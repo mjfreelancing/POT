@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="Pot.Maui.Features.ShowSummary.Views.SummaryPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModel="clr-namespace:Pot.Maui.Features.ShowSummary.ViewModels"
+    Title="{Binding Title}"
+    x:DataType="viewModel:SummaryViewModel"
+    BackgroundColor="{AppThemeBinding Dark={StaticResource WindowBackgroundColorDark},
+                                      Light={StaticResource WindowBackgroundColor}}"
+    IsBusy="{Binding IsBusy}">
+
+    <ContentPage.ToolbarItems>
+        <!--<ToolbarItem Text="Add" Command="{Binding AddCommand}"/>-->
+    </ContentPage.ToolbarItems>
+
+    <ContentPage.Content>
+        <VerticalStackLayout HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand">
+            <Frame Margin="10" HasShadow="True">
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,*,*,*,*,*">
+                    <Label
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2"
+                        Style="{StaticResource SummaryTitleStyle}"
+                        Text="Accounts" />
+
+                    <Label
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        HorizontalOptions="FillAndExpand"
+                        Style="{StaticResource SummaryItemTitleStyle}"
+                        Text="Balance" />
+                    <Label
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        HorizontalOptions="End"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="{Binding AccountSummary.Balance, StringFormat={StaticResource CurrencyFormat}}" />
+
+                    <Label
+                        Grid.Row="2"
+                        Grid.Column="0"
+                        HorizontalOptions="FillAndExpand"
+                        Style="{StaticResource SummaryItemTitleStyle}"
+                        Text="Reserved" />
+                    <Label
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        HorizontalOptions="End"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="{Binding AccountSummary.Reserved, StringFormat={StaticResource CurrencyFormat}}" />
+
+                    <Label
+                        Grid.Row="3"
+                        Grid.Column="0"
+                        HorizontalOptions="FillAndExpand"
+                        Style="{StaticResource SummaryItemTitleStyle}"
+                        Text="Allocated" />
+                    <Label
+                        Grid.Row="3"
+                        Grid.Column="1"
+                        HorizontalOptions="End"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="{Binding AccountSummary.Allocated, StringFormat={StaticResource CurrencyFormat}}" />
+
+                    <Label
+                        Grid.Row="4"
+                        Grid.Column="0"
+                        HorizontalOptions="FillAndExpand"
+                        Style="{StaticResource SummaryItemTitleStyle}"
+                        Text="Daily Accrual" />
+                    <Label
+                        Grid.Row="4"
+                        Grid.Column="1"
+                        HorizontalOptions="End"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="{Binding AccountSummary.DailyAccrual, StringFormat={StaticResource CurrencyFormat}}" />
+
+                    <Label
+                        Grid.Row="5"
+                        Grid.Column="0"
+                        HorizontalOptions="FillAndExpand"
+                        Style="{StaticResource SummaryItemTitleStyle}"
+                        Text="Available" />
+                    <Label
+                        Grid.Row="5"
+                        Grid.Column="1"
+                        HorizontalOptions="End"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="{Binding AccountSummary.Available, StringFormat={StaticResource CurrencyFormat}}" />
+                </Grid>
+            </Frame>
+
+            <Frame Margin="10,0" HasShadow="True">
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,*,*,*,*">
+                    <Label
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2"
+                        Style="{StaticResource SummaryTitleStyle}"
+                        Text="Expenses" />
+
+                    <Label
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        HorizontalOptions="FillAndExpand"
+                        Style="{StaticResource SummaryItemTitleStyle}"
+                        Text="Total" />
+                    <Label
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        HorizontalOptions="End"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="{Binding ExpenseSummary.Total, StringFormat={StaticResource CurrencyFormat}}" />
+
+                    <Label
+                        Grid.Row="2"
+                        Grid.Column="0"
+                        HorizontalOptions="FillAndExpand"
+                        Style="{StaticResource SummaryItemTitleStyle}"
+                        Text="Allocated" />
+                    <Label
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        HorizontalOptions="End"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="{Binding ExpenseSummary.Allocated, StringFormat={StaticResource CurrencyFormat}}" />
+
+                    <Label
+                        Grid.Row="3"
+                        Grid.Column="0"
+                        HorizontalOptions="FillAndExpand"
+                        Style="{StaticResource SummaryItemTitleStyle}"
+                        Text="Daily Accrual" />
+                    <Label
+                        Grid.Row="3"
+                        Grid.Column="1"
+                        HorizontalOptions="End"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="{Binding ExpenseSummary.AccrualDaily, StringFormat={StaticResource CurrencyFormat}}" />
+
+                    <Label
+                        Grid.Row="4"
+                        Grid.Column="0"
+                        HorizontalOptions="FillAndExpand"
+                        Style="{StaticResource SummaryItemTitleStyle}"
+                        Text="Balance/Day" />
+                    <Label
+                        Grid.Row="4"
+                        Grid.Column="1"
+                        HorizontalOptions="End"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="{Binding ExpenseSummary.BalanceDaily, StringFormat={StaticResource CurrencyFormat}}" />
+                </Grid>
+            </Frame>
+        </VerticalStackLayout>
+    </ContentPage.Content>
+
+    <!--<ContentPage.Content>
+
+        <ScrollView>
+            <StackLayout
+                HorizontalOptions="FillAndExpand"
+                Orientation="Vertical"
+                VerticalOptions="StartAndExpand">
+
+                <Frame
+                    Margin="10"
+                    BackgroundColor="{StaticResource DivvyFrameBackgroundColor}"
+                    BorderColor="{StaticResource DivvyBlue}"
+                    CornerRadius="8"
+                    HasShadow="True">
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <Label
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            Margin="0,-8,0,8"
+                            Style="{StaticResource SummaryTitleStyle}"
+                            Text="Accounts" />
+
+                        <Label
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            HorizontalOptions="FillAndExpand"
+                            Style="{StaticResource SummaryItemTitleStyle}"
+                            Text="Balance" />
+                        <Label
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            HorizontalOptions="End"
+                            Style="{StaticResource SummaryContentStyle}"
+                            Text="{Binding AccountSummary.Balance, StringFormat={StaticResource CurrencyFormat}}" />
+
+                        <Label
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            HorizontalOptions="FillAndExpand"
+                            Style="{StaticResource SummaryItemTitleStyle}"
+                            Text="Reserved" />
+                        <Label
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            HorizontalOptions="End"
+                            Style="{StaticResource SummaryContentStyle}"
+                            Text="{Binding AccountSummary.Reserved, StringFormat={StaticResource CurrencyFormat}}" />
+
+                        <Label
+                            Grid.Row="3"
+                            Grid.Column="0"
+                            HorizontalOptions="FillAndExpand"
+                            Style="{StaticResource SummaryItemTitleStyle}"
+                            Text="Allocated" />
+                        <Label
+                            Grid.Row="3"
+                            Grid.Column="1"
+                            HorizontalOptions="End"
+                            Style="{StaticResource SummaryContentStyle}"
+                            Text="{Binding AccountSummary.Allocated, StringFormat={StaticResource CurrencyFormat}}" />
+
+                        <Label
+                            Grid.Row="4"
+                            Grid.Column="0"
+                            HorizontalOptions="FillAndExpand"
+                            Style="{StaticResource SummaryItemTitleStyle}"
+                            Text="Daily Accrual" />
+                        <Label
+                            Grid.Row="4"
+                            Grid.Column="1"
+                            HorizontalOptions="End"
+                            Style="{StaticResource SummaryContentStyle}"
+                            Text="{Binding AccountSummary.DailyAccrual, StringFormat={StaticResource CurrencyFormat}}" />
+
+                        <Label
+                            Grid.Row="5"
+                            Grid.Column="0"
+                            HorizontalOptions="FillAndExpand"
+                            Style="{StaticResource SummaryItemTitleStyle}"
+                            Text="Available" />
+                        <Label
+                            Grid.Row="5"
+                            Grid.Column="1"
+                            HorizontalOptions="End"
+                            Style="{StaticResource SummaryContentStyle}"
+                            Text="{Binding AccountSummary.Available, StringFormat={StaticResource CurrencyFormat}}" />
+                    </Grid>
+                </Frame>
+
+                <Frame
+                    Margin="10,0"
+                    BackgroundColor="{StaticResource DivvyFrameBackgroundColor}"
+                    BorderColor="{StaticResource DivvyBlue}"
+                    CornerRadius="8"
+                    HasShadow="True">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <Label
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            Margin="0,-8,0,8"
+                            Style="{StaticResource SummaryTitleStyle}"
+                            Text="Expenses" />
+
+                        <Label
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            HorizontalOptions="FillAndExpand"
+                            Style="{StaticResource SummaryItemTitleStyle}"
+                            Text="Total" />
+                        <Label
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            HorizontalOptions="End"
+                            Style="{StaticResource SummaryContentStyle}"
+                            Text="{Binding ExpenseSummary.Total, StringFormat={StaticResource CurrencyFormat}}" />
+
+                        <Label
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            HorizontalOptions="FillAndExpand"
+                            Style="{StaticResource SummaryItemTitleStyle}"
+                            Text="Allocated" />
+                        <Label
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            HorizontalOptions="End"
+                            Style="{StaticResource SummaryContentStyle}"
+                            Text="{Binding ExpenseSummary.Allocated, StringFormat={StaticResource CurrencyFormat}}" />
+
+                        <Label
+                            Grid.Row="3"
+                            Grid.Column="0"
+                            HorizontalOptions="FillAndExpand"
+                            Style="{StaticResource SummaryItemTitleStyle}"
+                            Text="Daily Accrual" />
+                        <Label
+                            Grid.Row="3"
+                            Grid.Column="1"
+                            HorizontalOptions="End"
+                            Style="{StaticResource SummaryContentStyle}"
+                            Text="{Binding ExpenseSummary.AccrualDaily, StringFormat={StaticResource CurrencyFormat}}" />
+
+                        <Label
+                            Grid.Row="4"
+                            Grid.Column="0"
+                            HorizontalOptions="FillAndExpand"
+                            Style="{StaticResource SummaryItemTitleStyle}"
+                            Text="Balance/Day" />
+                        <Label
+                            Grid.Row="4"
+                            Grid.Column="1"
+                            HorizontalOptions="End"
+                            Style="{StaticResource SummaryContentStyle}"
+                            Text="{Binding ExpenseSummary.BalanceDaily, StringFormat={StaticResource CurrencyFormat}}" />
+                    </Grid>
+                </Frame>
+
+            </StackLayout>
+        </ScrollView>
+    </ContentPage.Content>-->
+</ContentPage>

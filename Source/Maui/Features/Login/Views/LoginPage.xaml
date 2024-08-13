@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="Pot.Maui.Features.Login.Views.LoginPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModel="clr-namespace:Pot.Maui.Features.Login.ViewModels"
+    Title="{Binding Title}"
+    x:DataType="viewModel:LoginViewModel"
+    BackgroundColor="{AppThemeBinding Dark={StaticResource WindowBackgroundColorDark},
+                                      Light={StaticResource WindowBackgroundColor}}"
+    IsBusy="{Binding IsBusy}"
+    Shell.FlyoutBehavior="Disabled"
+    Shell.NavBarIsVisible="False">
+    <ContentPage.Content>
+        <VerticalStackLayout
+            Padding="40"
+            HorizontalOptions="FillAndExpand"
+            Spacing="16"
+            VerticalOptions="Center">
+            <VerticalStackLayout>
+                <Label Text="Username:" />
+                <Entry Placeholder="Username" />
+            </VerticalStackLayout>
+            <VerticalStackLayout>
+                <Label Text="Password:" />
+                <Entry IsPassword="True" Placeholder="Password" />
+            </VerticalStackLayout>
+            <Button Command="{Binding LoginCommand}" Text="Login" />
+            <Label HorizontalOptions="Center" Text="Register">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped" />
+                </Label.GestureRecognizers>
+            </Label>
+        </VerticalStackLayout>
+    </ContentPage.Content>
+</ContentPage>
