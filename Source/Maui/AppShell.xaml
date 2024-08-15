@@ -38,19 +38,19 @@
                 ApplyToDerivedTypes="True"
                 Class="FlyoutItemLayoutStyle"
                 TargetType="Layout">
-                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark=DarkSecondary, Light=LightSecondary}" />
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource DarkSecondary}, Light={StaticResource LightSecondary}}" />
                 <Setter Property="VisualStateManager.VisualStateGroups">
                     <VisualStateGroupList>
                         <VisualStateGroup x:Name="CommonStates">
                             <VisualState x:Name="Normal">
                                 <VisualState.Setters>
                                     <Setter Property="BackgroundColor" Value="Transparent" />
-                                    <Setter TargetName="FlyoutItemLabel" Property="Label.TextColor" Value="{AppThemeBinding Dark=DarkPrimary, Light=LightPrimary}" />
+                                    <Setter TargetName="FlyoutItemLabel" Property="Label.TextColor" Value="{AppThemeBinding Dark={StaticResource DarkPrimary}, Light={StaticResource LightPrimary}}" />
                                 </VisualState.Setters>
                             </VisualState>
                             <VisualState x:Name="Selected">
                                 <VisualState.Setters>
-                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark=DarkPrimary, Light=LightPrimary}" />
+                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource DarkPrimary}, Light={StaticResource LightPrimary}}" />
                                 </VisualState.Setters>
                             </VisualState>
                         </VisualStateGroup>
@@ -67,7 +67,7 @@
                         <VisualStateGroup x:Name="CommonStates">
                             <VisualState x:Name="Normal">
                                 <VisualState.Setters>
-                                    <Setter TargetName="FlyoutItemLabel" Property="Label.TextColor" Value="{AppThemeBinding Dark=DarkPrimary, Light=LightPrimary}" />
+                                    <Setter TargetName="FlyoutItemLabel" Property="Label.TextColor" Value="{AppThemeBinding Dark={StaticResource DarkPrimary}, Light={StaticResource LightPrimary}}" />
                                 </VisualState.Setters>
                             </VisualState>
                         </VisualStateGroup>
@@ -217,11 +217,10 @@
         ContentTemplate="{DataTemplate summary:SummaryPage}"
         FlyoutIcon="pot_splash.svg" />
 
-    <!--  15/08/2024 - The icon is not currently showing  -->
     <MenuItem Command="{Binding ShowAppInfoCommand}" Text="App Info">
         <MenuItem.IconImageSource>
             <FontImageSource
-                FontFamily="{StaticResource MaterialDesign}"
+                FontFamily="MaterialDesign"
                 Glyph="{x:Static fonts:IconFont.InformationOutline}"
                 Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
                                         Light={StaticResource LightOnSurface}}" />

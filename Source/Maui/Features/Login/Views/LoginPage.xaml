@@ -6,8 +6,8 @@
     xmlns:viewModel="clr-namespace:Pot.Maui.Features.Login.ViewModels"
     Title="{Binding Title}"
     x:DataType="viewModel:LoginViewModel"
-    BackgroundColor="{AppThemeBinding Dark={StaticResource WindowBackgroundColorDark},
-                                      Light={StaticResource WindowBackgroundColor}}"
+    BackgroundColor="{AppThemeBinding Dark={StaticResource DarkBackground},
+                                      Light={StaticResource LightBackground}}"
     IsBusy="{Binding IsBusy}"
     Shell.FlyoutBehavior="Disabled"
     Shell.NavBarIsVisible="False">
