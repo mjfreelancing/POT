@@ -1,5 +1,5 @@
-﻿using Pot.Helpers;
-using Pot.Maui.Domain.Expenses.Models;
+﻿using Pot.Maui.Domain.Expenses.Models;
+using Pot.Maui.Helpers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 

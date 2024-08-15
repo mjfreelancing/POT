@@ -71,14 +71,23 @@
 		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.80" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
 		<PackageReference Include="Syncfusion.Maui.Core" version="26.2.9" />
-		<PackageReference Include="System.Reactive" Version="6.0.1" />
+		<!--<PackageReference Include="System.Reactive" Version="6.0.1" />-->
 	</ItemGroup>
 
 	<ItemGroup>
-		<MauiXaml Update="Features\Accounts\Views\AccountPage.xaml">
+	  <Compile Update="Features\Accounts\Views\AccountsPage.xaml.cs">
+	    <DependentUpon>AccountsPage.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Features\Expenses\Views\ExpensesPage.xaml.cs">
+	    <DependentUpon>ExpensesPage.xaml</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<MauiXaml Update="Features\Accounts\Views\AccountsPage.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
-		<MauiXaml Update="Features\Expenses\Views\ExpensePage.xaml">
+		<MauiXaml Update="Features\Expenses\Views\ExpensesPage.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 		<MauiXaml Update="Features\Login\Views\LoginPage.xaml">
@@ -87,7 +96,7 @@
 		<MauiXaml Update="Features\Summary\Views\SummaryPage.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
-		<MauiXaml Update="Resources\Styles\Themes.xaml">
+		<MauiXaml Update="Resources\Styles\Material.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 	</ItemGroup>

@@ -20,7 +20,7 @@ internal partial class LoginViewModel : ViewModelBase, ILoginViewModel
     {
         using (GetIsBusyTransaction())
         {
-            await Task.Delay(1500);
+            await Task.Delay(300);
 
             RaiseOnLoggedIn();
             //_loggedInSubject.OnNext(true);

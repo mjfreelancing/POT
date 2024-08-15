@@ -1,7 +1,7 @@
 ﻿using Pot.Maui.Domain.Models;
 using System.Globalization;
 
-namespace Pot.Domain.Converters
+namespace Pot.Maui.Domain.Converters
 {
     public sealed class ExpenseFrequencyConverter : IValueConverter
     {

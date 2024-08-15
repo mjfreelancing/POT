@@ -1,4 +1,4 @@
-﻿namespace Pot.Helpers
+﻿namespace Pot.Maui.Helpers
 {
     public static class AssetLoader
     {

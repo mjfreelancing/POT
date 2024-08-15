@@ -9,7 +9,8 @@ internal static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddSummary(this IServiceCollection services)
     {
-        services.AddTransient<ISummaryViewModel, SummaryViewModel>();
+        //services.AddTransient<ISummaryViewModel, SummaryViewModel>();
+        services.AddTransient<SummaryViewModel>();
         services.AddTransient<SummaryPage>();
 
         services.AddTransient<ISummaryService, SummaryService>();

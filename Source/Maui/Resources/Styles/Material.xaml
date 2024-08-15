@@ -102,8 +102,4 @@
     <Color x:Key="DarkSurfaceContainerHigh">#262A30</Color>
     <Color x:Key="DarkSurfaceContainerHighest">#31353B</Color>
 
-    <!--
-    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}" />
-    -->
-
 </ResourceDictionary>

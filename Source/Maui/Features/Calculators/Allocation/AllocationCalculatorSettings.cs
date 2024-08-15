@@ -1,4 +1,4 @@
-﻿namespace Pot.Features.Calculators.Allocation
+﻿namespace Pot.Maui.Features.Calculators.Allocation
 {
     public sealed record AllocationCalculatorSettings
     {

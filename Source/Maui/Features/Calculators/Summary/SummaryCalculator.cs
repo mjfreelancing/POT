@@ -1,7 +1,7 @@
 ﻿using Pot.Maui.Domain.Accounts.Models;
 using Pot.Maui.Domain.Expenses.Models;
 
-namespace Pot.Features.Calculators.Summary
+namespace Pot.Maui.Features.Calculators.Summary
 {
     public static class SummaryCalculator
     {

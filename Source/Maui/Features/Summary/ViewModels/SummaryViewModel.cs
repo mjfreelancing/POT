@@ -5,15 +5,15 @@ using Pot.Maui.Features.Summary.Services;
 
 namespace Pot.Maui.Features.Summary.ViewModels;
 
-public interface ISummaryViewModel
-{
-    AccountSummary AccountSummary { get; }
-    ExpenseSummary ExpenseSummary { get; }
+//public interface ISummaryViewModel : IViewModel
+//{
+//    AccountSummary AccountSummary { get; }
+//    ExpenseSummary ExpenseSummary { get; }
 
-    Task RefreshSummariesAsync();
-}
+//    Task RefreshSummariesAsync();
+//}
 
-internal partial class SummaryViewModel : ViewModelBase, ISummaryViewModel
+public partial class SummaryViewModel : ViewModelBase//, ISummaryViewModel
 {
     private readonly ISummaryService _summaryService;
 
@@ -26,6 +26,8 @@ internal partial class SummaryViewModel : ViewModelBase, ISummaryViewModel
     public SummaryViewModel(ISummaryService summaryService)
     {
         _summaryService = summaryService;
+
+        Title = "Summary";
     }
 
     public async Task RefreshSummariesAsync()

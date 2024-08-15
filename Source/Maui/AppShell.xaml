@@ -5,9 +5,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:accounts="clr-namespace:Pot.Maui.Features.Accounts.Views"
     xmlns:expenses="clr-namespace:Pot.Maui.Features.Expenses.Views"
+    xmlns:fonts="clr-namespace:Pot.Maui.Resources.Fonts"
     xmlns:local="clr-namespace:Pot.Maui"
     xmlns:login="clr-namespace:Pot.Maui.Features.Login.Views"
-    xmlns:pot="clr-namespace:Pot"
     xmlns:summary="clr-namespace:Pot.Maui.Features.Summary.Views"
     Title="POT"
     x:DataType="local:AppShell"
@@ -38,19 +38,19 @@
                 ApplyToDerivedTypes="True"
                 Class="FlyoutItemLayoutStyle"
                 TargetType="Layout">
-                <Setter Property="BackgroundColor" Value="LightBlue" />
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark=DarkSecondary, Light=LightSecondary}" />
                 <Setter Property="VisualStateManager.VisualStateGroups">
                     <VisualStateGroupList>
                         <VisualStateGroup x:Name="CommonStates">
                             <VisualState x:Name="Normal">
                                 <VisualState.Setters>
                                     <Setter Property="BackgroundColor" Value="Transparent" />
-                                    <Setter TargetName="FlyoutItemLabel" Property="Label.TextColor" Value="{StaticResource Primary}" />
+                                    <Setter TargetName="FlyoutItemLabel" Property="Label.TextColor" Value="{AppThemeBinding Dark=DarkPrimary, Light=LightPrimary}" />
                                 </VisualState.Setters>
                             </VisualState>
                             <VisualState x:Name="Selected">
                                 <VisualState.Setters>
-                                    <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark=DarkPrimary, Light=LightPrimary}" />
                                 </VisualState.Setters>
                             </VisualState>
                         </VisualStateGroup>
@@ -67,7 +67,7 @@
                         <VisualStateGroup x:Name="CommonStates">
                             <VisualState x:Name="Normal">
                                 <VisualState.Setters>
-                                    <Setter TargetName="FlyoutItemLabel" Property="Label.TextColor" Value="{StaticResource Primary}" />
+                                    <Setter TargetName="FlyoutItemLabel" Property="Label.TextColor" Value="{AppThemeBinding Dark=DarkPrimary, Light=LightPrimary}" />
                                 </VisualState.Setters>
                             </VisualState>
                         </VisualStateGroup>
@@ -90,7 +90,7 @@
             <Tab.Icon>
                 <FontImageSource
                     FontFamily="MaterialDesign"
-                    Glyph="{x:Static pot:IconFont.Bank}"
+                    Glyph="{x:Static fonts:IconFont.Bank}"
                     Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
                                             Light={StaticResource LightOnSurface}}" />
             </Tab.Icon>
@@ -101,7 +101,7 @@
                 <ShellContent.Icon>
                     <FontImageSource
                         FontFamily="MaterialDesign"
-                        Glyph="{x:Static pot:IconFont.FileDocumentBoxCheckOutline}"
+                        Glyph="{x:Static fonts:IconFont.FileDocumentBoxCheckOutline}"
                         Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
                                                 Light={StaticResource LightOnSurface}}" />
                 </ShellContent.Icon>
@@ -114,7 +114,7 @@
                 <ShellContent.Icon>
                     <FontImageSource
                         FontFamily="MaterialDesign"
-                        Glyph="{x:Static pot:IconFont.Bank}"
+                        Glyph="{x:Static fonts:IconFont.Bank}"
                         Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
                                                 Light={StaticResource LightOnSurface}}" />
                 </ShellContent.Icon>
@@ -127,7 +127,7 @@
                 <ShellContent.Icon>
                     <FontImageSource
                         FontFamily="MaterialDesign"
-                        Glyph="{x:Static pot:IconFont.CreditCardMultipleOutline}"
+                        Glyph="{x:Static fonts:IconFont.CreditCardMultipleOutline}"
                         Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
                                                 Light={StaticResource LightOnSurface}}" />
                 </ShellContent.Icon>
@@ -145,7 +145,7 @@
             <ShellContent.Icon>
                 <FontImageSource
                     FontFamily="MaterialDesign"
-                    Glyph="{x:Static pot:IconFont.TextBoxCheckOutline}"
+                    Glyph="{x:Static fonts:IconFont.TextBoxCheckOutline}"
                     Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
                                             Light={StaticResource LightOnSurface}}" />
             </ShellContent.Icon>
@@ -153,12 +153,12 @@
 
         <ShellContent
             Title="Accounts"
-            ContentTemplate="{DataTemplate accounts:AccountPage}"
+            ContentTemplate="{DataTemplate accounts:AccountsPage}"
             Route="AccountsPage">
             <ShellContent.Icon>
                 <FontImageSource
                     FontFamily="MaterialDesign"
-                    Glyph="{x:Static pot:IconFont.Bank}"
+                    Glyph="{x:Static fonts:IconFont.Bank}"
                     Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
                                             Light={StaticResource LightOnSurface}}" />
             </ShellContent.Icon>
@@ -166,12 +166,12 @@
 
         <ShellContent
             Title="Expenses"
-            ContentTemplate="{DataTemplate expenses:ExpensePage}"
+            ContentTemplate="{DataTemplate expenses:ExpensesPage}"
             Route="ExpensesPage">
             <ShellContent.Icon>
                 <FontImageSource
                     FontFamily="MaterialDesign"
-                    Glyph="{x:Static pot:IconFont.CreditCardMultipleOutline}"
+                    Glyph="{x:Static fonts:IconFont.CreditCardMultipleOutline}"
                     Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
                                             Light={StaticResource LightOnSurface}}" />
             </ShellContent.Icon>
@@ -182,7 +182,7 @@
         <FlyoutItem.Icon>
             <FontImageSource
                 FontFamily="MaterialDesign"
-                Glyph="{x:Static pot:IconFont.FileDocumentBoxCheckOutline}"
+                Glyph="{x:Static fonts:IconFont.FileDocumentBoxCheckOutline}"
                 Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
                                         Light={StaticResource LightOnSurface}}" />
         </FlyoutItem.Icon>
@@ -193,7 +193,7 @@
         <FlyoutItem.Icon>
             <FontImageSource
                 FontFamily="MaterialDesign"
-                Glyph="{x:Static pot:IconFont.Bank}"
+                Glyph="{x:Static fonts:IconFont.Bank}"
                 Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
                                         Light={StaticResource LightOnSurface}}" />
         </FlyoutItem.Icon>
@@ -204,7 +204,7 @@
         <FlyoutItem.Icon>
             <FontImageSource
                 FontFamily="MaterialDesign"
-                Glyph="{x:Static pot:IconFont.CreditCardMultipleOutline}"
+                Glyph="{x:Static fonts:IconFont.CreditCardMultipleOutline}"
                 Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
                                         Light={StaticResource LightOnSurface}}" />
         </FlyoutItem.Icon>
@@ -222,7 +222,7 @@
         <MenuItem.IconImageSource>
             <FontImageSource
                 FontFamily="{StaticResource MaterialDesign}"
-                Glyph="{x:Static pot:IconFont.InformationOutline}"
+                Glyph="{x:Static fonts:IconFont.InformationOutline}"
                 Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
                                         Light={StaticResource LightOnSurface}}" />
         </MenuItem.IconImageSource>

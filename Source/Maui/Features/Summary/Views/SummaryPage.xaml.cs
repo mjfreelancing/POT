@@ -4,9 +4,9 @@ namespace Pot.Maui.Features.Summary.Views;
 
 public partial class SummaryPage : ContentPage
 {
-    private readonly ISummaryViewModel _summaryViewModel;
+    private readonly SummaryViewModel _summaryViewModel;
 
-    public SummaryPage(ISummaryViewModel viewModel)
+    public SummaryPage(SummaryViewModel viewModel)
     {
         InitializeComponent();
 

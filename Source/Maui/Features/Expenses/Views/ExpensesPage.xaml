@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="Pot.Maui.Features.Expenses.Views.ExpensesPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:model="clr-namespace:Pot.Maui.Domain.Expenses.Models"
+    xmlns:viewModels="clr-namespace:Pot.Maui.Features.Expenses.ViewModels"
+    Title="{Binding Title}"
+    x:DataType="viewModels:ExpensesViewModel"
+    BackgroundColor="{AppThemeBinding Dark={StaticResource DarkBackground},
+                                      Light={StaticResource LightBackground}}">
+    <CollectionView
+        ItemSizingStrategy="MeasureAllItems"
+        ItemsSource="{Binding Expenses}"
+        SelectionMode="None">
+        <CollectionView.EmptyView>
+            <StackLayout VerticalOptions="Center">
+                <Label
+                    FontSize="20"
+                    HorizontalOptions="Center"
+                    Text="No Accounts" />
+            </StackLayout>
+        </CollectionView.EmptyView>
+        <CollectionView.ItemTemplate>
+            <DataTemplate x:DataType="model:Expense">
+                <Frame Margin="20,20,20,0" Padding="10">
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,*,*">
+                        <Label
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            Margin="0,0,0,10"
+                            Style="{StaticResource FrameTitleStyle}"
+                            Text="{Binding Description}" />
+                        <Label
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            FontSize="18"
+                            Style="{StaticResource FrameContentStyle}"
+                            Text="{Binding Amount, StringFormat={StaticResource CurrencyFormat}}" />
+                        <Label
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            Style="{StaticResource FrameContentStyle}">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <FormattedString.Spans>
+                                        <Span Text="{Binding Balance, StringFormat={StaticResource CurrencyFormat}}" />
+                                        <Span Text=" Balance" />
+                                    </FormattedString.Spans>
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+
+                        <Label
+                            Grid.Row="0"
+                            Grid.RowSpan="3"
+                            Grid.Column="1"
+                            HorizontalOptions="EndAndExpand"
+                            Style="{StaticResource FrameContentStyle}"
+                            Text="{Binding NextDue, StringFormat={StaticResource DateFormat}}"
+                            VerticalOptions="EndAndExpand" />
+                    </Grid>
+                </Frame>
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+    </CollectionView>
+</ContentPage>

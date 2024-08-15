@@ -4,18 +4,19 @@
 
     <!--  Note: For Android please see also Platforms\Android\Resources\values\colors.xml  -->
 
-    <Color x:Key="Primary">#512BD4</Color>
+    <!--<Color x:Key="Primary">#512BD4</Color>
     <Color x:Key="PrimaryDark">#ac99ea</Color>
     <Color x:Key="PrimaryDarkText">#242424</Color>
     <Color x:Key="Secondary">#DFD8F7</Color>
     <Color x:Key="SecondaryDarkText">#9880e5</Color>
-    <Color x:Key="Tertiary">#2B0B98</Color>
+    <Color x:Key="Tertiary">#2B0B98</Color>-->
+
+    <!--<Color x:Key="Magenta">#D600AA</Color>
+    <Color x:Key="MidnightBlue">#190649</Color>
+    <Color x:Key="OffBlack">#1f1f1f</Color>-->
 
     <Color x:Key="White">White</Color>
     <Color x:Key="Black">Black</Color>
-    <Color x:Key="Magenta">#D600AA</Color>
-    <Color x:Key="MidnightBlue">#190649</Color>
-    <Color x:Key="OffBlack">#1f1f1f</Color>
 
     <Color x:Key="Gray100">#E1E1E1</Color>
     <Color x:Key="Gray200">#C8C8C8</Color>
@@ -26,9 +27,14 @@
     <Color x:Key="Gray900">#212121</Color>
     <Color x:Key="Gray950">#141414</Color>
 
-    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}" />
-    <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource Secondary}" />
-    <SolidColorBrush x:Key="TertiaryBrush" Color="{StaticResource Tertiary}" />
+    <SolidColorBrush x:Key="LightPrimaryBrush" Color="{StaticResource LightPrimary}" />
+    <SolidColorBrush x:Key="LightSecondaryBrush" Color="{StaticResource LightSecondary}" />
+    <SolidColorBrush x:Key="LightTertiaryBrush" Color="{StaticResource LightTertiary}" />
+
+    <SolidColorBrush x:Key="DarkPrimaryBrush" Color="{StaticResource DarkPrimary}" />
+    <SolidColorBrush x:Key="DarkSecondaryBrush" Color="{StaticResource DarkSecondary}" />
+    <SolidColorBrush x:Key="DarkTertiaryBrush" Color="{StaticResource DarkTertiary}" />
+
     <SolidColorBrush x:Key="WhiteBrush" Color="{StaticResource White}" />
     <SolidColorBrush x:Key="BlackBrush" Color="{StaticResource Black}" />
 
@@ -42,9 +48,7 @@
     <SolidColorBrush x:Key="Gray950Brush" Color="{StaticResource Gray950}" />
 
 
-
-
-    <Color x:Key="WindowBackgroundColor">#f2f2f7</Color>
+    <!--<Color x:Key="WindowBackgroundColor">#f2f2f7</Color>
     <Color x:Key="WindowBackgroundColorDark">Black</Color>
 
 
@@ -83,11 +87,15 @@
     <Color x:Key="SystemGray6Dark">#1C1C1E</Color>
 
 
+    -->
     <!--  colors below are currently in use  -->
+    <!--
     <Color x:Key="DivvyBlue">#2196FF</Color>
     <Color x:Key="DivvyOrange">#FF7221</Color>
 
+    -->
     <!--  keep  -->
+    <!--
     <Color x:Key="DivvyError">#B00020</Color>
 
     <Color x:Key="DivvyGrey">#999999</Color>
@@ -98,7 +106,7 @@
     <Color x:Key="DivvyPageBackgroundColor">#ebf5ff</Color>
     <Color x:Key="DivvyFrameBackgroundColor">#fafcff</Color>
 
-    <Color x:Key="LightTextColor">#999999</Color>
+    <Color x:Key="LightTextColor">#999999</Color>-->
 
 
 </ResourceDictionary>

@@ -3,15 +3,15 @@
     x:Class="Pot.Maui.App"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:valueConverters="clr-namespace:Pot.Domain.Converters">
+    xmlns:valueConverters="clr-namespace:Pot.Maui.Domain.Converters">
     <Application.Resources>
         <!--  Move back up if needed  -->
         <!--  xmlns:syncTheme="clr-namespace:Syncfusion.Maui.Themes;assembly=Syncfusion.Maui.Core"  -->
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <!--<syncTheme:SyncfusionThemeResourceDictionary VisualTheme="MaterialDark" />-->
+                <ResourceDictionary Source="Resources/Styles/Material.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
-                <ResourceDictionary Source="Resources/Styles/Themes.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 

@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Maui;
-using Pot.Features.Calculators.Allocation;
+using Pot.Maui.Features.Calculators.Allocation;
 
-namespace Pot.Features.Calculators.Extensions;
+namespace Pot.Maui.Features.Calculators.Extensions;
 
 internal static class ServiceCollectionExtensions
 {

@@ -1,9 +1,9 @@
-﻿using Pot.Features.Calculators.Allocation;
-using Pot.Features.Calculators.Summary;
-using Pot.Maui.Domain.Accounts.Models;
+﻿using Pot.Maui.Domain.Accounts.Models;
 using Pot.Maui.Domain.Accounts.Repository;
 using Pot.Maui.Domain.Expenses.Models;
 using Pot.Maui.Domain.Expenses.Repository;
+using Pot.Maui.Features.Calculators.Allocation;
+using Pot.Maui.Features.Calculators.Summary;
 
 namespace Pot.Maui.Features.Summary.Services;
 
