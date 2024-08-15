@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Pot.Features.Calculators.Extensions;
 using Pot.Maui.Domain.Extensions;
 using Pot.Maui.Features.Login.Extensions;
-using Pot.Maui.Features.ShowSummary.Extensions;
+using Pot.Maui.Features.Summary.Extensions;
 
 namespace Pot.Maui
 {

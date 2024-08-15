@@ -5,9 +5,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:valueConverters="clr-namespace:Pot.Domain.Converters">
     <Application.Resources>
+        <!--  Move back up if needed  -->
+        <!--  xmlns:syncTheme="clr-namespace:Syncfusion.Maui.Themes;assembly=Syncfusion.Maui.Core"  -->
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <!--<syncTheme:SyncfusionThemeResourceDictionary VisualTheme="MaterialDark" />-->
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Themes.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
@@ -16,7 +20,6 @@
 
             <x:String x:Key="CurrencyFormat">{0:c}</x:String>
             <x:String x:Key="DateFormat">{0:dd MMM yyyy}</x:String>
-
 
             <!--<OnPlatform x:Key="MaterialFontFamily" x:TypeArguments="x:String">
                 <On Platform="iOS" Value="Material Design Icons" />

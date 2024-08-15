@@ -1,9 +1,9 @@
 ﻿using CommunityToolkit.Maui;
-using Pot.Maui.Features.ShowSummary.Services;
-using Pot.Maui.Features.ShowSummary.ViewModels;
-using Pot.Maui.Features.ShowSummary.Views;
+using Pot.Maui.Features.Summary.Services;
+using Pot.Maui.Features.Summary.ViewModels;
+using Pot.Maui.Features.Summary.Views;
 
-namespace Pot.Maui.Features.ShowSummary.Extensions;
+namespace Pot.Maui.Features.Summary.Extensions;
 
 internal static class ServiceCollectionExtensions
 {

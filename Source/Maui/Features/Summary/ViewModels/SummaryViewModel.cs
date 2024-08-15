@@ -1,9 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Pot.Maui.Domain.Accounts.Models;
 using Pot.Maui.Domain.Expenses.Models;
-using Pot.Maui.Features.ShowSummary.Services;
+using Pot.Maui.Features.Summary.Services;
 
-namespace Pot.Maui.Features.ShowSummary.ViewModels;
+namespace Pot.Maui.Features.Summary.ViewModels;
 
 public interface ISummaryViewModel
 {

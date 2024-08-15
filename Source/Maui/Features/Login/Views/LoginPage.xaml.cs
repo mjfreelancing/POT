@@ -1,5 +1,5 @@
 using Pot.Maui.Features.Login.ViewModels;
-using Pot.Maui.Features.ShowSummary.Views;
+using Pot.Maui.Features.Summary.Views;
 
 namespace Pot.Maui.Features.Login.Views;
 

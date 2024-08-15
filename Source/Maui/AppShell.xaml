@@ -3,12 +3,14 @@
     x:Class="Pot.Maui.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Pot.Maui"
     xmlns:login="clr-namespace:Pot.Maui.Features.Login.Views"
     xmlns:pot="clr-namespace:Pot"
-    xmlns:summary="clr-namespace:Pot.Maui.Features.ShowSummary.Views"
+    xmlns:summary="clr-namespace:Pot.Maui.Features.Summary.Views"
     Title="POT"
-    FlyoutBackgroundColor="{AppThemeBinding Dark={StaticResource WindowBackgroundColorDark},
-                                            Light={StaticResource WindowBackgroundColor}}">
+    x:DataType="local:AppShell"
+    FlyoutBackgroundColor="{AppThemeBinding Dark={StaticResource DarkSurfaceContainer},
+                                            Light={StaticResource LightSurfaceContainer}}">
 
     <Shell.Resources>
         <ResourceDictionary>
@@ -77,25 +79,150 @@
         <ShellContent ContentTemplate="{DataTemplate login:LoginPage}" />
     </ShellItem>
 
-    <FlyoutItem Title="Summary">
-        <FlyoutItem.Icon>
-            <FontImageSource
-                FontFamily="MaterialDesign"
-                Glyph="{x:Static pot:IconFont.FileDocumentBoxCheckOutline}"
-                Color="{AppThemeBinding Dark=White,
-                                        Light={StaticResource SystemGray5Dark}}" />
-        </FlyoutItem.Icon>
-        <ShellContent ContentTemplate="{DataTemplate summary:SummaryPage}" Route="SummaryPage" />
+    <!--
+        Creates a single flyout item that, when clicked, shows 3 tabs at the top, one for each page.
+        Not using this look since adding a toolbar at the top for adding new accounts / expenses isn't visually appealing.
+    -->
+    <!--<FlyoutItem FlyoutDisplayOptions="AsMultipleItems">
+        <Tab Title="Home">
+            <Tab.Icon>
+                <FontImageSource
+                    FontFamily="MaterialDesign"
+                    Glyph="{x:Static pot:IconFont.Bank}"
+                    Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
+                                            Light={StaticResource LightOnSurface}}" />
+            </Tab.Icon>
+            <ShellContent
+                Title="Summary"
+                ContentTemplate="{DataTemplate summary:SummaryPage}"
+                Route="SummaryPage">
+                <ShellContent.Icon>
+                    <FontImageSource
+                        FontFamily="MaterialDesign"
+                        Glyph="{x:Static pot:IconFont.FileDocumentBoxCheckOutline}"
+                        Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
+                                                Light={StaticResource LightOnSurface}}" />
+                </ShellContent.Icon>
+            </ShellContent>
+
+            <ShellContent
+                Title="Accounts"
+                ContentTemplate="{DataTemplate summary:AccountsPage}"
+                Route="AccountsPage">
+                <ShellContent.Icon>
+                    <FontImageSource
+                        FontFamily="MaterialDesign"
+                        Glyph="{x:Static pot:IconFont.Bank}"
+                        Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
+                                                Light={StaticResource LightOnSurface}}" />
+                </ShellContent.Icon>
+            </ShellContent>
+
+            <ShellContent
+                Title="Expenses"
+                ContentTemplate="{DataTemplate summary:ExpensesPage}"
+                Route="ExpensesPage">
+                <ShellContent.Icon>
+                    <FontImageSource
+                        FontFamily="MaterialDesign"
+                        Glyph="{x:Static pot:IconFont.CreditCardMultipleOutline}"
+                        Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
+                                                Light={StaticResource LightOnSurface}}" />
+                </ShellContent.Icon>
+            </ShellContent>
+        </Tab>
+    </FlyoutItem>-->
+
+
+    <!--  Creates a flyout group containing Summary, Accounts, Expenses. These are also presented as Bottom Tabs  -->
+    <FlyoutItem FlyoutDisplayOptions="AsMultipleItems">
+        <ShellContent
+            Title="Summary"
+            ContentTemplate="{DataTemplate summary:SummaryPage}"
+            Route="SummaryPage">
+            <ShellContent.Icon>
+                <FontImageSource
+                    FontFamily="MaterialDesign"
+                    Glyph="{x:Static pot:IconFont.TextBoxCheckOutline}"
+                    Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
+                                            Light={StaticResource LightOnSurface}}" />
+            </ShellContent.Icon>
+        </ShellContent>
+
+        <ShellContent
+            Title="Accounts"
+            ContentTemplate="{DataTemplate summary:SummaryPage}"
+            Route="AccountsPage">
+            <ShellContent.Icon>
+                <FontImageSource
+                    FontFamily="MaterialDesign"
+                    Glyph="{x:Static pot:IconFont.Bank}"
+                    Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
+                                            Light={StaticResource LightOnSurface}}" />
+            </ShellContent.Icon>
+        </ShellContent>
+
+        <ShellContent
+            Title="Expenses"
+            ContentTemplate="{DataTemplate summary:SummaryPage}"
+            Route="ExpensesPage">
+            <ShellContent.Icon>
+                <FontImageSource
+                    FontFamily="MaterialDesign"
+                    Glyph="{x:Static pot:IconFont.CreditCardMultipleOutline}"
+                    Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
+                                            Light={StaticResource LightOnSurface}}" />
+            </ShellContent.Icon>
+        </ShellContent>
     </FlyoutItem>
 
-    <FlyoutItem Title="Summary 2">
+    <!--<FlyoutItem Title="Summary">
         <FlyoutItem.Icon>
             <FontImageSource
                 FontFamily="MaterialDesign"
                 Glyph="{x:Static pot:IconFont.FileDocumentBoxCheckOutline}"
-                Color="{AppThemeBinding Dark=White,
-                                        Light={StaticResource SystemGray5Dark}}" />
+                Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
+                                        Light={StaticResource LightOnSurface}}" />
         </FlyoutItem.Icon>
-        <ShellContent ContentTemplate="{DataTemplate summary:SummaryPage}" Route="SummaryPage2" />
-    </FlyoutItem>
+        <ShellContent ContentTemplate="{DataTemplate summary:SummaryPage}" Route="SummaryPage0" />
+    </FlyoutItem>-->
+
+    <!--<FlyoutItem Title="Accounts">
+        <FlyoutItem.Icon>
+            <FontImageSource
+                FontFamily="MaterialDesign"
+                Glyph="{x:Static pot:IconFont.Bank}"
+                Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
+                                        Light={StaticResource LightOnSurface}}" />
+        </FlyoutItem.Icon>
+        <ShellContent ContentTemplate="{DataTemplate summary:SummaryPage}" Route="AccountsPage" />
+    </FlyoutItem>-->
+
+    <!--<FlyoutItem Title="Expenses">
+        <FlyoutItem.Icon>
+            <FontImageSource
+                FontFamily="MaterialDesign"
+                Glyph="{x:Static pot:IconFont.CreditCardMultipleOutline}"
+                Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
+                                        Light={StaticResource LightOnSurface}}" />
+        </FlyoutItem.Icon>
+        <ShellContent ContentTemplate="{DataTemplate summary:SummaryPage}" Route="ExpensesPage" />
+    </FlyoutItem>-->
+
+    <!--  Implicitly wrapped in a Tab, which is wrapped in a FlyoutItem  -->
+    <ShellContent
+        Title="Settings"
+        ContentTemplate="{DataTemplate summary:SummaryPage}"
+        FlyoutIcon="pot_splash.svg" />
+
+    <!--  15/08/2024 - The icon is not currently showing  -->
+    <MenuItem Command="{Binding ShowAppInfoCommand}" Text="App Info">
+        <MenuItem.IconImageSource>
+            <FontImageSource
+                FontFamily="{StaticResource MaterialDesign}"
+                Glyph="{x:Static pot:IconFont.InformationOutline}"
+                Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
+                                        Light={StaticResource LightOnSurface}}" />
+        </MenuItem.IconImageSource>
+    </MenuItem>
 </Shell>

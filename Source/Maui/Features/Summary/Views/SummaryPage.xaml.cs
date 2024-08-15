@@ -1,6 +1,6 @@
-using Pot.Maui.Features.ShowSummary.ViewModels;
+using Pot.Maui.Features.Summary.ViewModels;
 
-namespace Pot.Maui.Features.ShowSummary.Views;
+namespace Pot.Maui.Features.Summary.Views;
 
 public partial class SummaryPage : ContentPage
 {

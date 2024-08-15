@@ -132,10 +132,9 @@
 
     <Style TargetType="Frame">
         <Setter Property="HasShadow" Value="False" />
-        <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
-        <!--<Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray950}}" />-->
+        <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource LightOutline}, Dark={StaticResource DarkOutline}}" />
         <Setter Property="CornerRadius" Value="8" />
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightSurface}, Dark={StaticResource DarkSurface}}" />
     </Style>
 
     <Style TargetType="ImageButton">
@@ -451,23 +450,18 @@
         <Setter Property="FontAttributes" Value="Bold" />
     </Style>-->
 
-    <Style x:Key="SummaryTitleStyle" TargetType="Label">
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource SystemOrange}, Dark={StaticResource SystemOrangeDark}}" />
+    <!--<Style x:Key="SummaryTitleStyle" TargetType="Label">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource LightOnSurface}, Dark={StaticResource DarkOnSurface}}" />
         <Setter Property="FontSize" Value="20" />
         <Setter Property="Margin" Value="0,0,0,8" />
         <Setter Property="FontAttributes" Value="Bold" />
     </Style>
 
-    <Style x:Key="SummaryItemTitleStyle" TargetType="Label">
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray300}}" />
-        <Setter Property="Margin" Value="0,4" />
-        <Setter Property="FontSize" Value="18" />
-    </Style>
-
     <Style x:Key="SummaryContentStyle" TargetType="Label">
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray300}}" />
-        <Setter Property="FontSize" Value="16" />
-    </Style>
+        <Setter Property="Margin" Value="0,5" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource LightOnSurface}, Dark={StaticResource DarkOnSurface}}" />
+        <Setter Property="FontSize" Value="18" />
+    </Style>-->
 
     <!--<Style x:Key="GridTitleStyle" TargetType="Label">
         <Setter Property="TextColor" Value="{StaticResource DivvyOrange}" />

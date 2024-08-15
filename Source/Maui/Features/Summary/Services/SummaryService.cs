@@ -5,7 +5,7 @@ using Pot.Maui.Domain.Accounts.Repository;
 using Pot.Maui.Domain.Expenses.Models;
 using Pot.Maui.Domain.Expenses.Repository;
 
-namespace Pot.Maui.Features.ShowSummary.Services;
+namespace Pot.Maui.Features.Summary.Services;
 
 public interface ISummaryService
 {

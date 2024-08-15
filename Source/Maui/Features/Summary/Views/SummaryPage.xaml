@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="Pot.Maui.Features.Summary.Views.SummaryPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModel="clr-namespace:Pot.Maui.Features.Summary.ViewModels"
+    Title="{Binding Title}"
+    x:DataType="viewModel:SummaryViewModel"
+    BackgroundColor="{AppThemeBinding Dark={StaticResource DarkBackground},
+                                      Light={StaticResource LightBackground}}"
+    IsBusy="{Binding IsBusy}">
+
+    <ContentPage.Resources>
+        <Style x:Key="SummaryTitleStyle" TargetType="Label">
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource LightOnSurface}, Dark={StaticResource DarkOnSurface}}" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="FontAttributes" Value="Bold" />
+        </Style>
+
+        <Style x:Key="SummaryContentStyle" TargetType="Label">
+            <Setter Property="Margin" Value="0,5" />
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource LightOnSurface}, Dark={StaticResource DarkOnSurface}}" />
+            <Setter Property="FontSize" Value="18" />
+        </Style>
+    </ContentPage.Resources>
+
+    <ContentPage.ToolbarItems>
+        <!--<ToolbarItem Text="Add" Command="{Binding AddCommand}"/>-->
+    </ContentPage.ToolbarItems>
+
+    <ContentPage.Content>
+        <VerticalStackLayout HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand">
+            <Frame Margin="20" HasShadow="True">
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,*,*,*,*,*">
+                    <VerticalStackLayout
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2"
+                        Margin="0,0,0,8">
+                        <Label Style="{StaticResource SummaryTitleStyle}" Text="Accounts" />
+                        <BoxView
+                            HeightRequest="2"
+                            HorizontalOptions="Fill"
+                            Color="Gray" />
+                    </VerticalStackLayout>
+
+                    <Label
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        HorizontalOptions="FillAndExpand"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="Balance" />
+                    <Label
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        HorizontalOptions="End"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="{Binding AccountSummary.Balance, StringFormat={StaticResource CurrencyFormat}}" />
+
+                    <Label
+                        Grid.Row="2"
+                        Grid.Column="0"
+                        HorizontalOptions="FillAndExpand"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="Reserved" />
+                    <Label
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        HorizontalOptions="End"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="{Binding AccountSummary.Reserved, StringFormat={StaticResource CurrencyFormat}}" />
+
+                    <Label
+                        Grid.Row="3"
+                        Grid.Column="0"
+                        HorizontalOptions="FillAndExpand"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="Allocated" />
+                    <Label
+                        Grid.Row="3"
+                        Grid.Column="1"
+                        HorizontalOptions="End"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="{Binding AccountSummary.Allocated, StringFormat={StaticResource CurrencyFormat}}" />
+
+                    <Label
+                        Grid.Row="4"
+                        Grid.Column="0"
+                        HorizontalOptions="FillAndExpand"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="Daily Accrual" />
+                    <Label
+                        Grid.Row="4"
+                        Grid.Column="1"
+                        HorizontalOptions="End"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="{Binding AccountSummary.DailyAccrual, StringFormat={StaticResource CurrencyFormat}}" />
+
+                    <Label
+                        Grid.Row="5"
+                        Grid.Column="0"
+                        HorizontalOptions="FillAndExpand"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="Available" />
+                    <Label
+                        Grid.Row="5"
+                        Grid.Column="1"
+                        HorizontalOptions="End"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="{Binding AccountSummary.Available, StringFormat={StaticResource CurrencyFormat}}" />
+                </Grid>
+            </Frame>
+
+            <Frame Margin="20,0" HasShadow="True">
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,*,*,*,*">
+                    <VerticalStackLayout
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2"
+                        Margin="0,0,0,8">
+                        <Label Style="{StaticResource SummaryTitleStyle}" Text="Expenses" />
+                        <BoxView
+                            HeightRequest="2"
+                            HorizontalOptions="Fill"
+                            Color="Gray" />
+                    </VerticalStackLayout>
+
+                    <Label
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        HorizontalOptions="FillAndExpand"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="Total" />
+                    <Label
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        HorizontalOptions="End"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="{Binding ExpenseSummary.Total, StringFormat={StaticResource CurrencyFormat}}" />
+
+                    <Label
+                        Grid.Row="2"
+                        Grid.Column="0"
+                        HorizontalOptions="FillAndExpand"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="Allocated" />
+                    <Label
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        HorizontalOptions="End"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="{Binding ExpenseSummary.Allocated, StringFormat={StaticResource CurrencyFormat}}" />
+
+                    <Label
+                        Grid.Row="3"
+                        Grid.Column="0"
+                        HorizontalOptions="FillAndExpand"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="Daily Accrual" />
+                    <Label
+                        Grid.Row="3"
+                        Grid.Column="1"
+                        HorizontalOptions="End"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="{Binding ExpenseSummary.AccrualDaily, StringFormat={StaticResource CurrencyFormat}}" />
+
+                    <Label
+                        Grid.Row="4"
+                        Grid.Column="0"
+                        HorizontalOptions="FillAndExpand"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="Balance/Day" />
+                    <Label
+                        Grid.Row="4"
+                        Grid.Column="1"
+                        HorizontalOptions="End"
+                        Style="{StaticResource SummaryContentStyle}"
+                        Text="{Binding ExpenseSummary.BalanceDaily, StringFormat={StaticResource CurrencyFormat}}" />
+                </Grid>
+            </Frame>
+        </VerticalStackLayout>
+    </ContentPage.Content>
+</ContentPage>
