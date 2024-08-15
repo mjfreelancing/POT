@@ -11,21 +11,23 @@
     xmlns:summary="clr-namespace:Pot.Maui.Features.Summary.Views"
     Title="POT"
     x:DataType="local:AppShell"
-    FlyoutBackgroundColor="{AppThemeBinding Dark={StaticResource DarkSurfaceContainer},
-                                            Light={StaticResource LightSurfaceContainer}}">
+    FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource LightSurfaceContainer},
+                                            Dark={StaticResource DarkSurfaceContainer}}">
 
     <Shell.Resources>
         <ResourceDictionary>
             <Style x:Key="BaseStyle" TargetType="Element">
-                <Setter Property="Shell.BackgroundColor" Value="{AppThemeBinding Dark=Black, Light=White}" />
-                <Setter Property="Shell.ForegroundColor" Value="{AppThemeBinding Dark=White, Light=Black}" />
-                <Setter Property="Shell.TitleColor" Value="{AppThemeBinding Dark=White, Light=Black}" />
+                <!--<Setter Property="Shell.BackgroundColor" Value="{AppThemeBinding Dark=Black, Light=White}" />-->
+                <Setter Property="Shell.BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" />
+
+                <Setter Property="Shell.ForegroundColor" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                <Setter Property="Shell.TitleColor" Value="{AppThemeBinding Light=Black, Dark=White}" />
                 <Setter Property="Shell.DisabledColor" Value="#B4FFFFFF" />
-                <Setter Property="Shell.UnselectedColor" Value="{AppThemeBinding Dark=#95FFFFFF, Light=#95000000}" />
-                <Setter Property="Shell.TabBarBackgroundColor" Value="{AppThemeBinding Dark=Black, Light=White}" />
-                <Setter Property="Shell.TabBarForegroundColor" Value="{AppThemeBinding Dark=White, Light=Black}" />
-                <Setter Property="Shell.TabBarUnselectedColor" Value="{AppThemeBinding Dark=#95FFFFFF, Light=#95000000}" />
-                <Setter Property="Shell.TabBarTitleColor" Value="{AppThemeBinding Dark=White, Light=Black}" />
+                <Setter Property="Shell.UnselectedColor" Value="{AppThemeBinding Light=#95000000, Dark=#95FFFFFF}" />
+                <Setter Property="Shell.TabBarBackgroundColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
+                <Setter Property="Shell.TabBarForegroundColor" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                <Setter Property="Shell.TabBarUnselectedColor" Value="{AppThemeBinding Light=#95000000, Dark=#95FFFFFF}" />
+                <Setter Property="Shell.TabBarTitleColor" Value="{AppThemeBinding Light=Black, Dark=White}" />
             </Style>
             <Style BasedOn="{StaticResource BaseStyle}" TargetType="TabBar" />
             <Style BasedOn="{StaticResource BaseStyle}" TargetType="FlyoutItem" />
@@ -38,19 +40,19 @@
                 ApplyToDerivedTypes="True"
                 Class="FlyoutItemLayoutStyle"
                 TargetType="Layout">
-                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource DarkSecondary}, Light={StaticResource LightSecondary}}" />
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightSecondary}, Dark={StaticResource DarkSecondary}}" />
                 <Setter Property="VisualStateManager.VisualStateGroups">
                     <VisualStateGroupList>
                         <VisualStateGroup x:Name="CommonStates">
                             <VisualState x:Name="Normal">
                                 <VisualState.Setters>
                                     <Setter Property="BackgroundColor" Value="Transparent" />
-                                    <Setter TargetName="FlyoutItemLabel" Property="Label.TextColor" Value="{AppThemeBinding Dark={StaticResource DarkPrimary}, Light={StaticResource LightPrimary}}" />
+                                    <Setter TargetName="FlyoutItemLabel" Property="Label.TextColor" Value="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" />
                                 </VisualState.Setters>
                             </VisualState>
                             <VisualState x:Name="Selected">
                                 <VisualState.Setters>
-                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource DarkPrimary}, Light={StaticResource LightPrimary}}" />
+                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" />
                                 </VisualState.Setters>
                             </VisualState>
                         </VisualStateGroup>
@@ -67,7 +69,7 @@
                         <VisualStateGroup x:Name="CommonStates">
                             <VisualState x:Name="Normal">
                                 <VisualState.Setters>
-                                    <Setter TargetName="FlyoutItemLabel" Property="Label.TextColor" Value="{AppThemeBinding Dark={StaticResource DarkPrimary}, Light={StaticResource LightPrimary}}" />
+                                    <Setter TargetName="FlyoutItemLabel" Property="Label.TextColor" Value="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" />
                                 </VisualState.Setters>
                             </VisualState>
                         </VisualStateGroup>
@@ -91,8 +93,8 @@
                 <FontImageSource
                     FontFamily="MaterialDesign"
                     Glyph="{x:Static fonts:IconFont.Bank}"
-                    Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
-                                            Light={StaticResource LightOnSurface}}" />
+                    Color="{AppThemeBinding Light={StaticResource LightOnSurface},
+                                            Dark={StaticResource DarkOnSurface}}" />
             </Tab.Icon>
             <ShellContent
                 Title="Summary"
@@ -102,8 +104,8 @@
                     <FontImageSource
                         FontFamily="MaterialDesign"
                         Glyph="{x:Static fonts:IconFont.FileDocumentBoxCheckOutline}"
-                        Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
-                                                Light={StaticResource LightOnSurface}}" />
+                        Color="{AppThemeBinding Light={StaticResource LightOnSurface},
+                                                Dark={StaticResource DarkOnSurface}}" />
                 </ShellContent.Icon>
             </ShellContent>
 
@@ -115,8 +117,8 @@
                     <FontImageSource
                         FontFamily="MaterialDesign"
                         Glyph="{x:Static fonts:IconFont.Bank}"
-                        Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
-                                                Light={StaticResource LightOnSurface}}" />
+                        Color="{AppThemeBinding Light={StaticResource LightOnSurface},
+                                                Dark={StaticResource DarkOnSurface}}" />
                 </ShellContent.Icon>
             </ShellContent>
 
@@ -128,13 +130,12 @@
                     <FontImageSource
                         FontFamily="MaterialDesign"
                         Glyph="{x:Static fonts:IconFont.CreditCardMultipleOutline}"
-                        Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
-                                                Light={StaticResource LightOnSurface}}" />
+                        Color="{AppThemeBinding Light={StaticResource LightOnSurface},
+                                                Dark={StaticResource DarkOnSurface}}" />
                 </ShellContent.Icon>
             </ShellContent>
         </Tab>
     </FlyoutItem>-->
-
 
     <!--  Creates a flyout group containing Summary, Accounts, Expenses. These are also presented as Bottom Tabs  -->
     <FlyoutItem FlyoutDisplayOptions="AsMultipleItems">
@@ -146,8 +147,8 @@
                 <FontImageSource
                     FontFamily="MaterialDesign"
                     Glyph="{x:Static fonts:IconFont.TextBoxCheckOutline}"
-                    Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
-                                            Light={StaticResource LightOnSurface}}" />
+                    Color="{AppThemeBinding Light={StaticResource LightOnSurface},
+                                            Dark={StaticResource DarkOnSurface}}" />
             </ShellContent.Icon>
         </ShellContent>
 
@@ -159,8 +160,8 @@
                 <FontImageSource
                     FontFamily="MaterialDesign"
                     Glyph="{x:Static fonts:IconFont.Bank}"
-                    Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
-                                            Light={StaticResource LightOnSurface}}" />
+                    Color="{AppThemeBinding Light={StaticResource LightOnSurface},
+                                            Dark={StaticResource DarkOnSurface}}" />
             </ShellContent.Icon>
         </ShellContent>
 
@@ -172,44 +173,11 @@
                 <FontImageSource
                     FontFamily="MaterialDesign"
                     Glyph="{x:Static fonts:IconFont.CreditCardMultipleOutline}"
-                    Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
-                                            Light={StaticResource LightOnSurface}}" />
+                    Color="{AppThemeBinding Light={StaticResource LightOnSurface},
+                                            Dark={StaticResource DarkOnSurface}}" />
             </ShellContent.Icon>
         </ShellContent>
     </FlyoutItem>
-
-    <!--<FlyoutItem Title="Summary">
-        <FlyoutItem.Icon>
-            <FontImageSource
-                FontFamily="MaterialDesign"
-                Glyph="{x:Static fonts:IconFont.FileDocumentBoxCheckOutline}"
-                Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
-                                        Light={StaticResource LightOnSurface}}" />
-        </FlyoutItem.Icon>
-        <ShellContent ContentTemplate="{DataTemplate summary:SummaryPage}" Route="SummaryPage0" />
-    </FlyoutItem>-->
-
-    <!--<FlyoutItem Title="Accounts">
-        <FlyoutItem.Icon>
-            <FontImageSource
-                FontFamily="MaterialDesign"
-                Glyph="{x:Static fonts:IconFont.Bank}"
-                Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
-                                        Light={StaticResource LightOnSurface}}" />
-        </FlyoutItem.Icon>
-        <ShellContent ContentTemplate="{DataTemplate summary:SummaryPage}" Route="AccountsPage" />
-    </FlyoutItem>-->
-
-    <!--<FlyoutItem Title="Expenses">
-        <FlyoutItem.Icon>
-            <FontImageSource
-                FontFamily="MaterialDesign"
-                Glyph="{x:Static fonts:IconFont.CreditCardMultipleOutline}"
-                Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
-                                        Light={StaticResource LightOnSurface}}" />
-        </FlyoutItem.Icon>
-        <ShellContent ContentTemplate="{DataTemplate summary:SummaryPage}" Route="ExpensesPage" />
-    </FlyoutItem>-->
 
     <!--  Implicitly wrapped in a Tab, which is wrapped in a FlyoutItem  -->
     <ShellContent
@@ -222,8 +190,8 @@
             <FontImageSource
                 FontFamily="MaterialDesign"
                 Glyph="{x:Static fonts:IconFont.InformationOutline}"
-                Color="{AppThemeBinding Dark={StaticResource DarkOnSurface},
-                                        Light={StaticResource LightOnSurface}}" />
+                Color="{AppThemeBinding Light={StaticResource LightOnSurface},
+                                        Dark={StaticResource DarkOnSurface}}" />
         </MenuItem.IconImageSource>
     </MenuItem>
 </Shell>
