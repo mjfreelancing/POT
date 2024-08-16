@@ -11,8 +11,8 @@
     xmlns:summary="clr-namespace:Pot.Maui.Features.Summary.Views"
     Title="POT"
     x:DataType="local:AppShell"
-    FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource LightSurfaceContainer},
-                                            Dark={StaticResource DarkSurfaceContainer}}">
+    FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource LightSurfaceDim},
+                                            Dark={StaticResource DarkSurfaceDim}}">
 
     <Shell.Resources>
         <ResourceDictionary>
