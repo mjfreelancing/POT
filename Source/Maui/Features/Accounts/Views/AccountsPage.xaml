@@ -10,6 +10,7 @@
     BackgroundColor="{AppThemeBinding Dark={StaticResource DarkBackground},
                                       Light={StaticResource LightBackground}}">
     <CollectionView
+        Margin="0,0,0,20"
         ItemSizingStrategy="MeasureAllItems"
         ItemsSource="{Binding Accounts}"
         SelectionMode="None">
