@@ -12,7 +12,7 @@ namespace Pot.Maui
         }
 
         [RelayCommand]
-        private void ShowAppInfo()
+        private static void ShowAppInfo()
         {
             AppInfo.ShowSettingsUI();
         }

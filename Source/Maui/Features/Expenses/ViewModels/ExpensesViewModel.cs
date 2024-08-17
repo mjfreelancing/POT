@@ -1,17 +1,12 @@
 ﻿using Pot.Maui.Domain.Expenses.Models;
 using Pot.Maui.Domain.Expenses.Repository;
 using Pot.Maui.Helpers;
+using Pot.Maui.Mvvm;
+using System.Reactive.Disposables;
 
 namespace Pot.Maui.Features.Expenses.ViewModels;
 
-//public interface IExpensesViewModel : IViewModel
-//{
-//    ObservableRangeCollection<Expense> Expenses { get; }
-
-//    Task RefreshAsync();
-//}
-
-public partial class ExpensesViewModel : ViewModelBase//, IExpensesViewModel
+public partial class ExpensesViewModel : ViewModelBase
 {
     private readonly IExpenseRepository _expenseRepository;
 
@@ -24,10 +19,15 @@ public partial class ExpensesViewModel : ViewModelBase//, IExpensesViewModel
         Title = "Expenses";
     }
 
-    public async Task RefreshAsync()
+    public override async void OnActivate(CompositeDisposable disposables)
     {
-        var allExpenses = await _expenseRepository.GetAllExpensesAsync();
+        base.OnActivate(disposables);
 
-        Expenses.ReplaceRange(allExpenses);
+        using (StartIsBusyScope())
+        {
+            var allExpenses = await _expenseRepository.GetAllExpensesAsync();
+
+            Expenses.ReplaceRange(allExpenses);
+        }
     }
 }

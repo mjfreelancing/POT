@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage
+<mvvm:ViewModelContentPage
     x:Class="Pot.Maui.Features.Accounts.Views.AccountsPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:model="clr-namespace:Pot.Maui.Domain.Accounts.Models"
-    xmlns:viewModels="clr-namespace:Pot.Maui.Features.Accounts.ViewModels"
+    xmlns:mvvm="clr-namespace:Pot.Maui.Mvvm"
+    xmlns:viewModel="clr-namespace:Pot.Maui.Features.Accounts.ViewModels"
     Title="{Binding Title}"
-    x:DataType="viewModels:AccountsViewModel"
+    x:DataType="viewModel:AccountsViewModel"
+    x:TypeArguments="viewModel:AccountsViewModel"
     BackgroundColor="{AppThemeBinding Dark={StaticResource DarkBackground},
-                                      Light={StaticResource LightBackground}}">
+                                      Light={StaticResource LightBackground}}"
+    IsBusy="{Binding IsBusy}">
     <CollectionView
         Margin="0,0,0,20"
         ItemSizingStrategy="MeasureAllItems"
@@ -19,7 +22,13 @@
                 <Label
                     FontSize="20"
                     HorizontalOptions="Center"
+                    IsVisible="{Binding IsNotBusy}"
                     Text="No Accounts" />
+                <Label
+                    FontSize="20"
+                    HorizontalOptions="Center"
+                    IsVisible="{Binding IsBusy}"
+                    Text="Loading Accounts..." />
             </StackLayout>
         </CollectionView.EmptyView>
         <CollectionView.ItemTemplate>
@@ -76,4 +85,4 @@
             </DataTemplate>
         </CollectionView.ItemTemplate>
     </CollectionView>
-</ContentPage>
+</mvvm:ViewModelContentPage>

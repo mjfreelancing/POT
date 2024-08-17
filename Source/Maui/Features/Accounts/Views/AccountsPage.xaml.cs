@@ -1,24 +1,13 @@
 using Pot.Maui.Features.Accounts.ViewModels;
+using Pot.Maui.Mvvm;
 
 namespace Pot.Maui.Features.Accounts.Views;
 
-public partial class AccountsPage : ContentPage
+public partial class AccountsPage : ViewModelContentPage<AccountsViewModel>
 {
-    private readonly AccountsViewModel _accountsViewModel;
-
-    public AccountsPage(AccountsViewModel accountsViewModel)
+    public AccountsPage(AccountsViewModel viewModel)
+        : base(viewModel)
     {
         InitializeComponent();
-
-        BindingContext = accountsViewModel;
-
-        _accountsViewModel = accountsViewModel;
-    }
-
-    protected override async void OnAppearing()
-    {
-        base.OnAppearing();
-
-        await _accountsViewModel.RefreshAsync();
     }
 }

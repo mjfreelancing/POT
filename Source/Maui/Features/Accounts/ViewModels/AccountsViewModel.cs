@@ -1,17 +1,12 @@
 ﻿using Pot.Maui.Domain.Accounts.Models;
 using Pot.Maui.Domain.Accounts.Repository;
 using Pot.Maui.Helpers;
+using Pot.Maui.Mvvm;
+using System.Reactive.Disposables;
 
 namespace Pot.Maui.Features.Accounts.ViewModels;
 
-//public interface IAccountsViewModel : IViewModel
-//{
-//    ObservableRangeCollection<Account> Accounts { get; }
-
-//    Task RefreshAsync();
-//}
-
-public partial class AccountsViewModel : ViewModelBase//, IAccountsViewModel
+public partial class AccountsViewModel : ViewModelBase
 {
     private readonly IAccountRepository _accountRepository;
 
@@ -24,10 +19,15 @@ public partial class AccountsViewModel : ViewModelBase//, IAccountsViewModel
         Title = "Accounts";
     }
 
-    public async Task RefreshAsync()
+    public override async void OnActivate(CompositeDisposable disposables)
     {
-        var allAccounts = await _accountRepository.GetAllAccountsAsync();
+        base.OnActivate(disposables);
 
-        Accounts.ReplaceRange(allAccounts);
+        using (StartIsBusyScope())
+        {
+            var allAccounts = await _accountRepository.GetAllAccountsAsync();
+
+            Accounts.ReplaceRange(allAccounts);
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Input;
+using Pot.Maui.Mvvm;
 
 namespace Pot.Maui.Features.Login.ViewModels;
 

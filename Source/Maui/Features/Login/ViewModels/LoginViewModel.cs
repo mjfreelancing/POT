@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Input;
+using Pot.Maui.Mvvm;
 
 namespace Pot.Maui.Features.Login.ViewModels;
 
@@ -18,7 +19,7 @@ internal partial class LoginViewModel : ViewModelBase, ILoginViewModel
     [RelayCommand]
     private async Task<bool> LoginAsync()
     {
-        using (GetIsBusyTransaction())
+        using (StartIsBusyScope())
         {
             await Task.Delay(300);
 

@@ -1,4 +1,4 @@
-﻿namespace Pot.Maui.Features;
+﻿namespace Pot.Maui.Mvvm;
 
 public interface IViewModel
 {
@@ -6,5 +6,5 @@ public interface IViewModel
     bool IsBusy { get; }
     bool IsNotBusy { get; }
 
-    IDisposable GetIsBusyTransaction();
+    IDisposable StartIsBusyScope();
 }

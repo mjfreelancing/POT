@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage
+<mvvm:ViewModelContentPage
     x:Class="Pot.Maui.Features.Summary.Views.SummaryPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mvvm="clr-namespace:Pot.Maui.Mvvm"
     xmlns:viewModel="clr-namespace:Pot.Maui.Features.Summary.ViewModels"
     Title="{Binding Title}"
     x:DataType="viewModel:SummaryViewModel"
+    x:TypeArguments="viewModel:SummaryViewModel"
     BackgroundColor="{AppThemeBinding Dark={StaticResource DarkBackground},
                                       Light={StaticResource LightBackground}}"
     IsBusy="{Binding IsBusy}">
@@ -166,4 +168,4 @@
             </Frame>
         </VerticalStackLayout>
     </ContentPage.Content>
-</ContentPage>
+</mvvm:ViewModelContentPage>

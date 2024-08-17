@@ -1,24 +1,13 @@
 using Pot.Maui.Features.Expenses.ViewModels;
+using Pot.Maui.Mvvm;
 
 namespace Pot.Maui.Features.Expenses.Views;
 
-public partial class ExpensesPage : ContentPage
+public partial class ExpensesPage : ViewModelContentPage<ExpensesViewModel>
 {
-    private readonly ExpensesViewModel _expensesViewModel;
-
-    public ExpensesPage(ExpensesViewModel expensesViewModel)
+    public ExpensesPage(ExpensesViewModel viewModel)
+        : base(viewModel)
     {
         InitializeComponent();
-
-        BindingContext = expensesViewModel;
-
-        _expensesViewModel = expensesViewModel;
-    }
-
-    protected override async void OnAppearing()
-    {
-        base.OnAppearing();
-
-        await _expensesViewModel.RefreshAsync();
     }
 }

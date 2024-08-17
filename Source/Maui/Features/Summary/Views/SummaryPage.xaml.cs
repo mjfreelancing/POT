@@ -1,27 +1,13 @@
 using Pot.Maui.Features.Summary.ViewModels;
+using Pot.Maui.Mvvm;
 
 namespace Pot.Maui.Features.Summary.Views;
 
-public partial class SummaryPage : ContentPage
+public partial class SummaryPage : ViewModelContentPage<SummaryViewModel>
 {
-    private readonly SummaryViewModel _summaryViewModel;
-
     public SummaryPage(SummaryViewModel viewModel)
+        : base(viewModel)
     {
         InitializeComponent();
-
-        BindingContext = viewModel;
-
-        _summaryViewModel = viewModel;
-    }
-
-    protected override async void OnAppearing()
-    {
-        base.OnAppearing();
-
-        // TODO: error handle here or the view model
-
-        // Updates AccountSummary and ExpenseSummary on the view model
-        await _summaryViewModel.RefreshSummariesAsync();
     }
 }
