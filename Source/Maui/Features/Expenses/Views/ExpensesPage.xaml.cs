@@ -10,4 +10,13 @@ public partial class ExpensesPage : ViewModelContentPage<ExpensesViewModel>
     {
         InitializeComponent();
     }
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+
+
+        // need to react to...
+        //ViewModel.IsBusy
+    }
 }
