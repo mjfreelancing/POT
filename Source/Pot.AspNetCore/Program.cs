@@ -1,4 +1,5 @@
 using Pot.AspNetCore.Extensions;
+using Pot.Data;
 
 namespace Pot.AspNetCore;
 
@@ -10,7 +11,7 @@ public class Program
 
         // builder.Logging.AddJsonConsole();
 
-        // builder.Services.AddScoped()
+        builder.Services.AddDbContextFactory<PotDbContext>();
 
         var app = builder.Build();
 

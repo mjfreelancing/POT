@@ -7,6 +7,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pot.Maui", "Maui\Pot.Maui.c
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pot.AspNetCore", "Pot.AspNetCore\Pot.AspNetCore.csproj", "{20BC0095-21EF-4B5C-8141-0F4BD714E5E7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pot.Data", "Pot.Data\Pot.Data.csproj", "{CD8910C2-CAA8-4097-80C3-7F982EFA460A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pot.Data.Migrations", "Pot.Data.Migrations\Pot.Data.Migrations.csproj", "{678E206A-66E7-4EAD-86DC-8AC5CB3E03DD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,6 +27,14 @@ Global
 		{20BC0095-21EF-4B5C-8141-0F4BD714E5E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{20BC0095-21EF-4B5C-8141-0F4BD714E5E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{20BC0095-21EF-4B5C-8141-0F4BD714E5E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD8910C2-CAA8-4097-80C3-7F982EFA460A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD8910C2-CAA8-4097-80C3-7F982EFA460A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD8910C2-CAA8-4097-80C3-7F982EFA460A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD8910C2-CAA8-4097-80C3-7F982EFA460A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{678E206A-66E7-4EAD-86DC-8AC5CB3E03DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{678E206A-66E7-4EAD-86DC-8AC5CB3E03DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{678E206A-66E7-4EAD-86DC-8AC5CB3E03DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{678E206A-66E7-4EAD-86DC-8AC5CB3E03DD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
