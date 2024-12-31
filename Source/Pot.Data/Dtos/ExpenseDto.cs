@@ -2,7 +2,7 @@
 
 namespace Pot.Data.Dtos
 {
-    public sealed record ExpenseDto : DtoBase
+    public sealed class ExpenseDto : DtoBase
     {
         public int AccountId { get; init; }
 

@@ -1,0 +1,16 @@
+<Project>
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<!--IDE0063 - 'using' statement can be simplified-->
+		<!--IDE0079 - remove unnecessary suppression-->
+		<!--IDE0290 - use primary constructor-->
+		<!--CS0618 - 'member' is obsolete-->
+		<!--<NoWarn>$(NoWarn);IDE0063;IDE0079;IDE0290;CS0618</NoWarn>-->
+		<NoWarn>$(NoWarn);IDE0290</NoWarn>
+	</PropertyGroup>
+</Project>

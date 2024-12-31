@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Http.Features;
+using Pot.AspNetCore.Endpoints.Accounts.Import.Repository;
+using Pot.AspNetCore.Endpoints.Expenses.Import.Repository;
 using Pot.AspNetCore.Extensions;
 using Pot.Data;
 
@@ -12,6 +15,15 @@ public class Program
         // builder.Logging.AddJsonConsole();
 
         builder.Services.AddDbContextFactory<PotDbContext>();
+
+        builder.Services.Configure<FormOptions>(options =>
+        {
+            options.MultipartBodyLengthLimit = 10 * 1024 * 1024; // 10 MB
+        });
+
+
+        builder.Services.AddScoped<IAccountImportRepository, AccountImportRepository>();
+        builder.Services.AddScoped<IExpenseImportRepository, ExpenseImportRepository>();
 
         var app = builder.Build();
 
