@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http.Features;
+using Pot.AspNetCore.Extensions;
 using Pot.AspNetCore.Features.Accounts.Extensions;
 using Pot.AspNetCore.Features.Expenses.Extensions;
 using Pot.AspNetCore.Features.Expenses.GetAll.Extensions;
@@ -12,26 +13,7 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Alternative to the default SimpleConsole Logger
-        // https://learn.microsoft.com/en-us/dotnet/core/extensions/console-log-formatter
-        //
-        //builder.Logging.AddJsonConsole(options =>
-        //{
-        //    options.IncludeScopes = false;
-        //    options.TimestampFormat = "HH:mm:ss";
-        //    options.JsonWriterOptions = new JsonWriterOptions
-        //    {
-        //        Indented = true
-        //    };
-        //});
-
-        builder.Logging.AddSimpleConsole(options =>
-        {
-            options.IncludeScopes = true;
-            options.SingleLine = true;
-            options.TimestampFormat = "HH:mm:ss ";
-            options.UseUtcTimestamp = true;
-        });
+        builder.AddLogging();
 
         builder.Services.Configure<FormOptions>(options =>
         {
@@ -48,10 +30,10 @@ public class Program
 
         app.Logger.LogInformation("POT Startup: {AppStartup}", new { Local = DateTime.Now });
 
-        app.MapGet("/", () => "POT");
+        // TODO: POT-14
+        app.MapGet("/", () => "POT Summary");
 
-        app
-            .AddAccounts()
+        app.AddAccounts()
             .AddExpenses();
 
         await app.RunAsync();
