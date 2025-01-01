@@ -19,7 +19,7 @@ public static class WebApplicationExtensions
                 .WithTags("Accounts Api");
 
             group
-                .MapGet("", GetAll.Handler.GetAllAccounts)
+                .MapGet("", GetAll.Handler.Invoke)
                 .Produces<List<AccountDto>>();
 
             group

@@ -19,7 +19,7 @@ public static class WebApplicationExtensions
                 .WithTags("Expenses Api");
 
             group
-               .MapGet("", GetAll.Handler.GetAllExpenses)
+               .MapGet("", GetAll.Handler.Invoke)
                .Produces<List<ExpenseDto>>();
 
             group

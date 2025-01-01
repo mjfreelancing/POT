@@ -6,7 +6,7 @@ namespace Pot.AspNetCore.Features.Expenses.GetAll;
 
 internal static class Handler
 {
-    public static async Task<IResult> GetAllExpenses(IDbContextFactory<PotDbContext> dbContextFactory, CancellationToken cancellationToken)
+    public static async Task<IResult> Invoke(IDbContextFactory<PotDbContext> dbContextFactory, CancellationToken cancellationToken)
     {
         using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
 
