@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pot.Maui", "Maui\Pot.Maui.csproj", "{37684064-DEF8-4D8C-991F-AC0ABD7B6C00}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pot.AspNetCore", "Pot.AspNetCore\Pot.AspNetCore.csproj", "{20BC0095-21EF-4B5C-8141-0F4BD714E5E7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pot.Data", "Pot.Data\Pot.Data.csproj", "{CD8910C2-CAA8-4097-80C3-7F982EFA460A}"
@@ -24,12 +22,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{37684064-DEF8-4D8C-991F-AC0ABD7B6C00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{37684064-DEF8-4D8C-991F-AC0ABD7B6C00}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{37684064-DEF8-4D8C-991F-AC0ABD7B6C00}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{37684064-DEF8-4D8C-991F-AC0ABD7B6C00}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{37684064-DEF8-4D8C-991F-AC0ABD7B6C00}.Release|Any CPU.Build.0 = Release|Any CPU
-		{37684064-DEF8-4D8C-991F-AC0ABD7B6C00}.Release|Any CPU.Deploy.0 = Release|Any CPU
 		{20BC0095-21EF-4B5C-8141-0F4BD714E5E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{20BC0095-21EF-4B5C-8141-0F4BD714E5E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{20BC0095-21EF-4B5C-8141-0F4BD714E5E7}.Release|Any CPU.ActiveCfg = Release|Any CPU

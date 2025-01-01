@@ -1,8 +1,8 @@
 ﻿using CsvHelper;
-using Pot.AspNetCore.Endpoints.Accounts.Import.Models;
-using Pot.AspNetCore.Endpoints.Accounts.Import.Repository;
-using Pot.AspNetCore.Endpoints.Expenses.Import.Models;
-using Pot.AspNetCore.Endpoints.Expenses.Import.Repository;
+using Pot.AspNetCore.Features.Accounts.Import.Models;
+using Pot.AspNetCore.Features.Accounts.Import.Repository;
+using Pot.AspNetCore.Features.Expenses.Import.Models;
+using Pot.AspNetCore.Features.Expenses.Import.Repository;
 using Pot.Data.Dtos;
 using System.Globalization;
 
@@ -13,7 +13,7 @@ internal static class RouteBuilderExtensions
     public static RouteGroupBuilder AddAccountsEndpoints(this RouteGroupBuilder group)
     {
         group
-            .MapGet("", Endpoints.Accounts.GetAll.Handler.GetAllAccounts)
+            .MapGet("", Features.Accounts.GetAll.Handler.GetAllAccounts)
             .Produces<List<AccountDto>>();
 
         group
@@ -26,8 +26,6 @@ internal static class RouteBuilderExtensions
 
                     var accounts = csv.GetRecords<AccountImport>().ToArray();
 
-                    // TODO: test and handle errors such as conflicts
-                    // TODO: add problem details
                     await importRepository.ImportAccountsAsync(accounts, cancellationToken);
                 }
                 catch (Exception exception)
@@ -80,7 +78,7 @@ internal static class RouteBuilderExtensions
     public static RouteGroupBuilder AddExpensesEndpoints(this RouteGroupBuilder group)
     {
         group
-            .MapGet("", Endpoints.Expenses.GetAll.Handler.GetAllExpenses)
+            .MapGet("", Features.Expenses.GetAll.Handler.GetAllExpenses)
             .Produces<List<ExpenseDto>>();
 
         group

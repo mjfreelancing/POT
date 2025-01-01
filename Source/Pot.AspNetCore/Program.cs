@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http.Features;
-using Pot.AspNetCore.Endpoints.Accounts.Import.Repository;
-using Pot.AspNetCore.Endpoints.Expenses.Import.Repository;
 using Pot.AspNetCore.Extensions;
+using Pot.AspNetCore.Features.Accounts.Import.Repository;
+using Pot.AspNetCore.Features.Expenses.Import.Repository;
 using Pot.Data;
 
 namespace Pot.AspNetCore;
