@@ -8,7 +8,7 @@ namespace Pot.AspNetCore.Features.Expenses.Extensions;
 
 public static class WebApplicationExtensions
 {
-    public static WebApplication AddExpenses(this WebApplication app)
+    public static WebApplication AddExpenseEndpoints(this WebApplication app)
     {
         using (app.Logger.BeginScope("[Setup Expense Routes]"))
         {

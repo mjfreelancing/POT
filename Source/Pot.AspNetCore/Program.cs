@@ -23,8 +23,8 @@ public class Program
 
         builder.Services
             .AddPotDbContext()
-            .AddAccounts()
-            .AddExpenses();
+            .AddAccountServices()
+            .AddExpenseServicess();
 
         var app = builder.Build();
 
@@ -33,8 +33,8 @@ public class Program
         // TODO: POT-14
         app.MapGet("/", () => "POT Summary");
 
-        app.AddAccounts()
-            .AddExpenses();
+        app.AddAccountEndpoints()
+           .AddExpenseEndpoints();
 
         await app.RunAsync();
     }

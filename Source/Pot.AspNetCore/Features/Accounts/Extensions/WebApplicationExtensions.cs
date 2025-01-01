@@ -8,7 +8,7 @@ namespace Pot.AspNetCore.Features.Accounts.Extensions;
 
 public static class WebApplicationExtensions
 {
-    public static WebApplication AddAccounts(this WebApplication app)
+    public static WebApplication AddAccountEndpoints(this WebApplication app)
     {
         using (app.Logger.BeginScope("[Setup Account Routes]"))
         {
