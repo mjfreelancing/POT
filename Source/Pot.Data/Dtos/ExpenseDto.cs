@@ -1,4 +1,5 @@
 ﻿using Pot.Data.Models;
+using Pot.Shared.Extensions;
 
 namespace Pot.Data.Dtos
 {
@@ -7,8 +8,8 @@ namespace Pot.Data.Dtos
         public int AccountId { get; init; }
 
         public string Description { get; init; } = string.Empty;
-        public DateTime NextDue { get; init; }
-        public DateTime AccrualStart { get; init; }
+        public DateOnly NextDue { get; init; }
+        public DateOnly AccrualStart { get; init; }
         public ExpenseFrequency Frequency { get; init; } = ExpenseFrequency.Months;
         public int FrequencyCount { get; init; }
         public bool Recurring { get; init; }
@@ -20,14 +21,14 @@ namespace Pot.Data.Dtos
         public int DaysElapsed { get; }
         public double Balance => Amount - Allocated;
         public double BalanceDaily { get; }
-        public double AccrualDaily => Amount / Math.Max((NextDue - AccrualStart).Days, 1);
+        public double AccrualDaily => Amount / Math.Max(NextDue.DaysFrom(AccrualStart), 1);
 
         public ExpenseDto(TimeProvider? timeProvider = null)
         {
-            var currentDate = (timeProvider ?? TimeProvider.System).GetLocalNow().DateTime;
+            var currentDate = DateOnly.FromDateTime((timeProvider ?? TimeProvider.System).GetLocalNow().Date);
 
-            DaysDue = Math.Max(0, (NextDue.Date - currentDate).Days);
-            DaysElapsed = (currentDate - AccrualStart).Days;
+            DaysDue = Math.Max(0, NextDue.DaysFrom(currentDate));
+            DaysElapsed = currentDate.DaysFrom(AccrualStart);
             BalanceDaily = Balance / Math.Max(DaysDue, 1);
         }
     }

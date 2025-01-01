@@ -36,8 +36,8 @@ namespace Pot.AspNetCore.Endpoints.Expenses.Import.Repository
                     {
                         Id = expense.Id,
                         Description = expense.Description,
-                        NextDue = expense.NextDue.ToUniversalTime(),
-                        AccrualStart = expense.AccrualStart.ToUniversalTime(),
+                        NextDue = expense.NextDue,
+                        AccrualStart = expense.AccrualStart,
                         Frequency = expense.Frequency,
                         FrequencyCount = expense.FrequencyCount,
                         Recurring = expense.Recurring,

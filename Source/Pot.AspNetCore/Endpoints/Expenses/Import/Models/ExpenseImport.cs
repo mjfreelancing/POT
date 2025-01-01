@@ -16,10 +16,10 @@ namespace Pot.AspNetCore.Endpoints.Expenses.Import.Models
         public string Description { get; init; } = string.Empty;
 
         [Index(3)]
-        public DateTime NextDue { get; init; }
+        public DateOnly NextDue { get; init; }
 
         [Index(4)]
-        public DateTime AccrualStart { get; init; }
+        public DateOnly AccrualStart { get; init; }
 
         [Index(5)]
         [TypeConverter(typeof(ExpenseFrequencyConverter))]

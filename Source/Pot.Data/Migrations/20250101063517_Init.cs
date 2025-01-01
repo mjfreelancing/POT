@@ -39,8 +39,8 @@ namespace Pot.Data.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Description = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    NextDue = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    AccrualStart = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    NextDue = table.Column<DateOnly>(type: "date", nullable: false),
+                    AccrualStart = table.Column<DateOnly>(type: "date", nullable: false),
                     Frequency = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
                     FrequencyCount = table.Column<int>(type: "integer", nullable: false),
                     Recurring = table.Column<bool>(type: "boolean", nullable: false),

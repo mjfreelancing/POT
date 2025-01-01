@@ -12,6 +12,7 @@ namespace Pot.Data
         {
             base.OnConfiguring(optionsBuilder);
 
+            // TODO: Get username / password from environment variables via IConfiguration
             optionsBuilder.UseNpgsql("Host=localhost;Database=Pot;Username=postgres;Password=password", options =>
             {
                 options.SetPostgresVersion(new Version(13, 6));

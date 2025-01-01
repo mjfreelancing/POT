@@ -12,7 +12,7 @@ using Pot.Data;
 namespace Pot.Data.Migrations
 {
     [DbContext(typeof(PotDbContext))]
-    [Migration("20241228113628_Init")]
+    [Migration("20250101063517_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -82,8 +82,8 @@ namespace Pot.Data.Migrations
                     b.Property<int>("AccountId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("AccrualStart")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateOnly>("AccrualStart")
+                        .HasColumnType("date");
 
                     b.Property<double>("Allocated")
                         .HasColumnType("double precision");
@@ -106,8 +106,8 @@ namespace Pot.Data.Migrations
                     b.Property<int>("FrequencyCount")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("NextDue")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateOnly>("NextDue")
+                        .HasColumnType("date");
 
                     b.Property<bool>("Recurring")
                         .HasColumnType("boolean");

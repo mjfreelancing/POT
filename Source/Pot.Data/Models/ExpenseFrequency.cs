@@ -11,7 +11,7 @@ namespace Pot.Data.Models
         public static readonly ExpenseFrequency Years = new(3);
 
         private ExpenseFrequency(int value, [CallerMemberName] string? name = default)
-            : base(value, name)
+            : base(value, name!)
         {
         }
     }
