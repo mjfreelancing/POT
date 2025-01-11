@@ -4,6 +4,6 @@ namespace Pot.AspNetCore.Features.Accounts.Import.Repository
 {
     public interface IAccountImportRepository
     {
-        Task ImportAccountsAsync(AccountImport[] accounts, CancellationToken cancellationToken);
+        Task<ImportResult> ImportAccountsAsync(AccountImport[] accounts, CancellationToken cancellationToken);
     }
 }

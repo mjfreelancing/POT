@@ -1,11 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<ItemGroup>
-	  <PackageReference Include="AllOverIt.Csv" Version="8.0.0" />
+		<PackageReference Include="AllOverIt.Csv" Version="8.0.0" />
+		<PackageReference Include="AllOverIt.Logging" Version="8.0.0" />
+		<PackageReference Include="AllOverIt.Validation" Version="8.0.0" />
+		<!--<PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />-->
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Pot.Data\Pot.Data.csproj" />
 	</ItemGroup>
-
 </Project>

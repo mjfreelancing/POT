@@ -34,7 +34,7 @@ public static class WebApplicationExtensions
 
                         await importRepository.ImportExpensesAsync(expenses, cancellationToken);
                     }
-                    catch (Exception exception)
+                    catch (Exception)
                     {
                         return Results.BadRequest("Invalid file.");
                     }

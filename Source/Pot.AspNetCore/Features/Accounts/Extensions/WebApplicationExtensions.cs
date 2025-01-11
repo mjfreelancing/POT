@@ -1,13 +1,13 @@
-﻿using CsvHelper;
+﻿using Microsoft.AspNetCore.Mvc;
 using Pot.AspNetCore.Features.Accounts.Import.Models;
-using Pot.AspNetCore.Features.Accounts.Import.Repository;
 using Pot.Data.Dtos;
-using System.Globalization;
 
 namespace Pot.AspNetCore.Features.Accounts.Extensions;
 
 public static class WebApplicationExtensions
 {
+    private static readonly long _maxImportPayloadBytes = 1 * 1024 * 1024;
+
     public static WebApplication AddAccountEndpoints(this WebApplication app)
     {
         using (app.Logger.BeginScope("[Setup Account Routes]"))
@@ -23,26 +23,10 @@ public static class WebApplicationExtensions
                 .Produces<List<AccountDto>>();
 
             group
-                .MapPost("/import", async (IFormFile file, IAccountImportRepository importRepository, CancellationToken cancellationToken) =>
-                {
-                    try
-                    {
-                        using var reader = new StreamReader(file.OpenReadStream());
-                        using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
-
-                        var accounts = csv.GetRecords<AccountImport>().ToArray();
-
-                        await importRepository.ImportAccountsAsync(accounts, cancellationToken);
-                    }
-                    catch (Exception exception)
-                    {
-                        return Results.BadRequest("Invalid file.");
-                    }
-
-                    return Results.Ok();
-                })
-                .Accepts<IFormFile>("multipart/form-data")
-                .DisableAntiforgery();
+                .MapPost("/import", Import.Handler.Invoke)
+                .WithMetadata(new RequestSizeLimitAttribute(_maxImportPayloadBytes))    // Will raise 413 Payload Too Large if the file exceeds this limit
+                .DisableAntiforgery()
+                .Produces<ImportResult>();
 
             //group.MapGet("/export/{fileName}", (string fileName) =>
             //{
