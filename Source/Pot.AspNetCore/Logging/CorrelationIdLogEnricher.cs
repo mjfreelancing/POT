@@ -4,7 +4,7 @@ using Microsoft.Extensions.Diagnostics.Enrichment;
 
 namespace Pot.AspNetCore.Logging;
 
-public class CorrelationIdLogEnricher : ILogEnricher
+internal class CorrelationIdLogEnricher : ILogEnricher
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
 

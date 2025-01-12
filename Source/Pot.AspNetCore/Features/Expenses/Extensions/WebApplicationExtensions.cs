@@ -6,7 +6,7 @@ using System.Globalization;
 
 namespace Pot.AspNetCore.Features.Expenses.Extensions;
 
-public static class WebApplicationExtensions
+internal static class WebApplicationExtensions
 {
     public static WebApplication AddExpenseEndpoints(this WebApplication app)
     {

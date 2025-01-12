@@ -2,7 +2,7 @@
 
 namespace Pot.AspNetCore.Features.Accounts.Extensions;
 
-public static class WebApplicationBuilderExtensions
+internal static class WebApplicationBuilderExtensions
 {
     public static WebApplicationBuilder AddAccountServices(this WebApplicationBuilder builder)
     {

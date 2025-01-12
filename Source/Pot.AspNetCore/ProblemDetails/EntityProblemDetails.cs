@@ -1,6 +1,6 @@
 ﻿namespace Pot.AspNetCore.ProblemDetails;
 
-public class EntityProblemDetails : ProblemDetailsExtension
+internal class EntityProblemDetails : ProblemDetailsExtension
 {
     public required string EntityType { get; init; }
 }

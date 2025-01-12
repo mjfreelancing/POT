@@ -1,6 +1,6 @@
 ﻿namespace Pot.AspNetCore.ProblemDetails;
 
-public static class ProblemDetailsContextFactory
+internal static class ProblemDetailsContextFactory
 {
     public static ProblemDetailsContext Create(HttpContext httpContext, Exception exception, int statusCode, ProblemDetailsExtension[]? errorDetails = default)
     {

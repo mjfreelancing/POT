@@ -5,7 +5,7 @@ using System.Net;
 
 namespace Pot.AspNetCore.Middleware;
 
-public sealed class CorrelationIdMiddleware : IMiddleware
+internal sealed class CorrelationIdMiddleware : IMiddleware
 {
     private readonly IProblemDetailsService _problemDetailsService;
 

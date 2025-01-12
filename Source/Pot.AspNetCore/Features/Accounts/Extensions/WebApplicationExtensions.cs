@@ -1,12 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Pot.AspNetCore.Features.Accounts.Import.Models;
-using Pot.Data.Dtos;
+﻿namespace Pot.AspNetCore.Features.Accounts.Extensions;
 
-namespace Pot.AspNetCore.Features.Accounts.Extensions;
-
-public static class WebApplicationExtensions
+internal static class WebApplicationExtensions
 {
-    private static readonly long _maxImportPayloadBytes = 1 * 1024 * 1024;
+    private const long MaxImportPayloadBytes = 1 * 1024 * 1024;
 
     public static WebApplication AddAccountEndpoints(this WebApplication app)
     {
@@ -14,19 +10,12 @@ public static class WebApplicationExtensions
         {
             app.Logger.LogInformation("Adding account endpoints");
 
-            var group = app
-                .MapGroup("api/accounts")
-                .WithTags("Accounts Api");
+            app.MapGroup("api/accounts")
+                .WithTags("Accounts Api")
+                .GetAllAccounts()
+                .ImportAccounts(MaxImportPayloadBytes);
 
-            group
-                .MapGet("", GetAll.Handler.Invoke)
-                .Produces<List<AccountDto>>();
 
-            group
-                .MapPost("/import", Import.Handler.Invoke)
-                .WithMetadata(new RequestSizeLimitAttribute(_maxImportPayloadBytes))    // Will raise 413 Payload Too Large if the file exceeds this limit
-                .DisableAntiforgery()
-                .Produces<ImportResult>();
 
             //group.MapGet("/export/{fileName}", (string fileName) =>
             //{

@@ -2,7 +2,7 @@
 
 namespace Pot.AspNetCore.Features.Expenses.Extensions;
 
-public static class WebApplicationBuilderExtensions
+internal static class WebApplicationBuilderExtensions
 {
     public static WebApplicationBuilder AddExpenseServicess(this WebApplicationBuilder builder)
     {

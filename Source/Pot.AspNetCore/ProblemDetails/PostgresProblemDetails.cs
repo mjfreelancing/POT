@@ -1,6 +1,6 @@
 ﻿namespace Pot.AspNetCore.ProblemDetails;
 
-public class PostgresProblemDetails : ProblemDetailsExtension
+internal class PostgresProblemDetails : ProblemDetailsExtension
 {
     public required string SqlState { get; init; }
 }

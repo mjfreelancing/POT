@@ -79,7 +79,6 @@ internal static class WebApplicationBuilderExtensions
         builder.Services.AddProblemDetails(options =>
             options.CustomizeProblemDetails = ctx =>
             {
-                // A 'traceId' is already added - it will be the same as the 'correlationId' if the first request in a chain of service-to-service calls.
                 ctx.ProblemDetails.Extensions.Add("correlationId", ctx.HttpContext.TraceIdentifier);
                 ctx.ProblemDetails.Extensions.Add("instance", $"{ctx.HttpContext.Request.Method} {ctx.HttpContext.Request.Path}");
             });
