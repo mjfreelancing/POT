@@ -32,7 +32,7 @@ public sealed class IsUniqueValidator<TType, TProperty> : AbstractValidator<IEnu
                 {
                     context.AddFailure(new ValidationFailure(
                         propertyName: propertyName,
-                        errorMessage: $"'{propertyName}' cannot have duplicate values.",
+                        errorMessage: $"'{propertyName}' must have unique values.",
                         attemptedValue: duplicateValues
                     ));
                 }
