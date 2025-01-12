@@ -4,6 +4,7 @@
 		<PackageReference Include="AllOverIt.Csv" Version="8.0.0" />
 		<PackageReference Include="AllOverIt.Logging" Version="8.0.0" />
 		<PackageReference Include="AllOverIt.Validation" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Telemetry" Version="9.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

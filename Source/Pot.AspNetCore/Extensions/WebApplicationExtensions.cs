@@ -2,7 +2,7 @@
 
 namespace Pot.AspNetCore.Extensions;
 
-public static class WebApplicationExtensions
+internal static class WebApplicationExtensions
 {
     public static WebApplication UseCorrelationId(this WebApplication app)
     {

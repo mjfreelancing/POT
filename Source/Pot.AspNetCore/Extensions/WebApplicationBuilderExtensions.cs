@@ -1,25 +1,44 @@
 ﻿using AllOverIt.Validation.Extensions;
 using Pot.AspNetCore.ExceptionHandlers;
+using Pot.AspNetCore.Logging;
 using Pot.AspNetCore.Middleware;
 using Pot.Data;
 
 namespace Pot.AspNetCore.Extensions;
 
-public static class WebApplicationBuilderExtensions
+internal static class WebApplicationBuilderExtensions
 {
-    internal static WebApplicationBuilder AddCorrelationId(this WebApplicationBuilder builder)
+    public static WebApplicationBuilder AddCorrelationId(this WebApplicationBuilder builder)
     {
         builder.Services.AddScoped<CorrelationIdMiddleware>();
 
         return builder;
     }
 
-    internal static WebApplicationBuilder AddLogging(this WebApplicationBuilder builder)
+    public static WebApplicationBuilder AddLogging(this WebApplicationBuilder builder)
     {
-        // Alternative to the default SimpleConsole Logger
-        // https://learn.microsoft.com/en-us/dotnet/core/extensions/console-log-formatter
-        //
-        //builder.Logging.AddJsonConsole(options =>
+        var loggingBuilder = builder.Logging;
+
+        builder.Services
+            .AddHttpContextAccessor()                       // CorrelationIdLogEnricher requires IHttpContextAccessor
+            .AddLogEnricher<CorrelationIdLogEnricher>();    // Requires Microsoft.Extensions.Telemetry
+
+        loggingBuilder
+            .ClearProviders()
+            .EnableEnrichment(/*options => { }*/)
+            .AddConsole(options =>
+            {
+                options.FormatterName = PotConsoleFormatter.FormatterName;
+            })
+            .AddConsoleFormatter<PotConsoleFormatter, PotConsoleFormatterOptions>(options =>
+            {
+                options.IncludeScopes = false;
+                options.TimestampFormat = "HH:mm:ss";
+                options.UseUtcTimestamp = true;
+                options.SingleLine = true;
+            }); ;
+
+        //loggingBuilder.AddJsonConsole(options =>
         //{
         //    options.IncludeScopes = false;
         //    options.TimestampFormat = "HH:mm:ss";
@@ -29,21 +48,21 @@ public static class WebApplicationBuilderExtensions
         //    };
         //});
 
-        builder.Logging.AddSimpleConsole(options =>
-        {
-            options.IncludeScopes = true;
-            options.SingleLine = true;
-            options.TimestampFormat = "HH:mm:ss ";
-            options.UseUtcTimestamp = true;
-        });
+        //loggingBuilder.AddSimpleConsole(options =>
+        //{
+        //    options.IncludeScopes = true;
+        //    options.SingleLine = true;
+        //    options.TimestampFormat = "HH:mm:ss ";
+        //    options.UseUtcTimestamp = true;
+        //});
 
         return builder;
     }
 
-    internal static WebApplicationBuilder AddExceptionHandlers(this WebApplicationBuilder builder)
+    public static WebApplicationBuilder AddExceptionHandlers(this WebApplicationBuilder builder)
     {
-        // Exception handlers are registered as a singleton
-        // Ordering of registered exception handlers matter
+        // Exception handlers are registered as a singleton.
+        // Ordering of registered exception handlers matter.
         builder.Services
             .AddExceptionHandler<IgnoreExceptionHandler>()
             .AddExceptionHandler<ValidationExceptionHandler>()
@@ -54,7 +73,7 @@ public static class WebApplicationBuilderExtensions
         return builder;
     }
 
-    internal static WebApplicationBuilder AddCustomProblemDetails(this WebApplicationBuilder builder)
+    public static WebApplicationBuilder AddCustomProblemDetails(this WebApplicationBuilder builder)
     {
         // IProblemDetailsService is registered as a singleton.
         builder.Services.AddProblemDetails(options =>

@@ -1,4 +1,5 @@
-﻿using AllOverIt.Validation;
+﻿using AllOverIt.Logging.Extensions;
+using AllOverIt.Validation;
 using CsvHelper;
 using Pot.AspNetCore.Features.Accounts.Import.Models;
 using Pot.AspNetCore.Features.Accounts.Import.Repository;
@@ -6,10 +7,13 @@ using System.Globalization;
 
 namespace Pot.AspNetCore.Features.Accounts.Import;
 
-internal static class Handler
+internal sealed class Handler
 {
-    public static async Task<IResult> Invoke(IFormFile file, ILifetimeValidationInvoker validationInvoker, IAccountImportRepository importRepository, CancellationToken cancellationToken)
+    public static async Task<IResult> Invoke(IFormFile file, ILifetimeValidationInvoker validationInvoker, IAccountImportRepository importRepository,
+        ILogger<Handler> logger, CancellationToken cancellationToken)
     {
+        logger.LogCall(null);
+
         using var reader = new StreamReader(file.OpenReadStream());
         using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
 
