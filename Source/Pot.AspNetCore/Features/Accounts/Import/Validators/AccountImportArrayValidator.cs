@@ -8,7 +8,6 @@ internal sealed class AccountImportArrayValidator : ValidatorBase<AccountForImpo
 {
     public AccountImportArrayValidator()
     {
-        RuleFor(accounts => accounts).IsUnique(account => account.Id);
         RuleFor(accounts => accounts).IsUnique(account => account.Description);
         RuleFor(accounts => accounts).IsUnique(account => account.Bsb, account => account.Number);
 

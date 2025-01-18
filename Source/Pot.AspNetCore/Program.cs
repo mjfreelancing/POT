@@ -8,6 +8,8 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
+        // ASPNETCORE_ENVIRONMENT => Environment name
+
         var builder = WebApplication.CreateBuilder(args);
 
         builder
@@ -32,6 +34,8 @@ public class Program
         // TODO: POT-14
         app.MapGet("/", () => "POT Summary");
 
+        // 200 - Success
+        // 304 - Not Modified
         // 422 - Validation and other errors that occur due to data related problems
         //       (such as conflicts, constraints, etc) when processing the input data
         // 500 - Unexpected errors

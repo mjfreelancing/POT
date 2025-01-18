@@ -10,6 +10,8 @@ namespace Pot.AspNetCore.Features.Accounts.Import.Repository;
 
 internal sealed class AccountImportRepository : IAccountImportRepository
 {
+    private sealed record AccountKey(string Bsb, string Number);
+
     private readonly IDbContextFactory<PotDbContext> _dbContextFactory;
 
     public AccountImportRepository(IDbContextFactory<PotDbContext> dbContextFactory)
@@ -17,86 +19,68 @@ internal sealed class AccountImportRepository : IAccountImportRepository
         _dbContextFactory = dbContextFactory.WhenNotNull();
     }
 
-    public async Task<ImportSummary> ImportAccountsAsync(AccountForImport[] accounts, bool overwrite, CancellationToken cancellationToken)
+    public async Task<ImportSummary> ImportAccountsAsync(AccountForImport[] accountsImport, bool overwrite, CancellationToken cancellationToken)
     {
+        var importAccountKeys = accountsImport.ToDictionary(account => new AccountKey(account.Bsb, account.Number));
+
         using var dbContext = _dbContextFactory.CreateDbContext().WithTracking(true);
 
-        var existingAccounts = await GetExistingAccountsAsync(dbContext, accounts, cancellationToken).ConfigureAwait(false);
+        var imported = 0;
+        var updated = 0;
 
-        var existingIds = accounts
-            .FindMatches(existingAccounts, account => account.Id, account => account.Id)
-            .SelectToArray(account => account.Id);
+        foreach (var import in accountsImport)
+        {
+            var existing = await dbContext.Accounts
+                .Where(account => account.Bsb == import.Bsb && account.Number == import.Number)
+                .SingleOrDefaultAsync(cancellationToken);
 
-        var updated = overwrite
-            ? await UpdateExistingAccountsAsync(dbContext, accounts, existingIds, cancellationToken).ConfigureAwait(false)
-            : 0;
+            if (existing is null)
+            {
+                AddAccountEntity(dbContext, import);
+                imported++;
+            }
+            else if (overwrite)
+            {
+                UpdateAccountEntity(existing, import);
+                updated++;
+            }
+        }
 
-        var imported = await AddNewAccountsAsync(dbContext, accounts, existingIds, cancellationToken).ConfigureAwait(false);
+        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         return new ImportSummary
         {
-            Skipped = existingIds.Length - updated,
+            Skipped = accountsImport.Length - imported - updated,
             Imported = imported,
             Updated = updated,
-            Total = accounts.Length
+            Total = accountsImport.Length
         };
     }
 
-    private static async Task<List<AccountEntity>> GetExistingAccountsAsync(PotDbContext dbContext, AccountForImport[] accounts,
-        CancellationToken cancellationToken)
+    private static void AddAccountEntity(PotDbContext dbContext, AccountForImport import)
     {
-        var accountIds = accounts.SelectToArray(account => account.Id);
-
-        var accountsQuery = from account in dbContext.Accounts
-                            where accountIds.Contains(account.Id)
-                            select account;
-
-        return await accountsQuery.ToListAsync(cancellationToken).ConfigureAwait(false);
-    }
-
-    private static async Task<int> UpdateExistingAccountsAsync(PotDbContext dbContext, AccountForImport[] accounts,
-        int[] existingIds, CancellationToken cancellationToken)
-    {
-        accounts
-            .Where(account => existingIds.Contains(account.Id))
-            .ForEach((account, _) =>
-            {
-                // Will return the account entity already being tracked
-                var accountEntity = dbContext.Find<AccountEntity>([account.Id])!;
-
-                accountEntity.Id = account.Id;
-                accountEntity.Bsb = account.Bsb;
-                accountEntity.Number = account.Number;
-                accountEntity.Description = account.Description;
-                accountEntity.Balance = account.Balance;
-                accountEntity.Reserved = account.Reserved;
-                accountEntity.Allocated = account.Allocated;
-                accountEntity.DailyAccrual = account.DailyAccrual;
-            });
-
-        return await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-    }
-
-    private static async Task<int> AddNewAccountsAsync(PotDbContext dbContext, AccountForImport[] accounts,
-        int[] existingIds, CancellationToken cancellationToken)
-    {
-        var missingAccounts = accounts.Where(account => !existingIds.Contains(account.Id));
-
-        var newAccounts = missingAccounts.SelectToArray(account => new AccountEntity
+        var newAccount = new AccountEntity
         {
-            Id = account.Id,
-            Bsb = account.Bsb,
-            Number = account.Number,
-            Description = account.Description,
-            Balance = account.Balance,
-            Reserved = account.Reserved,
-            Allocated = account.Allocated,
-            DailyAccrual = account.DailyAccrual,
-            Expenses = []
-        });
+            Bsb = import.Bsb,
+            Number = import.Number,
+            Description = import.Description,
+            Balance = import.Balance,
+            Reserved = import.Reserved,
+            Allocated = import.Allocated,
+            DailyAccrual = import.DailyAccrual
+        };
 
-        await dbContext.Accounts.AddRangeAsync(newAccounts, cancellationToken).ConfigureAwait(false);
+        dbContext.Accounts.Add(newAccount);
+    }
 
-        return await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    private static void UpdateAccountEntity(AccountEntity entity, AccountForImport import)
+    {
+        entity.Bsb = import.Bsb;
+        entity.Number = import.Number;
+        entity.Description = import.Description;
+        entity.Balance = import.Balance;
+        entity.Reserved = import.Reserved;
+        entity.Allocated = import.Allocated;
+        entity.DailyAccrual = import.DailyAccrual;
     }
 }

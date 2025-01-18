@@ -39,18 +39,19 @@ internal abstract class RepositoryBase<TEntity> : IRepository<TEntity> where TEn
         return await dbContext.Set<TEntity>().FindAsync([id], cancellationToken);
     }
 
-    public virtual async Task CreateAsync(TEntity entity, CancellationToken cancellationToken)
+    public virtual async Task<int> CreateAsync(TEntity entity, CancellationToken cancellationToken)
     {
         _ = entity.WhenNotNull();
 
         using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-        await dbContext.Set<TEntity>().AddAsync(entity, cancellationToken);
+        // AddAsync() should only be used for special cases where value generators need to access the database asynchronously
+        dbContext.Set<TEntity>().Add(entity);
 
-        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public virtual async Task UpdateRangeAsync(TEntity[] entities, CancellationToken cancellationToken)
+    public virtual async Task<int> UpdateRangeAsync(TEntity[] entities, CancellationToken cancellationToken)
     {
         _ = entities.WhenNotNullOrEmpty();
 
@@ -58,10 +59,10 @@ internal abstract class RepositoryBase<TEntity> : IRepository<TEntity> where TEn
 
         dbContext.Set<TEntity>().UpdateRange(entities);
 
-        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public virtual async Task DeleteByIdAsync(int id, CancellationToken cancellationToken)
+    public virtual async Task<int> DeleteByIdAsync(int id, CancellationToken cancellationToken)
     {
         using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
@@ -69,7 +70,7 @@ internal abstract class RepositoryBase<TEntity> : IRepository<TEntity> where TEn
 
         dbContext.Set<TEntity>().Remove(entity);
 
-        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 }
 

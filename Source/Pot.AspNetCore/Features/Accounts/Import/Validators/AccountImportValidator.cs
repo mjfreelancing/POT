@@ -8,7 +8,6 @@ internal sealed class AccountImportValidator : ValidatorBase<AccountForImport>
 {
     public AccountImportValidator()
     {
-        RuleFor(account => account.Id).IsGreaterThan(0);
         RuleFor(account => account.Bsb).IsNotEmpty();
         RuleFor(account => account.Description).IsNotEmpty();
     }

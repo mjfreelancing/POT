@@ -2,7 +2,6 @@
 
 public sealed class AccountForImport
 {
-    public int Id { get; init; }
     public string Bsb { get; init; } = string.Empty;
     public string Number { get; init; } = string.Empty;
     public string Description { get; init; } = string.Empty;

@@ -65,6 +65,8 @@ namespace Pot.Data.Migrations
                     b.HasIndex("Description")
                         .IsUnique();
 
+                    b.HasIndex("Etag");
+
                     b.HasIndex("Bsb", "Number")
                         .IsUnique();
 
@@ -119,6 +121,8 @@ namespace Pot.Data.Migrations
 
                     b.HasIndex("Description")
                         .IsUnique();
+
+                    b.HasIndex("Etag");
 
                     b.HasIndex("NextDue");
 

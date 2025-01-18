@@ -73,6 +73,11 @@ namespace Pot.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Account_Etag",
+                table: "Account",
+                column: "Etag");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Expense_AccountId",
                 table: "Expense",
                 column: "AccountId");
@@ -82,6 +87,11 @@ namespace Pot.Data.Migrations
                 table: "Expense",
                 column: "Description",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Expense_Etag",
+                table: "Expense",
+                column: "Etag");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Expense_NextDue",

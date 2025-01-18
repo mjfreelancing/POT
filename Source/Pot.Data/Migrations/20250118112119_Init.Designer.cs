@@ -12,7 +12,7 @@ using Pot.Data;
 namespace Pot.Data.Migrations
 {
     [DbContext(typeof(PotDbContext))]
-    [Migration("20250118101214_Init")]
+    [Migration("20250118112119_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -68,6 +68,8 @@ namespace Pot.Data.Migrations
                     b.HasIndex("Description")
                         .IsUnique();
 
+                    b.HasIndex("Etag");
+
                     b.HasIndex("Bsb", "Number")
                         .IsUnique();
 
@@ -122,6 +124,8 @@ namespace Pot.Data.Migrations
 
                     b.HasIndex("Description")
                         .IsUnique();
+
+                    b.HasIndex("Etag");
 
                     b.HasIndex("NextDue");
 

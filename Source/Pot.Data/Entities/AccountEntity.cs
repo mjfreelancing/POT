@@ -24,6 +24,6 @@ namespace Pot.Data.Entities
         public double Allocated { get; set; }
         public double DailyAccrual { get; set; }
 
-        public required ICollection<ExpenseEntity> Expenses { get; set; }
+        public ICollection<ExpenseEntity> Expenses { get; set; } = [];
     }
 }

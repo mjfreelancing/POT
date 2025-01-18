@@ -1,40 +1,36 @@
 ﻿using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
-using Pot.Data;
+using Pot.Data.Entities;
+using Pot.Data.Repositories.Accounts;
 
 namespace Pot.AspNetCore.Features.Accounts.Create;
 
-internal class Handler
+internal partial class Handler
 {
-    public static async Task<Results<Created<CreatedResponse>, ProblemHttpResult /*ValidationProblem*/>> Invoke(IDbContextFactory<PotDbContext> dbContextFactory,
-        ILogger<Handler> logger, CancellationToken cancellationToken)
+    public static async Task<Results<CreatedAtRoute<Response>, ProblemHttpResult>> Invoke(Request request,
+        IAccountRepository accountRepository, ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);
 
-        //using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+        var entity = new AccountEntity
+        {
+            Bsb = request.Bsb,
+            Number = request.Number,
+            Description = request.Description,
+            Balance = request.Balance,
+            Reserved = request.Reserved,
+            Allocated = request.Allocated,
+            DailyAccrual = request.DailyAccrual
+        };
 
-        //var query = from account in dbContext.Accounts
-        //            select account.ToDto();
+        await accountRepository.CreateAsync(entity, cancellationToken);
 
-        //var accounts = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
+        var response = new Response
+        {
+            Id = entity.Id,
+            ETag = entity.Etag
+        };
 
-        //return TypedResults.Ok(accounts);
-
-        await Task.Delay(1, cancellationToken);
-
-        var response = new CreatedResponse { Id = 1, ETag = 2 };
-
-        return TypedResults.Created($"{nameof(Extensions.RouteGroupBuilderExtensions.GetAccount)}/{response.Id}", response);
-    }
-
-    internal sealed class CreatedResponse
-    {
-        public int Id { get; init; }
-        public long ETag { get; init; }
+        return TypedResults.CreatedAtRoute(response, nameof(Extensions.RouteGroupBuilderExtensions.GetAccount), new { response.Id });
     }
 }
-
-// CREATE AN ABSTRACT FACTORY
-
-// Use 304 for updates not modified
