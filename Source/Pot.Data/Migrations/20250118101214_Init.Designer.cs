@@ -12,8 +12,8 @@ using Pot.Data;
 namespace Pot.Data.Migrations
 {
     [DbContext(typeof(PotDbContext))]
-    [Migration("20250112114820_AddAccountBsbNumberIndex")]
-    partial class AddAccountBsbNumberIndex
+    [Migration("20250118101214_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -103,6 +103,7 @@ namespace Pot.Data.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("Frequency")
+                        .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
 

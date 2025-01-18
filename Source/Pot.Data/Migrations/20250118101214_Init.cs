@@ -41,7 +41,7 @@ namespace Pot.Data.Migrations
                     Description = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     NextDue = table.Column<DateOnly>(type: "date", nullable: false),
                     AccrualStart = table.Column<DateOnly>(type: "date", nullable: false),
-                    Frequency = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
+                    Frequency = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
                     FrequencyCount = table.Column<int>(type: "integer", nullable: false),
                     Recurring = table.Column<bool>(type: "boolean", nullable: false),
                     Amount = table.Column<double>(type: "double precision", nullable: false),
@@ -61,6 +61,12 @@ namespace Pot.Data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Account_Bsb_Number",
+                table: "Account",
+                columns: new[] { "Bsb", "Number" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Account_Description",
                 table: "Account",
                 column: "Description",
@@ -76,6 +82,11 @@ namespace Pot.Data.Migrations
                 table: "Expense",
                 column: "Description",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Expense_NextDue",
+                table: "Expense",
+                column: "NextDue");
         }
 
         /// <inheritdoc />

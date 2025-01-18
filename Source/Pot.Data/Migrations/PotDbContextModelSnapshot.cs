@@ -100,6 +100,7 @@ namespace Pot.Data.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("Frequency")
+                        .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
 

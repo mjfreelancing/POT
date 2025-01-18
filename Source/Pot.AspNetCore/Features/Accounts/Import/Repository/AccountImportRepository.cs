@@ -91,7 +91,8 @@ internal sealed class AccountImportRepository : IAccountImportRepository
             Balance = account.Balance,
             Reserved = account.Reserved,
             Allocated = account.Allocated,
-            DailyAccrual = account.DailyAccrual
+            DailyAccrual = account.DailyAccrual,
+            Expenses = []
         });
 
         await dbContext.Accounts.AddRangeAsync(newAccounts, cancellationToken).ConfigureAwait(false);

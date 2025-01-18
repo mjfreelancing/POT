@@ -1,6 +1,4 @@
-﻿#nullable disable           // If enabled, string without [Required] would need to be changed to string?
-
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Pot.Data.Models;
 using System.ComponentModel.DataAnnotations;
 
@@ -12,7 +10,7 @@ namespace Pot.Data.Entities
     {
         [Required]
         [MaxLength(100)]
-        public string Description { get; set; }
+        public required string Description { get; set; }
 
         public DateOnly NextDue { get; set; }
         public DateOnly AccrualStart { get; set; }
@@ -23,6 +21,6 @@ namespace Pot.Data.Entities
         public double Allocated { get; set; }
 
         [Required]
-        public AccountEntity Account { get; set; }
+        public required AccountEntity Account { get; set; }
     }
 }
