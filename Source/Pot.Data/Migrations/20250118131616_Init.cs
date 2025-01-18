@@ -25,6 +25,7 @@ namespace Pot.Data.Migrations
                     Reserved = table.Column<double>(type: "double precision", nullable: false),
                     Allocated = table.Column<double>(type: "double precision", nullable: false),
                     DailyAccrual = table.Column<double>(type: "double precision", nullable: false),
+                    RowId = table.Column<Guid>(type: "uuid", nullable: false),
                     Etag = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
@@ -47,6 +48,7 @@ namespace Pot.Data.Migrations
                     Amount = table.Column<double>(type: "double precision", nullable: false),
                     Allocated = table.Column<double>(type: "double precision", nullable: false),
                     AccountId = table.Column<int>(type: "integer", nullable: false),
+                    RowId = table.Column<Guid>(type: "uuid", nullable: false),
                     Etag = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
@@ -78,6 +80,12 @@ namespace Pot.Data.Migrations
                 column: "Etag");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Account_RowId",
+                table: "Account",
+                column: "RowId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Expense_AccountId",
                 table: "Expense",
                 column: "AccountId");
@@ -97,6 +105,12 @@ namespace Pot.Data.Migrations
                 name: "IX_Expense_NextDue",
                 table: "Expense",
                 column: "NextDue");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Expense_RowId",
+                table: "Expense",
+                column: "RowId",
+                unique: true);
         }
 
         /// <inheritdoc />

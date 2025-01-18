@@ -16,16 +16,16 @@ internal abstract class RepositoryBase<TEntity> : IRepository<TEntity> where TEn
 
     public virtual async Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken)
     {
-        using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+        using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        return await dbContext.Set<TEntity>().ToListAsync(cancellationToken);
+        return await dbContext.Set<TEntity>().ToListAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public virtual async Task<TEntity> GetByIdAsync(int id, CancellationToken cancellationToken)
     {
-        using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+        using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        var entity = await dbContext.Set<TEntity>().FindAsync([id], cancellationToken);
+        var entity = await dbContext.Set<TEntity>().FindAsync([id], cancellationToken).ConfigureAwait(false);
 
         return entity is null
             ? throw new EntityNotFoundException<TEntity>()
@@ -34,16 +34,23 @@ internal abstract class RepositoryBase<TEntity> : IRepository<TEntity> where TEn
 
     public virtual async Task<TEntity?> GetByIdOrDefaultAsync(int id, CancellationToken cancellationToken)
     {
-        using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+        using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        return await dbContext.Set<TEntity>().FindAsync([id], cancellationToken);
+        return await dbContext.Set<TEntity>().FindAsync([id], cancellationToken).ConfigureAwait(false);
+    }
+
+    public virtual async Task<TEntity?> GetByRowIdOrDefaultAsync(Guid rowId, CancellationToken cancellationToken)
+    {
+        using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+
+        return await dbContext.Set<TEntity>().Where(item => item.RowId == rowId).SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public virtual async Task<int> CreateAsync(TEntity entity, CancellationToken cancellationToken)
     {
         _ = entity.WhenNotNull();
 
-        using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+        using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         // AddAsync() should only be used for special cases where value generators need to access the database asynchronously
         dbContext.Set<TEntity>().Add(entity);
@@ -55,7 +62,7 @@ internal abstract class RepositoryBase<TEntity> : IRepository<TEntity> where TEn
     {
         _ = entities.WhenNotNullOrEmpty();
 
-        using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+        using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         dbContext.Set<TEntity>().UpdateRange(entities);
 
@@ -64,7 +71,7 @@ internal abstract class RepositoryBase<TEntity> : IRepository<TEntity> where TEn
 
     public virtual async Task<int> DeleteByIdAsync(int id, CancellationToken cancellationToken)
     {
-        using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+        using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         var entity = await GetByIdAsync(id, cancellationToken).ConfigureAwait(false);
 

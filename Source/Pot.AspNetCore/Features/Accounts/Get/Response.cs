@@ -41,7 +41,7 @@ internal sealed class Response : ResponseBase
     {
         _ = account.WhenNotNull();
 
-        Id = account.Id;
+        RowId = account.RowId;
         ETag = account.Etag;
         Bsb = account.Bsb;
         Number = account.Number;

@@ -1,13 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Pot.AspNetCore.Models;
 using Pot.Data.Entities;
 
 namespace Pot.AspNetCore.Features.Accounts.Create;
 
-internal sealed class Response
+internal sealed class Response : ResponseBase
 {
-    public int Id { get; init; }
-    public long ETag { get; init; }
-
     public static CreatedAtRoute<Response> Created(AccountEntity account)
     {
         var response = new Response(account);
@@ -15,12 +13,12 @@ internal sealed class Response
         return TypedResults.CreatedAtRoute(
             response,
             nameof(Extensions.RouteGroupBuilderExtensions.GetAccount),
-            new { response.Id });
+            new { Id = response.RowId });
     }
 
     private Response(AccountEntity account)
     {
-        Id = account.Id;
+        RowId = account.RowId;
         ETag = account.Etag;
     }
 }

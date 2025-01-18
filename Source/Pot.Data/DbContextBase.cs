@@ -3,6 +3,7 @@ using AllOverIt.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.ValueGeneration;
 using Pot.Data.Entities;
 using Pot.Shared.Extensions;
 using System.Diagnostics;
@@ -74,6 +75,7 @@ namespace Pot.Data
                 ValidateEntity(entityType, entityName);
                 SetTableName(entityType, entityName);
                 DisableCascadeDelete(entityType);
+                GenerateRowIdColumns(modelBuilder, entityType);
             }
         }
 
@@ -83,7 +85,7 @@ namespace Pot.Data
             if (!entityName.EndsWith(_entitySuffix))
             {
                 throw new InvalidOperationException(
-                    $"The entity '{entityType.ClrType}' does not have a suffix of '{_entitySuffix}' (i.e. {entityName}{_entitySuffix}).");
+                    $"The entity '{entityType.ClrType}' does not have a suffix of '{_entitySuffix}' (should be {entityName}{_entitySuffix}).");
             }
 
             if (!entityType.ClrType.IsDerivedFrom(_entityBaseType))
@@ -107,6 +109,15 @@ namespace Pot.Data
             {
                 foreignKey.DeleteBehavior = DeleteBehavior.Restrict;
             }
+        }
+
+        private static void GenerateRowIdColumns(ModelBuilder modelBuilder, IMutableEntityType entityType)
+        {
+            modelBuilder
+               .Entity(entityType.ClrType)
+               .Property(nameof(EntityBase.RowId))
+               .HasValueGenerator<GuidValueGenerator>()
+               .ValueGeneratedOnAdd();
         }
 
         private static void ConfigureEnrichedEnum(ModelBuilder modelBuilder)

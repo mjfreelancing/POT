@@ -12,7 +12,7 @@ using Pot.Data;
 namespace Pot.Data.Migrations
 {
     [DbContext(typeof(PotDbContext))]
-    [Migration("20250118112119_Init")]
+    [Migration("20250118131616_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -63,12 +63,19 @@ namespace Pot.Data.Migrations
                     b.Property<double>("Reserved")
                         .HasColumnType("double precision");
 
+                    b.Property<Guid>("RowId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Description")
                         .IsUnique();
 
                     b.HasIndex("Etag");
+
+                    b.HasIndex("RowId")
+                        .IsUnique();
 
                     b.HasIndex("Bsb", "Number")
                         .IsUnique();
@@ -118,6 +125,10 @@ namespace Pot.Data.Migrations
                     b.Property<bool>("Recurring")
                         .HasColumnType("boolean");
 
+                    b.Property<Guid>("RowId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId");
@@ -128,6 +139,9 @@ namespace Pot.Data.Migrations
                     b.HasIndex("Etag");
 
                     b.HasIndex("NextDue");
+
+                    b.HasIndex("RowId")
+                        .IsUnique();
 
                     b.ToTable("Expense");
                 });
