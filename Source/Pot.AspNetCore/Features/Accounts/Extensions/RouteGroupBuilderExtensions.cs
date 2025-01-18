@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Pot.AspNetCore.Features.Accounts.Import.Models;
-using Pot.Data.Dtos;
+using System.Net;
 
 namespace Pot.AspNetCore.Features.Accounts.Extensions;
 
@@ -10,7 +9,35 @@ internal static class RouteGroupBuilderExtensions
     {
         routeGroupBuilder
             .MapGet("", GetAll.Handler.Invoke)
-            .Produces<List<AccountDto>>();
+            .WithName(nameof(GetAllAccounts))
+            .WithSummary("Get all accounts")
+            .WithDescription("Get all account details")
+            .WithTags("Accounts");
+
+        return routeGroupBuilder;
+    }
+
+    public static RouteGroupBuilder GetAccount(this RouteGroupBuilder routeGroupBuilder)
+    {
+        routeGroupBuilder
+            .MapGet("/{id}", Get.Handler.Invoke)
+            .WithName(nameof(GetAccount))
+            .WithSummary("Get account")
+            .WithDescription("Get details for an existing account")
+            .WithTags("Accounts");
+
+        return routeGroupBuilder;
+    }
+
+    public static RouteGroupBuilder CreateAccount(this RouteGroupBuilder routeGroupBuilder)
+    {
+        routeGroupBuilder
+            .MapPost("", Create.Handler.Invoke)
+            .WithName(nameof(CreateAccount))
+            .WithSummary("Create account")
+            .WithDescription("Create new account details")
+            .WithTags("Accounts")
+            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
 
         return routeGroupBuilder;
     }
@@ -19,9 +46,13 @@ internal static class RouteGroupBuilderExtensions
     {
         routeGroupBuilder
             .MapPost("/import", Import.Handler.Invoke)
+            .WithName(nameof(ImportAccounts))
+            .WithSummary("Import Accounts")
+            .WithDescription("Import new / update existing account details")
+            .WithTags("Accounts", "Import")
             .WithMetadata(new RequestSizeLimitAttribute(maxImportPayloadBytes)) // Will raise 413 Payload Too Large if the file exceeds this limit
             .DisableAntiforgery()
-            .Produces<ImportResult>();
+            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
 
         return routeGroupBuilder;
     }

@@ -1,9 +1,8 @@
 ﻿using Pot.AspNetCore.Features.Accounts.Import.Models;
 
-namespace Pot.AspNetCore.Features.Accounts.Import.Repository
+namespace Pot.AspNetCore.Features.Accounts.Import.Repository;
+
+public interface IAccountImportRepository
 {
-    public interface IAccountImportRepository
-    {
-        Task<ImportResult> ImportAccountsAsync(AccountImport[] accounts, CancellationToken cancellationToken);
-    }
+    Task<ImportSummary> ImportAccountsAsync(AccountForImport[] accounts, bool overwrite, CancellationToken cancellationToken);
 }

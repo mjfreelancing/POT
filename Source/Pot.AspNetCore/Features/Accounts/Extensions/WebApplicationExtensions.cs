@@ -13,6 +13,8 @@ internal static class WebApplicationExtensions
             app.MapGroup("api/accounts")
                 .WithTags("Accounts Api")
                 .GetAllAccounts()
+                .GetAccount()
+                .CreateAccount()
                 .ImportAccounts(MaxImportPayloadBytes);
 
 

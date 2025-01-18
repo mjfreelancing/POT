@@ -1,6 +1,5 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Extensions;
-using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -15,27 +14,19 @@ internal sealed class DatabaseExceptionHandler : IExceptionHandler
     private static readonly Type[] _databaseExceptionTypes = [typeof(DbUpdateException)];
 
     private readonly IProblemDetailsService _problemDetailsService;
-    private readonly ILoggerFactory _loggerFactory;
 
-    public DatabaseExceptionHandler(IProblemDetailsService problemDetailsService, ILoggerFactory loggerFactory)
+    public DatabaseExceptionHandler(IProblemDetailsService problemDetailsService)
     {
         _problemDetailsService = problemDetailsService.WhenNotNull();
-        _loggerFactory = loggerFactory.WhenNotNull();
     }
 
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
         var exceptionType = exception.GetType();
-
         var isDatabaseException = _databaseExceptionTypes.Any(item => exceptionType == item);
 
         if (isDatabaseException)
         {
-            _loggerFactory
-                .CreateLogger<DatabaseExceptionHandler>()
-                .LogAllExceptions(exception, null);
-
-
             var postgresException = (exception.InnerException as PostgresException)!;
 
             var errorDetails = new[]

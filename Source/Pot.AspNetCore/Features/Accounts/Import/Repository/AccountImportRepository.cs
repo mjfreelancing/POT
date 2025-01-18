@@ -6,63 +6,96 @@ using Pot.Data;
 using Pot.Data.Entities;
 using Pot.Data.Extensions;
 
-namespace Pot.AspNetCore.Features.Accounts.Import.Repository
+namespace Pot.AspNetCore.Features.Accounts.Import.Repository;
+
+internal sealed class AccountImportRepository : IAccountImportRepository
 {
+    private readonly IDbContextFactory<PotDbContext> _dbContextFactory;
 
-    internal sealed class AccountImportRepository : IAccountImportRepository
+    public AccountImportRepository(IDbContextFactory<PotDbContext> dbContextFactory)
     {
-        private readonly IDbContextFactory<PotDbContext> _dbContextFactory;
+        _dbContextFactory = dbContextFactory.WhenNotNull();
+    }
 
-        public AccountImportRepository(IDbContextFactory<PotDbContext> dbContextFactory)
+    public async Task<ImportSummary> ImportAccountsAsync(AccountForImport[] accounts, bool overwrite, CancellationToken cancellationToken)
+    {
+        using var dbContext = _dbContextFactory.CreateDbContext().WithTracking(true);
+
+        var existingAccounts = await GetExistingAccountsAsync(dbContext, accounts, cancellationToken).ConfigureAwait(false);
+
+        var existingIds = accounts
+            .FindMatches(existingAccounts, account => account.Id, account => account.Id)
+            .SelectToArray(account => account.Id);
+
+        var updated = overwrite
+            ? await UpdateExistingAccountsAsync(dbContext, accounts, existingIds, cancellationToken).ConfigureAwait(false)
+            : 0;
+
+        var imported = await AddNewAccountsAsync(dbContext, accounts, existingIds, cancellationToken).ConfigureAwait(false);
+
+        return new ImportSummary
         {
-            _dbContextFactory = dbContextFactory.WhenNotNull();
-        }
+            Skipped = existingIds.Length - updated,
+            Imported = imported,
+            Updated = updated,
+            Total = accounts.Length
+        };
+    }
 
-        public async Task<ImportResult> ImportAccountsAsync(AccountImport[] accounts, CancellationToken cancellationToken)
-        {
-            var existingIds = await GetExistingIds(accounts, cancellationToken).ConfigureAwait(false);
+    private static async Task<List<AccountEntity>> GetExistingAccountsAsync(PotDbContext dbContext, AccountForImport[] accounts,
+        CancellationToken cancellationToken)
+    {
+        var accountIds = accounts.SelectToArray(account => account.Id);
 
-            using var dbContext = _dbContextFactory.CreateDbContext().WithTracking(true);
+        var accountsQuery = from account in dbContext.Accounts
+                            where accountIds.Contains(account.Id)
+                            select account;
 
-            var missingAccounts = accounts.Where(account => !existingIds.Contains(account.Id));
+        return await accountsQuery.ToListAsync(cancellationToken).ConfigureAwait(false);
+    }
 
-            var newAccounts = missingAccounts.Select(account => new AccountEntity
+    private static async Task<int> UpdateExistingAccountsAsync(PotDbContext dbContext, AccountForImport[] accounts,
+        int[] existingIds, CancellationToken cancellationToken)
+    {
+        accounts
+            .Where(account => existingIds.Contains(account.Id))
+            .ForEach((account, _) =>
             {
-                Id = account.Id,
-                Bsb = account.Bsb,
-                Number = account.Number,
-                Description = account.Description,
-                Balance = account.Balance,
-                Reserved = account.Reserved,
-                Allocated = account.Allocated,
-                DailyAccrual = account.DailyAccrual
+                // Will return the account entity already being tracked
+                var accountEntity = dbContext.Find<AccountEntity>([account.Id])!;
+
+                accountEntity.Id = account.Id;
+                accountEntity.Bsb = account.Bsb;
+                accountEntity.Number = account.Number;
+                accountEntity.Description = account.Description;
+                accountEntity.Balance = account.Balance;
+                accountEntity.Reserved = account.Reserved;
+                accountEntity.Allocated = account.Allocated;
+                accountEntity.DailyAccrual = account.DailyAccrual;
             });
 
-            await dbContext.Accounts.AddRangeAsync(newAccounts, cancellationToken).ConfigureAwait(false);
+        return await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    }
 
-            var importCount = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    private static async Task<int> AddNewAccountsAsync(PotDbContext dbContext, AccountForImport[] accounts,
+        int[] existingIds, CancellationToken cancellationToken)
+    {
+        var missingAccounts = accounts.Where(account => !existingIds.Contains(account.Id));
 
-            return new ImportResult
-            {
-                Skipped = existingIds.Count,
-                Imported = importCount,
-                Total = accounts.Length
-            };
-        }
-
-        private async Task<List<int>> GetExistingIds(AccountImport[] accounts, CancellationToken cancellationToken)
+        var newAccounts = missingAccounts.SelectToArray(account => new AccountEntity
         {
-            using var dbContext = _dbContextFactory.CreateDbContext();
+            Id = account.Id,
+            Bsb = account.Bsb,
+            Number = account.Number,
+            Description = account.Description,
+            Balance = account.Balance,
+            Reserved = account.Reserved,
+            Allocated = account.Allocated,
+            DailyAccrual = account.DailyAccrual
+        });
 
-            var ids = accounts.SelectToArray(account => account.Id);
+        await dbContext.Accounts.AddRangeAsync(newAccounts, cancellationToken).ConfigureAwait(false);
 
-            var existingQuery = from account in dbContext.Accounts
-                                where ids.Contains(account.Id)
-                                select account.Id;
-
-            var existingIds = await existingQuery.ToListAsync(cancellationToken).ConfigureAwait(false);
-
-            return existingIds;
-        }
+        return await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 }

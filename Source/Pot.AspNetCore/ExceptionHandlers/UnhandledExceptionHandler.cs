@@ -1,31 +1,27 @@
-﻿using AllOverIt.Assertion;
-using AllOverIt.Logging.Extensions;
-using Microsoft.AspNetCore.Diagnostics;
-using Pot.AspNetCore.ProblemDetails;
-using System.Net;
+﻿using Microsoft.AspNetCore.Diagnostics;
 
 namespace Pot.AspNetCore.ExceptionHandlers;
 
 // Note: Exception handlers are registered as a Singleton.
 internal sealed class UnhandledExceptionHandler : IExceptionHandler
 {
-    private readonly IProblemDetailsService _problemDetailsService;
-    private readonly ILoggerFactory _loggerFactory;
-
-    public UnhandledExceptionHandler(IProblemDetailsService problemDetailsService, ILoggerFactory loggerFactory)
-    {
-        _problemDetailsService = problemDetailsService.WhenNotNull();
-        _loggerFactory = loggerFactory.WhenNotNull();
-    }
+    private static readonly Type[] _handledExceptionTypes = [typeof(BadHttpRequestException)];
 
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
-        _loggerFactory
-            .CreateLogger<UnhandledExceptionHandler>()
-            .LogAllExceptions(exception, null);
+        var exceptionType = exception.GetType();
+        var isHandledException = _handledExceptionTypes.Any(item => exceptionType == item);
 
-        var problemContext = ProblemDetailsContextFactory.Create(httpContext, exception, (int)HttpStatusCode.InternalServerError);
+        if (!isHandledException)
+        {
+            return false;
+        }
 
-        return await _problemDetailsService.TryWriteAsync(problemContext);
+        // Not sending back the message in case it is something like:
+        // "Unexpected request without body, failed to bind parameter \"IFormFile file\" from the request body as form."
+        // The logging will provide the required detail.
+
+        await Results.Problem(statusCode: 400).ExecuteAsync(httpContext);
+        return true;
     }
 }

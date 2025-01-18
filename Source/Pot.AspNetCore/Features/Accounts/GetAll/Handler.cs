@@ -1,22 +1,18 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Pot.Data;
-using Pot.Data.Extensions;
+﻿using AllOverIt.Logging.Extensions;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Pot.Data.Repositories.Accounts;
 
 namespace Pot.AspNetCore.Features.Accounts.GetAll;
 
-internal static class Handler
+internal class Handler
 {
-    // When potentially returning more than one type
-    // Task<Results<Ok<List<AccountResponse>>, NotFound>>
-    public static async Task<IResult> Invoke(IDbContextFactory<PotDbContext> dbContextFactory, CancellationToken cancellationToken)
+    public static async Task<Ok<Response[]>> Invoke(IAccountRepository accountRepository, ILogger<Handler> logger,
+        CancellationToken cancellationToken)
     {
-        using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+        logger.LogCall(null);
 
-        var query = from account in dbContext.Accounts
-                    select account.ToDto();
+        var accounts = await accountRepository.GetAllAsync(cancellationToken);
 
-        var accounts = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
-
-        return TypedResults.Ok(accounts);
+        return Response.Ok(accounts);
     }
 }

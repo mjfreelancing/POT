@@ -2,6 +2,7 @@
 using Pot.AspNetCore.ExceptionHandlers;
 using Pot.AspNetCore.Logging;
 using Pot.AspNetCore.Middleware;
+using Pot.AspNetCore.Validation;
 using Pot.Data;
 
 namespace Pot.AspNetCore.Extensions;
@@ -11,6 +12,15 @@ internal static class WebApplicationBuilderExtensions
     public static WebApplicationBuilder AddCorrelationId(this WebApplicationBuilder builder)
     {
         builder.Services.AddScoped<CorrelationIdMiddleware>();
+
+        return builder;
+    }
+
+    public static WebApplicationBuilder AddOpenApi(this WebApplicationBuilder builder)
+    {
+        // Refer to this link if multiple versions are required and different pages should be shown:
+        // https://learn.microsoft.com/en-us/aspnet/core/fundamentals/openapi/aspnetcore-openapi
+        builder.Services.AddOpenApi("v1", options => { });
 
         return builder;
     }
@@ -65,7 +75,6 @@ internal static class WebApplicationBuilderExtensions
         // Ordering of registered exception handlers matter.
         builder.Services
             .AddExceptionHandler<IgnoreExceptionHandler>()
-            .AddExceptionHandler<ValidationExceptionHandler>()
             .AddExceptionHandler<EntityExceptionHandler>()
             .AddExceptionHandler<DatabaseExceptionHandler>()
             .AddExceptionHandler<UnhandledExceptionHandler>();          // This MUST be the last handler
@@ -92,6 +101,8 @@ internal static class WebApplicationBuilderExtensions
         {
             validationRegistry.AutoRegisterSingletonValidators<PotValidationRegistrar>();
         });
+
+        builder.Services.AddSingleton<IProblemDetailsInspector, ProblemDetailsInspector>();
 
         return builder;
     }

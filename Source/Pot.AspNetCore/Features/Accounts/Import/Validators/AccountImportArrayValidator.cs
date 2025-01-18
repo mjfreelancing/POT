@@ -2,17 +2,15 @@
 using Pot.AspNetCore.Features.Accounts.Import.Models;
 using Pot.AspNetCore.Validation.Extensions;
 
-namespace Pot.AspNetCore.Features.Accounts.Validators;
+namespace Pot.AspNetCore.Features.Accounts.Import.Validators;
 
-internal sealed class AccountImportArrayValidator : ValidatorBase<AccountImport[]>
+internal sealed class AccountImportArrayValidator : ValidatorBase<AccountForImport[]>
 {
     public AccountImportArrayValidator()
     {
         RuleFor(accounts => accounts).IsUnique(account => account.Id);
         RuleFor(accounts => accounts).IsUnique(account => account.Description);
         RuleFor(accounts => accounts).IsUnique(account => account.Bsb, account => account.Number);
-
-        // EXTEND THE IsUnique() so multiple columns can be provided => need to be able to identify all columns
 
         RuleForEach(accounts => accounts).SetValidator(new AccountImportValidator());
     }

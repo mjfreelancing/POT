@@ -1,6 +1,5 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Extensions;
-using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Diagnostics;
 using Pot.AspNetCore.ProblemDetails;
 using Pot.Data.Exceptions;
@@ -15,12 +14,10 @@ internal sealed class EntityExceptionHandler : IExceptionHandler
     private static readonly Type _databaseExceptionType = typeof(DatabaseException);
 
     private readonly IProblemDetailsService _problemDetailsService;
-    private readonly ILoggerFactory _loggerFactory;
 
-    public EntityExceptionHandler(IProblemDetailsService problemDetailsService, ILoggerFactory loggerFactory)
+    public EntityExceptionHandler(IProblemDetailsService problemDetailsService)
     {
         _problemDetailsService = problemDetailsService.WhenNotNull();
-        _loggerFactory = loggerFactory.WhenNotNull();
     }
 
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
@@ -32,13 +29,6 @@ internal sealed class EntityExceptionHandler : IExceptionHandler
         if (isDatabaseException)
         {
             var databaseException = exception as DatabaseException;
-
-            _loggerFactory
-                .CreateLogger<EntityExceptionHandler>()
-                .LogAllExceptions(
-                    exception,
-                    "A database error occurred for entity type: {@entityType}",
-                    databaseException!.EntityType.Name);
 
             var errorDetails = new[]
             {

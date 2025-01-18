@@ -1,4 +1,4 @@
-﻿#nullable disable           // If enabled, string without [Required] would need to be changed to string?
+﻿#nullable disable           // If enabled, string without [Required] would need to be changed to string? OR may be as 'public required string...'
 
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;

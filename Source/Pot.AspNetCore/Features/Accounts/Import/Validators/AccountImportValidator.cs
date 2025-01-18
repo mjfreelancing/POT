@@ -2,9 +2,9 @@
 using AllOverIt.Validation.Extensions;
 using Pot.AspNetCore.Features.Accounts.Import.Models;
 
-namespace Pot.AspNetCore.Features.Accounts.Validators;
+namespace Pot.AspNetCore.Features.Accounts.Import.Validators;
 
-internal sealed class AccountImportValidator : ValidatorBase<AccountImport>
+internal sealed class AccountImportValidator : ValidatorBase<AccountForImport>
 {
     public AccountImportValidator()
     {

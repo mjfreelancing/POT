@@ -1,6 +1,6 @@
 ﻿namespace Pot.AspNetCore.ProblemDetails;
 
-internal class ProblemDetailsExtension
+internal abstract class ProblemDetailsExtensionBase
 {
     public required string ErrorMessage { get; init; }
 }

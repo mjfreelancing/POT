@@ -12,6 +12,7 @@ public class Program
 
         builder
             .AddCorrelationId()
+            .AddOpenApi()
             .AddLogging()
             .AddExceptionHandlers()
             .AddCustomProblemDetails()
@@ -25,11 +26,15 @@ public class Program
         app.Logger.LogInformation("POT Startup: {AppStartup}", new { Local = DateTime.Now });
 
         app.UseCorrelationId()
+           .UseScalarOpenApi()
            .UseExceptionHandler();
 
         // TODO: POT-14
         app.MapGet("/", () => "POT Summary");
 
+        // 422 - Validation and other errors that occur due to data related problems
+        //       (such as conflicts, constraints, etc) when processing the input data
+        // 500 - Unexpected errors
         app.AddAccountEndpoints()
            .AddExpenseEndpoints();
 
