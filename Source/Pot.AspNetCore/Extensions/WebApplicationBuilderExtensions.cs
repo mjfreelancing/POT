@@ -76,8 +76,7 @@ internal static class WebApplicationBuilderExtensions
         builder.Services
             .AddExceptionHandler<IgnoreExceptionHandler>()
             .AddExceptionHandler<EntityExceptionHandler>()
-            .AddExceptionHandler<DatabaseExceptionHandler>()
-            .AddExceptionHandler<UnhandledExceptionHandler>();          // This MUST be the last handler
+            .AddExceptionHandler<DatabaseExceptionHandler>();
 
         return builder;
     }
