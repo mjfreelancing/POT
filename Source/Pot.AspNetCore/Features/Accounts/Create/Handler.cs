@@ -5,14 +5,14 @@ using Pot.Data.Repositories.Accounts;
 
 namespace Pot.AspNetCore.Features.Accounts.Create;
 
-internal partial class Handler
+internal sealed class Handler
 {
     public static async Task<Results<CreatedAtRoute<Response>, ProblemHttpResult>> Invoke(Request request,
         IAccountRepository accountRepository, ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);
 
-        var entity = new AccountEntity
+        var account = new AccountEntity
         {
             Bsb = request.Bsb,
             Number = request.Number,
@@ -23,14 +23,8 @@ internal partial class Handler
             DailyAccrual = request.DailyAccrual
         };
 
-        await accountRepository.CreateAsync(entity, cancellationToken);
+        await accountRepository.CreateAsync(account, cancellationToken);
 
-        var response = new Response
-        {
-            Id = entity.Id,
-            ETag = entity.Etag
-        };
-
-        return TypedResults.CreatedAtRoute(response, nameof(Extensions.RouteGroupBuilderExtensions.GetAccount), new { response.Id });
+        return Response.Created(account);
     }
 }

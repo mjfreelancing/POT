@@ -5,7 +5,7 @@ using System.ComponentModel;
 
 namespace Pot.AspNetCore.Features.Accounts.Get;
 
-internal class Handler
+internal sealed class Handler
 {
     public static async Task<Results<Ok<Response>, NotFound>> Invoke([Description("The account Id to get.")] int id,
         IAccountRepository accountRepository, ILogger<Handler> logger, CancellationToken cancellationToken)

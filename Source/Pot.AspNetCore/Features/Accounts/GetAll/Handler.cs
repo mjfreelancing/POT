@@ -4,7 +4,7 @@ using Pot.Data.Repositories.Accounts;
 
 namespace Pot.AspNetCore.Features.Accounts.GetAll;
 
-internal class Handler
+internal sealed class Handler
 {
     public static async Task<Ok<Response[]>> Invoke(IAccountRepository accountRepository, ILogger<Handler> logger,
         CancellationToken cancellationToken)
