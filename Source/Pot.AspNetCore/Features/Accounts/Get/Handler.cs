@@ -4,7 +4,6 @@ using Pot.AspNetCore.ProblemDetails;
 using Pot.AspNetCore.ProblemDetails.Extensions;
 using Pot.Data.Repositories.Accounts;
 using System.ComponentModel;
-using System.Net;
 
 namespace Pot.AspNetCore.Features.Accounts.Get;
 
@@ -17,23 +16,7 @@ internal sealed class Handler
 
         if (!Guid.TryParse(id, out var accountId))
         {
-            var errorDetails = new ProblemDetailsError
-            {
-                PropertyName = nameof(id),
-                // ErrorCode = ,
-                AttemptedValue = id,
-                ErrorMessage = "The value is not a valid identifier"
-            };
-
-            var problemDetails = new Microsoft.AspNetCore.Mvc.ProblemDetails
-            {
-                Detail = "One or more validation errors occurred.",
-                Status = (int)HttpStatusCode.UnprocessableEntity,
-                Extensions = new Dictionary<string, object?>
-                {
-                    { "errors", errorDetails }
-                }
-            };
+            var problemDetails = ProblemDetailsFactory.CreateUnprocessableEntity(nameof(id), id, "The value is not a valid identifier");
 
             logger.LogErrors(problemDetails);
 
