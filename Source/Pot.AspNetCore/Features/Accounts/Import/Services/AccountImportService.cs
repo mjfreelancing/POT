@@ -1,42 +1,38 @@
 ﻿using AllOverIt.Assertion;
-using AllOverIt.Extensions;
-using Microsoft.EntityFrameworkCore;
 using Pot.AspNetCore.Features.Accounts.Import.Models;
-using Pot.Data;
 using Pot.Data.Entities;
 using Pot.Data.Extensions;
+using Pot.Data.Repositories.Accounts;
+using Pot.Data.UnitOfWork;
 
-namespace Pot.AspNetCore.Features.Accounts.Import.Repository;
+namespace Pot.AspNetCore.Features.Accounts.Import.Services;
 
-internal sealed class AccountImportRepository : IAccountImportRepository
+internal sealed class AccountImportService : IAccountImportService
 {
     private sealed record AccountKey(string Bsb, string Number);
 
-    private readonly IDbContextFactory<PotDbContext> _dbContextFactory;
+    private readonly IAccountRepository _accountRepository;
 
-    public AccountImportRepository(IDbContextFactory<PotDbContext> dbContextFactory)
+    public AccountImportService(IPotUnitOfWork potUnitOfWork, IAccountRepository accountRepository)
     {
-        _dbContextFactory = dbContextFactory.WhenNotNull();
+        _accountRepository = accountRepository.WhenNotNull();
+        _accountRepository.DbContext.WithTracking(true);
     }
 
     public async Task<ImportSummary> ImportAccountsAsync(AccountForImport[] accountsImport, bool overwrite, CancellationToken cancellationToken)
     {
         var importAccountKeys = accountsImport.ToDictionary(account => new AccountKey(account.Bsb, account.Number));
 
-        using var dbContext = _dbContextFactory.CreateDbContext().WithTracking(true);
-
         var imported = 0;
         var updated = 0;
 
         foreach (var import in accountsImport)
         {
-            var existing = await dbContext.Accounts
-                .Where(account => account.Bsb == import.Bsb && account.Number == import.Number)
-                .SingleOrDefaultAsync(cancellationToken);
+            var existing = await _accountRepository.FindAccountOrDefaultAsync(import.Bsb, import.Number, cancellationToken).ConfigureAwait(false);
 
             if (existing is null)
             {
-                AddAccountEntity(dbContext, import);
+                AddAccountEntity(import);
                 imported++;
             }
             else if (overwrite)
@@ -46,7 +42,7 @@ internal sealed class AccountImportRepository : IAccountImportRepository
             }
         }
 
-        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await _accountRepository.SaveAsync(cancellationToken).ConfigureAwait(false);
 
         return new ImportSummary
         {
@@ -57,7 +53,7 @@ internal sealed class AccountImportRepository : IAccountImportRepository
         };
     }
 
-    private static void AddAccountEntity(PotDbContext dbContext, AccountForImport import)
+    private void AddAccountEntity(AccountForImport import)
     {
         var newAccount = new AccountEntity
         {
@@ -70,7 +66,7 @@ internal sealed class AccountImportRepository : IAccountImportRepository
             DailyAccrual = import.DailyAccrual
         };
 
-        dbContext.Accounts.Add(newAccount);
+        _accountRepository.Add(newAccount);
     }
 
     private static void UpdateAccountEntity(AccountEntity entity, AccountForImport import)
@@ -82,5 +78,8 @@ internal sealed class AccountImportRepository : IAccountImportRepository
         entity.Reserved = import.Reserved;
         entity.Allocated = import.Allocated;
         entity.DailyAccrual = import.DailyAccrual;
+
+        // Don't need to explicitly call _accountRepository.Update(entity). The entity will
+        // be marked as modified if anything has changed.
     }
 }

@@ -9,7 +9,7 @@ namespace Pot.AspNetCore.Features.Accounts.Get;
 
 internal sealed class Handler
 {
-    public static async Task<Results<Ok<Response>, ProblemHttpResult, NotFound>> Invoke([Description("The account Id.")] string id,
+    public static async Task<Results<Ok<Response>, NotFound, ProblemHttpResult>> Invoke([Description("The account Id.")] string id,
         IAccountRepository accountRepository, ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);

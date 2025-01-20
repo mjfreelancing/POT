@@ -23,7 +23,9 @@ internal sealed class Handler
             DailyAccrual = request.DailyAccrual
         };
 
-        await accountRepository.CreateAsync(account, cancellationToken);
+        accountRepository.Add(account);
+
+        await accountRepository.SaveAsync(cancellationToken);
 
         return Response.Created(account);
     }

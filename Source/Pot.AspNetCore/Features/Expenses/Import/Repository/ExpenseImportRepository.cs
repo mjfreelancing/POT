@@ -1,10 +1,7 @@
 ﻿using AllOverIt.Assertion;
-using AllOverIt.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Pot.AspNetCore.Features.Expenses.Import.Models;
 using Pot.Data;
-using Pot.Data.Entities;
-using Pot.Data.Extensions;
 
 namespace Pot.AspNetCore.Features.Expenses.Import.Repository
 {
@@ -17,36 +14,40 @@ namespace Pot.AspNetCore.Features.Expenses.Import.Repository
             _dbContextFactory = dbContextFactory.WhenNotNull();
         }
 
-        public async Task ImportExpensesAsync(ExpenseImport[] expenses, CancellationToken cancellationToken)
+        public /*async*/ Task ImportExpensesAsync(ExpenseImport[] expenses, CancellationToken cancellationToken)
         {
-            using var dbContext = _dbContextFactory.CreateDbContext().WithTracking(true);
+            return Task.CompletedTask;
 
-            await expenses
-                .GroupBy(expense => expense.AccountId)
-                .ForEachAsync(async (grp, _, token) =>
-                {
-                    var accountId = grp.Key;
+            // TO BE REFACTORED TO USE THE NEW REPOSITORY APPROACH
 
-                    var account = await dbContext.Accounts.SingleAsync(account => account.Id == accountId, token);
+            //using var dbContext = _dbContextFactory.CreateDbContext().WithTracking(true);
 
-                    var entities = grp.Select(expense => new ExpenseEntity
-                    {
-                        Id = expense.Id,
-                        Description = expense.Description,
-                        NextDue = expense.NextDue,
-                        AccrualStart = expense.AccrualStart,
-                        Frequency = expense.Frequency,
-                        FrequencyCount = expense.FrequencyCount,
-                        Recurring = expense.Recurring,
-                        Amount = expense.Amount,
-                        Allocated = expense.Allocated,
-                        Account = account
-                    });
+            //await expenses
+            //    .GroupBy(expense => expense.AccountId)
+            //    .ForEachAsync(async (grp, _, token) =>
+            //    {
+            //        var accountId = grp.Key;
 
-                    await dbContext.Expenses.AddRangeAsync(entities, cancellationToken);
-                }, cancellationToken);
+            //        var account = await dbContext.Accounts.SingleAsync(account => account.Id == accountId, token);
 
-            await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            //        var entities = grp.Select(expense => new ExpenseEntity
+            //        {
+            //            Id = expense.Id,
+            //            Description = expense.Description,
+            //            NextDue = expense.NextDue,
+            //            AccrualStart = expense.AccrualStart,
+            //            Frequency = expense.Frequency,
+            //            FrequencyCount = expense.FrequencyCount,
+            //            Recurring = expense.Recurring,
+            //            Amount = expense.Amount,
+            //            Allocated = expense.Allocated,
+            //            Account = account
+            //        });
+
+            //        await dbContext.Expenses.AddRangeAsync(entities, cancellationToken);
+            //    }, cancellationToken);
+
+            //await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 }

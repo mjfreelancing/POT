@@ -3,7 +3,7 @@ using CsvHelper;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pot.AspNetCore.Features.Accounts.Import.Models;
-using Pot.AspNetCore.Features.Accounts.Import.Repository;
+using Pot.AspNetCore.Features.Accounts.Import.Services;
 using Pot.AspNetCore.ProblemDetails.Extensions;
 using Pot.AspNetCore.Validation;
 using Pot.AspNetCore.Validation.Extensions;
@@ -17,7 +17,7 @@ internal sealed class Handler
     // https://learn.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads?view=aspnetcore-9.0
 
     public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke([FromForm] Request request,
-        IProblemDetailsInspector problemDetailsInspector, IAccountImportRepository accountImportRepository,
+        IProblemDetailsInspector problemDetailsInspector, IAccountImportService accountImportService,
         ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);
@@ -36,7 +36,7 @@ internal sealed class Handler
             return TypedResults.Problem(problemDetails);
         }
 
-        var importSummary = await accountImportRepository.ImportAccountsAsync(accounts, request.Overwrite, cancellationToken);
+        var importSummary = await accountImportService.ImportAccountsAsync(accounts, request.Overwrite, cancellationToken);
 
         return Response.Ok(importSummary);
     }

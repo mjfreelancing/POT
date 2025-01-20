@@ -19,7 +19,7 @@ public class Program
             .AddExceptionHandlers()
             .AddCustomProblemDetails()
             .AddValidation()
-            .AddPotDbContext()
+            .AddPotData()
             .AddAccountServices()
             .AddExpenseServicess();
 

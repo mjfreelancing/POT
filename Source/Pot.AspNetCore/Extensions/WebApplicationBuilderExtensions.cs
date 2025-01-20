@@ -4,6 +4,7 @@ using Pot.AspNetCore.Logging;
 using Pot.AspNetCore.Middleware;
 using Pot.AspNetCore.Validation;
 using Pot.Data;
+using Pot.Data.Extensions;
 
 namespace Pot.AspNetCore.Extensions;
 
@@ -106,9 +107,10 @@ internal static class WebApplicationBuilderExtensions
         return builder;
     }
 
-    public static WebApplicationBuilder AddPotDbContext(this WebApplicationBuilder builder)
+    public static WebApplicationBuilder AddPotData(this WebApplicationBuilder builder)
     {
         builder.Services.AddDbContextFactory<PotDbContext>();
+        builder.Services.AddUnitOfWork();
 
         return builder;
     }

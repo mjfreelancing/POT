@@ -15,6 +15,7 @@ internal static class WebApplicationExtensions
                 .GetAllAccounts()
                 .GetAccount()
                 .CreateAccount()
+                .UpdateAccount()
                 .ImportAccounts(MaxImportPayloadBytes);
 
 

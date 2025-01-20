@@ -12,4 +12,3 @@ internal static class ProblemDetailsExtensions
         }
     }
 }
-

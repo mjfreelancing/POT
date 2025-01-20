@@ -42,6 +42,21 @@ internal static class RouteGroupBuilderExtensions
         return routeGroupBuilder;
     }
 
+    public static RouteGroupBuilder UpdateAccount(this RouteGroupBuilder routeGroupBuilder)
+    {
+        routeGroupBuilder
+            .MapPut("", Update.Handler.Invoke)
+            .WithName(nameof(UpdateAccount))
+            .WithSummary("Update account")
+            .WithDescription("Updates existing account details")
+            .WithTags("Accounts")
+            .ProducesProblem((int)HttpStatusCode.NotFound)
+            .ProducesProblem((int)HttpStatusCode.NotModified)
+            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
+
+        return routeGroupBuilder;
+    }
+
     public static RouteGroupBuilder ImportAccounts(this RouteGroupBuilder routeGroupBuilder, long maxImportPayloadBytes)
     {
         routeGroupBuilder
