@@ -1,6 +1,5 @@
 ﻿using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
 using Pot.Data.Repositories.Accounts;
 
 namespace Pot.AspNetCore.Features.Accounts.GetAll;
@@ -12,7 +11,7 @@ internal sealed class Handler
     {
         logger.LogCall(null);
 
-        var accounts = await accountRepository.GetAll().ToListAsync(cancellationToken);
+        var accounts = await accountRepository.GetAllAsync(cancellationToken);
 
         return Response.Ok(accounts);
     }

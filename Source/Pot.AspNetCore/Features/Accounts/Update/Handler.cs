@@ -15,7 +15,7 @@ internal sealed class Handler
 
         accountRepository.DbContext.WithTracking(true);
 
-        var account = await accountRepository.FindAccountOrDefaultAsync(request.Bsb, request.Number, cancellationToken);
+        var account = await accountRepository.GetAccountOrDefaultAsync(request.Bsb, request.Number, cancellationToken);
 
         if (account is null)
         {

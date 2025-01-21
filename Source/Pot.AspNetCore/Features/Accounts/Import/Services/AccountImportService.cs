@@ -28,7 +28,7 @@ internal sealed class AccountImportService : IAccountImportService
 
         foreach (var import in accountsImport)
         {
-            var existing = await _accountRepository.FindAccountOrDefaultAsync(import.Bsb, import.Number, cancellationToken).ConfigureAwait(false);
+            var existing = await _accountRepository.GetAccountOrDefaultAsync(import.Bsb, import.Number, cancellationToken).ConfigureAwait(false);
 
             if (existing is null)
             {

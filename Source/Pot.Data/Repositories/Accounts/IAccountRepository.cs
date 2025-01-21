@@ -4,5 +4,6 @@ namespace Pot.Data.Repositories.Accounts;
 
 public interface IAccountRepository : IGenericRepository<PotDbContext, AccountEntity>
 {
-    Task<AccountEntity?> FindAccountOrDefaultAsync(string bsb, string number, CancellationToken cancellationToken);
+    Task<AccountEntity?> GetAccountOrDefaultAsync(Guid id, CancellationToken cancellationToken);
+    Task<AccountEntity?> GetAccountOrDefaultAsync(string bsb, string number, CancellationToken cancellationToken);
 }

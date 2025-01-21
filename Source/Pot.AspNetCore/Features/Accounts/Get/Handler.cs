@@ -23,7 +23,7 @@ internal sealed class Handler
             return TypedResults.Problem(problemDetails);
         }
 
-        var account = await accountRepository.GetByRowIdOrDefaultAsync(accountId, cancellationToken);
+        var account = await accountRepository.GetAccountOrDefaultAsync(accountId, cancellationToken);
 
         if (account is null)
         {

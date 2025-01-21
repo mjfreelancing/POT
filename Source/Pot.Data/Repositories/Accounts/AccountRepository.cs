@@ -10,8 +10,13 @@ internal sealed class AccountRepository : GenericRepository<PotDbContext, Accoun
     {
     }
 
-    public Task<AccountEntity?> FindAccountOrDefaultAsync(string bsb, string number, CancellationToken cancellationToken)
+    public Task<AccountEntity?> GetAccountOrDefaultAsync(Guid id, CancellationToken cancellationToken)
     {
-        return Find(entity => entity.Bsb == bsb && entity.Number == number).SingleOrDefaultAsync(cancellationToken);
+        return Get().SingleOrDefaultAsync(entity => entity.RowId == id, cancellationToken);
+    }
+
+    public Task<AccountEntity?> GetAccountOrDefaultAsync(string bsb, string number, CancellationToken cancellationToken)
+    {
+        return Get().SingleOrDefaultAsync(entity => entity.Bsb == bsb && entity.Number == number, cancellationToken);
     }
 }
