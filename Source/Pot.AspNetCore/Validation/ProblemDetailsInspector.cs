@@ -1,5 +1,6 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Validation;
+using FluentValidation.Results;
 using Pot.AspNetCore.ProblemDetails;
 using Pot.AspNetCore.Validation.Extensions;
 
@@ -20,11 +21,20 @@ internal sealed class ProblemDetailsInspector : IProblemDetailsInspector
     {
         var validationResult = _validationInvoker.Validate(instance);
 
-        if (validationResult.IsValid)
-        {
-            return NoProblemDetails.Single;
-        }
+        return AsProblemDetails(validationResult);
+    }
 
-        return validationResult.ToProblemDetails();
+    public async Task<Microsoft.AspNetCore.Mvc.ProblemDetails> ValidateAsync<TType>(TType instance, CancellationToken cancellationToken)
+    {
+        var validationResult = await _validationInvoker.ValidateAsync(instance, cancellationToken);
+
+        return AsProblemDetails(validationResult);
+    }
+
+    private static Microsoft.AspNetCore.Mvc.ProblemDetails AsProblemDetails(ValidationResult validationResult)
+    {
+        return validationResult.IsValid
+            ? NoProblemDetails.Single
+            : validationResult.ToProblemDetails();
     }
 }

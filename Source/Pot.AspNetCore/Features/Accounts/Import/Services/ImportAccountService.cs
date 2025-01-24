@@ -3,17 +3,16 @@ using Pot.AspNetCore.Features.Accounts.Import.Models;
 using Pot.Data.Entities;
 using Pot.Data.Extensions;
 using Pot.Data.Repositories.Accounts;
-using Pot.Data.UnitOfWork;
 
 namespace Pot.AspNetCore.Features.Accounts.Import.Services;
 
-internal sealed class AccountImportService : IAccountImportService
+internal sealed class ImportAccountService : IImportAccountService
 {
     private sealed record AccountKey(string Bsb, string Number);
 
     private readonly IAccountRepository _accountRepository;
 
-    public AccountImportService(IPotUnitOfWork potUnitOfWork, IAccountRepository accountRepository)
+    public ImportAccountService(IAccountRepository accountRepository)
     {
         _accountRepository = accountRepository.WhenNotNull();
         _accountRepository.DbContext.WithTracking(true);
@@ -28,7 +27,9 @@ internal sealed class AccountImportService : IAccountImportService
 
         foreach (var import in accountsImport)
         {
-            var existing = await _accountRepository.GetAccountOrDefaultAsync(import.Bsb, import.Number, cancellationToken).ConfigureAwait(false);
+            var existing = await _accountRepository
+                .GetAccountOrDefaultAsync(import.Bsb, import.Number, cancellationToken)
+                .ConfigureAwait(false);
 
             if (existing is null)
             {
@@ -42,7 +43,9 @@ internal sealed class AccountImportService : IAccountImportService
             }
         }
 
-        await _accountRepository.SaveAsync(cancellationToken).ConfigureAwait(false);
+        await _accountRepository
+            .SaveAsync(cancellationToken)
+            .ConfigureAwait(false);
 
         return new ImportSummary
         {
@@ -62,8 +65,8 @@ internal sealed class AccountImportService : IAccountImportService
             Description = import.Description,
             Balance = import.Balance,
             Reserved = import.Reserved,
-            Allocated = import.Allocated,
-            DailyAccrual = import.DailyAccrual
+            Allocated = 0.0d,
+            DailyAccrual = 0.0d
         };
 
         _accountRepository.Add(newAccount);
@@ -76,8 +79,10 @@ internal sealed class AccountImportService : IAccountImportService
         entity.Description = import.Description;
         entity.Balance = import.Balance;
         entity.Reserved = import.Reserved;
-        entity.Allocated = import.Allocated;
-        entity.DailyAccrual = import.DailyAccrual;
+
+        // Leave these at their current values
+        // entity.Allocated
+        // entity.DailyAccrual
 
         // Don't need to explicitly call _accountRepository.Update(entity). The entity will
         // be marked as modified if anything has changed.

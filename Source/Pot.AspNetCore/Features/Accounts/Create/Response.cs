@@ -4,7 +4,7 @@ using Pot.Data.Entities;
 
 namespace Pot.AspNetCore.Features.Accounts.Create;
 
-internal sealed class Response : ResponseBase
+public sealed class Response : ResponseBase
 {
     public static CreatedAtRoute<Response> Created(AccountEntity account)
     {

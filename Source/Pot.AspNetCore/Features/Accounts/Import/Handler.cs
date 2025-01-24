@@ -17,7 +17,7 @@ internal sealed class Handler
     // https://learn.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads?view=aspnetcore-9.0
 
     public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke([FromForm] Request request,
-        IProblemDetailsInspector problemDetailsInspector, IAccountImportService accountImportService,
+        IProblemDetailsInspector problemDetailsInspector, IImportAccountService accountImportService,
         ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);

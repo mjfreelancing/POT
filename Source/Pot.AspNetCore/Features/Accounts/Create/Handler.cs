@@ -1,6 +1,10 @@
 ﻿using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Pot.Data.Entities;
+using Pot.AspNetCore.Errors;
+using Pot.AspNetCore.Features.Accounts.Create.Services;
+using Pot.AspNetCore.ProblemDetails.Extensions;
+using Pot.AspNetCore.Validation;
+using Pot.AspNetCore.Validation.Extensions;
 using Pot.Data.Repositories.Accounts;
 
 namespace Pot.AspNetCore.Features.Accounts.Create;
@@ -8,23 +12,29 @@ namespace Pot.AspNetCore.Features.Accounts.Create;
 internal sealed class Handler
 {
     public static async Task<Results<CreatedAtRoute<Response>, ProblemHttpResult>> Invoke(Request request,
+        IProblemDetailsInspector problemDetailsInspector, ICreateAccountService createAccountService,
         IAccountRepository accountRepository, ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);
 
-        var account = new AccountEntity
+        var problemDetails = problemDetailsInspector.Validate(request);
+
+        if (problemDetails.IsProblem())
         {
-            Bsb = request.Bsb,
-            Number = request.Number,
-            Description = request.Description,
-            Balance = request.Balance,
-            Reserved = request.Reserved,
-            Allocated = request.Allocated,
-            DailyAccrual = request.DailyAccrual
-        };
+            logger.LogErrors(problemDetails);
 
-        await accountRepository.AddAndSaveAsync(account, cancellationToken);
+            return TypedResults.Problem(problemDetails);
+        }
 
-        return Response.Created(account);
+        var result = await createAccountService.CreateAccountAsync(request, cancellationToken);
+
+        if (result.IsSuccess)
+        {
+            return Response.Created(result.Value!);
+        }
+
+        var error = result.Error as ServiceError;
+
+        return TypedResults.Problem(error!.ProblemDetails);
     }
 }

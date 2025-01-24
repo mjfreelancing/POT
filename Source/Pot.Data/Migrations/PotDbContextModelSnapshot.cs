@@ -17,7 +17,7 @@ namespace Pot.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.0")
+                .HasAnnotation("ProductVersion", "9.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -77,7 +77,7 @@ namespace Pot.Data.Migrations
                     b.HasIndex("Bsb", "Number")
                         .IsUnique();
 
-                    b.ToTable("Account");
+                    b.ToTable("Account", (string)null);
                 });
 
             modelBuilder.Entity("Pot.Data.Entities.ExpenseEntity", b =>
@@ -140,7 +140,7 @@ namespace Pot.Data.Migrations
                     b.HasIndex("RowId")
                         .IsUnique();
 
-                    b.ToTable("Expense");
+                    b.ToTable("Expense", (string)null);
                 });
 
             modelBuilder.Entity("Pot.Data.Entities.ExpenseEntity", b =>

@@ -14,7 +14,7 @@ namespace Pot.Data.Entities
 
         public DateOnly NextDue { get; set; }
         public DateOnly AccrualStart { get; set; }
-        public ExpenseFrequency Frequency { get; set; }
+        public required ExpenseFrequency Frequency { get; set; }
         public int FrequencyCount { get; set; }
         public bool Recurring { get; set; }
         public double Amount { get; set; }

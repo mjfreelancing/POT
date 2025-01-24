@@ -19,4 +19,9 @@ internal sealed class AccountRepository : GenericRepository<PotDbContext, Accoun
     {
         return Get().SingleOrDefaultAsync(entity => entity.Bsb == bsb && entity.Number == number, cancellationToken);
     }
+
+    public Task<bool> AccountExistsAsync(string bsb, string number, CancellationToken cancellationToken)
+    {
+        return Get().AnyAsync(entity => entity.Bsb == bsb && entity.Number == number, cancellationToken);
+    }
 }

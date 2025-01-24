@@ -22,6 +22,8 @@ internal sealed class Request
     [Description("The amount allocated to future expenses.")]
     public double Allocated { get; init; }
 
-    [Description("The daily accrual required to meet all future expenses.")]
-    public double DailyAccrual { get; init; }
+    // DailyAccrual must be re-calculated
+    //
+    //[Description("The daily accrual required to meet all future expenses.")]
+    //public double DailyAccrual { get; init; }
 }

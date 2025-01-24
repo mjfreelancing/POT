@@ -28,7 +28,7 @@ internal sealed class Handler
         account.Balance = request.Balance;
         account.Reserved = request.Reserved;
         account.Allocated = request.Allocated;
-        account.DailyAccrual = request.DailyAccrual;
+        //account.DailyAccrual must be re-calculated
 
         // Don't call accountRepository.Update(account) as this will mark the
         // entity as modified even if nothing was changed.

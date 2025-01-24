@@ -10,6 +10,8 @@ namespace Pot.AspNetCore.Extensions;
 
 internal static class WebApplicationBuilderExtensions
 {
+    private static readonly Type _iScopedLifetimeValidatorType = typeof(IScopedLifetimeValidator);
+
     public static WebApplicationBuilder AddCorrelationId(this WebApplicationBuilder builder)
     {
         builder.Services.AddScoped<CorrelationIdMiddleware>();
@@ -99,7 +101,15 @@ internal static class WebApplicationBuilderExtensions
     {
         builder.Services.AddLifetimeValidationInvoker(validationRegistry =>
         {
-            validationRegistry.AutoRegisterSingletonValidators<PotValidationRegistrar>();
+            validationRegistry.AutoRegisterScopedValidators<PotValidationRegistrar>((modelType, validatorType) =>
+            {
+                return validatorType.IsAssignableTo(_iScopedLifetimeValidatorType);
+            });
+
+            validationRegistry.AutoRegisterSingletonValidators<PotValidationRegistrar>((modelType, validatorType) =>
+            {
+                return !validatorType.IsAssignableTo(_iScopedLifetimeValidatorType);
+            });
         });
 
         builder.Services.AddSingleton<IProblemDetailsInspector, ProblemDetailsInspector>();

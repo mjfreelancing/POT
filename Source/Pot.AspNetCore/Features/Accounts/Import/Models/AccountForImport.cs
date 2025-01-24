@@ -7,6 +7,7 @@ public sealed class AccountForImport
     public string Description { get; init; } = string.Empty;
     public double Balance { get; init; }
     public double Reserved { get; init; }
-    public double Allocated { get; init; }
-    public double DailyAccrual { get; init; }
+
+    // Allocated and DailyAccrual are calculated based on linked expenses so
+    // we should not import these values as there are no associated expenses,
 }

@@ -18,5 +18,10 @@ namespace Pot.Data
                 options.SetPostgresVersion(new Version(13, 6));
             });
         }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+        }
     }
 }

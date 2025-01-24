@@ -2,7 +2,7 @@
 
 namespace Pot.AspNetCore.Features.Accounts.Create;
 
-internal sealed class Request
+public sealed class Request
 {
     [Description("The account BSB.")]
     public string Bsb { get; init; } = string.Empty;
@@ -19,9 +19,5 @@ internal sealed class Request
     [Description("The minimum reserved amount.")]
     public double Reserved { get; init; }
 
-    [Description("The amount allocated to future expenses.")]
-    public double Allocated { get; init; }
-
-    [Description("The daily accrual required to meet all future expenses.")]
-    public double DailyAccrual { get; init; }
+    // Allocated and DailyAccrual are calculated based on linked expenses
 }
