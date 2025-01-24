@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Validation;
+﻿namespace Pot.AspNetCore.Concerns.Validation;
 
 public interface IProblemDetailsInspector
 {

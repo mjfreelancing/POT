@@ -1,11 +1,11 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Extensions;
 using Microsoft.AspNetCore.Diagnostics;
-using Pot.AspNetCore.ProblemDetails;
+using Pot.AspNetCore.Concerns.ProblemDetails;
 using Pot.Data.Exceptions;
 using System.Net;
 
-namespace Pot.AspNetCore.ExceptionHandlers;
+namespace Pot.AspNetCore.Concerns.ExceptionHandlers;
 
 // Note: Exception handlers are registered as a Singleton.
 internal sealed class EntityExceptionHandler : IExceptionHandler

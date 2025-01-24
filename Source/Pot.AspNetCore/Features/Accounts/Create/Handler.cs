@@ -1,10 +1,10 @@
 ﻿using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Pot.AspNetCore.Concerns.ProblemDetails.Extensions;
+using Pot.AspNetCore.Concerns.Validation;
+using Pot.AspNetCore.Concerns.Validation.Extensions;
 using Pot.AspNetCore.Errors;
 using Pot.AspNetCore.Features.Accounts.Create.Services;
-using Pot.AspNetCore.ProblemDetails.Extensions;
-using Pot.AspNetCore.Validation;
-using Pot.AspNetCore.Validation.Extensions;
 
 namespace Pot.AspNetCore.Features.Accounts.Create;
 

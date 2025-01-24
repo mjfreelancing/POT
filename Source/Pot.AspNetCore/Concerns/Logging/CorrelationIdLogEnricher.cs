@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Diagnostics.Enrichment;
 
-namespace Pot.AspNetCore.Logging;
+namespace Pot.AspNetCore.Concerns.Logging;
 
 internal class CorrelationIdLogEnricher : ILogEnricher
 {

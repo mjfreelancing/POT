@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.ProblemDetails.Extensions;
+﻿namespace Pot.AspNetCore.Concerns.ProblemDetails.Extensions;
 
 internal static class ProblemDetailsExtensions
 {

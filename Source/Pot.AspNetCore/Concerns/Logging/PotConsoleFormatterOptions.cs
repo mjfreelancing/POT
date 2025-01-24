@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging.Console;
 
-namespace Pot.AspNetCore.Logging;
+namespace Pot.AspNetCore.Concerns.Logging;
 
 internal sealed class PotConsoleFormatterOptions : ConsoleFormatterOptions
 {

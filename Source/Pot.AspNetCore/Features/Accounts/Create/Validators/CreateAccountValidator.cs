@@ -2,7 +2,7 @@
 using AllOverIt.Validation;
 using AllOverIt.Validation.Extensions;
 using FluentValidation.Results;
-using Pot.AspNetCore.Validation;
+using Pot.AspNetCore.Concerns.Validation;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
 

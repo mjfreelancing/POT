@@ -1,7 +1,7 @@
 ﻿using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Pot.AspNetCore.ProblemDetails;
-using Pot.AspNetCore.ProblemDetails.Extensions;
+using Pot.AspNetCore.Concerns.ProblemDetails;
+using Pot.AspNetCore.Concerns.ProblemDetails.Extensions;
 using Pot.Data.Repositories.Accounts;
 using System.ComponentModel;
 

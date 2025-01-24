@@ -1,8 +1,8 @@
 ﻿using AllOverIt.Extensions;
 using FluentValidation.Results;
-using Pot.AspNetCore.ProblemDetails;
+using Pot.AspNetCore.Concerns.ProblemDetails;
 
-namespace Pot.AspNetCore.Validation.Extensions;
+namespace Pot.AspNetCore.Concerns.Validation.Extensions;
 
 internal static class ValidationResultExtensions
 {

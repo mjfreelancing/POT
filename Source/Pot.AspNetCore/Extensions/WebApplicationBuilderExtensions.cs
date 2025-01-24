@@ -1,8 +1,8 @@
 ﻿using AllOverIt.Validation.Extensions;
-using Pot.AspNetCore.ExceptionHandlers;
-using Pot.AspNetCore.Logging;
-using Pot.AspNetCore.Middleware;
-using Pot.AspNetCore.Validation;
+using Pot.AspNetCore.Concerns.ExceptionHandlers;
+using Pot.AspNetCore.Concerns.Logging;
+using Pot.AspNetCore.Concerns.Middleware;
+using Pot.AspNetCore.Concerns.Validation;
 using Pot.Data;
 using Pot.Data.Extensions;
 

@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.ProblemDetails;
+﻿namespace Pot.AspNetCore.Concerns.ProblemDetails;
 
 internal static class ProblemDetailsContextFactory
 {

@@ -1,4 +1,4 @@
-﻿using Pot.AspNetCore.Middleware;
+﻿using Pot.AspNetCore.Concerns.Middleware;
 using Scalar.AspNetCore;
 
 namespace Pot.AspNetCore.Extensions;

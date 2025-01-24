@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Options;
 
-namespace Pot.AspNetCore.Logging;
+namespace Pot.AspNetCore.Concerns.Logging;
 
 // https://learn.microsoft.com/en-us/dotnet/core/extensions/console-log-formatter
 
@@ -189,7 +189,7 @@ internal sealed class PotConsoleFormatter : ConsoleFormatter, IDisposable
     private DateTimeOffset GetCurrentDateTime()
     {
         return _formatterOptions.TimestampFormat is not null
-            ? (_formatterOptions.UseUtcTimestamp ? DateTimeOffset.UtcNow : DateTimeOffset.Now)
+            ? _formatterOptions.UseUtcTimestamp ? DateTimeOffset.UtcNow : DateTimeOffset.Now
             : DateTimeOffset.MinValue;
     }
 

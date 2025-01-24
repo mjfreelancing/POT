@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
 using System.Net;
 
-namespace Pot.AspNetCore.ExceptionHandlers;
+namespace Pot.AspNetCore.Concerns.ExceptionHandlers;
 
 // Note: Exception handlers are registered as a Singleton.
 internal sealed class IgnoreExceptionHandler : IExceptionHandler

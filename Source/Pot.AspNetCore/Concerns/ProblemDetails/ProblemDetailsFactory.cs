@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace Pot.AspNetCore.ProblemDetails;
+namespace Pot.AspNetCore.Concerns.ProblemDetails;
 
 internal static class ProblemDetailsFactory
 {

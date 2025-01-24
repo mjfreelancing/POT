@@ -3,7 +3,7 @@ using AllOverIt.Extensions;
 using Microsoft.AspNetCore.Http.Features;
 using System.Net;
 
-namespace Pot.AspNetCore.Middleware;
+namespace Pot.AspNetCore.Concerns.Middleware;
 
 internal sealed class CorrelationIdMiddleware : IMiddleware
 {

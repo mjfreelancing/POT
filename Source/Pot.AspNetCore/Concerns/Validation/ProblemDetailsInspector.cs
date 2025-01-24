@@ -1,10 +1,10 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Validation;
 using FluentValidation.Results;
-using Pot.AspNetCore.ProblemDetails;
-using Pot.AspNetCore.Validation.Extensions;
+using Pot.AspNetCore.Concerns.ProblemDetails;
+using Pot.AspNetCore.Concerns.Validation.Extensions;
 
-namespace Pot.AspNetCore.Validation;
+namespace Pot.AspNetCore.Concerns.Validation;
 
 internal sealed class ProblemDetailsInspector : IProblemDetailsInspector
 {
