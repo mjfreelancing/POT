@@ -1,6 +1,6 @@
 ﻿using AllOverIt.Validation;
+using AllOverIt.Validation.Extensions;
 using Pot.AspNetCore.Features.Accounts.Import.Models;
-using Pot.AspNetCore.Validation.Extensions;
 
 namespace Pot.AspNetCore.Features.Accounts.Import.Validators;
 

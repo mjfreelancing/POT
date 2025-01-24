@@ -5,7 +5,6 @@ using Pot.AspNetCore.Features.Accounts.Create.Services;
 using Pot.AspNetCore.ProblemDetails.Extensions;
 using Pot.AspNetCore.Validation;
 using Pot.AspNetCore.Validation.Extensions;
-using Pot.Data.Repositories.Accounts;
 
 namespace Pot.AspNetCore.Features.Accounts.Create;
 
@@ -13,7 +12,7 @@ internal sealed class Handler
 {
     public static async Task<Results<CreatedAtRoute<Response>, ProblemHttpResult>> Invoke(Request request,
         IProblemDetailsInspector problemDetailsInspector, ICreateAccountService createAccountService,
-        IAccountRepository accountRepository, ILogger<Handler> logger, CancellationToken cancellationToken)
+        ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);
 

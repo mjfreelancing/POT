@@ -33,9 +33,10 @@ internal sealed class CreateAccountValidator : ValidatorBase<AccountEntity>, ISc
                     var failure = new ValidationFailure(
                         $"{nameof(AccountEntity.Bsb)}, {nameof(AccountEntity.Number)}",
                         $"An account already exists with the provided {nameof(entity.Bsb)} and {nameof(entity.Number)}",
-                        new { entity.Bsb, entity.Number });
-
-                    failure.ErrorCode = ErrorCodes.Conflict;
+                        new { entity.Bsb, entity.Number })
+                    {
+                        ErrorCode = ErrorCodes.Conflict
+                    };
 
                     context.AddFailure(failure);
                 }
