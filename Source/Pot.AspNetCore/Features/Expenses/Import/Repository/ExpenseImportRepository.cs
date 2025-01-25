@@ -1,17 +1,15 @@
-﻿using AllOverIt.Assertion;
-using Microsoft.EntityFrameworkCore;
-using Pot.AspNetCore.Features.Expenses.Import.Models;
-using Pot.Data;
+﻿using Pot.AspNetCore.Features.Expenses.Import.Models;
 
 namespace Pot.AspNetCore.Features.Expenses.Import.Repository
 {
     internal sealed class ExpenseImportRepository : IExpenseImportRepository
     {
-        private readonly IDbContextFactory<PotDbContext> _dbContextFactory;
+        //private readonly IDbContextFactory<PotDbContext> _dbContextFactory;
 
-        public ExpenseImportRepository(IDbContextFactory<PotDbContext> dbContextFactory)
+        // TODO: Not using IDbContextFactory now - not registered
+        public ExpenseImportRepository(/*IDbContextFactory<PotDbContext> dbContextFactory*/)
         {
-            _dbContextFactory = dbContextFactory.WhenNotNull();
+            //_dbContextFactory = dbContextFactory.WhenNotNull();
         }
 
         public /*async*/ Task ImportExpensesAsync(ExpenseImport[] expenses, CancellationToken cancellationToken)

@@ -10,18 +10,28 @@ internal sealed class AccountRepository : GenericRepository<PotDbContext, Accoun
     {
     }
 
+    public Task<bool> AccountExistsAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return Query().AnyAsync(entity => entity.RowId == id, cancellationToken);
+    }
+
+    public Task<AccountEntity> GetAccountAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return Query().SingleAsync(entity => entity.RowId == id, cancellationToken);
+    }
+
     public Task<AccountEntity?> GetAccountOrDefaultAsync(Guid id, CancellationToken cancellationToken)
     {
-        return Get().SingleOrDefaultAsync(entity => entity.RowId == id, cancellationToken);
+        return Query().SingleOrDefaultAsync(entity => entity.RowId == id, cancellationToken);
     }
 
     public Task<AccountEntity?> GetAccountOrDefaultAsync(string bsb, string number, CancellationToken cancellationToken)
     {
-        return Get().SingleOrDefaultAsync(entity => entity.Bsb == bsb && entity.Number == number, cancellationToken);
+        return Query().SingleOrDefaultAsync(entity => entity.Bsb == bsb && entity.Number == number, cancellationToken);
     }
 
     public Task<bool> AccountExistsAsync(string bsb, string number, CancellationToken cancellationToken)
     {
-        return Get().AnyAsync(entity => entity.Bsb == bsb && entity.Number == number, cancellationToken);
+        return Query().AnyAsync(entity => entity.Bsb == bsb && entity.Number == number, cancellationToken);
     }
 }

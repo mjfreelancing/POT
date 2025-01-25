@@ -1,4 +1,7 @@
-﻿using System.Net;
+﻿using Pot.AspNetCore.Concerns.Validation;
+using Pot.Data;
+using Pot.Data.Entities;
+using System.Net;
 
 namespace Pot.AspNetCore.Concerns.ProblemDetails;
 
@@ -28,6 +31,54 @@ internal static class ProblemDetailsFactory
             Extensions = new Dictionary<string, object?>
             {
                 { "errors", errorDetails.ToArray() }
+            }
+        };
+    }
+
+    public static Microsoft.AspNetCore.Mvc.ProblemDetails CreateETagConflict(EntityBase entity)
+    {
+        var errorDetails = new ProblemDetailsError[]
+        {
+            new()
+            {
+                PropertyName = nameof(EntityBase.Etag),
+                ErrorCode = ErrorCodes.Conflict,
+                AttemptedValue = entity.Etag,
+                ErrorMessage = $"The {DbContextBase.GetTableNameFromEntity(entity)} entity tag does not match the current record."
+            }
+        };
+
+        return new Microsoft.AspNetCore.Mvc.ProblemDetails
+        {
+            Detail = "Unable to save changes.",
+            Status = (int)HttpStatusCode.Conflict,
+            Extensions = new Dictionary<string, object?>
+            {
+                { "errors", errorDetails }
+            }
+        };
+    }
+
+    public static Microsoft.AspNetCore.Mvc.ProblemDetails CreateEntityExistsConflict(EntityBase entity, string propertyName, string attemptedValue)
+    {
+        var errorDetails = new ProblemDetailsError[]
+        {
+            new()
+            {
+                PropertyName = propertyName,
+                ErrorCode = ErrorCodes.Conflict,
+                AttemptedValue = attemptedValue,
+                ErrorMessage = $"The update would conflict with another {DbContextBase.GetTableNameFromEntity(entity)} entity."
+            }
+        };
+
+        return new Microsoft.AspNetCore.Mvc.ProblemDetails
+        {
+            Detail = "Unable to save changes.",
+            Status = (int)HttpStatusCode.Conflict,
+            Extensions = new Dictionary<string, object?>
+            {
+                { "errors", errorDetails }
             }
         };
     }

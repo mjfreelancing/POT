@@ -1,7 +1,6 @@
 ﻿using AllOverIt.Assertion;
 using Pot.AspNetCore.Features.Accounts.Import.Models;
 using Pot.Data.Entities;
-using Pot.Data.Extensions;
 using Pot.Data.Repositories.Accounts;
 
 namespace Pot.AspNetCore.Features.Accounts.Import.Services;
@@ -15,45 +14,47 @@ internal sealed class ImportAccountService : IImportAccountService
     public ImportAccountService(IAccountRepository accountRepository)
     {
         _accountRepository = accountRepository.WhenNotNull();
-        _accountRepository.DbContext.WithTracking(true);
     }
 
     public async Task<ImportSummary> ImportAccountsAsync(AccountForImport[] accountsImport, bool overwrite, CancellationToken cancellationToken)
     {
-        var importAccountKeys = accountsImport.ToDictionary(account => new AccountKey(account.Bsb, account.Number));
-
-        var imported = 0;
-        var updated = 0;
-
-        foreach (var import in accountsImport)
+        using (_accountRepository.WithTracking())
         {
-            var existing = await _accountRepository
-                .GetAccountOrDefaultAsync(import.Bsb, import.Number, cancellationToken)
+            var importAccountKeys = accountsImport.ToDictionary(account => new AccountKey(account.Bsb, account.Number));
+
+            var imported = 0;
+            var updated = 0;
+
+            foreach (var import in accountsImport)
+            {
+                var existing = await _accountRepository
+                    .GetAccountOrDefaultAsync(import.Bsb, import.Number, cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (existing is null)
+                {
+                    AddAccountEntity(import);
+                    imported++;
+                }
+                else if (overwrite)
+                {
+                    UpdateAccountEntity(existing, import);
+                    updated++;
+                }
+            }
+
+            await _accountRepository
+                .SaveAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            if (existing is null)
+            return new ImportSummary
             {
-                AddAccountEntity(import);
-                imported++;
-            }
-            else if (overwrite)
-            {
-                UpdateAccountEntity(existing, import);
-                updated++;
-            }
+                Skipped = accountsImport.Length - imported - updated,
+                Imported = imported,
+                Updated = updated,
+                Total = accountsImport.Length
+            };
         }
-
-        await _accountRepository
-            .SaveAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        return new ImportSummary
-        {
-            Skipped = accountsImport.Length - imported - updated,
-            Imported = imported,
-            Updated = updated,
-            Total = accountsImport.Length
-        };
     }
 
     private void AddAccountEntity(AccountForImport import)

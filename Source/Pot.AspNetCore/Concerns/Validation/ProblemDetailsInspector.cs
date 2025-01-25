@@ -17,6 +17,13 @@ internal sealed class ProblemDetailsInspector : IProblemDetailsInspector
         _validationInvoker = validationInvoker.WhenNotNull();
     }
 
+    public static Microsoft.AspNetCore.Mvc.ProblemDetails ValidateAsRowId(string id, string entityType, out Guid entityId)
+    {
+        return Guid.TryParse(id, out entityId)
+            ? NoProblemDetails.Single
+            : ProblemDetailsFactory.CreateUnprocessableEntity(nameof(id), id, $"The {entityType} Id is invalid.");
+    }
+
     public Microsoft.AspNetCore.Mvc.ProblemDetails Validate<TType>(TType instance)
     {
         var validationResult = _validationInvoker.Validate(instance);

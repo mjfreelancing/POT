@@ -1,9 +1,9 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
+using Microsoft.EntityFrameworkCore;
+using Pot.AspNetCore.Concerns.ProblemDetails;
 using Pot.AspNetCore.Concerns.ProblemDetails.Extensions;
-using Pot.AspNetCore.Concerns.Validation;
-using Pot.AspNetCore.Concerns.Validation.Extensions;
 using Pot.AspNetCore.Errors;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
@@ -12,14 +12,11 @@ namespace Pot.AspNetCore.Features.Accounts.Create.Services;
 
 internal sealed class CreateAccountService : ICreateAccountService
 {
-    private readonly IProblemDetailsInspector _problemDetailsInspector;
     private readonly IAccountRepository _accountRepository;
-    private readonly ILogger<CreateAccountService> _logger;
+    private readonly ILogger _logger;
 
-    public CreateAccountService(IProblemDetailsInspector problemDetailsInspector, IAccountRepository accountRepository,
-        ILogger<CreateAccountService> logger)
+    public CreateAccountService(IAccountRepository accountRepository, ILogger<CreateAccountService> logger)
     {
-        _problemDetailsInspector = problemDetailsInspector.WhenNotNull();
         _accountRepository = accountRepository.WhenNotNull(); ;
         _logger = logger.WhenNotNull();
     }
@@ -37,18 +34,54 @@ internal sealed class CreateAccountService : ICreateAccountService
             Reserved = request.Reserved
         };
 
-        var problemDetails = await _problemDetailsInspector
-            .ValidateAsync(account, cancellationToken)
+
+
+
+        var accountExists = await _accountRepository
+            .AccountExistsAsync(account.Bsb, account.Number, cancellationToken)
             .ConfigureAwait(false);
 
-        if (problemDetails.IsProblem())
+        if (accountExists)
         {
+            var problemDetails = ProblemDetailsFactory.CreateEntityExistsConflict(
+                account,
+                $"{nameof(AccountEntity.Bsb)}, {nameof(AccountEntity.Number)}",
+                $"{account.Bsb}, {account.Number}");
+
             _logger.LogErrors(problemDetails);
 
             var accountError = new ServiceError(problemDetails);
 
             return EnrichedResult.Fail<AccountEntity>(accountError);
         }
+
+
+
+
+
+        // TODO: Specification pattern
+        var descriptionExists = await _accountRepository.Query()
+            .AnyAsync(account => !(account.Bsb == request.Bsb && account.Number == request.Number) && account.Description == request.Description, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (descriptionExists)
+        {
+            var problemDetails = ProblemDetailsFactory.CreateEntityExistsConflict(
+                account,
+                nameof(AccountEntity.Description),
+                account.Description);
+
+            _logger.LogErrors(problemDetails);
+
+            var accountError = new ServiceError(problemDetails);
+
+            return EnrichedResult.Fail<AccountEntity>(accountError);
+        }
+
+
+
+
+
 
         await _accountRepository
             .AddAndSaveAsync(account, cancellationToken)

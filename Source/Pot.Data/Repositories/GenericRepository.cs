@@ -1,8 +1,10 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Expressions;
+using AllOverIt.Patterns.ResourceInitialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Pot.Data.Entities;
+using Pot.Data.Extensions;
 using System.Linq.Expressions;
 
 namespace Pot.Data.Repositories;
@@ -21,8 +23,15 @@ internal abstract class GenericRepository<TDbContext, TEntity> : IGenericReposit
         DbContext = dbContext.WhenNotNull();
     }
 
+    public IDisposable WithTracking()
+    {
+        return new Raii(
+            () => { DbContext.WithTracking(true); },
+            () => { DbContext.WithTracking(false); });
+    }
+
     // IQueryable
-    public IQueryable<TEntity> Get()
+    public IQueryable<TEntity> Query()
     {
         return DbContext.Set<TEntity>();
     }
@@ -31,7 +40,7 @@ internal abstract class GenericRepository<TDbContext, TEntity> : IGenericReposit
     // =======================
     public Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken)
     {
-        return Get().ToListAsync(cancellationToken);
+        return Query().ToListAsync(cancellationToken);
     }
 
     public ValueTask<TEntity?> GetByPrimaryKeyAsync<TKey>(TKey id, CancellationToken cancellationToken)

@@ -1,7 +1,7 @@
 ﻿using AllOverIt.Validation;
 using AllOverIt.Validation.Extensions;
 
-namespace Pot.AspNetCore.Features.Accounts.Create.Validators;
+namespace Pot.AspNetCore.Features.Accounts.Create;
 
 internal sealed class RequestValidator : ValidatorBase<Request>
 {

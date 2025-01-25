@@ -2,8 +2,14 @@
 
 namespace Pot.AspNetCore.Features.Accounts.Update;
 
-internal sealed class Request
+public sealed class Request
 {
+    [Description("The account identifier.")]
+    public string RowId { get; init; } = string.Empty;
+
+    [Description("The account's entity tag.")]
+    public long ETag { get; init; }
+
     [Description("The account BSB.")]
     public string Bsb { get; init; } = string.Empty;
 
@@ -23,7 +29,4 @@ internal sealed class Request
     public double Allocated { get; init; }
 
     // DailyAccrual must be re-calculated
-    //
-    //[Description("The daily accrual required to meet all future expenses.")]
-    //public double DailyAccrual { get; init; }
 }

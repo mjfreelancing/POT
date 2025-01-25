@@ -17,11 +17,15 @@ public interface IGenericRepository<TDbContext, TEntity>
 
 
 
-    TDbContext DbContext { get; }
+    //TDbContext DbContext { get; }
+
+
+    IDisposable WithTracking();
+
 
     // IQueryable
     // =======================
-    IQueryable<TEntity> Get();
+    IQueryable<TEntity> Query();
 
 
     // Get data

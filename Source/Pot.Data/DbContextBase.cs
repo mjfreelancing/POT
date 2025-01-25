@@ -43,6 +43,11 @@ namespace Pot.Data
             return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
         }
 
+        public static string GetTableNameFromEntity(EntityBase entity)
+        {
+            return entity.GetType().Name[..^_entitySuffix.Length];
+        }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
@@ -85,7 +90,7 @@ namespace Pot.Data
             if (!entityName.EndsWith(_entitySuffix))
             {
                 throw new InvalidOperationException(
-                    $"The entity '{entityType.ClrType}' does not have a suffix of '{_entitySuffix}' (should be {entityName}{_entitySuffix}).");
+                    $"The entity '{entityType.ClrType}' does not have a suffix of '{_entitySuffix}'.");
             }
 
             if (!entityType.ClrType.IsDerivedFrom(_entityBaseType))

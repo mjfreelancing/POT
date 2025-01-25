@@ -1,45 +1,40 @@
 ﻿using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Pot.Data.Extensions;
+using Pot.AspNetCore.Concerns.ProblemDetails.Extensions;
+using Pot.AspNetCore.Concerns.Validation;
+using Pot.AspNetCore.Concerns.Validation.Extensions;
+using Pot.AspNetCore.Errors;
+using Pot.AspNetCore.Features.Accounts.Update.Services;
 using Pot.Data.Repositories.Accounts;
-using System.Net;
 
 namespace Pot.AspNetCore.Features.Accounts.Update;
 
 internal sealed class Handler
 {
-    public static async Task<Results<Ok<Response>, NotFound, StatusCodeHttpResult, ProblemHttpResult>> Invoke(Request request,
+    public static async Task<Results<Ok<Response>, NotFound, /*StatusCodeHttpResult,*/ ProblemHttpResult>> Invoke(Request request,
+        IProblemDetailsInspector problemDetailsInspector, IUpdateAccountService updateAccountService,
         IAccountRepository accountRepository, ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);
 
-        accountRepository.DbContext.WithTracking(true);
+        var problemDetails = problemDetailsInspector.Validate(request);
 
-        var account = await accountRepository.GetAccountOrDefaultAsync(request.Bsb, request.Number, cancellationToken);
-
-        if (account is null)
+        if (problemDetails.IsProblem())
         {
-            return TypedResults.NotFound();
+            logger.LogErrors(problemDetails);
+
+            return TypedResults.Problem(problemDetails);
         }
 
-        account.Bsb = request.Bsb;
-        account.Number = request.Number;
-        account.Description = request.Description;
-        account.Balance = request.Balance;
-        account.Reserved = request.Reserved;
-        account.Allocated = request.Allocated;
-        //account.DailyAccrual must be re-calculated
+        var result = await updateAccountService.UpdateAccountAsync(request, cancellationToken);
 
-        // Don't call accountRepository.Update(account) as this will mark the
-        // entity as modified even if nothing was changed.
-
-        var update = await accountRepository.SaveAsync(cancellationToken);
-
-        if (update == 0)
+        if (result.IsSuccess)
         {
-            return TypedResults.StatusCode((int)HttpStatusCode.NotModified);
+            return Response.Ok(result.Value!);
         }
 
-        return Response.Ok(account);
+        var error = result.Error as ServiceError;
+
+        return TypedResults.Problem(error!.ProblemDetails);
     }
 }
