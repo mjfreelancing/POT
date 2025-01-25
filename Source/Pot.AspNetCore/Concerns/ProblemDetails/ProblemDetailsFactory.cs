@@ -35,7 +35,7 @@ internal static class ProblemDetailsFactory
         };
     }
 
-    public static Microsoft.AspNetCore.Mvc.ProblemDetails CreateETagConflict(EntityBase entity)
+    public static Microsoft.AspNetCore.Mvc.ProblemDetails CreateETagConflict(EntityBase entity, object? attemptedValue)
     {
         var errorDetails = new ProblemDetailsError[]
         {
@@ -43,7 +43,7 @@ internal static class ProblemDetailsFactory
             {
                 PropertyName = nameof(EntityBase.Etag),
                 ErrorCode = ErrorCodes.Conflict,
-                AttemptedValue = entity.Etag,
+                AttemptedValue = attemptedValue,
                 ErrorMessage = $"The {DbContextBase.GetTableNameFromEntity(entity)} entity tag does not match the current record."
             }
         };

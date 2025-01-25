@@ -8,7 +8,7 @@ namespace Pot.AspNetCore.Features.Accounts.Update.Services.PreCommit;
 
 internal sealed class PreUpdateChecker : ChainOfResponsibilityAsyncComposer<InputState, OutputState>, IPreUpdateChecker
 {
-    private static readonly IEnumerable<PreCommitCheckBase> Handlers =
+    private static readonly IEnumerable<PreUpdateCheckBase> Handlers =
     [
         new CheckHasSameETag(),
         new CheckAccountNumberDoesNotExist(),

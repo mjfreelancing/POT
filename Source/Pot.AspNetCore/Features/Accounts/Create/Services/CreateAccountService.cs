@@ -36,6 +36,12 @@ internal sealed class CreateAccountService : ICreateAccountService
 
 
 
+        //var notSameAccount = AccountSpecifications.IsSameBsbNumber(request.Bsb, request.Number).Not();
+        //var sameDescription = AccountSpecifications.IsSameDescription(request.Description);
+        //var predicate = notSameAccount.And(sameDescription).Expression;
+
+        // REFACTOR THE CODE BELOW TO USE THE SAME CHAIN OF RESPONSIBILITY PATTERN AS THE UPDATE ACCOUNT SERVICE
+
 
         var accountExists = await _accountRepository
             .AccountExistsAsync(account.Bsb, account.Number, cancellationToken)

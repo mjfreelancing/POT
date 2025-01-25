@@ -1,13 +1,15 @@
 ﻿using AllOverIt.Patterns.Result;
+using AllOverIt.Patterns.Specification.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Pot.AspNetCore.Concerns.ProblemDetails;
 using Pot.AspNetCore.Concerns.ProblemDetails.Extensions;
 using Pot.AspNetCore.Errors;
 using Pot.Data.Entities;
+using Pot.Data.Specifications;
 
 namespace Pot.AspNetCore.Features.Accounts.Update.Services.PreCommit.Checks;
 
-internal sealed class CheckDescriptionDoesNotExist : PreCommitCheckBase
+internal sealed class CheckDescriptionDoesNotExist : PreUpdateCheckBase
 {
     public override async Task<OutputState?> HandleAsync(InputState state, CancellationToken cancellationToken)
     {
@@ -16,8 +18,12 @@ internal sealed class CheckDescriptionDoesNotExist : PreCommitCheckBase
 
         if (account.Description != request.Description)
         {
+            var notSameAccount = AccountSpecifications.IsSameBsbNumber(request.Bsb, request.Number).Not();
+            var sameDescription = AccountSpecifications.IsSameDescription(request.Description);
+            var predicate = notSameAccount.And(sameDescription).Expression;
+
             var descriptionExists = await state.AccountRepository.Query()
-                .AnyAsync(account => !(account.Bsb == request.Bsb && account.Number == request.Number) && account.Description == request.Description, cancellationToken)
+                .AnyAsync(predicate, cancellationToken)
                 .ConfigureAwait(false);
 
             if (descriptionExists)
@@ -41,4 +47,3 @@ internal sealed class CheckDescriptionDoesNotExist : PreCommitCheckBase
         return await base.HandleAsync(state, cancellationToken);
     }
 }
-

@@ -6,7 +6,7 @@ using Pot.Data.Entities;
 
 namespace Pot.AspNetCore.Features.Accounts.Update.Services.PreCommit.Checks;
 
-internal sealed class CheckHasSameETag : PreCommitCheckBase
+internal sealed class CheckHasSameETag : PreUpdateCheckBase
 {
     public override async Task<OutputState?> HandleAsync(InputState state, CancellationToken cancellationToken)
     {
@@ -15,7 +15,7 @@ internal sealed class CheckHasSameETag : PreCommitCheckBase
 
         if (account.Etag != request.ETag)
         {
-            var problemDetails = ProblemDetailsFactory.CreateETagConflict(account);
+            var problemDetails = ProblemDetailsFactory.CreateETagConflict(account, request.ETag);
 
             state.Logger.LogErrors(problemDetails);
 

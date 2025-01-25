@@ -6,7 +6,7 @@ using Pot.Data.Entities;
 
 namespace Pot.AspNetCore.Features.Accounts.Update.Services.PreCommit.Checks;
 
-internal sealed class CheckAccountNumberDoesNotExist : PreCommitCheckBase
+internal sealed class CheckAccountNumberDoesNotExist : PreUpdateCheckBase
 {
     public override async Task<OutputState?> HandleAsync(InputState state, CancellationToken cancellationToken)
     {
