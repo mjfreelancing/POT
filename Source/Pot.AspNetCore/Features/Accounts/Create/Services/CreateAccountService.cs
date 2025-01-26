@@ -1,10 +1,7 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
-using Microsoft.EntityFrameworkCore;
-using Pot.AspNetCore.Concerns.ProblemDetails;
-using Pot.AspNetCore.Concerns.ProblemDetails.Extensions;
-using Pot.AspNetCore.Errors;
+using Pot.AspNetCore.Features.Accounts.Create.Services.PreSave;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
 
@@ -12,19 +9,21 @@ namespace Pot.AspNetCore.Features.Accounts.Create.Services;
 internal sealed class CreateAccountService : ICreateAccountService
 {
     private readonly IAccountRepository _accountRepository;
+    private readonly IPreCreateChecker _preCreateChecker;
     private readonly ILogger _logger;
 
-    public CreateAccountService(IAccountRepository accountRepository, ILogger<CreateAccountService> logger)
+    public CreateAccountService(IAccountRepository accountRepository, IPreCreateChecker preCreateChecker, ILogger<CreateAccountService> logger)
     {
         _accountRepository = accountRepository.WhenNotNull(); ;
         _logger = logger.WhenNotNull();
+        _preCreateChecker = preCreateChecker.WhenNotNull();
     }
 
     public async Task<EnrichedResult<AccountEntity>> CreateAccountAsync(Request request, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
-        var account = new AccountEntity
+        var accountToCreate = new AccountEntity
         {
             Bsb = request.Bsb,
             Number = request.Number,
@@ -33,65 +32,17 @@ internal sealed class CreateAccountService : ICreateAccountService
             Reserved = request.Reserved
         };
 
+        var canSaveResult = await _preCreateChecker.CanSaveAsync(accountToCreate, cancellationToken);
 
-
-        //var notSameAccount = AccountSpecifications.IsSameBsbNumber(request.Bsb, request.Number).Not();
-        //var sameDescription = AccountSpecifications.IsSameDescription(request.Description);
-        //var predicate = notSameAccount.And(sameDescription).Expression;
-
-        // REFACTOR THE CODE BELOW TO USE THE SAME CHAIN OF RESPONSIBILITY PATTERN AS THE UPDATE ACCOUNT SERVICE
-
-
-        var accountExists = await _accountRepository
-            .AccountExistsAsync(account.Bsb, account.Number, cancellationToken)
-            .ConfigureAwait(false);
-
-        if (accountExists)
+        if (canSaveResult is not null)
         {
-            var problemDetails = ProblemDetailsFactory.CreateEntityExistsConflict(
-                account,
-                $"{nameof(AccountEntity.Bsb)}, {nameof(AccountEntity.Number)}",
-                $"{account.Bsb}, {account.Number}");
-
-            _logger.LogErrors(problemDetails);
-
-            var accountError = new ServiceError(problemDetails);
-
-            return EnrichedResult.Fail<AccountEntity>(accountError);
+            return canSaveResult.FailResult;
         }
-
-
-
-
-
-        // TODO: Specification pattern
-        var descriptionExists = await _accountRepository.Query()
-            .AnyAsync(account => !(account.Bsb == request.Bsb && account.Number == request.Number) && account.Description == request.Description, cancellationToken)
-            .ConfigureAwait(false);
-
-        if (descriptionExists)
-        {
-            var problemDetails = ProblemDetailsFactory.CreateEntityExistsConflict(
-                account,
-                nameof(AccountEntity.Description),
-                account.Description);
-
-            _logger.LogErrors(problemDetails);
-
-            var accountError = new ServiceError(problemDetails);
-
-            return EnrichedResult.Fail<AccountEntity>(accountError);
-        }
-
-
-
-
-
 
         await _accountRepository
-            .AddAndSaveAsync(account, cancellationToken)
+            .AddAndSaveAsync(accountToCreate, cancellationToken)
             .ConfigureAwait(false);
 
-        return EnrichedResult.Success(account);
+        return EnrichedResult.Success(accountToCreate);
     }
 }

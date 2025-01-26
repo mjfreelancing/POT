@@ -11,13 +11,13 @@ namespace Pot.AspNetCore.Features.Accounts.Update.Services;
 internal sealed class UpdateAccountService : IUpdateAccountService
 {
     private readonly IAccountRepository _accountRepository;
-    private readonly IPreUpdateChecker _preUpdateCommitChecker;
+    private readonly IPreUpdateChecker _preUpdateChecker;
     private readonly ILogger _logger;
 
-    public UpdateAccountService(IAccountRepository accountRepository, IPreUpdateChecker preUpdateCommitChecker, ILogger<UpdateAccountService> logger)
+    public UpdateAccountService(IAccountRepository accountRepository, IPreUpdateChecker preUpdateChecker, ILogger<UpdateAccountService> logger)
     {
         _accountRepository = accountRepository.WhenNotNull();
-        _preUpdateCommitChecker = preUpdateCommitChecker.WhenNotNull();
+        _preUpdateChecker = preUpdateChecker.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
@@ -29,7 +29,7 @@ internal sealed class UpdateAccountService : IUpdateAccountService
         {
             var accountToUpdate = await _accountRepository.GetAccountAsync(request.RowId.As<Guid>(), cancellationToken);
 
-            var canSaveResult = await _preUpdateCommitChecker.CanSaveAsync(request, accountToUpdate, cancellationToken);
+            var canSaveResult = await _preUpdateChecker.CanSaveAsync(request, accountToUpdate, cancellationToken);
 
             if (canSaveResult is not null)
             {

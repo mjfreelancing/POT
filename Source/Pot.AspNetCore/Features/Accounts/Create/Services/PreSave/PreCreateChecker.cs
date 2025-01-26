@@ -1,16 +1,15 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Patterns.ChainOfResponsibility;
-using Pot.AspNetCore.Features.Accounts.Update.Services.PreSave.Checks;
+using Pot.AspNetCore.Features.Accounts.Create.Services.PreSave.Checks;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
 
-namespace Pot.AspNetCore.Features.Accounts.Update.Services.PreSave;
+namespace Pot.AspNetCore.Features.Accounts.Create.Services.PreSave;
 
-internal sealed class PreUpdateChecker : ChainOfResponsibilityAsyncComposer<InputState, OutputState>, IPreUpdateChecker
+internal sealed class PreCreateChecker : ChainOfResponsibilityAsyncComposer<InputState, OutputState>, IPreCreateChecker
 {
-    private static readonly IEnumerable<PreUpdateCheckBase> _handlers =
+    private static readonly IEnumerable<PreCreateCheckBase> _handlers =
     [
-        new CheckHasSameETag(),
         new CheckAccountNumberDoesNotExist(),
         new CheckDescriptionDoesNotExist()
     ];
@@ -18,19 +17,18 @@ internal sealed class PreUpdateChecker : ChainOfResponsibilityAsyncComposer<Inpu
     private readonly IAccountRepository _accountRepository;
     private readonly ILogger _logger;
 
-    public PreUpdateChecker(IAccountRepository accountRepository, ILogger<PreUpdateChecker> logger)
+    public PreCreateChecker(IAccountRepository accountRepository, ILogger<PreCreateChecker> logger)
         : base(_handlers)
     {
         _accountRepository = accountRepository.WhenNotNull();
         _logger = logger.WhenNotNull(); ;
     }
 
-    public Task<OutputState?> CanSaveAsync(Request request, AccountEntity accountToUpdate, CancellationToken cancellationToken)
+    public Task<OutputState?> CanSaveAsync(AccountEntity accountToCreate, CancellationToken cancellationToken)
     {
         var state = new InputState
         {
-            Request = request,
-            AccountToUpdate = accountToUpdate,
+            AccountToCreate = accountToCreate,
             AccountRepository = _accountRepository,
             Logger = _logger
         };
