@@ -1,4 +1,5 @@
 ﻿using AllOverIt.Assertion;
+using AllOverIt.Logging.Extensions;
 using Pot.AspNetCore.Features.Accounts.Import.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
@@ -10,14 +11,18 @@ internal sealed class ImportAccountService : IImportAccountService
     private sealed record AccountKey(string Bsb, string Number);
 
     private readonly IAccountRepository _accountRepository;
+    private readonly ILogger _logger;
 
-    public ImportAccountService(IAccountRepository accountRepository)
+    public ImportAccountService(IAccountRepository accountRepository, ILogger<ImportAccountService> logger)
     {
         _accountRepository = accountRepository.WhenNotNull();
+        _logger = logger.WhenNotNull();
     }
 
     public async Task<ImportSummary> ImportAccountsAsync(AccountForImport[] accountsImport, bool overwrite, CancellationToken cancellationToken)
     {
+        _logger.LogCall(this, new { overwrite });
+
         using (_accountRepository.WithTracking())
         {
             var importAccountKeys = accountsImport.ToDictionary(account => new AccountKey(account.Bsb, account.Number));
