@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Pot.Data.Repositories.Accounts;
 using Pot.Data.UnitOfWork;
 
 namespace Pot.Data.Extensions;
@@ -13,13 +12,6 @@ public static class ServiceCollectionExtensions
 
         // Inject this when multiple units of work need to be created.
         // services.AddSingleton<IPotUnitOfWorkFactory, PotUnitOfWorkFactory>();
-
-        return services;
-    }
-
-    public static IServiceCollection AddAccountRepositories(this IServiceCollection services)
-    {
-        services.AddScoped<IAccountRepository, AccountRepository>();
 
         return services;
     }

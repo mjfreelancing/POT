@@ -68,7 +68,7 @@ internal static class ProblemDetailsFactory
                 PropertyName = propertyName,
                 ErrorCode = ErrorCodes.Conflict,
                 AttemptedValue = attemptedValue,
-                ErrorMessage = $"The update would conflict with another {DbContextBase.GetTableNameFromEntity(entity)} entity."
+                ErrorMessage = $"The operation would conflict with another {DbContextBase.GetTableNameFromEntity(entity)} entity."
             }
         };
 

@@ -9,7 +9,6 @@ using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
 
 namespace Pot.AspNetCore.Features.Accounts.Create.Services;
-
 internal sealed class CreateAccountService : ICreateAccountService
 {
     private readonly IAccountRepository _accountRepository;

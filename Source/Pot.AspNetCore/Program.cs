@@ -18,10 +18,10 @@ public class Program
             .AddLogging()
             .AddExceptionHandlers()
             .AddCustomProblemDetails()
+            .AutoRegisterPotDependencies()
             .AddValidation()
             .AddPotData()
-            .AddAccountServices()
-            .AddExpenseServicess();
+            .AddExpenseServices();      // TODO: Can be removed when the repository is changed to use IGenericRepository
 
         var app = builder.Build();
 

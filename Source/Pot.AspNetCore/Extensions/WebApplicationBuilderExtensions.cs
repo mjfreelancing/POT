@@ -1,16 +1,19 @@
-﻿using AllOverIt.Validation.Extensions;
+﻿using AllOverIt.DependencyInjection.Extensions;
+using AllOverIt.Validation.Extensions;
+using Pot.AspNetCore.Concerns.DependencyInjection;
 using Pot.AspNetCore.Concerns.ExceptionHandlers;
 using Pot.AspNetCore.Concerns.Logging;
 using Pot.AspNetCore.Concerns.Middleware;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.Data;
 using Pot.Data.Extensions;
+using Pot.Data.Repositories;
 
 namespace Pot.AspNetCore.Extensions;
 
 internal static class WebApplicationBuilderExtensions
 {
-    private static readonly Type _iScopedLifetimeValidatorType = typeof(IScopedLifetimeValidator);
+    private static readonly Type _scopedLifetimeValidatorType = typeof(IScopedLifetimeValidator);
 
     public static WebApplicationBuilder AddCorrelationId(this WebApplicationBuilder builder)
     {
@@ -103,12 +106,13 @@ internal static class WebApplicationBuilderExtensions
         {
             validationRegistry.AutoRegisterScopedValidators<PotValidationRegistrar>((modelType, validatorType) =>
             {
-                return validatorType.IsAssignableTo(_iScopedLifetimeValidatorType);
+                return validatorType.IsAssignableTo(_scopedLifetimeValidatorType);
             });
 
             validationRegistry.AutoRegisterSingletonValidators<PotValidationRegistrar>((modelType, validatorType) =>
             {
-                return !validatorType.IsAssignableTo(_iScopedLifetimeValidatorType);
+                // Validators are typically registered as singletons, so we look for the lack of IScopedLifetimeValidator.
+                return !validatorType.IsAssignableTo(_scopedLifetimeValidatorType);
             });
         });
 
@@ -121,6 +125,29 @@ internal static class WebApplicationBuilderExtensions
     {
         builder.Services.AddDbContext<PotDbContext>();
         builder.Services.AddUnitOfWork();
+
+        return builder;
+    }
+
+    public static WebApplicationBuilder AutoRegisterPotDependencies(this WebApplicationBuilder builder)
+    {
+        builder.Services.AutoRegisterScoped<PotRegistrar, IPotScopedDependency>(config =>
+        {
+            config.Filter((serviceType, implementationType) =>
+            {
+                // Exclude the marker interface
+                return serviceType != typeof(IPotScopedDependency);
+            });
+        });
+
+        builder.Services.AutoRegisterScoped<PotDataRegistrar>([typeof(IGenericRepository<,>)], config =>
+        {
+            config.Filter((serviceType, implementationType) =>
+            {
+                // Exclude the marker interface
+                return !serviceType.IsGenericType || serviceType.GetGenericTypeDefinition() != typeof(IGenericRepository<,>);
+            });
+        });
 
         return builder;
     }
