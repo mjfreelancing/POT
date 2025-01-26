@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.AspNetCore.Concerns.ProblemDetails.Extensions;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Concerns.Validation.Extensions;
-using Pot.AspNetCore.Errors;
+using Pot.AspNetCore.Extensions;
 using Pot.AspNetCore.Features.Accounts.Create.Services;
 
 namespace Pot.AspNetCore.Features.Accounts.Create;
@@ -27,13 +27,8 @@ internal sealed class Handler
 
         var result = await createAccountService.CreateAccountAsync(request, cancellationToken);
 
-        if (result.IsSuccess)
-        {
-            return Response.Created(result.Value!);
-        }
-
-        var error = result.Error as ServiceError;
-
-        return TypedResults.Problem(error!.ProblemDetails);
+        return result.IsSuccess
+            ? Response.Created(result.Value!)
+            : TypedResults.Problem(result.Error!.GetProblemDetails());
     }
 }
