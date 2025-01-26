@@ -1,7 +1,7 @@
 ﻿using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
 
-namespace Pot.AspNetCore.Features.Accounts.Update.Services.PreCommit;
+namespace Pot.AspNetCore.Features.Accounts.Update.Services.PreSave;
 
 internal sealed class InputState
 {

@@ -4,7 +4,7 @@ using Pot.AspNetCore.Concerns.ProblemDetails.Extensions;
 using Pot.AspNetCore.Errors;
 using Pot.Data.Entities;
 
-namespace Pot.AspNetCore.Features.Accounts.Update.Services.PreCommit.Checks;
+namespace Pot.AspNetCore.Features.Accounts.Update.Services.PreSave.Checks;
 
 internal sealed class CheckAccountNumberDoesNotExist : PreUpdateCheckBase
 {

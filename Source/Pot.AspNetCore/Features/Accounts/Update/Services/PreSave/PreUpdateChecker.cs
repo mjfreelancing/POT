@@ -1,10 +1,11 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Patterns.ChainOfResponsibility;
 using Pot.AspNetCore.Features.Accounts.Update.Services.PreCommit.Checks;
+using Pot.AspNetCore.Features.Accounts.Update.Services.PreSave.Checks;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
 
-namespace Pot.AspNetCore.Features.Accounts.Update.Services.PreCommit;
+namespace Pot.AspNetCore.Features.Accounts.Update.Services.PreSave;
 
 internal sealed class PreUpdateChecker : ChainOfResponsibilityAsyncComposer<InputState, OutputState>, IPreUpdateChecker
 {

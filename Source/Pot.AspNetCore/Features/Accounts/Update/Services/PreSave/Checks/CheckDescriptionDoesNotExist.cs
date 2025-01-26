@@ -7,7 +7,7 @@ using Pot.AspNetCore.Errors;
 using Pot.Data.Entities;
 using Pot.Data.Specifications;
 
-namespace Pot.AspNetCore.Features.Accounts.Update.Services.PreCommit.Checks;
+namespace Pot.AspNetCore.Features.Accounts.Update.Services.PreSave.Checks;
 
 internal sealed class CheckDescriptionDoesNotExist : PreUpdateCheckBase
 {
