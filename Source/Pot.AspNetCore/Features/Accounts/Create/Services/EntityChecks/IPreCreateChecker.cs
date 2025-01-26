@@ -1,7 +1,7 @@
 ﻿using Pot.AspNetCore.Concerns.DependencyInjection;
 using Pot.Data.Entities;
 
-namespace Pot.AspNetCore.Features.Accounts.Create.Services.PreSave;
+namespace Pot.AspNetCore.Features.Accounts.Create.Services.EntityChecks;
 
 public interface IPreCreateChecker : IPotScopedDependency
 {

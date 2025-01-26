@@ -6,7 +6,7 @@ using Pot.AspNetCore.Errors;
 using Pot.Data.Entities;
 using Pot.Data.Specifications;
 
-namespace Pot.AspNetCore.Features.Accounts.Create.Services.PreSave.Checks;
+namespace Pot.AspNetCore.Features.Accounts.Create.Services.EntityChecks.Checks;
 
 internal sealed class CheckDescriptionDoesNotExist : PreCreateCheckBase
 {

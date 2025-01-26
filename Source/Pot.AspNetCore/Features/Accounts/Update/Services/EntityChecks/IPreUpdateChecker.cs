@@ -1,7 +1,7 @@
 ﻿using Pot.AspNetCore.Concerns.DependencyInjection;
 using Pot.Data.Entities;
 
-namespace Pot.AspNetCore.Features.Accounts.Update.Services.PreSave;
+namespace Pot.AspNetCore.Features.Accounts.Update.Services.EntityChecks;
 
 public interface IPreUpdateChecker : IPotScopedDependency
 {

@@ -1,10 +1,10 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Patterns.ChainOfResponsibility;
-using Pot.AspNetCore.Features.Accounts.Create.Services.PreSave.Checks;
+using Pot.AspNetCore.Features.Accounts.Create.Services.EntityChecks.Checks;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
 
-namespace Pot.AspNetCore.Features.Accounts.Create.Services.PreSave;
+namespace Pot.AspNetCore.Features.Accounts.Create.Services.EntityChecks;
 
 internal sealed class PreCreateChecker : ChainOfResponsibilityAsyncComposer<InputState, OutputState>, IPreCreateChecker
 {

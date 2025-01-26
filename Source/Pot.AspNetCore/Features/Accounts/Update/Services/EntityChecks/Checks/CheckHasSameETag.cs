@@ -4,7 +4,7 @@ using Pot.AspNetCore.Concerns.ProblemDetails.Extensions;
 using Pot.AspNetCore.Errors;
 using Pot.Data.Entities;
 
-namespace Pot.AspNetCore.Features.Accounts.Update.Services.PreSave.Checks;
+namespace Pot.AspNetCore.Features.Accounts.Update.Services.EntityChecks.Checks;
 
 internal sealed class CheckHasSameETag : PreUpdateCheckBase
 {
