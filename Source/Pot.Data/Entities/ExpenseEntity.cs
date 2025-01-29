@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Pot.Data.Entities
 {
-    [Index(nameof(Description), IsUnique = true)]
+    [Index("AccountId", nameof(Description), IsUnique = true)]
     [Index(nameof(NextDue), IsUnique = false)]
     public sealed class ExpenseEntity : EntityBase
     {
@@ -20,7 +20,7 @@ namespace Pot.Data.Entities
         public double Amount { get; set; }
         public double Allocated { get; set; }
 
-        [Required]
-        public required AccountEntity Account { get; set; }
+        //[Required]
+        public AccountEntity? Account { get; set; }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Expressions;
-using AllOverIt.Patterns.ResourceInitialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Pot.Data.Entities;
@@ -23,17 +22,17 @@ internal abstract class GenericRepository<TDbContext, TEntity> : IGenericReposit
         DbContext = dbContext.WhenNotNull();
     }
 
-    public IDisposable WithTracking()
-    {
-        return new Raii(
-            () => { DbContext.WithTracking(true); },
-            () => { DbContext.WithTracking(false); });
-    }
+    public IDisposable WithTracking() => DbContext.WithAutoTracking();
 
     // IQueryable
     public IQueryable<TEntity> Query()
     {
         return DbContext.Set<TEntity>();
+    }
+
+    public IQueryable<TEntity> Where(Expression<Func<TEntity, bool>> predicate)
+    {
+        return DbContext.Set<TEntity>().Where(predicate);
     }
 
     // Get data

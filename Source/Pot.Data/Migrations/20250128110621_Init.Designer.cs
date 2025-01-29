@@ -12,7 +12,7 @@ using Pot.Data;
 namespace Pot.Data.Migrations
 {
     [DbContext(typeof(PotDbContext))]
-    [Migration("20250118131616_Init")]
+    [Migration("20250128110621_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -20,7 +20,7 @@ namespace Pot.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.0")
+                .HasAnnotation("ProductVersion", "9.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -91,7 +91,7 @@ namespace Pot.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AccountId")
+                    b.Property<int?>("AccountId")
                         .HasColumnType("integer");
 
                     b.Property<DateOnly>("AccrualStart")
@@ -131,16 +131,14 @@ namespace Pot.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AccountId");
-
-                    b.HasIndex("Description")
-                        .IsUnique();
-
                     b.HasIndex("Etag");
 
                     b.HasIndex("NextDue");
 
                     b.HasIndex("RowId")
+                        .IsUnique();
+
+                    b.HasIndex("AccountId", "Description")
                         .IsUnique();
 
                     b.ToTable("Expense");
@@ -151,8 +149,7 @@ namespace Pot.Data.Migrations
                     b.HasOne("Pot.Data.Entities.AccountEntity", "Account")
                         .WithMany("Expenses")
                         .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Account");
                 });

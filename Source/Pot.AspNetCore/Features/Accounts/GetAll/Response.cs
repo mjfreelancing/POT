@@ -10,13 +10,13 @@ namespace Pot.AspNetCore.Features.Accounts.GetAll;
 internal sealed class Response : ResponseBase
 {
     [Description("The account BSB.")]
-    public string Bsb { get; init; } = string.Empty;
+    public string Bsb { get; init; }
 
     [Description("The account number.")]
-    public string Number { get; init; } = string.Empty;
+    public string Number { get; init; }
 
     [Description("A description of the account.")]
-    public string Description { get; init; } = string.Empty;
+    public string Description { get; init; }
 
     [Description("The account balance.")]
     public double Balance { get; init; }

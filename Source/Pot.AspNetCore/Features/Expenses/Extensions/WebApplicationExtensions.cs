@@ -1,8 +1,5 @@
-﻿using CsvHelper;
-using Pot.AspNetCore.Features.Expenses.Import.Models;
-using Pot.AspNetCore.Features.Expenses.Import.Repository;
-using Pot.Data.Dtos;
-using System.Globalization;
+﻿using Pot.Data.Dtos;
+using System.Net;
 
 namespace Pot.AspNetCore.Features.Expenses.Extensions;
 
@@ -23,26 +20,35 @@ internal static class WebApplicationExtensions
                .Produces<List<ExpenseDto>>();
 
             group
-                .MapPost("/import", async (IFormFile file, IExpenseImportRepository importRepository, CancellationToken cancellationToken) =>
-                {
-                    try
-                    {
-                        using var reader = new StreamReader(file.OpenReadStream());
-                        using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+                .MapPost("/import", Import.Handler.Invoke)
+                //.WithName(nameof(ImportExpenses))
+                .WithSummary("Import Expenses")
+                .WithDescription("Import new / update existing expense details")
+                .WithTags("Accounts", "Import")
+                //.WithMetadata(new RequestSizeLimitAttribute(maxImportPayloadBytes)) // Will raise 413 Payload Too Large if the file exceeds this limit
+                .DisableAntiforgery()
+                .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
 
-                        var expenses = csv.GetRecords<ExpenseImport>().ToArray();
+            //.MapPost("/import", async (IFormFile file, IExpenseImportRepository importRepository, CancellationToken cancellationToken) =>
+            //{
+            //    try
+            //    {
+            //        using var reader = new StreamReader(file.OpenReadStream());
+            //        using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
 
-                        await importRepository.ImportExpensesAsync(expenses, cancellationToken);
-                    }
-                    catch (Exception)
-                    {
-                        return Results.BadRequest("Invalid file.");
-                    }
+            //        var expenses = csv.GetRecords<ExpenseForImport>().ToArray();
 
-                    return Results.Ok();
-                })
-                .Accepts<IFormFile>("multipart/form-data")
-                .DisableAntiforgery();
+            //        await importRepository.ImportExpensesAsync(expenses, cancellationToken);
+            //    }
+            //    catch (Exception)
+            //    {
+            //        return Results.BadRequest("Invalid file.");
+            //    }
+
+            //    return Results.Ok();
+            //})
+            //.Accepts<IFormFile>("multipart/form-data")
+            //.DisableAntiforgery();
         }
 
         return app;

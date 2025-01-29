@@ -11,6 +11,7 @@ internal static class WebApplicationExtensions
             app.Logger.LogInformation("Adding account endpoints");
 
             app.MapGroup("api/accounts")
+                //.RequireAuthorization()
                 .WithTags("Accounts Api")
                 .GetAllAccounts()
                 .GetAccount()

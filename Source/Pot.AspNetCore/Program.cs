@@ -1,6 +1,7 @@
 using Pot.AspNetCore.Extensions;
 using Pot.AspNetCore.Features.Accounts.Extensions;
 using Pot.AspNetCore.Features.Expenses.Extensions;
+using Pot.AspNetCore.Features.Expenses.Import.Validators;
 
 namespace Pot.AspNetCore;
 
@@ -20,12 +21,44 @@ public class Program
             .AddCustomProblemDetails()
             .AutoRegisterPotDependencies()
             .AddValidation()
-            .AddPotData()
-            .AddExpenseServices();      // TODO: Can be removed when the repository is changed to use IGenericRepository
+            .AddPotData();
+
+
+        // https://www.youtube.com/watch?v=3XoXzEPHdTA Nick Chapsas
+        // https://www.youtube.com/watch?v=6DWJIyipxzw Milan Jovanovic
+
+        //builder.Services.AddAuthorization();
+
+        //builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        //    .AddJwtBearer(options =>
+        //    {
+        //        options.TokenValidationParameters = new TokenValidationParameters
+        //        {
+        //            ValidateIssuer = true,
+        //            ValidateAudience = true,
+        //            ValidateLifetime = true,
+        //            ValidateIssuerSigningKey = true,
+        //            ValidIssuer = "https://pot.mjfreelancing.com",
+        //            ValidAudience = "https://pot.mjfreelancing.com",
+        //            IssuerSigningKey = new SymmetricSecurityKey("some_secret_key"u8.ToArray())
+        //        };
+        //    });
+
+
+        // TODO: Move somewhere else
+        builder.Services.AddScoped<IExpenseImportValidator, ExpenseImportValidator>();
+
 
         var app = builder.Build();
 
         app.Logger.LogInformation("POT Startup: {AppStartup}", new { Local = DateTime.Now });
+
+
+
+        //app.UseAuthentication();
+        //app.UseAuthorization();
+
+
 
         app.UseCorrelationId()
            .UseScalarOpenApi()

@@ -22,13 +22,14 @@ internal sealed class CheckDescriptionDoesNotExist : PreUpdateCheckBase
             var sameDescription = AccountSpecifications.IsSameDescription(request.Description);
             var predicate = notSameAccount.And(sameDescription).Expression;
 
-            var descriptionExists = await state.AccountRepository.Query()
-                .AnyAsync(predicate, cancellationToken)
+            var descriptionExists = await state.AccountRepository
+                .Where(predicate)
+                .AnyAsync(cancellationToken)
                 .ConfigureAwait(false);
 
             if (descriptionExists)
             {
-                var problemDetails = ProblemDetailsFactory.CreateEntityExistsConflict(
+                var problemDetails = ApiProblemDetailsFactory.CreateEntityExistsConflict(
                     account,
                     nameof(AccountEntity.Description),
                     request.Description);

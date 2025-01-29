@@ -1,40 +1,42 @@
 ﻿using CsvHelper.Configuration.Attributes;
+using CsvHelper.TypeConversion;
 using Pot.AspNetCore.Features.Expenses.Import.Converters;
 using Pot.Data.Models;
 
 namespace Pot.AspNetCore.Features.Expenses.Import.Models
 {
-    public sealed class ExpenseImport
+    public sealed class ExpenseForImport
     {
         [Index(0)]
-        public int Id { get; init; }
+        public string? AccountId { get; init; }
 
         [Index(1)]
-        public int AccountId { get; init; }
+        public required string Description { get; init; }
 
         [Index(2)]
-        public string Description { get; init; } = string.Empty;
-
-        [Index(3)]
+        [Format("yyyy-MM-dd")]
+        [TypeConverter(typeof(DateOnlyConverter))]
         public DateOnly NextDue { get; init; }
 
-        [Index(4)]
+        [Index(3)]
+        [Format("yyyy-MM-dd")]
+        [TypeConverter(typeof(DateOnlyConverter))]
         public DateOnly AccrualStart { get; init; }
 
-        [Index(5)]
+        [Index(4)]
         [TypeConverter(typeof(ExpenseFrequencyConverter))]
-        public ExpenseFrequency Frequency { get; init; } = ExpenseFrequency.Months;
+        public required ExpenseFrequency Frequency { get; init; }
 
-        [Index(6)]
+        [Index(5)]
         public int FrequencyCount { get; init; }
 
-        [Index(7)]
+        [Index(6)]
         public bool Recurring { get; init; }
 
-        [Index(8)]
+        [Index(7)]
         public double Amount { get; init; }
 
-        [Index(9)]
+        [Index(8)]
         public double Allocated { get; init; }
     }
 }

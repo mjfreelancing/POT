@@ -15,7 +15,7 @@ internal sealed class CheckHasSameETag : PreUpdateCheckBase
 
         if (account.Etag != request.ETag)
         {
-            var problemDetails = ProblemDetailsFactory.CreateETagConflict(account, request.ETag);
+            var problemDetails = ApiProblemDetailsFactory.CreateETagConflict(account, request.ETag);
 
             state.Logger.LogErrors(problemDetails);
 

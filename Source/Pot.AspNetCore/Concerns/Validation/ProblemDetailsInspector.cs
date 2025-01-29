@@ -21,7 +21,7 @@ internal sealed class ProblemDetailsInspector : IProblemDetailsInspector
     {
         return Guid.TryParse(id, out entityId)
             ? NoProblemDetails.Single
-            : ProblemDetailsFactory.CreateUnprocessableEntity(nameof(id), id, $"The {entityType} Id is invalid.");
+            : ApiProblemDetailsFactory.CreateUnprocessableEntity(ErrorCodes.Invalid, nameof(id), id, $"The {entityType} Id is invalid.");
     }
 
     public Microsoft.AspNetCore.Mvc.ProblemDetails Validate<TType>(TType instance)

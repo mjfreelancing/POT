@@ -47,7 +47,7 @@ namespace Pot.Data.Migrations
                     Recurring = table.Column<bool>(type: "boolean", nullable: false),
                     Amount = table.Column<double>(type: "double precision", nullable: false),
                     Allocated = table.Column<double>(type: "double precision", nullable: false),
-                    AccountId = table.Column<int>(type: "integer", nullable: false),
+                    AccountId = table.Column<int>(type: "integer", nullable: true),
                     RowId = table.Column<Guid>(type: "uuid", nullable: false),
                     Etag = table.Column<long>(type: "bigint", nullable: false)
                 },
@@ -86,14 +86,9 @@ namespace Pot.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Expense_AccountId",
+                name: "IX_Expense_AccountId_Description",
                 table: "Expense",
-                column: "AccountId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Expense_Description",
-                table: "Expense",
-                column: "Description",
+                columns: new[] { "AccountId", "Description" },
                 unique: true);
 
             migrationBuilder.CreateIndex(

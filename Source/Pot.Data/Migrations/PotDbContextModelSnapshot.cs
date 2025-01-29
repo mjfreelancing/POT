@@ -77,7 +77,7 @@ namespace Pot.Data.Migrations
                     b.HasIndex("Bsb", "Number")
                         .IsUnique();
 
-                    b.ToTable("Account", (string)null);
+                    b.ToTable("Account");
                 });
 
             modelBuilder.Entity("Pot.Data.Entities.ExpenseEntity", b =>
@@ -88,7 +88,7 @@ namespace Pot.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AccountId")
+                    b.Property<int?>("AccountId")
                         .HasColumnType("integer");
 
                     b.Property<DateOnly>("AccrualStart")
@@ -128,11 +128,6 @@ namespace Pot.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AccountId");
-
-                    b.HasIndex("Description")
-                        .IsUnique();
-
                     b.HasIndex("Etag");
 
                     b.HasIndex("NextDue");
@@ -140,7 +135,10 @@ namespace Pot.Data.Migrations
                     b.HasIndex("RowId")
                         .IsUnique();
 
-                    b.ToTable("Expense", (string)null);
+                    b.HasIndex("AccountId", "Description")
+                        .IsUnique();
+
+                    b.ToTable("Expense");
                 });
 
             modelBuilder.Entity("Pot.Data.Entities.ExpenseEntity", b =>
@@ -148,8 +146,7 @@ namespace Pot.Data.Migrations
                     b.HasOne("Pot.Data.Entities.AccountEntity", "Account")
                         .WithMany("Expenses")
                         .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Account");
                 });

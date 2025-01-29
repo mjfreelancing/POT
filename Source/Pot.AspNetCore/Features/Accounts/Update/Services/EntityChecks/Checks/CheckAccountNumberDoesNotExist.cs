@@ -23,7 +23,7 @@ internal sealed class CheckAccountNumberDoesNotExist : PreUpdateCheckBase
 
             if (accountExists)
             {
-                var problemDetails = ProblemDetailsFactory.CreateEntityExistsConflict(
+                var problemDetails = ApiProblemDetailsFactory.CreateEntityExistsConflict(
                     account,
                     $"{nameof(AccountEntity.Bsb)}, {nameof(AccountEntity.Number)}",
                     $"{request.Bsb}, {request.Number}");

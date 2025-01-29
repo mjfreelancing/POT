@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Pot.Data.Entities;
+using System.Linq.Expressions;
 
 namespace Pot.Data.Repositories;
 
@@ -24,8 +25,10 @@ public interface IGenericRepository<TDbContext, TEntity>
 
 
     // IQueryable
+
     // =======================
     IQueryable<TEntity> Query();
+    IQueryable<TEntity> Where(Expression<Func<TEntity, bool>> predicate);
 
 
     // Get data

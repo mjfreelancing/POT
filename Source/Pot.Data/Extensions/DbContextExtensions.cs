@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AllOverIt.Patterns.ResourceInitialization;
+using Microsoft.EntityFrameworkCore;
 
 namespace Pot.Data.Extensions
 {
@@ -9,6 +10,13 @@ namespace Pot.Data.Extensions
             dbContext.ChangeTracker.QueryTrackingBehavior = enabled
                 ? QueryTrackingBehavior.TrackAll
                 : QueryTrackingBehavior.NoTrackingWithIdentityResolution;
+        }
+
+        public static IDisposable WithAutoTracking(this DbContext dbContext)
+        {
+            return new Raii(
+                () => { dbContext.WithTracking(true); },
+                () => { dbContext.WithTracking(false); });
         }
     }
 }

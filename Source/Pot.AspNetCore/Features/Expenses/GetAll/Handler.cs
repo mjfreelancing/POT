@@ -1,20 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Pot.Data;
-using Pot.Data.Extensions;
+﻿using AllOverIt.Logging.Extensions;
+using Pot.Data.Repositories.Expenses;
 
 namespace Pot.AspNetCore.Features.Expenses.GetAll;
 
-internal static class Handler
+internal sealed class Handler
 {
-    public static async Task<IResult> Invoke(/*IDbContextFactory<PotDbContext> dbContextFactory,*/ PotDbContext dbContext, CancellationToken cancellationToken)
+    public static async Task<IResult> Invoke(IExpenseRepository expenseRepository, ILogger<Handler> logger,
+        CancellationToken cancellationToken)
     {
-        //using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+        logger.LogCall(null);
 
-        var query = from expense in dbContext.Expenses.Include(expense => expense.Account)
-                    select expense.ToDto();
+        var expenses = await expenseRepository.GetAllAsync(cancellationToken);
 
-        var expenses = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
-
-        return TypedResults.Ok(expenses);
+        return Response.Ok(expenses);
     }
 }

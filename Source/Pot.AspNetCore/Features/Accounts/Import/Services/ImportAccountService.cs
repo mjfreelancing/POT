@@ -19,18 +19,19 @@ internal sealed class ImportAccountService : IImportAccountService
         _logger = logger.WhenNotNull();
     }
 
-    public async Task<ImportSummary> ImportAccountsAsync(AccountForImport[] accountsImport, bool overwrite, CancellationToken cancellationToken)
+    // The account BSB / Number is used for identifying a record that can be overwritten
+    public async Task<ImportSummary> ImportAccountsAsync(AccountForImport[] accountsForImport, bool overwrite, CancellationToken cancellationToken)
     {
         _logger.LogCall(this, new { overwrite });
 
         using (_accountRepository.WithTracking())
         {
-            var importAccountKeys = accountsImport.ToDictionary(account => new AccountKey(account.Bsb, account.Number));
+            //var importAccountKeys = accountsForImport.ToDictionary(account => new AccountKey(account.Bsb, account.Number));
 
             var imported = 0;
             var updated = 0;
 
-            foreach (var import in accountsImport)
+            foreach (var import in accountsForImport)
             {
                 var existing = await _accountRepository
                     .GetAccountOrDefaultAsync(import.Bsb, import.Number, cancellationToken)
@@ -54,10 +55,10 @@ internal sealed class ImportAccountService : IImportAccountService
 
             return new ImportSummary
             {
-                Skipped = accountsImport.Length - imported - updated,
+                Skipped = accountsForImport.Length - imported - updated,
                 Imported = imported,
                 Updated = updated,
-                Total = accountsImport.Length
+                Total = accountsForImport.Length
             };
         }
     }
