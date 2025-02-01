@@ -8,10 +8,6 @@ using Pot.AspNetCore.Features.Expenses.Import.Models;
 
 namespace Pot.AspNetCore.Features.Expenses.Import.Validators;
 
-public interface IExpenseImportValidator : IValidator<ExpenseForImport> //: IPotScopedDependency
-{
-}
-
 internal sealed class ExpenseImportValidator : ValidatorBase<ExpenseForImport>, IExpenseImportValidator
 {
     public ExpenseImportValidator()
@@ -35,7 +31,7 @@ internal sealed class ExpenseImportValidator : ValidatorBase<ExpenseForImport>, 
 
         RuleFor(expense => expense.Description).IsNotEmpty();
         RuleFor(expense => expense.FrequencyCount).IsGreaterThan(0);
-        RuleFor(expense => expense.Amount).IsGreaterThanOrEqualTo(0.0d);    // May be importing as a marker
+        RuleFor(expense => expense.Amount).IsGreaterThanOrEqualTo(0.0d);
 
         // TODO: Needs to be inclusive between 0 and Amount
         RuleFor(expense => expense.Allocated).IsGreaterThanOrEqualTo(0.0d);          // RuleFor(account => account.Allocated).IsInclusiveBetween(0.0d, ...);

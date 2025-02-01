@@ -1,7 +1,6 @@
 using Pot.AspNetCore.Extensions;
 using Pot.AspNetCore.Features.Accounts.Extensions;
 using Pot.AspNetCore.Features.Expenses.Extensions;
-using Pot.AspNetCore.Features.Expenses.Import.Validators;
 
 namespace Pot.AspNetCore;
 
@@ -44,9 +43,6 @@ public class Program
         //        };
         //    });
 
-
-        // TODO: Move somewhere else
-        builder.Services.AddScoped<IExpenseImportValidator, ExpenseImportValidator>();
 
 
         var app = builder.Build();

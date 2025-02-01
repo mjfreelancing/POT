@@ -1,5 +1,7 @@
 ﻿using AllOverIt.DependencyInjection.Extensions;
+using AllOverIt.Validation;
 using AllOverIt.Validation.Extensions;
+using FluentValidation;
 using Pot.AspNetCore.Concerns.DependencyInjection;
 using Pot.AspNetCore.Concerns.ExceptionHandlers;
 using Pot.AspNetCore.Concerns.Logging;
@@ -133,18 +135,26 @@ internal static class WebApplicationBuilderExtensions
     {
         builder.Services.AutoRegisterScoped<PotRegistrar, IPotScopedDependency>(config =>
         {
+            // Exclude interfaces we know we don't want to register
             config.Filter((serviceType, implementationType) =>
             {
-                // Exclude the marker interface
+                if (serviceType.IsGenericType)
+                {
+                    var genericTypeDefinition = serviceType.GetGenericTypeDefinition();
+
+                    // Not expecting other types, but only filter out those we expect
+                    return !(genericTypeDefinition == typeof(IValidator<>) || genericTypeDefinition == typeof(ValidatorBase<>));
+                }
+
                 return serviceType != typeof(IPotScopedDependency);
             });
         });
 
         builder.Services.AutoRegisterScoped<PotDataRegistrar>([typeof(IGenericRepository<,>)], config =>
         {
+            // Exclude interfaces we know we don't want to register
             config.Filter((serviceType, implementationType) =>
             {
-                // Exclude the marker interface
                 return !serviceType.IsGenericType || serviceType.GetGenericTypeDefinition() != typeof(IGenericRepository<,>);
             });
         });

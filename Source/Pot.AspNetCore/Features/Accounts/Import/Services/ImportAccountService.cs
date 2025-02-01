@@ -1,6 +1,12 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
+using AllOverIt.Patterns.Result;
+using Pot.AspNetCore.Concerns.ProblemDetails;
+using Pot.AspNetCore.Concerns.Validation;
+using Pot.AspNetCore.Concerns.Validation.Extensions;
+using Pot.AspNetCore.Errors;
 using Pot.AspNetCore.Features.Accounts.Import.Models;
+using Pot.AspNetCore.Features.Accounts.Import.Validators;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
 
@@ -10,56 +16,130 @@ internal sealed class ImportAccountService : IImportAccountService
 {
     private sealed record AccountKey(string Bsb, string Number);
 
+    private readonly IAccountImportValidator _accountImportValidator;
     private readonly IAccountRepository _accountRepository;
     private readonly ILogger _logger;
 
-    public ImportAccountService(IAccountRepository accountRepository, ILogger<ImportAccountService> logger)
+    public ImportAccountService(IAccountImportValidator accountImportValidator, IAccountRepository accountRepository, ILogger<ImportAccountService> logger)
     {
+        _accountImportValidator = accountImportValidator.WhenNotNull();
         _accountRepository = accountRepository.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
-    // The account BSB / Number is used for identifying a record that can be overwritten
-    public async Task<ImportSummary> ImportAccountsAsync(AccountForImport[] accountsForImport, bool overwrite, CancellationToken cancellationToken)
+    public async Task<EnrichedResult<ImportSummary>> ImportAccountsAsync(IEnumerable<AccountForImport> accountsForImport, bool overwrite, CancellationToken cancellationToken)
     {
         _logger.LogCall(this, new { overwrite });
 
         using (_accountRepository.WithTracking())
         {
-            //var importAccountKeys = accountsForImport.ToDictionary(account => new AccountKey(account.Bsb, account.Number));
+            var problemDetailsErrors = new List<CsvProblemDetailsError>();
 
+            // Look for duplicates in the import file
+            var accountKeys = new HashSet<AccountKey>();
+
+            var recordCount = 0;
             var imported = 0;
             var updated = 0;
+            var row = 1;            // Skip the header row
 
             foreach (var import in accountsForImport)
             {
-                var existing = await _accountRepository
+                row++;
+                recordCount++;
+
+                CheckImportColumns(row, import, problemDetailsErrors);
+                CheckForDuplicateAccount(row, import, accountKeys, problemDetailsErrors);
+
+                // If an invalid row is detected, only look for more errors.
+                if (problemDetailsErrors.Count > 0)
+                {
+                    continue;
+                }
+
+                var existingAccount = await _accountRepository
                     .GetAccountOrDefaultAsync(import.Bsb, import.Number, cancellationToken)
                     .ConfigureAwait(false);
 
-                if (existing is null)
+                if (existingAccount is null)
                 {
                     AddAccountEntity(import);
                     imported++;
                 }
                 else if (overwrite)
                 {
-                    UpdateAccountEntity(existing, import);
+                    UpdateAccountEntity(existingAccount, import);
                     updated++;
                 }
+            }
+
+            if (problemDetailsErrors.Count > 0)
+            {
+                var problemDetails = ApiProblemDetailsFactory.CreateUnprocessableEntity(problemDetailsErrors);
+                var serviceError = new ServiceError(problemDetails);
+
+                return EnrichedResult.Fail<ImportSummary>(serviceError);
             }
 
             await _accountRepository
                 .SaveAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            return new ImportSummary
+            var result = new ImportSummary
             {
-                Skipped = accountsForImport.Length - imported - updated,
+                Skipped = recordCount - imported - updated,
                 Imported = imported,
                 Updated = updated,
-                Total = accountsForImport.Length
+                Total = recordCount
             };
+
+            return EnrichedResult.Success(result);
+        }
+    }
+
+    private void CheckImportColumns(int row, AccountForImport import, List<CsvProblemDetailsError> problemDetailsErrors)
+    {
+        var validationResult = _accountImportValidator.Validate(import);
+
+        if (!validationResult.IsValid)
+        {
+            var errors = validationResult
+                .ToProblemDetailsErrors()
+                .Select(error => new CsvProblemDetailsError
+                {
+                    ImportRow = row,
+                    PropertyName = error.PropertyName,
+                    ErrorCode = error.ErrorCode,
+                    AttemptedValue = error.AttemptedValue,
+                    ErrorMessage = error.ErrorMessage
+                });
+
+            problemDetailsErrors.AddRange(errors);
+        }
+    }
+
+    private static void CheckForDuplicateAccount(int row, AccountForImport import, HashSet<AccountKey> accountKeys,
+        List<CsvProblemDetailsError> problemDetailsErrors)
+    {
+        // Note: This only looks for duplicates in the import file.
+        //  - Consider pre-loading all current BSB/Number, or
+        //  - Query the database to see if another row already exists with the same BSB/Number, or
+        //  - Work out how to cleanly report a database conflict at the time of saving.
+        var accountKey = new AccountKey(import.Bsb, import.Number);
+
+        // Look for a duplicate row
+        if (!accountKeys.Add(accountKey))
+        {
+            var errorDetails = new CsvProblemDetailsError
+            {
+                ImportRow = row,
+                PropertyName = $"{nameof(AccountForImport.Bsb)}, {nameof(AccountForImport.Number)}",
+                ErrorCode = ErrorCodes.Duplicate,
+                AttemptedValue = $"{import.Bsb}, {import.Number}",
+                ErrorMessage = "The import data contains a duplicate row with the same BSB and Number"
+            };
+
+            problemDetailsErrors.Add(errorDetails);
         }
     }
 

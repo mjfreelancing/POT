@@ -14,11 +14,6 @@ using Pot.Data.UnitOfWork;
 
 namespace Pot.AspNetCore.Features.Expenses.Import.Services;
 
-internal sealed class CsvProblemDetailsError : ProblemDetailsError
-{
-    public int ImportRow { get; init; }
-}
-
 internal sealed class ImportExpenseService : IImportExpenseService
 {
     private sealed record ExpenseKey(string? AccountId, string Description);
@@ -35,21 +30,19 @@ internal sealed class ImportExpenseService : IImportExpenseService
         _logger = logger.WhenNotNull();
     }
 
-    // The expense description and associated account RowId is used for identifying a record that can be overwritten
     public async Task<EnrichedResult<ImportSummary>> ImportExpensesAsync(IEnumerable<ExpenseForImport> expensesForImport, bool overwrite,
         CancellationToken cancellationToken)
     {
         _logger.LogCall(this, new { overwrite });
-
-        var recordCount = 0;
 
         using (_unitOfWork.WithTracking())
         {
             var problemDetailsErrors = new List<CsvProblemDetailsError>();
 
             // Look for duplicates in the import file
-            var descriptions = new HashSet<ExpenseKey>();
+            var expenseKeys = new HashSet<ExpenseKey>();
 
+            var recordCount = 0;
             var imported = 0;
             var updated = 0;
             var row = 1;            // Skip the header row
@@ -57,9 +50,10 @@ internal sealed class ImportExpenseService : IImportExpenseService
             foreach (var import in expensesForImport)
             {
                 row++;
+                recordCount++;
 
-                CheckForDuplicateExpense(row, import, descriptions, problemDetailsErrors);
                 CheckImportColumns(row, import, problemDetailsErrors);
+                CheckForDuplicateExpense(row, import, expenseKeys, problemDetailsErrors);
 
                 var (accountGuid, accountEntity) = await CheckExpenseAccountAsync(row, import, problemDetailsErrors, cancellationToken)
                     .ConfigureAwait(false);
@@ -83,8 +77,6 @@ internal sealed class ImportExpenseService : IImportExpenseService
                     UpdateExistingExpense(existingExpense, import);
                     updated++;
                 }
-
-                recordCount++;
             }
 
             if (problemDetailsErrors.Count > 0)
@@ -155,13 +147,17 @@ internal sealed class ImportExpenseService : IImportExpenseService
         }
     }
 
-    private static void CheckForDuplicateExpense(int row, ExpenseForImport import, HashSet<ExpenseKey> descriptions,
+    private static void CheckForDuplicateExpense(int row, ExpenseForImport import, HashSet<ExpenseKey> expenseKeys,
         List<CsvProblemDetailsError> problemDetailsErrors)
     {
-        var expenseDescription = new ExpenseKey(import.AccountId, import.Description);
+        // Note: This only looks for duplicates in the import file.
+        //  - Consider pre-loading all current AccountId/Description, or
+        //  - Query the database to see if another row already exists with the same AccountId/Description, or
+        //  - Work out how to cleanly report a database conflict at the time of saving.
+        var expenseKey = new ExpenseKey(import.AccountId, import.Description);
 
-        // Look for a duplicate account/description row
-        if (!descriptions.Add(expenseDescription))
+        // Look for a duplicate row
+        if (!expenseKeys.Add(expenseKey))
         {
             var errorDetails = new CsvProblemDetailsError
             {
