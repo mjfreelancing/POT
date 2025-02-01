@@ -4,9 +4,9 @@ using Pot.AspNetCore.Features.Accounts.Import.Models;
 
 namespace Pot.AspNetCore.Features.Accounts.Import.Validators;
 
-internal sealed class AccountImportValidator : ValidatorBase<AccountForImport>, IAccountImportValidator
+internal sealed class AccountForImportValidator : ValidatorBase<AccountForImport>, IAccountForImportValidator
 {
-    public AccountImportValidator()
+    public AccountForImportValidator()
     {
         RuleFor(account => account.Bsb).IsNotEmpty();
         RuleFor(account => account.Number).IsNotEmpty();

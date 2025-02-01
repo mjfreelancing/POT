@@ -1,6 +1,5 @@
 ﻿using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Pot.AspNetCore.Concerns.ProblemDetails;
 using Pot.AspNetCore.Concerns.ProblemDetails.Extensions;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.Data.Repositories.Accounts;
@@ -19,7 +18,7 @@ internal sealed class Handler
 
         var problemDetails = ProblemDetailsInspector.ValidateAsRowId(id, "Account", out var accountId);
 
-        if (!ReferenceEquals(problemDetails, NoProblemDetails.Single))
+        if (problemDetails.IsProblem())
         {
             logger.LogErrors(problemDetails);
 

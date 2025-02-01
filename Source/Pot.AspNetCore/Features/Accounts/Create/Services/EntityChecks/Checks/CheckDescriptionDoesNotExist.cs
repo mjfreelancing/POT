@@ -1,5 +1,5 @@
-﻿using AllOverIt.Patterns.Result;
-using Microsoft.EntityFrameworkCore;
+﻿using AllOverIt.Logging.Extensions;
+using AllOverIt.Patterns.Result;
 using Pot.AspNetCore.Concerns.ProblemDetails;
 using Pot.AspNetCore.Concerns.ProblemDetails.Extensions;
 using Pot.AspNetCore.Errors;
@@ -12,13 +12,14 @@ internal sealed class CheckDescriptionDoesNotExist : PreCreateCheckBase
 {
     public override async Task<OutputState?> HandleAsync(InputState state, CancellationToken cancellationToken)
     {
+        state.Logger.LogCall(this);
+
         var account = state.AccountToCreate;
 
         var predicate = AccountSpecifications.IsSameDescription(account.Description).Expression;
 
         var descriptionExists = await state.AccountRepository
-            .Where(predicate)
-            .AnyAsync(cancellationToken)
+            .AnyAsync(predicate, cancellationToken)
             .ConfigureAwait(false);
 
         if (descriptionExists)

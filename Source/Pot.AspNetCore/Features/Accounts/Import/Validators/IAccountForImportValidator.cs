@@ -4,6 +4,6 @@ using Pot.AspNetCore.Features.Accounts.Import.Models;
 
 namespace Pot.AspNetCore.Features.Accounts.Import.Validators;
 
-public interface IAccountImportValidator : IValidator<AccountForImport>, IPotScopedDependency
+public interface IAccountForImportValidator : IValidator<AccountForImport>, IPotScopedDependency
 {
 }

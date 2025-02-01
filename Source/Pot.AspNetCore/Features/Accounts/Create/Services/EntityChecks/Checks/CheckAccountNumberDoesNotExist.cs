@@ -1,4 +1,5 @@
-﻿using AllOverIt.Patterns.Result;
+﻿using AllOverIt.Logging.Extensions;
+using AllOverIt.Patterns.Result;
 using Pot.AspNetCore.Concerns.ProblemDetails;
 using Pot.AspNetCore.Concerns.ProblemDetails.Extensions;
 using Pot.AspNetCore.Errors;
@@ -10,6 +11,8 @@ internal sealed class CheckAccountNumberDoesNotExist : PreCreateCheckBase
 {
     public override async Task<OutputState?> HandleAsync(InputState state, CancellationToken cancellationToken)
     {
+        state.Logger.LogCall(this);
+
         var account = state.AccountToCreate;
 
         var accountExists = await state.AccountRepository

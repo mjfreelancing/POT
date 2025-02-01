@@ -35,6 +35,21 @@ internal abstract class GenericRepository<TDbContext, TEntity> : IGenericReposit
         return DbContext.Set<TEntity>().Where(predicate);
     }
 
+    public Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken)
+    {
+        return DbContext.Set<TEntity>().AnyAsync(predicate, cancellationToken);
+    }
+
+    public Task<TEntity?> SingleOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken)
+    {
+        return DbContext.Set<TEntity>().SingleOrDefaultAsync(predicate, cancellationToken);
+    }
+
+    public Task<TEntity> SingleAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken)
+    {
+        return DbContext.Set<TEntity>().SingleAsync(predicate, cancellationToken);
+    }
+
     // Get data
     // =======================
     public Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken)

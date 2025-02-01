@@ -1,6 +1,5 @@
 ﻿using AllOverIt.Assertion;
 using Microsoft.EntityFrameworkCore;
-using Pot.Data.Extensions;
 
 namespace Pot.Data.UnitOfWork;
 
@@ -13,9 +12,6 @@ public abstract class UnitOfWork<TDbContext> : IUnitOfWork where TDbContext : Db
     public UnitOfWork(TDbContext dbContext)
     {
         DbContext = dbContext.WhenNotNull();
-
-        // If using UnitOfWork then you'd require tracking to be enabled
-        DbContext.WithTracking(true);
     }
 
     public void Dispose()

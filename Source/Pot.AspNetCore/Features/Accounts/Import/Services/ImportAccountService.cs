@@ -16,11 +16,11 @@ internal sealed class ImportAccountService : IImportAccountService
 {
     private sealed record AccountKey(string Bsb, string Number);
 
-    private readonly IAccountImportValidator _accountImportValidator;
+    private readonly IAccountForImportValidator _accountImportValidator;
     private readonly IAccountRepository _accountRepository;
     private readonly ILogger _logger;
 
-    public ImportAccountService(IAccountImportValidator accountImportValidator, IAccountRepository accountRepository, ILogger<ImportAccountService> logger)
+    public ImportAccountService(IAccountForImportValidator accountImportValidator, IAccountRepository accountRepository, ILogger<ImportAccountService> logger)
     {
         _accountImportValidator = accountImportValidator.WhenNotNull();
         _accountRepository = accountRepository.WhenNotNull();
@@ -35,7 +35,8 @@ internal sealed class ImportAccountService : IImportAccountService
         {
             var problemDetailsErrors = new List<CsvProblemDetailsError>();
 
-            // Look for duplicates in the import file
+            // Look for duplicates in the import file - not checking for duplicates in the database since
+            // the import will either skip or overwrite existing records.
             var accountKeys = new HashSet<AccountKey>();
 
             var recordCount = 0;
@@ -121,13 +122,9 @@ internal sealed class ImportAccountService : IImportAccountService
     private static void CheckForDuplicateAccount(int row, AccountForImport import, HashSet<AccountKey> accountKeys,
         List<CsvProblemDetailsError> problemDetailsErrors)
     {
-        // Note: This only looks for duplicates in the import file.
-        //  - Consider pre-loading all current BSB/Number, or
-        //  - Query the database to see if another row already exists with the same BSB/Number, or
-        //  - Work out how to cleanly report a database conflict at the time of saving.
         var accountKey = new AccountKey(import.Bsb, import.Number);
 
-        // Look for a duplicate row
+        // Look for a duplicate import row
         if (!accountKeys.Add(accountKey))
         {
             var errorDetails = new CsvProblemDetailsError

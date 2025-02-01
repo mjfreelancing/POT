@@ -2,10 +2,8 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.AspNetCore.Concerns.ProblemDetails.Extensions;
 using Pot.AspNetCore.Concerns.Validation;
-using Pot.AspNetCore.Concerns.Validation.Extensions;
 using Pot.AspNetCore.Extensions;
 using Pot.AspNetCore.Features.Accounts.Update.Services;
-using Pot.Data.Repositories.Accounts;
 
 namespace Pot.AspNetCore.Features.Accounts.Update;
 
@@ -13,7 +11,7 @@ internal sealed class Handler
 {
     public static async Task<Results<Ok<Response>, NotFound, ProblemHttpResult>> Invoke(Request request,
         IProblemDetailsInspector problemDetailsInspector, IUpdateAccountService updateAccountService,
-        IAccountRepository accountRepository, ILogger<Handler> logger, CancellationToken cancellationToken)
+        ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);
 
@@ -29,7 +27,7 @@ internal sealed class Handler
         var result = await updateAccountService.UpdateAccountAsync(request, cancellationToken);
 
         return result.IsSuccess
-         ? Response.Ok(result.Value!)
-         : TypedResults.Problem(result.Error!.GetProblemDetails());
+            ? Response.Ok(result.Value!)
+            : TypedResults.Problem(result.Error!.GetProblemDetails());
     }
 }

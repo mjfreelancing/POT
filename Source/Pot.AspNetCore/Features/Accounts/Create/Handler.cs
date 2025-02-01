@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.AspNetCore.Concerns.ProblemDetails.Extensions;
 using Pot.AspNetCore.Concerns.Validation;
-using Pot.AspNetCore.Concerns.Validation.Extensions;
 using Pot.AspNetCore.Extensions;
 using Pot.AspNetCore.Features.Accounts.Create.Services;
 

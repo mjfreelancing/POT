@@ -7,6 +7,6 @@ public interface IAccountRepository : IGenericRepository<PotDbContext, AccountEn
     Task<bool> AccountExistsAsync(Guid id, CancellationToken cancellationToken);
     Task<AccountEntity> GetAccountAsync(Guid id, CancellationToken cancellationToken);
     Task<AccountEntity?> GetAccountOrDefaultAsync(Guid id, CancellationToken cancellationToken);
-    Task<AccountEntity?> GetAccountOrDefaultAsync(string bsb, string number, CancellationToken cancellationToken);
     Task<bool> AccountExistsAsync(string bsb, string number, CancellationToken cancellationToken);
+    Task<AccountEntity?> GetAccountOrDefaultAsync(string bsb, string number, CancellationToken cancellationToken);
 }

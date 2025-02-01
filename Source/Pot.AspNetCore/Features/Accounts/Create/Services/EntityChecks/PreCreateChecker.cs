@@ -1,4 +1,5 @@
 ﻿using AllOverIt.Assertion;
+using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.ChainOfResponsibility;
 using Pot.AspNetCore.Features.Accounts.Create.Services.EntityChecks.Checks;
 using Pot.Data.Entities;
@@ -21,11 +22,13 @@ internal sealed class PreCreateChecker : ChainOfResponsibilityAsyncComposer<Inpu
         : base(_handlers)
     {
         _accountRepository = accountRepository.WhenNotNull();
-        _logger = logger.WhenNotNull(); ;
+        _logger = logger.WhenNotNull();
     }
 
     public Task<OutputState?> CanSaveAsync(AccountEntity accountToCreate, CancellationToken cancellationToken)
     {
+        _logger.LogCall(this);
+
         var state = new InputState
         {
             AccountToCreate = accountToCreate,

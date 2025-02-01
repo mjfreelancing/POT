@@ -14,9 +14,9 @@ internal sealed class CreateAccountService : ICreateAccountService
 
     public CreateAccountService(IAccountRepository accountRepository, IPreCreateChecker preCreateChecker, ILogger<CreateAccountService> logger)
     {
-        _accountRepository = accountRepository.WhenNotNull(); ;
-        _logger = logger.WhenNotNull();
+        _accountRepository = accountRepository.WhenNotNull();
         _preCreateChecker = preCreateChecker.WhenNotNull();
+        _logger = logger.WhenNotNull();
     }
 
     public async Task<EnrichedResult<AccountEntity>> CreateAccountAsync(Request request, CancellationToken cancellationToken)

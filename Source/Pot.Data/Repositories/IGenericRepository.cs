@@ -30,6 +30,9 @@ public interface IGenericRepository<TDbContext, TEntity>
     IQueryable<TEntity> Query();
     IQueryable<TEntity> Where(Expression<Func<TEntity, bool>> predicate);
 
+    Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken);
+    Task<TEntity?> SingleOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken);
+    Task<TEntity> SingleAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken);
 
     // Get data
     // =======================

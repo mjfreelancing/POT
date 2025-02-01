@@ -39,7 +39,8 @@ internal sealed class ImportExpenseService : IImportExpenseService
         {
             var problemDetailsErrors = new List<CsvProblemDetailsError>();
 
-            // Look for duplicates in the import file
+            // Look for duplicates in the import file - not checking for duplicates in the database since
+            // the import will either skip or overwrite existing records.
             var expenseKeys = new HashSet<ExpenseKey>();
 
             var recordCount = 0;
@@ -150,13 +151,9 @@ internal sealed class ImportExpenseService : IImportExpenseService
     private static void CheckForDuplicateExpense(int row, ExpenseForImport import, HashSet<ExpenseKey> expenseKeys,
         List<CsvProblemDetailsError> problemDetailsErrors)
     {
-        // Note: This only looks for duplicates in the import file.
-        //  - Consider pre-loading all current AccountId/Description, or
-        //  - Query the database to see if another row already exists with the same AccountId/Description, or
-        //  - Work out how to cleanly report a database conflict at the time of saving.
         var expenseKey = new ExpenseKey(import.AccountId, import.Description);
 
-        // Look for a duplicate row
+        // Look for a duplicate import row
         if (!expenseKeys.Add(expenseKey))
         {
             var errorDetails = new CsvProblemDetailsError
