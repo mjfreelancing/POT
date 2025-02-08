@@ -6,5 +6,5 @@ namespace Pot.AspNetCore.Features.Expenses.Import.Services;
 
 public interface IImportExpenseService : IPotScopedDependency
 {
-    Task<EnrichedResult<ImportSummary>> ImportExpensesAsync(IEnumerable<ExpenseForImport> expensesForImport, bool overwrite, CancellationToken cancellationToken);
+    Task<EnrichedResult<ImportSummary>> ImportExpensesAsync(IEnumerable<ExpenseCsvRow> csvRows, CancellationToken cancellationToken);
 }

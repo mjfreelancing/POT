@@ -12,6 +12,9 @@ namespace Pot.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AlterDatabase()
+                .Annotation("Npgsql:PostgresExtension:citext", ",,");
+
             migrationBuilder.CreateTable(
                 name: "Account",
                 columns: table => new
@@ -20,7 +23,7 @@ namespace Pot.Data.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Bsb = table.Column<string>(type: "character varying(7)", maxLength: 7, nullable: false),
                     Number = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    Description = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "citext", maxLength: 100, nullable: false),
                     Balance = table.Column<double>(type: "double precision", nullable: false),
                     Reserved = table.Column<double>(type: "double precision", nullable: false),
                     Allocated = table.Column<double>(type: "double precision", nullable: false),
@@ -39,7 +42,7 @@ namespace Pot.Data.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Description = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "citext", maxLength: 100, nullable: false),
                     NextDue = table.Column<DateOnly>(type: "date", nullable: false),
                     AccrualStart = table.Column<DateOnly>(type: "date", nullable: false),
                     Frequency = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),

@@ -17,7 +17,7 @@ internal sealed class Handler
     // Refer to this link for examples and security considerations:
     // https://learn.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads?view=aspnetcore-9.0
 
-    internal static readonly ProblemDetails _invalidCsvColumnCount = ApiProblemDetailsFactory.CreateUnprocessableEntity("Invalid CSV file format. Expected 9 header columns.");
+    internal static readonly ProblemDetails _invalidCsvColumnCount = ApiProblemDetailsFactory.CreateUnprocessableEntity("Invalid CSV file format. Expected 10 header columns.");
 
     public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke([FromForm] Request request,
         IImportExpenseService expenseImportService, ILogger<Handler> logger, CancellationToken cancellationToken)
@@ -34,15 +34,12 @@ internal sealed class Handler
 
             var columnCount = csv.ColumnCount;
 
-            if (columnCount != 9)
+            if (columnCount != 10)
             {
                 return TypedResults.Problem(_invalidCsvColumnCount);
             }
 
-            var importSummary = await expenseImportService.ImportExpensesAsync(
-                csv.GetRecords<ExpenseForImport>(),
-                request.Overwrite,
-                cancellationToken);
+            var importSummary = await expenseImportService.ImportExpensesAsync(csv.GetRecords<ExpenseCsvRow>(), cancellationToken);
 
             return importSummary.IsSuccess
                 ? Response.Ok(importSummary.Value!)

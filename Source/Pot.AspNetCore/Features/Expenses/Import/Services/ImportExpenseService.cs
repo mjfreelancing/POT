@@ -16,68 +16,62 @@ namespace Pot.AspNetCore.Features.Expenses.Import.Services;
 
 internal sealed class ImportExpenseService : IImportExpenseService
 {
-    private sealed record ExpenseKey(string? AccountId, string Description);
+    private record ExpenseEntityInfo(ExpenseEntity ExpenseEntity, bool Created);
 
-    private readonly IExpenseImportValidator _expenseImportValidator;
+    private readonly IExpenseCsvRowValidator _csvRowValidator;
     private readonly IPotUnitOfWork _unitOfWork;
     private readonly ILogger _logger;
 
-    public ImportExpenseService(IExpenseImportValidator expenseImportValidator, IPotUnitOfWork unitOfWork,
-        ILogger<ImportExpenseService> logger)
+    public ImportExpenseService(IExpenseCsvRowValidator csvRowValidator, IPotUnitOfWork unitOfWork, ILogger<ImportExpenseService> logger)
     {
-        _expenseImportValidator = expenseImportValidator.WhenNotNull();
+        _csvRowValidator = csvRowValidator.WhenNotNull();
         _unitOfWork = unitOfWork.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
-    public async Task<EnrichedResult<ImportSummary>> ImportExpensesAsync(IEnumerable<ExpenseForImport> expensesForImport, bool overwrite,
+    public async Task<EnrichedResult<ImportSummary>> ImportExpensesAsync(IEnumerable<ExpenseCsvRow> csvRows,
         CancellationToken cancellationToken)
     {
-        _logger.LogCall(this, new { overwrite });
+        _logger.LogCall(this);
 
         using (_unitOfWork.WithTracking())
         {
             var problemDetailsErrors = new List<CsvProblemDetailsError>();
-
-            // Look for duplicates in the import file - not checking for duplicates in the database since
-            // the import will either skip or overwrite existing records.
-            var expenseKeys = new HashSet<ExpenseKey>();
 
             var recordCount = 0;
             var imported = 0;
             var updated = 0;
             var row = 1;            // Skip the header row
 
-            foreach (var import in expensesForImport)
+            foreach (var csvRow in csvRows)
             {
                 row++;
                 recordCount++;
 
-                CheckImportColumns(row, import, problemDetailsErrors);
-                CheckForDuplicateExpense(row, import, expenseKeys, problemDetailsErrors);
+                // Only validating each row. Not looking for duplicates or other possible conflicts.
+                CheckImportColumns(row, csvRow, problemDetailsErrors);
 
-                var (accountGuid, accountEntity) = await CheckExpenseAccountAsync(row, import, problemDetailsErrors, cancellationToken)
-                    .ConfigureAwait(false);
-
-                // If an invalid row is detected, only look for more errors.
+                // If we already have at least one error then only look for more errors.
                 if (problemDetailsErrors.Count > 0)
                 {
                     continue;
                 }
 
-                var existingExpense = await GetExpenseOrDefaultAsync(import, accountGuid, accountEntity, cancellationToken)
-                    .ConfigureAwait(false);
+                var expenseEntityInfo = await CreateOrUpdateExpenseAsync(csvRow, cancellationToken).ConfigureAwait(false);
 
-                if (existingExpense is null)
+                if (expenseEntityInfo.Created)
                 {
-                    AddNewExpense(import, accountEntity);
                     imported++;
                 }
-                else if (overwrite)
+                else
                 {
-                    UpdateExistingExpense(existingExpense, import);
                     updated++;
                 }
+
+                var expenseEntity = expenseEntityInfo.ExpenseEntity;
+                var csvAccountId = csvRow.AccountId?.As<Guid?>();
+
+                await UpdateExpenseAccountAsync(expenseEntity, csvAccountId, row, problemDetailsErrors, cancellationToken).ConfigureAwait(false);
             }
 
             if (problemDetailsErrors.Count > 0)
@@ -94,7 +88,6 @@ internal sealed class ImportExpenseService : IImportExpenseService
 
             var result = new ImportSummary
             {
-                Skipped = recordCount - imported - updated,
                 Imported = imported,
                 Updated = updated,
                 Total = recordCount
@@ -104,32 +97,9 @@ internal sealed class ImportExpenseService : IImportExpenseService
         }
     }
 
-    private async Task<ExpenseEntity?> GetExpenseOrDefaultAsync(ExpenseForImport import, Guid accountGuid, AccountEntity? accountEntity,
-        CancellationToken cancellationToken)
+    private void CheckImportColumns(int row, ExpenseCsvRow import, List<CsvProblemDetailsError> problemDetailsErrors)
     {
-        ExpenseEntity? existing = null;
-
-        if (accountEntity is null)
-        {
-            existing = await _unitOfWork.ExpenseRepository
-                .Where(expense => expense.Account == null && expense.Description == import.Description)
-                .SingleOrDefaultAsync(cancellationToken)
-                .ConfigureAwait(false);
-        }
-        else
-        {
-            existing = await _unitOfWork.ExpenseRepository
-                .Where(expense => expense.Account != null && expense.Account.RowId == accountGuid && expense.Description == import.Description)
-                .SingleOrDefaultAsync(cancellationToken)
-                .ConfigureAwait(false);
-        }
-
-        return existing;
-    }
-
-    private void CheckImportColumns(int row, ExpenseForImport import, List<CsvProblemDetailsError> problemDetailsErrors)
-    {
-        var validationResult = _expenseImportValidator.Validate(import);
+        var validationResult = _csvRowValidator.Validate(import);
 
         if (!validationResult.IsValid)
         {
@@ -148,63 +118,74 @@ internal sealed class ImportExpenseService : IImportExpenseService
         }
     }
 
-    private static void CheckForDuplicateExpense(int row, ExpenseForImport import, HashSet<ExpenseKey> expenseKeys,
-        List<CsvProblemDetailsError> problemDetailsErrors)
+    private async Task<ExpenseEntityInfo> CreateOrUpdateExpenseAsync(ExpenseCsvRow csvRow, CancellationToken cancellationToken)
     {
-        var expenseKey = new ExpenseKey(import.AccountId, import.Description);
+        ExpenseEntity? expenseEntity = null;
 
-        // Look for a duplicate import row
-        if (!expenseKeys.Add(expenseKey))
+        var csvExpenseId = csvRow.ExpenseId?.As<Guid?>();
+
+        if (csvExpenseId.HasValue)
         {
-            var errorDetails = new CsvProblemDetailsError
-            {
-                ImportRow = row,
-                PropertyName = $"{nameof(ExpenseForImport.AccountId)}, {nameof(ExpenseForImport.Description)}",
-                ErrorCode = ErrorCodes.Duplicate,
-                AttemptedValue = $"{import.AccountId}, {import.Description}",
-                ErrorMessage = "The import data contains a duplicate row with the same Account and Description"
-            };
-
-            problemDetailsErrors.Add(errorDetails);
+            // Will not exist if re-importing a file to recover data
+            expenseEntity = await _unitOfWork.ExpenseRepository
+               .Where(expense => expense.RowId == csvExpenseId)
+               .Include(expense => expense.Account)
+               .SingleOrDefaultAsync(cancellationToken)
+               .ConfigureAwait(false);
         }
+
+        if (expenseEntity is null)
+        {
+            expenseEntity = CreateExpenseEntity(csvExpenseId, csvRow);
+            return new ExpenseEntityInfo(expenseEntity, true);
+        }
+
+        UpdateExistingExpense(expenseEntity, csvRow);
+
+        return new ExpenseEntityInfo(expenseEntity, false);
     }
 
-    private async Task<(Guid, AccountEntity?)> CheckExpenseAccountAsync(int row, ExpenseForImport import,
+    private async Task UpdateExpenseAccountAsync(ExpenseEntity expenseEntity, Guid? csvAccountId, int row,
         List<CsvProblemDetailsError> problemDetailsErrors, CancellationToken cancellationToken)
     {
-        Guid accountGuid = default;
-        AccountEntity? accountEntity = null;
-
-        if (import.AccountId is not null)
+        // If the expense has an account but it doesn't match the provided Account Id,
+        // then move the expense to the new account (or unassign if not provided)
+        if (expenseEntity.Account is not null && expenseEntity.Account.RowId != csvAccountId)
         {
-            accountGuid = import.AccountId.As<Guid>();
+            expenseEntity.Account.Expenses.Remove(expenseEntity);
+            expenseEntity.Account = null;
+        }
 
-            accountEntity = await _unitOfWork.AccountRepository
-                .GetAccountOrDefaultAsync(accountGuid, cancellationToken)
+        if (csvAccountId.HasValue && expenseEntity.Account is null)
+        {
+            var targetAccountEntity = await _unitOfWork.AccountRepository
+                .GetAccountOrDefaultAsync(csvAccountId.Value, cancellationToken)
                 .ConfigureAwait(false);
 
-            if (accountEntity is null)
+            if (targetAccountEntity is null)
             {
                 var errorDetails = new CsvProblemDetailsError
                 {
                     ImportRow = row,
-                    PropertyName = nameof(ExpenseForImport.AccountId),
+                    PropertyName = nameof(ExpenseCsvRow.AccountId),
                     ErrorCode = ErrorCodes.NotFound,
-                    AttemptedValue = import.AccountId,
+                    AttemptedValue = csvAccountId!.Value,
                     ErrorMessage = "The Account does not exist"
                 };
 
                 problemDetailsErrors.Add(errorDetails);
+                return;
             }
-        }
 
-        return (accountGuid, accountEntity);
+            targetAccountEntity.Expenses.Add(expenseEntity);
+        }
     }
 
-    private static ExpenseEntity CreateExpenseEntity(ExpenseForImport import)
+    private ExpenseEntity CreateExpenseEntity(Guid? expenseId, ExpenseCsvRow import)
     {
-        return new ExpenseEntity
+        var expenseEntity = new ExpenseEntity
         {
+            RowId = expenseId ?? Guid.NewGuid(),
             Description = import.Description,
             NextDue = import.NextDue,
             AccrualStart = import.AccrualStart,
@@ -214,23 +195,13 @@ internal sealed class ImportExpenseService : IImportExpenseService
             Amount = import.Amount,
             Allocated = import.Allocated
         };
+
+        _unitOfWork.ExpenseRepository.Add(expenseEntity);
+
+        return expenseEntity;
     }
 
-    private void AddNewExpense(ExpenseForImport import, AccountEntity? accountEntity)
-    {
-        var expenseEntity = CreateExpenseEntity(import);
-
-        if (accountEntity is not null)
-        {
-            accountEntity.Expenses.Add(expenseEntity);
-        }
-        else
-        {
-            _unitOfWork.ExpenseRepository.Add(expenseEntity);
-        }
-    }
-
-    private static void UpdateExistingExpense(ExpenseEntity entity, ExpenseForImport import)
+    private static void UpdateExistingExpense(ExpenseEntity entity, ExpenseCsvRow import)
     {
         entity.Description = import.Description;
         entity.NextDue = import.NextDue;

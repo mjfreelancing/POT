@@ -4,6 +4,6 @@ using Pot.AspNetCore.Features.Expenses.Import.Models;
 
 namespace Pot.AspNetCore.Features.Expenses.Import.Validators;
 
-public interface IExpenseImportValidator : IValidator<ExpenseForImport>, IPotScopedDependency
+public interface IExpenseCsvRowValidator : IValidator<ExpenseCsvRow>, IPotScopedDependency
 {
 }

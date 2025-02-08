@@ -1,5 +1,6 @@
 ﻿using AllOverIt.EntityFrameworkCore.Extensions;
 using AllOverIt.Extensions;
+using EntityFramework.Exceptions.PostgreSQL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -12,7 +13,7 @@ namespace Pot.Data
 {
     public abstract class DbContextBase : DbContext
     {
-        private const string _entitySuffix = "Entity";
+        private const string EntitySuffix = "Entity";
         private static readonly Type _entityBaseType = typeof(EntityBase);
 
         public override int SaveChanges()
@@ -45,12 +46,14 @@ namespace Pot.Data
 
         public static string GetTableNameFromEntity(EntityBase entity)
         {
-            return entity.GetType().Name[..^_entitySuffix.Length];
+            return entity.GetType().Name[..^EntitySuffix.Length];
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
+
+            optionsBuilder.UseExceptionProcessor();
 
             // Set to no tracking with identity resolution by default
             // This will help with read performance while ensuring duplicate entities with the same key are not created
@@ -61,6 +64,8 @@ namespace Pot.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.HasPostgresExtension("citext");
 
             ConfigureEntities(modelBuilder);
             ConfigureEnrichedEnum(modelBuilder);
@@ -87,10 +92,9 @@ namespace Pot.Data
         [Conditional("DEBUG")]
         private static void ValidateEntity(IMutableEntityType entityType, string entityName)
         {
-            if (!entityName.EndsWith(_entitySuffix))
+            if (!entityName.EndsWith(EntitySuffix))
             {
-                throw new InvalidOperationException(
-                    $"The entity '{entityType.ClrType}' does not have a suffix of '{_entitySuffix}'.");
+                throw new InvalidOperationException($"The entity '{entityType.ClrType}' does not have a suffix of '{EntitySuffix}'.");
             }
 
             if (!entityType.ClrType.IsDerivedFrom(_entityBaseType))
@@ -101,7 +105,7 @@ namespace Pot.Data
 
         private static void SetTableName(IMutableEntityType entityType, string entityName)
         {
-            var tableName = entityName[..^_entitySuffix.Length];
+            var tableName = entityName[..^EntitySuffix.Length];
 
             entityType.SetTableName(tableName);
         }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Pot.Data.Annotations;
 using Pot.Data.Models;
 using System.ComponentModel.DataAnnotations;
 
@@ -9,7 +10,8 @@ namespace Pot.Data.Entities
     public sealed class ExpenseEntity : EntityBase
     {
         [Required]
-        [MaxLength(100)]
+        [MediumString]
+        [Citext]
         public required string Description { get; set; }
 
         public DateOnly NextDue { get; set; }
@@ -20,7 +22,6 @@ namespace Pot.Data.Entities
         public double Amount { get; set; }
         public double Allocated { get; set; }
 
-        //[Required]
         public AccountEntity? Account { get; set; }
     }
 }

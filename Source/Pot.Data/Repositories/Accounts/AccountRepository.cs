@@ -3,7 +3,7 @@ using Pot.Data.Specifications;
 
 namespace Pot.Data.Repositories.Accounts;
 
-internal sealed class AccountRepository : GenericRepository<PotDbContext, AccountEntity>, IAccountRepository
+internal sealed class AccountRepository : GenericRepository<PotDbContext, AccountEntity>, IPersistableAccountRepository
 {
     public AccountRepository(PotDbContext dbContext)
         : base(dbContext)

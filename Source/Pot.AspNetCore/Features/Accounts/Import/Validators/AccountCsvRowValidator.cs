@@ -4,10 +4,11 @@ using Pot.AspNetCore.Features.Accounts.Import.Models;
 
 namespace Pot.AspNetCore.Features.Accounts.Import.Validators;
 
-internal sealed class AccountForImportValidator : ValidatorBase<AccountForImport>, IAccountForImportValidator
+internal sealed class AccountCsvRowValidator : ValidatorBase<AccountCsvRow>, IAccountCsvRowValidator
 {
-    public AccountForImportValidator()
+    public AccountCsvRowValidator()
     {
+        RuleFor(expense => expense.Id).IsNotEmpty();    // TODO: Can be null, but cannot be default
         RuleFor(account => account.Bsb).IsNotEmpty();
         RuleFor(account => account.Number).IsNotEmpty();
         RuleFor(account => account.Description).IsNotEmpty();

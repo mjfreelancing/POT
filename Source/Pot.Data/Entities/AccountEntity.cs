@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Pot.Data.Annotations;
 using System.ComponentModel.DataAnnotations;
 
 namespace Pot.Data.Entities
@@ -16,7 +17,8 @@ namespace Pot.Data.Entities
         public required string Number { get; set; }
 
         [Required]
-        [MaxLength(100)]
+        [MediumString]
+        [Citext]
         public required string Description { get; set; }
 
         public double Balance { get; set; }

@@ -2,7 +2,8 @@
 
 internal static class ProblemDetailsContextFactory
 {
-    public static ProblemDetailsContext Create(HttpContext httpContext, Exception exception, int statusCode, ProblemDetailsExtensionBase[]? errorDetails = default)
+    public static ProblemDetailsContext Create<TProblemDetails>(HttpContext httpContext, Exception exception, int statusCode, TProblemDetails[]? errorDetails = default)
+        where TProblemDetails : ProblemDetailsExtensionBase
     {
         httpContext.Response.StatusCode = statusCode;
 

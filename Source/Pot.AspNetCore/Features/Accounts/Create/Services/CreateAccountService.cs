@@ -8,11 +8,11 @@ using Pot.Data.Repositories.Accounts;
 namespace Pot.AspNetCore.Features.Accounts.Create.Services;
 internal sealed class CreateAccountService : ICreateAccountService
 {
-    private readonly IAccountRepository _accountRepository;
+    private readonly IPersistableAccountRepository _accountRepository;
     private readonly IPreCreateChecker _preCreateChecker;
     private readonly ILogger _logger;
 
-    public CreateAccountService(IAccountRepository accountRepository, IPreCreateChecker preCreateChecker, ILogger<CreateAccountService> logger)
+    public CreateAccountService(IPersistableAccountRepository accountRepository, IPreCreateChecker preCreateChecker, ILogger<CreateAccountService> logger)
     {
         _accountRepository = accountRepository.WhenNotNull();
         _preCreateChecker = preCreateChecker.WhenNotNull();

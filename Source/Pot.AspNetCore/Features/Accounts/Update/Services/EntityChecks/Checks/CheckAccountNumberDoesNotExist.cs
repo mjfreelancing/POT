@@ -42,4 +42,3 @@ internal sealed class CheckAccountNumberDoesNotExist : PreUpdateCheckBase
         return await base.HandleAsync(state, cancellationToken);
     }
 }
-

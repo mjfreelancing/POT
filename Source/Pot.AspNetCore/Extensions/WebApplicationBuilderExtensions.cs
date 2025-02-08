@@ -81,9 +81,11 @@ internal static class WebApplicationBuilderExtensions
     {
         // Exception handlers are registered as a singleton.
         // Ordering of registered exception handlers matter.
+        // Note: BadHttpRequestException is returned as 500 during development, but 400 in production.
         builder.Services
             .AddExceptionHandler<IgnoreExceptionHandler>()
             .AddExceptionHandler<EntityExceptionHandler>()
+            .AddExceptionHandler<UniqueConstraintExceptionHandler>()
             .AddExceptionHandler<DatabaseExceptionHandler>();
 
         return builder;

@@ -2,7 +2,6 @@
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Pot.AspNetCore.Concerns.ProblemDetails;
-using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Concerns.Validation.Extensions;
 using Pot.AspNetCore.Errors;
 using Pot.AspNetCore.Features.Accounts.Import.Models;
@@ -14,62 +13,54 @@ namespace Pot.AspNetCore.Features.Accounts.Import.Services;
 
 internal sealed class ImportAccountService : IImportAccountService
 {
-    private sealed record AccountKey(string Bsb, string Number);
+    private record AccountEntityInfo(AccountEntity AccountEntity, bool Created);
 
-    private readonly IAccountForImportValidator _accountImportValidator;
-    private readonly IAccountRepository _accountRepository;
+    private readonly IAccountCsvRowValidator _csvRowValidator;
+    private readonly IPersistableAccountRepository _accountRepository;
     private readonly ILogger _logger;
 
-    public ImportAccountService(IAccountForImportValidator accountImportValidator, IAccountRepository accountRepository, ILogger<ImportAccountService> logger)
+    public ImportAccountService(IAccountCsvRowValidator csvRowValidator, IPersistableAccountRepository accountRepository, ILogger<ImportAccountService> logger)
     {
-        _accountImportValidator = accountImportValidator.WhenNotNull();
+        _csvRowValidator = csvRowValidator.WhenNotNull();
         _accountRepository = accountRepository.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
-    public async Task<EnrichedResult<ImportSummary>> ImportAccountsAsync(IEnumerable<AccountForImport> accountsForImport, bool overwrite, CancellationToken cancellationToken)
+    public async Task<EnrichedResult<ImportSummary>> ImportAccountsAsync(IEnumerable<AccountCsvRow> csvRows, CancellationToken cancellationToken)
     {
-        _logger.LogCall(this, new { overwrite });
+        _logger.LogCall(this);
 
         using (_accountRepository.WithTracking())
         {
             var problemDetailsErrors = new List<CsvProblemDetailsError>();
-
-            // Look for duplicates in the import file - not checking for duplicates in the database since
-            // the import will either skip or overwrite existing records.
-            var accountKeys = new HashSet<AccountKey>();
 
             var recordCount = 0;
             var imported = 0;
             var updated = 0;
             var row = 1;            // Skip the header row
 
-            foreach (var import in accountsForImport)
+            foreach (var csvRow in csvRows)
             {
                 row++;
                 recordCount++;
 
-                CheckImportColumns(row, import, problemDetailsErrors);
-                CheckForDuplicateAccount(row, import, accountKeys, problemDetailsErrors);
+                // Only validating each row. Not looking for duplicates or other possible conflicts.
+                CheckImportColumns(row, csvRow, problemDetailsErrors);
 
-                // If an invalid row is detected, only look for more errors.
+                // If we already have at least one error then only look for more errors.
                 if (problemDetailsErrors.Count > 0)
                 {
                     continue;
                 }
 
-                var existingAccount = await _accountRepository
-                    .GetAccountOrDefaultAsync(import.Bsb, import.Number, cancellationToken)
-                    .ConfigureAwait(false);
+                var accountEntityInfo = await CreateOrUpdateAccountAsync(csvRow, cancellationToken);
 
-                if (existingAccount is null)
+                if (accountEntityInfo.Created)
                 {
-                    AddAccountEntity(import);
                     imported++;
                 }
-                else if (overwrite)
+                else
                 {
-                    UpdateAccountEntity(existingAccount, import);
                     updated++;
                 }
             }
@@ -82,13 +73,14 @@ internal sealed class ImportAccountService : IImportAccountService
                 return EnrichedResult.Fail<ImportSummary>(serviceError);
             }
 
+            // Could throw UniqueConstraintException (or a related database exception),
+            // resulting in a custom 422 ProblemDetails response.
             await _accountRepository
                 .SaveAsync(cancellationToken)
                 .ConfigureAwait(false);
 
             var result = new ImportSummary
             {
-                Skipped = recordCount - imported - updated,
                 Imported = imported,
                 Updated = updated,
                 Total = recordCount
@@ -98,9 +90,9 @@ internal sealed class ImportAccountService : IImportAccountService
         }
     }
 
-    private void CheckImportColumns(int row, AccountForImport import, List<CsvProblemDetailsError> problemDetailsErrors)
+    private void CheckImportColumns(int row, AccountCsvRow import, List<CsvProblemDetailsError> problemDetailsErrors)
     {
-        var validationResult = _accountImportValidator.Validate(import);
+        var validationResult = _csvRowValidator.Validate(import);
 
         if (!validationResult.IsValid)
         {
@@ -119,31 +111,37 @@ internal sealed class ImportAccountService : IImportAccountService
         }
     }
 
-    private static void CheckForDuplicateAccount(int row, AccountForImport import, HashSet<AccountKey> accountKeys,
-        List<CsvProblemDetailsError> problemDetailsErrors)
+    private async Task<AccountEntityInfo> CreateOrUpdateAccountAsync(AccountCsvRow csvRow, CancellationToken cancellationToken)
     {
-        var accountKey = new AccountKey(import.Bsb, import.Number);
+        AccountEntity? accountEntity = null;
 
-        // Look for a duplicate import row
-        if (!accountKeys.Add(accountKey))
+        var csvAccountId = csvRow.Id;
+
+        if (csvAccountId.HasValue)
         {
-            var errorDetails = new CsvProblemDetailsError
-            {
-                ImportRow = row,
-                PropertyName = $"{nameof(AccountForImport.Bsb)}, {nameof(AccountForImport.Number)}",
-                ErrorCode = ErrorCodes.Duplicate,
-                AttemptedValue = $"{import.Bsb}, {import.Number}",
-                ErrorMessage = "The import data contains a duplicate row with the same BSB and Number"
-            };
-
-            problemDetailsErrors.Add(errorDetails);
+            // Will not exist if re-importing a file to recover data
+            accountEntity = await _accountRepository
+                .GetAccountOrDefaultAsync(csvAccountId.Value, cancellationToken)
+                .ConfigureAwait(false);
         }
+
+        if (accountEntity is null)
+        {
+            accountEntity = CreateAccountEntity(csvAccountId, csvRow);
+
+            return new AccountEntityInfo(accountEntity, true);
+        }
+
+        UpdateExistingAccount(accountEntity, csvRow);
+
+        return new AccountEntityInfo(accountEntity, false);
     }
 
-    private void AddAccountEntity(AccountForImport import)
+    private AccountEntity CreateAccountEntity(Guid? accountId, AccountCsvRow import)
     {
-        var newAccount = new AccountEntity
+        var accountEntity = new AccountEntity
         {
+            RowId = accountId ?? Guid.NewGuid(),
             Bsb = import.Bsb,
             Number = import.Number,
             Description = import.Description,
@@ -153,10 +151,12 @@ internal sealed class ImportAccountService : IImportAccountService
             DailyAccrual = 0.0d
         };
 
-        _accountRepository.Add(newAccount);
+        _accountRepository.Add(accountEntity);
+
+        return accountEntity;
     }
 
-    private static void UpdateAccountEntity(AccountEntity entity, AccountForImport import)
+    private static void UpdateExistingAccount(AccountEntity entity, AccountCsvRow import)
     {
         entity.Bsb = import.Bsb;
         entity.Number = import.Number;

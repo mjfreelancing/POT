@@ -9,7 +9,7 @@ using System.Linq.Expressions;
 namespace Pot.Data.Repositories;
 
 // TODO: AOI
-internal abstract class GenericRepository<TDbContext, TEntity> : IGenericRepository<TDbContext, TEntity>
+internal abstract class GenericRepository<TDbContext, TEntity> : IGenericRepository<TDbContext, TEntity>, IPersistableRepository<TEntity>
     where TEntity : EntityBase
     where TDbContext : DbContextBase
 {
@@ -25,36 +25,36 @@ internal abstract class GenericRepository<TDbContext, TEntity> : IGenericReposit
     public IDisposable WithTracking() => DbContext.WithAutoTracking();
 
     // IQueryable
-    public IQueryable<TEntity> Query()
+    public IQueryable<TEntity> AsQueryable()
     {
         return DbContext.Set<TEntity>();
     }
 
     public IQueryable<TEntity> Where(Expression<Func<TEntity, bool>> predicate)
     {
-        return DbContext.Set<TEntity>().Where(predicate);
+        return AsQueryable().Where(predicate);
     }
 
     public Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken)
     {
-        return DbContext.Set<TEntity>().AnyAsync(predicate, cancellationToken);
+        return AsQueryable().AnyAsync(predicate, cancellationToken);
     }
 
     public Task<TEntity?> SingleOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken)
     {
-        return DbContext.Set<TEntity>().SingleOrDefaultAsync(predicate, cancellationToken);
+        return AsQueryable().SingleOrDefaultAsync(predicate, cancellationToken);
     }
 
     public Task<TEntity> SingleAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken)
     {
-        return DbContext.Set<TEntity>().SingleAsync(predicate, cancellationToken);
+        return AsQueryable().SingleAsync(predicate, cancellationToken);
     }
 
     // Get data
     // =======================
     public Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken)
     {
-        return Query().ToListAsync(cancellationToken);
+        return AsQueryable().ToListAsync(cancellationToken);
     }
 
     public ValueTask<TEntity?> GetByPrimaryKeyAsync<TKey>(TKey id, CancellationToken cancellationToken)
@@ -83,13 +83,6 @@ internal abstract class GenericRepository<TDbContext, TEntity> : IGenericReposit
         return DbContext.Set<TEntity>().AddAsync(entity, cancellationToken);
     }
 
-    public Task<int> AddAndSaveAsync(TEntity entity, CancellationToken cancellationToken)
-    {
-        Add(entity);
-
-        return SaveAsync(cancellationToken);
-    }
-
     // Update data
     // =======================
     public EntityEntry<TEntity> Update(TEntity entity)
@@ -97,6 +90,15 @@ internal abstract class GenericRepository<TDbContext, TEntity> : IGenericReposit
         _ = entity.WhenNotNull();
 
         return DbContext.Set<TEntity>().Update(entity);
+    }
+
+    // Delete data
+    // =======================
+    public EntityEntry<TEntity> Delete(TEntity entity)
+    {
+        _ = entity.WhenNotNull();
+
+        return DbContext.Set<TEntity>().Remove(entity);
     }
 
     // Save data
@@ -109,6 +111,13 @@ internal abstract class GenericRepository<TDbContext, TEntity> : IGenericReposit
     public virtual Task<int> SaveAsync(CancellationToken cancellationToken)
     {
         return DbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public Task<int> AddAndSaveAsync(TEntity entity, CancellationToken cancellationToken)
+    {
+        Add(entity);
+
+        return SaveAsync(cancellationToken);
     }
 
 

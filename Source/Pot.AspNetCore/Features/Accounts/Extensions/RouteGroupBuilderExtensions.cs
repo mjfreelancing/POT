@@ -57,6 +57,21 @@ internal static class RouteGroupBuilderExtensions
         return routeGroupBuilder;
     }
 
+    public static RouteGroupBuilder DeleteAccount(this RouteGroupBuilder routeGroupBuilder)
+    {
+        routeGroupBuilder
+            .MapDelete("/{id}", Delete.Handler.Invoke)
+            .WithName(nameof(DeleteAccount))
+            .WithSummary("Delete account")
+            .WithDescription("Deletes existing account details")
+            .WithTags("Accounts")
+            .ProducesProblem((int)HttpStatusCode.NotFound)
+            .ProducesProblem((int)HttpStatusCode.OK)
+            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
+
+        return routeGroupBuilder;
+    }
+
     public static RouteGroupBuilder ImportAccounts(this RouteGroupBuilder routeGroupBuilder, long maxImportPayloadBytes)
     {
         routeGroupBuilder

@@ -11,7 +11,7 @@ public interface IExpenseRepository : IGenericRepository<PotDbContext, ExpenseEn
     //Task<bool> AccountExistsAsync(string bsb, string number, CancellationToken cancellationToken);
 }
 
-internal sealed class ExpenseRepository : GenericRepository<PotDbContext, ExpenseEntity>, IExpenseRepository
+internal sealed class ExpenseRepository : GenericRepository<PotDbContext, ExpenseEntity>, IPersistableExpenseRepository
 {
     public ExpenseRepository(PotDbContext dbContext)
         : base(dbContext)

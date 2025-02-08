@@ -5,7 +5,7 @@ namespace Pot.AspNetCore.Features.Accounts.Update;
 public sealed class Request
 {
     [Description("The account identifier.")]
-    public string RowId { get; init; } = string.Empty;
+    public Guid RowId { get; init; }
 
     [Description("The account's entity tag.")]
     public long ETag { get; init; }

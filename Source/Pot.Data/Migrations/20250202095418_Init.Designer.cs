@@ -12,7 +12,7 @@ using Pot.Data;
 namespace Pot.Data.Migrations
 {
     [DbContext(typeof(PotDbContext))]
-    [Migration("20250128110621_Init")]
+    [Migration("20250202095418_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -23,6 +23,7 @@ namespace Pot.Data.Migrations
                 .HasAnnotation("ProductVersion", "9.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "citext");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("Pot.Data.Entities.AccountEntity", b =>
@@ -50,7 +51,7 @@ namespace Pot.Data.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("citext");
 
                     b.Property<long>("Etag")
                         .HasColumnType("bigint");
@@ -106,7 +107,7 @@ namespace Pot.Data.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("citext");
 
                     b.Property<long>("Etag")
                         .HasColumnType("bigint");

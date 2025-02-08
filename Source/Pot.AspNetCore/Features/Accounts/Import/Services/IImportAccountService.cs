@@ -6,5 +6,5 @@ namespace Pot.AspNetCore.Features.Accounts.Import.Services;
 
 public interface IImportAccountService : IPotScopedDependency
 {
-    Task<EnrichedResult<ImportSummary>> ImportAccountsAsync(IEnumerable<AccountForImport> accounts, bool overwrite, CancellationToken cancellationToken);
+    Task<EnrichedResult<ImportSummary>> ImportAccountsAsync(IEnumerable<AccountCsvRow> csvRows, CancellationToken cancellationToken);
 }

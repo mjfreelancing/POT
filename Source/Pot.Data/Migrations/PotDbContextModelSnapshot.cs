@@ -20,6 +20,7 @@ namespace Pot.Data.Migrations
                 .HasAnnotation("ProductVersion", "9.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "citext");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("Pot.Data.Entities.AccountEntity", b =>
@@ -47,7 +48,7 @@ namespace Pot.Data.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("citext");
 
                     b.Property<long>("Etag")
                         .HasColumnType("bigint");
@@ -103,7 +104,7 @@ namespace Pot.Data.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("citext");
 
                     b.Property<long>("Etag")
                         .HasColumnType("bigint");

@@ -7,9 +7,6 @@ namespace Pot.AspNetCore.Features.Expenses.Import;
 
 internal sealed class Response
 {
-    [Description("The number of expenses in the CSV file that were skipped.")]
-    public int Skipped { get; init; }
-
     [Description("The number of expenses in the CSV file that were created.")]
     public int Imported { get; init; }
 
@@ -28,7 +25,6 @@ internal sealed class Response
     {
         _ = summary.WhenNotNull();
 
-        Skipped = summary.Skipped;
         Imported = summary.Imported;
         Updated = summary.Updated;
         Total = summary.Total;
