@@ -79,6 +79,7 @@ internal static class RouteGroupBuilderExtensions
             .WithTags("Accounts", "Import")
             .WithMetadata(new RequestSizeLimitAttribute(maxImportPayloadBytes)) // Will raise 413 Payload Too Large if the file exceeds this limit
             .DisableAntiforgery()
+            .ProducesProblem((int)HttpStatusCode.RequestEntityTooLarge)
             .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
 
         return routeGroupBuilder;
