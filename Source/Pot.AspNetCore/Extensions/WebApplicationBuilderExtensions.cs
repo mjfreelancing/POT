@@ -86,6 +86,7 @@ internal static class WebApplicationBuilderExtensions
             .AddExceptionHandler<IgnoreExceptionHandler>()
             .AddExceptionHandler<EntityExceptionHandler>()
             .AddExceptionHandler<UniqueConstraintExceptionHandler>()
+            .AddExceptionHandler<ReferenceConstraintExceptionHandler>()
             .AddExceptionHandler<DatabaseExceptionHandler>();
 
         return builder;
