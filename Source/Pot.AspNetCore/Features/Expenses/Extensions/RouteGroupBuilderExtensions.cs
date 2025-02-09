@@ -50,8 +50,6 @@ internal static class RouteGroupBuilderExtensions
     //        .WithSummary("Update expense")
     //        .WithDescription("Updates existing expense details")
     //        .WithTags("Expenses")
-    //        .ProducesProblem((int)HttpStatusCode.NotFound)
-    //        .ProducesProblem((int)HttpStatusCode.NotModified)
     //        .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
 
     //    return routeGroupBuilder;
@@ -65,8 +63,6 @@ internal static class RouteGroupBuilderExtensions
     //        .WithSummary("Delete expense")
     //        .WithDescription("Deletes existing expense details")
     //        .WithTags("Expenses")
-    //        .ProducesProblem((int)HttpStatusCode.NotFound)
-    //        .ProducesProblem((int)HttpStatusCode.OK)
     //        .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
 
     //    return routeGroupBuilder;
