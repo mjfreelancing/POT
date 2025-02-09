@@ -24,7 +24,8 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(GetAccount))
             .WithSummary("Get account")
             .WithDescription("Get details for an existing account")
-            .WithTags("Accounts");
+            .WithTags("Accounts")
+            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
 
         return routeGroupBuilder;
     }
@@ -50,8 +51,6 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Update account")
             .WithDescription("Updates existing account details")
             .WithTags("Accounts")
-            .ProducesProblem((int)HttpStatusCode.NotFound)
-            .ProducesProblem((int)HttpStatusCode.NotModified)
             .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
 
         return routeGroupBuilder;
@@ -65,8 +64,6 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Delete account")
             .WithDescription("Deletes existing account details")
             .WithTags("Accounts")
-            .ProducesProblem((int)HttpStatusCode.NotFound)
-            .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
 
         return routeGroupBuilder;
