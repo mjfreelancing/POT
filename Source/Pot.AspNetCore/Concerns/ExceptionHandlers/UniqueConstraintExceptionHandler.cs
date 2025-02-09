@@ -24,16 +24,18 @@ internal sealed class UniqueConstraintExceptionHandler : IExceptionHandler
             return false;
         }
 
+        var propertiesLabel = constraintException.ConstraintProperties.Count > 1 ? "properties" : "property";
         var constraintNames = string.Join(", ", constraintException.ConstraintProperties);
 
         var errorDetails = from entry in constraintException.Entries
                            let properties = entry.Entity.ToPropertyDictionary()
                            select new PostgresUniqueConstraintProblemDetails
                            {
-                               ErrorMessage = $"A conflict occurred with the properties {constraintNames}",
-                               Properties = (from propertyName in properties.Keys
-                                             where constraintException.ConstraintProperties.Contains(propertyName)
-                                             select new KeyValuePair<string, object?>(propertyName, properties[propertyName])).ToDictionary(item => item.Key, item => (object?)item.Value)
+                               ErrorMessage = $"A conflict occurred with the {propertiesLabel} {constraintNames}",
+                               Properties = new Dictionary<string, object?>(
+                                   from propertyName in properties.Keys
+                                   where constraintException.ConstraintProperties.Contains(propertyName)
+                                   select new KeyValuePair<string, object?>(propertyName, properties[propertyName]))
                            };
 
         var problemContext = ProblemDetailsContextFactory.Create(httpContext, exception, (int)HttpStatusCode.UnprocessableEntity, [.. errorDetails]);

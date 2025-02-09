@@ -2,4 +2,4 @@
 
 namespace Pot.Data.Repositories.Expenses;
 
-public interface IPersistableExpenseRepository : IExpenseRepository, IPersistableRepository<ExpenseEntity>;;
+public interface IPersistableExpenseRepository : IExpenseRepository, IPersistableRepository<ExpenseEntity>;
