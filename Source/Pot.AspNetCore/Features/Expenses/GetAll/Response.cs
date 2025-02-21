@@ -1,5 +1,6 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Extensions;
+using AllOverIt.Pagination;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.AspNetCore.Models;
 using Pot.Data.Entities;
@@ -33,11 +34,13 @@ internal sealed class Response : ResponseBase
     [Description("The amount allocated towards this expense.")]
     public double Allocated { get; init; }
 
-    public static Ok<Response[]> Ok(List<ExpenseEntity> expenses)
+    public static Ok<PagedResponse<Response>> Ok(PageResult<ExpenseEntity> expenses)
     {
-        var responses = expenses.SelectToArray(expense => new Response(expense));
+        var results = expenses.Results.SelectToArray(expense => new Response(expense));
 
-        return TypedResults.Ok(responses);
+        var response = PagedResponse<Response>.CreateFromPageResult(expenses, results);
+
+        return TypedResults.Ok(response);
     }
 
     private Response(ExpenseEntity account)

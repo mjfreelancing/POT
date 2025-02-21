@@ -1,4 +1,5 @@
 ﻿using AllOverIt.DependencyInjection.Extensions;
+using AllOverIt.Pagination.Extensions;
 using AllOverIt.Validation;
 using AllOverIt.Validation.Extensions;
 using FluentValidation;
@@ -129,6 +130,7 @@ internal static class WebApplicationBuilderExtensions
     public static WebApplicationBuilder AddPotData(this WebApplicationBuilder builder)
     {
         builder.Services.AddDbContext<PotDbContext>();
+        builder.Services.AddQueryPagination();
         builder.Services.AddUnitOfWork();
 
         return builder;
