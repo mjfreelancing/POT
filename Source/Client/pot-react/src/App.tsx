@@ -1,15 +1,18 @@
-import { Button } from "@/components/ui/button";
+import { AppSidebar } from "./components/app-sidebar";
+import { ThemeProvider } from "./components/theme/theme-provider";
+import { SidebarProvider, SidebarTrigger } from "./components/ui/sidebar";
+import SummaryPage from "./features/summary/summary-page";
 
 const App = () => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-svh gap-1">
-      <Button variant="default">Default</Button>
-      <Button variant="destructive">Destructive</Button>
-      <Button variant="ghost">Ghost</Button>
-      <Button variant="link">Link</Button>
-      <Button variant="outline">Outline</Button>
-      <Button variant="secondary">Secondary</Button>
-    </div>
+    <ThemeProvider defaultTheme="system" storageKey="pot-ui-theme">
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarTrigger />
+        {/* Yet to add routing */}
+        <SummaryPage />
+      </SidebarProvider>
+    </ThemeProvider>
   );
 };
 
