@@ -1,12 +1,14 @@
 import { Separator } from "@radix-ui/react-separator";
 import { AppSidebar } from "./components/AppSidebar";
 import { ThemeProvider } from "./components/theme/ThemeProvider";
+import { Route, Routes } from "react-router-dom";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from "./components/ui/sidebar";
 import DashboardPage from "./features/dashboard/DashboardPage";
+import ProjectionsPage from "./features/projections/ProjectionsPage";
 
 const App = () => {
   return (
@@ -14,6 +16,7 @@ const App = () => {
       <div className="flex h-screen w-screen">
         <SidebarProvider>
           <AppSidebar />
+          {/* Everything below is yet to be cleaned up */}
           <SidebarInset>
             <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
               <div className="flex items-center gap-2 px-4">
@@ -23,18 +26,12 @@ const App = () => {
               </div>
             </header>
             <div className="flex-1 h-full">
-              <DashboardPage />
+              <Routes>
+                <Route path="/" element={<DashboardPage />} />
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/projections" element={<ProjectionsPage />} />
+              </Routes>
             </div>
-            {/*
-            <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-              <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-                <div className="aspect-video rounded-xl bg-muted/50" />
-                <div className="aspect-video rounded-xl bg-muted/50" />
-                <div className="aspect-video rounded-xl bg-muted/50" />
-              </div>
-              <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
-            </div>
-            */}
           </SidebarInset>
         </SidebarProvider>
       </div>

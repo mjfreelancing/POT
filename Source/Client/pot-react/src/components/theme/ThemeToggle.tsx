@@ -5,7 +5,7 @@ const ThemeToggle = () => {
   const { setTheme } = useTheme();
 
   return (
-    // bg-background
+    // TODO: Originally contained bg-background, leave off for now until it's decided where the theme switching will be performed from
     <div className="relative inline-flex h-10 w-10 items-center justify-center rounded-md border border-input cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700">
       <Sun
         onClick={() => setTheme("dark")}

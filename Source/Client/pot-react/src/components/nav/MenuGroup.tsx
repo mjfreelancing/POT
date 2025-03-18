@@ -6,12 +6,14 @@ import {
   SidebarMenu,
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
+import { isHomeOrMatchesCurrentPath } from "./utils/menuUtils";
+import { Link } from "react-router-dom";
 
 export type MenuGroupItem = {
   label: string;
   icon: React.ElementType;
   href: string;
-  tooltip?: string;
+  isHome: boolean;
 };
 
 export type MenuGroupDefinition = {
@@ -31,15 +33,18 @@ const MenuGroup: React.FC<MenuGroupProps> = ({ group }) => {
         <SidebarGroupContent>
           {group.items.map((item, index) => {
             const Icon = item.icon;
-            const tooltip = item.tooltip ?? item.label;
 
             return (
               <SidebarMenu key={index}>
-                <SidebarMenuButton tooltip={tooltip} asChild>
-                  <a href={item.href} aria-label={item.label}>
+                <SidebarMenuButton
+                  isActive={isHomeOrMatchesCurrentPath(item)}
+                  tooltip={item.label}
+                  asChild
+                >
+                  <Link to={item.href} aria-label={item.label}>
                     <Icon />
                     <span>{item.label}</span>
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenu>
             );
@@ -53,8 +58,10 @@ const MenuGroup: React.FC<MenuGroupProps> = ({ group }) => {
 export default MenuGroup;
 
 /*
-    Had not planned on usinf (item, index) as explained below, but using item.href showed errors in the console for
-    duplicate keys. To be revisited.
+    TODO:
+    
+    Had not planned on using (item, index) as explained below (according to ChatGPT), but using item.href showed
+    errors in the console for duplicate keys. To be revisited.
 
     ---
 

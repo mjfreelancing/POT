@@ -1,10 +1,10 @@
-const DashboardPage = () => {
+const ProjectionsPage = () => {
   return (
     // Temporary
     <div className="flex h-full w-full items-center justify-center">
-      Dashboard Content Here
+      Projections Content Here
     </div>
   );
 };
 
-export default DashboardPage;
+export default ProjectionsPage;
