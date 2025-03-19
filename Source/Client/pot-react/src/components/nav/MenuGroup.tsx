@@ -6,14 +6,13 @@ import {
   SidebarMenu,
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
-import { isHomeOrMatchesCurrentPath } from "./utils/menuUtils";
+import { matchesCurrentPath } from "./utils/menuUtils";
 import { Link } from "react-router-dom";
 
 export type MenuGroupItem = {
   label: string;
   icon: React.ElementType;
   href: string;
-  isHome: boolean;
 };
 
 export type MenuGroupDefinition = {
@@ -37,7 +36,7 @@ const MenuGroup: React.FC<MenuGroupProps> = ({ group }) => {
             return (
               <SidebarMenu key={index}>
                 <SidebarMenuButton
-                  isActive={isHomeOrMatchesCurrentPath(item)}
+                  isActive={matchesCurrentPath(item)}
                   tooltip={item.label}
                   asChild
                 >
@@ -59,7 +58,7 @@ export default MenuGroup;
 
 /*
     TODO:
-    
+
     Had not planned on using (item, index) as explained below (according to ChatGPT), but using item.href showed
     errors in the console for duplicate keys. To be revisited.
 

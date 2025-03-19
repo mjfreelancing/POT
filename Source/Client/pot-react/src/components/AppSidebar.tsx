@@ -8,7 +8,6 @@ import ThemeToggle from "./theme/ThemeToggle";
 import { ChartSpline, Home, LayoutDashboard } from "lucide-react";
 import MenuGroup, { MenuGroupDefinition } from "./nav/MenuGroup";
 import { Link } from "react-router-dom";
-import { createMenuItem } from "./nav/utils/menuUtils";
 
 {
   /*
@@ -21,20 +20,16 @@ const menuGroups: Record<string, MenuGroupDefinition> = {
   analysis: {
     label: "Analysis",
     items: [
-      createMenuItem({
+      {
         label: "Dashboard",
         icon: LayoutDashboard,
         href: "/dashboard",
-        // This item will be made active if the user navigates to the home page, matching
-        // the router config where / and /dashboard both mount the <DashboardPage>.
-        // TODO: Is it possible to determine this automatically somehow ??
-        isHome: true,
-      }),
-      createMenuItem({
+      },
+      {
         label: "Projections",
         icon: ChartSpline,
         href: "/projections",
-      }),
+      },
     ],
   },
 };

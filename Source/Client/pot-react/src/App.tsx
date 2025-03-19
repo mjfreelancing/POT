@@ -1,7 +1,7 @@
 import { Separator } from "@radix-ui/react-separator";
 import { AppSidebar } from "./components/AppSidebar";
 import { ThemeProvider } from "./components/theme/ThemeProvider";
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import {
   SidebarInset,
   SidebarProvider,
@@ -27,7 +27,7 @@ const App = () => {
             </header>
             <div className="flex-1 h-full">
               <Routes>
-                <Route path="/" element={<DashboardPage />} />
+                <Route path="/" element={<Navigate replace to="dashboard" />} />
                 <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/projections" element={<ProjectionsPage />} />
               </Routes>
