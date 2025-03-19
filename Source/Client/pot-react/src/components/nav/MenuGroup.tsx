@@ -10,18 +10,18 @@ import { matchesCurrentPath } from "./utils/menuUtils";
 import { Link } from "react-router-dom";
 
 export type MenuGroupItem = {
-  label: string;
-  icon: React.ElementType;
-  href: string;
+  readonly label: string;
+  readonly icon: React.ElementType;
+  readonly href: string;
 };
 
 export type MenuGroupDefinition = {
-  label: string;
-  items: MenuGroupItem[];
+  readonly label: string;
+  readonly items: MenuGroupItem[];
 };
 
 type MenuGroupProps = {
-  group: MenuGroupDefinition;
+  readonly group: MenuGroupDefinition;
 };
 
 const MenuGroup: React.FC<MenuGroupProps> = ({ group }) => {
