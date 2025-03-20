@@ -38,9 +38,8 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       {/* TODO: The header will be moved to a custom component once the CSS issue is sorted */}
-      <SidebarHeader>
-        {/* FIX: Need the p-2 to not be applied when the sidebar is collapsed */}
-        <div className="flex items-center gap-2 p-2">
+      <SidebarHeader className="group">
+        <div className="flex items-center gap-2 group-data-[state=collapsed]:p-0 p-2">
           <Link
             className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
             to="/"
