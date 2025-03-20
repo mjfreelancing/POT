@@ -1,7 +1,7 @@
 import { Separator } from "@radix-ui/react-separator";
 import { AppSidebar } from "./components/AppSidebar";
 import { ThemeProvider } from "./components/theme/ThemeProvider";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router";
 import {
   SidebarInset,
   SidebarProvider,

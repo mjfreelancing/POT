@@ -1,4 +1,4 @@
-import { useMatch, useResolvedPath } from "react-router-dom";
+import { useMatch, useResolvedPath } from "react-router";
 import { MenuGroupItem } from "../MenuGroup";
 
 // Determines if the menu item matches the current path, or it is associated with the home path.

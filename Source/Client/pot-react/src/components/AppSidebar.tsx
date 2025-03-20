@@ -7,7 +7,7 @@ import {
 import ThemeToggle from "./theme/ThemeToggle";
 import { ChartSpline, Home, LayoutDashboard } from "lucide-react";
 import MenuGroup, { MenuGroupDefinition } from "./nav/MenuGroup";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 {
   /*

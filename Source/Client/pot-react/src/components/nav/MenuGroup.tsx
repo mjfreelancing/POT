@@ -7,7 +7,7 @@ import {
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
 import { matchesCurrentPath } from "./utils/menuUtils";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 export type MenuGroupItem = {
   readonly label: string;
