@@ -1,13 +1,14 @@
-import React from "react";
+import React from 'react';
+import { matchPath, useLocation } from 'react-router';
+import { Link } from 'react-router';
+
 import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
-} from "@/components/ui/sidebar";
-import { matchesCurrentPath } from "./utils/menuUtils";
-import { Link } from "react-router";
+} from '@/components/ui/sidebar';
 
 export type MenuGroupItem = {
   readonly label: string;
@@ -24,22 +25,40 @@ type MenuGroupProps = {
   readonly group: MenuGroupDefinition;
 };
 
+/*
+  The original code used to determine if a menu item matched the current location relied on react hooks.
+
+    import { useMatch, useResolvedPath } from 'react-router';
+
+    // What's the path associated with the menu item (within group.items.map)
+    const resolvedPath = useResolvedPath(item.href);
+
+    // Does it match the current path?
+    isMatch = !!useMatch({ path: resolvedPath.pathname, end: true });
+
+  This cannot be used, however, because the hooks cannot be called within a callback.
+*/
+
+const isActivePath = (currentPath: string, href: string) => {
+  const resolvedPath = new URL(href, window.location.origin).pathname;
+  return !!matchPath({ path: resolvedPath, end: true }, currentPath);
+};
+
 const MenuGroup: React.FC<MenuGroupProps> = ({ group }) => {
+  const location = useLocation();
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarGroupContent>
           {group.items.map((item, index) => {
+            const isActive = isActivePath(location.pathname, item.href);
             const Icon = item.icon;
 
             return (
               <SidebarMenu key={index}>
-                <SidebarMenuButton
-                  isActive={matchesCurrentPath(item)}
-                  tooltip={item.label}
-                  asChild
-                >
+                <SidebarMenuButton isActive={isActive} tooltip={item.label} asChild>
                   <Link to={item.href} aria-label={item.label}>
                     <Icon />
                     <span>{item.label}</span>
