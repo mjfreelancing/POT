@@ -1,14 +1,11 @@
-import { Separator } from "@radix-ui/react-separator";
-import { AppSidebar } from "./components/AppSidebar";
-import { ThemeProvider } from "./components/theme/ThemeProvider";
-import { Navigate, Route, Routes } from "react-router";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "./components/ui/sidebar";
-import DashboardPage from "./features/dashboard/DashboardPage";
-import ProjectionsPage from "./features/projections/ProjectionsPage";
+import { Separator } from '@radix-ui/react-separator';
+import { Navigate, Route, Routes } from 'react-router';
+
+import { AppSidebar } from './components/AppSidebar';
+import { ThemeProvider } from './components/theme/ThemeProvider';
+import { SidebarInset, SidebarProvider, SidebarTrigger } from './components/ui/sidebar';
+import DashboardPage from './features/dashboard/DashboardPage';
+import ProjectionsPage from './features/projections/ProjectionsPage';
 
 const App = () => {
   return (

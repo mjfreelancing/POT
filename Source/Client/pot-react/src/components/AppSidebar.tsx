@@ -1,13 +1,10 @@
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-} from "@/components/ui/sidebar";
-import ThemeToggle from "./theme/ThemeToggle";
-import { ChartSpline, Home, LayoutDashboard } from "lucide-react";
-import MenuGroup, { MenuGroupDefinition } from "./nav/MenuGroup";
-import { Link } from "react-router";
+import { ChartSpline, Home, LayoutDashboard } from 'lucide-react';
+import { Link } from 'react-router';
+
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from '@/components/ui/sidebar';
+
+import MenuGroup, { MenuGroupDefinition } from './nav/MenuGroup';
+import ThemeToggle from './theme/ThemeToggle';
 
 {
   /*
@@ -18,17 +15,17 @@ import { Link } from "react-router";
 
 const menuGroups: Record<string, MenuGroupDefinition> = {
   analysis: {
-    label: "Analysis",
+    label: 'Analysis',
     items: [
       {
-        label: "Dashboard",
+        label: 'Dashboard',
         icon: LayoutDashboard,
-        href: "/dashboard",
+        href: '/dashboard',
       },
       {
-        label: "Projections",
+        label: 'Projections',
         icon: ChartSpline,
-        href: "/projections",
+        href: '/projections',
       },
     ],
   },
