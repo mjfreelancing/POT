@@ -1,3 +1,4 @@
+import { InvalidOperationError } from '../errors/invalidOperationError';
 import { FailResultBase } from './failResultBase';
 import { Result } from './result';
 
@@ -16,11 +17,11 @@ describe('Result Class', () => {
     expect(result.getValue()).toBe('Success!');
   });
 
-  it('should throw when trying to get error from success result', () => {
+  it('should throw InvalidOperationError when trying to get error from a success result', () => {
     const result = Result.success('Success!');
 
     expect(() => result.getError()).toThrow(
-      'Cannot get error from a success result',
+      new InvalidOperationError('Cannot get error from a success result'),
     );
   });
 
@@ -38,12 +39,12 @@ describe('Result Class', () => {
     expect(resultError.description).toBe('Test Error');
   });
 
-  it('should throw when trying to get value from failure result', () => {
+  it('should throw InvalidOperationError when trying to get value from a failed result', () => {
     const error = new DummyError();
     const result = Result.fail(error);
 
     expect(() => result.getValue()).toThrow(
-      'Cannot get value from a failed result',
+      new InvalidOperationError('Cannot get value from a failed result'),
     );
   });
 });
