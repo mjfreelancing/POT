@@ -58,7 +58,11 @@ const MenuGroup: React.FC<MenuGroupProps> = ({ group }) => {
 
             return (
               <SidebarMenu key={index}>
-                <SidebarMenuButton isActive={isActive} tooltip={item.label} asChild>
+                <SidebarMenuButton
+                  isActive={isActive}
+                  tooltip={item.label}
+                  asChild
+                >
                   <Link to={item.href} aria-label={item.label}>
                     <Icon />
                     <span>{item.label}</span>

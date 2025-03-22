@@ -1,7 +1,12 @@
 import { ChartSpline, Home, LayoutDashboard } from 'lucide-react';
 import { Link } from 'react-router';
 
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from '@/components/ui/sidebar';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+} from '@/components/ui/sidebar';
 
 import MenuGroup, { MenuGroupDefinition } from './nav/MenuGroup';
 import ThemeToggle from './theme/ThemeToggle';

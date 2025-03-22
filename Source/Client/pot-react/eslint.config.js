@@ -7,7 +7,7 @@ import simpleImportSort from 'eslint-plugin-simple-import-sort';
 
 export default tseslint.config(
   {
-    ignores: ['dist/**', 'src/lib/', 'src/components/ui/'],
+    ignores: ['dist/**', 'src/lib/utils.ts', 'src/components/ui/'],
   },
   {
     extends: [

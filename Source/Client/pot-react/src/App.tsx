@@ -3,7 +3,11 @@ import { Navigate, Route, Routes } from 'react-router';
 
 import { AppSidebar } from './components/AppSidebar';
 import { ThemeProvider } from './components/theme/ThemeProvider';
-import { SidebarInset, SidebarProvider, SidebarTrigger } from './components/ui/sidebar';
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from './components/ui/sidebar';
 import DashboardPage from './features/dashboard/DashboardPage';
 import ProjectionsPage from './features/projections/ProjectionsPage';
 

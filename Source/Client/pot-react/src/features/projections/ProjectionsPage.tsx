@@ -1,7 +1,9 @@
 const ProjectionsPage = () => {
   return (
     // Temporary
-    <div className="flex h-full w-full items-center justify-center">Projections Content Here</div>
+    <div className="flex h-full w-full items-center justify-center">
+      Projections Content Here
+    </div>
   );
 };
 
