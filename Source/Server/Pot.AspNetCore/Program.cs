@@ -12,6 +12,8 @@ public class Program
 
         var builder = WebApplication.CreateBuilder(args);
 
+        builder.Services.AddCors();
+
         builder
             .AddCorrelationId()
             .AddOpenApi()
@@ -54,6 +56,11 @@ public class Program
         //app.UseAuthentication();
         //app.UseAuthorization();
 
+
+        app.UseCors(policy => policy.WithOrigins("http://localhost:5175") // Allow frontend URL
+          .AllowAnyMethod()
+          .AllowAnyHeader());
+        //.AllowCredentials()); // If using authentication
 
 
         app.UseCorrelationId()
