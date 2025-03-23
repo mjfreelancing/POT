@@ -1,5 +1,5 @@
 import { FailResultBase } from './failResultBase';
-import { Failure,Result, Success } from './result';
+import { FailResult, Result, SuccessResult } from './result';
 
 class DummyError extends FailResultBase {
   constructor() {
@@ -9,7 +9,7 @@ class DummyError extends FailResultBase {
 
 describe('Result Type', () => {
   it('should create a success result', () => {
-    const result: Result<string, DummyError> = new Success('Success!');
+    const result: Result<string, DummyError> = new SuccessResult('Success!');
 
     expect(result.success).toBe(true);
 
@@ -22,7 +22,7 @@ describe('Result Type', () => {
 
   it('should create a failure result', () => {
     const error = new DummyError();
-    const result: Result<string, DummyError> = new Failure(error);
+    const result: Result<string, DummyError> = new FailResult(error);
 
     expect(result.success).toBe(false);
 
