@@ -9,7 +9,10 @@ class DummyError extends FailResultBase {
 
 describe('Result Type', () => {
   it('should create a success result', () => {
-    const result: Result<string, DummyError> = new SuccessResult('Success!');
+    // Deliberately using FailResultBase instead of DummyError since the error could be any derived type.
+    const result: Result<string, FailResultBase> = new SuccessResult(
+      'Success!',
+    );
 
     expect(result.success).toBe(true);
 
@@ -22,12 +25,16 @@ describe('Result Type', () => {
 
   it('should create a failure result', () => {
     const error = new DummyError();
-    const result: Result<string, DummyError> = new FailResult(error);
+
+    // Deliberately using FailResultBase instead of DummyError since the error could be any derived type.
+    const result: Result<string, FailResultBase> = new FailResult(error);
 
     expect(result.success).toBe(false);
 
     if (!result.success) {
       expect(result.error).toBe(error);
+      expect(result.error).toBeInstanceOf(DummyError);
+      expect(result.error).toBeInstanceOf(FailResultBase);
       expect(result.error.type).toBe(undefined);
       expect(result.error.code).toBe('TEST');
       expect(result.error.description).toBe('Test Error');
