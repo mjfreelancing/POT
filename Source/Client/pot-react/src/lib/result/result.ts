@@ -1,15 +1,15 @@
 import { FailResultBase } from './failResultBase';
 
-export class Success<TSuccess> {
+export class SuccessResult<TSuccess> {
   public readonly success = true;
   constructor(public value: TSuccess) {}
 }
 
-export class Failure<TFail extends FailResultBase> {
+export class FailResult<TFail extends FailResultBase> {
   public readonly success = false;
   constructor(public error: TFail) {}
 }
 
 export type Result<TSuccess, TFail extends FailResultBase> =
-  | Success<TSuccess>
-  | Failure<TFail>;
+  | SuccessResult<TSuccess>
+  | FailResult<TFail>;
