@@ -1,6 +1,5 @@
-import { InvalidOperationError } from '../errors/invalidOperationError';
 import { FailResultBase } from './failResultBase';
-import { Result } from './result';
+import { isFail, isSuccess, ResultFactory } from './result';
 
 class DummyError extends FailResultBase {
   constructor() {
@@ -8,43 +7,30 @@ class DummyError extends FailResultBase {
   }
 }
 
-describe('Result Class', () => {
+describe('Result Type', () => {
   it('should create a success result', () => {
-    const result = Result.success('Success!');
+    const result = ResultFactory.success('Success!');
 
-    expect(result.isSuccess()).toBe(true);
-    expect(result.isFail()).toBe(false);
-    expect(result.getValue()).toBe('Success!');
-  });
+    expect(isSuccess(result)).toBe(true);
+    expect(isFail(result)).toBe(false);
 
-  it('should throw InvalidOperationError when trying to get error from a success result', () => {
-    const result = Result.success('Success!');
-
-    expect(() => result.getError()).toThrow(
-      new InvalidOperationError('Cannot get error from a success result'),
-    );
+    if (isSuccess(result)) {
+      expect(result.value).toBe('Success!');
+    }
   });
 
   it('should create a failure result', () => {
     const error = new DummyError();
-    const result = Result.fail(error);
+    const result = ResultFactory.fail(error);
 
-    expect(result.isSuccess()).toBe(false);
-    expect(result.isFail()).toBe(true);
+    expect(isSuccess(result)).toBe(false);
+    expect(isFail(result)).toBe(true);
 
-    const resultError = result.getError();
-    expect(resultError).toBe(error);
-    expect(resultError.type).toBe(undefined);
-    expect(resultError.code).toBe('TEST');
-    expect(resultError.description).toBe('Test Error');
-  });
-
-  it('should throw InvalidOperationError when trying to get value from a failed result', () => {
-    const error = new DummyError();
-    const result = Result.fail(error);
-
-    expect(() => result.getValue()).toThrow(
-      new InvalidOperationError('Cannot get value from a failed result'),
-    );
+    if (isFail(result)) {
+      expect(result.error).toBe(error);
+      expect(result.error.type).toBe(undefined);
+      expect(result.error.code).toBe('TEST');
+      expect(result.error.description).toBe('Test Error');
+    }
   });
 });
