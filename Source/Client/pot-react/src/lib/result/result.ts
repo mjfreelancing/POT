@@ -1,43 +1,29 @@
-import { InvalidOperationError } from '../errors/invalidOperationError';
 import { FailResultBase } from './failResultBase';
 
-export class Result<TSuccess, TFail extends FailResultBase> {
-  private constructor(
-    private readonly value?: TSuccess,
-    private readonly error?: TFail,
-  ) {}
+export type Result<TSuccess, TFail extends FailResultBase> =
+  | { success: true; value: TSuccess }
+  | { success: false; error: TFail };
 
+export class ResultFactory {
   static success<TSuccess>(value: TSuccess): Result<TSuccess, never> {
-    return new Result<TSuccess, never>(value, undefined as never);
+    return { success: true, value };
   }
 
   static fail<TFail extends FailResultBase>(
     error: TFail,
   ): Result<never, TFail> {
-    return new Result<never, TFail>(undefined as never, error);
+    return { success: false, error };
   }
+}
 
-  isSuccess(): boolean {
-    return this.value !== undefined;
-  }
+export function isSuccess<TSuccess, TFail extends FailResultBase>(
+  result: Result<TSuccess, TFail>,
+): result is { success: true; value: TSuccess } {
+  return result.success;
+}
 
-  isFail(): boolean {
-    return this.error !== undefined;
-  }
-
-  getValue(): TSuccess {
-    if (!this.isSuccess()) {
-      throw new InvalidOperationError('Cannot get value from a failed result');
-    }
-
-    return this.value as TSuccess;
-  }
-
-  getError(): TFail {
-    if (!this.isFail()) {
-      throw new InvalidOperationError('Cannot get error from a success result');
-    }
-
-    return this.error as TFail;
-  }
+export function isFail<TSuccess, TFail extends FailResultBase>(
+  result: Result<TSuccess, TFail>,
+): result is { success: false; error: TFail } {
+  return !result.success;
 }
