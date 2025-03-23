@@ -1,5 +1,5 @@
 import { FailResultBase } from './failResultBase';
-import { isFail, isSuccess, ResultFactory } from './result';
+import { Failure,Result, Success } from './result';
 
 class DummyError extends FailResultBase {
   constructor() {
@@ -9,28 +9,30 @@ class DummyError extends FailResultBase {
 
 describe('Result Type', () => {
   it('should create a success result', () => {
-    const result = ResultFactory.success('Success!');
+    const result: Result<string, DummyError> = new Success('Success!');
 
-    expect(isSuccess(result)).toBe(true);
-    expect(isFail(result)).toBe(false);
+    expect(result.success).toBe(true);
 
-    if (isSuccess(result)) {
+    if (result.success) {
       expect(result.value).toBe('Success!');
+    } else {
+      throw new Error('Expected success but got failure');
     }
   });
 
   it('should create a failure result', () => {
     const error = new DummyError();
-    const result = ResultFactory.fail(error);
+    const result: Result<string, DummyError> = new Failure(error);
 
-    expect(isSuccess(result)).toBe(false);
-    expect(isFail(result)).toBe(true);
+    expect(result.success).toBe(false);
 
-    if (isFail(result)) {
+    if (!result.success) {
       expect(result.error).toBe(error);
       expect(result.error.type).toBe(undefined);
       expect(result.error.code).toBe('TEST');
       expect(result.error.description).toBe('Test Error');
+    } else {
+      throw new Error('Expected failure but got success');
     }
   });
 });
