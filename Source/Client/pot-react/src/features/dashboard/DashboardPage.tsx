@@ -1,5 +1,6 @@
-import { getAccounts } from '@/api/accounts/accountsApi';
 import { useQuery } from '@tanstack/react-query';
+
+import { getAccounts } from '@/api/accounts/accountsApi';
 
 // Temporary - a WIP
 
@@ -40,9 +41,29 @@ const DashboardPage = () => {
             key={index}
             className="p-2 border-b last:border-none text-foreground"
           >
+            <span className="font-semibold">Id:</span> {account.rowId}
+            <br />
+            <span className="font-semibold">ETag:</span> {account.eTag}
+            <br />
             <span className="font-semibold">BSB:</span> {account.bsb}
             <br />
             <span className="font-semibold">Number:</span> {account.number}
+            <br />
+            <span className="font-semibold">Description:</span>{' '}
+            {account.description}
+            <br />
+            <span className="font-semibold">Balance:</span> {account.balance}
+            <br />
+            <span className="font-semibold">Reserved:</span> {account.reserved}
+            <br />
+            <span className="font-semibold">Allocated:</span>{' '}
+            {account.allocated}
+            <br />
+            <span className="font-semibold">Daily Accrual:</span>{' '}
+            {account.dailyAccrual}
+            <br />
+            <span className="font-semibold">Available:</span>
+            {account.available}
           </li>
         ))}
       </ul>

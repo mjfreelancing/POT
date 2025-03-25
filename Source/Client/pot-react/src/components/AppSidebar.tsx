@@ -1,4 +1,11 @@
-import { ChartSpline, Home, LayoutDashboard } from 'lucide-react';
+import {
+  //ArrowDownUp,
+  ChartSpline,
+  CircleDollarSignIcon,
+  Home,
+  LayoutDashboard,
+  PiggyBank,
+} from 'lucide-react';
 import { Link } from 'react-router';
 
 import {
@@ -34,6 +41,33 @@ const menuGroups: Record<string, MenuGroupDefinition> = {
       },
     ],
   },
+
+  accounts: {
+    label: 'Accounts',
+    items: [
+      {
+        label: 'Manage',
+        icon: PiggyBank,
+        href: '/accounts',
+      },
+      // {
+      //   label: 'Import/Export',
+      //   icon: ArrowDownUp,
+      //   href: '/accounts',
+      // },
+    ],
+  },
+
+  expenses: {
+    label: 'Expenses',
+    items: [
+      {
+        label: 'Manage',
+        icon: CircleDollarSignIcon,
+        href: '/expenses',
+      },
+    ],
+  },
 };
 
 export function AppSidebar() {
@@ -61,6 +95,8 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <MenuGroup group={menuGroups.analysis} />
+        <MenuGroup group={menuGroups.accounts} />
+        <MenuGroup group={menuGroups.expenses} />
       </SidebarContent>
       <SidebarFooter>
         <ThemeToggle />

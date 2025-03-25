@@ -8,6 +8,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from './components/ui/sidebar';
+import AccountsPage from './features/accounts/AccountsPage';
 import DashboardPage from './features/dashboard/DashboardPage';
 import ProjectionsPage from './features/projections/ProjectionsPage';
 
@@ -31,6 +32,7 @@ const App = () => {
                 <Route path="/" element={<Navigate replace to="dashboard" />} />
                 <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/projections" element={<ProjectionsPage />} />
+                <Route path="/accounts" element={<AccountsPage />} />
               </Routes>
             </div>
           </SidebarInset>
