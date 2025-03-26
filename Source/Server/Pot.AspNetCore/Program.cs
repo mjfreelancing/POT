@@ -57,7 +57,7 @@ public class Program
         //app.UseAuthorization();
 
 
-        app.UseCors(policy => policy.WithOrigins("http://localhost:5175") // Allow frontend URL
+        app.UseCors(policy => policy.WithOrigins("http://localhost:5175", "http://localhost:4173") // Allow frontend URL
           .AllowAnyMethod()
           .AllowAnyHeader());
         //.AllowCredentials()); // If using authentication
