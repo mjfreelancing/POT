@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
-import { useEffect,useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { getAccounts } from '@/api/accounts/accountsApi';
-import { createCurrencyColumn, DataTable } from '@/components/dataTable';
+import { createCurrencyColumn, DataTable } from '@/components/DataTable';
 import { Account } from '@/data/accounts/account';
 
 const columns: ColumnDef<Account>[] = [

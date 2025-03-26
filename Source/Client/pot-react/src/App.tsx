@@ -13,6 +13,8 @@ import DashboardPage from './features/dashboard/DashboardPage';
 import ProjectionsPage from './features/projections/ProjectionsPage';
 
 const App = () => {
+  console.log('Running mode:', import.meta.env.MODE);
+
   return (
     <ThemeProvider defaultTheme="system" storageKey="pot-ui-theme">
       <div className="flex h-screen w-screen">
