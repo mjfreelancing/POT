@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
-import { useEffect, useState } from 'react';
 
 import { getAccounts } from '@/api/accounts/accountsApi';
 import { createCurrencyColumn, DataTable } from '@/components/DataTable';
 import { Account } from '@/data/accounts/account';
+import LoadingMessage from '@/components/LoadingMessage';
+import ErrorMessage from '@/components/ErrorMessage';
+import { logFunction } from '@/lib/loggerUtils';
 
 const columns: ColumnDef<Account>[] = [
   {
@@ -27,42 +29,23 @@ const columns: ColumnDef<Account>[] = [
 ];
 
 const AccountsPage = () => {
+  logFunction(AccountsPage);
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ['accounts'],
     queryFn: async ({ signal }) => {
       return getAccounts(signal);
     },
+    retryDelay: 10000,
   });
-
-  const [showLoading, setShowLoading] = useState(false);
-
-  useEffect(() => {
-    let timeout: number;
-
-    if (isLoading) {
-      timeout = window.setTimeout(() => setShowLoading(true), 300);
-    } else {
-      setShowLoading(false);
-    }
-
-    return () => clearTimeout(timeout);
-  }, [isLoading]);
 
   return (
     <div className="container mx-auto py-4 px-4">
-      {isError && (
-        <div className="flex flex-col items-center justify-center text-red-500 mb-8">
-          Failed to load accounts
-        </div>
-      )}
+      {isError && <ErrorMessage message="Failed to load accounts" />}
 
-      <DataTable columns={columns} data={data ?? []} />
+      <DataTable columns={columns} data={data || []} />
 
-      {showLoading && (
-        <div className="flex flex-col items-center justify-center mt-8">
-          Loading...
-        </div>
-      )}
+      <LoadingMessage isLoading={isLoading} text="Loading..." />
     </div>
   );
 };
