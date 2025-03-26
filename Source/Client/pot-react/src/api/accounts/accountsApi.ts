@@ -1,5 +1,6 @@
-import { ApiBase } from '../apiBase';
 import { Account } from '@/data/accounts/account';
+
+import { ApiBase } from '../apiBase';
 
 class AccountsApi extends ApiBase {
   public getAll(signal: AbortSignal): Promise<Account[]> {
