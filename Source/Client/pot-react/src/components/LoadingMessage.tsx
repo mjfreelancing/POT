@@ -17,7 +17,7 @@ function LoadingMessage({ isLoading, text }: LoadingMessageProps) {
       setShowLoading(false);
     }
 
-    return () => clearTimeout(timeout);
+    return () => window.clearTimeout(timeout);
   }, [isLoading]);
 
   if (!showLoading) {
