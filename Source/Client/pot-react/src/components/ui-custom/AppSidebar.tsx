@@ -89,7 +89,7 @@ export function AppSidebar() {
                 text-overflow: ellipsis;      => not applicable, but replaces the text with ... if space allows
             */}
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold">Header content here</span>
+            <span className="truncate font-semibold">Pay On Time</span>
           </div>
         </div>
       </SidebarHeader>
