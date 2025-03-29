@@ -4,6 +4,7 @@ import axios, { AxiosResponse } from 'axios';
 
 axios.defaults.baseURL = 'http://localhost:5241/api';
 axios.defaults.timeout = 3000;
+
 // axios.defaults.headers.common['Authorization'] = 'Bearer your-token';
 
 // // Request Interceptor
@@ -57,6 +58,16 @@ export class ApiBase {
   ): Promise<TResponse> {
     return axios
       .post<TResponse>(url, data, { signal: signal })
+      .then(this.responseData);
+  }
+
+  protected async put<TResponse, TData>(
+    url: string,
+    data: TData,
+    signal?: AbortSignal,
+  ): Promise<TResponse> {
+    return axios
+      .put<TResponse>(url, data, { signal: signal })
       .then(this.responseData);
   }
 

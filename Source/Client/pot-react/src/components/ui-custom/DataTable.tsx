@@ -6,8 +6,8 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 
-import { formatCurrency } from '../lib/currencyUtils';
-import { Currency } from '../lib/valueTypes';
+import { formatCurrency } from '../../lib/currencyUtils';
+import { Currency } from '../../lib/valueTypes';
 import {
   Table,
   TableBody,
@@ -15,7 +15,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from './ui/table';
+} from '../ui/table';
 
 // Gets the currency value from a row.
 const getCurrencyValue = <TData,>(row: Row<TData>, key: string): Currency => {

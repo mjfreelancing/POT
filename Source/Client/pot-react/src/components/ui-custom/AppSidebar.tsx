@@ -15,8 +15,8 @@ import {
   SidebarHeader,
 } from '@/components/ui/sidebar';
 
-import MenuGroup, { MenuGroupDefinition } from './nav/MenuGroup';
-import ThemeToggle from './theme/ThemeToggle';
+import MenuGroup, { MenuGroupDefinition } from '../nav/MenuGroup';
+import ThemeToggle from '../theme/ThemeToggle';
 
 {
   /*

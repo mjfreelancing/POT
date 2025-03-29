@@ -1,0 +1,61 @@
+import { ColumnDef } from '@tanstack/react-table';
+import { MoreHorizontal } from 'lucide-react';
+import { Account } from '@/data/accounts/account';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import { createCurrencyColumn } from '@/components/ui-custom/DataTable';
+import { EditAccountDialog } from './edit/EditAccountDialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+
+export const columns: ColumnDef<Account>[] = [
+  {
+    accessorKey: 'bsb_number',
+    header: 'BSB / Number',
+    cell: ({ row }) => {
+      const { bsb, number } = row.original;
+      return `(${bsb}) ${number}`;
+    },
+  },
+  {
+    accessorKey: 'description',
+    header: 'Description',
+  },
+  createCurrencyColumn<Account>('balance', 'Balance'),
+  createCurrencyColumn<Account>('reserved', 'Reserved'),
+  createCurrencyColumn<Account>('allocated', 'Allocated'),
+  createCurrencyColumn<Account>('dailyAccrual', 'Daily Accrual'),
+  createCurrencyColumn<Account>('available', 'Available'),
+  {
+    id: 'actions',
+    cell: ({ row }) => {
+      const account = row.original;
+
+      return (
+        <Dialog>
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DialogTrigger asChild>
+                <DropdownMenuItem>Edit</DropdownMenuItem>
+              </DialogTrigger>
+              <DropdownMenuSeparator />
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <EditAccountDialog account={account} />
+        </Dialog>
+      );
+    },
+  },
+];

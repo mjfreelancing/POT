@@ -1,8 +1,7 @@
 import { Separator } from '@radix-ui/react-separator';
 import { Navigate, Route, Routes } from 'react-router';
-import { logFunction } from './lib/loggerUtils'; // Import the helper method
 
-import { AppSidebar } from './components/AppSidebar';
+import { AppSidebar } from './components/ui-custom/AppSidebar';
 import { ThemeProvider } from './components/theme/ThemeProvider';
 import {
   SidebarInset,
@@ -14,7 +13,7 @@ import DashboardPage from './features/dashboard/DashboardPage';
 import ProjectionsPage from './features/projections/ProjectionsPage';
 
 const App = () => {
-  logFunction(App, `Running mode: ${import.meta.env.MODE}`);
+  console.info(`Running mode: ${import.meta.env.MODE}`);
 
   return (
     <ThemeProvider defaultTheme="system" storageKey="pot-ui-theme">

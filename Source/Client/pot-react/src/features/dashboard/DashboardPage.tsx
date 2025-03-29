@@ -1,72 +1,43 @@
-import { useQuery } from '@tanstack/react-query';
+import { ColumnDef } from '@tanstack/react-table';
 
-import { getAccounts } from '@/api/accounts/accountsApi';
+import { useAllAccountsQuery } from '@/api/accounts/accountsApi';
+import {
+  createCurrencyColumn,
+  DataTable,
+} from '@/components/ui-custom/DataTable';
+import ErrorMessage from '@/components/ui-custom/ErrorMessage';
+import LoadingMessage from '@/components/ui-custom/LoadingMessage';
+import { Account } from '@/data/accounts/account';
 
 // Temporary - a WIP
 
-const DashboardPage = () => {
-  const {
-    data: accounts,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ['accounts'],
-    queryFn: async ({ signal }) => {
-      return getAccounts(signal);
+const columns: ColumnDef<Account>[] = [
+  {
+    accessorKey: 'bsb_number',
+    header: 'BSB / Number',
+    cell: ({ row }) => {
+      const { bsb, number } = row.original;
+      return `(${bsb}) ${number}`;
     },
-  });
+  },
+  {
+    accessorKey: 'description',
+    header: 'Description',
+  },
+  createCurrencyColumn<Account>('balance', 'Balance'),
+  createCurrencyColumn<Account>('available', 'Available'),
+];
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center">
-        Loading...
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="flex flex-col items-center justify-center text-red-500">
-        Failed to load accounts
-      </div>
-    );
-  }
+const DashboardPage = () => {
+  const { data, isLoading, isError } = useAllAccountsQuery();
 
   return (
-    <div className="flex flex-col items-center justify-center h-full w-full">
-      <h1 className="text-2xl font-bold mb-4 text-foreground">Accounts</h1>
-      <ul className="w-1/2 bg-background shadow-md rounded-lg p-4">
-        {accounts?.map((account, index) => (
-          <li
-            key={index}
-            className="p-2 border-b last:border-none text-foreground"
-          >
-            <span className="font-semibold">Id:</span> {account.rowId}
-            <br />
-            <span className="font-semibold">ETag:</span> {account.eTag}
-            <br />
-            <span className="font-semibold">BSB:</span> {account.bsb}
-            <br />
-            <span className="font-semibold">Number:</span> {account.number}
-            <br />
-            <span className="font-semibold">Description:</span>{' '}
-            {account.description}
-            <br />
-            <span className="font-semibold">Balance:</span> {account.balance}
-            <br />
-            <span className="font-semibold">Reserved:</span> {account.reserved}
-            <br />
-            <span className="font-semibold">Allocated:</span>{' '}
-            {account.allocated}
-            <br />
-            <span className="font-semibold">Daily Accrual:</span>{' '}
-            {account.dailyAccrual}
-            <br />
-            <span className="font-semibold">Available:</span>
-            {account.available}
-          </li>
-        ))}
-      </ul>
+    <div className="container mx-auto py-4 px-4">
+      {isError && <ErrorMessage message="Failed to load accounts" />}
+
+      <DataTable columns={columns} data={data || []} />
+
+      <LoadingMessage isLoading={isLoading} text="Loading..." />
     </div>
   );
 };
