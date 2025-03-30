@@ -1,13 +1,13 @@
 import { Separator } from '@radix-ui/react-separator';
 import { Navigate, Route, Routes } from 'react-router';
 
-import { AppSidebar } from './components/ui-custom/AppSidebar';
 import { ThemeProvider } from './components/theme/ThemeProvider';
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from './components/ui/sidebar';
+import { AppSidebar } from './components/ui-custom/AppSidebar';
 import AccountsPage from './features/accounts/AccountsPage';
 import DashboardPage from './features/dashboard/DashboardPage';
 import ProjectionsPage from './features/projections/ProjectionsPage';

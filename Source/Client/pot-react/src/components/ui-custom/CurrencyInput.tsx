@@ -1,6 +1,8 @@
 import { ComponentPropsWithoutRef, useState } from 'react';
-import { Input } from '../ui/input';
+
 import { isNumber } from '@/lib/utils';
+
+import { Input } from '../ui/input';
 
 type CurrencyInputProps = Omit<
   ComponentPropsWithoutRef<typeof Input>,
@@ -24,7 +26,11 @@ function CurrencyInput({
     setDisplayValue(newValue);
 
     const numericValue = newValue === '' ? undefined : Number(newValue);
-    onChange?.({ ...e, target: { ...e.target, value: numericValue } } as any);
+
+    onChange?.({
+      ...e,
+      target: { ...e.target, value: numericValue?.toString() || '' },
+    } as React.ChangeEvent<HTMLInputElement>);
   };
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {

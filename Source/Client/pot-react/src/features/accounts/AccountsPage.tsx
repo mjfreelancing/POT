@@ -2,6 +2,7 @@ import { useAllAccountsQuery } from '@/api/accounts/accountsApi';
 import { DataTable } from '@/components/ui-custom/DataTable';
 import ErrorMessage from '@/components/ui-custom/ErrorMessage';
 import LoadingMessage from '@/components/ui-custom/LoadingMessage';
+
 import { columns } from './columns';
 
 const AccountsPage = () => {

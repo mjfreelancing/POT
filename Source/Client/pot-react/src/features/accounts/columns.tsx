@@ -1,10 +1,8 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
-import { Account } from '@/data/accounts/account';
+
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
-import { createCurrencyColumn } from '@/components/ui-custom/DataTable';
-import { EditAccountDialog } from './edit/EditAccountDialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +10,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { createCurrencyColumn } from '@/components/ui-custom/DataTable';
+import { Account } from '@/data/accounts/account';
+
+import { EditAccountDialog } from './edit/EditAccountDialog';
 
 export const columns: ColumnDef<Account>[] = [
   {
