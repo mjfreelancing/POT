@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Pot.Data.Migrations": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DATABASE_HOST": "localhost"
+      }
+    }
+  }
+}
