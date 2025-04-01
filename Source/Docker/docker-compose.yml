@@ -1,0 +1,46 @@
+# version: "3.8"
+services:
+  postgres:
+    container_name: pot-postgres
+    build:
+      context: Postgres
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: "pg_isready -U postgres -d postgres"
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - pot-network
+
+  server:
+    container_name: pot-aspnet
+    build:
+      # The context needs to be up one level so the server source code can be found
+      context: ..
+      dockerfile: Docker/Server/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DATABASE_HOST=pot-postgres
+      - ASPNETCORE_URLS=http://+:5241
+    ports:
+      - "5241:5241"
+    healthcheck:
+      test: "curl -f http://localhost:5241 || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - pot-network
+
+networks:
+  pot-network:
+    driver: bridge
