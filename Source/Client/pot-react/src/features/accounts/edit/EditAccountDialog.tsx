@@ -4,14 +4,14 @@ import { ControllerRenderProps, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { useUpdateAccountMutation } from '@/api/accounts/accountsApi';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/shadcn/button';
 import {
   DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@/components/ui/shadcn/dialog';
 import {
   Form,
   FormControl,
@@ -19,10 +19,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
-import CurrencyInput from '@/components/ui-custom/CurrencyInput';
+} from '@/components/ui/shadcn/form';
+import { Input } from '@/components/ui/shadcn/input';
+import { Separator } from '@/components/ui/shadcn/separator';
+import CurrencyInput from '@/components/ui/CurrencyInput';
 import { Account } from '@/data/accounts/account';
 
 import { useAccountEditor } from './useAccountEditor';

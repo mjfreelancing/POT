@@ -6,8 +6,8 @@ import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from './components/ui/sidebar';
-import { AppSidebar } from './components/ui-custom/AppSidebar';
+} from './components/ui/shadcn/sidebar';
+import { AppSidebar } from './components/ui/AppSidebar';
 import AccountsPage from './features/accounts/AccountsPage';
 import DashboardPage from './features/dashboard/DashboardPage';
 import ProjectionsPage from './features/projections/ProjectionsPage';

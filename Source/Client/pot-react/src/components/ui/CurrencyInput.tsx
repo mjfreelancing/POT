@@ -2,7 +2,7 @@ import { ComponentPropsWithoutRef, useState } from 'react';
 
 import { isNumber } from '@/lib/utils';
 
-import { Input } from '../ui/input';
+import { Input } from './shadcn/input';
 
 type CurrencyInputProps = Omit<
   ComponentPropsWithoutRef<typeof Input>,

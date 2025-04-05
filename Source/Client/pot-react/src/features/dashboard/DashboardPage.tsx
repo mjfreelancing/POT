@@ -1,13 +1,11 @@
 import { ColumnDef } from '@tanstack/react-table';
 
 import { useAllAccountsQuery } from '@/api/accounts/accountsApi';
-import {
-  createCurrencyColumn,
-  DataTable,
-} from '@/components/ui-custom/DataTable';
-import ErrorMessage from '@/components/ui-custom/ErrorMessage';
-import LoadingMessage from '@/components/ui-custom/LoadingMessage';
+import { createCurrencyColumn, DataTable } from '@/components/ui/DataTable';
+import ErrorMessage from '@/components/ui/ErrorMessage';
+import LoadingMessage from '@/components/ui/LoadingMessage';
 import { Account } from '@/data/accounts/account';
+import { DatePickerWithYear } from '@/components/ui/DatePickerWithYear';
 
 // Temporary - a WIP
 
@@ -36,6 +34,8 @@ const DashboardPage = () => {
       {isError && <ErrorMessage message="Failed to load accounts" />}
 
       <DataTable columns={columns} data={data || []} />
+
+      <DatePickerWithYear />
 
       <LoadingMessage isLoading={isLoading} text="Loading..." />
     </div>

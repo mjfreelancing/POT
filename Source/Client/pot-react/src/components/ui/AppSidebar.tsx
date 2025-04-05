@@ -13,7 +13,7 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-} from '@/components/ui/sidebar';
+} from '@/components/ui/shadcn/sidebar';
 
 import MenuGroup, { MenuGroupDefinition } from '../nav/MenuGroup';
 import ThemeToggle from '../theme/ThemeToggle';

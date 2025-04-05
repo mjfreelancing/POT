@@ -1,7 +1,7 @@
 import { useAllAccountsQuery } from '@/api/accounts/accountsApi';
-import { DataTable } from '@/components/ui-custom/DataTable';
-import ErrorMessage from '@/components/ui-custom/ErrorMessage';
-import LoadingMessage from '@/components/ui-custom/LoadingMessage';
+import { DataTable } from '@/components/ui/DataTable';
+import ErrorMessage from '@/components/ui/ErrorMessage';
+import LoadingMessage from '@/components/ui/LoadingMessage';
 
 import { columns } from './columns';
 
