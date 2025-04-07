@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { ControllerRenderProps, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -56,6 +56,16 @@ export function EditAccountDialog({ account }: EditAccountDialogProps) {
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
   });
+
+  useEffect(() => {
+    form.reset({
+      bsb: account.bsb,
+      number: account.number,
+      description: account.description,
+      balance: Number(account.balance.toFixed(2)),
+      reserved: Number(account.reserved.toFixed(2)),
+    });
+  }, [account, form]);
 
   const { resetToOriginal } = useAccountEditor(form, account);
 
