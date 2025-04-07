@@ -8,9 +8,7 @@ import {
   SidebarTrigger,
 } from './components/ui/shadcn/sidebar';
 import { AppSidebar } from './components/ui/AppSidebar';
-import AccountsPage from './features/accounts/AccountsPage';
-import DashboardPage from './features/dashboard/DashboardPage';
-import ProjectionsPage from './features/projections/ProjectionsPage';
+import { AccountsPage, DashboardPage, ProjectionsPage } from './features';
 
 const App = () => {
   console.info(`Running mode: ${import.meta.env.MODE}`);
