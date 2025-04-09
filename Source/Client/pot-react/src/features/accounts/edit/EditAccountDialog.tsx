@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { ControllerRenderProps, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -27,11 +27,9 @@ import { Account } from '@/data/accounts/account';
 
 import { useAccountEditor } from './useAccountEditor';
 
-// This is for the case when the user leaves the number cell empty when the form is submitted.
 const currencySchema = z
   .number({
     required_error: 'This field is required',
-    invalid_type_error: 'Please enter a valid number',
   })
   .min(0, 'Value must be 0 or greater');
 
@@ -57,17 +55,7 @@ export function EditAccountDialog({ account }: EditAccountDialogProps) {
     resolver: zodResolver(formSchema),
   });
 
-  useEffect(() => {
-    form.reset({
-      bsb: account.bsb,
-      number: account.number,
-      description: account.description,
-      balance: Number(account.balance.toFixed(2)),
-      reserved: Number(account.reserved.toFixed(2)),
-    });
-  }, [account, form]);
-
-  const { resetToOriginal } = useAccountEditor(form, account);
+  const { resetToOriginal, isDirty } = useAccountEditor(form, account);
 
   const onSubmit = async (values: FormSchema) => {
     const controller = new AbortController();
@@ -226,7 +214,7 @@ export function EditAccountDialog({ account }: EditAccountDialogProps) {
             <Button
               type="submit"
               className="w-24"
-              disabled={!form.formState.isDirty}
+              disabled={!isDirty()}
               aria-label="Save account changes"
             >
               Save
