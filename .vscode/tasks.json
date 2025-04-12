@@ -4,7 +4,10 @@
     {
       "label": "docker-start-pot",
       "type": "shell",
-      "command": "docker-compose -p pot -f Docker/docker-compose.yml up --build -d",
+      "command": "docker-compose -p pot -f docker-compose.yml up --build -d",
+      "options": {
+        "cwd": "${workspaceFolder}/Source/Docker"
+      },
       "group": {
         "kind": "build",
         "isDefault": true
@@ -14,7 +17,10 @@
     {
       "label": "docker-stop-pot",
       "type": "shell",
-      "command": "docker-compose -p pot -f Docker/docker-compose.yml down",
+      "command": "docker-compose -p pot -f docker-compose.yml down",
+      "options": {
+        "cwd": "${workspaceFolder}/Source/Docker"
+      },
       "group": {
         "kind": "build",
         "isDefault": false
