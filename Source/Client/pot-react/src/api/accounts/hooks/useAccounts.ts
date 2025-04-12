@@ -1,8 +1,11 @@
 import { useGet, usePost, usePut } from '../../hooks/useApi';
 import { Account } from '@/data/accounts/account';
+import { compareAccountBsbNumber } from '@/data/accounts/account-comparators';
 
 const useGetAllAccounts = () => {
-  return useGet<Account[]>('/accounts', ['accounts']);
+  const { data, ...rest } = useGet<Account[]>('/accounts', ['accounts']);
+  const sorted = data?.sort(compareAccountBsbNumber);
+  return { data: sorted, ...rest };
 };
 
 const useGetAccountById = (id: string) => {
