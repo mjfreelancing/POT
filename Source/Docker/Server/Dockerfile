@@ -30,7 +30,11 @@ COPY --from=build /app/migrations ./migrations
 # Copy the startup script
 COPY Docker/Server/entrypoint.sh .
 
-RUN chmod +x entrypoint.sh
+# Install dos2unix to fix Windows CRLF line endings that can break shell scripts
+# Then convert the entrypoint.sh to Unix line endings and make it executable
+RUN apk add --no-cache dos2unix && \
+    dos2unix entrypoint.sh && \
+    chmod +x entrypoint.sh
 
 # Expose the server port
 EXPOSE 5241

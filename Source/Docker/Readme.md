@@ -38,6 +38,35 @@
      - `POSTGRES_PASSWORD=password`
      - `POSTGRES_DB=postgres`
 
+## Updating and Rebuilding Docker Images
+
+To update and rebuild the Docker images after making changes to the source code:
+
+1. Stop the containers if they are running:
+
+   ```bash
+   docker-compose down
+   ```
+
+2. Rebuild the images:
+
+   ```bash
+   docker-compose build
+   ```
+
+3. Start the containers with the new images:
+   ```bash
+   docker-compose up -d
+   ```
+
+Alternatively, you can combine steps 2 and 3 with:
+
+```bash
+docker-compose up -d --build
+```
+
+Note: These commands should be run from the Docker directory containing the docker-compose.yml file.
+
 ## Managing Docker Containers via VS Code
 
 You can start and stop the Docker containers directly from Visual Studio Code using the predefined tasks:
