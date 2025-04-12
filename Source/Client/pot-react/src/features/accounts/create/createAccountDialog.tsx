@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import { ControllerRenderProps, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { useUpdateAccount } from '@/api/accounts/hooks/useAccounts';
+import { useCreateAccount } from '@/api/accounts/hooks/useAccounts';
 import CurrencyInput from '@/components/ui/CurrencyInput';
 import { Button } from '@/components/ui/shadcn/button';
 import {
@@ -24,10 +24,7 @@ import {
 } from '@/components/ui/shadcn/form';
 import { Input } from '@/components/ui/shadcn/input';
 import { Separator } from '@/components/ui/shadcn/separator';
-import { EditAccount } from '@/data/accounts/account';
-import { Account } from '@/data/accounts/account';
-
-import { useAccountEditor } from './useAccountEditor';
+import { CreateAccount } from '@/data/accounts/account';
 
 const currencySchema = z
   .number({
@@ -45,28 +42,27 @@ const formSchema = z.object({
 
 type FormSchema = z.infer<typeof formSchema>;
 
-type EditAccountDialogProps = {
-  account: Account;
-};
-
-export function EditAccountDialog({ account }: EditAccountDialogProps) {
+export function CreateAccountDialog() {
   const closeRef = useRef<HTMLButtonElement>(null);
-  const updateMutation = useUpdateAccount();
+  const createMutation = useCreateAccount();
   const queryClient = useQueryClient();
 
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      bsb: '',
+      number: '',
+      description: '',
+      balance: 0,
+      reserved: 0,
+    },
   });
-
-  const { resetToOriginal, isDirty } = useAccountEditor(form, account);
 
   const onSubmit = async (values: FormSchema) => {
     const controller = new AbortController();
 
     try {
-      const updatedAccount: EditAccount = {
-        rowId: account.rowId,
-        eTag: account.eTag,
+      const account: CreateAccount = {
         bsb: values.bsb,
         number: values.number,
         description: values.description,
@@ -74,13 +70,14 @@ export function EditAccountDialog({ account }: EditAccountDialogProps) {
         reserved: values.reserved,
       };
 
-      await updateMutation.mutateAsync({
-        data: updatedAccount,
+      await createMutation.mutateAsync({
+        data: account,
         signal: controller.signal,
       });
 
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
       closeRef.current?.click();
+      form.reset();
     } finally {
       controller.abort();
     }
@@ -92,8 +89,7 @@ export function EditAccountDialog({ account }: EditAccountDialogProps) {
       modal
     >
       <DialogHeader>
-        <DialogTitle>Edit Account</DialogTitle>
-        {/* DialogDescription is required to remove warnings from the console: Missing Description or aria-describedby={undefined} */}
+        <DialogTitle>Create Account</DialogTitle>
         <DialogDescription className="sr-only"></DialogDescription>
         <Separator className="mb-4 bg-border" />
       </DialogHeader>
@@ -113,10 +109,8 @@ export function EditAccountDialog({ account }: EditAccountDialogProps) {
                   <Input
                     {...field}
                     id="bsb-input"
-                    aria-description="The BSB in the format XXX-XXX"
-                    readOnly
-                    tabIndex={-1}
-                    className="bg-muted cursor-not-allowed"
+                    placeholder="Enter the Account BSB"
+                    aria-description="Enter BSB in the format XXX-XXX"
                   />
                 </FormControl>
                 <FormMessage />
@@ -139,10 +133,8 @@ export function EditAccountDialog({ account }: EditAccountDialogProps) {
                   <Input
                     {...field}
                     id="account-number-input"
-                    aria-description="The bank account number"
-                    readOnly
-                    tabIndex={-1}
-                    className="bg-muted cursor-not-allowed"
+                    placeholder="Enter the Account Number"
+                    aria-description="Your bank account number"
                   />
                 </FormControl>
                 <FormMessage />
@@ -221,19 +213,14 @@ export function EditAccountDialog({ account }: EditAccountDialogProps) {
                 variant="outline"
                 type="button"
                 className="w-24"
-                aria-label="Cancel editing account"
-                onClick={resetToOriginal}
+                aria-label="Cancel creating account"
+                onClick={() => form.reset()}
               >
                 Cancel
               </Button>
             </DialogClose>
-            <Button
-              type="submit"
-              className="w-24"
-              disabled={!isDirty()}
-              aria-label="Save account changes"
-            >
-              Save
+            <Button type="submit" className="w-24" aria-label="Create account">
+              Create
             </Button>
           </div>
           <DialogClose ref={closeRef} className="hidden" />

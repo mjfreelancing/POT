@@ -2,12 +2,12 @@ import { Separator } from '@radix-ui/react-separator';
 import { Navigate, Route, Routes } from 'react-router';
 
 import { ThemeProvider } from './components/theme/ThemeProvider';
+import { AppSidebar } from './components/ui/AppSidebar';
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from './components/ui/shadcn/sidebar';
-import { AppSidebar } from './components/ui/AppSidebar';
 import { AccountsPage, DashboardPage, ProjectionsPage } from './features';
 
 const App = () => {

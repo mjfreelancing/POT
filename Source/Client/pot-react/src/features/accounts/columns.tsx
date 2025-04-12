@@ -1,6 +1,7 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
 
+import { createCurrencyColumn } from '@/components/ui/DataTable';
 import { Button } from '@/components/ui/shadcn/button';
 import { Dialog, DialogTrigger } from '@/components/ui/shadcn/dialog';
 import {
@@ -10,7 +11,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/shadcn/dropdown-menu';
-import { createCurrencyColumn } from '@/components/ui/DataTable';
 import { Account } from '@/data/accounts/account';
 
 import { EditAccountDialog } from './edit/EditAccountDialog';

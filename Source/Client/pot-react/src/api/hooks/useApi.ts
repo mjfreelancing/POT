@@ -1,5 +1,5 @@
+import { useMutation,useQuery } from '@tanstack/react-query';
 import axios, { AxiosResponse } from 'axios';
-import { useQuery, useMutation } from '@tanstack/react-query';
 
 axios.defaults.baseURL = 'http://localhost:5241/api';
 axios.defaults.timeout = 3000;

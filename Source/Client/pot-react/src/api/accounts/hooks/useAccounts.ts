@@ -1,6 +1,11 @@
+import {
+  Account,
+  compareAccountBsbNumber,
+  CreateAccount,
+  EditAccount,
+} from '@/data/accounts/account';
+
 import { useGet, usePost, usePut } from '../../hooks/useApi';
-import { Account } from '@/data/accounts/account';
-import { compareAccountBsbNumber } from '@/data/accounts/account-comparators';
 
 const useGetAllAccounts = () => {
   const { data, ...rest } = useGet<Account[]>('/accounts', ['accounts']);
@@ -13,16 +18,16 @@ const useGetAccountById = (id: string) => {
 };
 
 const useCreateAccount = () => {
-  return usePost<void, Account>('/accounts');
+  return usePost<void, CreateAccount>('/accounts');
 };
 
 const useUpdateAccount = () => {
-  return usePut<void, Account>('/accounts');
+  return usePut<void, EditAccount>('/accounts');
 };
 
 export {
-  useGetAllAccounts,
-  useGetAccountById,
   useCreateAccount,
+  useGetAccountById,
+  useGetAllAccounts,
   useUpdateAccount,
 };
