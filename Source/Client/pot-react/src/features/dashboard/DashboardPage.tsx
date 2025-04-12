@@ -1,6 +1,6 @@
 import { ColumnDef } from '@tanstack/react-table';
 
-import { useAllAccountsQuery } from '@/api/accounts/accountsApi';
+import { useGetAllAccounts } from '@/api/accounts/hooks/useAccounts';
 import { createCurrencyColumn, DataTable } from '@/components/ui/DataTable';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import LoadingMessage from '@/components/ui/LoadingMessage';
@@ -27,7 +27,7 @@ const columns: ColumnDef<Account>[] = [
 ];
 
 const DashboardPage = () => {
-  const { data, isLoading, isError } = useAllAccountsQuery();
+  const { data, isLoading, isError } = useGetAllAccounts();
 
   return (
     <div className="container mx-auto py-4 px-4">

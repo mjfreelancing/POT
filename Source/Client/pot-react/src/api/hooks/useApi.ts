@@ -1,6 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-// import axios, { AxiosError, AxiosResponse, AxiosRequestConfig } from 'axios';
-// import token from './somewhere';
+import { useQuery, useMutation } from '@tanstack/react-query';
 
 axios.defaults.baseURL = 'http://localhost:5241/api';
 axios.defaults.timeout = 3000;
@@ -41,39 +40,45 @@ axios.defaults.timeout = 3000;
 //   },
 // );
 
-export class ApiBase {
-  protected async get<TResponse>(
-    url: string,
-    signal: AbortSignal,
-  ): Promise<TResponse> {
-    return axios
-      .get<TResponse>(url, { signal: signal })
-      .then(this.responseData);
-  }
+const responseData = <TResponse>(
+  response: AxiosResponse<TResponse>,
+): TResponse => {
+  return response.data;
+};
 
-  protected async post<TResponse, TData>(
-    url: string,
-    data: TData,
-    signal?: AbortSignal,
-  ): Promise<TResponse> {
-    return axios
-      .post<TResponse>(url, data, { signal: signal })
-      .then(this.responseData);
-  }
+export const useGet = <TResponse>(url: string, queryKey: string[]) => {
+  return useQuery({
+    queryKey,
+    queryFn: async ({ signal }) => {
+      return axios.get<TResponse>(url, { signal }).then(responseData);
+    },
+  });
+};
 
-  protected async put<TResponse, TData>(
-    url: string,
-    data: TData,
-    signal?: AbortSignal,
-  ): Promise<TResponse> {
-    return axios
-      .put<TResponse>(url, data, { signal: signal })
-      .then(this.responseData);
-  }
+export const usePost = <TResponse, TData>(url: string) => {
+  return useMutation({
+    mutationFn: async ({
+      data,
+      signal,
+    }: {
+      data: TData;
+      signal?: AbortSignal;
+    }) => {
+      return axios.post<TResponse>(url, data, { signal }).then(responseData);
+    },
+  });
+};
 
-  private responseData<TResponse>(
-    response: AxiosResponse<TResponse>,
-  ): TResponse {
-    return response.data;
-  }
-}
+export const usePut = <TResponse, TData>(url: string) => {
+  return useMutation({
+    mutationFn: async ({
+      data,
+      signal,
+    }: {
+      data: TData;
+      signal?: AbortSignal;
+    }) => {
+      return axios.put<TResponse>(url, data, { signal }).then(responseData);
+    },
+  });
+};

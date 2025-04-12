@@ -2,8 +2,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRef } from 'react';
 import { ControllerRenderProps, useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { useQueryClient } from '@tanstack/react-query';
 
-import { useUpdateAccountMutation } from '@/api/accounts/accountsApi';
+import { useUpdateAccount } from '@/api/accounts/hooks/useAccounts';
 import { Button } from '@/components/ui/shadcn/button';
 import {
   DialogClose,
@@ -49,7 +50,8 @@ type EditAccountDialogProps = {
 
 export function EditAccountDialog({ account }: EditAccountDialogProps) {
   const closeRef = useRef<HTMLButtonElement>(null);
-  const updateMutation = useUpdateAccountMutation();
+  const updateMutation = useUpdateAccount();
+  const queryClient = useQueryClient();
 
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -64,10 +66,13 @@ export function EditAccountDialog({ account }: EditAccountDialogProps) {
         ...account,
         ...values,
       };
+
       await updateMutation.mutateAsync({
-        account: updatedAccount,
+        data: updatedAccount,
         signal: controller.signal,
       });
+
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
       closeRef.current?.click();
     } finally {
       controller.abort();
