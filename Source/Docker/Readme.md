@@ -69,7 +69,7 @@ Note: These commands should be run from the Docker directory containing the dock
 
 ## Managing Docker Containers via VS Code
 
-You can start and stop the Docker containers directly from Visual Studio Code using the predefined tasks:
+You can start and stop the Docker containers directly from Visual Studio Code using the predefined tasks. From the root folder:
 
 1. Press `Shift+Ctrl+P` (or `Shift+Cmd+P` on macOS) to open the Command Palette.
 2. Type `Run Task` and select it.
