@@ -5,7 +5,7 @@ import {
   EditAccount,
 } from '@/data/accounts/account';
 
-import { useGet, usePost, usePut } from '../../hooks/useApi';
+import { useDelete, useGet, usePost, usePut } from '../../hooks/useApi';
 
 const useGetAllAccounts = () => {
   const { data, ...rest } = useGet<Account[]>('/accounts', ['accounts']);
@@ -25,9 +25,14 @@ const useUpdateAccount = () => {
   return usePut<void, EditAccount>('/accounts');
 };
 
+const useDeleteAccount = (id: string) => {
+  return useDelete<void>(`/accounts/${id}`);
+};
+
 export {
   useCreateAccount,
   useGetAccountById,
   useGetAllAccounts,
   useUpdateAccount,
+  useDeleteAccount,
 };

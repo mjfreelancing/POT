@@ -14,6 +14,7 @@ import {
 import { Account } from '@/data/accounts/account';
 
 import { EditAccountDialog } from './edit/EditAccountDialog';
+import { useDeleteAccount } from './delete/hooks/useDeleteAccount';
 
 export const columns: ColumnDef<Account>[] = [
   {
@@ -37,6 +38,13 @@ export const columns: ColumnDef<Account>[] = [
     id: 'actions',
     cell: ({ row }) => {
       const account = row.original;
+      const { deleteAccount } = useDeleteAccount(account.rowId);
+
+      const handleDelete = async () => {
+        if (window.confirm('Are you sure you want to delete this account?')) {
+          await deleteAccount();
+        }
+      };
 
       return (
         <Dialog>
@@ -48,9 +56,11 @@ export const columns: ColumnDef<Account>[] = [
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuSeparator />
               <DialogTrigger asChild>
                 <DropdownMenuItem>Edit</DropdownMenuItem>
               </DialogTrigger>
+              <DropdownMenuItem onClick={handleDelete}>Delete</DropdownMenuItem>
               <DropdownMenuSeparator />
             </DropdownMenuContent>
           </DropdownMenu>

@@ -1,4 +1,4 @@
-import { useMutation,useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import axios, { AxiosResponse } from 'axios';
 
 axios.defaults.baseURL = 'http://localhost:5241/api';
@@ -79,6 +79,14 @@ export const usePut = <TResponse, TData>(url: string) => {
       signal?: AbortSignal;
     }) => {
       return axios.put<TResponse>(url, data, { signal }).then(responseData);
+    },
+  });
+};
+
+export const useDelete = <TResponse>(url: string) => {
+  return useMutation({
+    mutationFn: async ({ signal }: { signal?: AbortSignal }) => {
+      return axios.delete<TResponse>(url, { signal }).then(responseData);
     },
   });
 };
