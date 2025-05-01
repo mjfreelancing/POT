@@ -5,34 +5,34 @@ import { isNumber } from '@/lib/utils';
 import { Input } from './shadcn/input';
 
 // Th onChange event will pass a number value rather than a string (or undefined)
-type CurrencyInputElement = Omit<HTMLInputElement, 'value'> & {
+type MoneyValueInputElement = Omit<HTMLInputElement, 'value'> & {
   value: number | undefined;
 };
 
-type CurrencyChangeEvent = Omit<
+type MoneyValueChangeEvent = Omit<
   React.ChangeEvent<HTMLInputElement>,
   'target'
 > & {
-  target: CurrencyInputElement;
+  target: MoneyValueInputElement;
 };
 
 // 'type' and 'inputMode' are defined internally
 // 'min' and 'max' are not supported - caller can use custom validation
 // 'onChange' is overridden to pass a number value rather than a string (or undefined)
-type CurrencyInputProps = Omit<
+type MoneyValueInputProps = Omit<
   ComponentPropsWithoutRef<typeof Input>,
   'type' | 'inputMode' | 'min' | 'max' | 'onChange'
 > & {
-  onChange?: (event: CurrencyChangeEvent) => void;
+  onChange?: (event: MoneyValueChangeEvent) => void;
 };
 
-function CurrencyInput({
+function MoneyValueInput({
   value,
   onChange,
   onBlur,
   onKeyDown,
   ...props
-}: CurrencyInputProps) {
+}: MoneyValueInputProps) {
   const [displayValue, setDisplayValue] = useState(() =>
     isNumber(value) ? value.toFixed(2) : undefined,
   );
@@ -51,7 +51,7 @@ function CurrencyInput({
       onChange?.({
         ...e,
         target: { ...e.target, value: numericValue },
-      } as CurrencyChangeEvent);
+      } as MoneyValueChangeEvent);
     }
   };
 
@@ -147,4 +147,4 @@ function CurrencyInput({
   );
 }
 
-export default CurrencyInput;
+export default MoneyValueInput;

@@ -5,7 +5,7 @@ import { ControllerRenderProps, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { useCreateAccount } from '@/api/accounts/hooks/useAccounts';
-import CurrencyInput from '@/components/ui/CurrencyInput';
+import MoneyValueInput from '@/components/ui/MoneyValueInput';
 import { Button } from '@/components/ui/shadcn/button';
 import {
   DialogClose,
@@ -26,7 +26,7 @@ import { Input } from '@/components/ui/shadcn/input';
 import { Separator } from '@/components/ui/shadcn/separator';
 import { CreateAccount } from '@/data/accounts/account';
 
-const currencySchema = z
+const MoneyValueSchema = z
   .number({
     required_error: 'This field is required',
   })
@@ -36,8 +36,8 @@ const formSchema = z.object({
   bsb: z.string().regex(/^\d{3}-\d{3}$/, 'BSB must be in the format XXX-XXX'),
   number: z.string().min(1),
   description: z.string().min(1),
-  balance: currencySchema,
-  reserved: currencySchema,
+  balance: MoneyValueSchema,
+  reserved: MoneyValueSchema,
 });
 
 type FormSchema = z.infer<typeof formSchema>;
@@ -174,7 +174,7 @@ export function CreateAccountDialog() {
               <FormItem>
                 <FormLabel htmlFor="balance-input">Balance</FormLabel>
                 <FormControl>
-                  <CurrencyInput
+                  <MoneyValueInput
                     {...field}
                     id="balance-input"
                     placeholder="Enter the Account balance"
@@ -196,7 +196,7 @@ export function CreateAccountDialog() {
               <FormItem>
                 <FormLabel htmlFor="reserved-input">Reserved</FormLabel>
                 <FormControl>
-                  <CurrencyInput
+                  <MoneyValueInput
                     {...field}
                     id="reserved-input"
                     placeholder="Enter the reserved amount"

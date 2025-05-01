@@ -1,7 +1,7 @@
 import { ColumnDef } from '@tanstack/react-table';
 
 import { useGetAllAccounts } from '@/api/accounts/hooks/useAccounts';
-import { createCurrencyColumn, DataTable } from '@/components/ui/DataTable';
+import { createMoneyValueColumn, DataTable } from '@/components/ui/DataTable';
 import { DatePickerWithYear } from '@/components/ui/DatePickerWithYear';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import LoadingMessage from '@/components/ui/LoadingMessage';
@@ -22,8 +22,8 @@ const columns: ColumnDef<Account>[] = [
     accessorKey: 'description',
     header: 'Description',
   },
-  createCurrencyColumn<Account>('balance', 'Balance'),
-  createCurrencyColumn<Account>('available', 'Available'),
+  createMoneyValueColumn<Account>('balance', 'Balance'),
+  createMoneyValueColumn<Account>('available', 'Available'),
 ];
 
 const DashboardPage = () => {

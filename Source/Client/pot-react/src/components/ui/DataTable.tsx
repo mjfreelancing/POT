@@ -6,8 +6,8 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 
-import { formatCurrency } from '../../lib/currencyUtils';
-import { Currency } from '../../lib/valueTypes';
+import { formatMoneyValue } from '../../lib/moneyUtils';
+import { MoneyValue } from '../../lib/valueTypes';
 import {
   Table,
   TableBody,
@@ -17,25 +17,25 @@ import {
   TableRow,
 } from './shadcn/table';
 
-// Gets the currency value from a row.
-const getCurrencyValue = <TData,>(row: Row<TData>, key: string): Currency => {
+// Gets the money value from a row.
+const getMoneyValue = <TData,>(row: Row<TData>, key: string): MoneyValue => {
   return parseFloat(row.getValue(key));
 };
 
-// Formats a currency value as a string.
-const formatCellCurrency = <TData,>(row: Row<TData>, key: string) => {
-  const value = getCurrencyValue(row, key);
-  return <div className="text-right">{formatCurrency(value)}</div>;
+// Formats a money value as a string.
+const formatCellMoneyValue = <TData,>(row: Row<TData>, key: string) => {
+  const value = getMoneyValue(row, key);
+  return <div className="text-right">{formatMoneyValue(value)}</div>;
 };
 
-// Creates a column definition for a currency (right-aligned number) column.
-export const createCurrencyColumn = <TData,>(
+// Creates a column definition for a money value (right-aligned number) column.
+export const createMoneyValueColumn = <TData,>(
   accessorKey: keyof TData & string, // Ensure this is both a key of TData and a string
   header: string,
 ): ColumnDef<TData> => ({
   accessorKey,
   header: () => <div className="text-right">{header}</div>,
-  cell: ({ row }) => formatCellCurrency(row, accessorKey),
+  cell: ({ row }) => formatCellMoneyValue(row, accessorKey),
 });
 
 type DataTableProps<TData, TValue> = {

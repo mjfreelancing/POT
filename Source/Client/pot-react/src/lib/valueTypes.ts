@@ -1,1 +1,1 @@
-export type Currency = number;
+export type MoneyValue = number;

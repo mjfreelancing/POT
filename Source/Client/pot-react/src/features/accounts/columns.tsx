@@ -1,7 +1,7 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
 
-import { createCurrencyColumn } from '@/components/ui/DataTable';
+import { createMoneyValueColumn } from '@/components/ui/DataTable';
 import { Button } from '@/components/ui/shadcn/button';
 import { Dialog, DialogTrigger } from '@/components/ui/shadcn/dialog';
 import {
@@ -28,11 +28,11 @@ export const columns: ColumnDef<Account>[] = [
     accessorKey: 'description',
     header: 'Description',
   },
-  createCurrencyColumn<Account>('balance', 'Balance'),
-  createCurrencyColumn<Account>('reserved', 'Reserved'),
-  createCurrencyColumn<Account>('allocated', 'Allocated'),
-  createCurrencyColumn<Account>('dailyAccrual', 'Daily Accrual'),
-  createCurrencyColumn<Account>('available', 'Available'),
+  createMoneyValueColumn<Account>('balance', 'Balance'),
+  createMoneyValueColumn<Account>('reserved', 'Reserved'),
+  createMoneyValueColumn<Account>('allocated', 'Allocated'),
+  createMoneyValueColumn<Account>('dailyAccrual', 'Daily Accrual'),
+  createMoneyValueColumn<Account>('available', 'Available'),
   {
     id: 'actions',
     cell: ({ row }) => {
