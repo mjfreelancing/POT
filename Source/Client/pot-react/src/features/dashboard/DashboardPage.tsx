@@ -1,10 +1,13 @@
 import { ColumnDef } from '@tanstack/react-table';
 
 import { useGetAllAccounts } from '@/api/accounts/hooks/useAccounts';
-import { createMoneyValueColumn, DataTable } from '@/components/ui/DataTable';
-import { DatePickerWithYear } from '@/components/ui/DatePickerWithYear';
-import ErrorMessage from '@/components/ui/ErrorMessage';
-import LoadingMessage from '@/components/ui/LoadingMessage';
+import ErrorMessage from '@/components/feedback/message/ErrorMessage';
+import LoadingMessage from '@/components/feedback/message/LoadingMessage';
+import { DatePickerWithYear } from '@/components/picker/DatePickerWithYear';
+import {
+  createMoneyValueColumn,
+  DataTable,
+} from '@/components/table/DataTable';
 import { Account } from '@/data/accounts/account';
 
 // Temporary - a WIP

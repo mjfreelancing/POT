@@ -1,11 +1,11 @@
 import { Plus } from 'lucide-react';
 
 import { useGetAllAccounts } from '@/api/accounts/hooks/useAccounts';
-import { DataTable } from '@/components/ui/DataTable';
-import ErrorMessage from '@/components/ui/ErrorMessage';
-import LoadingMessage from '@/components/ui/LoadingMessage';
-import { Button } from '@/components/ui/shadcn/button';
-import { Dialog, DialogTrigger } from '@/components/ui/shadcn/dialog';
+import ErrorMessage from '@/components/feedback/message/ErrorMessage';
+import LoadingMessage from '@/components/feedback/message/LoadingMessage';
+import { DataTable } from '@/components/table/DataTable';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 
 import { columns } from './columns';
 import { CreateAccountDialog } from './create/createAccountDialog';

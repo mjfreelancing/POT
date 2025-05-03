@@ -15,7 +15,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from './shadcn/table';
+} from '../ui/table';
 
 // Gets the money value from a row.
 const getMoneyValue = <TData,>(row: Row<TData>, key: string): MoneyValue => {

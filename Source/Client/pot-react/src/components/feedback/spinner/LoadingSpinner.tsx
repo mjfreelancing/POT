@@ -1,4 +1,4 @@
-function Spinner() {
+function LoadingSpinner() {
   return (
     <svg
       className="animate-spin h-5 w-5 text-gray-500 mr-2"
@@ -26,4 +26,4 @@ function Spinner() {
   );
 }
 
-export default Spinner;
+export default LoadingSpinner;

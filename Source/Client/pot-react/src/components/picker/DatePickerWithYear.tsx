@@ -1,15 +1,15 @@
-import * as React from 'react';
 import { format } from 'date-fns';
 import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react'; // Import Chevron icons
+import * as React from 'react';
 
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/shadcn/button';
-import { Calendar } from '@/components/ui/shadcn/calendar';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/shadcn/popover';
+} from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 export function DatePickerWithYear() {
   const [date, setDate] = React.useState<Date>();

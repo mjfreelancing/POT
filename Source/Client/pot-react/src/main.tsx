@@ -3,13 +3,14 @@ import './index.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router';
 import { ErrorBoundary } from 'react-error-boundary';
+import { BrowserRouter } from 'react-router';
+
+import App from './App.tsx';
 import {
   FallbackErrorDialog,
   logError,
 } from './components/errorBoundary/ErrorBoundaryFallback';
-import App from './App.tsx';
 
 const queryClient = new QueryClient();
 

@@ -13,10 +13,10 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-} from '@/components/ui/shadcn/sidebar';
+} from '@/components/ui/sidebar';
 
-import MenuGroup, { MenuGroupDefinition } from '../nav/MenuGroup';
 import ThemeToggle from '../theme/ThemeToggle';
+import MenuGroup, { MenuGroupDefinition } from './MenuGroup';
 
 {
   /*

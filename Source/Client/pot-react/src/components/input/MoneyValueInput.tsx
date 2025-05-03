@@ -2,7 +2,7 @@ import { ComponentPropsWithoutRef, useState } from 'react';
 
 import { isNumber } from '@/lib/utils';
 
-import { Input } from './shadcn/input';
+import { Input } from '../ui/input';
 
 // Th onChange event will pass a number value rather than a string (or undefined)
 type MoneyValueInputElement = Omit<HTMLInputElement, 'value'> & {

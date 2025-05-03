@@ -5,15 +5,15 @@ import { ControllerRenderProps, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { useCreateAccount } from '@/api/accounts/hooks/useAccounts';
-import MoneyValueInput from '@/components/ui/MoneyValueInput';
-import { Button } from '@/components/ui/shadcn/button';
+import MoneyValueInput from '@/components/input/MoneyValueInput';
+import { Button } from '@/components/ui/button';
 import {
   DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/shadcn/dialog';
+} from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -21,9 +21,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/shadcn/form';
-import { Input } from '@/components/ui/shadcn/input';
-import { Separator } from '@/components/ui/shadcn/separator';
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
 import { CreateAccount } from '@/data/accounts/account';
 
 const MoneyValueSchema = z

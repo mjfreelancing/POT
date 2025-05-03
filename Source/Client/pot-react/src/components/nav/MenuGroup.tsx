@@ -8,7 +8,7 @@ import {
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
-} from '@/components/ui/shadcn/sidebar';
+} from '@/components/ui/sidebar';
 
 export type MenuGroupItem = {
   readonly label: string;

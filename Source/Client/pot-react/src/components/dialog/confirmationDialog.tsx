@@ -1,26 +1,33 @@
 import {
   AlertDialog,
   AlertDialogAction,
+  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/shadcn/alert-dialog';
+} from '@/components/ui/alert-dialog';
 
-interface ErrorDialogProps {
+type ConfirmationDialogProps = {
   open: boolean;
   title: string;
   description: string;
-  onOk: () => void;
-}
+  confirmLabel?: string;
+  cancelLabel?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+};
 
-export function ErrorDialog({
+export function ConfirmationDialog({
   open,
   title,
   description,
-  onOk,
-}: ErrorDialogProps) {
+  confirmLabel,
+  cancelLabel,
+  onConfirm,
+  onCancel,
+}: ConfirmationDialogProps) {
   return (
     <AlertDialog open={open}>
       <AlertDialogContent>
@@ -29,7 +36,12 @@ export function ErrorDialog({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogAction onClick={onOk}>OK</AlertDialogAction>
+          <AlertDialogAction onClick={onConfirm}>
+            {confirmLabel}
+          </AlertDialogAction>
+          <AlertDialogCancel onClick={onCancel}>
+            {cancelLabel}
+          </AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

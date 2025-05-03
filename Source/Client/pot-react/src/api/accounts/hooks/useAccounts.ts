@@ -31,8 +31,8 @@ const useDeleteAccount = (id: string) => {
 
 export {
   useCreateAccount,
+  useDeleteAccount,
   useGetAccountById,
   useGetAllAccounts,
   useUpdateAccount,
-  useDeleteAccount,
 };

@@ -1,7 +1,7 @@
-import { ErrorInfo } from 'react';
-import { ErrorDialog } from '../dialogs/errorDialog';
+import { ErrorDialog } from '../dialog/errorDialog';
 
-export const logError = (error: Error, _: ErrorInfo) => {
+// Can be (error: Error, errorInfo: ErrorInfo)
+export const logError = (error: Error) => {
   // TODO: Do something with this error
   console.info(`Error: ${error.message}`);
   // console.info(`Stack: ${errorInfo.componentStack}`);

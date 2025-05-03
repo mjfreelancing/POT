@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import Spinner from './Spinner';
+import Spinner from '../spinner/LoadingSpinner';
 
 type LoadingMessageProps = {
   isLoading: boolean;
