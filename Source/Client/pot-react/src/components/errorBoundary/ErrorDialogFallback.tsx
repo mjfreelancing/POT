@@ -12,7 +12,7 @@ type FallbackErrorDialogProps = {
   resetErrorBoundary: () => void;
 };
 
-export function FallbackErrorDialog({
+export function ErrorDialogFallback({
   error,
   resetErrorBoundary,
 }: FallbackErrorDialogProps) {

@@ -8,9 +8,9 @@ import { BrowserRouter } from 'react-router';
 
 import App from './App.tsx';
 import {
-  FallbackErrorDialog,
+  ErrorDialogFallback,
   logError,
-} from './components/errorBoundary/ErrorBoundaryFallback';
+} from './components/errorBoundary/ErrorDialogFallback.tsx';
 
 const queryClient = new QueryClient();
 
@@ -19,7 +19,7 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <ErrorBoundary
-          FallbackComponent={FallbackErrorDialog}
+          FallbackComponent={ErrorDialogFallback}
           onError={logError}
         >
           <App />
