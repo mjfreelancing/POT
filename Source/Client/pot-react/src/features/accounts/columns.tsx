@@ -1,5 +1,6 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
+import { useState } from 'react';
 
 import { createMoneyValueColumn } from '@/components/ui/DataTable';
 import { Button } from '@/components/ui/shadcn/button';
@@ -12,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/shadcn/dropdown-menu';
 import { Account } from '@/data/accounts/account';
+import { ConfirmationDialog } from '@/components/dialogs/confirmationDialog';
 
 import { EditAccountDialog } from './edit/EditAccountDialog';
 import { useDeleteAccount } from './delete/hooks/useDeleteAccount';
@@ -39,34 +41,46 @@ export const columns: ColumnDef<Account>[] = [
     cell: ({ row }) => {
       const account = row.original;
       const { deleteAccount } = useDeleteAccount(account.rowId);
-
-      const handleDelete = async () => {
-        if (window.confirm('Are you sure you want to delete this account?')) {
-          await deleteAccount();
-        }
-      };
+      const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
       return (
-        <Dialog>
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuSeparator />
-              <DialogTrigger asChild>
-                <DropdownMenuItem>Edit</DropdownMenuItem>
-              </DialogTrigger>
-              <DropdownMenuItem onClick={handleDelete}>Delete</DropdownMenuItem>
-              <DropdownMenuSeparator />
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <>
+          <Dialog>
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuSeparator />
+                <DialogTrigger asChild>
+                  <DropdownMenuItem>Edit</DropdownMenuItem>
+                </DialogTrigger>
+                <DropdownMenuItem onClick={() => setShowDeleteDialog(true)}>
+                  Delete
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-          <EditAccountDialog account={account} />
-        </Dialog>
+            <EditAccountDialog account={account} />
+          </Dialog>
+
+          <ConfirmationDialog
+            open={showDeleteDialog}
+            title="Delete Account"
+            description={`Are you sure you want to delete account (${account.bsb}) ${account.number}?`}
+            confirmLabel="Delete"
+            cancelLabel="Cancel"
+            onConfirm={async () => {
+              await deleteAccount();
+              setShowDeleteDialog(false);
+            }}
+            onCancel={() => setShowDeleteDialog(false)}
+          />
+        </>
       );
     },
   },
