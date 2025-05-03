@@ -33,7 +33,7 @@ const AccountsPage = () => {
         </Dialog>
       </div>
       <DataTable columns={columns} data={data || []} />
-      <LoadingMessage isLoading={isLoading} text="Loading..." />
+      <LoadingMessage isLoading={isLoading} />
     </div>
   );
 };
