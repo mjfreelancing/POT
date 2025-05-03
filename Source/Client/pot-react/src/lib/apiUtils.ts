@@ -1,5 +1,10 @@
 // Example to simulate a slow connection
-// return withDelay(() => accountsApi.getAll(signal));
+//
+// Change this:
+//   return axios.get<TResponse>(url, { signal }).then(responseData);
+//
+// To this:
+//   return withDelay(() =>axios.get<TResponse>(url, { signal }).then(responseData));
 
 import { isDevelopment } from './utils';
 
