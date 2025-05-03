@@ -1,10 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useQueryClient } from '@tanstack/react-query';
 import { useRef } from 'react';
 import { ControllerRenderProps, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { useUpdateAccount } from '@/api/accounts/hooks/useAccounts';
 import MoneyValueInput from '@/components/input/MoneyValueInput';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,6 +25,7 @@ import { Separator } from '@/components/ui/separator';
 import { EditAccount } from '@/data/accounts/account';
 import { Account } from '@/data/accounts/account';
 
+import { useEditAccount } from './hooks/useEditAccount';
 import { useAccountEditor } from './useAccountEditor';
 
 const MoneyValueSchema = z
@@ -51,9 +50,7 @@ type EditAccountDialogProps = {
 
 export function EditAccountDialog({ account }: EditAccountDialogProps) {
   const closeRef = useRef<HTMLButtonElement>(null);
-  const updateMutation = useUpdateAccount();
-  const queryClient = useQueryClient();
-
+  const { editAccount } = useEditAccount();
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
   });
@@ -61,29 +58,18 @@ export function EditAccountDialog({ account }: EditAccountDialogProps) {
   const { resetToOriginal, isDirty } = useAccountEditor(form, account);
 
   const onSubmit = async (values: FormSchema) => {
-    const controller = new AbortController();
+    const updatedAccount: EditAccount = {
+      rowId: account.rowId,
+      eTag: account.eTag,
+      bsb: values.bsb,
+      number: values.number,
+      description: values.description,
+      balance: values.balance,
+      reserved: values.reserved,
+    };
 
-    try {
-      const updatedAccount: EditAccount = {
-        rowId: account.rowId,
-        eTag: account.eTag,
-        bsb: values.bsb,
-        number: values.number,
-        description: values.description,
-        balance: values.balance,
-        reserved: values.reserved,
-      };
-
-      await updateMutation.mutateAsync({
-        data: updatedAccount,
-        signal: controller.signal,
-      });
-
-      queryClient.invalidateQueries({ queryKey: ['accounts'] });
-      closeRef.current?.click();
-    } finally {
-      controller.abort();
-    }
+    await editAccount(updatedAccount);
+    closeRef.current?.click();
   };
 
   return (

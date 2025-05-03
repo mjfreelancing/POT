@@ -1,6 +1,6 @@
 import { ColumnDef } from '@tanstack/react-table';
 
-import { useGetAllAccounts } from '@/api/accounts/hooks/useAccounts';
+import { useApiGetAllAccounts } from '@/api/accounts/hooks/useAccounts';
 import ErrorMessage from '@/components/feedback/message/ErrorMessage';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import { DatePickerWithYear } from '@/components/picker/DatePickerWithYear';
@@ -30,7 +30,7 @@ const columns: ColumnDef<Account>[] = [
 ];
 
 const DashboardPage = () => {
-  const { data, isLoading, isError } = useGetAllAccounts();
+  const { data, isLoading, isError } = useApiGetAllAccounts();
 
   return (
     <div className="container mx-auto py-4 px-4">

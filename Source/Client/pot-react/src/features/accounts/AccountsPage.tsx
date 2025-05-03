@@ -1,6 +1,6 @@
 import { Plus } from 'lucide-react';
 
-import { useGetAllAccounts } from '@/api/accounts/hooks/useAccounts';
+import { useApiGetAllAccounts } from '@/api/accounts/hooks/useAccounts';
 import ErrorMessage from '@/components/feedback/message/ErrorMessage';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import { DataTable } from '@/components/table/DataTable';
@@ -13,7 +13,7 @@ import { CreateAccountDialog } from './create/createAccountDialog';
 const AccountsPage = () => {
   console.info('Rendering AccountsPage');
 
-  const { data, isLoading, isError } = useGetAllAccounts();
+  const { data, isLoading, isError } = useApiGetAllAccounts();
 
   // See how this compares to the loading...
   // https://app.studyraid.com/en/read/11919/379833/component-lazy-loading

@@ -1,10 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useQueryClient } from '@tanstack/react-query';
 import { useRef } from 'react';
 import { ControllerRenderProps, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { useCreateAccount } from '@/api/accounts/hooks/useAccounts';
+import { useCreateAccount } from './hooks/useCreateAccount';
 import MoneyValueInput from '@/components/input/MoneyValueInput';
 import { Button } from '@/components/ui/button';
 import {
@@ -44,9 +43,7 @@ type FormSchema = z.infer<typeof formSchema>;
 
 export function CreateAccountDialog() {
   const closeRef = useRef<HTMLButtonElement>(null);
-  const createMutation = useCreateAccount();
-  const queryClient = useQueryClient();
-
+  const { createAccount } = useCreateAccount();
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -59,28 +56,17 @@ export function CreateAccountDialog() {
   });
 
   const onSubmit = async (values: FormSchema) => {
-    const controller = new AbortController();
+    const account: CreateAccount = {
+      bsb: values.bsb,
+      number: values.number,
+      description: values.description,
+      balance: values.balance,
+      reserved: values.reserved,
+    };
 
-    try {
-      const account: CreateAccount = {
-        bsb: values.bsb,
-        number: values.number,
-        description: values.description,
-        balance: values.balance,
-        reserved: values.reserved,
-      };
-
-      await createMutation.mutateAsync({
-        data: account,
-        signal: controller.signal,
-      });
-
-      queryClient.invalidateQueries({ queryKey: ['accounts'] });
-      closeRef.current?.click();
-      form.reset();
-    } finally {
-      controller.abort();
-    }
+    await createAccount(account);
+    closeRef.current?.click();
+    form.reset();
   };
 
   return (
