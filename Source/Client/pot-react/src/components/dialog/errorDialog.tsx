@@ -12,14 +12,14 @@ type ErrorDialogProps = {
   open: boolean;
   title: string;
   description: string;
-  onOk: () => void;
+  onOk?: () => void;
 };
 
 export function ErrorDialog({
   open,
   title,
   description,
-  onOk,
+  onOk = () => {},
 }: ErrorDialogProps) {
   return (
     <AlertDialog open={open}>
