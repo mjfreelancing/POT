@@ -1,6 +1,5 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
-import { useState } from 'react';
 
 import { createMoneyValueColumn } from '@/components/ui/DataTable';
 import { Button } from '@/components/ui/shadcn/button';
@@ -16,7 +15,7 @@ import { Account } from '@/data/accounts/account';
 import { ConfirmationDialog } from '@/components/dialogs/confirmationDialog';
 
 import { EditAccountDialog } from './edit/EditAccountDialog';
-import { useDeleteAccount } from './delete/hooks/useDeleteAccount';
+import { useAccountDeletion } from './delete/hooks/useAccountDeletion';
 
 export const columns: ColumnDef<Account>[] = [
   {
@@ -40,8 +39,8 @@ export const columns: ColumnDef<Account>[] = [
     id: 'actions',
     cell: ({ row }) => {
       const account = row.original;
-      const { deleteAccount } = useDeleteAccount(account.rowId);
-      const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+      const { showDeleteDialog, setShowDeleteDialog, onDelete } =
+        useAccountDeletion(account.rowId);
 
       return (
         <>
@@ -74,10 +73,7 @@ export const columns: ColumnDef<Account>[] = [
             description={`Are you sure you want to delete account (${account.bsb}) ${account.number}?`}
             confirmLabel="Delete"
             cancelLabel="Cancel"
-            onConfirm={async () => {
-              await deleteAccount();
-              setShowDeleteDialog(false);
-            }}
+            onConfirm={onDelete}
             onCancel={() => setShowDeleteDialog(false)}
           />
         </>

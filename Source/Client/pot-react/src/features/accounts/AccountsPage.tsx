@@ -15,10 +15,12 @@ const AccountsPage = () => {
 
   const { data, isLoading, isError } = useGetAllAccounts();
 
+  // See how this compares to the loading...
+  // https://app.studyraid.com/en/read/11919/379833/component-lazy-loading
+
   return (
     <div className="container mx-auto py-4 px-4">
       {isError && <ErrorMessage message="Failed to load accounts" />}
-
       <div className="mb-4">
         <Dialog>
           <DialogTrigger asChild>
@@ -30,9 +32,7 @@ const AccountsPage = () => {
           <CreateAccountDialog />
         </Dialog>
       </div>
-
       <DataTable columns={columns} data={data || []} />
-
       <LoadingMessage isLoading={isLoading} text="Loading..." />
     </div>
   );
