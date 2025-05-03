@@ -1,4 +1,5 @@
 import { createPortal } from 'react-dom';
+
 import { ErrorDialog } from '../dialog/errorDialog';
 
 // Can be (error: Error, errorInfo: ErrorInfo)

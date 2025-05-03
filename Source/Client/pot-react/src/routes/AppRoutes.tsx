@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
+
 import LoadingMessage from '../components/feedback/message/LoadingMessage';
 
 // Lazy load page components to enable code splitting and reduce the initial bundle size

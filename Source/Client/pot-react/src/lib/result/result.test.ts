@@ -3,7 +3,7 @@ import { FailResult, Result, SuccessResult } from './result';
 
 class DummyError extends FailResultBase {
   constructor() {
-    super(undefined, 'TEST', 'Test Error');
+    super('Type', 'Code', 'Test Error');
   }
 }
 
@@ -35,8 +35,8 @@ describe('Result Type', () => {
       expect(result.error).toBe(error);
       expect(result.error).toBeInstanceOf(DummyError);
       expect(result.error).toBeInstanceOf(FailResultBase);
-      expect(result.error.type).toBe(undefined);
-      expect(result.error.code).toBe('TEST');
+      expect(result.error.type).toBe('Type');
+      expect(result.error.code).toBe('Code');
       expect(result.error.description).toBe('Test Error');
     } else {
       throw new Error('Expected failure but got success');
