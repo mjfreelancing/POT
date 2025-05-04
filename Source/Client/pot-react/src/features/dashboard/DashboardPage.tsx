@@ -1,7 +1,8 @@
 import { ColumnDef } from '@tanstack/react-table';
+import { useEffect, useState } from 'react';
 
 import { useApiGetAllAccounts } from '@/api/accounts/hooks/useAccounts';
-import ErrorMessage from '@/components/feedback/message/ErrorMessage';
+import { ErrorDialog, ErrorDialogState } from '@/components/dialog/errorDialog';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import { DatePickerWithYear } from '@/components/picker/DatePickerWithYear';
 import {
@@ -30,18 +31,38 @@ const columns: ColumnDef<Account>[] = [
 ];
 
 const DashboardPage = () => {
-  const { data, isLoading, isError } = useApiGetAllAccounts();
+  const [dialogError, setDialogError] = useState<ErrorDialogState | null>(null);
+  const { data: result, isLoading } = useApiGetAllAccounts();
+
+  useEffect(() => {
+    if (result && !result.success) {
+      setDialogError({
+        title: result.error.code,
+        description: result.error.description,
+      });
+    }
+  }, [result]);
+
+  const accounts = result?.success ? result.value : [];
 
   return (
-    <div className="container mx-auto py-4 px-4">
-      {isError && <ErrorMessage message="Failed to load accounts" />}
+    <>
+      <div className="container mx-auto py-4 px-4">
+        <DataTable columns={columns} data={accounts} />
 
-      <DataTable columns={columns} data={data || []} />
+        <DatePickerWithYear />
 
-      <DatePickerWithYear />
-
-      <LoadingMessage isLoading={isLoading} text="Loading..." />
-    </div>
+        <LoadingMessage isLoading={isLoading} />
+      </div>
+      {dialogError && (
+        <ErrorDialog
+          open={true}
+          title={dialogError.title}
+          description={dialogError.description}
+          onOk={() => setDialogError(null)}
+        />
+      )}{' '}
+    </>
   );
 };
 
