@@ -3,13 +3,15 @@ import { FailResultBase } from '@/lib/result/failResultBase';
 // These const objects exist at runtime
 export const ErrorType = {
   Api: 'Api',
+  Network: 'Network',
   Unexpected: 'Unexpected',
 } as const;
 
 export const ErrorCode = {
-  Validation: 'Validation',
-  Conflict: 'Conflict',
-  Unexpected: 'Unexpected',
+  Validation: 'Validation Error',
+  Conflict: 'Conflict Error',
+  Network: 'Network Error',
+  Unexpected: 'Unexpected Error',
 } as const;
 
 // These type declarations only exist at compile time
@@ -39,5 +41,11 @@ export class ConflictError extends ApiError {
 export class UnexpectedError extends ApiError {
   constructor(description: string) {
     super(ErrorCode.Unexpected, description);
+  }
+}
+
+export class NetworkError extends FailResultBase {
+  constructor(description: string) {
+    super(ErrorType.Network, ErrorCode.Network, description);
   }
 }

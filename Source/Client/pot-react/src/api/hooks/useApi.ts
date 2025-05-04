@@ -12,6 +12,7 @@ import {
 } from '../errors/apiErrorResponse';
 import {
   ConflictError,
+  NetworkError,
   UnexpectedError,
   ValidationError,
 } from '../errors/apiErrors';
@@ -39,9 +40,50 @@ axios.defaults.timeout = 3000;
 //   return config;
 // });
 
+const getNetworkErrorMessage = (error: AxiosError): string => {
+  switch (error.code) {
+    case AxiosError.ECONNABORTED:
+    case AxiosError.ETIMEDOUT:
+      return 'Request timed out while waiting for the server';
+
+    case AxiosError.ERR_NETWORK:
+      return 'Unable to connect to the server';
+
+    case AxiosError.ERR_BAD_REQUEST:
+      return 'Invalid request';
+
+    case AxiosError.ERR_BAD_RESPONSE:
+      return 'Server returned an invalid response';
+
+    case AxiosError.ERR_NOT_SUPPORT:
+      return 'Operation not supported';
+
+    case AxiosError.ERR_INVALID_URL:
+      return 'Invalid server URL';
+
+    case AxiosError.ERR_FR_TOO_MANY_REDIRECTS:
+      return 'Too many redirects';
+
+    default:
+      return `Network error: ${error.message}`;
+  }
+};
+
+const getNetworkError = (error: AxiosError): NetworkError => {
+  const message = getNetworkErrorMessage(error);
+  const code = error.code ?? 'UNKNOWN';
+
+  return new NetworkError(`${message} (${code})`);
+};
+
 axios.interceptors.response.use(
   response => response,
   (error: AxiosError) => {
+    // Ignore cancelled requests
+    if (error.code === AxiosError.ERR_CANCELED) {
+      return Promise.reject(error);
+    }
+
     if (error.response) {
       const { status, data } = error.response;
       const apiError = data as ApiErrorResponse;
@@ -68,13 +110,11 @@ axios.interceptors.response.use(
       return Promise.reject(new FailResult(failResult));
     }
 
-    // Handle cases where no response was received from the server:
-    // - Network errors (no internet, DNS failures, server unreachable)
-    // - Request timeout (exceeding axios.defaults.timeout)
-    // - Request cancellation (via AbortController)
-    return Promise.reject(
-      new FailResult(new UnexpectedError('An unexpected error occurred')),
-    );
+    if (error.isAxiosError) {
+      console.error('API Error', error);
+    }
+
+    return Promise.reject(new FailResult(getNetworkError(error)));
   },
 );
 
