@@ -3,8 +3,7 @@ import { useRef, useState } from 'react';
 import { ControllerRenderProps, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { ErrorDialog } from '@/components/dialog/errorDialog';
-import { ErrorDialogState } from '@/components/dialog/types';
+import { ErrorDialog, ErrorDialogState } from '@/components/dialog/errorDialog';
 import MoneyValueInput from '@/components/input/MoneyValueInput';
 import { Button } from '@/components/ui/button';
 import {

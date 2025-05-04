@@ -7,9 +7,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { noop } from '@/lib/utils';
 
-// A no-op named function is required to avoid the linter error 'Unexpected empty arrow function'
-const noop = () => void 0;
+// Useful for setting state to be provided to an ErrorDialog, such as:
+// const [dialogEror, setDialogError] = useState<ErrorDialogState | null>(null);
+export type ErrorDialogState = {
+  title: string;
+  description: string;
+};
 
 type ErrorDialogProps = {
   open: boolean;
@@ -18,7 +23,7 @@ type ErrorDialogProps = {
   onOk?: () => void;
 };
 
-export function ErrorDialog({
+function ErrorDialog({
   open,
   title = 'Error',
   description,
@@ -38,3 +43,5 @@ export function ErrorDialog({
     </AlertDialog>
   );
 }
+
+export { ErrorDialog };

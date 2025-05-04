@@ -89,24 +89,21 @@ const performOperation = async <TResponse>(
   }
 };
 
+const useDelete = <TResponse>(url: string) => {
+  return useMutation({
+    mutationFn: async ({
+      signal,
+    }: DeleteMutationData): Promise<Result<TResponse, FailResultBase>> => {
+      return performOperation(() => axios.delete<TResponse>(url, { signal }));
+    },
+  });
+};
+
 const useGet = <TResponse>(url: string, queryKey: string[]) => {
   return useQuery({
     queryKey,
     queryFn: async ({ signal }): Promise<Result<TResponse, FailResultBase>> => {
       return performOperation(() => axios.get<TResponse>(url, { signal }));
-    },
-  });
-};
-
-const usePut = <TResponse, TData>(url: string) => {
-  return useMutation({
-    mutationFn: async ({
-      data,
-      signal,
-    }: MutationData<TData>): Promise<Result<TResponse, FailResultBase>> => {
-      return performOperation(() =>
-        axios.put<TResponse>(url, data, { signal }),
-      );
     },
   });
 };
@@ -124,14 +121,17 @@ const usePost = <TResponse, TData>(url: string) => {
   });
 };
 
-const useDelete = <TResponse>(url: string) => {
+const usePut = <TResponse, TData>(url: string) => {
   return useMutation({
     mutationFn: async ({
+      data,
       signal,
-    }: DeleteMutationData): Promise<Result<TResponse, FailResultBase>> => {
-      return performOperation(() => axios.delete<TResponse>(url, { signal }));
+    }: MutationData<TData>): Promise<Result<TResponse, FailResultBase>> => {
+      return performOperation(() =>
+        axios.put<TResponse>(url, data, { signal }),
+      );
     },
   });
 };
 
-export { useGet, usePut, usePost, useDelete };
+export { useDelete, useGet, usePost, usePut };
