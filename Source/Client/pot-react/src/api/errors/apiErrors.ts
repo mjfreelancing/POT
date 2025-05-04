@@ -14,20 +14,26 @@ export const ErrorCode = {
 export type ErrorType = (typeof ErrorType)[keyof typeof ErrorType];
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
 
-export class ValidationError extends FailResultBase {
-  constructor(description: string) {
-    super(ErrorType.Api, ErrorCode.Validation, description);
+export abstract class ApiError extends FailResultBase {
+  constructor(code: ErrorCode, description: string) {
+    super(ErrorType.Api, code, description);
   }
 }
 
-export class ConflictError extends FailResultBase {
+export class ValidationError extends ApiError {
   constructor(description: string) {
-    super(ErrorType.Api, ErrorCode.Conflict, description);
+    super(ErrorCode.Validation, description);
   }
 }
 
-export class UnexpectedError extends FailResultBase {
+export class ConflictError extends ApiError {
   constructor(description: string) {
-    super(ErrorType.Unexpected, ErrorCode.Unexpected, description);
+    super(ErrorCode.Conflict, description);
+  }
+}
+
+export class UnexpectedError extends ApiError {
+  constructor(description: string) {
+    super(ErrorCode.Unexpected, description);
   }
 }
