@@ -1,5 +1,6 @@
 import { FailResultBase } from '@/lib/result/failResultBase';
 
+// These const objects exist at runtime
 export const ErrorType = {
   Api: 'Api',
   Unexpected: 'Unexpected',
@@ -11,8 +12,11 @@ export const ErrorCode = {
   Unexpected: 'Unexpected',
 } as const;
 
-export type ErrorType = (typeof ErrorType)[keyof typeof ErrorType];
-export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
+// These type declarations only exist at compile time
+// They extract the literal types from the const objects above
+// They can have the same names as the consts because they're in the type namespace
+type ErrorType = (typeof ErrorType)[keyof typeof ErrorType];
+type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
 
 export abstract class ApiError extends FailResultBase {
   constructor(code: ErrorCode, description: string) {
