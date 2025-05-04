@@ -30,65 +30,50 @@ axios.defaults.timeout = 3000;
 //   return config;
 // });
 
-// // Response Interceptor
-// axios.interceptors.response.use(
-//   res => res,
-//   (error: AxiosError) => {
-//     if (error.response) {
-//       const { data, status } = error.response;
-//       switch (status) {
-//         case 400:
-//           console.error(data);
-//           break;
-//         case 401:
-//           console.error('Unauthorized');
-//           break;
-//         case 404:
-//           console.error('Not Found');
-//           break;
-//         case 500:
-//           console.error('Server Error');
-//           break;
-//       }
-//     }
-//     return Promise.reject(error);
-//   },
-// );
+// Response Interceptor
+axios.interceptors.response.use(
+  response => response,
+  (error: AxiosError) => {
+    if (error.response) {
+      const { status, data } = error.response;
+      const apiError = data as ApiErrorResponse;
+
+      console.error(`API Error: ${status} ${apiError.detail}`, apiError);
+
+      let failResult: FailResultBase;
+
+      switch (status) {
+        case 409:
+          failResult = new ConflictError(getConflictMessage(apiError));
+          break;
+
+        case 422:
+          failResult = new ValidationError(getValidationMessage(apiError));
+          break;
+
+        case 500:
+        default:
+          failResult = new UnexpectedError(getErrorMessage(apiError));
+          break;
+      }
+
+      return Promise.reject(new FailResult(failResult));
+    }
+
+    // Handle cases where no response was received from the server:
+    // - Network errors (no internet, DNS failures, server unreachable)
+    // - Request timeout (exceeding axios.defaults.timeout)
+    // - Request cancellation (via AbortController)
+    return Promise.reject(
+      new FailResult(new UnexpectedError('An unexpected error occurred')),
+    );
+  },
+);
 
 const responseData = <TResponse>(
   response: AxiosResponse<TResponse>,
 ): TResponse => {
   return response.data;
-};
-
-const getApiError = (error: AxiosError): FailResultBase => {
-  if (error.response) {
-    const { status, data } = error.response;
-    const apiError = data as ApiErrorResponse;
-
-    console.error(`API Error: ${status} ${apiError.detail}`, apiError);
-
-    switch (status) {
-      case 409:
-        return new ConflictError(getConflictMessage(apiError));
-
-      case 422:
-        return new ValidationError(getValidationMessage(apiError));
-
-      default:
-        return new UnexpectedError(getErrorMessage(apiError));
-    }
-  }
-
-  return new UnexpectedError(error.message);
-};
-
-const getFailResult = (error: unknown): FailResult<FailResultBase> => {
-  if (error instanceof AxiosError) {
-    return new FailResult(getApiError(error));
-  }
-
-  return new FailResult(new UnexpectedError('An unexpected error occurred'));
 };
 
 export const useGet = <TResponse>(url: string, queryKey: string[]) => {
@@ -113,7 +98,7 @@ export const usePost = <TResponse, TData>(url: string) => {
         const response = await axios.post<TResponse>(url, data, { signal });
         return new SuccessResult(response.data);
       } catch (error) {
-        return getFailResult(error);
+        return error as FailResult<FailResultBase>;
       }
     },
   });
@@ -132,7 +117,7 @@ export const usePut = <TResponse, TData>(url: string) => {
         const response = await axios.put<TResponse>(url, data, { signal });
         return new SuccessResult(response.data);
       } catch (error) {
-        return getFailResult(error);
+        return error as FailResult<FailResultBase>;
       }
     },
   });
