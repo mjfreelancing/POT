@@ -11,17 +11,17 @@ export const useEditAccount = () => {
     const controller = new AbortController();
 
     try {
-      await apiUpdateAccount.mutateAsync(
-        {
-          data: account,
-          signal: controller.signal,
-        },
-        {
-          onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['accounts'] });
-          },
-        },
-      );
+      // Not using onSuccess cllback because both success/fails are returned
+      const result = await apiUpdateAccount.mutateAsync({
+        data: account,
+        signal: controller.signal,
+      });
+
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      }
+
+      return result;
     } finally {
       controller.abort();
     }

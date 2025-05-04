@@ -15,6 +15,7 @@ export const useCreateAccount = () => {
     const controller = new AbortController();
 
     try {
+      // Not using onSuccess cllback because both success/fails are returned
       const result = await apiCreateAccount.mutateAsync({
         data: account,
         signal: controller.signal,

@@ -45,7 +45,6 @@ type FormSchema = z.infer<typeof formSchema>;
 
 export function CreateAccountDialog() {
   const [dialogError, setDialogError] = useState<ErrorDialogState | null>(null);
-
   const closeRef = useRef<HTMLButtonElement>(null);
   const { createAccount } = useCreateAccount();
 
@@ -103,6 +102,7 @@ export function CreateAccountDialog() {
       >
         <DialogHeader>
           <DialogTitle>Create Account</DialogTitle>
+          {/* DialogDescription is required to remove warnings from the console: Missing Description or aria-describedby={undefined} */}
           <DialogDescription className="sr-only"></DialogDescription>
           <Separator className="mb-4 bg-border" />
         </DialogHeader>
@@ -245,6 +245,7 @@ export function CreateAccountDialog() {
         </Form>
       </DialogContent>
 
+      {/* Using conditional rendering rather than the 'opne' prop so we don't need to perform null checks, such as title={dialogError?.title ?? ''} */}
       {dialogError && (
         <ErrorDialog
           open={true}
