@@ -1,10 +1,11 @@
+import { describe, expect, test } from 'vitest';
 import { faker } from '@faker-js/faker';
 import { formatMoneyValue } from './moneyUtils';
 import { MoneyValue } from './valueTypes';
 
 describe('Money Utils', () => {
   describe('formatMoneyValue', () => {
-    it('should format positive money value with default AUD currency and en-AU locale', () => {
+    test('should format positive money value with default AUD currency and en-AU locale', () => {
       const value: MoneyValue = faker.number.float({
         min: 0,
         max: 10000,
@@ -21,7 +22,7 @@ describe('Money Utils', () => {
       expect(numericValue).toBe(value);
     });
 
-    it('should format negative money value with default AUD currency and en-AU locale', () => {
+    test('should format negative money value with default AUD currency and en-AU locale', () => {
       const value: MoneyValue = faker.number.float({
         min: -10000,
         max: 0,
@@ -38,12 +39,12 @@ describe('Money Utils', () => {
       expect(numericValue).toBe(value);
     });
 
-    it('should format zero value correctly with defaults', () => {
+    test('should format zero value correctly with defaults', () => {
       const result = formatMoneyValue(0);
       expect(result).toBe('$0.00');
     });
 
-    it('should respect different currency and locale combinations', () => {
+    test('should respect different currency and locale combinations', () => {
       const value = 1234567.89;
 
       // Australian dollar variations

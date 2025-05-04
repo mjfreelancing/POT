@@ -1,3 +1,4 @@
+import { test, describe, expect, beforeEach } from 'vitest';
 import { faker } from '@faker-js/faker';
 import { FailResultBase } from './failResultBase';
 import { FailResult, Result, SuccessResult } from './result';
@@ -21,7 +22,7 @@ describe('Result Type', () => {
     dummyError = new DummyError(errorType, errorCode, errorDescription);
   });
 
-  it('should create a success result', () => {
+  test('should create a success result', () => {
     // Deliberately using FailResultBase instead of DummyError since the error could be any derived type.
     const successValue = faker.lorem.sentence();
     const result: Result<string, FailResultBase> = new SuccessResult(
@@ -32,7 +33,7 @@ describe('Result Type', () => {
     expect(result.value).toBe(successValue);
   });
 
-  it('should create a failure result', () => {
+  test('should create a failure result', () => {
     // Deliberately using FailResultBase instead of DummyError since the error could be any derived type.
     const result: Result<string, FailResultBase> = new FailResult(dummyError);
 

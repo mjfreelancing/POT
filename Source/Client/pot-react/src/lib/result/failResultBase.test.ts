@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { faker } from '@faker-js/faker';
 
 import { FailResultBase } from './failResultBase';
@@ -9,7 +10,7 @@ class TestFailResult extends FailResultBase {
 }
 
 describe('FailResultBase', () => {
-  it('should have correct properties with random data', () => {
+  test('should have correct properties with random data', () => {
     const type = faker.word.sample();
     const code = faker.string.alphanumeric(8);
     const description = faker.lorem.sentence();

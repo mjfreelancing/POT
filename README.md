@@ -64,15 +64,11 @@ From the `/Source/Client/pot-react` folder:
 
 - `npm run test` - Run unit tests
   ```bash
-  jest
+  vitest
   ```
-- `npm run test:watch` - Run tests in watch mode
+- `npm run test:ui` - Run tests with UI
   ```bash
-  jest --watch
-  ```
-- `npm run test:coverage` - Generate test coverage report
-  ```bash
-  jest --coverage
+  vitest --ui
   ```
 
 ## Type Checking
