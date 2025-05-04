@@ -233,12 +233,14 @@ export function CreateAccountDialog() {
         </Form>
       </DialogContent>
 
-      <ErrorDialog
-        open={dialogError !== null}
-        title={dialogError?.title ?? ''}
-        description={dialogError?.description ?? ''}
-        onOk={() => setDialogError(null)}
-      />
+      {dialogError && (
+        <ErrorDialog
+          open={true}
+          title={dialogError.title}
+          description={dialogError.description}
+          onOk={() => setDialogError(null)}
+        />
+      )}
     </>
   );
 }
