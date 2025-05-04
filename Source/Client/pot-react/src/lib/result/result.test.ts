@@ -1,45 +1,48 @@
+import { faker } from '@faker-js/faker';
 import { FailResultBase } from './failResultBase';
 import { FailResult, Result, SuccessResult } from './result';
 
 class DummyError extends FailResultBase {
-  constructor() {
-    super('Type', 'Code', 'Test Error');
+  constructor(type: string, code: string, description: string) {
+    super(type, code, description);
   }
 }
 
 describe('Result Type', () => {
+  let errorType: string;
+  let errorCode: string;
+  let errorDescription: string;
+  let dummyError: DummyError;
+
+  beforeEach(() => {
+    errorType = faker.word.sample();
+    errorCode = faker.string.alphanumeric(8);
+    errorDescription = faker.lorem.sentence();
+    dummyError = new DummyError(errorType, errorCode, errorDescription);
+  });
+
   it('should create a success result', () => {
     // Deliberately using FailResultBase instead of DummyError since the error could be any derived type.
+    const successValue = faker.lorem.sentence();
     const result: Result<string, FailResultBase> = new SuccessResult(
-      'Success!',
+      successValue,
     );
 
     expect(result.success).toBe(true);
-
-    if (result.success) {
-      expect(result.value).toBe('Success!');
-    } else {
-      throw new Error('Expected success but got failure');
-    }
+    expect(result.value).toBe(successValue);
   });
 
   it('should create a failure result', () => {
-    const error = new DummyError();
-
     // Deliberately using FailResultBase instead of DummyError since the error could be any derived type.
-    const result: Result<string, FailResultBase> = new FailResult(error);
+    const result: Result<string, FailResultBase> = new FailResult(dummyError);
 
     expect(result.success).toBe(false);
 
-    if (!result.success) {
-      expect(result.error).toBe(error);
-      expect(result.error).toBeInstanceOf(DummyError);
-      expect(result.error).toBeInstanceOf(FailResultBase);
-      expect(result.error.type).toBe('Type');
-      expect(result.error.code).toBe('Code');
-      expect(result.error.description).toBe('Test Error');
-    } else {
-      throw new Error('Expected failure but got success');
-    }
+    expect(result.error).toBe(dummyError);
+    expect(result.error).toBeInstanceOf(DummyError);
+    expect(result.error).toBeInstanceOf(FailResultBase);
+    expect(result.error.type).toBe(errorType);
+    expect(result.error.code).toBe(errorCode);
+    expect(result.error.description).toBe(errorDescription);
   });
 });
