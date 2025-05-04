@@ -83,6 +83,19 @@ export function CreateAccountDialog() {
     }
   };
 
+  // TODO: Issue - when the error dialog is shown, the following error is in the console (related to this component):
+  //
+  // Blocked aria-hidden on an element because its descendant retained focus. The focus must not be hidden from assistive technology users.
+  //  Avoid using aria-hidden on a focused element or its ancestor. Consider using the inert attribute instead, which will also prevent focus.
+  //  For more details, see the aria-hidden section of the WAI-ARIA specification at https://w3c.github.io/aria/#aria-hidden.
+  //
+  // Tried using these, but it makes no difference:
+  //   modal={dialogError === null}
+  //   aria-hidden={dialogError !== null}
+  //
+  // https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Attributes/aria-hidden
+  // Indicates not to apply aria-hidden to focusable elements.
+
   return (
     <>
       <DialogContent
