@@ -16,6 +16,15 @@ import {
   ValidationError,
 } from '../errors/apiErrors';
 
+type MutationData<TData> = {
+  data: TData;
+  signal?: AbortSignal;
+};
+
+type DeleteMutationData = {
+  signal?: AbortSignal;
+};
+
 axios.defaults.baseURL = 'http://localhost:5241/api';
 axios.defaults.timeout = 3000;
 
@@ -30,7 +39,6 @@ axios.defaults.timeout = 3000;
 //   return config;
 // });
 
-// Response Interceptor
 axios.interceptors.response.use(
   response => response,
   (error: AxiosError) => {
@@ -70,63 +78,60 @@ axios.interceptors.response.use(
   },
 );
 
-const responseData = <TResponse>(
-  response: AxiosResponse<TResponse>,
-): TResponse => {
-  return response.data;
+const performOperation = async <TResponse>(
+  operation: () => Promise<AxiosResponse<TResponse>>,
+): Promise<Result<TResponse, FailResultBase>> => {
+  try {
+    const response = await operation();
+    return new SuccessResult(response.data);
+  } catch (error) {
+    return error as FailResult<FailResultBase>;
+  }
 };
 
-export const useGet = <TResponse>(url: string, queryKey: string[]) => {
+const useGet = <TResponse>(url: string, queryKey: string[]) => {
   return useQuery({
     queryKey,
-    queryFn: async ({ signal }) => {
-      return axios.get<TResponse>(url, { signal }).then(responseData);
+    queryFn: async ({ signal }): Promise<Result<TResponse, FailResultBase>> => {
+      return performOperation(() => axios.get<TResponse>(url, { signal }));
     },
   });
 };
 
-export const usePost = <TResponse, TData>(url: string) => {
+const usePut = <TResponse, TData>(url: string) => {
   return useMutation({
     mutationFn: async ({
       data,
       signal,
-    }: {
-      data: TData;
-      signal?: AbortSignal;
-    }): Promise<Result<TResponse, FailResultBase>> => {
-      try {
-        const response = await axios.post<TResponse>(url, data, { signal });
-        return new SuccessResult(response.data);
-      } catch (error) {
-        return error as FailResult<FailResultBase>;
-      }
+    }: MutationData<TData>): Promise<Result<TResponse, FailResultBase>> => {
+      return performOperation(() =>
+        axios.put<TResponse>(url, data, { signal }),
+      );
     },
   });
 };
 
-export const usePut = <TResponse, TData>(url: string) => {
+const usePost = <TResponse, TData>(url: string) => {
   return useMutation({
     mutationFn: async ({
       data,
       signal,
-    }: {
-      data: TData;
-      signal?: AbortSignal;
-    }): Promise<Result<TResponse, FailResultBase>> => {
-      try {
-        const response = await axios.put<TResponse>(url, data, { signal });
-        return new SuccessResult(response.data);
-      } catch (error) {
-        return error as FailResult<FailResultBase>;
-      }
+    }: MutationData<TData>): Promise<Result<TResponse, FailResultBase>> => {
+      return performOperation(() =>
+        axios.post<TResponse>(url, data, { signal }),
+      );
     },
   });
 };
 
-export const useDelete = <TResponse>(url: string) => {
+const useDelete = <TResponse>(url: string) => {
   return useMutation({
-    mutationFn: async ({ signal }: { signal?: AbortSignal }) => {
-      return axios.delete<TResponse>(url, { signal }).then(responseData);
+    mutationFn: async ({
+      signal,
+    }: DeleteMutationData): Promise<Result<TResponse, FailResultBase>> => {
+      return performOperation(() => axios.delete<TResponse>(url, { signal }));
     },
   });
 };
+
+export { useGet, usePut, usePost, useDelete };

@@ -4,13 +4,20 @@ import {
   CreateAccount,
   EditAccount,
 } from '@/data/accounts/account';
+import { FailResultBase } from '@/lib/result/failResultBase';
+import { Result } from '@/lib/result/result';
 
 import { useDelete, useGet, usePost, usePut } from '../../hooks/useApi';
 
 const useApiGetAllAccounts = () => {
-  const { data, ...rest } = useGet<Account[]>('/accounts', ['accounts']);
-  const sorted = data?.sort(compareAccountBsbNumber);
-  return { data: sorted, ...rest };
+  const query = useGet<Account[]>('/accounts', ['accounts']);
+  const result = query.data as Result<Account[], FailResultBase>;
+
+  // In React Query, when data is loading or there's an error, `query.data` will be `undefined`
+  const accounts = result?.success ? result.value : undefined;
+  const sorted = accounts?.sort(compareAccountBsbNumber);
+
+  return { ...query, data: sorted };
 };
 
 // const useApiGetAccountById = (id: string) => {
