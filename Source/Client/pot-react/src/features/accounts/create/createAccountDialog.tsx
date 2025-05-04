@@ -245,7 +245,8 @@ export function CreateAccountDialog() {
           </form>
         </Form>
       </DialogContent>
-
+      // Using conditional rendering instead of the `open` prop to avoid the use
+      // of null checks (e.g., dialogError?.title ?? '').
       {dialogError && (
         <ErrorDialog
           open={true}
