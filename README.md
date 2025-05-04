@@ -47,9 +47,13 @@ From the `/Source/Client/pot-react` folder:
   ```bash
   eslint .
   ```
-- `npm run lint-fix` - Automatically fix linting issues
+- `npm run lint:fix` - Automatically fix linting issues
   ```bash
   eslint . --fix
+  ```
+- `npm run lint:sort` - Fix and sort imports
+  ```bash
+  eslint --fix --fix-type layout,suggestion src/**/*.{ts,tsx}
   ```
 - `npm run pretty` - Format code using Prettier
   ```bash
@@ -73,7 +77,7 @@ From the `/Source/Client/pot-react` folder:
 
 ## Type Checking
 
-- `npm run type-check` - Verify TypeScript types
+- `npm run type:check` - Verify TypeScript types
   ```bash
   tsc --noEmit
   ```
