@@ -8,6 +8,25 @@ type SheetErrorProps = DisplayError & {
   onDismiss: () => void;
 };
 
+{
+  /* CSS Classes:
+   * fixed - positions element relative to viewport
+   * top-0, left-0, right-0 - anchors sheet to top of screen, spanning full width
+   * z-50 - ensures high z-index to display above other content
+   * p-4 - adds padding (1rem) to all sides
+   * bg-destructive/95 - applies destructive background color with 95% opacity
+   *
+   * flex - enables flexbox layout
+   * items-start - aligns flex items to start of cross axis
+   * justify-between - spaces flex items with space between them
+   *
+   * flex-1 - allows content to grow and fill available space
+   * text-sm - sets small font size
+   * font-semibold - applies semi-bold font weight
+   * text-white - sets text color to white
+   * text-white/90 - sets text color to white with 90% opacity
+   */
+}
 export const ErrorSheet = ({
   title,
   description,
