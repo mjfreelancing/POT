@@ -400,3 +400,4 @@ FodyWeavers.xsd
 /_Local Ignore
 /Data
 Source/Client/pot-react/coverage
+Source/Docker/postgres-data
