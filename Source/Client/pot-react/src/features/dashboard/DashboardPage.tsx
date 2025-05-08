@@ -2,14 +2,15 @@ import { ColumnDef } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
 
 import { useApiGetAllAccounts } from '@/api/accounts/hooks/useAccounts';
-import { ErrorDialog, ErrorDialogState } from '@/components/dialog/errorDialog';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
+import { ErrorSheet } from '@/components/feedback/sheet/ErrorSheet';
 import { DatePickerWithYear } from '@/components/picker/DatePickerWithYear';
 import {
   createMoneyValueColumn,
   DataTable,
 } from '@/components/table/DataTable';
 import { Account } from '@/data/accounts/account';
+import { DisplayError } from '@/lib/errors/displayError';
 
 // Temporary - a WIP
 
@@ -31,15 +32,21 @@ const columns: ColumnDef<Account>[] = [
 ];
 
 const DashboardPage = () => {
-  const [dialogError, setDialogError] = useState<ErrorDialogState | null>(null);
+  const [error, setError] = useState<DisplayError | null>(null);
   const { data: result, isLoading } = useApiGetAllAccounts();
 
   useEffect(() => {
-    if (result && !result.success) {
-      setDialogError({
-        title: result.error.code,
-        description: result.error.description,
-      });
+    // Transient error handling
+    if (result) {
+      if (result.success) {
+        // Reset error state, such as after a network loss
+        setError(null);
+      } else {
+        setError({
+          title: result.error.code,
+          description: result.error.description,
+        });
+      }
     }
   }, [result]);
 
@@ -54,14 +61,13 @@ const DashboardPage = () => {
 
         <LoadingMessage isLoading={isLoading} />
       </div>
-      {dialogError && (
-        <ErrorDialog
-          open={true}
-          title={dialogError.title}
-          description={dialogError.description}
-          onOk={() => setDialogError(null)}
+      {error && (
+        <ErrorSheet
+          title={error.title}
+          description={error.description}
+          onDismiss={() => setError(null)}
         />
-      )}{' '}
+      )}
     </>
   );
 };

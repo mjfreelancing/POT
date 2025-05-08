@@ -9,6 +9,12 @@ const DashboardPage = lazy(() => import('../features/dashboard/DashboardPage'));
 const ProjectionsPage = lazy(
   () => import('../features/projections/ProjectionsPage'),
 );
+const CreateAccountSheet = lazy(
+  () => import('../features/accounts/create/CreateAccountSheet'),
+);
+const EditAccountSheet = lazy(
+  () => import('../features/accounts/edit/EditAccountSheet'),
+);
 
 // Suspense provides a loading fallback while the lazy-loaded components are being downloaded
 export const AppRoutes = () => {
@@ -18,7 +24,10 @@ export const AppRoutes = () => {
         <Route path="/" element={<Navigate replace to="dashboard" />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/projections" element={<ProjectionsPage />} />
-        <Route path="/accounts" element={<AccountsPage />} />
+        <Route path="/accounts" element={<AccountsPage />}>
+          <Route path="create" element={<CreateAccountSheet />} />
+          <Route path="edit/:id" element={<EditAccountSheet />} />
+        </Route>
       </Routes>
     </Suspense>
   );

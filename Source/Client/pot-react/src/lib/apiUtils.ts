@@ -5,10 +5,19 @@
 //
 // To this:
 //   return withDelay(() =>axios.get<TResponse>(url, { signal }).then(responseData));
+//
+// Or just use a sleep() if that's all you need:
+//   await sleep(3000);
 
 import { isDevelopment } from './utils';
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+export const sleep = (ms: number) => {
+  if (!isDevelopment()) {
+    throw new Error('sleep should only be used in development mode');
+  }
+
+  new Promise(resolve => setTimeout(resolve, ms));
+};
 
 export const withDelay = async <T>(
   fn: () => Promise<T>,

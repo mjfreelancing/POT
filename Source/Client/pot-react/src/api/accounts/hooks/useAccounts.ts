@@ -29,18 +29,29 @@ const useApiGetAllAccounts = () => {
   return { ...query, data };
 };
 
-// const useApiGetAccountById = (id: string) => {
-//   return useGet<Account>(`/accounts/${id}`, ['accounts', id]);
-// };
+const useApiGetAccountById = (id: string) => {
+  const query = useGet<Account>(`/accounts/${id}`, ['accounts', id]);
 
+  // Cast to Result<Account, FailResultBase> type to enable TypeScript's discriminated union type narrowing.
+  // This allows TypeScript to infer that when !success, error must exist, and when success, value must exist.
+  // Without the cast, TypeScript can't determine the relationship between success and error/value properties.
+  return {
+    ...query,
+    data: query.data as Result<Account, FailResultBase>,
+  };
+};
+
+// Not performing type narrowing as this method currently returns a mutation without Result<T> handling
 const useApiCreateAccount = () => {
   return usePost<void, CreateAccount>('/accounts');
 };
 
+// Not performing type narrowing as this method currently returns a mutation without Result<T> handling
 const useApiUpdateAccount = () => {
   return usePut<void, EditAccount>('/accounts');
 };
 
+// Not performing type narrowing as this method currently returns a mutation without Result<T> handling
 const useApiDeleteAccount = (id: string) => {
   return useDelete<void>(`/accounts/${id}`);
 };
@@ -48,7 +59,7 @@ const useApiDeleteAccount = (id: string) => {
 export {
   useApiCreateAccount,
   useApiDeleteAccount,
-  //useApiGetAccountById,
+  useApiGetAccountById,
   useApiGetAllAccounts,
   useApiUpdateAccount,
 };

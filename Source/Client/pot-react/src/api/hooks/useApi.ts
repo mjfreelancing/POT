@@ -8,11 +8,13 @@ import {
   ApiErrorResponse,
   getConflictMessage,
   getErrorMessage,
+  getNotFoundMessage,
   getValidationMessage,
 } from '../errors/apiErrorResponse';
 import {
   ConflictError,
   NetworkError,
+  NotFoundError,
   UnexpectedError,
   ValidationError,
 } from '../errors/apiErrors';
@@ -93,6 +95,10 @@ axios.interceptors.response.use(
       let failResult: FailResultBase;
 
       switch (status) {
+        case 400:
+          failResult = new NotFoundError(getNotFoundMessage(apiError));
+          break;
+
         case 409:
           failResult = new ConflictError(getConflictMessage(apiError));
           break;

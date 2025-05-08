@@ -1,10 +1,10 @@
 import { MoreHorizontal } from 'lucide-react';
 import { useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
+import { useNavigate } from 'react-router';
 
 import { ConfirmationDialog } from '@/components/dialog/confirmationDialog';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +15,6 @@ import {
 import { Account } from '@/data/accounts/account';
 
 import { useDeleteAccount } from '../delete/hooks/useDeleteAccount';
-import { EditAccountDialog } from '../edit/EditAccountDialog';
 
 type AccountActionsProps = {
   account: Account;
@@ -23,6 +22,7 @@ type AccountActionsProps = {
 
 export const AccountActions = ({ account }: AccountActionsProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const navigate = useNavigate();
   const { deleteAccount } = useDeleteAccount(account.rowId);
   const { showBoundary } = useErrorBoundary();
 
@@ -37,28 +37,26 @@ export const AccountActions = ({ account }: AccountActionsProps) => {
 
   return (
     <>
-      <Dialog>
-        <DropdownMenu modal={false}>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuSeparator />
-            <DialogTrigger asChild>
-              <DropdownMenuItem>Edit</DropdownMenuItem>
-            </DialogTrigger>
-            <DropdownMenuItem onClick={() => setShowDeleteDialog(true)}>
-              Delete
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        <EditAccountDialog account={account} />
-      </Dialog>
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() => navigate(`/accounts/edit/${account.rowId}`)}
+          >
+            Edit
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShowDeleteDialog(true)}>
+            Delete
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <ConfirmationDialog
         open={showDeleteDialog}

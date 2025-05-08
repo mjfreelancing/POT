@@ -9,6 +9,7 @@ export const ErrorType = {
 
 export const ErrorCode = {
   Validation: 'Validation Error',
+  NotFound: 'Not Found',
   Conflict: 'Conflict Error',
   Network: 'Network Error',
   Unexpected: 'Unexpected Error',
@@ -29,6 +30,12 @@ export abstract class ApiError extends FailResultBase {
 export class ValidationError extends ApiError {
   constructor(description: string) {
     super(ErrorCode.Validation, description);
+  }
+}
+
+export class NotFoundError extends ApiError {
+  constructor(description: string) {
+    super(ErrorCode.NotFound, description);
   }
 }
 

@@ -16,6 +16,11 @@ export type ApiErrorResponse = {
   instance?: string;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const getNotFoundMessage = (_error: ApiErrorResponse): string => {
+  return 'The requested resource was not found';
+};
+
 export const getConflictMessage = (error: ApiErrorResponse): string => {
   if (error.errors?.length) {
     const firstError = error.errors[0];
@@ -35,5 +40,5 @@ export const getValidationMessage = (error: ApiErrorResponse): string => {
 
 // TODO: Check what happens when the error is a 500
 export const getErrorMessage = (error: ApiErrorResponse): string => {
-  return error.detail ?? 'An unknown error occurred';
+  return error.title ?? 'An unknown error occurred';
 };
