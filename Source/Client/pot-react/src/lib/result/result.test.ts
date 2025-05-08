@@ -1,5 +1,6 @@
-import { test, describe, expect, beforeEach } from 'vitest';
 import { faker } from '@faker-js/faker';
+import { beforeEach, describe, expect, test } from 'vitest';
+
 import { FailResultBase } from './failResultBase';
 import { FailResult, Result, SuccessResult } from './result';
 
