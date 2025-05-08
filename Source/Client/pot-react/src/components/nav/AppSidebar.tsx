@@ -46,7 +46,7 @@ const menuGroups: Record<string, MenuGroupDefinition> = {
     label: 'Accounts',
     items: [
       {
-        label: 'Manage',
+        label: 'Manage Accounts',
         icon: PiggyBank,
         href: '/accounts',
       },
@@ -62,7 +62,7 @@ const menuGroups: Record<string, MenuGroupDefinition> = {
     label: 'Expenses',
     items: [
       {
-        label: 'Manage',
+        label: 'Manage Expenses',
         icon: CircleDollarSignIcon,
         href: '/expenses',
       },
