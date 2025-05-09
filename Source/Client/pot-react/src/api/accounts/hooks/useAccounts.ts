@@ -19,9 +19,11 @@ const useApiGetAllAccounts = () => {
   // - returns undefined immediately and while loading
   // - returns the result when the query is successful
   if (result?.success) {
+    // spreading [...result.value] to create a shallow copy of the array since sort() mutates the source array
     const sorted = [...result.value].sort(compareAccountBsbNumber);
     data = new SuccessResult(sorted);
   } else {
+    // type narrowed to FailResult<FailResultBase> since result cannot be undefined at this point
     data = result;
   }
 
