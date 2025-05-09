@@ -8,6 +8,7 @@ import { FailResultBase } from '@/lib/result/failResultBase';
 import { Result, SuccessResult } from '@/lib/result/result';
 
 import { useDelete, useGet, usePost, usePut } from '../../hooks/useApi';
+import { Identity } from '@/data/identity';
 
 const useApiGetAllAccounts = () => {
   const query = useGet<Account[]>('/accounts', ['accounts']);
@@ -43,14 +44,24 @@ const useApiGetAccountById = (id: string) => {
   };
 };
 
-// Not performing type narrowing as this method currently returns a mutation without Result<T> handling
 const useApiCreateAccount = () => {
-  return usePost<void, CreateAccount>('/accounts');
+  const mutation = usePost<Identity, CreateAccount>('/accounts');
+
+  // Returning the mutation data as Result<Identity, FailResultBase> type to enable TypeScript's discriminated union type narrowing.
+  return {
+    ...mutation,
+    data: mutation.data as Result<Identity, FailResultBase>,
+  };
 };
 
-// Not performing type narrowing as this method currently returns a mutation without Result<T> handling
+// Returning the mutation data as Result<Identity, FailResultBase> type to enable TypeScript's discriminated union type narrowing.
 const useApiUpdateAccount = () => {
-  return usePut<void, EditAccount>('/accounts');
+  const mutation = usePut<Identity, EditAccount>('/accounts');
+
+  return {
+    ...mutation,
+    data: mutation.data as Result<Identity, FailResultBase>,
+  };
 };
 
 // Not performing type narrowing as this method currently returns a mutation without Result<T> handling
