@@ -7,7 +7,7 @@ import { FailResult, Result, SuccessResult } from '@/lib/result/result';
 import {
   ApiErrorResponse,
   getConflictMessage,
-  getErrorMessage,
+  getErrorTitle,
   getNotFoundMessage,
   getValidationMessage,
 } from '../errors/apiErrorResponse';
@@ -109,7 +109,7 @@ axios.interceptors.response.use(
 
         case 500:
         default:
-          failResult = new UnexpectedError(getErrorMessage(apiError));
+          failResult = new UnexpectedError(getErrorTitle(apiError));
           break;
       }
 
