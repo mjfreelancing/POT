@@ -1,4 +1,4 @@
-import { ComponentPropsWithoutRef, useState } from 'react';
+import { ComponentPropsWithoutRef, useState, useEffect } from 'react';
 
 import { isNumber } from '@/lib/utils';
 
@@ -36,6 +36,13 @@ function MoneyValueInput({
   const [displayValue, setDisplayValue] = useState(() =>
     isNumber(value) ? value.toFixed(2) : undefined,
   );
+
+  useEffect(() => {
+    if (isNumber(value)) {
+      console.info('MoneyValueInput value update:', { value });
+      setDisplayValue(value.toFixed(2));
+    }
+  }, [value]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
