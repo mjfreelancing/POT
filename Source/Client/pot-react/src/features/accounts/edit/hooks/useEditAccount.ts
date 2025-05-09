@@ -11,7 +11,7 @@ export const useEditAccount = () => {
     const controller = new AbortController();
 
     try {
-      // Not using onSuccess cllback because both success/fails are returned
+      // Not using onSuccess callback because both success/fails are returned
       const result = await apiUpdateAccount.mutateAsync({
         data: account,
         signal: controller.signal,
