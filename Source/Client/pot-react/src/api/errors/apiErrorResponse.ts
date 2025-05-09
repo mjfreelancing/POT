@@ -26,7 +26,7 @@ export const getConflictMessage = (error: ApiErrorResponse): string => {
     const firstError = error.errors[0];
 
     if (firstError.propertyName === 'Etag') {
-      return `The record has been updated by another user. Refresh and try again.`;
+      return `A conflicting update has been performed by another user. Refresh and try again.`;
     }
 
     return `The '${firstError.propertyName}' conflicts with another record that has the same value '${firstError.attemptedValue}'.`;
