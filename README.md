@@ -62,11 +62,11 @@ From the `/Source/Client/pot-react` folder:
 
 ## Testing
 
-- `npm run test` - Run unit tests
+- `npm run test` - Run unit tests and coverage
   ```bash
   vitest
   ```
-- `npm run test:ui` - Run tests with UI
+- `npm run test:ui` - Run tests and coverage with UI
   ```bash
   vitest --ui
   ```
@@ -77,3 +77,52 @@ From the `/Source/Client/pot-react` folder:
   ```bash
   tsc --noEmit
   ```
+
+# Development Configuration
+
+## TypeScript
+
+The project uses a multi-tsconfig setup:
+
+- `tsconfig.json` - Base configuration and path aliases
+- `tsconfig.app.json` - Application-specific settings
+- `tsconfig.node.json` - Node.js build settings (for Vite config)
+
+## Path Aliases
+
+The `@/*` path alias is configured for importing from the `src` directory:
+
+```typescript
+import { Button } from "@/components/ui/button";
+```
+
+## ESLint Configuration
+
+The project uses the new flat ESLint config with:
+
+- TypeScript ESLint recommended rules
+- React Hooks plugin
+- React Refresh plugin
+- Simple Import Sort plugin
+
+Additional rules:
+
+- Enforces type over interface
+- Enforces import sorting
+- Disables react-refresh warnings for constant exports
+
+## Vite Configuration
+
+The development server runs on port 5175 with support for:
+
+- React Fast Refresh
+- TailwindCSS
+- Path aliases (@/\*)
+
+## Testing
+
+Vitest is configured to:
+
+- Run on port 9527 for UI mode
+- Use Istanbul for coverage reporting
+- Use JSDOM for DOM simulation

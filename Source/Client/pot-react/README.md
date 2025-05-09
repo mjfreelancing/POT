@@ -1,54 +1,44 @@
-# React + TypeScript + Vite
+# POT React Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the React client application for the POT (Paid On Time) budget utility.
 
-Currently, two official plugins are available:
+## Development Setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1. Install dependencies:
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-});
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2. Start the development server:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x';
-import reactDom from 'eslint-plugin-react-dom';
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-});
+```bash
+npm run dev
 ```
+
+The application will be available at `http://localhost:5175`
+
+## Available Scripts
+
+- `npm run dev` - Start development server on port 5175
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Check code style
+- `npm run lint:fix` - Fix linting issues
+- `npm run lint:sort` - Fix and sort imports
+- `npm run pretty` - Format code with Prettier
+- `npm run test` - Run tests
+- `npm run test:ui` - Run tests with UI and coverage on port 9527 (the default 51204 fails with an access error)
+- `npm run type:check` - Verify TypeScript types
+
+## Technology Stack
+
+- React 19
+- TypeScript
+- Vite
+- TailwindCSS
+- Radix UI Components
+- React Query
+- React Hook Form
+- React Router
+- Vitest for testing
