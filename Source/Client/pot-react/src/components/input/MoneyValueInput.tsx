@@ -55,7 +55,7 @@ function MoneyValueInput({
     const isIncompleteValue =
       newValue === '' || newValue === '-' || newValue === '.';
 
-    // Only allow valid decimal number formats
+    // Only allow valid decimal number formats (including leading decimals like .123)
     if (isIncompleteValue || /^-?\d*\.?\d*$/.test(newValue)) {
       setDisplayValue(newValue);
 
@@ -72,7 +72,7 @@ function MoneyValueInput({
     // Flag the user is no longer typing
     setIsUserInput(false);
 
-    let value = '';
+    let value = '0.00'; // Default to 0.00 for empty strings
 
     if (displayValue && displayValue !== '-') {
       const numValue = parseFloat(displayValue);
