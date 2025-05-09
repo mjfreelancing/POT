@@ -6,7 +6,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 
-import { formatMoneyValue } from '../../lib/moneyUtils';
+import { formatMoneyValue } from '../../lib/money/moneyUtils';
 import { MoneyValue } from '../../lib/valueTypes';
 import {
   Table,

@@ -4,11 +4,11 @@ import {
   CreateAccount,
   EditAccount,
 } from '@/data/accounts/account';
+import { Identity } from '@/data/identity';
 import { FailResultBase } from '@/lib/result/failResultBase';
 import { Result, SuccessResult } from '@/lib/result/result';
 
 import { useDelete, useGet, usePost, usePut } from '../../hooks/useApi';
-import { Identity } from '@/data/identity';
 
 const useApiGetAllAccounts = () => {
   const query = useGet<Account[]>('/accounts', ['accounts']);

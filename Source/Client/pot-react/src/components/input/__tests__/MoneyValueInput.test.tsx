@@ -363,7 +363,6 @@ describe('MoneyValueInput', () => {
   });
 
   it('truncates long decimal numbers on paste', async () => {
-    const user = userEvent.setup();
     const onChange = vi.fn();
     render(<MoneyValueInput onChange={onChange} />);
     const input = screen.getByRole('textbox');
