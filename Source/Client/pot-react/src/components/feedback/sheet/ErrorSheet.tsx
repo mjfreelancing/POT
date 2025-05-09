@@ -32,12 +32,18 @@ export const ErrorSheet = ({
   description,
   onDismiss,
 }: SheetErrorProps) => {
+  const descriptionLines = description.split('\n');
+
   return (
     <div className="fixed top-0 left-0 right-0 z-50 p-4 bg-destructive/95">
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <h3 className="text-sm font-semibold text-white">{title}</h3>
-          <div className="mt-1 text-sm text-white/90">{description}</div>
+          <div className="mt-1 text-sm text-white/90">
+            {descriptionLines.map((line, index) => (
+              <div key={index}>{line}</div>
+            ))}
+          </div>
         </div>
         <Button
           variant="ghost"
