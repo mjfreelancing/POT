@@ -112,7 +112,7 @@ const EditAccountSheet = () => {
         form={form}
         onSubmit={onSubmit}
         onCancel={() => navigate('/accounts')}
-        readOnlyFields={true}
+        readOnlyAccountIdentifiers={true}
         submitLabel="Save"
       />
     </AccountSheet>

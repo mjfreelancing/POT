@@ -56,6 +56,7 @@ const CreateAccountSheet = () => {
         form={form}
         onSubmit={onSubmit}
         onCancel={() => navigate('/accounts')}
+        readOnlyAccountIdentifiers={false}
         submitLabel="Create"
       />
     </AccountSheet>

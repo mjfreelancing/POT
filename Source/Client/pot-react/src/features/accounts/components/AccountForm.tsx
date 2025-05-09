@@ -18,7 +18,7 @@ type AccountFormProps = {
   form: UseFormReturn<AccountFormSchema>;
   onSubmit: (values: AccountFormSchema) => Promise<void>;
   onCancel: () => void;
-  readOnlyFields?: boolean;
+  readOnlyAccountIdentifiers: boolean;
   submitLabel: string;
 };
 
@@ -26,7 +26,7 @@ export const AccountForm = ({
   form,
   onSubmit,
   onCancel,
-  readOnlyFields = false,
+  readOnlyAccountIdentifiers,
   submitLabel,
 }: AccountFormProps) => (
   <Form {...form}>
@@ -42,12 +42,16 @@ export const AccountForm = ({
                 {...field}
                 id="bsb-input"
                 placeholder={
-                  readOnlyFields ? undefined : 'Enter the Account BSB'
+                  readOnlyAccountIdentifiers
+                    ? undefined
+                    : 'Enter the Account BSB'
                 }
                 aria-description="Enter BSB in the format XXX-XXX"
-                readOnly={readOnlyFields}
+                readOnly={readOnlyAccountIdentifiers}
                 className={
-                  readOnlyFields ? 'bg-muted cursor-not-allowed' : undefined
+                  readOnlyAccountIdentifiers
+                    ? 'bg-muted cursor-not-allowed'
+                    : undefined
                 }
               />
             </FormControl>
@@ -66,12 +70,16 @@ export const AccountForm = ({
                 {...field}
                 id="account-number-input"
                 placeholder={
-                  readOnlyFields ? undefined : 'Enter the Account Number'
+                  readOnlyAccountIdentifiers
+                    ? undefined
+                    : 'Enter the Account Number'
                 }
                 aria-description="Your bank account number"
-                readOnly={readOnlyFields}
+                readOnly={readOnlyAccountIdentifiers}
                 className={
-                  readOnlyFields ? 'bg-muted cursor-not-allowed' : undefined
+                  readOnlyAccountIdentifiers
+                    ? 'bg-muted cursor-not-allowed'
+                    : undefined
                 }
               />
             </FormControl>
