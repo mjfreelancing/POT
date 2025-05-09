@@ -2,6 +2,68 @@
 
 A simple money budget utility to ensure debts are Paid On Time.
 
+# Features
+
+## Accounts Management
+
+Manage your bank accounts with the following capabilities:
+
+- View all accounts in a table format showing:
+
+  - BSB and Account Number
+  - Description
+  - Current Balance
+  - Reserved Amount
+  - Allocated Funds
+  - Daily Accrual
+  - Available Balance
+
+- Create new accounts with:
+
+  - BSB and Account Number
+  - Description
+  - Initial Balance
+  - Reserved Amount
+
+- Edit existing accounts:
+  - Update Description
+  - Modify Balance
+  - Adjust Reserved Amount
+  - BSB and Account Number are read-only after creation
+
+### Accessing Account Features
+
+- Create a new account:
+
+  - Click the "Add Account" button at the top of the accounts page
+  - A slide-out sheet appears from the right with the account form
+
+- Edit an existing account:
+  - Click the "..." menu button in the account's row
+  - Select "Edit" from the dropdown menu
+  - A slide-out sheet appears from the right with the account form
+
+### Error Handling
+
+The application displays errors in a dismissible notification banner at the top of the screen, such as:
+
+- Account Creation Errors
+
+  - Duplicate BSB/Account number combination
+  - Invalid BSB format
+  - Duplicate Account description
+
+- Account Edit Errors
+
+  - Concurrent modification detected (someone else modified the account)
+  - Invalid balance or reserved amount
+  - Account no longer exists
+
+- Loading Errors
+
+  - Network connectivity issues
+  - Server availability problems
+
 # Starting the Dockerised server
 
 You can start and stop the Docker containers directly from Visual Studio Code using the predefined tasks. From the root folder:
