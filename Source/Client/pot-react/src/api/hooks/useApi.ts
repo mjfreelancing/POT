@@ -78,8 +78,26 @@ const getNetworkError = (error: AxiosError): NetworkError => {
   return new NetworkError(`${message} (${code})`);
 };
 
+// Add request interceptor to inject correlation ID
+axios.interceptors.request.use(config => {
+  config.headers['X-Correlation-ID'] = crypto.randomUUID();
+
+  console.log(
+    `API ${config.method?.toUpperCase()} Request [${config.headers['X-Correlation-ID']}]`,
+    config.url,
+  );
+
+  return config;
+});
+
 axios.interceptors.response.use(
-  response => response,
+  response => {
+    console.log(
+      `API Response [${response.config.headers['X-Correlation-ID']}]`,
+      response.data,
+    );
+    return response;
+  },
   (error: AxiosError) => {
     // Ignore cancelled requests
     if (error.code === AxiosError.ERR_CANCELED) {
@@ -87,10 +105,13 @@ axios.interceptors.response.use(
     }
 
     if (error.response) {
-      const { status, data } = error.response;
+      const { status, data, config } = error.response;
       const apiError = data as ApiErrorResponse;
 
-      console.error(`API Error: ${status} ${apiError.detail}`, apiError);
+      console.error(
+        `API Error [${config.headers['X-Correlation-ID']}]: ${status} ${apiError.detail}`,
+        apiError,
+      );
 
       let failResult: FailResultBase;
 
