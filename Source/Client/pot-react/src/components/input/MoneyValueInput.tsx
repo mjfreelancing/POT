@@ -33,18 +33,24 @@ function MoneyValueInput({
   onKeyDown,
   ...props
 }: MoneyValueInputProps) {
+  const [isUserInput, setIsUserInput] = useState(false);
+
   const [displayValue, setDisplayValue] = useState(() =>
     isNumber(value) ? value.toFixed(2) : undefined,
   );
 
   useEffect(() => {
-    if (isNumber(value)) {
-      console.info('MoneyValueInput value update:', { value });
+    // Only update the display value from the external value prop
+    //  when it's not being edited by the user
+    if (isNumber(value) && !isUserInput) {
       setDisplayValue(value.toFixed(2));
     }
-  }, [value]);
+  }, [isUserInput, value]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Flag the user is typing
+    setIsUserInput(true);
+
     const newValue = e.target.value;
     const isIncompleteValue =
       newValue === '' || newValue === '-' || newValue === '.';
@@ -63,16 +69,20 @@ function MoneyValueInput({
   };
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    if (!displayValue || displayValue === '-') {
-      setDisplayValue('');
-    } else {
+    // Flag the user is no longer typing
+    setIsUserInput(false);
+
+    let value = '';
+
+    if (displayValue && displayValue !== '-') {
       const numValue = parseFloat(displayValue);
+
       if (!isNaN(numValue)) {
-        setDisplayValue(numValue.toFixed(2));
-      } else {
-        setDisplayValue('');
+        value = numValue.toFixed(2);
       }
     }
+
+    setDisplayValue(value);
     onBlur?.(e);
   };
 
