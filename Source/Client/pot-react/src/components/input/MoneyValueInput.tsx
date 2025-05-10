@@ -4,12 +4,12 @@ import { isNumber } from '@/lib/utils';
 
 import { Input } from '../ui/input';
 
-// Th onChange event will pass a number value rather than a string (or undefined)
-type MoneyValueInputElement = Omit<HTMLInputElement, 'value'> & {
+// The onChange event will pass a number value rather than a string (or undefined)
+export type MoneyValueInputElement = Omit<HTMLInputElement, 'value'> & {
   value: number | undefined;
 };
 
-type MoneyValueChangeEvent = Omit<
+export type MoneyValueChangeEvent = Omit<
   React.ChangeEvent<HTMLInputElement>,
   'target'
 > & {
@@ -35,8 +35,10 @@ function MoneyValueInput({
 }: MoneyValueInputProps) {
   const [isUserInput, setIsUserInput] = useState(false);
 
+  // Initialize with empty string rather than undefined
+  // to avoid uncontrolled->controlled warnings in tests
   const [displayValue, setDisplayValue] = useState(() =>
-    isNumber(value) ? value.toFixed(2) : undefined,
+    isNumber(value) ? value.toFixed(2) : '',
   );
 
   useEffect(() => {
