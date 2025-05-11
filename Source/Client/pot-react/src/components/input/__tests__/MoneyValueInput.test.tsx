@@ -37,7 +37,6 @@ describe('MoneyValueInput', () => {
     additionalProps = {},
   ) => {
     const Component = () => {
-      // Use string state to properly handle incomplete values like '.'
       const [value, setValue] = React.useState(initialValue);
 
       const handleChange = (e: MoneyValueChangeEvent) => {
@@ -190,12 +189,6 @@ describe('MoneyValueInput', () => {
     );
   });
 
-  /*
-   *
-   *
-   *
-   */
-
   it('allows leading decimal point while typing', async () => {
     const user = userEvent.setup();
 
@@ -212,23 +205,19 @@ describe('MoneyValueInput', () => {
   });
 
   /*
-   *
-   *
-   *
+   *******************************************************************
+   *******************************************************************
+   *******************************************************************
    */
 
-  it('treats a single decimal point as 0.00 on blur', async () => {
+  it('treats a single decimal point as 0.00 on tab', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
 
-    const Component = createControlledMoneyValueInput();
+    const Component = createControlledMoneyValueInput('', onChange);
     render(<Component />);
 
-    const input = screen.getByRole('textbox');
-
-    await act(async () => {
-      await user.click(input);
-    });
+    const input = screen.getByRole('textbox') as HTMLInputElement;
 
     await act(async () => {
       await user.type(input, '.');
@@ -237,21 +226,18 @@ describe('MoneyValueInput', () => {
     expect(input).toHaveValue('.');
 
     await act(async () => {
-      //fireEvent.blur(input);
-      user.tab();
+      await user.tab();
+      // fireEvent.blur(input);
     });
 
     expect(input).toHaveValue('0.00');
-
-    expect(onChange).toHaveBeenCalledWith(
-      createMoneyValueEvent('.', undefined),
-    );
+    expect(onChange).toHaveBeenCalledWith(createMoneyValueEvent('0.00', 0.0));
   });
 
   /*
-   *
-   *
-   *
+   *******************************************************************
+   *******************************************************************
+   *******************************************************************
    */
 
   it('blocks additional decimal points', async () => {
@@ -301,17 +287,30 @@ describe('MoneyValueInput', () => {
   });
 
   it('formats empty string to 0.00 on blur', async () => {
+    console.log(
+      '******************************* START *******************************',
+    );
+
     const user = userEvent.setup();
+
     const Component = createControlledMoneyValueInput();
     render(<Component />);
+
     const input = screen.getByRole('textbox');
 
     await act(async () => {
       await user.click(input);
     });
+
     await act(async () => {
       fireEvent.blur(input);
     });
+
+    console.log(
+      '*******************************',
+      (input as HTMLInputElement).value,
+    );
+
     expect(input).toHaveValue('0.00');
   });
 
@@ -862,5 +861,103 @@ describe('MoneyValueInput', () => {
     });
     expect(input).toHaveValue('123.45');
     expect(onChange).not.toHaveBeenCalled();
+  });
+
+  // Test for Scenario 1: Delete all text, tab out
+  it('formats empty input to 0.00 when deleting all text and tabbing out', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const Component = createControlledMoneyValueInput('123.45', onChange);
+    render(<Component />);
+
+    const input = screen.getByRole('textbox');
+
+    // Select all text and delete it
+    await act(async () => {
+      await user.clear(input);
+    });
+
+    // Verify input is empty after clearing
+    expect(input).toHaveValue('');
+
+    // Tab out
+    await act(async () => {
+      await user.tab();
+    });
+
+    // Should format to 0.00
+    expect(input).toHaveValue('0.00');
+    expect(onChange).toHaveBeenCalledWith(createMoneyValueEvent('0.00', 0));
+  });
+
+  // Test for Scenario 2: Select all text, press . then tab out
+  it('formats single decimal point to 0.00 when replacing content and tabbing out', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+
+    const Component = createControlledMoneyValueInput('123.45', onChange);
+    render(<Component />);
+
+    const input = screen.getByRole('textbox') as HTMLInputElement;
+
+    expect(input).toHaveValue('123.45');
+
+    await act(async () => {
+      await user.click(input);
+      input.select(); // could also use: await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('.');
+    });
+
+    expect(input).toHaveValue('.');
+
+    await act(async () => {
+      await user.tab();
+    });
+
+    expect(input).toHaveValue('0.00');
+    expect(onChange).toHaveBeenCalledWith(createMoneyValueEvent('0.00', 0));
+  });
+
+  it('formats just minus sign to 0.00 when replacing content and tabbing out', async () => {
+    console.log('Test starting: formats just minus sign to 0.00...');
+
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+
+    // Use the existing helper to create a controlled component
+    const Component = createControlledMoneyValueInput('123.45', onChange);
+    render(<Component />);
+
+    const input = screen.getByRole('textbox') as HTMLInputElement;
+
+    // Verify initial value
+    expect(input).toHaveValue('123.45');
+
+    // Simulate a real user: select all text and type minus
+    await act(async () => {
+      // First focus and select all text
+      await user.click(input);
+      await user.keyboard('{Control>}a{/Control}');
+
+      // Clear the onChange mock to focus on what happens after typing
+      onChange.mockClear();
+
+      // Type minus to replace selected text
+      await user.keyboard('-');
+    });
+
+    // Verify the input now has just the minus sign
+    expect(input).toHaveValue('-');
+
+    // Tab out - this is what triggers the formatting in real use
+    await act(async () => {
+      await user.tab();
+    });
+
+    // Verify the value is correctly formatted
+    expect(input).toHaveValue('0.00');
+
+    // Verify the right onChange event was fired
+    expect(onChange).toHaveBeenCalledWith(createMoneyValueEvent('0.00', 0));
   });
 });

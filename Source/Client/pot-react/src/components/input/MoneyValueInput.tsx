@@ -27,15 +27,32 @@ type MoneyValueInputProps = Omit<
   onChange?: (event: MoneyValueChangeEvent) => void;
 };
 
-// Helper function to safely parse numeric strings and numbers to a numeric value
+const isIncompleteValue = (value: string) =>
+  value === '' || value === '.' || value === '-';
+
+const formatDisplayValue = (value: string | number | undefined): string => {
+  const numericalValue = parseNumericValue(value);
+  return numericalValue !== undefined ? numericalValue.toFixed(2) : '';
+};
+
+// Helper function to safely parse numeric strings and numbers to a numeric value.
+// Anything that can't be parsed to a number (including dot and minus) will return undefined.
 const parseNumericValue = (
   value: string | number | undefined,
 ): number | undefined => {
-  if (value === undefined || value === '') return undefined;
-  if (typeof value === 'number') return value;
+  if (value === undefined) {
+    return undefined;
+  }
 
-  // Try to convert string to number
-  const parsedValue = parseFloat(value);
+  if (typeof value === 'string' && isIncompleteValue(value)) {
+    return undefined;
+  }
+
+  if (isNumber(value)) {
+    return value;
+  }
+
+  const parsedValue = parseFloat(value as string);
   return isNaN(parsedValue) ? undefined : parsedValue;
 };
 
@@ -48,22 +65,20 @@ function MoneyValueInput({
 }: MoneyValueInputProps) {
   const [isUserInput, setIsUserInput] = useState(false);
 
-  // Initialize with empty string rather than undefined
-  // to avoid uncontrolled->controlled warnings in tests
   const [displayValue, setDisplayValue] = useState(() => {
-    const numericValue = parseNumericValue(value);
-    return numericValue !== undefined ? numericValue.toFixed(2) : '';
+    // Initialize with empty string rather than undefined to avoid uncontrolled->controlled warnings in tests
+    return formatDisplayValue(value);
   });
 
   useEffect(() => {
-    // Only update the display value from the external value prop
-    //  when it's not being edited by the user
-    if (!isUserInput) {
-      const numericValue = parseNumericValue(value);
-      setDisplayValue(
-        numericValue !== undefined ? numericValue.toFixed(2) : '',
-      );
+    // Only update the display value from the external value prop when it's not being edited by the user.
+    if (isUserInput) {
+      return;
     }
+
+    const formattedValue = formatDisplayValue(value);
+
+    setDisplayValue(formattedValue);
   }, [isUserInput, value]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,40 +86,32 @@ function MoneyValueInput({
     setIsUserInput(true);
 
     const newValue = e.target.value;
-    const isIncompleteValue =
-      newValue === '' || newValue === '-' || newValue === '.';
 
-    // Only allow valid decimal number formats (including leading decimals like .123)
-    if (isIncompleteValue || /^-?\d*\.?\d*$/.test(newValue)) {
-      setDisplayValue(newValue);
+    // Always update displayValue to ensure controlled input shows what the user typed
+    setDisplayValue(newValue);
 
-      const numericValue = isIncompleteValue ? undefined : Number(newValue);
-
-      onChange?.({
-        ...e,
-        target: {
-          ...e.target,
-          number: numericValue,
-        },
-      } as MoneyValueChangeEvent);
-    }
+    onChange?.({
+      ...e,
+      target: {
+        ...e.target,
+        number: parseNumericValue(newValue),
+      },
+    } as MoneyValueChangeEvent);
   };
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    // Flag the user is no longer typing
+    // Flag the user is no longer typing. Will result in the display value being updated
     setIsUserInput(false);
 
-    let value = '0.00';
+    onChange?.({
+      ...e,
+      target: {
+        ...e.target,
+        number: parseNumericValue(displayValue),
+      },
+    } as MoneyValueChangeEvent);
 
-    if (displayValue && displayValue !== '-' && displayValue !== '.') {
-      const numValue = parseFloat(displayValue);
-
-      if (!isNaN(numValue)) {
-        value = numValue.toFixed(2);
-      }
-    }
-
-    setDisplayValue(value);
+    // Call the original onBlur handler
     onBlur?.(e);
   };
 
@@ -172,7 +179,7 @@ function MoneyValueInput({
 
   return (
     // Tried using type="number" but it is inconsistent across browsers and it's impossible to detect "--"
-    // being entered because when the input is "-", the value of e.currentTarget.value is "". Force to
+    // being entered because when the input is "-", the value of e.currentTarget.value is "". Forced to
     // use type="text" and handle the formatting / validation internally.
     <Input
       {...props}
