@@ -6,6 +6,23 @@ import { describe, expect, it, vi } from 'vitest';
 
 import MoneyValueInput, { MoneyValueChangeEvent } from '../MoneyValueInput';
 
+/**
+ * Creates an expectation matcher for MoneyValueInput onChange events.
+ * This helper simplifies assertions by checking both the string value
+ * and numeric representation in the event's target.
+ */
+const createMoneyValueEvent = (
+  stringValue: string,
+  numericValue: number | undefined,
+) => {
+  return expect.objectContaining({
+    target: expect.objectContaining({
+      value: stringValue,
+      number: numericValue,
+    }),
+  });
+};
+
 describe('MoneyValueInput', () => {
   /**
    * Creates a wrapper component that provides controlled component behavior for testing
@@ -14,17 +31,18 @@ describe('MoneyValueInput', () => {
    * 2. We need to correctly capture onChange events for assertions
    * 3. It ensures consistent handling of the component's value prop across tests
    */
-  const createControlledComponent = (
+  const createControlledMoneyValueInput = (
     initialValue: string | number = '',
     onChange = vi.fn(),
     additionalProps = {},
   ) => {
     const Component = () => {
+      // Use string state to properly handle incomplete values like '.'
       const [value, setValue] = React.useState(initialValue);
 
       const handleChange = (e: MoneyValueChangeEvent) => {
         onChange(e);
-        setValue(e.target.value !== undefined ? e.target.value : '');
+        setValue(e.target.value);
       };
 
       return (
@@ -39,23 +57,31 @@ describe('MoneyValueInput', () => {
     return Component;
   };
 
-  it('renders with initial value', () => {
-    render(<MoneyValueInput value={123.45} />);
-    expect(screen.getByRole('textbox')).toHaveValue('123.45');
+  it('renders empty when no initial value', () => {
+    render(<MoneyValueInput />);
+    expect(screen.getByRole('textbox')).toHaveValue('');
   });
 
-  it('renders empty when no initial value', () => {
+  it('renders empty when initial empty string', () => {
     render(<MoneyValueInput value="" />);
     expect(screen.getByRole('textbox')).toHaveValue('');
   });
 
-  // The allows typing valid numbers test can now use createControlledComponent directly
+  it('renders with initial value as number', () => {
+    render(<MoneyValueInput value={123.45} />);
+    expect(screen.getByRole('textbox')).toHaveValue('123.45');
+  });
+
+  it('renders with initial value as string', () => {
+    render(<MoneyValueInput value="123.45" />);
+    expect(screen.getByRole('textbox')).toHaveValue('123.45');
+  });
+
   it('allows typing valid numbers', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
 
-    // Use our standard helper instead of custom render
-    const Component = createControlledComponent('', onChange);
+    const Component = createControlledMoneyValueInput('', onChange);
     render(<Component />);
 
     const input = screen.getByRole('textbox');
@@ -66,20 +92,17 @@ describe('MoneyValueInput', () => {
 
     expect(input).toHaveValue('123.45');
 
-    // Verify the onChange handler receives numeric values, not strings
-    // This is a key feature of MoneyValueInput - converting string inputs to numbers
     expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({
-        target: expect.objectContaining({ value: 123.45 }),
-      }),
+      createMoneyValueEvent('123.45', 123.45),
     );
   });
 
-  // These validation-related tests each test ONE specific validation rule
   it('allows single minus at start', async () => {
     const user = userEvent.setup();
-    const Component = createControlledComponent();
+
+    const Component = createControlledMoneyValueInput();
     render(<Component />);
+
     const input = screen.getByRole('textbox');
 
     await act(async () => {
@@ -91,8 +114,10 @@ describe('MoneyValueInput', () => {
 
   it('blocks double minus at start', async () => {
     const user = userEvent.setup();
-    const Component = createControlledComponent();
+
+    const Component = createControlledMoneyValueInput();
     render(<Component />);
+
     const input = screen.getByRole('textbox');
 
     await act(async () => {
@@ -104,8 +129,10 @@ describe('MoneyValueInput', () => {
 
   it('blocks minus in middle of number', async () => {
     const user = userEvent.setup();
-    const Component = createControlledComponent();
+
+    const Component = createControlledMoneyValueInput();
     render(<Component />);
+
     const input = screen.getByRole('textbox');
 
     await act(async () => {
@@ -117,8 +144,10 @@ describe('MoneyValueInput', () => {
 
   it('blocks minus at end of number', async () => {
     const user = userEvent.setup();
-    const Component = createControlledComponent();
+
+    const Component = createControlledMoneyValueInput();
     render(<Component />);
+
     const input = screen.getByRole('textbox');
 
     await act(async () => {
@@ -128,11 +157,28 @@ describe('MoneyValueInput', () => {
     expect(input).toHaveValue('123.45');
   });
 
+  it('allows minus at start of number and ignores subsequent minus', async () => {
+    const user = userEvent.setup();
+
+    const Component = createControlledMoneyValueInput();
+    render(<Component />);
+
+    const input = screen.getByRole('textbox');
+
+    await act(async () => {
+      await user.type(input, '-12-3.45-');
+    });
+
+    expect(input).toHaveValue('-123.45');
+  });
+
   it('triggers onChange with correct negative value', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
-    const Component = createControlledComponent('', onChange);
+
+    const Component = createControlledMoneyValueInput('', onChange);
     render(<Component />);
+
     const input = screen.getByRole('textbox');
 
     await act(async () => {
@@ -140,15 +186,77 @@ describe('MoneyValueInput', () => {
     });
 
     expect(onChange).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        target: expect.objectContaining({ value: -123.45 }),
-      }),
+      createMoneyValueEvent('-123.45', -123.45),
     );
   });
 
+  /*
+   *
+   *
+   *
+   */
+
+  it('allows leading decimal point while typing', async () => {
+    const user = userEvent.setup();
+
+    const Component = createControlledMoneyValueInput();
+    render(<Component />);
+
+    const input = screen.getByRole('textbox');
+
+    await act(async () => {
+      await user.type(input, '.');
+    });
+
+    expect(input).toHaveValue('.');
+  });
+
+  /*
+   *
+   *
+   *
+   */
+
+  it('treats a single decimal point as 0.00 on blur', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+
+    const Component = createControlledMoneyValueInput();
+    render(<Component />);
+
+    const input = screen.getByRole('textbox');
+
+    await act(async () => {
+      await user.click(input);
+    });
+
+    await act(async () => {
+      await user.type(input, '.');
+    });
+
+    expect(input).toHaveValue('.');
+
+    await act(async () => {
+      //fireEvent.blur(input);
+      user.tab();
+    });
+
+    expect(input).toHaveValue('0.00');
+
+    expect(onChange).toHaveBeenCalledWith(
+      createMoneyValueEvent('.', undefined),
+    );
+  });
+
+  /*
+   *
+   *
+   *
+   */
+
   it('blocks additional decimal points', async () => {
     const user = userEvent.setup();
-    const Component = createControlledComponent();
+    const Component = createControlledMoneyValueInput();
     render(<Component />);
     const input = screen.getByRole('textbox');
 
@@ -161,7 +269,7 @@ describe('MoneyValueInput', () => {
 
   it('allows numbers after decimal point', async () => {
     const user = userEvent.setup();
-    const Component = createControlledComponent();
+    const Component = createControlledMoneyValueInput();
     render(<Component />);
     const input = screen.getByRole('textbox');
 
@@ -175,38 +283,26 @@ describe('MoneyValueInput', () => {
     expect(input).toHaveValue('123.4567');
   });
 
-  it('allows leading decimal point while typing', async () => {
-    const user = userEvent.setup();
-    const Component = createControlledComponent();
-    render(<Component />);
-    const input = screen.getByRole('textbox');
-
-    await act(async () => {
-      await user.type(input, '.');
-    });
-
-    expect(input).toHaveValue('.');
-  });
-
   it('formats leading decimal on blur', async () => {
     const user = userEvent.setup();
-    const Component = createControlledComponent();
+    const Component = createControlledMoneyValueInput();
     render(<Component />);
     const input = screen.getByRole('textbox');
 
     await act(async () => {
       await user.type(input, '.5');
     });
+
     await act(async () => {
-      await user.tab(); // Wrapping tab in act() to handle state updates
+      await user.tab();
     });
+
     expect(input).toHaveValue('0.50');
   });
 
-  // Replace the one large test with multiple focused tests
   it('formats empty string to 0.00 on blur', async () => {
     const user = userEvent.setup();
-    const Component = createControlledComponent();
+    const Component = createControlledMoneyValueInput();
     render(<Component />);
     const input = screen.getByRole('textbox');
 
@@ -221,7 +317,7 @@ describe('MoneyValueInput', () => {
 
   it('appends .00 to whole numbers on blur', async () => {
     const user = userEvent.setup();
-    const Component = createControlledComponent();
+    const Component = createControlledMoneyValueInput();
     render(<Component />);
     const input = screen.getByRole('textbox');
 
@@ -236,7 +332,7 @@ describe('MoneyValueInput', () => {
 
   it('adds trailing zero to single decimal on blur', async () => {
     const user = userEvent.setup();
-    const Component = createControlledComponent();
+    const Component = createControlledMoneyValueInput();
     render(<Component />);
     const input = screen.getByRole('textbox');
 
@@ -251,7 +347,7 @@ describe('MoneyValueInput', () => {
 
   it('rounds values properly on blur', async () => {
     const user = userEvent.setup();
-    const Component = createControlledComponent();
+    const Component = createControlledMoneyValueInput();
     render(<Component />);
     const input = screen.getByRole('textbox');
 
@@ -278,7 +374,7 @@ describe('MoneyValueInput', () => {
           onBlur={onBlur}
           onChange={(e: MoneyValueChangeEvent) => {
             setValue(
-              e.target.value !== undefined ? String(e.target.value) : '',
+              e.target.number !== undefined ? String(e.target.number) : '',
             );
           }}
         />
@@ -303,7 +399,7 @@ describe('MoneyValueInput', () => {
 
   it('blocks invalid key presses', async () => {
     const user = userEvent.setup();
-    const Component = createControlledComponent();
+    const Component = createControlledMoneyValueInput();
     render(<Component />);
     const input = screen.getByRole('textbox');
 
@@ -322,7 +418,8 @@ describe('MoneyValueInput', () => {
       const [value, setValue] = React.useState(123.45);
 
       const handleChange = (e: MoneyValueChangeEvent) => {
-        setValue(e.target.value as number);
+        // Use the number property instead of value
+        setValue(e.target.number as number);
       };
 
       return <MoneyValueInput value={value} onChange={handleChange} />;
@@ -359,7 +456,7 @@ describe('MoneyValueInput', () => {
   it('handles empty string with undefined onChange value', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
-    const Component = createControlledComponent('', onChange);
+    const Component = createControlledMoneyValueInput('', onChange);
     render(<Component />);
     const input = screen.getByRole('textbox');
 
@@ -370,9 +467,7 @@ describe('MoneyValueInput', () => {
       await user.clear(input); // Wrap in act() since clear triggers state update
     });
     expect(onChange).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        target: expect.objectContaining({ value: undefined }),
-      }),
+      createMoneyValueEvent('', undefined),
     );
   });
 
@@ -400,7 +495,7 @@ describe('MoneyValueInput', () => {
 
   it('handles paste of invalid content', async () => {
     const onChange = vi.fn();
-    const Component = createControlledComponent('', onChange);
+    const Component = createControlledMoneyValueInput('', onChange);
     render(<Component />);
     const input = screen.getByRole('textbox');
 
@@ -418,7 +513,7 @@ describe('MoneyValueInput', () => {
 
   it('handles paste of valid number content', async () => {
     const onChange = vi.fn();
-    const Component = createControlledComponent('', onChange);
+    const Component = createControlledMoneyValueInput('', onChange);
     render(<Component />);
     const input = screen.getByRole('textbox');
 
@@ -439,14 +534,17 @@ describe('MoneyValueInput', () => {
     expect(input).toHaveValue('123.45');
     expect(onChange).toHaveBeenCalledWith(
       expect.objectContaining({
-        target: expect.objectContaining({ value: 123.45 }),
+        target: expect.objectContaining({
+          value: '123.45',
+          number: 123.45,
+        }),
       }),
     );
   });
 
   it('handles partial text selection and replacement', async () => {
     const onChange = vi.fn();
-    const Component = createControlledComponent('123.45', onChange);
+    const Component = createControlledMoneyValueInput('123.45', onChange);
     render(<Component />);
     const input = screen.getByRole('textbox');
 
@@ -463,7 +561,10 @@ describe('MoneyValueInput', () => {
     expect(input).toHaveValue('999.45');
     expect(onChange).toHaveBeenCalledWith(
       expect.objectContaining({
-        target: expect.objectContaining({ value: 999.45 }),
+        target: expect.objectContaining({
+          value: '999.45',
+          number: 999.45,
+        }),
       }),
     );
   });
@@ -471,7 +572,7 @@ describe('MoneyValueInput', () => {
   it('maintains empty state when deleting empty content', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
-    const Component = createControlledComponent('', onChange);
+    const Component = createControlledMoneyValueInput('', onChange);
     render(<Component />);
     const input = screen.getByRole('textbox');
 
@@ -493,7 +594,7 @@ describe('MoneyValueInput', () => {
   it('does not trigger onChange for incomplete values', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
-    const Component = createControlledComponent('', onChange);
+    const Component = createControlledMoneyValueInput('', onChange);
     render(<Component />);
     const input = screen.getByRole('textbox');
 
@@ -501,9 +602,7 @@ describe('MoneyValueInput', () => {
       await user.type(input, '-');
     });
     expect(onChange).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        target: expect.objectContaining({ value: undefined }),
-      }),
+      createMoneyValueEvent('-', undefined),
     );
 
     await act(async () => {
@@ -513,9 +612,7 @@ describe('MoneyValueInput', () => {
       await user.type(input, '.');
     });
     expect(onChange).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        target: expect.objectContaining({ value: undefined }),
-      }),
+      createMoneyValueEvent('.', undefined),
     );
   });
 
@@ -525,7 +622,7 @@ describe('MoneyValueInput', () => {
       const [value, setValue] = React.useState('');
 
       const handleChange = (e: MoneyValueChangeEvent) => {
-        setValue(e.target.value !== undefined ? String(e.target.value) : '');
+        setValue(e.target.number !== undefined ? String(e.target.number) : '');
       };
 
       return (
@@ -557,7 +654,7 @@ describe('MoneyValueInput', () => {
 
   it('allows Escape key to maintain focus', async () => {
     const user = userEvent.setup();
-    const Component = createControlledComponent('123.45');
+    const Component = createControlledMoneyValueInput('123.45');
     render(<Component />);
     const input = screen.getByRole('textbox');
 
@@ -569,7 +666,7 @@ describe('MoneyValueInput', () => {
 
   it('handles large numbers without scientific notation', async () => {
     const user = userEvent.setup();
-    const Component = createControlledComponent();
+    const Component = createControlledMoneyValueInput();
     render(<Component />);
     const input = screen.getByRole('textbox');
 
@@ -582,7 +679,7 @@ describe('MoneyValueInput', () => {
 
   it('truncates long decimal numbers on paste', async () => {
     const onChange = vi.fn();
-    const Component = createControlledComponent('', onChange);
+    const Component = createControlledMoneyValueInput('', onChange);
     render(<Component />);
     const input = screen.getByRole('textbox');
 
@@ -605,15 +702,77 @@ describe('MoneyValueInput', () => {
     expect(input).toHaveValue('123.46');
     expect(onChange).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        target: expect.objectContaining({ value: 123.456789 }),
+        target: expect.objectContaining({
+          value: '123.456789',
+          number: 123.456789,
+        }),
       }),
+    );
+  });
+
+  // Add specific tests for number and value property relationship
+  it('provides both string value and number properties in onChange event', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const Component = createControlledMoneyValueInput('', onChange);
+    render(<Component />);
+    const input = screen.getByRole('textbox');
+
+    // Test for positive numbers
+    await act(async () => {
+      await user.type(input, '42.25');
+    });
+
+    expect(onChange).toHaveBeenLastCalledWith(
+      createMoneyValueEvent('42.25', 42.25),
+    );
+
+    // Clear and test for negative numbers
+    await act(async () => {
+      await user.clear(input);
+    });
+    await act(async () => {
+      await user.type(input, '-17.5');
+    });
+
+    expect(onChange).toHaveBeenLastCalledWith(
+      createMoneyValueEvent('-17.5', -17.5),
+    );
+  });
+
+  it('provides undefined number property for incomplete numeric inputs', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const Component = createControlledMoneyValueInput('', onChange);
+    render(<Component />);
+    const input = screen.getByRole('textbox');
+
+    // Test for incomplete inputs: minus sign
+    await act(async () => {
+      await user.type(input, '-');
+    });
+
+    expect(onChange).toHaveBeenLastCalledWith(
+      createMoneyValueEvent('-', undefined),
+    );
+
+    // Clear and test for incomplete inputs: decimal point only
+    await act(async () => {
+      await user.clear(input);
+    });
+    await act(async () => {
+      await user.type(input, '.');
+    });
+
+    expect(onChange).toHaveBeenLastCalledWith(
+      createMoneyValueEvent('.', undefined),
     );
   });
 
   it('filters out non-numeric characters while typing', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
-    const Component = createControlledComponent('', onChange);
+    const Component = createControlledMoneyValueInput('', onChange);
     render(<Component />);
     const input = screen.getByRole('textbox');
 
@@ -624,7 +783,10 @@ describe('MoneyValueInput', () => {
     expect(input).toHaveValue('1234.56');
     expect(onChange).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        target: expect.objectContaining({ value: 1234.56 }),
+        target: expect.objectContaining({
+          value: '1234.56',
+          number: 1234.56,
+        }),
       }),
     );
   });
@@ -637,7 +799,7 @@ describe('MoneyValueInput', () => {
       const [value, setValue] = React.useState(123.45);
 
       const handleChange = (e: MoneyValueChangeEvent) => {
-        setValue(e.target.value as number);
+        setValue(e.target.number as number);
       };
 
       return <MoneyValueInput value={value} onChange={handleChange} />;
@@ -656,7 +818,7 @@ describe('MoneyValueInput', () => {
 
   it('handles paste at cursor position', async () => {
     const onChange = vi.fn();
-    const Component = createControlledComponent('123.45', onChange);
+    const Component = createControlledMoneyValueInput('123.45', onChange);
     render(<Component />);
     const input = screen.getByRole('textbox') as HTMLInputElement;
 
@@ -677,7 +839,10 @@ describe('MoneyValueInput', () => {
     expect(input).toHaveValue('12993.45');
     expect(onChange).toHaveBeenCalledWith(
       expect.objectContaining({
-        target: expect.objectContaining({ value: 12993.45 }),
+        target: expect.objectContaining({
+          value: '12993.45',
+          number: 12993.45,
+        }),
       }),
     );
   });

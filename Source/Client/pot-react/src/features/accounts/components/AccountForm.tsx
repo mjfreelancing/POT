@@ -1,6 +1,8 @@
 import { UseFormReturn } from 'react-hook-form';
 
-import MoneyValueInput from '@/components/input/MoneyValueInput';
+import MoneyValueInput, {
+  MoneyValueChangeEvent,
+} from '@/components/input/MoneyValueInput';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -112,11 +114,15 @@ export const AccountForm = ({
           <FormItem className="space-y-1">
             <FormLabel htmlFor="balance-input">Balance</FormLabel>
             <FormControl>
+              {/* Getting the numerical value from e.target.number since the 'value' is a string */}
               <MoneyValueInput
                 {...field}
                 id="balance-input"
                 placeholder="Enter the Account balance"
                 aria-description="Current account balance"
+                onChange={(e: MoneyValueChangeEvent) => {
+                  field.onChange(e.target.number);
+                }}
               />
             </FormControl>
             <FormMessage />
@@ -130,11 +136,15 @@ export const AccountForm = ({
           <FormItem className="space-y-1">
             <FormLabel htmlFor="reserved-input">Reserved</FormLabel>
             <FormControl>
+              {/* Getting the numerical value from e.target.number since the 'value' is a string */}
               <MoneyValueInput
                 {...field}
                 id="reserved-input"
                 placeholder="Enter the reserved amount"
                 aria-description="Amount reserved for unexpected expenses"
+                onChange={(e: MoneyValueChangeEvent) => {
+                  field.onChange(e.target.number);
+                }}
               />
             </FormControl>
             <FormMessage />

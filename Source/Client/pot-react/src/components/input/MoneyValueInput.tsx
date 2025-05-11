@@ -4,9 +4,9 @@ import { isNumber } from '@/lib/utils';
 
 import { Input } from '../ui/input';
 
-// The onChange event will pass a number value rather than a string (or undefined)
-export type MoneyValueInputElement = Omit<HTMLInputElement, 'value'> & {
-  value: number | undefined;
+// The onChange event will pass both the original string value and a parsed number value
+export type MoneyValueInputElement = HTMLInputElement & {
+  number: number | undefined;
 };
 
 export type MoneyValueChangeEvent = Omit<
@@ -18,12 +18,25 @@ export type MoneyValueChangeEvent = Omit<
 
 // 'type' and 'inputMode' are defined internally
 // 'min' and 'max' are not supported - caller can use custom validation
-// 'onChange' is overridden to pass a number value rather than a string (or undefined)
+// 'onChange' is overridden to pass both string and number values
 type MoneyValueInputProps = Omit<
   ComponentPropsWithoutRef<typeof Input>,
-  'type' | 'inputMode' | 'min' | 'max' | 'onChange'
+  'type' | 'inputMode' | 'min' | 'max' | 'onChange' | 'value'
 > & {
+  value?: string | number | undefined;
   onChange?: (event: MoneyValueChangeEvent) => void;
+};
+
+// Helper function to safely parse numeric strings and numbers to a numeric value
+const parseNumericValue = (
+  value: string | number | undefined,
+): number | undefined => {
+  if (value === undefined || value === '') return undefined;
+  if (typeof value === 'number') return value;
+
+  // Try to convert string to number
+  const parsedValue = parseFloat(value);
+  return isNaN(parsedValue) ? undefined : parsedValue;
 };
 
 function MoneyValueInput({
@@ -37,15 +50,19 @@ function MoneyValueInput({
 
   // Initialize with empty string rather than undefined
   // to avoid uncontrolled->controlled warnings in tests
-  const [displayValue, setDisplayValue] = useState(() =>
-    isNumber(value) ? value.toFixed(2) : '',
-  );
+  const [displayValue, setDisplayValue] = useState(() => {
+    const numericValue = parseNumericValue(value);
+    return numericValue !== undefined ? numericValue.toFixed(2) : '';
+  });
 
   useEffect(() => {
     // Only update the display value from the external value prop
     //  when it's not being edited by the user
-    if (isNumber(value) && !isUserInput) {
-      setDisplayValue(value.toFixed(2));
+    if (!isUserInput) {
+      const numericValue = parseNumericValue(value);
+      setDisplayValue(
+        numericValue !== undefined ? numericValue.toFixed(2) : '',
+      );
     }
   }, [isUserInput, value]);
 
@@ -65,7 +82,10 @@ function MoneyValueInput({
 
       onChange?.({
         ...e,
-        target: { ...e.target, value: numericValue },
+        target: {
+          ...e.target,
+          number: numericValue,
+        },
       } as MoneyValueChangeEvent);
     }
   };
@@ -74,9 +94,9 @@ function MoneyValueInput({
     // Flag the user is no longer typing
     setIsUserInput(false);
 
-    let value = '0.00'; // Default to 0.00 for empty strings
+    let value = '0.00';
 
-    if (displayValue && displayValue !== '-') {
+    if (displayValue && displayValue !== '-' && displayValue !== '.') {
       const numValue = parseFloat(displayValue);
 
       if (!isNaN(numValue)) {
