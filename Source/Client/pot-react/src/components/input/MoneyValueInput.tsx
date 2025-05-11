@@ -100,18 +100,27 @@ function MoneyValueInput({
   };
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    // Flag the user is no longer typing. Will result in the display value being updated
+    // Flag the user is no longer typing
     setIsUserInput(false);
 
-    onChange?.({
-      ...e,
-      target: {
-        ...e.target,
-        number: parseNumericValue(displayValue),
-      },
-    } as MoneyValueChangeEvent);
+    const isIncomplete = isIncompleteValue(displayValue);
+    const valueStr = isIncomplete ? '0.00' : displayValue;
 
-    // Call the original onBlur handler
+    // This will update the 'value' prop asynchronously after the blur event due to value={displayValue}
+    setDisplayValue(valueStr);
+
+    // Only call onChange if formatting adjusted the value
+    if (valueStr !== displayValue) {
+      onChange?.({
+        ...e,
+        target: {
+          ...e.target,
+          value: valueStr,
+          number: parseNumericValue(valueStr),
+        },
+      } as MoneyValueChangeEvent);
+    }
+
     onBlur?.(e);
   };
 
