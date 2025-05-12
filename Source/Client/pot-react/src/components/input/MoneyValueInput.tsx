@@ -40,19 +40,15 @@ const formatDisplayValue = (value: string | number | undefined): string => {
 const parseNumericValue = (
   value: string | number | undefined,
 ): number | undefined => {
-  if (value === undefined) {
-    return undefined;
-  }
-
-  if (typeof value === 'string' && isIncompleteValue(value)) {
-    return undefined;
-  }
-
   if (isNumber(value)) {
     return value;
   }
 
-  const parsedValue = parseFloat(value as string);
+  if (value === undefined || isIncompleteValue(value)) {
+    return undefined;
+  }
+
+  const parsedValue = parseFloat(value);
   return isNaN(parsedValue) ? undefined : parsedValue;
 };
 
