@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
-import axios, { InternalAxiosRequestConfig } from 'axios';
+import axios from 'axios';
 import React, { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -18,16 +18,6 @@ import { useDelete, useGet, usePost, usePut } from '../useApi';
 
 // Mock axios instead of using vitest-mock-axios
 vi.mock('axios');
-
-// Mock the apiHelpers module
-vi.mock('../apiHelpers', () => ({
-  addCorrelationId: (config: InternalAxiosRequestConfig) => {
-    config.headers = config.headers || {};
-    config.headers['X-Correlation-ID'] = 'test-correlation-id';
-    return config;
-  },
-  getNetworkError: () => new NetworkError('Network error (MOCKED)'),
-}));
 
 // Create a wrapper for the QueryClientProvider
 const createWrapper = () => {
@@ -75,6 +65,30 @@ const expectFailResult = <E extends FailResultBase>(
   }
 };
 
+const renderUseGetHook = <TResponse>(url: string, queryKey: string[]) => {
+  return renderHook(() => useGet<TResponse>(url, queryKey), {
+    wrapper: createWrapper(),
+  });
+};
+
+const renderUsePostHook = <TResponse, TData>(url: string) => {
+  return renderHook(() => usePost<TResponse, TData>(url), {
+    wrapper: createWrapper(),
+  });
+};
+
+const renderUsePutHook = <TResponse, TData>(url: string) => {
+  return renderHook(() => usePut<TResponse, TData>(url), {
+    wrapper: createWrapper(),
+  });
+};
+
+const renderUseDeleteHook = <TResponse>(url: string) => {
+  return renderHook(() => useDelete<TResponse>(url), {
+    wrapper: createWrapper(),
+  });
+};
+
 describe('useApi hooks', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -91,10 +105,9 @@ describe('useApi hooks', () => {
       // Mock axios.get to resolve with our test data
       vi.mocked(axios.get).mockResolvedValueOnce({ data: responseData });
 
-      const { result } = renderHook(
-        () => useGet<typeof responseData>('/test', ['test']),
-        { wrapper: createWrapper() },
-      );
+      const { result } = renderUseGetHook<typeof responseData>('/test', [
+        'test',
+      ]);
 
       expect(result.current.isLoading).toBe(true);
 
@@ -109,17 +122,12 @@ describe('useApi hooks', () => {
     });
 
     it('should handle network errors', async () => {
-      // Create a network error
-      // const networkError = new AxiosError('Network Error', 'ERR_NETWORK');
-
       // Mock axios.get to reject with a FailResult directly
       vi.mocked(axios.get).mockRejectedValueOnce(
         new FailResult(new NetworkError('Network error (MOCKED)')),
       );
 
-      const { result } = renderHook(() => useGet<unknown>('/test', ['test']), {
-        wrapper: createWrapper(),
-      });
+      const { result } = renderUseGetHook<unknown>('/test', ['test']);
 
       // Wait for the query to finish and data to be populated
       await waitFor(() => expect(result.current.data).toBeDefined());
@@ -136,9 +144,7 @@ describe('useApi hooks', () => {
         new FailResult(new NotFoundError('Resource not found')),
       );
 
-      const { result } = renderHook(() => useGet<unknown>('/test', ['test']), {
-        wrapper: createWrapper(),
-      });
+      const { result } = renderUseGetHook<unknown>('/test', ['test']);
 
       // Wait for the query to finish and data to be populated
       await waitFor(() => expect(result.current.data).toBeDefined());
@@ -154,9 +160,7 @@ describe('useApi hooks', () => {
         new FailResult(new ConflictError('A conflict occurred')),
       );
 
-      const { result } = renderHook(() => useGet<unknown>('/test', ['test']), {
-        wrapper: createWrapper(),
-      });
+      const { result } = renderUseGetHook<unknown>('/test', ['test']);
 
       await waitFor(() => expect(result.current.data).toBeDefined());
 
@@ -170,9 +174,7 @@ describe('useApi hooks', () => {
         new FailResult(new ValidationError('Validation failed')),
       );
 
-      const { result } = renderHook(() => useGet<unknown>('/test', ['test']), {
-        wrapper: createWrapper(),
-      });
+      const { result } = renderUseGetHook<unknown>('/test', ['test']);
 
       await waitFor(() => expect(result.current.data).toBeDefined());
 
@@ -186,9 +188,7 @@ describe('useApi hooks', () => {
         new FailResult(new UnexpectedError('Server error occurred')),
       );
 
-      const { result } = renderHook(() => useGet<unknown>('/test', ['test']), {
-        wrapper: createWrapper(),
-      });
+      const { result } = renderUseGetHook<unknown>('/test', ['test']);
 
       await waitFor(() => expect(result.current.data).toBeDefined());
 
@@ -205,10 +205,10 @@ describe('useApi hooks', () => {
       // Mock axios.post to resolve with our test data
       vi.mocked(axios.post).mockResolvedValueOnce({ data: responseData });
 
-      const { result } = renderHook(
-        () => usePost<typeof responseData, typeof requestData>('/test'),
-        { wrapper: createWrapper() },
-      );
+      const { result } = renderUsePostHook<
+        typeof responseData,
+        typeof requestData
+      >('/test');
 
       result.current.mutate({ data: requestData });
 
@@ -229,10 +229,7 @@ describe('useApi hooks', () => {
         new FailResult(new NetworkError('Network error (MOCKED)')),
       );
 
-      const { result } = renderHook(
-        () => usePost<unknown, { name: string }>('/test'),
-        { wrapper: createWrapper() },
-      );
+      const { result } = renderUsePostHook<unknown, { name: string }>('/test');
 
       result.current.mutate({ data: { name: 'Test' } });
 
@@ -252,16 +249,67 @@ describe('useApi hooks', () => {
         new FailResult(new ValidationError('Invalid data')),
       );
 
-      const { result } = renderHook(
-        () => usePost<unknown, { name: string }>('/test'),
-        { wrapper: createWrapper() },
-      );
+      const { result } = renderUsePostHook<unknown, { name: string }>('/test');
 
       result.current.mutate({ data: { name: 'Test' } });
 
       await waitFor(() => expect(result.current.data).toBeDefined());
 
       expectFailResult(result.current.data!, ValidationError);
+    });
+
+    it('should handle not found errors', async () => {
+      vi.mocked(axios.post).mockRejectedValueOnce(
+        new FailResult(new NotFoundError('Endpoint not found')),
+      );
+
+      const { result } = renderUsePostHook<unknown, { name: string }>('/test');
+
+      result.current.mutate({ data: { name: 'Test' } });
+
+      await waitFor(() => expect(result.current.data).toBeDefined());
+      expect(axios.post).toHaveBeenCalledWith(
+        '/test',
+        { name: 'Test' },
+        expect.anything(),
+      );
+      expectFailResult(result.current.data!, NotFoundError);
+    });
+
+    it('should handle conflict errors', async () => {
+      vi.mocked(axios.post).mockRejectedValueOnce(
+        new FailResult(new ConflictError('Resource conflict')),
+      );
+
+      const { result } = renderUsePostHook<unknown, { name: string }>('/test');
+
+      result.current.mutate({ data: { name: 'Test' } });
+
+      await waitFor(() => expect(result.current.data).toBeDefined());
+      expect(axios.post).toHaveBeenCalledWith(
+        '/test',
+        { name: 'Test' },
+        expect.anything(),
+      );
+      expectFailResult(result.current.data!, ConflictError);
+    });
+
+    it('should handle unexpected errors', async () => {
+      vi.mocked(axios.post).mockRejectedValueOnce(
+        new FailResult(new UnexpectedError('Unexpected server error')),
+      );
+
+      const { result } = renderUsePostHook<unknown, { name: string }>('/test');
+
+      result.current.mutate({ data: { name: 'Test' } });
+
+      await waitFor(() => expect(result.current.data).toBeDefined());
+      expect(axios.post).toHaveBeenCalledWith(
+        '/test',
+        { name: 'Test' },
+        expect.anything(),
+      );
+      expectFailResult(result.current.data!, UnexpectedError);
     });
   });
 
@@ -273,10 +321,10 @@ describe('useApi hooks', () => {
       // Mock axios.put to resolve with our test data
       vi.mocked(axios.put).mockResolvedValueOnce({ data: responseData });
 
-      const { result } = renderHook(
-        () => usePut<typeof responseData, typeof requestData>('/test/1'),
-        { wrapper: createWrapper() },
-      );
+      const { result } = renderUsePutHook<
+        typeof responseData,
+        typeof requestData
+      >('/test/1');
 
       // Trigger the mutation
       await act(async () => {
@@ -300,16 +348,100 @@ describe('useApi hooks', () => {
         new FailResult(new ConflictError('Resource already exists')),
       );
 
-      const { result } = renderHook(
-        () => usePut<unknown, { id: number; name: string }>('/test/1'),
-        { wrapper: createWrapper() },
-      );
+      const { result } = renderUsePutHook<
+        unknown,
+        { id: number; name: string }
+      >('/test/1');
 
       result.current.mutate({ data: { id: 1, name: 'Updated Item' } });
 
       await waitFor(() => expect(result.current.data).toBeDefined());
 
       expectFailResult(result.current.data!, ConflictError);
+    });
+
+    it('should handle network errors', async () => {
+      vi.mocked(axios.put).mockRejectedValueOnce(
+        new FailResult(new NetworkError('Network error (MOCKED)')),
+      );
+
+      const { result } = renderUsePutHook<
+        unknown,
+        { id: number; name: string }
+      >('/test/1');
+
+      result.current.mutate({ data: { id: 1, name: 'Updated Item' } });
+
+      await waitFor(() => expect(result.current.data).toBeDefined());
+      expect(axios.put).toHaveBeenCalledWith(
+        '/test/1',
+        { id: 1, name: 'Updated Item' },
+        expect.anything(),
+      );
+      expectFailResult(result.current.data!, NetworkError);
+    });
+
+    it('should handle not found errors', async () => {
+      vi.mocked(axios.put).mockRejectedValueOnce(
+        new FailResult(new NotFoundError('Resource not found')),
+      );
+
+      const { result } = renderUsePutHook<
+        unknown,
+        { id: number; name: string }
+      >('/test/1');
+
+      result.current.mutate({ data: { id: 1, name: 'Updated Item' } });
+
+      await waitFor(() => expect(result.current.data).toBeDefined());
+      expect(axios.put).toHaveBeenCalledWith(
+        '/test/1',
+        { id: 1, name: 'Updated Item' },
+        expect.anything(),
+      );
+      expectFailResult(result.current.data!, NotFoundError);
+    });
+
+    it('should handle validation errors', async () => {
+      vi.mocked(axios.put).mockRejectedValueOnce(
+        new FailResult(new ValidationError('Invalid data')),
+      );
+
+      const { result } = renderUsePutHook<
+        unknown,
+        { id: number; name: string }
+      >('/test/1');
+
+      result.current.mutate({ data: { id: 1, name: 'Updated Item' } });
+
+      await waitFor(() => expect(result.current.data).toBeDefined());
+      expect(axios.put).toHaveBeenCalledWith(
+        '/test/1',
+        { id: 1, name: 'Updated Item' },
+        expect.anything(),
+      );
+      expectFailResult(result.current.data!, ValidationError);
+    });
+
+    it('should handle unexpected errors', async () => {
+      vi.mocked(axios.put).mockRejectedValueOnce(
+        new FailResult(new UnexpectedError('Unexpected server error')),
+      );
+
+      const { result } = renderUsePutHook<
+        unknown,
+        { id: number; name: string }
+      >('/test/1');
+
+      result.current.mutate({ data: { id: 1, name: 'Updated Item' } });
+
+      await waitFor(() => expect(result.current.data).toBeDefined());
+      expect(axios.put).toHaveBeenCalledWith(
+        '/test/1',
+        { id: 1, name: 'Updated Item' },
+        expect.anything(),
+      );
+      expectFailResult(result.current.data!, UnexpectedError);
     });
   });
 
@@ -320,10 +452,7 @@ describe('useApi hooks', () => {
       // Mock axios.delete to resolve with our test data
       vi.mocked(axios.delete).mockResolvedValueOnce({ data: responseData });
 
-      const { result } = renderHook(
-        () => useDelete<typeof responseData>('/test/1'),
-        { wrapper: createWrapper() },
-      );
+      const { result } = renderUseDeleteHook<typeof responseData>('/test/1');
 
       await act(async () => {
         result.current.mutate({});
@@ -341,15 +470,72 @@ describe('useApi hooks', () => {
         new FailResult(new NotFoundError('Resource not found')),
       );
 
-      const { result } = renderHook(() => useDelete<unknown>('/test/999'), {
-        wrapper: createWrapper(),
-      });
+      const { result } = renderUseDeleteHook<unknown>('/test/999');
 
       result.current.mutate({});
 
       await waitFor(() => expect(result.current.data).toBeDefined());
 
       expectFailResult(result.current.data!, NotFoundError);
+    });
+
+    it('should handle network errors', async () => {
+      vi.mocked(axios.delete).mockRejectedValueOnce(
+        new FailResult(new NetworkError('Network error (MOCKED)')),
+      );
+
+      const { result } = renderUseDeleteHook<unknown>('/test/1');
+
+      result.current.mutate({});
+
+      await waitFor(() => expect(result.current.data).toBeDefined());
+      expect(axios.delete).toHaveBeenCalledWith('/test/1', expect.anything());
+      expectFailResult(result.current.data!, NetworkError);
+    });
+
+    it('should handle conflict errors', async () => {
+      vi.mocked(axios.delete).mockRejectedValueOnce(
+        new FailResult(
+          new ConflictError('Cannot delete resource due to conflict'),
+        ),
+      );
+
+      const { result } = renderUseDeleteHook<unknown>('/test/1');
+
+      result.current.mutate({});
+
+      await waitFor(() => expect(result.current.data).toBeDefined());
+      expect(axios.delete).toHaveBeenCalledWith('/test/1', expect.anything());
+      expectFailResult(result.current.data!, ConflictError);
+    });
+
+    it('should handle validation errors', async () => {
+      // This is less common for DELETE but included for completeness
+      vi.mocked(axios.delete).mockRejectedValueOnce(
+        new FailResult(new ValidationError('Invalid request for delete')),
+      );
+
+      const { result } = renderUseDeleteHook<unknown>('/test/1');
+
+      result.current.mutate({});
+
+      await waitFor(() => expect(result.current.data).toBeDefined());
+      expect(axios.delete).toHaveBeenCalledWith('/test/1', expect.anything());
+      expectFailResult(result.current.data!, ValidationError);
+    });
+
+    it('should handle unexpected errors', async () => {
+      vi.mocked(axios.delete).mockRejectedValueOnce(
+        new FailResult(new UnexpectedError('Unexpected server error')),
+      );
+
+      const { result } = renderUseDeleteHook<unknown>('/test/1');
+
+      result.current.mutate({});
+
+      await waitFor(() => expect(result.current.data).toBeDefined());
+      expect(axios.delete).toHaveBeenCalledWith('/test/1', expect.anything());
+      expectFailResult(result.current.data!, UnexpectedError);
     });
   });
 });
