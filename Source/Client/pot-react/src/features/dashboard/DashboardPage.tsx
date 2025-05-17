@@ -35,6 +35,10 @@ const columns: ColumnDef<Account>[] = [
 
 const DashboardPage = () => {
   const [error, setError] = useState<DisplayError | null>(null);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+
   const { data: result, isLoading } = useApiGetAllAccounts();
 
   useEffect(() => {
