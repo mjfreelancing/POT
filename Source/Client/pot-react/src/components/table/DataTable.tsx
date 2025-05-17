@@ -38,14 +38,32 @@ export const createMoneyValueColumn = <TData,>(
   cell: ({ row }) => formatCellMoneyValue(row, accessorKey),
 });
 
+/** Default highlight class for rows marked by `highlightRowFilter` */
+export const DEFAULT_HIGHLIGHT_ROW_CLASS = 'bg-blue-100 dark:bg-blue-900';
+
+/**
+ * Props for the `DataTable` component.
+ *
+ * @template TData - The type of the data objects in the table.
+ * @template TValue - The type of the value for each column.
+ *
+ * @property columns - An array of column definitions describing how to render and access data for each column.
+ * @property data - The array of data objects to display in the table.
+ * @property [highlightRowFilter] - Optional function to determine if a row should be highlighted. Receives a row object and returns a boolean.
+ * @property [highlightClassName] - Optional Tailwind CSS class(es) to apply to rows that match the `highlightRowFilter`.
+ */
 type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  highlightRowFilter?: (row: Row<TData>) => boolean;
+  highlightClassName?: string;
 };
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  highlightRowFilter,
+  highlightClassName = DEFAULT_HIGHLIGHT_ROW_CLASS,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -79,7 +97,10 @@ export function DataTable<TData, TValue>({
             table.getRowModel().rows.map(row => (
               <TableRow
                 key={row.id}
-                data-state={row.getIsSelected() && 'selected'}
+                data-state={row.getIsSelected() ? 'selected' : undefined}
+                className={
+                  highlightRowFilter?.(row) ? highlightClassName : undefined
+                }
               >
                 {row.getVisibleCells().map(cell => (
                   <TableCell key={cell.id}>

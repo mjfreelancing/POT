@@ -1,6 +1,6 @@
 import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Outlet, useNavigate } from 'react-router';
+import { Outlet, useNavigate, useParams } from 'react-router';
 
 import { useApiGetAllAccounts } from '@/api/accounts/hooks/useAccounts';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
@@ -15,6 +15,7 @@ const AccountsPage = () => {
   console.info('Rendering AccountsPage');
 
   const navigate = useNavigate();
+  const { id: editingId } = useParams<{ id: string }>();
   const { data: result, isLoading } = useApiGetAllAccounts();
   const [error, setError] = useState<DisplayError | null>(null);
 
@@ -47,7 +48,13 @@ const AccountsPage = () => {
             Add Account
           </Button>
         </div>
-        <DataTable columns={columns} data={accounts} />
+        <DataTable
+          columns={columns}
+          data={accounts}
+          highlightRowFilter={row =>
+            row.original.rowId.toString() === editingId
+          }
+        />
         <LoadingMessage isLoading={isLoading} />
       </div>
       {error && (
