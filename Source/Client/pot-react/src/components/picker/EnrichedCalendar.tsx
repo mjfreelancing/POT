@@ -36,25 +36,25 @@ type EnrichedCalendarProps = Omit<
  *
  * @param {EnrichedCalendarProps} props - The props for the EnrichedCalendar component.
  * @param {Date | undefined} props.selectedDate - The currently selected date (controlled).
+ * @param {boolean} [props.showBorder=true] - Whether to display a border around the calendar.
+ * @param {boolean} [props.compactHeader=false] - Whether to use compact padding for the header.
+ * @param {React.ReactNode} [props.caption] - Optional React node (e.g., JSX element) to display as a caption above the navigation header.
  * @param {(date: Date | undefined) => void} [props.onDateChange] - Callback fired when the date selection changes.
  * @param {(date: Date | undefined) => void} props.onDateAccepted - Callback fired when the user accepts the selected date.
  * @param {() => void} [props.onCancel] - Callback fired when the user cancels the selection.
  * @param {(month: Date) => void} [props.onMonthChange] - Callback fired when the displayed month changes.
  * @param {(year: number) => void} [props.onYearChange] - Callback fired when the displayed year changes.
- * @param {boolean} [props.showBorder=true] - Whether to display a border around the calendar.
- * @param {boolean} [props.compactHeader=false] - Whether to use compact padding for the header.
- * @param {React.ReactNode} [props.caption] - Optional React node (e.g., JSX element) to display as a caption above the navigation header.
  */
 function EnrichedCalendar({
   selectedDate: propDate,
-  onDateChange,
-  onDateAccepted,
-  onCancel,
-  onMonthChange: parentOnMonthChange,
-  onYearChange,
   showBorder = true,
   compactHeader = false,
   caption,
+  onDateChange,
+  onDateAccepted,
+  onCancel,
+  onMonthChange,
+  onYearChange,
   ...calendarProps
 }: EnrichedCalendarProps): JSX.Element {
   const [pickerDate, setPickerDate] = React.useState<Date | undefined>(
@@ -150,11 +150,11 @@ function EnrichedCalendar({
     }
   };
 
-  const handleInternalMonthChange = (newMonth: Date) => {
+  const handleMonthChange = (newMonth: Date) => {
     setCurrentDisplayMonth(newMonth);
 
-    if (parentOnMonthChange) {
-      parentOnMonthChange(newMonth);
+    if (onMonthChange) {
+      onMonthChange(newMonth);
     }
   };
 
@@ -239,7 +239,7 @@ function EnrichedCalendar({
         selected={pickerDate}
         onSelect={handleDateSelectInCalendar}
         month={currentDisplayMonth}
-        onMonthChange={handleInternalMonthChange}
+        onMonthChange={handleMonthChange}
         initialFocus
         showOutsideDays
         components={{
