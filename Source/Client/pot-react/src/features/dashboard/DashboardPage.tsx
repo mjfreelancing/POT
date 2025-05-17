@@ -82,6 +82,13 @@ const DashboardPage = () => {
 
   // *********************
 
+  const defaultCalendarCaption = (
+    <div className="flex items-center gap-1">
+      <CalendarIcon className="w-4 h-4 text-muted-foreground" />
+      <span>Select the due date</span>
+    </div>
+  );
+
   return (
     <>
       <div className="container mx-auto py-4 px-4 flex flex-col gap-4">
@@ -94,23 +101,31 @@ const DashboardPage = () => {
           <EnrichedCalendar
             showBorder={false}
             compactHeader={true}
-            date={selectedDate}
+            selectedDate={selectedDate}
             onDateAccepted={handleDateAccepted}
             onCancel={handleCalendarCancel}
           />
           <EnrichedCalendar
-            date={selectedDate}
+            caption={defaultCalendarCaption}
+            selectedDate={selectedDate}
             onDateAccepted={handleDateAccepted}
             onCancel={handleCalendarCancel}
           />
           <EnrichedCalendar
+            selectedDate={selectedDate}
+            onDateAccepted={handleDateAccepted}
+            onCancel={handleCalendarCancel}
+          />
+          <EnrichedCalendar
+            caption="Select a date" // This one uses a string, just to show it works
             showBorder={false}
             compactHeader={false}
-            date={selectedDate}
+            selectedDate={selectedDate}
             onDateAccepted={handleDateAccepted}
             onCancel={handleCalendarCancel}
           />
           <EnrichedDatePicker
+            caption={defaultCalendarCaption}
             selectedDate={selectedDate}
             onDateAccepted={handleDateAccepted}
             onCancel={handleCalendarCancel}

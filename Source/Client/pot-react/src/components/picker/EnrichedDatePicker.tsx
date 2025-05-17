@@ -15,7 +15,7 @@ import type { ComponentProps } from 'react';
 // Props for EnrichedCalendar, excluding those managed by EnrichedDatePicker
 type EnrichedCalendarPassthroughProps = Omit<
   ComponentProps<typeof EnrichedCalendar>,
-  'date' | 'onDateAccepted' | 'onCancel'
+  'selectedDate' | 'onDateAccepted' | 'onCancel'
 >;
 
 export type EnrichedDatePickerProps = EnrichedCalendarPassthroughProps & {
@@ -74,7 +74,7 @@ function EnrichedDatePicker({
       <PopoverContent className="w-auto p-0" align={popoverContentAlign}>
         <EnrichedCalendar
           {...calendarProps}
-          date={selectedDate}
+          selectedDate={selectedDate}
           onDateAccepted={handleDateAccept}
           onCancel={handleDateCancel}
           showBorder={false} // Will thicken the border if enabled
