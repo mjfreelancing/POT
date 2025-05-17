@@ -1,26 +1,18 @@
 import { ColumnDef } from '@tanstack/react-table';
-import { useEffect, useState } from 'react';
-import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 import { useApiGetAllAccounts } from '@/api/accounts/hooks/useAccounts';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import { ErrorSheet } from '@/components/feedback/sheet/ErrorSheet';
 import { EnrichedCalendar } from '@/components/picker/EnrichedCalendar'; // Renamed import
+import { EnrichedDatePicker } from '@/components/picker/EnrichedDatePicker';
 import {
   createMoneyValueColumn,
   DataTable,
 } from '@/components/table/DataTable';
 import { Account } from '@/data/accounts/account';
 import { DisplayError } from '@/lib/errors/displayError';
-import { Button } from '@/components/ui/button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
-import { EnrichedDatePicker } from '@/components/picker/EnrichedDatePicker';
 
 // Temporary - a WIP
 
@@ -44,7 +36,6 @@ const columns: ColumnDef<Account>[] = [
 const DashboardPage = () => {
   const [error, setError] = useState<DisplayError | null>(null);
   const { data: result, isLoading } = useApiGetAllAccounts();
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
   useEffect(() => {
     // Transient error handling

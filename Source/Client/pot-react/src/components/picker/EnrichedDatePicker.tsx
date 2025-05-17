@@ -1,6 +1,7 @@
-import * as React from 'react';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
+import type { ComponentProps } from 'react';
+import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -9,8 +10,8 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+
 import { EnrichedCalendar } from './EnrichedCalendar';
-import type { ComponentProps } from 'react';
 
 // Props for EnrichedCalendar, excluding those managed by EnrichedDatePicker
 type EnrichedCalendarPassthroughProps = Omit<
