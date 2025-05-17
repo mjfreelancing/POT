@@ -1,4 +1,4 @@
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { useNavigate } from 'react-router';
@@ -49,9 +49,14 @@ export const AccountActions = ({ account }: AccountActionsProps) => {
           <DropdownMenuItem
             onClick={() => navigate(`/accounts/edit/${account.rowId}`)}
           >
+            <Pencil className="mr-2 h-4 w-4" />
             Edit
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setShowDeleteDialog(true)}>
+          <DropdownMenuItem
+            className="text-red-600"
+            onClick={() => setShowDeleteDialog(true)}
+          >
+            <Trash2 className="mr-2 h-4 w-4 text-red-600" />
             Delete
           </DropdownMenuItem>
           <DropdownMenuSeparator />
