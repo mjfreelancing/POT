@@ -25,7 +25,7 @@ const AppContent = () => (
 const App = () => {
   console.info(`Running mode: ${import.meta.env.MODE}`);
 
-  const [error, setError] = useState<DisplayError | null>(null);
+  const [error, setError] = useState<DisplayError | undefined>();
 
   const handleError = (error: Error) => {
     console.error('Error boundary caught an error:', error);
@@ -47,7 +47,7 @@ const App = () => {
         <ErrorSheet
           title={error.title}
           description={error.description}
-          onDismiss={() => setError(null)}
+          onDismiss={() => setError(undefined)}
         />
       )}
     </ThemeProvider>
