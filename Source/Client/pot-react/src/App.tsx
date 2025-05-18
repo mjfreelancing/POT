@@ -12,10 +12,10 @@ import { AppRoutes } from './routes/AppRoutes';
 const AppContent = () => (
   <SidebarProvider>
     {/* Use the full viewport height. Will get 2 columns with the sidebar on the left and other content on the right */}
-    <div className="flex min-h-screen">
+    <div className="flex flex-1">
       <AppSidebar />
       {/* The routed pages will expand and fill the remaining space */}
-      <div className="flex-1 h-full">
+      <div className="flex-1">
         <AppRoutes />
       </div>
     </div>
