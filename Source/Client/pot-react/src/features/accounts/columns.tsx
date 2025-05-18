@@ -27,7 +27,11 @@ export const columns: ColumnDef<Account>[] = [
     id: 'actions',
     cell: ({ row }) => {
       const account = row.original;
-      return <AccountActions account={account} />;
+      return (
+        <div className="flex justify-end">
+          <AccountActions account={account} />
+        </div>
+      );
     },
   },
 ];
