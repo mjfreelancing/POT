@@ -20,7 +20,7 @@ type AccountActionsProps = {
   account: Account;
 };
 
-export const AccountActions = ({ account }: AccountActionsProps) => {
+const AccountActions = ({ account }: AccountActionsProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const navigate = useNavigate();
   const { deleteAccount } = useDeleteAccount(account.rowId);
@@ -75,3 +75,5 @@ export const AccountActions = ({ account }: AccountActionsProps) => {
     </>
   );
 };
+
+export { AccountActions };
