@@ -4,7 +4,6 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { ErrorSheet } from '@/components/feedback/sheet/ErrorSheet';
 import { DisplayError } from '@/lib/errors/displayError';
 
-import { AppLayout } from './components/layout/AppLayout';
 import { AppSidebar } from './components/nav/AppSidebar';
 import { ThemeProvider } from './components/theme/ThemeProvider';
 import { SidebarProvider } from './components/ui/sidebar';
@@ -12,10 +11,14 @@ import { AppRoutes } from './routes/AppRoutes';
 
 const AppContent = () => (
   <SidebarProvider>
-    <AppSidebar />
-    <AppLayout>
-      <AppRoutes />
-    </AppLayout>
+    {/* Use the full viewport height. Will get 2 columns with the sidebar on the left and other content on the right */}
+    <div className="flex min-h-screen">
+      <AppSidebar />
+      {/* The routed pages will expand and fill the remaining space */}
+      <div className="flex-1 h-full">
+        <AppRoutes />
+      </div>
+    </div>
   </SidebarProvider>
 );
 
