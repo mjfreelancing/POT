@@ -45,9 +45,7 @@ function AccountsTable() {
         <CardHeader className="flex flex-row items-center">
           <div>
             <CardTitle>Bank Accounts</CardTitle>
-            <CardDescription>
-              Manage your accounts and their details.
-            </CardDescription>
+            <CardDescription>Manage your account details.</CardDescription>
           </div>
           {/*
            * ml-auto pushes the element as far right as it can go in a flex container
