@@ -3,7 +3,7 @@ import { formatMoneyValue } from '@/lib/money/moneyUtils';
 
 import {
   AccountsSummary,
-  useAccountsSummaryStore,
+  useAccountsSummary,
 } from './hooks/useAccountsSummary';
 
 type SummaryItemProps = {
@@ -21,19 +21,19 @@ function SummaryItem({ title, value }: SummaryItemProps) {
 }
 
 function AccountsHeader() {
-  const totalBalance = useAccountsSummaryStore(
+  const totalBalance = useAccountsSummary(
     (state: AccountsSummary) => state.totalBalance,
   );
 
-  const totalReserved = useAccountsSummaryStore(
+  const totalReserved = useAccountsSummary(
     (state: AccountsSummary) => state.totalReserved,
   );
 
-  const totalAllocated = useAccountsSummaryStore(
+  const totalAllocated = useAccountsSummary(
     (state: AccountsSummary) => state.totalAllocated,
   );
 
-  const totalDailyAccrual = useAccountsSummaryStore(
+  const totalDailyAccrual = useAccountsSummary(
     (state: AccountsSummary) => state.totalDailyAccrual,
   );
 

@@ -26,4 +26,4 @@ const useAccountsSummary = create<AccountsSummary>(set => ({
   ) => set({ totalBalance, totalReserved, totalAllocated, totalDailyAccrual }),
 }));
 
-export { useAccountsSummary as useAccountsSummaryStore };
+export { useAccountsSummary };
