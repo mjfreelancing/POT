@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
 import { useApiGetAllAccounts } from '@/api/accounts/hooks/useAccounts';
@@ -16,6 +16,10 @@ import {
 import { DisplayError } from '@/lib/errors/displayError';
 
 import { columns } from './columns';
+import {
+  AccountsSummary,
+  useAccountsSummaryStore,
+} from './hooks/useAccountsSummary';
 
 function AccountsTable() {
   const { id: editingId } = useParams<{ id: string }>();
@@ -23,7 +27,37 @@ function AccountsTable() {
   const [error, setError] = useState<DisplayError | null>(null);
   const navigate = useNavigate();
 
-  const accounts = result?.success ? result.value : [];
+  const setSummary = useAccountsSummaryStore(
+    (state: AccountsSummary) => state.setSummary,
+  );
+
+  // Memoize 'accounts' so its array reference only changes when `result` changes.
+  // Without this, each render would create a new array (even with identical data), causing the summary effect to rerun every time.
+  const accounts = useMemo(() => {
+    return result?.success ? result.value : [];
+  }, [result]);
+
+  // Recalculates and pushes summary; 'setSummary' is in deps to satisfy exhaustive-deps and use the latest setter
+  useEffect(() => {
+    const totalBalance = accounts.reduce((sum, acct) => sum + acct.balance, 0);
+
+    const totalReserved = accounts.reduce(
+      (sum, acct) => sum + acct.reserved,
+      0,
+    );
+
+    const totalAllocated = accounts.reduce(
+      (sum, acct) => sum + acct.allocated,
+      0,
+    );
+
+    const totalDailyAccrual = accounts.reduce(
+      (sum, acct) => sum + acct.dailyAccrual,
+      0,
+    );
+
+    setSummary(totalBalance, totalReserved, totalAllocated, totalDailyAccrual);
+  }, [accounts, setSummary]);
 
   useEffect(() => {
     // Transient error handling - resetting error state when success, such as after a network loss
