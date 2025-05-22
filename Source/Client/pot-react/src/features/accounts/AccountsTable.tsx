@@ -18,7 +18,7 @@ import { DisplayError } from '@/lib/errors/displayError';
 import { columns } from './columns';
 import {
   AccountsSummary,
-  useAccountsSummaryStore,
+  useAccountsSummary,
 } from './hooks/useAccountsSummary';
 
 function AccountsTable() {
@@ -27,7 +27,7 @@ function AccountsTable() {
   const [error, setError] = useState<DisplayError | null>(null);
   const navigate = useNavigate();
 
-  const setSummary = useAccountsSummaryStore(
+  const setSummary = useAccountsSummary(
     (state: AccountsSummary) => state.setSummary,
   );
 
