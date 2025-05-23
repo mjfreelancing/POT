@@ -39,7 +39,22 @@ const App = () => {
   return (
     <ThemeProvider defaultTheme="system" storageKey="pot-ui-theme">
       <div className="flex h-screen w-screen">
-        <ErrorBoundary fallback={<AppContent />} onError={handleError}>
+        <ErrorBoundary
+          fallbackRender={({ error }) => (
+            <div
+              role="alert"
+              className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4"
+            >
+              <div className="bg-white dark:bg-gray-800 text-red-700 p-6 rounded-lg shadow-lg max-w-md w-full text-center">
+                <p className="text-lg font-medium mb-2">
+                  Something went wrong !
+                </p>
+                <pre className="whitespace-pre-wrap">{error.message}</pre>
+              </div>
+            </div>
+          )}
+          onError={handleError}
+        >
           <AppContent />
         </ErrorBoundary>
       </div>
