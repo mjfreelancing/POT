@@ -12,17 +12,17 @@ internal sealed class AccountRepository : GenericRepository<PotDbContext, Accoun
 
     public Task<bool> AccountExistsAsync(Guid id, CancellationToken cancellationToken)
     {
-        return AnyAsync(AccountSpecifications.IsSameId(id).Expression, cancellationToken);
+        return AnyAsync(EntitySpecifications.IsSameId<AccountEntity>(id).Expression, cancellationToken);
     }
 
     public Task<AccountEntity> GetAccountAsync(Guid id, CancellationToken cancellationToken)
     {
-        return SingleAsync(AccountSpecifications.IsSameId(id).Expression, cancellationToken);
+        return SingleAsync(EntitySpecifications.IsSameId<AccountEntity>(id).Expression, cancellationToken);
     }
 
     public Task<AccountEntity?> GetAccountOrDefaultAsync(Guid id, CancellationToken cancellationToken)
     {
-        return SingleOrDefaultAsync(AccountSpecifications.IsSameId(id).Expression, cancellationToken);
+        return SingleOrDefaultAsync(EntitySpecifications.IsSameId<AccountEntity>(id).Expression, cancellationToken);
     }
 
     public Task<bool> AccountExistsAsync(string bsb, string number, CancellationToken cancellationToken)

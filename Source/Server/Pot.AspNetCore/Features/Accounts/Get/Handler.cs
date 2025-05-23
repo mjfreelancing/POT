@@ -5,11 +5,11 @@ using System.ComponentModel;
 
 namespace Pot.AspNetCore.Features.Accounts.Get;
 
-using OkResult = Ok<Response>;
+using OkGetResult = Ok<Response>;
 
 internal sealed class Handler
 {
-    public static async Task<Results<OkResult, NotFound, ProblemHttpResult>> Invoke(
+    public static async Task<Results<OkGetResult, NotFound, ProblemHttpResult>> Invoke(
         [Description("The account Id.")] Guid id,
         IAccountRepository accountRepository,
         ILogger<Handler> logger,
