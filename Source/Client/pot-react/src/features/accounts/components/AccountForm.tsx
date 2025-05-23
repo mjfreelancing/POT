@@ -24,7 +24,7 @@ type AccountFormProps = {
   submitLabel: string;
 };
 
-export const AccountForm = ({
+const AccountForm = ({
   form,
   onSubmit,
   onCancel,
@@ -171,3 +171,5 @@ export const AccountForm = ({
     </form>
   </Form>
 );
+
+export { AccountForm };
