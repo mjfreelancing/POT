@@ -49,7 +49,7 @@ const menuGroups: Record<string, MenuGroupDefinition> = {
       {
         label: 'Manage Income',
         icon: CircleDollarSignIcon,
-        href: '/income',
+        href: '/incomes',
       },
     ],
   },
@@ -66,7 +66,7 @@ const menuGroups: Record<string, MenuGroupDefinition> = {
   },
 };
 
-function AppSidebarContent() {
+function AppSidebarMenus() {
   return (
     <SidebarContent>
       <MenuGroup group={menuGroups.analysis} />
@@ -77,4 +77,4 @@ function AppSidebarContent() {
   );
 }
 
-export { AppSidebarContent };
+export { AppSidebarMenus };

@@ -1,14 +1,14 @@
 import { Sidebar, SidebarFooter } from '@/components/ui/sidebar';
 
 import ThemeToggle from '../theme/ThemeToggle';
-import { AppSidebarContent } from './AppSidebarContent';
+import { AppSidebarMenus } from './AppSidebarMenus';
 import { AppSidebarHeader } from './AppSidebarHeader';
 
 function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <AppSidebarHeader />
-      <AppSidebarContent />
+      <AppSidebarMenus />
       <SidebarFooter>
         <ThemeToggle />
       </SidebarFooter>
