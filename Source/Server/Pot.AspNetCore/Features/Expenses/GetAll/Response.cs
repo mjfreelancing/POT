@@ -58,7 +58,7 @@ internal sealed class Response : ResponseBase
         AccrualStart = expense.AccrualStart;
 
         // Minimal APIs doesn't support Controller style ModelBinderProviders so
-        // we can't use ExpenseFrequency on this response.
+        // we can't use Frequency on this response.
         Frequency = expense.Frequency.Name;
 
         FrequencyCount = expense.FrequencyCount;

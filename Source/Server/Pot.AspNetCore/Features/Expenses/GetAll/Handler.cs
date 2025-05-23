@@ -6,11 +6,11 @@ using Pot.Data.Repositories.Expenses;
 
 namespace Pot.AspNetCore.Features.Expenses.GetAll;
 
-using OkResult = Ok<PagedResponse<Response>>;
+using OkExpensesResult = Ok<PagedResponse<Response>>;
 
 internal sealed class Handler
 {
-    public static async Task<Results<OkResult, NotFound, ProblemHttpResult>> Invoke(
+    public static async Task<Results<OkExpensesResult, NotFound, ProblemHttpResult>> Invoke(
         /*[Description("...")]*/ Request request,
         IAccountRepository accountRepository,
         IExpenseRepository expenseRepository,
