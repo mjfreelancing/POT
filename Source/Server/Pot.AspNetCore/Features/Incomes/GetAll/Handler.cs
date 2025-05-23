@@ -5,11 +5,11 @@ using Pot.Data.Repositories.Incomes;
 
 namespace Pot.AspNetCore.Features.Incomes.GetAll;
 
-using OkIncomesResult = Ok<PagedResponse<Response>>;
+using OkGetAllResult = Ok<PagedResponse<Response>>;
 
 internal sealed class Handler
 {
-    public static async Task<Results<OkIncomesResult, ProblemHttpResult>> Invoke(Request request, IIncomeRepository incomeRepository,
+    public static async Task<Results<OkGetAllResult, ProblemHttpResult>> Invoke(Request request, IIncomeRepository incomeRepository,
         ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);
