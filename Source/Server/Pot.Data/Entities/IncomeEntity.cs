@@ -7,7 +7,7 @@ namespace Pot.Data.Entities
 {
     [Index("AccountId", nameof(Description), IsUnique = true)]
     [Index(nameof(NextDue), IsUnique = false)]
-    public sealed class ExpenseEntity : EntityBase
+    public sealed class IncomeEntity : EntityBase
     {
         [Required]
         [MediumString]
@@ -16,11 +16,9 @@ namespace Pot.Data.Entities
 
         public DateOnly NextDue { get; set; }
         public DateOnly? EndDate { get; set; }
-        public DateOnly AccrualStart { get; set; }
         public required Frequency Frequency { get; set; }
         public int FrequencyCount { get; set; }
         public double Amount { get; set; }
-        public double Allocated { get; set; }
 
         public AccountEntity? Account { get; set; }
     }

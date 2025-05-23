@@ -70,13 +70,13 @@ internal sealed class App : ConsoleAppBase
                 });
 
         // Use the retry policy to ensure the database is ready
-        await retryPolicy.ExecuteAsync(async () =>
+        await retryPolicy.ExecuteAsync(async token =>
         {
             using var connection = new NpgsqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAsync(token);
 
             _logger.LogInformation("Database is ready.");
-        });
+        }, cancellationToken);
     }
 
     private void OnNewMigration(object? sender, AllOverIt.EntityFrameworkCore.Migrator.Events.MigrationEventArgs eventArgs)

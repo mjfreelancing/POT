@@ -191,7 +191,7 @@ internal sealed class ImportExpenseService : IImportExpenseService
             AccrualStart = import.AccrualStart,
             Frequency = import.Frequency,
             FrequencyCount = import.FrequencyCount,
-            Recurring = import.Recurring,
+            EndDate = import.EndDate,
             Amount = import.Amount,
             Allocated = import.Allocated
         };
@@ -205,10 +205,10 @@ internal sealed class ImportExpenseService : IImportExpenseService
     {
         entity.Description = import.Description;
         entity.NextDue = import.NextDue;
+        entity.EndDate = import.EndDate;
         entity.AccrualStart = import.AccrualStart;
         entity.Frequency = import.Frequency;
         entity.FrequencyCount = import.FrequencyCount;
-        entity.Recurring = import.Recurring;
         entity.Amount = import.Amount;
         entity.Allocated = import.Allocated;    // TODO: ? leave these at their current values
 

@@ -16,6 +16,9 @@ internal sealed class Response : ResponseBase
     [Description("When the expense is next due.")]
     public DateOnly NextDue { get; init; }
 
+    [Description("When the expense is no longer a recurring concern.")]
+    public DateOnly? EndDate { get; init; }
+
     [Description("When automatic allocations will begin accruing for this expense.")]
     public DateOnly AccrualStart { get; init; }
 
@@ -43,23 +46,23 @@ internal sealed class Response : ResponseBase
         return TypedResults.Ok(response);
     }
 
-    private Response(ExpenseEntity account)
+    private Response(ExpenseEntity expense)
     {
-        _ = account.WhenNotNull();
+        _ = expense.WhenNotNull();
 
-        RowId = account.RowId;
-        ETag = account.Etag;
-        Description = account.Description;
-        NextDue = account.NextDue;
-        AccrualStart = account.AccrualStart;
+        RowId = expense.RowId;
+        ETag = expense.Etag;
+        Description = expense.Description;
+        NextDue = expense.NextDue;
+        EndDate = expense.EndDate;
+        AccrualStart = expense.AccrualStart;
 
         // Minimal APIs doesn't support Controller style ModelBinderProviders so
         // we can't use ExpenseFrequency on this response.
-        Frequency = account.Frequency.Name;
+        Frequency = expense.Frequency.Name;
 
-        FrequencyCount = account.FrequencyCount;
-        Recurring = account.Recurring;
-        Amount = account.Amount;
-        Allocated = account.Allocated;
+        FrequencyCount = expense.FrequencyCount;
+        Amount = expense.Amount;
+        Allocated = expense.Allocated;
     }
 }

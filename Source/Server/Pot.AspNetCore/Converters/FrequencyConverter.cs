@@ -3,13 +3,13 @@ using CsvHelper.Configuration;
 using CsvHelper.TypeConversion;
 using Pot.Data.Models;
 
-namespace Pot.AspNetCore.Features.Expenses.Import.Converters
+namespace Pot.AspNetCore.Converters
 {
-    public class ExpenseFrequencyConverter : DefaultTypeConverter
+    public class FrequencyConverter : DefaultTypeConverter
     {
         public override object ConvertFromString(string? text, IReaderRow row, MemberMapData memberMapData)
         {
-            return ExpenseFrequency.From(text!);
+            return Frequency.From(text!);
         }
     }
 }

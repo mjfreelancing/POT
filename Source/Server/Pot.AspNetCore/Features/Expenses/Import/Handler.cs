@@ -58,5 +58,12 @@ internal sealed class Handler
 
             return TypedResults.Problem(statusCode: (int)HttpStatusCode.UnprocessableEntity, detail: exception.Message);
         }
+        catch (ReaderException exception)
+        {
+            var error = exception.InnerException ?? exception;
+
+            logger.LogException(error);
+            return TypedResults.Problem(statusCode: (int)HttpStatusCode.UnprocessableEntity, detail: error.Message);
+        }
     }
 }

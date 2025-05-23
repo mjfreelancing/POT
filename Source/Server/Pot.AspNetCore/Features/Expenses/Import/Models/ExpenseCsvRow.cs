@@ -1,6 +1,6 @@
 ﻿using CsvHelper.Configuration.Attributes;
 using CsvHelper.TypeConversion;
-using Pot.AspNetCore.Features.Expenses.Import.Converters;
+using Pot.AspNetCore.Converters;
 using Pot.Data.Models;
 
 namespace Pot.AspNetCore.Features.Expenses.Import.Models;
@@ -23,18 +23,20 @@ public sealed class ExpenseCsvRow
 
     [Index(4)]
     [Format("yyyy-MM-dd")]
+    [TypeConverter(typeof(NullableDateOnlyConverter))]
+    public DateOnly? EndDate { get; init; }
+
+    [Index(5)]
+    [Format("yyyy-MM-dd")]
     [TypeConverter(typeof(DateOnlyConverter))]
     public DateOnly AccrualStart { get; init; }
 
-    [Index(5)]
-    [TypeConverter(typeof(ExpenseFrequencyConverter))]
-    public required ExpenseFrequency Frequency { get; init; }
-
     [Index(6)]
-    public int FrequencyCount { get; init; }
+    [TypeConverter(typeof(FrequencyConverter))]
+    public required Frequency Frequency { get; init; }
 
     [Index(7)]
-    public bool Recurring { get; init; }
+    public int FrequencyCount { get; init; }
 
     [Index(8)]
     public double Amount { get; init; }
