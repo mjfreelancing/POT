@@ -4,6 +4,7 @@ import { useApiCreateAccount } from '@/api/accounts/hooks/useAccounts';
 import { CreateAccount } from '@/data/accounts/account';
 import { FailResultBase } from '@/lib/result/failResultBase';
 import { Result } from '@/lib/result/result';
+import { Identity } from '@/data/identity';
 
 export const useCreateAccount = () => {
   const queryClient = useQueryClient();
@@ -11,11 +12,11 @@ export const useCreateAccount = () => {
 
   const createAccount = async (
     account: CreateAccount,
-  ): Promise<Result<void, FailResultBase>> => {
+  ): Promise<Result<Identity, FailResultBase>> => {
     const controller = new AbortController();
 
     try {
-      // Not using onSuccess cllback because both success/fails are returned
+      // Not using onSuccess callback because both success/fails are returned
       const result = await apiCreateAccount.mutateAsync({
         data: account,
         signal: controller.signal,
