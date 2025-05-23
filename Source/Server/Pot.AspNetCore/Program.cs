@@ -1,6 +1,7 @@
 using Pot.AspNetCore.Extensions;
 using Pot.AspNetCore.Features.Accounts.Extensions;
 using Pot.AspNetCore.Features.Expenses.Extensions;
+using Pot.AspNetCore.Features.Incomes.Extensions;
 
 namespace Pot.AspNetCore;
 
@@ -58,8 +59,8 @@ public class Program
 
 
         app.UseCors(policy => policy.WithOrigins("http://localhost:5175", "http://localhost:4173") // Allow frontend URL
-          .AllowAnyMethod()
-          .AllowAnyHeader());
+           .AllowAnyMethod()
+           .AllowAnyHeader());
         //.AllowCredentials()); // If using authentication
 
 
@@ -76,6 +77,7 @@ public class Program
         //       (such as conflicts, constraints, etc) when processing the input data
         // 500 - Unexpected errors
         app.AddAccountEndpoints()
+           .AddIncomeEndpoints()
            .AddExpenseEndpoints();
 
         await app.RunAsync();
