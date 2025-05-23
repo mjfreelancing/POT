@@ -1,4 +1,6 @@
-﻿namespace Pot.AspNetCore.Features.Incomes.Extensions;
+﻿using System.Net;
+
+namespace Pot.AspNetCore.Features.Incomes.Extensions;
 
 internal static class RouteGroupBuilderExtensions
 {
@@ -14,20 +16,21 @@ internal static class RouteGroupBuilderExtensions
         return routeGroupBuilder;
     }
 
+    public static RouteGroupBuilder GetIncome(this RouteGroupBuilder routeGroupBuilder)
+    {
+        routeGroupBuilder
+            .MapGet("/{id}", Get.Handler.Invoke)
+            .WithName(nameof(GetIncome))
+            .WithSummary("Get income")
+            .WithDescription("Get details for an existing income source")
+            .WithTags("Incomes")
+            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
+
+        return routeGroupBuilder;
+    }
+
     // Use the code below as a template
 
-    //public static RouteGroupBuilder GetAccount(this RouteGroupBuilder routeGroupBuilder)
-    //{
-    //    routeGroupBuilder
-    //        .MapGet("/{id}", Get.Handler.Invoke)
-    //        .WithName(nameof(GetAccount))
-    //        .WithSummary("Get account")
-    //        .WithDescription("Get details for an existing account")
-    //        .WithTags("Accounts")
-    //        .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
-
-    //    return routeGroupBuilder;
-    //}
 
     //public static RouteGroupBuilder CreateAccount(this RouteGroupBuilder routeGroupBuilder)
     //{

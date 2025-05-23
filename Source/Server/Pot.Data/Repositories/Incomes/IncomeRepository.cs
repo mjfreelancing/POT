@@ -4,6 +4,7 @@ using AllOverIt.Pagination;
 using Microsoft.EntityFrameworkCore;
 using Pot.Data.Entities;
 using Pot.Data.Models;
+using Pot.Data.Specifications;
 
 namespace Pot.Data.Repositories.Incomes;
 
@@ -37,5 +38,12 @@ internal sealed class IncomeRepository : GenericRepository<PotDbContext, IncomeE
             .CreatePaginator(incomeQuery, paginatorConfig)
             .ColumnAscending(entity => entity.NextDue)
             .GetPageResultsAsync(paging.Continuation, cancellationToken);
+    }
+
+    public Task<IncomeEntity?> GetIncomeOrDefaultAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return AsQueryable()
+            .Include(income => income.Account)
+            .SingleOrDefaultAsync(EntitySpecifications.IsSameId<IncomeEntity>(id).Expression, cancellationToken);
     }
 }
