@@ -6,6 +6,7 @@ import LoadingMessage from '../components/feedback/message/LoadingMessage';
 // Lazy load page components to enable code splitting and reduce the initial bundle size
 const AccountsPage = lazy(() => import('../features/accounts/AccountsPage'));
 const DashboardPage = lazy(() => import('../features/dashboard/DashboardPage'));
+const IncomesPage = lazy(() => import('../features/incomes/IncomesPage'));
 const ProjectionsPage = lazy(
   () => import('../features/projections/ProjectionsPage'),
 );
@@ -27,6 +28,10 @@ export const AppRoutes = () => {
         <Route path="/accounts" element={<AccountsPage />}>
           <Route path="create" element={<CreateAccountSheet />} />
           <Route path="edit/:id" element={<EditAccountSheet />} />
+        </Route>
+        <Route path="/income" element={<IncomesPage />}>
+          {/* <Route path="create" element={<CreateIncomeSheet />} />
+          <Route path="edit/:id" element={<EditIncomeSheet />} /> */}
         </Route>
       </Routes>
     </Suspense>

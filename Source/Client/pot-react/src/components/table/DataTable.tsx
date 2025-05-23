@@ -7,7 +7,7 @@ import {
 } from '@tanstack/react-table';
 
 import { formatMoneyValue } from '../../lib/money/moneyUtils';
-import { MoneyValue } from '../../lib/valueTypes';
+import { Frequency, MoneyValue } from '../../lib/types';
 import {
   Table,
   TableBody,
@@ -25,8 +25,33 @@ const getMoneyValue = <TData,>(row: Row<TData>, key: string): MoneyValue => {
 // Formats a money value as a string.
 const formatCellMoneyValue = <TData,>(row: Row<TData>, key: string) => {
   const value = getMoneyValue(row, key);
-  return <div className="text-right">{formatMoneyValue(value)}</div>;
+  return formatMoneyValue(value);
 };
+
+// Formats a date value as dd-MM-yyyy.
+const formatCellDate = (date: Date): string => {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+};
+
+// Mapping of plural frequency values to their singular forms, equivalent to:
+//
+// const frequencySingularMap: { [K in Frequency]: string } = {
+//   Days: 'Day',
+//   Weeks: 'Week',
+//   Months: 'Month',
+//   Years: 'Year',
+// };
+const frequencySingularMap: Record<Frequency, string> = {
+  Days: 'Day',
+  Weeks: 'Week',
+  Months: 'Month',
+  Years: 'Year',
+};
+
+// Note: The trailing comma in <TData,> is necessary for TypeScript to differentiate it from a JSX element.
 
 // Creates a column definition for a money value (right-aligned number) column.
 export const createMoneyValueColumn = <TData,>(
@@ -34,8 +59,54 @@ export const createMoneyValueColumn = <TData,>(
   header: string,
 ): ColumnDef<TData> => ({
   accessorKey,
-  header: () => <div className="text-right">{header}</div>,
-  cell: ({ row }) => formatCellMoneyValue(row, accessorKey),
+  header: () => <div>{header}</div>,
+  cell: ({ row }) => <div>{formatCellMoneyValue(row, accessorKey)}</div>,
+  // header: () => <div className="text-right">{header}</div>,
+  // cell: ({ row }) => (
+  //   <div className="text-right">{formatCellMoneyValue(row, accessorKey)}</div>
+  // ),
+});
+
+export const createDateColumn = <TData,>(
+  accessorKey: keyof TData & string, // Ensure this is both a key of TData and a string
+  header: string,
+  nullValue = 'Ongoing',
+): ColumnDef<TData> => ({
+  accessorKey,
+  header: () => <div>{header}</div>,
+  cell: ({ row }) => {
+    const rawValue = row.getValue(accessorKey) as string | Date;
+
+    if (rawValue === null) {
+      return <div>{nullValue}</div>;
+    }
+
+    const dateValue = rawValue instanceof Date ? rawValue : new Date(rawValue);
+    return <div>{formatCellDate(dateValue)}</div>;
+  },
+});
+
+/**
+ * Creates a column showing "<count> <frequency>" based on two keys.
+ */
+export const createFrequencyColumn = <TData,>(
+  countKey: keyof TData & string,
+  frequencyKey: keyof TData & string,
+  header: string,
+): ColumnDef<TData> => ({
+  id: `${frequencyKey}-${countKey}`,
+  header: () => <div>{header}</div>,
+  cell: ({ row }) => {
+    const count = row.original[countKey] as number;
+    const freq = row.original[frequencyKey] as Frequency;
+    const frequencyLabel = count === 1 ? frequencySingularMap[freq] : freq;
+
+    return (
+      <div>
+        {count} {frequencyLabel}
+      </div>
+    );
+  },
 });
 
 /** Default highlight class for rows marked by `highlightRowFilter` */

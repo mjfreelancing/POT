@@ -1,0 +1,79 @@
+import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { useErrorBoundary } from 'react-error-boundary';
+import { useNavigate } from 'react-router';
+
+import { ConfirmationDialog } from '@/components/dialog/confirmationDialog';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Income } from '@/data/incomes/income';
+
+//import { useDeleteIncome } from '../delete/hooks/useDeleteIncome';
+
+type IncomeActionsProps = {
+  income: Income;
+};
+
+const IncomeActions = ({ income }: IncomeActionsProps) => {
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const navigate = useNavigate();
+  //const { deleteIncome } = useDeleteIncome(income.rowId);
+  const { showBoundary } = useErrorBoundary();
+
+  const handleDelete = async () => {
+    try {
+      //await deleteIncome();
+      setShowDeleteDialog(false);
+    } catch (error) {
+      showBoundary(error);
+    }
+  };
+
+  return (
+    <>
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() => navigate(`/incomes/edit/${income.rowId}`)}
+          >
+            <Pencil className="mr-2 h-4 w-4" />
+            Edit
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="text-red-600"
+            onClick={() => setShowDeleteDialog(true)}
+          >
+            <Trash2 className="mr-2 h-4 w-4 text-red-600" />
+            Delete
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <ConfirmationDialog
+        open={showDeleteDialog}
+        title="Delete Account"
+        description={`Are you sure you want to delete '${income.description}'?`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteDialog(false)}
+      />
+    </>
+  );
+};
+
+export { IncomeActions };
