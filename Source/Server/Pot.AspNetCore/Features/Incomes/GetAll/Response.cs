@@ -13,6 +13,7 @@ internal sealed class Response : ResponseBase
     internal sealed class AccountModel
     {
         public required Guid RowId { get; init; }
+        public required string Description { get; init; }
     }
 
     [Description("A description of the income.")]
@@ -62,11 +63,14 @@ internal sealed class Response : ResponseBase
         FrequencyCount = income.FrequencyCount;
         Amount = income.Amount;
 
-        if (income.Account is not null)
+        var account = income.Account;
+
+        if (account is not null)
         {
             Account = new AccountModel
             {
-                RowId = income.Account.RowId
+                RowId = account.RowId,
+                Description = account.Description
             };
         }
     }
