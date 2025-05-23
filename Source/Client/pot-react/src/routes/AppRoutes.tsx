@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 
 import LoadingMessage from '../components/feedback/message/LoadingMessage';
+import CreateIncomeSheet from '@/features/incomes/create/CreateIncomeSheet';
 
 // Lazy load page components to enable code splitting and reduce the initial bundle size
 const AccountsPage = lazy(() => import('../features/accounts/AccountsPage'));
@@ -29,9 +30,9 @@ export const AppRoutes = () => {
           <Route path="create" element={<CreateAccountSheet />} />
           <Route path="edit/:id" element={<EditAccountSheet />} />
         </Route>
-        <Route path="/income" element={<IncomesPage />}>
-          {/* <Route path="create" element={<CreateIncomeSheet />} />
-          <Route path="edit/:id" element={<EditIncomeSheet />} /> */}
+        <Route path="/incomes" element={<IncomesPage />}>
+          <Route path="create" element={<CreateIncomeSheet />} />
+          {/* <Route path="edit/:id" element={<EditIncomeSheet />} /> */}
         </Route>
       </Routes>
     </Suspense>

@@ -1,14 +1,14 @@
 import {
   compareIncomeNextDue,
+  CreateIncome,
   Income,
   PagedIncome,
-  //CreateAccount,
-  //EditAccount,
 } from '@/data/incomes/income';
 import { FailResultBase } from '@/lib/result/failResultBase';
 import { Result, SuccessResult } from '@/lib/result/result';
 
-import { useGet } from '../../hooks/useApi';
+import { useGet, usePost } from '../../hooks/useApi';
+import { Identity } from '@/data/identity';
 
 const parseDateFields = (income: Income): Income =>
   ({
@@ -58,15 +58,15 @@ const useApiGetAllIncomes = () => {
 //   };
 // };
 
-// const useApiCreateAccount = () => {
-//   const mutation = usePost<Identity, CreateAccount>('/accounts');
+const useApiCreateIncome = () => {
+  const mutation = usePost<Identity, CreateIncome>('/incomes');
 
-//   // Returning the mutation data as Result<Identity, FailResultBase> type to enable TypeScript's discriminated union type narrowing.
-//   return {
-//     ...mutation,
-//     data: mutation.data as Result<Identity, FailResultBase>,
-//   };
-// };
+  // Returning the mutation data as Result<Identity, FailResultBase> type to enable TypeScript's discriminated union type narrowing.
+  return {
+    ...mutation,
+    data: mutation.data as Result<Identity, FailResultBase>,
+  };
+};
 
 // // Returning the mutation data as Result<Identity, FailResultBase> type to enable TypeScript's discriminated union type narrowing.
 // const useApiUpdateAccount = () => {
@@ -84,7 +84,7 @@ const useApiGetAllIncomes = () => {
 // };
 
 export {
-  // useApiCreateAccount,
+  useApiCreateIncome,
   // useApiDeleteAccount,
   // useApiGetAccountById,
   useApiGetAllIncomes,

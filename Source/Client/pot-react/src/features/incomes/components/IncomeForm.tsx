@@ -13,8 +13,19 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { EnrichedDatePicker } from '@/components/picker/EnrichedDatePicker';
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from '@/components/ui/select';
+import { X } from 'lucide-react';
+import { FrequencyEnumValues } from '@/lib/types';
 
 import { IncomeFormSchema } from '../schemas/incomeSchema';
+import type { Account } from '@/data/accounts/account';
 
 type IncomeFormProps = {
   form: UseFormReturn<IncomeFormSchema>;
@@ -22,6 +33,7 @@ type IncomeFormProps = {
   onCancel: () => void;
   readOnlyIncomeIdentifiers: boolean;
   submitLabel: string;
+  accounts: Account[];
 };
 
 const IncomeForm = ({
@@ -30,6 +42,7 @@ const IncomeForm = ({
   onCancel,
   readOnlyIncomeIdentifiers,
   submitLabel,
+  accounts,
 }: IncomeFormProps) => (
   <Form {...form}>
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -81,6 +94,144 @@ const IncomeForm = ({
           </FormItem>
         )}
       />
+
+      {/* Next Due date picker */}
+      <FormField
+        control={form.control}
+        name="nextDue"
+        render={({ field }) => (
+          <FormItem className="space-y-1">
+            <FormLabel htmlFor="nextDue-picker">Next Due</FormLabel>
+            <FormControl>
+              <div className="flex items-center space-x-2">
+                <EnrichedDatePicker
+                  selectedDate={field.value}
+                  onDateAccepted={field.onChange}
+                  triggerClassName="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="w-16"
+                  onClick={() => field.onChange(new Date())}
+                >
+                  Today
+                </Button>
+              </div>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      {/* End Date picker */}
+      <FormField
+        control={form.control}
+        name="endDate"
+        render={({ field }) => (
+          <FormItem className="space-y-1">
+            <FormLabel htmlFor="endDate-picker">End Date</FormLabel>
+            <FormControl>
+              <div className="flex items-center space-x-2">
+                <EnrichedDatePicker
+                  selectedDate={field.value ?? undefined}
+                  onDateAccepted={date => field.onChange(date ?? null)}
+                  triggerClassName="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="w-16"
+                  onClick={() => field.onChange(null)}
+                >
+                  Clear
+                </Button>
+              </div>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      {/* Frequency count and frequency dropdown side by side */}
+      <div className="flex space-x-4">
+        <FormField
+          control={form.control}
+          name="frequencyCount"
+          render={({ field }) => (
+            <FormItem className="space-y-1 flex-1">
+              <FormLabel htmlFor="frequencyCount-input">Every</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  id="frequencyCount-input"
+                  type="number"
+                  min={1}
+                  className="w-full"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="frequency"
+          render={({ field }) => (
+            <FormItem className="space-y-1 flex-1">
+              <FormLabel htmlFor="frequency-select">Frequency</FormLabel>
+              <FormControl>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger
+                    id="frequency-select"
+                    size="sm"
+                    className="w-full"
+                  >
+                    <SelectValue placeholder="Select frequency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {FrequencyEnumValues.map(freq => (
+                      <SelectItem key={freq} value={freq}>
+                        {freq}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+
+      {/* Account dropdown */}
+      <FormField
+        control={form.control}
+        name="account.rowId"
+        render={({ field }) => (
+          <FormItem className="space-y-1">
+            <FormLabel htmlFor="account-select">Associated Account</FormLabel>
+            <FormControl>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger id="account-select" className="w-full">
+                  <SelectValue placeholder="Select an account" />
+                </SelectTrigger>
+                <SelectContent>
+                  {accounts.map(acc => (
+                    <SelectItem key={acc.rowId} value={acc.rowId}>
+                      {acc.description}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
       <div className="flex justify-end space-x-4">
         {/* type="button" prevents this button from triggering a form submission - there's a scenario
             where the user may press ENTER but the server reports a validation error and the sheet

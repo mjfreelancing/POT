@@ -1,3 +1,4 @@
+import { FrequencyEnumValues } from '@/lib/types';
 import { z } from 'zod';
 
 export const MoneyValueSchema = z
@@ -8,8 +9,14 @@ export const MoneyValueSchema = z
 
 export const incomeFormSchema = z.object({
   description: z.string().min(1),
-  // nextDue, frequency, frequencyCount
+  nextDue: z.date(),
+  endDate: z.date().nullable(),
+  frequency: z.enum(FrequencyEnumValues),
+  frequencyCount: z.number().min(1),
   amount: MoneyValueSchema,
+  account: z.object({
+    rowId: z.string(),
+  }),
 });
 
 export type IncomeFormSchema = z.infer<typeof incomeFormSchema>;

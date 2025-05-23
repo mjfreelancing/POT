@@ -12,7 +12,7 @@ export const IncomeAccountSchema = z.object({
 export const BaseIncomeSchema = z.object({
   description: z.string(),
   nextDue: z.date(),
-  endDate: z.date(),
+  endDate: z.date().nullable(),
   frequency: z.enum(FrequencyEnumValues),
   frequencyCount: z.number(),
   amount: z.number(),
