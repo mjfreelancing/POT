@@ -1,5 +1,6 @@
 import {
   compareIncomeNextDue,
+  Income,
   PagedIncome,
   //CreateAccount,
   //EditAccount,
@@ -8,6 +9,13 @@ import { FailResultBase } from '@/lib/result/failResultBase';
 import { Result, SuccessResult } from '@/lib/result/result';
 
 import { useGet } from '../../hooks/useApi';
+
+const parseDateFields = (income: Income): Income =>
+  ({
+    ...income,
+    nextDue: new Date(income.nextDue),
+    endDate: income.endDate != null ? new Date(income.endDate) : null,
+  }) as Income;
 
 const useApiGetAllIncomes = () => {
   const query = useGet<PagedIncome>('/incomes', ['incomes']);
@@ -19,9 +27,15 @@ const useApiGetAllIncomes = () => {
   // - returns undefined immediately and while loading
   // - returns the result when the query is successful
   if (result?.success) {
-    // spreading [...result.value] to create a shallow copy of the array since sort() mutates the source array
-    const sortedResults = [...result.value.results].sort(compareIncomeNextDue);
-    const paged: PagedIncome = { ...result.value, results: sortedResults };
+    const sortedResults = result.value.results
+      .map(parseDateFields) // Make sure the date fields are a Date type and not a string
+      .sort(compareIncomeNextDue); // Not concerned about mutating the source since map returns a new array
+
+    const paged: PagedIncome = {
+      ...result.value,
+      results: sortedResults,
+    };
+
     data = new SuccessResult(paged);
   } else {
     // type narrowed to FailResult<FailResultBase> since result cannot be undefined at this point
