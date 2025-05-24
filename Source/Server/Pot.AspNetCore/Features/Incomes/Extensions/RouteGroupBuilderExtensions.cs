@@ -29,21 +29,20 @@ internal static class RouteGroupBuilderExtensions
         return routeGroupBuilder;
     }
 
+    public static RouteGroupBuilder CreateIncome(this RouteGroupBuilder routeGroupBuilder)
+    {
+        routeGroupBuilder
+            .MapPost("", Create.Handler.Invoke)
+            .WithName(nameof(CreateIncome))
+            .WithSummary("Create income")
+            .WithDescription("Create a new income source")
+            .WithTags("Incomes")
+            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
+
+        return routeGroupBuilder;
+    }
+
     // Use the code below as a template
-
-
-    //public static RouteGroupBuilder CreateAccount(this RouteGroupBuilder routeGroupBuilder)
-    //{
-    //    routeGroupBuilder
-    //        .MapPost("", Create.Handler.Invoke)
-    //        .WithName(nameof(CreateAccount))
-    //        .WithSummary("Create account")
-    //        .WithDescription("Create new account details")
-    //        .WithTags("Accounts")
-    //        .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
-
-    //    return routeGroupBuilder;
-    //}
 
     //public static RouteGroupBuilder UpdateAccount(this RouteGroupBuilder routeGroupBuilder)
     //{

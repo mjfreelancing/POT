@@ -8,4 +8,5 @@ public interface IPersistableRepository<TEntity>
     int Save();
     Task<int> SaveAsync(CancellationToken cancellationToken);
     Task<int> AddAndSaveAsync(TEntity entity, CancellationToken cancellationToken);
+    Task<int> UpdateAndSaveAsync(TEntity entity, CancellationToken cancellationToken);
 }

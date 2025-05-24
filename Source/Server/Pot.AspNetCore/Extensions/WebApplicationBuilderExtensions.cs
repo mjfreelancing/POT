@@ -1,8 +1,10 @@
 ﻿using AllOverIt.DependencyInjection.Extensions;
 using AllOverIt.Pagination.Extensions;
+using AllOverIt.Serialization.Json.SystemText.Converters;
 using AllOverIt.Validation;
 using AllOverIt.Validation.Extensions;
 using FluentValidation;
+using Pot.AspNetCore.Concerns.Converters.JsonSerialization;
 using Pot.AspNetCore.Concerns.DependencyInjection;
 using Pot.AspNetCore.Concerns.ExceptionHandlers;
 using Pot.AspNetCore.Concerns.Logging;
@@ -10,6 +12,7 @@ using Pot.AspNetCore.Concerns.Middleware;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.Data;
 using Pot.Data.Extensions;
+using Pot.Data.Models;
 using Pot.Data.Repositories;
 
 namespace Pot.AspNetCore.Extensions;
@@ -30,6 +33,18 @@ internal static class WebApplicationBuilderExtensions
         // Refer to this link if multiple versions are required and different pages should be shown:
         // https://learn.microsoft.com/en-us/aspnet/core/fundamentals/openapi/aspnetcore-openapi
         builder.Services.AddOpenApi("v1", options => { });
+
+        return builder;
+    }
+
+    public static WebApplicationBuilder AddHttpJsonOptions(this WebApplicationBuilder builder)
+    {
+        // Required for request/response deserialization/serialization
+        builder.Services.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(EnrichedEnumJsonConverter<Frequency>.Create());
+            options.SerializerOptions.Converters.Add(new NullableGuidConverter());
+        });
 
         return builder;
     }

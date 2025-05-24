@@ -1,0 +1,9 @@
+﻿using Pot.AspNetCore.Concerns.DependencyInjection;
+using Pot.Data.Entities;
+
+namespace Pot.AspNetCore.Features.Incomes.Create.Services.EntityChecks;
+
+public interface IPreCreateChecker : IPotScopedDependency
+{
+    Task<OutputState?> CanSaveAsync(Guid? accountRowId, IncomeEntity incomeToCreate, CancellationToken cancellationToken);
+}

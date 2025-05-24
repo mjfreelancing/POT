@@ -3,7 +3,7 @@ using CsvHelper.Configuration;
 using CsvHelper.TypeConversion;
 using Pot.Data.Models;
 
-namespace Pot.AspNetCore.Converters
+namespace Pot.AspNetCore.Concerns.Converters.Csv
 {
     public class FrequencyConverter : DefaultTypeConverter
     {

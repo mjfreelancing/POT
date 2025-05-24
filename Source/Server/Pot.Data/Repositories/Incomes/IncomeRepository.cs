@@ -1,6 +1,7 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.EntityFrameworkCore.Pagination.Extensions;
 using AllOverIt.Pagination;
+using AllOverIt.Pagination.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Pot.Data.Entities;
 using Pot.Data.Extensions;
@@ -34,9 +35,10 @@ internal sealed class IncomeRepository : GenericRepository<PotDbContext, IncomeE
             }
         };
 
+        // The OrderBy needs Description + Id to ensure pagination works correctly
         return _queryPaginatorFactory
             .CreatePaginator(incomeQuery, paginatorConfig)
-            .ColumnAscending(entity => entity.NextDue)
+            .ColumnAscending(entity => entity.NextDue, entity => entity.Description, entity => entity.Id)
             .GetPageResultsAsync(paging.Continuation, cancellationToken);
     }
 

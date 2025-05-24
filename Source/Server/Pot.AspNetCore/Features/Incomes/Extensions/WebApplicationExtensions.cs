@@ -13,7 +13,7 @@ internal static class WebApplicationExtensions
                 .WithTags("Incomes Api")
                 .GetAllIncomes()
                 .GetIncome()
-                //.CreateIncome()
+                .CreateIncome()
                 //.UpdateIncome()
                 //.DeleteIncome()
                 ;

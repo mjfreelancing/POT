@@ -1,13 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<ItemGroup>
-		<PackageReference Include="AllOverIt.Csv" Version="9.0.0-rc.1" />
-		<PackageReference Include="AllOverIt.Logging" Version="9.0.0-rc.1" />
-		<PackageReference Include="AllOverIt.Validation" Version="9.0.0-rc.1" />
+		<PackageReference Include="AllOverIt.Csv" Version="9.0.0-rc.2" />
+		<PackageReference Include="AllOverIt.Logging" Version="9.0.0-rc.2" />
+		<PackageReference Include="AllOverIt.Serialization.Json.SystemText" Version="9.0.0-rc.2" />
+		<PackageReference Include="AllOverIt.Validation" Version="9.0.0-rc.2" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.5" />
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.5" />
 		<PackageReference Include="Microsoft.Extensions.Telemetry" Version="9.5.0" />
-		<PackageReference Include="Scalar.AspNetCore" Version="2.3.0" />
+		<PackageReference Include="Scalar.AspNetCore" Version="2.4.3" />
 	</ItemGroup>
 
 	<ItemGroup>

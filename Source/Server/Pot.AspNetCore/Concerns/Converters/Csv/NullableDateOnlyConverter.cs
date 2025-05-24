@@ -4,7 +4,7 @@ using CsvHelper.Configuration;
 using CsvHelper.TypeConversion;
 using System.Globalization;
 
-namespace Pot.AspNetCore.Converters
+namespace Pot.AspNetCore.Concerns.Converters.Csv
 {
     // Will use the format style specified in the [Format] attribute on the property,for example:
     // [Format("yyyy-MM-dd")]

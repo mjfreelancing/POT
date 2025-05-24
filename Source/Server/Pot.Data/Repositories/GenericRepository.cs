@@ -120,6 +120,13 @@ internal abstract class GenericRepository<TDbContext, TEntity> : IGenericReposit
         return SaveAsync(cancellationToken);
     }
 
+    public Task<int> UpdateAndSaveAsync(TEntity entity, CancellationToken cancellationToken)
+    {
+        Update(entity);
+
+        return SaveAsync(cancellationToken);
+    }
+
 
 
 

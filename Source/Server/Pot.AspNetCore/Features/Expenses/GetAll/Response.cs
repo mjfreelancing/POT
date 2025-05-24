@@ -4,6 +4,7 @@ using AllOverIt.Pagination;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.AspNetCore.Models;
 using Pot.Data.Entities;
+using Pot.Data.Models;
 using System.ComponentModel;
 
 namespace Pot.AspNetCore.Features.Expenses.GetAll;
@@ -23,7 +24,7 @@ internal sealed class Response : ResponseBase
     public DateOnly AccrualStart { get; init; }
 
     [Description("The expense frequency type.")]
-    public string Frequency { get; init; }
+    public Frequency Frequency { get; init; }
 
     [Description("The expense frequency count.")]
     public int FrequencyCount { get; init; }
@@ -56,11 +57,7 @@ internal sealed class Response : ResponseBase
         NextDue = expense.NextDue;
         EndDate = expense.EndDate;
         AccrualStart = expense.AccrualStart;
-
-        // Minimal APIs doesn't support Controller style ModelBinderProviders so
-        // we can't use Frequency on this response.
-        Frequency = expense.Frequency.Name;
-
+        Frequency = expense.Frequency;
         FrequencyCount = expense.FrequencyCount;
         Amount = expense.Amount;
         Allocated = expense.Allocated;

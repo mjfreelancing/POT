@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.AspNetCore.Models;
 using Pot.Data.Entities;
+using Pot.Data.Models;
 using System.ComponentModel;
 
 namespace Pot.AspNetCore.Features.Incomes.Get;
@@ -24,7 +25,7 @@ internal sealed class Response : ResponseBase
     public DateOnly? EndDate { get; init; }
 
     [Description("The income frequency type.")]
-    public string Frequency { get; init; }
+    public Frequency Frequency { get; init; }   // Serialized via EnrichedEnumJsonConverter<Frequency>
 
     [Description("The income frequency count.")]
     public int FrequencyCount { get; init; }
@@ -49,11 +50,7 @@ internal sealed class Response : ResponseBase
         Description = income.Description;
         NextDue = income.NextDue;
         EndDate = income.EndDate;
-
-        // Minimal APIs doesn't support Controller style ModelBinderProviders so
-        // we can't use Frequency on this response.
-        Frequency = income.Frequency.Name;
-
+        Frequency = income.Frequency;
         FrequencyCount = income.FrequencyCount;
         Amount = income.Amount;
 

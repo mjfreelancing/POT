@@ -1,6 +1,6 @@
 ﻿using CsvHelper.Configuration.Attributes;
 using CsvHelper.TypeConversion;
-using Pot.AspNetCore.Converters;
+using Pot.AspNetCore.Concerns.Converters.Csv;
 using Pot.Data.Models;
 
 namespace Pot.AspNetCore.Features.Expenses.Import.Models;

@@ -18,13 +18,13 @@ public class Program
         builder
             .AddCorrelationId()
             .AddOpenApi()
+            .AddHttpJsonOptions()
             .AddLogging()
             .AddExceptionHandlers()
             .AddCustomProblemDetails()
             .AutoRegisterPotDependencies()
             .AddValidation()
             .AddPotData();
-
 
         // https://www.youtube.com/watch?v=3XoXzEPHdTA Nick Chapsas
         // https://www.youtube.com/watch?v=6DWJIyipxzw Milan Jovanovic
