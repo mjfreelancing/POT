@@ -1,4 +1,5 @@
 ﻿using Pot.Data.Entities;
+using Pot.Data.Extensions;
 using Pot.Data.Specifications;
 
 namespace Pot.Data.Repositories.Accounts;
@@ -12,16 +13,22 @@ internal sealed class AccountRepository : GenericRepository<PotDbContext, Accoun
 
     public Task<bool> AccountExistsAsync(Guid id, CancellationToken cancellationToken)
     {
-        return AnyAsync(EntitySpecifications.IsSameId<AccountEntity>(id).Expression, cancellationToken);
+        return AsQueryable().AnyAsync(id, cancellationToken);
+        // Same as:
+        // return AnyAsync(EntitySpecifications.IsSameId<AccountEntity>(id).Expression, cancellationToken);
     }
 
     public Task<AccountEntity> GetAccountAsync(Guid id, CancellationToken cancellationToken)
     {
-        return SingleAsync(EntitySpecifications.IsSameId<AccountEntity>(id).Expression, cancellationToken);
+        // Same as:
+        // return SingleAsync(EntitySpecifications.IsSameId<AccountEntity>(id).Expression, cancellationToken);
+        return AsQueryable().SingleAsync(id, cancellationToken);
     }
 
     public Task<AccountEntity?> GetAccountOrDefaultAsync(Guid id, CancellationToken cancellationToken)
     {
+        // Same as:
+        // return AsQueryable().SingleOrDefaultAsync(id, cancellationToken);
         return SingleOrDefaultAsync(EntitySpecifications.IsSameId<AccountEntity>(id).Expression, cancellationToken);
     }
 

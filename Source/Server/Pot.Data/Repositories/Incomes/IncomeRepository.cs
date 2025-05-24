@@ -3,8 +3,8 @@ using AllOverIt.EntityFrameworkCore.Pagination.Extensions;
 using AllOverIt.Pagination;
 using Microsoft.EntityFrameworkCore;
 using Pot.Data.Entities;
+using Pot.Data.Extensions;
 using Pot.Data.Models;
-using Pot.Data.Specifications;
 
 namespace Pot.Data.Repositories.Incomes;
 
@@ -44,6 +44,6 @@ internal sealed class IncomeRepository : GenericRepository<PotDbContext, IncomeE
     {
         return AsQueryable()
             .Include(income => income.Account)
-            .SingleOrDefaultAsync(EntitySpecifications.IsSameId<IncomeEntity>(id).Expression, cancellationToken);
+            .SingleOrDefaultAsync(id, cancellationToken);
     }
 }
