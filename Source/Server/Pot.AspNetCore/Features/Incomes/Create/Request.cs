@@ -24,5 +24,5 @@ public sealed class Request
     public double Amount { get; init; }
 
     [Description("The identifier for the associated account to be credited.")]
-    public Guid? AccountRowId { get; init; }
+    public Guid AccountRowId { get; init; }
 }

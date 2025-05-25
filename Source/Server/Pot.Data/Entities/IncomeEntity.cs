@@ -20,6 +20,6 @@ namespace Pot.Data.Entities
         public int FrequencyCount { get; set; }
         public double Amount { get; set; }
 
-        public AccountEntity? Account { get; set; }
+        public required AccountEntity Account { get; set; }
     }
 }

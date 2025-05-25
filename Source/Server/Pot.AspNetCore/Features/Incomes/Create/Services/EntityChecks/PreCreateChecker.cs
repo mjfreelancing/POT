@@ -12,7 +12,6 @@ internal sealed class PreCreateChecker : ChainOfResponsibilityAsyncComposer<Inpu
 {
     private static readonly IEnumerable<PreCreateCheckBase> _handlers =
     [
-        new CheckAccountExistsWhenProvided(),
         new CheckDescriptionDoesNotExist()
     ];
 
@@ -28,13 +27,12 @@ internal sealed class PreCreateChecker : ChainOfResponsibilityAsyncComposer<Inpu
         _logger = logger.WhenNotNull();
     }
 
-    public Task<OutputState?> CanSaveAsync(Guid? accountRowId, IncomeEntity incomeToCreate, CancellationToken cancellationToken)
+    public Task<OutputState?> CanSaveAsync(IncomeEntity incomeToCreate, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
         var state = new InputState
         {
-            AccountRowId = accountRowId,
             IncomeToCreate = incomeToCreate,
             AccountRepository = _accountRepository,
             IncomeRepository = _incomeRepository,

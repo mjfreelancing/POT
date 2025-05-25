@@ -1,6 +1,10 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
+using Pot.AspNetCore.Concerns.ProblemDetails;
+using Pot.AspNetCore.Concerns.ProblemDetails.Extensions;
+using Pot.AspNetCore.Concerns.Validation;
+using Pot.AspNetCore.Errors;
 using Pot.AspNetCore.Features.Incomes.Create.Services.EntityChecks;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
@@ -28,6 +32,25 @@ internal sealed class CreateIncomeService : ICreateIncomeService
     {
         _logger.LogCall(this);
 
+        var incomeAccount = await _accountRepository
+            .GetAccountOrDefaultAsync(request.AccountRowId, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (incomeAccount is null)
+        {
+            var problemDetails = ApiProblemDetailsFactory.CreateUnprocessableEntity(
+                ErrorCodes.NotFound,
+                nameof(Request.AccountRowId),
+                request.AccountRowId,
+                "The account does not exist");
+
+            _logger.LogErrors(problemDetails);
+
+            var incomeError = new ServiceError(problemDetails);
+
+            return EnrichedResult.Fail<IncomeEntity>(incomeError);
+        }
+
         var incomeToCreate = new IncomeEntity
         {
             Description = request.Description,
@@ -35,33 +58,22 @@ internal sealed class CreateIncomeService : ICreateIncomeService
             EndDate = request.EndDate,
             Frequency = request.Frequency,
             FrequencyCount = request.FrequencyCount,
-            Amount = request.Amount
+            Amount = request.Amount,
+            Account = incomeAccount
         };
 
-        // incomeToCreate.Account will be assigned if it is found
-        var canSaveResult = await _preCreateChecker.CanSaveAsync(request.AccountRowId, incomeToCreate, cancellationToken);
+        var canSaveResult = await _preCreateChecker.CanSaveAsync(incomeToCreate, cancellationToken);
 
         if (canSaveResult is not null)
         {
             return canSaveResult.FailResult;
         }
 
-        var account = incomeToCreate.Account;
+        incomeAccount.Incomes.Add(incomeToCreate);
 
-        if (account is not null)
-        {
-            account.Incomes.Add(incomeToCreate);
-
-            await _accountRepository
-                .UpdateAndSaveAsync(account, cancellationToken)
-                .ConfigureAwait(false);
-        }
-        else
-        {
-            await _incomeRepository
-                .AddAndSaveAsync(incomeToCreate, cancellationToken)
-                .ConfigureAwait(false);
-        }
+        await _accountRepository
+            .UpdateAndSaveAsync(incomeAccount, cancellationToken)
+            .ConfigureAwait(false);
 
         return EnrichedResult.Success(incomeToCreate);
     }

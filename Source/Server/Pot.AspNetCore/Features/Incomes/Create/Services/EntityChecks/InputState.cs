@@ -6,7 +6,6 @@ namespace Pot.AspNetCore.Features.Incomes.Create.Services.EntityChecks;
 
 internal sealed class InputState
 {
-    public required Guid? AccountRowId { get; init; }
     public required IncomeEntity IncomeToCreate { get; init; }
     public required IAccountRepository AccountRepository { get; init; }
     public required IIncomeRepository IncomeRepository { get; init; }
