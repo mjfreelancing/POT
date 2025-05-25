@@ -78,7 +78,7 @@ export const createDateColumn = <TData,>(
     const rawValue = row.getValue(accessorKey) as string | Date;
 
     if (rawValue === null) {
-      return <div>{nullValue}</div>;
+      return <div className="text-muted-foreground">{nullValue}</div>;
     }
 
     const dateValue = rawValue instanceof Date ? rawValue : new Date(rawValue);

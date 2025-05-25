@@ -22,8 +22,8 @@ const useApiGetAllAccounts = () => {
   if (result?.success) {
     // spreading [...result.value] to create a shallow copy of the array since sort()
     // mutates the source array in the react-query cache.
-    const sorted = [...result.value].sort(compareAccountBsbNumber);
-    data = new SuccessResult(sorted);
+    const sortedResults = [...result.value].sort(compareAccountBsbNumber);
+    data = new SuccessResult(sortedResults);
   } else {
     // type narrowed to FailResult<FailResultBase> since result cannot be undefined at this point
     data = result;
