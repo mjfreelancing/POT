@@ -1,6 +1,5 @@
 ﻿using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
-using Microsoft.EntityFrameworkCore;
 using Pot.AspNetCore.Concerns.ProblemDetails;
 using Pot.AspNetCore.Concerns.ProblemDetails.Extensions;
 using Pot.AspNetCore.Errors;
@@ -20,8 +19,7 @@ internal sealed class CheckDescriptionDoesNotExist : PreCreateCheckBase
         var predicate = IncomeSpecifications.IsSameDescription(state.IncomeToCreate.Account.Id, income.Description).Expression;
 
         var descriptionExists = await state.IncomeRepository
-            .Where(predicate)
-            .AnyAsync(income => income.Id != income.Id, cancellationToken)
+            .AnyAsync(predicate, cancellationToken)
             .ConfigureAwait(false);
 
         if (descriptionExists)
