@@ -15,8 +15,17 @@ export const columns: ColumnDef<Income>[] = [
     header: 'Description',
   },
   {
-    accessorKey: 'account.description',
+    id: 'accountDescription',
     header: 'Account',
+    cell: ({ row }) => (
+      <div
+        className={
+          !row.original.account?.description ? 'text-muted-foreground' : ''
+        }
+      >
+        {row.original.account?.description ?? 'Not Assigned'}
+      </div>
+    ),
   },
   createFrequencyColumn<Income>('frequencyCount', 'frequency', 'Frequency'),
   createMoneyValueColumn<Income>('amount', 'Amount'),
