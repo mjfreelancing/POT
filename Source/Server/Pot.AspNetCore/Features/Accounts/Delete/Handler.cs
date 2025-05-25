@@ -7,7 +7,7 @@ namespace Pot.AspNetCore.Features.Accounts.Delete;
 
 internal sealed class Handler
 {
-    // A 422 may be returned if the account cannot be deleted due to being associated with one or more expenses.
+    // A 422 may be returned if the account cannot be deleted due to being associated with one or more expenses or incomes.
     public static async Task<Results<Ok, NotFound, ProblemHttpResult>> Invoke([Description("The account Id.")] Guid id,
         IPersistableAccountRepository accountRepository, ILogger<Handler> logger, CancellationToken cancellationToken)
     {
