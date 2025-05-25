@@ -1,9 +1,10 @@
 import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 
-import LoadingMessage from '../components/feedback/message/LoadingMessage';
 import CreateIncomeSheet from '@/features/incomes/create/CreateIncomeSheet';
 import EditIncomeSheet from '@/features/incomes/edit/EditIncomeSheet';
+
+import LoadingMessage from '../components/feedback/message/LoadingMessage';
 
 // Lazy load page components to enable code splitting and reduce the initial bundle size
 const AccountsPage = lazy(() => import('../features/accounts/AccountsPage'));

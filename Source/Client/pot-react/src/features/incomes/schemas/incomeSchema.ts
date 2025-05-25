@@ -1,5 +1,6 @@
-import { Frequency } from '@/lib/types';
 import { z } from 'zod';
+
+import { Frequency } from '@/lib/types';
 
 export const MoneyValueSchema = z
   .number({

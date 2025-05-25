@@ -2,9 +2,9 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiCreateAccount } from '@/api/accounts/hooks/useAccounts';
 import { CreateAccount } from '@/data/accounts/account';
+import { Identity } from '@/data/identity';
 import { FailResultBase } from '@/lib/result/failResultBase';
 import { Result } from '@/lib/result/result';
-import { Identity } from '@/data/identity';
 
 export const useCreateAccount = () => {
   const queryClient = useQueryClient();

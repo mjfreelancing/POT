@@ -1,3 +1,4 @@
+import { Identity } from '@/data/identity';
 import {
   compareIncomeNextDue,
   CreateIncome,
@@ -9,7 +10,6 @@ import { FailResultBase } from '@/lib/result/failResultBase';
 import { Result, SuccessResult } from '@/lib/result/result';
 
 import { useDelete, useGet, usePost, usePut } from '../../hooks/useApi';
-import { Identity } from '@/data/identity';
 
 const useApiGetAllIncomes = () => {
   const query = useGet<PagedIncome>('/incomes', ['incomes']);
@@ -80,7 +80,7 @@ const useApiDeleteIncome = (id: string) => {
 export {
   useApiCreateIncome,
   useApiDeleteIncome,
-  useApiGetIncomeById,
   useApiGetAllIncomes,
+  useApiGetIncomeById,
   useApiUpdateIncome,
 };

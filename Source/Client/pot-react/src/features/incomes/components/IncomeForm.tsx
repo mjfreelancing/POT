@@ -3,6 +3,7 @@ import { UseFormReturn } from 'react-hook-form';
 import MoneyValueInput, {
   MoneyValueChangeEvent,
 } from '@/components/input/MoneyValueInput';
+import { EnrichedDatePicker } from '@/components/picker/EnrichedDatePicker';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -13,19 +14,18 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { EnrichedDatePicker } from '@/components/picker/EnrichedDatePicker';
 import {
   Select,
-  SelectTrigger,
   SelectContent,
   SelectItem,
+  SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import type { Account } from '@/data/accounts/account';
 import { FrequencyEnumValues } from '@/lib/types';
+import { localIsoDate, localToday } from '@/lib/utils';
 
 import { IncomeFormSchema } from '../schemas/incomeSchema';
-import type { Account } from '@/data/accounts/account';
-import { localIsoDate, localToday } from '@/lib/utils';
 
 type IncomeFormProps = {
   form: UseFormReturn<IncomeFormSchema>;

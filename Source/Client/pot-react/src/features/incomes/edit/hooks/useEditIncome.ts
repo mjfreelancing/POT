@@ -1,10 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiUpdateIncome } from '@/api/incomes/hooks/useIncomes';
+import { Identity } from '@/data/identity';
 import { EditIncome } from '@/data/incomes/income';
 import { FailResultBase } from '@/lib/result/failResultBase';
 import { Result } from '@/lib/result/result';
-import { Identity } from '@/data/identity';
 
 // Hook to handle editing an existing income entry
 export const useEditIncome = () => {

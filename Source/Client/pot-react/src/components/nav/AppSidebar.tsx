@@ -1,8 +1,8 @@
 import { Sidebar, SidebarFooter } from '@/components/ui/sidebar';
 
 import ThemeToggle from '../theme/ThemeToggle';
-import { AppSidebarMenus } from './AppSidebarMenus';
 import { AppSidebarHeader } from './AppSidebarHeader';
+import { AppSidebarMenus } from './AppSidebarMenus';
 
 function AppSidebar() {
   return (
