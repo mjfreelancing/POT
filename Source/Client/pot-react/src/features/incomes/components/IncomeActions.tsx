@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Income } from '@/data/incomes/income';
 
-//import { useDeleteIncome } from '../delete/hooks/useDeleteIncome';
+import { useDeleteIncome } from '../delete/hooks/useDeleteIncome';
 
 type IncomeActionsProps = {
   income: Income;
@@ -23,12 +23,12 @@ type IncomeActionsProps = {
 const IncomeActions = ({ income }: IncomeActionsProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const navigate = useNavigate();
-  //const { deleteIncome } = useDeleteIncome(income.rowId);
+  const { deleteIncome } = useDeleteIncome(income.rowId);
   const { showBoundary } = useErrorBoundary();
 
   const handleDelete = async () => {
     try {
-      //await deleteIncome();
+      await deleteIncome();
       setShowDeleteDialog(false);
     } catch (error) {
       showBoundary(error);
@@ -65,7 +65,7 @@ const IncomeActions = ({ income }: IncomeActionsProps) => {
 
       <ConfirmationDialog
         open={showDeleteDialog}
-        title="Delete Account"
+        title="Delete Income"
         description={`Are you sure you want to delete '${income.description}'?`}
         confirmLabel="Delete"
         cancelLabel="Cancel"
