@@ -2,12 +2,17 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiUpdateAccount } from '@/api/accounts/hooks/useAccounts';
 import { EditAccount } from '@/data/accounts/account';
+import { Identity } from '@/data/identity';
+import { Result } from '@/lib/result/result';
+import { FailResultBase } from '@/lib/result/failResultBase';
 
 export const useEditAccount = () => {
   const queryClient = useQueryClient();
   const apiUpdateAccount = useApiUpdateAccount();
 
-  const editAccount = async (account: EditAccount) => {
+  const editAccount = async (
+    account: EditAccount,
+  ): Promise<Result<Identity, FailResultBase>> => {
     const controller = new AbortController();
 
     try {

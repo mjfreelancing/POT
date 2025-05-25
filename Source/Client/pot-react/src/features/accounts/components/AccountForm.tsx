@@ -61,6 +61,7 @@ const AccountForm = ({
           </FormItem>
         )}
       />
+
       <FormField
         control={form.control}
         name="number"
@@ -89,6 +90,7 @@ const AccountForm = ({
           </FormItem>
         )}
       />
+
       <FormField
         control={form.control}
         name="description"
@@ -107,6 +109,7 @@ const AccountForm = ({
           </FormItem>
         )}
       />
+
       <FormField
         control={form.control}
         name="balance"
@@ -129,6 +132,7 @@ const AccountForm = ({
           </FormItem>
         )}
       />
+
       <FormField
         control={form.control}
         name="reserved"
@@ -151,6 +155,7 @@ const AccountForm = ({
           </FormItem>
         )}
       />
+
       <div className="flex justify-end space-x-4">
         {/* type="button" prevents this button from triggering a form submission - there's a scenario
             where the user may press ENTER but the server reports a validation error and the sheet

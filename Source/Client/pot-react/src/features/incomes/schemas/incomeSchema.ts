@@ -12,14 +12,14 @@ export const incomeFormSchema = z.object({
   nextDue: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
   endDate: z
     .string()
-    .nullable()
-    .refine(val => val == null || /^\d{4}-\d{2}-\d{2}$/.test(val), {
+    .optional()
+    .refine(val => val === undefined || /^\d{4}-\d{2}-\d{2}$/.test(val), {
       message: 'Date must be YYYY-MM-DD',
     }),
   frequency: z.nativeEnum(Frequency),
   frequencyCount: z.number().min(1),
   amount: MoneyValueSchema.min(1, 'Amount must be 1 or greater'),
-  accountRowId: z.string().nullable(),
+  accountRowId: z.string().optional(),
 });
 
 export type IncomeFormSchema = z.infer<typeof incomeFormSchema>;

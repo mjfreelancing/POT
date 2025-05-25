@@ -16,11 +16,13 @@ import { AccountFormSchema, accountFormSchema } from '../schemas/accountSchema';
 import { useEditAccount } from './hooks/useEditAccount';
 
 const EditAccountSheet = () => {
-  const [error, setError] = useState<DisplayError | null>(null);
-  const navigate = useNavigate();
   const { id } = useParams();
-  const { data: result, isLoading } = useApiGetAccountById(id!);
+  const navigate = useNavigate();
+  const { data: accountResult, isLoading: isAccountLoading } =
+    useApiGetAccountById(id!);
   const { editAccount } = useEditAccount();
+
+  const [error, setError] = useState<DisplayError | null>(null);
 
   // Initialize form with default values to prevent uncontrolled-to-controlled input warnings
   // while LoadingMessage is displayed. When the account data loads, form.reset() will
@@ -38,18 +40,18 @@ const EditAccountSheet = () => {
   });
 
   useEffect(() => {
-    if (result?.success) {
+    if (accountResult?.success) {
       form.reset({
-        bsb: result.value.bsb,
-        number: result.value.number,
-        description: result.value.description,
-        balance: result.value.balance,
-        reserved: result.value.reserved,
+        bsb: accountResult.value.bsb,
+        number: accountResult.value.number,
+        description: accountResult.value.description,
+        balance: accountResult.value.balance,
+        reserved: accountResult.value.reserved,
       });
     }
-  }, [form, result]);
+  }, [accountResult, form]);
 
-  if (isLoading) {
+  if (isAccountLoading) {
     return (
       <AccountSheet title="Edit Account">
         <LoadingMessage isLoading={true} />
@@ -57,16 +59,14 @@ const EditAccountSheet = () => {
     );
   }
 
-  {
-    /* Deal with failure to load account data */
-  }
-  if (result && !result.success) {
+  // Deal with failure to load data
+  if (accountResult && !accountResult.success) {
     return (
       <Sheet open={true}>
         <SheetContent>
           <ErrorSheet
-            title={result.error.code}
-            description={result.error.description}
+            title={accountResult.error.code}
+            description={accountResult.error.description}
             onDismiss={() => navigate('/accounts')}
           />
         </SheetContent>
@@ -74,7 +74,7 @@ const EditAccountSheet = () => {
     );
   }
 
-  const { rowId, eTag } = result.value;
+  const { rowId, eTag } = accountResult.value;
 
   const onSubmit = async (values: AccountFormSchema) => {
     const updatedAccount: EditAccount = {

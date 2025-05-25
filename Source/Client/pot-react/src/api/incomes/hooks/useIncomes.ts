@@ -1,13 +1,14 @@
 import {
   compareIncomeNextDue,
   CreateIncome,
+  EditIncome,
   Income,
   PagedIncome,
 } from '@/data/incomes/income';
 import { FailResultBase } from '@/lib/result/failResultBase';
 import { Result, SuccessResult } from '@/lib/result/result';
 
-import { useGet, usePost } from '../../hooks/useApi';
+import { useDelete, useGet, usePost, usePut } from '../../hooks/useApi';
 import { Identity } from '@/data/identity';
 
 const useApiGetAllIncomes = () => {
@@ -39,17 +40,17 @@ const useApiGetAllIncomes = () => {
   return { ...query, data };
 };
 
-// const useApiGetAccountById = (id: string) => {
-//   const query = useGet<Account>(`/accounts/${id}`, ['accounts', id]);
+const useApiGetIncomeById = (id: string) => {
+  const query = useGet<Income>(`/incomes/${id}`, ['incomes', id]);
 
-//   // Cast to Result<Account, FailResultBase> type to enable TypeScript's discriminated union type narrowing.
-//   // This allows TypeScript to infer that when !success, error must exist, and when success, value must exist.
-//   // Without the cast, TypeScript can't determine the relationship between success and error/value properties.
-//   return {
-//     ...query,
-//     data: query.data as Result<Account, FailResultBase>,
-//   };
-// };
+  // Cast to Result<Income, FailResultBase> type to enable TypeScript's discriminated union type narrowing.
+  // This allows TypeScript to infer that when !success, error must exist, and when success, value must exist.
+  // Without the cast, TypeScript can't determine the relationship between success and error/value properties.
+  return {
+    ...query,
+    data: query.data as Result<Income, FailResultBase>,
+  };
+};
 
 const useApiCreateIncome = () => {
   const mutation = usePost<Identity, CreateIncome>('/incomes');
@@ -61,25 +62,25 @@ const useApiCreateIncome = () => {
   };
 };
 
-// // Returning the mutation data as Result<Identity, FailResultBase> type to enable TypeScript's discriminated union type narrowing.
-// const useApiUpdateAccount = () => {
-//   const mutation = usePut<Identity, EditAccount>('/accounts');
+// Returning the mutation data as Result<Identity, FailResultBase> type to enable TypeScript's discriminated union type narrowing.
+const useApiUpdateIncome = () => {
+  const mutation = usePut<Identity, EditIncome>('/incomes');
 
-//   return {
-//     ...mutation,
-//     data: mutation.data as Result<Identity, FailResultBase>,
-//   };
-// };
+  return {
+    ...mutation,
+    data: mutation.data as Result<Identity, FailResultBase>,
+  };
+};
 
-// // Not performing type narrowing as this method currently returns a mutation without Result<T> handling
-// const useApiDeleteAccount = (id: string) => {
-//   return useDelete<void>(`/accounts/${id}`);
-// };
+// Not performing type narrowing as this method currently returns a mutation without Result<T> handling
+const useApiDeleteIncome = (id: string) => {
+  return useDelete<void>(`/incomes/${id}`);
+};
 
 export {
   useApiCreateIncome,
-  // useApiDeleteAccount,
-  // useApiGetAccountById,
+  useApiDeleteIncome,
+  useApiGetIncomeById,
   useApiGetAllIncomes,
-  //useApiUpdateAccount,
+  useApiUpdateIncome,
 };

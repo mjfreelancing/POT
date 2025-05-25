@@ -33,11 +33,11 @@ const CreateIncomeSheet = () => {
     defaultValues: {
       description: '',
       nextDue: localToday(),
-      endDate: null,
+      endDate: undefined,
       frequency: Frequency.Months,
       frequencyCount: 1,
       amount: 0,
-      accountRowId: null,
+      accountRowId: undefined, // undefined since the <Select> component on <IncomeForm> expects string | undefined
     },
   });
 

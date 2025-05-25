@@ -1,5 +1,4 @@
 import { UseFormReturn } from 'react-hook-form';
-import { format } from 'date-fns';
 
 import MoneyValueInput, {
   MoneyValueChangeEvent,
@@ -22,7 +21,7 @@ import {
   SelectItem,
   SelectValue,
 } from '@/components/ui/select';
-import { FrequencyEnumValues } from '@/lib/types';
+import { Frequency, FrequencyEnumValues } from '@/lib/types';
 
 import { IncomeFormSchema } from '../schemas/incomeSchema';
 import type { Account } from '@/data/accounts/account';
@@ -73,6 +72,7 @@ const IncomeForm = ({
           </FormItem>
         )}
       />
+
       <FormField
         control={form.control}
         name="amount"
@@ -106,9 +106,7 @@ const IncomeForm = ({
               <div className="flex items-center space-x-2">
                 <EnrichedDatePicker
                   selectedDate={field.value ? new Date(field.value) : undefined}
-                  onDateAccepted={date =>
-                    field.onChange(date ? localIsoDate(date) : '')
-                  }
+                  onDateAccepted={field.onChange}
                   triggerClassName="flex-1"
                 />
                 <Button
@@ -138,7 +136,9 @@ const IncomeForm = ({
                 <EnrichedDatePicker
                   selectedDate={field.value ? new Date(field.value) : undefined}
                   onDateAccepted={date =>
-                    field.onChange(date ? localIsoDate(date) : null)
+                    field.onChange(
+                      date !== undefined ? localIsoDate(date) : undefined,
+                    )
                   }
                   triggerClassName="flex-1"
                 />
@@ -147,7 +147,7 @@ const IncomeForm = ({
                   variant="ghost"
                   size="sm"
                   className="w-16"
-                  onClick={() => field.onChange(null)}
+                  onClick={() => field.onChange(undefined)}
                 >
                   Clear
                 </Button>
@@ -158,8 +158,7 @@ const IncomeForm = ({
         )}
       />
 
-      {/* Frequency count and frequency dropdown side by side */}
-      <div className="flex space-x-4">
+      <div className="flex space-x-4 items-baseline">
         <FormField
           control={form.control}
           name="frequencyCount"
@@ -188,11 +187,7 @@ const IncomeForm = ({
               <FormLabel htmlFor="frequency-select">Frequency</FormLabel>
               <FormControl>
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger
-                    id="frequency-select"
-                    size="sm"
-                    className="w-full"
-                  >
+                  <SelectTrigger id="frequency-select" className="w-full">
                     <SelectValue placeholder="Select frequency" />
                   </SelectTrigger>
                   <SelectContent>
@@ -210,7 +205,6 @@ const IncomeForm = ({
         />
       </div>
 
-      {/* Account dropdown */}
       <FormField
         control={form.control}
         name="accountRowId"
