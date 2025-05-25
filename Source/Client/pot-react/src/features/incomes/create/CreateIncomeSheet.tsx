@@ -42,7 +42,13 @@ const CreateIncomeSheet = () => {
   });
 
   const onSubmit = async (values: IncomeFormSchema) => {
-    const income: CreateIncome = values;
+    // if the optional fields are undefined, set them to null to match the CreateIncome type
+    const income: CreateIncome = {
+      ...values,
+      endDate: values.endDate ?? null,
+      accountRowId: values.accountRowId ?? null,
+    };
+
     const result = await createIncome(income);
 
     if (result.success) {

@@ -50,11 +50,11 @@ const EditIncomeSheet = () => {
       form.reset({
         description: income.description,
         nextDue: income.nextDue,
-        endDate: income.endDate,
+        endDate: income.endDate ?? undefined, // if endDate is null, set it to undefined to match the form's expected type
         frequency: income.frequency,
         frequencyCount: income.frequencyCount,
         amount: income.amount,
-        accountRowId: income.account?.rowId, //mjf ?? '',
+        accountRowId: income.account?.rowId,
       });
       setInitialized(true);
     }
@@ -107,16 +107,13 @@ const EditIncomeSheet = () => {
     const payload: EditIncome = {
       rowId,
       eTag,
-      description: values.description,
-      nextDue: values.nextDue,
-      endDate: values.endDate,
-      frequency: values.frequency,
-      frequencyCount: values.frequencyCount,
-      amount: values.amount,
-      accountRowId: values.accountRowId,
+      ...values,
+      endDate: values.endDate ?? null,
+      accountRowId: values.accountRowId ?? null,
     };
 
     const result = await editIncome(payload);
+
     if (result.success) {
       navigate('/incomes');
     } else {

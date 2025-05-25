@@ -16,7 +16,7 @@ export const BaseIncomeSchema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'Dates must be formatted as YYYY-MM-DD'),
   endDate: z
     .string()
-    .optional()
+    .nullable()
     .refine(val => val === undefined || /^\d{4}-\d{2}-\d{2}$/.test(val), {
       message: 'Dates must be formatted as YYYY-MM-DD',
     }),
@@ -31,12 +31,12 @@ export const IncomeSchema = BaseIncomeSchema.extend({
 });
 
 export const CreateIncomeSchema = BaseIncomeSchema.extend({
-  accountRowId: z.string().optional(),
+  accountRowId: z.string().nullable(),
 });
 
 export const EditIncomeSchema = BaseIncomeSchema.extend({
   ...IdentitySchema.shape,
-  accountRowId: z.string().optional(),
+  accountRowId: z.string().nullable(),
 });
 
 export const compareIncomeNextDue = (lhs: Income, rhs: Income): number => {

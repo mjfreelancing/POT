@@ -21,7 +21,7 @@ import {
   SelectItem,
   SelectValue,
 } from '@/components/ui/select';
-import { Frequency, FrequencyEnumValues } from '@/lib/types';
+import { FrequencyEnumValues } from '@/lib/types';
 
 import { IncomeFormSchema } from '../schemas/incomeSchema';
 import type { Account } from '@/data/accounts/account';
