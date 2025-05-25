@@ -1,4 +1,5 @@
 import { UseFormReturn } from 'react-hook-form';
+import { format } from 'date-fns';
 
 import MoneyValueInput, {
   MoneyValueChangeEvent,
@@ -21,11 +22,11 @@ import {
   SelectItem,
   SelectValue,
 } from '@/components/ui/select';
-import { X } from 'lucide-react';
 import { FrequencyEnumValues } from '@/lib/types';
 
 import { IncomeFormSchema } from '../schemas/incomeSchema';
 import type { Account } from '@/data/accounts/account';
+import { localIsoDate, localToday } from '@/lib/utils';
 
 type IncomeFormProps = {
   form: UseFormReturn<IncomeFormSchema>;
@@ -95,7 +96,6 @@ const IncomeForm = ({
         )}
       />
 
-      {/* Next Due date picker */}
       <FormField
         control={form.control}
         name="nextDue"
@@ -105,8 +105,10 @@ const IncomeForm = ({
             <FormControl>
               <div className="flex items-center space-x-2">
                 <EnrichedDatePicker
-                  selectedDate={field.value}
-                  onDateAccepted={field.onChange}
+                  selectedDate={field.value ? new Date(field.value) : undefined}
+                  onDateAccepted={date =>
+                    field.onChange(date ? localIsoDate(date) : '')
+                  }
                   triggerClassName="flex-1"
                 />
                 <Button
@@ -114,7 +116,7 @@ const IncomeForm = ({
                   variant="ghost"
                   size="sm"
                   className="w-16"
-                  onClick={() => field.onChange(new Date())}
+                  onClick={() => field.onChange(localToday())}
                 >
                   Today
                 </Button>
@@ -125,7 +127,6 @@ const IncomeForm = ({
         )}
       />
 
-      {/* End Date picker */}
       <FormField
         control={form.control}
         name="endDate"
@@ -135,8 +136,10 @@ const IncomeForm = ({
             <FormControl>
               <div className="flex items-center space-x-2">
                 <EnrichedDatePicker
-                  selectedDate={field.value ?? undefined}
-                  onDateAccepted={date => field.onChange(date ?? null)}
+                  selectedDate={field.value ? new Date(field.value) : undefined}
+                  onDateAccepted={date =>
+                    field.onChange(date ? localIsoDate(date) : null)
+                  }
                   triggerClassName="flex-1"
                 />
                 <Button
@@ -170,6 +173,7 @@ const IncomeForm = ({
                   type="number"
                   min={1}
                   className="w-full"
+                  onChange={e => field.onChange(e.target.valueAsNumber)}
                 />
               </FormControl>
               <FormMessage />
@@ -209,7 +213,7 @@ const IncomeForm = ({
       {/* Account dropdown */}
       <FormField
         control={form.control}
-        name="account.rowId"
+        name="accountRowId"
         render={({ field }) => (
           <FormItem className="space-y-1">
             <FormLabel htmlFor="account-select">Associated Account</FormLabel>

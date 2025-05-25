@@ -10,13 +10,6 @@ import { Result, SuccessResult } from '@/lib/result/result';
 import { useGet, usePost } from '../../hooks/useApi';
 import { Identity } from '@/data/identity';
 
-const parseDateFields = (income: Income): Income =>
-  ({
-    ...income,
-    nextDue: new Date(income.nextDue),
-    endDate: income.endDate != null ? new Date(income.endDate) : null,
-  }) as Income;
-
 const useApiGetAllIncomes = () => {
   const query = useGet<PagedIncome>('/incomes', ['incomes']);
   const result = query.data as Result<PagedIncome, FailResultBase>;
@@ -27,9 +20,9 @@ const useApiGetAllIncomes = () => {
   // - returns undefined immediately and while loading
   // - returns the result when the query is successful
   if (result?.success) {
-    const sortedResults = result.value.results
-      .map(parseDateFields) // Make sure the date fields are a Date type and not a string
-      .sort(compareIncomeNextDue); // Not concerned about mutating the source since map returns a new array
+    // spreading [...result.value.results] to create a shallow copy of the array since sort()
+    // mutates the source array in the react-query cache.
+    const sortedResults = [...result.value.results].sort(compareIncomeNextDue);
 
     const paged: PagedIncome = {
       ...result.value,

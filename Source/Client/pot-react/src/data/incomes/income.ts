@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { FrequencyEnumValues } from '@/lib/types';
+import { Frequency } from '@/lib/types';
 
 import { IdentitySchema } from '../identity';
 
@@ -11,9 +11,16 @@ export const IncomeAccountSchema = z.object({
 
 export const BaseIncomeSchema = z.object({
   description: z.string(),
-  nextDue: z.date(),
-  endDate: z.date().nullable(),
-  frequency: z.enum(FrequencyEnumValues),
+  nextDue: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Dates must be formatted as YYYY-MM-DD'),
+  endDate: z
+    .string()
+    .nullable()
+    .refine(val => val == null || /^\d{4}-\d{2}-\d{2}$/.test(val), {
+      message: 'Dates must be formatted as YYYY-MM-DD',
+    }),
+  frequency: z.nativeEnum(Frequency),
   frequencyCount: z.number(),
   amount: z.number(),
 });
@@ -24,16 +31,17 @@ export const IncomeSchema = BaseIncomeSchema.extend({
 });
 
 export const CreateIncomeSchema = BaseIncomeSchema.extend({
-  account: z.object({ rowId: z.string() }),
+  accountRowId: z.string().nullable(),
 });
 
 export const EditIncomeSchema = BaseIncomeSchema.extend({
   ...IdentitySchema.shape,
-  account: z.object({ rowId: z.string() }),
+  accountRowId: z.string().nullable(),
 });
 
 export const compareIncomeNextDue = (lhs: Income, rhs: Income): number => {
-  return lhs.nextDue.getTime() - rhs.nextDue.getTime();
+  // Dates are stored in the format 'YYYY-MM-DD'
+  return lhs.nextDue.localeCompare(rhs.nextDue);
 };
 
 export type Income = z.infer<typeof IncomeSchema>;

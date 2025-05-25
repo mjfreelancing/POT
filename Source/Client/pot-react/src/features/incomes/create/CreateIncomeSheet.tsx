@@ -6,7 +6,9 @@ import { useNavigate } from 'react-router';
 import { ErrorSheet } from '@/components/feedback/sheet/ErrorSheet';
 import { CreateIncome } from '@/data/incomes/income';
 import { DisplayError } from '@/lib/errors/displayError';
+import { localToday } from '@/lib/utils';
 import { useApiGetAllAccounts } from '@/api/accounts/hooks/useAccounts';
+import { Frequency } from '@/lib/types';
 
 import { IncomeForm } from '../components/IncomeForm';
 import { IncomeSheet } from '../components/IncomeSheet';
@@ -30,12 +32,12 @@ const CreateIncomeSheet = () => {
     mode: 'onSubmit',
     defaultValues: {
       description: '',
-      nextDue: new Date(),
+      nextDue: localToday(),
       endDate: null,
-      frequency: 'Months',
+      frequency: Frequency.Months,
       frequencyCount: 1,
       amount: 0,
-      account: { rowId: '' },
+      accountRowId: null,
     },
   });
 

@@ -1,4 +1,4 @@
-import { FrequencyEnumValues } from '@/lib/types';
+import { Frequency } from '@/lib/types';
 import { z } from 'zod';
 
 export const MoneyValueSchema = z
@@ -9,14 +9,17 @@ export const MoneyValueSchema = z
 
 export const incomeFormSchema = z.object({
   description: z.string().min(1),
-  nextDue: z.date(),
-  endDate: z.date().nullable(),
-  frequency: z.enum(FrequencyEnumValues),
+  nextDue: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
+  endDate: z
+    .string()
+    .nullable()
+    .refine(val => val == null || /^\d{4}-\d{2}-\d{2}$/.test(val), {
+      message: 'Date must be YYYY-MM-DD',
+    }),
+  frequency: z.nativeEnum(Frequency),
   frequencyCount: z.number().min(1),
-  amount: MoneyValueSchema,
-  account: z.object({
-    rowId: z.string(),
-  }),
+  amount: MoneyValueSchema.min(1, 'Amount must be 1 or greater'),
+  accountRowId: z.string().nullable(),
 });
 
 export type IncomeFormSchema = z.infer<typeof incomeFormSchema>;
