@@ -17,7 +17,7 @@ export const BaseIncomeSchema = z.object({
   endDate: z
     .string()
     .nullable()
-    .refine(val => val === undefined || /^\d{4}-\d{2}-\d{2}$/.test(val), {
+    .refine(val => val === null || /^\d{4}-\d{2}-\d{2}$/.test(val), {
       message: 'Dates must be formatted as YYYY-MM-DD',
     }),
   frequency: z.nativeEnum(Frequency),
