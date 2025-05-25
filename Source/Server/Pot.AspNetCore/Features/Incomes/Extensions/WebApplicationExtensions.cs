@@ -15,7 +15,7 @@ internal static class WebApplicationExtensions
                 .GetIncome()
                 .CreateIncome()
                 //.UpdateIncome()
-                //.DeleteIncome()
+                .DeleteIncome()
                 ;
         }
 

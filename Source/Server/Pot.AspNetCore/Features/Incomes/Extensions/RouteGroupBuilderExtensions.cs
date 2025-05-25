@@ -57,16 +57,16 @@ internal static class RouteGroupBuilderExtensions
     //    return routeGroupBuilder;
     //}
 
-    //public static RouteGroupBuilder DeleteAccount(this RouteGroupBuilder routeGroupBuilder)
-    //{
-    //    routeGroupBuilder
-    //        .MapDelete("/{id}", Delete.Handler.Invoke)
-    //        .WithName(nameof(DeleteAccount))
-    //        .WithSummary("Delete account")
-    //        .WithDescription("Deletes existing account details")
-    //        .WithTags("Accounts")
-    //        .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
+    public static RouteGroupBuilder DeleteIncome(this RouteGroupBuilder routeGroupBuilder)
+    {
+        routeGroupBuilder
+            .MapDelete("/{id}", Delete.Handler.Invoke)
+            .WithName(nameof(DeleteIncome))
+            .WithSummary("Delete income")
+            .WithDescription("Deletes existing income details")
+            .WithTags("Incomes")
+            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
 
-    //    return routeGroupBuilder;
-    //}
+        return routeGroupBuilder;
+    }
 }
