@@ -72,38 +72,36 @@ const EditIncomeSheet = () => {
     );
   }
 
-  // Deal with failure to load data
+  const renderErrorSheet = (title: string, description: string) => (
+    <Sheet open={true}>
+      <SheetContent>
+        <ErrorSheet
+          title={title}
+          description={description}
+          onDismiss={() => navigate('/incomes')}
+        />
+      </SheetContent>
+    </Sheet>
+  );
+
+  // Deal with failure to load income results
   if (incomeResult && !incomeResult.success) {
-    return (
-      <Sheet open={true}>
-        <SheetContent>
-          <ErrorSheet
-            title={incomeResult.error.code}
-            description={incomeResult.error.description}
-            onDismiss={() => navigate('/incomes')}
-          />
-        </SheetContent>
-      </Sheet>
+    return renderErrorSheet(
+      incomeResult.error.code,
+      incomeResult.error.description,
     );
   }
 
-  // Deal with failure to load data
+  // Deal with failure to load accounts
   if (accountsResult && !accountsResult.success) {
-    return (
-      <Sheet open={true}>
-        <SheetContent>
-          <ErrorSheet
-            title={accountsResult.error.code}
-            description={accountsResult.error.description}
-            onDismiss={() => navigate('/incomes')}
-          />
-        </SheetContent>
-      </Sheet>
+    return renderErrorSheet(
+      accountsResult.error.code,
+      accountsResult.error.description,
     );
   }
 
-  const accounts = accountsResult.value;
   const { rowId, eTag } = incomeResult.value;
+  const accounts = accountsResult.value;
 
   const onSubmit = async (values: IncomeFormSchema) => {
     const payload: EditIncome = {
