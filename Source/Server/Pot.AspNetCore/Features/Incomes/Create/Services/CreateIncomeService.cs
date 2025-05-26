@@ -38,17 +38,7 @@ internal sealed class CreateIncomeService : ICreateIncomeService
 
         if (incomeAccount is null)
         {
-            var problemDetails = ApiProblemDetailsFactory.CreateUnprocessableEntity(
-                ErrorCodes.NotFound,
-                nameof(Request.AccountRowId),
-                request.AccountRowId,
-                "The account does not exist");
-
-            _logger.LogErrors(problemDetails);
-
-            var incomeError = new ServiceError(problemDetails);
-
-            return EnrichedResult.Fail<IncomeEntity>(incomeError);
+            return IncomeAccountDoesNotExist(request.AccountRowId);
         }
 
         var incomeToCreate = new IncomeEntity
@@ -76,5 +66,20 @@ internal sealed class CreateIncomeService : ICreateIncomeService
             .ConfigureAwait(false);
 
         return EnrichedResult.Success(incomeToCreate);
+    }
+
+    private EnrichedResult<IncomeEntity> IncomeAccountDoesNotExist(Guid accountRowId)
+    {
+        var problemDetails = ApiProblemDetailsFactory.CreateUnprocessableEntity(
+                ErrorCodes.NotFound,
+                nameof(Request.AccountRowId),
+                accountRowId,
+                "The account does not exist");
+
+        _logger.LogErrors(problemDetails);
+
+        var incomeError = new ServiceError(problemDetails);
+
+        return EnrichedResult.Fail<IncomeEntity>(incomeError);
     }
 }
