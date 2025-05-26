@@ -14,4 +14,4 @@ export const accountFormSchema = z.object({
   reserved: MoneyValueSchema,
 });
 
-export type AccountFormSchema = z.infer<typeof accountFormSchema>;
+export type AccountFormData = z.infer<typeof accountFormSchema>;

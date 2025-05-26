@@ -13,7 +13,7 @@ import { localToday } from '@/lib/utils';
 
 import { IncomeForm } from '../components/IncomeForm';
 import { IncomeSheet } from '../components/IncomeSheet';
-import { IncomeFormSchema, incomeFormSchema } from '../schemas/incomeSchema';
+import { IncomeFormData, incomeFormSchema } from '../schemas/incomeFormSchema';
 import { useCreateIncome } from './hooks/useCreateIncome';
 
 const CreateIncomeSheet = () => {
@@ -27,7 +27,7 @@ const CreateIncomeSheet = () => {
     ? accountsResult.value
     : [];
 
-  const form = useForm<IncomeFormSchema>({
+  const form = useForm<IncomeFormData>({
     resolver: zodResolver(incomeFormSchema),
     mode: 'onSubmit',
     defaultValues: {
@@ -41,7 +41,7 @@ const CreateIncomeSheet = () => {
     },
   });
 
-  const onSubmit = async (values: IncomeFormSchema) => {
+  const onSubmit = async (values: IncomeFormData) => {
     // if the optional fields are undefined, set them to null to match the CreateIncome type
     const income: CreateIncome = {
       ...values,

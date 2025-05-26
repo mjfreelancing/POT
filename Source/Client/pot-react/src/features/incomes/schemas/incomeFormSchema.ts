@@ -23,4 +23,4 @@ export const incomeFormSchema = z.object({
   accountRowId: z.string().optional(),
 });
 
-export type IncomeFormSchema = z.infer<typeof incomeFormSchema>;
+export type IncomeFormData = z.infer<typeof incomeFormSchema>;

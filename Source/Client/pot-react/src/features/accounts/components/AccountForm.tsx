@@ -14,11 +14,11 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 
-import { AccountFormSchema } from '../schemas/accountSchema';
+import { AccountFormData } from '../schemas/accountFormSchema';
 
 type AccountFormProps = {
-  form: UseFormReturn<AccountFormSchema>;
-  onSubmit: (values: AccountFormSchema) => Promise<void>;
+  form: UseFormReturn<AccountFormData>;
+  onSubmit: (values: AccountFormData) => Promise<void>;
   onCancel: () => void;
   readOnlyAccountIdentifiers: boolean;
   submitLabel: string;

@@ -9,7 +9,10 @@ import { DisplayError } from '@/lib/errors/displayError';
 
 import { AccountForm } from '../components/AccountForm';
 import { AccountSheet } from '../components/AccountSheet';
-import { AccountFormSchema, accountFormSchema } from '../schemas/accountSchema';
+import {
+  AccountFormData,
+  accountFormSchema,
+} from '../schemas/accountFormSchema';
 import { useCreateAccount } from './hooks/useCreateAccount';
 
 const CreateAccountSheet = () => {
@@ -17,7 +20,7 @@ const CreateAccountSheet = () => {
   const navigate = useNavigate();
   const { createAccount } = useCreateAccount();
 
-  const form = useForm<AccountFormSchema>({
+  const form = useForm<AccountFormData>({
     resolver: zodResolver(accountFormSchema),
     mode: 'onSubmit',
     defaultValues: {
@@ -29,7 +32,7 @@ const CreateAccountSheet = () => {
     },
   });
 
-  const onSubmit = async (values: AccountFormSchema) => {
+  const onSubmit = async (values: AccountFormData) => {
     const account: CreateAccount = values;
     const result = await createAccount(account);
 

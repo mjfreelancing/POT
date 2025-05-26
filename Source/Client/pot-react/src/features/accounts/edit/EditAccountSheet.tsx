@@ -12,7 +12,10 @@ import { DisplayError } from '@/lib/errors/displayError';
 
 import { AccountForm } from '../components/AccountForm';
 import { AccountSheet } from '../components/AccountSheet';
-import { AccountFormSchema, accountFormSchema } from '../schemas/accountSchema';
+import {
+  AccountFormData,
+  accountFormSchema,
+} from '../schemas/accountFormSchema';
 import { useEditAccount } from './hooks/useEditAccount';
 
 const EditAccountSheet = () => {
@@ -27,7 +30,7 @@ const EditAccountSheet = () => {
   // Initialize form with default values to prevent uncontrolled-to-controlled input warnings
   // while LoadingMessage is displayed. When the account data loads, form.reset() will
   // update these values with the actual account details.
-  const form = useForm<AccountFormSchema>({
+  const form = useForm<AccountFormData>({
     resolver: zodResolver(accountFormSchema),
     mode: 'onSubmit',
     defaultValues: {
@@ -76,7 +79,7 @@ const EditAccountSheet = () => {
 
   const { rowId, eTag } = accountResult.value;
 
-  const onSubmit = async (values: AccountFormSchema) => {
+  const onSubmit = async (values: AccountFormData) => {
     const updatedAccount: EditAccount = {
       rowId,
       eTag,

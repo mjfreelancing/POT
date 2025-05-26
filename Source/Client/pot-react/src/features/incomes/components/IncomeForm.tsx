@@ -25,11 +25,11 @@ import type { Account } from '@/data/accounts/account';
 import { FrequencyEnumValues } from '@/lib/types';
 import { localIsoDate, localToday } from '@/lib/utils';
 
-import { IncomeFormSchema } from '../schemas/incomeSchema';
+import { IncomeFormData } from '../schemas/incomeFormSchema';
 
 type IncomeFormProps = {
-  form: UseFormReturn<IncomeFormSchema>;
-  onSubmit: (values: IncomeFormSchema) => Promise<void>;
+  form: UseFormReturn<IncomeFormData>;
+  onSubmit: (values: IncomeFormData) => Promise<void>;
   onCancel: () => void;
   readOnlyIncomeIdentifiers: boolean;
   submitLabel: string;

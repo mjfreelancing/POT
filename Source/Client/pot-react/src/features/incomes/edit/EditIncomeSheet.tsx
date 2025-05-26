@@ -15,7 +15,7 @@ import { localToday } from '@/lib/utils';
 
 import { IncomeForm } from '../components/IncomeForm';
 import { IncomeSheet } from '../components/IncomeSheet';
-import { IncomeFormSchema, incomeFormSchema } from '../schemas/incomeSchema';
+import { IncomeFormData, incomeFormSchema } from '../schemas/incomeFormSchema';
 import { useEditIncome } from './hooks/useEditIncome';
 
 const EditIncomeSheet = () => {
@@ -30,7 +30,7 @@ const EditIncomeSheet = () => {
   const [error, setError] = useState<DisplayError | null>(null);
   const [initialized, setInitialized] = useState(false);
 
-  const form = useForm<IncomeFormSchema>({
+  const form = useForm<IncomeFormData>({
     resolver: zodResolver(incomeFormSchema),
     mode: 'onSubmit',
     defaultValues: {
@@ -104,7 +104,7 @@ const EditIncomeSheet = () => {
   const { rowId, eTag } = incomeResult.value;
   const accounts = accountsResult.value;
 
-  const onSubmit = async (values: IncomeFormSchema) => {
+  const onSubmit = async (values: IncomeFormData) => {
     const payload: EditIncome = {
       rowId,
       eTag,
