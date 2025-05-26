@@ -62,7 +62,7 @@ internal sealed class UpdateAccountService : IUpdateAccountService
 
             UpdateAccountEntity(accountToUpdate, request);
 
-            // Don't call _accountRepository.Update(account) as this will mark the
+            // Not calling _accountRepository.Update(account) as this will mark the
             // entity as modified even if nothing was changed.
             _ = await _accountRepository.SaveAsync(cancellationToken);
 

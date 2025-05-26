@@ -13,8 +13,8 @@ internal sealed class CheckDescriptionDoesNotExist : PreUpdateCheckBase
 {
     public override async Task<OutputState?> HandleAsync(InputState state, CancellationToken cancellationToken)
     {
-        var account = state.AccountToUpdate;
         var request = state.Request;
+        var account = state.AccountToUpdate;
 
         if (account.Description != request.Description)
         {

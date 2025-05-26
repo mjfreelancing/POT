@@ -10,8 +10,8 @@ internal sealed class CheckAccountNumberDoesNotExist : PreUpdateCheckBase
 {
     public override async Task<OutputState?> HandleAsync(InputState state, CancellationToken cancellationToken)
     {
-        var account = state.AccountToUpdate;
         var request = state.Request;
+        var account = state.AccountToUpdate;
 
         var differentAccountNumber = !(account.Bsb == request.Bsb && account.Number == request.Number);
 
