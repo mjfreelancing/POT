@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router';
 
@@ -28,7 +28,6 @@ const EditIncomeSheet = () => {
   const { editIncome } = useEditIncome();
 
   const [error, setError] = useState<DisplayError | null>(null);
-  const [initialized, setInitialized] = useState(false);
 
   const form = useForm<IncomeFormData>({
     resolver: zodResolver(incomeFormSchema),
@@ -44,28 +43,33 @@ const EditIncomeSheet = () => {
     },
   });
 
-  useEffect(() => {
-    if (!initialized && incomeResult?.success && accountsResult?.success) {
-      const income = incomeResult.value;
+  // Using useRef() to track if the form has been reset rather than useEffect() because there was a race condition where the
+  // form reset would happen after the component had already rendered, causing the initial values to not be set correctly.
+  const formHasReset = useRef(false);
 
-      form.reset({
-        description: income.description,
-        nextDue: income.nextDue,
-        endDate: income.endDate ?? undefined, // if endDate is null, set it to undefined to match the form's expected type
-        frequency: income.frequency,
-        frequencyCount: income.frequencyCount,
-        amount: income.amount,
-        accountRowId: income.account?.rowId,
-      });
-      setInitialized(true);
-    }
-  }, [initialized, incomeResult, accountsResult, form]);
+  if (
+    !isIncomeLoading &&
+    !isAccountsLoading &&
+    incomeResult?.success &&
+    accountsResult?.success &&
+    !formHasReset.current
+  ) {
+    const income = incomeResult.value;
 
-  // Show loading state until both income and account lists arrive
-  // initialized is required to ensure the form is only shown once
-  // the initial form reset has completed. If this is not done then
-  // the Frequency and Associated Account fields will not be set.
-  if (isIncomeLoading || isAccountsLoading || !initialized) {
+    form.reset({
+      description: income.description,
+      nextDue: income.nextDue,
+      endDate: income.endDate ?? undefined, // if endDate is null, set it to undefined to match the form's expected type
+      frequency: income.frequency,
+      frequencyCount: income.frequencyCount,
+      amount: income.amount,
+      accountRowId: income.account?.rowId,
+    });
+
+    formHasReset.current = true;
+  }
+
+  if (isIncomeLoading || isAccountsLoading || !formHasReset.current) {
     return (
       <IncomeSheet title="Edit Income">
         <LoadingMessage isLoading={true} />
