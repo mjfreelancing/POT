@@ -42,20 +42,18 @@ internal static class RouteGroupBuilderExtensions
         return routeGroupBuilder;
     }
 
-    // Use the code below as a template
+    public static RouteGroupBuilder UpdateIncome(this RouteGroupBuilder routeGroupBuilder)
+    {
+        routeGroupBuilder
+            .MapPut("", Update.Handler.Invoke)
+            .WithName(nameof(UpdateIncome))
+            .WithSummary("Update income")
+            .WithDescription("Updates existing income details")
+            .WithTags("Incomes")
+            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
 
-    //public static RouteGroupBuilder UpdateAccount(this RouteGroupBuilder routeGroupBuilder)
-    //{
-    //    routeGroupBuilder
-    //        .MapPut("", Update.Handler.Invoke)
-    //        .WithName(nameof(UpdateAccount))
-    //        .WithSummary("Update account")
-    //        .WithDescription("Updates existing account details")
-    //        .WithTags("Accounts")
-    //        .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
-
-    //    return routeGroupBuilder;
-    //}
+        return routeGroupBuilder;
+    }
 
     public static RouteGroupBuilder DeleteIncome(this RouteGroupBuilder routeGroupBuilder)
     {
