@@ -40,7 +40,7 @@ const EditIncomeSheet = () => {
       frequency: Frequency.Months,
       frequencyCount: 1,
       amount: 0,
-      accountRowId: undefined, // undefined since the <Select> component on <IncomeForm> expects string | undefined
+      accountRowId: '',
     },
   });
 

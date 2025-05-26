@@ -11,15 +11,8 @@ export const IncomeAccountSchema = z.object({
 
 export const BaseIncomeSchema = z.object({
   description: z.string(),
-  nextDue: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Dates must be formatted as YYYY-MM-DD'),
-  endDate: z
-    .string()
-    .nullable()
-    .refine(val => val === null || /^\d{4}-\d{2}-\d{2}$/.test(val), {
-      message: 'Dates must be formatted as YYYY-MM-DD',
-    }),
+  nextDue: z.string(),
+  endDate: z.string().nullable(),
   frequency: z.nativeEnum(Frequency),
   frequencyCount: z.number(),
   amount: z.number(),
@@ -31,12 +24,12 @@ export const IncomeSchema = BaseIncomeSchema.extend({
 });
 
 export const CreateIncomeSchema = BaseIncomeSchema.extend({
-  accountRowId: z.string().nullable(),
+  accountRowId: z.string(),
 });
 
 export const EditIncomeSchema = BaseIncomeSchema.extend({
   ...IdentitySchema.shape,
-  accountRowId: z.string().nullable(),
+  accountRowId: z.string(),
 });
 
 export const compareIncomeNextDue = (lhs: Income, rhs: Income): number => {

@@ -133,9 +133,20 @@ const IncomeForm = ({
             <FormLabel htmlFor="endDate-picker">End Date</FormLabel>
             <FormControl>
               <div className="flex items-center space-x-2">
+                {/* Two-way binding between form and picker:
+                    1. selectedDate prop (from field.value) drives the picker's internal state via useEffect in EnrichedCalendar.
+                    2. onDateChange (day clicks) pushes immediate date selections back to the form via field.onChange.
+                    3. onDateAccepted (Accept button) commits the chosen date into the form.
+                    4. Clear button calls field.onChange(undefined), which updates selectedDate to undefined,
+                       triggering the picker's useEffect to reset its internal pickerDate to cleared state. */}
                 <EnrichedDatePicker
                   selectedDate={field.value ? new Date(field.value) : undefined}
                   onDateAccepted={date =>
+                    field.onChange(
+                      date !== undefined ? localIsoDate(date) : undefined,
+                    )
+                  }
+                  onDateChange={date =>
                     field.onChange(
                       date !== undefined ? localIsoDate(date) : undefined,
                     )

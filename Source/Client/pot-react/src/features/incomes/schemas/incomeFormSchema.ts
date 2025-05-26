@@ -6,10 +6,10 @@ export const MoneyValueSchema = z
   .number({
     required_error: 'This field is required',
   })
-  .min(0, 'Value must be 0 or greater');
+  .min(1, 'Value must be greater than zero');
 
 export const incomeFormSchema = z.object({
-  description: z.string().min(1),
+  description: z.string().min(1, 'A description is required'),
   nextDue: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
   endDate: z
     .string()
@@ -19,8 +19,8 @@ export const incomeFormSchema = z.object({
     }),
   frequency: z.nativeEnum(Frequency),
   frequencyCount: z.number().min(1),
-  amount: MoneyValueSchema.min(1, 'Amount must be 1 or greater'),
-  accountRowId: z.string().optional(),
+  amount: MoneyValueSchema,
+  accountRowId: z.string().min(1, 'An account is required'),
 });
 
 export type IncomeFormData = z.infer<typeof incomeFormSchema>;
