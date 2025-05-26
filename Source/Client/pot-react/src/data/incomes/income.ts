@@ -32,11 +32,6 @@ export const EditIncomeSchema = BaseIncomeSchema.extend({
   accountRowId: z.string(),
 });
 
-export const compareIncomeNextDue = (lhs: Income, rhs: Income): number => {
-  // Dates are stored in the format 'YYYY-MM-DD'
-  return lhs.nextDue.localeCompare(rhs.nextDue);
-};
-
 export type Income = z.infer<typeof IncomeSchema>;
 export type CreateIncome = z.infer<typeof CreateIncomeSchema>;
 export type EditIncome = z.infer<typeof EditIncomeSchema>;

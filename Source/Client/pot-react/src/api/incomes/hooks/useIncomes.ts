@@ -1,6 +1,5 @@
 import { Identity } from '@/data/identity';
 import {
-  compareIncomeNextDue,
   CreateIncome,
   EditIncome,
   Income,
@@ -21,13 +20,19 @@ const useApiGetAllIncomes = () => {
   // - returns undefined immediately and while loading
   // - returns the result when the query is successful
   if (result?.success) {
-    // spreading [...result.value.results] to create a shallow copy of the array since sort()
-    // mutates the source array in the react-query cache.
-    const sortedResults = [...result.value.results].sort(compareIncomeNextDue);
+    // Not sorting client-side since the server performs this to ensure pagination is consistent.
+
+    // // spreading [...result.value.results] to create a shallow copy of the array since sort()
+    // // mutates the source array in the react-query cache.
+    // const sortedResults = [...result.value.results].sort(compareIncomeNextDue);
+
+    // const paged: PagedIncome = {
+    //   ...result.value,
+    //   results: sortedResults,
+    // };
 
     const paged: PagedIncome = {
       ...result.value,
-      results: sortedResults,
     };
 
     data = new SuccessResult(paged);
