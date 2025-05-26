@@ -142,16 +142,30 @@ export function DataTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
   });
 
+  // To put the table in a rounded border, wrap everything in
+  // <div className="rounded-md border"></div>
+
+  // Scenarios for header styling:
+  // 1. Style on <TableHeader> (<thead>) paints the entire header section uniformly.
+  //    - Pros: Single spot for styling, automatically covers all header rows.
+  //    - Cons: Any custom background on individual <tr> or <th> can override it or introduce gaps.
+  // 2. Style on each <TableRow> (<tr>) allows different header rows to have distinct backgrounds.
+  //    - Pros: Fine-grained control per row; guarantees that each row’s own class takes precedence.
+  //    - Cons: You must remember to apply the class to every header <tr>; new rows need manual updates.
+  // 3. Style on each <TableHead> (<th>) controls text appearance (uppercase, bold) without affecting background.
+  //    - Pros: Keeps background styling separate from text styling, consistent typography.
+  //    - Cons: Does not affect row background, so must be combined with header or row styles for full effect.
   return (
-    // To put the table in a rounded border, wrap everything in
-    // <div className="rounded-md border"></div>
     <Table>
-      <TableHeader>
+      <TableHeader className="bg-gray-200 dark:bg-gray-700">
         {table.getHeaderGroups().map(headerGroup => (
-          <TableRow key={headerGroup.id}>
+          <TableRow
+            key={headerGroup.id}
+            className="bg-gray-200 dark:bg-gray-700"
+          >
             {headerGroup.headers.map(header => {
               return (
-                <TableHead key={header.id}>
+                <TableHead key={header.id} className="font-semibold uppercase">
                   {header.isPlaceholder
                     ? null
                     : flexRender(
