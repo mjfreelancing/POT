@@ -50,8 +50,8 @@ const EditIncomeSheet = () => {
   if (
     !isIncomeLoading &&
     !isAccountsLoading &&
-    incomeResult?.success &&
-    accountsResult?.success &&
+    incomeResult.success &&
+    accountsResult.success &&
     !formHasReset.current
   ) {
     const income = incomeResult.value;
