@@ -21,7 +21,7 @@ internal sealed class CheckDescriptionDoesNotExist : PreUpdateCheckBase
 
         var descriptionExists = await state.IncomeRepository
             .Where(predicate)
-            .AnyAsync(income => income.Id != income.Id, cancellationToken)
+            .AnyAsync(entity => entity.Id != income.Id, cancellationToken)
             .ConfigureAwait(false);
 
         if (descriptionExists)
