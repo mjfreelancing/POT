@@ -2,8 +2,7 @@
 
 internal static class ProblemDetailsContextFactory
 {
-    public static ProblemDetailsContext Create<TProblemDetails>(HttpContext httpContext, Exception exception, int statusCode, TProblemDetails[]? errorDetails = default)
-        where TProblemDetails : ProblemDetailsExtensionBase
+    public static ProblemDetailsContext Create(HttpContext httpContext, int statusCode, string detail, Exception exception, ProblemDetailsError[] errorDetails)
     {
         httpContext.Response.StatusCode = statusCode;
 
@@ -12,16 +11,13 @@ internal static class ProblemDetailsContextFactory
             HttpContext = httpContext,
             ProblemDetails =
             {
-                Detail = exception.Message,
+                Detail = detail,
                 Status = httpContext.Response.StatusCode
             },
             Exception = exception
         };
 
-        if (errorDetails is not null)
-        {
-            context.ProblemDetails.Extensions.Add("errors", errorDetails);
-        }
+        context.ProblemDetails.Extensions.Add("errors", errorDetails);
 
         return context;
     }

@@ -100,7 +100,6 @@ internal static class WebApplicationBuilderExtensions
         // Note: BadHttpRequestException is returned as 500 during development, but 400 in production.
         builder.Services
             .AddExceptionHandler<IgnoreExceptionHandler>()
-            .AddExceptionHandler<EntityExceptionHandler>()
             .AddExceptionHandler<UniqueConstraintExceptionHandler>()
             .AddExceptionHandler<ReferenceConstraintExceptionHandler>()
             .AddExceptionHandler<DatabaseExceptionHandler>();

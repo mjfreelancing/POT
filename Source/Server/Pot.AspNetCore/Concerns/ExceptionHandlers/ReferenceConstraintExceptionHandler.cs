@@ -2,8 +2,8 @@
 using AllOverIt.Extensions;
 using EntityFramework.Exceptions.Common;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.EntityFrameworkCore;
 using Pot.AspNetCore.Concerns.ProblemDetails;
+using Pot.AspNetCore.Concerns.Validation;
 using System.Net;
 
 namespace Pot.AspNetCore.Concerns.ExceptionHandlers;
@@ -24,21 +24,30 @@ internal sealed class ReferenceConstraintExceptionHandler : IExceptionHandler
             return false;
         }
 
-        var propertiesLabel = constraintException.ConstraintProperties.Count > 1 ? "properties" : "property";
-        var constraintNames = string.Join(", ", constraintException.ConstraintProperties);
+        // constraintException.ConstraintProperties may include FK that we cannot report (since it is just an Id),
+        // so we'll grab all values but exclude anything we don't have a value for.
+        //
+        // constraintException.Entries typically has a single entry, but in some cases it may be zero or multiple entries.
+        // For this app, there will only ever be a single entry.
+        var properties = constraintException.Entries.Single().Entity.ToPropertyDictionary();
 
-        var errorDetails = from entry in constraintException.Entries
-                           let properties = entry.Entity.ToPropertyDictionary()
-                           select new PostgresUniqueConstraintProblemDetails
-                           {
-                               ErrorMessage = $"A constraint violation occurred with the {propertiesLabel} {constraintNames}",
-                               Properties = new Dictionary<string, object?>(
-                                   from propertyName in properties.Keys
-                                   where constraintException.ConstraintProperties.Contains(propertyName)
-                                   select new KeyValuePair<string, object?>(propertyName, properties[propertyName]))
-                           };
+        var propertyValues = properties
+            .Where(kvp => constraintException.ConstraintProperties.Contains(kvp.Key))
+            .ToDictionary();
 
-        var problemContext = ProblemDetailsContextFactory.Create(httpContext, exception, (int)HttpStatusCode.UnprocessableEntity, [.. errorDetails]);
+        var propertiesLabel = propertyValues.Keys.Count > 1 ? "properties" : "property";
+        var constraintNames = string.Join(", ", propertyValues.Keys);
+        var detail = $"A constraint violation occurred with the {propertiesLabel} {constraintNames}";
+
+        var errorDetail = new ProblemDetailsError
+        {
+            PropertyName = constraintNames,
+            ErrorCode = ErrorCodes.Conflict,
+            AttemptedValue = string.Join(", ", propertyValues.Values.Select(value => value?.ToString() ?? "(null)")),
+            ErrorMessage = detail
+        };
+
+        var problemContext = ProblemDetailsContextFactory.Create(httpContext, (int)HttpStatusCode.Conflict, detail, exception, [errorDetail]);
 
         return await _problemDetailsService.TryWriteAsync(problemContext);
     }
