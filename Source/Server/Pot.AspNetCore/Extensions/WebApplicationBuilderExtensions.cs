@@ -102,7 +102,7 @@ internal static class WebApplicationBuilderExtensions
             .AddExceptionHandler<IgnoreExceptionHandler>()
             .AddExceptionHandler<UniqueConstraintExceptionHandler>()
             .AddExceptionHandler<ReferenceConstraintExceptionHandler>()
-            .AddExceptionHandler<DatabaseExceptionHandler>();
+            .AddExceptionHandler<DatabaseExceptionHandler>();   // Must be the last database handler
 
         return builder;
     }

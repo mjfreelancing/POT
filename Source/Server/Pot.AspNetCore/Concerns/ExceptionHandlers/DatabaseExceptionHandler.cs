@@ -1,9 +1,9 @@
 ﻿using AllOverIt.Assertion;
-using AllOverIt.Extensions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Pot.AspNetCore.Concerns.ProblemDetails;
+using Pot.AspNetCore.Concerns.Validation;
 using System.Net;
 
 namespace Pot.AspNetCore.Concerns.ExceptionHandlers;
@@ -11,7 +11,8 @@ namespace Pot.AspNetCore.Concerns.ExceptionHandlers;
 // Note: Exception handlers are registered as a Singleton.
 internal sealed class DatabaseExceptionHandler : IExceptionHandler
 {
-    private static readonly Type[] _databaseExceptionTypes = [typeof(DbUpdateException)];
+    // UniqueConstraintException and ReferenceConstraintException are explicitly handled. This handler is for unexpected cases.
+    private static readonly Type _dbUpdateExceptionType = typeof(DbUpdateException);
 
     private readonly IProblemDetailsService _problemDetailsService;
 
@@ -23,26 +24,22 @@ internal sealed class DatabaseExceptionHandler : IExceptionHandler
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
         var exceptionType = exception.GetType();
-        var isDatabaseException = _databaseExceptionTypes.Any(item => exceptionType == item);
 
-        if (isDatabaseException)
+        if (exceptionType == _dbUpdateExceptionType && exception.InnerException is PostgresException postgresException)
         {
-            var postgresException = (exception.InnerException as PostgresException)!;
-
-            var errorDetails = new[]
+            var errorDetail = new ProblemDetailsError
             {
-                new PostgresProblemDetails
-                {
-                    ErrorMessage = postgresException.MessageText,
-                    SqlState = postgresException.SqlState
-                }
+                PropertyName = string.Empty,
+                ErrorCode = ErrorCodes.IO,
+                AttemptedValue = null,
+                ErrorMessage = postgresException.Detail ?? postgresException.MessageText
             };
 
-            var problemContext = ProblemDetailsContextFactory.Create(httpContext, exception, (int)HttpStatusCode.UnprocessableEntity, errorDetails);
+            var problemContext = ProblemDetailsContextFactory.Create(httpContext, (int)HttpStatusCode.Conflict, postgresException.MessageText, exception, [errorDetail]);
 
             return await _problemDetailsService.TryWriteAsync(problemContext);
         }
 
-        return isDatabaseException;
+        return false;
     }
 }
