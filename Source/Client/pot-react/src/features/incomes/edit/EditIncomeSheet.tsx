@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router';
 
@@ -7,114 +7,52 @@ import { useApiGetAllAccounts } from '@/api/accounts/hooks/useAccounts';
 import { useApiGetIncomeById } from '@/api/incomes/hooks/useIncomes';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import { ErrorSheet } from '@/components/feedback/sheet/ErrorSheet';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
-import type { EditIncome } from '@/data/incomes/income';
+import type { Account } from '@/data/accounts/account';
+import type { EditIncome, Income } from '@/data/incomes/income';
 import type { DisplayError } from '@/lib/errors/displayError';
-import { Frequency } from '@/lib/types';
-import { localToday } from '@/lib/utils';
 
 import { IncomeForm } from '../components/IncomeForm';
 import { IncomeSheet } from '../components/IncomeSheet';
 import { IncomeFormData, incomeFormSchema } from '../schemas/incomeFormSchema';
 import { useEditIncome } from './hooks/useEditIncome';
 
-const EditIncomeSheet = () => {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { data: incomeResult, isLoading: isIncomeLoading } =
-    useApiGetIncomeById(id!);
-  const { data: accountsResult, isLoading: isAccountsLoading } =
-    useApiGetAllAccounts();
-  const { editIncome } = useEditIncome();
+type EditIncomeSheetInternalProps = {
+  incomeData: Income;
+  accountsList: Account[];
+};
 
-  const [error, setError] = useState<DisplayError | null>(null);
+// This internal sheet is used to encapsulate the form logic and state management. We need
+// to make sure the sheet is only rendered after both income and account data is loaded.
+const EditIncomeSheetInternal: React.FC<EditIncomeSheetInternalProps> = ({
+  incomeData,
+  accountsList,
+}) => {
+  const navigate = useNavigate();
+  const { editIncome } = useEditIncome();
 
   const form = useForm<IncomeFormData>({
     resolver: zodResolver(incomeFormSchema),
     mode: 'onSubmit',
     defaultValues: {
-      description: '',
-      nextDue: localToday(),
-      endDate: undefined,
-      frequency: Frequency.Months,
-      frequencyCount: 1,
-      amount: 0,
-      accountRowId: '',
+      description: incomeData.description,
+      nextDue: incomeData.nextDue,
+      endDate: incomeData.endDate ?? undefined, // If null, make it undefined to satisfy the form schema
+      frequency: incomeData.frequency,
+      frequencyCount: incomeData.frequencyCount,
+      amount: incomeData.amount,
+      accountRowId: incomeData.account?.rowId,
     },
   });
 
-  // Using useRef() to track if the form has been reset rather than useEffect() because there was a race condition where the
-  // form reset would happen after the component had already rendered, causing the initial values to not be set correctly.
-  const formHasReset = useRef(false);
-
-  if (
-    !isIncomeLoading &&
-    !isAccountsLoading &&
-    incomeResult.success &&
-    accountsResult.success &&
-    !formHasReset.current
-  ) {
-    const income = incomeResult.value;
-
-    form.reset({
-      description: income.description,
-      nextDue: income.nextDue,
-      endDate: income.endDate ?? undefined, // if endDate is null, set it to undefined to match the form's expected type
-      frequency: income.frequency,
-      frequencyCount: income.frequencyCount,
-      amount: income.amount,
-      accountRowId: income.account?.rowId,
-    });
-
-    formHasReset.current = true;
-  }
-
-  if (isIncomeLoading || isAccountsLoading || !formHasReset.current) {
-    return (
-      <IncomeSheet title="Edit Income">
-        <LoadingMessage isLoading={true} />
-      </IncomeSheet>
-    );
-  }
-
-  const renderErrorSheet = (title: string, description: string) => (
-    <Sheet open={true}>
-      <SheetContent>
-        <ErrorSheet
-          title={title}
-          description={description}
-          onDismiss={() => navigate('/incomes')}
-        />
-      </SheetContent>
-    </Sheet>
-  );
-
-  // Deal with failure to load income results
-  if (incomeResult && !incomeResult.success) {
-    return renderErrorSheet(
-      incomeResult.error.code,
-      incomeResult.error.description,
-    );
-  }
-
-  // Deal with failure to load accounts
-  if (accountsResult && !accountsResult.success) {
-    return renderErrorSheet(
-      accountsResult.error.code,
-      accountsResult.error.description,
-    );
-  }
-
-  const { rowId, eTag } = incomeResult.value;
-  const accounts = accountsResult.value;
+  const [error, setError] = useState<DisplayError | null>(null);
 
   const onSubmit = async (values: IncomeFormData) => {
     const payload: EditIncome = {
-      rowId,
-      eTag,
+      rowId: incomeData.rowId,
+      eTag: incomeData.eTag,
       ...values,
       endDate: values.endDate ?? null,
-      accountRowId: values.accountRowId ?? null,
+      accountRowId: values.accountRowId,
     };
 
     const result = await editIncome(payload);
@@ -144,9 +82,64 @@ const EditIncomeSheet = () => {
         onCancel={() => navigate('/incomes')}
         readOnlyIncomeIdentifiers={true}
         submitLabel="Save"
-        accounts={accounts}
+        accounts={accountsList}
       />
     </IncomeSheet>
+  );
+};
+
+const EditIncomeSheet = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { data: incomeResult, isLoading: isIncomeLoading } =
+    useApiGetIncomeById(id!);
+  const { data: accountsResult, isLoading: isAccountsLoading } =
+    useApiGetAllAccounts();
+
+  // Show loading state while either API call is in progress
+  if (isIncomeLoading || isAccountsLoading) {
+    return (
+      <IncomeSheet title="Edit Income">
+        <LoadingMessage isLoading={true} />
+      </IncomeSheet>
+    );
+  }
+
+  // Handle failure to load income
+  if (!incomeResult || !incomeResult.success) {
+    return (
+      <ErrorSheet
+        title={incomeResult?.error?.code || 'Error Loading Income'}
+        description={
+          incomeResult?.error?.description ||
+          'Failed to load the income details. Please try again.'
+        }
+        onDismiss={() => navigate('/incomes')}
+      />
+    );
+  }
+
+  // Handle failure to load accounts
+  if (!accountsResult || !accountsResult.success) {
+    return (
+      <ErrorSheet
+        title={accountsResult?.error?.code || 'Error Loading Accounts'}
+        description={
+          accountsResult?.error?.description ||
+          'Failed to load accounts. Please try again.'
+        }
+        onDismiss={() => navigate('/incomes')}
+      />
+    );
+  }
+
+  // If we reach here, both incomeResult and accountsResult are loaded and successful.
+  // Their 'value' properties are guaranteed to be non-null.
+  return (
+    <EditIncomeSheetInternal
+      incomeData={incomeResult.value}
+      accountsList={accountsResult.value}
+    />
   );
 };
 
