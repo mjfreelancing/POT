@@ -46,7 +46,7 @@ const CreateIncomeSheet = () => {
     const income: CreateIncome = {
       ...values,
       endDate: values.endDate ?? null,
-      accountRowId: values.accountRowId ?? null,
+      accountRowId: values.accountRowId,
     };
 
     const result = await createIncome(income);
