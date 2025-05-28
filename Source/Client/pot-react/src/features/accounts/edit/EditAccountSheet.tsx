@@ -65,15 +65,11 @@ const EditAccountSheet = () => {
   // Deal with failure to load data
   if (accountResult && !accountResult.success) {
     return (
-      <Sheet open={true}>
-        <SheetContent>
-          <ErrorSheet
-            title={accountResult.error.code}
-            description={accountResult.error.description}
-            onDismiss={() => navigate('/accounts')}
-          />
-        </SheetContent>
-      </Sheet>
+      <ErrorSheet
+        title={accountResult.error.code}
+        description={accountResult.error.description}
+        onDismiss={() => navigate('/accounts')}
+      />
     );
   }
 
