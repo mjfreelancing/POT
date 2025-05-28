@@ -6,7 +6,6 @@ import { useNavigate, useParams } from 'react-router';
 import { useApiGetAccountById } from '@/api/accounts/hooks/useAccounts';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import { ErrorSheet } from '@/components/feedback/sheet/ErrorSheet';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { EditAccount } from '@/data/accounts/account';
 import { DisplayError } from '@/lib/errors/displayError';
 
