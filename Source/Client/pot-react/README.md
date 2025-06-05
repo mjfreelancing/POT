@@ -20,7 +20,7 @@ The application will be available at `http://localhost:5175`
 
 ## Available Scripts
 
-- `npm run dev` - Start development server on port 5175
+- `npm run dev` - Start development server on port 5175 (use `npx kill-port 5175` if you need to brute-force kill it)
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
 - `npm run lint` - Check code style
