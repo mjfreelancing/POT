@@ -8,7 +8,7 @@ internal static class RouteGroupBuilderExtensions
     public static RouteGroupBuilder GetAllExpenses(this RouteGroupBuilder routeGroupBuilder)
     {
         routeGroupBuilder
-            .MapGet("", GetAll.Handler.Invoke)
+            .MapGet(ExpensesEndpoints.GetAll, GetAll.Handler.Invoke)
             .WithName(nameof(GetAllExpenses))
             .WithSummary("Get all expenses")
             .WithDescription("Get all expense details")
@@ -20,7 +20,7 @@ internal static class RouteGroupBuilderExtensions
     //public static RouteGroupBuilder GetExpense(this RouteGroupBuilder routeGroupBuilder)
     //{
     //    routeGroupBuilder
-    //        .MapGet("/{id}", Get.Handler.Invoke)
+    //        .MapGet(ExpensesEndpoints.Get, Get.Handler.Invoke)
     //        .WithName(nameof(GetExpense))
     //        .WithSummary("Get expense")
     //        .WithDescription("Get details for an existing expense")
@@ -32,7 +32,7 @@ internal static class RouteGroupBuilderExtensions
     //public static RouteGroupBuilder CreateExpense(this RouteGroupBuilder routeGroupBuilder)
     //{
     //    routeGroupBuilder
-    //        .MapPost("", Create.Handler.Invoke)
+    //        .MapPost(ExpensesEndpoints.Create, Create.Handler.Invoke)
     //        .WithName(nameof(CreateExpense))
     //        .WithSummary("Create expense")
     //        .WithDescription("Create new expense details")
@@ -45,7 +45,7 @@ internal static class RouteGroupBuilderExtensions
     //public static RouteGroupBuilder UpdateExpense(this RouteGroupBuilder routeGroupBuilder)
     //{
     //    routeGroupBuilder
-    //        .MapPut("", Update.Handler.Invoke)
+    //        .MapPut(ExpensesEndpoints.Update, Update.Handler.Invoke)
     //        .WithName(nameof(UpdateExpense))
     //        .WithSummary("Update expense")
     //        .WithDescription("Updates existing expense details")
@@ -58,7 +58,7 @@ internal static class RouteGroupBuilderExtensions
     //public static RouteGroupBuilder DeleteExpense(this RouteGroupBuilder routeGroupBuilder)
     //{
     //    routeGroupBuilder
-    //        .MapDelete("/{id}", Delete.Handler.Invoke)
+    //        .MapDelete(ExpensesEndpoints.Delete, Delete.Handler.Invoke)
     //        .WithName(nameof(DeleteExpense))
     //        .WithSummary("Delete expense")
     //        .WithDescription("Deletes existing expense details")

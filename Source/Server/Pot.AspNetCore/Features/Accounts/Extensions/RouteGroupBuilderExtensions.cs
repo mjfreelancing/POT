@@ -8,7 +8,7 @@ internal static class RouteGroupBuilderExtensions
     public static RouteGroupBuilder GetAllAccounts(this RouteGroupBuilder routeGroupBuilder)
     {
         routeGroupBuilder
-            .MapGet("", GetAll.Handler.Invoke)
+            .MapGet(AccountsEndpoints.GetAll, GetAll.Handler.Invoke)
             .WithName(nameof(GetAllAccounts))
             .WithSummary("Get all accounts")
             .WithDescription("Get all account details")
@@ -20,7 +20,7 @@ internal static class RouteGroupBuilderExtensions
     public static RouteGroupBuilder GetAccount(this RouteGroupBuilder routeGroupBuilder)
     {
         routeGroupBuilder
-            .MapGet("/{id}", Get.Handler.Invoke)
+            .MapGet(AccountsEndpoints.Get, Get.Handler.Invoke)
             .WithName(nameof(GetAccount))
             .WithSummary("Get account")
             .WithDescription("Get details for an existing account")
@@ -33,7 +33,7 @@ internal static class RouteGroupBuilderExtensions
     public static RouteGroupBuilder CreateAccount(this RouteGroupBuilder routeGroupBuilder)
     {
         routeGroupBuilder
-            .MapPost("", Create.Handler.Invoke)
+            .MapPost(AccountsEndpoints.Create, Create.Handler.Invoke)
             .WithName(nameof(CreateAccount))
             .WithSummary("Create account")
             .WithDescription("Create new account details")
@@ -46,7 +46,7 @@ internal static class RouteGroupBuilderExtensions
     public static RouteGroupBuilder UpdateAccount(this RouteGroupBuilder routeGroupBuilder)
     {
         routeGroupBuilder
-            .MapPut("", Update.Handler.Invoke)
+            .MapPut(AccountsEndpoints.Update, Update.Handler.Invoke)
             .WithName(nameof(UpdateAccount))
             .WithSummary("Update account")
             .WithDescription("Updates existing account details")
@@ -59,7 +59,7 @@ internal static class RouteGroupBuilderExtensions
     public static RouteGroupBuilder DeleteAccount(this RouteGroupBuilder routeGroupBuilder)
     {
         routeGroupBuilder
-            .MapDelete("/{id}", Delete.Handler.Invoke)
+            .MapDelete(AccountsEndpoints.Delete, Delete.Handler.Invoke)
             .WithName(nameof(DeleteAccount))
             .WithSummary("Delete account")
             .WithDescription("Deletes existing account details")

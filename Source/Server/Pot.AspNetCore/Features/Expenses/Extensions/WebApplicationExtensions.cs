@@ -11,8 +11,8 @@ internal static class WebApplicationExtensions
             app.Logger.LogInformation("Adding expense endpoints");
 
             var group = app
-                .MapGroup("api/expenses")
-                .WithTags("Expenses Api")
+                .MapGroup(ExpensesEndpoints.Group)
+                .WithTags(ExpensesEndpoints.Tag)
                 .GetAllExpenses()
                 //.GetExpense()
                 //.CreateExpense()

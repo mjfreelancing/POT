@@ -7,7 +7,7 @@ internal static class RouteGroupBuilderExtensions
     public static RouteGroupBuilder GetAllIncomes(this RouteGroupBuilder routeGroupBuilder)
     {
         routeGroupBuilder
-            .MapGet("", GetAll.Handler.Invoke)
+            .MapGet(IncomesEndpoints.GetAll, GetAll.Handler.Invoke)
             .WithName(nameof(GetAllIncomes))
             .WithSummary("Get all incomes")
             .WithDescription("Get all income details")
@@ -19,7 +19,7 @@ internal static class RouteGroupBuilderExtensions
     public static RouteGroupBuilder GetIncome(this RouteGroupBuilder routeGroupBuilder)
     {
         routeGroupBuilder
-            .MapGet("/{id}", Get.Handler.Invoke)
+            .MapGet(IncomesEndpoints.Get, Get.Handler.Invoke)
             .WithName(nameof(GetIncome))
             .WithSummary("Get income")
             .WithDescription("Get details for an existing income source")
@@ -32,7 +32,7 @@ internal static class RouteGroupBuilderExtensions
     public static RouteGroupBuilder CreateIncome(this RouteGroupBuilder routeGroupBuilder)
     {
         routeGroupBuilder
-            .MapPost("", Create.Handler.Invoke)
+            .MapPost(IncomesEndpoints.Create, Create.Handler.Invoke)
             .WithName(nameof(CreateIncome))
             .WithSummary("Create income")
             .WithDescription("Create a new income source")
@@ -45,7 +45,7 @@ internal static class RouteGroupBuilderExtensions
     public static RouteGroupBuilder UpdateIncome(this RouteGroupBuilder routeGroupBuilder)
     {
         routeGroupBuilder
-            .MapPut("", Update.Handler.Invoke)
+            .MapPut(IncomesEndpoints.Update, Update.Handler.Invoke)
             .WithName(nameof(UpdateIncome))
             .WithSummary("Update income")
             .WithDescription("Updates existing income details")
@@ -58,7 +58,7 @@ internal static class RouteGroupBuilderExtensions
     public static RouteGroupBuilder DeleteIncome(this RouteGroupBuilder routeGroupBuilder)
     {
         routeGroupBuilder
-            .MapDelete("/{id}", Delete.Handler.Invoke)
+            .MapDelete(IncomesEndpoints.Delete, Delete.Handler.Invoke)
             .WithName(nameof(DeleteIncome))
             .WithSummary("Delete income")
             .WithDescription("Deletes existing income details")
