@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-
 import Spinner from '../spinner/LoadingSpinner';
+import { useDelayedBooleanState } from '../../../hooks/useDelayedState';
 
 /*
  * LoadingMessage serves two purposes:
@@ -30,23 +29,10 @@ function LoadingMessage({
   delay = DEFAULT_LOADING_DELAY,
   text = DEFAULT_LOADING_TEXT,
 }: LoadingMessageProps) {
-  const [showLoading, setShowLoading] = useState(false);
-
-  // Use a ref to store the delay value to avoid unnecessary re-renders - the value is never
-  // changed so this avoids having to add it to the dependency array.
-  const delayRef = useRef(delay);
-
-  useEffect(() => {
-    let timeout: number;
-
-    if (isLoading) {
-      timeout = window.setTimeout(() => setShowLoading(true), delayRef.current);
-    } else {
-      setShowLoading(false);
-    }
-
-    return () => window.clearTimeout(timeout);
-  }, [isLoading]);
+  const showLoading = useDelayedBooleanState({
+    condition: isLoading,
+    delay,
+  });
 
   if (!showLoading) {
     return null;
