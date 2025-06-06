@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiDeleteAccount } from '@/api/accounts/hooks/useAccounts';
 
-export const useDeleteAccount = (rowId: string) => {
+function useDeleteAccount(rowId: string) {
   const queryClient = useQueryClient();
   const apiDeleteAccount = useApiDeleteAccount(rowId);
 
@@ -24,4 +24,6 @@ export const useDeleteAccount = (rowId: string) => {
   };
 
   return { deleteAccount };
-};
+}
+
+export default useDeleteAccount;

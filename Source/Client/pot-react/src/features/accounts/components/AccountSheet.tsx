@@ -7,9 +7,10 @@ type AccountSheetProps = {
   children: React.ReactNode;
 };
 
-export const AccountSheet = ({ title, children }: AccountSheetProps) => (
-  <Sheet open modal={false}>
-    {/*
+function AccountSheet({ title, children }: AccountSheetProps) {
+  return (
+    <Sheet open modal={false}>
+      {/*
       You can adjust the width by choosing a different size:
       - sm:max-w-md (28rem)
       - sm:max-w-lg (32rem)
@@ -21,13 +22,18 @@ export const AccountSheet = ({ title, children }: AccountSheetProps) => (
 
       The close button (the first button) is hidden using [&>button:first-of-type]:hidden
     */}
-    <SheetContent className="p-6 sm:max-w-lg [&>button:first-of-type]:hidden">
-      <div className="space-y-6 pr-6 pl-6">
-        <DialogTitle className="text-lg font-semibold">{title}</DialogTitle>
-        <DialogDescription className="sr-only">{title} form</DialogDescription>
-        <Separator />
-        {children}
-      </div>
-    </SheetContent>
-  </Sheet>
-);
+      <SheetContent className="p-6 sm:max-w-lg [&>button:first-of-type]:hidden">
+        <div className="space-y-6 pr-6 pl-6">
+          <DialogTitle className="text-lg font-semibold">{title}</DialogTitle>
+          <DialogDescription className="sr-only">
+            {title} form
+          </DialogDescription>
+          <Separator />
+          {children}
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+export default AccountSheet;

@@ -3,19 +3,19 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 
-import { ErrorSheet } from '@/components/feedback/sheet/ErrorSheet';
+import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { CreateAccount } from '@/data/accounts/account';
 import { DisplayError } from '@/lib/errors/displayError';
 
-import { AccountForm } from '../components/AccountForm';
-import { AccountSheet } from '../components/AccountSheet';
+import AccountForm from '../components/AccountForm';
+import AccountSheet from '../components/AccountSheet';
 import {
   AccountFormData,
   accountFormSchema,
 } from '../schemas/accountFormSchema';
-import { useCreateAccount } from './hooks/useCreateAccount';
+import useCreateAccount from './hooks/useCreateAccount';
 
-const CreateAccountSheet = () => {
+function CreateAccountSheet() {
   const [error, setError] = useState<DisplayError | null>(null);
   const navigate = useNavigate();
   const { createAccount } = useCreateAccount();
@@ -64,6 +64,6 @@ const CreateAccountSheet = () => {
       />
     </AccountSheet>
   );
-};
+}
 
 export default CreateAccountSheet;

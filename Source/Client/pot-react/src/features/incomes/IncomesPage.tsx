@@ -1,9 +1,9 @@
 import { Outlet } from 'react-router';
 
-import { IncomesHeader } from './IncomesHeader';
-import { IncomesTable } from './IncomesTable';
+import IncomesHeader from './IncomesHeader';
+import IncomesTable from './IncomesTable';
 
-const IncomesPage = () => {
+function IncomesPage() {
   console.info('Rendering IncomesPage');
 
   return (
@@ -16,6 +16,6 @@ const IncomesPage = () => {
       <Outlet />
     </div>
   );
-};
+}
 
 export default IncomesPage;

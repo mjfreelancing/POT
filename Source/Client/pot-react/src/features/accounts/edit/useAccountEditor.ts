@@ -11,10 +11,10 @@ type AccountFormValues = {
   reserved: number;
 };
 
-export const useAccountEditor = (
+function useAccountEditor(
   form: UseFormReturn<AccountFormValues>,
   account: Account,
-) => {
+) {
   const [originalValues, setOriginalValues] =
     useState<AccountFormValues | null>(null);
 
@@ -72,4 +72,6 @@ export const useAccountEditor = (
   };
 
   return { resetToOriginal, isDirty };
-};
+}
+
+export default useAccountEditor;

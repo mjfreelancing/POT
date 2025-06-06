@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiDeleteIncome } from '@/api/incomes/hooks/useIncomes';
 
-export const useDeleteIncome = (rowId: string) => {
+function useDeleteIncome(rowId: string) {
   const queryClient = useQueryClient();
   const apiDeleteIncome = useApiDeleteIncome(rowId);
 
@@ -24,4 +24,6 @@ export const useDeleteIncome = (rowId: string) => {
   };
 
   return { deleteIncome };
-};
+}
+
+export default useDeleteIncome;

@@ -7,7 +7,7 @@ import {
 } from '@/components/table/DataTable';
 import { Income } from '@/data/incomes/income';
 
-import { IncomeActions } from './components/IncomeActions';
+import IncomeActions from './components/IncomeActions';
 
 export const columns: ColumnDef<Income>[] = [
   {

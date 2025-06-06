@@ -1,10 +1,9 @@
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { formatMoneyValue } from '@/lib/money/moneyUtils';
 
-import {
+import accountsSummaryStore, {
   AccountsSummary,
-  useAccountsSummary,
-} from './hooks/useAccountsSummary';
+} from './stores/useAccountsSummary';
 
 type SummaryItemProps = {
   title: string;
@@ -21,19 +20,19 @@ function SummaryItem({ title, value }: SummaryItemProps) {
 }
 
 function AccountsHeader() {
-  const totalBalance = useAccountsSummary(
+  const totalBalance = accountsSummaryStore(
     (state: AccountsSummary) => state.totalBalance,
   );
 
-  const totalReserved = useAccountsSummary(
+  const totalReserved = accountsSummaryStore(
     (state: AccountsSummary) => state.totalReserved,
   );
 
-  const totalAllocated = useAccountsSummary(
+  const totalAllocated = accountsSummaryStore(
     (state: AccountsSummary) => state.totalAllocated,
   );
 
-  const totalDailyAccrual = useAccountsSummary(
+  const totalDailyAccrual = accountsSummaryStore(
     (state: AccountsSummary) => state.totalDailyAccrual,
   );
 
@@ -53,4 +52,4 @@ function AccountsHeader() {
   );
 }
 
-export { AccountsHeader };
+export default AccountsHeader;

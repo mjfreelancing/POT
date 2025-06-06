@@ -265,4 +265,4 @@ function EnrichedCalendar({
   );
 }
 
-export { EnrichedCalendar };
+export default EnrichedCalendar;

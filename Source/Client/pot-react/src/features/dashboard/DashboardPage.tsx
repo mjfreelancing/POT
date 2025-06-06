@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 
 import { useApiGetAllAccounts } from '@/api/accounts/hooks/useAccounts';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
-import { ErrorSheet } from '@/components/feedback/sheet/ErrorSheet';
-import { EnrichedCalendar } from '@/components/picker/EnrichedCalendar'; // Renamed import
+import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
+import EnrichedCalendar from '@/components/picker/EnrichedCalendar'; // Renamed import
 import { EnrichedDatePicker } from '@/components/picker/EnrichedDatePicker';
 import {
   createMoneyValueColumn,
@@ -33,11 +33,11 @@ const columns: ColumnDef<Account>[] = [
   createMoneyValueColumn<Account>('available', 'Available'),
 ];
 
-const DashboardPage = () => {
+function DashboardPage() {
   const [error, setError] = useState<DisplayError | null>(null);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [_isPopoverOpen, setIsPopoverOpen] = useState(false);
 
   const { data: result, isLoading } = useApiGetAllAccounts();
 
@@ -137,6 +137,6 @@ const DashboardPage = () => {
       )}
     </>
   );
-};
+}
 
 export default DashboardPage;

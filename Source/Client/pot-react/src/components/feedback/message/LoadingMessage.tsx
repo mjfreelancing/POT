@@ -1,5 +1,5 @@
-import Spinner from '../spinner/LoadingSpinner';
 import { useDelayedBooleanState } from '../../../hooks/useDelayedState';
+import Spinner from '../spinner/LoadingSpinner';
 
 /*
  * LoadingMessage serves two purposes:

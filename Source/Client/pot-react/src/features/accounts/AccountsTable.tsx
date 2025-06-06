@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router';
 
 import { useApiGetAllAccounts } from '@/api/accounts/hooks/useAccounts';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
-import { ErrorSheet } from '@/components/feedback/sheet/ErrorSheet';
+import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { DataTable } from '@/components/table/DataTable';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,10 +16,9 @@ import {
 import { DisplayError } from '@/lib/errors/displayError';
 
 import { columns } from './columns';
-import {
+import accountsSummaryStore, {
   AccountsSummary,
-  useAccountsSummary,
-} from './hooks/useAccountsSummary';
+} from './stores/useAccountsSummary';
 
 function AccountsTable() {
   const { id: editingId } = useParams<{ id: string }>();
@@ -27,7 +26,7 @@ function AccountsTable() {
   const [error, setError] = useState<DisplayError | null>(null);
   const navigate = useNavigate();
 
-  const setSummary = useAccountsSummary(
+  const setSummary = accountsSummaryStore(
     (state: AccountsSummary) => state.setSummary,
   );
 
@@ -118,4 +117,4 @@ function AccountsTable() {
   );
 }
 
-export { AccountsTable };
+export default AccountsTable;

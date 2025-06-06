@@ -27,11 +27,7 @@ type SheetErrorProps = DisplayError & {
    * text-white/90 - sets text color to white with 90% opacity
    */
 }
-export const ErrorSheet = ({
-  title,
-  description,
-  onDismiss,
-}: SheetErrorProps) => {
+function ErrorSheet({ title, description, onDismiss }: SheetErrorProps) {
   const descriptionLines = description.split('\n');
 
   return (
@@ -57,4 +53,6 @@ export const ErrorSheet = ({
       </div>
     </div>
   );
-};
+}
+
+export default ErrorSheet;

@@ -13,7 +13,7 @@ export type AccountsSummary = {
   ) => void;
 };
 
-const useAccountsSummary = create<AccountsSummary>(set => ({
+const accountsSummaryStore = create<AccountsSummary>(set => ({
   totalBalance: 0,
   totalReserved: 0,
   totalAllocated: 0,
@@ -26,4 +26,4 @@ const useAccountsSummary = create<AccountsSummary>(set => ({
   ) => set({ totalBalance, totalReserved, totalAllocated, totalDailyAccrual }),
 }));
 
-export { useAccountsSummary };
+export default accountsSummaryStore;

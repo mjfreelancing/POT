@@ -1,6 +1,8 @@
 import { useErrorBoundary } from 'react-error-boundary';
 
-export const useResetErrorBoundary = () => {
+function useResetErrorBoundary() {
   const { resetBoundary } = useErrorBoundary();
   return resetBoundary;
-};
+}
+
+export default useResetErrorBoundary;

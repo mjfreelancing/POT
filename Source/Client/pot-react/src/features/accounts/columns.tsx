@@ -3,7 +3,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { createMoneyValueColumn } from '@/components/table/DataTable';
 import { Account } from '@/data/accounts/account';
 
-import { AccountActions } from './components/AccountActions';
+import AccountActions from './components/AccountActions';
 
 export const columns: ColumnDef<Account>[] = [
   {

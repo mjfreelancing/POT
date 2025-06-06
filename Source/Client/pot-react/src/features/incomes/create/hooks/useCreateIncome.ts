@@ -6,7 +6,7 @@ import { CreateIncome } from '@/data/incomes/income';
 import { FailResultBase } from '@/lib/result/failResultBase';
 import { Result } from '@/lib/result/result';
 
-export const useCreateIncome = () => {
+function useCreateIncome() {
   const queryClient = useQueryClient();
   const apiCreateIncome = useApiCreateIncome();
 
@@ -33,4 +33,6 @@ export const useCreateIncome = () => {
   };
 
   return { createIncome };
-};
+}
+
+export default useCreateIncome;

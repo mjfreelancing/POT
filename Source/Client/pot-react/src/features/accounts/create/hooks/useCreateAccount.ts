@@ -6,7 +6,7 @@ import { Identity } from '@/data/identity';
 import { FailResultBase } from '@/lib/result/failResultBase';
 import { Result } from '@/lib/result/result';
 
-export const useCreateAccount = () => {
+function useCreateAccount() {
   const queryClient = useQueryClient();
   const apiCreateAccount = useApiCreateAccount();
 
@@ -33,4 +33,6 @@ export const useCreateAccount = () => {
   };
 
   return { createAccount };
-};
+}
+
+export default useCreateAccount;

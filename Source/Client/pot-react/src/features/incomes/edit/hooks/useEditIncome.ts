@@ -7,7 +7,7 @@ import { FailResultBase } from '@/lib/result/failResultBase';
 import { Result } from '@/lib/result/result';
 
 // Hook to handle editing an existing income entry
-export const useEditIncome = () => {
+function useEditIncome() {
   const queryClient = useQueryClient();
   const apiUpdateIncome = useApiUpdateIncome();
 
@@ -34,4 +34,6 @@ export const useEditIncome = () => {
   };
 
   return { editIncome };
-};
+}
+
+export default useEditIncome;

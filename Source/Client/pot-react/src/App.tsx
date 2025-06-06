@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 
-import { ErrorSheet } from '@/components/feedback/sheet/ErrorSheet';
+import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { DisplayError } from '@/lib/errors/displayError';
 
 import { AppSidebar } from './components/nav/AppSidebar';

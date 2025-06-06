@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router';
 
 import { useApiGetAllIncomes } from '@/api/incomes/hooks/useIncomes';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
-import { ErrorSheet } from '@/components/feedback/sheet/ErrorSheet';
+import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { DataTable } from '@/components/table/DataTable';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,10 +16,6 @@ import {
 import { DisplayError } from '@/lib/errors/displayError';
 
 import { columns } from './columns';
-// import {
-//   AccountsSummary,
-//   useAccountsSummary,
-// } from './hooks/useAccountsSummary';
 
 function IncomesTable() {
   const { id: editingId } = useParams<{ id: string }>();
@@ -27,36 +23,7 @@ function IncomesTable() {
   const [error, setError] = useState<DisplayError | null>(null);
   const navigate = useNavigate();
 
-  // const setSummary = useAccountsSummary(
-  //   (state: AccountsSummary) => state.setSummary,
-  // );
-
-  // Memoize 'accounts' so its array reference only changes when `result` changes.
-  // Without this, each render would create a new array (even with identical data), causing the summary effect to rerun every time.
-  // const incomes = useMemo(() => {
-  //   return result?.success ? result.value : [];
-  // }, [result]);
-
   const incomes = result?.success ? result.value.results : [];
-
-  // Recalculates and pushes summary; 'setSummary' is in deps to satisfy exhaustive-deps and use the latest setter
-  // useEffect(() => {
-  //   const totalBalance = incomes.reduce((sum, acct) => sum + acct.balance, 0);
-
-  //   const totalReserved = incomes.reduce((sum, acct) => sum + acct.reserved, 0);
-
-  //   const totalAllocated = incomes.reduce(
-  //     (sum, acct) => sum + acct.allocated,
-  //     0,
-  //   );
-
-  //   const totalDailyAccrual = incomes.reduce(
-  //     (sum, acct) => sum + acct.dailyAccrual,
-  //     0,
-  //   );
-
-  //   setSummary(totalBalance, totalReserved, totalAllocated, totalDailyAccrual);
-  // }, [incomes, setSummary]);
 
   useEffect(() => {
     // Transient error handling - resetting error state when success, such as after a network loss
@@ -117,4 +84,4 @@ function IncomesTable() {
   );
 }
 
-export { IncomesTable };
+export default IncomesTable;

@@ -14,13 +14,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Account } from '@/data/accounts/account';
 
-import { useDeleteAccount } from '../delete/hooks/useDeleteAccount';
+import useDeleteAccount from '../delete/hooks/useDeleteAccount';
 
 type AccountActionsProps = {
   account: Account;
 };
 
-const AccountActions = ({ account }: AccountActionsProps) => {
+function AccountActions({ account }: AccountActionsProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const navigate = useNavigate();
   const { deleteAccount } = useDeleteAccount(account.rowId);
@@ -74,6 +74,6 @@ const AccountActions = ({ account }: AccountActionsProps) => {
       />
     </>
   );
-};
+}
 
-export { AccountActions };
+export default AccountActions;

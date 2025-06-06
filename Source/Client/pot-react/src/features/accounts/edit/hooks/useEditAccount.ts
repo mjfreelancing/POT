@@ -6,7 +6,7 @@ import { Identity } from '@/data/identity';
 import { FailResultBase } from '@/lib/result/failResultBase';
 import { Result } from '@/lib/result/result';
 
-export const useEditAccount = () => {
+function useEditAccount() {
   const queryClient = useQueryClient();
   const apiUpdateAccount = useApiUpdateAccount();
 
@@ -33,4 +33,6 @@ export const useEditAccount = () => {
   };
 
   return { editAccount };
-};
+}
+
+export default useEditAccount;

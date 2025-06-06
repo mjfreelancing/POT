@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
-import { EnrichedCalendar } from './EnrichedCalendar';
+import EnrichedCalendar from './EnrichedCalendar';
 
 // Props for EnrichedCalendar, excluding those managed by EnrichedDatePicker
 type EnrichedCalendarPassthroughProps = Omit<

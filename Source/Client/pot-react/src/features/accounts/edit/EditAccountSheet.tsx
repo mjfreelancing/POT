@@ -5,19 +5,19 @@ import { useNavigate, useParams } from 'react-router';
 
 import { useApiGetAccountById } from '@/api/accounts/hooks/useAccounts';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
-import { ErrorSheet } from '@/components/feedback/sheet/ErrorSheet';
+import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { EditAccount } from '@/data/accounts/account';
 import { DisplayError } from '@/lib/errors/displayError';
 
-import { AccountForm } from '../components/AccountForm';
-import { AccountSheet } from '../components/AccountSheet';
+import AccountForm from '../components/AccountForm';
+import AccountSheet from '../components/AccountSheet';
 import {
   AccountFormData,
   accountFormSchema,
 } from '../schemas/accountFormSchema';
-import { useEditAccount } from './hooks/useEditAccount';
+import useEditAccount from './hooks/useEditAccount';
 
-const EditAccountSheet = () => {
+function EditAccountSheet() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: accountResult, isLoading: isAccountLoading } =
@@ -115,6 +115,6 @@ const EditAccountSheet = () => {
       />
     </AccountSheet>
   );
-};
+}
 
 export default EditAccountSheet;

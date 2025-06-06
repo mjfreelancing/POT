@@ -14,13 +14,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Income } from '@/data/incomes/income';
 
-import { useDeleteIncome } from '../delete/hooks/useDeleteIncome';
+import useDeleteIncome from '../delete/hooks/useDeleteIncome';
 
 type IncomeActionsProps = {
   income: Income;
 };
 
-const IncomeActions = ({ income }: IncomeActionsProps) => {
+function IncomeActions({ income }: IncomeActionsProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const navigate = useNavigate();
   const { deleteIncome } = useDeleteIncome(income.rowId);
@@ -74,6 +74,6 @@ const IncomeActions = ({ income }: IncomeActionsProps) => {
       />
     </>
   );
-};
+}
 
-export { IncomeActions };
+export default IncomeActions;
