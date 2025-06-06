@@ -14,7 +14,7 @@ import {
 import { FailResultBase } from '@/lib/result/failResultBase';
 import { FailResult, SuccessResult } from '@/lib/result/result';
 
-import { useDelete, useGet, usePost, usePut } from '../useApi';
+import { useDelete, useGet, usePost, usePut } from '@/api/hooks/useApi';
 
 // Mock axios instead of using vitest-mock-axios
 vi.mock('axios');

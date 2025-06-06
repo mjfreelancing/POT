@@ -7,21 +7,21 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { FailResult } from '@/lib/result/result';
 
-import { addCorrelationId } from '../../apiHelpers';
-import { ApiErrorResponse } from '../../errors/apiErrorResponse';
+import { addCorrelationId } from '@/api/apiHelpers';
+import { ApiErrorResponse } from '@/api/errors/apiErrorResponse';
 import {
   ConflictError,
   NetworkError,
   NotFoundError,
   UnexpectedError,
   ValidationError,
-} from '../../errors/apiErrors';
+} from '@/api/errors/apiErrors';
 
 // Explicitly mock axios
 vi.mock('axios');
 
 // Import the error handler function from the interceptors module for direct testing
-import { responseErrorHandler } from '../axiosInterceptors';
+import { responseErrorHandler } from '../../../src/api/interceptors/axiosInterceptors';
 
 describe('Axios Interceptors', () => {
   beforeEach(() => {

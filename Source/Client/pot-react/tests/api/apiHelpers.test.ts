@@ -6,8 +6,8 @@ import {
   addCorrelationId,
   getNetworkError,
   getNetworkErrorMessage,
-} from '../apiHelpers';
-import { NetworkError } from '../errors/apiErrors';
+} from '@/api/apiHelpers';
+import { NetworkError } from '@/api/errors/apiErrors';
 
 describe('API helper utilities', () => {
   describe('getNetworkErrorMessage', () => {

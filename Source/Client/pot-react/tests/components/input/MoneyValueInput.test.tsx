@@ -4,7 +4,9 @@ import { act } from 'react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import MoneyValueInput, { MoneyValueChangeEvent } from '../MoneyValueInput';
+import MoneyValueInput, {
+  MoneyValueChangeEvent,
+} from '@/components/input/MoneyValueInput';
 
 /**
  * Creates an expectation matcher for MoneyValueInput onChange events.

@@ -1,8 +1,8 @@
 import { faker } from '@faker-js/faker';
 import { beforeEach, describe, expect, test } from 'vitest';
 
-import { FailResultBase } from '../failResultBase';
-import { FailResult, Result, SuccessResult } from '../result';
+import { FailResultBase } from '@/lib/result/failResultBase';
+import { FailResult, Result, SuccessResult } from '@/lib/result/result';
 
 class DummyError extends FailResultBase {
   constructor(type: string, code: string, description: string) {
