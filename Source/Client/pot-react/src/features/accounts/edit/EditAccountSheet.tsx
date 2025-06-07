@@ -72,12 +72,12 @@ function EditAccountSheet() {
     );
   }
 
-  const { rowId, eTag } = accountResult.value;
+  const { rowId, etag } = accountResult.value;
 
   const onSubmit = async (values: AccountFormData) => {
     const updatedAccount: EditAccount = {
       rowId,
-      eTag,
+      etag,
       bsb: values.bsb,
       number: values.number,
       description: values.description,

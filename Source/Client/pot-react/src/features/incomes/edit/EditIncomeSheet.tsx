@@ -49,7 +49,7 @@ const EditIncomeSheetInternal: React.FC<EditIncomeSheetInternalProps> = ({
   const onSubmit = async (values: IncomeFormData) => {
     const payload: EditIncome = {
       rowId: incomeData.rowId,
-      eTag: incomeData.eTag,
+      etag: incomeData.etag,
       ...values,
       endDate: values.endDate ?? null,
       accountRowId: values.accountRowId,
