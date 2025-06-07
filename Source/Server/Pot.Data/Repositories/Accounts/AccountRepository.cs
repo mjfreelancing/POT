@@ -18,6 +18,16 @@ internal sealed class AccountRepository : GenericRepository<PotDbContext, Accoun
         // return AnyAsync(EntitySpecifications.IsSameId<AccountEntity>(id).Expression, cancellationToken);
     }
 
+    public Task<bool> HasExpensesAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return AnyAsync(account => account.RowId == id && account.Expenses.Any(), cancellationToken);
+    }
+
+    public Task<bool> HasIncomesAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return AnyAsync(account => account.RowId == id && account.Incomes.Any(), cancellationToken);
+    }
+
     public Task<AccountEntity> GetAccountAsync(Guid id, CancellationToken cancellationToken)
     {
         // Same as:

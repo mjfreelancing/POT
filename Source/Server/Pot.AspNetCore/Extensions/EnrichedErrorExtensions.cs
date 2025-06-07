@@ -16,6 +16,7 @@ internal static class EnrichedErrorExtensions
         {
             ProblemType.NotFound => StatusCodes.Status404NotFound,
             ProblemType.Conflict => StatusCodes.Status409Conflict,
+            ProblemType.Constraint => StatusCodes.Status422UnprocessableEntity,
             ProblemType.UnprocessableEntity => StatusCodes.Status422UnprocessableEntity,
             ProblemType.Server => StatusCodes.Status500InternalServerError,
             _ => throw new UnreachableException($"Unknown problem type: {error.ErrorType}")

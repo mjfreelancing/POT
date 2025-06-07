@@ -4,6 +4,7 @@ public enum ProblemType
 {
     NotFound,
     Conflict,
+    Constraint,
     UnprocessableEntity,
     Server
 }

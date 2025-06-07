@@ -1,22 +1,27 @@
 ﻿using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.App.Features.Accounts.Delete;
+using Pot.AspNetCore.Extensions;
 using System.ComponentModel;
 
 namespace Pot.AspNetCore.Features.Accounts.Delete;
 
 internal sealed class Handler
 {
-    // A 422 may be returned if the account cannot be deleted due to being associated with one or more expenses or incomes.
     public static async Task<Results<Ok, NotFound, ProblemHttpResult>> Invoke([Description("The account Id.")] Guid id,
         IDeleteAccountService accountService, ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);
 
-        var deleted = await accountService.DeleteAccountAsync(id, cancellationToken);
+        var deletedResult = await accountService.DeleteAccountAsync(id, cancellationToken);
 
-        return deleted
-            ? TypedResults.Ok()
-            : TypedResults.NotFound();
+        if (deletedResult.IsSuccess)
+        {
+            return deletedResult.Value
+                ? TypedResults.Ok()
+                : TypedResults.NotFound();
+        }
+
+        return TypedResults.Problem(deletedResult.Error!.GetProblemDetails());
     }
 }

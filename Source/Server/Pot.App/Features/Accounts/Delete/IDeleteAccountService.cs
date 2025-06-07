@@ -1,8 +1,9 @@
-﻿using Pot.App.Concerns.DependencyInjection;
+﻿using AllOverIt.Patterns.Result;
+using Pot.App.Concerns.DependencyInjection;
 
 namespace Pot.App.Features.Accounts.Delete;
 
 public interface IDeleteAccountService : IPotScopedDependency
 {
-    Task<bool> DeleteAccountAsync(Guid id, CancellationToken cancellationToken);
+    Task<EnrichedResult<bool>> DeleteAccountAsync(Guid accountId, CancellationToken cancellationToken);
 }

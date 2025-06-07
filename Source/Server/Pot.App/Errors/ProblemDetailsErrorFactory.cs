@@ -4,6 +4,7 @@ namespace Pot.App.Errors;
 
 public static class ProblemDetailsErrorFactory
 {
+    // TODO: Update these so the caller passes a more contextual message
     public static ProblemDetailsError CreateEntityExistsError(string entityType, string propertyName, object? attemptedValue)
     {
         return new ProblemDetailsError(ProblemType.Conflict)
@@ -12,6 +13,17 @@ public static class ProblemDetailsErrorFactory
             PropertyName = propertyName,
             AttemptedValue = attemptedValue,
             ErrorMessage = $"The operation would conflict with another {entityType} entity."
+        };
+    }
+
+    public static ProblemDetailsError CreateEntityConstraintError(string propertyName, object? attemptedValue, string errorMessage)
+    {
+        return new ProblemDetailsError(ProblemType.Constraint)
+        {
+            ErrorCode = ErrorCodes.Constraint,
+            PropertyName = propertyName,
+            AttemptedValue = attemptedValue,
+            ErrorMessage = errorMessage
         };
     }
 
