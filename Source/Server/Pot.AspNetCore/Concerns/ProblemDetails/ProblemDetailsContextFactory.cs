@@ -1,4 +1,5 @@
 ﻿using Pot.App.Errors;
+using Pot.App.Extensions;
 
 namespace Pot.AspNetCore.Concerns.ProblemDetails;
 
@@ -19,7 +20,9 @@ internal static class ProblemDetailsContextFactory
             Exception = exception
         };
 
-        context.ProblemDetails.Extensions.Add("errors", errorDetails);
+        var errors = errorDetails.Select(error => error.GetErrorDetails());
+
+        context.ProblemDetails.Extensions.Add("errors", errors);
 
         return context;
     }

@@ -1,4 +1,5 @@
 ﻿using AllOverIt.Assertion;
+using AllOverIt.Extensions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -11,7 +12,7 @@ namespace Pot.AspNetCore.Concerns.ExceptionHandlers;
 // Note: Exception handlers are registered as a Singleton.
 internal sealed class DatabaseExceptionHandler : IExceptionHandler
 {
-    // UniqueConstraintException and ReferenceConstraintException are explicitly handled. This handler is for unexpected cases.
+    // Will also catch UniqueConstraintException and ReferenceConstraintException
     private static readonly Type _dbUpdateExceptionType = typeof(DbUpdateException);
 
     private readonly IProblemDetailsService _problemDetailsService;
@@ -25,15 +26,30 @@ internal sealed class DatabaseExceptionHandler : IExceptionHandler
     {
         var exceptionType = exception.GetType();
 
-        if (exceptionType == _dbUpdateExceptionType && exception.InnerException is PostgresException postgresException)
+        if (exceptionType.IsDerivedFrom(_dbUpdateExceptionType))
         {
-            var errorDetail = new ProblemDetailsError(ProblemType.Server)
-            {
-                ErrorCode = ErrorCodes.IO,
-                ErrorMessage = postgresException.Detail ?? postgresException.MessageText
-            };
+            ProblemDetailsContext problemContext;
 
-            var problemContext = ProblemDetailsContextFactory.Create(httpContext, (int)HttpStatusCode.Conflict, postgresException.MessageText, exception, [errorDetail]);
+            if (exception.InnerException is PostgresException postgresException)
+            {
+                var errorDetail = new ProblemDetailsError(ProblemType.Server)
+                {
+                    ErrorCode = ErrorCodes.Database,
+                    ErrorMessage = postgresException.MessageText
+                };
+
+                problemContext = ProblemDetailsContextFactory.Create(httpContext, (int)HttpStatusCode.InternalServerError, postgresException.MessageText, exception, [errorDetail]);
+            }
+            else
+            {
+                var errorDetail = new ProblemDetailsError(ProblemType.Server)
+                {
+                    ErrorCode = ErrorCodes.Database,
+                    ErrorMessage = exception.Message
+                };
+
+                problemContext = ProblemDetailsContextFactory.Create(httpContext, (int)HttpStatusCode.InternalServerError, exception.Message, exception, [errorDetail]);
+            }
 
             return await _problemDetailsService.TryWriteAsync(problemContext);
         }

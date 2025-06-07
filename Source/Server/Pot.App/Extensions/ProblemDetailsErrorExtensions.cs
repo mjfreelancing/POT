@@ -4,6 +4,7 @@ namespace Pot.App.Extensions;
 
 public static class ProblemDetailsErrorExtensions
 {
+    // Only report the properties of interest (not the base class properties)
     public static object GetErrorDetails(this ProblemDetailsError error)
     {
         // See ValidationFailureExtensions.AddCustomState() for how custom state is added

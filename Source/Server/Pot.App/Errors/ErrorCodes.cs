@@ -6,5 +6,5 @@ public static class ErrorCodes
     public const string NotFound = nameof(NotFound);
     public const string Conflict = nameof(Conflict);
     public const string Duplicate = nameof(Duplicate);
-    public const string IO = nameof(IO);
+    public const string Database = nameof(Database);
 }
