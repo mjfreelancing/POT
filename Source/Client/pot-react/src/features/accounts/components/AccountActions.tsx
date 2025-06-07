@@ -1,9 +1,9 @@
 import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { useErrorBoundary } from 'react-error-boundary';
 import { useNavigate } from 'react-router';
 
 import { ConfirmationDialog } from '@/components/dialog/confirmationDialog';
+import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Account } from '@/data/accounts/account';
+import { DisplayError } from '@/lib/errors/displayError';
 
 import useDeleteAccount from '../delete/hooks/useDeleteAccount';
 
@@ -22,21 +23,34 @@ type AccountActionsProps = {
 
 function AccountActions({ account }: AccountActionsProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [error, setError] = useState<DisplayError | null>(null);
   const navigate = useNavigate();
   const { deleteAccount } = useDeleteAccount(account.rowId);
-  const { showBoundary } = useErrorBoundary();
 
   const handleDelete = async () => {
-    try {
-      await deleteAccount();
-      setShowDeleteDialog(false);
-    } catch (error) {
-      showBoundary(error);
+    const result = await deleteAccount();
+
+    // Always close the dialog regardless of success or failure
+    setShowDeleteDialog(false);
+
+    if (!result.success) {
+      setError({
+        title: result.error.code,
+        description: result.error.description,
+      });
     }
   };
 
   return (
     <>
+      {error && (
+        <ErrorSheet
+          title={error.title}
+          description={error.description}
+          onDismiss={() => setError(null)}
+        />
+      )}
+
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">
