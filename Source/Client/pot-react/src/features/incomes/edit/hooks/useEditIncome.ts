@@ -11,9 +11,9 @@ function useEditIncome() {
   const queryClient = useQueryClient();
   const apiUpdateIncome = useApiUpdateIncome();
 
-  const editIncome = async (
+  async function editIncome(
     income: EditIncome,
-  ): Promise<Result<Identity, FailResultBase>> => {
+  ): Promise<Result<Identity, FailResultBase>> {
     const controller = new AbortController();
 
     try {
@@ -31,7 +31,7 @@ function useEditIncome() {
     } finally {
       controller.abort();
     }
-  };
+  }
 
   return { editIncome };
 }

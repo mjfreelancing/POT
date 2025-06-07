@@ -1,27 +1,31 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiDeleteIncome } from '@/api/incomes/hooks/useIncomes';
+import { FailResultBase } from '@/lib/result/failResultBase';
+import { Result } from '@/lib/result/result';
 
 function useDeleteIncome(rowId: string) {
   const queryClient = useQueryClient();
   const apiDeleteIncome = useApiDeleteIncome(rowId);
 
-  const deleteIncome = async () => {
+  async function deleteIncome(): Promise<Result<void, FailResultBase>> {
     const controller = new AbortController();
 
     try {
-      await apiDeleteIncome.mutateAsync(
-        { signal: controller.signal },
-        {
-          onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['incomes'] });
-          },
-        },
-      );
+      // Not using onSuccess callback because both success/fails are returned
+      const result = await apiDeleteIncome.mutateAsync({
+        signal: controller.signal,
+      });
+
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: ['incomes'] });
+      }
+
+      return result;
     } finally {
       controller.abort();
     }
-  };
+  }
 
   return { deleteIncome };
 }

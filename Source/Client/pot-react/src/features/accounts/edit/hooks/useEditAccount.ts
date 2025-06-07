@@ -10,9 +10,9 @@ function useEditAccount() {
   const queryClient = useQueryClient();
   const apiUpdateAccount = useApiUpdateAccount();
 
-  const editAccount = async (
+  async function editAccount(
     account: EditAccount,
-  ): Promise<Result<Identity, FailResultBase>> => {
+  ): Promise<Result<Identity, FailResultBase>> {
     const controller = new AbortController();
 
     try {
@@ -30,7 +30,7 @@ function useEditAccount() {
     } finally {
       controller.abort();
     }
-  };
+  }
 
   return { editAccount };
 }
