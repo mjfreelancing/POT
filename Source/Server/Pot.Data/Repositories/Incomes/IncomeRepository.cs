@@ -5,7 +5,7 @@ using AllOverIt.Pagination.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Pot.Data.Entities;
 using Pot.Data.Extensions;
-using Pot.Data.Models;
+using Pot.Shared;
 
 namespace Pot.Data.Repositories.Incomes;
 

@@ -2,8 +2,8 @@
 using AllOverIt.Extensions;
 using EntityFramework.Exceptions.Common;
 using Microsoft.AspNetCore.Diagnostics;
+using Pot.App.Errors;
 using Pot.AspNetCore.Concerns.ProblemDetails;
-using Pot.AspNetCore.Concerns.Validation;
 using System.Net;
 
 namespace Pot.AspNetCore.Concerns.ExceptionHandlers;
@@ -39,10 +39,10 @@ internal sealed class UniqueConstraintExceptionHandler : IExceptionHandler
         var constraintNames = string.Join(", ", propertyValues.Keys);
         var detail = $"A conflict occurred with the {propertiesLabel} {constraintNames}";
 
-        var errorDetail = new ProblemDetailsError
+        var errorDetail = new ProblemDetailsError(ProblemType.Conflict)
         {
-            PropertyName = constraintNames,
             ErrorCode = ErrorCodes.Conflict,
+            PropertyName = constraintNames,
             AttemptedValue = string.Join(", ", propertyValues.Values.Select(value => value?.ToString() ?? "(null)")),
             ErrorMessage = detail
         };

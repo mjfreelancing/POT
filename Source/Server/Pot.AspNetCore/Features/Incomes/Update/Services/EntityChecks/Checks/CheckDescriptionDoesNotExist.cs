@@ -2,8 +2,8 @@
 using AllOverIt.Patterns.Result;
 using Microsoft.EntityFrameworkCore;
 using Pot.AspNetCore.Concerns.ProblemDetails;
-using Pot.AspNetCore.Concerns.ProblemDetails.Extensions;
 using Pot.AspNetCore.Errors;
+using Pot.AspNetCore.Extensions;
 using Pot.Data.Entities;
 using Pot.Data.Specifications;
 

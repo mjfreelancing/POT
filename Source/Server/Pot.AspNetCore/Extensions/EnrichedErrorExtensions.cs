@@ -1,5 +1,8 @@
-﻿using AllOverIt.Patterns.Result;
-using Pot.AspNetCore.Errors;
+﻿using AllOverIt.Extensions;
+using AllOverIt.Patterns.Result;
+using Pot.App.Errors;
+using Pot.App.Extensions;
+using System.Diagnostics;
 
 namespace Pot.AspNetCore.Extensions;
 
@@ -7,8 +10,32 @@ internal static class EnrichedErrorExtensions
 {
     public static Microsoft.AspNetCore.Mvc.ProblemDetails GetProblemDetails(this EnrichedError enrichedError)
     {
-        var error = enrichedError as ServiceError;
+        var error = enrichedError as ProblemDetailsErrorBase;
 
-        return error!.ProblemDetails;
+        var statusCode = error!.ErrorType switch
+        {
+            ProblemType.NotFound => StatusCodes.Status404NotFound,
+            ProblemType.Conflict => StatusCodes.Status409Conflict,
+            ProblemType.UnprocessableEntity => StatusCodes.Status422UnprocessableEntity,
+            ProblemType.Server => StatusCodes.Status500InternalServerError,
+            _ => throw new UnreachableException($"Unknown problem type: {error.ErrorType}")
+        };
+
+        var errors = enrichedError switch
+        {
+            ProblemDetailsError problemDetailsError => problemDetailsError.GetErrorDetails(),
+            ProblemDetailsErrorCollection problemDetailsErrorCollection => problemDetailsErrorCollection.Errors.SelectToArray(error => error.GetErrorDetails()),
+            _ => throw new UnreachableException($"Unknown enriched error type: {enrichedError.GetType()}")
+        };
+
+        return new Microsoft.AspNetCore.Mvc.ProblemDetails
+        {
+            Detail = error.Description,
+            Status = statusCode,
+            Extensions = new Dictionary<string, object?>
+            {
+                { "errors", errors }
+            }
+        };
     }
 }

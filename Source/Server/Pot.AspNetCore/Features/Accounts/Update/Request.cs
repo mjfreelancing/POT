@@ -8,7 +8,7 @@ public sealed class Request
     public Guid RowId { get; init; }
 
     [Description("The account's entity tag.")]
-    public long ETag { get; init; }
+    public long Etag { get; init; }
 
     [Description("The account BSB.")]
     public string Bsb { get; init; } = string.Empty;
@@ -24,9 +24,4 @@ public sealed class Request
 
     [Description("The minimum reserved amount.")]
     public double Reserved { get; init; }
-
-    [Description("The amount allocated to future expenses.")]
-    public double Allocated { get; init; }
-
-    // DailyAccrual must be re-calculated
 }

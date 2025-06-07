@@ -22,8 +22,8 @@ public class Program
             .AddLogging()
             .AddExceptionHandlers()
             .AddCustomProblemDetails()
-            .AutoRegisterPotDependencies()
-            .AddValidation()
+            .AddAspNetDependencies()
+            .AddAspNetValidation()
             .AddPotData();
 
         // https://www.youtube.com/watch?v=3XoXzEPHdTA Nick Chapsas

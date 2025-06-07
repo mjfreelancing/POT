@@ -1,10 +1,10 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
+using Pot.App.Errors;
 using Pot.AspNetCore.Concerns.ProblemDetails;
-using Pot.AspNetCore.Concerns.ProblemDetails.Extensions;
-using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Errors;
+using Pot.AspNetCore.Extensions;
 using Pot.AspNetCore.Features.Incomes.Create.Services.EntityChecks;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;

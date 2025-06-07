@@ -1,6 +1,6 @@
 ﻿using AllOverIt.Assertion;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Pot.AspNetCore.Features.Accounts.Import.Models;
+using Pot.App.Features.Accounts.Import.Models;
 using System.ComponentModel;
 
 namespace Pot.AspNetCore.Features.Accounts.Import;

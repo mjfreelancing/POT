@@ -1,4 +1,6 @@
-﻿namespace Pot.AspNetCore.Concerns.ProblemDetails;
+﻿using Pot.App.Errors;
+
+namespace Pot.AspNetCore.Concerns.ProblemDetails;
 
 internal static class ProblemDetailsContextFactory
 {

@@ -4,7 +4,7 @@ using AllOverIt.Pagination;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.AspNetCore.Models;
 using Pot.Data.Entities;
-using Pot.Data.Models;
+using Pot.Shared;
 using System.ComponentModel;
 
 namespace Pot.AspNetCore.Features.Expenses.GetAll;
@@ -52,7 +52,7 @@ internal sealed class Response : ResponseBase
         _ = expense.WhenNotNull();
 
         RowId = expense.RowId;
-        ETag = expense.Etag;
+        Etag = expense.Etag;
         Description = expense.Description;
         NextDue = expense.NextDue;
         EndDate = expense.EndDate;

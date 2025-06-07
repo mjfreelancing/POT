@@ -2,7 +2,7 @@
 using AllOverIt.EntityFrameworkCore.Pagination.Extensions;
 using AllOverIt.Pagination;
 using Pot.Data.Entities;
-using Pot.Data.Models;
+using Pot.Shared;
 
 namespace Pot.Data.Repositories.Expenses;
 

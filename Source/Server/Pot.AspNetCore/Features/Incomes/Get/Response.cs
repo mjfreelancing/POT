@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.AspNetCore.Models;
 using Pot.Data.Entities;
-using Pot.Data.Models;
+using Pot.Shared;
 using System.ComponentModel;
 
 namespace Pot.AspNetCore.Features.Incomes.Get;
@@ -46,7 +46,7 @@ internal sealed class Response : ResponseBase
         _ = income.WhenNotNull();
 
         RowId = income.RowId;
-        ETag = income.Etag;
+        Etag = income.Etag;
         Description = income.Description;
         NextDue = income.NextDue;
         EndDate = income.EndDate;

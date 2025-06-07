@@ -1,5 +1,5 @@
 ﻿using AllOverIt.Patterns.Result;
-using Pot.AspNetCore.Concerns.DependencyInjection;
+using Pot.App.Concerns.DependencyInjection;
 using Pot.Data.Entities;
 
 namespace Pot.AspNetCore.Features.Incomes.Create.Services;

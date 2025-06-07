@@ -3,9 +3,8 @@ using AllOverIt.Extensions;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.EntityFrameworkCore;
+using Pot.App.Errors;
 using Pot.AspNetCore.Concerns.ProblemDetails;
-using Pot.AspNetCore.Concerns.Validation;
-using Pot.AspNetCore.Concerns.Validation.Extensions;
 using Pot.AspNetCore.Errors;
 using Pot.AspNetCore.Features.Expenses.Import.Models;
 using Pot.AspNetCore.Features.Expenses.Import.Validators;
@@ -103,13 +102,12 @@ internal sealed class ImportExpenseService : IImportExpenseService
 
         if (!validationResult.IsValid)
         {
-            var errors = validationResult
-                .ToProblemDetailsErrors()
+            var errors = validationResult.Errors
                 .Select(error => new CsvProblemDetailsError
                 {
                     ImportRow = row,
-                    PropertyName = error.PropertyName,
                     ErrorCode = error.ErrorCode,
+                    PropertyName = error.PropertyName,
                     AttemptedValue = error.AttemptedValue,
                     ErrorMessage = error.ErrorMessage
                 });
@@ -167,8 +165,8 @@ internal sealed class ImportExpenseService : IImportExpenseService
                 var errorDetails = new CsvProblemDetailsError
                 {
                     ImportRow = row,
-                    PropertyName = nameof(ExpenseCsvRow.AccountId),
                     ErrorCode = ErrorCodes.NotFound,
+                    PropertyName = nameof(ExpenseCsvRow.AccountId),
                     AttemptedValue = csvAccountId!.Value,
                     ErrorMessage = "The Account does not exist"
                 };

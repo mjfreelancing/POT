@@ -1,16 +1,16 @@
 ﻿using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Pot.AspNetCore.Concerns.ProblemDetails.Extensions;
+using Pot.App.Features.Accounts.Update;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Extensions;
-using Pot.AspNetCore.Features.Accounts.Update.Services;
+using Pot.AspNetCore.Features.Accounts.Update.Mappings;
 
 namespace Pot.AspNetCore.Features.Accounts.Update;
 
 internal sealed class Handler
 {
     public static async Task<Results<Ok<Response>, NotFound, ProblemHttpResult>> Invoke(Request request,
-        IProblemDetailsInspector problemDetailsInspector, IUpdateAccountService updateAccountService,
+        IUpdateAccountService updateAccountService, IProblemDetailsInspector problemDetailsInspector,
         ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);
@@ -24,7 +24,9 @@ internal sealed class Handler
             return TypedResults.Problem(problemDetails);
         }
 
-        var result = await updateAccountService.UpdateAccountAsync(request, cancellationToken);
+        var accountInput = request.MapToInput();
+
+        var result = await updateAccountService.UpdateAccountAsync(accountInput, cancellationToken);
 
         return result.IsSuccess
             ? Response.Ok(result.Value!)

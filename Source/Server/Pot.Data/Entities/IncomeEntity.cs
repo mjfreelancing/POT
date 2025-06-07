@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Pot.Data.Annotations;
-using Pot.Data.Models;
+using Pot.Shared;
 using System.ComponentModel.DataAnnotations;
 
 namespace Pot.Data.Entities

@@ -1,4 +1,4 @@
-﻿using Pot.Data.Models;
+﻿using Pot.Shared;
 
 namespace Pot.AspNetCore.Models;
 

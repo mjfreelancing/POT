@@ -1,5 +1,5 @@
 ﻿using AllOverIt.Patterns.Result;
-using Pot.AspNetCore.Concerns.DependencyInjection;
+using Pot.App.Concerns.DependencyInjection;
 using Pot.AspNetCore.Features.Expenses.Import.Models;
 
 namespace Pot.AspNetCore.Features.Expenses.Import.Services;

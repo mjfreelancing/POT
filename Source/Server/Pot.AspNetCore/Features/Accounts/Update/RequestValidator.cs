@@ -5,6 +5,12 @@ namespace Pot.AspNetCore.Features.Accounts.Update;
 
 internal sealed class RequestValidator : ValidatorBase<Request>
 {
+    static RequestValidator()
+    {
+        // Prevent RowId from being split into two words
+        DisablePropertyNameSplitting();
+    }
+
     public RequestValidator()
     {
         RuleFor(account => account.RowId).IsNotEmpty();

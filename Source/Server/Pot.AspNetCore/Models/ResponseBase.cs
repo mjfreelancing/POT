@@ -8,5 +8,5 @@ public abstract class ResponseBase
     public Guid RowId { get; init; }
 
     [Description("A tag indicating when the resource was created or updated.")]
-    public long ETag { get; init; }
+    public long Etag { get; init; }
 }

@@ -1,4 +1,4 @@
-﻿using Pot.Data.Models;
+﻿using Pot.Shared;
 using System.ComponentModel;
 
 namespace Pot.AspNetCore.Features.Incomes.Update;
@@ -9,7 +9,7 @@ public sealed class Request
     public Guid RowId { get; init; }
 
     [Description("The income's entity tag.")]
-    public long ETag { get; init; }
+    public long Etag { get; init; }
 
     [Description("A description of the account.")]
     public string Description { get; init; } = string.Empty;

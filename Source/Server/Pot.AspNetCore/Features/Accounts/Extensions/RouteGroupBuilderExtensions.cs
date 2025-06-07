@@ -12,7 +12,9 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(GetAllAccounts))
             .WithSummary("Get all accounts")
             .WithDescription("Get all account details")
-            .WithTags("Accounts");
+            .WithTags("Accounts")
+            .ProducesProblem((int)HttpStatusCode.OK)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
 
         return routeGroupBuilder;
     }
@@ -25,7 +27,10 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Get account")
             .WithDescription("Get details for an existing account")
             .WithTags("Accounts")
-            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
+            .ProducesProblem((int)HttpStatusCode.OK)
+            .ProducesProblem((int)HttpStatusCode.NotFound)
+            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
 
         return routeGroupBuilder;
     }
@@ -38,7 +43,9 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Create account")
             .WithDescription("Create new account details")
             .WithTags("Accounts")
-            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
+            .ProducesProblem((int)HttpStatusCode.Created)
+            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
 
         return routeGroupBuilder;
     }
@@ -51,7 +58,10 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Update account")
             .WithDescription("Updates existing account details")
             .WithTags("Accounts")
-            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
+            .ProducesProblem((int)HttpStatusCode.OK)
+            .ProducesProblem((int)HttpStatusCode.NotFound)
+            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
 
         return routeGroupBuilder;
     }
@@ -64,7 +74,9 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Delete account")
             .WithDescription("Deletes existing account details")
             .WithTags("Accounts")
-            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
+            .ProducesProblem((int)HttpStatusCode.OK)
+            .ProducesProblem((int)HttpStatusCode.NotFound)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
 
         return routeGroupBuilder;
     }
@@ -79,8 +91,10 @@ internal static class RouteGroupBuilderExtensions
             .WithTags("Accounts", "Import")
             .WithMetadata(new RequestSizeLimitAttribute(maxImportPayloadBytes)) // Will raise 413 Payload Too Large if the file exceeds this limit
             .DisableAntiforgery()
+            .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.RequestEntityTooLarge)
-            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
+            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
 
         return routeGroupBuilder;
     }

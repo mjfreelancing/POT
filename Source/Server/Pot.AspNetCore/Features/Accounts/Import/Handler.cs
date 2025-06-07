@@ -3,10 +3,10 @@ using CsvHelper;
 using CsvHelper.TypeConversion;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Pot.App.Features.Accounts.Import;
+using Pot.App.Features.Accounts.Import.Models;
 using Pot.AspNetCore.Concerns.ProblemDetails;
 using Pot.AspNetCore.Extensions;
-using Pot.AspNetCore.Features.Accounts.Import.Models;
-using Pot.AspNetCore.Features.Accounts.Import.Services;
 using System.Globalization;
 using System.Net;
 

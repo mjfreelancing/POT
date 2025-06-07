@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Pot.App.Errors;
 using Pot.AspNetCore.Concerns.ProblemDetails;
-using Pot.AspNetCore.Concerns.Validation;
 using System.Net;
 
 namespace Pot.AspNetCore.Concerns.ExceptionHandlers;
@@ -27,11 +27,9 @@ internal sealed class DatabaseExceptionHandler : IExceptionHandler
 
         if (exceptionType == _dbUpdateExceptionType && exception.InnerException is PostgresException postgresException)
         {
-            var errorDetail = new ProblemDetailsError
+            var errorDetail = new ProblemDetailsError(ProblemType.Server)
             {
-                PropertyName = string.Empty,
                 ErrorCode = ErrorCodes.IO,
-                AttemptedValue = null,
                 ErrorMessage = postgresException.Detail ?? postgresException.MessageText
             };
 

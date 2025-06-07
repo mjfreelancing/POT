@@ -4,6 +4,9 @@ using AllOverIt.Serialization.Json.SystemText.Converters;
 using AllOverIt.Validation;
 using AllOverIt.Validation.Extensions;
 using FluentValidation;
+using Pot.App.Concerns.DependencyInjection;
+using Pot.App.Concerns.Validation;
+using Pot.App.Extensions;
 using Pot.AspNetCore.Concerns.Converters.JsonSerialization;
 using Pot.AspNetCore.Concerns.DependencyInjection;
 using Pot.AspNetCore.Concerns.ExceptionHandlers;
@@ -12,8 +15,7 @@ using Pot.AspNetCore.Concerns.Middleware;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.Data;
 using Pot.Data.Extensions;
-using Pot.Data.Models;
-using Pot.Data.Repositories;
+using Pot.Shared;
 
 namespace Pot.AspNetCore.Extensions;
 
@@ -120,20 +122,46 @@ internal static class WebApplicationBuilderExtensions
         return builder;
     }
 
-    public static WebApplicationBuilder AddValidation(this WebApplicationBuilder builder)
+    public static WebApplicationBuilder AddAspNetDependencies(this WebApplicationBuilder builder)
+    {
+        builder.Services
+            .AutoRegisterScoped<DependencyRegistrar, IPotScopedDependency>(config =>
+            {
+                // Exclude interfaces we know we don't want to register
+                config.Filter((serviceType, implementationType) =>
+                {
+                    if (serviceType.IsGenericType)
+                    {
+                        var genericTypeDefinition = serviceType.GetGenericTypeDefinition();
+
+                        // Not expecting other types, but only filter out those we expect
+                        return !(genericTypeDefinition == typeof(IValidator<>) || genericTypeDefinition == typeof(ValidatorBase<>));
+                    }
+
+                    return serviceType != typeof(IPotScopedDependency);
+                });
+            })
+            .AddAppDependencies();
+
+        return builder;
+    }
+
+    public static WebApplicationBuilder AddAspNetValidation(this WebApplicationBuilder builder)
     {
         builder.Services.AddLifetimeValidationInvoker(validationRegistry =>
         {
-            validationRegistry.AutoRegisterScopedValidators<PotValidationRegistrar>((modelType, validatorType) =>
+            validationRegistry.AutoRegisterScopedValidators<ValidationRegistrar>((modelType, validatorType) =>
             {
                 return validatorType.IsAssignableTo(_scopedLifetimeValidatorType);
             });
 
-            validationRegistry.AutoRegisterSingletonValidators<PotValidationRegistrar>((modelType, validatorType) =>
+            validationRegistry.AutoRegisterSingletonValidators<ValidationRegistrar>((modelType, validatorType) =>
             {
                 // Validators are typically registered as singletons, so we look for the lack of IScopedLifetimeValidator.
                 return !validatorType.IsAssignableTo(_scopedLifetimeValidatorType);
             });
+
+            validationRegistry.AddAppValidators();
         });
 
         builder.Services.AddSingleton<IProblemDetailsInspector, ProblemDetailsInspector>();
@@ -146,37 +174,6 @@ internal static class WebApplicationBuilderExtensions
         builder.Services.AddDbContext<PotDbContext>();
         builder.Services.AddQueryPagination();
         builder.Services.AddUnitOfWork();
-
-        return builder;
-    }
-
-    public static WebApplicationBuilder AutoRegisterPotDependencies(this WebApplicationBuilder builder)
-    {
-        builder.Services.AutoRegisterScoped<PotRegistrar, IPotScopedDependency>(config =>
-        {
-            // Exclude interfaces we know we don't want to register
-            config.Filter((serviceType, implementationType) =>
-            {
-                if (serviceType.IsGenericType)
-                {
-                    var genericTypeDefinition = serviceType.GetGenericTypeDefinition();
-
-                    // Not expecting other types, but only filter out those we expect
-                    return !(genericTypeDefinition == typeof(IValidator<>) || genericTypeDefinition == typeof(ValidatorBase<>));
-                }
-
-                return serviceType != typeof(IPotScopedDependency);
-            });
-        });
-
-        builder.Services.AutoRegisterScoped<PotDataRegistrar>([typeof(IGenericRepository<,>)], config =>
-        {
-            // Exclude interfaces we know we don't want to register
-            config.Filter((serviceType, implementationType) =>
-            {
-                return !serviceType.IsGenericType || serviceType.GetGenericTypeDefinition() != typeof(IGenericRepository<,>);
-            });
-        });
 
         return builder;
     }

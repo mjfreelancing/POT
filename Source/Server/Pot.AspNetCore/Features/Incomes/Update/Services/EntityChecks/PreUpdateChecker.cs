@@ -10,7 +10,7 @@ internal sealed class PreUpdateChecker : ChainOfResponsibilityAsyncComposer<Inpu
 {
     private static readonly IEnumerable<PreUpdateCheckBase> _handlers =
     [
-        new CheckHasSameETag(),
+        new CheckHasSameEtag(),
         new CheckDescriptionDoesNotExist()
     ];
 

@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<ItemGroup>
-		<PackageReference Include="AllOverIt" Version="9.0.0-rc.2" />
 		<PackageReference Include="AllOverIt.DependencyInjection" Version="9.0.0-rc.2" />
 		<PackageReference Include="AllOverIt.EntityFrameworkCore" Version="9.0.0-rc.2" />
 		<PackageReference Include="AllOverIt.EntityFrameworkCore.Pagination" Version="9.0.0-rc.2" />

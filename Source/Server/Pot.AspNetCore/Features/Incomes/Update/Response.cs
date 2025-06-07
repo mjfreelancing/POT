@@ -16,6 +16,6 @@ internal sealed class Response : ResponseBase
     private Response(IncomeEntity income)
     {
         RowId = income.RowId;
-        ETag = income.Etag;
+        Etag = income.Etag;
     }
 }

@@ -1,8 +1,8 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Pot.App.Features.Accounts.GetAll.Models;
 using Pot.AspNetCore.Models;
-using Pot.Data.Entities;
 using System.ComponentModel;
 
 namespace Pot.AspNetCore.Features.Accounts.GetAll;
@@ -33,19 +33,19 @@ internal sealed class Response : ResponseBase
     [Description("The available balance after consider the Reserved and Allocation amounts.")]
     public double Available => Balance - Reserved - Allocated;
 
-    public static Ok<Response[]> Ok(List<AccountEntity> accounts)
+    public static Ok<Response[]> Ok(List<Output> accounts)
     {
         var responses = accounts.SelectToArray(account => new Response(account));
 
         return TypedResults.Ok(responses);
     }
 
-    private Response(AccountEntity account)
+    private Response(Output account)
     {
         _ = account.WhenNotNull();
 
         RowId = account.RowId;
-        ETag = account.Etag;
+        Etag = account.Etag;
         Bsb = account.Bsb;
         Number = account.Number;
         Description = account.Description;

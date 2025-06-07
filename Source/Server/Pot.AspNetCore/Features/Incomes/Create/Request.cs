@@ -1,4 +1,4 @@
-﻿using Pot.Data.Models;
+﻿using Pot.Shared;
 using System.ComponentModel;
 
 namespace Pot.AspNetCore.Features.Incomes.Create;

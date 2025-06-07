@@ -1,16 +1,16 @@
 ﻿using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Pot.AspNetCore.Concerns.ProblemDetails.Extensions;
+using Pot.App.Features.Accounts.Create;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Extensions;
-using Pot.AspNetCore.Features.Accounts.Create.Services;
+using Pot.AspNetCore.Features.Accounts.Create.Mappings;
 
 namespace Pot.AspNetCore.Features.Accounts.Create;
 
 internal sealed class Handler
 {
     public static async Task<Results<CreatedAtRoute<Response>, ProblemHttpResult>> Invoke(Request request,
-        IProblemDetailsInspector problemDetailsInspector, ICreateAccountService createAccountService,
+        ICreateAccountService accountService, IProblemDetailsInspector problemDetailsInspector,
         ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);
@@ -24,10 +24,12 @@ internal sealed class Handler
             return TypedResults.Problem(problemDetails);
         }
 
-        var result = await createAccountService.CreateAccountAsync(request, cancellationToken);
+        var accountInput = request.MapToInput();
 
-        return result.IsSuccess
-            ? Response.Created(result.Value!)
-            : TypedResults.Problem(result.Error!.GetProblemDetails());
+        var accountOutput = await accountService.CreateAccountAsync(accountInput, cancellationToken);
+
+        return accountOutput.IsSuccess
+            ? Response.Created(accountOutput.Value!)
+            : TypedResults.Problem(accountOutput.Error!.GetProblemDetails());
     }
 }

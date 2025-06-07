@@ -1,7 +1,7 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
 using CsvHelper.TypeConversion;
-using Pot.Data.Models;
+using Pot.Shared;
 
 namespace Pot.AspNetCore.Concerns.Converters.Csv
 {

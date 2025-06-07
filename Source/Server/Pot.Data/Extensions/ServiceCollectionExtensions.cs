@@ -1,10 +1,24 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using AllOverIt.DependencyInjection.Extensions;
+using Microsoft.Extensions.DependencyInjection;
+using Pot.Data.Repositories;
 using Pot.Data.UnitOfWork;
 
 namespace Pot.Data.Extensions;
 
 public static class ServiceCollectionExtensions
 {
+    public static void AddDataDependencies(this IServiceCollection services)
+    {
+        services.AutoRegisterScoped<PotDataRegistrar>([typeof(IGenericRepository<,>)], config =>
+        {
+            // Exclude interfaces we know we don't want to register
+            config.Filter((serviceType, implementationType) =>
+            {
+                return !serviceType.IsGenericType || serviceType.GetGenericTypeDefinition() != typeof(IGenericRepository<,>);
+            });
+        });
+    }
+
     public static IServiceCollection AddUnitOfWork(this IServiceCollection services)
     {
         // When injecting into a handler / service that performs all operations on the same thread.
