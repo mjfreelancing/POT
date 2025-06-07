@@ -13,7 +13,7 @@ internal sealed class CheckDescriptionDoesNotExist : PreCreateCheckBase
     private readonly IAccountRepository _accountRepository;
     private readonly ILogger _logger;
 
-    public CheckDescriptionDoesNotExist(IAccountRepository accountRepository, ILogger<CheckAccountNumberDoesNotExist> logger)
+    public CheckDescriptionDoesNotExist(IAccountRepository accountRepository, ILogger<CheckDescriptionDoesNotExist> logger)
     {
         _accountRepository = accountRepository.WhenNotNull();
         _logger = logger.WhenNotNull();
