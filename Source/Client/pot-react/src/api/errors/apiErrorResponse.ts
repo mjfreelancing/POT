@@ -25,7 +25,7 @@ export const getConflictMessage = (error: ApiErrorResponse): string => {
   if (error.errors && error.errors.length > 0) {
     return error.errors
       .map(err => {
-        if (err.propertyName === 'Etag') {
+        if (err.propertyName.toLowerCase() === 'etag') {
           return 'A conflicting update has been performed by another user. Refresh and try again.';
         }
 
@@ -46,5 +46,5 @@ export const getValidationMessage = (error: ApiErrorResponse): string => {
 };
 
 export const getErrorTitle = (error: ApiErrorResponse): string => {
-  return error.title ?? 'An unknown error occurred';
+  return error.detail ?? error.title ?? 'An unknown error occurred';
 };
