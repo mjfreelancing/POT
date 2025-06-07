@@ -1,9 +1,9 @@
 import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { useErrorBoundary } from 'react-error-boundary';
 import { useNavigate } from 'react-router';
 
 import { ConfirmationDialog } from '@/components/dialog/confirmationDialog';
+import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Income } from '@/data/incomes/income';
+import { DisplayError } from '@/lib/errors/displayError';
 
 import useDeleteIncome from '../delete/hooks/useDeleteIncome';
 
@@ -22,21 +23,34 @@ type IncomeActionsProps = {
 
 function IncomeActions({ income }: IncomeActionsProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [error, setError] = useState<DisplayError | null>(null);
   const navigate = useNavigate();
   const { deleteIncome } = useDeleteIncome(income.rowId);
-  const { showBoundary } = useErrorBoundary();
 
   const handleDelete = async () => {
-    try {
-      await deleteIncome();
-      setShowDeleteDialog(false);
-    } catch (error) {
-      showBoundary(error);
+    const result = await deleteIncome();
+
+    // Always close the dialog regardless of success or failure
+    setShowDeleteDialog(false);
+
+    if (!result.success) {
+      setError({
+        title: result.error.code,
+        description: result.error.description,
+      });
     }
   };
 
   return (
     <>
+      {error && (
+        <ErrorSheet
+          title={error.title}
+          description={error.description}
+          onDismiss={() => setError(null)}
+        />
+      )}
+
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">

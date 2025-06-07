@@ -77,9 +77,14 @@ const useApiUpdateIncome = () => {
   };
 };
 
-// Not performing type narrowing as this method currently returns a mutation without Result<T> handling
+// Returning the mutation data as Result<void, FailResultBase> type to enable TypeScript's discriminated union type narrowing.
 const useApiDeleteIncome = (id: string) => {
-  return useDelete<void>(`/incomes/${id}`);
+  const mutation = useDelete<void>(`/incomes/${id}`);
+
+  return {
+    ...mutation,
+    data: mutation.data as Result<void, FailResultBase>,
+  };
 };
 
 export {
