@@ -21,9 +21,10 @@ internal static class EnrichedErrorExtensions
             _ => throw new UnreachableException($"Unknown problem type: {error.ErrorType}")
         };
 
+        // Note: 'errors' must be an array of objects
         var errors = enrichedError switch
         {
-            ProblemDetailsError problemDetailsError => problemDetailsError.GetErrorDetails(),
+            ProblemDetailsError problemDetailsError => [problemDetailsError.GetErrorDetails()],
             ProblemDetailsErrorCollection problemDetailsErrorCollection => problemDetailsErrorCollection.Errors.SelectToArray(error => error.GetErrorDetails()),
             _ => throw new UnreachableException($"Unknown enriched error type: {enrichedError.GetType()}")
         };
