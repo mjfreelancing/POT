@@ -19,7 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Account } from '@/data/accounts/account';
+import { Account } from '@/data/account';
 import { DisplayError } from '@/lib/errors/displayError';
 
 import useDeleteAccount from '../delete/hooks/useDeleteAccount';

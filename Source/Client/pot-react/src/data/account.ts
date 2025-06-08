@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { IdentitySchema } from '../identity';
+import { IdentitySchema } from './identity';
 
 export const BaseAccountSchema = z.object({
   bsb: z.string(),

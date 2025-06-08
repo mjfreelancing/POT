@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
-import { CreateAccount } from '@/data/accounts/account';
+import { CreateAccount } from '@/data/account';
 import { DisplayError } from '@/lib/errors/displayError';
 
 import AccountForm from '../components/AccountForm';

@@ -8,7 +8,7 @@ import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { EnrichedDatePicker } from '@/components/picker';
 import EnrichedCalendar from '@/components/picker/EnrichedCalendar'; // Renamed import
 import { createMoneyValueColumn, DataTable } from '@/components/table';
-import { Account } from '@/data/accounts/account';
+import { Account } from '@/data/account';
 import { DisplayError } from '@/lib/errors/displayError';
 
 // Temporary - a WIP

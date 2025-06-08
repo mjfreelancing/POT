@@ -6,7 +6,7 @@ import { useNavigate, useParams } from 'react-router';
 import { useApiGetAccountById } from '@/api/accounts/hooks/useAccounts';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
-import { EditAccount } from '@/data/accounts/account';
+import { EditAccount } from '@/data/account';
 import { DisplayError } from '@/lib/errors/displayError';
 
 import AccountForm from '../components/AccountForm';
@@ -110,7 +110,7 @@ function EditAccountSheet() {
         form={form}
         onSubmit={onSubmit}
         onCancel={() => navigate('/accounts')}
-        readOnlyAccountIdentifiers={true}
+        readOnlyIdentifiers={true}
         submitLabel="Save"
       />
     </AccountSheet>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 
-import { Account } from '@/data/accounts/account';
+import { Account } from '@/data/account';
 
 type AccountFormValues = {
   bsb: string;
