@@ -42,10 +42,10 @@ internal sealed class IncomeRepository : GenericRepository<PotDbContext, IncomeE
             .GetPageResultsAsync(paging.Continuation, cancellationToken);
     }
 
-    public Task<IncomeEntity?> GetIncomeOrDefaultAsync(Guid id, CancellationToken cancellationToken)
+    public Task<IncomeEntity?> GetIncomeOrDefaultAsync(Guid incomeId, CancellationToken cancellationToken)
     {
         return AsQueryable()
             .Include(income => income.Account)
-            .SingleOrDefaultAsync(id, cancellationToken);
+            .SingleOrDefaultAsync(incomeId, cancellationToken);
     }
 }

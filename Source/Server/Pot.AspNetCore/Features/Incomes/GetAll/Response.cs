@@ -62,13 +62,10 @@ internal sealed class Response : ResponseBase
 
         var account = income.Account;
 
-        if (account is not null)
+        Account = new AccountModel
         {
-            Account = new AccountModel
-            {
-                RowId = account.RowId,
-                Description = account.Description
-            };
-        }
+            RowId = account.RowId,
+            Description = account.Description
+        };
     }
 }

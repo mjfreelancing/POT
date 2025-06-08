@@ -14,7 +14,7 @@ public sealed class Output
     public required long Etag { get; init; }
     public required string Description { get; init; }
     public required DateOnly NextDue { get; init; }
-    public DateOnly? EndDate { get; init; }
+    public required DateOnly? EndDate { get; init; }
     public required Frequency Frequency { get; init; }  // Serialized via EnrichedEnumJsonConverter<Frequency>
     public required int FrequencyCount { get; init; }
     public required double Amount { get; init; }

@@ -14,7 +14,7 @@ internal sealed class GetAllIncomesService : IGetAllIncomesService
     private readonly IIncomeRepository _incomeRepository;
     private readonly ILogger _logger;
 
-    public GetAllIncomesService(IPersistableIncomeRepository incomeRepository, ILogger<GetAllIncomesService> logger)
+    public GetAllIncomesService(IIncomeRepository incomeRepository, ILogger<GetAllIncomesService> logger)
     {
         _incomeRepository = incomeRepository.WhenNotNull();
         _logger = logger.WhenNotNull();
