@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { Frequency } from '@/lib/types';
 
-import { IdentitySchema } from '../identity';
+import { IdentitySchema } from './identity';
 
 export const IncomeAccountSchema = z.object({
   rowId: z.string(),

@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { Account } from '@/data/accounts/account';
+import type { Account } from '@/data/account';
 import { FrequencyEnumValues } from '@/lib/types';
 import { localIsoDate, localToday } from '@/lib/utils';
 

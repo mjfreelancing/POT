@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiCreateIncome } from '@/api/incomes/hooks/useIncomes';
 import { Identity } from '@/data/identity';
-import { CreateIncome } from '@/data/incomes/income';
+import { CreateIncome } from '@/data/income';
 import { FailResultBase } from '@/lib/result/failResultBase';
 import { Result } from '@/lib/result/result';
 

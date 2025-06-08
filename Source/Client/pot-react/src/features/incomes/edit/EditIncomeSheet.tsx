@@ -7,8 +7,8 @@ import { useApiGetAllAccounts } from '@/api/accounts/hooks/useAccounts';
 import { useApiGetIncomeById } from '@/api/incomes/hooks/useIncomes';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
-import type { Account } from '@/data/accounts/account';
-import type { EditIncome, Income } from '@/data/incomes/income';
+import type { Account } from '@/data/account';
+import type { EditIncome, Income } from '@/data/income';
 import type { DisplayError } from '@/lib/errors/displayError';
 
 import IncomeForm from '../components/IncomeForm';
@@ -80,7 +80,7 @@ const EditIncomeSheetInternal: React.FC<EditIncomeSheetInternalProps> = ({
         form={form}
         onSubmit={onSubmit}
         onCancel={() => navigate('/incomes')}
-        readOnlyIncomeIdentifiers={true}
+        readOnlyIdentifiers={true}
         submitLabel="Save"
         accounts={accountsList}
       />

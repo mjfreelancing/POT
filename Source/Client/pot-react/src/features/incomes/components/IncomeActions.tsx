@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Income } from '@/data/incomes/income';
+import { Income } from '@/data/income';
 import { DisplayError } from '@/lib/errors/displayError';
 
 import useDeleteIncome from '../delete/hooks/useDeleteIncome';
