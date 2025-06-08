@@ -1,15 +1,16 @@
 ﻿using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Pot.App.Features.Incomes.Create;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Extensions;
-using Pot.AspNetCore.Features.Incomes.Create.Services;
+using Pot.AspNetCore.Features.Incomes.Create.Mappings;
 
 namespace Pot.AspNetCore.Features.Incomes.Create;
 
 internal sealed class Handler
 {
     public static async Task<Results<CreatedAtRoute<Response>, ProblemHttpResult>> Invoke(Request request,
-        IProblemDetailsInspector problemDetailsInspector, ICreateIncomeService createIncomeService,
+        ICreateIncomeService incomeService, IProblemDetailsInspector problemDetailsInspector,
         ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);
@@ -23,10 +24,12 @@ internal sealed class Handler
             return TypedResults.Problem(problemDetails);
         }
 
-        var result = await createIncomeService.CreateIncomeAsync(request, cancellationToken);
+        var incomeInput = request.MapToInput();
 
-        return result.IsSuccess
-            ? Response.Created(result.Value!)
-            : TypedResults.Problem(result.Error!.GetProblemDetails());
+        var incomeOutput = await incomeService.CreateIncomeAsync(incomeInput, cancellationToken);
+
+        return incomeOutput.IsSuccess
+            ? Response.Created(incomeOutput.Value!)
+            : TypedResults.Problem(incomeOutput.Error!.GetProblemDetails());
     }
 }

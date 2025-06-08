@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Pot.App.Features.Incomes.Create.Models;
 using Pot.AspNetCore.Models;
-using Pot.Data.Entities;
 
 namespace Pot.AspNetCore.Features.Incomes.Create;
 
 public sealed class Response : ResponseBase
 {
-    public static CreatedAtRoute<Response> Created(IncomeEntity income)
+    public static CreatedAtRoute<Response> Created(Output income)
     {
         var response = new Response(income);
 
@@ -16,7 +16,7 @@ public sealed class Response : ResponseBase
             new { Id = response.RowId });
     }
 
-    private Response(IncomeEntity income)
+    private Response(Output income)
     {
         RowId = income.RowId;
         Etag = income.Etag;
