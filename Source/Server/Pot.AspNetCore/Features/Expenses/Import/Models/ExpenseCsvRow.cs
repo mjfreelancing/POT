@@ -8,7 +8,7 @@ namespace Pot.AspNetCore.Features.Expenses.Import.Models;
 public sealed class ExpenseCsvRow
 {
     [Index(0)]
-    public Guid? AccountId { get; init; }
+    public Guid AccountId { get; init; }
 
     [Index(1)]
     public Guid? ExpenseId { get; init; }

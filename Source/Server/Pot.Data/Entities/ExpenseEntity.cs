@@ -22,6 +22,6 @@ namespace Pot.Data.Entities
         public double Amount { get; set; }
         public double Allocated { get; set; }
 
-        public AccountEntity? Account { get; set; }
+        public required AccountEntity Account { get; set; }
     }
 }

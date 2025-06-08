@@ -13,6 +13,8 @@ using Pot.Data.UnitOfWork;
 
 namespace Pot.AspNetCore.Features.Expenses.Import.Services;
 
+// THIS ALL NEEDS A RE-WRITE SINCE ACCOUNT IS NO LONGER NULLABLE
+
 internal sealed class ImportExpenseService : IImportExpenseService
 {
     private record ExpenseEntityInfo(ExpenseEntity ExpenseEntity, bool Created);
@@ -68,7 +70,7 @@ internal sealed class ImportExpenseService : IImportExpenseService
                 }
 
                 var expenseEntity = expenseEntityInfo.ExpenseEntity;
-                var csvAccountId = csvRow.AccountId?.As<Guid?>();
+                var csvAccountId = csvRow.AccountId.As<Guid>();
 
                 await UpdateExpenseAccountAsync(expenseEntity, csvAccountId, row, problemDetailsErrors, cancellationToken).ConfigureAwait(false);
             }
@@ -134,7 +136,7 @@ internal sealed class ImportExpenseService : IImportExpenseService
 
         if (expenseEntity is null)
         {
-            expenseEntity = CreateExpenseEntity(csvExpenseId, csvRow);
+            expenseEntity = CreateExpenseEntity(csvExpenseId, csvRow, null!);                                       // THIS ALL NEEDS A RE-WRITE SINCE ACCOUNT IS NO LONGER NULLABLE 
             return new ExpenseEntityInfo(expenseEntity, true);
         }
 
@@ -143,7 +145,7 @@ internal sealed class ImportExpenseService : IImportExpenseService
         return new ExpenseEntityInfo(expenseEntity, false);
     }
 
-    private async Task UpdateExpenseAccountAsync(ExpenseEntity expenseEntity, Guid? csvAccountId, int row,
+    private async Task UpdateExpenseAccountAsync(ExpenseEntity expenseEntity, Guid csvAccountId, int row,
         List<CsvProblemDetailsError> problemDetailsErrors, CancellationToken cancellationToken)
     {
         // If the expense has an account but it doesn't match the provided Account Id,
@@ -151,13 +153,13 @@ internal sealed class ImportExpenseService : IImportExpenseService
         if (expenseEntity.Account is not null && expenseEntity.Account.RowId != csvAccountId)
         {
             expenseEntity.Account.Expenses.Remove(expenseEntity);
-            expenseEntity.Account = null;
+            expenseEntity.Account = null!;                                                                          // THIS ALL NEEDS A RE-WRITE SINCE ACCOUNT IS NO LONGER NULLABLE
         }
 
-        if (csvAccountId.HasValue && expenseEntity.Account is null)
+        if (expenseEntity.Account is null)
         {
             var targetAccountEntity = await _unitOfWork.AccountRepository
-                .GetAccountOrDefaultAsync(csvAccountId.Value, cancellationToken)
+                .GetAccountOrDefaultAsync(csvAccountId, cancellationToken)
                 .ConfigureAwait(false);
 
             if (targetAccountEntity is null)
@@ -167,7 +169,7 @@ internal sealed class ImportExpenseService : IImportExpenseService
                     ImportRow = row,
                     ErrorCode = ErrorCodes.NotFound,
                     PropertyName = nameof(ExpenseCsvRow.AccountId),
-                    AttemptedValue = csvAccountId!.Value,
+                    AttemptedValue = csvAccountId,
                     ErrorMessage = "The Account does not exist"
                 };
 
@@ -179,7 +181,7 @@ internal sealed class ImportExpenseService : IImportExpenseService
         }
     }
 
-    private ExpenseEntity CreateExpenseEntity(Guid? expenseId, ExpenseCsvRow import)
+    private ExpenseEntity CreateExpenseEntity(Guid? expenseId, ExpenseCsvRow import, AccountEntity account)
     {
         var expenseEntity = new ExpenseEntity
         {
@@ -191,7 +193,8 @@ internal sealed class ImportExpenseService : IImportExpenseService
             FrequencyCount = import.FrequencyCount,
             EndDate = import.EndDate,
             Amount = import.Amount,
-            Allocated = import.Allocated
+            Allocated = import.Allocated,
+            Account = account
         };
 
         _unitOfWork.ExpenseRepository.Add(expenseEntity);
