@@ -92,7 +92,7 @@ function AccountActions({ account }: AccountActionsProps) {
             onClick={() => navigate(`/accounts/edit/${account.rowId}`)}
           >
             <ShoppingCart className="mr-2 h-4 w-4" />
-            Expenses{' '}
+            Expenses
             {account.linkedExpenses > 0 && `(${account.linkedExpenses})`}
           </DropdownMenuItem>
           <DropdownMenuItem

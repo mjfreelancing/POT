@@ -12,7 +12,7 @@ function IncomesPage() {
       <div className="flex-1 p-8 pt-6">
         <IncomesTable />
       </div>
-      {/* The Outlet is used to render nested routes, such as when creating/editing accounts */}
+      {/* The Outlet is used to render nested routes, such as when creating/editing incomes */}
       <Outlet />
     </div>
   );

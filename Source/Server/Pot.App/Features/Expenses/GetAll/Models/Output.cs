@@ -15,7 +15,7 @@ public sealed class Output
     public required string Description { get; init; }
     public required DateOnly NextDue { get; init; }
     public required DateOnly? EndDate { get; init; }
-    public required DateOnly AccrualStart { get; init; }
+    public required DateOnly AccrualStart { get; init; }    // Can adjust this date to start accruing sooner/later (paid previous earlier or want to delay)
     public required Frequency Frequency { get; init; }
     public required int FrequencyCount { get; init; }
     public required bool Recurring { get; init; }
