@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 
-import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
+import { ErrorSheet } from '@/components/feedback';
 import { DisplayError } from '@/lib/errors/displayError';
 
-import { AppSidebar } from './components/nav/AppSidebar';
-import { ThemeProvider } from './components/theme/ThemeProvider';
+import { AppSidebar } from './components/nav';
+import { ThemeProvider } from './components/theme';
 import { SidebarProvider } from './components/ui/sidebar';
 import { AppRoutes } from './routes/AppRoutes';
 

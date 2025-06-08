@@ -4,7 +4,7 @@ import {
   createDateColumn,
   createFrequencyColumn,
   createMoneyValueColumn,
-} from '@/components/table/DataTable';
+} from '@/components/table';
 import { Income } from '@/data/incomes/income';
 
 import IncomeActions from './components/IncomeActions';

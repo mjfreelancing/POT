@@ -2,9 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
 import { useApiGetAllAccounts } from '@/api/accounts/hooks/useAccounts';
-import LoadingMessage from '@/components/feedback/message/LoadingMessage';
-import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
-import { DataTable } from '@/components/table/DataTable';
+import { ErrorSheet, LoadingMessage } from '@/components/feedback';
+import { DataTable } from '@/components/table';
 import { Button } from '@/components/ui/button';
 import {
   Card,

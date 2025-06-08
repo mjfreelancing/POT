@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 
-type EnrichedCalendarProps = Omit<
+export type EnrichedCalendarProps = Omit<
   React.ComponentProps<typeof Calendar>,
   'onSelect' | 'selected' | 'month' | 'components' | 'mode'
 > & {

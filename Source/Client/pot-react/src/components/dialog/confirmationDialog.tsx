@@ -9,7 +9,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-type ConfirmationDialogProps = {
+export type ConfirmationDialogProps = {
   open: boolean;
   title: string;
   description: string;

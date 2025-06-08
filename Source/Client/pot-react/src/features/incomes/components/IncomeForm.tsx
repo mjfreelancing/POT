@@ -1,9 +1,7 @@
 import { UseFormReturn } from 'react-hook-form';
 
-import MoneyValueInput, {
-  MoneyValueChangeEvent,
-} from '@/components/input/MoneyValueInput';
-import { EnrichedDatePicker } from '@/components/picker/EnrichedDatePicker';
+import { MoneyValueChangeEvent, MoneyValueInput } from '@/components/input';
+import { EnrichedDatePicker } from '@/components/picker';
 import { Button } from '@/components/ui/button';
 import {
   Form,

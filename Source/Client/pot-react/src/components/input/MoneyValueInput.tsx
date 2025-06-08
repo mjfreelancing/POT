@@ -19,7 +19,7 @@ export type MoneyValueChangeEvent = Omit<
 // 'type' and 'inputMode' are defined internally
 // 'min' and 'max' are not supported - caller can use custom validation
 // 'onChange' is overridden to pass both string and number values
-type MoneyValueInputProps = Omit<
+export type MoneyValueInputProps = Omit<
   ComponentPropsWithoutRef<typeof Input>,
   'type' | 'inputMode' | 'min' | 'max' | 'onChange' | 'value'
 > & {

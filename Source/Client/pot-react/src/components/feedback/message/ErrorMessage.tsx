@@ -1,4 +1,4 @@
-type ErrorMessageProps = {
+export type ErrorMessageProps = {
   message: string;
 };
 

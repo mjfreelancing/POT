@@ -5,12 +5,9 @@ import { useEffect, useState } from 'react';
 import { useApiGetAllAccounts } from '@/api/accounts/hooks/useAccounts';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
+import { EnrichedDatePicker } from '@/components/picker';
 import EnrichedCalendar from '@/components/picker/EnrichedCalendar'; // Renamed import
-import { EnrichedDatePicker } from '@/components/picker/EnrichedDatePicker';
-import {
-  createMoneyValueColumn,
-  DataTable,
-} from '@/components/table/DataTable';
+import { createMoneyValueColumn, DataTable } from '@/components/table';
 import { Account } from '@/data/accounts/account';
 import { DisplayError } from '@/lib/errors/displayError';
 

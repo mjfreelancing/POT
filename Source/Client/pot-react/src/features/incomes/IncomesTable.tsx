@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router';
 import { useApiGetAllIncomes } from '@/api/incomes/hooks/useIncomes';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
-import { DataTable } from '@/components/table/DataTable';
+import { DataTable } from '@/components/table';
 import { Button } from '@/components/ui/button';
 import {
   Card,

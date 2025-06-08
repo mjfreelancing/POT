@@ -4,7 +4,7 @@ import { DisplayError } from '@/lib/errors/displayError';
 
 import { Button } from '../../ui/button';
 
-type SheetErrorProps = DisplayError & {
+export type SheetErrorProps = DisplayError & {
   onDismiss: () => void;
 };
 

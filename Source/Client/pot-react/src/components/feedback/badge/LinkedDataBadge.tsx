@@ -2,7 +2,7 @@ import { CircleDollarSignIcon, ShoppingCart } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 
-type LinkedDataType = 'expense' | 'income';
+export type LinkedDataType = 'expense' | 'income';
 
 type LinkedDataBadgeProps = {
   type: LinkedDataType;

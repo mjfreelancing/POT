@@ -123,7 +123,7 @@ export const DEFAULT_HIGHLIGHT_ROW_CLASS = 'bg-blue-100 dark:bg-blue-900';
  * @property [highlightRowFilter] - Optional function to determine if a row should be highlighted. Receives a row object and returns a boolean.
  * @property [highlightClassName] - Optional Tailwind CSS class(es) to apply to rows that match the `highlightRowFilter`.
  */
-type DataTableProps<TData, TValue> = {
+export type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   highlightRowFilter?: (row: Row<TData>) => boolean;

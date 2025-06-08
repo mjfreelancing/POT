@@ -21,7 +21,7 @@ export type MenuGroupDefinition = {
   readonly items: MenuGroupItem[];
 };
 
-type MenuGroupProps = {
+export type MenuGroupProps = {
   readonly group: MenuGroupDefinition;
 };
 

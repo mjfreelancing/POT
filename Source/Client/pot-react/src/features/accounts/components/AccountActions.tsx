@@ -9,8 +9,8 @@ import {
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { ConfirmationDialog } from '@/components/dialog/confirmationDialog';
-import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
+import { ConfirmationDialog } from '@/components/dialog';
+import { ErrorSheet } from '@/components/feedback';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,

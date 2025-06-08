@@ -1,8 +1,6 @@
 import { UseFormReturn } from 'react-hook-form';
 
-import MoneyValueInput, {
-  MoneyValueChangeEvent,
-} from '@/components/input/MoneyValueInput';
+import { MoneyValueChangeEvent, MoneyValueInput } from '@/components/input';
 import { Button } from '@/components/ui/button';
 import {
   Form,
