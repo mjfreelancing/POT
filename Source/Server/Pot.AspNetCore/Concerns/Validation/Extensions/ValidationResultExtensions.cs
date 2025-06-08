@@ -1,6 +1,8 @@
-﻿using FluentValidation.Results;
+﻿using AllOverIt.Extensions;
+using FluentValidation.Results;
 using Pot.App.Concerns.Validation;
-using Pot.AspNetCore.Concerns.ProblemDetails;
+using Pot.App.Extensions;
+using System.Net;
 
 namespace Pot.AspNetCore.Concerns.Validation.Extensions;
 
@@ -10,7 +12,15 @@ internal static class ValidationResultExtensions
     {
         var errorDetails = validationResult.ToProblemDetailsErrors();
 
-        return ApiProblemDetailsFactory.CreateUnprocessableEntity(errorDetails);
+        return new Microsoft.AspNetCore.Mvc.ProblemDetails
+        {
+            Detail = "One or more validation errors occurred.",
+            Status = (int)HttpStatusCode.UnprocessableEntity,
+            Extensions = new Dictionary<string, object?>
+            {
+                { "errors", errorDetails.SelectToArray(error => error.GetErrorDetails()) }
+            }
+        };
     }
 }
 
