@@ -4,14 +4,14 @@ import { useApiGetAllAccounts } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 
-import IncomeSheet from '../../components/IncomeSheet';
-import CreateIncomeForm from '../components/CreateIncomeForm';
+import ExpenseSheet from '../../components/ExpenseSheet';
+import CreateExpenseForm from '../components/CreateExpenseForm';
 
 /**
- * Strategy for creating a completely new income
+ * Strategy for creating a completely new expense
  * Only needs to load accounts data
  */
-function CreateNewIncome() {
+function CreateNewExpense() {
   const navigate = useNavigate();
   const { data: accountsResult, isLoading: isAccountsLoading } =
     useApiGetAllAccounts();
@@ -19,9 +19,9 @@ function CreateNewIncome() {
   // Show loading state while accounts are loading
   if (isAccountsLoading) {
     return (
-      <IncomeSheet title="Create Income">
+      <ExpenseSheet title="Create Expense">
         <LoadingMessage isLoading={true} />
-      </IncomeSheet>
+      </ExpenseSheet>
     );
   }
 
@@ -34,13 +34,13 @@ function CreateNewIncome() {
           accountsResult?.error?.description ||
           'Failed to load accounts. Please try again.'
         }
-        onDismiss={() => navigate('/incomes')}
+        onDismiss={() => navigate('/expenses')}
       />
     );
   }
 
-  // Render form for new income
-  return <CreateIncomeForm accountsList={accountsResult.value} />;
+  // Render form for new expense
+  return <CreateExpenseForm accountsList={accountsResult.value} />;
 }
 
-export default CreateNewIncome;
+export default CreateNewExpense;

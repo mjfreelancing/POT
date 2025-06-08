@@ -24,25 +24,25 @@ import type { Account } from '@/data';
 import { FrequencyEnumValues } from '@/lib/types';
 import { localIsoDate, localToday } from '@/lib/utils';
 
-import { IncomeFormData } from '../schemas/incomeFormSchema';
+import { ExpenseFormData } from '../schemas/expenseFormSchema';
 
-type IncomeFormProps = {
-  form: UseFormReturn<IncomeFormData>;
-  onSubmit: (values: IncomeFormData) => Promise<void>;
+type ExpenseFormProps = {
+  form: UseFormReturn<ExpenseFormData>;
+  onSubmit: (values: ExpenseFormData) => Promise<void>;
   onCancel: () => void;
   readOnlyIdentifiers: boolean;
   submitLabel: string;
   accounts: Account[];
 };
 
-function IncomeForm({
+function ExpenseForm({
   form,
   onSubmit,
   onCancel,
   readOnlyIdentifiers,
   submitLabel,
   accounts,
-}: IncomeFormProps) {
+}: ExpenseFormProps) {
   useEffect(() => {
     if (readOnlyIdentifiers) {
       // In edit mode, focus the first editable field (amount)
@@ -67,7 +67,7 @@ function IncomeForm({
                   placeholder={
                     readOnlyIdentifiers ? undefined : 'Enter a description'
                   }
-                  aria-description="A memorable name for this income"
+                  aria-description="A memorable name for this expense"
                   readOnly={readOnlyIdentifiers}
                   className={
                     readOnlyIdentifiers
@@ -92,8 +92,8 @@ function IncomeForm({
                 <MoneyValueInput
                   {...field}
                   id="amount-input"
-                  placeholder="Enter the income amount"
-                  aria-description="Current income amount"
+                  placeholder="Enter the expense amount"
+                  aria-description="Current expense amount"
                   onChange={(e: MoneyValueChangeEvent) => {
                     field.onChange(e.target.number);
                   }}
@@ -291,4 +291,4 @@ function IncomeForm({
   );
 }
 
-export default IncomeForm;
+export default ExpenseForm;

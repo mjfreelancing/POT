@@ -1,15 +1,13 @@
 import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 
-import CreateIncomeSheet from '@/features/incomes/create/CreateIncomeSheet';
-import EditIncomeSheet from '@/features/incomes/edit/EditIncomeSheet';
-
 import LoadingMessage from '../components/feedback/message/LoadingMessage';
 
 // Lazy load page components to enable code splitting and reduce the initial bundle size
 const AccountsPage = lazy(() => import('../features/accounts/AccountsPage'));
 const DashboardPage = lazy(() => import('../features/dashboard/DashboardPage'));
 const IncomesPage = lazy(() => import('../features/incomes/IncomesPage'));
+const ExpensesPage = lazy(() => import('../features/expenses/ExpensesPage'));
 const ProjectionsPage = lazy(
   () => import('../features/projections/ProjectionsPage'),
 );
@@ -18,6 +16,18 @@ const CreateAccountSheet = lazy(
 );
 const EditAccountSheet = lazy(
   () => import('../features/accounts/edit/EditAccountSheet'),
+);
+const CreateIncomeSheet = lazy(
+  () => import('../features/incomes/create/CreateIncomeSheet'),
+);
+const EditIncomeSheet = lazy(
+  () => import('../features/incomes/edit/EditIncomeSheet'),
+);
+const CreateExpenseSheet = lazy(
+  () => import('../features/expenses/create/CreateExpenseSheet'),
+);
+const EditExpenseSheet = lazy(
+  () => import('../features/expenses/edit/EditExpenseSheet'),
 );
 
 // Suspense provides a loading fallback while the lazy-loaded components are being downloaded
@@ -35,6 +45,10 @@ export const AppRoutes = () => {
         <Route path="/incomes" element={<IncomesPage />}>
           <Route path="create" element={<CreateIncomeSheet />} />
           <Route path="edit/:id" element={<EditIncomeSheet />} />
+        </Route>
+        <Route path="/expenses" element={<ExpensesPage />}>
+          <Route path="create" element={<CreateExpenseSheet />} />
+          <Route path="edit/:id" element={<EditExpenseSheet />} />
         </Route>
       </Routes>
     </Suspense>

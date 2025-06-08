@@ -1,0 +1,38 @@
+import { useQueryClient } from '@tanstack/react-query';
+
+import { useApiUpdateExpense } from '@/api/hooks';
+import { EditExpense, Identity } from '@/data';
+import { FailResultBase } from '@/lib/result/failResultBase';
+import { Result } from '@/lib/result/result';
+
+// Hook to handle editing an existing expense entry
+function useEditExpense() {
+  const queryClient = useQueryClient();
+  const apiUpdateExpense = useApiUpdateExpense();
+
+  async function editExpense(
+    expense: EditExpense,
+  ): Promise<Result<Identity, FailResultBase>> {
+    const controller = new AbortController();
+
+    try {
+      // Not using onSuccess callback because both success/fails are returned
+      const result = await apiUpdateExpense.mutateAsync({
+        data: expense,
+        signal: controller.signal,
+      });
+
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      }
+
+      return result;
+    } finally {
+      controller.abort();
+    }
+  }
+
+  return { editExpense };
+}
+
+export default useEditExpense;
