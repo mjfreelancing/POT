@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Pot.Data.Annotations;
 using Pot.Shared;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Pot.Data.Entities
@@ -20,6 +21,10 @@ namespace Pot.Data.Entities
         public required Frequency Frequency { get; set; }
         public int FrequencyCount { get; set; }
         public double Amount { get; set; }
+
+        [DefaultValue(true)]
+        public bool Recurring { get; set; } = true;
+
         public double Allocated { get; set; }
 
         public required AccountEntity Account { get; set; }
