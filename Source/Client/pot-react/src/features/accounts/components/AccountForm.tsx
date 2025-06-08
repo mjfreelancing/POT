@@ -13,12 +13,13 @@ import {
 import { Input } from '@/components/ui/input';
 
 import { AccountFormData } from '../schemas/accountFormSchema';
+import { useEffect } from 'react';
 
 type AccountFormProps = {
   form: UseFormReturn<AccountFormData>;
   onSubmit: (values: AccountFormData) => Promise<void>;
   onCancel: () => void;
-  readOnlyAccountIdentifiers: boolean;
+  readOnlyIdentifiers: boolean;
   submitLabel: string;
 };
 
@@ -26,9 +27,17 @@ function AccountForm({
   form,
   onSubmit,
   onCancel,
-  readOnlyAccountIdentifiers,
+  readOnlyIdentifiers,
   submitLabel,
 }: AccountFormProps) {
+  useEffect(() => {
+    if (readOnlyIdentifiers) {
+      // In edit mode, focus the first editable field (description)
+      // This runs after the component mounts and the DOM is ready
+      form.setFocus('description');
+    }
+  }, [readOnlyIdentifiers, form]);
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -43,14 +52,12 @@ function AccountForm({
                   {...field}
                   id="bsb-input"
                   placeholder={
-                    readOnlyAccountIdentifiers
-                      ? undefined
-                      : 'Enter the Account BSB'
+                    readOnlyIdentifiers ? undefined : 'Enter the Account BSB'
                   }
                   aria-description="Enter BSB in the format XXX-XXX"
-                  readOnly={readOnlyAccountIdentifiers}
+                  readOnly={readOnlyIdentifiers}
                   className={
-                    readOnlyAccountIdentifiers
+                    readOnlyIdentifiers
                       ? 'bg-muted cursor-not-allowed'
                       : undefined
                   }
@@ -74,14 +81,12 @@ function AccountForm({
                   {...field}
                   id="account-number-input"
                   placeholder={
-                    readOnlyAccountIdentifiers
-                      ? undefined
-                      : 'Enter the Account Number'
+                    readOnlyIdentifiers ? undefined : 'Enter the Account Number'
                   }
                   aria-description="Your bank account number"
-                  readOnly={readOnlyAccountIdentifiers}
+                  readOnly={readOnlyIdentifiers}
                   className={
-                    readOnlyAccountIdentifiers
+                    readOnlyIdentifiers
                       ? 'bg-muted cursor-not-allowed'
                       : undefined
                   }

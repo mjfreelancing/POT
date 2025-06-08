@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 
 import { MoneyValueChangeEvent, MoneyValueInput } from '@/components/input';
@@ -29,7 +30,7 @@ type IncomeFormProps = {
   form: UseFormReturn<IncomeFormData>;
   onSubmit: (values: IncomeFormData) => Promise<void>;
   onCancel: () => void;
-  readOnlyIncomeIdentifiers: boolean;
+  readOnlyIdentifiers: boolean;
   submitLabel: string;
   accounts: Account[];
 };
@@ -38,10 +39,18 @@ function IncomeForm({
   form,
   onSubmit,
   onCancel,
-  readOnlyIncomeIdentifiers,
+  readOnlyIdentifiers,
   submitLabel,
   accounts,
 }: IncomeFormProps) {
+  useEffect(() => {
+    if (readOnlyIdentifiers) {
+      // In edit mode, focus the first editable field (amount)
+      // This runs after the component mounts and the DOM is ready
+      form.setFocus('amount');
+    }
+  }, [readOnlyIdentifiers, form]);
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -56,14 +65,12 @@ function IncomeForm({
                   {...field}
                   id="description-input"
                   placeholder={
-                    readOnlyIncomeIdentifiers
-                      ? undefined
-                      : 'Enter a description'
+                    readOnlyIdentifiers ? undefined : 'Enter a description'
                   }
                   aria-description="A memorable name for this income"
-                  readOnly={readOnlyIncomeIdentifiers}
+                  readOnly={readOnlyIdentifiers}
                   className={
-                    readOnlyIncomeIdentifiers
+                    readOnlyIdentifiers
                       ? 'bg-muted cursor-not-allowed'
                       : undefined
                   }
