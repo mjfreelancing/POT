@@ -9,6 +9,8 @@ internal sealed class ExpenseCsvRowValidator : ValidatorBase<ExpenseCsvRow>, IEx
 {
     public ExpenseCsvRowValidator()
     {
+        // NOTE: AccountId is now required
+
         // Can be null but cannot be 00000000-0000-0000-0000-000000000000
         RuleFor(csvRow => csvRow.AccountId).IsNullOrNonDefault();
         RuleFor(csvRow => csvRow.ExpenseId).IsNullOrNonDefault();
