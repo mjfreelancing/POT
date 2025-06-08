@@ -29,6 +29,12 @@ internal sealed class Response : ResponseBase
     [Description("The daily accrual required to meet all future expenses.")]
     public double DailyAccrual { get; init; }
 
+    [Description("The number of expenses recorded against this account.")]
+    public int LinkedExpenses { get; init; }
+
+    [Description("The number of incomes recorded against this account.")]
+    public int LinkedIncomes { get; init; }
+
     [Description("The available balance after consider the Reserved and Allocation amounts.")]
     public double Available => Balance - Reserved - Allocated;
 
@@ -50,5 +56,7 @@ internal sealed class Response : ResponseBase
         Reserved = account.Reserved;
         Allocated = account.Allocated;
         DailyAccrual = account.DailyAccrual;
+        LinkedExpenses = account.LinkedExpenses;
+        LinkedIncomes = account.LinkedIncomes;
     }
 }

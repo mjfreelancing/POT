@@ -1,5 +1,7 @@
-﻿using Pot.Data.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using Pot.Data.Entities;
 using Pot.Data.Extensions;
+using Pot.Data.Repositories.Accounts.Dtos;
 using Pot.Data.Specifications;
 
 namespace Pot.Data.Repositories.Accounts;
@@ -40,6 +42,32 @@ internal sealed class AccountRepository : GenericRepository<PotDbContext, Accoun
         // Same as:
         // return AsQueryable().SingleOrDefaultAsync(id, cancellationToken);
         return SingleOrDefaultAsync(EntitySpecifications.IsSameId<AccountEntity>(id).Expression, cancellationToken);
+    }
+
+    public Task<GetAccountDto> GetAccountWithLinkedCountsAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return AsQueryable()
+            .Where(EntitySpecifications
+            .IsSameId<AccountEntity>(id).Expression)
+            .Select(item => new GetAccountDto
+            {
+                Account = item,
+                LinkedIncomes = item.Incomes.Count,
+                LinkedExpenses = item.Expenses.Count
+            })
+            .SingleAsync(cancellationToken);
+    }
+
+    public Task<GetAccountDto[]> GetAllAccountsWithLinkedCountsAsync(CancellationToken cancellationToken)
+    {
+        return AsQueryable()
+            .Select(item => new GetAccountDto
+            {
+                Account = item,
+                LinkedIncomes = item.Incomes.Count,
+                LinkedExpenses = item.Expenses.Count
+            })
+            .ToArrayAsync(cancellationToken);
     }
 
     public Task<bool> AccountExistsAsync(string bsb, string number, CancellationToken cancellationToken)

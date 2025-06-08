@@ -11,6 +11,8 @@ public sealed class Output
     public required double Reserved { get; init; }
     public required double Allocated { get; init; }
     public required double DailyAccrual { get; init; }
+    public required int LinkedExpenses { get; init; }
+    public required int LinkedIncomes { get; init; }
     public double Available => Balance - Reserved - Allocated;
 
 }

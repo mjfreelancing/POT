@@ -24,7 +24,7 @@ internal sealed class GetAllAccountsService : IGetAllAccountsService
     {
         _logger.LogCall(this);
 
-        var accounts = await _accountRepository.GetAllAsync(cancellationToken);
+        var accounts = await _accountRepository.GetAllAccountsWithLinkedCountsAsync(cancellationToken);
 
         return accounts.SelectToList(account => account.MapToOutput());
     }

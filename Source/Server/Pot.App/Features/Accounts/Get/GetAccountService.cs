@@ -22,7 +22,7 @@ internal sealed class GetAccountService : IGetAccountService
     {
         _logger.LogCall(this);
 
-        var account = await _accountRepository.GetAccountOrDefaultAsync(id, cancellationToken);
+        var account = await _accountRepository.GetAccountWithLinkedCountsAsync(id, cancellationToken);
 
         return account?.MapToOutput();
     }
