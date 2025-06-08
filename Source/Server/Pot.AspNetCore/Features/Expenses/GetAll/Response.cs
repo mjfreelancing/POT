@@ -2,8 +2,8 @@
 using AllOverIt.Extensions;
 using AllOverIt.Pagination;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Pot.App.Features.Expenses.GetAll.Models;
 using Pot.AspNetCore.Models;
-using Pot.Data.Entities;
 using Pot.Shared;
 using System.ComponentModel;
 
@@ -11,6 +11,12 @@ namespace Pot.AspNetCore.Features.Expenses.GetAll;
 
 internal sealed class Response : ResponseBase
 {
+    internal sealed class AccountModel
+    {
+        public required Guid RowId { get; init; }
+        public required string Description { get; init; }
+    }
+
     [Description("A description of the expense.")]
     public string Description { get; init; }
 
@@ -38,7 +44,10 @@ internal sealed class Response : ResponseBase
     [Description("The amount allocated towards this expense.")]
     public double Allocated { get; init; }
 
-    public static Ok<PagedResponse<Response>> Ok(PageResult<ExpenseEntity> expenses)
+    [Description("The account this expense is associated with.")]
+    public AccountModel? Account { get; init; }
+
+    public static Ok<PagedResponse<Response>> Ok(PageResult<Output> expenses)
     {
         var results = expenses.Results.SelectToArray(expense => new Response(expense));
 
@@ -47,7 +56,7 @@ internal sealed class Response : ResponseBase
         return TypedResults.Ok(response);
     }
 
-    private Response(ExpenseEntity expense)
+    private Response(Output expense)
     {
         _ = expense.WhenNotNull();
 
@@ -61,5 +70,13 @@ internal sealed class Response : ResponseBase
         FrequencyCount = expense.FrequencyCount;
         Amount = expense.Amount;
         Allocated = expense.Allocated;
+
+        var account = expense.Account;
+
+        Account = new AccountModel
+        {
+            RowId = account.RowId,
+            Description = account.Description
+        };
     }
 }
