@@ -2,7 +2,6 @@
 using AllOverIt.Extensions;
 using AllOverIt.Logging.Extensions;
 using Microsoft.Extensions.Logging;
-using Pot.App.Features.Accounts.Create;
 using Pot.App.Features.Accounts.GetAll.Mappings;
 using Pot.App.Features.Accounts.GetAll.Models;
 using Pot.Data.Repositories.Accounts;
@@ -14,7 +13,7 @@ internal sealed class GetAllAccountsService : IGetAllAccountsService
     private readonly IAccountRepository _accountRepository;
     private readonly ILogger _logger;
 
-    public GetAllAccountsService(IPersistableAccountRepository accountRepository, ILogger<CreateAccountService> logger)
+    public GetAllAccountsService(IPersistableAccountRepository accountRepository, ILogger<GetAllAccountsService> logger)
     {
         _accountRepository = accountRepository.WhenNotNull();
         _logger = logger.WhenNotNull();
