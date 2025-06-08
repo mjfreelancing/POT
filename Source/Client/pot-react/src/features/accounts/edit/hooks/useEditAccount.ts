@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 
-import { useApiUpdateAccount } from '@/api/accounts/hooks/useAccounts';
+import { useApiUpdateAccount } from '@/api/hooks';
 import { EditAccount, Identity } from '@/data';
 import { FailResultBase } from '@/lib/result/failResultBase';
 import { Result } from '@/lib/result/result';

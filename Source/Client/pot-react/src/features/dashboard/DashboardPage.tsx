@@ -2,7 +2,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { CalendarIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { useApiGetAllAccounts } from '@/api/accounts/hooks/useAccounts';
+import { useApiGetAllAccounts } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { EnrichedDatePicker } from '@/components/picker';

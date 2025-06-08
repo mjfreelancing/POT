@@ -8,7 +8,7 @@ import {
 import { FailResultBase } from '@/lib/result/failResultBase';
 import { Result, SuccessResult } from '@/lib/result/result';
 
-import { useDelete, useGet, usePost, usePut } from '../../hooks/useApi';
+import { useDelete, useGet, usePost, usePut } from './useApi';
 
 const useApiGetAllIncomes = () => {
   const query = useGet<PagedIncome>('/incomes', ['incomes']);

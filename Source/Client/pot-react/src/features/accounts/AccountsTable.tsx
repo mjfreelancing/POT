@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
-import { useApiGetAllAccounts } from '@/api/accounts/hooks/useAccounts';
+import { useApiGetAllAccounts } from '@/api/hooks';
 import { ErrorSheet, LoadingMessage } from '@/components/feedback';
 import { DataTable } from '@/components/table';
 import { Button } from '@/components/ui/button';

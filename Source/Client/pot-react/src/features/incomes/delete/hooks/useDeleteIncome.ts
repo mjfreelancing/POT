@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 
-import { useApiDeleteIncome } from '@/api/incomes/hooks/useIncomes';
+import { useApiDeleteIncome } from '@/api/hooks';
 import { FailResultBase } from '@/lib/result/failResultBase';
 import { Result } from '@/lib/result/result';
 

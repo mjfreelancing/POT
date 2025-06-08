@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 
-import { useApiDeleteAccount } from '@/api/accounts/hooks/useAccounts';
+import { useApiDeleteAccount } from '@/api/hooks';
 import { FailResultBase } from '@/lib/result/failResultBase';
 import { Result } from '@/lib/result/result';
 

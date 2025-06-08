@@ -3,8 +3,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router';
 
-import { useApiGetAllAccounts } from '@/api/accounts/hooks/useAccounts';
-import { useApiGetIncomeById } from '@/api/incomes/hooks/useIncomes';
+import { useApiGetAllAccounts, useApiGetIncomeById } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import type { Account, EditIncome, Income } from '@/data';
