@@ -1,8 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiUpdateIncome } from '@/api/incomes/hooks/useIncomes';
-import { Identity } from '@/data/identity';
-import { EditIncome } from '@/data/income';
+import { EditIncome, Identity } from '@/data';
 import { FailResultBase } from '@/lib/result/failResultBase';
 import { Result } from '@/lib/result/result';
 

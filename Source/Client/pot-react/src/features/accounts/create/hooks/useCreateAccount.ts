@@ -1,8 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiCreateAccount } from '@/api/accounts/hooks/useAccounts';
-import { CreateAccount } from '@/data/account';
-import { Identity } from '@/data/identity';
+import { CreateAccount, Identity } from '@/data';
 import { FailResultBase } from '@/lib/result/failResultBase';
 import { Result } from '@/lib/result/result';
 

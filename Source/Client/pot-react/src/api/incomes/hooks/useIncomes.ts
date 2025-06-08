@@ -1,5 +1,10 @@
-import { Identity } from '@/data/identity';
-import { CreateIncome, EditIncome, Income, PagedIncome } from '@/data/income';
+import {
+  CreateIncome,
+  EditIncome,
+  Identity,
+  Income,
+  PagedIncome,
+} from '@/data';
 import { FailResultBase } from '@/lib/result/failResultBase';
 import { Result, SuccessResult } from '@/lib/result/result';
 

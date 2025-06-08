@@ -5,7 +5,7 @@ import {
   createFrequencyColumn,
   createMoneyValueColumn,
 } from '@/components/table';
-import { Income } from '@/data/income';
+import { Income } from '@/data';
 
 import IncomeActions from './components/IncomeActions';
 

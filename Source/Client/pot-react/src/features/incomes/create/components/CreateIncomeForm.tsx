@@ -4,9 +4,7 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
-import type { Account } from '@/data/account';
-import type { Income } from '@/data/income';
-import { CreateIncome } from '@/data/income';
+import type { Account, CreateIncome, Income } from '@/data';
 import { DisplayError } from '@/lib/errors/displayError';
 import { Frequency } from '@/lib/types';
 import { localToday } from '@/lib/utils';

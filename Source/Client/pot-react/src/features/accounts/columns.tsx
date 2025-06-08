@@ -2,7 +2,7 @@ import { ColumnDef } from '@tanstack/react-table';
 
 import { LinkedDataBadge } from '@/components/feedback/badge';
 import { createMoneyValueColumn } from '@/components/table';
-import { Account } from '@/data/account';
+import { Account } from '@/data';
 
 import AccountActions from './components/AccountActions';
 

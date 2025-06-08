@@ -3,8 +3,8 @@ import {
   compareAccountBsbNumber,
   CreateAccount,
   EditAccount,
-} from '@/data/account';
-import { Identity } from '@/data/identity';
+  Identity,
+} from '@/data';
 import { FailResultBase } from '@/lib/result/failResultBase';
 import { Result, SuccessResult } from '@/lib/result/result';
 
