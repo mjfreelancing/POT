@@ -15,6 +15,8 @@ export const AccountSchema = BaseAccountSchema.extend({
   allocated: z.number(),
   dailyAccrual: z.number(),
   available: z.number(),
+  linkedExpenses: z.number(),
+  linkedIncomes: z.number(),
 });
 
 export const CreateAccountSchema = BaseAccountSchema;

@@ -1,4 +1,11 @@
-import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { DropdownMenuLabel } from '@radix-ui/react-dropdown-menu';
+import {
+  CircleDollarSignIcon,
+  MoreHorizontal,
+  Pencil,
+  ShoppingCart,
+  Trash2,
+} from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -60,6 +67,9 @@ function AccountActions({ account }: AccountActionsProps) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuSeparator />
+          <DropdownMenuLabel className="text-sm font-semibold">
+            Actions
+          </DropdownMenuLabel>
           <DropdownMenuItem
             onClick={() => navigate(`/accounts/edit/${account.rowId}`)}
           >
@@ -72,6 +82,25 @@ function AccountActions({ account }: AccountActionsProps) {
           >
             <Trash2 className="mr-2 h-4 w-4 text-red-600" />
             Delete
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuLabel className="text-sm font-semibold">
+            Linked Data
+          </DropdownMenuLabel>
+          <DropdownMenuItem
+            disabled={account.linkedExpenses === 0}
+            onClick={() => navigate(`/accounts/edit/${account.rowId}`)}
+          >
+            <ShoppingCart className="mr-2 h-4 w-4" />
+            Expenses{' '}
+            {account.linkedExpenses > 0 && `(${account.linkedExpenses})`}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            disabled={account.linkedIncomes === 0}
+            onClick={() => navigate(`/accounts/edit/${account.rowId}`)}
+          >
+            <CircleDollarSignIcon className="mr-2 h-4 w-4" />
+            Income {account.linkedIncomes > 0 && `(${account.linkedIncomes})`}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
         </DropdownMenuContent>
