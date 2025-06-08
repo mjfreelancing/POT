@@ -1,4 +1,4 @@
-import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { Copy, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -9,6 +9,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -60,11 +61,22 @@ function IncomeActions({ income }: IncomeActionsProps) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuSeparator />
+          <DropdownMenuLabel className="text-sm font-semibold">
+            Actions
+          </DropdownMenuLabel>
           <DropdownMenuItem
             onClick={() => navigate(`/incomes/edit/${income.rowId}`)}
           >
             <Pencil className="mr-2 h-4 w-4" />
             Edit
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() =>
+              navigate(`/incomes/create?duplicate=${income.rowId}`)
+            }
+          >
+            <Copy className="mr-2 h-4 w-4" />
+            Duplicate
           </DropdownMenuItem>
           <DropdownMenuItem
             className="text-red-600"

@@ -1,85 +1,19 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router';
+import { useSearchParams } from 'react-router';
 
-import { useApiGetAllAccounts } from '@/api/accounts/hooks/useAccounts';
-import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
-import type { Account } from '@/data/accounts/account';
-import { CreateIncome } from '@/data/incomes/income';
-import { DisplayError } from '@/lib/errors/displayError';
-import { Frequency } from '@/lib/types';
-import { localToday } from '@/lib/utils';
+import { CreateNewIncome, DuplicateIncome } from './strategies';
 
-import IncomeForm from '../components/IncomeForm';
-import IncomeSheet from '../components/IncomeSheet';
-import { IncomeFormData, incomeFormSchema } from '../schemas/incomeFormSchema';
-import useCreateIncome from './hooks/useCreateIncome';
-
+/**
+ * Main component that chooses the appropriate strategy based on query parameters
+ */
 function CreateIncomeSheet() {
-  const [error, setError] = useState<DisplayError | null>(null);
-  const navigate = useNavigate();
-  const { createIncome } = useCreateIncome();
+  const [searchParams] = useSearchParams();
+  const duplicateId = searchParams.get('duplicate');
 
-  const { data: accountsResult } = useApiGetAllAccounts();
+  if (duplicateId) {
+    return <DuplicateIncome duplicateId={duplicateId} />;
+  }
 
-  const accounts: Account[] = accountsResult?.success
-    ? accountsResult.value
-    : [];
-
-  const form = useForm<IncomeFormData>({
-    resolver: zodResolver(incomeFormSchema),
-    mode: 'onSubmit',
-    defaultValues: {
-      description: '',
-      nextDue: localToday(),
-      endDate: undefined,
-      frequency: Frequency.Months,
-      frequencyCount: 1,
-      amount: 0,
-      accountRowId: '',
-    },
-  });
-
-  const onSubmit = async (values: IncomeFormData) => {
-    // if the optional fields are undefined, set them to null to match the CreateIncome type
-    const income: CreateIncome = {
-      ...values,
-      endDate: values.endDate ?? null,
-      accountRowId: values.accountRowId,
-    };
-
-    const result = await createIncome(income);
-
-    if (result.success) {
-      navigate('/incomes');
-    } else {
-      setError({
-        title: result.error.code,
-        description: result.error.description,
-      });
-    }
-  };
-
-  return (
-    <IncomeSheet title="Create Income">
-      {error && (
-        <ErrorSheet
-          title={error.title}
-          description={error.description}
-          onDismiss={() => setError(null)}
-        />
-      )}
-      <IncomeForm
-        form={form}
-        onSubmit={onSubmit}
-        onCancel={() => navigate('/incomes')}
-        readOnlyIncomeIdentifiers={false}
-        submitLabel="Create"
-        accounts={accounts}
-      />
-    </IncomeSheet>
-  );
+  return <CreateNewIncome />;
 }
 
 export default CreateIncomeSheet;
