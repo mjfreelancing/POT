@@ -109,7 +109,16 @@ function IncomeForm({
                     selectedDate={
                       field.value ? new Date(field.value) : undefined
                     }
-                    onDateAccepted={field.onChange}
+                    onDateAccepted={date =>
+                      field.onChange(
+                        date !== undefined ? localIsoDate(date) : undefined,
+                      )
+                    }
+                    onDateChange={date =>
+                      field.onChange(
+                        date !== undefined ? localIsoDate(date) : undefined,
+                      )
+                    }
                     triggerClassName="flex-1"
                   />
                   <Button
