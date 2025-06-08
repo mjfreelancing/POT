@@ -10,5 +10,6 @@ internal sealed class RequestValidator : ValidatorBase<Request>
         RuleFor(income => income.Description).IsNotEmpty();
         RuleFor(income => income.FrequencyCount).IsGreaterThanOrEqualTo(1);
         RuleFor(income => income.Amount).IsGreaterThanOrEqualTo(0.0d);
+        RuleFor(income => income.AccountRowId).IsNotEmpty();
     }
 }

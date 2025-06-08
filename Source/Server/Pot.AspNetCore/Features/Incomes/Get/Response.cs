@@ -1,7 +1,7 @@
 ﻿using AllOverIt.Assertion;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Pot.App.Features.Incomes.Get.Models;
 using Pot.AspNetCore.Models;
-using Pot.Data.Entities;
 using Pot.Shared;
 using System.ComponentModel;
 
@@ -36,12 +36,12 @@ internal sealed class Response : ResponseBase
     [Description("The account this income is associated with.")]
     public AccountModel? Account { get; init; }
 
-    public static Ok<Response> Ok(IncomeEntity income)
+    public static Ok<Response> Ok(Output income)
     {
         return TypedResults.Ok(new Response(income));
     }
 
-    private Response(IncomeEntity income)
+    private Response(Output income)
     {
         _ = income.WhenNotNull();
 
@@ -56,13 +56,10 @@ internal sealed class Response : ResponseBase
 
         var account = income.Account;
 
-        if (account is not null)
+        Account = new AccountModel
         {
-            Account = new AccountModel
-            {
-                RowId = account.RowId,
-                Description = account.Description
-            };
-        }
+            RowId = account.RowId,
+            Description = account.Description
+        };
     }
 }
