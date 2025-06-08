@@ -2,7 +2,6 @@
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
-using Pot.App.Features.Accounts.Create;
 using Pot.App.Features.Accounts.Delete.EntityChecks;
 using Pot.Data.Repositories.Accounts;
 
@@ -14,7 +13,7 @@ internal sealed class DeleteAccountService : IDeleteAccountService
     private readonly IPreCreateChecker _preCreateChecker;
     private readonly ILogger _logger;
 
-    public DeleteAccountService(IPersistableAccountRepository accountRepository, IPreCreateChecker preCreateChecker, ILogger<CreateAccountService> logger)
+    public DeleteAccountService(IPersistableAccountRepository accountRepository, IPreCreateChecker preCreateChecker, ILogger<DeleteAccountService> logger)
     {
         _accountRepository = accountRepository.WhenNotNull();
         _preCreateChecker = preCreateChecker.WhenNotNull();
