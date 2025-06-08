@@ -11,6 +11,9 @@ export const MoneyValueSchema = z
 export const expenseFormSchema = z.object({
   description: z.string().min(1, 'A description is required'),
   nextDue: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
+  accrualStart: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
   endDate: z
     .string()
     .optional()
@@ -19,6 +22,7 @@ export const expenseFormSchema = z.object({
     }),
   frequency: z.nativeEnum(Frequency),
   frequencyCount: z.number().min(1),
+  recurring: z.boolean(),
   amount: MoneyValueSchema,
   accountRowId: z.string().min(1, 'An account is required'),
 });

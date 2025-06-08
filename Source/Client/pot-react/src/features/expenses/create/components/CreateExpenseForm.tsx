@@ -38,9 +38,11 @@ function CreateExpenseForm({
       return {
         description: `Copy of ${duplicateExpense.description}`,
         nextDue: duplicateExpense.nextDue,
+        accrualStart: duplicateExpense.accrualStart,
         endDate: duplicateExpense.endDate || undefined,
         frequency: duplicateExpense.frequency,
         frequencyCount: duplicateExpense.frequencyCount,
+        recurring: duplicateExpense.recurring,
         amount: duplicateExpense.amount,
         accountRowId: duplicateExpense.account.rowId,
       };
@@ -49,9 +51,11 @@ function CreateExpenseForm({
     return {
       description: '',
       nextDue: localToday(),
+      accrualStart: localToday(),
       endDate: undefined,
       frequency: Frequency.Months,
       frequencyCount: 1,
+      recurring: true,
       amount: 0,
       accountRowId: '',
     };

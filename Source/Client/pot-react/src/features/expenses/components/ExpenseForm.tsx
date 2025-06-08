@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import type { Account } from '@/data';
 import { FrequencyEnumValues } from '@/lib/types';
 import { localIsoDate, localToday } from '@/lib/utils';
@@ -110,6 +111,52 @@ function ExpenseForm({
           render={({ field }) => (
             <FormItem className="space-y-1">
               <FormLabel htmlFor="nextDue-picker">Next Due</FormLabel>
+              <FormControl>
+                <div className="flex items-center space-x-2">
+                  {/* Two-way binding between form and picker:
+                    1. selectedDate prop (from field.value) drives the picker's internal state via useEffect in EnrichedCalendar.
+                    2. onDateChange (day clicks) pushes immediate date selections back to the form via field.onChange.
+                    3. onDateAccepted (Accept button) commits the chosen date into the form.
+                    4. Clear button calls field.onChange(undefined), which updates selectedDate to undefined,
+                       triggering the picker's useEffect to reset its internal pickerDate to cleared state. */}
+                  <EnrichedDatePicker
+                    selectedDate={
+                      field.value ? new Date(field.value) : undefined
+                    }
+                    onDateAccepted={date =>
+                      field.onChange(
+                        date !== undefined ? localIsoDate(date) : undefined,
+                      )
+                    }
+                    onDateChange={date =>
+                      field.onChange(
+                        date !== undefined ? localIsoDate(date) : undefined,
+                      )
+                    }
+                    triggerClassName="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="w-16"
+                    onClick={() => field.onChange(localToday())}
+                  >
+                    Today
+                  </Button>
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="accrualStart"
+          render={({ field }) => (
+            <FormItem className="space-y-1">
+              <FormLabel htmlFor="accrualStart-picker">Accrual Start</FormLabel>
               <FormControl>
                 <div className="flex items-center space-x-2">
                   {/* Two-way binding between form and picker:
@@ -243,6 +290,31 @@ function ExpenseForm({
             )}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name="recurring"
+          render={({ field }) => (
+            <FormItem className="space-y-1">
+              <div className="flex items-center space-x-2">
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    id="recurring-switch"
+                  />
+                </FormControl>
+                <FormLabel
+                  htmlFor="recurring-switch"
+                  className="cursor-pointer"
+                >
+                  Recurring
+                </FormLabel>
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}

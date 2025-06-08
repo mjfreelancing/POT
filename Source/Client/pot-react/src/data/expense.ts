@@ -13,9 +13,11 @@ export const ExpenseAccountSchema = z.object({
 export const BaseExpenseSchema = z.object({
   description: z.string(),
   nextDue: z.string(),
+  accrualStart: z.string(),
   endDate: z.string().nullable(),
   frequency: z.nativeEnum(Frequency),
   frequencyCount: z.number(),
+  recurring: z.boolean(),
   amount: z.number(),
 });
 
