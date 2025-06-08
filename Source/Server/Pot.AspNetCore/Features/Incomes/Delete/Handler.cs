@@ -1,6 +1,7 @@
 ﻿using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Pot.Data.Repositories.Incomes;
+using Pot.App.Features.Incomes.Delete;
+using Pot.AspNetCore.Extensions;
 using System.ComponentModel;
 
 namespace Pot.AspNetCore.Features.Incomes.Delete;
@@ -8,21 +9,19 @@ namespace Pot.AspNetCore.Features.Incomes.Delete;
 internal sealed class Handler
 {
     public static async Task<Results<Ok, NotFound, ProblemHttpResult>> Invoke([Description("The income Id.")] Guid id,
-        IPersistableIncomeRepository incomeRepository, ILogger<Handler> logger, CancellationToken cancellationToken)
+        IDeleteIncomeService incomeService, ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);
 
-        var income = await incomeRepository.GetIncomeOrDefaultAsync(id, cancellationToken);
+        var deletedResult = await incomeService.DeleteIncomeAsync(id, cancellationToken);
 
-        if (income is null)
+        if (deletedResult.IsSuccess)
         {
-            return TypedResults.NotFound();
+            return deletedResult.Value
+                ? TypedResults.Ok()
+                : TypedResults.NotFound();
         }
 
-        incomeRepository.Delete(income);
-
-        await incomeRepository.SaveAsync(cancellationToken);
-
-        return TypedResults.Ok();
+        return TypedResults.Problem(deletedResult.Error!.GetProblemDetails());
     }
 }
