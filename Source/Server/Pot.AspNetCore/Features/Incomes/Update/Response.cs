@@ -1,19 +1,19 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Pot.App.Features.Incomes.Update.Models;
 using Pot.AspNetCore.Models;
-using Pot.Data.Entities;
 
 namespace Pot.AspNetCore.Features.Incomes.Update;
 
 internal sealed class Response : ResponseBase
 {
-    public static Ok<Response> Ok(IncomeEntity income)
+    public static Ok<Response> Ok(Output income)
     {
         var response = new Response(income);
 
         return TypedResults.Ok(response);
     }
 
-    private Response(IncomeEntity income)
+    private Response(Output income)
     {
         RowId = income.RowId;
         Etag = income.Etag;
