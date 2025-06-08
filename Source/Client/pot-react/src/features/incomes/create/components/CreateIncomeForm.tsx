@@ -100,7 +100,7 @@ function CreateIncomeForm({
         form={form}
         onSubmit={onSubmit}
         onCancel={() => navigate('/incomes')}
-        readOnlyIncomeIdentifiers={false}
+        readOnlyIdentifiers={false}
         submitLabel="Create"
         accounts={accountsList}
       />

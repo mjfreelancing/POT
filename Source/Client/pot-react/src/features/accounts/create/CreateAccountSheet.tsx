@@ -59,7 +59,7 @@ function CreateAccountSheet() {
         form={form}
         onSubmit={onSubmit}
         onCancel={() => navigate('/accounts')}
-        readOnlyAccountIdentifiers={false}
+        readOnlyIdentifiers={false}
         submitLabel="Create"
       />
     </AccountSheet>
