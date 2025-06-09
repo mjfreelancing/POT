@@ -5,6 +5,8 @@ namespace Pot.AspNetCore.Features.Expenses.Extensions;
 
 internal static class RouteGroupBuilderExtensions
 {
+    // TODO: Update ProducesProblem() across all routes
+
     public static RouteGroupBuilder GetAllExpenses(this RouteGroupBuilder routeGroupBuilder)
     {
         routeGroupBuilder
@@ -57,13 +59,13 @@ internal static class RouteGroupBuilderExtensions
 
     public static RouteGroupBuilder DeleteExpense(this RouteGroupBuilder routeGroupBuilder)
     {
-        //routeGroupBuilder
-        //    .MapDelete(ExpensesEndpoints.Delete, Delete.Handler.Invoke)
-        //    .WithName(nameof(DeleteExpense))
-        //    .WithSummary("Delete expense")
-        //    .WithDescription("Deletes existing expense details")
-        //    .WithTags("Expenses")
-        //    .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
+        routeGroupBuilder
+            .MapDelete(ExpensesEndpoints.Delete, Delete.Handler.Invoke)
+            .WithName(nameof(DeleteExpense))
+            .WithSummary("Delete expense")
+            .WithDescription("Deletes existing expense details")
+            .WithTags("Expenses")
+            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
 
         return routeGroupBuilder;
     }

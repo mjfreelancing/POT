@@ -1,0 +1,37 @@
+﻿using AllOverIt.Assertion;
+using AllOverIt.Logging.Extensions;
+using AllOverIt.Patterns.Result;
+using Microsoft.Extensions.Logging;
+using Pot.Data.Repositories.Expenses;
+
+namespace Pot.App.Features.Expenses.Delete;
+
+internal sealed class DeleteExpenseService : IDeleteExpenseService
+{
+    private readonly IPersistableExpenseRepository _expenseRepository;
+    private readonly ILogger _logger;
+
+    public DeleteExpenseService(IPersistableExpenseRepository expenseRepository, ILogger<DeleteExpenseService> logger)
+    {
+        _expenseRepository = expenseRepository.WhenNotNull();
+        _logger = logger.WhenNotNull();
+    }
+
+    public async Task<EnrichedResult<bool>> DeleteExpenseAsync(Guid expenseId, CancellationToken cancellationToken)
+    {
+        _logger.LogCall(this);
+
+        var expense = await _expenseRepository.GetExpenseOrDefaultAsync(expenseId, cancellationToken);
+
+        if (expense is null)
+        {
+            return EnrichedResult.Success(false);
+        }
+
+        _expenseRepository.Delete(expense);
+
+        await _expenseRepository.SaveAsync(cancellationToken);
+
+        return EnrichedResult.Success(true);
+    }
+}
