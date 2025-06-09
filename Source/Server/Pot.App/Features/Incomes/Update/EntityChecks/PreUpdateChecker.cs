@@ -1,4 +1,5 @@
 ﻿using AllOverIt.Assertion;
+using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.ChainOfResponsibility;
 using Microsoft.Extensions.Logging;
 using Pot.App.Errors;
@@ -20,6 +21,8 @@ internal sealed class PreUpdateChecker : ChainOfResponsibilityAsyncComposer<Inpu
 
     public Task<ProblemDetailsError?> CanSaveAsync(Input input, AccountEntity incomeAccount, IncomeEntity incomeToUpdate, CancellationToken cancellationToken)
     {
+        _logger.LogCall(this);
+
         var state = new InputState
         {
             Input = input,

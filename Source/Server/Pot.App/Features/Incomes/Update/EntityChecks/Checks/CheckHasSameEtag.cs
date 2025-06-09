@@ -19,11 +19,11 @@ internal sealed class CheckHasSameEtag : PreUpdateCheckBase
         _logger.LogCall(this);
 
         var input = state.Input;
-        var income = state.IncomeToUpdate;
+        var incomeToUpdate = state.IncomeToUpdate;
 
-        if (income.Etag != input.Etag)
+        if (incomeToUpdate.Etag != input.Etag)
         {
-            if (income.Etag != input.Etag)
+            if (incomeToUpdate.Etag != input.Etag)
             {
                 return ProblemDetailsErrorFactory.CreateEtagConflict("Income", input.Etag);
             }
