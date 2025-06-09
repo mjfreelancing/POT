@@ -107,10 +107,10 @@ function ExpenseForm({
 
         <FormField
           control={form.control}
-          name="nextDue"
+          name="accrualStart"
           render={({ field }) => (
             <FormItem className="space-y-1">
-              <FormLabel htmlFor="nextDue-picker">Next Due</FormLabel>
+              <FormLabel htmlFor="accrualStart-picker">Accrual Start</FormLabel>
               <FormControl>
                 <div className="flex items-center space-x-2">
                   {/* Two-way binding between form and picker:
@@ -153,10 +153,10 @@ function ExpenseForm({
 
         <FormField
           control={form.control}
-          name="accrualStart"
+          name="nextDue"
           render={({ field }) => (
             <FormItem className="space-y-1">
-              <FormLabel htmlFor="accrualStart-picker">Accrual Start</FormLabel>
+              <FormLabel htmlFor="nextDue-picker">Next Due</FormLabel>
               <FormControl>
                 <div className="flex items-center space-x-2">
                   {/* Two-way binding between form and picker:

@@ -34,8 +34,8 @@ export const columns: ColumnDef<Expense>[] = [
     cell: ({ row }) => <div>{row.original.recurring ? 'Yes' : 'No'}</div>,
   },
   createMoneyValueColumn<Expense>('amount', 'Amount'),
-  createDateColumn<Expense>('nextDue', 'Next Due'),
   createDateColumn<Expense>('accrualStart', 'Accrual Start'),
+  createDateColumn<Expense>('nextDue', 'Next Due'),
   createDateColumn<Expense>('endDate', 'End Date'),
   {
     id: 'actions',
