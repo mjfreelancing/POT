@@ -18,11 +18,11 @@ internal sealed class Response : ResponseBase
     [Description("A description of the Expense.")]
     public string Description { get; init; }
 
+    [Description("When automatic allocations will begin accruing for this expense.")]
+    public DateOnly AccrualStart { get; init; }
+
     [Description("When the Expense is next due.")]
     public DateOnly NextDue { get; init; }
-
-    [Description("When the Expense starts accruing.")]
-    public DateOnly AccrualStart { get; init; }
 
     [Description("When the Expense is no longer recurring.")]
     public DateOnly? EndDate { get; init; }

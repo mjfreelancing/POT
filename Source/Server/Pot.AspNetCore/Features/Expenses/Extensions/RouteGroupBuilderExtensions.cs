@@ -46,13 +46,13 @@ internal static class RouteGroupBuilderExtensions
 
     public static RouteGroupBuilder UpdateExpense(this RouteGroupBuilder routeGroupBuilder)
     {
-        //routeGroupBuilder
-        //    .MapPut(ExpensesEndpoints.Update, Update.Handler.Invoke)
-        //    .WithName(nameof(UpdateExpense))
-        //    .WithSummary("Update expense")
-        //    .WithDescription("Updates existing expense details")
-        //    .WithTags("Expenses")
-        //    .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
+        routeGroupBuilder
+            .MapPut(ExpensesEndpoints.Update, Update.Handler.Invoke)
+            .WithName(nameof(UpdateExpense))
+            .WithSummary("Update expense")
+            .WithDescription("Updates existing expense details")
+            .WithTags("Expenses")
+            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
 
         return routeGroupBuilder;
     }

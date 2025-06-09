@@ -20,14 +20,14 @@ internal sealed class Response : ResponseBase
     [Description("A description of the expense.")]
     public string Description { get; init; }
 
+    [Description("When automatic allocations will begin accruing for this expense.")]
+    public DateOnly AccrualStart { get; init; }
+
     [Description("When the expense is next due.")]
     public DateOnly NextDue { get; init; }
 
     [Description("When the expense is no longer a recurring concern.")]
     public DateOnly? EndDate { get; init; }
-
-    [Description("When automatic allocations will begin accruing for this expense.")]
-    public DateOnly AccrualStart { get; init; }
 
     [Description("The expense frequency type.")]
     public Frequency Frequency { get; init; }

@@ -1,17 +1,23 @@
 ﻿using Pot.Shared;
 using System.ComponentModel;
 
-namespace Pot.AspNetCore.Features.Expenses.Create;
+namespace Pot.AspNetCore.Features.Expenses.Update;
 
 public sealed class Request
 {
-    [Description("A description of the Expense.")]
+    [Description("The Expense identifier.")]
+    public Guid RowId { get; init; }
+
+    [Description("The Expense's entity tag.")]
+    public long Etag { get; init; }
+
+    [Description("A description of the account.")]
     public string Description { get; init; } = string.Empty;
 
     [Description("When automatic allocations will begin accruing for this expense.")]
     public DateOnly AccrualStart { get; init; }
 
-    [Description("The date when the next Expense will be due.")]
+    [Description("The date when the next Expense amount will be credited to the associated account.")]
     public DateOnly NextDue { get; init; }
 
     [Description("The inclusive date when the Expense source will no longer credit the associated account.")]

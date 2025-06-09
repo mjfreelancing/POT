@@ -1,0 +1,11 @@
+﻿using Pot.App.Concerns.DependencyInjection;
+using Pot.App.Errors;
+using Pot.App.Features.Expenses.Update.Models;
+using Pot.Data.Entities;
+
+namespace Pot.App.Features.Expenses.Update.EntityChecks;
+
+public interface IPreUpdateChecker : IPotScopedDependency
+{
+    Task<ProblemDetailsError?> CanSaveAsync(Input request, AccountEntity expenseAccount, ExpenseEntity expenseToUpdate, CancellationToken cancellationToken);
+}

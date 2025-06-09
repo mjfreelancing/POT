@@ -15,9 +15,9 @@ namespace Pot.Data.Entities
         [Citext]
         public required string Description { get; set; }
 
+        public DateOnly AccrualStart { get; set; }
         public DateOnly NextDue { get; set; }
         public DateOnly? EndDate { get; set; }
-        public DateOnly AccrualStart { get; set; }
         public required Frequency Frequency { get; set; }
         public int FrequencyCount { get; set; }
         public double Amount { get; set; }
