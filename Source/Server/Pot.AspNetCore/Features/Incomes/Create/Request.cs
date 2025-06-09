@@ -5,7 +5,7 @@ namespace Pot.AspNetCore.Features.Incomes.Create;
 
 public sealed class Request
 {
-    [Description("A description of the account.")]
+    [Description("A description of the Income.")]
     public string Description { get; init; } = string.Empty;
 
     [Description("The date when the next income amount will be credited to the associated account.")]

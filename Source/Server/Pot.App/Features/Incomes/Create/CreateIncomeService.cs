@@ -8,21 +8,18 @@ using Pot.App.Features.Incomes.Create.Mappings;
 using Pot.App.Features.Incomes.Create.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
-using Pot.Data.Repositories.Incomes;
 
 namespace Pot.App.Features.Incomes.Create;
 
 internal sealed class CreateIncomeService : ICreateIncomeService
 {
-    private readonly IPersistableIncomeRepository _incomeRepository;
     private readonly IPersistableAccountRepository _accountRepository;
     private readonly IPreCreateChecker _preCreateChecker;
     private readonly ILogger _logger;
 
-    public CreateIncomeService(IPersistableIncomeRepository incomeRepository, IPersistableAccountRepository accountRepository,
-        IPreCreateChecker preCreateChecker, ILogger<CreateIncomeService> logger)
+    public CreateIncomeService(IPersistableAccountRepository accountRepository, IPreCreateChecker preCreateChecker,
+        ILogger<CreateIncomeService> logger)
     {
-        _incomeRepository = incomeRepository.WhenNotNull();
         _accountRepository = accountRepository.WhenNotNull();
         _preCreateChecker = preCreateChecker.WhenNotNull();
         _logger = logger.WhenNotNull();
