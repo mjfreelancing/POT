@@ -89,8 +89,8 @@ function AccountActions({ account }: AccountActionsProps) {
           </DropdownMenuLabel>
           <DropdownMenuItem
             disabled={account.linkedExpenses === 0}
-            // This needs to navigate to the expenses page, filtered by the account
-            onClick={() => navigate(`/expenses/edit/${account.rowId}`)}
+            // Navigate to expenses with the account ID as a query parameter
+            onClick={() => navigate(`/expenses?accountId=${account.rowId}`)}
           >
             <ShoppingCart className="mr-2 h-4 w-4" />
             Expenses
@@ -98,8 +98,8 @@ function AccountActions({ account }: AccountActionsProps) {
           </DropdownMenuItem>
           <DropdownMenuItem
             disabled={account.linkedIncomes === 0}
-            // This needs to navigate to the incomes page, filtered by the account
-            onClick={() => navigate(`/incomes/edit/${account.rowId}`)}
+            // Navigate to income with the account ID as a query parameter
+            onClick={() => navigate(`/incomes?accountId=${account.rowId}`)}
           >
             <CircleDollarSignIcon className="mr-2 h-4 w-4" />
             Income {account.linkedIncomes > 0 && `(${account.linkedIncomes})`}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useNavigate, useParams, useSearchParams } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetAllExpenses } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
@@ -21,6 +21,7 @@ import { columns } from './columns';
 
 function ExpensesTable() {
   const { id: editingId } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const { data: expensesResult, isLoading: expensesLoading } =
     useApiGetAllExpenses();
   const { data: accountsResult, isLoading: accountsLoading } =
@@ -32,6 +33,9 @@ function ExpensesTable() {
   const accounts = accountsResult?.success ? accountsResult.value : [];
   const isLoading = expensesLoading || accountsLoading;
 
+  // Get initial account filter from URL
+  const initialAccountId = searchParams.get('accountId');
+
   // Use the shared account filtering hook
   const {
     accountsInItems: accountsInExpenses,
@@ -42,6 +46,20 @@ function ExpensesTable() {
     accounts,
     items: expenses,
   });
+
+  // Set initial account filter from URL when data is loaded
+  useEffect(() => {
+    if (initialAccountId && accounts.length > 0 && !selectedAccountId) {
+      // Only set if we have accounts data and haven't already set a filter
+      const accountExists = accounts.some(
+        account => account.rowId.toString() === initialAccountId,
+      );
+
+      if (accountExists) {
+        setSelectedAccountId(initialAccountId);
+      }
+    }
+  }, [initialAccountId, accounts, selectedAccountId, setSelectedAccountId]);
 
   useEffect(() => {
     // Transient error handling - resetting error state when success, such as after a network loss
