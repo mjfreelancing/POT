@@ -6,9 +6,9 @@ namespace Pot.AspNetCore.Features.Expenses.Create;
 
 public sealed class Response : ResponseBase
 {
-    public static CreatedAtRoute<Response> Created(Output Expense)
+    public static CreatedAtRoute<Response> Created(Output expense)
     {
-        var response = new Response(Expense);
+        var response = new Response(expense);
 
         return TypedResults.CreatedAtRoute(
             response,
@@ -16,9 +16,9 @@ public sealed class Response : ResponseBase
             new { Id = response.RowId });
     }
 
-    private Response(Output Expense)
+    private Response(Output expense)
     {
-        RowId = Expense.RowId;
-        Etag = Expense.Etag;
+        RowId = expense.RowId;
+        Etag = expense.Etag;
     }
 }
