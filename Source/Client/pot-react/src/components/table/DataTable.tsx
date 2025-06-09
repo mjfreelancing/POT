@@ -1,8 +1,12 @@
+import { useState } from 'react';
+
 import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
+  getSortedRowModel,
   Row,
+  SortingState,
   useReactTable,
 } from '@tanstack/react-table';
 
@@ -16,6 +20,8 @@ import {
   TableHeader,
   TableRow,
 } from '../ui/table';
+
+import { DataTableColumnHeader } from './DataTableColumnHeader';
 
 // Gets the money value from a row.
 const getMoneyValue = <TData,>(row: Row<TData>, key: string): MoneyValue => {
@@ -54,37 +60,55 @@ const frequencySingularMap: Record<Frequency, string> = {
 // Note: The trailing comma in <TData,> is necessary for TypeScript to differentiate it from a JSX element.
 
 // Creates a column definition for a money value (right-aligned number) column.
+//
+// Using DataTableColumnHeader as decribed at https://ui.shadcn.com/docs/components/data-table#reusable-components
+// for a sortable header with a title.
 export const createMoneyValueColumn = <TData,>(
   accessorKey: keyof TData & string, // Ensure this is both a key of TData and a string
   header: string,
-): ColumnDef<TData> => ({
-  accessorKey,
-  header: () => <div>{header}</div>,
-  cell: ({ row }) => <div>{formatCellMoneyValue(row, accessorKey)}</div>,
-  // header: () => <div className="text-right">{header}</div>,
-  // cell: ({ row }) => (
-  //   <div className="text-right">{formatCellMoneyValue(row, accessorKey)}</div>
-  // ),
-});
+  options: Partial<ColumnDef<TData>> = {},
+): ColumnDef<TData> => {
+  const { enableSorting = false, ...restOptions } = options;
+
+  return {
+    accessorKey,
+    header: enableSorting
+      ? ({ column }) => <DataTableColumnHeader column={column} title={header} />
+      : () => <div>{header}</div>,
+    cell: ({ row }) => <div>{formatCellMoneyValue(row, accessorKey)}</div>,
+    enableSorting,
+    ...restOptions,
+  };
+};
 
 export const createDateColumn = <TData,>(
   accessorKey: keyof TData & string, // Ensure this is both a key of TData and a string
   header: string,
   nullValue = 'Ongoing',
-): ColumnDef<TData> => ({
-  accessorKey,
-  header: () => <div>{header}</div>,
-  cell: ({ row }) => {
-    const rawValue = row.getValue(accessorKey) as string | Date;
+  options: Partial<ColumnDef<TData>> = {},
+): ColumnDef<TData> => {
+  const { enableSorting = false, ...restOptions } = options;
 
-    if (rawValue === null) {
-      return <div className="text-muted-foreground">{nullValue}</div>;
-    }
+  return {
+    accessorKey,
+    header: enableSorting
+      ? ({ column }) => <DataTableColumnHeader column={column} title={header} />
+      : () => <div>{header}</div>,
+    cell: ({ row }) => {
+      const rawValue = row.getValue(accessorKey) as string | Date;
 
-    const dateValue = rawValue instanceof Date ? rawValue : new Date(rawValue);
-    return <div>{formatCellDate(dateValue)}</div>;
-  },
-});
+      if (rawValue === null) {
+        return <div className="text-muted-foreground">{nullValue}</div>;
+      }
+
+      const dateValue =
+        rawValue instanceof Date ? rawValue : new Date(rawValue);
+      return <div>{formatCellDate(dateValue)}</div>;
+    },
+    enableSorting,
+    ...restOptions,
+  };
+};
 
 /**
  * Creates a column showing "<count> <frequency>" based on two keys.
@@ -93,21 +117,30 @@ export const createFrequencyColumn = <TData,>(
   countKey: keyof TData & string,
   frequencyKey: keyof TData & string,
   header: string,
-): ColumnDef<TData> => ({
-  id: `${frequencyKey}-${countKey}`,
-  header: () => <div>{header}</div>,
-  cell: ({ row }) => {
-    const count = row.original[countKey] as number;
-    const freq = row.original[frequencyKey] as Frequency;
-    const frequencyLabel = count === 1 ? frequencySingularMap[freq] : freq;
+  options: Partial<ColumnDef<TData>> = {},
+): ColumnDef<TData> => {
+  const { enableSorting = false, ...restOptions } = options;
 
-    return (
-      <div>
-        {count} {frequencyLabel}
-      </div>
-    );
-  },
-});
+  return {
+    id: `${frequencyKey}-${countKey}`,
+    header: enableSorting
+      ? ({ column }) => <DataTableColumnHeader column={column} title={header} />
+      : () => <div>{header}</div>,
+    cell: ({ row }) => {
+      const count = row.original[countKey] as number;
+      const freq = row.original[frequencyKey] as Frequency;
+      const frequencyLabel = count === 1 ? frequencySingularMap[freq] : freq;
+
+      return (
+        <div>
+          {count} {frequencyLabel}
+        </div>
+      );
+    },
+    enableSorting,
+    ...restOptions,
+  };
+};
 
 /** Default highlight class for rows marked by `highlightRowFilter` */
 export const DEFAULT_HIGHLIGHT_ROW_CLASS = 'bg-blue-100 dark:bg-blue-900';
@@ -136,10 +169,19 @@ export function DataTable<TData, TValue>({
   highlightRowFilter,
   highlightClassName = DEFAULT_HIGHLIGHT_ROW_CLASS,
 }: DataTableProps<TData, TValue>) {
+  const [sorting, setSorting] = useState<SortingState>([]);
+
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    onSortingChange: setSorting,
+    enableSortingRemoval: true,
+    enableMultiSort: false,
+    state: {
+      sorting,
+    },
   });
 
   // To put the table in a rounded border, wrap everything in

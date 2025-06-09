@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
-import { useApiGetAllExpenses } from '@/api/hooks';
+import { useApiGetAllAccounts, useApiGetAllExpenses } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
+import AccountFilter from '@/components/filters/AccountFilter';
 import { DataTable } from '@/components/table';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,30 +15,47 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { DisplayError } from '@/lib/errors/displayError';
+import { useAccountFilter } from '@/hooks/useAccountFilter';
 
 import { columns } from './columns';
 
 function ExpensesTable() {
   const { id: editingId } = useParams<{ id: string }>();
-  const { data: result, isLoading } = useApiGetAllExpenses();
+  const { data: expensesResult, isLoading: expensesLoading } =
+    useApiGetAllExpenses();
+  const { data: accountsResult, isLoading: accountsLoading } =
+    useApiGetAllAccounts();
   const [error, setError] = useState<DisplayError | null>(null);
   const navigate = useNavigate();
 
-  const expenses = result?.success ? result.value.results : [];
+  const expenses = expensesResult?.success ? expensesResult.value.results : [];
+  const accounts = accountsResult?.success ? accountsResult.value : [];
+  const isLoading = expensesLoading || accountsLoading;
+
+  // Use the shared account filtering hook
+  const {
+    accountsInItems: accountsInExpenses,
+    selectedAccountId,
+    setSelectedAccountId,
+    filteredItems: filteredExpenses,
+  } = useAccountFilter({
+    accounts,
+    items: expenses,
+  });
 
   useEffect(() => {
     // Transient error handling - resetting error state when success, such as after a network loss
-    if (result) {
+    if (expensesResult) {
       setError(
-        result.success
+        expensesResult.success
           ? null
           : {
-              title: result.error.code,
-              description: result.error.description,
+              title: expensesResult.error.code,
+              description: expensesResult.error.description,
             },
       );
     }
-  }, [result]);
+  }, [expensesResult]);
 
   return (
     <>
@@ -54,6 +72,11 @@ function ExpensesTable() {
            * space-x-4 adds a 1rem horizontal gap between each child
            */}
           <div className="ml-auto flex items-center space-x-4">
+            <AccountFilter
+              accounts={accountsInExpenses}
+              selectedAccountId={selectedAccountId}
+              onAccountChange={setSelectedAccountId}
+            />
             <Button
               onClick={() => navigate('create')}
               aria-label="Add a new expense"
@@ -65,7 +88,7 @@ function ExpensesTable() {
         <CardContent>
           <DataTable
             columns={columns}
-            data={expenses}
+            data={filteredExpenses}
             highlightRowFilter={row =>
               row.original.rowId.toString() === editingId
             }

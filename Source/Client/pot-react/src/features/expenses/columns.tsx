@@ -4,6 +4,7 @@ import {
   createDateColumn,
   createFrequencyColumn,
   createMoneyValueColumn,
+  DataTableColumnHeader,
 } from '@/components/table';
 import { Expense } from '@/data';
 
@@ -12,7 +13,11 @@ import ExpenseActions from './components/ExpenseActions';
 export const columns: ColumnDef<Expense>[] = [
   {
     accessorKey: 'description',
-    header: 'Description',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Description" />
+    ),
+    enableSorting: true,
+    sortingFn: 'text',
   },
   {
     id: 'accountDescription',
@@ -35,7 +40,10 @@ export const columns: ColumnDef<Expense>[] = [
   },
   createMoneyValueColumn<Expense>('amount', 'Amount'),
   createDateColumn<Expense>('accrualStart', 'Accrual Start'),
-  createDateColumn<Expense>('nextDue', 'Next Due'),
+  createDateColumn<Expense>('nextDue', 'Next Due', 'Ongoing', {
+    enableSorting: true,
+    sortingFn: 'datetime',
+  }),
   createDateColumn<Expense>('endDate', 'End Date'),
   {
     id: 'actions',

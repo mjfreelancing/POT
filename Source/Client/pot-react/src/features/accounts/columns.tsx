@@ -1,7 +1,10 @@
 import { ColumnDef } from '@tanstack/react-table';
 
 import { LinkedDataBadge } from '@/components/feedback/badge';
-import { createMoneyValueColumn } from '@/components/table';
+import {
+  createMoneyValueColumn,
+  DataTableColumnHeader,
+} from '@/components/table';
 import { Account } from '@/data';
 
 import AccountActions from './components/AccountActions';
@@ -17,7 +20,11 @@ export const columns: ColumnDef<Account>[] = [
   },
   {
     accessorKey: 'description',
-    header: 'Description',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Description" />
+    ),
+    enableSorting: true,
+    sortingFn: 'text',
     cell: ({ row }) => {
       const account = row.original;
       const hasLinkedData =
