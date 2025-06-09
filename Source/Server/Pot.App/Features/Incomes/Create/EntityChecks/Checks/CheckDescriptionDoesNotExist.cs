@@ -23,9 +23,9 @@ internal sealed class CheckDescriptionDoesNotExist : PreCreateCheckBase
     {
         _logger.LogCall(this);
 
-        var income = state.IncomeToCreate;
+        var incomeToCreate = state.IncomeToCreate;
 
-        var predicate = IncomeSpecifications.IsSameDescription(state.IncomeToCreate.Account.Id, income.Description).Expression;
+        var predicate = IncomeSpecifications.IsSameDescription(state.IncomeToCreate.Account.Id, incomeToCreate.Description).Expression;
 
         var descriptionExists = await _incomeRepository
             .AnyAsync(predicate, cancellationToken)
@@ -38,7 +38,7 @@ internal sealed class CheckDescriptionDoesNotExist : PreCreateCheckBase
                 return ProblemDetailsErrorFactory.CreateEntityExistsError(
                     "Income",
                     nameof(IncomeEntity.Description),
-                    income.Description);
+                    incomeToCreate.Description);
             }
 
             return await base.HandleAsync(state, cancellationToken);
