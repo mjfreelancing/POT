@@ -4,6 +4,7 @@ using AllOverIt.Pagination;
 using AllOverIt.Pagination.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Pot.Data.Entities;
+using Pot.Data.Extensions;
 using Pot.Shared;
 
 namespace Pot.Data.Repositories.Expenses;
@@ -39,5 +40,12 @@ internal sealed class ExpenseRepository : GenericRepository<PotDbContext, Expens
             .CreatePaginator(incomeQuery, paginatorConfig)
             .ColumnAscending(entity => entity.NextDue, entity => entity.Description, entity => entity.Id)
             .GetPageResultsAsync(paging.Continuation, cancellationToken);
+    }
+
+    public Task<ExpenseEntity?> GetExpenseOrDefaultAsync(Guid expenseId, CancellationToken cancellationToken)
+    {
+        return AsQueryable()
+            .Include(expense => expense.Account)
+            .SingleOrDefaultAsync(expenseId, cancellationToken);
     }
 }

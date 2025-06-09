@@ -7,4 +7,5 @@ namespace Pot.Data.Repositories.Expenses;
 public interface IExpenseRepository : IGenericRepository<PotDbContext, ExpenseEntity>
 {
     Task<PageResult<ExpenseEntity>> GetAllExpensesAsync(Paging paging, CancellationToken cancellationToken);
+    Task<ExpenseEntity?> GetExpenseOrDefaultAsync(Guid expenseId, CancellationToken cancellationToken);
 }

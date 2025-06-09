@@ -20,8 +20,7 @@ internal static class RouteGroupBuilderExtensions
     public static RouteGroupBuilder GetExpense(this RouteGroupBuilder routeGroupBuilder)
     {
         routeGroupBuilder
-            .MapGet("", (_) => { return null; })
-            //.MapGet(ExpensesEndpoints.Get, Get.Handler.Invoke)
+            .MapGet(ExpensesEndpoints.Get, Get.Handler.Invoke)
             .WithName(nameof(GetExpense))
             .WithSummary("Get expense")
             .WithDescription("Get details for an existing expense")
