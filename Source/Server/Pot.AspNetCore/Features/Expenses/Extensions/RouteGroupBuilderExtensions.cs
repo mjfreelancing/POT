@@ -14,7 +14,9 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(GetAllExpenses))
             .WithSummary("Get all expenses")
             .WithDescription("Get all expense details")
-            .WithTags("Expenses");
+            .WithTags("Expenses")
+            .ProducesProblem((int)HttpStatusCode.OK)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
 
         return routeGroupBuilder;
     }
@@ -26,7 +28,11 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(GetExpense))
             .WithSummary("Get expense")
             .WithDescription("Get details for an existing expense")
-            .WithTags("Expenses");
+            .WithTags("Expenses")
+            .ProducesProblem((int)HttpStatusCode.OK)
+            .ProducesProblem((int)HttpStatusCode.NotFound)
+            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
 
         return routeGroupBuilder;
     }
@@ -39,7 +45,9 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Create expense")
             .WithDescription("Create new expense details")
             .WithTags("Expenses")
-            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
+            .ProducesProblem((int)HttpStatusCode.Created)
+            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
 
         return routeGroupBuilder;
     }
@@ -52,7 +60,10 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Update expense")
             .WithDescription("Updates existing expense details")
             .WithTags("Expenses")
-            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
+            .ProducesProblem((int)HttpStatusCode.OK)
+            .ProducesProblem((int)HttpStatusCode.NotFound)
+            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
 
         return routeGroupBuilder;
     }
@@ -65,7 +76,9 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Delete expense")
             .WithDescription("Deletes existing expense details")
             .WithTags("Expenses")
-            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
+            .ProducesProblem((int)HttpStatusCode.OK)
+            .ProducesProblem((int)HttpStatusCode.NotFound)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
 
         return routeGroupBuilder;
     }
