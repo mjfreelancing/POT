@@ -16,6 +16,11 @@ public sealed class ExpenseCsvRow
     [Index(2)]
     public required string Description { get; init; }
 
+    [Index(5)]
+    [Format("yyyy-MM-dd")]
+    [TypeConverter(typeof(DateOnlyConverter))]
+    public DateOnly AccrualStart { get; init; }
+
     [Index(3)]
     [Format("yyyy-MM-dd")]
     [TypeConverter(typeof(DateOnlyConverter))]
@@ -25,11 +30,6 @@ public sealed class ExpenseCsvRow
     [Format("yyyy-MM-dd")]
     [TypeConverter(typeof(NullableDateOnlyConverter))]
     public DateOnly? EndDate { get; init; }
-
-    [Index(5)]
-    [Format("yyyy-MM-dd")]
-    [TypeConverter(typeof(DateOnlyConverter))]
-    public DateOnly AccrualStart { get; init; }
 
     [Index(6)]
     [TypeConverter(typeof(FrequencyConverter))]
