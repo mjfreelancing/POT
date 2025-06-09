@@ -14,10 +14,10 @@ internal static class WebApplicationExtensions
                 .MapGroup(ExpensesEndpoints.Group)
                 .WithTags(ExpensesEndpoints.Tag)
                 .GetAllExpenses()
-                //.GetExpense()
-                //.CreateExpense()
-                //.UpdateExpense()
-                //.DeleteExpense()
+                .GetExpense()
+                .CreateExpense()
+                .UpdateExpense()
+                .DeleteExpense()
                 .ImportExpenses(MaxImportPayloadBytes);
         }
 
