@@ -1,6 +1,6 @@
 import { X } from 'lucide-react';
 
-import { DisplayError } from '@/lib/errors/displayError';
+import { DisplayError } from '@/lib';
 
 import { Button } from '../../ui/button';
 

@@ -1,16 +1,16 @@
 import { z } from 'zod';
 
-import { Frequency } from '@/lib/types';
+import { Frequency } from '@/lib';
 
 import { IdentitySchema } from './identity';
 import { Paged } from './types';
 
-export const IncomeAccountSchema = z.object({
+const IncomeAccountSchema = z.object({
   rowId: z.string(),
   description: z.string(),
 });
 
-export const BaseIncomeSchema = z.object({
+const BaseIncomeSchema = z.object({
   description: z.string(),
   nextDue: z.string(),
   endDate: z.string().nullable(),
@@ -19,22 +19,30 @@ export const BaseIncomeSchema = z.object({
   amount: z.number(),
 });
 
-export const IncomeSchema = BaseIncomeSchema.extend({
+const IncomeSchema = BaseIncomeSchema.extend({
   ...IdentitySchema.shape,
   account: IncomeAccountSchema,
 });
 
-export const CreateIncomeSchema = BaseIncomeSchema.extend({
+const CreateIncomeSchema = BaseIncomeSchema.extend({
   accountRowId: z.string(),
 });
 
-export const EditIncomeSchema = BaseIncomeSchema.extend({
+const EditIncomeSchema = BaseIncomeSchema.extend({
   ...IdentitySchema.shape,
   accountRowId: z.string(),
 });
 
-export type Income = z.infer<typeof IncomeSchema>;
-export type CreateIncome = z.infer<typeof CreateIncomeSchema>;
-export type EditIncome = z.infer<typeof EditIncomeSchema>;
+type Income = z.infer<typeof IncomeSchema>;
+type CreateIncome = z.infer<typeof CreateIncomeSchema>;
+type EditIncome = z.infer<typeof EditIncomeSchema>;
+type PagedIncome = Paged<Income>;
 
-export type PagedIncome = Paged<Income>;
+export {
+  BaseIncomeSchema,
+  CreateIncomeSchema,
+  EditIncomeSchema,
+  IncomeAccountSchema,
+  IncomeSchema,
+};
+export type { CreateIncome, EditIncome, Income, PagedIncome };

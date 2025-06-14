@@ -1,8 +1,11 @@
 import { z } from 'zod';
 
-export const IdentitySchema = z.object({
+const IdentitySchema = z.object({
   rowId: z.string(),
   etag: z.bigint(),
 });
 
-export type Identity = z.infer<typeof IdentitySchema>;
+type Identity = z.infer<typeof IdentitySchema>;
+
+export { IdentitySchema };
+export type { Identity };

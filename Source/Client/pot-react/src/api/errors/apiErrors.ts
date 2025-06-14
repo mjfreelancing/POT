@@ -1,4 +1,4 @@
-import { FailResultBase } from '@/lib/result/failResultBase';
+import { FailResultBase } from '@/lib';
 
 // These const objects exist at runtime
 export const ErrorType = {

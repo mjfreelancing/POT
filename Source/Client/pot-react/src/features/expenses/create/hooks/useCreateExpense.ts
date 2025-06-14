@@ -2,8 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiCreateExpense } from '@/api/hooks';
 import { CreateExpense, Identity } from '@/data';
-import { FailResultBase } from '@/lib/result/failResultBase';
-import { Result } from '@/lib/result/result';
+import { FailResultBase, Result } from '@/lib';
 
 function useCreateExpense() {
   const queryClient = useQueryClient();

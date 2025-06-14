@@ -1,16 +1,16 @@
 import { z } from 'zod';
 
-import { Frequency } from '@/lib/types';
+import { Frequency } from '@/lib';
 
 import { IdentitySchema } from './identity';
 import { Paged } from './types';
 
-export const ExpenseAccountSchema = z.object({
+const ExpenseAccountSchema = z.object({
   rowId: z.string(),
   description: z.string(),
 });
 
-export const BaseExpenseSchema = z.object({
+const BaseExpenseSchema = z.object({
   description: z.string(),
   nextDue: z.string(),
   accrualStart: z.string(),
@@ -21,22 +21,35 @@ export const BaseExpenseSchema = z.object({
   amount: z.number(),
 });
 
-export const ExpenseSchema = BaseExpenseSchema.extend({
+const ExpenseSchema = BaseExpenseSchema.extend({
   ...IdentitySchema.shape,
   account: ExpenseAccountSchema,
 });
 
-export const CreateExpenseSchema = BaseExpenseSchema.extend({
+const CreateExpenseSchema = BaseExpenseSchema.extend({
   accountRowId: z.string(),
 });
 
-export const EditExpenseSchema = BaseExpenseSchema.extend({
+const EditExpenseSchema = BaseExpenseSchema.extend({
   ...IdentitySchema.shape,
   accountRowId: z.string(),
 });
 
-export type Expense = z.infer<typeof ExpenseSchema>;
-export type CreateExpense = z.infer<typeof CreateExpenseSchema>;
-export type EditExpense = z.infer<typeof EditExpenseSchema>;
+type Expense = z.infer<typeof ExpenseSchema>;
+type CreateExpense = z.infer<typeof CreateExpenseSchema>;
+type EditExpense = z.infer<typeof EditExpenseSchema>;
+type PagedExpense = Paged<Expense>;
 
-export type PagedExpense = Paged<Expense>;
+export {
+  BaseExpenseSchema,
+  CreateExpenseSchema,
+  EditExpenseSchema,
+  ExpenseAccountSchema,
+  ExpenseSchema,
+};
+export {
+  type CreateExpense,
+  type EditExpense,
+  type Expense,
+  type PagedExpense,
+};

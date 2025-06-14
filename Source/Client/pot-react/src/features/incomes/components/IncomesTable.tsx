@@ -1,23 +1,65 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router';
+import { ColumnDef } from '@tanstack/react-table';
+import { useEffect, useMemo, useState } from 'react';
+import { useParams, useSearchParams } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetAllIncomes } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
-import AccountFilter from '@/components/filters/AccountFilter';
-import { DataTable } from '@/components/table';
-import { Button } from '@/components/ui/button';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { DisplayError } from '@/lib/errors/displayError';
-import { useAccountFilter } from '@/hooks/useAccountFilter';
+  createDateColumn,
+  createFrequencyColumn,
+  createMoneyValueColumn,
+  DataTable,
+  DataTableColumnHeader,
+} from '@/components/table';
+import { Card, CardContent } from '@/components/ui/card';
+import { Income } from '@/data';
+import { useAccountFilter } from '@/hooks';
+import { DisplayError } from '@/lib';
 
-import { columns } from './columns';
+import IncomeActions from './IncomeActions';
+
+const columns: ColumnDef<Income>[] = [
+  {
+    accessorKey: 'description',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Description" />
+    ),
+    enableSorting: true,
+    sortingFn: 'text',
+  },
+  {
+    id: 'accountDescription',
+    header: 'Account',
+    cell: ({ row }) => (
+      <div
+        className={
+          !row.original.account?.description ? 'text-muted-foreground' : ''
+        }
+      >
+        {row.original.account?.description ?? 'Not Assigned'}
+      </div>
+    ),
+  },
+  createFrequencyColumn<Income>('frequencyCount', 'frequency', 'Frequency'),
+  createMoneyValueColumn<Income>('amount', 'Amount'),
+  createDateColumn<Income>('nextDue', 'Next Due', 'Ongoing', {
+    enableSorting: true,
+    sortingFn: 'datetime',
+  }),
+  createDateColumn<Income>('endDate', 'End Date'),
+  {
+    id: 'actions',
+    cell: ({ row }) => {
+      const income = row.original;
+      return (
+        <div className="flex justify-end">
+          <IncomeActions income={income} />
+        </div>
+      );
+    },
+  },
+];
 
 function IncomesTable() {
   const { id: editingId } = useParams<{ id: string }>();
@@ -27,10 +69,12 @@ function IncomesTable() {
   const { data: accountsResult, isLoading: accountsLoading } =
     useApiGetAllAccounts();
   const [error, setError] = useState<DisplayError | null>(null);
-  const navigate = useNavigate();
 
   const incomes = incomesResult?.success ? incomesResult.value.results : [];
-  const accounts = accountsResult?.success ? accountsResult.value : [];
+  const accounts = useMemo(
+    () => (accountsResult?.success ? accountsResult.value : []),
+    [accountsResult],
+  );
   const isLoading = incomesLoading || accountsLoading;
 
   // Get initial account filter from URL
@@ -38,7 +82,6 @@ function IncomesTable() {
 
   // Use the shared account filtering hook
   const {
-    accountsInItems: accountsInIncomes,
     selectedAccountId,
     setSelectedAccountId,
     filteredItems: filteredIncomes,
@@ -54,6 +97,7 @@ function IncomesTable() {
       const accountExists = accounts.some(
         account => account.rowId.toString() === initialAccountId,
       );
+
       if (accountExists) {
         setSelectedAccountId(initialAccountId);
       }
@@ -76,33 +120,8 @@ function IncomesTable() {
 
   return (
     <>
-      <Card>
-        <CardHeader className="flex flex-row items-center">
-          <div>
-            <CardTitle>Income Sources</CardTitle>
-            <CardDescription>Manage your income sources.</CardDescription>
-          </div>
-          {/*
-           * ml-auto pushes the element as far right as it can go in a flex container
-           * flex makes it a flex container
-           * items-center vertically centers its children
-           * space-x-4 adds a 1rem horizontal gap between each child
-           */}
-          <div className="ml-auto flex items-center space-x-4">
-            <AccountFilter
-              accounts={accountsInIncomes}
-              selectedAccountId={selectedAccountId}
-              onAccountChange={setSelectedAccountId}
-            />
-            <Button
-              onClick={() => navigate('create')}
-              aria-label="Add a new income source"
-            >
-              Add Income
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
+      <Card className="card-elevated">
+        <CardContent className="px-4">
           <DataTable
             columns={columns}
             data={filteredIncomes}

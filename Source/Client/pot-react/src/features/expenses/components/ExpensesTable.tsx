@@ -1,23 +1,71 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router';
+import { ColumnDef } from '@tanstack/react-table';
+import { useEffect, useMemo, useState } from 'react';
+import { useParams, useSearchParams } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetAllExpenses } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
-import AccountFilter from '@/components/filters/AccountFilter';
-import { DataTable } from '@/components/table';
-import { Button } from '@/components/ui/button';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { DisplayError } from '@/lib/errors/displayError';
-import { useAccountFilter } from '@/hooks/useAccountFilter';
+  createDateColumn,
+  createFrequencyColumn,
+  createMoneyValueColumn,
+  DataTable,
+  DataTableColumnHeader,
+} from '@/components/table';
+import { Card, CardContent } from '@/components/ui/card';
+import { Expense } from '@/data';
+import { useAccountFilter } from '@/hooks';
+import { DisplayError } from '@/lib';
 
-import { columns } from './columns';
+import ExpenseActions from './ExpenseActions';
+
+const columns: ColumnDef<Expense>[] = [
+  {
+    accessorKey: 'description',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Description" />
+    ),
+    enableSorting: true,
+    sortingFn: 'text',
+  },
+  {
+    id: 'accountDescription',
+    header: 'Account',
+    cell: ({ row }) => (
+      <div
+        className={
+          !row.original.account?.description ? 'text-muted-foreground' : ''
+        }
+      >
+        {row.original.account?.description ?? 'Not Assigned'}
+      </div>
+    ),
+  },
+  createFrequencyColumn<Expense>('frequencyCount', 'frequency', 'Frequency'),
+  {
+    accessorKey: 'recurring',
+    header: 'Recurring',
+    cell: ({ row }) => <div>{row.original.recurring ? 'Yes' : 'No'}</div>,
+  },
+  createMoneyValueColumn<Expense>('amount', 'Amount'),
+  createDateColumn<Expense>('accrualStart', 'Accrual Start'),
+  createDateColumn<Expense>('nextDue', 'Next Due', 'Ongoing', {
+    enableSorting: true,
+    sortingFn: 'datetime',
+  }),
+  createDateColumn<Expense>('endDate', 'End Date'),
+  {
+    id: 'actions',
+    cell: ({ row }) => {
+      const expense = row.original;
+      return (
+        <div className="flex justify-end">
+          <ExpenseActions expense={expense} />
+        </div>
+      );
+    },
+  },
+];
 
 function ExpensesTable() {
   const { id: editingId } = useParams<{ id: string }>();
@@ -27,10 +75,12 @@ function ExpensesTable() {
   const { data: accountsResult, isLoading: accountsLoading } =
     useApiGetAllAccounts();
   const [error, setError] = useState<DisplayError | null>(null);
-  const navigate = useNavigate();
 
   const expenses = expensesResult?.success ? expensesResult.value.results : [];
-  const accounts = accountsResult?.success ? accountsResult.value : [];
+  const accounts = useMemo(
+    () => (accountsResult?.success ? accountsResult.value : []),
+    [accountsResult],
+  );
   const isLoading = expensesLoading || accountsLoading;
 
   // Get initial account filter from URL
@@ -38,7 +88,6 @@ function ExpensesTable() {
 
   // Use the shared account filtering hook
   const {
-    accountsInItems: accountsInExpenses,
     selectedAccountId,
     setSelectedAccountId,
     filteredItems: filteredExpenses,
@@ -77,33 +126,8 @@ function ExpensesTable() {
 
   return (
     <>
-      <Card>
-        <CardHeader className="flex flex-row items-center">
-          <div>
-            <CardTitle>Expenses</CardTitle>
-            <CardDescription>Manage your expenses.</CardDescription>
-          </div>
-          {/*
-           * ml-auto pushes the element as far right as it can go in a flex container
-           * flex makes it a flex container
-           * items-center vertically centers its children
-           * space-x-4 adds a 1rem horizontal gap between each child
-           */}
-          <div className="ml-auto flex items-center space-x-4">
-            <AccountFilter
-              accounts={accountsInExpenses}
-              selectedAccountId={selectedAccountId}
-              onAccountChange={setSelectedAccountId}
-            />
-            <Button
-              onClick={() => navigate('create')}
-              aria-label="Add a new expense"
-            >
-              Add Expense
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
+      <Card className="card-elevated">
+        <CardContent className="px-4">
           <DataTable
             columns={columns}
             data={filteredExpenses}

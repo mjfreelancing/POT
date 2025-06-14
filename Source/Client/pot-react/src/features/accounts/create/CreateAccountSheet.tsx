@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router';
 
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { CreateAccount } from '@/data';
-import { DisplayError } from '@/lib/errors/displayError';
+import { DisplayError } from '@/lib';
 
 import AccountForm from '../components/AccountForm';
 import AccountSheet from '../components/AccountSheet';

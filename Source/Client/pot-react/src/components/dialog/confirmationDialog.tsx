@@ -9,7 +9,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-export type ConfirmationDialogProps = {
+type ConfirmationDialogProps = {
   open: boolean;
   title: string;
   description: string;
@@ -19,7 +19,7 @@ export type ConfirmationDialogProps = {
   onCancel: () => void;
 };
 
-export function ConfirmationDialog({
+function ConfirmationDialog({
   open,
   title,
   description,
@@ -47,3 +47,6 @@ export function ConfirmationDialog({
     </AlertDialog>
   );
 }
+
+export default ConfirmationDialog;
+export type { ConfirmationDialogProps };

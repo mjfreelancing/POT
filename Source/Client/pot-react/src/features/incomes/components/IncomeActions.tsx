@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Income } from '@/data';
-import { DisplayError } from '@/lib/errors/displayError';
+import { DisplayError } from '@/lib';
 
 import useDeleteIncome from '../delete/hooks/useDeleteIncome';
 

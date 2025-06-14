@@ -7,7 +7,7 @@ import { useApiGetAllAccounts, useApiGetIncomeById } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import type { Account, EditIncome, Income } from '@/data';
-import type { DisplayError } from '@/lib/errors/displayError';
+import type { DisplayError } from '@/lib';
 
 import IncomeForm from '../components/IncomeForm';
 import IncomeSheet from '../components/IncomeSheet';

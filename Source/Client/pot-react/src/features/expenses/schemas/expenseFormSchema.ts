@@ -1,14 +1,14 @@
 import { z } from 'zod';
 
-import { Frequency } from '@/lib/types';
+import { Frequency } from '@/lib';
 
-export const MoneyValueSchema = z
+const MoneyValueSchema = z
   .number({
     required_error: 'This field is required',
   })
   .min(1, 'Value must be greater than zero');
 
-export const expenseFormSchema = z.object({
+const expenseFormSchema = z.object({
   description: z.string().min(1, 'A description is required'),
   nextDue: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
   accrualStart: z
@@ -27,4 +27,7 @@ export const expenseFormSchema = z.object({
   accountRowId: z.string().min(1, 'An account is required'),
 });
 
-export type ExpenseFormData = z.infer<typeof expenseFormSchema>;
+type ExpenseFormData = z.infer<typeof expenseFormSchema>;
+
+export { expenseFormSchema, MoneyValueSchema };
+export type { ExpenseFormData };

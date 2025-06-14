@@ -19,7 +19,7 @@ import { MoneyValue } from '../types';
  * Euros with Irish English locale
  *   formatMoneyValue(1234.56, 'EUR', 'en-IE') // '€1,234.56'
  */
-export const formatMoneyValue = (
+const formatMoneyValue = (
   value: MoneyValue,
   currency = 'AUD',
   locale = 'en-AU',
@@ -29,3 +29,5 @@ export const formatMoneyValue = (
     currency: currency,
   }).format(value);
 };
+
+export { formatMoneyValue };

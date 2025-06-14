@@ -1,8 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import axios, { AxiosResponse } from 'axios';
 
-import { FailResultBase } from '@/lib/result/failResultBase';
-import { FailResult, Result, SuccessResult } from '@/lib/result/result';
+import { FailResult, FailResultBase, Result, SuccessResult } from '@/lib';
 
 import {
   setupAxiosDefaults,

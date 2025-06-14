@@ -18,7 +18,7 @@ import Spinner from '../spinner/LoadingSpinner';
 const DEFAULT_LOADING_DELAY = 300;
 const DEFAULT_LOADING_TEXT = 'Loading...';
 
-export type LoadingMessageProps = {
+type LoadingMessageProps = {
   isLoading?: boolean;
   delay?: number;
   text?: string;
@@ -49,3 +49,4 @@ function LoadingMessage({
 }
 
 export default LoadingMessage;
+export type { LoadingMessageProps };

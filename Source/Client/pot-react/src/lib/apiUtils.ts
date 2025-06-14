@@ -11,7 +11,7 @@
 
 import { isDevelopment } from './utils';
 
-export const sleep = (ms: number) => {
+const sleep = (ms: number) => {
   if (!isDevelopment()) {
     throw new Error('sleep should only be used in development mode');
   }
@@ -19,15 +19,13 @@ export const sleep = (ms: number) => {
   new Promise(resolve => setTimeout(resolve, ms));
 };
 
-export const withDelay = async <T>(
-  fn: () => Promise<T>,
-  delay = 3000,
-): Promise<T> => {
+const withDelay = async <T>(fn: () => Promise<T>, delay = 3000): Promise<T> => {
   if (!isDevelopment()) {
     throw new Error('withDelay should only be used in development mode');
   }
 
   await sleep(delay);
-
   return await fn();
 };
+
+export { sleep, withDelay };

@@ -122,3 +122,23 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  /* Page Layout Utilities */
+  .page-header {
+    @apply px-6 py-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60;
+  }
+
+  .page-title {
+    @apply text-2xl font-bold tracking-tight text-foreground;
+  }
+
+  .page-subtitle {
+    @apply text-sm text-muted-foreground mt-1;
+  }
+
+  /* Status Badge Utilities */
+  .status-success {
+    @apply bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 border-green-200 dark:border-green-800;
+  }
+}

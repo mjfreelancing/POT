@@ -31,7 +31,7 @@ const EditExpenseSheet = lazy(
 );
 
 // Suspense provides a loading fallback while the lazy-loaded components are being downloaded
-export const AppRoutes = () => {
+function AppRoutes() {
   return (
     <Suspense fallback={<LoadingMessage />}>
       <Routes>
@@ -53,4 +53,6 @@ export const AppRoutes = () => {
       </Routes>
     </Suspense>
   );
-};
+}
+
+export { AppRoutes };

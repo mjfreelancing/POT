@@ -22,8 +22,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import type { Account } from '@/data';
-import { FrequencyEnumValues } from '@/lib/types';
-import { localIsoDate, localToday } from '@/lib/utils';
+import { FrequencyEnumValues, localIsoDate, localToday } from '@/lib';
 
 import { ExpenseFormData } from '../schemas/expenseFormSchema';
 

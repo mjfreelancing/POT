@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { IdentitySchema } from './identity';
 
-export const BaseAccountSchema = z.object({
+const BaseAccountSchema = z.object({
   bsb: z.string(),
   number: z.string(),
   description: z.string(),
@@ -10,7 +10,7 @@ export const BaseAccountSchema = z.object({
   reserved: z.number(),
 });
 
-export const AccountSchema = BaseAccountSchema.extend({
+const AccountSchema = BaseAccountSchema.extend({
   ...IdentitySchema.shape,
   allocated: z.number(),
   dailyAccrual: z.number(),
@@ -19,17 +19,26 @@ export const AccountSchema = BaseAccountSchema.extend({
   linkedIncomes: z.number(),
 });
 
-export const CreateAccountSchema = BaseAccountSchema;
+const CreateAccountSchema = BaseAccountSchema;
 
-export const EditAccountSchema = BaseAccountSchema.extend({
+const EditAccountSchema = BaseAccountSchema.extend({
   ...IdentitySchema.shape,
 });
 
-export type Account = z.infer<typeof AccountSchema>;
-export type CreateAccount = z.infer<typeof CreateAccountSchema>;
-export type EditAccount = z.infer<typeof EditAccountSchema>;
+type Account = z.infer<typeof AccountSchema>;
+type CreateAccount = z.infer<typeof CreateAccountSchema>;
+type EditAccount = z.infer<typeof EditAccountSchema>;
 
-export const compareAccountBsbNumber = (lhs: Account, rhs: Account): number => {
+const compareAccountBsbNumber = (lhs: Account, rhs: Account): number => {
   const bsbCompare = lhs.bsb.localeCompare(rhs.bsb);
   return bsbCompare !== 0 ? bsbCompare : lhs.number.localeCompare(rhs.number);
 };
+
+export {
+  AccountSchema,
+  BaseAccountSchema,
+  compareAccountBsbNumber,
+  CreateAccountSchema,
+  EditAccountSchema,
+};
+export type { Account, CreateAccount, EditAccount };

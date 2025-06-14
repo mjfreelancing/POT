@@ -1,4 +1,5 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+
 import { Account } from '@/data';
 
 /**
@@ -95,7 +96,7 @@ type UseAccountFilterReturn = {
  * <DataTable data={filteredItems} />
  * ```
  */
-export function useAccountFilter<T extends ItemWithAccount>({
+function useAccountFilter<T extends ItemWithAccount>({
   accounts,
   items,
 }: UseAccountFilterOptions & { items: T[] }): UseAccountFilterReturn & {
@@ -136,11 +137,11 @@ export function useAccountFilter<T extends ItemWithAccount>({
       .filter((account): account is Account => account !== undefined)
       .sort((lhs, rhs) => lhs.description.localeCompare(rhs.description));
 
-    // Add a virtual "Not Assigned" account if there are unassigned items
-    // This allows users to filter specifically for items without accounts
+    // Add a virtual "Not Assigned" account if there are unassigned items.
+    // This allows users to filter specifically for items without accounts.
     if (hasUnassignedItems) {
       accountsInUse.unshift({
-        rowId: 'not-assigned' as any,
+        rowId: 'not-assigned',
         description: 'Not Assigned',
         bsb: '',
         number: '',
@@ -202,3 +203,5 @@ export function useAccountFilter<T extends ItemWithAccount>({
     filteredItems,
   };
 }
+
+export default useAccountFilter;

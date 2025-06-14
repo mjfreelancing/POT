@@ -1,10 +1,10 @@
 import { DropdownMenuLabel } from '@radix-ui/react-dropdown-menu';
 import {
-  CircleDollarSignIcon,
   MoreHorizontal,
   Pencil,
-  ShoppingCart,
+  Receipt,
   Trash2,
+  TrendingUp,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Account } from '@/data';
-import { DisplayError } from '@/lib/errors/displayError';
+import { DisplayError } from '@/lib';
 
 import useDeleteAccount from '../delete/hooks/useDeleteAccount';
 
@@ -92,7 +92,7 @@ function AccountActions({ account }: AccountActionsProps) {
             // Navigate to expenses with the account ID as a query parameter
             onClick={() => navigate(`/expenses?accountId=${account.rowId}`)}
           >
-            <ShoppingCart className="mr-2 h-4 w-4" />
+            <Receipt className="mr-2 h-4 w-4" />
             Expenses
             {account.linkedExpenses > 0 && `(${account.linkedExpenses})`}
           </DropdownMenuItem>
@@ -101,7 +101,7 @@ function AccountActions({ account }: AccountActionsProps) {
             // Navigate to income with the account ID as a query parameter
             onClick={() => navigate(`/incomes?accountId=${account.rowId}`)}
           >
-            <CircleDollarSignIcon className="mr-2 h-4 w-4" />
+            <TrendingUp className="mr-2 h-4 w-4" />
             Income {account.linkedIncomes > 0 && `(${account.linkedIncomes})`}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
@@ -122,3 +122,4 @@ function AccountActions({ account }: AccountActionsProps) {
 }
 
 export default AccountActions;
+export type { AccountActionsProps };

@@ -1,15 +1,15 @@
 import { ComponentPropsWithoutRef, useEffect, useState } from 'react';
 
-import { isNumber } from '@/lib/utils';
+import { isNumber } from '@/lib';
 
 import { Input } from '../ui/input';
 
 // The onChange event will pass both the original string value and a parsed number value
-export type MoneyValueInputElement = HTMLInputElement & {
+type MoneyValueInputElement = HTMLInputElement & {
   number: number | undefined;
 };
 
-export type MoneyValueChangeEvent = Omit<
+type MoneyValueChangeEvent = Omit<
   React.ChangeEvent<HTMLInputElement>,
   'target'
 > & {
@@ -19,7 +19,7 @@ export type MoneyValueChangeEvent = Omit<
 // 'type' and 'inputMode' are defined internally
 // 'min' and 'max' are not supported - caller can use custom validation
 // 'onChange' is overridden to pass both string and number values
-export type MoneyValueInputProps = Omit<
+type MoneyValueInputProps = Omit<
   ComponentPropsWithoutRef<typeof Input>,
   'type' | 'inputMode' | 'min' | 'max' | 'onChange' | 'value'
 > & {
@@ -199,3 +199,8 @@ function MoneyValueInput({
 }
 
 export default MoneyValueInput;
+export {
+  type MoneyValueChangeEvent,
+  type MoneyValueInputElement,
+  type MoneyValueInputProps,
+};

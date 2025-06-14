@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 import {
   ColumnDef,
   flexRender,
@@ -9,9 +7,9 @@ import {
   SortingState,
   useReactTable,
 } from '@tanstack/react-table';
+import { useState } from 'react';
 
-import { formatMoneyValue } from '../../lib/money/moneyUtils';
-import { Frequency, MoneyValue } from '../../lib/types';
+import { formatMoneyValue, Frequency, MoneyValue } from '../../lib';
 import {
   Table,
   TableBody,
@@ -20,8 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '../ui/table';
-
-import { DataTableColumnHeader } from './DataTableColumnHeader';
+import DataTableColumnHeader from './DataTableColumnHeader';
 
 // Gets the money value from a row.
 const getMoneyValue = <TData,>(row: Row<TData>, key: string): MoneyValue => {
@@ -63,7 +60,7 @@ const frequencySingularMap: Record<Frequency, string> = {
 //
 // Using DataTableColumnHeader as decribed at https://ui.shadcn.com/docs/components/data-table#reusable-components
 // for a sortable header with a title.
-export const createMoneyValueColumn = <TData,>(
+const createMoneyValueColumn = <TData,>(
   accessorKey: keyof TData & string, // Ensure this is both a key of TData and a string
   header: string,
   options: Partial<ColumnDef<TData>> = {},
@@ -81,7 +78,7 @@ export const createMoneyValueColumn = <TData,>(
   };
 };
 
-export const createDateColumn = <TData,>(
+const createDateColumn = <TData,>(
   accessorKey: keyof TData & string, // Ensure this is both a key of TData and a string
   header: string,
   nullValue = 'Ongoing',
@@ -113,7 +110,7 @@ export const createDateColumn = <TData,>(
 /**
  * Creates a column showing "<count> <frequency>" based on two keys.
  */
-export const createFrequencyColumn = <TData,>(
+const createFrequencyColumn = <TData,>(
   countKey: keyof TData & string,
   frequencyKey: keyof TData & string,
   header: string,
@@ -142,8 +139,7 @@ export const createFrequencyColumn = <TData,>(
   };
 };
 
-/** Default highlight class for rows marked by `highlightRowFilter` */
-export const DEFAULT_HIGHLIGHT_ROW_CLASS = 'bg-blue-100 dark:bg-blue-900';
+const DEFAULT_HIGHLIGHT_ROW_CLASS = 'bg-yellow-200 dark:bg-yellow-800';
 
 /**
  * Props for the `DataTable` component.
@@ -156,14 +152,14 @@ export const DEFAULT_HIGHLIGHT_ROW_CLASS = 'bg-blue-100 dark:bg-blue-900';
  * @property [highlightRowFilter] - Optional function to determine if a row should be highlighted. Receives a row object and returns a boolean.
  * @property [highlightClassName] - Optional Tailwind CSS class(es) to apply to rows that match the `highlightRowFilter`.
  */
-export type DataTableProps<TData, TValue> = {
+type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   highlightRowFilter?: (row: Row<TData>) => boolean;
   highlightClassName?: string;
 };
 
-export function DataTable<TData, TValue>({
+function DataTable<TData, TValue>({
   columns,
   data,
   highlightRowFilter,
@@ -248,3 +244,12 @@ export function DataTable<TData, TValue>({
     </Table>
   );
 }
+
+export default DataTable;
+export {
+  createDateColumn,
+  createFrequencyColumn,
+  createMoneyValueColumn,
+  DEFAULT_HIGHLIGHT_ROW_CLASS,
+};
+export type { DataTableProps };

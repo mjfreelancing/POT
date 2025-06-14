@@ -1,7 +1,7 @@
-export type MoneyValue = number;
+type MoneyValue = number;
 
 // Define a const-object for frequencies to ensure type-safety and named access
-export const Frequency = {
+const Frequency = {
   Days: 'Days',
   Weeks: 'Weeks',
   Months: 'Months',
@@ -9,7 +9,10 @@ export const Frequency = {
 } as const;
 
 // The union type of allowable frequency strings
-export type Frequency = (typeof Frequency)[keyof typeof Frequency];
+type Frequency = (typeof Frequency)[keyof typeof Frequency];
 
 // An array of all frequency values, for e.g. dropdown options
-export const FrequencyEnumValues: Frequency[] = Object.values(Frequency);
+const FrequencyEnumValues: Frequency[] = Object.values(Frequency);
+
+export { Frequency, FrequencyEnumValues };
+export type { MoneyValue };

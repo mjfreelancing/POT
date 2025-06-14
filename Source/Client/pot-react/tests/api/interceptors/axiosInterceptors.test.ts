@@ -5,7 +5,7 @@ import axios, {
 } from 'axios';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { FailResult } from '@/lib/result/result';
+import { FailResult } from '@/lib';
 
 import { addCorrelationId } from '@/api/apiHelpers';
 import { ApiErrorResponse } from '@/api/errors/apiErrorResponse';

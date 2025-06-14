@@ -1,29 +1,91 @@
+import { ColumnDef } from '@tanstack/react-table';
+import { Receipt, TrendingUp } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useParams } from 'react-router';
 
 import { useApiGetAllAccounts } from '@/api/hooks';
 import { ErrorSheet, LoadingMessage } from '@/components/feedback';
-import { DataTable } from '@/components/table';
-import { Button } from '@/components/ui/button';
+import { StatusBadge } from '@/components/feedback/badge';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { DisplayError } from '@/lib/errors/displayError';
+  createMoneyValueColumn,
+  DataTable,
+  DataTableColumnHeader,
+} from '@/components/table';
+import { Card, CardContent } from '@/components/ui/card';
+import { Account } from '@/data';
+import { DisplayError } from '@/lib';
 
-import { columns } from './columns';
 import accountsSummaryStore, {
   AccountsSummary,
-} from './stores/useAccountsSummary';
+} from '../stores/useAccountsSummary';
+import AccountActions from './AccountActions';
+
+const columns: ColumnDef<Account>[] = [
+  {
+    accessorKey: 'bsb_number',
+    header: 'BSB / Number',
+    cell: ({ row }) => {
+      const { bsb, number } = row.original;
+      return `(${bsb}) ${number}`;
+    },
+  },
+  {
+    accessorKey: 'description',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Description" />
+    ),
+    enableSorting: true,
+    sortingFn: 'text',
+    cell: ({ row }) => {
+      const account = row.original;
+      const hasLinkedData =
+        account.linkedExpenses > 0 || account.linkedIncomes > 0;
+
+      return (
+        <div className="flex items-center gap-2">
+          <span>{account.description}</span>
+          {hasLinkedData && (
+            <div className="flex gap-1">
+              {account.linkedExpenses > 0 && (
+                <StatusBadge color="yellow">
+                  <Receipt />
+                  {account.linkedExpenses}
+                </StatusBadge>
+              )}
+              {account.linkedIncomes > 0 && (
+                <StatusBadge color="blue">
+                  <TrendingUp />
+                  {account.linkedIncomes}
+                </StatusBadge>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    },
+  },
+  createMoneyValueColumn<Account>('balance', 'Balance'),
+  createMoneyValueColumn<Account>('reserved', 'Reserved'),
+  createMoneyValueColumn<Account>('allocated', 'Allocated'),
+  createMoneyValueColumn<Account>('dailyAccrual', 'Daily Accrual'),
+  createMoneyValueColumn<Account>('available', 'Available'),
+  {
+    id: 'actions',
+    cell: ({ row }) => {
+      const account = row.original;
+      return (
+        <div className="flex justify-end">
+          <AccountActions account={account} />
+        </div>
+      );
+    },
+  },
+];
 
 function AccountsTable() {
   const { id: editingId } = useParams<{ id: string }>();
   const { data: result, isLoading } = useApiGetAllAccounts();
   const [error, setError] = useState<DisplayError | null>(null);
-  const navigate = useNavigate();
 
   const setSummary = accountsSummaryStore(
     (state: AccountsSummary) => state.setSummary,
@@ -73,28 +135,8 @@ function AccountsTable() {
 
   return (
     <>
-      <Card>
-        <CardHeader className="flex flex-row items-center">
-          <div>
-            <CardTitle>Bank Accounts</CardTitle>
-            <CardDescription>Manage your account details.</CardDescription>
-          </div>
-          {/*
-           * ml-auto pushes the element as far right as it can go in a flex container
-           * flex makes it a flex container
-           * items-center vertically centers its children
-           * space-x-4 adds a 1rem horizontal gap between each child
-           */}
-          <div className="ml-auto flex items-center space-x-4">
-            <Button
-              onClick={() => navigate('create')}
-              aria-label="Add a new account"
-            >
-              Add Account
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
+      <Card className="card-elevated">
+        <CardContent className="px-4">
           <DataTable
             columns={columns}
             data={accounts}

@@ -11,8 +11,7 @@ import {
   UnexpectedError,
   ValidationError,
 } from '@/api/errors/apiErrors';
-import { FailResultBase } from '@/lib/result/failResultBase';
-import { FailResult, SuccessResult } from '@/lib/result/result';
+import { FailResultBase, FailResult, SuccessResult } from '@/lib';
 
 import { useDelete, useGet, usePost, usePut } from '@/api/hooks';
 

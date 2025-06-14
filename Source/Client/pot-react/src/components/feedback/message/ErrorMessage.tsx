@@ -1,4 +1,4 @@
-export type ErrorMessageProps = {
+type ErrorMessageProps = {
   message: string;
 };
 
@@ -12,3 +12,4 @@ function ErrorMessage({ message }: ErrorMessageProps) {
 }
 
 export default ErrorMessage;
+export type { ErrorMessageProps };

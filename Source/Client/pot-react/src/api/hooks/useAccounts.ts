@@ -5,8 +5,7 @@ import {
   EditAccount,
   Identity,
 } from '@/data';
-import { FailResultBase } from '@/lib/result/failResultBase';
-import { Result, SuccessResult } from '@/lib/result/result';
+import { FailResultBase, Result, SuccessResult } from '@/lib';
 
 import { useDelete, useGet, usePost, usePut } from './useApi';
 

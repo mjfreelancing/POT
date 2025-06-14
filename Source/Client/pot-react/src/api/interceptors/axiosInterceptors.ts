@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 
-import { FailResult } from '@/lib/result/result';
+import { FailResult } from '@/lib';
 
 import { addCorrelationId, getNetworkError } from '../apiHelpers';
 import {

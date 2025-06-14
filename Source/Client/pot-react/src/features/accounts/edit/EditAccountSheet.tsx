@@ -7,7 +7,7 @@ import { useApiGetAccountById } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { EditAccount } from '@/data';
-import { DisplayError } from '@/lib/errors/displayError';
+import { DisplayError } from '@/lib';
 
 import AccountForm from '../components/AccountForm';
 import AccountSheet from '../components/AccountSheet';

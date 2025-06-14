@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type AccountsSummary = {
+type AccountsSummary = {
   totalBalance: number;
   totalReserved: number;
   totalAllocated: number;
@@ -27,3 +27,4 @@ const accountsSummaryStore = create<AccountsSummary>(set => ({
 }));
 
 export default accountsSummaryStore;
+export type { AccountsSummary };

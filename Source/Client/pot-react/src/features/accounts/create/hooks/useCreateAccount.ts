@@ -2,8 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiCreateAccount } from '@/api/hooks';
 import { CreateAccount, Identity } from '@/data';
-import { FailResultBase } from '@/lib/result/failResultBase';
-import { Result } from '@/lib/result/result';
+import { FailResultBase, Result } from '@/lib';
 
 function useCreateAccount() {
   const queryClient = useQueryClient();

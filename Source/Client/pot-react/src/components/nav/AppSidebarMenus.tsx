@@ -1,9 +1,9 @@
 import {
   ChartSpline,
-  CircleDollarSignIcon,
+  Landmark,
   LayoutDashboard,
-  PiggyBank,
-  ShoppingCart,
+  Receipt,
+  TrendingUp,
 } from 'lucide-react';
 
 import { SidebarContent } from '@/components/ui/sidebar';
@@ -32,7 +32,7 @@ const menuGroups: Record<string, MenuGroupDefinition> = {
     items: [
       {
         label: 'Manage Accounts',
-        icon: PiggyBank,
+        icon: Landmark,
         href: '/accounts',
       },
       // {
@@ -43,24 +43,24 @@ const menuGroups: Record<string, MenuGroupDefinition> = {
     ],
   },
 
-  income: {
-    label: 'Income',
-    items: [
-      {
-        label: 'Manage Income',
-        icon: CircleDollarSignIcon,
-        href: '/incomes',
-      },
-    ],
-  },
-
   expenses: {
     label: 'Expenses',
     items: [
       {
         label: 'Manage Expenses',
-        icon: ShoppingCart,
+        icon: Receipt,
         href: '/expenses',
+      },
+    ],
+  },
+
+  income: {
+    label: 'Income',
+    items: [
+      {
+        label: 'Manage Income',
+        icon: TrendingUp,
+        href: '/incomes',
       },
     ],
   },
@@ -71,8 +71,8 @@ function AppSidebarMenus() {
     <SidebarContent>
       <MenuGroup group={menuGroups.analysis} />
       <MenuGroup group={menuGroups.accounts} />
-      <MenuGroup group={menuGroups.income} />
       <MenuGroup group={menuGroups.expenses} />
+      <MenuGroup group={menuGroups.income} />
     </SidebarContent>
   );
 }

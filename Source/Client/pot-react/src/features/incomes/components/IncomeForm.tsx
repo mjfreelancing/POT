@@ -21,8 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { Account } from '@/data';
-import { FrequencyEnumValues } from '@/lib/types';
-import { localIsoDate, localToday } from '@/lib/utils';
+import { FrequencyEnumValues, localIsoDate, localToday } from '@/lib';
 
 import { IncomeFormData } from '../schemas/incomeFormSchema';
 

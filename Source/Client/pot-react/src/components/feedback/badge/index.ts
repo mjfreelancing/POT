@@ -1,1 +1,5 @@
-export { LinkedDataBadge, type LinkedDataBadgeProps } from './LinkedDataBadge';
+export {
+  type BadgeColor,
+  default as StatusBadge,
+  type StatusBadgeProps,
+} from './StatusBadge';

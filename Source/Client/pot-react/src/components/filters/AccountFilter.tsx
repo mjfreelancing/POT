@@ -1,4 +1,3 @@
-import { Account } from '@/data';
 import {
   Select,
   SelectContent,
@@ -6,6 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Account } from '@/data';
 
 type AccountFilterProps = {
   accounts: Account[];
@@ -41,3 +41,4 @@ function AccountFilter({
 }
 
 export default AccountFilter;
+export type { AccountFilterProps };

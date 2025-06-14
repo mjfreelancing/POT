@@ -2,8 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiUpdateExpense } from '@/api/hooks';
 import { EditExpense, Identity } from '@/data';
-import { FailResultBase } from '@/lib/result/failResultBase';
-import { Result } from '@/lib/result/result';
+import { FailResultBase, Result } from '@/lib';
 
 // Hook to handle editing an existing expense entry
 function useEditExpense() {

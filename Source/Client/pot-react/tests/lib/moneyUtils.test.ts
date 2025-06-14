@@ -1,8 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { describe, expect, test } from 'vitest';
 
-import { MoneyValue } from '@/lib/types';
-import { formatMoneyValue } from '@/lib/money/moneyUtils';
+import { MoneyValue, formatMoneyValue } from '@/lib';
 
 describe('Money Utils', () => {
   describe('formatMoneyValue', () => {
@@ -12,6 +11,7 @@ describe('Money Utils', () => {
         max: 10000,
         fractionDigits: 2,
       });
+
       const result = formatMoneyValue(value);
 
       // Matches positive money values: starts with $, followed by 1-3 digits,

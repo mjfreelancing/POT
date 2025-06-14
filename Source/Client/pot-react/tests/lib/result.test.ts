@@ -1,14 +1,27 @@
 import { faker } from '@faker-js/faker';
 import { beforeEach, describe, expect, test } from 'vitest';
 
-import { FailResultBase } from '@/lib/result/failResultBase';
-import { FailResult, Result, SuccessResult } from '@/lib/result/result';
+import { FailResultBase, FailResult, Result, SuccessResult } from '@/lib';
 
 class DummyError extends FailResultBase {
   constructor(type: string, code: string, description: string) {
     super(type, code, description);
   }
 }
+
+describe('FailResultBase', () => {
+  test('should have correct properties with random data', () => {
+    const type = faker.word.sample();
+    const code = faker.string.alphanumeric(8);
+    const description = faker.lorem.sentence();
+
+    const result = new DummyError(type, code, description);
+
+    expect(result.type).toBe(type);
+    expect(result.code).toBe(code);
+    expect(result.description).toBe(description);
+  });
+});
 
 describe('Result Type', () => {
   let errorType: string;

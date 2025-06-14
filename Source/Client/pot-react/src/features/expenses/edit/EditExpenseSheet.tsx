@@ -7,7 +7,7 @@ import { useApiGetAllAccounts, useApiGetExpenseById } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import type { Account, EditExpense, Expense } from '@/data';
-import type { DisplayError } from '@/lib/errors/displayError';
+import type { DisplayError } from '@/lib';
 
 import ExpenseForm from '../components/ExpenseForm';
 import ExpenseSheet from '../components/ExpenseSheet';

@@ -2,7 +2,7 @@ import { Column } from '@tanstack/react-table';
 import { ArrowUpDown, ChevronDown, ChevronUp } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib';
 
 type DataTableColumnHeaderProps<TData, TValue> = {
   column: Column<TData, TValue>;
@@ -10,7 +10,7 @@ type DataTableColumnHeaderProps<TData, TValue> = {
   className?: string;
 } & React.HTMLAttributes<HTMLDivElement>;
 
-export function DataTableColumnHeader<TData, TValue>({
+function DataTableColumnHeader<TData, TValue>({
   column,
   title,
   className,
@@ -52,3 +52,6 @@ export function DataTableColumnHeader<TData, TValue>({
     </div>
   );
 }
+
+export default DataTableColumnHeader;
+export type { DataTableColumnHeaderProps };
