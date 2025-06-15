@@ -44,7 +44,7 @@ function AccountsHeader() {
         <Button
           onClick={() => navigate('create')}
           aria-label="Add a new account"
-          className="gap-2"
+          className="gap-2 min-w-[132px]"
         >
           <Plus className="h-4 w-4" />
           Add Account

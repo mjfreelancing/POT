@@ -1,16 +1,180 @@
-import { Outlet } from 'react-router';
+import { useEffect, useMemo, useState } from 'react';
+import { Outlet, useSearchParams } from 'react-router';
+
+import { useApiGetAllAccounts, useApiGetAllExpenses } from '@/api/hooks';
+import LoadingMessage from '@/components/feedback/message/LoadingMessage';
+import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
+import { useAccountFilter } from '@/hooks';
+import { DisplayError } from '@/lib';
 
 import { ExpensesHeader, ExpensesTable } from './components';
 
 function ExpensesPage() {
   console.info('Rendering ExpensesPage');
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [error, setError] = useState<DisplayError | null>(null);
+
+  // Get data
+  const { data: expensesResult, isLoading: expensesLoading } =
+    useApiGetAllExpenses();
+  const { data: accountsResult, isLoading: accountsLoading } =
+    useApiGetAllAccounts();
+
+  // Memoize data arrays to prevent unnecessary re-renders
+  const expenses = useMemo(
+    () => (expensesResult?.success ? expensesResult.value.results : []),
+    [expensesResult],
+  );
+  const accounts = useMemo(
+    () => (accountsResult?.success ? accountsResult.value : []),
+    [accountsResult],
+  );
+
+  const isLoading = expensesLoading || accountsLoading;
+
+  // Get account filter from URL
+  const urlAccountId = searchParams.get('accountId');
+
+  // Use the shared account filtering hook to manage filtering state
+  const {
+    accountsInItems,
+    selectedAccountId,
+    setSelectedAccountId,
+    filteredItems: filteredExpenses,
+  } = useAccountFilter({
+    accounts,
+    items: expenses,
+  });
+
+  // Validate and sync filter state with URL, handling all edge cases
+  useEffect(() => {
+    if (accounts.length > 0 && expenses.length > 0) {
+      if (urlAccountId) {
+        // Check if the account from URL exists
+        const accountExists = accounts.some(
+          account => account.rowId.toString() === urlAccountId,
+        );
+
+        if (accountExists) {
+          // Check if the account has items after filtering
+          const accountHasItems = expenses.some(expense => {
+            if (urlAccountId === 'not-assigned') {
+              return !expense.account?.rowId;
+            }
+            return expense.account?.rowId?.toString() === urlAccountId;
+          });
+
+          if (accountHasItems) {
+            // Valid account with items - set the filter
+            if (selectedAccountId !== urlAccountId) {
+              setSelectedAccountId(urlAccountId);
+            }
+          } else {
+            // Account exists but has no items - clear the URL filter
+            console.log('Clearing account filter - no items:', urlAccountId);
+            setSelectedAccountId(null);
+            setSearchParams(new URLSearchParams());
+          }
+        } else {
+          // Invalid account - clear the URL filter
+          console.log('Clearing invalid account filter:', urlAccountId);
+          setSelectedAccountId(null);
+          setSearchParams(new URLSearchParams());
+        }
+      } else if (selectedAccountId) {
+        // No URL filter but component has selection - clear it
+        setSelectedAccountId(null);
+      }
+    }
+  }, [
+    urlAccountId,
+    accounts,
+    expenses,
+    selectedAccountId,
+    setSelectedAccountId,
+    setSearchParams,
+  ]);
+
+  // Monitor filtered results and clear URL if last item was deleted
+  useEffect(() => {
+    if (
+      urlAccountId &&
+      selectedAccountId === urlAccountId &&
+      filteredExpenses.length === 0 &&
+      expenses.length > 0
+    ) {
+      // We have a filter active, but no filtered results while there are total items
+      // This means the last item for this account was deleted
+      console.log('Last filtered item deleted, clearing filter');
+      setSelectedAccountId(null);
+      setSearchParams(new URLSearchParams());
+    }
+  }, [
+    urlAccountId,
+    selectedAccountId,
+    filteredExpenses.length,
+    expenses.length,
+    setSelectedAccountId,
+    setSearchParams,
+  ]);
+
+  // Handle account filter changes from header
+  const handleAccountChange = (accountId: string | null) => {
+    setSelectedAccountId(accountId);
+    const newSearchParams = new URLSearchParams(searchParams);
+    if (accountId && accountId !== 'not-assigned') {
+      newSearchParams.set('accountId', accountId);
+    } else {
+      newSearchParams.delete('accountId');
+    }
+    setSearchParams(newSearchParams);
+  };
+
+  // Validate the selected account ID for display in header
+  const validatedSelectedAccountId = useMemo(() => {
+    if (!urlAccountId) return null;
+
+    // Check if it's a valid account that has items
+    const isValidAccount = accountsInItems.some(
+      account => account.rowId.toString() === urlAccountId,
+    );
+
+    return isValidAccount ? urlAccountId : null;
+  }, [urlAccountId, accountsInItems]);
+
+  // Handle errors
+  useEffect(() => {
+    if (expensesResult) {
+      setError(
+        expensesResult.success
+          ? null
+          : {
+              title: expensesResult.error.code,
+              description: expensesResult.error.description,
+            },
+      );
+    }
+  }, [expensesResult]);
+
   return (
     <div className="flex flex-col flex-1 min-h-screen bg-gradient-to-br from-background to-muted/20">
-      <ExpensesHeader />
+      <ExpensesHeader
+        accountsInItems={accountsInItems}
+        selectedAccountId={validatedSelectedAccountId}
+        onAccountChange={handleAccountChange}
+      />
       <div className="flex-1 p-6 space-y-6">
-        <ExpensesTable />
+        <ExpensesTable filteredExpenses={filteredExpenses} />
       </div>
+      <LoadingMessage isLoading={isLoading} />
+      {error && (
+        <ErrorSheet
+          title={error.title}
+          description={error.description}
+          onDismiss={() => setError(null)}
+        />
+      )}
       {/* The Outlet is used to render nested routes, such as when creating/editing expenses */}
       <Outlet />
     </div>

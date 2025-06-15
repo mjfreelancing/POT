@@ -1,10 +1,8 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { Receipt, TrendingUp } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect } from 'react';
 import { useParams } from 'react-router';
 
-import { useApiGetAllAccounts } from '@/api/hooks';
-import { ErrorSheet, LoadingMessage } from '@/components/feedback';
 import { StatusBadge } from '@/components/feedback/badge';
 import {
   createMoneyValueColumn,
@@ -13,12 +11,15 @@ import {
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Account } from '@/data';
-import { DisplayError } from '@/lib';
 
 import accountsSummaryStore, {
   AccountsSummary,
 } from '../stores/useAccountsSummary';
 import AccountActions from './AccountActions';
+
+type AccountsTableProps = {
+  accounts: Account[];
+};
 
 const columns: ColumnDef<Account>[] = [
   {
@@ -82,22 +83,14 @@ const columns: ColumnDef<Account>[] = [
   },
 ];
 
-function AccountsTable() {
+function AccountsTable({ accounts }: AccountsTableProps) {
   const { id: editingId } = useParams<{ id: string }>();
-  const { data: result, isLoading } = useApiGetAllAccounts();
-  const [error, setError] = useState<DisplayError | null>(null);
 
   const setSummary = accountsSummaryStore(
     (state: AccountsSummary) => state.setSummary,
   );
 
-  // Memoize 'accounts' so its array reference only changes when `result` changes.
-  // Without this, each render would create a new array (even with identical data), causing the summary effect to rerun every time.
-  const accounts = useMemo(() => {
-    return result?.success ? result.value : [];
-  }, [result]);
-
-  // Recalculates and pushes summary; 'setSummary' is in deps to satisfy exhaustive-deps and use the latest setter
+  // Recalculate and update summary when accounts change
   useEffect(() => {
     const totalBalance = accounts.reduce((sum, acct) => sum + acct.balance, 0);
 
@@ -119,43 +112,20 @@ function AccountsTable() {
     setSummary(totalBalance, totalReserved, totalAllocated, totalDailyAccrual);
   }, [accounts, setSummary]);
 
-  useEffect(() => {
-    // Transient error handling - resetting error state when success, such as after a network loss
-    if (result) {
-      setError(
-        result.success
-          ? null
-          : {
-              title: result.error.code,
-              description: result.error.description,
-            },
-      );
-    }
-  }, [result]);
-
   return (
-    <>
-      <Card className="card-elevated">
-        <CardContent className="px-4">
-          <DataTable
-            columns={columns}
-            data={accounts}
-            highlightRowFilter={row =>
-              row.original.rowId.toString() === editingId
-            }
-          />
-        </CardContent>
-      </Card>
-      <LoadingMessage isLoading={isLoading} />
-      {error && (
-        <ErrorSheet
-          title={error.title}
-          description={error.description}
-          onDismiss={() => setError(null)}
+    <Card className="card-elevated">
+      <CardContent className="px-4">
+        <DataTable
+          columns={columns}
+          data={accounts}
+          highlightRowFilter={row =>
+            row.original.rowId.toString() === editingId
+          }
         />
-      )}
-    </>
+      </CardContent>
+    </Card>
   );
 }
 
 export default AccountsTable;
+export type { AccountsTableProps };

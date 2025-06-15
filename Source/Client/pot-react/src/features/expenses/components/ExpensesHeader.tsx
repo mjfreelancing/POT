@@ -1,59 +1,23 @@
 import { Plus } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
+import { useNavigate } from 'react-router';
 
-import { useApiGetAllAccounts, useApiGetAllExpenses } from '@/api/hooks';
+import AccountFilter from '@/components/filters/AccountFilter';
 import { AppSidebarTrigger } from '@/components/nav';
 import { Button } from '@/components/ui/button';
-import { useAccountFilter } from '@/hooks';
+import { Account } from '@/data';
 
-import AccountFilter from './AccountFilter';
+type ExpensesHeaderProps = {
+  accountsInItems: Account[];
+  selectedAccountId: string | null;
+  onAccountChange: (accountId: string | null) => void;
+};
 
-function ExpensesHeader() {
+function ExpensesHeader({
+  accountsInItems,
+  selectedAccountId,
+  onAccountChange,
+}: ExpensesHeaderProps) {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  // Get data for account filtering
-  const { data: expensesResult } = useApiGetAllExpenses();
-  const { data: accountsResult } = useApiGetAllAccounts();
-
-  const expenses = expensesResult?.success ? expensesResult.value.results : [];
-  const accounts = useMemo(
-    () => (accountsResult?.success ? accountsResult.value : []),
-    [accountsResult],
-  );
-
-  // Get initial account filter from URL
-  const initialAccountId = searchParams.get('accountId');
-
-  // Use the shared account filtering hook
-  const { accountsInItems, selectedAccountId, setSelectedAccountId } =
-    useAccountFilter({
-      accounts,
-      items: expenses,
-    });
-
-  // Set initial account filter from URL when data is loaded
-  useEffect(() => {
-    if (initialAccountId && accounts.length > 0 && !selectedAccountId) {
-      const accountExists = accounts.some(
-        account => account.rowId.toString() === initialAccountId,
-      );
-      if (accountExists) {
-        setSelectedAccountId(initialAccountId);
-      }
-    }
-  }, [initialAccountId, accounts, selectedAccountId, setSelectedAccountId]);
-
-  // Sync the filter with URL parameters
-  const handleAccountChange = (accountId: string | null) => {
-    setSelectedAccountId(accountId);
-    if (accountId && accountId !== 'not-assigned') {
-      setSearchParams({ accountId });
-    } else {
-      setSearchParams({});
-    }
-  };
 
   return (
     <div className="page-header">
@@ -74,13 +38,13 @@ function ExpensesHeader() {
             <AccountFilter
               accounts={accountsInItems}
               selectedAccountId={selectedAccountId}
-              onAccountChange={handleAccountChange}
+              onAccountChange={onAccountChange}
             />
           )}
           <Button
             onClick={() => navigate('create')}
             aria-label="Add a new expense"
-            className="gap-2"
+            className="gap-2 min-w-[132px]"
           >
             <Plus className="h-4 w-4" />
             Add Expense
@@ -92,3 +56,4 @@ function ExpensesHeader() {
 }
 
 export default ExpensesHeader;
+export type { ExpensesHeaderProps };
