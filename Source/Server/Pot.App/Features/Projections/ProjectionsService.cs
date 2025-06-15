@@ -208,6 +208,4 @@ internal sealed class ProjectionsService : IProjectionsService
             Global = new GlobalDailyBalances(globalBalances)
         };
     }
-
-
 }
