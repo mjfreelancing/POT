@@ -4,6 +4,7 @@ using AllOverIt.Extensions;
 using AllOverIt.Logging.Extensions;
 using Microsoft.Extensions.Logging;
 using Pot.App.Features.Projections.Models;
+using Pot.Data.Entities;
 using Pot.Data.Repositories.Expenses;
 using Pot.Data.Repositories.Incomes;
 using Pot.Shared.Extensions;
@@ -202,10 +203,38 @@ internal sealed class ProjectionsService : IProjectionsService
                     .ToList();
             });
 
+        return CreateOutput(uniqueAccounts, accountBalances, globalBalances);
+    }
+
+    private static Output CreateOutput(List<AccountEntity> uniqueAccounts, Dictionary<Guid, List<DateBalance>> accountBalances,
+        Dictionary<DateOnly, double> globalBalances)
+    {
+        // Enrich the account information to include the description
+        var accountsDailyBalances = accountBalances
+            .SelectToList(item =>
+            {
+                var accountId = item.Key;
+                var description = uniqueAccounts.Single(account => account.RowId == accountId).Description;
+
+                return new AccountDailyBalances
+                {
+                    RowId = accountId,
+                    Description = description,
+                    Dates = item.Value
+                };
+            });
+
+        var globalDailyBalances = globalBalances
+            .SelectToList(item => new DateBalance
+            {
+                Date = item.Key,
+                Balance = item.Value
+            });
+
         return new Output
         {
-            Accounts = new AccountsDailyBalances(accountBalances),
-            Global = new GlobalDailyBalances(globalBalances)
+            Accounts = accountsDailyBalances,
+            Global = globalDailyBalances
         };
     }
 }
