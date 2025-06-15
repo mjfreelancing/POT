@@ -1,5 +1,5 @@
-﻿using Pot.App.Concerns.DependencyInjection;
-using Pot.App.Errors;
+﻿using Pot.App.Errors;
+using Pot.Shared.DependencyInjection;
 
 namespace Pot.App.Features.Accounts.Delete.EntityChecks;
 

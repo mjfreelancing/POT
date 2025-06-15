@@ -1,3 +1,3 @@
-﻿namespace Pot.App.Concerns.DependencyInjection;
+﻿namespace Pot.Shared.DependencyInjection;
 
 public interface IPotSingletonDependency;

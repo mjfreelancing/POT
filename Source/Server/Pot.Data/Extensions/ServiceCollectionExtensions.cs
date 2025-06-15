@@ -1,8 +1,8 @@
 ﻿using AllOverIt.DependencyInjection.Extensions;
 using Microsoft.Extensions.DependencyInjection;
-using Pot.App.Concerns.DependencyInjection;
 using Pot.Data.Repositories;
 using Pot.Data.UnitOfWork;
+using Pot.Shared.DependencyInjection;
 
 namespace Pot.Data.Extensions;
 

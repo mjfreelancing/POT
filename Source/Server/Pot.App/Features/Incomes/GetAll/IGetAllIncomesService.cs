@@ -1,7 +1,7 @@
 ﻿using AllOverIt.Pagination;
-using Pot.App.Concerns.DependencyInjection;
 using Pot.App.Features.Incomes.GetAll.Models;
 using Pot.Shared;
+using Pot.Shared.DependencyInjection;
 
 namespace Pot.App.Features.Incomes.GetAll;
 

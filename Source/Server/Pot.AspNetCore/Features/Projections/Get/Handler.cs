@@ -13,8 +13,13 @@ internal sealed class Handler
     {
         logger.LogCall(null);
 
-        await projectionsService.GetProjectionsAsync(cancellationToken);
+        var options = new ProjectionOptions
+        {
+            DaysForecast = 365
+        };
 
-        return Response.Ok();
+        var output = await projectionsService.GetProjectionsAsync(options, cancellationToken);
+
+        return Response.Ok(output);
     }
 }

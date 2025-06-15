@@ -1,5 +1,5 @@
-﻿using Pot.App.Concerns.DependencyInjection;
-using Pot.App.Features.Accounts.Get.Models;
+﻿using Pot.App.Features.Accounts.Get.Models;
+using Pot.Shared.DependencyInjection;
 
 namespace Pot.App.Features.Accounts.Get;
 

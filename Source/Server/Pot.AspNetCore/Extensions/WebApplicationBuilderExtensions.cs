@@ -4,7 +4,6 @@ using AllOverIt.Serialization.Json.SystemText.Converters;
 using AllOverIt.Validation;
 using AllOverIt.Validation.Extensions;
 using FluentValidation;
-using Pot.App.Concerns.DependencyInjection;
 using Pot.App.Concerns.Validation;
 using Pot.App.Extensions;
 using Pot.AspNetCore.Concerns.Converters.JsonSerialization;
@@ -16,6 +15,7 @@ using Pot.AspNetCore.Concerns.Validation;
 using Pot.Data;
 using Pot.Data.Extensions;
 using Pot.Shared;
+using Pot.Shared.DependencyInjection;
 
 namespace Pot.AspNetCore.Extensions;
 

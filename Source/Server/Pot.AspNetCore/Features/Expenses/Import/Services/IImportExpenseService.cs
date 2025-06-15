@@ -1,6 +1,6 @@
 ﻿using AllOverIt.Patterns.Result;
-using Pot.App.Concerns.DependencyInjection;
 using Pot.AspNetCore.Features.Expenses.Import.Models;
+using Pot.Shared.DependencyInjection;
 
 namespace Pot.AspNetCore.Features.Expenses.Import.Services;
 

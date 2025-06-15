@@ -1,6 +1,6 @@
 ﻿using AllOverIt.Patterns.Result;
-using Pot.App.Concerns.DependencyInjection;
 using Pot.App.Features.Incomes.Create.Models;
+using Pot.Shared.DependencyInjection;
 
 namespace Pot.App.Features.Incomes.Create;
 

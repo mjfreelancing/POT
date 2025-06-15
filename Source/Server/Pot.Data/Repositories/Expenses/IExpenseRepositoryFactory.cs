@@ -1,4 +1,4 @@
-﻿using Pot.App.Concerns.DependencyInjection;
+﻿using Pot.Shared.DependencyInjection;
 
 namespace Pot.Data.Repositories.Expenses;
 

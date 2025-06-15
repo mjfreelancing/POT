@@ -1,5 +1,5 @@
 ﻿using AllOverIt.Patterns.Result;
-using Pot.App.Concerns.DependencyInjection;
+using Pot.Shared.DependencyInjection;
 
 namespace Pot.App.Features.Accounts.Delete;
 

@@ -4,6 +4,7 @@ using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Pot.App.Concerns.DependencyInjection;
 using Pot.Data.Extensions;
+using Pot.Shared.DependencyInjection;
 
 namespace Pot.App.Extensions;
 
