@@ -78,6 +78,7 @@ function AccountActions({ account }: AccountActionsProps) {
           </DropdownMenuItem>
           <DropdownMenuItem
             className="text-red-600"
+            disabled={account.linkedExpenses > 0 || account.linkedIncomes > 0}
             onClick={() => setShowDeleteDialog(true)}
           >
             <Trash2 className="mr-2 h-4 w-4 text-red-600" />
