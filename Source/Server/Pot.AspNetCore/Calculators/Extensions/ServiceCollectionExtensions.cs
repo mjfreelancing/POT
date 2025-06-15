@@ -1,6 +1,6 @@
-﻿using Pot.AspNetCore.Features.Calculators.Allocation;
+﻿using Pot.AspNetCore.Calculators.Allocation;
 
-namespace Pot.AspNetCore.Features.Calculators.Extensions;
+namespace Pot.AspNetCore.Calculators.Extensions;
 
 internal static class ServiceCollectionExtensions
 {
