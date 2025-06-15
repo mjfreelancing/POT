@@ -19,7 +19,14 @@ internal sealed class IncomeRepository : GenericRepository<PotDbContext, IncomeE
         _queryPaginatorFactory = queryPaginatorFactory.WhenNotNull();
     }
 
-    public Task<PageResult<IncomeEntity>> GetAllIncomesAsync(Paging paging, CancellationToken cancellationToken)
+    public Task<List<IncomeEntity>> GetAllIncomesAsync(CancellationToken cancellationToken)
+    {
+        return AsQueryable()
+            .Include(income => income.Account)
+            .ToListAsync(cancellationToken);
+    }
+
+    public Task<PageResult<IncomeEntity>> GetAllIncomesPagedAsync(Paging paging, CancellationToken cancellationToken)
     {
         var incomeQuery = AsQueryable().Include(income => income.Account);
 

@@ -1,5 +1,6 @@
 ﻿using AllOverIt.DependencyInjection.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Pot.App.Concerns.DependencyInjection;
 using Pot.Data.Repositories;
 using Pot.Data.UnitOfWork;
 
@@ -15,6 +16,15 @@ public static class ServiceCollectionExtensions
             config.Filter((serviceType, implementationType) =>
             {
                 return !serviceType.IsGenericType || serviceType.GetGenericTypeDefinition() != typeof(IGenericRepository<,>);
+            });
+        });
+
+        services.AutoRegisterSingleton<PotDataRegistrar, IPotSingletonDependency>(config =>
+        {
+            // Exclude interfaces we know we don't want to register
+            config.Filter((serviceType, implementationType) =>
+            {
+                return serviceType != typeof(IPotSingletonDependency);
             });
         });
     }

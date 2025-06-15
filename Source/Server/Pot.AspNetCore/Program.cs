@@ -2,6 +2,7 @@ using Pot.AspNetCore.Extensions;
 using Pot.AspNetCore.Features.Accounts.Extensions;
 using Pot.AspNetCore.Features.Expenses.Extensions;
 using Pot.AspNetCore.Features.Incomes.Extensions;
+using Pot.AspNetCore.Features.Projections.Extensions;
 
 namespace Pot.AspNetCore;
 
@@ -78,7 +79,8 @@ public class Program
         // 500 - Unexpected errors
         app.AddAccountEndpoints()
            .AddIncomeEndpoints()
-           .AddExpenseEndpoints();
+           .AddExpenseEndpoints()
+           .AddProjectionsEndpoints();
 
         await app.RunAsync();
     }

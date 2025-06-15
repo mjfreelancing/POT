@@ -1,4 +1,4 @@
-﻿namespace Pot.Data.UnitOfWork;
+﻿//namespace Pot.Data.UnitOfWork;
 
 //public interface IPotUnitOfWorkFactory
 //{

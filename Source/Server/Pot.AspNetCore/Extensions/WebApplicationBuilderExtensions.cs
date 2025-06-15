@@ -169,7 +169,7 @@ internal static class WebApplicationBuilderExtensions
 
     public static WebApplicationBuilder AddPotData(this WebApplicationBuilder builder)
     {
-        builder.Services.AddDbContext<PotDbContext>();
+        builder.Services.AddDbContextFactory<PotDbContext>();
         builder.Services.AddQueryPagination();
         builder.Services.AddUnitOfWork();
 

@@ -19,7 +19,14 @@ internal sealed class ExpenseRepository : GenericRepository<PotDbContext, Expens
         _queryPaginatorFactory = queryPaginatorFactory.WhenNotNull();
     }
 
-    public Task<PageResult<ExpenseEntity>> GetAllExpensesAsync(Paging paging, CancellationToken cancellationToken)
+    public Task<List<ExpenseEntity>> GetAllExpensesAsync(CancellationToken cancellationToken)
+    {
+        return AsQueryable()
+            .Include(expense => expense.Account)
+            .ToListAsync(cancellationToken);
+    }
+
+    public Task<PageResult<ExpenseEntity>> GetAllExpensesPagedAsync(Paging paging, CancellationToken cancellationToken)
     {
         var incomeQuery = AsQueryable().Include(expense => expense.Account);
 

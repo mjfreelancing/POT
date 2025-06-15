@@ -24,7 +24,7 @@ internal sealed class GetAllExpensesService : IGetAllExpensesService
     {
         _logger.LogCall(this);
 
-        var incomes = await _expenseRepository.GetAllExpensesAsync(paging, cancellationToken);
+        var incomes = await _expenseRepository.GetAllExpensesPagedAsync(paging, cancellationToken);
 
         var outputs = incomes.Results.Select(result => result.MapToOutput());
 

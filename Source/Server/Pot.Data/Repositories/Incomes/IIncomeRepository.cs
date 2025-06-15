@@ -6,6 +6,7 @@ namespace Pot.Data.Repositories.Incomes;
 
 public interface IIncomeRepository : IGenericRepository<PotDbContext, IncomeEntity>
 {
-    Task<PageResult<IncomeEntity>> GetAllIncomesAsync(Paging paging, CancellationToken cancellationToken);
+    Task<List<IncomeEntity>> GetAllIncomesAsync(CancellationToken cancellationToken);
+    Task<PageResult<IncomeEntity>> GetAllIncomesPagedAsync(Paging paging, CancellationToken cancellationToken);
     Task<IncomeEntity?> GetIncomeOrDefaultAsync(Guid incomeId, CancellationToken cancellationToken);
 }
