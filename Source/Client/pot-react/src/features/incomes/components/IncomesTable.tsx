@@ -92,15 +92,18 @@ function IncomesTable() {
 
   // Set initial account filter from URL when data is loaded
   useEffect(() => {
-    if (initialAccountId && accounts.length > 0 && !selectedAccountId) {
-      // Only set if we have accounts data and haven't already set a filter
+    if (initialAccountId && accounts.length > 0) {
+      // Only set if we have accounts data
       const accountExists = accounts.some(
         account => account.rowId.toString() === initialAccountId,
       );
 
-      if (accountExists) {
+      if (accountExists && selectedAccountId !== initialAccountId) {
         setSelectedAccountId(initialAccountId);
       }
+    } else if (!initialAccountId && selectedAccountId) {
+      // Clear the filter if there's no accountId in URL but we have a selection
+      setSelectedAccountId(null);
     }
   }, [initialAccountId, accounts, selectedAccountId, setSelectedAccountId]);
 
