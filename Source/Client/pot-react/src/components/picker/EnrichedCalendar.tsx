@@ -56,7 +56,7 @@ function EnrichedCalendar({
   onMonthChange,
   onYearChange,
   ...calendarProps
-}: EnrichedCalendarProps): JSX.Element {
+}: EnrichedCalendarProps): React.JSX.Element {
   const [pickerDate, setPickerDate] = React.useState<Date | undefined>(
     propDate,
   );
