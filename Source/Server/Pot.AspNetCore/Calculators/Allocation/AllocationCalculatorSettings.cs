@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Features.Calculators.Allocation
+﻿namespace Pot.AspNetCore.Calculators.Allocation
 {
     public sealed record AllocationCalculatorSettings
     {

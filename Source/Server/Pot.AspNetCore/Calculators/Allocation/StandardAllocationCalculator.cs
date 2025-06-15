@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Features.Calculators.Allocation
+﻿namespace Pot.AspNetCore.Calculators.Allocation
 {
     internal sealed class StandardAllocationCalculator : IAllocationCalculator
     {

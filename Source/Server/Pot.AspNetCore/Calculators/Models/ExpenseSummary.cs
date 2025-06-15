@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Features.Calculators.Models
+﻿namespace Pot.AspNetCore.Calculators.Models
 {
     public sealed class ExpenseSummary
     {

@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Features.Calculators.Summary
+﻿namespace Pot.AspNetCore.Calculators.Summary
 {
     //    public sealed class AccountDto : DtoBase
     //    {

@@ -12,4 +12,8 @@
 	  <ProjectReference Include="..\Pot.App\Pot.App.csproj" />
 	  <ProjectReference Include="..\Pot.Data\Pot.Data.csproj" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Features\Projections\" />
+	</ItemGroup>
 </Project>
