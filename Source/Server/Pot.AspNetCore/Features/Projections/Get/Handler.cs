@@ -1,6 +1,7 @@
 ﻿using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.App.Features.Projections;
+using Pot.AspNetCore.Extensions;
 
 namespace Pot.AspNetCore.Features.Projections.Get;
 
@@ -20,6 +21,8 @@ internal sealed class Handler
 
         var output = await projectionsService.GetProjectionsAsync(options, cancellationToken);
 
-        return Response.Ok(output);
+        return output.IsSuccess
+            ? Response.Ok(output.Value!)
+            : TypedResults.Problem(output.Error!.GetProblemDetails());
     }
 }

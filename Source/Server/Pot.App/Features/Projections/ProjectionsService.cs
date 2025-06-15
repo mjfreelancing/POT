@@ -2,7 +2,9 @@
 using AllOverIt.Async;
 using AllOverIt.Extensions;
 using AllOverIt.Logging.Extensions;
+using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
+using Pot.App.Errors;
 using Pot.App.Features.Projections.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Expenses;
@@ -73,7 +75,7 @@ internal sealed class ProjectionsService : IProjectionsService
         _logger = logger.WhenNotNull();
     }
 
-    public async Task<Output> GetProjectionsAsync(ProjectionOptions options, CancellationToken cancellationToken)
+    public async Task<EnrichedResult<Output>> GetProjectionsAsync(ProjectionOptions options, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
@@ -92,10 +94,15 @@ internal sealed class ProjectionsService : IProjectionsService
 
         var today = DateOnly.FromDateTime(DateTime.Today);
 
-        // TODO: Change this to a FailResult
         if (Math.Min(expenseNextDue.DayNumber, incomeNextDue.DayNumber) < today.DayNumber)
         {
-            throw new Exception("Cannot perform projections as some expenses or incomes have not been advanced to their next due date.");
+            var problemDetails = new ProblemDetailsError(ProblemType.UnprocessableEntity)
+            {
+                ErrorCode = ErrorCodes.Invalid,
+                ErrorMessage = "Cannot project financial status as some expenses or incomes have not been advanced to their next due date."
+            };
+
+            return EnrichedResult.Fail<Output>(problemDetails);
         }
 
         //
@@ -203,7 +210,9 @@ internal sealed class ProjectionsService : IProjectionsService
                     .ToList();
             });
 
-        return CreateOutput(uniqueAccounts, accountBalances, globalBalances);
+        var output = CreateOutput(uniqueAccounts, accountBalances, globalBalances);
+
+        return EnrichedResult.Success(output);
     }
 
     private static Output CreateOutput(List<AccountEntity> uniqueAccounts, Dictionary<Guid, List<DateBalance>> accountBalances,
