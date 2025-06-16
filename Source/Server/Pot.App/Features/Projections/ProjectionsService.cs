@@ -68,7 +68,8 @@ internal sealed class ProjectionsService : IProjectionsService
     private readonly IIncomeRepositoryFactory _incomeRepositoryFactory;
     private readonly ILogger _logger;
 
-    public ProjectionsService(IExpenseRepositoryFactory expenseRepositoryFactory, IIncomeRepositoryFactory incomeRepositoryFactory, ILogger<ProjectionsService> logger)
+    public ProjectionsService(IExpenseRepositoryFactory expenseRepositoryFactory, IIncomeRepositoryFactory incomeRepositoryFactory,
+        ILogger<ProjectionsService> logger)
     {
         _expenseRepositoryFactory = expenseRepositoryFactory.WhenNotNull();
         _incomeRepositoryFactory = incomeRepositoryFactory.WhenNotNull();
@@ -144,7 +145,7 @@ internal sealed class ProjectionsService : IProjectionsService
                     accountItem.AddIncome(date, income.Amount);
 
                     // update the next due date based on the frequency
-                    if (income.EndDate > date)
+                    if (income.EndDate.GetValueOrDefault(DateOnly.MaxValue) >= date)
                     {
                         income.NextDue = income.NextDue.AddDays(income.Frequency.GetDays(date, income.FrequencyCount));
                     }
@@ -164,10 +165,9 @@ internal sealed class ProjectionsService : IProjectionsService
                     accountItem.AddExpense(date, expense.Amount);
 
                     // update the next due date based on the frequency
-                    if (expense.EndDate.GetValueOrDefault(DateOnly.MaxValue) > date)
+                    if (expense.EndDate.GetValueOrDefault(DateOnly.MaxValue) >= date)
                     {
                         expense.NextDue = expense.NextDue.AddDays(expense.Frequency.GetDays(date, expense.FrequencyCount));
-
                     }
                 }
                 else
