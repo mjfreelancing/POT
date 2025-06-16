@@ -1,7 +1,7 @@
+import { Projection } from '@/data/projection';
 import { FailResultBase, Result, SuccessResult } from '@/lib';
 
 import { useGet } from './useApi';
-import { Projection } from '@/data/projection';
 
 const useApiGetProjection = () => {
   const query = useGet<Projection>('/projections', ['projections']);

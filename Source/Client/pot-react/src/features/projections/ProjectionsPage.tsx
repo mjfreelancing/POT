@@ -1,7 +1,10 @@
+import { useEffect, useState } from 'react';
+
 import { useApiGetProjection } from '@/api/hooks/useProjections';
 import { ErrorSheet, LoadingMessage } from '@/components/feedback';
 import { DisplayError } from '@/lib';
-import { useEffect, useState } from 'react';
+
+import { NoProjectionData, ProjectionChart } from './components';
 
 function ProjectionsPage() {
   const { data: result, isLoading } = useApiGetProjection();
@@ -22,21 +25,29 @@ function ProjectionsPage() {
   }, [result]);
 
   return (
-    <>
-      <LoadingMessage isLoading={isLoading} />
-
-      <div className="flex h-full w-full items-center justify-center">
-        Projections Content Here
-      </div>
-
-      {error && (
-        <ErrorSheet
-          title={error.title}
-          description={error.description}
-          onDismiss={() => setError(null)}
-        />
+    <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20">
+      {result?.success && (
+        <div className="p-6 flex-1">
+          <ProjectionChart data={result.value} />
+        </div>
       )}
-    </>
+      {error && (
+        <>
+          <div className="flex items-center justify-center flex-1 p-6 w-full">
+            <div className="w-full">
+              <NoProjectionData />
+            </div>
+          </div>
+
+          <ErrorSheet
+            title={error.title}
+            description={error.description}
+            onDismiss={() => setError(null)}
+          />
+        </>
+      )}
+      <LoadingMessage isLoading={isLoading} />
+    </div>
   );
 }
 
