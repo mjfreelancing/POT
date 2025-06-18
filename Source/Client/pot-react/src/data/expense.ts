@@ -19,6 +19,7 @@ const BaseExpenseSchema = z.object({
   frequencyCount: z.number(),
   recurring: z.boolean(),
   amount: z.number(),
+  accrued: z.number(),
 });
 
 const ExpenseSchema = BaseExpenseSchema.extend({

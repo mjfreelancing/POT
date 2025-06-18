@@ -12,8 +12,8 @@ const BaseAccountSchema = z.object({
 
 const AccountSchema = BaseAccountSchema.extend({
   ...IdentitySchema.shape,
-  allocated: z.number(),
-  dailyAccrual: z.number(),
+  totalExpenseAccrued: z.number(),
+  dailyExpenseAccrual: z.number(),
   available: z.number(),
   linkedExpenses: z.number(),
   linkedIncomes: z.number(),

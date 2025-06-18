@@ -43,6 +43,7 @@ const columns: ColumnDef<Expense>[] = [
   },
   createMoneyValueColumn<Expense>('amount', 'Amount'),
   createDateColumn<Expense>('accrualStart', 'Accrual Start'),
+  createDateColumn<Expense>('accrued', 'Accrued'),
   createDateColumn<Expense>('nextDue', 'Next Due', 'Ongoing', {
     enableSorting: true,
     sortingFn: 'datetime',

@@ -21,8 +21,8 @@ function AccountsHeader() {
     (state: AccountsSummary) => state.totalReserved,
   );
 
-  const totalAllocated = accountsSummaryStore(
-    (state: AccountsSummary) => state.totalAllocated,
+  const totalAccrued = accountsSummaryStore(
+    (state: AccountsSummary) => state.totalAccrued,
   );
 
   const totalDailyAccrual = accountsSummaryStore(
@@ -71,12 +71,12 @@ function AccountsHeader() {
           </div>
         </ActionCard>
         <ActionCard
-          title="Allocated Amount"
+          title="Accrued Amount"
           icon={<Target className="h-6 w-6" />}
           className="border-2"
         >
           <div className="text-2xl font-bold">
-            {formatMoneyValue(totalAllocated)}
+            {formatMoneyValue(totalAccrued)}
           </div>
         </ActionCard>
         <ActionCard

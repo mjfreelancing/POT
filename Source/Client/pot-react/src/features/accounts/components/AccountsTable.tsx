@@ -67,8 +67,8 @@ const columns: ColumnDef<Account>[] = [
   },
   createMoneyValueColumn<Account>('balance', 'Balance'),
   createMoneyValueColumn<Account>('reserved', 'Reserved'),
-  createMoneyValueColumn<Account>('allocated', 'Allocated'),
-  createMoneyValueColumn<Account>('dailyAccrual', 'Daily Accrual'),
+  createMoneyValueColumn<Account>('totalExpenseAccrued', 'Total Accrued'),
+  createMoneyValueColumn<Account>('dailyExpenseAccrual', 'Daily Accrual'),
   createMoneyValueColumn<Account>('available', 'Available'),
   {
     id: 'actions',
@@ -99,17 +99,17 @@ function AccountsTable({ accounts }: AccountsTableProps) {
       0,
     );
 
-    const totalAllocated = accounts.reduce(
-      (sum, acct) => sum + acct.allocated,
+    const totalAccrued = accounts.reduce(
+      (sum, acct) => sum + acct.totalExpenseAccrued,
       0,
     );
 
     const totalDailyAccrual = accounts.reduce(
-      (sum, acct) => sum + acct.dailyAccrual,
+      (sum, acct) => sum + acct.dailyExpenseAccrual,
       0,
     );
 
-    setSummary(totalBalance, totalReserved, totalAllocated, totalDailyAccrual);
+    setSummary(totalBalance, totalReserved, totalAccrued, totalDailyAccrual);
   }, [accounts, setSummary]);
 
   return (
