@@ -16,7 +16,7 @@ internal sealed class Handler
 
         var options = new ProjectionOptions
         {
-            DaysForecast = 60
+            DaysForecast = 365
         };
 
         var output = await projectionsService.GetProjectionsAsync(options, cancellationToken);

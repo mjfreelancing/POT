@@ -2,7 +2,7 @@
 
 public static class FrequencyExtensions
 {
-    public static int GetDays(this Frequency frequency, DateOnly fromDate, int frequencyCount)
+    public static int GetDaysToNext(this Frequency frequency, DateOnly fromDate, int frequencyCount)
     {
         if (frequency == Frequency.Days)
         {
