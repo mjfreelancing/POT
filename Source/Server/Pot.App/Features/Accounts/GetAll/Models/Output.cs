@@ -9,10 +9,10 @@ public sealed class Output
     public required string Description { get; init; }
     public required double Balance { get; init; }
     public required double Reserved { get; init; }
-    public required double Allocated { get; init; }
-    public required double DailyAccrual { get; init; }
+    public required double TotalExpenseAccrued { get; init; }
+    public required double DailyExpenseAccrual { get; init; }
     public required int LinkedExpenses { get; init; }
     public required int LinkedIncomes { get; init; }
-    public double Available => Balance - Reserved - Allocated;
+    public double Available => Balance - Reserved - TotalExpenseAccrued;
 
 }

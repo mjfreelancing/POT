@@ -19,5 +19,5 @@ public sealed class Request
     [Description("The minimum reserved amount.")]
     public double Reserved { get; init; }
 
-    // Allocated and DailyAccrual are calculated based on linked expenses
+    // TotalExpenseAccrued and DailyExpenseAccrual are calculated based on linked expenses
 }

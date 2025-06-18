@@ -24,11 +24,11 @@ internal sealed class Response : ResponseBase
     [Description("The minimum reserved amount.")]
     public double Reserved { get; init; }
 
-    [Description("The amount allocated to future expenses.")]
-    public double Allocated { get; init; }
+    [Description("The total amount accrued to pay for future expenses.")]
+    public double TotalExpenseAccrued { get; init; }
 
     [Description("The daily accrual required to meet all future expenses.")]
-    public double DailyAccrual { get; init; }
+    public double DailyExpenseAccrual { get; init; }
 
     [Description("The number of expenses recorded against this account.")]
     public int LinkedExpenses { get; init; }
@@ -36,8 +36,8 @@ internal sealed class Response : ResponseBase
     [Description("The number of incomes recorded against this account.")]
     public int LinkedIncomes { get; init; }
 
-    [Description("The available balance after consider the Reserved and Allocation amounts.")]
-    public double Available => Balance - Reserved - Allocated;
+    [Description("The available balance after consider the Reserved and TotalExpenseAccrued amounts.")]
+    public double Available => Balance - Reserved - TotalExpenseAccrued;
 
     public static Ok<Response[]> Ok(List<Output> accounts)
     {
@@ -57,8 +57,8 @@ internal sealed class Response : ResponseBase
         Description = account.Description;
         Balance = account.Balance;
         Reserved = account.Reserved;
-        Allocated = account.Allocated;
-        DailyAccrual = account.DailyAccrual;
+        TotalExpenseAccrued = account.TotalExpenseAccrued;
+        DailyExpenseAccrual = account.DailyExpenseAccrual;
         LinkedExpenses = account.LinkedExpenses;
         LinkedIncomes = account.LinkedIncomes;
     }

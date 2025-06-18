@@ -143,8 +143,8 @@ internal sealed class ImportAccountService : IImportAccountService
             Description = import.Description,
             Balance = import.Balance,
             Reserved = import.Reserved,
-            Allocated = 0.0d,
-            DailyAccrual = 0.0d
+            TotalExpenseAccrued = 0.0d,
+            DailyExpenseAccrual = 0.0d
         };
 
         _accountRepository.Add(accountEntity);
@@ -161,8 +161,8 @@ internal sealed class ImportAccountService : IImportAccountService
         entity.Reserved = import.Reserved;
 
         // Leave these at their current values
-        // entity.Allocated
-        // entity.DailyAccrual
+        // entity.TotalExpenseAccrued
+        // entity.DailyExpenseAccrual
 
         // Don't need to explicitly call _accountRepository.Update(entity). The entity will
         // be marked as modified if anything has changed.

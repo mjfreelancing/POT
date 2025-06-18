@@ -76,7 +76,6 @@ internal sealed class UpdateAccountService : IUpdateAccountService
         accountToUpdate.Description = request.Description;
         accountToUpdate.Balance = request.Balance;
         accountToUpdate.Reserved = request.Reserved;
-        // account.Allocated and account.DailyAccrual - will need to be re-calculated, when requested by the caller
-        // ? add a feature to allow the caller to set Allocated as an override
+        // account.TotalExpenseAccrued and account.DailyExpenseAccrual - will need to be re-calculated, when requested by the caller
     }
 }

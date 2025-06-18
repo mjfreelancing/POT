@@ -193,7 +193,7 @@ internal sealed class ImportExpenseService : IImportExpenseService
             FrequencyCount = import.FrequencyCount,
             EndDate = import.EndDate,
             Amount = import.Amount,
-            Allocated = import.Allocated,
+            Accrued = import.Accrued,
             Account = account
         };
 
@@ -211,7 +211,7 @@ internal sealed class ImportExpenseService : IImportExpenseService
         entity.Frequency = import.Frequency;
         entity.FrequencyCount = import.FrequencyCount;
         entity.Amount = import.Amount;
-        entity.Allocated = import.Allocated;    // TODO: ? leave these at their current values
+        entity.Accrued = import.Accrued;    // TODO: ? leave these at their current values
 
         // Don't need to explicitly call _expenseRepository.Update(entity). The entity will
         // be marked as modified if anything has changed.

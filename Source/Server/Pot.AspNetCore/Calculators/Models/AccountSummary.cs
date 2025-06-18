@@ -4,8 +4,8 @@
     {
         public double Balance { get; set; }
         public double Reserved { get; set; }
-        public double Allocated { get; set; }
+        public double DailyExpenseAccrual { get; set; }
+        public double TotalExpenseAccrued { get; set; }
         public double Available { get; set; }
-        public double DailyAccrual { get; set; }
     }
 }

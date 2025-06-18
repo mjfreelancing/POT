@@ -42,5 +42,5 @@ public sealed class ExpenseCsvRow
     public double Amount { get; init; }
 
     [Index(9)]
-    public double Allocated { get; init; }
+    public double Accrued { get; init; }
 }

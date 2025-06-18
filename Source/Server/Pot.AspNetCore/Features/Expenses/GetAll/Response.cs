@@ -41,8 +41,8 @@ internal sealed class Response : ResponseBase
     [Description("The expense amount.")]
     public double Amount { get; init; }
 
-    [Description("The amount allocated towards this expense.")]
-    public double Allocated { get; init; }
+    [Description("The amount accrued towards this expense.")]
+    public double Accrued { get; init; }
 
     [Description("The account this expense is associated with.")]
     public AccountModel? Account { get; init; }
@@ -69,7 +69,7 @@ internal sealed class Response : ResponseBase
         Frequency = expense.Frequency;
         FrequencyCount = expense.FrequencyCount;
         Amount = expense.Amount;
-        Allocated = expense.Allocated;
+        Accrued = expense.Accrued;
 
         var account = expense.Account;
 

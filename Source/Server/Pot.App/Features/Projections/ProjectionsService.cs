@@ -6,56 +6,13 @@ using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
 using Pot.App.Errors;
 using Pot.App.Features.Projections.Models;
-using Pot.Data.Entities;
 using Pot.Data.Repositories.Expenses;
 using Pot.Data.Repositories.Incomes;
 using Pot.Shared.Extensions;
 
 namespace Pot.App.Features.Projections;
 
-public sealed class ProjectionAccountItem
-{
-    // TODO: Currently assumes the client / server / database are all in the same time-zone.
-    internal TimeProvider TimeProvider { get; } = TimeProvider.System;
-
-    private readonly Dictionary<DateOnly, double> _credits = [];
-    private readonly Dictionary<DateOnly, double> _debits = [];
-
-    public Guid AccountId { get; }
-    public double StartingBalance { get; }
-    public IReadOnlyDictionary<DateOnly, double> Credits => _credits;
-    public IReadOnlyDictionary<DateOnly, double> Debits => _debits;
-
-    public ProjectionAccountItem(Guid accountId, double startingBalance)
-    {
-        AccountId = accountId;
-        StartingBalance = startingBalance;
-    }
-
-    public void AddIncome(DateOnly date, double amount)
-    {
-        if (_credits.TryGetValue(date, out var currentAmount))
-        {
-            _credits[date] = currentAmount + amount;
-        }
-        else
-        {
-            _credits[date] = amount;
-        }
-    }
-
-    public void AddExpense(DateOnly date, double amount)
-    {
-        if (_debits.TryGetValue(date, out var currentAmount))
-        {
-            _debits[date] = currentAmount + amount;
-        }
-        else
-        {
-            _debits[date] = amount;
-        }
-    }
-}
+using DailyDateBalanceAvailable = Dictionary<DateOnly, DateBalanceAvailable>;
 
 public sealed class ProjectionOptions
 {
@@ -64,6 +21,8 @@ public sealed class ProjectionOptions
 
 internal sealed class ProjectionsService : IProjectionsService
 {
+    internal TimeProvider TimeProvider { get; } = TimeProvider.System;
+
     private readonly IExpenseRepositoryFactory _expenseRepositoryFactory;
     private readonly IIncomeRepositoryFactory _incomeRepositoryFactory;
     private readonly ILogger _logger;
@@ -93,7 +52,8 @@ internal sealed class ProjectionsService : IProjectionsService
         var expenseNextDue = expenses.Min(expense => expense.NextDue);
         var incomeNextDue = incomes.Min(income => income.NextDue);
 
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var todayDateTime = TimeProvider.GetLocalNow().DateTime;
+        var today = DateOnly.FromDateTime(todayDateTime);
 
         if (Math.Min(expenseNextDue.DayNumber, incomeNextDue.DayNumber) < today.DayNumber)
         {
@@ -120,29 +80,66 @@ internal sealed class ProjectionsService : IProjectionsService
             .Select(grp => grp.First())
             .ToList();
 
-        var projectedAccounts = uniqueAccounts
-            .Select(account =>
+        var global = new Dictionary<DateOnly, DateBalanceAvailable>();
+        var accountDailyAmounts = new Dictionary<Guid, DailyDateBalanceAvailable>();       // transformed later to new List<AccountDailyBalanceAvailable>();
+
+        // Pre-initialise each account daily balance and available amounts
+        foreach (var account in uniqueAccounts)
+        {
+            var accountId = account.RowId;
+            var dailyBalanceAvailable = new DailyDateBalanceAvailable();
+            accountDailyAmounts[accountId] = dailyBalanceAvailable;
+
+            for (var day = 0; day < options.DaysForecast; day++)
             {
-                var accountId = account.RowId;
-                var currentBalance = account.Balance;
-                var accountItem = new ProjectionAccountItem(accountId, currentBalance);
+                var date = today.AddDays(day);
 
-                return new KeyValuePair<Guid, ProjectionAccountItem>(accountId, accountItem);
-            })
-            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                dailyBalanceAvailable[date] = new DateBalanceAvailable
+                {
+                    Date = date,
+                    Balance = account.Balance,
+                    Accrued = account.TotalExpenseAccrued
+                };
+            }
+        }
 
-        // Forecast the account balances
+        // Start processing
+        var runningBalance = uniqueAccounts.Sum(account => account.Balance);
+        var runningAccrued = uniqueAccounts.Sum(account => account.TotalExpenseAccrued);
+
         for (var day = 0; day < options.DaysForecast; day++)
         {
             var date = today.AddDays(day);
 
+            var globalBalanceAvailable = new DateBalanceAvailable
+            {
+                Date = date,
+                Balance = runningBalance,
+                Accrued = runningBalance - runningAccrued
+            };
+
+            global[date] = globalBalanceAvailable;
+
+            if (day != 0)
+            {
+                foreach (var account in uniqueAccounts)
+                {
+                    var accountDailyAmount = accountDailyAmounts[account.RowId][date];
+                    accountDailyAmount.Accrued += account.DailyExpenseAccrual;
+                    runningAccrued += account.DailyExpenseAccrual;
+                }
+            }
+
+            // Track income received
             foreach (var income in incomes)
             {
-                var accountItem = projectedAccounts[income.Account.RowId];
+                var dailyBalanceAvailable = accountDailyAmounts[income.Account.RowId];
+                var dateBalanceAvailable = dailyBalanceAvailable[date];
 
                 if (income.NextDue == date)
                 {
-                    accountItem.AddIncome(date, income.Amount);
+                    dateBalanceAvailable.Balance += income.Amount;
+                    runningBalance += income.Amount;
 
                     // update the next due date based on the frequency
                     if (income.EndDate.GetValueOrDefault(DateOnly.MaxValue) >= date)
@@ -150,19 +147,18 @@ internal sealed class ProjectionsService : IProjectionsService
                         income.NextDue = income.NextDue.AddDays(income.Frequency.GetDays(date, income.FrequencyCount));
                     }
                 }
-                else
-                {
-                    accountItem.AddIncome(date, 0);
-                }
             }
 
+            // Track expenses paid
             foreach (var expense in expenses)
             {
-                var accountItem = projectedAccounts[expense.Account.RowId];
+                var dailyBalanceAvailable = accountDailyAmounts[expense.Account.RowId];
+                var dateBalanceAvailable = dailyBalanceAvailable[date];
 
                 if (expense.NextDue == date)
                 {
-                    accountItem.AddExpense(date, expense.Amount);
+                    dateBalanceAvailable.Balance -= expense.Amount;
+                    runningBalance -= expense.Amount;
 
                     // update the next due date based on the frequency
                     if (expense.EndDate.GetValueOrDefault(DateOnly.MaxValue) >= date)
@@ -170,80 +166,30 @@ internal sealed class ProjectionsService : IProjectionsService
                         expense.NextDue = expense.NextDue.AddDays(expense.Frequency.GetDays(date, expense.FrequencyCount));
                     }
                 }
-                else
-                {
-                    accountItem.AddExpense(date, 0);
-                }
             }
         }
 
-        // Transform the transactions into daily balances
-        var globalBalances = new Dictionary<DateOnly, double>();
-
-        var accountBalances = projectedAccounts
-            .ToDictionary(kvp => kvp.Key, kvp =>
+        var accountDailyuAmounts = accountDailyAmounts
+            .SelectToList(kvp =>
             {
-                var accountItem = kvp.Value;
-                var runningBalance = accountItem.StartingBalance;
-
-                return accountItem.Credits
-                    .Zip(accountItem.Debits, (credit, debit) =>
-                    {
-                        var date = credit.Key;
-
-                        // New balance for the current account
-                        runningBalance += credit.Value - debit.Value;
-
-                        // Update the global balance for the date
-                        if (globalBalances.TryGetValue(date, out var globalBalance))
-                        {
-                            globalBalances[date] = globalBalance + runningBalance;
-                        }
-                        else
-                        {
-                            globalBalances[date] = runningBalance;
-                        }
-
-                        // Return account balance for the specific date
-                        return new DateBalance { Date = date, Balance = runningBalance };
-                    })
-                    .ToList();
-            });
-
-        var output = CreateOutput(uniqueAccounts, accountBalances, globalBalances);
-
-        return EnrichedResult.Success(output);
-    }
-
-    private static Output CreateOutput(List<AccountEntity> uniqueAccounts, Dictionary<Guid, List<DateBalance>> accountBalances,
-        Dictionary<DateOnly, double> globalBalances)
-    {
-        // Enrich the account information to include the description
-        var accountsDailyBalances = accountBalances
-            .SelectToList(item =>
-            {
-                var accountId = item.Key;
+                var accountId = kvp.Key;
+                var dailyAmounts = kvp.Value;
                 var description = uniqueAccounts.Single(account => account.RowId == accountId).Description;
 
-                return new AccountDailyBalances
+                return new AccountDailyBalanceAvailable
                 {
                     RowId = accountId,
                     Description = description,
-                    Dates = item.Value
+                    Dates = dailyAmounts.Values.ToList()
                 };
             });
 
-        var globalDailyBalances = globalBalances
-            .SelectToList(item => new DateBalance
-            {
-                Date = item.Key,
-                Balance = item.Value
-            });
-
-        return new Output
+        var output = new Output
         {
-            Accounts = accountsDailyBalances,
-            Global = globalDailyBalances
+            Accounts = accountDailyuAmounts,
+            Global = [.. global.Values]
         };
+
+        return EnrichedResult.Success(output);
     }
 }

@@ -23,6 +23,6 @@ public sealed class AccountCsvRow
     [Index(5)]
     public double Reserved { get; init; }
 
-    // Allocated and DailyAccrual are calculated based on linked expenses so
+    // TotalExpenseAccrued and DailyExpenseAccrual are calculated based on linked expenses so
     // we should not import these values as there are no associated expenses.
 }
