@@ -217,7 +217,7 @@ internal sealed class ProjectionsService : IProjectionsService
         error = new ProblemDetailsError(ProblemType.UnprocessableEntity)
         {
             ErrorCode = ErrorCodes.Invalid,
-            ErrorMessage = $"Cannot project financial status as at least one {entityType} has not been advanced to a current next due date."
+            ErrorMessage = $"Cannot project financial status. At least one {entityType} has not been advanced to a current next due date."
         };
 
         return true;
