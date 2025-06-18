@@ -10,12 +10,14 @@ type IncomesHeaderProps = {
   accountsInItems: Account[];
   selectedAccountId: string | null;
   onAccountChange: (accountId: string | null) => void;
+  totalAccountsCount: number;
 };
 
 function IncomesHeader({
   accountsInItems,
   selectedAccountId,
   onAccountChange,
+  totalAccountsCount,
 }: IncomesHeaderProps) {
   const navigate = useNavigate();
 
@@ -45,6 +47,7 @@ function IncomesHeader({
             onClick={() => navigate('create')}
             aria-label="Add a new income source"
             className="gap-2 min-w-[132px]"
+            disabled={totalAccountsCount === 0}
           >
             <Plus className="h-4 w-4" />
             Add Income

@@ -16,7 +16,7 @@ function DataTableColumnHeader<TData, TValue>({
   className,
 }: DataTableColumnHeaderProps<TData, TValue>) {
   if (!column.getCanSort()) {
-    return <div className={cn(className)}>{title}</div>;
+    return <div className={cn('uppercase', className)}>{title}</div>;
   }
 
   return (
@@ -40,7 +40,7 @@ function DataTableColumnHeader<TData, TValue>({
           }
         }}
       >
-        <span>{title}</span>
+        <span className="uppercase">{title}</span>
         {column.getIsSorted() === 'desc' ? (
           <ChevronDown className="ml-2 h-4 w-4" />
         ) : column.getIsSorted() === 'asc' ? (

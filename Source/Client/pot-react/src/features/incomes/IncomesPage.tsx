@@ -163,6 +163,7 @@ function IncomesPage() {
         accountsInItems={accountsInItems}
         selectedAccountId={validatedSelectedAccountId}
         onAccountChange={handleAccountChange}
+        totalAccountsCount={accounts.length}
       />
       <div className="flex-1 p-6 space-y-6">
         <IncomesTable filteredIncomes={filteredIncomes} />

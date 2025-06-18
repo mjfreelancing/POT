@@ -71,7 +71,7 @@ const createMoneyValueColumn = <TData,>(
     accessorKey,
     header: enableSorting
       ? ({ column }) => <DataTableColumnHeader column={column} title={header} />
-      : () => <div>{header}</div>,
+      : () => <div className="uppercase">{header}</div>,
     cell: ({ row }) => <div>{formatCellMoneyValue(row, accessorKey)}</div>,
     enableSorting,
     ...restOptions,
@@ -90,7 +90,7 @@ const createDateColumn = <TData,>(
     accessorKey,
     header: enableSorting
       ? ({ column }) => <DataTableColumnHeader column={column} title={header} />
-      : () => <div>{header}</div>,
+      : () => <div className="uppercase">{header}</div>,
     cell: ({ row }) => {
       const rawValue = row.getValue(accessorKey) as string | Date;
 
@@ -122,7 +122,7 @@ const createFrequencyColumn = <TData,>(
     id: `${frequencyKey}-${countKey}`,
     header: enableSorting
       ? ({ column }) => <DataTableColumnHeader column={column} title={header} />
-      : () => <div>{header}</div>,
+      : () => <div className="uppercase">{header}</div>,
     cell: ({ row }) => {
       const count = row.original[countKey] as number;
       const freq = row.original[frequencyKey] as Frequency;
