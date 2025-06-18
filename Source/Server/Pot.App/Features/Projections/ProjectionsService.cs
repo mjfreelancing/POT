@@ -190,7 +190,7 @@ internal sealed class ProjectionsService : IProjectionsService
         return EnrichedResult.Success(output);
     }
 
-    private bool NextDueIsBehindSchedule<TEntity>(DateOnly today, List<TEntity> entities, out ProblemDetailsError? error)
+    private static bool NextDueIsBehindSchedule<TEntity>(DateOnly today, List<TEntity> entities, out ProblemDetailsError? error)
         where TEntity : IHasNextDue
     {
         error = null;
