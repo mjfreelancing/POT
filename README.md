@@ -14,7 +14,7 @@ Manage your bank accounts with the following capabilities:
   - Description
   - Current Balance
   - Reserved Amount
-  - Allocated Funds
+  - Accrued Funds
   - Daily Accrual
   - Available Balance
 

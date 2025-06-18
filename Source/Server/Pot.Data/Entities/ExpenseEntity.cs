@@ -25,7 +25,7 @@ namespace Pot.Data.Entities
         [DefaultValue(true)]
         public bool Recurring { get; set; } = true;
 
-        public double Allocated { get; set; }
+        public double Accrued { get; set; }
 
         public required AccountEntity Account { get; set; }
     }

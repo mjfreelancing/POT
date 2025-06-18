@@ -17,7 +17,7 @@ namespace Pot.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.5")
+                .HasAnnotation("ProductVersion", "9.0.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "citext");
@@ -31,9 +31,6 @@ namespace Pot.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<double>("Allocated")
-                        .HasColumnType("double precision");
-
                     b.Property<double>("Balance")
                         .HasColumnType("double precision");
 
@@ -42,7 +39,7 @@ namespace Pot.Data.Migrations
                         .HasMaxLength(7)
                         .HasColumnType("character varying(7)");
 
-                    b.Property<double>("DailyAccrual")
+                    b.Property<double>("DailyExpenseAccrual")
                         .HasColumnType("double precision");
 
                     b.Property<string>("Description")
@@ -64,6 +61,9 @@ namespace Pot.Data.Migrations
                     b.Property<Guid>("RowId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<double>("TotalExpenseAccrued")
+                        .HasColumnType("double precision");
 
                     b.HasKey("Id");
 
@@ -95,7 +95,7 @@ namespace Pot.Data.Migrations
                     b.Property<DateOnly>("AccrualStart")
                         .HasColumnType("date");
 
-                    b.Property<double>("Allocated")
+                    b.Property<double>("Accrued")
                         .HasColumnType("double precision");
 
                     b.Property<double>("Amount")

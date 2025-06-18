@@ -12,15 +12,15 @@ using Pot.Data;
 namespace Pot.Data.Migrations
 {
     [DbContext(typeof(PotDbContext))]
-    [Migration("20250202095418_Init")]
-    partial class Init
+    [Migration("20250618093422_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.1")
+                .HasAnnotation("ProductVersion", "9.0.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "citext");
@@ -34,9 +34,6 @@ namespace Pot.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<double>("Allocated")
-                        .HasColumnType("double precision");
-
                     b.Property<double>("Balance")
                         .HasColumnType("double precision");
 
@@ -45,7 +42,7 @@ namespace Pot.Data.Migrations
                         .HasMaxLength(7)
                         .HasColumnType("character varying(7)");
 
-                    b.Property<double>("DailyAccrual")
+                    b.Property<double>("DailyExpenseAccrual")
                         .HasColumnType("double precision");
 
                     b.Property<string>("Description")
@@ -67,6 +64,9 @@ namespace Pot.Data.Migrations
                     b.Property<Guid>("RowId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<double>("TotalExpenseAccrued")
+                        .HasColumnType("double precision");
 
                     b.HasKey("Id");
 
@@ -92,13 +92,13 @@ namespace Pot.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("AccountId")
+                    b.Property<int>("AccountId")
                         .HasColumnType("integer");
 
                     b.Property<DateOnly>("AccrualStart")
                         .HasColumnType("date");
 
-                    b.Property<double>("Allocated")
+                    b.Property<double>("Accrued")
                         .HasColumnType("double precision");
 
                     b.Property<double>("Amount")
@@ -108,6 +108,9 @@ namespace Pot.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("citext");
+
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("date");
 
                     b.Property<long>("Etag")
                         .HasColumnType("bigint");
@@ -145,12 +148,79 @@ namespace Pot.Data.Migrations
                     b.ToTable("Expense");
                 });
 
+            modelBuilder.Entity("Pot.Data.Entities.IncomeEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AccountId")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("Amount")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("citext");
+
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<long>("Etag")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Frequency")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<int>("FrequencyCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateOnly>("NextDue")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("RowId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Etag");
+
+                    b.HasIndex("NextDue");
+
+                    b.HasIndex("RowId")
+                        .IsUnique();
+
+                    b.HasIndex("AccountId", "Description")
+                        .IsUnique();
+
+                    b.ToTable("Income");
+                });
+
             modelBuilder.Entity("Pot.Data.Entities.ExpenseEntity", b =>
                 {
                     b.HasOne("Pot.Data.Entities.AccountEntity", "Account")
                         .WithMany("Expenses")
                         .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+                });
+
+            modelBuilder.Entity("Pot.Data.Entities.IncomeEntity", b =>
+                {
+                    b.HasOne("Pot.Data.Entities.AccountEntity", "Account")
+                        .WithMany("Incomes")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Account");
                 });
@@ -158,6 +228,8 @@ namespace Pot.Data.Migrations
             modelBuilder.Entity("Pot.Data.Entities.AccountEntity", b =>
                 {
                     b.Navigation("Expenses");
+
+                    b.Navigation("Incomes");
                 });
 #pragma warning restore 612, 618
         }
