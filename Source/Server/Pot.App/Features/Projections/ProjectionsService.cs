@@ -6,9 +6,11 @@ using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
 using Pot.App.Errors;
 using Pot.App.Features.Projections.Models;
+using Pot.Data.Entities;
 using Pot.Data.Repositories.Expenses;
 using Pot.Data.Repositories.Incomes;
 using Pot.Shared.Extensions;
+using System.Diagnostics;
 
 namespace Pot.App.Features.Projections;
 
@@ -35,6 +37,7 @@ internal sealed class ProjectionsService : IProjectionsService
         _logger = logger.WhenNotNull();
     }
 
+
     public async Task<EnrichedResult<Output>> GetProjectionsAsync(ProjectionOptions options, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
@@ -48,23 +51,17 @@ internal sealed class ProjectionsService : IProjectionsService
             _incomeRepository.GetAllIncomesAsync(cancellationToken)
         );
 
-        // Do not perform projections if any expense or income 'NextDue' date has not been advanced.
-        var expenseNextDue = expenses.Min(expense => expense.NextDue);
-        var incomeNextDue = incomes.Min(income => income.NextDue);
-
         var todayDateTime = TimeProvider.GetLocalNow().DateTime;
         var today = DateOnly.FromDateTime(todayDateTime);
 
-        if (Math.Min(expenseNextDue.DayNumber, incomeNextDue.DayNumber) < today.DayNumber)
+        if (NextDueIsBehindSchedule(today, expenses, out var problemDetails) || NextDueIsBehindSchedule(today, expenses, out problemDetails))
         {
-            var problemDetails = new ProblemDetailsError(ProblemType.UnprocessableEntity)
-            {
-                ErrorCode = ErrorCodes.Invalid,
-                ErrorMessage = "Cannot project financial status as some expenses or incomes have not been advanced to their next due date."
-            };
-
             return EnrichedResult.Fail<Output>(problemDetails);
         }
+
+
+
+
 
         //
         // TODO: Update the response so it also projects the available balance - will have to recalculate accrual etc.
@@ -191,5 +188,38 @@ internal sealed class ProjectionsService : IProjectionsService
         };
 
         return EnrichedResult.Success(output);
+    }
+
+    private bool NextDueIsBehindSchedule<TEntity>(DateOnly today, List<TEntity> entities, out ProblemDetailsError? error)
+        where TEntity : IHasNextDue
+    {
+        error = null;
+
+        if (entities.Count == 0)
+        {
+            return false;
+        }
+
+        var nextDue = entities.Min(entity => entity.NextDue);
+
+        if (nextDue.DayNumber >= today.DayNumber)
+        {
+            return false;
+        }
+
+        var entityType = typeof(TEntity) switch
+        {
+            _ when typeof(TEntity) == typeof(ExpenseEntity) => "expense",
+            _ when typeof(TEntity) == typeof(IncomeEntity) => "income",
+            _ => throw new UnreachableException($"Unexpected entity type: {typeof(TEntity).GetFriendlyName()}")
+        };
+
+        error = new ProblemDetailsError(ProblemType.UnprocessableEntity)
+        {
+            ErrorCode = ErrorCodes.Invalid,
+            ErrorMessage = $"Cannot project financial status as at least one {entityType} has not been advanced to a current next due date."
+        };
+
+        return true;
     }
 }

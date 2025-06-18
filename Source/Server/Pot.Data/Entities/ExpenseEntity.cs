@@ -8,7 +8,7 @@ namespace Pot.Data.Entities
 {
     [Index("AccountId", nameof(Description), IsUnique = true)]
     [Index(nameof(NextDue), IsUnique = false)]
-    public sealed class ExpenseEntity : EntityBase
+    public sealed class ExpenseEntity : EntityBase, IHasNextDue
     {
         [Required]
         [MediumString]
