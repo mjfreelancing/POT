@@ -27,6 +27,17 @@ const menuGroups: Record<string, MenuGroupDefinition> = {
     ],
   },
 
+  expenses: {
+    label: 'Expenses',
+    items: [
+      {
+        label: 'Manage Expenses',
+        icon: Receipt,
+        href: '/expenses',
+      },
+    ],
+  },
+
   accounts: {
     label: 'Accounts',
     items: [
@@ -40,17 +51,6 @@ const menuGroups: Record<string, MenuGroupDefinition> = {
       //   icon: ArrowDownUp,
       //   href: '/accounts',
       // },
-    ],
-  },
-
-  expenses: {
-    label: 'Expenses',
-    items: [
-      {
-        label: 'Manage Expenses',
-        icon: Receipt,
-        href: '/expenses',
-      },
     ],
   },
 
@@ -70,8 +70,8 @@ function AppSidebarMenus() {
   return (
     <SidebarContent>
       <MenuGroup group={menuGroups.analysis} />
-      <MenuGroup group={menuGroups.accounts} />
       <MenuGroup group={menuGroups.expenses} />
+      <MenuGroup group={menuGroups.accounts} />
       <MenuGroup group={menuGroups.income} />
     </SidebarContent>
   );
