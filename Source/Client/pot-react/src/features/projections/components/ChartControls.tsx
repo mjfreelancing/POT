@@ -1,6 +1,8 @@
 import { addDays, format } from 'date-fns';
 
+import { EnrichedDatePicker } from '@/components/picker/EnrichedDatePicker';
 import { Button } from '@/components/ui/button';
+import { ChartConfig } from '@/components/ui/chart';
 import {
   Select,
   SelectContent,
@@ -8,9 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ChartConfig } from '@/components/ui/chart';
-import { EnrichedDatePicker } from '@/components/picker/EnrichedDatePicker';
-import { ProjectionMetric, PROJECTION_METRICS } from '@/data/projection';
+import { PROJECTION_METRICS, ProjectionMetric } from '@/data/projection';
 
 type ChartControlsProps = {
   selectedMetric: ProjectionMetric;

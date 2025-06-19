@@ -1,11 +1,11 @@
 import { format, parseISO } from 'date-fns';
 import { useState } from 'react';
 import {
+  Bar,
+  BarChart,
   CartesianGrid,
   Line,
   LineChart,
-  Bar,
-  BarChart,
   XAxis,
   YAxis,
 } from 'recharts';
@@ -20,8 +20,8 @@ import {
 import { ChartContainer, ChartTooltip } from '@/components/ui/chart';
 import {
   Projection,
-  ProjectionMetric,
   PROJECTION_METRICS,
+  ProjectionMetric,
 } from '@/data/projection';
 import { formatMoneyValue } from '@/lib/moneyUtils';
 

@@ -72,14 +72,14 @@ type Projection = z.infer<typeof ProjectionSchema>;
 export {
   AccountDailyBalancesSchema,
   DateBalanceSchema,
-  ProjectionSchema,
   PROJECTION_METRICS,
+  ProjectionSchema,
 };
 export type {
   AccountDailyBalances,
+  ChartType,
   DateBalance,
+  MetricConfig,
   Projection,
   ProjectionMetric,
-  ChartType,
-  MetricConfig,
 };
