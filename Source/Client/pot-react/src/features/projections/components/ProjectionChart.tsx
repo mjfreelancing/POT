@@ -1,7 +1,8 @@
-import { format, parseISO } from 'date-fns';
-import { useEffect, useRef, useState } from 'react';
+import { addDays, format, parseISO } from 'date-fns';
+import { useState } from 'react';
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
 
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -10,6 +11,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip } from '@/components/ui/chart';
+import { EnrichedDatePicker } from '@/components/picker/EnrichedDatePicker';
 import { Projection } from '@/data/projection';
 import { formatMoneyValue } from '@/lib/moneyUtils';
 
@@ -34,12 +36,26 @@ function ProjectionChart({
   title = 'Account Balance Projections',
   curveType = 'basis',
 }: ProjectionChartProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 800, height: 400 });
+  // Date range filtering state
+  const today = new Date();
+  const [startDate, setStartDate] = useState<Date | undefined>(today);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
 
   // Transform data for chart consumption using custom hook
-  const { chartData, chartConfig, seriesKeys, hasData } =
-    useProjectionChartData(data);
+  const {
+    chartData: allChartData,
+    chartConfig,
+    seriesKeys,
+    hasData,
+  } = useProjectionChartData(data);
+
+  // Filter chart data based on date range
+  const chartData = allChartData.filter(point => {
+    const pointDate = parseISO(point.date);
+    const afterStart = !startDate || pointDate >= startDate;
+    const beforeEnd = !endDate || pointDate <= endDate;
+    return afterStart && beforeEnd;
+  });
 
   // Helper function to check if a series has meaningful data
   const hasSeriesData = (seriesKey: string): boolean => {
@@ -66,39 +82,20 @@ function ProjectionChart({
     },
   );
 
-  // Update dimensions when container size changes
-  useEffect(() => {
-    const updateDimensions = () => {
-      if (containerRef.current) {
-        const { clientWidth, clientHeight } = containerRef.current;
+  // Get date range for description
+  const getDateRangeDescription = () => {
+    const firstDate = parseISO(chartData[0].date);
+    const lastDate = parseISO(chartData[chartData.length - 1].date);
 
-        // Account for more conservative padding and margins to prevent overflow
-        // Increase padding allowance for card headers, legends, and margins
-        const availableWidth = Math.max(300, clientWidth - 60);
-        const availableHeight = Math.max(300, clientHeight - 80);
+    const startText = format(firstDate, 'MMM dd, yyyy');
+    const endText = format(lastDate, 'MMM dd, yyyy');
 
-        // Calculate ideal dimensions using 16:9 aspect ratio
-        const idealHeight = availableWidth * (9 / 16);
+    if (chartData.length === 1) {
+      return `Projection for ${startText}`;
+    }
 
-        // Use the ideal 16:9 dimensions if they fit, otherwise constrain by height
-        const finalWidth =
-          idealHeight <= availableHeight
-            ? availableWidth
-            : availableHeight * (16 / 9);
-        const finalHeight =
-          idealHeight <= availableHeight ? idealHeight : availableHeight;
-
-        setDimensions({
-          width: Math.max(300, finalWidth),
-          height: Math.max(300, finalHeight),
-        });
-      }
-    };
-
-    updateDimensions();
-    window.addEventListener('resize', updateDimensions);
-    return () => window.removeEventListener('resize', updateDimensions);
-  }, []);
+    return `${startText} → ${endText} (${chartData.length} days)`;
+  };
 
   // Toggle series visibility
   const toggleSeries = (seriesKey: string) => {
@@ -108,9 +105,37 @@ function ProjectionChart({
     }));
   };
 
+  // Date range preset handlers
+  const setDateRangePreset = (days: number | 'all') => {
+    if (days === 'all') {
+      setStartDate(undefined);
+      setEndDate(undefined);
+    } else {
+      setStartDate(today);
+      setEndDate(addDays(today, days));
+    }
+  };
+
+  // Validation for date range
+  const handleStartDateChange = (date: Date | undefined) => {
+    setStartDate(date);
+    // If end date is before start date, clear it
+    if (date && endDate && endDate < date) {
+      setEndDate(undefined);
+    }
+  };
+
+  const handleEndDateChange = (date: Date | undefined) => {
+    // Don't allow end date before start date
+    if (date && startDate && date < startDate) {
+      return; // Reject the change
+    }
+    setEndDate(date);
+  };
+
   // Custom legend component
   const CustomLegend = () => (
-    <div className="flex flex-wrap gap-4 justify-center mb-4">
+    <div className="flex flex-wrap gap-3 justify-center">
       {seriesKeys.map(key => {
         const config = chartConfig[key];
         const isVisible = seriesVisibility[key];
@@ -119,7 +144,7 @@ function ProjectionChart({
           <button
             key={key}
             onClick={() => toggleSeries(key)}
-            className={`flex items-center gap-2 px-3 py-1 rounded-md border transition-all ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-md border transition-all ${
               isVisible
                 ? 'bg-background border-border hover:bg-muted'
                 : 'bg-muted border-muted-foreground/20 opacity-50 hover:opacity-75'
@@ -149,25 +174,92 @@ function ProjectionChart({
   return (
     <Card className="flex flex-col h-full">
       <CardHeader className="flex-shrink-0">
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>
-          Projected account balances over {chartData.length} days
-        </CardDescription>
+        <div className="flex items-start justify-between gap-6">
+          {/* Title and Description */}
+          <div className="flex-1">
+            <CardTitle>{title}</CardTitle>
+            <CardDescription>{getDateRangeDescription()}</CardDescription>
+          </div>
+
+          {/* Date Range Controls */}
+          <div className="flex flex-wrap gap-4 items-center">
+            {/* Preset Buttons */}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDateRangePreset(30)}
+                className={!startDate && !endDate ? 'bg-muted' : ''}
+              >
+                Next 30 Days
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDateRangePreset(60)}
+              >
+                Next 60 Days
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDateRangePreset(90)}
+              >
+                Next 90 days
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDateRangePreset('all')}
+                className={!startDate && !endDate ? 'bg-muted' : ''}
+              >
+                All Time
+              </Button>
+            </div>
+
+            {/* Vertical Separator */}
+            <div className="h-8 w-px bg-border"></div>
+
+            {/* Custom Date Range */}
+            <div className="flex gap-3 items-center">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">From:</span>
+                <EnrichedDatePicker
+                  selectedDate={startDate}
+                  onDateAccepted={handleStartDateChange}
+                  triggerClassName="w-auto h-8"
+                  triggerLabel={date =>
+                    date ? format(date, 'MMM dd, yyyy') : 'Today'
+                  }
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">To:</span>
+                <EnrichedDatePicker
+                  selectedDate={endDate}
+                  onDateAccepted={handleEndDateChange}
+                  triggerClassName="w-auto h-8"
+                  triggerLabel={date =>
+                    date ? format(date, 'MMM dd, yyyy') : 'No limit'
+                  }
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col p-0">
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 px-6">
           <CustomLegend />
         </div>
-        <div
-          className="flex-1 w-full min-h-0 flex items-center justify-center"
-          ref={containerRef}
-        >
-          <ChartContainer config={chartConfig} className="w-full h-full">
+        <div className="flex-1 w-full min-h-0 p-6">
+          <ChartContainer
+            config={chartConfig}
+            className="w-full h-full aspect-auto"
+          >
             <LineChart
-              width={dimensions.width}
-              height={dimensions.height}
               data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              margin={{ top: 20, right: 0, left: 0, bottom: 0 }}
             >
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />{' '}
               <XAxis
