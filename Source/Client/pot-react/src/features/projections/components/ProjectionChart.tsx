@@ -140,7 +140,7 @@ function ProjectionChart({
   }
 
   return (
-    <Card className="flex flex-col h-full">
+    <Card className="flex flex-col h-full pb-0">
       <CardHeader className="flex-shrink-0">
         <div className="flex items-start justify-between gap-6">
           <div className="flex-1 space-y-1">
