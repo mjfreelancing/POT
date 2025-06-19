@@ -31,21 +31,17 @@ function ProjectionsPage() {
           <ProjectionChart data={result.value} />
         </div>
       )}
-      {error && (
-        <>
-          <div className="flex items-center justify-center flex-1 p-6 w-full">
-            <div className="w-full">
-              <NoProjectionData />
-            </div>
-          </div>
 
-          <ErrorSheet
-            title={error.title}
-            description={error.description}
-            onDismiss={() => setError(null)}
-          />
-        </>
+      {!result?.success && <NoProjectionData />}
+
+      {error && (
+        <ErrorSheet
+          title={error.title}
+          description={error.description}
+          onDismiss={() => setError(null)}
+        />
       )}
+
       <LoadingMessage isLoading={isLoading} />
     </div>
   );
