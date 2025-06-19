@@ -2,7 +2,17 @@ import { format, parseISO } from 'date-fns';
 import { useMemo } from 'react';
 
 import { ChartConfig } from '@/components/ui/chart';
-import { Projection } from '@/data/projection';
+import { Projection, ProjectionMetric } from '@/data/projection';
+
+const ACCOUNT_COLORS = [
+  '#8884d8', // Purple
+  '#82ca9d', // Green
+  '#ffc658', // Yellow/Orange
+  '#ff7300', // Orange
+  '#8dd1e1', // Light Blue
+] as const;
+
+const GLOBAL_SERIES_COLOR = '#2563eb'; // Blue
 
 type ChartDataPoint = {
   date: string;
@@ -20,29 +30,17 @@ type UseProjectionChartDataResult = {
 /**
  * Custom hook to transform projection data for chart consumption
  * @param data - The projection data from the API
+ * @param metric - The metric to display (balance, available, incomeReceived, expensesPaid)
  * @returns Transformed data ready for chart rendering
  */
 function useProjectionChartData(
   data: Projection,
+  metric: ProjectionMetric = 'balance',
 ): UseProjectionChartDataResult {
   return useMemo(() => {
-    // Collect all unique dates from all accounts and global data
-    const allDates = new Set<string>();
-
-    // Add dates from accounts
-    data.accounts.forEach(account => {
-      account.dates.forEach(dateBalance => {
-        allDates.add(dateBalance.date);
-      });
-    });
-
-    // Add dates from global data
-    data.global.forEach(dateBalance => {
-      allDates.add(dateBalance.date);
-    });
-
-    // Sort dates chronologically
-    const sortedDates = Array.from(allDates).sort();
+    // Since all accounts and global data contain the same set of dates,
+    // we can simply use the global dates (already sorted from the API)
+    const sortedDates = data.global.map(db => db.date);
 
     // Create chart data points
     const chartData: ChartDataPoint[] = sortedDates.map(date => {
@@ -50,51 +48,42 @@ function useProjectionChartData(
         date,
         formattedDate: format(parseISO(date), 'MMM dd'),
       };
+
       // Add account balances
       data.accounts.forEach(account => {
-        const dateBalance = account.dates.find(db => db.date === date);
-        const balance = dateBalance?.balance ?? 0;
-        point[account.rowId] = balance;
-
-        // Debug logging in development
-        if (process.env.NODE_ENV === 'development' && date === sortedDates[0]) {
-          console.log(
-            `Account ${account.description} (${account.rowId}):`,
-            balance,
-          );
-        }
+        const dateBalance = account.dates.find(db => db.date === date)!;
+        const value = dateBalance[metric];
+        point[account.rowId] = value;
       });
 
       // Add global balance
-      const globalBalance = data.global.find(db => db.date === date);
-      point['global'] = globalBalance?.balance ?? 0;
+      const globalBalance = data.global.find(db => db.date === date)!;
+      point['global'] = globalBalance[metric];
 
       return point;
     });
 
     // Create chart configuration
     const config: ChartConfig = {};
-    const seriesKeys: string[] = []; // Add account series
-    const accountColors = [
-      '#8884d8',
-      '#82ca9d',
-      '#ffc658',
-      '#ff7300',
-      '#8dd1e1',
-    ];
+    const seriesKeys: string[] = [];
+
     data.accounts.forEach((account, index) => {
-      const fallbackColor = accountColors[index % accountColors.length];
+      const fallbackColor = ACCOUNT_COLORS[index % ACCOUNT_COLORS.length];
+
       config[account.rowId] = {
         label: account.description,
-        color: fallbackColor, // Use explicit color for now
+        color: fallbackColor,
       };
+
       seriesKeys.push(account.rowId);
     });
+
     // Add global series
     config['global'] = {
       label: 'Total (All Accounts)',
-      color: '#2563eb', // Explicit blue color
+      color: GLOBAL_SERIES_COLOR,
     };
+
     seriesKeys.push('global');
 
     // Check if we have any data to display
@@ -105,7 +94,7 @@ function useProjectionChartData(
       );
 
     return { chartData, chartConfig: config, seriesKeys, hasData };
-  }, [data]);
+  }, [data, metric]);
 }
 
 export { useProjectionChartData };

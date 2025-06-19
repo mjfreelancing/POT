@@ -1,8 +1,55 @@
 import { z } from 'zod';
 
+// Chart type for displaying metrics
+type ChartType = 'line' | 'bar';
+
+// Projection metric types for chart display
+type ProjectionMetric =
+  | 'balance'
+  | 'available'
+  | 'incomeReceived'
+  | 'expensesPaid';
+
+type MetricConfig = {
+  label: string;
+  shortLabel: string;
+  chartType: ChartType;
+  description?: string;
+};
+
+const PROJECTION_METRICS: Record<ProjectionMetric, MetricConfig> = {
+  balance: {
+    label: 'Account Balances',
+    shortLabel: 'Balance',
+    chartType: 'line',
+    description: 'Account balance trends over time',
+  },
+  available: {
+    label: 'Available Amounts',
+    shortLabel: 'Available',
+    chartType: 'line',
+    description: 'Available amount trends over time',
+  },
+  incomeReceived: {
+    label: 'Income Received',
+    shortLabel: 'Income',
+    chartType: 'bar',
+    description: 'Income received by date',
+  },
+  expensesPaid: {
+    label: 'Expenses Paid',
+    shortLabel: 'Expenses',
+    chartType: 'bar',
+    description: 'Expenses paid by date',
+  },
+} as const;
+
 const DateBalanceSchema = z.object({
   date: z.string(), // ISO date string
-  balance: z.number(), // Balance for the date
+  balance: z.number(),
+  available: z.number(),
+  incomeReceived: z.number(),
+  expensesPaid: z.number(),
 });
 
 type DateBalance = z.infer<typeof DateBalanceSchema>;
@@ -22,5 +69,17 @@ const ProjectionSchema = z.object({
 
 type Projection = z.infer<typeof ProjectionSchema>;
 
-export { AccountDailyBalancesSchema, DateBalanceSchema, ProjectionSchema };
-export type { AccountDailyBalances, DateBalance, Projection };
+export {
+  AccountDailyBalancesSchema,
+  DateBalanceSchema,
+  ProjectionSchema,
+  PROJECTION_METRICS,
+};
+export type {
+  AccountDailyBalances,
+  DateBalance,
+  Projection,
+  ProjectionMetric,
+  ChartType,
+  MetricConfig,
+};

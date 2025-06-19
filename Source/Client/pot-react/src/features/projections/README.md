@@ -1,89 +1,147 @@
 # Projections Chart Feature
 
-This directory contains the implementation of the account balance projections chart feature.
+This directory contains the implementation of the account balance and transaction projections chart feature with dynamic chart type switching.
+
+## Overview
+
+The projections feature provides a comprehensive visualization system for financial data with:
+
+- **Configuration-Driven Chart Types**: Automatically switches between line charts (for trends) and bar charts (for transactions)
+- **Multiple Metric Support**: Balance, Available, Income Received, Expenses Paid
+- **Interactive Controls**: Metric selection, date range filtering, and series visibility toggles
+- **Responsive Design**: Adapts to all screen sizes with stable layout
 
 ## Components
 
 ### `ProjectionChart`
 
-The main chart component that displays account balance projections over time with fully responsive sizing.
+The main chart component that displays financial projections with dynamic chart type switching based on the selected metric.
 
 **Features:**
 
-- Multiple line series (one per account + global total)
-- Interactive legend with series visibility toggle
-- **Smart Default Visibility**: Accounts with empty dates arrays are hidden by default
-- Dynamic date formatting based on data range
-- Currency formatting using the app's `formatMoneyValue` utility
-- **Fully Responsive Design**: Automatically adapts to container size and window resizing
-- Empty state handling
-- Visual indicators for accounts with no data
-- **Dynamic Sizing Management**: Uses container measurement for optimal chart sizing
+- **Smart Chart Types**: Line charts for Balance/Available trends, Bar charts for Income/Expenses events
+- **Metric Selection**: Dropdown to switch between different data metrics
+- **Interactive Controls**: Period presets (30d, 60d, 90d, All) and custom date range selection
+- **Series Management**: Toggle account visibility with indicators for accounts with no data
+- **Stable Layout**: Fixed-width controls prevent layout shifts when switching options
+- **Currency Formatting**: Uses the app's `formatMoneyValue` utility
+- **Empty State Handling**: Shows appropriate message when no data is available
 
 **Props:**
 
-- `data`: Projection data from the API
-- `title`: Optional chart title (default: "Account Balance Projections")
-- `curveType`: Optional curve type for line smoothing (default: "basis")
+- `data`: Projection data from the API (includes balance, available, incomeReceived, expensesPaid)
 
-## Responsive Sizing System
+### `ChartControls`
 
-The `ProjectionChart` component implements a sophisticated responsive sizing system that eliminates scroll bars and maximizes chart visibility:
+Extracted component that handles all user interaction controls for the chart.
 
-### Container Measurement Strategy
+**Features:**
 
-- **useRef Hook**: Uses `containerRef` to reference the chart container DOM element
-- **Dynamic Dimensions**: Measures actual container `clientWidth` and `clientHeight`
-- **Real-time Updates**: Automatically recalculates dimensions on window resize events
-- **Minimum Constraints**: Enforces minimum size of 300x300 pixels for usability
+- **Metric Dropdown**: Select between Balance, Available, Income Received, Expenses Paid
+- **Period Controls**: Quick preset buttons for common time ranges
+- **Date Range Selectors**: Custom start/end date selection with validation
+- **Series Legend**: Toggle account visibility with visual indicators
+- **Responsive Layout**: Left-aligned metric selector, right-aligned time controls
+- **Fixed-Width Elements**: Prevents layout shifts when switching between options
 
-### Size Calculation Details
+**Props:**
 
-```typescript
-const [dimensions, setDimensions] = useState({ width: 800, height: 400 });
-
-useEffect(() => {
-  const updateDimensions = () => {
-    if (containerRef.current) {
-      const { clientWidth, clientHeight } = containerRef.current;
-      setDimensions({
-        width: Math.max(300, clientWidth - 40), // Account for padding
-        height: Math.max(300, clientHeight - 20), // Account for margins
-      });
-    }
-  };
-
-  updateDimensions();
-  window.addEventListener('resize', updateDimensions);
-  return () => window.removeEventListener('resize', updateDimensions);
-}, []);
-```
-
-### Layout Structure
-
-- **Flex Container**: Uses CSS flexbox (`flex flex-col h-full`) for predictable layout
-- **Fixed Header**: Card header is `flex-shrink-0` to prevent compression
-- **Flexible Content**: Chart area uses `flex-1` to fill remaining space
-- **Overflow Prevention**: `min-h-0` on chart container prevents flex overflow issues
-- **Container Reference**: Chart container div includes `ref={containerRef}` for measurement
-
-### Benefits
-
-- **No Scroll Bars**: Chart dimensions precisely match available space
-- **True Responsiveness**: Adapts to all screen sizes and window resizing
-- **Consistent Aspect Ratio**: Maintains proper proportions across devices
-- **Performance Optimized**: Only recalculates on actual resize events
-- **Cross-Browser Compatible**: Uses standard DOM measurement APIs
+- `selectedMetric`: Currently selected metric
+- `onMetricChange`: Callback for metric selection changes
+- `startDate`/`endDate`: Date range state
+- `onStartDateChange`/`onEndDateChange`: Date change callbacks
+- `seriesKeys`: Array of available data series
+- `seriesVisibility`: Object tracking which series are visible
+- `onToggleSeries`: Callback for toggling series visibility
+- `chartConfig`: Chart configuration object
+- `hasSeriesData`: Function to check if a series has meaningful data
 
 ### `NoProjectionData`
 
 Component displayed when there's no data available to chart.
 
+## Configuration System
+
+### Metric Configuration
+
+The system uses a configuration-driven approach to determine chart types and behaviors:
+
+```typescript
+type ProjectionMetric =
+  | 'balance'
+  | 'available'
+  | 'incomeReceived'
+  | 'expensesPaid';
+
+type MetricConfig = {
+  label: string; // Display name in dropdown
+  shortLabel: string; // Abbreviated label for compact displays
+  chartType: ChartType; // 'line' or 'bar'
+  description?: string; // Optional description
+};
+
+const PROJECTION_METRICS: Record<ProjectionMetric, MetricConfig> = {
+  balance: {
+    label: 'Account Balances',
+    shortLabel: 'Balance',
+    chartType: 'line',
+    description: 'Account balance trends over time',
+  },
+  available: {
+    label: 'Available Amounts',
+    shortLabel: 'Available',
+    chartType: 'line',
+    description: 'Available amount trends over time',
+  },
+  incomeReceived: {
+    label: 'Income Received',
+    shortLabel: 'Income',
+    chartType: 'bar',
+    description: 'Income received by date',
+  },
+  expensesPaid: {
+    label: 'Expenses Paid',
+    shortLabel: 'Expenses',
+    chartType: 'bar',
+    description: 'Expenses paid by date',
+  },
+};
+```
+
+### Adding New Metrics
+
+To add a new metric:
+
+1. **Update the type**: Add to `ProjectionMetric` union type
+2. **Add configuration**: Add entry to `PROJECTION_METRICS` with appropriate chart type
+3. **Update data schema**: Ensure the field exists in `DateBalance` type
+4. **Update API**: Include the new field in backend response
+
+The chart will automatically render with the correct visualization type!
+
+## Chart Type Logic
+
+The system automatically selects the appropriate chart type based on data characteristics:
+
+- **Line Charts** (`chartType: 'line'`): Best for continuous data that shows trends over time
+  - Balance amounts (account totals)
+  - Available amounts (spendable funds)
+- **Bar Charts** (`chartType: 'bar'`): Best for discrete events or transactions
+  - Income received (individual payments)
+  - Expenses paid (individual transactions)
+
+This prevents the visual issue where transaction data (with many zero values) looks awkward as line charts.
+
 ## Hooks
 
 ### `useProjectionChartData`
 
-Custom hook that transforms raw projection data into chart-ready format.
+Custom hook that transforms raw projection data into chart-ready format based on the selected metric.
+
+**Parameters:**
+
+- `data`: Raw projection data from API
+- `metric`: Selected metric to display ('balance' | 'available' | 'incomeReceived' | 'expensesPaid')
 
 **Returns:**
 
@@ -91,6 +149,31 @@ Custom hook that transforms raw projection data into chart-ready format.
 - `chartConfig`: Configuration object for styling and labels
 - `seriesKeys`: Array of series identifiers
 - `hasData`: Boolean indicating if there's meaningful data to display
+
+## Data Schema
+
+### Updated Projection Types
+
+```typescript
+type DateBalance = {
+  date: string; // ISO date string
+  balance: number; // Account balance
+  available: number; // Available amount
+  incomeReceived: number; // Income received on this date
+  expensesPaid: number; // Expenses paid on this date
+};
+
+type AccountDailyBalances = {
+  rowId: string; // Unique account identifier
+  description: string; // Account description/name
+  dates: DateBalance[]; // Array of daily data
+};
+
+type Projection = {
+  accounts: AccountDailyBalances[]; // Per-account data
+  global: DateBalance[]; // Global totals
+};
+```
 
 ## Utilities
 
