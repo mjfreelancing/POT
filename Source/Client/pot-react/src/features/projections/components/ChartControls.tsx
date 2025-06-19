@@ -23,7 +23,6 @@ type ChartControlsProps = {
   seriesVisibility: Record<string, boolean>;
   onToggleSeries: (seriesKey: string) => void;
   chartConfig: ChartConfig;
-  hasSeriesData: (seriesKey: string) => boolean;
 };
 
 function ChartControls({
@@ -37,7 +36,6 @@ function ChartControls({
   seriesVisibility,
   onToggleSeries,
   chartConfig,
-  hasSeriesData,
 }: ChartControlsProps) {
   const today = new Date();
 
@@ -181,7 +179,6 @@ function ChartControls({
             {seriesKeys.map(key => {
               const config = chartConfig[key];
               const isVisible = seriesVisibility[key];
-              const hasData = hasSeriesData(key);
 
               return (
                 <button
@@ -192,18 +189,12 @@ function ChartControls({
                       ? 'bg-background border-border hover:bg-muted shadow-sm'
                       : 'bg-muted/50 border-muted-foreground/20 opacity-60 hover:opacity-80'
                   }`}
-                  title={
-                    !hasData ? 'This account has no data to display' : undefined
-                  }
                 >
                   <div
                     className="w-2 h-2 rounded-full"
                     style={{ backgroundColor: config.color }}
                   />
-                  <span className={!hasData ? 'text-muted-foreground' : ''}>
-                    {config.label}
-                    {!hasData && ' (no data)'}
-                  </span>
+                  <span>{config.label}</span>
                 </button>
               );
             })}

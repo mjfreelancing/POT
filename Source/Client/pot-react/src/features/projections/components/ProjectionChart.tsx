@@ -45,6 +45,7 @@ function ProjectionChart({ data }: ProjectionChartProps) {
   const today = new Date();
   const [startDate, setStartDate] = useState<Date | undefined>(today);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+
   // Transform data for chart consumption using custom hook
   const {
     chartData: allChartData,
@@ -58,28 +59,17 @@ function ProjectionChart({ data }: ProjectionChartProps) {
     const pointDate = parseISO(point.date);
     const afterStart = !startDate || pointDate >= startDate;
     const beforeEnd = !endDate || pointDate <= endDate;
+
     return afterStart && beforeEnd;
   });
 
-  // Helper function to check if a series has meaningful data
-  const hasSeriesData = (seriesKey: string): boolean => {
-    if (seriesKey === 'global') {
-      // Always show the global series
-      return true;
-    }
-
-    // Find the account and check if it has any dates
-    const account = data.accounts.find(acc => acc.rowId === seriesKey);
-    return account ? account.dates.length > 0 : false;
-  };
-
-  // State for series visibility - hide accounts with no data by default
+  // State for series visibility - show all series by default since all accounts have data
   const [seriesVisibility, setSeriesVisibility] = useState<SeriesVisibility>(
     () => {
       const initial: SeriesVisibility = {};
 
       seriesKeys.forEach(key => {
-        initial[key] = hasSeriesData(key);
+        initial[key] = true; // All series have data
       });
 
       return initial;
@@ -95,6 +85,7 @@ function ProjectionChart({ data }: ProjectionChartProps) {
   const getChartType = () => {
     return PROJECTION_METRICS[selectedMetric].chartType;
   };
+
   // Get date range for description
   const getDateRangeDescription = () => {
     if (chartData.length === 0) {
@@ -135,7 +126,6 @@ function ProjectionChart({ data }: ProjectionChartProps) {
           </div>
         </div>
       </CardHeader>
-      {/* Chart Controls */}
       <ChartControls
         selectedMetric={selectedMetric}
         onMetricChange={setSelectedMetric}
@@ -147,7 +137,6 @@ function ProjectionChart({ data }: ProjectionChartProps) {
         seriesVisibility={seriesVisibility}
         onToggleSeries={toggleSeries}
         chartConfig={chartConfig}
-        hasSeriesData={hasSeriesData}
       />
       <CardContent className="flex-1 flex flex-col p-0">
         <div
