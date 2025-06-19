@@ -299,3 +299,4 @@ function ProjectionChart({ data }: ProjectionChartProps) {
 }
 
 export default ProjectionChart;
+export type { ProjectionChartProps };

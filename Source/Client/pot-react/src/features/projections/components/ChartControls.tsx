@@ -97,9 +97,9 @@ function ChartControls({
           </div>
 
           {/* Right-aligned controls group */}
-          <div className="flex items-center gap-4">
-            {/* Period Controls */}
-            <div className="flex items-center gap-2">
+          <div className="flex items-center gap-6">
+            {/* Period Controls Group */}
+            <div className="flex items-center gap-2 px-3 py-2 bg-muted/30 rounded-md">
               <span className="text-sm font-medium text-muted-foreground">
                 Period:
               </span>
@@ -138,9 +138,8 @@ function ChartControls({
                 </Button>
               </div>
             </div>
-            {/* Vertical Divider */}
-            <div className="h-6 w-px bg-border"></div> {/* Custom Date Range */}
-            <div className="flex items-center gap-3">
+            {/* Custom Date Range Group */}
+            <div className="flex items-center gap-3 px-3 py-2 bg-muted/30 rounded-md">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-muted-foreground">
                   From:
@@ -206,3 +205,4 @@ function ChartControls({
 }
 
 export default ChartControls;
+export type { ChartControlsProps };
