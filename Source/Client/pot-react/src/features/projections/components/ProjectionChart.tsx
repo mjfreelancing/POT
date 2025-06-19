@@ -119,6 +119,7 @@ function ProjectionChart({
   // Validation for date range
   const handleStartDateChange = (date: Date | undefined) => {
     setStartDate(date);
+
     // If end date is before start date, clear it
     if (date && endDate && endDate < date) {
       setEndDate(undefined);
@@ -128,44 +129,11 @@ function ProjectionChart({
   const handleEndDateChange = (date: Date | undefined) => {
     // Don't allow end date before start date
     if (date && startDate && date < startDate) {
-      return; // Reject the change
+      return;
     }
+
     setEndDate(date);
   };
-
-  // Custom legend component
-  const CustomLegend = () => (
-    <div className="flex flex-wrap gap-3 justify-center">
-      {seriesKeys.map(key => {
-        const config = chartConfig[key];
-        const isVisible = seriesVisibility[key];
-        const hasData = hasSeriesData(key);
-        return (
-          <button
-            key={key}
-            onClick={() => toggleSeries(key)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-md border transition-all ${
-              isVisible
-                ? 'bg-background border-border hover:bg-muted'
-                : 'bg-muted border-muted-foreground/20 opacity-50 hover:opacity-75'
-            }`}
-            title={!hasData ? 'This account has no data to display' : undefined}
-          >
-            <div
-              className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: config.color }}
-            />
-            <span
-              className={`text-sm font-medium ${!hasData ? 'text-muted-foreground' : ''}`}
-            >
-              {config.label}
-              {!hasData && ' (no data)'}
-            </span>
-          </button>
-        );
-      })}
-    </div>
-  );
 
   if (!hasData) {
     return <NoProjectionData />;
@@ -175,37 +143,43 @@ function ProjectionChart({
     <Card className="flex flex-col h-full">
       <CardHeader className="flex-shrink-0">
         <div className="flex items-start justify-between gap-6">
-          {/* Title and Description */}
           <div className="flex-1">
             <CardTitle>{title}</CardTitle>
             <CardDescription>{getDateRangeDescription()}</CardDescription>
           </div>
+        </div>
+      </CardHeader>
 
+      {/* Chart Controls Section */}
+      <div className="px-6 py-4 border-b bg-muted/30">
+        <div className="space-y-3">
           {/* Date Range Controls */}
-          <div className="flex flex-wrap gap-4 items-center">
-            {/* Preset Buttons */}
+          <div className="flex flex-wrap gap-4 items-center justify-between">
             <div className="flex flex-wrap gap-2">
+              <span className="text-sm font-medium text-muted-foreground self-center">
+                Time Range:
+              </span>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setDateRangePreset(30)}
                 className={!startDate && !endDate ? 'bg-muted' : ''}
               >
-                Next 30 Days
+                30 Days
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setDateRangePreset(60)}
               >
-                Next 60 Days
+                60 Days
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setDateRangePreset(90)}
               >
-                Next 90 days
+                90 Days
               </Button>
               <Button
                 variant="outline"
@@ -217,13 +191,12 @@ function ProjectionChart({
               </Button>
             </div>
 
-            {/* Vertical Separator */}
-            <div className="h-8 w-px bg-border"></div>
-
             {/* Custom Date Range */}
             <div className="flex gap-3 items-center">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">From:</span>
+                <span className="text-sm font-medium text-muted-foreground">
+                  From:
+                </span>
                 <EnrichedDatePicker
                   selectedDate={startDate}
                   onDateAccepted={handleStartDateChange}
@@ -234,7 +207,9 @@ function ProjectionChart({
                 />
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">To:</span>
+                <span className="text-sm font-medium text-muted-foreground">
+                  To:
+                </span>
                 <EnrichedDatePicker
                   selectedDate={endDate}
                   onDateAccepted={handleEndDateChange}
@@ -246,13 +221,51 @@ function ProjectionChart({
               </div>
             </div>
           </div>
+
+          {/* Legend */}
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-muted-foreground">
+              Show:
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {seriesKeys.map(key => {
+                const config = chartConfig[key];
+                const isVisible = seriesVisibility[key];
+                const hasData = hasSeriesData(key);
+
+                return (
+                  <button
+                    key={key}
+                    onClick={() => toggleSeries(key)}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium border transition-all ${
+                      isVisible
+                        ? 'bg-background border-border hover:bg-muted shadow-sm'
+                        : 'bg-muted/50 border-muted-foreground/20 opacity-60 hover:opacity-80'
+                    }`}
+                    title={
+                      !hasData
+                        ? 'This account has no data to display'
+                        : undefined
+                    }
+                  >
+                    <div
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: config.color }}
+                    />
+                    <span className={!hasData ? 'text-muted-foreground' : ''}>
+                      {config.label}
+                      {!hasData && ' (no data)'}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
-      </CardHeader>
+      </div>
+
       <CardContent className="flex-1 flex flex-col p-0">
-        <div className="flex-shrink-0 px-6">
-          <CustomLegend />
-        </div>
-        <div className="flex-1 w-full min-h-0 p-6">
+        <div className="flex-1 w-full min-h-0 px-6">
           <ChartContainer
             config={chartConfig}
             className="w-full h-full aspect-auto"
