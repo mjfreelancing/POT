@@ -149,7 +149,6 @@ function ProjectionChart({
           </div>
         </div>
       </CardHeader>
-
       {/* Chart Controls Section */}
       <div className="px-6 py-4 border-b bg-muted/30">
         <div className="space-y-3">
@@ -263,9 +262,14 @@ function ProjectionChart({
           </div>
         </div>
       </div>
-
       <CardContent className="flex-1 flex flex-col p-0">
-        <div className="flex-1 w-full min-h-0 px-6">
+        <div
+          className="flex-1 w-full min-h-0 px-6"
+          style={{
+            background:
+              'linear-gradient(to bottom, rgba(148, 163, 184, 0.02), rgba(148, 163, 184, 0.08))',
+          }}
+        >
           <ChartContainer
             config={chartConfig}
             className="w-full h-full aspect-auto"
@@ -274,7 +278,7 @@ function ProjectionChart({
               data={chartData}
               margin={{ top: 20, right: 0, left: 0, bottom: 0 }}
             >
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />{' '}
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis
                 dataKey="date"
                 tickFormatter={value => format(parseISO(value), 'MMM dd')}
