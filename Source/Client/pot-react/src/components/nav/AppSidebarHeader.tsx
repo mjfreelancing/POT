@@ -37,6 +37,7 @@ function AppSidebarHeader() {
         <Link
           className="flex aspect-square size-10 group-data-[state=collapsed]:size-8 items-center justify-center rounded-xl bg-blue-500 text-white shadow-md hover:shadow-lg transition-all"
           to="/"
+          aria-label="Navigate to Pay On Time homepage"
         >
           <PiggyBank className="size-6 group-data-[state=collapsed]:size-5" />
         </Link>

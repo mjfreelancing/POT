@@ -39,6 +39,25 @@ function ChartControls({
 }: ChartControlsProps) {
   const today = new Date();
 
+  // Helper function to calculate days between two dates
+  const getDaysBetween = (start: Date, end: Date): number => {
+    return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+  };
+
+  // Helper to determine which period is currently selected
+  const getSelectedPeriod = (): '30' | '60' | '90' | 'all' | 'custom' => {
+    if (!startDate && !endDate) return 'all';
+
+    if (startDate && endDate) {
+      const days = getDaysBetween(startDate, endDate);
+      if (days === 30) return '30';
+      if (days === 60) return '60';
+      if (days === 90) return '90';
+    }
+
+    return 'custom';
+  };
+
   // Date range preset handlers
   const setDateRangePreset = (days: number | 'all') => {
     if (days === 'all') {
@@ -75,15 +94,25 @@ function ChartControls({
         {/* Row 1: Metric Dropdown | Period Controls + Date Range (right-aligned) */}
         <div className="flex flex-wrap gap-4 items-center justify-between">
           {/* Metric Selection */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-muted-foreground">
+          <div
+            className="flex items-center gap-2"
+            role="group"
+            aria-labelledby="metric-label"
+          >
+            <span
+              id="metric-label"
+              className="text-sm font-medium text-muted-foreground"
+            >
               View:
             </span>
             <Select
               value={selectedMetric}
               onValueChange={(value: ProjectionMetric) => onMetricChange(value)}
             >
-              <SelectTrigger className="w-[160px] h-8">
+              <SelectTrigger
+                className="w-[160px] h-8"
+                aria-label="Select chart metric to display"
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -99,16 +128,31 @@ function ChartControls({
           {/* Right-aligned controls group */}
           <div className="flex items-center gap-6">
             {/* Period Controls Group */}
-            <div className="flex items-center gap-2 px-3 py-2 bg-muted/30 rounded-md">
-              <span className="text-sm font-medium text-muted-foreground">
+            <div
+              className="flex items-center gap-2 px-3 py-2 bg-muted/30 rounded-md"
+              role="group"
+              aria-labelledby="period-label"
+            >
+              <span
+                id="period-label"
+                className="text-sm font-medium text-muted-foreground"
+              >
                 Period:
               </span>
-              <div className="flex gap-1">
+              <div
+                className="flex gap-1"
+                role="radiogroup"
+                aria-labelledby="period-label"
+              >
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setDateRangePreset(30)}
                   className="h-8 px-3"
+                  aria-label="Set chart period to 30 days"
+                  role="radio"
+                  aria-checked={getSelectedPeriod() === '30'}
+                  tabIndex={getSelectedPeriod() === '30' ? 0 : -1}
                 >
                   30d
                 </Button>
@@ -117,6 +161,10 @@ function ChartControls({
                   size="sm"
                   onClick={() => setDateRangePreset(60)}
                   className="h-8 px-3"
+                  aria-label="Set chart period to 60 days"
+                  role="radio"
+                  aria-checked={getSelectedPeriod() === '60'}
+                  tabIndex={getSelectedPeriod() === '60' ? 0 : -1}
                 >
                   60d
                 </Button>
@@ -125,6 +173,10 @@ function ChartControls({
                   size="sm"
                   onClick={() => setDateRangePreset(90)}
                   className="h-8 px-3"
+                  aria-label="Set chart period to 90 days"
+                  role="radio"
+                  aria-checked={getSelectedPeriod() === '90'}
+                  tabIndex={getSelectedPeriod() === '90' ? 0 : -1}
                 >
                   90d
                 </Button>
@@ -133,13 +185,24 @@ function ChartControls({
                   size="sm"
                   onClick={() => setDateRangePreset('all')}
                   className={`h-8 px-3 ${!startDate && !endDate ? 'bg-muted' : ''}`}
+                  aria-label="Show all data without date filtering"
+                  role="radio"
+                  aria-checked={getSelectedPeriod() === 'all'}
+                  tabIndex={getSelectedPeriod() === 'all' ? 0 : -1}
                 >
                   All
                 </Button>
               </div>
             </div>
             {/* Custom Date Range Group */}
-            <div className="flex items-center gap-3 px-3 py-2 bg-muted/30 rounded-md">
+            <div
+              className="flex items-center gap-3 px-3 py-2 bg-muted/30 rounded-md"
+              role="group"
+              aria-labelledby="date-range-label"
+            >
+              <span id="date-range-label" className="sr-only">
+                Custom date range selection
+              </span>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-muted-foreground">
                   From:
@@ -170,11 +233,22 @@ function ChartControls({
           </div>
         </div>
         {/* Row 2: Legend */}
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-medium text-muted-foreground">
+        <div
+          className="flex items-center gap-3"
+          role="group"
+          aria-labelledby="legend-label"
+        >
+          <span
+            id="legend-label"
+            className="text-sm font-medium text-muted-foreground"
+          >
             Show:
           </span>
-          <div className="flex flex-wrap gap-2">
+          <div
+            className="flex flex-wrap gap-2"
+            role="group"
+            aria-labelledby="legend-label"
+          >
             {seriesKeys.map(key => {
               const config = chartConfig[key];
               const isVisible = seriesVisibility[key];
@@ -188,10 +262,14 @@ function ChartControls({
                       ? 'bg-background border-border hover:bg-muted shadow-sm'
                       : 'bg-muted/50 border-muted-foreground/20 opacity-60 hover:opacity-80'
                   }`}
+                  aria-label={`${isVisible ? 'Hide' : 'Show'} ${config.label} series on chart`}
+                  aria-pressed={isVisible}
+                  type="button"
                 >
                   <div
                     className="w-2 h-2 rounded-full"
                     style={{ backgroundColor: config.color }}
+                    aria-hidden="true"
                   />
                   <span>{config.label}</span>
                 </button>
