@@ -143,7 +143,7 @@ function ProjectionChart({
     <Card className="flex flex-col h-full">
       <CardHeader className="flex-shrink-0">
         <div className="flex items-start justify-between gap-6">
-          <div className="flex-1">
+          <div className="flex-1 space-y-1">
             <CardTitle>{title}</CardTitle>
             <CardDescription>{getDateRangeDescription()}</CardDescription>
           </div>
@@ -157,7 +157,7 @@ function ProjectionChart({
           <div className="flex flex-wrap gap-4 items-center justify-between">
             <div className="flex flex-wrap gap-2">
               <span className="text-sm font-medium text-muted-foreground self-center">
-                Time Range:
+                Period:
               </span>
               <Button
                 variant="outline"
