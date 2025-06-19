@@ -72,9 +72,25 @@ function ProjectionChart({
       if (containerRef.current) {
         const { clientWidth, clientHeight } = containerRef.current;
 
+        // Account for more conservative padding and margins to prevent overflow
+        // Increase padding allowance for card headers, legends, and margins
+        const availableWidth = Math.max(300, clientWidth - 60);
+        const availableHeight = Math.max(300, clientHeight - 80);
+
+        // Calculate ideal dimensions using 16:9 aspect ratio
+        const idealHeight = availableWidth * (9 / 16);
+
+        // Use the ideal 16:9 dimensions if they fit, otherwise constrain by height
+        const finalWidth =
+          idealHeight <= availableHeight
+            ? availableWidth
+            : availableHeight * (16 / 9);
+        const finalHeight =
+          idealHeight <= availableHeight ? idealHeight : availableHeight;
+
         setDimensions({
-          width: Math.max(300, clientWidth - 40), // Account for padding
-          height: Math.max(300, clientHeight - 20), // Account for margins
+          width: Math.max(300, finalWidth),
+          height: Math.max(300, finalHeight),
         });
       }
     };
@@ -142,7 +158,10 @@ function ProjectionChart({
         <div className="flex-shrink-0">
           <CustomLegend />
         </div>
-        <div className="flex-1 w-full min-h-0" ref={containerRef}>
+        <div
+          className="flex-1 w-full min-h-0 flex items-center justify-center"
+          ref={containerRef}
+        >
           <ChartContainer config={chartConfig} className="w-full h-full">
             <LineChart
               width={dimensions.width}
