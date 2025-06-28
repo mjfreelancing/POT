@@ -38,6 +38,17 @@ const menuGroups: Record<string, MenuGroupDefinition> = {
     ],
   },
 
+  income: {
+    label: 'Income',
+    items: [
+      {
+        label: 'Manage Income',
+        icon: TrendingUp,
+        href: '/incomes',
+      },
+    ],
+  },
+
   accounts: {
     label: 'Accounts',
     items: [
@@ -53,17 +64,6 @@ const menuGroups: Record<string, MenuGroupDefinition> = {
       // },
     ],
   },
-
-  income: {
-    label: 'Income',
-    items: [
-      {
-        label: 'Manage Income',
-        icon: TrendingUp,
-        href: '/incomes',
-      },
-    ],
-  },
 };
 
 function AppSidebarMenus() {
@@ -71,8 +71,8 @@ function AppSidebarMenus() {
     <SidebarContent>
       <MenuGroup group={menuGroups.analysis} />
       <MenuGroup group={menuGroups.expenses} />
-      <MenuGroup group={menuGroups.accounts} />
       <MenuGroup group={menuGroups.income} />
+      <MenuGroup group={menuGroups.accounts} />
     </SidebarContent>
   );
 }
