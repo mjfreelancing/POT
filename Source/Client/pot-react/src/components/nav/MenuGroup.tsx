@@ -63,6 +63,7 @@ const MenuGroup: React.FC<MenuGroupProps> = ({ group }) => {
                   isActive={isActive}
                   tooltip={item.label}
                   asChild
+                  className="ml-4"
                 >
                   <Link to={item.href} aria-label={item.label}>
                     <Icon />
