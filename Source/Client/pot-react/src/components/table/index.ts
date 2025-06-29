@@ -1,3 +1,5 @@
+export * from './BulkActionsBar';
+export { default as BulkActionsBar } from './BulkActionsBar';
 export * from './DataTable';
 export { default as DataTable } from './DataTable';
 export * from './dataTableColumnFactories';

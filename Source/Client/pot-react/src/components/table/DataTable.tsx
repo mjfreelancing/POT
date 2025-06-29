@@ -11,14 +11,7 @@ import {
 } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
 
-import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
 import {
   Table,
   TableBody,
@@ -27,13 +20,9 @@ import {
   TableHeader,
   TableRow,
 } from '../ui/table';
+import BulkActionsBar, { BulkAction } from './BulkActionsBar';
 
 const DEFAULT_HIGHLIGHT_ROW_CLASS = 'bg-yellow-200 dark:bg-yellow-800';
-
-type BulkAction<TData> = {
-  label: string;
-  onClick: (selectedItems: TData[]) => void;
-};
 
 /**
  * Props for the `DataTable` component.
@@ -144,48 +133,13 @@ function DataTable<TData, TValue>({
   //    - Cons: Does not affect row background, so must be combined with header or row styles for full effect.
   return (
     <div>
-      {/* Bulk Actions Bar - Always visible when enableRowSelection is true */}
-      {enableRowSelection && bulkActions.length > 0 && (
-        <div className="flex items-center gap-3 bg-muted p-3 rounded-md mb-4">
-          <span className="text-sm text-muted-foreground w-32">
-            {selectedCount > 0
-              ? `${selectedCount} selected`
-              : 'No items selected'}
-          </span>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setRowSelection({})}
-            disabled={selectedCount === 0}
-            className="hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100 transition-colors"
-          >
-            Clear Selection
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={selectedCount === 0}
-                className="hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100 transition-colors"
-              >
-                Actions
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              {bulkActions.map((action, index) => (
-                <DropdownMenuItem
-                  key={index}
-                  onClick={() => action.onClick(selectedItems)}
-                  disabled={selectedCount === 0}
-                >
-                  {action.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      )}
+      <BulkActionsBar
+        selectedCount={selectedCount}
+        selectedItems={selectedItems}
+        bulkActions={bulkActions}
+        onClearSelection={() => setRowSelection({})}
+        isVisible={enableRowSelection}
+      />
       <Table>
         <TableHeader className="bg-gray-200 dark:bg-gray-700">
           {table.getHeaderGroups().map(headerGroup => (
@@ -246,4 +200,4 @@ function DataTable<TData, TValue>({
 
 export default DataTable;
 export { DEFAULT_HIGHLIGHT_ROW_CLASS };
-export type { BulkAction, DataTableProps };
+export type { DataTableProps };
