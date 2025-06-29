@@ -12,15 +12,9 @@ import {
 import { useEffect, useState } from 'react';
 
 import { Checkbox } from '../ui/checkbox';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../ui/table';
+import { Table, TableBody, TableCell, TableRow } from '../ui/table';
 import BulkActionsBar, { BulkAction } from './BulkActionsBar';
+import DataTableHeader from './DataTableHeader';
 
 const DEFAULT_HIGHLIGHT_ROW_CLASS = 'bg-yellow-200 dark:bg-yellow-800';
 
@@ -141,30 +135,7 @@ function DataTable<TData, TValue>({
         isVisible={enableRowSelection}
       />
       <Table>
-        <TableHeader className="bg-gray-200 dark:bg-gray-700">
-          {table.getHeaderGroups().map(headerGroup => (
-            <TableRow
-              key={headerGroup.id}
-              className="bg-gray-200 dark:bg-gray-700"
-            >
-              {headerGroup.headers.map(header => {
-                return (
-                  <TableHead
-                    key={header.id}
-                    className="font-semibold uppercase"
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                  </TableHead>
-                );
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
+        <DataTableHeader headerGroups={table.getHeaderGroups()} />
         <TableBody>
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map(row => (
