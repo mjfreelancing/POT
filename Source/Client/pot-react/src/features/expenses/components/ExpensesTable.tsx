@@ -1,7 +1,8 @@
-import { ColumnDef } from '@tanstack/react-table';
+import { ColumnDef, Row } from '@tanstack/react-table';
 import { useParams } from 'react-router';
 
 import {
+  BulkAction,
   createDateColumn,
   createFrequencyColumn,
   createMoneyValueColumn,
@@ -69,13 +70,25 @@ type ExpensesTableProps = {
 function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
   const { id: editingId } = useParams<{ id: string }>();
 
+  const bulkActions: BulkAction<Expense>[] = [
+    {
+      label: 'Auto Advance',
+      onClick: (selectedItems: Expense[]) => {
+        console.log('Auto Advance selected expenses:', selectedItems);
+        // TODO: Implement auto advance functionality
+      },
+    },
+  ];
+
   return (
     <Card className="card-elevated">
       <CardContent className="px-4">
         <DataTable
           columns={columns}
           data={filteredExpenses}
-          highlightRowFilter={row =>
+          enableRowSelection={true}
+          bulkActions={bulkActions}
+          highlightRowFilter={(row: Row<Expense>) =>
             row.original.rowId.toString() === editingId
           }
         />
