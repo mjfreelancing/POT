@@ -41,7 +41,6 @@ type BulkActionsBarProps<TData> = {
  *
  * This component provides a consistent interface for:
  * - Showing selection count ("X selected" or "No items selected")
- * - Clearing selection with a "Clear Selection" button
  * - Dropdown menu with custom bulk actions
  *
  * Features:
@@ -67,7 +66,6 @@ type BulkActionsBarProps<TData> = {
  *   selectedCount={selectedCount}
  *   selectedItems={selectedItems}
  *   bulkActions={bulkActions}
- *   onClearSelection={() => setSelection({})}
  *   isVisible={enableRowSelection}
  * />
  * ```
@@ -79,7 +77,6 @@ function BulkActionsBar<TData>({
   selectedCount,
   selectedItems,
   bulkActions,
-  onClearSelection,
   isVisible,
 }: BulkActionsBarProps<TData>) {
   // Hide the component if it's not visible or no bulk actions are configured
@@ -93,17 +90,6 @@ function BulkActionsBar<TData>({
       <span className="text-sm text-muted-foreground w-32">
         {selectedCount > 0 ? `${selectedCount} selected` : 'No items selected'}
       </span>
-
-      {/* Clear selection button - disabled when nothing is selected */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onClearSelection}
-        disabled={selectedCount === 0}
-        className="hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100 transition-colors"
-      >
-        Clear Selection
-      </Button>
 
       {/* Dropdown menu containing all available bulk actions */}
       <DropdownMenu>
