@@ -155,7 +155,7 @@ function ProjectionChart({ data }: ProjectionChartProps) {
             {getChartType() === 'line' ? (
               <LineChart
                 data={chartData}
-                margin={{ top: 20, right: 0, left: 0, bottom: 0 }}
+                margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
               >
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis
@@ -172,7 +172,9 @@ function ProjectionChart({ data }: ProjectionChartProps) {
                 />
                 <ChartTooltip
                   content={({ active, payload, label }) => {
-                    if (!active || !payload?.length) return null;
+                    if (!active || !payload?.length) {
+                      return null;
+                    }
 
                     return (
                       <div className="rounded-lg border bg-background p-3 shadow-md">
@@ -226,7 +228,7 @@ function ProjectionChart({ data }: ProjectionChartProps) {
             ) : (
               <BarChart
                 data={chartData}
-                margin={{ top: 20, right: 0, left: 0, bottom: 0 }}
+                margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
               >
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis
