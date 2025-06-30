@@ -12,7 +12,7 @@ import {
  * @template TData - The type of the data items that the action operates on.
  */
 type BulkAction<TData> = {
-  /** Display label for the action (e.g., "Delete", "Export", "Auto Advance") */
+  /** Display label for the action (e.g., "Delete", "Export") */
   label: string;
   /** Function called when the action is triggered, receives all selected items */
   onClick: (selectedItems: TData[]) => void;
