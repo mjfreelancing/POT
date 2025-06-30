@@ -1,6 +1,9 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { ColumnDef, Row } from '@tanstack/react-table';
+import { useState } from 'react';
 import { useParams } from 'react-router';
 
+import { useApiRenewExpenses } from '@/api/hooks/useExpenses';
 import {
   BulkAction,
   createDateColumn,
@@ -10,7 +13,9 @@ import {
   DataTableColumnHeader,
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
+import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { Expense } from '@/data';
+import { DisplayError } from '@/lib';
 
 import ExpenseActions from './ExpenseActions';
 
@@ -69,31 +74,56 @@ type ExpensesTableProps = {
 
 function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
   const { id: editingId } = useParams<{ id: string }>();
+  const queryClient = useQueryClient();
+  const renewExpensesMutation = useApiRenewExpenses();
+  const [error, setError] = useState<DisplayError | null>(null);
 
   const bulkActions: BulkAction<Expense>[] = [
     {
-      label: 'Auto Advance',
-      onClick: (selectedItems: Expense[]) => {
-        console.log('Auto Advance selected expenses:', selectedItems);
-        // TODO: Implement auto advance functionality
+      label: 'Auto Renew',
+      onClick: async (selectedItems: Expense[]) => {
+        const rowIds = selectedItems.map(expense => expense.rowId);
+
+        const result = await renewExpensesMutation.mutateAsync({
+          data: { rowIds },
+        });
+
+        if (result.success) {
+          queryClient.invalidateQueries({ queryKey: ['expenses'] });
+        } else {
+          setError({
+            title: result.error.code,
+            description: result.error.description,
+          });
+        }
       },
     },
   ];
 
   return (
-    <Card className="card-elevated">
-      <CardContent className="px-4">
-        <DataTable
-          columns={columns}
-          data={filteredExpenses}
-          enableRowSelection={true}
-          bulkActions={bulkActions}
-          highlightRowFilter={(row: Row<Expense>) =>
-            row.original.rowId.toString() === editingId
-          }
+    <>
+      {error && (
+        <ErrorSheet
+          title={error.title}
+          description={error.description}
+          onDismiss={() => setError(null)}
         />
-      </CardContent>
-    </Card>
+      )}
+
+      <Card className="card-elevated">
+        <CardContent className="px-4">
+          <DataTable
+            columns={columns}
+            data={filteredExpenses}
+            enableRowSelection={true}
+            bulkActions={bulkActions}
+            highlightRowFilter={(row: Row<Expense>) =>
+              row.original.rowId.toString() === editingId
+            }
+          />
+        </CardContent>
+      </Card>
+    </>
   );
 }
 

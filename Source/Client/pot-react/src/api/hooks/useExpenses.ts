@@ -4,6 +4,7 @@ import {
   Expense,
   Identity,
   PagedExpense,
+  RenewExpenses,
 } from '@/data';
 import { FailResultBase, Result, SuccessResult } from '@/lib';
 
@@ -86,10 +87,20 @@ const useApiDeleteExpense = (id: string) => {
   };
 };
 
+const useApiRenewExpenses = () => {
+  const mutation = usePost<void, RenewExpenses>('/expenses/renew');
+
+  return {
+    ...mutation,
+    data: mutation.data as Result<void, FailResultBase>,
+  };
+};
+
 export {
   useApiCreateExpense,
   useApiDeleteExpense,
   useApiGetAllExpenses,
   useApiGetExpenseById,
+  useApiRenewExpenses,
   useApiUpdateExpense,
 };

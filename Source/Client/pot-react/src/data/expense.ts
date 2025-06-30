@@ -36,9 +36,14 @@ const EditExpenseSchema = BaseExpenseSchema.extend({
   accountRowId: z.string(),
 });
 
+const RenewExpensesSchema = z.object({
+  rowIds: z.string().array(),
+});
+
 type Expense = z.infer<typeof ExpenseSchema>;
 type CreateExpense = z.infer<typeof CreateExpenseSchema>;
 type EditExpense = z.infer<typeof EditExpenseSchema>;
+type RenewExpenses = z.infer<typeof RenewExpensesSchema>;
 type PagedExpense = Paged<Expense>;
 
 export {
@@ -47,10 +52,13 @@ export {
   EditExpenseSchema,
   ExpenseAccountSchema,
   ExpenseSchema,
+  RenewExpensesSchema,
 };
-export {
-  type CreateExpense,
-  type EditExpense,
-  type Expense,
-  type PagedExpense,
+
+export type {
+  CreateExpense,
+  EditExpense,
+  Expense,
+  PagedExpense,
+  RenewExpenses,
 };
