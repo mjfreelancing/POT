@@ -20,7 +20,7 @@ public sealed class ProjectionOptions
 
 internal sealed class ProjectionsService : IProjectionsService
 {
-    internal TimeProvider TimeProvider { get; } = TimeProvider.System;
+    internal TimeProvider TimeProvider { get; set; } = TimeProvider.System;
 
     private readonly IExpenseRepositoryFactory _expenseRepositoryFactory;
     private readonly IIncomeRepositoryFactory _incomeRepositoryFactory;

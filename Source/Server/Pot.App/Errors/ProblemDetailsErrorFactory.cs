@@ -38,6 +38,17 @@ public static class ProblemDetailsErrorFactory
         };
     }
 
+    public static ProblemDetailsError CreateUnprocessableEntityError(string propertyName, object? attemptedValue, string errorMessage)
+    {
+        return new ProblemDetailsError(ProblemType.UnprocessableEntity)
+        {
+            ErrorCode = ErrorCodes.Invalid,
+            PropertyName = propertyName,
+            AttemptedValue = attemptedValue,
+            ErrorMessage = errorMessage
+        };
+    }
+
     public static ProblemDetailsError CreateEtagConflict(string entityType, object? attemptedValue)
     {
         return new ProblemDetailsError(ProblemType.Conflict)

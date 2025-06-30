@@ -74,7 +74,22 @@ internal static class RouteGroupBuilderExtensions
             .MapDelete(ExpensesEndpoints.Delete, Delete.Handler.Invoke)
             .WithName(nameof(DeleteExpense))
             .WithSummary("Delete expense")
-            .WithDescription("Deletes existing expense details")
+            .WithDescription("Deletes an existing expense")
+            .WithTags("Expenses")
+            .ProducesProblem((int)HttpStatusCode.OK)
+            .ProducesProblem((int)HttpStatusCode.NotFound)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+
+        return routeGroupBuilder;
+    }
+
+    public static RouteGroupBuilder RenewExpenses(this RouteGroupBuilder routeGroupBuilder)
+    {
+        routeGroupBuilder
+            .MapPost(ExpensesEndpoints.Renew, Renew.Handler.Invoke)
+            .WithName(nameof(RenewExpenses))
+            .WithSummary("Renew expenses")
+            .WithDescription("Renews selected expenses")
             .WithTags("Expenses")
             .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.NotFound)
