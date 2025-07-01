@@ -56,6 +56,14 @@ internal sealed class ExpenseRepository : GenericRepository<PotDbContext, Expens
             .SingleOrDefaultAsync(rowId, cancellationToken);
     }
 
+    public Task<List<ExpenseEntity>> GetExpensesAsync(Guid[] rowIds, CancellationToken cancellationToken)
+    {
+        return AsQueryable()
+            .Include(expense => expense.Account)
+            .Where(expense => rowIds.Contains(expense.RowId))
+            .ToListAsync(cancellationToken);
+    }
+
     public Task<List<ExpenseEntity>> GetExpensesForAccountAsync(Guid accountRowId, CancellationToken cancellationToken)
     {
         return AsQueryable()

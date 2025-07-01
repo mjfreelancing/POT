@@ -18,6 +18,7 @@ internal static class WebApplicationExtensions
                 .CreateExpense()
                 .UpdateExpense()
                 .DeleteExpense()
+                .RenewExpenses()
                 .ImportExpenses(MaxImportPayloadBytes);
         }
 
