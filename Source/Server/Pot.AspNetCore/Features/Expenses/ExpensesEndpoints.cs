@@ -10,5 +10,4 @@ internal static class ExpensesEndpoints
     public const string Create = "";
     public const string Update = "";
     public const string Delete = "/{id:guid}";
-    public const string Renew = "/renew";
 }

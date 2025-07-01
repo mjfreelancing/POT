@@ -9,5 +9,5 @@ public interface IExpenseRepository : IGenericRepository<PotDbContext, ExpenseEn
     Task<List<ExpenseEntity>> GetAllExpensesAsync(CancellationToken cancellationToken);
     Task<PageResult<ExpenseEntity>> GetAllExpensesPagedAsync(Paging paging, CancellationToken cancellationToken);
     Task<ExpenseEntity?> GetExpenseOrDefaultAsync(Guid rowId, CancellationToken cancellationToken);
-    Task<List<ExpenseEntity>> GetExpensesAsync(Guid[] rowIds, CancellationToken cancellationToken);
+    Task<List<ExpenseEntity>> GetExpensesForAccountAsync(Guid accountRowId, CancellationToken cancellationToken);
 }

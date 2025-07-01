@@ -81,6 +81,21 @@ internal static class RouteGroupBuilderExtensions
         return routeGroupBuilder;
     }
 
+    public static RouteGroupBuilder AccrueAccountExpenses(this RouteGroupBuilder routeGroupBuilder)
+    {
+        routeGroupBuilder
+            .MapPost(AccountsEndpoints.AccrueExpenses, AccrueExpenses.Handler.Invoke)
+            .WithName(nameof(AccrueExpenses))
+            .WithSummary("AccrueExpenses expenses")
+            .WithDescription("Accrue expenses associated with the account")
+            .WithTags("Accounts")
+            .ProducesProblem((int)HttpStatusCode.OK)
+            .ProducesProblem((int)HttpStatusCode.NotFound)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+
+        return routeGroupBuilder;
+    }
+
     public static RouteGroupBuilder ImportAccounts(this RouteGroupBuilder routeGroupBuilder, long maxImportPayloadBytes)
     {
         routeGroupBuilder
