@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Features.Expenses.Renew.Models;
+﻿namespace Pot.App.Features.Accounts.AccrueExpenses.Models;
 
 public sealed class Input
 {

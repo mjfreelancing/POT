@@ -10,5 +10,5 @@ internal static class AccountsEndpoints
     public const string Create = "";
     public const string Update = "";
     public const string Delete = "/{id:guid}";
-    public const string AccrueExpenses = "/accrue-expenses/{id:guid}";
+    public const string AccrueExpenses = "/accrue-expenses";
 }

@@ -1,4 +1,5 @@
 ﻿using AllOverIt.Assertion;
+using AllOverIt.Extensions;
 using Pot.Data.Entities;
 using Pot.Data.Extensions;
 using Pot.Data.Repositories.Expenses;
@@ -16,21 +17,25 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
         _expenseRepository = expenseRepository.WhenNotNull();
     }
 
-    public async Task AccrueExpensesAsync(AccountEntity account, CancellationToken cancellationToken)
+    public async Task AccrueExpensesAsync(Guid accountRowId, CancellationToken cancellationToken)
     {
         using (_expenseRepository.WithTracking())
         {
-            var expenses = await _expenseRepository.GetExpensesForAccountAsync(account.RowId, cancellationToken).ConfigureAwait(false);
-
-            ResetAccountAccruals(account);
+            var expenses = await _expenseRepository.GetExpensesForAccountAsync(accountRowId, cancellationToken).ConfigureAwait(false);
 
             // Sorted is important if the option to not allow negative balances is set.
             var sortedExpenses = expenses.OrderByDescending(expense => expense.NextDue);
 
-            foreach (var expense in sortedExpenses)
+            sortedExpenses.ForEach((expense, index) =>
             {
+                if (index == 0)
+                {
+                    // All expenses point to the same account
+                    ResetAccountAccruals(expense.Account);
+                }
+
                 AccrueExpense(expense);
-            }
+            });
 
             await _expenseRepository.SaveAsync(cancellationToken);
         }
