@@ -1,5 +1,6 @@
 import {
   Account,
+  AccrueExpenses,
   compareAccountBsbNumber,
   CreateAccount,
   EditAccount,
@@ -74,7 +75,17 @@ const useApiDeleteAccount = (id: string) => {
   };
 };
 
+const useApiAccrueExpenses = () => {
+  const mutation = usePost<void, AccrueExpenses>('/accounts/accrue-expenses');
+
+  return {
+    ...mutation,
+    data: mutation.data as Result<void, FailResultBase>,
+  };
+};
+
 export {
+  useApiAccrueExpenses,
   useApiCreateAccount,
   useApiDeleteAccount,
   useApiGetAccountById,

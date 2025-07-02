@@ -1,16 +1,21 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { Receipt, TrendingUp } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 
+import { useApiAccrueExpenses } from '@/api/hooks';
+import { ErrorSheet } from '@/components/feedback';
 import { StatusBadge } from '@/components/feedback/badge';
 import {
+  BulkAction,
   createMoneyValueColumn,
   DataTable,
   DataTableColumnHeader,
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Account } from '@/data';
+import { DisplayError } from '@/lib';
 
 import accountsSummaryStore, {
   AccountsSummary,
@@ -85,6 +90,9 @@ const columns: ColumnDef<Account>[] = [
 
 function AccountsTable({ accounts }: AccountsTableProps) {
   const { id: editingId } = useParams<{ id: string }>();
+  const queryClient = useQueryClient();
+  const accrueExpensesMutation = useApiAccrueExpenses();
+  const [error, setError] = useState<DisplayError | null>(null);
 
   const setSummary = accountsSummaryStore(
     (state: AccountsSummary) => state.setSummary,
@@ -112,18 +120,53 @@ function AccountsTable({ accounts }: AccountsTableProps) {
     setSummary(totalBalance, totalReserved, totalAccrued, totalDailyAccrual);
   }, [accounts, setSummary]);
 
+  const bulkActions: BulkAction<Account>[] = [
+    {
+      label: 'Accrue Expenses',
+      onClick: async (selectedItems: Account[]) => {
+        const rowIds = selectedItems.map(account => account.rowId);
+
+        const result = await accrueExpensesMutation.mutateAsync({
+          data: { rowIds },
+        });
+
+        if (result.success) {
+          queryClient.invalidateQueries({ queryKey: ['accounts'] });
+          queryClient.invalidateQueries({ queryKey: ['expenses'] });
+        } else {
+          setError({
+            title: result.error.code,
+            description: result.error.description,
+          });
+        }
+      },
+    },
+  ];
+
   return (
-    <Card className="card-elevated">
-      <CardContent className="px-4">
-        <DataTable
-          columns={columns}
-          data={accounts}
-          highlightRowFilter={row =>
-            row.original.rowId.toString() === editingId
-          }
+    <>
+      {error && (
+        <ErrorSheet
+          title={error.title}
+          description={error.description}
+          onDismiss={() => setError(null)}
         />
-      </CardContent>
-    </Card>
+      )}
+
+      <Card className="card-elevated">
+        <CardContent className="px-4">
+          <DataTable
+            columns={columns}
+            data={accounts}
+            enableRowSelection={true}
+            bulkActions={bulkActions}
+            highlightRowFilter={row =>
+              row.original.rowId.toString() === editingId
+            }
+          />
+        </CardContent>
+      </Card>
+    </>
   );
 }
 
