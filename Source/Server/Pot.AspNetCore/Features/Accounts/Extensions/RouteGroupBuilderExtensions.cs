@@ -86,7 +86,7 @@ internal static class RouteGroupBuilderExtensions
         routeGroupBuilder
             .MapPost(AccountsEndpoints.AccrueExpenses, AccrueExpenses.Handler.Invoke)
             .WithName(nameof(AccrueExpenses))
-            .WithSummary("AccrueExpenses expenses")
+            .WithSummary("Accrue expenses")
             .WithDescription("Accrue expenses associated with the account")
             .WithTags("Accounts")
             .ProducesProblem((int)HttpStatusCode.OK)
