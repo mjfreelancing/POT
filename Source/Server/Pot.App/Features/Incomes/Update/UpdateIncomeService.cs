@@ -43,7 +43,7 @@ internal sealed class UpdateIncomeService : IUpdateIncomeService
 
             if (incomeToUpdate is null)
             {
-                var incomeNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError("Income", nameof(IncomeEntity.RowId), incomeId);
+                var incomeNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(incomeId, "The income does not exist.");
 
                 _logger.LogError(incomeNotFoundDetails);
 
@@ -56,7 +56,7 @@ internal sealed class UpdateIncomeService : IUpdateIncomeService
 
             if (incomeAccount is null)
             {
-                var incomeAccountNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError("Account", nameof(Input.AccountRowId), input.AccountRowId);
+                var incomeAccountNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(input.AccountRowId, "The account does not exist.");
 
                 _logger.LogError(incomeAccountNotFoundDetails);
 

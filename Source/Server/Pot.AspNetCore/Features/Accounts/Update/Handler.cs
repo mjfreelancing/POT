@@ -9,7 +9,7 @@ namespace Pot.AspNetCore.Features.Accounts.Update;
 
 internal sealed class Handler
 {
-    public static async Task<Results<Ok<Response>, NotFound, ProblemHttpResult>> Invoke(Request request,
+    public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke(Request request,
         IUpdateAccountService accountService, IProblemDetailsInspector problemDetailsInspector,
         ILogger<Handler> logger, CancellationToken cancellationToken)
     {

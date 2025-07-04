@@ -3,21 +3,26 @@ using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
 using Pot.App.Calculators;
+using Pot.App.Errors;
+using Pot.App.Extensions;
 using Pot.App.Features.Accounts.AccrueExpenses.Models;
 using Pot.Data.Repositories.Accounts;
+using Pot.Data.Repositories.Expenses;
 
 namespace Pot.App.Features.Accounts.AccrueExpenses;
 
 internal sealed class AccrueExpensesService : IAccrueExpensesService
 {
     private readonly IAccountRepository _accountRepository;
+    private readonly IPersistableExpenseRepository _expenseRepository;
     private readonly IAccrueExpenseCalculator _accrueExpenseCalculator;
     private readonly ILogger _logger;
 
-    public AccrueExpensesService(IAccountRepository accountRepository, IAccrueExpenseCalculator accrueExpenseCalculator,
-        ILogger<AccrueExpensesService> logger)
+    public AccrueExpensesService(IAccountRepository accountRepository, IPersistableExpenseRepository expenseRepository,
+        IAccrueExpenseCalculator accrueExpenseCalculator, ILogger<AccrueExpensesService> logger)
     {
         _accountRepository = accountRepository.WhenNotNull();
+        _expenseRepository = expenseRepository.WhenNotNull();
         _accrueExpenseCalculator = accrueExpenseCalculator.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
@@ -26,35 +31,30 @@ internal sealed class AccrueExpensesService : IAccrueExpensesService
     {
         _logger.LogCall(this);
 
-        // TODO: Review all error reporting. In this case, there is no property name because it comes from a query-string parameter.
-        //       Need to review for a consistent approach.
-
-
-
-        // TODO: Update this validation to check all accounts
-        //
-
-
-        // TODO: Needs a transaction that covers this account repo and the expense repo used by the calculator.
-
-        foreach (var accountRowId in input.RowIds)
+        using (_expenseRepository.WithTracking())
         {
-            // TODO: Validate the account exists - don't need it beyond this point
-            var account = await _accountRepository.GetAccountAsync(accountRowId, cancellationToken).ConfigureAwait(false);
+            foreach (var accountRowId in input.RowIds)
+            {
+                var account = await _accountRepository.GetAccountAsync(accountRowId, cancellationToken).ConfigureAwait(false);
 
-            //if (account is null)
-            //{
-            //    var problemDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(
-            //        "Account",
-            //        string.Empty,
-            //        accountRowId);
+                if (account is null)
+                {
+                    var accountNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(accountRowId, "The account does not exist.");
 
-            //    return EnrichedResult.Fail<bool>(problemDetails);
-            //}
+                    _logger.LogError(accountNotFoundDetails);
 
-            await _accrueExpenseCalculator.AccrueExpensesAsync(accountRowId, cancellationToken);
+                    return EnrichedResult.Fail<bool>(accountNotFoundDetails);
+                }
+
+                var expenses = await _expenseRepository.GetExpensesForAccountAsync(accountRowId, cancellationToken).ConfigureAwait(false);
+
+                _accrueExpenseCalculator.AccrueExpenses(account, [.. expenses]);
+            }
+
+            await _expenseRepository
+                .SaveAsync(cancellationToken)
+                .ConfigureAwait(false);
         }
-
 
         return EnrichedResult.Success(true);
     }

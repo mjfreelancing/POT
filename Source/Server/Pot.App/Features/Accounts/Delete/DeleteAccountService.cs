@@ -2,6 +2,8 @@
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
+using Pot.App.Errors;
+using Pot.App.Extensions;
 using Pot.App.Features.Accounts.Delete.EntityChecks;
 using Pot.Data.Repositories.Accounts;
 
@@ -10,13 +12,13 @@ namespace Pot.App.Features.Accounts.Delete;
 internal sealed class DeleteAccountService : IDeleteAccountService
 {
     private readonly IPersistableAccountRepository _accountRepository;
-    private readonly IPreCreateChecker _preCreateChecker;
+    private readonly IPreDeleteChecker _preDeleteChecker;
     private readonly ILogger _logger;
 
-    public DeleteAccountService(IPersistableAccountRepository accountRepository, IPreCreateChecker preCreateChecker, ILogger<DeleteAccountService> logger)
+    public DeleteAccountService(IPersistableAccountRepository accountRepository, IPreDeleteChecker preCreateChecker, ILogger<DeleteAccountService> logger)
     {
         _accountRepository = accountRepository.WhenNotNull();
-        _preCreateChecker = preCreateChecker.WhenNotNull();
+        _preDeleteChecker = preCreateChecker.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
@@ -24,7 +26,7 @@ internal sealed class DeleteAccountService : IDeleteAccountService
     {
         _logger.LogCall(this);
 
-        var problemDetails = await _preCreateChecker.CanSaveAsync(accountId, cancellationToken);
+        var problemDetails = await _preDeleteChecker.CanDeleteAsync(accountId, cancellationToken);
 
         if (problemDetails is not null)
         {
@@ -35,7 +37,11 @@ internal sealed class DeleteAccountService : IDeleteAccountService
 
         if (account is null)
         {
-            return EnrichedResult.Success(false);
+            var accountNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(accountId, "The account does not exist.");
+
+            _logger.LogError(accountNotFoundDetails);
+
+            return EnrichedResult.Fail<bool>(accountNotFoundDetails);
         }
 
         _accountRepository.Delete(account);

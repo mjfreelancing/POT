@@ -2,6 +2,8 @@
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
+using Pot.App.Errors;
+using Pot.App.Extensions;
 using Pot.Data.Repositories.Expenses;
 
 namespace Pot.App.Features.Expenses.Delete;
@@ -25,7 +27,11 @@ internal sealed class DeleteExpenseService : IDeleteExpenseService
 
         if (expense is null)
         {
-            return EnrichedResult.Success(false);
+            var expenseIdNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(expenseId, "The expense does not exist.");
+
+            _logger.LogError(expenseIdNotFoundDetails);
+
+            return EnrichedResult.Fail<bool>(expenseIdNotFoundDetails);
         }
 
         _expenseRepository.Delete(expense);

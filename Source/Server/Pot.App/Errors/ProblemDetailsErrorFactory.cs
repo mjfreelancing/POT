@@ -27,14 +27,14 @@ public static class ProblemDetailsErrorFactory
         };
     }
 
-    public static ProblemDetailsError CreateEntityNotFoundError(string entityType, string propertyName, object? attemptedValue)
+    public static ProblemDetailsError CreateEntityNotFoundError(object? attemptedValue, string errorMessage)
     {
         return new ProblemDetailsError(ProblemType.NotFound)
         {
             ErrorCode = ErrorCodes.NotFound,
-            PropertyName = propertyName,
+            PropertyName = string.Empty,
             AttemptedValue = attemptedValue,
-            ErrorMessage = $"The {entityType} does not exist."
+            ErrorMessage = errorMessage
         };
     }
 

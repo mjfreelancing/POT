@@ -44,18 +44,17 @@ internal sealed class AccountRepository : GenericRepository<PotDbContext, Accoun
         return SingleOrDefaultAsync(EntitySpecifications.IsSameId<AccountEntity>(id).Expression, cancellationToken);
     }
 
-    public Task<GetAccountDto> GetAccountWithLinkedCountsAsync(Guid id, CancellationToken cancellationToken)
+    public Task<GetAccountDto?> GetAccountWithLinkedCountsAsync(Guid id, CancellationToken cancellationToken)
     {
         return AsQueryable()
-            .Where(EntitySpecifications
-            .IsSameId<AccountEntity>(id).Expression)
+            .Where(EntitySpecifications.IsSameId<AccountEntity>(id).Expression)
             .Select(item => new GetAccountDto
             {
                 Account = item,
                 LinkedIncomes = item.Incomes.Count,
                 LinkedExpenses = item.Expenses.Count
             })
-            .SingleAsync(cancellationToken);
+            .SingleOrDefaultAsync(cancellationToken);
     }
 
     public Task<GetAccountDto[]> GetAllAccountsWithLinkedCountsAsync(CancellationToken cancellationToken)
