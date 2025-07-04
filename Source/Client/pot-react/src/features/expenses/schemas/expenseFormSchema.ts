@@ -22,7 +22,6 @@ const expenseFormSchema = z.object({
     }),
   frequency: z.nativeEnum(Frequency),
   frequencyCount: z.number().min(1),
-  recurring: z.boolean(),
   amount: MoneyValueSchema,
   accountRowId: z.string().min(1, 'An account is required'),
 });

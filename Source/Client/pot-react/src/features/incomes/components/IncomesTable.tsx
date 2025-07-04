@@ -65,10 +65,10 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
 
   const bulkActions: BulkAction<Income>[] = [
     {
-      label: 'Auto Advance',
+      label: 'Auto Renew',
       onClick: (selectedItems: Income[]) => {
-        console.log('Auto Advance selected incomes:', selectedItems);
-        // TODO: Implement auto advance functionality
+        console.log('Auto renew selected incomes:', selectedItems);
+        // TODO: Implement auto renew functionality
       },
     },
   ];

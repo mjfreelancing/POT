@@ -42,11 +42,6 @@ const columns: ColumnDef<Expense>[] = [
     ),
   },
   createFrequencyColumn<Expense>('frequencyCount', 'frequency', 'Frequency'),
-  {
-    accessorKey: 'recurring',
-    header: 'Recurring',
-    cell: ({ row }) => <div>{row.original.recurring ? 'Yes' : 'No'}</div>,
-  },
   createMoneyValueColumn<Expense>('amount', 'Amount'),
   createDateColumn<Expense>('accrualStart', 'Accrual Start'),
   createMoneyValueColumn<Expense>('accrued', 'Accrued'),

@@ -95,7 +95,6 @@ internal sealed class UpdateExpenseService : IUpdateExpenseService
         expenseToUpdate.Frequency = input.Frequency;
         expenseToUpdate.FrequencyCount = input.FrequencyCount;
         expenseToUpdate.Amount = input.Amount;
-        expenseToUpdate.Recurring = input.Recurring;
         expenseToUpdate.Account = expenseAccount;
     }
 }

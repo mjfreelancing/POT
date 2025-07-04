@@ -29,9 +29,6 @@ public sealed class Request
     [Description("The frequency count the associated account will be credited.")]
     public int FrequencyCount { get; init; }
 
-    [Description("If the Expense is recurring.")]
-    public bool Recurring { get; init; }
-
     [Description("The Expense amount.")]
     public double Amount { get; init; }
 

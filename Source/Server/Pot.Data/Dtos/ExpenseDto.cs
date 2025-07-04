@@ -12,7 +12,6 @@
 //        public DateOnly AccrualStart { get; init; }
 //        public Frequency Frequency { get; init; } = Frequency.Months;
 //        public int FrequencyCount { get; init; }
-//        public bool Recurring { get; init; }
 //        public double Amount { get; init; }
 //        public double Allocated { get; init; }
 

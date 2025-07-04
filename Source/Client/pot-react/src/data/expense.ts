@@ -17,14 +17,13 @@ const BaseExpenseSchema = z.object({
   endDate: z.string().nullable(),
   frequency: z.nativeEnum(Frequency),
   frequencyCount: z.number(),
-  recurring: z.boolean(),
   amount: z.number(),
-  accrued: z.number(),
 });
 
 const ExpenseSchema = BaseExpenseSchema.extend({
   ...IdentitySchema.shape,
   account: ExpenseAccountSchema,
+  accrued: z.number(),
 });
 
 const CreateExpenseSchema = BaseExpenseSchema.extend({

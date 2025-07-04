@@ -40,7 +40,6 @@ function CreateExpenseForm({
         endDate: duplicateExpense.endDate || undefined,
         frequency: duplicateExpense.frequency,
         frequencyCount: duplicateExpense.frequencyCount,
-        recurring: duplicateExpense.recurring,
         amount: duplicateExpense.amount,
         accountRowId: duplicateExpense.account.rowId,
       };
@@ -53,7 +52,6 @@ function CreateExpenseForm({
       endDate: undefined,
       frequency: Frequency.Months,
       frequencyCount: 1,
-      recurring: true,
       amount: 0,
       accountRowId: '',
     };

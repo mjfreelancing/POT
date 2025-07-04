@@ -20,7 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import type { Account } from '@/data';
 import { FrequencyEnumValues, localIsoDate, localToday } from '@/lib';
 
@@ -289,31 +288,6 @@ function ExpenseForm({
             )}
           />
         </div>
-
-        <FormField
-          control={form.control}
-          name="recurring"
-          render={({ field }) => (
-            <FormItem className="space-y-1">
-              <div className="flex items-center space-x-2">
-                <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    id="recurring-switch"
-                  />
-                </FormControl>
-                <FormLabel
-                  htmlFor="recurring-switch"
-                  className="cursor-pointer"
-                >
-                  Recurring
-                </FormLabel>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
         <FormField
           control={form.control}

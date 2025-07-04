@@ -127,15 +127,13 @@ internal sealed class ProjectionsService : IProjectionsService
                         accrued += account.DailyExpenseAccrual;
 
                         var nextDue = expenseNextDue[expense];
+
                         if (nextDue == date && (expense.EndDate.GetValueOrDefault(DateOnly.MaxValue) >= date))
                         {
                             expensesPaid += expense.Amount;
-                            // Advance next due only if recurring
-                            if (expense.Recurring)
-                            {
-                                var daysToIncrement = expense.Frequency.GetDaysToNext(date, expense.FrequencyCount);
-                                expenseNextDue[expense] = nextDue.AddDays(daysToIncrement);
-                            }
+
+                            var daysToIncrement = expense.Frequency.GetDaysToNext(date, expense.FrequencyCount);
+                            expenseNextDue[expense] = nextDue.AddDays(daysToIncrement);
                         }
                     }
                 }

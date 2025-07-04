@@ -18,7 +18,6 @@ public sealed class Output
     public required DateOnly? EndDate { get; init; }
     public required Frequency Frequency { get; init; }
     public required int FrequencyCount { get; init; }
-    public required bool Recurring { get; init; }
     public required double Amount { get; init; }
     public required double Accrued { get; init; }
     public required AccountModel Account { get; init; }

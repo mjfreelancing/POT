@@ -19,7 +19,6 @@ internal static class EntityMapping
             FrequencyCount = entity.FrequencyCount,
             Amount = entity.Amount,
             Accrued = entity.Accrued,
-            Recurring = entity.Recurring,
             Account = new Output.AccountModel
             {
                 RowId = entity.Account.RowId,

@@ -26,7 +26,7 @@ internal sealed class Response : ResponseBase
     [Description("When the expense is next due.")]
     public DateOnly NextDue { get; init; }
 
-    [Description("When the expense is no longer a recurring concern.")]
+    [Description("When the Expense is no longer recurring.")]
     public DateOnly? EndDate { get; init; }
 
     [Description("The expense frequency type.")]
@@ -34,9 +34,6 @@ internal sealed class Response : ResponseBase
 
     [Description("The expense frequency count.")]
     public int FrequencyCount { get; init; }
-
-    [Description("Indicates if the expense is recurring.")]
-    public bool Recurring { get; init; }
 
     [Description("The expense amount.")]
     public double Amount { get; init; }

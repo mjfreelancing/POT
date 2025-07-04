@@ -1,6 +1,5 @@
 1. Review implementation for accounts/accrue-expenses - sort out validation
 2. Tidy up and checkin client/server code for accruing expenses
 3. Add feature to renew income (same as expenses; client and server)
-4. 'Recurring' on expenses is pointless - there's an end date
 5. Check if react-query caching is being used correctly - individual vs all itemsn
 6. Review all endpoints and approach to validation and how NotFound is being returned

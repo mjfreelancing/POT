@@ -41,7 +41,6 @@ const EditExpenseSheetInternal: React.FC<EditExpenseSheetInternalProps> = ({
       endDate: expenseData.endDate ?? undefined, // If null, make it undefined to satisfy the form schema
       frequency: expenseData.frequency,
       frequencyCount: expenseData.frequencyCount,
-      recurring: expenseData.recurring,
       amount: expenseData.amount,
       accountRowId: expenseData.account?.rowId,
     },

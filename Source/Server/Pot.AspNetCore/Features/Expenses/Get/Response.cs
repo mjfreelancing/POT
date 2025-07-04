@@ -39,9 +39,6 @@ internal sealed class Response : ResponseBase
     [Description("The amount accrued for this expense.")]
     public double Accrued { get; init; }
 
-    [Description("Is the Expense recurring.")]
-    public bool Recurring { get; init; }
-
     [Description("The account this Expense is associated with.")]
     public AccountModel? Account { get; init; }
 
@@ -62,7 +59,6 @@ internal sealed class Response : ResponseBase
         EndDate = expense.EndDate;
         Frequency = expense.Frequency;
         FrequencyCount = expense.FrequencyCount;
-        Recurring = expense.Recurring;
         Amount = expense.Amount;
         Accrued = expense.Accrued;
 

@@ -49,7 +49,6 @@ internal sealed class CreateExpenseService : ICreateExpenseService
             Frequency = input.Frequency,
             FrequencyCount = input.FrequencyCount,
             Amount = input.Amount,
-            Recurring = input.Recurring,
             Account = expenseAccount
         };
 
