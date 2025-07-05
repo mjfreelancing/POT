@@ -100,52 +100,6 @@ function ExpenseForm({
 
         <FormField
           control={form.control}
-          name="accrualStart"
-          render={({ field }) => (
-            <FormItem className="space-y-1">
-              <FormLabel htmlFor="accrualStart-picker">Accrual Start</FormLabel>
-              <FormControl>
-                <div className="flex items-center space-x-2">
-                  {/* Two-way binding between form and picker:
-                    1. selectedDate prop (from field.value) drives the picker's internal state via useEffect in EnrichedCalendar.
-                    2. onDateChange (day clicks) pushes immediate date selections back to the form via field.onChange.
-                    3. onDateAccepted (Accept button) commits the chosen date into the form.
-                    4. Clear button calls field.onChange(undefined), which updates selectedDate to undefined,
-                       triggering the picker's useEffect to reset its internal pickerDate to cleared state. */}
-                  <EnrichedDatePicker
-                    selectedDate={
-                      field.value ? new Date(field.value) : undefined
-                    }
-                    onDateAccepted={date =>
-                      field.onChange(
-                        date !== undefined ? localIsoDate(date) : undefined,
-                      )
-                    }
-                    onDateChange={date =>
-                      field.onChange(
-                        date !== undefined ? localIsoDate(date) : undefined,
-                      )
-                    }
-                    triggerClassName="flex-1"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="w-16"
-                    onClick={() => field.onChange(localToday())}
-                  >
-                    Today
-                  </Button>
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
           name="nextDue"
           render={({ field }) => (
             <FormItem className="space-y-1">
@@ -173,6 +127,54 @@ function ExpenseForm({
                       )
                     }
                     triggerClassName="flex-1"
+                    triggerId="nextDue-picker"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="w-16"
+                    onClick={() => field.onChange(localToday())}
+                  >
+                    Today
+                  </Button>
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="accrualStart"
+          render={({ field }) => (
+            <FormItem className="space-y-1">
+              <FormLabel htmlFor="accrualStart-picker">Accrual Start</FormLabel>
+              <FormControl>
+                <div className="flex items-center space-x-2">
+                  {/* Two-way binding between form and picker:
+                    1. selectedDate prop (from field.value) drives the picker's internal state via useEffect in EnrichedCalendar.
+                    2. onDateChange (day clicks) pushes immediate date selections back to the form via field.onChange.
+                    3. onDateAccepted (Accept button) commits the chosen date into the form.
+                    4. Clear button calls field.onChange(undefined), which updates selectedDate to undefined,
+                       triggering the picker's useEffect to reset its internal pickerDate to cleared state. */}
+                  <EnrichedDatePicker
+                    selectedDate={
+                      field.value ? new Date(field.value) : undefined
+                    }
+                    onDateAccepted={date =>
+                      field.onChange(
+                        date !== undefined ? localIsoDate(date) : undefined,
+                      )
+                    }
+                    onDateChange={date =>
+                      field.onChange(
+                        date !== undefined ? localIsoDate(date) : undefined,
+                      )
+                    }
+                    triggerClassName="flex-1"
+                    triggerId="accrualStart-picker"
                   />
                   <Button
                     type="button"
@@ -219,6 +221,7 @@ function ExpenseForm({
                       )
                     }
                     triggerClassName="flex-1"
+                    triggerId="endDate-picker"
                   />
                   <Button
                     type="button"
