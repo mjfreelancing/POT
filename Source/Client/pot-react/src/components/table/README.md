@@ -1,19 +1,31 @@
 # DataTable Component Library
 
-A comprehensive, reusable table component library built on top of `@tanstack/react-table` with full TypeScript support.
+A comprehensive, reusable table component library built on top of `@tanstack/react-table` with full TypeScript support and componentized architecture.
 
 ## 📁 Components Overview
 
 ### Core Components
 
-- **`DataTable`** - Main table component with sorting, selection, and bulk actions
+- **`DataTable`** - Main orchestrator component that handles configuration and delegates rendering
+- **`StandardDataTable`** - Standard table implementation using shadcn Table components (default)
+- **`StickyDataTable`** - Table implementation with sticky headers using custom table structure
+- **`DataTableContent`** - Shared component for table body rendering (eliminates code duplication)
+- **`DataTableHeader`** - Reusable table header component with sorting capabilities
 - **`BulkActionsBar`** - Standalone bulk actions UI component
-- **`DataTableHeader`** - Reusable table header component
 - **`DataTableColumnHeader`** - Individual sortable column header component
 
 ### Utilities
 
-- **`dataTableColumnFactories`** - Helper functions for common column types
+- **`dataTableColumnFactories`** - Helper functions for common column types (money, date, frequency)
+
+## 🏗️ Architecture
+
+The DataTable uses a **strategy pattern** to switch between optimized implementations:
+
+- **When `stickyHeader={false}`** (default): Uses `StandardDataTable` with shadcn Table components
+- **When `stickyHeader={true}`**: Uses `StickyDataTable` with custom table structure for CSS sticky positioning
+
+Both implementations share `DataTableContent` for consistent table body rendering, eliminating code duplication.
 
 ---
 
@@ -96,6 +108,14 @@ function MyTableWithHighlighting() {
       highlightClassName="bg-blue-100 dark:bg-blue-900"
     />
   );
+}
+```
+
+### Table with Sticky Headers
+
+```tsx
+function MyTableWithStickyHeaders() {
+  return <DataTable columns={columns} data={people} stickyHeader={true} />;
 }
 ```
 

@@ -28,14 +28,29 @@ const DEFAULT_HIGHLIGHT_ROW_CLASS = 'bg-yellow-200 dark:bg-yellow-800';
  * - **Row highlighting** with customizable filter and styling
  * - **Bulk row selection** with checkboxes and selection management
  * - **Bulk actions** via dropdown menu for selected items
+ * - **Sticky header** option to keep headers visible while scrolling
  * - **Responsive design** with proper light/dark theme support
  * - **Type-safe** with full TypeScript generic support
  *
  * ## Architecture:
- * The DataTable is composed of several extracted components for better maintainability:
- * - `BulkActionsBar` - Handles bulk actions UI and selection management
- * - `DataTableHeader` - Renders table headers with sorting capabilities
- * - `dataTableColumnFactories` - Utility functions for common column types
+ * The DataTable uses a componentized architecture for better maintainability and code reusability:
+ *
+ * ### Core Components:
+ * - **`DataTable`** - Main orchestrator component that handles configuration and delegates rendering
+ * - **`StandardDataTable`** - Renders tables using shadcn Table components (default behavior)
+ * - **`StickyDataTable`** - Renders tables with sticky headers using custom table structure
+ * - **`DataTableContent`** - Shared component for table body rendering (eliminates code duplication)
+ * - **`DataTableHeader`** - Handles table header rendering with sorting capabilities
+ * - **`BulkActionsBar`** - Manages bulk actions UI and selection state
+ *
+ * ### Supporting Utilities:
+ * - **`dataTableColumnFactories`** - Factory functions for common column types
+ * - **`DataTableColumnHeader`** - Sortable column header component
+ *
+ * ## Implementation Details:
+ * When `stickyHeader={false}` (default): Uses `StandardDataTable` with shadcn Table components.
+ * When `stickyHeader={true}`: Uses `StickyDataTable` with custom table structure to enable
+ * CSS sticky positioning on header cells.
  *
  * ## Column Types:
  * Use the provided column factory functions for common data types:
@@ -90,6 +105,33 @@ const DEFAULT_HIGHLIGHT_ROW_CLASS = 'bg-yellow-200 dark:bg-yellow-800';
  *   highlightRowFilter={(row) => row.original.id === activeId}
  *   highlightClassName="bg-blue-100 dark:bg-blue-900"
  * />
+ * ```
+ *
+ * ## With Sticky Headers:
+ * ```tsx
+ * <DataTable
+ *   columns={columns}
+ *   data={myData}
+ *   stickyHeader={true}
+ * />
+ * ```
+ *
+ * ## Performance Considerations:
+ * - The component automatically switches between optimized implementations based on `stickyHeader` prop
+ * - Table body rendering logic is shared between implementations to avoid code duplication
+ * - Row selection state is managed efficiently with react-table's built-in selection handling
+ * - Memoization is recommended for `columns`, `data`, `bulkActions`, and callback props
+ *
+ * ## Component Files:
+ * ```
+ * components/table/
+ * ├── DataTable.tsx           # Main orchestrator component
+ * ├── DataTableContent.tsx    # Shared table body rendering
+ * ├── StickyDataTable.tsx     # Sticky header implementation
+ * ├── StandardDataTable.tsx   # Standard table implementation
+ * ├── DataTableHeader.tsx     # Header rendering with sorting
+ * ├── BulkActionsBar.tsx      # Bulk actions UI
+ * └── dataTableColumnFactories.ts # Column utility functions
  * ```
  *
  * @template TData - The type of the data objects in the table
