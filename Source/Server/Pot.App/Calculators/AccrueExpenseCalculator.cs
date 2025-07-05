@@ -39,17 +39,10 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
 
         var account = expense.Account;
 
-        var allocated = Math.Round(expense.DailyAccrual() * expense.DaysElapsed(currentDate), 2, MidpointRounding.AwayFromZero);
+        var allocated = Math.Round(expense.DailyAccrual() * expense.DaysFromAccrualStart(currentDate), 2, MidpointRounding.AwayFromZero);
 
         // Don't over-allocate
         allocated = Math.Min(allocated, expense.Amount);
-
-        var accountAvailable = account.Available();
-
-        if (/*!calculatorOptions.AllowNegativeBalance &&*/ accountAvailable < allocated)
-        {
-            allocated = accountAvailable;
-        }
 
         account.TotalExpenseAccrued += allocated;
         expense.Accrued = allocated;
