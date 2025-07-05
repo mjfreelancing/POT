@@ -1,3 +1,5 @@
+import React from 'react';
+
 import { Button } from '../ui/button';
 import {
   DropdownMenu,
@@ -76,7 +78,7 @@ function BulkActionsBar<TData>({
   selectedItems,
   bulkActions,
   isVisible,
-}: BulkActionsBarProps<TData>) {
+}: BulkActionsBarProps<TData>): React.ReactElement | null {
   // Hide the component if it's not visible or no bulk actions are configured
   if (!isVisible || bulkActions.length === 0) {
     return null;
@@ -97,6 +99,7 @@ function BulkActionsBar<TData>({
             size="sm"
             disabled={selectedCount === 0}
             className="hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100 transition-colors"
+            aria-label="Open bulk actions menu"
           >
             Actions
           </Button>

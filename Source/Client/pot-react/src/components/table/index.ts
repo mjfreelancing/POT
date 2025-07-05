@@ -8,7 +8,3 @@ export * from './DataTableContent';
 export { default as DataTableContent } from './DataTableContent';
 export * from './DataTableHeader';
 export { default as DataTableHeader } from './DataTableHeader';
-export * from './StandardDataTable';
-export { default as StandardDataTable } from './StandardDataTable';
-export * from './StickyDataTable';
-export { default as StickyDataTable } from './StickyDataTable';

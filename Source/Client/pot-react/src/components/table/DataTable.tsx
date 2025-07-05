@@ -1,5 +1,6 @@
 import {
   ColumnDef,
+  flexRender,
   getCoreRowModel,
   getSortedRowModel,
   HeaderContext,
@@ -8,12 +9,11 @@ import {
   SortingState,
   useReactTable,
 } from '@tanstack/react-table';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Checkbox } from '../ui/checkbox';
 import BulkActionsBar, { BulkAction } from './BulkActionsBar';
-import StandardDataTable from './StandardDataTable';
-import StickyDataTable from './StickyDataTable';
+import DataTableHeader from './DataTableHeader';
 
 const DEFAULT_HIGHLIGHT_ROW_CLASS = 'bg-yellow-200 dark:bg-yellow-800';
 
@@ -27,7 +27,6 @@ const DEFAULT_HIGHLIGHT_ROW_CLASS = 'bg-yellow-200 dark:bg-yellow-800';
  * - **Row highlighting** with customizable filter and styling
  * - **Bulk row selection** with checkboxes and selection management
  * - **Bulk actions** via dropdown menu for selected items
- * - **Sticky header** option to keep headers visible while scrolling
  * - **Responsive design** with proper light/dark theme support
  * - **Type-safe** with full TypeScript generic support
  *
@@ -36,8 +35,6 @@ const DEFAULT_HIGHLIGHT_ROW_CLASS = 'bg-yellow-200 dark:bg-yellow-800';
  *
  * ### Core Components:
  * - **`DataTable`** - Main orchestrator component that handles configuration and delegates rendering
- * - **`StandardDataTable`** - Renders tables using shadcn Table components (default behavior)
- * - **`StickyDataTable`** - Renders tables with sticky headers using custom table structure
  * - **`DataTableContent`** - Shared component for table body rendering (eliminates code duplication)
  * - **`DataTableHeader`** - Handles table header rendering with sorting capabilities
  * - **`BulkActionsBar`** - Manages bulk actions UI and selection state
@@ -45,11 +42,6 @@ const DEFAULT_HIGHLIGHT_ROW_CLASS = 'bg-yellow-200 dark:bg-yellow-800';
  * ### Supporting Utilities:
  * - **`dataTableColumnFactories`** - Factory functions for common column types
  * - **`DataTableColumnHeader`** - Sortable column header component
- *
- * ## Implementation Details:
- * When `stickyHeader={false}` (default): Uses `StandardDataTable` with shadcn Table components.
- * When `stickyHeader={true}`: Uses `StickyDataTable` with custom table structure to enable
- * CSS sticky positioning on header cells.
  *
  * ## Column Types:
  * Use the provided column factory functions for common data types:
@@ -106,17 +98,7 @@ const DEFAULT_HIGHLIGHT_ROW_CLASS = 'bg-yellow-200 dark:bg-yellow-800';
  * />
  * ```
  *
- * ## With Sticky Headers:
- * ```tsx
- * <DataTable
- *   columns={columns}
- *   data={myData}
- *   stickyHeader={true}
- * />
- * ```
- *
  * ## Performance Considerations:
- * - The component automatically switches between optimized implementations based on `stickyHeader` prop
  * - Table body rendering logic is shared between implementations to avoid code duplication
  * - Row selection state is managed efficiently with react-table's built-in selection handling
  * - Memoization is recommended for `columns`, `data`, `bulkActions`, and callback props
@@ -126,8 +108,6 @@ const DEFAULT_HIGHLIGHT_ROW_CLASS = 'bg-yellow-200 dark:bg-yellow-800';
  * components/table/
  * ├── DataTable.tsx           # Main orchestrator component
  * ├── DataTableContent.tsx    # Shared table body rendering
- * ├── StickyDataTable.tsx     # Sticky header implementation
- * ├── StandardDataTable.tsx   # Standard table implementation
  * ├── DataTableHeader.tsx     # Header rendering with sorting
  * ├── BulkActionsBar.tsx      # Bulk actions UI
  * └── dataTableColumnFactories.ts # Column utility functions
@@ -185,13 +165,6 @@ type DataTableProps<TData, TValue> = {
    * Useful for tracking selection state in parent components.
    */
   onSelectionChange?: (selectedItems: TData[]) => void;
-
-  /**
-   * Whether to enable sticky headers that remain visible while scrolling.
-   * When true, uses StickyDataTable implementation for proper header positioning.
-   * When false (default), uses StandardDataTable with shadcn Table components.
-   */
-  stickyHeader?: boolean;
 };
 
 function DataTable<TData, TValue>({
@@ -202,27 +175,26 @@ function DataTable<TData, TValue>({
   enableRowSelection = false,
   bulkActions = [],
   onSelectionChange,
-  stickyHeader = false,
-}: DataTableProps<TData, TValue>) {
+}: DataTableProps<TData, TValue>): React.ReactElement {
   // Table state management
   const [sorting, setSorting] = useState<SortingState>([]);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   // Create columns with optional selection column prepended
   // When row selection is enabled, we add a checkbox column at the beginning
-  const tableColumns = enableRowSelection
+  const tableColumns: ColumnDef<TData, TValue>[] = enableRowSelection
     ? [
         {
           id: 'select',
           // Header checkbox - allows selecting/deselecting all rows on the current page
-          header: ({ table }: HeaderContext<TData, unknown>) => (
+          header: ({ table }: HeaderContext<TData, TValue>) => (
             <Checkbox
               checked={
                 table.getIsAllPageRowsSelected() ||
                 (table.getIsSomePageRowsSelected() && 'indeterminate')
               }
-              onCheckedChange={(value: boolean) =>
-                table.toggleAllPageRowsSelected(value)
+              onCheckedChange={value =>
+                table.toggleAllPageRowsSelected(!!value)
               }
               aria-label="Select all"
             />
@@ -231,8 +203,8 @@ function DataTable<TData, TValue>({
           cell: ({ row }: { row: Row<TData> }) => (
             <Checkbox
               checked={row.getIsSelected()}
-              onCheckedChange={(value: boolean) => row.toggleSelected(value)}
-              aria-label="Select row"
+              onCheckedChange={value => row.toggleSelected(!!value)}
+              aria-label={`Select row ${row.id}`}
             />
           ),
           // Selection column configuration
@@ -293,21 +265,47 @@ function DataTable<TData, TValue>({
       />
       <div className="flex-1 min-h-0 border rounded-md">
         <div className="h-full overflow-auto">
-          {stickyHeader ? (
-            <StickyDataTable
-              table={table}
-              tableColumns={tableColumns}
-              highlightRowFilter={highlightRowFilter}
-              highlightClassName={highlightClassName}
-            />
-          ) : (
-            <StandardDataTable
-              table={table}
-              tableColumns={tableColumns}
-              highlightRowFilter={highlightRowFilter}
-              highlightClassName={highlightClassName}
-            />
-          )}
+          <div className="relative w-full">
+            <table className="w-full caption-bottom text-sm">
+              <DataTableHeader
+                headerGroups={table.getHeaderGroups()}
+                cellClassName="font-semibold uppercase sticky top-0 z-10 bg-gray-200 dark:bg-gray-700"
+              />
+              <tbody>
+                {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map(row => (
+                    <tr
+                      key={row.id}
+                      data-state={row.getIsSelected() ? 'selected' : undefined}
+                      className={
+                        highlightRowFilter?.(row)
+                          ? highlightClassName
+                          : undefined
+                      }
+                    >
+                      {row.getVisibleCells().map(cell => (
+                        <td key={cell.id} className="p-4 align-middle">
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={tableColumns.length}
+                      className="h-24 text-center p-4"
+                    >
+                      No results.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
