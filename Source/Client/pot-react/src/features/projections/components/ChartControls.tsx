@@ -108,6 +108,7 @@ function ChartControls({
             <Select
               value={selectedMetric}
               onValueChange={(value: ProjectionMetric) => onMetricChange(value)}
+              name="metric-select"
             >
               <SelectTrigger
                 id="metric-select"

@@ -268,7 +268,11 @@ function ExpenseForm({
               <FormItem className="space-y-1 flex-1">
                 <FormLabel htmlFor="frequency-select">Frequency</FormLabel>
                 <FormControl>
-                  <Select value={field.value} onValueChange={field.onChange}>
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    name={field.name}
+                  >
                     <SelectTrigger id="frequency-select" className="w-full">
                       <SelectValue placeholder="Select frequency" />
                     </SelectTrigger>
@@ -294,7 +298,11 @@ function ExpenseForm({
             <FormItem className="space-y-1">
               <FormLabel htmlFor="account-select">Associated Account</FormLabel>
               <FormControl>
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  name={field.name}
+                >
                   <SelectTrigger id="account-select" className="w-full">
                     <SelectValue placeholder="Select an account" />
                   </SelectTrigger>

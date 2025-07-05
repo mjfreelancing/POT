@@ -24,8 +24,9 @@ function AccountFilter({
       onValueChange={value => {
         onAccountChange(value === 'all' ? null : value);
       }}
+      name="account-filter"
     >
-      <SelectTrigger className="w-[200px]">
+      <SelectTrigger className="w-[200px]" id="account-filter-trigger">
         <SelectValue placeholder="Filter by account" />
       </SelectTrigger>
       <SelectContent>
