@@ -29,9 +29,7 @@ function ExpensesHeader({
           <div className="flex items-center gap-3">
             <div>
               <h1 className="page-title">Expense Management</h1>
-              <p className="page-subtitle">
-                Track and categorize your expenses
-              </p>
+              <p className="page-subtitle">Track and manage your expenses</p>
             </div>
           </div>
         </div>
