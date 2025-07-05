@@ -148,7 +148,11 @@ function ChartControls({
                   variant="outline"
                   size="sm"
                   onClick={() => setDateRangePreset(30)}
-                  className="h-8 px-3"
+                  className={`h-8 px-3 ${
+                    getSelectedPeriod() === '30'
+                      ? 'bg-primary text-primary-foreground border-primary shadow-sm font-medium hover:bg-primary/90 dark:bg-slate-200 dark:text-slate-900 dark:border-slate-200'
+                      : ''
+                  }`}
                   aria-label="Set chart period to 30 days"
                   role="radio"
                   aria-checked={getSelectedPeriod() === '30'}
@@ -160,7 +164,11 @@ function ChartControls({
                   variant="outline"
                   size="sm"
                   onClick={() => setDateRangePreset(60)}
-                  className="h-8 px-3"
+                  className={`h-8 px-3 ${
+                    getSelectedPeriod() === '60'
+                      ? 'bg-primary text-primary-foreground border-primary shadow-sm font-medium hover:bg-primary/90 dark:bg-slate-200 dark:text-slate-900 dark:border-slate-200'
+                      : ''
+                  }`}
                   aria-label="Set chart period to 60 days"
                   role="radio"
                   aria-checked={getSelectedPeriod() === '60'}
@@ -172,7 +180,11 @@ function ChartControls({
                   variant="outline"
                   size="sm"
                   onClick={() => setDateRangePreset(90)}
-                  className="h-8 px-3"
+                  className={`h-8 px-3 ${
+                    getSelectedPeriod() === '90'
+                      ? 'bg-primary text-primary-foreground border-primary shadow-sm font-medium hover:bg-primary/90 dark:bg-slate-200 dark:text-slate-900 dark:border-slate-200'
+                      : ''
+                  }`}
                   aria-label="Set chart period to 90 days"
                   role="radio"
                   aria-checked={getSelectedPeriod() === '90'}
@@ -184,7 +196,11 @@ function ChartControls({
                   variant="outline"
                   size="sm"
                   onClick={() => setDateRangePreset('all')}
-                  className={`h-8 px-3 ${!startDate && !endDate ? 'bg-muted' : ''}`}
+                  className={`h-8 px-3 ${
+                    getSelectedPeriod() === 'all'
+                      ? 'bg-primary text-primary-foreground border-primary shadow-sm font-medium hover:bg-primary/90 dark:bg-slate-200 dark:text-slate-900 dark:border-slate-200'
+                      : ''
+                  }`}
                   aria-label="Show all data without date filtering"
                   role="radio"
                   aria-checked={getSelectedPeriod() === 'all'}
