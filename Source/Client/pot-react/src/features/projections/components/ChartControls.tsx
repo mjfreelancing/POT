@@ -88,6 +88,19 @@ function ChartControls({
     onEndDateChange(date);
   };
 
+  // Period button style variables
+  const selectedPeriodButtonClass =
+    'group h-8 px-3 font-medium border border-black dark:border-white bg-black text-white dark:bg-white dark:text-slate-900';
+
+  const selectedPeriodButtonHoverClass =
+    'hover:bg-white hover:text-black hover:border-black dark:hover:bg-slate-900 dark:hover:text-white dark:hover:border-white';
+
+  const unselectedPeriodButtonClass =
+    'h-8 px-3 border border-transparent bg-white text-black dark:bg-slate-900 dark:text-white';
+
+  const unselectedPeriodButtonHoverClass =
+    'hover:bg-muted hover:text-black dark:hover:bg-slate-800 dark:hover:text-white';
+
   return (
     <div className="px-6 py-4 border-b bg-muted/30">
       <div className="space-y-3">
@@ -146,70 +159,37 @@ function ChartControls({
                 role="radiogroup"
                 aria-labelledby="period-label"
               >
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setDateRangePreset(30)}
-                  className={`h-8 px-3 ${
-                    getSelectedPeriod() === '30'
-                      ? 'bg-primary text-primary-foreground border-primary shadow-sm font-medium hover:bg-primary/90 dark:bg-slate-200 dark:text-slate-900 dark:border-slate-200'
-                      : ''
-                  }`}
-                  aria-label="Set chart period to 30 days"
-                  role="radio"
-                  aria-checked={getSelectedPeriod() === '30'}
-                  tabIndex={getSelectedPeriod() === '30' ? 0 : -1}
-                >
-                  30d
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setDateRangePreset(60)}
-                  className={`h-8 px-3 ${
-                    getSelectedPeriod() === '60'
-                      ? 'bg-primary text-primary-foreground border-primary shadow-sm font-medium hover:bg-primary/90 dark:bg-slate-200 dark:text-slate-900 dark:border-slate-200'
-                      : ''
-                  }`}
-                  aria-label="Set chart period to 60 days"
-                  role="radio"
-                  aria-checked={getSelectedPeriod() === '60'}
-                  tabIndex={getSelectedPeriod() === '60' ? 0 : -1}
-                >
-                  60d
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setDateRangePreset(90)}
-                  className={`h-8 px-3 ${
-                    getSelectedPeriod() === '90'
-                      ? 'bg-primary text-primary-foreground border-primary shadow-sm font-medium hover:bg-primary/90 dark:bg-slate-200 dark:text-slate-900 dark:border-slate-200'
-                      : ''
-                  }`}
-                  aria-label="Set chart period to 90 days"
-                  role="radio"
-                  aria-checked={getSelectedPeriod() === '90'}
-                  tabIndex={getSelectedPeriod() === '90' ? 0 : -1}
-                >
-                  90d
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setDateRangePreset('all')}
-                  className={`h-8 px-3 ${
-                    getSelectedPeriod() === 'all'
-                      ? 'bg-primary text-primary-foreground border-primary shadow-sm font-medium hover:bg-primary/90 dark:bg-slate-200 dark:text-slate-900 dark:border-slate-200'
-                      : ''
-                  }`}
-                  aria-label="Show all data without date filtering"
-                  role="radio"
-                  aria-checked={getSelectedPeriod() === 'all'}
-                  tabIndex={getSelectedPeriod() === 'all' ? 0 : -1}
-                >
-                  All
-                </Button>
+                {[
+                  { label: '30d', value: '30' },
+                  { label: '60d', value: '60' },
+                  { label: '90d', value: '90' },
+                  { label: 'All', value: 'all' },
+                ].map(period => {
+                  const isSelected = getSelectedPeriod() === period.value;
+                  return (
+                    <Button
+                      key={period.value}
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setDateRangePreset(
+                          period.value === 'all' ? 'all' : Number(period.value),
+                        )
+                      }
+                      className={
+                        isSelected
+                          ? `${selectedPeriodButtonClass} ${selectedPeriodButtonHoverClass}`
+                          : `${unselectedPeriodButtonClass} ${unselectedPeriodButtonHoverClass}`
+                      }
+                      aria-label={`Set chart period to ${period.label}`}
+                      role="radio"
+                      aria-checked={isSelected}
+                      tabIndex={isSelected ? 0 : -1}
+                    >
+                      {period.label}
+                    </Button>
+                  );
+                })}
               </div>
             </div>
             {/* Custom Date Range Group */}
