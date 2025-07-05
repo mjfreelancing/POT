@@ -110,6 +110,7 @@ function ChartControls({
               onValueChange={(value: ProjectionMetric) => onMetricChange(value)}
             >
               <SelectTrigger
+                id="metric-select"
                 className="w-[160px] h-8"
                 aria-label="Select chart metric to display"
               >
@@ -230,6 +231,7 @@ function ChartControls({
                   triggerLabel={date =>
                     date ? format(date, 'MMM dd, yyyy') : 'Today'
                   }
+                  triggerId="start-date-picker"
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -243,6 +245,7 @@ function ChartControls({
                   triggerLabel={date =>
                     date ? format(date, 'MMM dd, yyyy') : 'No limit'
                   }
+                  triggerId="end-date-picker"
                 />
               </div>
             </div>

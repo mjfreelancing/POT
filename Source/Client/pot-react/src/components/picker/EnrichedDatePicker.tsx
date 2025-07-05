@@ -26,6 +26,7 @@ export type EnrichedDatePickerProps = EnrichedCalendarPassthroughProps & {
   triggerClassName?: string;
   triggerLabel?: (date: Date | undefined) => React.ReactNode;
   popoverContentAlign?: ComponentProps<typeof PopoverContent>['align'];
+  triggerId?: string;
 };
 
 function EnrichedDatePicker({
@@ -35,6 +36,7 @@ function EnrichedDatePicker({
   triggerClassName,
   triggerLabel,
   popoverContentAlign = 'start',
+  triggerId,
   ...calendarProps
 }: EnrichedDatePickerProps) {
   const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
@@ -59,6 +61,7 @@ function EnrichedDatePicker({
     <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
       <PopoverTrigger asChild>
         <Button
+          id={triggerId}
           variant={'outline'}
           className={cn(
             'w-[240px] justify-start text-left font-normal',

@@ -127,6 +127,7 @@ function IncomeForm({
                       )
                     }
                     triggerClassName="flex-1"
+                    triggerId="nextDue-picker"
                   />
                   <Button
                     type="button"
@@ -173,6 +174,7 @@ function IncomeForm({
                       )
                     }
                     triggerClassName="flex-1"
+                    triggerId="endDate-picker"
                   />
                   <Button
                     type="button"
