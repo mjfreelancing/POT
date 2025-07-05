@@ -98,7 +98,6 @@ function CreateExpenseForm({
         form={form}
         onSubmit={onSubmit}
         onCancel={() => navigate('/expenses')}
-        readOnlyIdentifiers={false}
         submitLabel="Create"
         accounts={accountsList}
       />

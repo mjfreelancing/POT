@@ -82,9 +82,9 @@ const EditExpenseSheetInternal: React.FC<EditExpenseSheetInternalProps> = ({
         form={form}
         onSubmit={onSubmit}
         onCancel={() => navigate('/expenses')}
-        readOnlyIdentifiers={true}
         submitLabel="Save"
         accounts={accountsList}
+        isEditMode={true}
       />
     </ExpenseSheet>
   );

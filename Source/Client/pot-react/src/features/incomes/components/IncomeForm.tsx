@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 
 import { MoneyValueChangeEvent, MoneyValueInput } from '@/components/input';
@@ -29,26 +29,28 @@ type IncomeFormProps = {
   form: UseFormReturn<IncomeFormData>;
   onSubmit: (values: IncomeFormData) => Promise<void>;
   onCancel: () => void;
-  readOnlyIdentifiers: boolean;
   submitLabel: string;
   accounts: Account[];
+  isEditMode?: boolean;
 };
 
 function IncomeForm({
   form,
   onSubmit,
   onCancel,
-  readOnlyIdentifiers,
   submitLabel,
   accounts,
+  isEditMode = false,
 }: IncomeFormProps) {
+  const amountInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
-    if (readOnlyIdentifiers) {
-      // In edit mode, focus the first editable field (amount)
-      // This runs after the component mounts and the DOM is ready
-      form.setFocus('amount');
+    // Focus the amount field only when editing
+    // When creating a new income, let the browser focus the first field (description) by default
+    if (isEditMode && amountInputRef.current) {
+      amountInputRef.current.focus();
     }
-  }, [readOnlyIdentifiers, form]);
+  }, [isEditMode]);
 
   return (
     <Form {...form}>
@@ -63,16 +65,8 @@ function IncomeForm({
                 <Input
                   {...field}
                   id="description-input"
-                  placeholder={
-                    readOnlyIdentifiers ? undefined : 'Enter a description'
-                  }
+                  placeholder="Enter a description"
                   aria-description="A memorable name for this income"
-                  readOnly={readOnlyIdentifiers}
-                  className={
-                    readOnlyIdentifiers
-                      ? 'bg-muted cursor-not-allowed'
-                      : undefined
-                  }
                 />
               </FormControl>
               <FormMessage />
@@ -90,6 +84,7 @@ function IncomeForm({
                 {/* Getting the numerical value from e.target.number since the 'value' is a string */}
                 <MoneyValueInput
                   {...field}
+                  ref={amountInputRef}
                   id="amount-input"
                   placeholder="Enter the income amount"
                   aria-description="Current income amount"

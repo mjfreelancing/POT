@@ -78,9 +78,9 @@ const EditIncomeSheetInternal: React.FC<EditIncomeSheetInternalProps> = ({
         form={form}
         onSubmit={onSubmit}
         onCancel={() => navigate('/incomes')}
-        readOnlyIdentifiers={true}
         submitLabel="Save"
         accounts={accountsList}
+        isEditMode={true}
       />
     </IncomeSheet>
   );
