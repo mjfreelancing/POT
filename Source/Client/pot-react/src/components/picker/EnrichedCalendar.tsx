@@ -78,49 +78,6 @@ function EnrichedCalendar({
     }
   }, [propDate]);
 
-  /**
-   * Adjusts the selected date when navigating to a month where the current day doesn't exist.
-   * Uses the "clamp to last valid day" approach - if the selected day doesn't exist in the
-   * target month, it selects the last day of that month instead.
-   */
-  const adjustSelectedDateForMonth = React.useCallback(
-    (targetMonth: Date, currentSelectedDate: Date | undefined) => {
-      if (!currentSelectedDate) {
-        return;
-      }
-
-      const targetYear = targetMonth.getFullYear();
-      const targetMonthIndex = targetMonth.getMonth();
-      const selectedDay = currentSelectedDate.getDate();
-
-      // Get the last day of the target month
-      const lastDayOfTargetMonth = new Date(
-        targetYear,
-        targetMonthIndex + 1,
-        0,
-      ).getDate();
-
-      // If the selected day exists in the target month, use it; otherwise use the last day
-      const adjustedDay = Math.min(selectedDay, lastDayOfTargetMonth);
-      const adjustedDate = new Date(targetYear, targetMonthIndex, adjustedDay);
-
-      // Only update if the date actually changed
-      if (adjustedDate.getTime() !== currentSelectedDate.getTime()) {
-        setPickerDate(adjustedDate);
-
-        if (onDateChange) {
-          onDateChange(adjustedDate);
-        }
-      }
-    },
-    [onDateChange],
-  );
-
-  // Handle date adjustment when display month changes
-  React.useEffect(() => {
-    adjustSelectedDateForMonth(currentDisplayMonth, pickerDate);
-  }, [currentDisplayMonth, adjustSelectedDateForMonth, pickerDate]);
-
   const handleDateSelectInCalendar: DayPickerSingleProps['onSelect'] = (
     newSelection,
     dayClicked,
@@ -140,14 +97,32 @@ function EnrichedCalendar({
     }
   };
 
+  function clampDateToMonth(
+    date: Date | undefined,
+    targetMonth: Date,
+  ): Date | undefined {
+    if (!date) {
+      return undefined;
+    }
+
+    const year = targetMonth.getFullYear();
+    const month = targetMonth.getMonth();
+    const day = date.getDate();
+    const lastDay = new Date(year, month + 1, 0).getDate();
+
+    return new Date(year, month, Math.min(day, lastDay));
+  }
+
   const handlePrevMonth = () => {
     const newMonth = subMonths(currentDisplayMonth, 1);
     setCurrentDisplayMonth(newMonth);
+    setPickerDate(clampDateToMonth(pickerDate, newMonth));
   };
 
   const handleNextMonth = () => {
     const newMonth = addMonths(currentDisplayMonth, 1);
     setCurrentDisplayMonth(newMonth);
+    setPickerDate(clampDateToMonth(pickerDate, newMonth));
   };
 
   const handlePrevYear = () => {
