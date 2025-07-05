@@ -30,8 +30,6 @@ type BulkActionsBarProps<TData> = {
   selectedItems: TData[];
   /** Array of available bulk actions */
   bulkActions: BulkAction<TData>[];
-  /** Callback to clear all selections */
-  onClearSelection: () => void;
   /** Whether the bulk actions bar should be visible (typically when row selection is enabled) */
   isVisible: boolean;
 };

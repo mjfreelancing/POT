@@ -1,6 +1,5 @@
 import {
   ColumnDef,
-  flexRender,
   getCoreRowModel,
   getSortedRowModel,
   HeaderContext,
@@ -12,9 +11,9 @@ import {
 import { useEffect, useState } from 'react';
 
 import { Checkbox } from '../ui/checkbox';
-import { Table, TableBody, TableCell, TableRow } from '../ui/table';
 import BulkActionsBar, { BulkAction } from './BulkActionsBar';
-import DataTableHeader from './DataTableHeader';
+import StandardDataTable from './StandardDataTable';
+import StickyDataTable from './StickyDataTable';
 
 const DEFAULT_HIGHLIGHT_ROW_CLASS = 'bg-yellow-200 dark:bg-yellow-800';
 
@@ -186,6 +185,13 @@ type DataTableProps<TData, TValue> = {
    * Useful for tracking selection state in parent components.
    */
   onSelectionChange?: (selectedItems: TData[]) => void;
+
+  /**
+   * Whether to enable sticky headers that remain visible while scrolling.
+   * When true, uses StickyDataTable implementation for proper header positioning.
+   * When false (default), uses StandardDataTable with shadcn Table components.
+   */
+  stickyHeader?: boolean;
 };
 
 function DataTable<TData, TValue>({
@@ -196,6 +202,7 @@ function DataTable<TData, TValue>({
   enableRowSelection = false,
   bulkActions = [],
   onSelectionChange,
+  stickyHeader = false,
 }: DataTableProps<TData, TValue>) {
   // Table state management
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -214,8 +221,8 @@ function DataTable<TData, TValue>({
                 table.getIsAllPageRowsSelected() ||
                 (table.getIsSomePageRowsSelected() && 'indeterminate')
               }
-              onCheckedChange={value =>
-                table.toggleAllPageRowsSelected(!!value)
+              onCheckedChange={(value: boolean) =>
+                table.toggleAllPageRowsSelected(value)
               }
               aria-label="Select all"
             />
@@ -224,7 +231,7 @@ function DataTable<TData, TValue>({
           cell: ({ row }: { row: Row<TData> }) => (
             <Checkbox
               checked={row.getIsSelected()}
-              onCheckedChange={value => row.toggleSelected(!!value)}
+              onCheckedChange={(value: boolean) => row.toggleSelected(value)}
               aria-label="Select row"
             />
           ),
@@ -282,45 +289,25 @@ function DataTable<TData, TValue>({
         selectedCount={selectedCount}
         selectedItems={selectedItems}
         bulkActions={bulkActions}
-        onClearSelection={() => setRowSelection({})}
         isVisible={enableRowSelection}
       />
       <div className="flex-1 min-h-0 border rounded-md">
         <div className="h-full overflow-auto">
-          <Table>
-            <DataTableHeader headerGroups={table.getHeaderGroups()} />
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map(row => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() ? 'selected' : undefined}
-                    className={
-                      highlightRowFilter?.(row) ? highlightClassName : undefined
-                    }
-                  >
-                    {row.getVisibleCells().map(cell => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={tableColumns.length}
-                    className="h-24 text-center"
-                  >
-                    No results.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+          {stickyHeader ? (
+            <StickyDataTable
+              table={table}
+              tableColumns={tableColumns}
+              highlightRowFilter={highlightRowFilter}
+              highlightClassName={highlightClassName}
+            />
+          ) : (
+            <StandardDataTable
+              table={table}
+              tableColumns={tableColumns}
+              highlightRowFilter={highlightRowFilter}
+              highlightClassName={highlightClassName}
+            />
+          )}
         </div>
       </div>
     </div>

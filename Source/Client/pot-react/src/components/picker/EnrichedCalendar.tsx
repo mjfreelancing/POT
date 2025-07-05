@@ -78,36 +78,12 @@ function EnrichedCalendar({
     }
   }, [propDate]);
 
-  // Handle date adjustment when display month changes
-  React.useEffect(() => {
-    adjustSelectedDateForMonth(currentDisplayMonth, pickerDate);
-  }, [currentDisplayMonth]);
-
-  const handleDateSelectInCalendar: DayPickerSingleProps['onSelect'] = (
-    newSelection,
-    dayClicked,
-  ) => {
-    if (
-      newSelection === undefined &&
-      pickerDate &&
-      dayClicked.getTime() === pickerDate.getTime()
-    ) {
-      return;
-    }
-
-    setPickerDate(newSelection);
-
-    if (onDateChange) {
-      onDateChange(newSelection);
-    }
-  };
-
   /**
    * Adjusts the selected date when navigating to a month where the current day doesn't exist.
    * Uses the "clamp to last valid day" approach - if the selected day doesn't exist in the
    * target month, it selects the last day of that month instead.
    */
-  const adjustSelectedDateForMonth = (
+  const adjustSelectedDateForMonth = React.useCallback((
     targetMonth: Date,
     currentSelectedDate: Date | undefined,
   ) => {
@@ -137,6 +113,30 @@ function EnrichedCalendar({
       if (onDateChange) {
         onDateChange(adjustedDate);
       }
+    }
+  }, [onDateChange]);
+
+  // Handle date adjustment when display month changes
+  React.useEffect(() => {
+    adjustSelectedDateForMonth(currentDisplayMonth, pickerDate);
+  }, [currentDisplayMonth, adjustSelectedDateForMonth, pickerDate]);
+
+  const handleDateSelectInCalendar: DayPickerSingleProps['onSelect'] = (
+    newSelection,
+    dayClicked,
+  ) => {
+    if (
+      newSelection === undefined &&
+      pickerDate &&
+      dayClicked.getTime() === pickerDate.getTime()
+    ) {
+      return;
+    }
+
+    setPickerDate(newSelection);
+
+    if (onDateChange) {
+      onDateChange(newSelection);
     }
   };
 
