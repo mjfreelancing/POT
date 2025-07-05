@@ -49,13 +49,27 @@ internal sealed class RenewExpensesService : IRenewExpensesService
 
             foreach (var expense in expenses)
             {
-                while (expense.NextDue < todayDate)
-                {
-                    // Not resetting / updating expense.Accrued since this impacts the account's accrued amount
-                    expense.AccrualStart = expense.NextDue;
+                var endDate = expense.EndDate.GetValueOrDefault(DateOnly.MaxValue);
 
+                if (todayDate >= endDate)
+                {
+                    continue;
+                }
+
+                var nextDue = expense.NextDue;
+
+                while (nextDue < todayDate)
+                {
                     var days = expense.Frequency.GetDaysToNext(expense.NextDue, expense.FrequencyCount);
-                    expense.NextDue = expense.NextDue.AddDays(days);
+                    nextDue = expense.NextDue.AddDays(days);
+
+                    // Don't advance beyond the end date
+                    if (nextDue <= endDate)
+                    {
+                        // Not resetting / updating expense.Accrued since this impacts the account's accrued amount
+                        expense.AccrualStart = expense.NextDue;
+                        expense.NextDue = nextDue;
+                    }
                 }
             }
 

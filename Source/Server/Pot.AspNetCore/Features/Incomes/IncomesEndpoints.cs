@@ -10,4 +10,5 @@ internal static class IncomesEndpoints
     public const string Create = "";
     public const string Update = "";
     public const string Delete = "/{id:guid}";
+    public const string Renew = "/renew";
 }

@@ -33,9 +33,14 @@ const EditIncomeSchema = BaseIncomeSchema.extend({
   accountRowId: z.string(),
 });
 
+const RenewIncomesSchema = z.object({
+  rowIds: z.string().array(),
+});
+
 type Income = z.infer<typeof IncomeSchema>;
 type CreateIncome = z.infer<typeof CreateIncomeSchema>;
 type EditIncome = z.infer<typeof EditIncomeSchema>;
+type RenewIncomes = z.infer<typeof RenewIncomesSchema>;
 type PagedIncome = Paged<Income>;
 
 export {
@@ -44,5 +49,7 @@ export {
   EditIncomeSchema,
   IncomeAccountSchema,
   IncomeSchema,
+  RenewIncomesSchema,
 };
-export type { CreateIncome, EditIncome, Income, PagedIncome };
+
+export type { CreateIncome, EditIncome, Income, PagedIncome, RenewIncomes };

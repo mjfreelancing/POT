@@ -8,5 +8,6 @@ public interface IIncomeRepository : IGenericRepository<PotDbContext, IncomeEnti
 {
     Task<List<IncomeEntity>> GetAllIncomesAsync(CancellationToken cancellationToken);
     Task<PageResult<IncomeEntity>> GetAllIncomesPagedAsync(Paging paging, CancellationToken cancellationToken);
+    Task<List<IncomeEntity>> GetIncomesAsync(Guid[] rowIds, CancellationToken cancellationToken);
     Task<IncomeEntity?> GetIncomeOrDefaultAsync(Guid incomeId, CancellationToken cancellationToken);
 }

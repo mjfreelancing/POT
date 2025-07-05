@@ -79,4 +79,19 @@ internal static class RouteGroupBuilderExtensions
 
         return routeGroupBuilder;
     }
+
+    public static RouteGroupBuilder RenewIncomes(this RouteGroupBuilder routeGroupBuilder)
+    {
+        routeGroupBuilder
+            .MapPost(IncomesEndpoints.Renew, Renew.Handler.Invoke)
+            .WithName(nameof(RenewIncomes))
+            .WithSummary("Renew incomes")
+            .WithDescription("Renews selected incomes")
+            .WithTags("Incomes")
+            .ProducesProblem((int)HttpStatusCode.OK)
+            .ProducesProblem((int)HttpStatusCode.NotFound)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+
+        return routeGroupBuilder;
+    }
 }

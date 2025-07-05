@@ -4,6 +4,7 @@ import {
   Identity,
   Income,
   PagedIncome,
+  RenewIncomes,
 } from '@/data';
 import { FailResultBase, Result, SuccessResult } from '@/lib';
 
@@ -86,10 +87,21 @@ const useApiDeleteIncome = (id: string) => {
   };
 };
 
+// Returning the mutation data as Result<void, FailResultBase> type to enable TypeScript's discriminated union type narrowing.
+const useApiRenewIncomes = () => {
+  const mutation = usePost<void, RenewIncomes>('/incomes/renew');
+
+  return {
+    ...mutation,
+    data: mutation.data as Result<void, FailResultBase>,
+  };
+};
+
 export {
   useApiCreateIncome,
   useApiDeleteIncome,
   useApiGetAllIncomes,
   useApiGetIncomeById,
+  useApiRenewIncomes,
   useApiUpdateIncome,
 };
