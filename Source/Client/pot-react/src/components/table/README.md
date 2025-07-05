@@ -1,35 +1,21 @@
 # DataTable Component Library
 
-A comprehensive, reusable table component library built on top of `@tanstack/react-table` with full TypeScript support and componentized architecture.
+A comprehensive, reusable table system built on top of `@tanstack/react-table` with full TypeScript support, advanced features, and a modular architecture.
 
-## 📁 Components Overview
+## Components
 
-### Core Components
+- **DataTable**: Main table component. Handles configuration, sorting, selection, bulk actions, and row highlighting.
+- **BulkActionsBar**: Dropdown menu for bulk actions, shown when row selection is enabled.
+- **DataTableHeader**: Renders table headers, supports custom classes, and integrates with react-table header groups.
+- **DataTableContent**: Renders table body and rows, extracted for code reuse.
+- **DataTableColumnHeader**: Sortable column header with sort icons and three-state sorting.
+- **dataTableColumnFactories**: Utility functions for common column types: money, date, frequency.
 
-- **`DataTable`** - Main orchestrator component that handles configuration and delegates rendering
-- **`StandardDataTable`** - Standard table implementation using shadcn Table components (default)
-- **`StickyDataTable`** - Table implementation with sticky headers using custom table structure
-- **`DataTableContent`** - Shared component for table body rendering (eliminates code duplication)
-- **`DataTableHeader`** - Reusable table header component with sorting capabilities
-- **`BulkActionsBar`** - Standalone bulk actions UI component
-- **`DataTableColumnHeader`** - Individual sortable column header component
-
-### Utilities
-
-- **`dataTableColumnFactories`** - Helper functions for common column types (money, date, frequency)
-
-## 🏗️ Architecture
-
-The DataTable uses a **strategy pattern** to switch between optimized implementations:
-
-- **When `stickyHeader={false}`** (default): Uses `StandardDataTable` with shadcn Table components
-- **When `stickyHeader={true}`**: Uses `StickyDataTable` with custom table structure for CSS sticky positioning
-
-Both implementations share `DataTableContent` for consistent table body rendering, eliminating code duplication.
+All components and utilities are exported from `index.ts` for convenient import.
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Basic Table
 
@@ -37,29 +23,17 @@ Both implementations share `DataTableContent` for consistent table body renderin
 import { DataTable } from '@/components/table';
 import { ColumnDef } from '@tanstack/react-table';
 
-type Person = {
-  id: number;
-  name: string;
-  email: string;
-};
+type Person = { id: number; name: string; email: string };
 
 const columns: ColumnDef<Person>[] = [
-  {
-    accessorKey: 'name',
-    header: 'Name',
-  },
-  {
-    accessorKey: 'email',
-    header: 'Email',
-  },
+  { accessorKey: 'name', header: 'Name' },
+  { accessorKey: 'email', header: 'Email' },
 ];
 
-function MyTable() {
-  return <DataTable columns={columns} data={people} />;
-}
+<DataTable columns={columns} data={people} />;
 ```
 
-### Table with Row Selection and Bulk Actions
+### Row Selection and Bulk Actions
 
 ```tsx
 import { DataTable, BulkAction } from '@/components/table';
@@ -67,313 +41,131 @@ import { DataTable, BulkAction } from '@/components/table';
 const bulkActions: BulkAction<Person>[] = [
   {
     label: 'Delete Selected',
-    onClick: selectedItems => {
-      console.log('Deleting:', selectedItems);
-      // Implement delete logic
+    onClick: items => {
+      /* ... */
     },
   },
   {
     label: 'Export to CSV',
-    onClick: selectedItems => {
-      console.log('Exporting:', selectedItems);
-      // Implement export logic
+    onClick: items => {
+      /* ... */
     },
   },
 ];
 
-function MyTableWithSelection() {
-  return (
-    <DataTable
-      columns={columns}
-      data={people}
-      enableRowSelection={true}
-      bulkActions={bulkActions}
-      onSelectionChange={selected => console.log('Selected:', selected)}
-    />
-  );
-}
+<DataTable
+  columns={columns}
+  data={people}
+  enableRowSelection={true}
+  bulkActions={bulkActions}
+  onSelectionChange={selected => {
+    /* ... */
+  }}
+/>;
 ```
 
-### Table with Row Highlighting
+### Row Highlighting
 
 ```tsx
-function MyTableWithHighlighting() {
-  const [activeId, setActiveId] = useState<number | null>(null);
-
-  return (
-    <DataTable
-      columns={columns}
-      data={people}
-      highlightRowFilter={row => row.original.id === activeId}
-      highlightClassName="bg-blue-100 dark:bg-blue-900"
-    />
-  );
-}
-```
-
-### Table with Sticky Headers
-
-```tsx
-function MyTableWithStickyHeaders() {
-  return <DataTable columns={columns} data={people} stickyHeader={true} />;
-}
+<DataTable
+  columns={columns}
+  data={people}
+  highlightRowFilter={row => row.original.id === activeId}
+  highlightClassName="bg-blue-100 dark:bg-blue-900"
+/>
 ```
 
 ---
 
-## 🏗️ Column Factory Functions
+## Column Factory Utilities
 
-For common data types, use the provided factory functions:
+Import from `dataTableColumnFactories` for common column types:
 
-### Money Values
+- `createMoneyValueColumn<T>()`: Right-aligned, formatted money column
+- `createDateColumn<T>()`: Date column with formatting and null handling
+- `createFrequencyColumn<T>()`: Frequency display (e.g., "2 Weeks")
 
-```tsx
-import { createMoneyValueColumn } from '@/components/table';
-
-// Creates a right-aligned money column with proper formatting
-createMoneyValueColumn<MyData>('amount', 'Amount', {
-  enableSorting: true, // Optional: enable sorting
-});
-```
-
-### Date Values
-
-```tsx
-import { createDateColumn } from '@/components/table';
-
-// Creates a date column with dd-MM-yyyy format
-createDateColumn<MyData>('createdAt', 'Created', 'Not Set', {
-  enableSorting: true, // Optional: enable sorting
-});
-```
-
-### Frequency Values
-
-```tsx
-import { createFrequencyColumn } from '@/components/table';
-
-// Creates a column showing "count frequency" (e.g., "2 Weeks", "1 Month")
-createFrequencyColumn<MyData>('count', 'frequency', 'Payment Frequency');
-```
-
-### Complete Example with Factory Functions
+Example:
 
 ```tsx
 import {
-  DataTable,
   createMoneyValueColumn,
   createDateColumn,
   createFrequencyColumn,
 } from '@/components/table';
 
-const columns: ColumnDef<Expense>[] = [
-  {
-    accessorKey: 'description',
-    header: 'Description',
-    enableSorting: true,
-  },
-  createMoneyValueColumn<Expense>('amount', 'Amount'),
-  createDateColumn<Expense>('dueDate', 'Due Date', 'Ongoing'),
-  createFrequencyColumn<Expense>('frequencyCount', 'frequency', 'Frequency'),
+const columns = [
+  createMoneyValueColumn<MyType>('amount', 'Amount'),
+  createDateColumn<MyType>('createdAt', 'Created'),
+  createFrequencyColumn<MyType>('count', 'frequency', 'Frequency'),
 ];
 ```
 
 ---
 
-## 🎨 Styling & Themes
+## Customization & Styling
 
-### Default Styling
-
-The DataTable comes with built-in light/dark theme support:
-
-- Light theme: Gray headers, white rows
-- Dark theme: Dark gray headers, dark rows
-- Hover effects for interactive elements
-
-### Custom Styling
-
-Override default classes using component props:
-
-```tsx
-// Custom row highlighting
-<DataTable
-  highlightClassName="bg-emerald-100 dark:bg-emerald-900"
-  // ... other props
-/>
-
-// Custom header styling (when using DataTableHeader directly)
-<DataTableHeader
-  headerGroups={headerGroups}
-  headerClassName="bg-slate-100 dark:bg-slate-800"
-  rowClassName="bg-slate-50 dark:bg-slate-700"
-  cellClassName="font-bold text-lg"
-/>
-```
+- **Row Highlighting**: Use `highlightRowFilter` and `highlightClassName` props.
+- **Header Styling**: Use `DataTableHeader` with custom class props.
+- **Bulk Actions**: Pass an array of actions to `bulkActions`.
 
 ---
 
-## 🔧 Advanced Usage
+## Advanced Usage
 
-### Custom Bulk Actions
-
-```tsx
-const advancedBulkActions: BulkAction<MyData>[] = [
-  {
-    label: 'Archive Selected',
-    onClick: async items => {
-      try {
-        await archiveItems(items.map(item => item.id));
-        // Show success message
-        toast.success(`Archived ${items.length} items`);
-        // Refresh data
-        refetch();
-      } catch (error) {
-        toast.error('Failed to archive items');
-      }
-    },
-  },
-  {
-    label: 'Bulk Edit',
-    onClick: items => {
-      setBulkEditItems(items);
-      setShowBulkEditModal(true);
-    },
-  },
-];
-```
-
-### Custom Column Headers with Sorting
-
-```tsx
-import { DataTableColumnHeader } from '@/components/table';
-
-const customColumns: ColumnDef<MyData>[] = [
-  {
-    accessorKey: 'name',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Full Name" />
-    ),
-    enableSorting: true,
-  },
-  // ... more columns
-];
-```
-
-### Controlled Selection State
-
-```tsx
-function ControlledSelectionTable() {
-  const [selection, setSelection] = useState<MyData[]>([]);
-
-  return (
-    <DataTable
-      columns={columns}
-      data={data}
-      enableRowSelection={true}
-      onSelectionChange={setSelection}
-      // Selection state is controlled by parent component
-    />
-  );
-}
-```
+- **Custom Column Headers**: Use `DataTableColumnHeader` for sortable headers.
+- **Controlled Selection**: Use `onSelectionChange` to manage selection state externally.
+- **Reusable Table Body**: Use `DataTableContent` for custom table implementations.
 
 ---
 
-## 📝 TypeScript Support
+## TypeScript Support
 
-### Generic Type Safety
-
-The DataTable is fully generic and type-safe:
-
-```tsx
-// Type is automatically inferred from your data
-type Product = {
-  id: number;
-  name: string;
-  price: number;
-  category: string;
-};
-
-// DataTable<Product, any> - TData is inferred as Product
-<DataTable<Product> columns={productColumns} data={products} />;
-
-// Bulk actions are also type-safe
-const actions: BulkAction<Product>[] = [
-  {
-    label: 'Update Prices',
-    onClick: (products: Product[]) => {
-      // TypeScript knows this is Product[]
-      products.forEach(product => {
-        console.log(product.price); // ✅ Type-safe access
-      });
-    },
-  },
-];
-```
-
-### Available Types
-
-```tsx
-import type {
-  DataTableProps,
-  BulkAction,
-  BulkActionsBarProps,
-  DataTableHeaderProps,
-} from '@/components/table';
-```
+- All components and utilities are fully generic and type-safe.
+- See `DataTableProps`, `BulkAction`, and other exported types for details.
 
 ---
 
-## 🧪 Testing
+## Testing
 
-### Testing DataTable
+- Use React Testing Library to test rendering, selection, and bulk actions.
 
-```tsx
-import { render, screen } from '@testing-library/react';
-import { DataTable } from '@/components/table';
+---
 
-test('renders table with data', () => {
-  const mockData = [
-    { id: 1, name: 'John', email: 'john@example.com' },
-    { id: 2, name: 'Jane', email: 'jane@example.com' },
-  ];
+## API Reference
 
-  render(<DataTable columns={columns} data={mockData} />);
+### DataTable Props
 
-  expect(screen.getByText('John')).toBeInTheDocument();
-  expect(screen.getByText('jane@example.com')).toBeInTheDocument();
-});
-```
+- `columns`: ColumnDef<TData, TValue>[] — Column definitions
+- `data`: TData[] — Table data
+- `highlightRowFilter?`: (row: Row<TData>) => boolean — Highlight row filter
+- `highlightClassName?`: string — Class for highlighted rows
+- `enableRowSelection?`: boolean — Enable row selection
+- `bulkActions?`: BulkAction<TData>[] — Bulk actions for selected rows
+- `onSelectionChange?`: (selectedItems: TData[]) => void — Selection callback
 
-### Testing Bulk Actions
+### BulkActionsBar Props
 
-```tsx
-import userEvent from '@testing-library/user-event';
+- `selectedCount`: number
+- `selectedItems`: TData[]
+- `bulkActions`: BulkAction<TData>[]
+- `isVisible`: boolean
 
-test('bulk actions work correctly', async () => {
-  const mockAction = jest.fn();
-  const bulkActions = [{ label: 'Test Action', onClick: mockAction }];
+### DataTableHeader Props
 
-  render(
-    <DataTable
-      columns={columns}
-      data={mockData}
-      enableRowSelection={true}
-      bulkActions={bulkActions}
-    />,
-  );
+- `headerGroups`: HeaderGroup<TData>[]
+- `headerClassName?`, `rowClassName?`, `cellClassName?`: string
 
-  // Select a row
-  await userEvent.click(screen.getAllByRole('checkbox')[1]);
+### DataTableContent Props
 
-  // Click the actions dropdown
-  await userEvent.click(screen.getByText('Actions'));
+- `table`: Table<TData>
+- `tableColumns`: ColumnDef<TData, TValue>[]
+- `highlightRowFilter?`, `highlightClassName?`: as above
 
-  // Click the test action
-  await userEvent.click(screen.getByText('Test Action'));
+### DataTableColumnHeader Props
 
-  expect(mockAction).toHaveBeenCalledWith([mockData[0]]);
-});
-```
+- `column`: Column<TData, TValue>
+- `title`: string
+- `className?`: string
 
 ---

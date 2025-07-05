@@ -18,108 +18,7 @@ import DataTableHeader from './DataTableHeader';
 const DEFAULT_HIGHLIGHT_ROW_CLASS = 'bg-yellow-200 dark:bg-yellow-800';
 
 /**
- * DataTable - A comprehensive, reusable table component built on top of @tanstack/react-table.
- *
- * This component provides a complete table solution with the following features:
- *
- * ## Core Features:
- * - **Sortable columns** with visual sort indicators
- * - **Row highlighting** with customizable filter and styling
- * - **Bulk row selection** with checkboxes and selection management
- * - **Bulk actions** via dropdown menu for selected items
- * - **Responsive design** with proper light/dark theme support
- * - **Type-safe** with full TypeScript generic support
- *
- * ## Architecture:
- * The DataTable uses a componentized architecture for better maintainability and code reusability:
- *
- * ### Core Components:
- * - **`DataTable`** - Main orchestrator component that handles configuration and delegates rendering
- * - **`DataTableContent`** - Shared component for table body rendering (eliminates code duplication)
- * - **`DataTableHeader`** - Handles table header rendering with sorting capabilities
- * - **`BulkActionsBar`** - Manages bulk actions UI and selection state
- *
- * ### Supporting Utilities:
- * - **`dataTableColumnFactories`** - Factory functions for common column types
- * - **`DataTableColumnHeader`** - Sortable column header component
- *
- * ## Column Types:
- * Use the provided column factory functions for common data types:
- * - `createMoneyValueColumn()` - For currency/monetary values
- * - `createDateColumn()` - For date values with custom null handling
- * - `createFrequencyColumn()` - For frequency display (count + period)
- *
- * ## Basic Usage:
- * ```tsx
- * const columns: ColumnDef<MyData>[] = [
- *   {
- *     accessorKey: 'name',
- *     header: 'Name',
- *   },
- *   createMoneyValueColumn<MyData>('amount', 'Amount'),
- *   createDateColumn<MyData>('date', 'Date'),
- * ];
- *
- * <DataTable
- *   columns={columns}
- *   data={myData}
- * />
- * ```
- *
- * ## With Row Selection and Bulk Actions:
- * ```tsx
- * const bulkActions: BulkAction<MyData>[] = [
- *   {
- *     label: 'Delete Selected',
- *     onClick: (items) => handleDelete(items)
- *   },
- *   {
- *     label: 'Export to CSV',
- *     onClick: (items) => handleExport(items)
- *   }
- * ];
- *
- * <DataTable
- *   columns={columns}
- *   data={myData}
- *   enableRowSelection={true}
- *   bulkActions={bulkActions}
- *   onSelectionChange={(selectedItems) => setSelection(selectedItems)}
- * />
- * ```
- *
- * ## With Row Highlighting:
- * ```tsx
- * <DataTable
- *   columns={columns}
- *   data={myData}
- *   highlightRowFilter={(row) => row.original.id === activeId}
- *   highlightClassName="bg-blue-100 dark:bg-blue-900"
- * />
- * ```
- *
- * ## Performance Considerations:
- * - Table body rendering logic is shared between implementations to avoid code duplication
- * - Row selection state is managed efficiently with react-table's built-in selection handling
- * - Memoization is recommended for `columns`, `data`, `bulkActions`, and callback props
- *
- * ## Component Files:
- * ```
- * components/table/
- * ├── DataTable.tsx           # Main orchestrator component
- * ├── DataTableContent.tsx    # Shared table body rendering
- * ├── DataTableHeader.tsx     # Header rendering with sorting
- * ├── BulkActionsBar.tsx      # Bulk actions UI
- * └── dataTableColumnFactories.ts # Column utility functions
- * ```
- *
- * @template TData - The type of the data objects in the table
- * @template TValue - The type of the value for each column (usually inferred)
- */
-
-/**
- * Props for the DataTable component.
- *
+ * DataTable Props
  * @template TData - The type of the data objects in the table.
  * @template TValue - The type of the value for each column.
  */
@@ -136,7 +35,6 @@ type DataTableProps<TData, TValue> = {
   /**
    * Optional function to determine if a row should be highlighted.
    * Receives the row object and returns true if the row should be highlighted.
-   * Commonly used to highlight the currently selected/active row.
    */
   highlightRowFilter?: (row: Row<TData>) => boolean;
 
@@ -162,7 +60,6 @@ type DataTableProps<TData, TValue> = {
   /**
    * Callback function called when the selection changes.
    * Receives the array of currently selected data items.
-   * Useful for tracking selection state in parent components.
    */
   onSelectionChange?: (selectedItems: TData[]) => void;
 };
