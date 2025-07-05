@@ -78,6 +78,11 @@ function EnrichedCalendar({
     }
   }, [propDate]);
 
+  // Handle date adjustment when display month changes
+  React.useEffect(() => {
+    adjustSelectedDateForMonth(currentDisplayMonth, pickerDate);
+  }, [currentDisplayMonth]);
+
   const handleDateSelectInCalendar: DayPickerSingleProps['onSelect'] = (
     newSelection,
     dayClicked,
@@ -106,7 +111,9 @@ function EnrichedCalendar({
     targetMonth: Date,
     currentSelectedDate: Date | undefined,
   ) => {
-    if (!currentSelectedDate) return;
+    if (!currentSelectedDate) {
+      return;
+    }
 
     const targetYear = targetMonth.getFullYear();
     const targetMonthIndex = targetMonth.getMonth();
@@ -134,45 +141,31 @@ function EnrichedCalendar({
   };
 
   const handlePrevMonth = () => {
-    setCurrentDisplayMonth(prev => {
-      const newMonth = subMonths(prev, 1);
-      adjustSelectedDateForMonth(newMonth, pickerDate);
-      return newMonth;
-    });
+    const newMonth = subMonths(currentDisplayMonth, 1);
+    setCurrentDisplayMonth(newMonth);
   };
 
   const handleNextMonth = () => {
-    setCurrentDisplayMonth(prev => {
-      const newMonth = addMonths(prev, 1);
-      adjustSelectedDateForMonth(newMonth, pickerDate);
-      return newMonth;
-    });
+    const newMonth = addMonths(currentDisplayMonth, 1);
+    setCurrentDisplayMonth(newMonth);
   };
 
   const handlePrevYear = () => {
-    setCurrentDisplayMonth(prev => {
-      const newMonth = subYears(prev, 1);
-      adjustSelectedDateForMonth(newMonth, pickerDate);
+    const newMonth = subYears(currentDisplayMonth, 1);
+    setCurrentDisplayMonth(newMonth);
 
-      if (onYearChange) {
-        onYearChange(newMonth.getFullYear());
-      }
-
-      return newMonth;
-    });
+    if (onYearChange) {
+      onYearChange(newMonth.getFullYear());
+    }
   };
 
   const handleNextYear = () => {
-    setCurrentDisplayMonth(prev => {
-      const newMonth = addYears(prev, 1);
-      adjustSelectedDateForMonth(newMonth, pickerDate);
+    const newMonth = addYears(currentDisplayMonth, 1);
+    setCurrentDisplayMonth(newMonth);
 
-      if (onYearChange) {
-        onYearChange(newMonth.getFullYear());
-      }
-
-      return newMonth;
-    });
+    if (onYearChange) {
+      onYearChange(newMonth.getFullYear());
+    }
   };
 
   const handleToday = () => {
