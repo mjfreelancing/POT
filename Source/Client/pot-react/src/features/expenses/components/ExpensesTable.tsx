@@ -28,6 +28,14 @@ const columns: ColumnDef<Expense>[] = [
     enableSorting: true,
     sortingFn: 'text',
   },
+  createMoneyValueColumn<Expense>('amount', 'Amount'),
+  createDateColumn<Expense>('nextDue', 'Next Due', 'Ongoing', {
+    enableSorting: true,
+    sortingFn: 'datetime',
+  }),
+  createFrequencyColumn<Expense>('frequencyCount', 'frequency', 'Frequency'),
+  createDateColumn<Expense>('accrualStart', 'Accrual Start'),
+  createMoneyValueColumn<Expense>('accrued', 'Accrued'),
   {
     id: 'accountDescription',
     header: 'Account',
@@ -41,14 +49,6 @@ const columns: ColumnDef<Expense>[] = [
       </div>
     ),
   },
-  createFrequencyColumn<Expense>('frequencyCount', 'frequency', 'Frequency'),
-  createMoneyValueColumn<Expense>('amount', 'Amount'),
-  createDateColumn<Expense>('accrualStart', 'Accrual Start'),
-  createMoneyValueColumn<Expense>('accrued', 'Accrued'),
-  createDateColumn<Expense>('nextDue', 'Next Due', 'Ongoing', {
-    enableSorting: true,
-    sortingFn: 'datetime',
-  }),
   createDateColumn<Expense>('endDate', 'End Date'),
   {
     id: 'actions',
