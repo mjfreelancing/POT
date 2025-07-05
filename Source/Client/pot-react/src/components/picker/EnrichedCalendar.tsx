@@ -78,10 +78,48 @@ function EnrichedCalendar({
     }
   }, [propDate]);
 
+  /**
+   * Adjusts the selected date when navigating to a month where the current day doesn't exist.
+   * Uses the "clamp to last valid day" approach - if the selected day doesn't exist in the
+   * target month, it selects the last day of that month instead.
+   */
+  const adjustSelectedDateForMonth = React.useCallback(
+    (targetMonth: Date, currentSelectedDate: Date | undefined) => {
+      if (!currentSelectedDate) {
+        return;
+      }
+
+      const targetYear = targetMonth.getFullYear();
+      const targetMonthIndex = targetMonth.getMonth();
+      const selectedDay = currentSelectedDate.getDate();
+
+      // Get the last day of the target month
+      const lastDayOfTargetMonth = new Date(
+        targetYear,
+        targetMonthIndex + 1,
+        0,
+      ).getDate();
+
+      // If the selected day exists in the target month, use it; otherwise use the last day
+      const adjustedDay = Math.min(selectedDay, lastDayOfTargetMonth);
+      const adjustedDate = new Date(targetYear, targetMonthIndex, adjustedDay);
+
+      // Only update if the date actually changed
+      if (adjustedDate.getTime() !== currentSelectedDate.getTime()) {
+        setPickerDate(adjustedDate);
+
+        if (onDateChange) {
+          onDateChange(adjustedDate);
+        }
+      }
+    },
+    [onDateChange],
+  );
+
   // Handle date adjustment when display month changes
   React.useEffect(() => {
     adjustSelectedDateForMonth(currentDisplayMonth, pickerDate);
-  }, [currentDisplayMonth]);
+  }, [currentDisplayMonth, adjustSelectedDateForMonth, pickerDate]);
 
   const handleDateSelectInCalendar: DayPickerSingleProps['onSelect'] = (
     newSelection,
@@ -99,44 +137,6 @@ function EnrichedCalendar({
 
     if (onDateChange) {
       onDateChange(newSelection);
-    }
-  };
-
-  /**
-   * Adjusts the selected date when navigating to a month where the current day doesn't exist.
-   * Uses the "clamp to last valid day" approach - if the selected day doesn't exist in the
-   * target month, it selects the last day of that month instead.
-   */
-  const adjustSelectedDateForMonth = (
-    targetMonth: Date,
-    currentSelectedDate: Date | undefined,
-  ) => {
-    if (!currentSelectedDate) {
-      return;
-    }
-
-    const targetYear = targetMonth.getFullYear();
-    const targetMonthIndex = targetMonth.getMonth();
-    const selectedDay = currentSelectedDate.getDate();
-
-    // Get the last day of the target month
-    const lastDayOfTargetMonth = new Date(
-      targetYear,
-      targetMonthIndex + 1,
-      0,
-    ).getDate();
-
-    // If the selected day exists in the target month, use it; otherwise use the last day
-    const adjustedDay = Math.min(selectedDay, lastDayOfTargetMonth);
-    const adjustedDate = new Date(targetYear, targetMonthIndex, adjustedDay);
-
-    // Only update if the date actually changed
-    if (adjustedDate.getTime() !== currentSelectedDate.getTime()) {
-      setPickerDate(adjustedDate);
-
-      if (onDateChange) {
-        onDateChange(adjustedDate);
-      }
     }
   };
 

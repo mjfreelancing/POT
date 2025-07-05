@@ -115,7 +115,6 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
             highlightRowFilter={(row: Row<Expense>) =>
               row.original.rowId.toString() === editingId
             }
-            stickyHeader={true}
           />
         </CardContent>
       </Card>
