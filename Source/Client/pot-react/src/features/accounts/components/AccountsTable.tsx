@@ -163,6 +163,7 @@ function AccountsTable({ accounts }: AccountsTableProps) {
             highlightRowFilter={row =>
               row.original.rowId.toString() === editingId
             }
+            stickyHeader={true}
           />
         </CardContent>
       </Card>

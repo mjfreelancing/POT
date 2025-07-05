@@ -113,6 +113,7 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
             highlightRowFilter={(row: Row<Income>) =>
               row.original.rowId.toString() === editingId
             }
+            stickyHeader={true}
           />
         </CardContent>
       </Card>
