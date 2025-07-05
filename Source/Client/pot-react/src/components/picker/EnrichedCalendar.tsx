@@ -128,7 +128,7 @@ function EnrichedCalendar({
   const handlePrevYear = () => {
     const newMonth = subYears(currentDisplayMonth, 1);
     setCurrentDisplayMonth(newMonth);
-
+    setPickerDate(clampDateToMonth(pickerDate, newMonth));
     if (onYearChange) {
       onYearChange(newMonth.getFullYear());
     }
@@ -137,7 +137,7 @@ function EnrichedCalendar({
   const handleNextYear = () => {
     const newMonth = addYears(currentDisplayMonth, 1);
     setCurrentDisplayMonth(newMonth);
-
+    setPickerDate(clampDateToMonth(pickerDate, newMonth));
     if (onYearChange) {
       onYearChange(newMonth.getFullYear());
     }
