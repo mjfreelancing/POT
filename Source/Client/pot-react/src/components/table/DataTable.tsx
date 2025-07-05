@@ -224,9 +224,6 @@ function DataTable<TData, TValue>({
     }
   }, [selectedItems, onSelectionChange]);
 
-  // To put the table in a rounded border, wrap everything in
-  // <div className="rounded-md border"></div>
-
   // Scenarios for header styling:
   // 1. Style on <TableHeader> (<thead>) paints the entire header section uniformly.
   //    - Pros: Single spot for styling, automatically covers all header rows.
@@ -238,7 +235,7 @@ function DataTable<TData, TValue>({
   //    - Pros: Keeps background styling separate from text styling, consistent typography.
   //    - Cons: Does not affect row background, so must be combined with header or row styles for full effect.
   return (
-    <div>
+    <div className="h-full flex flex-col">
       <BulkActionsBar
         selectedCount={selectedCount}
         selectedItems={selectedItems}
@@ -246,37 +243,44 @@ function DataTable<TData, TValue>({
         onClearSelection={() => setRowSelection({})}
         isVisible={enableRowSelection}
       />
-      <Table>
-        <DataTableHeader headerGroups={table.getHeaderGroups()} />
-        <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map(row => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() ? 'selected' : undefined}
-                className={
-                  highlightRowFilter?.(row) ? highlightClassName : undefined
-                }
-              >
-                {row.getVisibleCells().map(cell => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+      <div className="flex-1 min-h-0 border rounded-md">
+        <div className="h-full overflow-auto">
+          <Table>
+            <DataTableHeader headerGroups={table.getHeaderGroups()} />
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map(row => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() ? 'selected' : undefined}
+                    className={
+                      highlightRowFilter?.(row) ? highlightClassName : undefined
+                    }
+                  >
+                    {row.getVisibleCells().map(cell => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={tableColumns.length}
+                    className="h-24 text-center"
+                  >
+                    No results.
                   </TableCell>
-                ))}
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell
-                colSpan={tableColumns.length}
-                className="h-24 text-center"
-              >
-                No results.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
     </div>
   );
 }

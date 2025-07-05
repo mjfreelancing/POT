@@ -105,8 +105,8 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
         />
       )}
 
-      <Card className="card-elevated">
-        <CardContent className="px-4">
+      <Card className="card-elevated h-full flex flex-col">
+        <CardContent className="px-4 py-4 flex-1 overflow-hidden">
           <DataTable
             columns={columns}
             data={filteredExpenses}

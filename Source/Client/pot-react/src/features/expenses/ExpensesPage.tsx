@@ -158,14 +158,14 @@ function ExpensesPage() {
   }, [expensesResult]);
 
   return (
-    <div className="flex flex-col flex-1 min-h-screen bg-gradient-to-br from-background to-muted/20">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20">
       <ExpensesHeader
         accountsInItems={accountsInItems}
         selectedAccountId={validatedSelectedAccountId}
         onAccountChange={handleAccountChange}
         totalAccountsCount={accounts.length}
       />
-      <div className="flex-1 p-6 space-y-6">
+      <div className="flex-1 p-6 overflow-hidden">
         <ExpensesTable filteredExpenses={filteredExpenses} />
       </div>
       <LoadingMessage isLoading={isLoading} />
