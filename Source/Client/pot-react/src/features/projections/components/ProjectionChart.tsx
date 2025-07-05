@@ -1,4 +1,4 @@
-import { format, parseISO } from 'date-fns';
+import { addDays, format, parseISO } from 'date-fns';
 import { useState } from 'react';
 import {
   Bar,
@@ -44,7 +44,7 @@ function ProjectionChart({ data }: ProjectionChartProps) {
   // Date range filtering state
   const today = new Date();
   const [startDate, setStartDate] = useState<Date | undefined>(today);
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(addDays(today, 60)); // TODO: Make this a user preference
 
   // Transform data for chart consumption using custom hook
   const {
