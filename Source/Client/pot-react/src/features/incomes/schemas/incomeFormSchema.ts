@@ -6,7 +6,7 @@ const MoneyValueSchema = z
   .number({
     required_error: 'This field is required',
   })
-  .min(1, 'Value must be greater than zero');
+  .min(0, 'Value must be positive');
 
 const incomeFormSchema = z.object({
   description: z.string().min(1, 'A description is required'),
