@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 
 import { MoneyValueChangeEvent, MoneyValueInput } from '@/components/input';
@@ -42,15 +42,11 @@ function ExpenseForm({
   accounts,
   isEditMode = false,
 }: ExpenseFormProps) {
-  const amountInputRef = useRef<HTMLInputElement>(null);
-
   useEffect(() => {
-    // Focus the amount field only when editing
-    // When creating a new expense, let the browser focus the first field (description) by default
-    if (isEditMode && amountInputRef.current) {
-      amountInputRef.current.focus();
+    if (isEditMode) {
+      form.setFocus('amount');
     }
-  }, [isEditMode]);
+  }, [isEditMode, form]);
 
   return (
     <Form {...form}>
@@ -84,7 +80,6 @@ function ExpenseForm({
                 {/* Getting the numerical value from e.target.number since the 'value' is a string */}
                 <MoneyValueInput
                   {...field}
-                  ref={amountInputRef}
                   id="amount-input"
                   placeholder="Enter the expense amount"
                   aria-description="Current expense amount"
