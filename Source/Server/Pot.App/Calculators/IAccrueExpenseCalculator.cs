@@ -5,5 +5,5 @@ namespace Pot.App.Calculators;
 
 public interface IAccrueExpenseCalculator : IPotScopedDependency
 {
-    void AccrueExpenses(AccountEntity account, ExpenseEntity[] expenses);
+    void AccrueExpenses(AccountEntity account, IEnumerable<ExpenseEntity> expenses, DateOnly? currentDate = null);
 }

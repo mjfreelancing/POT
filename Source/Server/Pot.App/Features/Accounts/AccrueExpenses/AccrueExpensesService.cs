@@ -48,7 +48,7 @@ internal sealed class AccrueExpensesService : IAccrueExpensesService
 
                 var expenses = await _expenseRepository.GetExpensesForAccountAsync(accountRowId, cancellationToken).ConfigureAwait(false);
 
-                _accrueExpenseCalculator.AccrueExpenses(account, [.. expenses]);
+                _accrueExpenseCalculator.AccrueExpenses(account, expenses);
             }
 
             await _expenseRepository

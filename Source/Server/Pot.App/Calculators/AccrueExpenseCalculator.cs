@@ -8,8 +8,10 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
 {
     internal TimeProvider TimeProvider { get; set; } = TimeProvider.System;
 
-    public void AccrueExpenses(AccountEntity account, ExpenseEntity[] expenses)
+    public void AccrueExpenses(AccountEntity account, IEnumerable<ExpenseEntity> expenses, DateOnly? currentDate = null)
     {
+        currentDate ??= DateOnly.FromDateTime(TimeProvider.GetLocalNow().Date);
+
         ResetAccountAccruals(account);
 
         // Sorted is important if the option to not allow negative balances is set.
@@ -17,7 +19,7 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
 
         sortedExpenses.ForEach((expense, index) =>
         {
-            AccrueExpense(expense);
+            AccrueExpense(expense, currentDate.Value);
         });
     }
 
@@ -27,10 +29,8 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
         account.DailyExpenseAccrual = 0.0d;
     }
 
-    private void AccrueExpense(ExpenseEntity expense)
+    private void AccrueExpense(ExpenseEntity expense, DateOnly currentDate)
     {
-        var currentDate = DateOnly.FromDateTime(TimeProvider.GetLocalNow().Date);
-
         if (expense.AccrualStart > currentDate)
         {
             // If the accrual start date is in the future, no accrual is needed

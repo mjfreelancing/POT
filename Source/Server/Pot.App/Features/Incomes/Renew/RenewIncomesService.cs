@@ -2,10 +2,10 @@
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
+using Pot.App.Calculators;
 using Pot.App.Errors;
 using Pot.App.Features.Incomes.Renew.Models;
 using Pot.Data.Repositories.Incomes;
-using Pot.Shared.Extensions;
 
 namespace Pot.App.Features.Incomes.Renew;
 
@@ -14,11 +14,14 @@ internal sealed class RenewExpensesService : IRenewIncomesService
     internal TimeProvider TimeProvider { get; set; } = TimeProvider.System;
 
     private readonly IPersistableIncomeRepository _incomeRepository;
+    private readonly IIncomeRenewalCalculator _renewalCalculator;
     private readonly ILogger _logger;
 
-    public RenewExpensesService(IPersistableIncomeRepository incomeRepository, ILogger<RenewExpensesService> logger)
+    public RenewExpensesService(IPersistableIncomeRepository incomeRepository, IIncomeRenewalCalculator renewalCalculator,
+        ILogger<RenewExpensesService> logger)
     {
         _incomeRepository = incomeRepository.WhenNotNull();
+        _renewalCalculator = renewalCalculator.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
@@ -47,29 +50,7 @@ internal sealed class RenewExpensesService : IRenewIncomesService
             var today = TimeProvider.GetLocalNow().Date;
             var todayDate = DateOnly.FromDateTime(today);
 
-            foreach (var income in incomes)
-            {
-                var endDate = income.EndDate.GetValueOrDefault(DateOnly.MaxValue);
-
-                if (todayDate >= endDate)
-                {
-                    continue;
-                }
-
-                var nextDue = income.NextDue;
-
-                while (nextDue < todayDate)
-                {
-                    var days = income.Frequency.GetDaysToNext(income.NextDue, income.FrequencyCount);
-                    nextDue = income.NextDue.AddDays(days);
-
-                    // Don't advance beyond the end date
-                    if (nextDue <= endDate)
-                    {
-                        income.NextDue = nextDue;
-                    }
-                }
-            }
+            _renewalCalculator.Renew(incomes, todayDate);
 
             await _incomeRepository.SaveAsync(cancellationToken);
         }

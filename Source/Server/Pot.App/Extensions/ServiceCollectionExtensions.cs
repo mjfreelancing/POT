@@ -29,7 +29,7 @@ public static class ServiceCollectionExtensions
             });
         });
 
-        //services.AutoRegisterScoped<DependencyRegistrar, IPotSingletonDependency>();
+        services.AutoRegisterScoped<DependencyRegistrar, IPotSingletonDependency>();
         services.AddDataDependencies();
     }
 }

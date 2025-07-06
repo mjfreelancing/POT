@@ -1,20 +1,21 @@
 ﻿using AllOverIt.Assertion;
-using AllOverIt.Async;
 using AllOverIt.Extensions;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
+using Pot.App.Calculators;
 using Pot.App.Errors;
 using Pot.App.Features.Projections.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Expenses;
 using Pot.Data.Repositories.Incomes;
-using Pot.Shared.Extensions;
 using System.Diagnostics;
 
 namespace Pot.App.Features.Projections;
+
 public sealed class ProjectionOptions
 {
+    public DateOnly StartDate { get; init; } = DateOnly.FromDateTime(TimeProvider.System.GetLocalNow().DateTime);
     public int DaysForecast { get; init; }
 }
 
@@ -22,15 +23,22 @@ internal sealed class ProjectionsService : IProjectionsService
 {
     internal TimeProvider TimeProvider { get; set; } = TimeProvider.System;
 
-    private readonly IExpenseRepositoryFactory _expenseRepositoryFactory;
-    private readonly IIncomeRepositoryFactory _incomeRepositoryFactory;
+    private readonly IExpenseRepository _expenseRepository;
+    private readonly IIncomeRepository _incomeRepository;
+    private readonly IExpenseRenewalCalculator _expenseRenewalCalculator;
+    private readonly IIncomeRenewalCalculator _incomeRenewalCalculator;
+    private readonly IAccrueExpenseCalculator _accrueExpenseCalculator;
     private readonly ILogger _logger;
 
-    public ProjectionsService(IExpenseRepositoryFactory expenseRepositoryFactory, IIncomeRepositoryFactory incomeRepositoryFactory,
-        ILogger<ProjectionsService> logger)
+    public ProjectionsService(IExpenseRepository expenseRepository, IIncomeRepository incomeRepository,
+        IExpenseRenewalCalculator expenseRenewalCalculator, IIncomeRenewalCalculator incomeRenewalCalculator,
+        IAccrueExpenseCalculator accrueExpenseCalculator, ILogger<ProjectionsService> logger)
     {
-        _expenseRepositoryFactory = expenseRepositoryFactory.WhenNotNull();
-        _incomeRepositoryFactory = incomeRepositoryFactory.WhenNotNull();
+        _expenseRepository = expenseRepository.WhenNotNull();
+        _incomeRepository = incomeRepository.WhenNotNull();
+        _expenseRenewalCalculator = expenseRenewalCalculator.WhenNotNull();
+        _incomeRenewalCalculator = incomeRenewalCalculator.WhenNotNull();
+        _accrueExpenseCalculator = accrueExpenseCalculator.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
@@ -38,51 +46,30 @@ internal sealed class ProjectionsService : IProjectionsService
     {
         _logger.LogCall(this);
 
-        var _expenseRepository = _expenseRepositoryFactory.CreateExpenseRepository();
-        var _incomeRepository = _incomeRepositoryFactory.CreateIncomeRepository();
+        var expenses = await _expenseRepository.GetAllExpensesAsync(cancellationToken);
+        var incomes = await _incomeRepository.GetAllIncomesAsync(cancellationToken);
 
-        var (expenses, incomes) = await TaskHelper.WhenAll(
-            _expenseRepository.GetAllExpensesAsync(cancellationToken),
-            _incomeRepository.GetAllIncomesAsync(cancellationToken)
-        );
-
-        var todayDateTime = TimeProvider.GetLocalNow().DateTime;
-        var today = DateOnly.FromDateTime(todayDateTime);
-
-        if (NextDueIsBehindSchedule(today, expenses, out var problemDetails) || NextDueIsBehindSchedule(today, incomes, out problemDetails))
+        if (NextDueIsBehindSchedule(options.StartDate, expenses, out var problemDetails) ||
+            NextDueIsBehindSchedule(options.StartDate, incomes, out problemDetails))
         {
             return EnrichedResult.Fail<Output>(problemDetails);
         }
 
-        // Build unique accounts list
         var uniqueAccounts = expenses.Select(e => e.Account)
             .Concat(incomes.Select(i => i.Account))
             .GroupBy(a => a.RowId)
             .Select(g => g.First())
             .ToList();
 
-        // Prepare per-account and global daily projections
-        var accountDaily = new Dictionary<Guid, List<DateBalanceAvailable>>(uniqueAccounts.Count);
+        var accountDaily = uniqueAccounts.ToDictionary(account => account.RowId, account => new List<DateBalanceAvailable>());
         var globalDaily = new List<DateBalanceAvailable>(options.DaysForecast);
-
-        // Precompute per-account expense/income lists for fast lookup
-        var expensesByAccount = expenses.GroupBy(expense => expense.Account.RowId).ToDictionary(grp => grp.Key, grp => grp.ToList());
-        var incomesByAccount = incomes.GroupBy(income => income.Account.RowId).ToDictionary(grp => grp.Key, grp => grp.ToList());
-
-        // Track running next due dates for each expense/income (so we don't mutate the originals)
-        var expenseNextDue = expenses.ToDictionary(expense => expense, expense => expense.NextDue);
-        var incomeNextDue = incomes.ToDictionary(income => income, income => income.NextDue);
-
-        // Track running accrued for each account
-        var accountAccrued = uniqueAccounts.ToDictionary(account => account.RowId, account => account.TotalExpenseAccrued);
-
-        // Track running balance for each account
-        var accountBalances = uniqueAccounts.ToDictionary(account => account.RowId, account => account.Balance);
-        var accountReserved = uniqueAccounts.ToDictionary(account => account.RowId, account => account.Reserved);
 
         for (int day = 0; day < options.DaysForecast; day++)
         {
-            var date = today.AddDays(day);
+            var date = options.StartDate.AddDays(day);
+
+            _expenseRenewalCalculator.Renew(expenses, date);
+            _incomeRenewalCalculator.Renew(incomes, date);
 
             var globalStarting = 0.0d;
             var globalIncome = 0.0d;
@@ -92,76 +79,36 @@ internal sealed class ProjectionsService : IProjectionsService
 
             foreach (var account in uniqueAccounts)
             {
-                var accountId = account.RowId;
-                var prevBalance = accountBalances[accountId];
-                var prevAccrued = accountAccrued[accountId];
-                var reserved = accountReserved[accountId];
+                _accrueExpenseCalculator.AccrueExpenses(account, expenses, date);
 
-                var incomeReceived = 0.0d;
-                var expensesPaid = 0.0d;
-                var accrued = prevAccrued;
+                var incomeReceived = incomes
+                    .Where(income => income.Account.RowId == account.RowId && income.NextDue == date && (income.EndDate.GetValueOrDefault(DateOnly.MaxValue) >= date))
+                    .Sum(income => income.Amount);
 
-                // Income for this account on this day
-                if (incomesByAccount.TryGetValue(accountId, out var accountIncomes))
-                {
-                    foreach (var income in accountIncomes)
-                    {
-                        var nextDue = incomeNextDue[income];
-
-                        if (nextDue == date && (income.EndDate.GetValueOrDefault(DateOnly.MaxValue) >= date))
-                        {
-                            incomeReceived += income.Amount;
-
-                            var daysToIncrement = income.Frequency.GetDaysToNext(date, income.FrequencyCount);
-                            incomeNextDue[income] = nextDue.AddDays(daysToIncrement);
-                        }
-                    }
-                }
-
-                // Expenses for this account on this day
-                if (expensesByAccount.TryGetValue(accountId, out var accountExpenses))
-                {
-                    foreach (var expense in accountExpenses)
-                    {
-                        // Accrual is daily, use account's DailyExpenseAccrual
-                        accrued += account.DailyExpenseAccrual;
-
-                        var nextDue = expenseNextDue[expense];
-
-                        if (nextDue == date && (expense.EndDate.GetValueOrDefault(DateOnly.MaxValue) >= date))
-                        {
-                            expensesPaid += expense.Amount;
-
-                            var daysToIncrement = expense.Frequency.GetDaysToNext(date, expense.FrequencyCount);
-                            expenseNextDue[expense] = nextDue.AddDays(daysToIncrement);
-                        }
-                    }
-                }
+                var expensesPaid = expenses
+                    .Where(expense => expense.Account.RowId == account.RowId && expense.NextDue == date && (expense.EndDate.GetValueOrDefault(DateOnly.MaxValue) >= date))
+                    .Sum(expense => expense.Amount);
 
                 var dateBalance = new DateBalanceAvailable
                 {
                     Date = date,
-                    StartingBalance = prevBalance,
+                    StartingBalance = account.Balance,
                     IncomeReceived = incomeReceived,
                     ExpensesPaid = expensesPaid,
-                    Accrued = accrued,
-                    Reserved = reserved
+                    Accrued = account.TotalExpenseAccrued,
+                    Reserved = account.Reserved
                 };
 
-                // Update running values
-                accountBalances[accountId] = dateBalance.Balance;
-                accountAccrued[accountId] = accrued;
+                account.Balance += dateBalance.IncomeReceived - dateBalance.ExpensesPaid;
 
-                // Store per-account
-                if (!accountDaily.TryGetValue(accountId, out var dailyList))
+                if (!accountDaily.TryGetValue(account.RowId, out var dailyList))
                 {
                     dailyList = new List<DateBalanceAvailable>(options.DaysForecast);
-                    accountDaily[accountId] = dailyList;
+                    accountDaily[account.RowId] = dailyList;
                 }
 
                 dailyList.Add(dateBalance);
 
-                // Aggregate for global
                 globalStarting += dateBalance.StartingBalance;
                 globalIncome += dateBalance.IncomeReceived;
                 globalExpenses += dateBalance.ExpensesPaid;

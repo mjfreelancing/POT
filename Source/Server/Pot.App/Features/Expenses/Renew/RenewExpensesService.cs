@@ -2,10 +2,10 @@
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
+using Pot.App.Calculators;
 using Pot.App.Errors;
 using Pot.App.Features.Expenses.Renew.Models;
 using Pot.Data.Repositories.Expenses;
-using Pot.Shared.Extensions;
 
 namespace Pot.App.Features.Expenses.Renew;
 
@@ -14,11 +14,14 @@ internal sealed class RenewExpensesService : IRenewExpensesService
     internal TimeProvider TimeProvider { get; set; } = TimeProvider.System;
 
     private readonly IPersistableExpenseRepository _expenseRepository;
+    private readonly IExpenseRenewalCalculator _renewalCalculator;
     private readonly ILogger _logger;
 
-    public RenewExpensesService(IPersistableExpenseRepository expenseRepository, ILogger<RenewExpensesService> logger)
+    public RenewExpensesService(IPersistableExpenseRepository expenseRepository, IExpenseRenewalCalculator renewalCalculator,
+        ILogger<RenewExpensesService> logger)
     {
         _expenseRepository = expenseRepository.WhenNotNull();
+        _renewalCalculator = renewalCalculator.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
@@ -47,31 +50,7 @@ internal sealed class RenewExpensesService : IRenewExpensesService
             var today = TimeProvider.GetLocalNow().Date;
             var todayDate = DateOnly.FromDateTime(today);
 
-            foreach (var expense in expenses)
-            {
-                var endDate = expense.EndDate.GetValueOrDefault(DateOnly.MaxValue);
-
-                if (todayDate >= endDate)
-                {
-                    continue;
-                }
-
-                var nextDue = expense.NextDue;
-
-                while (nextDue < todayDate)
-                {
-                    var days = expense.Frequency.GetDaysToNext(expense.NextDue, expense.FrequencyCount);
-                    nextDue = expense.NextDue.AddDays(days);
-
-                    // Don't advance beyond the end date
-                    if (nextDue <= endDate)
-                    {
-                        // Not resetting / updating expense.Accrued since this impacts the account's accrued amount
-                        expense.AccrualStart = expense.NextDue;
-                        expense.NextDue = nextDue;
-                    }
-                }
-            }
+            _renewalCalculator.Renew(expenses, todayDate);
 
             await _expenseRepository.SaveAsync(cancellationToken);
         }
