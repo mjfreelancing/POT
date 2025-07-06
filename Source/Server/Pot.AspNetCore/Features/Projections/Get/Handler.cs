@@ -1,6 +1,7 @@
 ﻿using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.App.Features.Projections;
+using Pot.App.Features.Projections.Models;
 using Pot.AspNetCore.Extensions;
 
 namespace Pot.AspNetCore.Features.Projections.Get;

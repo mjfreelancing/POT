@@ -3,5 +3,6 @@
     public interface IHasNextDue
     {
         DateOnly NextDue { get; }
+        DateOnly? EndDate { get; }
     }
 }

@@ -13,12 +13,6 @@ using System.Diagnostics;
 
 namespace Pot.App.Features.Projections;
 
-public sealed class ProjectionOptions
-{
-    public DateOnly StartDate { get; init; } = DateOnly.FromDateTime(TimeProvider.System.GetLocalNow().DateTime);
-    public int DaysForecast { get; init; }
-}
-
 internal sealed class ProjectionsService : IProjectionsService
 {
     internal TimeProvider TimeProvider { get; set; } = TimeProvider.System;
@@ -62,8 +56,8 @@ internal sealed class ProjectionsService : IProjectionsService
             .Select(g => g.First())
             .ToList();
 
-        var accountDaily = uniqueAccounts.ToDictionary(account => account.RowId, account => new List<DateBalanceAvailable>());
-        var globalDaily = new List<DateBalanceAvailable>(options.DaysForecast);
+        var accountDaily = uniqueAccounts.ToDictionary(account => account.RowId, account => new List<DateProjectionValues>());
+        var globalDailyProjections = new List<DateProjectionValues>(options.DaysForecast);
 
         for (int day = 0; day < options.DaysForecast; day++)
         {
@@ -83,14 +77,14 @@ internal sealed class ProjectionsService : IProjectionsService
                 _accrueExpenseCalculator.AccrueExpenses(account, expenses, date);
 
                 var incomeReceived = incomes
-                    .Where(income => income.Account.RowId == account.RowId && income.NextDue == date && (income.EndDate.GetValueOrDefault(DateOnly.MaxValue) >= date))
+                    .Where(income => income.Account.RowId == account.RowId && IsDueOnDate(income, date))
                     .Sum(income => income.Amount);
 
                 var expensesPaid = expenses
-                    .Where(expense => expense.Account.RowId == account.RowId && expense.NextDue == date && (expense.EndDate.GetValueOrDefault(DateOnly.MaxValue) >= date))
+                    .Where(expense => expense.Account.RowId == account.RowId && IsDueOnDate(expense, date))
                     .Sum(expense => expense.Amount);
 
-                var dateBalance = new DateBalanceAvailable
+                var dateBalance = new DateProjectionValues
                 {
                     Date = date,
                     StartingBalance = account.Balance,
@@ -104,7 +98,7 @@ internal sealed class ProjectionsService : IProjectionsService
 
                 if (!accountDaily.TryGetValue(account.RowId, out var dailyList))
                 {
-                    dailyList = new List<DateBalanceAvailable>(options.DaysForecast);
+                    dailyList = new List<DateProjectionValues>(options.DaysForecast);
                     accountDaily[account.RowId] = dailyList;
                 }
 
@@ -117,7 +111,7 @@ internal sealed class ProjectionsService : IProjectionsService
                 globalReserved += dateBalance.Reserved;
             }
 
-            globalDaily.Add(new DateBalanceAvailable
+            globalDailyProjections.Add(new DateProjectionValues
             {
                 Date = date,
                 StartingBalance = globalStarting,
@@ -128,21 +122,43 @@ internal sealed class ProjectionsService : IProjectionsService
             });
         }
 
-        var accountResults = uniqueAccounts
-            .SelectToList(account => new AccountDailyBalanceAvailable
+        var accountDailyProjections = uniqueAccounts
+            .SelectToList(account => new AccountDailyProjection
             {
                 RowId = account.RowId,
                 Description = account.Description,
-                Dates = accountDaily[account.RowId]
+                Dates = MapToDateBalanceAvailable(accountDaily[account.RowId])
             });
 
         var output = new Output
         {
-            Accounts = accountResults,
-            Global = globalDaily
+            Accounts = accountDailyProjections,
+            Global = MapToDateBalanceAvailable(globalDailyProjections)
         };
 
         return EnrichedResult.Success(output);
+    }
+
+    private static bool IsDueOnDate(IHasNextDue entity, DateOnly date)
+    {
+        return entity.NextDue == date && (entity.EndDate.GetValueOrDefault(DateOnly.MaxValue) >= date);
+    }
+
+    private static List<DateProjection> MapToDateBalanceAvailable(List<DateProjectionValues> dateBalances)
+    {
+        return dateBalances.SelectToList(item =>
+        {
+            var balance = item.StartingBalance + item.IncomeReceived - item.ExpensesPaid;
+
+            return new DateProjection
+            {
+                Date = item.Date,
+                Balance = balance,
+                Available = balance - item.Reserved - item.Accrued,
+                IncomeReceived = item.IncomeReceived,
+                ExpensesPaid = item.ExpensesPaid
+            };
+        });
     }
 
     private static bool NextDueIsBehindSchedule<TEntity>(DateOnly today, List<TEntity> entities, out ProblemDetailsError? error)
