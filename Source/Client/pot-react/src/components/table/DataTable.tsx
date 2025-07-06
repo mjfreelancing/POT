@@ -202,11 +202,14 @@ function DataTable<TData, TValue>({
                     <tr
                       key={row.id}
                       data-state={row.getIsSelected() ? 'selected' : undefined}
-                      className={
+                      className={[
+                        'hover:bg-gray-100 dark:hover:bg-gray-800',
                         highlightRowFilter?.(row)
                           ? highlightClassName
-                          : undefined
-                      }
+                          : undefined,
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
                     >
                       {row.getVisibleCells().map(cell => (
                         <td key={cell.id} className="p-4 align-middle">
