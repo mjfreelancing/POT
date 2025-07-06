@@ -5,9 +5,9 @@ import { useNavigate } from 'react-router';
 
 import { useApiGetAllAccounts } from '@/api/hooks';
 import { ErrorSheet, LoadingMessage } from '@/components/feedback';
+import { SearchInput } from '@/components/filters';
 import Toolbar from '@/components/toolbar/Toolbar';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { DisplayError } from '@/lib';
 
 import { AccountsHeader, AccountsTable } from './components';
@@ -60,13 +60,11 @@ function AccountsPage() {
       <div className="flex-1 min-h-0 flex flex-col p-6 gap-4">
         <Toolbar>
           <div className="flex items-center gap-4">
-            <Input
-              type="text"
-              placeholder="Search by description..."
+            <SearchInput
               value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              className="w-80"
-              aria-label="Search accounts by description"
+              onChange={setSearchTerm}
+              placeholder="Search by description..."
+              ariaLabel="Search accounts by description"
               name="account-search"
             />
           </div>

@@ -6,10 +6,9 @@ import { useNavigate } from 'react-router';
 import { useApiGetAllAccounts, useApiGetAllExpenses } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
-import AccountFilter from '@/components/filters/AccountFilter';
+import { AccountFilter, SearchInput } from '@/components/filters';
 import Toolbar from '@/components/toolbar/Toolbar';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Expense } from '@/data/expense';
 import { useAccountFilter } from '@/hooks';
 import { DisplayError } from '@/lib';
@@ -195,13 +194,11 @@ function ExpensesPage() {
                 onAccountChange={handleAccountChange}
               />
             )}
-            <Input
-              type="text"
-              placeholder="Search by description..."
+            <SearchInput
               value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              className="w-80"
-              aria-label="Search expenses by description"
+              onChange={setSearchTerm}
+              placeholder="Search by description..."
+              ariaLabel="Search expenses by description"
               name="expense-search"
             />
           </div>

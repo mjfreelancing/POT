@@ -1,6 +1,8 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { Calendar, DollarSign, PieChart, Target, Wallet } from 'lucide-react';
+import { useEffect } from 'react';
 
+import { ActionCard } from '@/components/cards';
 import StatusBadge from '@/components/feedback/badge/StatusBadge';
 import { createMoneyValueColumn, DataTable } from '@/components/table';
 import {
@@ -11,12 +13,11 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Account } from '@/data';
+import { formatMoneyValue } from '@/lib';
+
 import accountsSummaryStore, {
   AccountsSummary,
 } from '../stores/useAccountsSummary';
-import { ActionCard } from '@/components/cards';
-import { formatMoneyValue } from '@/lib';
-import { useEffect } from 'react';
 
 const columns: ColumnDef<Account>[] = [
   {

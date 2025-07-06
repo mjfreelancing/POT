@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { Receipt, TrendingUp } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useParams } from 'react-router';
 
 import { useApiAccrueExpenses } from '@/api/hooks';
@@ -16,6 +16,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Account } from '@/data';
 import { DisplayError } from '@/lib';
+
 import AccountActions from './AccountActions';
 
 type AccountsTableProps = {
