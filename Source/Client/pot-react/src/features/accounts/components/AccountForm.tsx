@@ -32,9 +32,7 @@ function AccountForm({
 }: AccountFormProps) {
   useEffect(() => {
     if (isEditMode) {
-      // In edit mode, focus the first editable field (description)
-      // This runs after the component mounts and the DOM is ready
-      form.setFocus('description');
+      form.setFocus('balance');
     }
   }, [isEditMode, form]);
 
