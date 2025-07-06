@@ -64,6 +64,27 @@ type DataTableProps<TData, TValue> = {
   onSelectionChange?: (selectedItems: TData[]) => void;
 };
 
+// Extend ColumnMeta to allow headerClassName and cellClassName
+// DataTableColumnMeta allows per-column styling for both header and body cells.
+// - headerClassName: applies only to the <th> (header cell) for this column. Use for alignment, width, etc.
+// - cellClassName: applies only to the <td> (body cell) for this column. Use for alignment, width, etc.
+//
+// DataTableHeader also accepts a cellClassName prop, which acts as a default for all header cells.
+// If a column's meta.headerClassName is set, it overrides the default cellClassName for that column's header.
+// This allows you to have a global default style for headers, but override it for special columns (like selection checkboxes).
+export type DataTableColumnMeta = {
+  /**
+   * CSS class for the <th> (header cell) of this column.
+   * Overrides the cellClassName prop on DataTableHeader for this column only.
+   */
+  headerClassName?: string;
+  /**
+   * CSS class for the <td> (body cell) of this column.
+   * Used for per-column body cell styling.
+   */
+  cellClassName?: string;
+};
+
 function DataTable<TData, TValue>({
   columns,
   data,
@@ -83,30 +104,36 @@ function DataTable<TData, TValue>({
     ? [
         {
           id: 'select',
-          // Header checkbox - allows selecting/deselecting all rows on the current page
           header: ({ table }: HeaderContext<TData, TValue>) => (
-            <Checkbox
-              checked={
-                table.getIsAllPageRowsSelected() ||
-                (table.getIsSomePageRowsSelected() && 'indeterminate')
-              }
-              onCheckedChange={value =>
-                table.toggleAllPageRowsSelected(!!value)
-              }
-              aria-label="Select all"
-            />
+            <div className="flex justify-center w-full">
+              <Checkbox
+                checked={
+                  table.getIsAllPageRowsSelected() ||
+                  (table.getIsSomePageRowsSelected() && 'indeterminate')
+                }
+                onCheckedChange={value =>
+                  table.toggleAllPageRowsSelected(!!value)
+                }
+                aria-label="Select all"
+              />
+            </div>
           ),
-          // Row checkbox - allows selecting/deselecting individual rows
           cell: ({ row }: { row: Row<TData> }) => (
-            <Checkbox
-              checked={row.getIsSelected()}
-              onCheckedChange={value => row.toggleSelected(!!value)}
-              aria-label={`Select row ${row.id}`}
-            />
+            <div className="flex justify-center w-full">
+              <Checkbox
+                checked={row.getIsSelected()}
+                onCheckedChange={value => row.toggleSelected(!!value)}
+                aria-label={`Select row ${row.id}`}
+              />
+            </div>
           ),
-          // Selection column configuration
           enableSorting: false, // Selection column doesn't need sorting
           enableHiding: false, // Selection column shouldn't be hideable
+          // Add className for header/cell alignment
+          meta: {
+            headerClassName: 'text-center px-0 w-[40px]',
+            cellClassName: 'text-center px-0 w-[40px]',
+          },
         },
         ...columns, // Spread the user-provided columns after the selection column
       ]
@@ -166,7 +193,8 @@ function DataTable<TData, TValue>({
             <table className="w-full caption-bottom text-sm">
               <DataTableHeader
                 headerGroups={table.getHeaderGroups()}
-                cellClassName="font-semibold uppercase sticky top-0 z-10 bg-gray-200 dark:bg-gray-700"
+                headerClassName="sticky top-0 z-20 bg-gray-200 dark:bg-gray-700"
+                cellClassName="font-semibold uppercase"
               />
               <tbody>
                 {table.getRowModel().rows?.length ? (

@@ -56,8 +56,11 @@ function DataTableHeader<TData>({
       {headerGroups.map(headerGroup => (
         <TableRow key={headerGroup.id} className={rowClassName}>
           {headerGroup.headers.map(header => {
+            // Use meta.headerClassName if present, else fallback to cellClassName
+            const customClass =
+              header.column.columnDef.meta?.headerClassName ?? cellClassName;
             return (
-              <TableHead key={header.id} className={cellClassName}>
+              <TableHead key={header.id} className={customClass}>
                 {/* Only render header content if it's not a placeholder */}
                 {header.isPlaceholder
                   ? null
@@ -78,3 +81,16 @@ export default DataTableHeader;
 
 // Export types for use in other components
 export type { DataTableHeaderProps };
+
+// TypeScript module augmentation for @tanstack/react-table
+// This allows us to add custom properties (headerClassName, cellClassName) to the meta field of ColumnDef.
+// Without this, TypeScript will not recognize these properties and will show type errors when accessing them.
+// This is only for type safety and editor support; it does not affect runtime behavior.
+declare module '@tanstack/react-table' {
+  // Must use interface for module augmentation.
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+  interface ColumnMeta<TData = unknown, TValue = unknown> {
+    headerClassName?: string;
+    cellClassName?: string;
+  }
+}
