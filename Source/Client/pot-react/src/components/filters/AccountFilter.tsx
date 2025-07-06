@@ -19,25 +19,34 @@ function AccountFilter({
   onAccountChange,
 }: AccountFilterProps) {
   return (
-    <Select
-      value={selectedAccountId ?? 'all'}
-      onValueChange={value => {
-        onAccountChange(value === 'all' ? null : value);
-      }}
-      name="account-filter"
-    >
-      <SelectTrigger className="w-[200px]" id="account-filter-trigger">
-        <SelectValue placeholder="Filter by account" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="all">All Accounts</SelectItem>
-        {accounts.map(account => (
-          <SelectItem key={account.rowId} value={account.rowId.toString()}>
-            {account.description}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <div className="flex flex-col gap-1">
+      <label htmlFor="account-filter-trigger" className="sr-only">
+        Filter by account
+      </label>
+      <Select
+        value={selectedAccountId ?? 'all'}
+        onValueChange={value => {
+          onAccountChange(value === 'all' ? null : value);
+        }}
+        name="account-filter"
+      >
+        <SelectTrigger
+          className="w-[200px]"
+          id="account-filter-trigger"
+          aria-label="Filter by account"
+        >
+          <SelectValue placeholder="Filter by account" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All Accounts</SelectItem>
+          {accounts.map(account => (
+            <SelectItem key={account.rowId} value={account.rowId.toString()}>
+              {account.description}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }
 
