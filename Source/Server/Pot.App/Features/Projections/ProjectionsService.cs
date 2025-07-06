@@ -46,6 +46,7 @@ internal sealed class ProjectionsService : IProjectionsService
     {
         _logger.LogCall(this);
 
+        // Not worrying about doing these in parallel - not worth the effort of maintaining repository factories for use with DbContextFactory.
         var expenses = await _expenseRepository.GetAllExpensesAsync(cancellationToken);
         var incomes = await _incomeRepository.GetAllIncomesAsync(cancellationToken);
 

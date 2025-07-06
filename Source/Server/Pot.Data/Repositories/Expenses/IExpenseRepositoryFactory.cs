@@ -1,8 +1,6 @@
-﻿using Pot.Shared.DependencyInjection;
+﻿namespace Pot.Data.Repositories.Expenses;
 
-namespace Pot.Data.Repositories.Expenses;
-
-public interface IExpenseRepositoryFactory : IPotSingletonDependency
-{
-    IExpenseRepository CreateExpenseRepository();
-}
+//public interface IExpenseRepositoryFactory : IPotSingletonDependency
+//{
+//    IExpenseRepository CreateExpenseRepository();
+//}
