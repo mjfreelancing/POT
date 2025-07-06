@@ -28,7 +28,13 @@ const columns: ColumnDef<Account>[] = [
     header: 'BSB / Number',
     cell: ({ row }) => {
       const { bsb, number } = row.original;
-      return `(${bsb}) ${number}`;
+
+      return (
+        <div>
+          <div className="text-sm text-muted-foreground">({bsb})</div>
+          <span>{number}</span>
+        </div>
+      );
     },
   },
   {
