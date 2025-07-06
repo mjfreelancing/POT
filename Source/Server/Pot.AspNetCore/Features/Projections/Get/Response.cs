@@ -1,11 +1,10 @@
 ﻿using AllOverIt.Assertion;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.App.Features.Projections.Models;
-using Pot.AspNetCore.Models;
 
 namespace Pot.AspNetCore.Features.Projections.Get;
 
-internal sealed class Response : ResponseBase
+internal sealed class Response
 {
     public List<AccountDailyBalanceAvailable> Accounts { get; init; }
     public List<DateBalanceAvailable> Global { get; init; }
