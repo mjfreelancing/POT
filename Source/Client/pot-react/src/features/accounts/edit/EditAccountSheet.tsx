@@ -110,7 +110,7 @@ function EditAccountSheet() {
         form={form}
         onSubmit={onSubmit}
         onCancel={() => navigate('/accounts')}
-        readOnlyIdentifiers={true}
+        isEditMode={true}
         submitLabel="Save"
       />
     </AccountSheet>

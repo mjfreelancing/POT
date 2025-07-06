@@ -19,7 +19,7 @@ type AccountFormProps = {
   form: UseFormReturn<AccountFormData>;
   onSubmit: (values: AccountFormData) => Promise<void>;
   onCancel: () => void;
-  readOnlyIdentifiers: boolean;
+  isEditMode: boolean;
   submitLabel: string;
 };
 
@@ -27,16 +27,16 @@ function AccountForm({
   form,
   onSubmit,
   onCancel,
-  readOnlyIdentifiers,
   submitLabel,
+  isEditMode = false,
 }: AccountFormProps) {
   useEffect(() => {
-    if (readOnlyIdentifiers) {
+    if (isEditMode) {
       // In edit mode, focus the first editable field (description)
       // This runs after the component mounts and the DOM is ready
       form.setFocus('description');
     }
-  }, [readOnlyIdentifiers, form]);
+  }, [isEditMode, form]);
 
   return (
     <Form {...form}>
@@ -51,15 +51,11 @@ function AccountForm({
                 <Input
                   {...field}
                   id="bsb-input"
-                  placeholder={
-                    readOnlyIdentifiers ? undefined : 'Enter the Account BSB'
-                  }
+                  placeholder={isEditMode ? undefined : 'Enter the Account BSB'}
                   aria-description="Enter BSB in the format XXX-XXX"
-                  readOnly={readOnlyIdentifiers}
+                  readOnly={isEditMode}
                   className={
-                    readOnlyIdentifiers
-                      ? 'bg-muted cursor-not-allowed'
-                      : undefined
+                    isEditMode ? 'bg-muted cursor-not-allowed' : undefined
                   }
                 />
               </FormControl>
@@ -81,14 +77,12 @@ function AccountForm({
                   {...field}
                   id="account-number-input"
                   placeholder={
-                    readOnlyIdentifiers ? undefined : 'Enter the Account Number'
+                    isEditMode ? undefined : 'Enter the Account Number'
                   }
                   aria-description="Your bank account number"
-                  readOnly={readOnlyIdentifiers}
+                  readOnly={isEditMode}
                   className={
-                    readOnlyIdentifiers
-                      ? 'bg-muted cursor-not-allowed'
-                      : undefined
+                    isEditMode ? 'bg-muted cursor-not-allowed' : undefined
                   }
                 />
               </FormControl>
