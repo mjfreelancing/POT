@@ -1,19 +1,27 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Outlet, useSearchParams } from 'react-router';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import { useNavigate } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetAllExpenses } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { useAccountFilter } from '@/hooks';
 import { DisplayError } from '@/lib';
+import { Expense } from '@/data/expense';
+import AccountFilter from '@/components/filters/AccountFilter';
+import Toolbar from '@/components/toolbar/Toolbar';
 
 import { ExpensesHeader, ExpensesTable } from './components';
+import { Input } from '@/components/ui/input';
 
 function ExpensesPage() {
   console.info('Rendering ExpensesPage');
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [error, setError] = useState<DisplayError | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   // Get data
   const { data: expensesResult, isLoading: expensesLoading } =
@@ -42,7 +50,7 @@ function ExpensesPage() {
     selectedAccountId,
     setSelectedAccountId,
     filteredItems: filteredExpenses,
-  } = useAccountFilter({
+  } = useAccountFilter<Expense>({
     accounts,
     items: expenses,
   });
@@ -143,6 +151,16 @@ function ExpensesPage() {
     return isValidAccount ? urlAccountId : null;
   }, [urlAccountId, accountsInItems]);
 
+  // Filter expenses by description (case-insensitive)
+  const descriptionFilteredExpenses = useMemo((): Expense[] => {
+    if (!searchTerm.trim()) return filteredExpenses as Expense[];
+    return (filteredExpenses as Expense[]).filter(expense =>
+      expense.description
+        ?.toLowerCase()
+        .includes(searchTerm.trim().toLowerCase()),
+    );
+  }, [filteredExpenses, searchTerm]);
+
   // Handle errors
   useEffect(() => {
     if (expensesResult) {
@@ -157,18 +175,49 @@ function ExpensesPage() {
     }
   }, [expensesResult]);
 
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20">
-      <ExpensesHeader
-        accountsInItems={accountsInItems}
-        selectedAccountId={validatedSelectedAccountId}
-        onAccountChange={handleAccountChange}
-        totalAccountsCount={accounts.length}
-      />
-      <div className="flex-1 p-6 overflow-hidden">
-        <ExpensesTable filteredExpenses={filteredExpenses} />
+      <ExpensesHeader />
+      {/* Main content area: flex-1 min-h-0 for proper flexbox scrolling */}
+      <div className="flex-1 min-h-0 flex flex-col p-6 gap-4">
+        <Toolbar>
+          <div className="flex items-center gap-4">
+            {accountsInItems.length > 1 && (
+              <AccountFilter
+                accounts={accountsInItems}
+                selectedAccountId={validatedSelectedAccountId}
+                onAccountChange={handleAccountChange}
+              />
+            )}
+            <Input
+              type="text"
+              placeholder="Search by description..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="w-80"
+              aria-label="Search expenses by description"
+            />
+          </div>
+          <Button
+            onClick={() => navigate('create')}
+            aria-label="Add a new expense"
+            className="gap-2 min-w-[132px]"
+            disabled={accounts.length === 0}
+          >
+            <Plus className="h-4 w-4" />
+            Add Expense
+          </Button>
+        </Toolbar>
+        {/* Table container: flex-1 min-h-0 for proper flexbox, no overflow here */}
+        <div className="flex-1 min-h-0 flex flex-col">
+          <ExpensesTable filteredExpenses={descriptionFilteredExpenses} />
+        </div>
       </div>
+
       <LoadingMessage isLoading={isLoading} />
+
       {error && (
         <ErrorSheet
           title={error.title}
@@ -176,7 +225,6 @@ function ExpensesPage() {
           onDismiss={() => setError(null)}
         />
       )}
-      {/* The Outlet is used to render nested routes, such as when creating/editing expenses */}
       <Outlet />
     </div>
   );

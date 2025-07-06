@@ -153,7 +153,7 @@ function DataTable<TData, TValue>({
   //    - Pros: Keeps background styling separate from text styling, consistent typography.
   //    - Cons: Does not affect row background, so must be combined with header or row styles for full effect.
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex flex-col h-full">
       <BulkActionsBar
         selectedCount={selectedCount}
         selectedItems={selectedItems}
@@ -162,7 +162,7 @@ function DataTable<TData, TValue>({
       />
       <div className="flex-1 min-h-0 border rounded-md">
         <div className="h-full overflow-auto">
-          <div className="relative w-full">
+          <div className="relative w-full h-full">
             <table className="w-full caption-bottom text-sm">
               <DataTableHeader
                 headerGroups={table.getHeaderGroups()}
