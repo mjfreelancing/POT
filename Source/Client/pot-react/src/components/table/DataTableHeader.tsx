@@ -88,7 +88,7 @@ export type { DataTableHeaderProps };
 // This is only for type safety and editor support; it does not affect runtime behavior.
 declare module '@tanstack/react-table' {
   // Must use interface for module augmentation.
-  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-unused-vars
   interface ColumnMeta<TData = unknown, TValue = unknown> {
     headerClassName?: string;
     cellClassName?: string;
