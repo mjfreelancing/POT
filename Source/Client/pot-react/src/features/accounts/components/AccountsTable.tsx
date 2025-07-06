@@ -16,10 +16,6 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Account } from '@/data';
 import { DisplayError } from '@/lib';
-
-import accountsSummaryStore, {
-  AccountsSummary,
-} from '../stores/useAccountsSummary';
 import AccountActions from './AccountActions';
 
 type AccountsTableProps = {
@@ -93,32 +89,6 @@ function AccountsTable({ accounts }: AccountsTableProps) {
   const queryClient = useQueryClient();
   const accrueExpensesMutation = useApiAccrueExpenses();
   const [error, setError] = useState<DisplayError | null>(null);
-
-  const setSummary = accountsSummaryStore(
-    (state: AccountsSummary) => state.setSummary,
-  );
-
-  // Recalculate and update summary when accounts change
-  useEffect(() => {
-    const totalBalance = accounts.reduce((sum, acct) => sum + acct.balance, 0);
-
-    const totalReserved = accounts.reduce(
-      (sum, acct) => sum + acct.reserved,
-      0,
-    );
-
-    const totalAccrued = accounts.reduce(
-      (sum, acct) => sum + acct.totalExpenseAccrued,
-      0,
-    );
-
-    const totalDailyAccrual = accounts.reduce(
-      (sum, acct) => sum + acct.dailyExpenseAccrual,
-      0,
-    );
-
-    setSummary(totalBalance, totalReserved, totalAccrued, totalDailyAccrual);
-  }, [accounts, setSummary]);
 
   const bulkActions: BulkAction<Account>[] = [
     {
