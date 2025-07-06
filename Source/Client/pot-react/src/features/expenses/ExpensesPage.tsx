@@ -154,7 +154,10 @@ function ExpensesPage() {
 
   // Filter expenses by description (case-insensitive)
   const descriptionFilteredExpenses = useMemo(() => {
-    if (!searchTerm.trim()) return filteredExpenses;
+    if (!searchTerm.trim()) {
+      return filteredExpenses;
+    }
+
     return filteredExpenses.filter(expense =>
       expense.description
         ?.toLowerCase()

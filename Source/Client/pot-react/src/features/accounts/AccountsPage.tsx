@@ -29,7 +29,10 @@ function AccountsPage() {
 
   // Filter accounts by description (case-insensitive)
   const descriptionFilteredAccounts = useMemo(() => {
-    if (!searchTerm.trim()) return accounts;
+    if (!searchTerm.trim()) {
+      return accounts;
+    }
+
     return accounts.filter(account =>
       account.description
         ?.toLowerCase()

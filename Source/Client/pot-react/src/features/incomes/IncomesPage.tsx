@@ -153,7 +153,10 @@ function IncomesPage() {
 
   // Filter incomes by description (case-insensitive)
   const descriptionFilteredIncomes = useMemo(() => {
-    if (!searchTerm.trim()) return filteredIncomes;
+    if (!searchTerm.trim()) {
+      return filteredIncomes;
+    }
+
     return filteredIncomes.filter(income =>
       income.description
         ?.toLowerCase()
