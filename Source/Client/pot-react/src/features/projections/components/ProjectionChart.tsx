@@ -54,11 +54,18 @@ function ProjectionChart({ data }: ProjectionChartProps) {
     hasData,
   } = useProjectionChartData(data, selectedMetric);
 
+  // Helper to normalize a date to midnight (local time)
+  function normalizeDate(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  }
+
   // Filter chart data based on date range
   const chartData = allChartData.filter(point => {
-    const pointDate = parseISO(point.date);
-    const afterStart = !startDate || pointDate >= startDate;
-    const beforeEnd = !endDate || pointDate <= endDate;
+    const pointDate = normalizeDate(parseISO(point.date));
+    const normalizedStart = startDate ? normalizeDate(startDate) : undefined;
+    const normalizedEnd = endDate ? normalizeDate(endDate) : undefined;
+    const afterStart = !normalizedStart || pointDate >= normalizedStart;
+    const beforeEnd = !normalizedEnd || pointDate <= normalizedEnd;
 
     return afterStart && beforeEnd;
   });
