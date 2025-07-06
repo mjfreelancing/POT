@@ -64,6 +64,7 @@ function AccountsPage() {
               onChange={e => setSearchTerm(e.target.value)}
               className="w-80"
               aria-label="Search accounts by description"
+              name="account-search"
             />
           </div>
           <Button
@@ -79,7 +80,9 @@ function AccountsPage() {
           <AccountsTable accounts={descriptionFilteredAccounts} />
         </div>
       </div>
+
       <LoadingMessage isLoading={isLoading} />
+
       {error && (
         <ErrorSheet
           title={error.title}

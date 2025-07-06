@@ -197,6 +197,7 @@ function IncomesPage() {
               onChange={e => setSearchTerm(e.target.value)}
               className="w-80"
               aria-label="Search incomes by description"
+              name="income-search"
             />
           </div>
           <Button
@@ -213,7 +214,9 @@ function IncomesPage() {
           <IncomesTable filteredIncomes={descriptionFilteredIncomes} />
         </div>
       </div>
+
       <LoadingMessage isLoading={isLoading} />
+
       {error && (
         <ErrorSheet
           title={error.title}

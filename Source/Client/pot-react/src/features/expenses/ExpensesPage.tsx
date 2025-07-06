@@ -199,6 +199,7 @@ function ExpensesPage() {
               onChange={e => setSearchTerm(e.target.value)}
               className="w-80"
               aria-label="Search expenses by description"
+              name="expense-search"
             />
           </div>
           <Button
