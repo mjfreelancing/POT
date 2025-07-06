@@ -1,5 +1,5 @@
 import { ColumnDef } from '@tanstack/react-table';
-import { PieChart } from 'lucide-react';
+import { Calendar, DollarSign, PieChart, Target, Wallet } from 'lucide-react';
 
 import StatusBadge from '@/components/feedback/badge/StatusBadge';
 import { createMoneyValueColumn, DataTable } from '@/components/table';
@@ -11,6 +11,12 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Account } from '@/data';
+import accountsSummaryStore, {
+  AccountsSummary,
+} from '../stores/useAccountsSummary';
+import { ActionCard } from '@/components/cards';
+import { formatMoneyValue } from '@/lib';
+import { useEffect } from 'react';
 
 const columns: ColumnDef<Account>[] = [
   {
@@ -78,23 +84,108 @@ type AccountsOverviewProps = {
 };
 
 function AccountsOverview({ accounts }: AccountsOverviewProps) {
+  const setSummary = accountsSummaryStore(
+    (state: AccountsSummary) => state.setSummary,
+  );
+
+  // Recalculate and update summary when accounts change
+  useEffect(() => {
+    const totalBalance = accounts.reduce((sum, acct) => sum + acct.balance, 0);
+
+    const totalReserved = accounts.reduce(
+      (sum, acct) => sum + acct.reserved,
+      0,
+    );
+
+    const totalAccrued = accounts.reduce(
+      (sum, acct) => sum + acct.totalExpenseAccrued,
+      0,
+    );
+
+    const totalDailyAccrual = accounts.reduce(
+      (sum, acct) => sum + acct.dailyExpenseAccrual,
+      0,
+    );
+
+    setSummary(totalBalance, totalReserved, totalAccrued, totalDailyAccrual);
+  }, [accounts, setSummary]);
+
+  const totalBalance = accountsSummaryStore(
+    (state: AccountsSummary) => state.totalBalance,
+  );
+
+  const totalReserved = accountsSummaryStore(
+    (state: AccountsSummary) => state.totalReserved,
+  );
+
+  const totalAccrued = accountsSummaryStore(
+    (state: AccountsSummary) => state.totalAccrued,
+  );
+
+  const totalDailyAccrual = accountsSummaryStore(
+    (state: AccountsSummary) => state.totalDailyAccrual,
+  );
+
   return (
-    <Card className="card-elevated">
-      <CardHeader>
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary/10 text-primary">
-            <PieChart className="h-5 w-5" />
+    <>
+      <Card className="card-elevated">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+              <PieChart className="h-5 w-5" />
+            </div>
+            <div>
+              <CardTitle>Account Overview</CardTitle>
+              <CardDescription>Your bank accounts at a glance</CardDescription>
+            </div>
           </div>
-          <div>
-            <CardTitle>Account Overview</CardTitle>
-            <CardDescription>Your bank accounts at a glance</CardDescription>
+        </CardHeader>
+        <CardContent className="px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <ActionCard
+              title="Total Balance"
+              icon={<Wallet className="h-6 w-6" />}
+              className="border-2"
+            >
+              <div className="text-2xl font-bold text-success">
+                {formatMoneyValue(totalBalance)}
+              </div>
+            </ActionCard>
+            <ActionCard
+              title="Reserved Funds"
+              icon={<DollarSign className="h-6 w-6" />}
+              className="border-2"
+            >
+              <div className="text-2xl font-bold">
+                {formatMoneyValue(totalReserved)}
+              </div>
+            </ActionCard>
+            <ActionCard
+              title="Accrued Amount"
+              icon={<Target className="h-6 w-6" />}
+              className="border-2"
+            >
+              <div className="text-2xl font-bold">
+                {formatMoneyValue(totalAccrued)}
+              </div>
+            </ActionCard>
+            <ActionCard
+              title="Daily Accrual"
+              icon={<Calendar className="h-6 w-6" />}
+              className="border-2"
+            >
+              <div
+                className={`text-2xl font-bold ${totalDailyAccrual > 0 ? 'text-success' : 'text-destructive'}`}
+              >
+                {formatMoneyValue(totalDailyAccrual)}
+              </div>
+            </ActionCard>
           </div>
-        </div>
-      </CardHeader>
-      <CardContent className="px-4">
-        <DataTable columns={columns} data={accounts} />
-      </CardContent>
-    </Card>
+
+          <DataTable columns={columns} data={accounts} />
+        </CardContent>
+      </Card>
+    </>
   );
 }
 

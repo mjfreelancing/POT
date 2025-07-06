@@ -1,8 +1,13 @@
+import { Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Outlet } from 'react-router';
+import { useNavigate } from 'react-router';
 
 import { useApiGetAllAccounts } from '@/api/hooks';
 import { ErrorSheet, LoadingMessage } from '@/components/feedback';
+import Toolbar from '@/components/toolbar/Toolbar';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { DisplayError } from '@/lib';
 
 import { AccountsHeader, AccountsTable } from './components';
@@ -11,6 +16,8 @@ function AccountsPage() {
   console.info('Rendering AccountsPage');
 
   const [error, setError] = useState<DisplayError | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const navigate = useNavigate();
 
   const { data: accountsResult, isLoading } = useApiGetAllAccounts();
 
@@ -19,6 +26,16 @@ function AccountsPage() {
     () => (accountsResult?.success ? accountsResult.value : []),
     [accountsResult],
   );
+
+  // Filter accounts by description (case-insensitive)
+  const descriptionFilteredAccounts = useMemo(() => {
+    if (!searchTerm.trim()) return accounts;
+    return accounts.filter(account =>
+      account.description
+        ?.toLowerCase()
+        .includes(searchTerm.trim().toLowerCase()),
+    );
+  }, [accounts, searchTerm]);
 
   // Handle errors
   useEffect(() => {
@@ -37,8 +54,30 @@ function AccountsPage() {
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20">
       <AccountsHeader />
-      <div className="flex-1 p-6 overflow-hidden">
-        <AccountsTable accounts={accounts} />
+      <div className="flex-1 min-h-0 flex flex-col p-6 gap-4">
+        <Toolbar>
+          <div className="flex items-center gap-4">
+            <Input
+              type="text"
+              placeholder="Search by description..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="w-80"
+              aria-label="Search accounts by description"
+            />
+          </div>
+          <Button
+            onClick={() => navigate('create')}
+            aria-label="Add a new account"
+            className="gap-2 min-w-[132px]"
+          >
+            <Plus className="h-4 w-4" />
+            Add Account
+          </Button>
+        </Toolbar>
+        <div className="flex-1 min-h-0 flex flex-col">
+          <AccountsTable accounts={descriptionFilteredAccounts} />
+        </div>
       </div>
       <LoadingMessage isLoading={isLoading} />
       {error && (

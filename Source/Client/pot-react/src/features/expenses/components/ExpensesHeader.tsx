@@ -1,5 +1,3 @@
-import { useNavigate } from 'react-router';
-
 import { AppSidebarTrigger } from '@/components/nav';
 
 function ExpensesHeader() {

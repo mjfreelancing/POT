@@ -1,20 +1,20 @@
+import { Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Outlet, useSearchParams } from 'react-router';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetAllExpenses } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
-import { useAccountFilter } from '@/hooks';
-import { DisplayError } from '@/lib';
-import { Expense } from '@/data/expense';
 import AccountFilter from '@/components/filters/AccountFilter';
 import Toolbar from '@/components/toolbar/Toolbar';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Expense } from '@/data/expense';
+import { useAccountFilter } from '@/hooks';
+import { DisplayError } from '@/lib';
 
 import { ExpensesHeader, ExpensesTable } from './components';
-import { Input } from '@/components/ui/input';
 
 function ExpensesPage() {
   console.info('Rendering ExpensesPage');
@@ -26,6 +26,7 @@ function ExpensesPage() {
   // Get data
   const { data: expensesResult, isLoading: expensesLoading } =
     useApiGetAllExpenses();
+
   const { data: accountsResult, isLoading: accountsLoading } =
     useApiGetAllAccounts();
 
@@ -152,9 +153,9 @@ function ExpensesPage() {
   }, [urlAccountId, accountsInItems]);
 
   // Filter expenses by description (case-insensitive)
-  const descriptionFilteredExpenses = useMemo((): Expense[] => {
-    if (!searchTerm.trim()) return filteredExpenses as Expense[];
-    return (filteredExpenses as Expense[]).filter(expense =>
+  const descriptionFilteredExpenses = useMemo(() => {
+    if (!searchTerm.trim()) return filteredExpenses;
+    return filteredExpenses.filter(expense =>
       expense.description
         ?.toLowerCase()
         .includes(searchTerm.trim().toLowerCase()),

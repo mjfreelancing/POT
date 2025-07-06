@@ -102,9 +102,8 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
           onDismiss={() => setError(null)}
         />
       )}
-
-      <Card className="card-elevated h-full flex flex-col">
-        <CardContent className="px-4 py-4 flex-1 overflow-hidden">
+      <Card className="card-elevated flex flex-col flex-1 min-h-0">
+        <CardContent className="px-4 flex-1 min-h-0 flex flex-col">
           <DataTable
             columns={columns}
             data={filteredIncomes}

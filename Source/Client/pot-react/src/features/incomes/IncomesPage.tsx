@@ -1,9 +1,16 @@
+import { Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Outlet, useSearchParams } from 'react-router';
+import { useNavigate } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetAllIncomes } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
+import AccountFilter from '@/components/filters/AccountFilter';
+import Toolbar from '@/components/toolbar/Toolbar';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import type { Income } from '@/data/income';
 import { useAccountFilter } from '@/hooks';
 import { DisplayError } from '@/lib';
 
@@ -14,6 +21,7 @@ function IncomesPage() {
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [error, setError] = useState<DisplayError | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   // Get data
   const { data: incomesResult, isLoading: incomesLoading } =
@@ -42,7 +50,7 @@ function IncomesPage() {
     selectedAccountId,
     setSelectedAccountId,
     filteredItems: filteredIncomes,
-  } = useAccountFilter({
+  } = useAccountFilter<Income>({
     accounts,
     items: incomes,
   });
@@ -143,6 +151,18 @@ function IncomesPage() {
     return isValidAccount ? urlAccountId : null;
   }, [urlAccountId, accountsInItems]);
 
+  // Filter incomes by description (case-insensitive)
+  const descriptionFilteredIncomes = useMemo(() => {
+    if (!searchTerm.trim()) return filteredIncomes;
+    return filteredIncomes.filter(income =>
+      income.description
+        ?.toLowerCase()
+        .includes(searchTerm.trim().toLowerCase()),
+    );
+  }, [filteredIncomes, searchTerm]);
+
+  const navigate = useNavigate();
+
   // Handle errors
   useEffect(() => {
     if (incomesResult) {
@@ -159,14 +179,39 @@ function IncomesPage() {
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20">
-      <IncomesHeader
-        accountsInItems={accountsInItems}
-        selectedAccountId={validatedSelectedAccountId}
-        onAccountChange={handleAccountChange}
-        totalAccountsCount={accounts.length}
-      />
-      <div className="flex-1 p-6 overflow-hidden">
-        <IncomesTable filteredIncomes={filteredIncomes} />
+      <IncomesHeader />
+      <div className="flex-1 min-h-0 flex flex-col p-6 gap-4">
+        <Toolbar>
+          <div className="flex items-center gap-4">
+            {accountsInItems.length > 1 && (
+              <AccountFilter
+                accounts={accountsInItems}
+                selectedAccountId={validatedSelectedAccountId}
+                onAccountChange={handleAccountChange}
+              />
+            )}
+            <Input
+              type="text"
+              placeholder="Search by description..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="w-80"
+              aria-label="Search incomes by description"
+            />
+          </div>
+          <Button
+            onClick={() => navigate('create')}
+            aria-label="Add a new income"
+            className="gap-2 min-w-[132px]"
+            disabled={accounts.length === 0}
+          >
+            <Plus className="h-4 w-4" />
+            Add Income
+          </Button>
+        </Toolbar>
+        <div className="flex-1 min-h-0 flex flex-col">
+          <IncomesTable filteredIncomes={descriptionFilteredIncomes} />
+        </div>
       </div>
       <LoadingMessage isLoading={isLoading} />
       {error && (

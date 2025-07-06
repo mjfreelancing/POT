@@ -25,7 +25,7 @@ type UseAccountFilterOptions = {
 /**
  * Return type for the useAccountFilter hook.
  */
-type UseAccountFilterReturn = {
+type UseAccountFilterReturn<T extends ItemWithAccount> = {
   /**
    * Filtered list of accounts that actually have items associated with them.
    * Includes a virtual "Not Assigned" account if there are unassigned items.
@@ -50,7 +50,7 @@ type UseAccountFilterReturn = {
    * If no account is selected, returns all items.
    * If 'not-assigned' is selected, returns only items without an account.
    */
-  filteredItems: ItemWithAccount[];
+  filteredItems: T[];
 };
 
 /**
@@ -99,9 +99,7 @@ type UseAccountFilterReturn = {
 function useAccountFilter<T extends ItemWithAccount>({
   accounts,
   items,
-}: UseAccountFilterOptions & { items: T[] }): UseAccountFilterReturn & {
-  filteredItems: T[];
-} {
+}: UseAccountFilterOptions & { items: T[] }): UseAccountFilterReturn<T> {
   // State to track which account is currently selected for filtering
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
     null,
