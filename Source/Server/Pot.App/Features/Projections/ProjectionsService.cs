@@ -4,12 +4,10 @@ using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
 using Pot.App.Calculators;
-using Pot.App.Errors;
 using Pot.App.Features.Projections.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Expenses;
 using Pot.Data.Repositories.Incomes;
-using System.Diagnostics;
 
 namespace Pot.App.Features.Projections;
 
@@ -44,17 +42,25 @@ internal sealed class ProjectionsService : IProjectionsService
         var expenses = await _expenseRepository.GetAllExpensesAsync(cancellationToken);
         var incomes = await _incomeRepository.GetAllIncomesAsync(cancellationToken);
 
-        if (NextDueIsBehindSchedule(options.StartDate, expenses, out var problemDetails) ||
-            NextDueIsBehindSchedule(options.StartDate, incomes, out problemDetails))
-        {
-            return EnrichedResult.Fail<Output>(problemDetails);
-        }
-
-        var uniqueAccounts = expenses.Select(e => e.Account)
-            .Concat(incomes.Select(i => i.Account))
-            .GroupBy(a => a.RowId)
-            .Select(g => g.First())
+        var uniqueAccounts = expenses.Select(expense => expense.Account)
+            .Concat(incomes.Select(income => income.Account))
+            .DistinctBy(account => account.RowId)
             .ToList();
+
+        // The expense and income entities sharing the same account by value will not be the same by reference. We need them
+        // to be the same when forecasting account balances at the start of the loop, so re-assign to the same instances.
+        foreach (var account in uniqueAccounts)
+        {
+            foreach (var expense in expenses.Where(expense => expense.Account.RowId == account.RowId))
+            {
+                expense.Account = account;
+            }
+
+            foreach (var income in incomes.Where(income => income.Account.RowId == account.RowId))
+            {
+                income.Account = account;
+            }
+        }
 
         var accountDaily = uniqueAccounts.ToDictionary(account => account.RowId, account => new List<DateProjectionValues>());
         var globalDailyProjections = new List<DateProjectionValues>(options.DaysForecast);
@@ -63,8 +69,9 @@ internal sealed class ProjectionsService : IProjectionsService
         {
             var date = options.StartDate.AddDays(day);
 
-            _expenseRenewalCalculator.Renew(expenses, date);
-            _incomeRenewalCalculator.Renew(incomes, date);
+            // Apply debit/credit to accounts otherwise the projections will be based on the current balance
+            _expenseRenewalCalculator.Renew(expenses, date, day == 0);
+            _incomeRenewalCalculator.Renew(incomes, date, day == 0);
 
             var globalStarting = 0.0d;
             var globalIncome = 0.0d;
@@ -159,38 +166,5 @@ internal sealed class ProjectionsService : IProjectionsService
                 ExpensesPaid = item.ExpensesPaid
             };
         });
-    }
-
-    private static bool NextDueIsBehindSchedule<TEntity>(DateOnly today, List<TEntity> entities, out ProblemDetailsError? error)
-        where TEntity : IHasNextDue
-    {
-        error = null;
-
-        if (entities.Count == 0)
-        {
-            return false;
-        }
-
-        var nextDue = entities.Min(entity => entity.NextDue);
-
-        if (nextDue.DayNumber >= today.DayNumber)
-        {
-            return false;
-        }
-
-        var entityType = typeof(TEntity) switch
-        {
-            _ when typeof(TEntity) == typeof(ExpenseEntity) => "expense",
-            _ when typeof(TEntity) == typeof(IncomeEntity) => "income",
-            _ => throw new UnreachableException($"Unexpected entity type: {typeof(TEntity).GetFriendlyName()}")
-        };
-
-        error = new ProblemDetailsError(ProblemType.UnprocessableEntity)
-        {
-            ErrorCode = ErrorCodes.Invalid,
-            ErrorMessage = $"Cannot project financial status. At least one {entityType} has not been advanced to a current next due date."
-        };
-
-        return true;
     }
 }

@@ -24,18 +24,21 @@ const PROJECTION_METRICS: Record<ProjectionMetric, MetricConfig> = {
     chartType: 'line',
     description: 'Account balance trends over time',
   },
+
   available: {
     label: 'Available Amounts',
     shortLabel: 'Available',
     chartType: 'line',
     description: 'Available amount trends over time',
   },
+
   incomeReceived: {
     label: 'Income Received',
     shortLabel: 'Income',
     chartType: 'bar',
     description: 'Income received by date',
   },
+
   expensesPaid: {
     label: 'Expenses Paid',
     shortLabel: 'Expenses',
@@ -75,6 +78,7 @@ export {
   PROJECTION_METRICS,
   ProjectionSchema,
 };
+
 export type {
   AccountDailyBalances,
   ChartType,

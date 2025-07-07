@@ -1,4 +1,4 @@
-import { addDays, format } from 'date-fns';
+import { format } from 'date-fns';
 
 import { EnrichedDatePicker } from '@/components/picker/EnrichedDatePicker';
 import { Button } from '@/components/ui/button';
@@ -16,9 +16,9 @@ type ChartControlsProps = {
   selectedMetric: ProjectionMetric;
   onMetricChange: (metric: ProjectionMetric) => void;
   startDate: Date | undefined;
-  endDate: Date | undefined;
   onStartDateChange: (date: Date | undefined) => void;
-  onEndDateChange: (date: Date | undefined) => void;
+  period: number;
+  onPeriodChange: (period: number) => void;
   seriesKeys: string[];
   seriesVisibility: Record<string, boolean>;
   onToggleSeries: (seriesKey: string) => void;
@@ -29,64 +29,28 @@ function ChartControls({
   selectedMetric,
   onMetricChange,
   startDate,
-  endDate,
   onStartDateChange,
-  onEndDateChange,
+  period,
+  onPeriodChange,
   seriesKeys,
   seriesVisibility,
   onToggleSeries,
   chartConfig,
 }: ChartControlsProps) {
-  const today = new Date();
+  // Helper to determine which period is currently selected (months)
+  const periodOptions = [
+    { label: '1 mo', value: 1 },
+    { label: '2 mo', value: 2 },
+    { label: '3 mo', value: 3 },
+    { label: '6 mo', value: 6 }, // default
+    { label: '9 mo', value: 9 },
+    { label: '12 mo', value: 12 },
+  ];
 
-  // Helper function to calculate days between two dates
-  const getDaysBetween = (start: Date, end: Date): number => {
-    return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-  };
-
-  // Helper to determine which period is currently selected
-  const getSelectedPeriod = (): '30' | '60' | '90' | 'all' | 'custom' => {
-    if (!startDate && !endDate) return 'all';
-
-    if (startDate && endDate) {
-      const days = getDaysBetween(startDate, endDate);
-      if (days === 30) return '30';
-      if (days === 60) return '60';
-      if (days === 90) return '90';
-    }
-
-    return 'custom';
-  };
-
-  // Date range preset handlers
-  const setDateRangePreset = (days: number | 'all') => {
-    if (days === 'all') {
-      onStartDateChange(undefined);
-      onEndDateChange(undefined);
-    } else {
-      onStartDateChange(today);
-      onEndDateChange(addDays(today, days));
-    }
-  };
-
-  // Validation for date range
-  const handleStartDateChange = (date: Date | undefined) => {
-    onStartDateChange(date);
-
-    // If end date is before start date, clear it
-    if (date && endDate && endDate < date) {
-      onEndDateChange(undefined);
-    }
-  };
-
-  const handleEndDateChange = (date: Date | undefined) => {
-    // Don't allow end date before start date
-    if (date && startDate && date < startDate) {
-      return;
-    }
-
-    onEndDateChange(date);
-  };
+  // When a period button is clicked, set period in months
+  function setMonthPeriod(months: number) {
+    onPeriodChange(months);
+  }
 
   // Period button style variables
   const selectedPeriodButtonClass =
@@ -142,6 +106,30 @@ function ChartControls({
 
           {/* Right-aligned controls group */}
           <div className="flex items-center gap-6">
+            {/* Start Date Picker Only */}
+            <div
+              className="flex items-center gap-3 px-3 py-2 bg-muted/30 rounded-md"
+              role="group"
+              aria-labelledby="date-range-label"
+            >
+              <span id="date-range-label" className="sr-only">
+                Custom date selection
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-muted-foreground">
+                  From:
+                </span>
+                <EnrichedDatePicker
+                  selectedDate={startDate}
+                  onDateAccepted={onStartDateChange}
+                  triggerClassName="w-[140px] h-8"
+                  triggerLabel={date =>
+                    date ? format(date, 'MMM dd, yyyy') : 'Today'
+                  }
+                  triggerId="start-date-picker"
+                />
+              </div>
+            </div>
             {/* Period Controls Group */}
             <div
               className="flex items-center gap-2 px-3 py-2 bg-muted/30 rounded-md"
@@ -159,75 +147,28 @@ function ChartControls({
                 role="radiogroup"
                 aria-labelledby="period-label"
               >
-                {[
-                  { label: '30d', value: '30' },
-                  { label: '60d', value: '60' },
-                  { label: '90d', value: '90' },
-                  { label: 'All', value: 'all' },
-                ].map(period => {
-                  const isSelected = getSelectedPeriod() === period.value;
+                {periodOptions.map(opt => {
+                  const isSelected = period === opt.value;
                   return (
                     <Button
-                      key={period.value}
+                      key={opt.value}
                       variant="outline"
                       size="sm"
-                      onClick={() =>
-                        setDateRangePreset(
-                          period.value === 'all' ? 'all' : Number(period.value),
-                        )
-                      }
+                      onClick={() => setMonthPeriod(opt.value)}
                       className={
                         isSelected
                           ? `${selectedPeriodButtonClass} ${selectedPeriodButtonHoverClass}`
                           : `${unselectedPeriodButtonClass} ${unselectedPeriodButtonHoverClass}`
                       }
-                      aria-label={`Set chart period to ${period.label}`}
+                      aria-label={`Set chart period to ${opt.label}`}
                       role="radio"
                       aria-checked={isSelected}
                       tabIndex={isSelected ? 0 : -1}
                     >
-                      {period.label}
+                      {opt.label}
                     </Button>
                   );
                 })}
-              </div>
-            </div>
-            {/* Custom Date Range Group */}
-            <div
-              className="flex items-center gap-3 px-3 py-2 bg-muted/30 rounded-md"
-              role="group"
-              aria-labelledby="date-range-label"
-            >
-              <span id="date-range-label" className="sr-only">
-                Custom date range selection
-              </span>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-muted-foreground">
-                  From:
-                </span>
-                <EnrichedDatePicker
-                  selectedDate={startDate}
-                  onDateAccepted={handleStartDateChange}
-                  triggerClassName="w-[140px] h-8"
-                  triggerLabel={date =>
-                    date ? format(date, 'MMM dd, yyyy') : 'Today'
-                  }
-                  triggerId="start-date-picker"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-muted-foreground">
-                  To:
-                </span>
-                <EnrichedDatePicker
-                  selectedDate={endDate}
-                  onDateAccepted={handleEndDateChange}
-                  triggerClassName="w-[140px] h-8"
-                  triggerLabel={date =>
-                    date ? format(date, 'MMM dd, yyyy') : 'No limit'
-                  }
-                  triggerId="end-date-picker"
-                />
               </div>
             </div>
           </div>

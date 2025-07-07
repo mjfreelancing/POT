@@ -1,17 +1,40 @@
+import { addDays,addMonths } from 'date-fns';
 import { useEffect, useState } from 'react';
 
 import { useApiGetProjection } from '@/api/hooks/useProjections';
 import { ErrorSheet, LoadingMessage } from '@/components/feedback';
 import { DisplayError } from '@/lib';
+import { localIsoDate,normalizeToLocalMidnight } from '@/lib/dateUtils';
 
 import { NoProjectionData, ProjectionChart } from './components';
 
 function ProjectionsPage() {
-  const { data: result, isLoading } = useApiGetProjection();
+  // State for start date and period (in months)
+  const today = normalizeToLocalMidnight(new Date());
+  const [startDate, setStartDate] = useState<Date>(today);
+  const [period, setPeriod] = useState<number>(6); // default 6 months
+
+  // Always fetch 12 months of data from the selected start date
+  const apiEndDate = addDays(addMonths(startDate, 12), -1);
+
+  // Handlers
+  function handleStartDateChange(date?: Date) {
+    setStartDate(normalizeToLocalMidnight(date ?? today));
+  }
+
+  function handlePeriodChange(months: number) {
+    setPeriod(months);
+  }
+
+  // Call API with local date strings for 12 months
+  const { data: result, isLoading } = useApiGetProjection(
+    localIsoDate(startDate),
+    localIsoDate(apiEndDate),
+  );
+
   const [error, setError] = useState<DisplayError | null>(null);
 
   useEffect(() => {
-    // Transient error handling - resetting error state when success, such as after a network loss
     if (result) {
       setError(
         result.success
@@ -28,7 +51,13 @@ function ProjectionsPage() {
     <div className="flex flex-col h-full bg-gradient-to-br from-background to-muted/20 overflow-hidden">
       {result?.success && (
         <div className="p-6 flex-1 min-h-0">
-          <ProjectionChart data={result.value} />
+          <ProjectionChart
+            data={result.value}
+            startDate={startDate}
+            period={period}
+            onStartDateChange={handleStartDateChange}
+            onPeriodChange={handlePeriodChange}
+          />
         </div>
       )}
 

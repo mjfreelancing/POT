@@ -3,8 +3,11 @@ import { FailResultBase, Result, SuccessResult } from '@/lib';
 
 import { useGet } from './useApi';
 
-const useApiGetProjection = () => {
-  const query = useGet<Projection>('/projections', ['projections']);
+const useApiGetProjection = (startDate: string, endDate: string) => {
+  const query = useGet<Projection>(
+    `/projections?startDate=${startDate}&endDate=${endDate}`,
+    ['projections', startDate, endDate],
+  );
   const result = query.data as Result<Projection, FailResultBase>;
 
   let data: Result<Projection, FailResultBase>;

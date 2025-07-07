@@ -1,4 +1,4 @@
-import { addDays, format, parseISO } from 'date-fns';
+import { addDays, addMonths, format, parseISO } from 'date-fns';
 import { useState } from 'react';
 import {
   Bar,
@@ -29,22 +29,28 @@ import { useProjectionChartData } from '../hooks/useProjectionChartData';
 import { formatTooltipDate, getStrokeWidth } from '../utils/chartHelpers';
 import ChartControls from './ChartControls';
 import NoProjectionData from './NoProjectionData';
+import { normalizeToLocalMidnight } from '@/lib/dateUtils';
 
 type ProjectionChartProps = {
   data: Projection;
+  startDate: Date;
+  period: number;
+  onStartDateChange: (date: Date | undefined) => void;
+  onPeriodChange: (period: number) => void;
 };
 
 type SeriesVisibility = Record<string, boolean>;
 
-function ProjectionChart({ data }: ProjectionChartProps) {
+function ProjectionChart({
+  data,
+  startDate,
+  period,
+  onStartDateChange,
+  onPeriodChange,
+}: ProjectionChartProps) {
   // Metric selection state
   const [selectedMetric, setSelectedMetric] =
     useState<ProjectionMetric>('balance');
-
-  // Date range filtering state
-  const today = new Date();
-  const [startDate, setStartDate] = useState<Date | undefined>(today);
-  const [endDate, setEndDate] = useState<Date | undefined>(addDays(today, 60)); // TODO: Make this a user preference
 
   // Transform data for chart consumption using custom hook
   const {
@@ -54,16 +60,21 @@ function ProjectionChart({ data }: ProjectionChartProps) {
     hasData,
   } = useProjectionChartData(data, selectedMetric);
 
-  // Helper to normalize a date to midnight (local time)
-  function normalizeDate(date: Date): Date {
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  }
+  // Calculate the end date for the selected period (for filtering only)
+  const periodEndDate = addDays(addMonths(startDate, period), -1);
 
-  // Filter chart data based on date range
+  // Filter chart data based on selected period
   const chartData = allChartData.filter(point => {
-    const pointDate = normalizeDate(parseISO(point.date));
-    const normalizedStart = startDate ? normalizeDate(startDate) : undefined;
-    const normalizedEnd = endDate ? normalizeDate(endDate) : undefined;
+    const pointDate = normalizeToLocalMidnight(parseISO(point.date));
+
+    const normalizedStart = startDate
+      ? normalizeToLocalMidnight(startDate)
+      : undefined;
+
+    const normalizedEnd = periodEndDate
+      ? normalizeToLocalMidnight(periodEndDate)
+      : undefined;
+
     const afterStart = !normalizedStart || pointDate >= normalizedStart;
     const beforeEnd = !normalizedEnd || pointDate <= normalizedEnd;
 
@@ -119,6 +130,7 @@ function ProjectionChart({ data }: ProjectionChartProps) {
       [seriesKey]: !prev[seriesKey],
     }));
   };
+
   if (!hasData) {
     return <NoProjectionData />;
   }
@@ -137,9 +149,9 @@ function ProjectionChart({ data }: ProjectionChartProps) {
         selectedMetric={selectedMetric}
         onMetricChange={setSelectedMetric}
         startDate={startDate}
-        endDate={endDate}
-        onStartDateChange={setStartDate}
-        onEndDateChange={setEndDate}
+        onStartDateChange={onStartDateChange}
+        period={period}
+        onPeriodChange={onPeriodChange}
         seriesKeys={seriesKeys}
         seriesVisibility={seriesVisibility}
         onToggleSeries={toggleSeries}
@@ -228,6 +240,9 @@ function ProjectionChart({ data }: ProjectionChartProps) {
                       hide={!isVisible}
                       connectNulls={false}
                       activeDot={{ r: 4 }}
+                      isAnimationActive={true}
+                      animationDuration={700}
+                      animationEasing="ease-in-out"
                     />
                   );
                 })}
@@ -295,6 +310,9 @@ function ProjectionChart({ data }: ProjectionChartProps) {
                       fill={fillColor}
                       hide={!isVisible}
                       opacity={0.8}
+                      isAnimationActive={true}
+                      animationDuration={700}
+                      animationEasing="ease-in-out"
                     />
                   );
                 })}

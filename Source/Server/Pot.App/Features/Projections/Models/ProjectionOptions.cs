@@ -2,6 +2,6 @@
 
 public sealed class ProjectionOptions
 {
-    public DateOnly StartDate { get; init; } = DateOnly.FromDateTime(TimeProvider.System.GetLocalNow().DateTime);
-    public int DaysForecast { get; init; }
+    public required DateOnly StartDate { get; init; }
+    public required int DaysForecast { get; init; }
 }
