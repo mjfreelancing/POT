@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router';
 
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import type { Account, CreateExpense, Expense } from '@/data';
-import { DisplayError, Frequency, localToday } from '@/lib';
+import { DisplayError, Frequency, todayIsoFormat } from '@/lib';
 
 import ExpenseForm from '../../components/ExpenseForm';
 import ExpenseSheet from '../../components/ExpenseSheet';
@@ -47,8 +47,8 @@ function CreateExpenseForm({
 
     return {
       description: '',
-      nextDue: localToday(),
-      accrualStart: localToday(),
+      nextDue: todayIsoFormat(),
+      accrualStart: todayIsoFormat(),
       endDate: undefined,
       frequency: Frequency.Months,
       frequencyCount: 1,

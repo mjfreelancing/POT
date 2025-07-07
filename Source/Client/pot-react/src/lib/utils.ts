@@ -1,5 +1,4 @@
 import { clsx, type ClassValue } from 'clsx';
-import { format } from 'date-fns';
 import { twMerge } from 'tailwind-merge';
 
 function cn(...inputs: ClassValue[]) {
@@ -16,12 +15,4 @@ function isNumber(value: unknown): value is number {
   return typeof value === 'number' && !isNaN(value);
 }
 
-function localIsoDate(date: Date) {
-  return format(date, 'yyyy-MM-dd');
-}
-
-function localToday() {
-  return format(new Date(), 'yyyy-MM-dd');
-}
-
-export { cn, isDevelopment, localIsoDate, localToday, noop, isNumber };
+export { cn, isDevelopment, noop, isNumber };

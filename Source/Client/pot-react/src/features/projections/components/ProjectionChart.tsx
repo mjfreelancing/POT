@@ -23,13 +23,13 @@ import {
   PROJECTION_METRICS,
   ProjectionMetric,
 } from '@/data/projection';
+import { normalizeToLocalMidnight } from '@/lib/dateUtils';
 import { formatMoneyValue } from '@/lib/moneyUtils';
 
 import { useProjectionChartData } from '../hooks/useProjectionChartData';
 import { formatTooltipDate, getStrokeWidth } from '../utils/chartHelpers';
 import ChartControls from './ChartControls';
 import NoProjectionData from './NoProjectionData';
-import { normalizeToLocalMidnight } from '@/lib/dateUtils';
 
 type ProjectionChartProps = {
   data: Projection;

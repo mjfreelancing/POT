@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { Account } from '@/data';
-import { FrequencyEnumValues, localIsoDate, localToday } from '@/lib';
+import { dateIsoFormat, FrequencyEnumValues, todayIsoFormat } from '@/lib';
 
 import { IncomeFormData } from '../schemas/incomeFormSchema';
 
@@ -113,12 +113,12 @@ function IncomeForm({
                     }
                     onDateAccepted={date =>
                       field.onChange(
-                        date !== undefined ? localIsoDate(date) : undefined,
+                        date !== undefined ? dateIsoFormat(date) : undefined,
                       )
                     }
                     onDateChange={date =>
                       field.onChange(
-                        date !== undefined ? localIsoDate(date) : undefined,
+                        date !== undefined ? dateIsoFormat(date) : undefined,
                       )
                     }
                     triggerClassName="flex-1"
@@ -129,7 +129,7 @@ function IncomeForm({
                     variant="ghost"
                     size="sm"
                     className="w-16"
-                    onClick={() => field.onChange(localToday())}
+                    onClick={() => field.onChange(todayIsoFormat())}
                   >
                     Today
                   </Button>
@@ -160,12 +160,12 @@ function IncomeForm({
                     }
                     onDateAccepted={date =>
                       field.onChange(
-                        date !== undefined ? localIsoDate(date) : undefined,
+                        date !== undefined ? dateIsoFormat(date) : undefined,
                       )
                     }
                     onDateChange={date =>
                       field.onChange(
-                        date !== undefined ? localIsoDate(date) : undefined,
+                        date !== undefined ? dateIsoFormat(date) : undefined,
                       )
                     }
                     triggerClassName="flex-1"

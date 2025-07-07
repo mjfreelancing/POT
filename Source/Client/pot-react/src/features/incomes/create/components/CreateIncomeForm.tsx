@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router';
 
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import type { Account, CreateIncome, Income } from '@/data';
-import { DisplayError, Frequency, localToday } from '@/lib';
+import { DisplayError, Frequency, todayIsoFormat } from '@/lib';
 
 import IncomeForm from '../../components/IncomeForm';
 import IncomeSheet from '../../components/IncomeSheet';
@@ -46,7 +46,7 @@ function CreateIncomeForm({
 
     return {
       description: '',
-      nextDue: localToday(),
+      nextDue: todayIsoFormat(),
       endDate: undefined,
       frequency: Frequency.Months,
       frequencyCount: 1,

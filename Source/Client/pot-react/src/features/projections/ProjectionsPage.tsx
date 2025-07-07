@@ -1,10 +1,10 @@
-import { addDays,addMonths } from 'date-fns';
+import { addDays, addMonths } from 'date-fns';
 import { useEffect, useState } from 'react';
 
 import { useApiGetProjection } from '@/api/hooks/useProjections';
 import { ErrorSheet, LoadingMessage } from '@/components/feedback';
 import { DisplayError } from '@/lib';
-import { localIsoDate,normalizeToLocalMidnight } from '@/lib/dateUtils';
+import { dateIsoFormat, normalizeToLocalMidnight } from '@/lib/dateUtils';
 
 import { NoProjectionData, ProjectionChart } from './components';
 
@@ -28,8 +28,8 @@ function ProjectionsPage() {
 
   // Call API with local date strings for 12 months
   const { data: result, isLoading } = useApiGetProjection(
-    localIsoDate(startDate),
-    localIsoDate(apiEndDate),
+    dateIsoFormat(startDate),
+    dateIsoFormat(apiEndDate),
   );
 
   const [error, setError] = useState<DisplayError | null>(null);
