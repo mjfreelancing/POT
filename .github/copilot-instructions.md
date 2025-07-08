@@ -7,3 +7,5 @@ Do not remove any existing comments, including code snippets
 Do not make changes to components in the components/ui folder as these come from shadcn
 
 Use function declaration syntax instead of arrow functions where appropriate
+
+Always use { } with if() statements, even if it is a single line
