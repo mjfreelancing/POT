@@ -48,6 +48,7 @@ const useGet = <TResponse>(url: string, queryKey: string[]) => {
     queryFn: async ({ signal }): Promise<Result<TResponse, FailResultBase>> => {
       return performOperation(() => axios.get<TResponse>(url, { signal }));
     },
+    placeholderData: prev => prev,
   });
 };
 
