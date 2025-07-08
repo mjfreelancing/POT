@@ -131,6 +131,40 @@ function ProjectionChart({
     }));
   };
 
+  // Calculate min and max for visible series only
+  function getVisibleYDomain(): [number, number] {
+    const visibleKeys = seriesKeys.filter(key => seriesVisibility[key]);
+    let min: number | undefined;
+    let max: number | undefined;
+
+    for (const point of chartData) {
+      for (const key of visibleKeys) {
+        const value = point[key];
+        if (typeof value === 'number' && !isNaN(value)) {
+          if (min === undefined || value < min) {
+            min = value;
+          }
+
+          if (max === undefined || value > max) {
+            max = value;
+          }
+        }
+      }
+    }
+
+    // If no visible data, fallback to 0-1
+    if (min === undefined || max === undefined) {
+      return [0, 1];
+    }
+
+    // Add a small margin for better visuals
+    const range = max - min;
+
+    const margin = range === 0 ? Math.abs(max) * 0.1 || 1 : range * 0.1;
+
+    return [Math.floor(min - margin), Math.ceil(max + margin)];
+  }
+
   if (!hasData) {
     return <NoProjectionData />;
   }
@@ -188,6 +222,7 @@ function ProjectionChart({
                 <YAxis
                   tickFormatter={value => formatMoneyValue(value)}
                   className="text-xs"
+                  domain={getVisibleYDomain()}
                 />
                 <ChartTooltip
                   content={({ active, payload, label }) => {
@@ -264,6 +299,7 @@ function ProjectionChart({
                 <YAxis
                   tickFormatter={value => formatMoneyValue(value)}
                   className="text-xs"
+                  domain={getVisibleYDomain()}
                 />
                 <ChartTooltip
                   content={({ active, payload, label }) => {
