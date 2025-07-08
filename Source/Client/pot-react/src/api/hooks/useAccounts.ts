@@ -75,6 +75,7 @@ const useApiDeleteAccount = (id: string) => {
   };
 };
 
+// Returning the mutation data as Result<void, FailResultBase> type to enable TypeScript's discriminated union type narrowing.
 const useApiAccrueExpenses = () => {
   const mutation = usePost<void, AccrueExpenses>('/accounts/accrue-expenses');
 
