@@ -211,7 +211,7 @@ function AccountsOverview({ accounts }: AccountsOverviewProps) {
                 </ActionCard>
               </div>
             </div>
-            <div className="flex-1 w-full min-w-0">
+            <div className="flex-1 w-full min-w-0 flex flex-col min-h-0 h-[292px]">
               <DataTable columns={columns} data={accounts} />
             </div>
           </div>

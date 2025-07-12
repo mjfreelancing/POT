@@ -72,8 +72,8 @@ function ActionCard({
       onClick={onClick}
     >
       <CardContent className="p-4 h-full flex items-center justify-center">
-        <div className="flex items-center justify-center w-full gap-6">
-          <div className="p-3 rounded-lg bg-primary/5 flex-shrink-0 flex items-center justify-center">
+        <div className="flex items-center justify-center w-full gap-4">
+          <div className="p-4 rounded-lg bg-primary/5 flex-shrink-0 flex items-center justify-center">
             {icon}
           </div>
           <div className="flex flex-col justify-center text-left">
