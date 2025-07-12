@@ -8,6 +8,15 @@ function normalizeToLocalMidnight(date: Date): Date {
 }
 
 /**
+ * Returns today as a date at local midnight (00:00:00)
+ */
+function localToday(): Date {
+  let date = new Date();
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
+/**
  * Formats a date as YYYY-MM-DD in local time (no timezone offset)
  */
 function dateIsoFormat(date: Date): string {
@@ -21,4 +30,4 @@ function todayIsoFormat(): string {
   return dateIsoFormat(new Date());
 }
 
-export { dateIsoFormat, normalizeToLocalMidnight, todayIsoFormat };
+export { dateIsoFormat, normalizeToLocalMidnight, localToday, todayIsoFormat };

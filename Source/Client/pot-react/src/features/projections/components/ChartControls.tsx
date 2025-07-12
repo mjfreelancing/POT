@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { PROJECTION_METRICS, ProjectionMetric } from '@/data/projection';
+import { localToday } from '@/lib';
 
 type ChartControlsProps = {
   selectedMetric: ProjectionMetric;
@@ -121,6 +122,7 @@ function ChartControls({
                 </span>
                 <EnrichedDatePicker
                   selectedDate={startDate}
+                  minDate={localToday()}
                   onDateAccepted={onStartDateChange}
                   triggerClassName="w-[140px] h-8"
                   triggerLabel={date =>
