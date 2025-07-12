@@ -63,7 +63,7 @@ function ActionCard({
   return (
     <Card
       className={cn(
-        'border-l border-primary/60 bg-slate-100 dark:bg-slate-900 transition-all duration-200',
+        'border-l border-primary/40 bg-slate-100 dark:bg-slate-900 transition-all duration-200',
         onClick && [
           'cursor-pointer hover:shadow-lg hover:scale-[1.02] hover:border-primary/80 hover:shadow-primary/10',
         ],
