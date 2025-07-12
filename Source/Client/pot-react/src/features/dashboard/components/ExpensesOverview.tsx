@@ -2,7 +2,6 @@ import { ColumnDef } from '@tanstack/react-table';
 import { DollarSign, ShoppingCart, Wallet } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 
-import { ActionCard } from '@/components/cards';
 import StatusBadge from '@/components/feedback/badge/StatusBadge';
 import { createMoneyValueColumn, DataTable } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,6 +12,7 @@ import expensesSummaryStore, {
   ExpensesSummary,
 } from '../stores/useExpensesSummary';
 import DashboardCardHeader from './DashboardCardHeader';
+import SummaryCardsGrid from './SummaryCardsGrid';
 
 type ExpensesOverviewProps = {
   expenses: Expense[];
@@ -157,40 +157,46 @@ function ExpensesOverview({ expenses }: ExpensesOverviewProps) {
         <CardContent className="px-4 -mt-2">
           <div className="flex flex-col xl:flex-row gap-6">
             <div className="flex-1 w-full max-w-2xl">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <ActionCard
-                  title="Due Next 7 Days"
-                  icon={<Wallet className="h-6 w-6 text-information" />}
-                >
-                  <div className="text-xl font-bold text-information">
-                    {dueIn7Days}
-                  </div>
-                </ActionCard>
-                <ActionCard
-                  title="Total Next 7 Days"
-                  icon={<DollarSign className="h-6 w-6 text-information" />}
-                >
-                  <div className="text-xl font-bold text-information">
-                    {formatMoneyValue(totalNext7Days)}
-                  </div>
-                </ActionCard>
-                <ActionCard
-                  title="Due Next 30 Days"
-                  icon={<Wallet className="h-6 w-6 text-information" />}
-                >
-                  <div className="text-xl font-bold text-information">
-                    {dueIn30Days}
-                  </div>
-                </ActionCard>
-                <ActionCard
-                  title="Total Next 30 Days"
-                  icon={<DollarSign className="h-6 w-6 text-information" />}
-                >
-                  <div className="text-xl font-bold text-information">
-                    {formatMoneyValue(totalNext30Days)}
-                  </div>
-                </ActionCard>
-              </div>
+              <SummaryCardsGrid
+                cards={[
+                  {
+                    title: 'Due Next 7 Days',
+                    icon: <Wallet className="h-6 w-6 text-information" />,
+                    value: (
+                      <div className="text-xl font-bold text-information">
+                        {dueIn7Days}
+                      </div>
+                    ),
+                  },
+                  {
+                    title: 'Total Next 7 Days',
+                    icon: <DollarSign className="h-6 w-6 text-information" />,
+                    value: (
+                      <div className="text-xl font-bold text-information">
+                        {formatMoneyValue(totalNext7Days)}
+                      </div>
+                    ),
+                  },
+                  {
+                    title: 'Due Next 30 Days',
+                    icon: <Wallet className="h-6 w-6 text-information" />,
+                    value: (
+                      <div className="text-xl font-bold text-information">
+                        {dueIn30Days}
+                      </div>
+                    ),
+                  },
+                  {
+                    title: 'Total Next 30 Days',
+                    icon: <DollarSign className="h-6 w-6 text-information" />,
+                    value: (
+                      <div className="text-xl font-bold text-information">
+                        {formatMoneyValue(totalNext30Days)}
+                      </div>
+                    ),
+                  },
+                ]}
+              />
             </div>
             <div className="flex-1 w-full min-w-0 flex flex-col min-h-0 h-[292px]">
               <DataTable columns={columns} data={dueIn30DaysExpenses} />
