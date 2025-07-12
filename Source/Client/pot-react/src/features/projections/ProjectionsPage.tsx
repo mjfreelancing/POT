@@ -6,7 +6,11 @@ import { ErrorSheet, LoadingMessage } from '@/components/feedback';
 import { DisplayError } from '@/lib';
 import { dateIsoFormat, normalizeToLocalMidnight } from '@/lib/dateUtils';
 
-import { NoProjectionData, ProjectionChart } from './components';
+import {
+  NoProjectionData,
+  ProjectionChart,
+  ProjectionsHeader,
+} from './components';
 
 function ProjectionsPage() {
   // State for start date and period (in months)
@@ -48,7 +52,8 @@ function ProjectionsPage() {
   }, [result]);
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-br from-background to-muted/20 overflow-hidden">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20">
+      <ProjectionsHeader />
       {result?.success && (
         <div className="p-6 flex-1 min-h-0">
           <ProjectionChart

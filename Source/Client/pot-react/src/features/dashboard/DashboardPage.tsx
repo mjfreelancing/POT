@@ -28,7 +28,7 @@ function DashboardPage() {
   const accounts = result?.success ? result.value : [];
 
   return (
-    <div className="flex flex-col flex-1 min-h-screen bg-gradient-to-br from-background to-muted/20">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20">
       <Toaster position="top-center" />
       <DashboardHeader />
 
