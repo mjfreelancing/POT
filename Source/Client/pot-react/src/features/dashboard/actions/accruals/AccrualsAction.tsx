@@ -97,7 +97,7 @@ function AccrualsAction() {
     <>
       <ActionCard
         title="Renew & Accrue All"
-        description="Renew all incomes and expenses, and accrue all expenses for each account"
+        description="Renew all incomes and expenses, and accrue all accounts"
         icon={<BarChart3 className="text-sky-500" />}
         onClick={handleBulkAction}
       />
