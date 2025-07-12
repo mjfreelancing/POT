@@ -14,5 +14,27 @@ type Frequency = (typeof Frequency)[keyof typeof Frequency];
 // An array of all frequency values, for e.g. dropdown options
 const FrequencyEnumValues: Frequency[] = Object.values(Frequency);
 
+type DisplayError = {
+  title: string;
+  description: string;
+};
+
+type ActionResultSuccess = {
+  success: true;
+};
+
+type ActionResultFail = {
+  success: false;
+  error: DisplayError;
+};
+
+type BulkActionResult = ActionResultSuccess | ActionResultFail;
+
 export { Frequency, FrequencyEnumValues };
-export type { MoneyValue };
+export type {
+  ActionResultFail,
+  ActionResultSuccess,
+  BulkActionResult,
+  DisplayError,
+  MoneyValue,
+};

@@ -17,6 +17,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Expense } from '@/data';
 import { DisplayError } from '@/lib';
 
+import { renewAllExpenses } from '../utils/bulkActions';
 import ExpenseActions from './ExpenseActions';
 
 const columns: ColumnDef<Expense>[] = [
@@ -77,19 +78,14 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
     {
       label: 'Auto Renew',
       onClick: async (selectedItems: Expense[]) => {
-        const rowIds = selectedItems.map(expense => expense.rowId);
+        const result = await renewAllExpenses(
+          selectedItems,
+          renewExpensesMutation,
+          queryClient,
+        );
 
-        const result = await renewExpensesMutation.mutateAsync({
-          data: { rowIds },
-        });
-
-        if (result.success) {
-          queryClient.invalidateQueries({ queryKey: ['expenses'] });
-        } else {
-          setError({
-            title: result.error.code,
-            description: result.error.description,
-          });
+        if (!result.success) {
+          setError(result.error);
         }
       },
     },

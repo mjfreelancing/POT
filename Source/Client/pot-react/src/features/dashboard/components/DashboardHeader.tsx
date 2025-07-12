@@ -7,9 +7,7 @@ function DashboardHeader() {
         <AppSidebarTrigger />
         <div>
           <h1 className="page-title">Financial Dashboard</h1>
-          <p className="page-subtitle">
-            Overview of your financial accounts and recent activity
-          </p>
+          <p className="page-subtitle">Overview of your financial status</p>
         </div>
       </div>
     </div>

@@ -17,6 +17,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Income } from '@/data';
 import { DisplayError } from '@/lib';
 
+import { renewAllIncomes } from '../utils/bulkActions';
 import IncomeActions from './IncomeActions';
 
 type IncomesTableProps = {
@@ -75,19 +76,14 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
     {
       label: 'Auto Renew',
       onClick: async (selectedItems: Income[]) => {
-        const rowIds = selectedItems.map(expense => expense.rowId);
+        const result = await renewAllIncomes(
+          selectedItems,
+          renewIncomesMutation,
+          queryClient,
+        );
 
-        const result = await renewIncomesMutation.mutateAsync({
-          data: { rowIds },
-        });
-
-        if (result.success) {
-          queryClient.invalidateQueries({ queryKey: ['incomes'] });
-        } else {
-          setError({
-            title: result.error.code,
-            description: result.error.description,
-          });
+        if (!result.success) {
+          setError(result.error);
         }
       },
     },

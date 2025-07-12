@@ -63,23 +63,25 @@ function ActionCard({
   return (
     <Card
       className={cn(
-        'border-slate-200 dark:border-muted bg-slate-50 dark:bg-background transition-all duration-200',
+        'border-l border-primary/60 bg-slate-100 dark:bg-slate-900 transition-all duration-200',
         onClick && [
-          'cursor-pointer hover:shadow-lg hover:scale-[1.02] hover:border-primary/50 hover:shadow-primary/10',
+          'cursor-pointer hover:shadow-lg hover:scale-[1.02] hover:border-primary/80 hover:shadow-primary/10',
         ],
         className,
       )}
       onClick={onClick}
     >
-      <CardContent className="p-4">
-        <div className="flex items-center gap-4">
-          <div className="p-3 rounded-lg bg-primary/10 text-primary flex-shrink-0">
+      <CardContent className="p-4 h-full flex items-center justify-center">
+        <div className="flex items-center justify-center w-full gap-6">
+          <div className="p-3 rounded-lg bg-primary/5 flex-shrink-0 flex items-center justify-center">
             {icon}
           </div>
-          <div className="flex-1 min-w-0">
+          <div className="flex flex-col justify-center text-left">
             <h4 className="font-medium">{title}</h4>
             {description && (
-              <p className="text-sm text-muted-foreground">{description}</p>
+              <div className="text-sm text-muted-foreground mt-1">
+                {description}
+              </div>
             )}
             {children}
           </div>

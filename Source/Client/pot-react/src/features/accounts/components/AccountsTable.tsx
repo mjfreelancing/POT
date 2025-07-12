@@ -17,6 +17,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Account } from '@/data';
 import { DisplayError } from '@/lib';
 
+import { accrueAllExpenses } from '../utils/bulkActions';
 import AccountActions from './AccountActions';
 
 type AccountsTableProps = {
@@ -101,20 +102,14 @@ function AccountsTable({ accounts }: AccountsTableProps) {
     {
       label: 'Accrue Expenses',
       onClick: async (selectedItems: Account[]) => {
-        const rowIds = selectedItems.map(account => account.rowId);
+        const result = await accrueAllExpenses(
+          selectedItems,
+          accrueExpensesMutation,
+          queryClient,
+        );
 
-        const result = await accrueExpensesMutation.mutateAsync({
-          data: { rowIds },
-        });
-
-        if (result.success) {
-          queryClient.invalidateQueries({ queryKey: ['accounts'] });
-          queryClient.invalidateQueries({ queryKey: ['expenses'] });
-        } else {
-          setError({
-            title: result.error.code,
-            description: result.error.description,
-          });
+        if (!result.success) {
+          setError(result.error);
         }
       },
     },

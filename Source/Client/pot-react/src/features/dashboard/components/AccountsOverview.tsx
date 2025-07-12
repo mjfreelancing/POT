@@ -127,6 +127,14 @@ function AccountsOverview({ accounts }: AccountsOverviewProps) {
     (state: AccountsSummary) => state.totalDailyAccrual,
   );
 
+  function getAmountClass(amount: number): string {
+    if (amount >= 0) {
+      return 'text-success';
+    }
+
+    return 'text-destructive';
+  }
+
   return (
     <>
       <Card className="card-elevated">
@@ -145,38 +153,52 @@ function AccountsOverview({ accounts }: AccountsOverviewProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <ActionCard
               title="Total Balance"
-              icon={<Wallet className="h-6 w-6" />}
-              className="border-2"
+              icon={
+                <Wallet className={`h-6 w-6 ${getAmountClass(totalBalance)}`} />
+              }
             >
-              <div className="text-2xl font-bold text-success">
+              <div
+                className={`text-xl font-bold ${getAmountClass(totalBalance)}`}
+              >
                 {formatMoneyValue(totalBalance)}
               </div>
             </ActionCard>
             <ActionCard
               title="Reserved Funds"
-              icon={<DollarSign className="h-6 w-6" />}
-              className="border-2"
+              icon={
+                <DollarSign
+                  className={`h-6 w-6 ${getAmountClass(totalReserved)}`}
+                />
+              }
             >
-              <div className="text-2xl font-bold">
+              <div
+                className={`text-xl font-bold ${getAmountClass(totalReserved)}`}
+              >
                 {formatMoneyValue(totalReserved)}
               </div>
             </ActionCard>
             <ActionCard
               title="Accrued Amount"
-              icon={<Target className="h-6 w-6" />}
-              className="border-2"
+              icon={
+                <Target className={`h-6 w-6 ${getAmountClass(totalAccrued)}`} />
+              }
             >
-              <div className="text-2xl font-bold">
+              <div
+                className={`text-xl font-bold ${getAmountClass(totalAccrued)}`}
+              >
                 {formatMoneyValue(totalAccrued)}
               </div>
             </ActionCard>
             <ActionCard
               title="Daily Accrual"
-              icon={<Calendar className="h-6 w-6" />}
-              className="border-2"
+              icon={
+                <Calendar
+                  className={`h-6 w-6 ${getAmountClass(totalDailyAccrual)}`}
+                />
+              }
             >
               <div
-                className={`text-2xl font-bold ${totalDailyAccrual > 0 ? 'text-success' : 'text-destructive'}`}
+                className={`text-xl font-bold ${getAmountClass(totalDailyAccrual)}`}
               >
                 {formatMoneyValue(totalDailyAccrual)}
               </div>
