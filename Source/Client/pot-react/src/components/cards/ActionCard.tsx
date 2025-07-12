@@ -77,7 +77,7 @@ function ActionCard({
             {icon}
           </div>
           <div className="flex flex-col justify-center text-left">
-            <h4 className="font-medium">{title}</h4>
+            <h4 className="text-xl font-medium">{title}</h4>
             {description && (
               <div className="text-sm text-muted-foreground mt-1">
                 {description}

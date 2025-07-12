@@ -83,7 +83,7 @@ function AccrualsAction() {
       <div className="flex items-start">
         <CheckCircle className="text-green-600 mr-6 w-16 h-16" />
         <div>
-          <div className="font-semibold">Accruals Complete</div>
+          <div className="text-xl font-semibold">Accruals Complete</div>
           <div className="mt-2 text-sm text-muted-foreground">
             All renewals and accruals have successfully processed
           </div>
