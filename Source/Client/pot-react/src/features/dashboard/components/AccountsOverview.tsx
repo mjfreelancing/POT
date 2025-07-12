@@ -137,21 +137,21 @@ function AccountsOverview({ accounts }: AccountsOverviewProps) {
 
   return (
     <>
-      <Card className="card-elevated">
+      <Card>
         <CardHeader>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <div className="p-2 rounded-lg bg-primary/10 text-primary">
               <PieChart className="h-5 w-5" />
             </div>
             <div>
-              <CardTitle>Account Overview</CardTitle>
+              <CardTitle>Accounts Overview</CardTitle>
               <CardDescription className="mt-1">
                 Your bank accounts at a glance
               </CardDescription>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="px-4">
+        <CardContent className="px-4 -mt-2">
           <div className="flex flex-col xl:flex-row gap-6">
             <div className="flex-1 w-full max-w-2xl">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

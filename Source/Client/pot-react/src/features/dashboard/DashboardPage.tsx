@@ -1,34 +1,44 @@
 import { useEffect, useState } from 'react';
 
-import { useApiGetAllAccounts } from '@/api/hooks';
+import { useApiGetAllAccounts, useApiGetAllExpenses } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { Toaster } from '@/components/ui/sonner';
 import { DisplayError } from '@/lib';
 
-import { AccountsOverview, DashboardHeader, QuickActions } from './components';
+import {
+  AccountsOverview,
+  DashboardHeader,
+  ExpensesOverview,
+  QuickActions,
+} from './components';
 
 function DashboardPage() {
   const [error, setError] = useState<DisplayError | null>(null);
-  const { data: result, isLoading } = useApiGetAllAccounts();
+  const { data: accountsResult, isLoading: accountsIsLoading } =
+    useApiGetAllAccounts();
+  const { data: expensesResult, isLoading: expensesIsLoading } =
+    useApiGetAllExpenses();
+  const isLoading = accountsIsLoading || expensesIsLoading;
 
   useEffect(() => {
-    if (result) {
-      if (result.success) {
+    if (accountsResult) {
+      if (accountsResult.success) {
         setError(null);
       } else {
         setError({
-          title: result.error.code,
-          description: result.error.description,
+          title: accountsResult.error.code,
+          description: accountsResult.error.description,
         });
       }
     }
-  }, [result]);
+  }, [accountsResult]);
 
-  const accounts = result?.success ? result.value : [];
+  const accounts = accountsResult?.success ? accountsResult.value : [];
+  const expenses = expensesResult?.success ? expensesResult.value.results : [];
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20 overflow-x-hidden">
       <Toaster position="top-center" />
       <DashboardHeader />
 
@@ -37,6 +47,7 @@ function DashboardPage() {
       <div className="flex-1 p-6 space-y-6">
         <QuickActions />
         <AccountsOverview accounts={accounts} />
+        <ExpensesOverview expenses={expenses} />
 
         {error && (
           <ErrorSheet
