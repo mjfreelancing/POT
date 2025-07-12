@@ -5,19 +5,14 @@ import { useEffect, useMemo } from 'react';
 import { ActionCard } from '@/components/cards';
 import StatusBadge from '@/components/feedback/badge/StatusBadge';
 import { createMoneyValueColumn, DataTable } from '@/components/table';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Expense } from '@/data';
 import { formatMoneyValue, localToday } from '@/lib';
 
 import expensesSummaryStore, {
   ExpensesSummary,
 } from '../stores/useExpensesSummary';
+import DashboardCardHeader from './DashboardCardHeader';
 
 type ExpensesOverviewProps = {
   expenses: Expense[];
@@ -154,19 +149,11 @@ function ExpensesOverview({ expenses }: ExpensesOverviewProps) {
   return (
     <>
       <Card>
-        <CardHeader>
-          <div className="flex items-center gap-4">
-            <div className="p-2 rounded-lg bg-primary/10 text-primary">
-              <ShoppingCart className="h-5 w-5" />
-            </div>
-            <div>
-              <CardTitle>Expenses Overview</CardTitle>
-              <CardDescription className="mt-1">
-                Your expenses at a glance
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
+        <DashboardCardHeader
+          icon={<ShoppingCart className="h-5 w-5" />}
+          title="Expenses Overview"
+          description="Your expenses at a glance"
+        />
         <CardContent className="px-4 -mt-2">
           <div className="flex flex-col xl:flex-row gap-6">
             <div className="flex-1 w-full max-w-2xl">
