@@ -145,7 +145,9 @@ function AccountsOverview({ accounts }: AccountsOverviewProps) {
             </div>
             <div>
               <CardTitle>Account Overview</CardTitle>
-              <CardDescription>Your bank accounts at a glance</CardDescription>
+              <CardDescription className="mt-1">
+                Your bank accounts at a glance
+              </CardDescription>
             </div>
           </div>
         </CardHeader>
