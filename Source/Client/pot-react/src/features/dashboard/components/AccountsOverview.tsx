@@ -150,62 +150,71 @@ function AccountsOverview({ accounts }: AccountsOverviewProps) {
           </div>
         </CardHeader>
         <CardContent className="px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <ActionCard
-              title="Total Balance"
-              icon={
-                <Wallet className={`h-6 w-6 ${getAmountClass(totalBalance)}`} />
-              }
-            >
-              <div
-                className={`text-xl font-bold ${getAmountClass(totalBalance)}`}
-              >
-                {formatMoneyValue(totalBalance)}
+          <div className="flex flex-col xl:flex-row gap-6">
+            <div className="flex-1 w-full max-w-2xl">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <ActionCard
+                  title="Total Balance"
+                  icon={
+                    <Wallet
+                      className={`h-6 w-6 ${getAmountClass(totalBalance)}`}
+                    />
+                  }
+                >
+                  <div
+                    className={`text-xl font-bold ${getAmountClass(totalBalance)}`}
+                  >
+                    {formatMoneyValue(totalBalance)}
+                  </div>
+                </ActionCard>
+                <ActionCard
+                  title="Reserved Funds"
+                  icon={
+                    <DollarSign
+                      className={`h-6 w-6 ${getAmountClass(totalReserved)}`}
+                    />
+                  }
+                >
+                  <div
+                    className={`text-xl font-bold ${getAmountClass(totalReserved)}`}
+                  >
+                    {formatMoneyValue(totalReserved)}
+                  </div>
+                </ActionCard>
+                <ActionCard
+                  title="Accrued Amount"
+                  icon={
+                    <Target
+                      className={`h-6 w-6 ${getAmountClass(totalAccrued)}`}
+                    />
+                  }
+                >
+                  <div
+                    className={`text-xl font-bold ${getAmountClass(totalAccrued)}`}
+                  >
+                    {formatMoneyValue(totalAccrued)}
+                  </div>
+                </ActionCard>
+                <ActionCard
+                  title="Daily Accrual"
+                  icon={
+                    <Calendar
+                      className={`h-6 w-6 ${getAmountClass(totalDailyAccrual)}`}
+                    />
+                  }
+                >
+                  <div
+                    className={`text-xl font-bold ${getAmountClass(totalDailyAccrual)}`}
+                  >
+                    {formatMoneyValue(totalDailyAccrual)}
+                  </div>
+                </ActionCard>
               </div>
-            </ActionCard>
-            <ActionCard
-              title="Reserved Funds"
-              icon={
-                <DollarSign
-                  className={`h-6 w-6 ${getAmountClass(totalReserved)}`}
-                />
-              }
-            >
-              <div
-                className={`text-xl font-bold ${getAmountClass(totalReserved)}`}
-              >
-                {formatMoneyValue(totalReserved)}
-              </div>
-            </ActionCard>
-            <ActionCard
-              title="Accrued Amount"
-              icon={
-                <Target className={`h-6 w-6 ${getAmountClass(totalAccrued)}`} />
-              }
-            >
-              <div
-                className={`text-xl font-bold ${getAmountClass(totalAccrued)}`}
-              >
-                {formatMoneyValue(totalAccrued)}
-              </div>
-            </ActionCard>
-            <ActionCard
-              title="Daily Accrual"
-              icon={
-                <Calendar
-                  className={`h-6 w-6 ${getAmountClass(totalDailyAccrual)}`}
-                />
-              }
-            >
-              <div
-                className={`text-xl font-bold ${getAmountClass(totalDailyAccrual)}`}
-              >
-                {formatMoneyValue(totalDailyAccrual)}
-              </div>
-            </ActionCard>
+            </div>
+            <div className="flex-1 w-full min-w-0">
+              <DataTable columns={columns} data={accounts} />
+            </div>
           </div>
-
-          <DataTable columns={columns} data={accounts} />
         </CardContent>
       </Card>
     </>
