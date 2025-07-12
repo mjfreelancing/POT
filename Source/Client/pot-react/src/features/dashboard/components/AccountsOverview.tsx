@@ -1,5 +1,5 @@
 import { ColumnDef } from '@tanstack/react-table';
-import { Calendar, DollarSign, PieChart, Target, Wallet } from 'lucide-react';
+import { Banknote, Calendar, DollarSign, PieChart, Wallet } from 'lucide-react';
 import { useEffect } from 'react';
 
 import { ActionCard } from '@/components/cards';
@@ -98,8 +98,8 @@ function AccountsOverview({ accounts }: AccountsOverviewProps) {
       0,
     );
 
-    const totalAccrued = accounts.reduce(
-      (sum, acct) => sum + acct.totalExpenseAccrued,
+    const totalAvailable = accounts.reduce(
+      (sum, acct) => sum + acct.available,
       0,
     );
 
@@ -108,7 +108,7 @@ function AccountsOverview({ accounts }: AccountsOverviewProps) {
       0,
     );
 
-    setSummary(totalBalance, totalReserved, totalAccrued, totalDailyAccrual);
+    setSummary(totalBalance, totalReserved, totalAvailable, totalDailyAccrual);
   }, [accounts, setSummary]);
 
   const totalBalance = accountsSummaryStore(
@@ -119,8 +119,8 @@ function AccountsOverview({ accounts }: AccountsOverviewProps) {
     (state: AccountsSummary) => state.totalReserved,
   );
 
-  const totalAccrued = accountsSummaryStore(
-    (state: AccountsSummary) => state.totalAccrued,
+  const totalAvailable = accountsSummaryStore(
+    (state: AccountsSummary) => state.totalAvailable,
   );
 
   const totalDailyAccrual = accountsSummaryStore(
@@ -182,17 +182,17 @@ function AccountsOverview({ accounts }: AccountsOverviewProps) {
                   </div>
                 </ActionCard>
                 <ActionCard
-                  title="Accrued Amount"
+                  title="Total Available"
                   icon={
-                    <Target
-                      className={`h-6 w-6 ${getAmountClass(totalAccrued)}`}
+                    <Banknote
+                      className={`h-6 w-6 ${getAmountClass(totalAvailable)}`}
                     />
                   }
                 >
                   <div
-                    className={`text-xl font-bold ${getAmountClass(totalAccrued)}`}
+                    className={`text-xl font-bold ${getAmountClass(totalAvailable)}`}
                   >
-                    {formatMoneyValue(totalAccrued)}
+                    {formatMoneyValue(totalAvailable)}
                   </div>
                 </ActionCard>
                 <ActionCard

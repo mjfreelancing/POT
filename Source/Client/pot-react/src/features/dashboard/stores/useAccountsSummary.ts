@@ -3,12 +3,12 @@ import { create } from 'zustand';
 type AccountsSummary = {
   totalBalance: number;
   totalReserved: number;
-  totalAccrued: number;
+  totalAvailable: number;
   totalDailyAccrual: number;
   setSummary: (
     totalBalance: number,
     totalReserved: number,
-    totalAccrued: number,
+    totalAvailable: number,
     totalDailyAccrual: number,
   ) => void;
 };
@@ -16,13 +16,18 @@ type AccountsSummary = {
 const accountsSummaryStore = create<AccountsSummary>(set => ({
   totalBalance: 0,
   totalReserved: 0,
-  totalAccrued: 0,
+  totalAvailable: 0,
   totalDailyAccrual: 0,
-  setSummary: (totalBalance, totalReserved, totalAccrued, totalDailyAccrual) =>
+  setSummary: (
+    totalBalance,
+    totalReserved,
+    totalAvailable,
+    totalDailyAccrual,
+  ) =>
     set({
       totalBalance,
       totalReserved,
-      totalAccrued,
+      totalAvailable,
       totalDailyAccrual,
     }),
 }));
