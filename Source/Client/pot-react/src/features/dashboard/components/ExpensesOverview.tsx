@@ -2,6 +2,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { ClockFading, DollarSign, ShoppingCart } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 
+import { NotePopover } from '@/components/feedback';
 import StatusBadge from '@/components/feedback/badge/StatusBadge';
 import { createMoneyValueColumn, DataTable } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,7 +29,12 @@ const columns: ColumnDef<Expense>[] = [
   {
     accessorKey: 'description',
     header: 'Description',
-    cell: ({ row }) => row.original.description,
+    cell: ({ row }) => (
+      <div className="flex items-center gap-2">
+        <span>{row.original.description}</span>
+        {row.original.note ? <NotePopover note={row.original.note} /> : null}
+      </div>
+    ),
   },
   {
     accessorKey: 'nextDue',
