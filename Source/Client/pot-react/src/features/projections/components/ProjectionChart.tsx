@@ -167,11 +167,11 @@ function ProjectionChart({
 
   function renderTooltipContent(
     active?: boolean,
-    payload?: Array<{
+    payload?: {
       color?: string;
       dataKey?: string | number;
       value?: string | number | (string | number)[];
-    }>,
+    }[],
     label?: string | number,
     chartConfig?: Record<string, { label?: React.ReactNode; color?: string }>,
   ) {
