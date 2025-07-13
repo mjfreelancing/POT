@@ -104,6 +104,6 @@ export const setupInterceptors = () => {
  */
 export const setupAxiosDefaults = () => {
   axios.defaults.baseURL = 'http://localhost:5241/api';
-  axios.defaults.timeout = 3000;
+  axios.defaults.timeout = 10000;
   // Add any other default settings here
 };
