@@ -56,7 +56,7 @@ function formatTooltipDate(value: string): string {
  * @returns Stroke width number
  */
 function getStrokeWidth(seriesKey: string): number {
-  return seriesKey === 'global' ? 2 : 1;
+  return seriesKey === 'global' ? 2 : 1.5;
 }
 
 export { formatTooltipDate, formatXAxisLabel, getStrokeWidth };
