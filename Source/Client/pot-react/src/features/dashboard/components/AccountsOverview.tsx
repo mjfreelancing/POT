@@ -1,5 +1,5 @@
 import { ColumnDef } from '@tanstack/react-table';
-import { Banknote, Calendar, DollarSign, PieChart, Wallet } from 'lucide-react';
+import { Banknote, Calendar, DollarSign, PieChart } from 'lucide-react';
 import { useEffect } from 'react';
 
 import StatusBadge from '@/components/feedback/badge/StatusBadge';
@@ -146,7 +146,7 @@ function AccountsOverview({ accounts }: AccountsOverviewProps) {
                   {
                     title: 'Total Balance',
                     icon: (
-                      <Wallet
+                      <DollarSign
                         className={`h-6 w-6 ${getAmountClass(totalBalance)}`}
                         aria-hidden="true"
                       />
@@ -162,7 +162,7 @@ function AccountsOverview({ accounts }: AccountsOverviewProps) {
                   {
                     title: 'Reserved Funds',
                     icon: (
-                      <DollarSign
+                      <Banknote
                         className={`h-6 w-6 ${getAmountClass(totalReserved)}`}
                         aria-hidden="true"
                       />

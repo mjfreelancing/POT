@@ -1,5 +1,5 @@
 import { ColumnDef } from '@tanstack/react-table';
-import { DollarSign, ShoppingCart, Wallet } from 'lucide-react';
+import { ClockFading, DollarSign, ShoppingCart } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 
 import StatusBadge from '@/components/feedback/badge/StatusBadge';
@@ -167,7 +167,7 @@ function ExpensesOverview({ expenses }: ExpensesOverviewProps) {
                   {
                     title: 'Due Next 7 Days',
                     icon: (
-                      <Wallet
+                      <ClockFading
                         className="h-6 w-6 text-information"
                         aria-hidden="true"
                       />
@@ -195,7 +195,7 @@ function ExpensesOverview({ expenses }: ExpensesOverviewProps) {
                   {
                     title: 'Due Next 30 Days',
                     icon: (
-                      <Wallet
+                      <ClockFading
                         className="h-6 w-6 text-information"
                         aria-hidden="true"
                       />
