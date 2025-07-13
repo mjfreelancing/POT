@@ -103,7 +103,6 @@ export const setupInterceptors = () => {
  * Setup default axios configuration
  */
 export const setupAxiosDefaults = () => {
-  axios.defaults.baseURL = 'http://localhost:5241/api';
+  axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL;
   axios.defaults.timeout = 10000;
-  // Add any other default settings here
 };
