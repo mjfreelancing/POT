@@ -17,6 +17,7 @@ const BaseIncomeSchema = z.object({
   frequency: z.nativeEnum(Frequency),
   frequencyCount: z.number(),
   amount: z.number(),
+  note: z.string().nullable(),
 });
 
 const IncomeSchema = BaseIncomeSchema.extend({

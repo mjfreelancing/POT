@@ -18,6 +18,7 @@ const BaseExpenseSchema = z.object({
   frequency: z.nativeEnum(Frequency),
   frequencyCount: z.number(),
   amount: z.number(),
+  note: z.string().nullable(),
 });
 
 const ExpenseSchema = BaseExpenseSchema.extend({

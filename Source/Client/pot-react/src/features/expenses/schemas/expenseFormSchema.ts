@@ -23,6 +23,10 @@ const expenseFormSchema = z.object({
   frequency: z.nativeEnum(Frequency),
   frequencyCount: z.number().min(1),
   amount: MoneyValueSchema,
+  note: z
+    .string()
+    .nullable()
+    .transform(val => (val === '' ? null : val)),
   accountRowId: z.string().min(1, 'An account is required'),
 });
 

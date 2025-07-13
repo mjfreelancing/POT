@@ -41,6 +41,7 @@ function CreateIncomeForm({
         frequencyCount: duplicateIncome.frequencyCount,
         amount: duplicateIncome.amount,
         accountRowId: duplicateIncome.account.rowId,
+        note: duplicateIncome.note ?? '',
       };
     }
 
@@ -52,6 +53,7 @@ function CreateIncomeForm({
       frequencyCount: 1,
       amount: 0,
       accountRowId: '',
+      note: '',
     };
   };
 

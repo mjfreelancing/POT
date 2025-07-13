@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import type { Account } from '@/data';
 import { dateIsoFormat, FrequencyEnumValues, todayIsoFormat } from '@/lib';
 
@@ -262,6 +263,26 @@ function IncomeForm({
                     ))}
                   </SelectContent>
                 </Select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="note"
+          render={({ field }) => (
+            <FormItem className="space-y-1">
+              <FormLabel htmlFor="note-textarea">Note (optional)</FormLabel>
+              <FormControl>
+                <Textarea
+                  {...field}
+                  id="note-textarea"
+                  placeholder="Add any notes about this income"
+                  className="min-h-[80px] max-h-[200px]"
+                  value={field.value ?? ''}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

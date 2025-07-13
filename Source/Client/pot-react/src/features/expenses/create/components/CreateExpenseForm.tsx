@@ -42,6 +42,7 @@ function CreateExpenseForm({
         frequencyCount: duplicateExpense.frequencyCount,
         amount: duplicateExpense.amount,
         accountRowId: duplicateExpense.account.rowId,
+        note: duplicateExpense.note ?? '',
       };
     }
 
@@ -54,6 +55,7 @@ function CreateExpenseForm({
       frequencyCount: 1,
       amount: 0,
       accountRowId: '',
+      note: '',
     };
   };
 

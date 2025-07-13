@@ -42,6 +42,7 @@ const EditExpenseSheetInternal: React.FC<EditExpenseSheetInternalProps> = ({
       frequency: expenseData.frequency,
       frequencyCount: expenseData.frequencyCount,
       amount: expenseData.amount,
+      note: expenseData.note,
       accountRowId: expenseData.account?.rowId,
     },
   });

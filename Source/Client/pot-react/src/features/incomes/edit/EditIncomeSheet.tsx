@@ -39,6 +39,7 @@ const EditIncomeSheetInternal: React.FC<EditIncomeSheetInternalProps> = ({
       frequencyCount: incomeData.frequencyCount,
       amount: incomeData.amount,
       accountRowId: incomeData.account?.rowId,
+      note: incomeData.note ?? '',
     },
   });
 
