@@ -79,10 +79,10 @@ function ExpenseActions({ expense }: ExpenseActionsProps) {
             Duplicate
           </DropdownMenuItem>
           <DropdownMenuItem
-            className="text-red-600"
+            className="text-destructive-high-contrast"
             onClick={() => setShowDeleteDialog(true)}
           >
-            <Trash2 className="mr-2 h-4 w-4 text-red-600" />
+            <Trash2 className="mr-2 h-4 w-4 text-destructive-high-contrast" />
             Delete
           </DropdownMenuItem>
           <DropdownMenuSeparator />

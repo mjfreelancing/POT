@@ -45,7 +45,12 @@ const columns: ColumnDef<Expense>[] = [
 
       if (days <= 0) {
         badge = (
-          <StatusBadge color="red" className="w-20">
+          <StatusBadge
+            color="red"
+            className="w-20"
+            aria-role="status"
+            aria-live="polite"
+          >
             Past Due
           </StatusBadge>
         );
@@ -53,7 +58,7 @@ const columns: ColumnDef<Expense>[] = [
 
       if (days > 0 && days <= 7) {
         badge = (
-          <StatusBadge color="orange" className="w-20">
+          <StatusBadge color="orange" className="w-20" aria-role="status">
             Due Soon
           </StatusBadge>
         );
@@ -150,7 +155,7 @@ function ExpensesOverview({ expenses }: ExpensesOverviewProps) {
     <>
       <Card>
         <DashboardCardHeader
-          icon={<ShoppingCart className="h-5 w-5" />}
+          icon={<ShoppingCart className="h-5 w-5" aria-hidden="true" />}
           title="Expenses Overview"
           description="Your expenses at a glance"
         />
@@ -161,7 +166,12 @@ function ExpensesOverview({ expenses }: ExpensesOverviewProps) {
                 cards={[
                   {
                     title: 'Due Next 7 Days',
-                    icon: <Wallet className="h-6 w-6 text-information" />,
+                    icon: (
+                      <Wallet
+                        className="h-6 w-6 text-information"
+                        aria-hidden="true"
+                      />
+                    ),
                     value: (
                       <div className="text-xl font-bold text-information">
                         {dueIn7Days}
@@ -170,7 +180,12 @@ function ExpensesOverview({ expenses }: ExpensesOverviewProps) {
                   },
                   {
                     title: 'Total Next 7 Days',
-                    icon: <DollarSign className="h-6 w-6 text-information" />,
+                    icon: (
+                      <DollarSign
+                        className="h-6 w-6 text-information"
+                        aria-hidden="true"
+                      />
+                    ),
                     value: (
                       <div className="text-xl font-bold text-information">
                         {formatMoneyValue(totalNext7Days)}
@@ -179,7 +194,12 @@ function ExpensesOverview({ expenses }: ExpensesOverviewProps) {
                   },
                   {
                     title: 'Due Next 30 Days',
-                    icon: <Wallet className="h-6 w-6 text-information" />,
+                    icon: (
+                      <Wallet
+                        className="h-6 w-6 text-information"
+                        aria-hidden="true"
+                      />
+                    ),
                     value: (
                       <div className="text-xl font-bold text-information">
                         {dueIn30Days}
@@ -188,7 +208,12 @@ function ExpensesOverview({ expenses }: ExpensesOverviewProps) {
                   },
                   {
                     title: 'Total Next 30 Days',
-                    icon: <DollarSign className="h-6 w-6 text-information" />,
+                    icon: (
+                      <DollarSign
+                        className="h-6 w-6 text-information"
+                        aria-hidden="true"
+                      />
+                    ),
                     value: (
                       <div className="text-xl font-bold text-information">
                         {formatMoneyValue(totalNext30Days)}

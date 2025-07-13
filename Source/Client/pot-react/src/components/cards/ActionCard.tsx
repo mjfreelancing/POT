@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { RotateCw } from 'lucide-react';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -60,24 +61,46 @@ function ActionCard({
   children,
   onClick,
 }: ActionCardProps) {
+  // Keyboard handler for accessibility
+  function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (onClick) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        onClick();
+      }
+    }
+  }
+
   return (
     <Card
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? handleKeyDown : undefined}
       className={cn(
         'border-l border-primary/40 bg-slate-100 dark:bg-slate-900 transition-all duration-200',
         onClick && [
           'cursor-pointer hover:shadow-lg hover:scale-[1.02] hover:border-primary/80 hover:shadow-primary/10',
         ],
         className,
+        'relative', // Make Card relative for absolute positioning of the icon when clickable
       )}
       onClick={onClick}
     >
+      {onClick && (
+        <RotateCw
+          className="h-4 w-4 text-muted-foreground absolute right-4 top-4 z-10 cursor-pointer"
+          aria-hidden="true"
+        />
+      )}
       <CardContent className="p-4 h-full flex items-center justify-center">
         <div className="flex items-center justify-center w-full gap-4">
           <div className="p-4 rounded-lg bg-primary/5 flex-shrink-0 flex items-center justify-center">
             {icon}
           </div>
-          <div className="flex flex-col justify-center text-left">
-            <h4 className="text-xl font-medium">{title}</h4>
+          <div className="flex flex-col justify-center text-left flex-1">
+            <div role="heading" aria-level={1} className="text-xl font-medium">
+              {title}
+            </div>
             {description && (
               <div className="text-sm text-muted-foreground mt-1">
                 {description}

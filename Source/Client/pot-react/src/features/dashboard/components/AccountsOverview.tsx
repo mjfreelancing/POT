@@ -49,21 +49,21 @@ const columns: ColumnDef<Account>[] = [
       switch (status) {
         case 'overdrawn':
           return (
-            <StatusBadge className="w-20" color="red">
+            <StatusBadge className="w-20" color="red" aria-role="status">
               Overdrawn
             </StatusBadge>
           );
 
         case 'low':
           return (
-            <StatusBadge className="w-20" color="orange">
+            <StatusBadge className="w-20" color="orange" aria-role="status">
               Low
             </StatusBadge>
           );
 
         case 'active':
           return (
-            <StatusBadge className="w-20" color="green">
+            <StatusBadge className="w-20" color="green" aria-role="status">
               Healthy
             </StatusBadge>
           );
@@ -127,14 +127,14 @@ function AccountsOverview({ accounts }: AccountsOverviewProps) {
       return 'text-success';
     }
 
-    return 'text-destructive';
+    return 'text-destructive-high-contrast';
   }
 
   return (
     <>
       <Card>
         <DashboardCardHeader
-          icon={<PieChart className="h-5 w-5" />}
+          icon={<PieChart className="h-5 w-5" aria-hidden="true" />}
           title="Accounts Overview"
           description="Your bank accounts at a glance"
         />
@@ -148,6 +148,7 @@ function AccountsOverview({ accounts }: AccountsOverviewProps) {
                     icon: (
                       <Wallet
                         className={`h-6 w-6 ${getAmountClass(totalBalance)}`}
+                        aria-hidden="true"
                       />
                     ),
                     value: (
@@ -163,6 +164,7 @@ function AccountsOverview({ accounts }: AccountsOverviewProps) {
                     icon: (
                       <DollarSign
                         className={`h-6 w-6 ${getAmountClass(totalReserved)}`}
+                        aria-hidden="true"
                       />
                     ),
                     value: (
@@ -178,6 +180,7 @@ function AccountsOverview({ accounts }: AccountsOverviewProps) {
                     icon: (
                       <Banknote
                         className={`h-6 w-6 ${getAmountClass(totalAvailable)}`}
+                        aria-hidden="true"
                       />
                     ),
                     value: (
@@ -193,6 +196,7 @@ function AccountsOverview({ accounts }: AccountsOverviewProps) {
                     icon: (
                       <Calendar
                         className={`h-6 w-6 ${getAmountClass(totalDailyAccrual)}`}
+                        aria-hidden="true"
                       />
                     ),
                     value: (

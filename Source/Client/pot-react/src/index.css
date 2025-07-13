@@ -185,4 +185,8 @@
   .text-information {
     @apply text-blue-600 dark:text-blue-400;
   }
+
+  .text-destructive-high-contrast {
+    @apply text-red-600 dark:text-red-500;
+  }
 }

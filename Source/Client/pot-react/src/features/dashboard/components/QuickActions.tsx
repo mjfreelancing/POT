@@ -9,7 +9,7 @@ function QuickActions() {
   return (
     <Card>
       <DashboardCardHeader
-        icon={<Zap className="h-5 w-5" />}
+        icon={<Zap className="h-5 w-5" aria-hidden="true" />}
         title="Quick Actions"
         description="Quick actions"
       />
