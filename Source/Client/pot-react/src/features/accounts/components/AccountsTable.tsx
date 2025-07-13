@@ -5,8 +5,7 @@ import { useState } from 'react';
 import { useParams } from 'react-router';
 
 import { useApiAccrueExpenses } from '@/api/hooks';
-import { ErrorSheet } from '@/components/feedback';
-import { StatusBadge } from '@/components/feedback/badge';
+import { ErrorSheet, StatusBadge } from '@/components/feedback';
 import {
   BulkAction,
   createMoneyValueColumn,
@@ -55,7 +54,7 @@ const columns: ColumnDef<Account>[] = [
         <div className="flex items-center gap-2">
           <span>{account.description}</span>
           {hasLinkedData && (
-            <div className="flex gap-1">
+            <div className="flex gap-2 ml-2">
               {account.linkedExpenses > 0 && (
                 <StatusBadge color="yellow">
                   <Receipt />
