@@ -94,6 +94,7 @@ internal sealed class UpdateIncomeService : IUpdateIncomeService
         incomeToUpdate.Frequency = input.Frequency;
         incomeToUpdate.FrequencyCount = input.FrequencyCount;
         incomeToUpdate.Amount = input.Amount;
+        incomeToUpdate.Note = input.Note;
         incomeToUpdate.Account = incomeAccount;
     }
 }

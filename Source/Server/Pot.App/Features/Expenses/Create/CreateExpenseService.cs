@@ -49,7 +49,8 @@ internal sealed class CreateExpenseService : ICreateExpenseService
             Frequency = input.Frequency,
             FrequencyCount = input.FrequencyCount,
             Amount = input.Amount,
-            Account = expenseAccount
+            Note = input.Note,
+            Account = expenseAccount,
         };
 
         var problemDetails = await _preCreateChecker.CanSaveAsync(expenseToCreate, cancellationToken);

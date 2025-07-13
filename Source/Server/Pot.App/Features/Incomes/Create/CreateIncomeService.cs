@@ -48,6 +48,7 @@ internal sealed class CreateIncomeService : ICreateIncomeService
             Frequency = input.Frequency,
             FrequencyCount = input.FrequencyCount,
             Amount = input.Amount,
+            Note = input.Note,
             Account = incomeAccount
         };
 

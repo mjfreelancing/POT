@@ -20,5 +20,6 @@ public sealed class Output
     public required int FrequencyCount { get; init; }
     public required double Amount { get; init; }
     public required double Accrued { get; init; }
+    public string? Note { get; init; }
     public required AccountModel Account { get; init; }
 }

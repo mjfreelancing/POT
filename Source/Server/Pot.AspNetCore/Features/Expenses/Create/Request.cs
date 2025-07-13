@@ -28,4 +28,7 @@ public sealed class Request
 
     [Description("The identifier for the associated account to be credited.")]
     public Guid AccountRowId { get; init; }
+
+    [Description("A note about the expense")]
+    public string? Note { get; init; }
 }

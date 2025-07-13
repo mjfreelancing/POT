@@ -16,6 +16,7 @@ internal static class RequestMapping
             Frequency = request.Frequency,
             FrequencyCount = request.FrequencyCount,
             Amount = request.Amount,
+            Note = request.Note,
             AccountRowId = request.AccountRowId
         };
     }

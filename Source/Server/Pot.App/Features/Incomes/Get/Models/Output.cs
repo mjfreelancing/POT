@@ -18,5 +18,6 @@ public sealed class Output
     public required Frequency Frequency { get; init; }  // Serialized via EnrichedEnumJsonConverter<Frequency>
     public required int FrequencyCount { get; init; }
     public required double Amount { get; init; }
+    public string? Note { get; init; }
     public required AccountModel Account { get; init; }
 }

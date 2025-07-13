@@ -42,6 +42,9 @@ internal sealed class Response : ResponseBase
     [Description("The account this Expense is associated with.")]
     public AccountModel? Account { get; init; }
 
+    [Description("A note about the expense")]
+    public string? Note { get; init; }
+
     public static Ok<Response> Ok(Output expense)
     {
         return TypedResults.Ok(new Response(expense));
@@ -61,6 +64,7 @@ internal sealed class Response : ResponseBase
         FrequencyCount = expense.FrequencyCount;
         Amount = expense.Amount;
         Accrued = expense.Accrued;
+        Note = expense.Note;
 
         var account = expense.Account;
 

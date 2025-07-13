@@ -36,6 +36,9 @@ internal sealed class Response : ResponseBase
     [Description("The account this income is associated with.")]
     public AccountModel? Account { get; init; }
 
+    [Description("A note about the income")]
+    public string? Note { get; init; }
+
     public static Ok<Response> Ok(Output income)
     {
         return TypedResults.Ok(new Response(income));
@@ -53,6 +56,7 @@ internal sealed class Response : ResponseBase
         Frequency = income.Frequency;
         FrequencyCount = income.FrequencyCount;
         Amount = income.Amount;
+        Note = income.Note;
 
         var account = income.Account;
 

@@ -21,6 +21,7 @@ namespace Pot.Data.Entities
         public int FrequencyCount { get; set; }
         public double Amount { get; set; }
         public double Accrued { get; set; }
+        public string? Note { get; set; }
 
         public required AccountEntity Account { get; set; }
     }

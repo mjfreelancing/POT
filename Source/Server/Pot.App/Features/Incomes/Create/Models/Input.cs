@@ -10,5 +10,6 @@ public sealed class Input
     public Frequency Frequency { get; init; } = Frequency.Months;
     public int FrequencyCount { get; init; }
     public double Amount { get; init; }
+    public string? Note { get; init; }
     public Guid AccountRowId { get; init; }
 }
