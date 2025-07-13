@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
-import { Receipt, TrendingUp } from 'lucide-react';
+import { BanknoteArrowDown, BanknoteArrowUp } from 'lucide-react';
 import { useState } from 'react';
 import { useParams } from 'react-router';
 
@@ -57,13 +57,13 @@ const columns: ColumnDef<Account>[] = [
             <div className="flex gap-2 ml-2">
               {account.linkedExpenses > 0 && (
                 <StatusBadge color="yellow">
-                  <Receipt />
+                  <BanknoteArrowDown />
                   {account.linkedExpenses}
                 </StatusBadge>
               )}
               {account.linkedIncomes > 0 && (
-                <StatusBadge color="blue">
-                  <TrendingUp />
+                <StatusBadge color="green">
+                  <BanknoteArrowUp />
                   {account.linkedIncomes}
                 </StatusBadge>
               )}
