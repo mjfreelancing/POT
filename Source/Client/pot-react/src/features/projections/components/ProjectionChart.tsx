@@ -165,6 +165,68 @@ function ProjectionChart({
     return [Math.floor(min - margin), Math.ceil(max + margin)];
   }
 
+  function renderTooltipContent(
+    active?: boolean,
+    payload?: Array<{
+      color?: string;
+      dataKey?: string | number;
+      value?: string | number | (string | number)[];
+    }>,
+    label?: string | number,
+    chartConfig?: Record<string, { label?: React.ReactNode; color?: string }>,
+  ) {
+    if (!active || !payload || payload.length === 0 || !chartConfig) {
+      return null;
+    }
+
+    function getDisplayValue(
+      value: string | number | (string | number)[] | undefined,
+    ): string {
+      if (Array.isArray(value)) {
+        return value.join(', ');
+      }
+
+      if (typeof value === 'number') {
+        return formatMoneyValue(value);
+      }
+
+      if (typeof value === 'string') {
+        return value;
+      }
+
+      return '';
+    }
+
+    return (
+      <div className="rounded-lg border bg-background p-3 shadow-md">
+        <div className="mb-2 font-medium text-foreground">
+          {formatTooltipDate(label as string)}
+        </div>
+        <div className="space-y-1">
+          {payload.map((entry, index) => (
+            <div
+              key={index}
+              className="flex items-center justify-between gap-3"
+            >
+              <div className="flex items-center gap-2">
+                <div
+                  className="h-3 w-3 rounded-full"
+                  style={{ backgroundColor: entry.color }}
+                />
+                <span className="text-sm text-muted-foreground">
+                  {chartConfig[String(entry.dataKey)]?.label || entry.dataKey}
+                </span>
+              </div>
+              <span className="font-semibold text-foreground">
+                {getDisplayValue(entry.value)}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   if (!hasData) {
     return <NoProjectionData />;
   }
@@ -225,41 +287,9 @@ function ProjectionChart({
                   domain={getVisibleYDomain()}
                 />
                 <ChartTooltip
-                  content={({ active, payload, label }) => {
-                    if (!active || !payload?.length) {
-                      return null;
-                    }
-
-                    return (
-                      <div className="rounded-lg border bg-background p-3 shadow-md">
-                        <div className="mb-2 font-medium text-foreground">
-                          {formatTooltipDate(label as string)}
-                        </div>
-                        <div className="space-y-1">
-                          {payload.map((entry, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center justify-between gap-3"
-                            >
-                              <div className="flex items-center gap-2">
-                                <div
-                                  className="h-3 w-3 rounded-full"
-                                  style={{ backgroundColor: entry.color }}
-                                />
-                                <span className="text-sm text-muted-foreground">
-                                  {chartConfig[entry.dataKey as string]
-                                    ?.label || entry.dataKey}
-                                </span>
-                              </div>
-                              <span className="font-semibold text-foreground">
-                                {formatMoneyValue(entry.value as number)}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  }}
+                  content={({ active, payload, label }) =>
+                    renderTooltipContent(active, payload, label, chartConfig)
+                  }
                 />
                 {seriesKeys.map(key => {
                   const isVisible = seriesVisibility[key];
@@ -302,43 +332,14 @@ function ProjectionChart({
                   domain={getVisibleYDomain()}
                 />
                 <ChartTooltip
-                  content={({ active, payload, label }) => {
-                    if (!active || !payload?.length) return null;
-
-                    return (
-                      <div className="rounded-lg border bg-background p-3 shadow-md">
-                        <div className="mb-2 font-medium text-foreground">
-                          {formatTooltipDate(label as string)}
-                        </div>
-                        <div className="space-y-1">
-                          {payload.map((entry, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center justify-between gap-3"
-                            >
-                              <div className="flex items-center gap-2">
-                                <div
-                                  className="h-3 w-3 rounded-full"
-                                  style={{ backgroundColor: entry.color }}
-                                />
-                                <span className="text-sm text-muted-foreground">
-                                  {chartConfig[entry.dataKey as string]
-                                    ?.label || entry.dataKey}
-                                </span>
-                              </div>
-                              <span className="font-semibold text-foreground">
-                                {formatMoneyValue(entry.value as number)}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  }}
+                  content={({ active, payload, label }) =>
+                    renderTooltipContent(active, payload, label, chartConfig)
+                  }
                 />
                 {seriesKeys.map(key => {
                   const isVisible = seriesVisibility[key];
                   const fillColor = chartConfig[key]?.color || '#8884d8';
+
                   return (
                     <Bar
                       key={key}
