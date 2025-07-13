@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useParams } from 'react-router';
 
 import { useApiRenewExpenses } from '@/api/hooks/useExpenses';
-import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
+import { ErrorSheet, NotePopover } from '@/components/feedback';
 import {
   BulkAction,
   createDateColumn,
@@ -28,6 +28,12 @@ const columns: ColumnDef<Expense>[] = [
     ),
     enableSorting: true,
     sortingFn: 'text',
+    cell: ({ row }) => (
+      <div className="flex items-center gap-1">
+        {row.original.description}
+        <NotePopover note={row.original.note} />
+      </div>
+    ),
   },
   createMoneyValueColumn<Expense>('amount', 'Amount'),
   createDateColumn<Expense>('nextDue', 'Next Due', 'Ongoing', {

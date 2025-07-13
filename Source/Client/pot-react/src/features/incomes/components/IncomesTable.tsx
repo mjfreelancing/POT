@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useParams } from 'react-router';
 
 import { useApiRenewIncomes } from '@/api/hooks';
-import { ErrorSheet } from '@/components/feedback';
+import { ErrorSheet, NotePopover } from '@/components/feedback';
 import {
   BulkAction,
   createDateColumn,
@@ -32,6 +32,12 @@ const columns: ColumnDef<Income>[] = [
     ),
     enableSorting: true,
     sortingFn: 'text',
+    cell: ({ row }) => (
+      <div className="flex items-center gap-1">
+        {row.original.description}
+        <NotePopover note={row.original.note} />
+      </div>
+    ),
   },
   createMoneyValueColumn<Income>('amount', 'Amount'),
   createDateColumn<Income>('nextDue', 'Next Due', 'Ongoing', {
