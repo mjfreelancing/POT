@@ -17,6 +17,7 @@ This guide provides instructions for building, running, and managing the POT pro
 ## Ports
 
 - The Dockerized server is exposed on port **5241**. Access the API at `http://localhost:5241/` when running via Docker Compose.
+- The Dockerized Postgres database is exposed on port **5444** (host) mapped to **5432** (container). Connect to `localhost:5444` from database tools on the host.
 - The local development version of the server (when running directly with .NET tooling) uses port **5242**, as defined in the server's `launchSettings.json`.
 
 ## Environment Variables
