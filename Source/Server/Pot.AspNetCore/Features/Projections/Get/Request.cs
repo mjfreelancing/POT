@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
-
-namespace Pot.AspNetCore.Features.Projections.Get;
+﻿namespace Pot.AspNetCore.Features.Projections.Get;
 
 internal sealed class Request
 {
