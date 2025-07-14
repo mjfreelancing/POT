@@ -2,6 +2,7 @@ using Pot.AspNetCore.Extensions;
 using Pot.AspNetCore.Features.Accounts.Extensions;
 using Pot.AspNetCore.Features.Expenses.Extensions;
 using Pot.AspNetCore.Features.Incomes.Extensions;
+using Pot.AspNetCore.Features.Maintenance.Extensions;
 using Pot.AspNetCore.Features.Projections.Extensions;
 
 namespace Pot.AspNetCore;
@@ -80,7 +81,8 @@ public class Program
         app.AddAccountEndpoints()
            .AddIncomeEndpoints()
            .AddExpenseEndpoints()
-           .AddProjectionsEndpoints();
+           .AddProjectionsEndpoints()
+           .AddMaintenanceEndpoints();
 
         await app.RunAsync();
     }

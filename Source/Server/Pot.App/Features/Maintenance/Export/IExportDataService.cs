@@ -1,0 +1,8 @@
+﻿using Pot.Shared.DependencyInjection;
+
+namespace Pot.App.Features.Maintenance.Export;
+
+public interface IExportDataService : IPotScopedDependency
+{
+    Task<byte[]> ExportAllAsync(CancellationToken cancellationToken);
+}
