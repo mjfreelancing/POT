@@ -1,8 +1,7 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Extensions;
-using Pot.Shared.DependencyInjection;
-using System.Diagnostics.CodeAnalysis;
-using System.IO.Compression;
+using AllOverIt.Zip;
+using Pot.App.Concerns.Zip;
 
 namespace Pot.App.Features.Maintenance.Export;
 
@@ -44,89 +43,5 @@ internal sealed class ExportDataService : IExportDataService
         await zipPackage
             .AddEntryAsync(entryName, content.AsMemory(), cancellationToken)
             .ConfigureAwait(false);
-    }
-}
-
-
-public interface IZipPackageFactory : IPotScopedDependency
-{
-    IZipPackage CreateZipPackage();
-}
-
-internal sealed class ZipPackageFactory : IZipPackageFactory
-{
-    public IZipPackage CreateZipPackage()
-    {
-        return new ZipPackage();
-    }
-}
-
-public interface IZipPackage : IPotScopedDependency, IDisposable
-{
-    // Complete() must be called to access the Content stream
-    Stream Content { get; }
-
-    Task AddEntryAsync(string entryName, ReadOnlyMemory<byte> content, CancellationToken cancellationToken);
-    void Complete();
-}
-
-internal sealed class ZipPackage : IZipPackage
-{
-    private MemoryStream? _memoryStream;
-    private ZipArchive? _archive;
-
-    public Stream Content => GetArchiveStream();
-
-    public ZipPackage()
-    {
-        _memoryStream = new MemoryStream();
-        _archive = new ZipArchive(_memoryStream, ZipArchiveMode.Create, true);
-    }
-
-    public async Task AddEntryAsync(string entryName, ReadOnlyMemory<byte> content, CancellationToken cancellationToken)
-    {
-        _ = entryName.WhenNotNullOrEmpty();
-
-        Throw<InvalidOperationException>.WhenNull(_archive, "The archive has already been disposed.");
-
-        cancellationToken.ThrowIfCancellationRequested();
-
-        var zipEntry = _archive.CreateEntry(entryName, CompressionLevel.Optimal);
-
-        using var zipStream = zipEntry.Open();
-
-        await zipStream.WriteAsync(content, cancellationToken).ConfigureAwait(false);
-    }
-
-    public void Complete()
-    {
-        Throw<InvalidOperationException>.WhenNull(_memoryStream, "The archive has already been completed.");
-
-        // The archive must be closed to ensure the stream is completely written to
-        DisposeArchive();
-
-        _memoryStream.Position = 0;
-    }
-
-    [ExcludeFromCodeCoverage]
-    public void Dispose()
-    {
-        DisposeArchive();
-
-        _memoryStream?.Dispose();
-        _memoryStream = null;
-    }
-
-    private void DisposeArchive()
-    {
-        _archive?.Dispose();
-        _archive = null;
-    }
-
-    private MemoryStream GetArchiveStream()
-    {
-        Throw<InvalidOperationException>.WhenNotNull(_archive, "The archive must be completed to access the stream.");
-
-        return _memoryStream!;
     }
 }
