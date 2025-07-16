@@ -7,7 +7,7 @@ import StatusBadge from '@/components/feedback/badge/StatusBadge';
 import { createMoneyValueColumn, DataTable } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Expense } from '@/data';
-import { formatMoneyValue, localToday } from '@/lib';
+import { dayOfYear, formatMoneyValue, localToday } from '@/lib';
 
 import expensesSummaryStore, {
   ExpensesSummary,
@@ -84,10 +84,7 @@ function getDaysDue(nextDue: string): number {
   const today = localToday();
   const dueDate = new Date(nextDue);
 
-  // Calculate difference in days
-  return Math.ceil(
-    (dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
-  );
+  return dayOfYear(dueDate) - dayOfYear(today);
 }
 
 function filterExpenses(days: number, expenses: Expense[]): Expense[] {

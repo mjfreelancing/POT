@@ -30,4 +30,21 @@ function todayIsoFormat(): string {
   return dateIsoFormat(localToday());
 }
 
-export { dateIsoFormat, localToday, normalizeToLocalMidnight, todayIsoFormat };
+/**
+ * Returns the day of the year (1-366) for a given date
+ */
+function dayOfYear(date: Date): number {
+  const start = new Date(date.getFullYear(), 0, 1);
+
+  return (
+    Math.floor((date.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
+  );
+}
+
+export {
+  dateIsoFormat,
+  dayOfYear,
+  localToday,
+  normalizeToLocalMidnight,
+  todayIsoFormat,
+};
