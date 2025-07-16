@@ -90,7 +90,7 @@ function ChartControls({
             >
               <SelectTrigger
                 id="metric-select"
-                className="w-[160px] h-8"
+                className="w-[170px] h-8"
                 aria-label="Select chart metric to display"
               >
                 <SelectValue />
