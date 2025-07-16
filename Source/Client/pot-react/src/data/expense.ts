@@ -38,6 +38,7 @@ const EditExpenseSchema = BaseExpenseSchema.extend({
 
 const RenewExpensesSchema = z.object({
   rowIds: z.string().array(),
+  untilDate: z.string(),
 });
 
 type Expense = z.infer<typeof ExpenseSchema>;

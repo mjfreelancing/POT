@@ -47,10 +47,7 @@ internal sealed class RenewExpensesService : IRenewIncomesService
                 return EnrichedResult.Fail<bool>(incomeRenewProblem);
             }
 
-            var today = TimeProvider.GetLocalNow().Date;
-            var todayDate = DateOnly.FromDateTime(today);
-
-            _renewalCalculator.Renew(incomes, todayDate);
+            _renewalCalculator.Renew(incomes, input.UntilDate);
 
             await _incomeRepository.SaveAsync(cancellationToken);
         }

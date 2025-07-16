@@ -27,7 +27,7 @@ function dateIsoFormat(date: Date): string {
  * Returns today's date as YYYY-MM-DD in local time
  */
 function todayIsoFormat(): string {
-  return dateIsoFormat(new Date());
+  return dateIsoFormat(localToday());
 }
 
 export { dateIsoFormat, localToday, normalizeToLocalMidnight, todayIsoFormat };

@@ -18,7 +18,7 @@ internal sealed class IncomeRenewalCalculator : IIncomeRenewalCalculator
 
             var nextDue = income.NextDue;
 
-            while (nextDue < advanceUtilDate)
+            while (nextDue <= advanceUtilDate)
             {
                 var days = income.Frequency.GetDaysToNext(income.NextDue, income.FrequencyCount);
                 nextDue = income.NextDue.AddDays(days);

@@ -47,10 +47,7 @@ internal sealed class RenewExpensesService : IRenewExpensesService
                 return EnrichedResult.Fail<bool>(expenseRenewProblem);
             }
 
-            var today = TimeProvider.GetLocalNow().Date;
-            var todayDate = DateOnly.FromDateTime(today);
-
-            _renewalCalculator.Renew(expenses, todayDate);
+            _renewalCalculator.Renew(expenses, input.UntilDate);
 
             await _expenseRepository.SaveAsync(cancellationToken);
         }

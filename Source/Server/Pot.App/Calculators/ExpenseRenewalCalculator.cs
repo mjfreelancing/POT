@@ -18,7 +18,7 @@ internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
 
             var nextDue = expense.NextDue;
 
-            while (nextDue < advanceUtilDate)
+            while (nextDue <= advanceUtilDate)
             {
                 var days = expense.Frequency.GetDaysToNext(expense.NextDue, expense.FrequencyCount);
                 nextDue = expense.NextDue.AddDays(days);

@@ -36,6 +36,7 @@ const EditIncomeSchema = BaseIncomeSchema.extend({
 
 const RenewIncomesSchema = z.object({
   rowIds: z.string().array(),
+  untilDate: z.string(),
 });
 
 type Income = z.infer<typeof IncomeSchema>;

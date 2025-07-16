@@ -2,7 +2,7 @@ import { QueryClient } from '@tanstack/react-query';
 
 import { useApiRenewExpenses } from '@/api/hooks/useExpenses';
 import { Expense } from '@/data';
-import { BulkActionResult } from '@/lib';
+import { BulkActionResult, todayIsoFormat } from '@/lib';
 
 export async function renewAllExpenses(
   expenses: Expense[],
@@ -10,7 +10,9 @@ export async function renewAllExpenses(
   queryClient: QueryClient,
 ): Promise<BulkActionResult> {
   const rowIds = expenses.map(expense => expense.rowId);
-  const result = await renewExpensesMutation.mutateAsync({ data: { rowIds } });
+  const result = await renewExpensesMutation.mutateAsync({
+    data: { rowIds, untilDate: todayIsoFormat() },
+  });
 
   if (result.success) {
     await queryClient.invalidateQueries({ queryKey: ['expenses'] });

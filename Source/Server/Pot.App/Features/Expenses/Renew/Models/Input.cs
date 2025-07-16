@@ -2,5 +2,6 @@
 
 public sealed class Input
 {
-    public Guid[] RowIds { get; init; } = [];
+    public required Guid[] RowIds { get; init; } = [];
+    public required DateOnly UntilDate { get; init; }
 }
