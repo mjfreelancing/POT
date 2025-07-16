@@ -18,7 +18,9 @@ internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
 
             var nextDue = expense.NextDue;
 
-            while (nextDue <= advanceUtilDate)
+            // Do not process items due on the advanceUtilDate - theoretically 'still due' and it would affect how projections
+            // are calculated because the expenses would continue to advance before the debit could be considered.
+            while (nextDue < advanceUtilDate)
             {
                 var days = expense.Frequency.GetDaysToNext(expense.NextDue, expense.FrequencyCount);
                 nextDue = expense.NextDue.AddDays(days);

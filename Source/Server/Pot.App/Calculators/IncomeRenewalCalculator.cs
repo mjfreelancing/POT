@@ -18,7 +18,9 @@ internal sealed class IncomeRenewalCalculator : IIncomeRenewalCalculator
 
             var nextDue = income.NextDue;
 
-            while (nextDue <= advanceUtilDate)
+            // Do not process items due on the advanceUtilDate - theoretically 'still due' and it would affect how projections
+            // are calculated because the expenses would continue to advance before the credit could be considered.
+            while (nextDue < advanceUtilDate)
             {
                 var days = income.Frequency.GetDaysToNext(income.NextDue, income.FrequencyCount);
                 nextDue = income.NextDue.AddDays(days);
