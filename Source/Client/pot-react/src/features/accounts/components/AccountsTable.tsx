@@ -9,6 +9,7 @@ import { ErrorSheet, StatusBadge } from '@/components/feedback';
 import {
   BulkAction,
   createMoneyValueColumn,
+  createRowIdGetter,
   DataTable,
   DataTableColumnHeader,
 } from '@/components/table';
@@ -130,6 +131,7 @@ function AccountsTable({ accounts }: AccountsTableProps) {
             data={accounts}
             enableRowSelection={true}
             bulkActions={bulkActions}
+            getRowId={createRowIdGetter<Account>()}
             highlightRowFilter={row =>
               row.original.rowId.toString() === editingId
             }

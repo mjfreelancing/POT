@@ -10,6 +10,7 @@ import {
   createDateColumn,
   createFrequencyColumn,
   createMoneyValueColumn,
+  createRowIdGetter,
   DataTable,
   DataTableColumnHeader,
 } from '@/components/table';
@@ -111,6 +112,7 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
             data={filteredIncomes}
             enableRowSelection={true}
             bulkActions={bulkActions}
+            getRowId={createRowIdGetter<Income>()}
             highlightRowFilter={(row: Row<Income>) =>
               row.original.rowId.toString() === editingId
             }

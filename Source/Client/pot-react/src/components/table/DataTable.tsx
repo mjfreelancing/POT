@@ -7,6 +7,7 @@ import {
   Row,
   RowSelectionState,
   SortingState,
+  TableOptions,
   useReactTable,
 } from '@tanstack/react-table';
 import React, { useEffect, useState } from 'react';
@@ -62,6 +63,12 @@ type DataTableProps<TData, TValue> = {
    * Receives the array of currently selected data items.
    */
   onSelectionChange?: (selectedItems: TData[]) => void;
+
+  /**
+   * Optional function to provide unique row identifiers for maintaining selection state.
+   * When not provided, defaults to using array index (react-table default behavior).
+   */
+  getRowId?: (row: TData, index: number) => string;
 };
 
 // Extend ColumnMeta to allow headerClassName and cellClassName
@@ -93,6 +100,7 @@ function DataTable<TData, TValue>({
   enableRowSelection = false,
   bulkActions = [],
   onSelectionChange,
+  getRowId,
 }: DataTableProps<TData, TValue>): React.ReactElement {
   // Table state management
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -140,7 +148,7 @@ function DataTable<TData, TValue>({
     : columns; // If selection is disabled, use columns as-is
 
   // Initialize the react-table instance with our configuration
-  const table = useReactTable({
+  const tableOptions: TableOptions<TData> = {
     data,
     columns: tableColumns,
     getCoreRowModel: getCoreRowModel(),
@@ -151,11 +159,14 @@ function DataTable<TData, TValue>({
     enableSortingRemoval: true, // Allow removing sort by clicking again
     enableMultiSort: false, // Only allow single column sorting
     enableRowSelection: enableRowSelection, // Enable/disable row selection feature
+    getRowId: getRowId, // Use custom getRowId function if provided, otherwise let react-table use default (index-based)
     state: {
       sorting, // Current sort state
       rowSelection, // Current selection state
     },
-  });
+  };
+
+  const table = useReactTable(tableOptions);
 
   // Extract selection information for bulk actions and parent notifications
   const selectedRows = table.getFilteredSelectedRowModel().rows;

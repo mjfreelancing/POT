@@ -10,6 +10,7 @@ A comprehensive, reusable table system built on top of `@tanstack/react-table` w
 - **DataTableContent**: Renders table body and rows, extracted for code reuse.
 - **DataTableColumnHeader**: Sortable column header with sort icons and three-state sorting.
 - **dataTableColumnFactories**: Utility functions for common column types: money, date, frequency.
+- **dataTableUtils**: Utility functions for row identification and selection persistence.
 
 All components and utilities are exported from `index.ts` for convenient import.
 
@@ -111,11 +112,33 @@ const columns = [
 
 ---
 
+## Utility Functions
+
+- **createRowIdGetter<TData extends Identity>()**: Creates a getRowId function for Identity-based objects (objects with rowId property). Perfect for Expense, Income, and Account.
+
+Example:
+
+```tsx
+import { DataTable, createRowIdGetter } from '@/components/table';
+
+// For Identity-based objects (recommended)
+<DataTable
+  columns={columns}
+  data={expenses}
+  enableRowSelection={true}
+  bulkActions={bulkActions}
+  getRowId={createRowIdGetter<Expense>()}
+/>;
+```
+
+---
+
 ## Advanced Usage
 
 - **Custom Column Headers**: Use `DataTableColumnHeader` for sortable headers.
 - **Controlled Selection**: Use `onSelectionChange` to manage selection state externally.
 - **Reusable Table Body**: Use `DataTableContent` for custom table implementations.
+- **Selection Persistence**: By default, the table uses array indices for row identification (standard react-table behavior). For data that changes and reorders, provide a `getRowId` function or use the provided `createRowIdGetter()` utility for Identity-based objects.
 
 ---
 
@@ -143,6 +166,7 @@ const columns = [
 - `enableRowSelection?`: boolean — Enable row selection
 - `bulkActions?`: BulkAction<TData>[] — Bulk actions for selected rows
 - `onSelectionChange?`: (selectedItems: TData[]) => void — Selection callback
+- `getRowId?`: (row: TData, index: number) => string — Custom row ID function for selection persistence (defaults to index)
 
 ### BulkActionsBar Props
 
@@ -167,5 +191,11 @@ const columns = [
 - `column`: Column<TData, TValue>
 - `title`: string
 - `className?`: string
+
+### Utility Functions
+
+#### createRowIdGetter<TData extends Identity>()
+
+Creates a type-safe getRowId function for objects that extend Identity (have rowId property).
 
 ---
