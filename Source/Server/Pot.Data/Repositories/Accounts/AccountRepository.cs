@@ -78,4 +78,12 @@ internal sealed class AccountRepository : GenericRepository<PotDbContext, Accoun
     {
         return SingleOrDefaultAsync(AccountSpecifications.IsSameBsbNumber(bsb, number).Expression, cancellationToken);
     }
+
+    public Task<List<AccountEntity>> GetAllAccountsWithIncomesAndExpensesAsync(CancellationToken cancellationToken)
+    {
+        return AsQueryable()
+            .Include(account => account.Incomes)
+            .Include(account => account.Expenses)
+            .ToListAsync(cancellationToken);
+    }
 }

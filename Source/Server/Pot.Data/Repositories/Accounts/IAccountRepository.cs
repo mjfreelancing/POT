@@ -14,4 +14,5 @@ public interface IAccountRepository : IGenericRepository<PotDbContext, AccountEn
     Task<GetAccountDto[]> GetAllAccountsWithLinkedCountsAsync(CancellationToken cancellationToken);
     Task<bool> AccountExistsAsync(string bsb, string number, CancellationToken cancellationToken);
     Task<AccountEntity?> GetAccountOrDefaultAsync(string bsb, string number, CancellationToken cancellationToken);
+    Task<List<AccountEntity>> GetAllAccountsWithIncomesAndExpensesAsync(CancellationToken cancellationToken);
 }
