@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 
-import { CardDescription,CardHeader, CardTitle } from '@/components/ui/card';
+import { CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 /**
  * Reusable dashboard card header with icon, title, and description.

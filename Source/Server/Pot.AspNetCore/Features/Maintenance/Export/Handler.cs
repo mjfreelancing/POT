@@ -9,8 +9,7 @@ internal sealed class Handler
     //internal TimeProvider TimeProvider { get; set; } = TimeProvider.System;
 
     public static async Task<Results<FileStreamHttpResult, ProblemHttpResult>> Invoke(
-        IExportDataService exportAccountsService,
-        ILogger<Handler> logger, CancellationToken cancellationToken)
+        IExportDataService exportAccountsService, ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);
 

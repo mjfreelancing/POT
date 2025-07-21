@@ -1,0 +1,48 @@
+import { useMutation } from '@tanstack/react-query';
+import axios, { AxiosResponse } from 'axios';
+
+import { FailResult, FailResultBase, Result, SuccessResult } from '@/lib';
+
+type ExportApiResponse = {
+  blob: Blob;
+  headers: Record<string, string>;
+};
+
+/**
+ * Custom export API hook
+ *
+ * Note: Cannot use the generic useGet() hook because:
+ * 1. Requires responseType: 'blob' for file downloads
+ * 2. Needs both response.data (blob) AND response.headers
+ * 3. Uses useMutation (action trigger) instead of useQuery (data fetching)
+ * 4. Generic performOperation() only returns response.data, not headers
+ */
+function useApiExport() {
+  return useMutation({
+    mutationFn: async ({
+      signal,
+    }: {
+      signal?: AbortSignal;
+    } = {}): Promise<Result<ExportApiResponse, FailResultBase>> => {
+      try {
+        const response: AxiosResponse<Blob> = await axios.get(
+          '/maintenance/export',
+          {
+            responseType: 'blob',
+            signal,
+          },
+        );
+
+        return new SuccessResult({
+          blob: response.data,
+          headers: response.headers as Record<string, string>,
+        });
+      } catch (error) {
+        return error as FailResult<FailResultBase>;
+      }
+    },
+  });
+}
+
+export { useApiExport };
+export type { ExportApiResponse };

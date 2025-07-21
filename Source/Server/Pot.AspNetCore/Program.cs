@@ -60,9 +60,11 @@ public class Program
         //app.UseAuthorization();
 
 
-        app.UseCors(policy => policy.WithOrigins("http://localhost:5175", "http://localhost:4173") // Allow frontend URL
+        // Exposing 'content-disposition' allows the client to handle the file download correctly (get the filename)
+        app.UseCors(policy => policy.WithOrigins("http://localhost:5175" /*, "http://localhost:4173"*/ ) // Allow frontend URL
            .AllowAnyMethod()
-           .AllowAnyHeader());
+           .AllowAnyHeader()
+           .WithExposedHeaders("content-disposition"));
         //.AllowCredentials()); // If using authentication
 
 

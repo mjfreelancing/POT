@@ -35,4 +35,4 @@ function SummaryCardsGrid({ cards, gridClassName }: SummaryCardsGridProps) {
 }
 
 export default SummaryCardsGrid;
-export type { SummaryCardConfig,SummaryCardsGridProps };
+export type { SummaryCardConfig, SummaryCardsGridProps };

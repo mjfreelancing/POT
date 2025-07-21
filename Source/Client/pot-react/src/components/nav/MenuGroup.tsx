@@ -11,11 +11,22 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 
-export type MenuGroupItem = {
+type MenuGroupItemBase = {
   readonly label: string;
   readonly icon: React.ElementType;
+};
+
+export type HrefLink = MenuGroupItemBase & {
+  readonly type: 'href';
   readonly href: string;
 };
+
+export type OnClickLink = MenuGroupItemBase & {
+  readonly type: 'onClick';
+  readonly onClick: () => void;
+};
+
+export type MenuGroupItem = HrefLink | OnClickLink;
 
 export type MenuGroupDefinition = {
   readonly label: string;
@@ -45,6 +56,14 @@ const isActivePath = (currentPath: string, href: string) => {
   return !!matchPath({ path: resolvedPath, end: true }, currentPath);
 };
 
+const isOnClickLink = (item: MenuGroupItem): item is OnClickLink => {
+  return item.type === 'onClick';
+};
+
+const isHrefLink = (item: MenuGroupItem): item is HrefLink => {
+  return item.type === 'href';
+};
+
 const MenuGroup: React.FC<MenuGroupProps> = ({ group }) => {
   const location = useLocation();
 
@@ -54,24 +73,45 @@ const MenuGroup: React.FC<MenuGroupProps> = ({ group }) => {
       <SidebarGroupContent>
         <SidebarMenu>
           {group.items.map((item, index) => {
-            const isActive = isActivePath(location.pathname, item.href);
             const Icon = item.icon;
 
-            return (
-              <SidebarMenuItem key={index}>
-                <SidebarMenuButton
-                  isActive={isActive}
-                  tooltip={item.label}
-                  asChild
-                  className="pl-6"
-                >
-                  <Link to={item.href} aria-label={item.label}>
+            if (isOnClickLink(item)) {
+              return (
+                <SidebarMenuItem key={index}>
+                  <SidebarMenuButton
+                    tooltip={item.label}
+                    onClick={item.onClick}
+                    className="pl-6"
+                  >
                     <Icon />
                     <span>{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            );
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            }
+
+            if (isHrefLink(item)) {
+              const isActive = isActivePath(location.pathname, item.href);
+
+              return (
+                <SidebarMenuItem key={index}>
+                  <SidebarMenuButton
+                    isActive={isActive}
+                    tooltip={item.label}
+                    asChild
+                    className="pl-6"
+                  >
+                    <Link to={item.href} aria-label={item.label}>
+                      <Icon />
+                      <span>{item.label}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            }
+
+            // This should never happen with proper typing, but TypeScript requires it
+            return null;
           })}
         </SidebarMenu>
       </SidebarGroupContent>
