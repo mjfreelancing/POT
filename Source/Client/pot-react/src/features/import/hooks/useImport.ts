@@ -1,4 +1,6 @@
-import { useApiImport, ImportApiResult } from '@/api/hooks/useImports';
+import { useQueryClient } from '@tanstack/react-query';
+
+import { useApiImport } from '@/api/hooks/useImports';
 import { FailResultBase, Result, SuccessResult } from '@/lib';
 
 type ImportResult = {
@@ -6,6 +8,7 @@ type ImportResult = {
 };
 
 function useImport() {
+  const queryClient = useQueryClient();
   const apiImport = useApiImport();
 
   async function importData(
@@ -21,6 +24,10 @@ function useImport() {
       });
 
       if (result.success) {
+        await queryClient.invalidateQueries({ queryKey: ['accounts'] });
+        await queryClient.invalidateQueries({ queryKey: ['incomes'] });
+        await queryClient.invalidateQueries({ queryKey: ['expenses'] });
+
         return new SuccessResult<ImportResult>({
           ...result.value,
         });

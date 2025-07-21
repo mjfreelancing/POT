@@ -1,4 +1,5 @@
 import { Download } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -11,7 +12,6 @@ import {
 } from '@/components/ui/dialog';
 
 import { useExport } from '../hooks/useExport';
-import { toast } from 'sonner';
 
 type ExportModalProps = {
   isOpen: boolean;
