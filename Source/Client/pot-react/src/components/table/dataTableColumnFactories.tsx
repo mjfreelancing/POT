@@ -83,7 +83,9 @@ const createDateColumn = <TData,>(
 
       const dateValue =
         rawValue instanceof Date ? rawValue : new Date(rawValue);
-      return <div>{formatCellDate(dateValue)}</div>;
+      const cellContent = formatCellDate(dateValue);
+
+      return <div className="min-w-[80px]">{cellContent}</div>;
     },
     enableSorting,
     ...restOptions,

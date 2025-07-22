@@ -4,7 +4,11 @@ import { useEffect, useMemo } from 'react';
 
 import { NotePopover } from '@/components/feedback';
 import StatusBadge from '@/components/feedback/badge/StatusBadge';
-import { createMoneyValueColumn, DataTable } from '@/components/table';
+import {
+  createDateColumn,
+  createMoneyValueColumn,
+  DataTable,
+} from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Expense } from '@/data';
 import { dayOfYear, formatMoneyValue, localToday } from '@/lib';
@@ -36,11 +40,7 @@ const columns: ColumnDef<Expense>[] = [
       </div>
     ),
   },
-  {
-    accessorKey: 'nextDue',
-    header: 'Next Due',
-    cell: ({ row }) => row.original.nextDue,
-  },
+  createDateColumn<Expense>('nextDue', 'Next Due'),
   createMoneyValueColumn<Expense>('amount', 'Amount'),
   {
     id: 'daysDue',
