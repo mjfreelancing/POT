@@ -24,7 +24,8 @@ const columns: ColumnDef<Account>[] = [
         <div>
           <div className="font-medium">{description}</div>
           <div className="text-sm text-muted-foreground">
-            ({bsb}) {number}
+            <div>({bsb})</div>
+            <div>{number}</div>
           </div>
         </div>
       );
