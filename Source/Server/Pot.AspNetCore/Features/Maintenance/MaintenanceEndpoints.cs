@@ -6,4 +6,5 @@ internal static class MaintenanceEndpoints
     public const string Tag = "Maintenance Api";
 
     public const string Export = "/export";
+    public const string Import = "/import";
 }

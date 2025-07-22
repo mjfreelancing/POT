@@ -3,7 +3,9 @@
     "Pot.Data.Migrations": {
       "commandName": "Project",
       "environmentVariables": {
-        "DATABASE_HOST": "localhost"
+        "DATABASE_HOST": "localhost",
+        "DATABASE_USERNAME": "postgres",
+        "DATABASE_PASSWORD": "password"
       }
     }
   }

@@ -50,8 +50,8 @@ internal sealed class IncomesExporter : MemoryCsvExporterBase<IncomeData>, IInco
 
         serializer.AddField(nameof(IncomeData.RowId), entity => entity.RowId);
         serializer.AddField(nameof(IncomeData.Description), entity => entity.Description);
-        serializer.AddField(nameof(IncomeData.NextDue), entity => entity.NextDue);
-        serializer.AddField(nameof(IncomeData.EndDate), entity => entity.EndDate);
+        serializer.AddField(nameof(IncomeData.NextDue), entity => entity.NextDue.ToString(format: "yyyy-MM-dd"));
+        serializer.AddField(nameof(IncomeData.EndDate), entity => entity.EndDate?.ToString(format: "yyyy-MM-dd"));
         serializer.AddField(nameof(IncomeData.Frequency), entity => entity.Frequency);
         serializer.AddField(nameof(IncomeData.FrequencyCount), entity => entity.FrequencyCount);
         serializer.AddField(nameof(IncomeData.Amount), entity => entity.Amount);
