@@ -159,8 +159,8 @@ internal sealed class AccountsImporter : IAccountsImporter
             Description = import.Description,
             Balance = import.Balance,
             Reserved = import.Reserved,
-            TotalExpenseAccrued = 0.0d,
-            DailyExpenseAccrual = 0.0d
+            TotalExpenseAccrued = import.TotalExpenseAccrued,
+            DailyExpenseAccrual = import.DailyExpenseAccrual
         };
 
         _accountRepository.Add(accountEntity);
