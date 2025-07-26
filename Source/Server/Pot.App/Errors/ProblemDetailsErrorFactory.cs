@@ -38,6 +38,15 @@ public static class ProblemDetailsErrorFactory
         };
     }
 
+    public static ProblemDetailsBasicError CreateUnprocessableEntityError(string errorMessage)
+    {
+        return new ProblemDetailsBasicError(ProblemType.UnprocessableEntity)
+        {
+            ErrorCode = ErrorCodes.Invalid,
+            ErrorMessage = errorMessage
+        };
+    }
+
     public static ProblemDetailsError CreateUnprocessableEntityError(string propertyName, object? attemptedValue, string errorMessage)
     {
         return new ProblemDetailsError(ProblemType.UnprocessableEntity)

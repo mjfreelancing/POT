@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pot.App.Features.Maintenance.Import;
+using Pot.AspNetCore.Extensions;
 
 namespace Pot.AspNetCore.Features.Maintenance.Import;
 
@@ -14,10 +15,10 @@ internal sealed class Handler
 
         using var zipStream = request.File.OpenReadStream();
 
-        // TODO: Add validation so the result needs to cater for success and failure.
-        // TODO: This currently returns the total number of records imported, extend it to return more detailed information.
         var result = await importAccountsService.ImportAsync(zipStream, cancellationToken);
 
-        return Response.Ok(result);
+        return result.IsSuccess
+            ? Response.Ok(result.Value!)
+            : TypedResults.Problem(result.Error!.GetProblemDetails());
     }
 }

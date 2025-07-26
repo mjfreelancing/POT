@@ -1,8 +1,9 @@
-﻿using Pot.Shared.DependencyInjection;
+﻿using AllOverIt.Patterns.Result;
+using Pot.Shared.DependencyInjection;
 
 namespace Pot.App.Features.Maintenance.Import;
 
 public interface IImportDataService : IPotScopedDependency
 {
-    Task<int> ImportAsync(Stream zipStream, CancellationToken cancellationToken);
+    Task<EnrichedResult<int>> ImportAsync(Stream zipStream, CancellationToken cancellationToken);
 }

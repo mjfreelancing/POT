@@ -2,6 +2,8 @@
 using AllOverIt.Extensions;
 using AllOverIt.Zip;
 using Pot.App.Concerns.Zip;
+using Pot.App.Features.Maintenance.Metadata.Models;
+using Pot.App.Features.Maintenance.Metadata.Serializer;
 
 namespace Pot.App.Features.Maintenance.Export;
 
@@ -10,14 +12,16 @@ internal sealed class ExportDataService : IExportDataService
     private readonly IAccountsExporter _accountsExporter;
     private readonly IIncomesExporter _incomesExporter;
     private readonly IExpensesExporter _expensesExporter;
+    private readonly IMetadataSerializer _metadataSerializer;
     private readonly IZipPackageFactory _zipPackageFactory;
 
     public ExportDataService(IAccountsExporter accountExporter, IIncomesExporter incomesExporter, IExpensesExporter expensesExporter,
-        IZipPackageFactory zipPackageFactory)
+        IMetadataSerializer metadataSerializer, IZipPackageFactory zipPackageFactory)
     {
         _accountsExporter = accountExporter.WhenNotNull();
         _incomesExporter = incomesExporter.WhenNotNull();
         _expensesExporter = expensesExporter.WhenNotNull();
+        _metadataSerializer = metadataSerializer.WhenNotNull();
         _zipPackageFactory = zipPackageFactory.WhenNotNull();
     }
 
@@ -25,7 +29,7 @@ internal sealed class ExportDataService : IExportDataService
     {
         using var zipPackage = _zipPackageFactory.CreateZipPackage();
 
-        // Not running in parallel until there is a performance concern. Would require a unique DbContext for each repository.
+        await AddToZipAsync(zipPackage, "metadata", ExportMetadataAsync, cancellationToken).ConfigureAwait(false);
         await AddToZipAsync(zipPackage, "accounts", _accountsExporter.ExportAllAsync, cancellationToken).ConfigureAwait(false);
         await AddToZipAsync(zipPackage, "incomes", _incomesExporter.ExportAllAsync, cancellationToken).ConfigureAwait(false);
         await AddToZipAsync(zipPackage, "expenses", _expensesExporter.ExportAllAsync, cancellationToken).ConfigureAwait(false);
@@ -43,5 +47,17 @@ internal sealed class ExportDataService : IExportDataService
         await zipPackage
             .AddEntryAsync(entryName, content.AsMemory(), cancellationToken)
             .ConfigureAwait(false);
+    }
+
+    private Task<byte[]> ExportMetadataAsync(CancellationToken _)
+    {
+        var metadata = new MetadataV1
+        {
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var bytes = _metadataSerializer.Serialize(metadata);
+
+        return Task.FromResult(bytes);
     }
 }

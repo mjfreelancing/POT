@@ -26,6 +26,7 @@ internal static class EnrichedErrorExtensions
         var errors = enrichedError switch
         {
             ProblemDetailsError problemDetailsError => [problemDetailsError.GetErrorDetails()],
+            ProblemDetailsBasicError problemDetailsBasicError => [problemDetailsBasicError.GetErrorDetails()],
             ProblemDetailsErrorCollection problemDetailsErrorCollection => problemDetailsErrorCollection.Errors.SelectToArray(error => error.GetErrorDetails()),
             _ => throw new UnreachableException($"Unknown enriched error type: {enrichedError.GetType()}")
         };
