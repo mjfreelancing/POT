@@ -2,6 +2,9 @@
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
 using Pot.App.Errors;
+using Pot.App.Features.Maintenance.Import.Accounts;
+using Pot.App.Features.Maintenance.Import.Expenses;
+using Pot.App.Features.Maintenance.Import.Incomes;
 using Pot.App.Features.Maintenance.Metadata.Models;
 using Pot.App.Features.Maintenance.Metadata.Serializer;
 using System.IO.Compression;
@@ -52,7 +55,6 @@ internal sealed class ImportDataService : IImportDataService
         }
 
         // TODO: Add asymmetric encryption to the zip file (export and import).
-        // TODO: Add validation per importer.
 
         var totalCount = 0;
         totalCount += await ImportAccountsAsync(entries["accounts"], cancellationToken);    // Must be first

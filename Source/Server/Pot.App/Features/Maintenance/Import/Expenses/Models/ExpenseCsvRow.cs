@@ -3,7 +3,7 @@ using CsvHelper.TypeConversion;
 using Pot.App.Concerns.Csv;
 using Pot.Shared;
 
-namespace Pot.App.Features.Maintenance.Import.Models;
+namespace Pot.App.Features.Maintenance.Import.Expenses.Models;
 
 internal sealed class ExpenseCsvRow
 {

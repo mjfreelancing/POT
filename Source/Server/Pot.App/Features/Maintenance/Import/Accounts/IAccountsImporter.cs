@@ -1,8 +1,8 @@
 ﻿using Pot.Shared.DependencyInjection;
 
-namespace Pot.App.Features.Maintenance.Import;
+namespace Pot.App.Features.Maintenance.Import.Accounts;
 
-public interface IIncomesImporter : IPotScopedDependency
+public interface IAccountsImporter : IPotScopedDependency
 {
     Task<int> ImportAsync(Stream zipStream, CancellationToken cancellationToken);
 }

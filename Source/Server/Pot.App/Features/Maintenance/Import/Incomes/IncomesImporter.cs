@@ -1,22 +1,22 @@
 ﻿using AllOverIt.Assertion;
 using CsvHelper;
-using Pot.App.Features.Maintenance.Import.Models;
+using Pot.App.Features.Maintenance.Import.Incomes.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
-using Pot.Data.Repositories.Expenses;
+using Pot.Data.Repositories.Incomes;
 using System.Globalization;
 
-namespace Pot.App.Features.Maintenance.Import;
+namespace Pot.App.Features.Maintenance.Import.Incomes;
 
-internal sealed class ExpensesImporter : IExpensesImporter
+internal sealed class IncomesImporter : IIncomesImporter
 {
     private readonly IPersistableAccountRepository _accountRepository;
-    private readonly IExpenseRepository _expenseRepository;
+    private readonly IIncomeRepository _incomeRepository;
 
-    public ExpensesImporter(IPersistableAccountRepository accountRepository, IExpenseRepository expenseRepository)
+    public IncomesImporter(IPersistableAccountRepository accountRepository, IIncomeRepository incomeRepository)
     {
         _accountRepository = accountRepository.WhenNotNull();
-        _expenseRepository = expenseRepository.WhenNotNull();
+        _incomeRepository = incomeRepository.WhenNotNull();
     }
 
     public async Task<int> ImportAsync(Stream zipStream, CancellationToken cancellationToken)
@@ -28,7 +28,7 @@ internal sealed class ExpensesImporter : IExpensesImporter
         csv.Read();
         csv.ReadHeader();
 
-        var csvRows = csv.GetRecords<ExpenseCsvRow>().ToList();
+        var csvRows = csv.GetRecords<IncomeCsvRow>().ToList();
 
         using (_accountRepository.WithTracking())
         {
@@ -38,7 +38,7 @@ internal sealed class ExpensesImporter : IExpensesImporter
                 .ToArray();
 
             var accounts = await _accountRepository
-                .GetAccountsWithExpensesAsync(accountRowIds, cancellationToken)
+                .GetAccountsWithIncomesAsync(accountRowIds, cancellationToken)
                 .ConfigureAwait(false);
 
             var accountLookup = accounts.ToDictionary(account => account.RowId, account => account);
@@ -48,7 +48,7 @@ internal sealed class ExpensesImporter : IExpensesImporter
                 // TODO: Check for unknown account
                 var account = accountLookup[csvRow.AccountRowId];
 
-                await CreateOrUpdateExpenseAsync(account, csvRow, cancellationToken).ConfigureAwait(false);
+                await CreateOrUpdateIncomeAsync(account, csvRow, cancellationToken).ConfigureAwait(false);
             }
 
             await _accountRepository
@@ -60,55 +60,51 @@ internal sealed class ExpensesImporter : IExpensesImporter
         return csvRows.Count;
     }
 
-    private async Task CreateOrUpdateExpenseAsync(AccountEntity account, ExpenseCsvRow csvRow, CancellationToken cancellationToken)
+    private async Task CreateOrUpdateIncomeAsync(AccountEntity account, IncomeCsvRow csvRow, CancellationToken cancellationToken)
     {
         var csvExpenseId = csvRow.RowId;
 
-        var expenseEntity = await _expenseRepository
-            .GetExpenseOrDefaultAsync(csvExpenseId, cancellationToken)
+        var incomeEntity = await _incomeRepository
+            .GetIncomeOrDefaultAsync(csvExpenseId, cancellationToken)
             .ConfigureAwait(false);
 
-        if (expenseEntity is null)
+        if (incomeEntity is null)
         {
-            var expense = CreateExpenseEntity(account, csvRow);
-            account.Expenses.Add(expense);
+            var income = CreateIncomeEntity(account, csvRow);
+            account.Incomes.Add(income);
         }
         else
         {
-            UpdateExistingExpense(expenseEntity, csvRow);
+            UpdateExistingIncome(incomeEntity, csvRow);
         }
     }
 
-    private static ExpenseEntity CreateExpenseEntity(AccountEntity account, ExpenseCsvRow import)
+    private static IncomeEntity CreateIncomeEntity(AccountEntity account, IncomeCsvRow import)
     {
-        var expenseEntity = new ExpenseEntity
+        var incomeEntity = new IncomeEntity
         {
             RowId = import.RowId,
             Description = import.Description,
-            AccrualStart = import.AccrualStart,
             NextDue = import.NextDue,
             EndDate = import.EndDate,
             Frequency = import.Frequency,
             FrequencyCount = import.FrequencyCount,
             Amount = import.Amount,
-            Accrued = import.Accrued,
             Note = import.Note,
             Account = account
         };
 
-        return expenseEntity;
+        return incomeEntity;
     }
 
-    private static void UpdateExistingExpense(ExpenseEntity entity, ExpenseCsvRow import)
+    private static void UpdateExistingIncome(IncomeEntity entity, IncomeCsvRow import)
     {
         entity.Description = import.Description;
-        entity.AccrualStart = import.AccrualStart;
         entity.NextDue = import.NextDue;
         entity.EndDate = import.EndDate;
         entity.Frequency = import.Frequency;
         entity.FrequencyCount = import.FrequencyCount;
         entity.Amount = import.Amount;
-        entity.Accrued = import.Accrued;
         entity.Note = import.Note;
     }
 }

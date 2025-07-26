@@ -1,6 +1,6 @@
 ﻿using CsvHelper.Configuration.Attributes;
 
-namespace Pot.App.Features.Maintenance.Import.Models;
+namespace Pot.App.Features.Maintenance.Import.Accounts.Models;
 
 internal sealed class AccountCsvRow
 {

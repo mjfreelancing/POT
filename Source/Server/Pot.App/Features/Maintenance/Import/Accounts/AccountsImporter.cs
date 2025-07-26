@@ -1,11 +1,11 @@
 ﻿using AllOverIt.Assertion;
 using CsvHelper;
-using Pot.App.Features.Maintenance.Import.Models;
+using Pot.App.Features.Maintenance.Import.Accounts.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
 using System.Globalization;
 
-namespace Pot.App.Features.Maintenance.Import;
+namespace Pot.App.Features.Maintenance.Import.Accounts;
 
 internal sealed class AccountsImporter : IAccountsImporter
 {
@@ -29,6 +29,7 @@ internal sealed class AccountsImporter : IAccountsImporter
 
         using (_accountRepository.WithTracking())
         {
+            // Not validating the rows since the CSV file is expected to be valid (the data was previously exported).
             foreach (var csvRow in csvRows)
             {
                 await CreateOrUpdateAccountAsync(csvRow, cancellationToken).ConfigureAwait(false);
