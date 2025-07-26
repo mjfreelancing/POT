@@ -26,9 +26,21 @@ function ExportModal({ isOpen, onClose }: ExportModalProps) {
 
     // TODO: Make the toast messages look better
     if (result.success) {
-      toast.success('Export Successful', {
-        description: `Data exported to ${result.value.filename} successfully.`,
-      });
+      toast(
+        <div className="flex items-start">
+          <Download className="text-green-600 mr-6 w-16 h-16" />
+          <div>
+            <div className="text-xl font-semibold">Export Complete</div>
+            <div className="mt-2 text-sm text-muted-foreground">
+              Data exported successfully
+            </div>
+            <div className="mt-1 text-xs font-mono text-muted-foreground">
+              {result.value.filename}
+            </div>
+          </div>
+        </div>,
+        { duration: 5000 },
+      );
     } else {
       toast.error('Export Failed', {
         description: 'There was an error exporting the data. Please try again.',
@@ -46,24 +58,15 @@ function ExportModal({ isOpen, onClose }: ExportModalProps) {
             <Download className="h-5 w-5" />
             Export Financial Data
           </DialogTitle>
-          <DialogDescription>
-            Export all your financial data as a zip file that can be saved
-            locally or imported later.
+          <DialogDescription className="mb-2">
+            Export all your financial data to prevent accidental data loss.
           </DialogDescription>
         </DialogHeader>
-
-        <div className="py-4">
-          <p className="text-sm text-muted-foreground">
-            This will create a complete backup of your financial data including
-            expenses, income, and account information.
-          </p>
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+        <DialogFooter className="gap-4">
+          <Button variant="outline" onClick={onClose} className="w-28">
             Cancel
           </Button>
-          <Button onClick={handleExport} disabled={isLoading}>
+          <Button onClick={handleExport} disabled={isLoading} className="w-28">
             {isLoading ? 'Exporting...' : 'Export Data'}
           </Button>
         </DialogFooter>

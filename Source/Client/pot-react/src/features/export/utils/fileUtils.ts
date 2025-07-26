@@ -1,15 +1,48 @@
 /**
  * Downloads a blob as a file with the specified filename
+ * Returns a Promise that resolves when file is saved or rejects when cancelled
  */
-function downloadBlob(blob: Blob, filename: string): void {
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  window.URL.revokeObjectURL(url);
+async function downloadBlob(blob: Blob, filename: string): Promise<void> {
+  // Check if File System Access API is supported
+  if ('showSaveFilePicker' in window) {
+    try {
+      const fileHandle = await (window as any).showSaveFilePicker({
+        suggestedName: filename,
+        types: [
+          {
+            description: 'POT Export files',
+            accept: {
+              'application/vnd.pot.export': ['.export'],
+            },
+          },
+        ],
+      });
+
+      const writable = await fileHandle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      return; // File saved successfully
+    } catch (error: any) {
+      // User cancelled or error occurred
+      if (error.name === 'AbortError') {
+        throw new Error('User cancelled file save');
+      }
+      throw error;
+    }
+  } else {
+    // Fallback to traditional download for browsers that don't support File System Access API
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+    // For fallback, we can't detect cancellation, so we resolve immediately
+    return;
+  }
 }
 
 function extractFilename(headers: Record<string, string>): string {

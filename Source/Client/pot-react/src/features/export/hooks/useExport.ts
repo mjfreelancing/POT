@@ -23,7 +23,8 @@ function useExport() {
         const filename = extractFilename(result.value.headers);
         // const size = result.value.blob.size;
 
-        downloadBlob(result.value.blob, filename);
+        // Wait for the file to be actually saved by the user
+        await downloadBlob(result.value.blob, filename);
 
         return new SuccessResult<ExportResult>({
           filename,
