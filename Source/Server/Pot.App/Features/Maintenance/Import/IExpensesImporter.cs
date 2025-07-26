@@ -2,7 +2,7 @@
 
 namespace Pot.App.Features.Maintenance.Import;
 
-public interface IImportDataService : IPotScopedDependency
+public interface IExpensesImporter : IPotScopedDependency
 {
     Task<int> ImportAsync(Stream zipStream, CancellationToken cancellationToken);
 }
