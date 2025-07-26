@@ -11,8 +11,6 @@ namespace Pot.App.Features.Expenses.Renew;
 
 internal sealed class RenewExpensesService : IRenewExpensesService
 {
-    internal TimeProvider TimeProvider { get; set; } = TimeProvider.System;
-
     private readonly IPersistableExpenseRepository _expenseRepository;
     private readonly IExpenseRenewalCalculator _renewalCalculator;
     private readonly ILogger _logger;

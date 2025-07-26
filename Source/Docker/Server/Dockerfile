@@ -21,8 +21,8 @@ RUN dotnet publish Pot.Data.Migrations/Pot.Data.Migrations.csproj -c Release -o 
 FROM mcr.microsoft.com/dotnet/aspnet:${DOTNET_VERSION}-alpine
 WORKDIR /app
 
-# Install postgresql-client for pg_isready
-RUN apk add --no-cache postgresql-client
+# Install postgresql-client for pg_isready and tzdata for timezone support
+RUN apk add --no-cache postgresql-client tzdata
 
 COPY --from=build /app/server ./server
 COPY --from=build /app/migrations ./migrations

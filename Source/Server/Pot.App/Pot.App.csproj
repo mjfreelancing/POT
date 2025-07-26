@@ -5,6 +5,7 @@
 		<PackageReference Include="AllOverIt.Logging" Version="9.0.0-rc.4.1" />
 		<PackageReference Include="AllOverIt.Serialization.Binary" Version="9.0.0-rc.4.1" />
 		<PackageReference Include="AllOverIt.Validation" Version="9.0.0-rc.4.1" />
+		<PackageReference Include="TimeZoneConverter" Version="7.0.0" />
 	</ItemGroup>
 	
   <ItemGroup>

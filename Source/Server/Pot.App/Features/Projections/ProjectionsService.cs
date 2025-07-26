@@ -12,8 +12,6 @@ namespace Pot.App.Features.Projections;
 
 internal sealed class ProjectionsService : IProjectionsService
 {
-    internal TimeProvider TimeProvider { get; set; } = TimeProvider.System;
-
     private readonly IAccountRepository _accountRepository;
     private readonly IExpenseRenewalCalculator _expenseRenewalCalculator;
     private readonly IIncomeRenewalCalculator _incomeRenewalCalculator;

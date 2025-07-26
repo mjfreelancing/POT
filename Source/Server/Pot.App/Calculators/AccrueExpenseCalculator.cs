@@ -1,4 +1,6 @@
-﻿using AllOverIt.Extensions;
+﻿using AllOverIt.Assertion;
+using AllOverIt.Extensions;
+using Pot.App.Concerns.Time;
 using Pot.Data.Entities;
 using Pot.Data.Extensions;
 
@@ -6,11 +8,16 @@ namespace Pot.App.Calculators;
 
 internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
 {
-    internal TimeProvider TimeProvider { get; set; } = TimeProvider.System;
+    private readonly ITimeProvider _timeProvider;
+
+    public AccrueExpenseCalculator(ITimeProvider timeProvider)
+    {
+        _timeProvider = timeProvider.WhenNotNull();
+    }
 
     public void AccrueExpenses(AccountEntity account, IEnumerable<ExpenseEntity> expenses, DateOnly? currentDate = null)
     {
-        currentDate ??= DateOnly.FromDateTime(TimeProvider.GetLocalNow().Date);
+        currentDate ??= DateOnly.FromDateTime(_timeProvider.GetLocalNow().Date);
 
         ResetAccountAccruals(account);
 
