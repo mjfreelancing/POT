@@ -35,12 +35,6 @@ internal sealed class ImportDataService : IImportDataService
 
         var entries = archive.Entries.ToDictionary(kvp => kvp.Name);
 
-        async Task<int> HandleEntry(ZipArchiveEntry entry, Func<Stream, CancellationToken, Task<int>> handler)
-        {
-            using var stream = entry.Open();
-            return await handler.Invoke(stream, cancellationToken);
-        }
-
         if (!_expectedEntryNames.All(entries.ContainsKey))
         {
             var problemDetailsError = ProblemDetailsErrorFactory.CreateUnprocessableEntityError("The import file is not supported.");
@@ -60,11 +54,10 @@ internal sealed class ImportDataService : IImportDataService
         // TODO: Add asymmetric encryption to the zip file (export and import).
         // TODO: Add validation per importer.
 
-        // Process in the required order
         var totalCount = 0;
-        totalCount += await HandleEntry(entries["accounts"], _accountsImporter.ImportAsync);
-        totalCount += await HandleEntry(entries["incomes"], _incomesImporter.ImportAsync);
-        totalCount += await HandleEntry(entries["expenses"], _expensesImporter.ImportAsync);
+        totalCount += await ImportAccountsAsync(entries["accounts"], cancellationToken);    // Must be first
+        totalCount += await ImportIncomesAsync(entries["incomes"], cancellationToken);
+        totalCount += await ImportExpensesAsync(entries["expenses"], cancellationToken);
 
         return EnrichedResult.Success(totalCount);
     }
@@ -72,7 +65,27 @@ internal sealed class ImportDataService : IImportDataService
     private MetadataBase GetMetadata(ZipArchiveEntry zipArchiveEntry)
     {
         using var stream = zipArchiveEntry.Open();
-
         return _metadataSerializer.Deserialize(stream);
+    }
+
+    private Task<int> ImportAccountsAsync(ZipArchiveEntry entry, CancellationToken cancellationToken)
+    {
+        return HandleEntry(entry, _accountsImporter.ImportAsync, cancellationToken);
+    }
+
+    private Task<int> ImportIncomesAsync(ZipArchiveEntry entry, CancellationToken cancellationToken)
+    {
+        return HandleEntry(entry, _incomesImporter.ImportAsync, cancellationToken);
+    }
+
+    private Task<int> ImportExpensesAsync(ZipArchiveEntry entry, CancellationToken cancellationToken)
+    {
+        return HandleEntry(entry, _expensesImporter.ImportAsync, cancellationToken);
+    }
+
+    private static async Task<int> HandleEntry(ZipArchiveEntry entry, Func<Stream, CancellationToken, Task<int>> handler, CancellationToken token)
+    {
+        using var stream = entry.Open();
+        return await handler.Invoke(stream, token);
     }
 }
