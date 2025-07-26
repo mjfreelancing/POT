@@ -2,9 +2,9 @@
 using AllOverIt.Csv;
 using AllOverIt.Csv.Exporter;
 using Pot.App.Features.Accounts.GetAll;
-using Pot.App.Features.Maintenance.Export.Models;
+using Pot.App.Features.Maintenance.Export.Accounts.Models;
 
-namespace Pot.App.Features.Maintenance.Export;
+namespace Pot.App.Features.Maintenance.Export.Accounts;
 
 internal sealed class AccountsExporter : MemoryCsvExporterBase<AccountData>, IAccountsExporter
 {

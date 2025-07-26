@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Features.Maintenance.Export.Models;
+﻿namespace Pot.App.Features.Maintenance.Export.Accounts.Models;
 
 public sealed class AccountData
 {

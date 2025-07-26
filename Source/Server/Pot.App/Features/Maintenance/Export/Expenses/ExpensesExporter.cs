@@ -2,10 +2,10 @@ using AllOverIt.Assertion;
 using AllOverIt.Csv;
 using AllOverIt.Csv.Exporter;
 using Pot.App.Features.Expenses.GetAll;
-using Pot.App.Features.Maintenance.Export.Models;
+using Pot.App.Features.Maintenance.Export.Expenses.Models;
 using Pot.Shared;
 
-namespace Pot.App.Features.Maintenance.Export;
+namespace Pot.App.Features.Maintenance.Export.Expenses;
 
 internal sealed class ExpensesExporter : MemoryCsvExporterBase<ExpenseData>, IExpensesExporter
 {

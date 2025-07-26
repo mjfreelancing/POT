@@ -1,6 +1,6 @@
 using Pot.Shared.DependencyInjection;
 
-namespace Pot.App.Features.Maintenance.Export;
+namespace Pot.App.Features.Maintenance.Export.Expenses;
 
 public interface IExpensesExporter : IPotScopedDependency
 {

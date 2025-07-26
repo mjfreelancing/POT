@@ -54,8 +54,6 @@ internal sealed class ImportDataService : IImportDataService
             _logger.LogInformation("Importing data (as v{MetadataVersion}) from {MetadataCreatedAt}", metadataV1.Version, metadataV1.CreatedAt);
         }
 
-        // TODO: Add asymmetric encryption to the zip file (export and import).
-
         var totalCount = 0;
         totalCount += await ImportAccountsAsync(entries["accounts"], cancellationToken);    // Must be first
         totalCount += await ImportIncomesAsync(entries["incomes"], cancellationToken);
