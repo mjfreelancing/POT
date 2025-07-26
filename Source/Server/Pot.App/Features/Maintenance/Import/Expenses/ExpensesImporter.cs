@@ -45,7 +45,7 @@ internal sealed class ExpensesImporter : IExpensesImporter
 
             foreach (var csvRow in csvRows)
             {
-                // TODO: Check for unknown account
+                // Not validating the rows since the CSV file is expected to be valid (the data was previously exported).
                 var account = accountLookup[csvRow.AccountRowId];
 
                 await CreateOrUpdateExpenseAsync(account, csvRow, cancellationToken).ConfigureAwait(false);

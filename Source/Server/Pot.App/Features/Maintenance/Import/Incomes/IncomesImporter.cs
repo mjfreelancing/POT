@@ -45,7 +45,7 @@ internal sealed class IncomesImporter : IIncomesImporter
 
             foreach (var csvRow in csvRows)
             {
-                // TODO: Check for unknown account
+                // Not validating the rows since the CSV file is expected to be valid (the data was previously exported).
                 var account = accountLookup[csvRow.AccountRowId];
 
                 await CreateOrUpdateIncomeAsync(account, csvRow, cancellationToken).ConfigureAwait(false);
