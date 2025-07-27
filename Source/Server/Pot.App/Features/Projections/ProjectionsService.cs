@@ -45,6 +45,7 @@ internal sealed class ProjectionsService : IProjectionsService
             var globalStarting = 0.0d;
             var globalIncome = 0.0d;
             var globalExpenses = 0.0d;
+            var globalDailyAccrual = 0.0d;
             var globalAccrued = 0.0d;
             var globalReserved = 0.0d;
 
@@ -64,17 +65,18 @@ internal sealed class ProjectionsService : IProjectionsService
                     .Where(expense => IsDueOnDate(expense, date))
                     .Sum(expense => expense.Amount);
 
-                var dateBalance = new DateProjectionValues
+                var dateValues = new DateProjectionValues
                 {
                     Date = date,
                     StartingBalance = account.Balance,
                     IncomeReceived = incomeReceived,
                     ExpensesPaid = expensesPaid,
+                    DailyAccrual = account.DailyExpenseAccrual,
                     Accrued = account.TotalExpenseAccrued,
                     Reserved = account.Reserved
                 };
 
-                account.Balance += dateBalance.IncomeReceived - dateBalance.ExpensesPaid;
+                account.Balance += dateValues.IncomeReceived - dateValues.ExpensesPaid;
 
                 if (!accountDaily.TryGetValue(account.RowId, out var dailyList))
                 {
@@ -82,13 +84,14 @@ internal sealed class ProjectionsService : IProjectionsService
                     accountDaily[account.RowId] = dailyList;
                 }
 
-                dailyList.Add(dateBalance);
+                dailyList.Add(dateValues);
 
-                globalStarting += dateBalance.StartingBalance;
-                globalIncome += dateBalance.IncomeReceived;
-                globalExpenses += dateBalance.ExpensesPaid;
-                globalAccrued += dateBalance.Accrued;
-                globalReserved += dateBalance.Reserved;
+                globalStarting += dateValues.StartingBalance;
+                globalIncome += dateValues.IncomeReceived;
+                globalExpenses += dateValues.ExpensesPaid;
+                globalDailyAccrual += dateValues.DailyAccrual;
+                globalAccrued += dateValues.Accrued;
+                globalReserved += dateValues.Reserved;
             }
 
             globalDailyProjections.Add(new DateProjectionValues
@@ -97,6 +100,7 @@ internal sealed class ProjectionsService : IProjectionsService
                 StartingBalance = globalStarting,
                 IncomeReceived = globalIncome,
                 ExpensesPaid = globalExpenses,
+                DailyAccrual = globalDailyAccrual,
                 Accrued = globalAccrued,
                 Reserved = globalReserved
             });
@@ -135,6 +139,7 @@ internal sealed class ProjectionsService : IProjectionsService
                 Date = item.Date,
                 Balance = balance,
                 Available = balance - item.Reserved - item.Accrued,
+                DailyAccrual = item.DailyAccrual,
                 IncomeReceived = item.IncomeReceived,
                 ExpensesPaid = item.ExpensesPaid
             };

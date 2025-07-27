@@ -6,6 +6,7 @@ public sealed class DateProjectionValues
     public required double StartingBalance { get; set; }
     public required double IncomeReceived { get; set; }
     public required double ExpensesPaid { get; set; }
+    public required double DailyAccrual { get; set; }
     public required double Accrued { get; set; }
     public required double Reserved { get; set; }
 }
