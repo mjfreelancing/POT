@@ -7,6 +7,7 @@ type ChartType = 'line' | 'bar';
 type ProjectionMetric =
   | 'balance'
   | 'available'
+  | 'dailyAccrual'
   | 'incomeReceived'
   | 'expensesPaid';
 
@@ -32,6 +33,13 @@ const PROJECTION_METRICS: Record<ProjectionMetric, MetricConfig> = {
     description: 'Available amount trends over time',
   },
 
+  dailyAccrual: {
+    label: 'Daily Accruals',
+    shortLabel: 'Accruals',
+    chartType: 'line',
+    description: 'Daily accrual amounts over time',
+  },
+
   incomeReceived: {
     label: 'Income Received',
     shortLabel: 'Income',
@@ -47,42 +55,43 @@ const PROJECTION_METRICS: Record<ProjectionMetric, MetricConfig> = {
   },
 } as const;
 
-const DateBalanceSchema = z.object({
+const DateValuesSchema = z.object({
   date: z.string(), // ISO date string
   balance: z.number(),
   available: z.number(),
+  dailyAccrual: z.number(),
   incomeReceived: z.number(),
   expensesPaid: z.number(),
 });
 
-type DateBalance = z.infer<typeof DateBalanceSchema>;
+type DateValues = z.infer<typeof DateValuesSchema>;
 
-const AccountDailyBalancesSchema = z.object({
+const AccountDailyValuesSchema = z.object({
   rowId: z.string(), // Unique identifier for the account
   description: z.string(), // Description of the account
-  dates: z.array(DateBalanceSchema), // Array of date balances
+  dates: z.array(DateValuesSchema), // Array of date balances
 });
 
-type AccountDailyBalances = z.infer<typeof AccountDailyBalancesSchema>;
+type AccountDailyValues = z.infer<typeof AccountDailyValuesSchema>;
 
 const ProjectionSchema = z.object({
-  accounts: z.array(AccountDailyBalancesSchema), // Array of accounts with their daily balances
-  global: z.array(DateBalanceSchema), // Golobal daily balances
+  accounts: z.array(AccountDailyValuesSchema), // Array of accounts with their daily balances
+  global: z.array(DateValuesSchema), // Golobal daily balances
 });
 
 type Projection = z.infer<typeof ProjectionSchema>;
 
 export {
-  AccountDailyBalancesSchema,
-  DateBalanceSchema,
+  AccountDailyValuesSchema,
+  DateValuesSchema,
   PROJECTION_METRICS,
   ProjectionSchema,
 };
 
 export type {
-  AccountDailyBalances,
+  AccountDailyValues,
   ChartType,
-  DateBalance,
+  DateValues,
   MetricConfig,
   Projection,
   ProjectionMetric,
