@@ -401,4 +401,6 @@ FodyWeavers.xsd
 /Data
 Source/Client/pot-react/coverage
 Source/Docker/postgres-data
-.env.development
+
+# Environment-specific configuration files
+.env.production

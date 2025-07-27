@@ -4,5 +4,5 @@ namespace Pot.App.Features.Maintenance.Import.Accounts;
 
 public interface IAccountsImporter : IPotScopedDependency
 {
-    Task<int> ImportAsync(Stream zipStream, CancellationToken cancellationToken);
+    Task<int> ImportAsync(Stream dataStream, CancellationToken cancellationToken);
 }

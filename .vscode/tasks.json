@@ -4,7 +4,7 @@
     {
       "label": "docker-start-pot",
       "type": "shell",
-      "command": "docker-compose -p pot -f docker-compose.yml up --build -d",
+      "command": "docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose.yml up --build -d",
       "options": {
         "cwd": "${workspaceFolder}/Source/Docker"
       },
@@ -17,7 +17,33 @@
     {
       "label": "docker-stop-pot",
       "type": "shell",
-      "command": "docker-compose -p pot -f docker-compose.yml down",
+      "command": "docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose.yml down",
+      "options": {
+        "cwd": "${workspaceFolder}/Source/Docker"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "docker-start-pot-production",
+      "type": "shell",
+      "command": "docker-compose --env-file .env --env-file .env.production -p pot -f docker-compose.yml up --build -d",
+      "options": {
+        "cwd": "${workspaceFolder}/Source/Docker"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "docker-stop-pot-production",
+      "type": "shell",
+      "command": "docker-compose --env-file .env --env-file .env.production -p pot -f docker-compose.yml down",
       "options": {
         "cwd": "${workspaceFolder}/Source/Docker"
       },

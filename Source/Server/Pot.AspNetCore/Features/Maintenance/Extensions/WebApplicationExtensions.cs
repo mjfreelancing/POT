@@ -14,7 +14,8 @@ internal static class WebApplicationExtensions
                 .MapGroup(MaintenanceEndpoints.Group)
                 .WithTags(MaintenanceEndpoints.Tag)
                 .ExportData()
-                .ImportData(MaxImportPayloadBytes);
+                .ImportData(MaxImportPayloadBytes)
+                .CreateRsaKeys();
         }
 
         return app;

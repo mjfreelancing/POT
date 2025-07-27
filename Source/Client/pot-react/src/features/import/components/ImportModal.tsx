@@ -93,8 +93,7 @@ function ImportModal({ isOpen, onClose }: ImportModalProps) {
       );
     } else {
       toast.error('Import Failed', {
-        description:
-          'There was an error importing the data. Please check the file and try again.',
+        description: 'There was an error importing the data.',
       });
     }
 

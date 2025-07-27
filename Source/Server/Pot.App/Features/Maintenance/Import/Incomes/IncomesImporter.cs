@@ -19,9 +19,9 @@ internal sealed class IncomesImporter : IIncomesImporter
         _incomeRepository = incomeRepository.WhenNotNull();
     }
 
-    public async Task<int> ImportAsync(Stream zipStream, CancellationToken cancellationToken)
+    public async Task<int> ImportAsync(Stream dataStream, CancellationToken cancellationToken)
     {
-        using StreamReader reader = new(zipStream);
+        using StreamReader reader = new(dataStream);
 
         using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
 

@@ -37,4 +37,19 @@ internal static class RouteGroupBuilderExtensions
 
         return routeGroupBuilder;
     }
+
+    public static RouteGroupBuilder CreateRsaKeys(this RouteGroupBuilder routeGroupBuilder)
+    {
+        // TODO: Needs to be locked down as this is not a public endpoint
+        routeGroupBuilder
+            .MapPost(MaintenanceEndpoints.RsaKeys, Rsa.Keys.Handler.Invoke)
+            .WithName(nameof(CreateRsaKeys))
+            .WithSummary("Create Rsa Keys")
+            .WithDescription("Create Rsa Public/Private Keys")
+            .WithTags("Maintenance")
+            .ProducesProblem((int)HttpStatusCode.OK)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+
+        return routeGroupBuilder;
+    }
 }

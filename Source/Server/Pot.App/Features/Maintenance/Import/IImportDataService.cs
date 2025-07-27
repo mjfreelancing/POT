@@ -5,5 +5,5 @@ namespace Pot.App.Features.Maintenance.Import;
 
 public interface IImportDataService : IPotScopedDependency
 {
-    Task<EnrichedResult<int>> ImportAsync(Stream zipStream, CancellationToken cancellationToken);
+    Task<EnrichedResult<int>> ImportAsync(string publicKey, Stream zipStream, CancellationToken cancellationToken);
 }

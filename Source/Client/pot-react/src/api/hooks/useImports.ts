@@ -34,6 +34,7 @@ function useApiImport() {
           {
             headers: {
               'Content-Type': 'multipart/form-data',
+              'export-public-key': import.meta.env.VITE_EXPORT_PUBLIC_KEY,
             },
             signal,
           },

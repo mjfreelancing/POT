@@ -33,9 +33,11 @@ services:
         condition: service_healthy
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - DATABASE_HOST=pot-postgres
-      - DATABASE_USERNAME=${POSTGRES_USER}
-      - DATABASE_PASSWORD=${POSTGRES_PASSWORD}
+      - DATABASE__HOST=pot-postgres
+      - DATABASE__USERNAME=${POSTGRES_USER}
+      - DATABASE__PASSWORD=${POSTGRES_PASSWORD}
+      - RSA__PUBLICKEY=${RSA_PUBLIC_KEY}
+      - RSA__PRIVATEKEY=${RSA_PRIVATE_KEY}
       - ASPNETCORE_URLS=http://+:5241
     ports:
       - "5241:5241"

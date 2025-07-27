@@ -4,5 +4,5 @@ namespace Pot.App.Features.Maintenance.Export;
 
 public interface IExportDataService : IPotScopedDependency
 {
-    Task<byte[]> ExportAllAsync(CancellationToken cancellationToken);
+    Task<byte[]> ExportAllAsync(string publicKey, CancellationToken cancellationToken);
 }

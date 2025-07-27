@@ -21,9 +21,10 @@ namespace Pot.Data
         {
             base.OnConfiguring(optionsBuilder);
 
-            var databaseHost = GetConfigurationValue("DATABASE_HOST");
-            var databaseUsername = GetConfigurationValue("DATABASE_USERNAME");
-            var databasePassword = GetConfigurationValue("DATABASE_PASSWORD");
+            // Effectively the same as configuration["DATABASE__HOST"] when an environment variable is set (and same for others).
+            var databaseHost = GetConfigurationValue("Database:Host");
+            var databaseUsername = GetConfigurationValue("Database:Username");
+            var databasePassword = GetConfigurationValue("Database:Password");
 
             var connectionString = $"Host={databaseHost};Database=Pot;Username={databaseUsername};Password={databasePassword}";
 
