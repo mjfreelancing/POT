@@ -10,7 +10,7 @@ public static class ExpenseEntityExtensions
         return expense.Amount - expense.Accrued;
     }
 
-    public static int DaysDue(this ExpenseEntity expense, DateOnly currentDate)
+    public static int DaysDueFrom(this ExpenseEntity expense, DateOnly currentDate)
     {
         return Math.Max(0, currentDate.DaysUntil(expense.NextDue));
     }
@@ -22,7 +22,7 @@ public static class ExpenseEntityExtensions
 
     public static double DailyBalance(this ExpenseEntity expense, DateOnly currentDate)
     {
-        var daysDue = expense.DaysDue(currentDate);
+        var daysDue = expense.DaysDueFrom(currentDate);
         return expense.Balance() / Math.Max(daysDue, 1);
     }
 

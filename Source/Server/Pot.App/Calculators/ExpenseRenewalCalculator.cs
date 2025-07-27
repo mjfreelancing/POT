@@ -5,22 +5,22 @@ namespace Pot.App.Calculators;
 
 internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
 {
-    public void Renew(IEnumerable<ExpenseEntity> expenses, DateOnly advanceUtilDate, bool debitAccount = false)
+    public void Renew(IEnumerable<ExpenseEntity> expenses, DateOnly advanceUntilDate, bool debitAccount = false)
     {
         foreach (var expense in expenses)
         {
             var endDate = expense.EndDate.GetValueOrDefault(DateOnly.MaxValue);
 
-            if (advanceUtilDate >= endDate)
+            if (advanceUntilDate >= endDate)
             {
                 continue;
             }
 
             var nextDue = expense.NextDue;
 
-            // Do not process items due on the advanceUtilDate - theoretically 'still due' and it would affect how projections
+            // Do not process items due on the advanceUntilDate - theoretically 'still due' and it would affect how projections
             // are calculated because the expenses would continue to advance before the debit could be considered.
-            while (nextDue < advanceUtilDate)
+            while (nextDue < advanceUntilDate)
             {
                 var days = expense.Frequency.GetDaysToNext(expense.NextDue, expense.FrequencyCount);
                 nextDue = expense.NextDue.AddDays(days);
