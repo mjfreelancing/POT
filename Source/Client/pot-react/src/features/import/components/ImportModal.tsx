@@ -2,6 +2,7 @@ import { Upload } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+import { ErrorToast, SuccessToast } from '@/components/feedback/toast';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -80,24 +81,23 @@ function ImportModal({ isOpen, onClose }: ImportModalProps) {
 
     if (result.success) {
       toast(
-        <div className="flex items-start">
-          <Upload className="text-green-600 mr-6 w-16 h-16" />
-          <div>
-            <div className="text-xl font-semibold">Import Complete</div>
-            <div className="mt-2 text-sm text-muted-foreground">
-              Data imported successfully
-            </div>
-            <div className="mt-1 text-xs text-muted-foreground">
-              {result.value.imported} records imported
-            </div>
-          </div>
-        </div>,
+        <SuccessToast
+          icon={Upload}
+          title="Import Complete"
+          description="Data imported successfully"
+          details={`${result.value.imported} records imported`}
+        />,
         { duration: 5000 },
       );
     } else {
-      toast.error('Import Failed', {
-        description: 'There was an error importing the data.',
-      });
+      toast(
+        <ErrorToast
+          icon={Upload}
+          title="Import Failed"
+          description="There was an error importing the data."
+        />,
+        { duration: 5000 },
+      );
     }
 
     handleClose();

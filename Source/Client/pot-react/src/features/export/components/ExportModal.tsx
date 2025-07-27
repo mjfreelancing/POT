@@ -1,6 +1,7 @@
 import { Download } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { ErrorToast, SuccessToast } from '@/components/feedback/toast';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -24,27 +25,25 @@ function ExportModal({ isOpen, onClose }: ExportModalProps) {
   async function handleExport() {
     const result = await exportData();
 
-    // TODO: Make the toast messages look better
     if (result.success) {
       toast(
-        <div className="flex items-start">
-          <Download className="text-green-600 mr-6 w-16 h-16" />
-          <div>
-            <div className="text-xl font-semibold">Export Complete</div>
-            <div className="mt-2 text-sm text-muted-foreground">
-              Data exported successfully
-            </div>
-            <div className="mt-1 text-xs font-mono text-muted-foreground">
-              {result.value.filename}
-            </div>
-          </div>
-        </div>,
+        <SuccessToast
+          icon={Download}
+          title="Export Complete"
+          description="Data exported successfully"
+          details={result.value.filename}
+        />,
         { duration: 5000 },
       );
     } else {
-      toast.error('Export Failed', {
-        description: 'There was an error exporting the data. Please try again.',
-      });
+      toast(
+        <ErrorToast
+          icon={Download}
+          title="Export Failed"
+          description="There was an error exporting the data."
+        />,
+        { duration: 5000 },
+      );
     }
 
     onClose();

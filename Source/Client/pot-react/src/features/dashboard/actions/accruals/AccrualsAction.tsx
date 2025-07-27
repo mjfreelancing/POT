@@ -15,6 +15,7 @@ import {
 import { ActionCard } from '@/components/cards';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
+import { SuccessToast } from '@/components/feedback/toast';
 import { accrueAllExpenses } from '@/features/accounts/utils/bulkActions';
 import { renewAllExpenses } from '@/features/expenses/utils/bulkActions';
 import { renewAllIncomes } from '@/features/incomes/utils/bulkActions';
@@ -80,15 +81,11 @@ function AccrualsAction() {
     }
 
     toast(
-      <div className="flex items-start">
-        <CheckCircle className="text-green-600 mr-6 w-16 h-16" />
-        <div>
-          <div className="text-xl font-semibold">Accruals Complete</div>
-          <div className="mt-2 text-sm text-muted-foreground">
-            All renewals and accruals have successfully processed
-          </div>
-        </div>
-      </div>,
+      <SuccessToast
+        icon={CheckCircle}
+        title="Accruals Complete"
+        description="All renewals and accruals have successfully processed"
+      />,
       { duration: 5000 },
     );
   }
