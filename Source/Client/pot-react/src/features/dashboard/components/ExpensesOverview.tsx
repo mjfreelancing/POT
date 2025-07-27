@@ -57,7 +57,7 @@ const columns: ColumnDef<Expense>[] = [
             aria-role="status"
             aria-live="polite"
           >
-            Past Due
+            {days === 0 ? 'Due Today' : 'Past Due'}
           </StatusBadge>
         );
       }
