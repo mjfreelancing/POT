@@ -3,6 +3,7 @@ using AllOverIt.Extensions;
 using Pot.App.Concerns.Time;
 using Pot.Data.Entities;
 using Pot.Data.Extensions;
+using Pot.Shared.Extensions;
 
 namespace Pot.App.Calculators;
 
@@ -36,11 +37,11 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
         account.DailyExpenseAccrual = 0.0d;
     }
 
-    private void AccrueExpense(ExpenseEntity expense, DateOnly currentDate)
+    private static void AccrueExpense(ExpenseEntity expense, DateOnly currentDate)
     {
         if (expense.AccrualStart > currentDate)
         {
-            // If the accrual start date is in the future, no accrual is needed
+            // If the accrual start date is in the future, no accrual is needed.
             return;
         }
 
@@ -48,6 +49,7 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
 
         var allocated = Math.Round(expense.DailyAccrual() * expense.DaysFromAccrualStart(currentDate), 2, MidpointRounding.AwayFromZero);
 
+        // TODO: Can this ever occur? May be precision related issues?
         // Don't over-allocate
         allocated = Math.Min(allocated, expense.Amount);
 
@@ -55,6 +57,25 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
         expense.Accrued = allocated;
 
         // Accrual must be applied after the expense allocation has been set
-        account.DailyExpenseAccrual += expense.DailyBalance(currentDate);
+
+        if (expense.NextDue == currentDate)
+        {
+            // When expenses are renewed, the NextDue date is not set until after they were due. This is to ensure projections are calculated correctly.
+            // In this case, when the expense is due on the 'current date' we calculate the daily balance based on the next due date.
+            var endDate = expense.EndDate.GetValueOrDefault(DateOnly.MaxValue);
+            var days = expense.Frequency.GetDaysToNext(expense.NextDue, expense.FrequencyCount);
+            var advancedDate = currentDate.AddDays(days);
+
+            // But only if the expense will be due again.
+            if (advancedDate < endDate)
+            {
+                var dailyAccrual = expense.Amount / Math.Max(days, 1);
+                account.DailyExpenseAccrual += dailyAccrual;
+            }
+        }
+        else
+        {
+            account.DailyExpenseAccrual += expense.DailyBalance(currentDate);
+        }
     }
 }
