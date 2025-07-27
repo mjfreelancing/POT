@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { WindowOpenFile } from '@/lib';
 
 import { useImport } from '../hooks/useImport';
 
@@ -29,7 +30,9 @@ function ImportModal({ isOpen, onClose }: ImportModalProps) {
     // Check if File System Access API is supported
     if ('showOpenFilePicker' in window) {
       try {
-        const [fileHandle] = await (window as any).showOpenFilePicker({
+        const [fileHandle] = await (
+          window as WindowOpenFile
+        ).showOpenFilePicker({
           types: [
             {
               description: 'POT Export files',
@@ -43,9 +46,9 @@ function ImportModal({ isOpen, onClose }: ImportModalProps) {
 
         const file = await fileHandle.getFile();
         setSelectedFile(file);
-      } catch (error: any) {
+      } catch (error: unknown) {
         // User cancelled or error occurred
-        if (error.name === 'AbortError') {
+        if (error instanceof Error && error.name === 'AbortError') {
           // User cancelled, do nothing
           return;
         }

@@ -1,3 +1,5 @@
+import { WindowSaveFile } from '@/lib';
+
 /**
  * Downloads a blob as a file with the specified filename
  * Returns a Promise that resolves when file is saved or rejects when cancelled
@@ -6,7 +8,7 @@ async function downloadBlob(blob: Blob, filename: string): Promise<void> {
   // Check if File System Access API is supported
   if ('showSaveFilePicker' in window) {
     try {
-      const fileHandle = await (window as any).showSaveFilePicker({
+      const fileHandle = await (window as WindowSaveFile).showSaveFilePicker({
         suggestedName: filename,
         types: [
           {
@@ -22,9 +24,9 @@ async function downloadBlob(blob: Blob, filename: string): Promise<void> {
       await writable.write(blob);
       await writable.close();
       return; // File saved successfully
-    } catch (error: any) {
+    } catch (error: unknown) {
       // User cancelled or error occurred
-      if (error.name === 'AbortError') {
+      if (error instanceof Error && error.name === 'AbortError') {
         throw new Error('User cancelled file save');
       }
       throw error;
