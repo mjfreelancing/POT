@@ -40,6 +40,7 @@ const frequencySingularMap: Record<Frequency, string> = {
   Weeks: 'Week',
   Months: 'Month',
   Years: 'Year',
+  OneTime: 'One Time',
 };
 
 // Note: The trailing comma in <TData,> is necessary for TypeScript to differentiate it from a JSX element.
