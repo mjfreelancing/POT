@@ -1,6 +1,11 @@
 import { ColumnDef, Row } from '@tanstack/react-table';
 
-import { formatMoneyValue, Frequency, MoneyValue } from '../../lib';
+import {
+  formatMoneyValue,
+  Frequency,
+  FrequencyDisplay,
+  MoneyValue,
+} from '../../lib';
 import DataTableColumnHeader from './DataTableColumnHeader';
 
 // Gets the money value from a row.
@@ -111,6 +116,12 @@ const createFrequencyColumn = <TData,>(
     cell: ({ row }) => {
       const count = row.original[countKey] as number;
       const freq = row.original[frequencyKey] as Frequency;
+
+      // Special case: for 'OneTime', display the FrequencyDisplay label only, no count
+      if (freq === 'OneTime') {
+        return <div>{FrequencyDisplay[freq]}</div>;
+      }
+
       const frequencyLabel = count === 1 ? frequencySingularMap[freq] : freq;
 
       return (
