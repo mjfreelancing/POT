@@ -1,18 +1,33 @@
 type MoneyValue = number;
 
-// Define a const-object for frequencies to ensure type-safety and named access
+// Define the frequency enum values (keys) for API communication
 const Frequency = {
   Days: 'Days',
   Weeks: 'Weeks',
   Months: 'Months',
   Years: 'Years',
+  OneTime: 'OneTime',
 } as const;
 
-// The union type of allowable frequency strings
+// Define frequency display values for UI. Using computed property names, instead of, for example,
+//   Days: 'Days'
+// which would lose the direct connection to the Frequency object values, making maintenance more error-prone.
+const FrequencyDisplay = {
+  [Frequency.Days]: 'Days',
+  [Frequency.Weeks]: 'Weeks',
+  [Frequency.Months]: 'Months',
+  [Frequency.Years]: 'Years',
+  [Frequency.OneTime]: 'One Time',
+} as const;
+
+// The union type of allowable frequency strings (using the API values)
 type Frequency = (typeof Frequency)[keyof typeof Frequency];
 
-// An array of all frequency values, for e.g. dropdown options
-const FrequencyEnumValues: Frequency[] = Object.values(Frequency);
+// An array of frequency options for dropdowns with their display values
+const FrequencyOptions = Object.values(Frequency).map(value => ({
+  value,
+  label: FrequencyDisplay[value],
+}));
 
 type DisplayError = {
   title: string;
@@ -30,11 +45,12 @@ type ActionResultFail = {
 
 type BulkActionResult = ActionResultSuccess | ActionResultFail;
 
-export { Frequency, FrequencyEnumValues };
+export { Frequency, FrequencyDisplay, FrequencyOptions };
 export type {
   ActionResultFail,
   ActionResultSuccess,
   BulkActionResult,
   DisplayError,
+  Frequency as FrequencyType,
   MoneyValue,
 };

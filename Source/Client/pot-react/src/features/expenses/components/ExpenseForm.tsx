@@ -22,7 +22,12 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import type { Account } from '@/data';
-import { dateIsoFormat, FrequencyEnumValues, todayIsoFormat } from '@/lib';
+import {
+  dateIsoFormat,
+  Frequency,
+  FrequencyOptions,
+  todayIsoFormat,
+} from '@/lib';
 
 import { ExpenseFormData } from '../schemas/expenseFormSchema';
 
@@ -48,6 +53,17 @@ function ExpenseForm({
       form.setFocus('amount');
     }
   }, [isEditMode, form]);
+
+  // Watch for frequency changes to handle One Time frequency
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'frequency' && value.frequency === Frequency.OneTime) {
+        form.setValue('frequencyCount', 0);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form]);
 
   return (
     <Form {...form}>
@@ -247,9 +263,10 @@ function ExpenseForm({
                     {...field}
                     id="frequencyCount-input"
                     type="number"
-                    min={1}
+                    min={0}
                     className="w-full"
                     onChange={e => field.onChange(e.target.valueAsNumber)}
+                    disabled={form.watch('frequency') === Frequency.OneTime}
                   />
                 </FormControl>
                 <FormMessage />
@@ -273,9 +290,9 @@ function ExpenseForm({
                       <SelectValue placeholder="Select frequency" />
                     </SelectTrigger>
                     <SelectContent>
-                      {FrequencyEnumValues.map(freq => (
-                        <SelectItem key={freq} value={freq}>
-                          {freq}
+                      {FrequencyOptions.map(({ value, label }) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
                         </SelectItem>
                       ))}
                     </SelectContent>

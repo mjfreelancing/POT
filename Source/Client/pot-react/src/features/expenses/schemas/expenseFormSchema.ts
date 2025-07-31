@@ -8,27 +8,45 @@ const MoneyValueSchema = z
   })
   .min(0, 'Value must be positive');
 
-const expenseFormSchema = z.object({
-  description: z.string().min(1, 'A description is required'),
-  nextDue: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
-  accrualStart: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
-  endDate: z
-    .string()
-    .optional()
-    .refine(val => val === undefined || /^\d{4}-\d{2}-\d{2}$/.test(val), {
-      message: 'Date must be YYYY-MM-DD',
-    }),
-  frequency: z.nativeEnum(Frequency),
-  frequencyCount: z.number().min(1),
-  amount: MoneyValueSchema,
-  note: z
-    .string()
-    .nullable()
-    .transform(val => (val === '' ? null : val)),
-  accountRowId: z.string().min(1, 'An account is required'),
-});
+const expenseFormSchema = z
+  .object({
+    description: z.string().min(1, 'A description is required'),
+    nextDue: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
+    accrualStart: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
+    endDate: z
+      .string()
+      .optional()
+      .refine(val => val === undefined || /^\d{4}-\d{2}-\d{2}$/.test(val), {
+        message: 'Date must be YYYY-MM-DD',
+      }),
+    frequency: z.nativeEnum(Frequency),
+    frequencyCount: z.number(),
+    amount: MoneyValueSchema,
+    note: z
+      .string()
+      .nullable()
+      .transform(val => (val === '' ? null : val)),
+    accountRowId: z.string().min(1, 'An account is required'),
+  })
+  .superRefine((data, ctx) => {
+    const isValid =
+      data.frequency === Frequency.OneTime
+        ? data.frequencyCount === 0
+        : data.frequencyCount >= 1;
+
+    if (!isValid) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          data.frequency === Frequency.OneTime
+            ? 'Must be 0'
+            : 'Must be at least 1',
+        path: ['frequencyCount'],
+      });
+    }
+  });
 
 type ExpenseFormData = z.infer<typeof expenseFormSchema>;
 
