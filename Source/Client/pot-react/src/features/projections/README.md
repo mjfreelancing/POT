@@ -88,10 +88,10 @@ const PROJECTION_METRICS: Record<ProjectionMetric, MetricConfig> = {
     description: 'Account balance trends over time',
   },
   available: {
-    label: 'Available Amounts',
+    label: 'Available Balances',
     shortLabel: 'Available',
     chartType: 'line',
-    description: 'Available amount trends over time',
+    description: 'Available balance trends over time',
   },
   incomeReceived: {
     label: 'Income Received',

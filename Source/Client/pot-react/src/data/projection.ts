@@ -27,10 +27,10 @@ const PROJECTION_METRICS: Record<ProjectionMetric, MetricConfig> = {
   },
 
   available: {
-    label: 'Available Amounts',
+    label: 'Available Balances',
     shortLabel: 'Available',
     chartType: 'line',
-    description: 'Available amount trends over time',
+    description: 'Available balance trends over time',
   },
 
   dailyAccrual: {
