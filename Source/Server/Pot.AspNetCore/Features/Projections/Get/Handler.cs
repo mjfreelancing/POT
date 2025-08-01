@@ -21,7 +21,7 @@ internal sealed class Handler
 
         var validationContext = new RequestValidationContext
         {
-            Today = DateOnly.FromDateTime(timeProvider.GetLocalNow().Date)
+            Today = timeProvider.GetLocalNow()
         };
 
         var problemDetails = problemDetailsInspector.Validate(request, validationContext);

@@ -18,7 +18,7 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
 
     public void AccrueExpenses(AccountEntity account, IEnumerable<ExpenseEntity> expenses, DateOnly? currentDate = null)
     {
-        currentDate ??= DateOnly.FromDateTime(_timeProvider.GetLocalNow().Date);
+        currentDate ??= _timeProvider.GetLocalNow();
 
         ResetAccountAccruals(account);
 

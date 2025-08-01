@@ -140,8 +140,7 @@ internal sealed class ProjectionsService : IProjectionsService
 
     private (DateOnly localDate, int preStartDays) GetPreStartDays(DateOnly startDate)
     {
-        var localDateTimeOffset = _timeProvider.GetLocalNow();
-        var localDate = DateOnly.FromDateTime(localDateTimeOffset.Date);
+        var localDate = _timeProvider.GetLocalNow();
 
         Throw<InvalidOperationException>.When(localDate > startDate, "Projections cannot start earlier than today");
 
