@@ -7,26 +7,23 @@ internal sealed class PotTimeProvider : ITimeProvider
     private readonly IAppContext _appContext;
 
     internal TimeProvider TimeProvider { get; set; } = TimeProvider.System;
-    public DateOnly GetUtcNow() => ToDateOnly(GetUtcNowOffset());
+
+    public DateOnly GetUtcDateNow() => DateOnly.FromDateTime(GetUtcDateTimeNow());
+    public DateTime GetUtcDateTimeNow() => GetUtcNowOffset(true);
+    public DateOnly GetLocalDateNow() => DateOnly.FromDateTime(GetLocalDateTimeNow());
+    public DateTime GetLocalDateTimeNow() => GetUtcNowOffset(false);
 
     public PotTimeProvider(IAppContext appContext)
     {
         _appContext = appContext.WhenNotNull();
     }
 
-    public DateOnly GetLocalNow()
+    private DateTime GetUtcNowOffset(bool utc)
     {
-        var dateTimeOffset = GetUtcNowOffset().ToOffset(_appContext.TimeZoneOffset);
-        return ToDateOnly(dateTimeOffset);
-    }
+        var utcNow = TimeProvider.GetUtcNow();
 
-    private DateTimeOffset GetUtcNowOffset()
-    {
-        return TimeProvider.GetUtcNow();
-    }
-
-    private static DateOnly ToDateOnly(DateTimeOffset offset)
-    {
-        return DateOnly.FromDateTime(offset.Date);
+        return utc
+            ? utcNow.DateTime
+            : utcNow.ToOffset(_appContext.TimeZoneOffset).DateTime;
     }
 }

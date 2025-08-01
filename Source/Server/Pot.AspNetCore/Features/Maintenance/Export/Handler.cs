@@ -22,7 +22,7 @@ internal sealed class Handler
         await stream.FlushAsync(cancellationToken);
         stream.Position = 0;
 
-        var timestamp = timeProvider.GetUtcNow();
+        var timestamp = timeProvider.GetUtcDateTimeNow();
         var fileName = $"pot-{timestamp:yyyy-MM-dd_HHmmss}-utc.export";
 
         // The stream is disposed of after the response is sent.
