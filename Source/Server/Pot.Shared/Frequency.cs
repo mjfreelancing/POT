@@ -9,6 +9,7 @@ namespace Pot.Shared
         public static readonly Frequency Weeks = new(1);
         public static readonly Frequency Months = new(2);
         public static readonly Frequency Years = new(3);
+        public static readonly Frequency OneTime = new(4);
 
         private Frequency(int value, [CallerMemberName] string? name = default)
             : base(value, name!)

@@ -39,9 +39,19 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
 
     private static void AccrueExpense(ExpenseEntity expense, DateOnly currentDate)
     {
+        expense.Accrued = 0.0d;
+
+        // TODO: Create a composite specification for these early returns
+
+        // If the accrual start date is in the future, no accrual is needed.
         if (expense.AccrualStart > currentDate)
         {
-            // If the accrual start date is in the future, no accrual is needed.
+            return;
+        }
+
+        // If the expense was a one-time expense and the current date is after the next due date, no accrual is needed.
+        if (expense.Frequency == Shared.Frequency.OneTime && currentDate > expense.NextDue)
+        {
             return;
         }
 
@@ -57,9 +67,14 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
         expense.Accrued = allocated;
 
         // Accrual must be applied after the expense allocation has been set
-
         if (expense.NextDue == currentDate)
         {
+            if (expense.Frequency == Shared.Frequency.OneTime)
+            {
+                // One-time expenses will not further accrue
+                return;
+            }
+
             // When expenses are renewed, the NextDue date is not set until after they were due. This is to ensure projections are calculated correctly.
             // In this case, when the expense is due on the 'current date' we calculate the daily balance based on the next due date.
             var endDate = expense.EndDate.GetValueOrDefault(DateOnly.MaxValue);

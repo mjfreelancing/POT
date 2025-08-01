@@ -1,5 +1,6 @@
 ﻿using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Pot.App.Concerns.Time;
 using Pot.App.Features.Projections;
 using Pot.App.Features.Projections.Models;
 using Pot.AspNetCore.Concerns.Validation;
@@ -13,12 +14,17 @@ using OkGetResult = Ok<Response>;
 internal sealed class Handler
 {
     public static async Task<Results<OkGetResult, NotFound, ProblemHttpResult>> Invoke([AsParameters] Request request,
-         IProblemDetailsInspector problemDetailsInspector, IProjectionsService projectionsService,
+         IProblemDetailsInspector problemDetailsInspector, IProjectionsService projectionsService, ITimeProvider timeProvider,
          ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);
 
-        var problemDetails = problemDetailsInspector.Validate(request);
+        var validationContext = new RequestValidationContext
+        {
+            Today = DateOnly.FromDateTime(timeProvider.GetLocalNow().Date)
+        };
+
+        var problemDetails = problemDetailsInspector.Validate(request, validationContext);
 
         if (problemDetails.IsProblem())
         {

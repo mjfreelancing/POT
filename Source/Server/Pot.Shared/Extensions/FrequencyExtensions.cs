@@ -26,6 +26,11 @@ public static class FrequencyExtensions
             return nextDate.DayNumber - fromDate.DayNumber;
         }
 
+        if (frequency == Frequency.OneTime)
+        {
+            throw new InvalidOperationException("The 'OneTime' frequency does not have a next occurrence.");
+        }
+
         throw new ArgumentOutOfRangeException(nameof(frequency), frequency, null);
     }
 }

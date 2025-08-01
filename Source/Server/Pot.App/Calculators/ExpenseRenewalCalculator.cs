@@ -9,6 +9,12 @@ internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
     {
         foreach (var expense in expenses)
         {
+            if (expense.Frequency == Shared.Frequency.OneTime)
+            {
+                // One-time expenses do not renew
+                continue;
+            }
+
             var endDate = expense.EndDate.GetValueOrDefault(DateOnly.MaxValue);
 
             if (advanceUntilDate >= endDate)

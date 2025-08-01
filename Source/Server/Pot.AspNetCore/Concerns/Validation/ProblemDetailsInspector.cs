@@ -24,6 +24,13 @@ internal sealed class ProblemDetailsInspector : IProblemDetailsInspector
         return AsProblemDetails(validationResult);
     }
 
+    public Microsoft.AspNetCore.Mvc.ProblemDetails Validate<TType, TContext>(TType instance, TContext context)
+    {
+        var validationResult = _validationInvoker.Validate(instance, context);
+
+        return AsProblemDetails(validationResult);
+    }
+
     public async Task<Microsoft.AspNetCore.Mvc.ProblemDetails> ValidateAsync<TType>(TType instance, CancellationToken cancellationToken)
     {
         var validationResult = await _validationInvoker.ValidateAsync(instance, cancellationToken);

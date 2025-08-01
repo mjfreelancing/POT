@@ -9,6 +9,12 @@ internal sealed class IncomeRenewalCalculator : IIncomeRenewalCalculator
     {
         foreach (var income in incomes)
         {
+            if (income.Frequency == Shared.Frequency.OneTime)
+            {
+                // One-time incomes do not renew
+                continue;
+            }
+
             var endDate = income.EndDate.GetValueOrDefault(DateOnly.MaxValue);
 
             if (advanceUtilDate >= endDate)
