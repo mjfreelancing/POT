@@ -15,7 +15,12 @@ internal sealed class Handler
     {
         logger.LogCall(null);
 
-        var problemDetails = problemDetailsInspector.Validate(request);
+        var validationContext = new RequestValidationContext
+        {
+            Frequency = request.Frequency
+        };
+
+        var problemDetails = problemDetailsInspector.Validate(request, validationContext);
 
         if (problemDetails.IsProblem())
         {
