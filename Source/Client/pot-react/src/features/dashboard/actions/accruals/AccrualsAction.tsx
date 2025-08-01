@@ -81,11 +81,13 @@ function AccrualsAction() {
     }
 
     toast(
-      <SuccessToast
-        icon={CheckCircle}
-        title="Accruals Complete"
-        description="All renewals and accruals have successfully processed"
-      />,
+      () => (
+        <SuccessToast
+          icon={CheckCircle}
+          title="Accruals Complete"
+          description="All renewals and accruals have successfully processed"
+        />
+      ),
       { duration: 5000 },
     );
   }

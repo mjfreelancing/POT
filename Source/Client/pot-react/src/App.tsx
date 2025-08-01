@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 
 import { ErrorSheet } from '@/components/feedback';
+import { Toaster } from '@/components/ui/sonner';
 import { DisplayError } from '@/lib';
 
 import { AppSidebar } from './components/nav';
@@ -19,6 +20,7 @@ const AppContent = () => (
         {/* Subtle background pattern */}
         <div className="absolute inset-0 opacity-[0.02] bg-[radial-gradient(circle_at_1px_1px,_oklch(var(--foreground))_1px,_transparent_0)] [background-size:20px_20px]" />
         <div className="relative z-10 h-full">
+          <Toaster position="top-center" />
           <AppRoutes />
         </div>
       </div>

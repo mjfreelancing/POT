@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { useApiGetAllAccounts, useApiGetAllExpenses } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
-import { Toaster } from '@/components/ui/sonner';
 import { DisplayError } from '@/lib';
 
 import {
@@ -39,7 +38,6 @@ function DashboardPage() {
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20 overflow-x-hidden">
-      <Toaster position="top-center" />
       <DashboardHeader />
 
       <LoadingMessage isLoading={isLoading} />

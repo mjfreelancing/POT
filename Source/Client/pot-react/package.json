@@ -10,7 +10,7 @@
     "lint": "eslint  src/**/*.{ts,tsx}",
     "lint:fix": "eslint --fix src/**/*.{ts,tsx}",
     "lint:sort": "eslint --fix --fix-type layout,suggestion src/**/*.{ts,tsx}",
-    "pretty": "prettier . --write",
+    "prettier": "prettier . --write",
     "test": "vitest",
     "test:ui": "vitest --ui --api 9527 --coverage.enabled --coverage.provider=istanbul --coverage.all",
     "type:check": "tsc --noEmit"

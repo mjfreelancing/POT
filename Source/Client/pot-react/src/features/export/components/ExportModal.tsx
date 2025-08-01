@@ -27,21 +27,25 @@ function ExportModal({ isOpen, onClose }: ExportModalProps) {
 
     if (result.success) {
       toast(
-        <SuccessToast
-          icon={Download}
-          title="Export Complete"
-          description="Data exported successfully"
-          details={result.value.filename}
-        />,
+        () => (
+          <SuccessToast
+            icon={Download}
+            title="Export Complete"
+            description="Data exported successfully"
+            details={result.value.filename}
+          />
+        ),
         { duration: 5000 },
       );
     } else {
       toast(
-        <ErrorToast
-          icon={Download}
-          title="Export Failed"
-          description="There was an error exporting the data."
-        />,
+        () => (
+          <ErrorToast
+            icon={Download}
+            title="Export Failed"
+            description="There was an error exporting the data."
+          />
+        ),
         { duration: 5000 },
       );
     }
