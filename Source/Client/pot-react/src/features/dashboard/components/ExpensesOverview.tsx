@@ -31,6 +31,7 @@ type FilteredExpenses = {
 // Table columns for due in next 30 days
 const columns: ColumnDef<Expense>[] = [
   {
+    id: 'description',
     accessorKey: 'description',
     header: 'Description',
     cell: ({ row }) => (
@@ -40,8 +41,14 @@ const columns: ColumnDef<Expense>[] = [
       </div>
     ),
   },
-  createDateColumn<Expense>('nextDue', 'Next Due'),
-  createMoneyValueColumn<Expense>('amount', 'Amount'),
+  createDateColumn<Expense>({
+    accessorKey: 'nextDue',
+    header: 'Next Due',
+  }),
+  createMoneyValueColumn<Expense>({
+    accessorKey: 'amount',
+    header: 'Amount',
+  }),
   {
     id: 'daysDue',
     header: 'Days Due',

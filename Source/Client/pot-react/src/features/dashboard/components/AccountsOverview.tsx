@@ -16,6 +16,7 @@ import SummaryCardsGrid from './SummaryCardsGrid';
 
 const columns: ColumnDef<Account>[] = [
   {
+    id: 'bsb_number',
     accessorKey: 'bsb_number',
     header: 'Account',
     cell: ({ row }) => {
@@ -31,8 +32,14 @@ const columns: ColumnDef<Account>[] = [
       );
     },
   },
-  createMoneyValueColumn<Account>('balance', 'Balance'),
-  createMoneyValueColumn<Account>('available', 'Available'),
+  createMoneyValueColumn<Account>({
+    accessorKey: 'balance',
+    header: 'Balance',
+  }),
+  createMoneyValueColumn<Account>({
+    accessorKey: 'available',
+    header: 'Available',
+  }),
   {
     id: 'status',
     header: 'Status',
