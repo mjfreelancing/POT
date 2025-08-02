@@ -148,7 +148,7 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
             }
             getRowClassName={(row: Row<Expense>) =>
               normalizeToLocalMidnight(row.original.nextDue) < localToday()
-                ? 'text-muted-foreground italic'
+                ? 'text-red-600 dark:text-red-400 italic'
                 : undefined
             }
           />

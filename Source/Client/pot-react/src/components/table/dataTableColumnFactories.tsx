@@ -83,7 +83,13 @@ const createMoneyValueColumn = <TData,>(
     header: enableSorting
       ? ({ column }) => <DataTableColumnHeader column={column} title={header} />
       : () => <div className="uppercase">{header}</div>,
-    cell: ({ row }) => <div>{formatCellMoneyValue(row, accessorKey)}</div>,
+    cell: ({ row }) => {
+      const formattedValue = formatCellMoneyValue(row, accessorKey);
+
+      return (
+        <span className="min-w-[80px] inline-block">{formattedValue}</span>
+      );
+    },
     enableSorting,
     ...restOptions,
   };
@@ -108,18 +114,23 @@ const createDateColumn = <TData,>(
           const nullContent = getNullValue(row);
 
           if (typeof nullContent === 'string' && nullContent.length > 0) {
-            return <div className="text-muted-foreground">{nullContent}</div>;
+            // By applying opacity instead of a text color, we can let the
+            // parent's color show through but with reduced opacity.
+            // return <span className="opacity-70">{nullContent}</span>;
+            return nullContent;
           }
         }
 
         return null;
       }
 
-      const dateValue =
-        rawValue instanceof Date ? rawValue : new Date(rawValue);
-      const cellContent = formatCellDate(dateValue);
+      // If the value is a string, assuming it is already formatted as yyyy-MM-dd.
+      const formattedValue =
+        rawValue instanceof Date ? formatCellDate(rawValue) : rawValue;
 
-      return <div className="min-w-[80px]">{cellContent}</div>;
+      return (
+        <span className="min-w-[80px] inline-block">{formattedValue}</span>
+      );
     },
     enableSorting,
     ...restOptions,
@@ -145,17 +156,16 @@ const createFrequencyColumn = <TData,>(
       const freq = row.original[frequencyKey] as Frequency;
 
       // Special case: for 'OneTime', display the FrequencyDisplay label only, no count
+      let displayValue;
+
       if (freq === 'OneTime') {
-        return <div>{FrequencyDisplay[freq]}</div>;
+        displayValue = FrequencyDisplay[freq];
+      } else {
+        const frequencyLabel = count === 1 ? frequencySingularMap[freq] : freq;
+        displayValue = `${count} ${frequencyLabel}`;
       }
 
-      const frequencyLabel = count === 1 ? frequencySingularMap[freq] : freq;
-
-      return (
-        <div>
-          {count} {frequencyLabel}
-        </div>
-      );
+      return <span className="inline-block">{displayValue}</span>;
     },
     enableSorting,
     ...restOptions,

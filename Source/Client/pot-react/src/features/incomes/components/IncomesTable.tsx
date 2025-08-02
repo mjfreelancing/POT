@@ -139,7 +139,7 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
             }
             getRowClassName={(row: Row<Income>) =>
               normalizeToLocalMidnight(row.original.nextDue) < localToday()
-                ? 'text-muted-foreground italic'
+                ? 'text-red-600 dark:text-red-400 italic'
                 : undefined
             }
           />
