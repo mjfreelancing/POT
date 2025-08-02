@@ -20,6 +20,51 @@ function localToday(): Date {
 }
 
 /**
+ * Checks if two dates represent the same calendar date (ignoring time)
+ * @param date1 - First date to compare
+ * @param date2 - Second date to compare
+ * @returns true if both dates represent the same calendar date
+ */
+function isSameDate(date1: Date | string, date2: Date | string): boolean {
+  const normalized1 = normalizeToLocalMidnight(date1);
+  const normalized2 = normalizeToLocalMidnight(date2);
+
+  return normalized1.valueOf() === normalized2.valueOf();
+}
+
+/**
+ * Checks if the first date is before the second date (ignoring time)
+ * @param date - The date to check
+ * @param compareAgainst - The date to compare against
+ * @returns true if date is before compareAgainst
+ */
+function isBeforeDate(
+  date: Date | string,
+  compareAgainst: Date | string,
+): boolean {
+  const normalized1 = normalizeToLocalMidnight(date);
+  const normalized2 = normalizeToLocalMidnight(compareAgainst);
+
+  return normalized1 < normalized2;
+}
+
+/**
+ * Checks if the first date is after the second date (ignoring time)
+ * @param date - The date to check
+ * @param compareAgainst - The date to compare against
+ * @returns true if date is after compareAgainst
+ */
+function isAfterDate(
+  date: Date | string,
+  compareAgainst: Date | string,
+): boolean {
+  const normalized1 = normalizeToLocalMidnight(date);
+  const normalized2 = normalizeToLocalMidnight(compareAgainst);
+
+  return normalized1 > normalized2;
+}
+
+/**
  * Formats a date as YYYY-MM-DD in local time (no timezone offset)
  */
 function dateIsoFormat(date: Date): string {
@@ -79,6 +124,9 @@ export {
   dateIsoFormat,
   dayOfYear,
   formatDate,
+  isAfterDate,
+  isBeforeDate,
+  isSameDate,
   localToday,
   normalizeToLocalMidnight,
   todayIsoFormat,

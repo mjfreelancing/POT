@@ -52,11 +52,14 @@ function useEndDatePicker(form: UseFormReturn<ExpenseFormData>) {
     setPickerDate(endDateValue ? new Date(endDateValue) : undefined);
   }, [endDateValue]);
 
+  // Called when user accepts a date selection or clears the field
   function syncPickerDate(date: Date | undefined) {
     setPickerDate(date);
+
     form.setValue(
       'endDate',
       date !== undefined ? dateIsoFormat(date) : undefined,
+      { shouldValidate: true },
     );
   }
 
@@ -143,26 +146,16 @@ function ExpenseForm({
               <FormLabel htmlFor="nextDue-picker">Next Due</FormLabel>
               <FormControl>
                 <div className="flex items-center space-x-2">
-                  {/* Two-way binding between form and picker:
-                    1. selectedDate prop (from field.value) drives the picker's internal state via useEffect in EnrichedCalendar.
-                    2. onDateChange (day clicks) pushes immediate date selections back to the form via field.onChange.
-                    3. onDateAccepted (Accept button) commits the chosen date into the form.
-                    4. Clear button calls field.onChange(undefined), which updates selectedDate to undefined,
-                       triggering the picker's useEffect to reset its internal pickerDate to cleared state. */}
                   <EnrichedDatePicker
                     selectedDate={
                       field.value ? new Date(field.value) : undefined
                     }
-                    onDateAccepted={date =>
-                      field.onChange(
-                        date !== undefined ? dateIsoFormat(date) : undefined,
-                      )
-                    }
-                    onDateChange={date =>
-                      field.onChange(
-                        date !== undefined ? dateIsoFormat(date) : undefined,
-                      )
-                    }
+                    onDateAccepted={date => {
+                      const value =
+                        date !== undefined ? dateIsoFormat(date) : undefined;
+                      field.onChange(value);
+                      form.trigger('nextDue');
+                    }}
                     triggerClassName="flex-1"
                     triggerId="nextDue-picker"
                   />
@@ -171,7 +164,10 @@ function ExpenseForm({
                     variant="ghost"
                     size="sm"
                     className="w-16"
-                    onClick={() => field.onChange(todayIsoFormat())}
+                    onClick={() => {
+                      field.onChange(todayIsoFormat());
+                      form.trigger('nextDue');
+                    }}
                   >
                     Today
                   </Button>
@@ -190,26 +186,16 @@ function ExpenseForm({
               <FormLabel htmlFor="accrualStart-picker">Accrual Start</FormLabel>
               <FormControl>
                 <div className="flex items-center space-x-2">
-                  {/* Two-way binding between form and picker:
-                    1. selectedDate prop (from field.value) drives the picker's internal state via useEffect in EnrichedCalendar.
-                    2. onDateChange (day clicks) pushes immediate date selections back to the form via field.onChange.
-                    3. onDateAccepted (Accept button) commits the chosen date into the form.
-                    4. Clear button calls field.onChange(undefined), which updates selectedDate to undefined,
-                       triggering the picker's useEffect to reset its internal pickerDate to cleared state. */}
                   <EnrichedDatePicker
                     selectedDate={
                       field.value ? new Date(field.value) : undefined
                     }
-                    onDateAccepted={date =>
-                      field.onChange(
-                        date !== undefined ? dateIsoFormat(date) : undefined,
-                      )
-                    }
-                    onDateChange={date =>
-                      field.onChange(
-                        date !== undefined ? dateIsoFormat(date) : undefined,
-                      )
-                    }
+                    onDateAccepted={date => {
+                      const value =
+                        date !== undefined ? dateIsoFormat(date) : undefined;
+                      field.onChange(value);
+                      form.trigger('accrualStart');
+                    }}
                     triggerClassName="flex-1"
                     triggerId="accrualStart-picker"
                   />
@@ -218,7 +204,9 @@ function ExpenseForm({
                     variant="ghost"
                     size="sm"
                     className="w-16"
-                    onClick={() => field.onChange(todayIsoFormat())}
+                    onClick={() => {
+                      field.onChange(todayIsoFormat());
+                    }}
                   >
                     Today
                   </Button>
@@ -237,15 +225,9 @@ function ExpenseForm({
               <FormLabel htmlFor="endDate-picker">End Date</FormLabel>
               <FormControl>
                 <div className="flex items-center space-x-2">
-                  {/* Two-way binding between form and picker:
-                    1. pickerDate state drives the picker's internal state.
-                    2. onDateChange (day clicks) pushes immediate date selections back to the form and local state.
-                    3. onDateAccepted (Accept button) commits the chosen date into the form and local state.
-                    4. Clear button sets both form and local state to undefined, resetting the picker UI. */}
                   <EnrichedDatePicker
                     selectedDate={pickerDate}
                     onDateAccepted={syncPickerDate}
-                    onDateChange={syncPickerDate}
                     triggerClassName="flex-1"
                     triggerId="endDate-picker"
                   />
