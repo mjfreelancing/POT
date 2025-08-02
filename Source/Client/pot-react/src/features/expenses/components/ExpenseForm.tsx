@@ -206,6 +206,7 @@ function ExpenseForm({
                     className="w-16"
                     onClick={() => {
                       field.onChange(todayIsoFormat());
+                      form.trigger('accrualStart');
                     }}
                   >
                     Today

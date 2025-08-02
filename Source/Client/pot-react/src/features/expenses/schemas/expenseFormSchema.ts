@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { Frequency } from '@/lib';
+import { Frequency, isAfterDate } from '@/lib';
 
 const MoneyValueSchema = z
   .number({
@@ -31,12 +31,12 @@ const expenseFormSchema = z
     accountRowId: z.string().min(1, 'An account is required'),
   })
   .superRefine((data, ctx) => {
-    const isValid =
+    const isFrequencyValid =
       data.frequency === Frequency.OneTime
         ? data.frequencyCount === 0
         : data.frequencyCount >= 1;
 
-    if (!isValid) {
+    if (!isFrequencyValid) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message:
@@ -45,6 +45,29 @@ const expenseFormSchema = z
             : 'Must be at least 1',
         path: ['frequencyCount'],
       });
+    }
+
+    // Validate date relationships if endDate is defined
+    if (data.endDate) {
+      // Ensure nextDue is not after endDate
+      if (isAfterDate(data.nextDue, data.endDate)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Cannot be after end date',
+          path: ['nextDue'],
+        });
+      }
+
+      // If accrual start exists, ensure it's not after endDate
+      if (data.accrualStart) {
+        if (isAfterDate(data.accrualStart, data.endDate)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Cannot be after end date',
+            path: ['accrualStart'],
+          });
+        }
+      }
     }
   });
 
