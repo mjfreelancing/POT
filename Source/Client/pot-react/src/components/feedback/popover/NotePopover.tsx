@@ -38,14 +38,14 @@ function NotePopover({
           <MessageSquareMore size={size} />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="max-w-xs text-sm whitespace-pre-line bg-gray-50 dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-800">
+      <PopoverContent className="w-[340px] text-sm whitespace-pre-line bg-gray-50 dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-800">
         <div className="flex items-center gap-2 mb-2 border-b pb-1 rounded-t px-2 py-1 shadow-sm bg-gray-100 dark:bg-gray-800">
           <NotebookPen size={22} className="text-information" />
           <span className="font-bold text-information tracking-wide uppercase text-sm">
             Note
           </span>
         </div>
-        <div className="px-2 pt-2 text-foreground">{note}</div>
+        <div className="px-2 pt-2 text-foreground break-all">{note}</div>
       </PopoverContent>
     </Popover>
   );
