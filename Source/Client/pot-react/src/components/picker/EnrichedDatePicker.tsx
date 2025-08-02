@@ -19,14 +19,14 @@ type EnrichedCalendarPassthroughProps = Omit<
   'selectedDate' | 'onDateAccepted' | 'onCancel'
 >;
 
-export type EnrichedDatePickerProps = EnrichedCalendarPassthroughProps & {
+type EnrichedDatePickerProps = EnrichedCalendarPassthroughProps & {
   selectedDate: Date | undefined;
   onDateAccepted: (date: Date | undefined) => void;
   onCancel?: () => void;
-  triggerClassName?: string;
-  triggerLabel?: (date: Date | undefined) => React.ReactNode;
-  popoverContentAlign?: ComponentProps<typeof PopoverContent>['align'];
   triggerId?: string;
+  triggerLabel?: (date: Date | undefined) => React.ReactNode;
+  triggerClassName?: string;
+  popoverContentAlign?: ComponentProps<typeof PopoverContent>['align'];
 };
 
 function EnrichedDatePicker({
@@ -90,3 +90,4 @@ function EnrichedDatePicker({
 }
 
 export { EnrichedDatePicker };
+export type { EnrichedDatePickerProps };

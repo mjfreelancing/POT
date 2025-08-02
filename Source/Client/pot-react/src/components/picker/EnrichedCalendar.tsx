@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { cn, localToday } from '@/lib';
 
-export type EnrichedCalendarProps = Omit<
+type EnrichedCalendarProps = Omit<
   React.ComponentProps<typeof Calendar>,
   'onSelect' | 'selected' | 'month' | 'components' | 'mode'
 > & {
@@ -339,3 +339,4 @@ function EnrichedCalendar({
 }
 
 export default EnrichedCalendar;
+export type { EnrichedCalendarProps };
