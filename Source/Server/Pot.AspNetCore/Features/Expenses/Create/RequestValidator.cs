@@ -12,6 +12,25 @@ internal sealed class RequestValidator : ValidatorBase<Request>
     {
         RuleFor(request => request.Description).IsNotEmpty();
 
+        // Can be before/after the next due date, but not after the end date
+        this.CustomRuleFor(request => request.AccrualStart, (value, context) =>
+        {
+            var validationContext = context.GetContextData<Request, RequestValidationContext>();
+
+            if (validationContext.EndDate.HasValue)
+            {
+                if (value > validationContext.EndDate.Value)
+                {
+                    var failure = new ValidationFailure(nameof(Request.AccrualStart), "Cannot be after the end date", value)
+                    {
+                        ErrorCode = ErrorCodes.Invalid
+                    };
+
+                    context.AddFailure(failure);
+                }
+            }
+        });
+
         this.CustomRuleFor(request => request.EndDate, (value, context) =>
         {
             if (value.HasValue)

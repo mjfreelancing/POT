@@ -18,6 +18,7 @@ internal sealed class Handler
         var validationContext = new RequestValidationContext
         {
             NextDue = request.NextDue,
+            EndDate = request.EndDate,
             Frequency = request.Frequency
         };
 
