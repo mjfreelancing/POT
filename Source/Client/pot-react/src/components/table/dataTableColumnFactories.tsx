@@ -1,6 +1,7 @@
 import { ColumnDef, Row } from '@tanstack/react-table';
 
 import {
+  formatDate,
   formatMoneyValue,
   Frequency,
   FrequencyDisplay,
@@ -40,14 +41,6 @@ const getMoneyValue = <TData,>(row: Row<TData>, key: string): MoneyValue => {
 const formatCellMoneyValue = <TData,>(row: Row<TData>, key: string) => {
   const value = getMoneyValue(row, key);
   return formatMoneyValue(value);
-};
-
-// Formats a date value as dd-MM-yyyy.
-const formatCellDate = (date: Date): string => {
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  return `${day}-${month}-${year}`;
 };
 
 // Mapping of plural frequency values to their singular forms, equivalent to:
@@ -126,9 +119,8 @@ const createDateColumn = <TData,>(
         return null;
       }
 
-      // If the value is a string, assuming it is already formatted as yyyy-MM-dd.
-      const formattedValue =
-        rawValue instanceof Date ? formatCellDate(rawValue) : rawValue;
+      // Handles Date and strings in yyyy-MM-dd format.
+      const formattedValue = formatDate(rawValue);
 
       return (
         <span className="min-w-[80px] inline-block">{formattedValue}</span>

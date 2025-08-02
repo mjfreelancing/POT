@@ -44,9 +44,41 @@ function dayOfYear(date: Date): number {
   );
 }
 
+/**
+ * Formats a date using internationalization
+ * @param date The Date, or a string that can be parsed by the Date constructor, to format
+ * @param locale The BCP 47 language tag for formatting (defaults to 'en-AU')
+ * @param options Optional Intl.DateTimeFormatOptions for custom formatting
+ * @returns A formatted date string
+ *
+ * @example
+ * Australian English locale (default)
+ *   formatDate(new Date('2025-08-02'))                   // '02/08/2025'
+ *
+ * US English locale
+ *   formatDate(new Date('2025-08-02'), 'en-US')          // '8/2/2025'
+ *
+ * Custom format (full month name, numeric day, year)
+ *   formatDate(new Date('2025-08-02'), 'en-AU',
+ *     { day: 'numeric', month: 'long', year: 'numeric' }) // '2 August 2025'
+ */
+function formatDate(
+  date: Date | string,
+  locale = 'en-AU',
+  options: Intl.DateTimeFormatOptions = {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  },
+): string {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return new Intl.DateTimeFormat(locale, options).format(dateObj);
+}
+
 export {
   dateIsoFormat,
   dayOfYear,
+  formatDate,
   localToday,
   normalizeToLocalMidnight,
   todayIsoFormat,
