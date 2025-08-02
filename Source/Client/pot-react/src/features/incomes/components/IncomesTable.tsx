@@ -16,7 +16,7 @@ import {
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Income } from '@/data';
-import { DisplayError } from '@/lib';
+import { DisplayError, Frequency } from '@/lib';
 
 import { renewAllIncomes } from '../utils/bulkActions';
 import IncomeActions from './IncomeActions';
@@ -41,12 +41,15 @@ const columns: ColumnDef<Income>[] = [
     ),
   },
   createMoneyValueColumn<Income>('amount', 'Amount'),
-  createDateColumn<Income>('nextDue', 'Next Due', 'Ongoing', {
+  createDateColumn<Income>('nextDue', 'Next Due', {
     enableSorting: true,
     sortingFn: 'datetime',
   }),
   createFrequencyColumn<Income>('frequencyCount', 'frequency', 'Frequency'),
-  createDateColumn<Income>('endDate', 'End Date'),
+  createDateColumn<Income>('endDate', 'End Date', {
+    getNullValue: row =>
+      row.original.frequency === Frequency.OneTime ? undefined : 'Ongoing',
+  }),
   {
     id: 'accountDescription',
     header: 'Account',

@@ -70,10 +70,11 @@ const createMoneyValueColumn = <TData,>(
 const createDateColumn = <TData,>(
   accessorKey: keyof TData & string, // Ensure this is both a key of TData and a string
   header: string,
-  nullValue = 'Ongoing',
-  options: Partial<ColumnDef<TData>> = {},
+  options: Partial<ColumnDef<TData>> & {
+    getNullValue?: (row: Row<TData>) => string | undefined;
+  } = {},
 ): ColumnDef<TData> => {
-  const { enableSorting = false, ...restOptions } = options;
+  const { getNullValue, enableSorting = false, ...restOptions } = options;
 
   return {
     accessorKey,
@@ -84,7 +85,15 @@ const createDateColumn = <TData,>(
       const rawValue = row.getValue(accessorKey) as string | Date;
 
       if (rawValue === null) {
-        return <div className="text-muted-foreground">{nullValue}</div>;
+        if (getNullValue) {
+          const nullContent = getNullValue(row);
+
+          if (typeof nullContent === 'string' && nullContent.length > 0) {
+            return <div className="text-muted-foreground">{nullContent}</div>;
+          }
+        }
+
+        return null;
       }
 
       const dateValue =
