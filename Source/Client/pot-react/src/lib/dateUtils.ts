@@ -2,9 +2,12 @@ import { format } from 'date-fns';
 
 /**
  * Returns a date at local midnight (00:00:00)
+ * @param date - A Date object or a string that can be parsed by the Date constructor
+ * @returns A new Date object set to midnight (00:00:00) in local time
  */
-function normalizeToLocalMidnight(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+function normalizeToLocalMidnight(date: Date | string): Date {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
 }
 
 /**

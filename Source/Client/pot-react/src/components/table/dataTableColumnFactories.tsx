@@ -8,6 +8,29 @@ import {
 } from '../../lib';
 import DataTableColumnHeader from './DataTableColumnHeader';
 
+// Parameter types for our column factory functions
+type BaseColumnParams<TData> = {
+  accessorKey: keyof TData & string;
+  header: string;
+  options?: Partial<ColumnDef<TData>>;
+};
+
+type MoneyColumnParams<TData> = BaseColumnParams<TData>;
+
+type DateColumnParams<TData> = BaseColumnParams<TData> & {
+  // Function type for providing custom null value handling in date columns.
+  // When undefined is returned, no content is displayed for null dates.
+  // When a string is returned, it's displayed with muted styling.
+  getNullValue?: (row: Row<TData>) => string | undefined;
+};
+
+type FrequencyColumnParams<TData> = {
+  countKey: keyof TData & string;
+  frequencyKey: keyof TData & string;
+  header: string;
+  options?: Partial<ColumnDef<TData>>;
+};
+
 // Gets the money value from a row.
 const getMoneyValue = <TData,>(row: Row<TData>, key: string): MoneyValue => {
   return parseFloat(row.getValue(key));
@@ -50,10 +73,9 @@ const frequencySingularMap: Record<Frequency, string> = {
 // Using DataTableColumnHeader as decribed at https://ui.shadcn.com/docs/components/data-table#reusable-components
 // for a sortable header with a title.
 const createMoneyValueColumn = <TData,>(
-  accessorKey: keyof TData & string, // Ensure this is both a key of TData and a string
-  header: string,
-  options: Partial<ColumnDef<TData>> = {},
+  params: MoneyColumnParams<TData>,
 ): ColumnDef<TData> => {
+  const { accessorKey, header, options = {} } = params;
   const { enableSorting = false, ...restOptions } = options;
 
   return {
@@ -68,13 +90,10 @@ const createMoneyValueColumn = <TData,>(
 };
 
 const createDateColumn = <TData,>(
-  accessorKey: keyof TData & string, // Ensure this is both a key of TData and a string
-  header: string,
-  options: Partial<ColumnDef<TData>> & {
-    getNullValue?: (row: Row<TData>) => string | undefined;
-  } = {},
+  params: DateColumnParams<TData>,
 ): ColumnDef<TData> => {
-  const { getNullValue, enableSorting = false, ...restOptions } = options;
+  const { accessorKey, header, getNullValue, options = {} } = params;
+  const { enableSorting = false, ...restOptions } = options;
 
   return {
     accessorKey,
@@ -111,11 +130,9 @@ const createDateColumn = <TData,>(
  * Creates a column showing "<count> <frequency>" based on two keys.
  */
 const createFrequencyColumn = <TData,>(
-  countKey: keyof TData & string,
-  frequencyKey: keyof TData & string,
-  header: string,
-  options: Partial<ColumnDef<TData>> = {},
+  params: FrequencyColumnParams<TData>,
 ): ColumnDef<TData> => {
+  const { countKey, frequencyKey, header, options = {} } = params;
   const { enableSorting = false, ...restOptions } = options;
 
   return {
@@ -146,3 +163,9 @@ const createFrequencyColumn = <TData,>(
 };
 
 export { createDateColumn, createFrequencyColumn, createMoneyValueColumn };
+export type {
+  BaseColumnParams,
+  DateColumnParams,
+  FrequencyColumnParams,
+  MoneyColumnParams,
+};

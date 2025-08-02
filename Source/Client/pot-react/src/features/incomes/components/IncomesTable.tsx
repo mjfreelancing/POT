@@ -16,7 +16,12 @@ import {
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Income } from '@/data';
-import { DisplayError, Frequency } from '@/lib';
+import {
+  DisplayError,
+  Frequency,
+  localToday,
+  normalizeToLocalMidnight,
+} from '@/lib';
 
 import { renewAllIncomes } from '../utils/bulkActions';
 import IncomeActions from './IncomeActions';
@@ -40,13 +45,26 @@ const columns: ColumnDef<Income>[] = [
       </div>
     ),
   },
-  createMoneyValueColumn<Income>('amount', 'Amount'),
-  createDateColumn<Income>('nextDue', 'Next Due', {
-    enableSorting: true,
-    sortingFn: 'datetime',
+  createMoneyValueColumn<Income>({
+    accessorKey: 'amount',
+    header: 'Amount',
   }),
-  createFrequencyColumn<Income>('frequencyCount', 'frequency', 'Frequency'),
-  createDateColumn<Income>('endDate', 'End Date', {
+  createDateColumn<Income>({
+    accessorKey: 'nextDue',
+    header: 'Next Due',
+    options: {
+      enableSorting: true,
+      sortingFn: 'datetime',
+    },
+  }),
+  createFrequencyColumn<Income>({
+    countKey: 'frequencyCount',
+    frequencyKey: 'frequency',
+    header: 'Frequency',
+  }),
+  createDateColumn<Income>({
+    accessorKey: 'endDate',
+    header: 'End Date',
     getNullValue: row =>
       row.original.frequency === Frequency.OneTime ? undefined : 'Ongoing',
   }),
@@ -118,6 +136,11 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
             getRowId={createRowIdGetter<Income>()}
             highlightRowFilter={(row: Row<Income>) =>
               row.original.rowId.toString() === editingId
+            }
+            getRowClassName={(row: Row<Income>) =>
+              normalizeToLocalMidnight(row.original.nextDue) < localToday()
+                ? 'text-muted-foreground italic'
+                : undefined
             }
           />
         </CardContent>

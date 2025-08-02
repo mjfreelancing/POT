@@ -74,11 +74,26 @@ const columns: ColumnDef<Account>[] = [
       );
     },
   },
-  createMoneyValueColumn<Account>('balance', 'Balance'),
-  createMoneyValueColumn<Account>('reserved', 'Reserved'),
-  createMoneyValueColumn<Account>('totalExpenseAccrued', 'Total Accrued'),
-  createMoneyValueColumn<Account>('dailyExpenseAccrual', 'Daily Accrual'),
-  createMoneyValueColumn<Account>('available', 'Available'),
+  createMoneyValueColumn<Account>({
+    accessorKey: 'balance',
+    header: 'Balance',
+  }),
+  createMoneyValueColumn<Account>({
+    accessorKey: 'reserved',
+    header: 'Reserved',
+  }),
+  createMoneyValueColumn<Account>({
+    accessorKey: 'totalExpenseAccrued',
+    header: 'Total Accrued',
+  }),
+  createMoneyValueColumn<Account>({
+    accessorKey: 'dailyExpenseAccrual',
+    header: 'Daily Accrual',
+  }),
+  createMoneyValueColumn<Account>({
+    accessorKey: 'available',
+    header: 'Available',
+  }),
   {
     id: 'actions',
     cell: ({ row }) => {

@@ -69,6 +69,15 @@ type DataTableProps<TData, TValue> = {
    * When not provided, defaults to using array index (react-table default behavior).
    */
   getRowId?: (row: TData, index: number) => string;
+
+  /**
+   * Get the class name for a row based on its data, allowing for custom styling.
+   * When a function is provided, it receives the row object and should return either:
+   * - A string with the CSS class name to apply to the row
+   * - undefined to apply no additional styling
+   * When not provided, no additional styling is applied.
+   */
+  getRowClassName?: RowClassNameFunction<TData>;
 };
 
 // Extend ColumnMeta to allow headerClassName and cellClassName
@@ -79,7 +88,7 @@ type DataTableProps<TData, TValue> = {
 // DataTableHeader also accepts a cellClassName prop, which acts as a default for all header cells.
 // If a column's meta.headerClassName is set, it overrides the default cellClassName for that column's header.
 // This allows you to have a global default style for headers, but override it for special columns (like selection checkboxes).
-export type DataTableColumnMeta = {
+type DataTableColumnMeta = {
   /**
    * CSS class for the <th> (header cell) of this column.
    * Overrides the cellClassName prop on DataTableHeader for this column only.
@@ -92,6 +101,13 @@ export type DataTableColumnMeta = {
   cellClassName?: string;
 };
 
+/**
+ * Function type for providing custom row styling based on row data.
+ * When undefined is returned, no additional class is applied.
+ * @template TData - The type of data in the row.
+ */
+type RowClassNameFunction<TData> = (row: Row<TData>) => string | undefined;
+
 function DataTable<TData, TValue>({
   columns,
   data,
@@ -101,6 +117,7 @@ function DataTable<TData, TValue>({
   bulkActions = [],
   onSelectionChange,
   getRowId,
+  getRowClassName,
 }: DataTableProps<TData, TValue>): React.ReactElement {
   // Table state management
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -218,6 +235,7 @@ function DataTable<TData, TValue>({
                         highlightRowFilter?.(row)
                           ? highlightClassName
                           : undefined,
+                        getRowClassName ? getRowClassName(row) : undefined,
                       ]
                         .filter(Boolean)
                         .join(' ')}
@@ -253,4 +271,4 @@ function DataTable<TData, TValue>({
 
 export default DataTable;
 export { DEFAULT_HIGHLIGHT_ROW_CLASS };
-export type { DataTableProps };
+export type { DataTableColumnMeta, DataTableProps, RowClassNameFunction };

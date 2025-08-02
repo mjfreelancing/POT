@@ -16,7 +16,12 @@ import {
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Expense } from '@/data';
-import { DisplayError, Frequency } from '@/lib';
+import {
+  DisplayError,
+  Frequency,
+  localToday,
+  normalizeToLocalMidnight,
+} from '@/lib';
 
 import { renewAllExpenses } from '../utils/bulkActions';
 import ExpenseActions from './ExpenseActions';
@@ -36,14 +41,31 @@ const columns: ColumnDef<Expense>[] = [
       </div>
     ),
   },
-  createMoneyValueColumn<Expense>('amount', 'Amount'),
-  createDateColumn<Expense>('nextDue', 'Next Due', {
-    enableSorting: true,
-    sortingFn: 'datetime',
+  createMoneyValueColumn<Expense>({
+    accessorKey: 'amount',
+    header: 'Amount',
   }),
-  createFrequencyColumn<Expense>('frequencyCount', 'frequency', 'Frequency'),
-  createDateColumn<Expense>('accrualStart', 'Accrual Start'),
-  createMoneyValueColumn<Expense>('accrued', 'Accrued'),
+  createDateColumn<Expense>({
+    accessorKey: 'nextDue',
+    header: 'Next Due',
+    options: {
+      enableSorting: true,
+      sortingFn: 'datetime',
+    },
+  }),
+  createFrequencyColumn<Expense>({
+    countKey: 'frequencyCount',
+    frequencyKey: 'frequency',
+    header: 'Frequency',
+  }),
+  createDateColumn<Expense>({
+    accessorKey: 'accrualStart',
+    header: 'Accrual Start',
+  }),
+  createMoneyValueColumn<Expense>({
+    accessorKey: 'accrued',
+    header: 'Accrued',
+  }),
   {
     id: 'accountDescription',
     header: 'Account',
@@ -57,7 +79,9 @@ const columns: ColumnDef<Expense>[] = [
       </div>
     ),
   },
-  createDateColumn<Expense>('endDate', 'End Date', {
+  createDateColumn<Expense>({
+    accessorKey: 'endDate',
+    header: 'End Date',
     getNullValue: row =>
       row.original.frequency === Frequency.OneTime ? undefined : 'Ongoing',
   }),
@@ -121,6 +145,11 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
             getRowId={createRowIdGetter<Expense>()}
             highlightRowFilter={(row: Row<Expense>) =>
               row.original.rowId.toString() === editingId
+            }
+            getRowClassName={(row: Row<Expense>) =>
+              normalizeToLocalMidnight(row.original.nextDue) < localToday()
+                ? 'text-muted-foreground italic'
+                : undefined
             }
           />
         </CardContent>
