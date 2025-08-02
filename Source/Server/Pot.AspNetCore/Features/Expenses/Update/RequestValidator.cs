@@ -12,6 +12,24 @@ internal sealed class RequestValidator : ValidatorBase<Request>
     {
         RuleFor(request => request.Description).IsNotEmpty();
 
+        this.CustomRuleFor(request => request.EndDate, (value, context) =>
+        {
+            if (value.HasValue)
+            {
+                var validationContext = context.GetContextData<Request, RequestValidationContext>();
+
+                if (validationContext.NextDue > value.Value)
+                {
+                    var failure = new ValidationFailure(nameof(Request.EndDate), "Cannot be earlier than the next due date", value)
+                    {
+                        ErrorCode = ErrorCodes.Invalid
+                    };
+
+                    context.AddFailure(failure);
+                }
+            }
+        });
+
         this.CustomRuleFor(request => request.FrequencyCount, (value, context) =>
         {
             var validationContext = context.GetContextData<Request, RequestValidationContext>();

@@ -4,5 +4,6 @@ namespace Pot.AspNetCore.Features.Incomes.Update;
 
 internal sealed class RequestValidationContext
 {
+    public required DateOnly NextDue { get; init; }
     public required Frequency Frequency { get; init; }
 }
