@@ -28,6 +28,7 @@ import ExpenseActions from './ExpenseActions';
 
 const columns: ColumnDef<Expense>[] = [
   {
+    id: 'description',
     accessorKey: 'description',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Description" />

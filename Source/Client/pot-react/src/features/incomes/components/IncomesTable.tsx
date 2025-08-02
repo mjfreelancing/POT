@@ -32,6 +32,7 @@ type IncomesTableProps = {
 
 const columns: ColumnDef<Income>[] = [
   {
+    id: 'description',
     accessorKey: 'description',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Description" />

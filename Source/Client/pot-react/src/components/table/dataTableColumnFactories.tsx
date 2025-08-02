@@ -79,6 +79,7 @@ const createMoneyValueColumn = <TData,>(
   const { enableSorting = false, ...restOptions } = options;
 
   return {
+    id: accessorKey,
     accessorKey,
     header: enableSorting
       ? ({ column }) => <DataTableColumnHeader column={column} title={header} />
@@ -102,6 +103,7 @@ const createDateColumn = <TData,>(
   const { enableSorting = false, ...restOptions } = options;
 
   return {
+    id: accessorKey,
     accessorKey,
     header: enableSorting
       ? ({ column }) => <DataTableColumnHeader column={column} title={header} />

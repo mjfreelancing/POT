@@ -26,6 +26,7 @@ type AccountsTableProps = {
 
 const columns: ColumnDef<Account>[] = [
   {
+    id: 'bsb_number',
     accessorKey: 'bsb_number',
     header: 'BSB / Number',
     cell: ({ row }) => {
@@ -40,6 +41,7 @@ const columns: ColumnDef<Account>[] = [
     },
   },
   {
+    id: 'description',
     accessorKey: 'description',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Description" />
