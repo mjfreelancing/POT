@@ -12,6 +12,10 @@ internal sealed class RequestValidator : ValidatorBase<Request>
     {
         RuleFor(request => request.Description).IsNotEmpty();
 
+        // It's more effort to use a custom property validator than simply use a custom rule.
+        // Check out the implementation of AccrualStartValidator in the commented code at the bottom.
+        // RuleFor(request => request.AccrualStart).SetValidator(new AccrualStartValidator());
+
         // Can be before/after the next due date, but not after the end date
         this.CustomRuleFor(request => request.AccrualStart, (value, context) =>
         {
@@ -83,3 +87,46 @@ internal sealed class RequestValidator : ValidatorBase<Request>
         RuleFor(request => request.AccountRowId).IsNotEmpty();
     }
 }
+
+// This would be the way to go if the validator was re-usable, but it's specific to each request type.
+// For the NextDue/EndDate validation, We could create an interface and apply ISP (a type constraint on
+// a generic model type), but it's not worth the effort / maintenance.
+//
+//internal sealed class AccrualStartValidator : PropertyValidator<Request, DateOnly>
+//{
+//    public override string Name => nameof(AccrualStartValidator);
+
+//    public override bool IsValid(ValidationContext<Request> context, DateOnly value)
+//    {
+//        var validationContext = context.GetContextData<Request, RequestValidationContext>();
+
+//        if (validationContext.EndDate.HasValue)
+//        {
+//            if (value > validationContext.EndDate.Value)
+//            {
+//                var errorCode = ErrorCodes.Invalid;
+
+//                var failure = new ValidationFailure
+//                {
+//                    PropertyName = nameof(Request.AccrualStart),
+//                    AttemptedValue = value,
+//                    ErrorCode = errorCode,
+//                    ErrorMessage = GetDefaultMessageTemplate(errorCode)
+//                };
+
+//                context.AddFailure(failure);
+
+//                // Return true to prevent FluentValidation from adding its own error
+//                // using GetDefaultMessageTemplate()
+//                return true;
+//            }
+//        }
+
+//        return true;
+//    }
+
+//    protected override string GetDefaultMessageTemplate(string errorCode)
+//    {
+//        return "Cannot be after the end date";
+//    }
+//}
