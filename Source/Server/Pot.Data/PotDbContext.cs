@@ -11,6 +11,7 @@ namespace Pot.Data
 
         public DbSet<AccountEntity> Accounts { get; set; }
         public DbSet<ExpenseEntity> Expenses { get; set; }
+        public DbSet<IncomeEntity> Incomes { get; set; }
 
         public PotDbContext(IConfiguration configuration)
         {

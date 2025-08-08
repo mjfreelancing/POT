@@ -36,9 +36,9 @@ function useAccountEditor(
     });
   }, [account, form]);
 
-  // Subscribe to form changes for the current values so we can custom compare. This is required
-  // because the user edits for balance / reserved are returned as strings from form.getValues().
-  form.watch(['description', 'balance', 'reserved']);
+  // Watch form changes to trigger re-renders when these fields change. This ensures isDirty()
+  // uses current values since balance/reserved are returned as strings from form.getValues().
+  form.watch(['balance', 'reserved']);
 
   const resetToOriginal = () => {
     if (originalValues) {
