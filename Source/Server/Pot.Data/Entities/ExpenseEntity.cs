@@ -9,7 +9,7 @@ namespace Pot.Data.Entities
     [Index(nameof(NextDue), IsUnique = false)]
     public sealed class ExpenseEntity : EntityBase, IHasNextDue
     {
-        public bool Disabled { get; set; }
+        public bool ExcludeFromCalcs { get; set; }
 
         [Required]
         [MediumString]
