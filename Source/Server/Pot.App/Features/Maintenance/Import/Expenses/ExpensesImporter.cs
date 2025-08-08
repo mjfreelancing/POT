@@ -84,6 +84,7 @@ internal sealed class ExpensesImporter : IExpensesImporter
         var expenseEntity = new ExpenseEntity
         {
             RowId = import.RowId,
+            ExcludeFromCalcs = import.ExcludeFromCalcs,
             Description = import.Description,
             AccrualStart = import.AccrualStart,
             NextDue = import.NextDue,
@@ -101,6 +102,7 @@ internal sealed class ExpensesImporter : IExpensesImporter
 
     private static void UpdateExistingExpense(ExpenseEntity entity, ExpenseCsvRow import)
     {
+        entity.ExcludeFromCalcs = import.ExcludeFromCalcs;
         entity.Description = import.Description;
         entity.AccrualStart = import.AccrualStart;
         entity.NextDue = import.NextDue;

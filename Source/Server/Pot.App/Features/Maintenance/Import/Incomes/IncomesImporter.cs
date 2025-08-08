@@ -84,6 +84,7 @@ internal sealed class IncomesImporter : IIncomesImporter
         var incomeEntity = new IncomeEntity
         {
             RowId = import.RowId,
+            ExcludeFromCalcs = import.ExcludeFromCalcs,
             Description = import.Description,
             NextDue = import.NextDue,
             EndDate = import.EndDate,
@@ -99,6 +100,7 @@ internal sealed class IncomesImporter : IIncomesImporter
 
     private static void UpdateExistingIncome(IncomeEntity entity, IncomeCsvRow import)
     {
+        entity.ExcludeFromCalcs = import.ExcludeFromCalcs;
         entity.Description = import.Description;
         entity.NextDue = import.NextDue;
         entity.EndDate = import.EndDate;

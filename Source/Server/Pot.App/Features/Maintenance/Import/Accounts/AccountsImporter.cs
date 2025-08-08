@@ -68,6 +68,7 @@ internal sealed class AccountsImporter : IAccountsImporter
         var accountEntity = new AccountEntity
         {
             RowId = import.RowId,
+            ExcludeFromCalcs = import.ExcludeFromCalcs,
             Bsb = import.Bsb,
             Number = import.Number,
             Description = import.Description,
@@ -86,6 +87,7 @@ internal sealed class AccountsImporter : IAccountsImporter
     {
         // Don't need to explicitly call _accountRepository.Update(entity).
         // The entity will be marked as modified if anything has changed.
+        entity.ExcludeFromCalcs = import.ExcludeFromCalcs;
         entity.Bsb = import.Bsb;
         entity.Number = import.Number;
         entity.Description = import.Description;

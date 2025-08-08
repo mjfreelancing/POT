@@ -8,13 +8,13 @@ namespace Pot.AspNetCore.Features.Maintenance.Import;
 internal sealed class Handler
 {
     public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke([AsParameters] Request request,
-       IImportDataService importAccountsService, ILogger<Handler> logger, CancellationToken cancellationToken)
+       IImportDataService importDataService, ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);
 
         using var zipStream = request.File.OpenReadStream();
 
-        var result = await importAccountsService.ImportAsync(request.ExportPublicKey, zipStream, cancellationToken);
+        var result = await importDataService.ImportAsync(request.ExportPublicKey, zipStream, cancellationToken);
 
         return result.IsSuccess
             ? Response.Ok(result.Value!)

@@ -11,31 +11,34 @@ internal sealed class IncomeCsvRow
     public Guid RowId { get; init; }
 
     [Index(1)]
-    public string Description { get; init; } = string.Empty;
+    public bool ExcludeFromCalcs { get; init; }
 
     [Index(2)]
+    public string Description { get; init; } = string.Empty;
+
+    [Index(3)]
     [Format("yyyy-MM-dd")]
     [TypeConverter(typeof(DateOnlyConverter))]
     public DateOnly NextDue { get; init; }
 
-    [Index(3)]
+    [Index(4)]
     [Format("yyyy-MM-dd")]
     [TypeConverter(typeof(NullableDateOnlyConverter))]
     public DateOnly? EndDate { get; init; }
 
-    [Index(4)]
+    [Index(5)]
     [TypeConverter(typeof(FrequencyConverter))]
     public required Frequency Frequency { get; init; }
 
-    [Index(5)]
+    [Index(6)]
     public int FrequencyCount { get; init; }
 
-    [Index(6)]
+    [Index(7)]
     public double Amount { get; init; }
 
-    [Index(7)]
+    [Index(8)]
     public string Note { get; init; } = string.Empty;
 
-    [Index(8)]
+    [Index(9)]
     public Guid AccountRowId { get; init; }
 }
