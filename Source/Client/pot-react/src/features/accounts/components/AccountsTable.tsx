@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { ColumnDef } from '@tanstack/react-table';
+import { ColumnDef, Row } from '@tanstack/react-table';
 import { BanknoteArrowDown, BanknoteArrowUp } from 'lucide-react';
 import { useState } from 'react';
 import { useParams } from 'react-router';
@@ -132,6 +132,14 @@ function AccountsTable({ accounts }: AccountsTableProps) {
     },
   ];
 
+  function getRowClassName(row: Row<Account>) {
+    if (row.original.excludeFromCalcs) {
+      return 'text-muted-foreground italic';
+    }
+
+    return undefined;
+  }
+
   return (
     <>
       {error && (
@@ -152,6 +160,7 @@ function AccountsTable({ accounts }: AccountsTableProps) {
             highlightRowFilter={row =>
               row.original.rowId.toString() === editingId
             }
+            getRowClassName={(row: Row<Account>) => getRowClassName(row)}
           />
         </CardContent>
       </Card>

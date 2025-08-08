@@ -12,6 +12,7 @@ const BaseAccountSchema = z.object({
 
 const AccountSchema = BaseAccountSchema.extend({
   ...IdentitySchema.shape,
+  excludeFromCalcs: z.boolean(),
   totalExpenseAccrued: z.number(),
   dailyExpenseAccrual: z.number(),
   available: z.number(),

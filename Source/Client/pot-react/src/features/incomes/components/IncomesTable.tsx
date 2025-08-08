@@ -118,6 +118,18 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
     },
   ];
 
+  function getRowClassName(row: Row<Income>) {
+    if (row.original.excludeFromCalcs) {
+      return 'text-muted-foreground italic';
+    }
+
+    if (normalizeToLocalMidnight(row.original.nextDue) < localToday()) {
+      return 'text-red-600 dark:text-red-400 italic';
+    }
+
+    return undefined;
+  }
+
   return (
     <>
       {error && (
@@ -138,11 +150,7 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
             highlightRowFilter={(row: Row<Income>) =>
               row.original.rowId.toString() === editingId
             }
-            getRowClassName={(row: Row<Income>) =>
-              normalizeToLocalMidnight(row.original.nextDue) < localToday()
-                ? 'text-red-600 dark:text-red-400 italic'
-                : undefined
-            }
+            getRowClassName={(row: Row<Income>) => getRowClassName(row)}
           />
         </CardContent>
       </Card>

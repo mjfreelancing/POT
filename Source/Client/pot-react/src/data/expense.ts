@@ -23,6 +23,7 @@ const BaseExpenseSchema = z.object({
 
 const ExpenseSchema = BaseExpenseSchema.extend({
   ...IdentitySchema.shape,
+  excludeFromCalcs: z.boolean(),
   account: ExpenseAccountSchema,
   accrued: z.number(),
 });

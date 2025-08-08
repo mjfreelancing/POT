@@ -126,6 +126,18 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
     },
   ];
 
+  function getRowClassName(row: Row<Expense>) {
+    if (row.original.excludeFromCalcs) {
+      return 'text-muted-foreground italic';
+    }
+
+    if (normalizeToLocalMidnight(row.original.nextDue) < localToday()) {
+      return 'text-red-600 dark:text-red-400 italic';
+    }
+
+    return undefined;
+  }
+
   return (
     <>
       {error && (
@@ -147,11 +159,7 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
             highlightRowFilter={(row: Row<Expense>) =>
               row.original.rowId.toString() === editingId
             }
-            getRowClassName={(row: Row<Expense>) =>
-              normalizeToLocalMidnight(row.original.nextDue) < localToday()
-                ? 'text-red-600 dark:text-red-400 italic'
-                : undefined
-            }
+            getRowClassName={(row: Row<Expense>) => getRowClassName(row)}
           />
         </CardContent>
       </Card>

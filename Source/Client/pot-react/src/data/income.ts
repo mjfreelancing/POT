@@ -22,6 +22,7 @@ const BaseIncomeSchema = z.object({
 
 const IncomeSchema = BaseIncomeSchema.extend({
   ...IdentitySchema.shape,
+  excludeFromCalcs: z.boolean(),
   account: IncomeAccountSchema,
 });
 
