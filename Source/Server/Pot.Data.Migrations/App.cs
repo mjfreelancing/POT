@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 using Polly;
+using Pot.Data.Extensions;
 
 namespace Pot.Data.Migrations;
 
@@ -21,10 +22,7 @@ internal sealed class App : ConsoleAppBase
         _ = configuration.WhenNotNull();
         _logger = logger.WhenNotNull();
 
-        // TODO: Get database, username and password from environment variables via IConfiguration
-        //       Cross reference with the docker container configuration
-        var databaseHost = configuration["DATABASE_HOST"];
-        _connectionString = $"Host={databaseHost};Database=postgres;Username=postgres;Password=password";
+        _connectionString = configuration.GetConnectionString();
     }
 
 

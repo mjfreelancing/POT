@@ -16,6 +16,11 @@ namespace Pot.Data
         private const string EntitySuffix = "Entity";
         private static readonly Type _entityBaseType = typeof(EntityBase);
 
+        protected DbContextBase(DbContextOptions dbContextOptions)
+            : base(dbContextOptions)
+        {
+        }
+
         public override int SaveChanges()
         {
             OnBeforeSave();

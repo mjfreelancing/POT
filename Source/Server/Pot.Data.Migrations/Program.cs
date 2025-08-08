@@ -2,6 +2,7 @@
 using AllOverIt.GenericHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Pot.Data.Extensions;
 
 namespace Pot.Data.Migrations;
 
@@ -14,7 +15,11 @@ internal class Program
             .ConfigureServices((hostContext, services) =>
             {
                 services
-                    .AddDbContextFactory<PotDbContext>()
+                    .AddDbContextFactory<PotDbContext>(options =>
+                    {
+                        var configuration = ConfigurationFactory.Create();
+                        options.ConfigurePostgres(configuration);
+                    })
                     .AddScoped<IDatabaseMigrator, PotDbMigrator>();
             })
             .RunConsoleAsync(options => options.SuppressStatusMessages = true);

@@ -8,6 +8,8 @@ namespace Pot.Data.Entities
     [Index(nameof(Bsb), nameof(Number), IsUnique = true)]
     public sealed class AccountEntity : EntityBase
     {
+        public bool Disabled { get; set; }
+
         [Required]
         [MaxLength(7)]
         public required string Bsb { get; set; }

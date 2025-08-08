@@ -21,7 +21,7 @@ namespace Pot.AspNetCore.Extensions;
 
 internal static class WebApplicationBuilderExtensions
 {
-    private static readonly Type _scopedLifetimeValidatorType = typeof(IScopedLifetimeValidator);
+    private static readonly Type ScopedLifetimeValidatorType = typeof(IScopedLifetimeValidator);
 
     public static WebApplicationBuilder AddCorrelationId(this WebApplicationBuilder builder)
     {
@@ -150,13 +150,13 @@ internal static class WebApplicationBuilderExtensions
         {
             validationRegistry.AutoRegisterScopedValidators<ValidationRegistrar>((modelType, validatorType) =>
             {
-                return validatorType.IsAssignableTo(_scopedLifetimeValidatorType);
+                return validatorType.IsAssignableTo(ScopedLifetimeValidatorType);
             });
 
             validationRegistry.AutoRegisterSingletonValidators<ValidationRegistrar>((modelType, validatorType) =>
             {
                 // Validators are typically registered as singletons, so we look for the lack of IScopedLifetimeValidator.
-                return !validatorType.IsAssignableTo(_scopedLifetimeValidatorType);
+                return !validatorType.IsAssignableTo(ScopedLifetimeValidatorType);
             });
 
             validationRegistry.AddAppValidators();
@@ -167,9 +167,13 @@ internal static class WebApplicationBuilderExtensions
         return builder;
     }
 
-    public static WebApplicationBuilder AddPotData(this WebApplicationBuilder builder)
+    public static WebApplicationBuilder AddPotData(this WebApplicationBuilder builder, string connectionString)
     {
-        builder.Services.AddDbContext<PotDbContext>();
+        builder.Services.AddDbContext<PotDbContext>(options =>
+        {
+            options.ConfigurePostgres(connectionString);
+        });
+
         builder.Services.AddQueryPagination();
         builder.Services.AddUnitOfWork();
 

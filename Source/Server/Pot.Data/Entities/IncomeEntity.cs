@@ -9,6 +9,8 @@ namespace Pot.Data.Entities
     [Index(nameof(NextDue), IsUnique = false)]
     public sealed class IncomeEntity : EntityBase, IHasNextDue
     {
+        public bool Disabled { get; set; }
+
         [Required]
         [MediumString]
         [Citext]

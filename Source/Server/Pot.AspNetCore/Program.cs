@@ -4,6 +4,7 @@ using Pot.AspNetCore.Features.Expenses.Extensions;
 using Pot.AspNetCore.Features.Incomes.Extensions;
 using Pot.AspNetCore.Features.Maintenance.Extensions;
 using Pot.AspNetCore.Features.Projections.Extensions;
+using Pot.Data.Extensions;
 
 namespace Pot.AspNetCore;
 
@@ -26,7 +27,7 @@ public class Program
             .AddCustomProblemDetails()
             .AddAspNetDependencies()
             .AddAspNetValidation()
-            .AddPotData();
+            .AddPotData(builder.Configuration.GetConnectionString());
 
         // https://www.youtube.com/watch?v=3XoXzEPHdTA Nick Chapsas
         // https://www.youtube.com/watch?v=6DWJIyipxzw Milan Jovanovic
