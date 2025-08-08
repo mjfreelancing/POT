@@ -28,6 +28,7 @@ internal sealed class ExpensesExporter : MemoryCsvExporterBase<ExpenseData>, IEx
             var expenseData = new ExpenseData
             {
                 RowId = expense.RowId,
+                ExcludeFromCalcs = expense.ExcludeFromCalcs,
                 Description = expense.Description,
                 AccrualStart = expense.AccrualStart,
                 NextDue = expense.NextDue,
@@ -51,6 +52,7 @@ internal sealed class ExpensesExporter : MemoryCsvExporterBase<ExpenseData>, IEx
         var serializer = new CsvSerializer<ExpenseData>();
 
         serializer.AddField(nameof(ExpenseData.RowId), entity => entity.RowId);
+        serializer.AddField(nameof(ExpenseData.ExcludeFromCalcs), entity => entity.ExcludeFromCalcs);
         serializer.AddField(nameof(ExpenseData.Description), entity => entity.Description);
         serializer.AddField(nameof(ExpenseData.AccrualStart), entity => entity.AccrualStart.ToString(format: "yyyy-MM-dd"));
         serializer.AddField(nameof(ExpenseData.NextDue), entity => entity.NextDue.ToString(format: "yyyy-MM-dd"));

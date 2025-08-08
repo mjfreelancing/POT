@@ -5,6 +5,7 @@ namespace Pot.App.Features.Maintenance.Export.Expenses.Models;
 public sealed class ExpenseData
 {
     public required Guid RowId { get; set; }
+    public bool ExcludeFromCalcs { get; set; }
     public required string Description { get; set; }
     public required DateOnly AccrualStart { get; set; }
     public required DateOnly NextDue { get; set; }

@@ -5,6 +5,7 @@ namespace Pot.App.Features.Maintenance.Export.Incomes.Models;
 public sealed class IncomeData
 {
     public required Guid RowId { get; set; }
+    public bool ExcludeFromCalcs { get; set; }
     public required string Description { get; set; }
     public required DateOnly NextDue { get; set; }
     public DateOnly? EndDate { get; set; }

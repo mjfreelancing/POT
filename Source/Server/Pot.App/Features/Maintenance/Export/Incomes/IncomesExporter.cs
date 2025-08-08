@@ -28,6 +28,7 @@ internal sealed class IncomesExporter : MemoryCsvExporterBase<IncomeData>, IInco
             var incomeData = new IncomeData
             {
                 RowId = income.RowId,
+                ExcludeFromCalcs = income.ExcludeFromCalcs,
                 Description = income.Description,
                 NextDue = income.NextDue,
                 EndDate = income.EndDate,
@@ -49,6 +50,7 @@ internal sealed class IncomesExporter : MemoryCsvExporterBase<IncomeData>, IInco
         var serializer = new CsvSerializer<IncomeData>();
 
         serializer.AddField(nameof(IncomeData.RowId), entity => entity.RowId);
+        serializer.AddField(nameof(IncomeData.ExcludeFromCalcs), entity => entity.ExcludeFromCalcs);
         serializer.AddField(nameof(IncomeData.Description), entity => entity.Description);
         serializer.AddField(nameof(IncomeData.NextDue), entity => entity.NextDue.ToString(format: "yyyy-MM-dd"));
         serializer.AddField(nameof(IncomeData.EndDate), entity => entity.EndDate?.ToString(format: "yyyy-MM-dd"));
