@@ -16,12 +16,7 @@ import {
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Income } from '@/data';
-import {
-  DisplayError,
-  Frequency,
-  localToday,
-  normalizeToLocalMidnight,
-} from '@/lib';
+import { DisplayError, Frequency, getTableRowClassName } from '@/lib';
 
 import { renewAllIncomes } from '../utils/bulkActions';
 import IncomeActions from './IncomeActions';
@@ -118,18 +113,6 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
     },
   ];
 
-  function getRowClassName(row: Row<Income>) {
-    if (row.original.excludeFromCalcs) {
-      return 'text-muted-foreground italic';
-    }
-
-    if (normalizeToLocalMidnight(row.original.nextDue) < localToday()) {
-      return 'text-red-600 dark:text-red-400 italic';
-    }
-
-    return undefined;
-  }
-
   return (
     <>
       {error && (
@@ -150,7 +133,9 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
             highlightRowFilter={(row: Row<Income>) =>
               row.original.rowId.toString() === editingId
             }
-            getRowClassName={(row: Row<Income>) => getRowClassName(row)}
+            getRowClassName={(row: Row<Income>) =>
+              getTableRowClassName(row.original)
+            }
           />
         </CardContent>
       </Card>

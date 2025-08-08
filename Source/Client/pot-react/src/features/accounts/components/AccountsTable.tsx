@@ -15,7 +15,7 @@ import {
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Account } from '@/data';
-import { DisplayError } from '@/lib';
+import { DisplayError, getTableRowClassName } from '@/lib';
 
 import { accrueAllExpenses } from '../utils/bulkActions';
 import AccountActions from './AccountActions';
@@ -132,14 +132,6 @@ function AccountsTable({ accounts }: AccountsTableProps) {
     },
   ];
 
-  function getRowClassName(row: Row<Account>) {
-    if (row.original.excludeFromCalcs) {
-      return 'text-muted-foreground italic';
-    }
-
-    return undefined;
-  }
-
   return (
     <>
       {error && (
@@ -160,7 +152,9 @@ function AccountsTable({ accounts }: AccountsTableProps) {
             highlightRowFilter={row =>
               row.original.rowId.toString() === editingId
             }
-            getRowClassName={(row: Row<Account>) => getRowClassName(row)}
+            getRowClassName={(row: Row<Account>) =>
+              getTableRowClassName(row.original)
+            }
           />
         </CardContent>
       </Card>

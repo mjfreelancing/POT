@@ -16,12 +16,7 @@ import {
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Expense } from '@/data';
-import {
-  DisplayError,
-  Frequency,
-  localToday,
-  normalizeToLocalMidnight,
-} from '@/lib';
+import { DisplayError, Frequency, getTableRowClassName } from '@/lib';
 
 import { renewAllExpenses } from '../utils/bulkActions';
 import ExpenseActions from './ExpenseActions';
@@ -126,18 +121,6 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
     },
   ];
 
-  function getRowClassName(row: Row<Expense>) {
-    if (row.original.excludeFromCalcs) {
-      return 'text-muted-foreground italic';
-    }
-
-    if (normalizeToLocalMidnight(row.original.nextDue) < localToday()) {
-      return 'text-red-600 dark:text-red-400 italic';
-    }
-
-    return undefined;
-  }
-
   return (
     <>
       {error && (
@@ -159,7 +142,9 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
             highlightRowFilter={(row: Row<Expense>) =>
               row.original.rowId.toString() === editingId
             }
-            getRowClassName={(row: Row<Expense>) => getRowClassName(row)}
+            getRowClassName={(row: Row<Expense>) =>
+              getTableRowClassName(row.original)
+            }
           />
         </CardContent>
       </Card>

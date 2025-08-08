@@ -3,5 +3,6 @@ export * from './dateUtils';
 export * from './fileSystem';
 export * from './moneyUtils';
 export * from './result';
+export * from './tableRowUtils';
 export * from './types';
 export * from './utils';
