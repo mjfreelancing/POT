@@ -5,23 +5,24 @@ namespace Pot.App.Features.Incomes.Get.Mappings;
 
 internal static class EntityMapping
 {
-    public static Output MapToOutput(this IncomeEntity entity)
+    public static Output MapToOutput(this IncomeEntity income)
     {
         return new Output
         {
-            RowId = entity.RowId,
-            Etag = entity.Etag,
-            Description = entity.Description,
-            NextDue = entity.NextDue,
-            EndDate = entity.EndDate,
-            Frequency = entity.Frequency,
-            FrequencyCount = entity.FrequencyCount,
-            Amount = entity.Amount,
-            Note = entity.Note,
+            RowId = income.RowId,
+            Etag = income.Etag,
+            ExcludeFromCalcs = income.ExcludeFromCalcs,
+            Description = income.Description,
+            NextDue = income.NextDue,
+            EndDate = income.EndDate,
+            Frequency = income.Frequency,
+            FrequencyCount = income.FrequencyCount,
+            Amount = income.Amount,
+            Note = income.Note,
             Account = new Output.AccountModel
             {
-                RowId = entity.Account.RowId,
-                Description = entity.Account.Description
+                RowId = income.Account.RowId,
+                Description = income.Account.Description
             }
         };
     }

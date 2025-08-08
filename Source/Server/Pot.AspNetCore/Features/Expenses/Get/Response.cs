@@ -15,6 +15,9 @@ internal sealed class Response : ResponseBase
         public required string Description { get; init; }
     }
 
+    [Description("Indicates if the expense is excluded from calculations such as accruals")]
+    public bool ExcludeFromCalcs { get; set; }
+
     [Description("A description of the Expense.")]
     public string Description { get; init; }
 
@@ -56,6 +59,7 @@ internal sealed class Response : ResponseBase
 
         RowId = expense.RowId;
         Etag = expense.Etag;
+        ExcludeFromCalcs = expense.ExcludeFromCalcs;
         Description = expense.Description;
         NextDue = expense.NextDue;
         AccrualStart = expense.AccrualStart;

@@ -13,6 +13,7 @@ internal static class EntityMapping
         {
             RowId = account.RowId,
             Etag = account.Etag,
+            ExcludeFromCalcs = account.ExcludeFromCalcs,
             Bsb = account.Bsb,
             Number = account.Number,
             Description = account.Description,

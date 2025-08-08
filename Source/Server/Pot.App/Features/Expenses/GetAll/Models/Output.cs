@@ -12,6 +12,7 @@ public sealed class Output
 
     public required Guid RowId { get; init; }
     public required long Etag { get; init; }
+    public required bool ExcludeFromCalcs { get; init; }
     public required string Description { get; init; }
     public required DateOnly AccrualStart { get; init; }    // Can adjust this date to start accruing sooner/later (paid previous earlier or want to delay)
     public required DateOnly NextDue { get; init; }

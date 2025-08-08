@@ -15,6 +15,9 @@ internal sealed class Response : ResponseBase
         public required string Description { get; init; }
     }
 
+    [Description("Indicates if the income is excluded from calculations")]
+    public bool ExcludeFromCalcs { get; set; }
+
     [Description("A description of the income.")]
     public string Description { get; init; }
 
@@ -50,6 +53,7 @@ internal sealed class Response : ResponseBase
 
         RowId = income.RowId;
         Etag = income.Etag;
+        ExcludeFromCalcs = income.ExcludeFromCalcs;
         Description = income.Description;
         NextDue = income.NextDue;
         EndDate = income.EndDate;

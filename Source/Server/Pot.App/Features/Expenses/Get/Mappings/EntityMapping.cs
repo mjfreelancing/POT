@@ -5,25 +5,26 @@ namespace Pot.App.Features.Expenses.Get.Mappings;
 
 internal static class EntityMapping
 {
-    public static Output MapToOutput(this ExpenseEntity entity)
+    public static Output MapToOutput(this ExpenseEntity expense)
     {
         return new Output
         {
-            RowId = entity.RowId,
-            Etag = entity.Etag,
-            Description = entity.Description,
-            NextDue = entity.NextDue,
-            AccrualStart = entity.AccrualStart,
-            EndDate = entity.EndDate,
-            Frequency = entity.Frequency,
-            FrequencyCount = entity.FrequencyCount,
-            Amount = entity.Amount,
-            Accrued = entity.Accrued,
-            Note = entity.Note,
+            RowId = expense.RowId,
+            Etag = expense.Etag,
+            ExcludeFromCalcs = expense.ExcludeFromCalcs,
+            Description = expense.Description,
+            NextDue = expense.NextDue,
+            AccrualStart = expense.AccrualStart,
+            EndDate = expense.EndDate,
+            Frequency = expense.Frequency,
+            FrequencyCount = expense.FrequencyCount,
+            Amount = expense.Amount,
+            Accrued = expense.Accrued,
+            Note = expense.Note,
             Account = new Output.AccountModel
             {
-                RowId = entity.Account.RowId,
-                Description = entity.Account.Description
+                RowId = expense.Account.RowId,
+                Description = expense.Account.Description
             }
         };
     }
