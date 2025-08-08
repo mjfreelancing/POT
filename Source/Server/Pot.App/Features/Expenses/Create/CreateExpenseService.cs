@@ -42,6 +42,7 @@ internal sealed class CreateExpenseService : ICreateExpenseService
 
         var expenseToCreate = new ExpenseEntity
         {
+            ExcludeFromCalcs = false,   // Just being explicit
             Description = input.Description,
             NextDue = input.NextDue,
             AccrualStart = input.AccrualStart,

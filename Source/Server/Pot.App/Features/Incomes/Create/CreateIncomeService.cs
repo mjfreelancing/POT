@@ -42,6 +42,7 @@ internal sealed class CreateIncomeService : ICreateIncomeService
 
         var incomeToCreate = new IncomeEntity
         {
+            ExcludeFromCalcs = false,   // Just being explicit
             Description = input.Description,
             NextDue = input.NextDue,
             EndDate = input.EndDate,

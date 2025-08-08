@@ -29,6 +29,7 @@ internal sealed class CreateAccountService : ICreateAccountService
 
         var accountToCreate = new AccountEntity
         {
+            ExcludeFromCalcs = false,   // Just being explicit
             Bsb = input.Bsb,
             Number = input.Number,
             Description = input.Description,
