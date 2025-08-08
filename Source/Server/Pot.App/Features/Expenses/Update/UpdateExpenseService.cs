@@ -88,6 +88,7 @@ internal sealed class UpdateExpenseService : IUpdateExpenseService
 
     private static void UpdateExpenseEntity(ExpenseEntity expenseToUpdate, Input input, AccountEntity expenseAccount)
     {
+        expenseToUpdate.ExcludeFromCalcs = input.ExcludeFromCalcs;
         expenseToUpdate.Description = input.Description;
         expenseToUpdate.AccrualStart = input.AccrualStart;
         expenseToUpdate.NextDue = input.NextDue;

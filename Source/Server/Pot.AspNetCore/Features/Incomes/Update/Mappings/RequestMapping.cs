@@ -10,6 +10,7 @@ internal static class RequestMapping
         {
             RowId = request.RowId,
             Etag = request.Etag,
+            ExcludeFromCalcs = request.ExcludeFromCalcs!.Value, // Will have been validated
             Description = request.Description,
             NextDue = request.NextDue,
             EndDate = request.EndDate,

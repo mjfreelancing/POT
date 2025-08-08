@@ -71,11 +71,12 @@ internal sealed class UpdateAccountService : IUpdateAccountService
 
     private static void UpdateAccountEntity(AccountEntity accountToUpdate, Input request)
     {
+        accountToUpdate.ExcludeFromCalcs = request.ExcludeFromCalcs;
         accountToUpdate.Bsb = request.Bsb;
         accountToUpdate.Number = request.Number;
         accountToUpdate.Description = request.Description;
         accountToUpdate.Balance = request.Balance;
         accountToUpdate.Reserved = request.Reserved;
-        // account.TotalExpenseAccrued and account.DailyExpenseAccrual - will need to be re-calculated, when requested by the caller
+        // account.TotalExpenseAccrued and account.DailyExpenseAccrual - will need to be re-calculated
     }
 }

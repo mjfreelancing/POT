@@ -13,11 +13,12 @@ internal sealed class RequestValidator : ValidatorBase<Request>
 
     public RequestValidator()
     {
-        RuleFor(account => account.RowId).IsNotEmpty();
-        RuleFor(account => account.Bsb).IsNotEmpty();
-        RuleFor(account => account.Number).IsNotEmpty();
-        RuleFor(account => account.Description).IsNotEmpty();
-        RuleFor(account => account.Balance).IsGreaterThanOrEqualTo(0.0d);
-        RuleFor(account => account.Reserved).IsGreaterThanOrEqualTo(0.0d);
+        RuleFor(request => request.RowId).IsNotEmpty();
+        RuleFor(request => request.ExcludeFromCalcs).IsRequired();
+        RuleFor(request => request.Bsb).IsNotEmpty();
+        RuleFor(request => request.Number).IsNotEmpty();
+        RuleFor(request => request.Description).IsNotEmpty();
+        RuleFor(request => request.Balance).IsGreaterThanOrEqualTo(0.0d);
+        RuleFor(request => request.Reserved).IsGreaterThanOrEqualTo(0.0d);
     }
 }

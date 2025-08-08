@@ -11,8 +11,11 @@ public sealed class Request
     [Description("The Expense's entity tag.")]
     public long Etag { get; init; }
 
+    [Description("Is the expense excluded from calculations such as accruals.")]
+    public bool? ExcludeFromCalcs { get; init; }
+
     [Description("A description of the account.")]
-    public string Description { get; init; } = string.Empty;
+    public required string Description { get; init; }
 
     [Description("When automatic allocations will begin accruing for this expense.")]
     public DateOnly AccrualStart { get; init; }
@@ -24,7 +27,7 @@ public sealed class Request
     public DateOnly? EndDate { get; init; }
 
     [Description("The frequency unit the associated account will be credited.")]
-    public Frequency Frequency { get; init; } = Frequency.Months;
+    public required Frequency Frequency { get; init; }
 
     [Description("The frequency count the associated account will be credited.")]
     public int FrequencyCount { get; init; }

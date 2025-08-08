@@ -10,14 +10,17 @@ public sealed class Request
     [Description("The account's entity tag.")]
     public long Etag { get; init; }
 
+    [Description("Is the account excluded from calculations such as accruals.")]
+    public bool? ExcludeFromCalcs { get; init; }
+
     [Description("The account BSB.")]
-    public string Bsb { get; init; } = string.Empty;
+    public required string Bsb { get; init; }
 
     [Description("The account number.")]
-    public string Number { get; init; } = string.Empty;
+    public required string Number { get; init; }
 
     [Description("A description of the account.")]
-    public string Description { get; init; } = string.Empty;
+    public required string Description { get; init; }
 
     [Description("The account balance.")]
     public double Balance { get; init; }

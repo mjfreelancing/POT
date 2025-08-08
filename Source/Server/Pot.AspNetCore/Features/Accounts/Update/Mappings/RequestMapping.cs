@@ -2,7 +2,7 @@
 
 namespace Pot.AspNetCore.Features.Accounts.Update.Mappings;
 
-internal static class ContractMapping
+internal static class RequestMapping
 {
     public static Input MapToInput(this Request request)
     {
@@ -10,6 +10,7 @@ internal static class ContractMapping
         {
             RowId = request.RowId,
             Etag = request.Etag,
+            ExcludeFromCalcs = request.ExcludeFromCalcs!.Value, // Will have been validated
             Bsb = request.Bsb,
             Number = request.Number,
             Description = request.Description,

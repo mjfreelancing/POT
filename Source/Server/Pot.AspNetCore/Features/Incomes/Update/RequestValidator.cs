@@ -10,6 +10,7 @@ internal sealed class RequestValidator : ValidatorBase<Request>
 {
     public RequestValidator()
     {
+        RuleFor(request => request.ExcludeFromCalcs).IsRequired();
         RuleFor(request => request.Description).IsNotEmpty();
 
         this.CustomRuleFor(request => request.EndDate, (value, context) =>

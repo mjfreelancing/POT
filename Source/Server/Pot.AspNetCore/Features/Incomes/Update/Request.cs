@@ -11,8 +11,11 @@ public sealed class Request
     [Description("The income's entity tag.")]
     public long Etag { get; init; }
 
+    [Description("Is the income excluded from calculations.")]
+    public bool? ExcludeFromCalcs { get; init; }
+
     [Description("A description of the account.")]
-    public string Description { get; init; } = string.Empty;
+    public required string Description { get; init; }
 
     [Description("The date when the next income amount will be credited to the associated account.")]
     public DateOnly NextDue { get; init; }
@@ -21,7 +24,7 @@ public sealed class Request
     public DateOnly? EndDate { get; init; }
 
     [Description("The frequency unit the associated account will be credited.")]
-    public Frequency Frequency { get; init; } = Frequency.Months;
+    public required Frequency Frequency { get; init; }
 
     [Description("The frequency count the associated account will be credited.")]
     public int FrequencyCount { get; init; }

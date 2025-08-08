@@ -6,10 +6,11 @@ public sealed class Input
 {
     public Guid RowId { get; init; }
     public long Etag { get; init; }
-    public string Description { get; init; } = string.Empty;
+    public bool ExcludeFromCalcs { get; init; }
+    public required string Description { get; init; }
     public DateOnly NextDue { get; init; }
     public DateOnly? EndDate { get; init; }
-    public Frequency Frequency { get; init; } = Frequency.Months;
+    public required Frequency Frequency { get; init; }
     public int FrequencyCount { get; init; }
     public double Amount { get; init; }
     public string? Note { get; init; }

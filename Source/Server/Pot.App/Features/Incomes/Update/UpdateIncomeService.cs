@@ -88,6 +88,7 @@ internal sealed class UpdateIncomeService : IUpdateIncomeService
 
     private static void UpdateIncomeEntity(IncomeEntity incomeToUpdate, Input input, AccountEntity incomeAccount)
     {
+        incomeToUpdate.ExcludeFromCalcs = input.ExcludeFromCalcs;
         incomeToUpdate.Description = input.Description;
         incomeToUpdate.NextDue = input.NextDue;
         incomeToUpdate.EndDate = input.EndDate;
