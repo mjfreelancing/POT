@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Pot.Data;
@@ -11,9 +12,11 @@ using Pot.Data;
 namespace Pot.Data.Migrations
 {
     [DbContext(typeof(PotDbContext))]
-    partial class PotDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250808110343_MakeDisabledNonNullable")]
+    partial class MakeDisabledNonNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -81,7 +84,7 @@ namespace Pot.Data.Migrations
                     b.HasIndex("Bsb", "Number")
                         .IsUnique();
 
-                    b.ToTable("Account", (string)null);
+                    b.ToTable("Account");
                 });
 
             modelBuilder.Entity("Pot.Data.Entities.ExpenseEntity", b =>
@@ -148,7 +151,7 @@ namespace Pot.Data.Migrations
                     b.HasIndex("AccountId", "Description")
                         .IsUnique();
 
-                    b.ToTable("Expense", (string)null);
+                    b.ToTable("Expense");
                 });
 
             modelBuilder.Entity("Pot.Data.Entities.IncomeEntity", b =>
@@ -209,7 +212,7 @@ namespace Pot.Data.Migrations
                     b.HasIndex("AccountId", "Description")
                         .IsUnique();
 
-                    b.ToTable("Income", (string)null);
+                    b.ToTable("Income");
                 });
 
             modelBuilder.Entity("Pot.Data.Entities.ExpenseEntity", b =>
