@@ -1,11 +1,10 @@
 ﻿using AllOverIt.Assertion;
+using AllOverIt.Extensions;
 using AllOverIt.Logging.Extensions;
-using AllOverIt.Pagination;
 using Microsoft.Extensions.Logging;
 using Pot.App.Features.Incomes.GetAll.Mappings;
 using Pot.App.Features.Incomes.GetAll.Models;
 using Pot.Data.Repositories.Incomes;
-using Pot.Shared;
 
 namespace Pot.App.Features.Incomes.GetAll;
 
@@ -20,14 +19,12 @@ internal sealed class GetAllIncomesService : IGetAllIncomesService
         _logger = logger.WhenNotNull();
     }
 
-    public async Task<PageResult<Output>> GetAllIncomesAsync(Paging paging, CancellationToken cancellationToken)
+    public async Task<List<Output>> GetAllIncomesAsync(CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
-        var incomes = await _incomeRepository.GetAllIncomesPagedAsync(paging, cancellationToken);
+        var incomes = await _incomeRepository.GetAllIncomesAsync(cancellationToken);
 
-        var outputs = incomes.Results.Select(result => result.MapToOutput());
-
-        return PageResult<Output>.CreateFrom(incomes, outputs);
+        return incomes.SelectToList(income => income.MapToOutput());
     }
 }

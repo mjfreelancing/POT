@@ -1,6 +1,5 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Extensions;
-using AllOverIt.Pagination;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.App.Features.Incomes.GetAll.Models;
 using Pot.AspNetCore.Models;
@@ -44,13 +43,11 @@ internal sealed class Response : ResponseBase
     [Description("A note about the income")]
     public string? Note { get; init; }
 
-    public static Ok<PagedResponse<Response>> Ok(PageResult<Output> incomes)
+    public static Ok<Response[]> Ok(List<Output> incomes)
     {
-        var results = incomes.Results.SelectToArray(income => new Response(income));
+        var responses = incomes.SelectToArray(income => new Response(income));
 
-        var response = PagedResponse<Response>.CreateFromPageResult(incomes, results);
-
-        return TypedResults.Ok(response);
+        return TypedResults.Ok(responses);
     }
 
     private Response(Output income)

@@ -30,7 +30,7 @@ function IncomesPage() {
 
   // Memoize data arrays to prevent unnecessary re-renders
   const incomes = useMemo(
-    () => (incomesResult?.success ? incomesResult.value.results : []),
+    () => (incomesResult?.success ? incomesResult.value : []),
     [incomesResult],
   );
   const accounts = useMemo(

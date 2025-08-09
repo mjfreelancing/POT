@@ -3,7 +3,6 @@ using AllOverIt.Csv;
 using AllOverIt.Csv.Exporter;
 using Pot.App.Features.Incomes.GetAll;
 using Pot.App.Features.Maintenance.Export.Incomes.Models;
-using Pot.Shared;
 
 namespace Pot.App.Features.Maintenance.Export.Incomes;
 
@@ -20,8 +19,7 @@ internal sealed class IncomesExporter : MemoryCsvExporterBase<IncomeData>, IInco
     {
         Configure();
 
-        var pageResult = await _incomesService.GetAllIncomesAsync(new Paging(), cancellationToken);
-        var incomes = pageResult.Results;
+        var incomes = await _incomesService.GetAllIncomesAsync(cancellationToken);
 
         foreach (var income in incomes)
         {

@@ -74,27 +74,6 @@ type UseAccountFilterReturn<T extends ItemWithAccount> = {
  * - selectedAccountId: Currently selected account ID or null for no filter
  * - setSelectedAccountId: Function to change the account filter
  * - filteredItems: Items filtered by the selected account
- *
- * @example
- * ```typescript
- * const {
- *   accountsInItems,
- *   selectedAccountId,
- *   setSelectedAccountId,
- *   filteredItems
- * } = useAccountFilter({
- *   accounts: allAccounts,
- *   items: expenses
- * });
- *
- * // Use in JSX
- * <AccountFilter
- *   accounts={accountsInItems}
- *   selectedAccountId={selectedAccountId}
- *   onAccountChange={setSelectedAccountId}
- * />
- * <DataTable data={filteredItems} />
- * ```
  */
 function useAccountFilter<T extends ItemWithAccount>({
   accounts,

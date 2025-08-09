@@ -3,7 +3,6 @@ import {
   EditIncome,
   Identity,
   Income,
-  PagedIncome,
   RenewIncomes,
 } from '@/data';
 import { FailResultBase, Result, SuccessResult } from '@/lib';
@@ -11,31 +10,16 @@ import { FailResultBase, Result, SuccessResult } from '@/lib';
 import { useDelete, useGet, usePost, usePut } from './useApi';
 
 const useApiGetAllIncomes = () => {
-  const query = useGet<PagedIncome>('/incomes', ['incomes']);
-  const result = query.data as Result<PagedIncome, FailResultBase>;
+  const query = useGet<Income[]>('/incomes', ['incomes']);
+  const result = query.data as Result<Income[], FailResultBase>;
 
-  let data: Result<PagedIncome, FailResultBase>;
+  let data: Result<Income[], FailResultBase>;
 
   // useGet() uses React Query which:
   // - returns undefined immediately and while loading
   // - returns the result when the query is successful
   if (result?.success) {
-    // Not sorting client-side since the server performs this to ensure pagination is consistent.
-
-    // // spreading [...result.value.results] to create a shallow copy of the array since sort()
-    // // mutates the source array in the react-query cache.
-    // const sortedResults = [...result.value.results].sort(compareIncomeNextDue);
-
-    // const paged: PagedIncome = {
-    //   ...result.value,
-    //   results: sortedResults,
-    // };
-
-    const paged: PagedIncome = {
-      ...result.value,
-    };
-
-    data = new SuccessResult(paged);
+    data = new SuccessResult(result.value);
   } else {
     // type narrowed to FailResult<FailResultBase> since result cannot be undefined at this point
     data = result;

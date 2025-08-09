@@ -25,7 +25,7 @@ internal sealed class PotUnitOfWork : UnitOfWork<PotDbContext>, IPotUnitOfWork
 
         _accountRepository = new Lazy<IAccountRepository>(() => new AccountRepository(DbContext));
         _expenseRepository = new Lazy<IExpenseRepository>(() => new ExpenseRepository(DbContext, _queryPaginatorFactory));
-        _incomeRepository = new Lazy<IIncomeRepository>(() => new IncomeRepository(DbContext, _queryPaginatorFactory));
+        _incomeRepository = new Lazy<IIncomeRepository>(() => new IncomeRepository(DbContext));
     }
 
     public IDisposable WithTracking() => DbContext.WithAutoTracking();

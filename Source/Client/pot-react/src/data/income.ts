@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { Frequency } from '@/lib';
 
 import { IdentitySchema } from './identity';
-import { Paged } from './types';
 
 const IncomeAccountSchema = z.object({
   rowId: z.string(),
@@ -45,7 +44,6 @@ type Income = z.infer<typeof IncomeSchema>;
 type CreateIncome = z.infer<typeof CreateIncomeSchema>;
 type EditIncome = z.infer<typeof EditIncomeSchema>;
 type RenewIncomes = z.infer<typeof RenewIncomesSchema>;
-type PagedIncome = Paged<Income>;
 
 export {
   BaseIncomeSchema,
@@ -56,4 +54,4 @@ export {
   RenewIncomesSchema,
 };
 
-export type { CreateIncome, EditIncome, Income, PagedIncome, RenewIncomes };
+export type { CreateIncome, EditIncome, Income, RenewIncomes };

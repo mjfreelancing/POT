@@ -3,7 +3,6 @@ using AllOverIt.Csv;
 using AllOverIt.Csv.Exporter;
 using Pot.App.Features.Expenses.GetAll;
 using Pot.App.Features.Maintenance.Export.Expenses.Models;
-using Pot.Shared;
 
 namespace Pot.App.Features.Maintenance.Export.Expenses;
 
@@ -20,8 +19,7 @@ internal sealed class ExpensesExporter : MemoryCsvExporterBase<ExpenseData>, IEx
     {
         Configure();
 
-        var pageResult = await _expensesService.GetAllExpensesAsync(new Paging(), cancellationToken);
-        var expenses = pageResult.Results;
+        var expenses = await _expensesService.GetAllExpensesAsync(cancellationToken);
 
         foreach (var expense in expenses)
         {
