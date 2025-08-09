@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import type { Account } from '@/data';
 import {
@@ -30,7 +31,6 @@ import {
 } from '@/lib';
 
 import { ExpenseFormData } from '../schemas/expenseFormSchema';
-import { Switch } from '@/components/ui/switch';
 
 type ExpenseFormProps = {
   form: UseFormReturn<ExpenseFormData>;

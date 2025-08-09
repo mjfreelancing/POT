@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { ColumnDef, Row } from '@tanstack/react-table';
+import { Ban } from 'lucide-react';
 import { useState } from 'react';
 import { useParams } from 'react-router';
 
@@ -20,7 +21,6 @@ import { DisplayError, Frequency, getTableRowClassName } from '@/lib';
 
 import { renewAllExpenses } from '../utils/bulkActions';
 import ExpenseActions from './ExpenseActions';
-import { Ban } from 'lucide-react';
 
 const columns: ColumnDef<Expense>[] = [
   {
