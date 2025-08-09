@@ -2,7 +2,6 @@ import { ColumnDef, Row } from '@tanstack/react-table';
 import { ClockFading, DollarSign, ShoppingCart } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 
-import { NotePopover } from '@/components/feedback';
 import StatusBadge from '@/components/feedback/badge/StatusBadge';
 import {
   createDateColumn,
@@ -14,6 +13,7 @@ import { Expense } from '@/data';
 import {
   dayOfYear,
   formatMoneyValue,
+  getAdornedExpenseDescription,
   getTableRowClassName,
   localToday,
 } from '@/lib';
@@ -39,12 +39,7 @@ const columns: ColumnDef<Expense>[] = [
     id: 'description',
     accessorKey: 'description',
     header: 'Description',
-    cell: ({ row }) => (
-      <div className="flex items-center gap-2">
-        <span>{row.original.description}</span>
-        {row.original.note ? <NotePopover note={row.original.note} /> : null}
-      </div>
-    ),
+    cell: ({ row }) => getAdornedExpenseDescription(row),
   },
   createDateColumn<Expense>({
     accessorKey: 'nextDue',

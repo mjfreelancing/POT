@@ -1,11 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { ColumnDef, Row } from '@tanstack/react-table';
-import { Ban } from 'lucide-react';
 import { useState } from 'react';
 import { useParams } from 'react-router';
 
 import { useApiRenewExpenses } from '@/api/hooks/useExpenses';
-import { ErrorSheet, NotePopover, StatusBadge } from '@/components/feedback';
+import { ErrorSheet } from '@/components/feedback';
 import {
   BulkAction,
   createDateColumn,
@@ -17,7 +16,12 @@ import {
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Expense } from '@/data';
-import { DisplayError, Frequency, getTableRowClassName } from '@/lib';
+import {
+  DisplayError,
+  Frequency,
+  getAdornedExpenseDescription,
+  getTableRowClassName,
+} from '@/lib';
 
 import { renewAllExpenses } from '../utils/bulkActions';
 import ExpenseActions from './ExpenseActions';
@@ -31,17 +35,7 @@ const columns: ColumnDef<Expense>[] = [
     ),
     enableSorting: true,
     sortingFn: 'text',
-    cell: ({ row }) => (
-      <div className="flex items-center gap-2">
-        {row.original.description}
-        {row.original.note ? <NotePopover note={row.original.note} /> : null}
-        {row.original.excludeFromCalcs && (
-          <StatusBadge color="red" tooltip="Excluded from calculations">
-            <Ban />
-          </StatusBadge>
-        )}
-      </div>
-    ),
+    cell: ({ row }) => getAdornedExpenseDescription(row),
   },
   createMoneyValueColumn<Expense>({
     accessorKey: 'amount',
