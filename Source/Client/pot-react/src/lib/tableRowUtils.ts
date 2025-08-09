@@ -11,13 +11,21 @@ type TableRowItem = {
   nextDue?: string; // applicable to incomes and expenses
 };
 
-function getTableRowClassName<T extends TableRowItem>(
-  item: T,
-): string | undefined {
+type StyleCheck = keyof typeof TABLE_ROW_STYLES;
+
+type TableRowOptions = {
+  exclude?: StyleCheck[];
+};
+
+function checkExcluded<T extends TableRowItem>(item: T): string | undefined {
   if (item.excludeFromCalcs) {
     return TABLE_ROW_STYLES.EXCLUDED;
   }
 
+  return undefined;
+}
+
+function checkOverdue<T extends TableRowItem>(item: T): string | undefined {
   if (item.nextDue && normalizeToLocalMidnight(item.nextDue) < localToday()) {
     return TABLE_ROW_STYLES.OVERDUE;
   }
@@ -25,4 +33,41 @@ function getTableRowClassName<T extends TableRowItem>(
   return undefined;
 }
 
-export { TABLE_ROW_STYLES, getTableRowClassName };
+type StyleCheckFunction<T extends TableRowItem> = (
+  item: T,
+) => string | undefined;
+
+// Map each style check to its corresponding check function
+const styleCheckMap: Record<StyleCheck, StyleCheckFunction<any>> = {
+  EXCLUDED: checkExcluded,
+  OVERDUE: checkOverdue,
+};
+
+function getTableRowClassName<T extends TableRowItem>(
+  item: T,
+  options?: TableRowOptions,
+): string | undefined {
+  const checksToExclude = new Set(options?.exclude ?? []);
+
+  // Get all style check names that aren't excluded
+  const checksToRun = (Object.keys(TABLE_ROW_STYLES) as StyleCheck[]).filter(
+    check => !checksToExclude.has(check),
+  );
+
+  // Run each check in order until one returns a style
+  for (const check of checksToRun) {
+    const result = styleCheckMap[check](item);
+    if (result) {
+      return result;
+    }
+  }
+
+  return undefined;
+}
+
+export {
+  getTableRowClassName,
+  type StyleCheck,
+  TABLE_ROW_STYLES,
+  type TableRowOptions,
+};

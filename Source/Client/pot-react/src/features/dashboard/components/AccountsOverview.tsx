@@ -1,4 +1,4 @@
-import { ColumnDef } from '@tanstack/react-table';
+import { ColumnDef, Row } from '@tanstack/react-table';
 import { Banknote, Calendar, DollarSign, PieChart } from 'lucide-react';
 import { useEffect } from 'react';
 
@@ -6,7 +6,7 @@ import StatusBadge from '@/components/feedback/badge/StatusBadge';
 import { createMoneyValueColumn, DataTable } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Account } from '@/data';
-import { formatMoneyValue } from '@/lib';
+import { formatMoneyValue, getTableRowClassName } from '@/lib';
 
 import accountsSummaryStore, {
   AccountsSummary,
@@ -219,7 +219,13 @@ function AccountsOverview({ accounts }: AccountsOverviewProps) {
               />
             </div>
             <div className="flex-1 w-full min-w-0 flex flex-col min-h-0 h-[292px]">
-              <DataTable columns={columns} data={accounts} />
+              <DataTable
+                columns={columns}
+                data={accounts}
+                getRowClassName={(row: Row<Account>) =>
+                  getTableRowClassName(row.original)
+                }
+              />
             </div>
           </div>
         </CardContent>

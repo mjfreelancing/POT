@@ -1,4 +1,4 @@
-import { ColumnDef } from '@tanstack/react-table';
+import { ColumnDef, Row } from '@tanstack/react-table';
 import { ClockFading, DollarSign, ShoppingCart } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 
@@ -11,7 +11,12 @@ import {
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Expense } from '@/data';
-import { dayOfYear, formatMoneyValue, localToday } from '@/lib';
+import {
+  dayOfYear,
+  formatMoneyValue,
+  getTableRowClassName,
+  localToday,
+} from '@/lib';
 
 import expensesSummaryStore, {
   ExpensesSummary,
@@ -234,7 +239,13 @@ function ExpensesOverview({ expenses }: ExpensesOverviewProps) {
               />
             </div>
             <div className="flex-1 w-full min-w-0 flex flex-col min-h-0 h-[292px]">
-              <DataTable columns={columns} data={dueIn30DaysExpenses} />
+              <DataTable
+                columns={columns}
+                data={dueIn30DaysExpenses}
+                getRowClassName={(row: Row<Expense>) =>
+                  getTableRowClassName(row.original, { exclude: ['OVERDUE'] })
+                }
+              />
             </div>
           </div>
         </CardContent>
