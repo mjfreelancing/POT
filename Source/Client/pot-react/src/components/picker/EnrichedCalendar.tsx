@@ -20,6 +20,40 @@ function getFirstDayOfMonth(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), 1);
 }
 
+/**
+ * Tries to maintain the same day when moving to a new month/year.
+ * Returns undefined if the day doesn't exist in the new month or is outside allowed range.
+ */
+function tryMaintainDateInNewMonth(
+  currentDate: Date | undefined,
+  newMonth: Date,
+  minDate: Date | undefined,
+  maxDate: Date | undefined,
+): Date | undefined {
+  if (!currentDate) {
+    return undefined;
+  }
+
+  const newDate = new Date(
+    newMonth.getFullYear(),
+    newMonth.getMonth(),
+    currentDate.getDate(),
+  );
+
+  // Only return the new date if:
+  // 1. The day exists in the new month (i.e., didn't roll over)
+  // 2. It's within the allowed date range
+  if (
+    newDate.getMonth() === newMonth.getMonth() &&
+    (!minDate || newDate >= minDate) &&
+    (!maxDate || newDate <= maxDate)
+  ) {
+    return newDate;
+  }
+
+  return undefined;
+}
+
 type EnrichedCalendarProps = Omit<
   React.ComponentProps<typeof Calendar>,
   'onSelect' | 'selected' | 'month' | 'components' | 'mode'
@@ -78,6 +112,21 @@ function EnrichedCalendar({
   const [currentDisplayMonth, setCurrentDisplayMonth] = React.useState<Date>(
     propDate || localToday(),
   );
+
+  /**
+   * Updates the picker state with a new date and notifies of the change.
+   * Handles setting the userJustSelected flag to prevent prop override.
+   */
+  function updatePickerDate(newDate: Date | undefined): void {
+    if (newDate) {
+      userJustSelected.current = true;
+      setPickerDate(newDate);
+
+      if (onDateChange) {
+        onDateChange(newDate);
+      }
+    }
+  }
 
   // Only run this effect once on mount or when propDate or min/max dates change
   const isFirstRender = React.useRef(true);
@@ -196,15 +245,8 @@ function EnrichedCalendar({
       return;
     }
 
-    // Flag that this is a user selection to prevent it being overridden by props
-    userJustSelected.current = true;
-
-    setPickerDate(newSelection);
-
-    // Notify parent of the date change
-    if (onDateChange) {
-      onDateChange(newSelection);
-    }
+    // Update the picker date and notify parent
+    updatePickerDate(newSelection);
   };
 
   function handlePrevMonth() {
@@ -222,8 +264,17 @@ function EnrichedCalendar({
       }
     }
 
-    // Only update the display month, not the picker date
+    // Update the display month
     setCurrentDisplayMonth(newMonth);
+
+    // Try to maintain the same day in the new month
+    const newDate = tryMaintainDateInNewMonth(
+      pickerDate,
+      newMonth,
+      minDate,
+      maxDate,
+    );
+    updatePickerDate(newDate);
   }
 
   function handleNextMonth() {
@@ -242,8 +293,17 @@ function EnrichedCalendar({
       }
     }
 
-    // Only update the display month, not the picker date
+    // Update the display month
     setCurrentDisplayMonth(newMonth);
+
+    // Try to maintain the same day in the new month
+    const newDate = tryMaintainDateInNewMonth(
+      pickerDate,
+      newMonth,
+      minDate,
+      maxDate,
+    );
+    updatePickerDate(newDate);
   }
 
   function handlePrevYear() {
@@ -274,8 +334,17 @@ function EnrichedCalendar({
       }
     }
 
-    // Only update the display month, not the picker date
+    // Update the display month
     setCurrentDisplayMonth(newMonth);
+
+    // Try to maintain the same day in the new year
+    const newDate = tryMaintainDateInNewMonth(
+      pickerDate,
+      newMonth,
+      minDate,
+      maxDate,
+    );
+    updatePickerDate(newDate);
 
     if (onYearChange) {
       onYearChange(newMonth.getFullYear());
@@ -310,8 +379,17 @@ function EnrichedCalendar({
       }
     }
 
-    // Only update the display month, not the picker date
+    // Update the display month
     setCurrentDisplayMonth(newMonth);
+
+    // Try to maintain the same day in the new year
+    const newDate = tryMaintainDateInNewMonth(
+      pickerDate,
+      newMonth,
+      minDate,
+      maxDate,
+    );
+    updatePickerDate(newDate);
 
     if (onYearChange) {
       onYearChange(newMonth.getFullYear());
@@ -326,19 +404,11 @@ function EnrichedCalendar({
       return;
     }
 
-    // Mark this as a user selection to prevent override
-    userJustSelected.current = true;
-
     // Update the picker date to the actual today
-    setPickerDate(today);
+    updatePickerDate(today);
 
     // Update the display month to show today's month
     setCurrentDisplayMonth(getFirstDayOfMonth(today));
-
-    // Notify parent of the date change
-    if (onDateChange) {
-      onDateChange(today);
-    }
   }
 
   function handleAcceptInternal() {
