@@ -19,12 +19,6 @@ import { DisplayError, getTableRowClassName } from '@/lib';
 
 import { accrueAllExpenses } from '../utils/bulkActions';
 import AccountActions from './AccountActions';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 type AccountsTableProps = {
   accounts: Account[];
@@ -65,50 +59,29 @@ const columns: ColumnDef<Account>[] = [
           {hasLinkedData && (
             <div className="flex gap-2 ml-2">
               {account.linkedExpenses > 0 && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <StatusBadge color="yellow">
-                        <BanknoteArrowDown />
-                        {account.linkedExpenses}
-                      </StatusBadge>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      Has {account.linkedExpenses} linked{' '}
-                      {account.linkedExpenses === 1 ? 'expense' : 'expenses'}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <StatusBadge
+                  color="yellow"
+                  tooltip={`Has ${account.linkedExpenses} linked ${account.linkedExpenses === 1 ? 'expense' : 'expenses'}`}
+                >
+                  <BanknoteArrowDown />
+                  {account.linkedExpenses}
+                </StatusBadge>
               )}
               {account.linkedIncomes > 0 && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <StatusBadge color="green">
-                        <BanknoteArrowUp />
-                        {account.linkedIncomes}
-                      </StatusBadge>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      Has {account.linkedIncomes} linked{' '}
-                      {account.linkedIncomes === 1 ? 'income' : 'incomes'}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <StatusBadge
+                  color="green"
+                  tooltip={`Has ${account.linkedIncomes} linked ${account.linkedIncomes === 1 ? 'income' : 'incomes'}`}
+                >
+                  <BanknoteArrowUp />
+                  {account.linkedIncomes}
+                </StatusBadge>
               )}
             </div>
           )}
           {account.excludeFromCalcs && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <StatusBadge color="red">
-                    <Ban />
-                  </StatusBadge>
-                </TooltipTrigger>
-                <TooltipContent>Excluded from calculations</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <StatusBadge color="red" tooltip="Excluded from calculations">
+              <Ban />
+            </StatusBadge>
           )}
         </div>
       );

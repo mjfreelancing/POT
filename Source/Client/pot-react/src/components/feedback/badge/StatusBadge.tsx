@@ -1,6 +1,12 @@
 import { ReactNode } from 'react';
 
 import { Badge } from '@/components/ui/badge';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 /**
  * Available color variants for the StatusBadge component.
@@ -25,6 +31,8 @@ type StatusBadgeProps = {
   children: ReactNode;
   /** Additional CSS classes to apply to the badge for custom styling */
   className?: string;
+  /** Optional tooltip text to show when hovering over the badge */
+  tooltip?: string;
 };
 
 const colorConfig = {
@@ -47,14 +55,32 @@ const colorConfig = {
   gray: 'text-xs justify-center bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300 dark:border-gray-800',
 } as const;
 
-function StatusBadge({ color, children, className }: StatusBadgeProps) {
+function StatusBadge({
+  color,
+  children,
+  className,
+  tooltip,
+}: StatusBadgeProps) {
   const badgeClassName = color ? colorConfig[color] : colorConfig['gray'];
 
-  return (
+  const badge = (
     <Badge variant="outline" className={`${badgeClassName} ${className || ''}`}>
       {children}
     </Badge>
   );
+
+  if (tooltip) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger>{badge}</TooltipTrigger>
+          <TooltipContent>{tooltip}</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
+  return badge;
 }
 
 export default StatusBadge;

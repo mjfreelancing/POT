@@ -21,12 +21,6 @@ import { DisplayError, Frequency, getTableRowClassName } from '@/lib';
 import { renewAllExpenses } from '../utils/bulkActions';
 import ExpenseActions from './ExpenseActions';
 import { Ban } from 'lucide-react';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 const columns: ColumnDef<Expense>[] = [
   {
@@ -42,16 +36,9 @@ const columns: ColumnDef<Expense>[] = [
         {row.original.description}
         {row.original.note ? <NotePopover note={row.original.note} /> : null}
         {row.original.excludeFromCalcs && (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <StatusBadge color="red">
-                  <Ban />
-                </StatusBadge>
-              </TooltipTrigger>
-              <TooltipContent>Excluded from calculations</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <StatusBadge color="red" tooltip="Excluded from calculations">
+            <Ban />
+          </StatusBadge>
         )}
       </div>
     ),
