@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Net;
+﻿using System.Net;
 
 namespace Pot.AspNetCore.Features.Accounts.Extensions;
 
@@ -91,24 +90,6 @@ internal static class RouteGroupBuilderExtensions
             .WithTags("Accounts")
             .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.NotFound)
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
-
-        return routeGroupBuilder;
-    }
-
-    public static RouteGroupBuilder ImportAccounts(this RouteGroupBuilder routeGroupBuilder, long maxImportPayloadBytes)
-    {
-        routeGroupBuilder
-            .MapPost("/import", Import.Handler.Invoke)
-            .WithName(nameof(ImportAccounts))
-            .WithSummary("Import Accounts")
-            .WithDescription("Import new / update existing account details")
-            .WithTags("Accounts", "Import")
-            .WithMetadata(new RequestSizeLimitAttribute(maxImportPayloadBytes)) // Will raise 413 Payload Too Large if the file exceeds this limit
-            .DisableAntiforgery()
-            .ProducesProblem((int)HttpStatusCode.OK)
-            .ProducesProblem((int)HttpStatusCode.RequestEntityTooLarge)
-            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity)
             .ProducesProblem((int)HttpStatusCode.InternalServerError);
 
         return routeGroupBuilder;

@@ -2,8 +2,6 @@
 
 internal static class WebApplicationExtensions
 {
-    private const long MaxImportPayloadBytes = 1 * 1024 * 1024;
-
     public static WebApplication AddAccountEndpoints(this WebApplication app)
     {
         using (app.Logger.BeginScope("[Setup Account Routes]"))
@@ -18,8 +16,7 @@ internal static class WebApplicationExtensions
                 .CreateAccount()
                 .UpdateAccount()
                 .DeleteAccount()
-                .AccrueAccountExpenses()
-                .ImportAccounts(MaxImportPayloadBytes);
+                .AccrueAccountExpenses();
 
 
 
