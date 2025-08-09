@@ -64,11 +64,11 @@ internal sealed class ExpenseRepository : GenericRepository<PotDbContext, Expens
             .ToListAsync(cancellationToken);
     }
 
-    public Task<List<ExpenseEntity>> GetExpensesForAccountAsync(Guid accountRowId, CancellationToken cancellationToken)
+    public Task<List<ExpenseEntity>> GetRenewableExpensesForAccountAsync(Guid accountRowId, CancellationToken cancellationToken)
     {
         return AsQueryable()
             .Include(expense => expense.Account)
-            .Where(expense => expense.Account.RowId == accountRowId)
+            .Where(expense => expense.Account.RowId == accountRowId && !expense.ExcludeFromCalcs)
             .ToListAsync(cancellationToken);
     }
 }
