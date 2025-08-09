@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { ColumnDef, Row } from '@tanstack/react-table';
-import { BanknoteArrowDown, BanknoteArrowUp } from 'lucide-react';
+import { Ban, BanknoteArrowDown, BanknoteArrowUp } from 'lucide-react';
 import { useState } from 'react';
 import { useParams } from 'react-router';
 
@@ -19,6 +19,12 @@ import { DisplayError, getTableRowClassName } from '@/lib';
 
 import { accrueAllExpenses } from '../utils/bulkActions';
 import AccountActions from './AccountActions';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 type AccountsTableProps = {
   accounts: Account[];
@@ -55,22 +61,54 @@ const columns: ColumnDef<Account>[] = [
 
       return (
         <div className="flex items-center gap-2">
-          <span>{account.description}</span>
+          {account.description}
           {hasLinkedData && (
             <div className="flex gap-2 ml-2">
               {account.linkedExpenses > 0 && (
-                <StatusBadge color="yellow">
-                  <BanknoteArrowDown />
-                  {account.linkedExpenses}
-                </StatusBadge>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <StatusBadge color="yellow">
+                        <BanknoteArrowDown />
+                        {account.linkedExpenses}
+                      </StatusBadge>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Has {account.linkedExpenses} linked{' '}
+                      {account.linkedExpenses === 1 ? 'expense' : 'expenses'}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
               {account.linkedIncomes > 0 && (
-                <StatusBadge color="green">
-                  <BanknoteArrowUp />
-                  {account.linkedIncomes}
-                </StatusBadge>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <StatusBadge color="green">
+                        <BanknoteArrowUp />
+                        {account.linkedIncomes}
+                      </StatusBadge>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Has {account.linkedIncomes} linked{' '}
+                      {account.linkedIncomes === 1 ? 'income' : 'incomes'}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
             </div>
+          )}
+          {account.excludeFromCalcs && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <StatusBadge color="red">
+                    <Ban />
+                  </StatusBadge>
+                </TooltipTrigger>
+                <TooltipContent>Excluded from calculations</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
         </div>
       );

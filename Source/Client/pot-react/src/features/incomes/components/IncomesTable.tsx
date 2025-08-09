@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useParams } from 'react-router';
 
 import { useApiRenewIncomes } from '@/api/hooks';
-import { ErrorSheet, NotePopover } from '@/components/feedback';
+import { ErrorSheet, NotePopover, StatusBadge } from '@/components/feedback';
 import {
   BulkAction,
   createDateColumn,
@@ -20,6 +20,13 @@ import { DisplayError, Frequency, getTableRowClassName } from '@/lib';
 
 import { renewAllIncomes } from '../utils/bulkActions';
 import IncomeActions from './IncomeActions';
+import { Ban } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 type IncomesTableProps = {
   filteredIncomes: Income[];
@@ -35,9 +42,21 @@ const columns: ColumnDef<Income>[] = [
     enableSorting: true,
     sortingFn: 'text',
     cell: ({ row }) => (
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-2">
         {row.original.description}
-        <NotePopover note={row.original.note} />
+        {row.original.note ? <NotePopover note={row.original.note} /> : null}
+        {row.original.excludeFromCalcs && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <StatusBadge color="red">
+                  <Ban />
+                </StatusBadge>
+              </TooltipTrigger>
+              <TooltipContent>Excluded from calculations</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
       </div>
     ),
   },
