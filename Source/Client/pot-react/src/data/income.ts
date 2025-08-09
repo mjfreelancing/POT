@@ -32,6 +32,7 @@ const CreateIncomeSchema = BaseIncomeSchema.extend({
 
 const EditIncomeSchema = BaseIncomeSchema.extend({
   ...IdentitySchema.shape,
+  excludeFromCalcs: z.boolean(),
   accountRowId: z.string(),
 });
 

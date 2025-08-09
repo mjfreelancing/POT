@@ -24,6 +24,7 @@ const CreateAccountSchema = BaseAccountSchema;
 
 const EditAccountSchema = BaseAccountSchema.extend({
   ...IdentitySchema.shape,
+  excludeFromCalcs: z.boolean(),
 });
 
 const AccrueExpensesSchema = z.object({

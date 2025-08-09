@@ -35,6 +35,7 @@ const EditExpenseSheetInternal: React.FC<EditExpenseSheetInternalProps> = ({
     resolver: zodResolver(expenseFormSchema),
     mode: 'onSubmit',
     defaultValues: {
+      excludeFromCalcs: expenseData.excludeFromCalcs,
       description: expenseData.description,
       nextDue: expenseData.nextDue,
       accrualStart: expenseData.accrualStart,

@@ -32,6 +32,7 @@ const EditIncomeSheetInternal: React.FC<EditIncomeSheetInternalProps> = ({
     resolver: zodResolver(incomeFormSchema),
     mode: 'onSubmit',
     defaultValues: {
+      excludeFromCalcs: incomeData.excludeFromCalcs,
       description: incomeData.description,
       nextDue: incomeData.nextDue,
       endDate: incomeData.endDate ?? undefined, // If null, make it undefined to satisfy the form schema

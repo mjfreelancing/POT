@@ -30,6 +30,7 @@ import {
 } from '@/lib';
 
 import { IncomeFormData } from '../schemas/incomeFormSchema';
+import { Switch } from '@/components/ui/switch';
 
 type IncomeFormProps = {
   form: UseFormReturn<IncomeFormData>;
@@ -303,6 +304,27 @@ function IncomeForm({
                 />
               </FormControl>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="excludeFromCalcs"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+              <div className="space-y-0.5">
+                <FormLabel htmlFor="exclude-from-calcs-switch">
+                  Exclude from Calculations
+                </FormLabel>
+              </div>
+              <FormControl>
+                <Switch
+                  id="exclude-from-calcs-switch"
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
             </FormItem>
           )}
         />

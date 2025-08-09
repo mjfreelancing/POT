@@ -34,6 +34,7 @@ const CreateExpenseSchema = BaseExpenseSchema.extend({
 
 const EditExpenseSchema = BaseExpenseSchema.extend({
   ...IdentitySchema.shape,
+  excludeFromCalcs: z.boolean(),
   accountRowId: z.string(),
 });
 
