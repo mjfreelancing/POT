@@ -113,6 +113,12 @@ function EnrichedCalendar({
     propDate || localToday(),
   );
 
+  // Only run this effect once on mount or when propDate or min/max dates change
+  const isFirstRender = React.useRef(true);
+
+  // Keep track of user selections to prevent them being overridden by props
+  const userJustSelected = React.useRef(false);
+
   /**
    * Updates the picker state with a new date and notifies of the change.
    * Handles setting the userJustSelected flag to prevent prop override.
@@ -127,12 +133,6 @@ function EnrichedCalendar({
       }
     }
   }
-
-  // Only run this effect once on mount or when propDate or min/max dates change
-  const isFirstRender = React.useRef(true);
-
-  // Keep track of user selections to prevent them being overridden by props
-  const userJustSelected = React.useRef(false);
 
   React.useEffect(() => {
     // Function to determine the appropriate display month based on a date and constraints
