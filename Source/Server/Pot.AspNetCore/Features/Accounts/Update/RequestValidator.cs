@@ -14,7 +14,6 @@ internal sealed class RequestValidator : ValidatorBase<Request>
     public RequestValidator()
     {
         RuleFor(request => request.RowId).IsNotEmpty();
-        RuleFor(request => request.ExcludeFromCalcs).IsRequired();
         RuleFor(request => request.Bsb).IsNotEmpty();
         RuleFor(request => request.Number).IsNotEmpty();
         RuleFor(request => request.Description).IsNotEmpty();

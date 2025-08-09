@@ -71,7 +71,6 @@ internal sealed class UpdateAccountService : IUpdateAccountService
 
     private static void UpdateAccountEntity(AccountEntity accountToUpdate, Input request)
     {
-        accountToUpdate.ExcludeFromCalcs = request.ExcludeFromCalcs;
         accountToUpdate.Bsb = request.Bsb;
         accountToUpdate.Number = request.Number;
         accountToUpdate.Description = request.Description;

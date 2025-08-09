@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { ColumnDef, Row } from '@tanstack/react-table';
-import { Ban, BanknoteArrowDown, BanknoteArrowUp } from 'lucide-react';
+import { ColumnDef } from '@tanstack/react-table';
+import { BanknoteArrowDown, BanknoteArrowUp } from 'lucide-react';
 import { useState } from 'react';
 import { useParams } from 'react-router';
 
@@ -15,7 +15,7 @@ import {
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Account } from '@/data';
-import { DisplayError, getTableRowClassName } from '@/lib';
+import { DisplayError } from '@/lib';
 
 import { accrueAllExpenses } from '../utils/bulkActions';
 import AccountActions from './AccountActions';
@@ -77,11 +77,6 @@ const columns: ColumnDef<Account>[] = [
                 </StatusBadge>
               )}
             </div>
-          )}
-          {account.excludeFromCalcs && (
-            <StatusBadge color="red" tooltip="Excluded from calculations">
-              <Ban />
-            </StatusBadge>
           )}
         </div>
       );
@@ -162,9 +157,6 @@ function AccountsTable({ accounts }: AccountsTableProps) {
             getRowId={createRowIdGetter<Account>()}
             highlightRowFilter={row =>
               row.original.rowId.toString() === editingId
-            }
-            getRowClassName={(row: Row<Account>) =>
-              getTableRowClassName(row.original)
             }
           />
         </CardContent>

@@ -33,7 +33,6 @@ function EditAccountSheet() {
     resolver: zodResolver(accountFormSchema),
     mode: 'onSubmit',
     defaultValues: {
-      excludeFromCalcs: false,
       bsb: '',
       number: '',
       description: '',
@@ -45,7 +44,6 @@ function EditAccountSheet() {
   useEffect(() => {
     if (accountResult?.success) {
       form.reset({
-        excludeFromCalcs: accountResult.value.excludeFromCalcs,
         bsb: accountResult.value.bsb,
         number: accountResult.value.number,
         description: accountResult.value.description,

@@ -26,7 +26,6 @@ internal sealed class AccountsExporter : MemoryCsvExporterBase<AccountData>, IAc
             var accountData = new AccountData
             {
                 RowId = account.RowId,
-                ExcludeFromCalcs = account.ExcludeFromCalcs,
                 Bsb = account.Bsb,
                 Number = account.Number,
                 Description = account.Description,

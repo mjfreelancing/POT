@@ -10,9 +10,6 @@ public sealed class Request
     [Description("The account's entity tag.")]
     public long Etag { get; init; }
 
-    [Description("Is the account excluded from calculations such as accruals.")]
-    public bool? ExcludeFromCalcs { get; init; }
-
     [Description("The account BSB.")]
     public required string Bsb { get; init; }
 
