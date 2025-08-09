@@ -38,7 +38,7 @@ type StyleCheckFunction<T extends TableRowItem> = (
 ) => string | undefined;
 
 // Map each style check to its corresponding check function
-const styleCheckMap: Record<StyleCheck, StyleCheckFunction<any>> = {
+const styleCheckMap: Record<StyleCheck, StyleCheckFunction<TableRowItem>> = {
   EXCLUDED: checkExcluded,
   OVERDUE: checkOverdue,
 };
