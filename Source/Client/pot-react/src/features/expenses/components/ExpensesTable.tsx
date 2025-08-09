@@ -40,6 +40,10 @@ const columns: ColumnDef<Expense>[] = [
   createMoneyValueColumn<Expense>({
     accessorKey: 'amount',
     header: 'Amount',
+    options: {
+      enableSorting: true,
+      sortingFn: 'basic',
+    },
   }),
   createDateColumn<Expense>({
     accessorKey: 'nextDue',
@@ -61,6 +65,10 @@ const columns: ColumnDef<Expense>[] = [
   createMoneyValueColumn<Expense>({
     accessorKey: 'accrued',
     header: 'Accrued',
+    options: {
+      enableSorting: true,
+      sortingFn: 'basic',
+    },
   }),
   {
     id: 'accountDescription',

@@ -85,22 +85,42 @@ const columns: ColumnDef<Account>[] = [
   createMoneyValueColumn<Account>({
     accessorKey: 'balance',
     header: 'Balance',
+    options: {
+      enableSorting: true,
+      sortingFn: 'basic',
+    },
   }),
   createMoneyValueColumn<Account>({
     accessorKey: 'reserved',
     header: 'Reserved',
+    options: {
+      enableSorting: true,
+      sortingFn: 'basic',
+    },
   }),
   createMoneyValueColumn<Account>({
     accessorKey: 'totalExpenseAccrued',
     header: 'Total Accrued',
+    options: {
+      enableSorting: true,
+      sortingFn: 'basic',
+    },
   }),
   createMoneyValueColumn<Account>({
     accessorKey: 'dailyExpenseAccrual',
     header: 'Daily Accrual',
+    options: {
+      enableSorting: true,
+      sortingFn: 'basic',
+    },
   }),
   createMoneyValueColumn<Account>({
     accessorKey: 'available',
     header: 'Available',
+    options: {
+      enableSorting: true,
+      sortingFn: 'basic',
+    },
   }),
   {
     id: 'actions',

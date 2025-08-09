@@ -50,6 +50,10 @@ const columns: ColumnDef<Income>[] = [
   createMoneyValueColumn<Income>({
     accessorKey: 'amount',
     header: 'Amount',
+    options: {
+      enableSorting: true,
+      sortingFn: 'basic',
+    },
   }),
   createDateColumn<Income>({
     accessorKey: 'nextDue',
