@@ -43,7 +43,7 @@ function AccrualsAction() {
     const expenses = expensesResult?.success
       ? expensesResult.value.results
       : [];
-    const incomes = incomesResult?.success ? incomesResult.value.results : [];
+    const incomes = incomesResult?.success ? incomesResult.value : [];
 
     // Need to renew Expenses and Incomes before accruing accounts
 
