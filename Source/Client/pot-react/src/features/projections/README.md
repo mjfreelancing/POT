@@ -19,17 +19,21 @@ The main chart component that displays financial projections with dynamic chart 
 
 **Features:**
 
-- **Smart Chart Types**: Line charts for Balance/Available trends, Bar charts for Income/Expenses events
-- **Metric Selection**: Dropdown to switch between different data metrics
-- **Interactive Controls**: Period presets (30d, 60d, 90d, All) and custom date range selection
-- **Series Management**: Toggle account visibility with indicators for accounts with no data
-- **Stable Layout**: Fixed-width controls prevent layout shifts when switching options
-- **Currency Formatting**: Uses the app's `formatMoneyValue` utility
-- **Empty State Handling**: Shows appropriate message when no data is available
+- **Smart Chart Types**: Line charts for Balance/Available trends, Bar charts for Income/Expenses events. The chart type is determined automatically by the selected metric.
+- **Metric Selection**: Dropdown to switch between different data metrics.
+- **Interactive Controls**: Period presets (30d, 60d, 90d, All) and custom date range selection.
+- **Series Management**: Toggle account visibility with indicators for accounts with no data.
+- **Stable Layout**: Fixed-width controls prevent layout shifts when switching options.
+- **Currency Formatting**: Uses the app's `formatMoneyValue` utility.
+- **Empty State Handling**: Shows appropriate message when no data is available, but all controls remain accessible.
 
 **Props:**
 
 - `data`: Projection data from the API (includes balance, available, incomeReceived, expensesPaid)
+- `startDate`: Start date for the chart
+- `period`: Number of months to display
+- `onStartDateChange`: Callback for start date changes
+- `onPeriodChange`: Callback for period changes
 
 ### `ChartControls`
 
@@ -38,8 +42,8 @@ Extracted component that handles all user interaction controls for the chart.
 **Features:**
 
 - **Metric Dropdown**: Select between Balance, Available, Income Received, Expenses Paid
-- **Period Controls**: Quick preset buttons for common time ranges
-- **Date Range Selectors**: Custom start/end date selection with validation
+- **Period Controls**: Quick preset buttons for common month ranges (1 mo, 2 mo, 3 mo, 6 mo, 9 mo, 12 mo)
+- **Start Date Picker**: Custom start date selection with validation
 - **Series Legend**: Toggle account visibility with visual indicators
 - **Responsive Layout**: Left-aligned metric selector, right-aligned time controls
 - **Fixed-Width Elements**: Prevents layout shifts when switching between options
@@ -121,14 +125,10 @@ The chart will automatically render with the correct visualization type!
 
 ## Chart Type Logic
 
-The system automatically selects the appropriate chart type based on data characteristics:
+The system automatically selects the appropriate chart type based on the selected metric:
 
-- **Line Charts** (`chartType: 'line'`): Best for continuous data that shows trends over time
-  - Balance amounts (account totals)
-  - Available amounts (spendable funds)
-- **Bar Charts** (`chartType: 'bar'`): Best for discrete events or transactions
-  - Income received (individual payments)
-  - Expenses paid (individual transactions)
+- **Line Charts** (`chartType: 'line'`): Used for continuous data that shows trends over time (e.g., Balance, Available)
+- **Bar Charts** (`chartType: 'bar'`): Used for discrete events or transactions (e.g., Income Received, Expenses Paid)
 
 This prevents the visual issue where transaction data (with many zero values) looks awkward as line charts.
 
@@ -193,12 +193,20 @@ import { ProjectionChart } from '@/features/projections/components';
 
 function ProjectionsPage() {
   const { data: result } = useApiGetProjection();
+  const [startDate, setStartDate] = useState(new Date());
+  const [period, setPeriod] = useState(6); // months
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20">
       {result?.success && (
         <div className="p-6 flex-1">
-          <ProjectionChart data={result.value} />
+          <ProjectionChart
+            data={result.value}
+            startDate={startDate}
+            period={period}
+            onStartDateChange={setStartDate}
+            onPeriodChange={setPeriod}
+          />
         </div>
       )}
     </div>
@@ -319,63 +327,7 @@ The implementation was replaced with a fully custom tooltip that provides:
 
 ## Curve Types
 
-The chart supports multiple curve types through the `curveType` prop, allowing you to customize how lines are drawn between data points. The type is automatically extracted from Recharts Line component props for type safety.
-
-### Available Curve Types:
-
-#### **Smooth Curves** (Best for Financial Data):
-
-- **`"basis"`** _(Default)_ - Smooth B-spline curves that create flowing lines perfect for financial projections
-- **`"natural"`** - Natural cubic splines that pass through all data points with smooth transitions
-- **`"monotone"`** - Monotonic cubic interpolation that preserves monotonicity and avoids overshooting
-
-#### **Linear Curves**:
-
-- **`"linear"`** - Straight lines between data points (sharp, precise)
-- **`"linearClosed"`** - Linear interpolation with closed path (connects end to start)
-
-#### **Step Functions** (Good for Discrete Data):
-
-- **`"step"`** - Step function with vertical lines at midpoints
-- **`"stepBefore"`** - Step function with vertical line before each point
-- **`"stepAfter"`** - Step function with vertical line after each point
-
-#### **Advanced Curves**:
-
-- **`"basisClosed"`** - B-spline with closed path
-- **`"basisOpen"`** - B-spline without connecting start/end points
-- **`"monotoneX"`** - Monotonic interpolation preserving X-axis monotonicity
-- **`"monotoneY"`** - Monotonic interpolation preserving Y-axis monotonicity
-
-#### **Bump/Cardinal Curves**:
-
-- **`"bump"`** - Bump interpolation (smooth curves with controlled curvature)
-- **`"bumpX"`** - Bump interpolation emphasizing X-axis direction
-- **`"bumpY"`** - Bump interpolation emphasizing Y-axis direction
-
-### Usage Examples:
-
-```tsx
-// Smooth, elegant curves (recommended for financial data)
-<ProjectionChart data={result.value} curveType="basis" />
-
-// Sharp, precise lines for exact data representation
-<ProjectionChart data={result.value} curveType="linear" />
-
-// Step function for discrete financial events
-<ProjectionChart data={result.value} curveType="stepAfter" />
-
-// Natural smooth curves
-<ProjectionChart data={result.value} curveType="natural" />
-```
-
-### Recommendations for Financial Data:
-
-- **`"basis"`** - Best overall choice for account projections (smooth, professional)
-- **`"natural"`** - Good for trend analysis where smooth curves are important
-- **`"linear"`** - Use when precise data representation is critical
-- **`"stepAfter"`** - Good for showing discrete financial transactions or events
-- **`"monotone"`** - Ideal when you need smoothness but want to preserve data trends exactly
+The chart uses a fixed curve type for line charts (`type="basis"` in the code), which provides smooth, professional curves for financial projections. There is no `curveType` prop in the public API. If you want to change the curve type, you must update the code directly.
 
 ## Data Requirements
 
