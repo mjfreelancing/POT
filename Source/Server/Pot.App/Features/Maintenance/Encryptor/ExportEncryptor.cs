@@ -1,5 +1,4 @@
-﻿using AllOverIt.Assertion;
-using AllOverIt.Cryptography.RSA;
+﻿using AllOverIt.Cryptography.RSA;
 using Microsoft.Extensions.Configuration;
 
 namespace Pot.App.Features.Maintenance.Encryptor;
@@ -11,8 +10,7 @@ internal sealed class ExportEncryptor : IExportEncryptor
     public ExportEncryptor(IConfiguration configuration)
     {
         // Effectively the same as configuration["RSA__PRIVATE_KEY"] when an environment variable is set
-        _privateKey = configuration["Rsa:PrivateKey"];
-        Throw<InvalidOperationException>.WhenNullOrEmpty(_privateKey, "The RSA private key is not defined.");
+        _privateKey = configuration["Rsa:PrivateKey"] ?? throw new InvalidOperationException("The RSA private key is not defined.");
     }
 
     public byte[] Encrypt(string publicKey, byte[] data)

@@ -14,7 +14,7 @@ namespace Pot.Data
     public abstract class DbContextBase : DbContext
     {
         private const string EntitySuffix = "Entity";
-        private static readonly Type _entityBaseType = typeof(EntityBase);
+        private static readonly Type EntityBaseType = typeof(EntityBase);
 
         protected DbContextBase(DbContextOptions dbContextOptions)
             : base(dbContextOptions)
@@ -102,9 +102,9 @@ namespace Pot.Data
                 throw new InvalidOperationException($"The entity '{entityType.ClrType}' does not have a suffix of '{EntitySuffix}'.");
             }
 
-            if (!entityType.ClrType.IsDerivedFrom(_entityBaseType))
+            if (!entityType.ClrType.IsDerivedFrom(EntityBaseType))
             {
-                throw new InvalidOperationException($"The entity '{entityType.ClrType}' does not inherit '{_entityBaseType}'.");
+                throw new InvalidOperationException($"The entity '{entityType.ClrType}' does not inherit '{EntityBaseType}'.");
             }
         }
 
