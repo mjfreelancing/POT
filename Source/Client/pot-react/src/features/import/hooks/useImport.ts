@@ -41,7 +41,7 @@ function useImport() {
 
   return {
     importData,
-    isLoading: apiImport.isPending,
+    isPending: apiImport.isPending,
   };
 }
 

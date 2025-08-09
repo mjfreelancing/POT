@@ -39,7 +39,7 @@ function useExport() {
 
   return {
     exportData,
-    isLoading: apiExport.isPending,
+    isPending: apiExport.isPending,
   };
 }
 

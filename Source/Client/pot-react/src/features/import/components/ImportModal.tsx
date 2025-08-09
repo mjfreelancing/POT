@@ -25,7 +25,8 @@ type ImportModalProps = {
 
 function ImportModal({ isOpen, onClose }: ImportModalProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const { importData, isLoading } = useImport();
+  const [isImporting, setIsImporting] = useState(false);
+  const { importData, isPending } = useImport();
 
   async function handleFileSelect() {
     // Check if File System Access API is supported
@@ -77,6 +78,8 @@ function ImportModal({ isOpen, onClose }: ImportModalProps) {
       return;
     }
 
+    setIsImporting(true);
+
     const result = await importData(selectedFile);
 
     if (result.success) {
@@ -100,10 +103,14 @@ function ImportModal({ isOpen, onClose }: ImportModalProps) {
       );
     }
 
+    setIsImporting(false);
     handleClose();
   }
 
   function handleClose() {
+    // Call onClose() first to trigger dialog unmount. If setSelectedFile is called first, the state
+    // update may be ignored or cause a warning if the component unmounts immediately. This order
+    // ensures the dialog closes properly and the selected file state is reset for the next open.
     onClose();
     setSelectedFile(null);
   }
@@ -149,10 +156,10 @@ function ImportModal({ isOpen, onClose }: ImportModalProps) {
           </Button>
           <Button
             onClick={handleImport}
-            disabled={!selectedFile || isLoading}
+            disabled={!selectedFile || isPending || isImporting}
             className="w-28"
           >
-            {isLoading ? 'Importing...' : 'Import Data'}
+            Import Data
           </Button>
         </DialogFooter>
       </DialogContent>

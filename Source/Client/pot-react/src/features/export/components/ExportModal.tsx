@@ -19,10 +19,15 @@ type ExportModalProps = {
   onClose: () => void;
 };
 
+import { useState } from 'react';
+
 function ExportModal({ isOpen, onClose }: ExportModalProps) {
-  const { exportData, isLoading } = useExport();
+  const [isExporting, setIsExporting] = useState(false);
+  const { exportData, isPending } = useExport();
 
   async function handleExport() {
+    setIsExporting(true);
+
     const result = await exportData();
 
     if (result.success) {
@@ -50,6 +55,7 @@ function ExportModal({ isOpen, onClose }: ExportModalProps) {
       );
     }
 
+    setIsExporting(false);
     onClose();
   }
 
@@ -69,8 +75,12 @@ function ExportModal({ isOpen, onClose }: ExportModalProps) {
           <Button variant="outline" onClick={onClose} className="w-28">
             Cancel
           </Button>
-          <Button onClick={handleExport} disabled={isLoading} className="w-28">
-            {isLoading ? 'Exporting...' : 'Export Data'}
+          <Button
+            onClick={handleExport}
+            disabled={isPending || isExporting}
+            className="w-28"
+          >
+            Export Data
           </Button>
         </DialogFooter>
       </DialogContent>
