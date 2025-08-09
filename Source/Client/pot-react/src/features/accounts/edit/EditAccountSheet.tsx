@@ -26,9 +26,8 @@ function EditAccountSheet() {
 
   const [error, setError] = useState<DisplayError | null>(null);
 
-  // Initialize form with default values to prevent uncontrolled-to-controlled input warnings
-  // while LoadingMessage is displayed. When the account data loads, form.reset() will
-  // update these values with the actual account details.
+  // Use placeholder defaults to prevent uncontrolled-to-controlled warnings.
+  // Always reset with real data when it loads (see useEffect below).
   const form = useForm<AccountFormData>({
     resolver: zodResolver(accountFormSchema),
     mode: 'onSubmit',
@@ -41,6 +40,8 @@ function EditAccountSheet() {
     },
   });
 
+  // React Hook Form only uses defaultValues on first mount. If incomeData changes (e.g. after import/cache refresh),
+  // we must manually reset the form to reflect the latest data. Otherwise, the form will show stale values.
   useEffect(() => {
     if (accountResult?.success) {
       form.reset({

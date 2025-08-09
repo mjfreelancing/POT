@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router';
 
@@ -31,22 +31,43 @@ const EditExpenseSheetInternal: React.FC<EditExpenseSheetInternalProps> = ({
   const navigate = useNavigate();
   const { editExpense } = useEditExpense();
 
+  // Use placeholder defaults to prevent uncontrolled-to-controlled warnings.
+  // Always reset with real data when it loads (see useEffect below).
   const form = useForm<ExpenseFormData>({
     resolver: zodResolver(expenseFormSchema),
     mode: 'onSubmit',
     defaultValues: {
+      excludeFromCalcs: false,
+      description: '',
+      nextDue: '',
+      accrualStart: '',
+      endDate: undefined,
+      frequency: undefined,
+      frequencyCount: 0,
+      amount: 0,
+      note: '',
+      accountRowId: '',
+    },
+  });
+
+  // React Hook Form only uses defaultValues on first mount. If expenseData changes (e.g. after import/cache refresh),
+  // we must manually reset the form to reflect the latest data. Otherwise, the form will show stale values.
+  // React Hook Form only uses defaultValues on first mount. If expenseData changes (e.g. after import/cache refresh),
+  // we must manually reset the form to reflect the latest data. Otherwise, the form will show stale values.
+  useEffect(() => {
+    form.reset({
       excludeFromCalcs: expenseData.excludeFromCalcs,
       description: expenseData.description,
       nextDue: expenseData.nextDue,
       accrualStart: expenseData.accrualStart,
-      endDate: expenseData.endDate ?? undefined, // If null, make it undefined to satisfy the form schema
+      endDate: expenseData.endDate ?? undefined,
       frequency: expenseData.frequency,
       frequencyCount: expenseData.frequencyCount,
       amount: expenseData.amount,
-      note: expenseData.note,
-      accountRowId: expenseData.account?.rowId,
-    },
-  });
+      note: expenseData.note ?? '',
+      accountRowId: expenseData.account.rowId,
+    });
+  }, [expenseData, form]);
 
   const [error, setError] = useState<DisplayError | null>(null);
 

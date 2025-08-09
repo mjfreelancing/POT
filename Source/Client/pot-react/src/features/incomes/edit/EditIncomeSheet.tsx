@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router';
 
@@ -28,21 +28,39 @@ const EditIncomeSheetInternal: React.FC<EditIncomeSheetInternalProps> = ({
   const navigate = useNavigate();
   const { editIncome } = useEditIncome();
 
+  // Use placeholder defaults to prevent uncontrolled-to-controlled warnings.
+  // Always reset with real data when it loads (see useEffect below).
   const form = useForm<IncomeFormData>({
     resolver: zodResolver(incomeFormSchema),
     mode: 'onSubmit',
     defaultValues: {
+      excludeFromCalcs: false,
+      description: '',
+      nextDue: '',
+      endDate: undefined,
+      frequency: undefined,
+      frequencyCount: 0,
+      amount: 0,
+      accountRowId: '',
+      note: '',
+    },
+  });
+
+  // React Hook Form only uses defaultValues on first mount. If incomeData changes (e.g. after import/cache refresh),
+  // we must manually reset the form to reflect the latest data. Otherwise, the form will show stale values.
+  useEffect(() => {
+    form.reset({
       excludeFromCalcs: incomeData.excludeFromCalcs,
       description: incomeData.description,
       nextDue: incomeData.nextDue,
-      endDate: incomeData.endDate ?? undefined, // If null, make it undefined to satisfy the form schema
+      endDate: incomeData.endDate ?? undefined,
       frequency: incomeData.frequency,
       frequencyCount: incomeData.frequencyCount,
       amount: incomeData.amount,
-      accountRowId: incomeData.account?.rowId,
+      accountRowId: incomeData.account.rowId,
       note: incomeData.note ?? '',
-    },
-  });
+    });
+  }, [incomeData, form]);
 
   const [error, setError] = useState<DisplayError | null>(null);
 
