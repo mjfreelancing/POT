@@ -94,12 +94,4 @@ internal sealed class AccountRepository : GenericRepository<PotDbContext, Accoun
             .Where(account => rowIds.Contains(account.RowId))
             .ToListAsync(cancellationToken);
     }
-
-    public Task<List<AccountEntity>> GetAllAccountsWithIncomesAndExpensesAsync(CancellationToken cancellationToken)
-    {
-        return AsQueryable()
-            .Include(account => account.Incomes)
-            .Include(account => account.Expenses)
-            .ToListAsync(cancellationToken);
-    }
 }

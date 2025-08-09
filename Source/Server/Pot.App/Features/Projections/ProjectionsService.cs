@@ -7,25 +7,25 @@ using Pot.App.Calculators;
 using Pot.App.Concerns.Time;
 using Pot.App.Features.Projections.Models;
 using Pot.Data.Entities;
-using Pot.Data.Repositories.Accounts;
+using Pot.Data.Repositories.Projections;
 using Pot.Shared.Extensions;
 
 namespace Pot.App.Features.Projections;
 
 internal sealed class ProjectionsService : IProjectionsService
 {
-    private readonly IAccountRepository _accountRepository;
+    private readonly IProjectionsRepository _projectionsRepository;
     private readonly IExpenseRenewalCalculator _expenseRenewalCalculator;
     private readonly IIncomeRenewalCalculator _incomeRenewalCalculator;
     private readonly IAccrueExpenseCalculator _accrueExpenseCalculator;
     private readonly ITimeProvider _timeProvider;
     private readonly ILogger _logger;
 
-    public ProjectionsService(IAccountRepository accountRepository,
+    public ProjectionsService(IProjectionsRepository accountRepository,
         IExpenseRenewalCalculator expenseRenewalCalculator, IIncomeRenewalCalculator incomeRenewalCalculator,
         IAccrueExpenseCalculator accrueExpenseCalculator, ITimeProvider timeProvider, ILogger<ProjectionsService> logger)
     {
-        _accountRepository = accountRepository.WhenNotNull();
+        _projectionsRepository = accountRepository.WhenNotNull();
         _expenseRenewalCalculator = expenseRenewalCalculator.WhenNotNull();
         _incomeRenewalCalculator = incomeRenewalCalculator.WhenNotNull();
         _accrueExpenseCalculator = accrueExpenseCalculator.WhenNotNull();
@@ -40,7 +40,11 @@ internal sealed class ProjectionsService : IProjectionsService
         // The start date may be into the future so we need to aggregate data from today until the start date
         var (localDate, preStartDays) = GetPreStartDays(options.StartDate);
 
-        var accounts = await _accountRepository.GetAllAccountsWithIncomesAndExpensesAsync(cancellationToken);
+        // Will only contain incomes/expenses that are not excluded from calculations
+        var accounts = await _projectionsRepository.GetAllAccountsWithCandidateIncomesAndExpensesAsync(cancellationToken);
+
+        var accountExpenses = accounts.ToDictionary(account => account, account => account.Expenses);
+        var accountIncomes = accounts.ToDictionary(account => account, account => account.Incomes);
 
         var accountDaily = accounts.ToDictionary(account => account.RowId, account => new List<DateProjectionValues>());
         var globalDailyProjections = new List<DateProjectionValues>(options.DaysForecast);
@@ -58,17 +62,20 @@ internal sealed class ProjectionsService : IProjectionsService
 
             foreach (var account in accounts)
             {
+                var expenses = accountExpenses[account];
+                var incomes = accountIncomes[account];
+
                 // Apply debit/credit to accounts otherwise the projections will be based on the current balance
-                _expenseRenewalCalculator.Renew(account.Expenses, date, day == 0);
-                _incomeRenewalCalculator.Renew(account.Incomes, date, day == 0);
+                _expenseRenewalCalculator.Renew(expenses, date, day == 0);
+                _incomeRenewalCalculator.Renew(incomes, date, day == 0);
 
-                _accrueExpenseCalculator.AccrueExpenses(account, account.Expenses, date);
+                _accrueExpenseCalculator.AccrueExpenses(account, expenses, date);
 
-                var incomeReceived = account.Incomes
+                var incomeReceived = incomes
                     .Where(income => IsDueOnDate(income, date))
                     .Sum(income => income.Amount);
 
-                var expensesPaid = account.Expenses
+                var expensesPaid = expenses
                     .Where(expense => IsDueOnDate(expense, date))
                     .Sum(expense => expense.Amount);
 

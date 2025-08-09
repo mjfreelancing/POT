@@ -9,9 +9,9 @@ internal sealed class IncomeRenewalCalculator : IIncomeRenewalCalculator
     {
         foreach (var income in incomes)
         {
-            if (income.Frequency == Shared.Frequency.OneTime)
+            // Frequency.OneTime incomes do not renew
+            if (income.ExcludeFromCalcs || income.Frequency == Shared.Frequency.OneTime)
             {
-                // One-time incomes do not renew
                 continue;
             }
 

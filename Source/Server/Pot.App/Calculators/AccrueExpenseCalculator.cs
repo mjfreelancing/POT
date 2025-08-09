@@ -22,8 +22,17 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
 
         ResetAccountAccruals(account);
 
-        // Sorted is important if the option to not allow negative balances is set.
-        var sortedExpenses = expenses.OrderByDescending(expense => expense.NextDue);
+        var sortedExpenses = expenses
+            .Where(expense => !expense.ExcludeFromCalcs)
+
+            // Negated: If the expense is a one-time expense and the current date is after the next due date, no accrual is needed.
+            .Where(expense => expense.Frequency != Shared.Frequency.OneTime || currentDate <= expense.NextDue)
+
+            // Negated: If the accrual start date is in the future, no accrual is needed.
+            .Where(expense => expense.AccrualStart <= currentDate)
+
+            // Sorted will be important if there's ever an option to not allow negative balances.
+            .OrderByDescending(expense => expense.NextDue);
 
         sortedExpenses.ForEach((expense, index) =>
         {
@@ -40,20 +49,6 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
     private static void AccrueExpense(ExpenseEntity expense, DateOnly currentDate)
     {
         expense.Accrued = 0.0d;
-
-        // TODO: Create a composite specification for these early returns
-
-        // If the accrual start date is in the future, no accrual is needed.
-        if (expense.AccrualStart > currentDate)
-        {
-            return;
-        }
-
-        // If the expense was a one-time expense and the current date is after the next due date, no accrual is needed.
-        if (expense.Frequency == Shared.Frequency.OneTime && currentDate > expense.NextDue)
-        {
-            return;
-        }
 
         var account = expense.Account;
 

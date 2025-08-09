@@ -9,9 +9,9 @@ internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
     {
         foreach (var expense in expenses)
         {
-            if (expense.Frequency == Shared.Frequency.OneTime)
+            // Frequency.OneTime expenses do not renew
+            if (expense.ExcludeFromCalcs || expense.Frequency == Shared.Frequency.OneTime)
             {
-                // One-time expenses do not renew
                 continue;
             }
 
