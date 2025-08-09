@@ -14,7 +14,7 @@ function NoProjectionData() {
     <div className="flex items-center justify-center flex-1 p-6 w-full h-full">
       <Card className="flex flex-col w-full h-full">
         <CardHeader className="flex-shrink-0">
-          <CardTitle>Account Balance Projections</CardTitle>
+          <CardTitle className="sr-only">No Data Available</CardTitle>
           <CardDescription className="sr-only">
             No projection data available to display
           </CardDescription>

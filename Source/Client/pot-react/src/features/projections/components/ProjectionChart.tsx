@@ -227,10 +227,6 @@ function ProjectionChart({
     );
   }
 
-  if (!hasData) {
-    return <NoProjectionData />;
-  }
-
   return (
     <Card className="flex flex-col h-full pb-0">
       <CardHeader className="flex-shrink-0">
@@ -254,109 +250,119 @@ function ProjectionChart({
         chartConfig={chartConfig}
       />
       <CardContent className="flex-1 flex flex-col p-0">
-        <div
-          className="flex-1 w-full min-h-0 px-6"
-          style={{
-            background:
-              'linear-gradient(to bottom, rgba(148, 163, 184, 0.02), rgba(148, 163, 184, 0.08))',
-            minHeight: '400px',
-          }}
-        >
-          <ChartContainer
-            config={chartConfig}
-            className="w-full h-full aspect-auto"
-            style={{ minHeight: '400px' }}
+        {hasData ? (
+          <div
+            className="flex-1 w-full min-h-0 px-6"
+            style={{
+              background:
+                'linear-gradient(to bottom, rgba(148, 163, 184, 0.02), rgba(148, 163, 184, 0.08))',
+              minHeight: '400px',
+            }}
           >
-            {getChartType() === 'line' ? (
-              <LineChart
-                data={chartData}
-                margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis
-                  dataKey="date"
-                  tickFormatter={value => format(parseISO(value), 'MMM dd')}
-                  angle={-45}
-                  textAnchor="end"
-                  height={60}
-                  className="text-xs"
-                />
-                <YAxis
-                  tickFormatter={value => formatMoneyValue(value)}
-                  className="text-xs"
-                  domain={getVisibleYDomain()}
-                />
-                <ChartTooltip
-                  content={({ active, payload, label }) =>
-                    renderTooltipContent(active, payload, label, chartConfig)
-                  }
-                />
-                {seriesKeys.map(key => {
-                  const isVisible = seriesVisibility[key];
-                  const strokeColor = chartConfig[key]?.color || '#8884d8';
-                  return (
-                    <Line
-                      key={key}
-                      type="basis"
-                      dataKey={key}
-                      stroke={strokeColor}
-                      strokeWidth={getStrokeWidth(key)}
-                      dot={false}
-                      hide={!isVisible}
-                      connectNulls={false}
-                      activeDot={{ r: 4 }}
-                      isAnimationActive={true}
-                      animationDuration={700}
-                      animationEasing="ease-in-out"
-                    />
-                  );
-                })}
-              </LineChart>
-            ) : (
-              <BarChart
-                data={chartData}
-                margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis
-                  dataKey="date"
-                  tickFormatter={value => format(parseISO(value), 'MMM dd')}
-                  angle={-45}
-                  textAnchor="end"
-                  height={60}
-                  className="text-xs"
-                />
-                <YAxis
-                  tickFormatter={value => formatMoneyValue(value)}
-                  className="text-xs"
-                  domain={getVisibleYDomain()}
-                />
-                <ChartTooltip
-                  content={({ active, payload, label }) =>
-                    renderTooltipContent(active, payload, label, chartConfig)
-                  }
-                />
-                {seriesKeys.map(key => {
-                  const isVisible = seriesVisibility[key];
-                  const fillColor = chartConfig[key]?.color || '#8884d8';
+            <ChartContainer
+              config={chartConfig}
+              className="w-full h-full aspect-auto"
+              style={{ minHeight: '400px' }}
+            >
+              {getChartType() === 'line' ? (
+                <LineChart
+                  data={chartData}
+                  margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    className="stroke-muted"
+                  />
+                  <XAxis
+                    dataKey="date"
+                    tickFormatter={value => format(parseISO(value), 'MMM dd')}
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                    className="text-xs"
+                  />
+                  <YAxis
+                    tickFormatter={value => formatMoneyValue(value)}
+                    className="text-xs"
+                    domain={getVisibleYDomain()}
+                  />
+                  <ChartTooltip
+                    content={({ active, payload, label }) =>
+                      renderTooltipContent(active, payload, label, chartConfig)
+                    }
+                  />
+                  {seriesKeys.map(key => {
+                    const isVisible = seriesVisibility[key];
+                    const strokeColor = chartConfig[key]?.color || '#8884d8';
+                    return (
+                      <Line
+                        key={key}
+                        type="basis"
+                        dataKey={key}
+                        stroke={strokeColor}
+                        strokeWidth={getStrokeWidth(key)}
+                        dot={false}
+                        hide={!isVisible}
+                        connectNulls={false}
+                        activeDot={{ r: 4 }}
+                        isAnimationActive={true}
+                        animationDuration={700}
+                        animationEasing="ease-in-out"
+                      />
+                    );
+                  })}
+                </LineChart>
+              ) : (
+                <BarChart
+                  data={chartData}
+                  margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    className="stroke-muted"
+                  />
+                  <XAxis
+                    dataKey="date"
+                    tickFormatter={value => format(parseISO(value), 'MMM dd')}
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                    className="text-xs"
+                  />
+                  <YAxis
+                    tickFormatter={value => formatMoneyValue(value)}
+                    className="text-xs"
+                    domain={getVisibleYDomain()}
+                  />
+                  <ChartTooltip
+                    content={({ active, payload, label }) =>
+                      renderTooltipContent(active, payload, label, chartConfig)
+                    }
+                  />
+                  {seriesKeys.map(key => {
+                    const isVisible = seriesVisibility[key];
+                    const fillColor = chartConfig[key]?.color || '#8884d8';
 
-                  return (
-                    <Bar
-                      key={key}
-                      dataKey={key}
-                      fill={fillColor}
-                      hide={!isVisible}
-                      opacity={0.8}
-                      isAnimationActive={true}
-                      animationDuration={700}
-                      animationEasing="ease-in-out"
-                    />
-                  );
-                })}
-              </BarChart>
-            )}
-          </ChartContainer>
-        </div>
+                    return (
+                      <Bar
+                        key={key}
+                        dataKey={key}
+                        fill={fillColor}
+                        hide={!isVisible}
+                        opacity={0.8}
+                        isAnimationActive={true}
+                        animationDuration={700}
+                        animationEasing="ease-in-out"
+                      />
+                    );
+                  })}
+                </BarChart>
+              )}
+            </ChartContainer>
+          </div>
+        ) : (
+          <NoProjectionData />
+        )}
       </CardContent>
     </Card>
   );

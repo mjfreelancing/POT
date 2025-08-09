@@ -6,11 +6,7 @@ import { ErrorSheet, LoadingMessage } from '@/components/feedback';
 import { DisplayError } from '@/lib';
 import { dateIsoFormat, normalizeToLocalMidnight } from '@/lib/dateUtils';
 
-import {
-  NoProjectionData,
-  ProjectionChart,
-  ProjectionsHeader,
-} from './components';
+import { ProjectionChart, ProjectionsHeader } from './components';
 
 function ProjectionsPage() {
   // State for start date and period (in months)
@@ -65,8 +61,6 @@ function ProjectionsPage() {
           />
         </div>
       )}
-
-      {!result?.success && <NoProjectionData />}
 
       {error && (
         <ErrorSheet
