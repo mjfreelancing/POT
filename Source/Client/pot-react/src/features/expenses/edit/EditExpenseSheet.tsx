@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router';
 
@@ -31,31 +31,8 @@ const EditExpenseSheetInternal: React.FC<EditExpenseSheetInternalProps> = ({
   const navigate = useNavigate();
   const { editExpense } = useEditExpense();
 
-  // Use placeholder defaults to prevent uncontrolled-to-controlled warnings.
-  // Always reset with real data when it loads (see useEffect below).
-  const form = useForm<ExpenseFormData>({
-    resolver: zodResolver(expenseFormSchema),
-    mode: 'onSubmit',
-    defaultValues: {
-      excludeFromCalcs: false,
-      description: '',
-      nextDue: '',
-      accrualStart: '',
-      endDate: undefined,
-      frequency: undefined,
-      frequencyCount: 0,
-      amount: 0,
-      note: '',
-      accountRowId: '',
-    },
-  });
-
-  // React Hook Form only uses defaultValues on first mount. If expenseData changes (e.g. after import/cache refresh),
-  // we must manually reset the form to reflect the latest data. Otherwise, the form will show stale values.
-  // React Hook Form only uses defaultValues on first mount. If expenseData changes (e.g. after import/cache refresh),
-  // we must manually reset the form to reflect the latest data. Otherwise, the form will show stale values.
-  useEffect(() => {
-    form.reset({
+  const defaultValues = useMemo(
+    () => ({
       excludeFromCalcs: expenseData.excludeFromCalcs,
       description: expenseData.description,
       nextDue: expenseData.nextDue,
@@ -66,8 +43,16 @@ const EditExpenseSheetInternal: React.FC<EditExpenseSheetInternalProps> = ({
       amount: expenseData.amount,
       note: expenseData.note ?? '',
       accountRowId: expenseData.account.rowId,
-    });
-  }, [expenseData, form]);
+    }),
+    [expenseData],
+  );
+
+  const form = useForm<ExpenseFormData>({
+    resolver: zodResolver(expenseFormSchema),
+    mode: 'onSubmit',
+    defaultValues,
+    values: defaultValues, // Use current values to avoid initial blank form
+  });
 
   const [error, setError] = useState<DisplayError | null>(null);
 
@@ -121,22 +106,18 @@ function EditExpenseSheet() {
   const { data: accountsResult, isLoading: isAccountsLoading } =
     useApiGetAllAccounts();
 
-  // Show loading state while either API call is in progress
+  // Show loading state before any data is available
   if (isExpenseLoading || isAccountsLoading) {
-    return (
-      <ExpenseSheet title="Edit Expense">
-        <LoadingMessage isLoading={true} />
-      </ExpenseSheet>
-    );
+    return <LoadingMessage />;
   }
 
-  // Handle failure to load expense
-  if (!expenseResult || !expenseResult.success) {
+  // Handle API errors before mounting the sheet
+  if (!expenseResult?.success) {
     return (
       <ErrorSheet
-        title={expenseResult?.error?.code || 'Error Loading Expense'}
+        title={expenseResult?.error?.code ?? 'Error Loading Expense'}
         description={
-          expenseResult?.error?.description ||
+          expenseResult?.error?.description ??
           'Failed to load the expense details. Please try again.'
         }
         onDismiss={() => navigate('/expenses')}
@@ -144,13 +125,12 @@ function EditExpenseSheet() {
     );
   }
 
-  // Handle failure to load accounts
-  if (!accountsResult || !accountsResult.success) {
+  if (!accountsResult?.success) {
     return (
       <ErrorSheet
-        title={accountsResult?.error?.code || 'Error Loading Accounts'}
+        title={accountsResult?.error?.code ?? 'Error Loading Accounts'}
         description={
-          accountsResult?.error?.description ||
+          accountsResult?.error?.description ??
           'Failed to load accounts. Please try again.'
         }
         onDismiss={() => navigate('/expenses')}
@@ -158,8 +138,7 @@ function EditExpenseSheet() {
     );
   }
 
-  // If we reach here, both expenseResult and accountsResult are loaded and successful.
-  // Their 'value' properties are guaranteed to be non-null.
+  // Only mount the sheet once we have all the data
   return (
     <EditExpenseSheetInternal
       expenseData={expenseResult.value}

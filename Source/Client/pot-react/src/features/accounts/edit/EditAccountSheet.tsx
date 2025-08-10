@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router';
 
@@ -17,68 +17,41 @@ import {
 } from '../schemas/accountFormSchema';
 import useEditAccount from './hooks/useEditAccount';
 
-function EditAccountSheet() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { data: accountResult, isLoading: isAccountLoading } =
-    useApiGetAccountById(id!);
-  const { editAccount } = useEditAccount();
+// This internal sheet is used to encapsulate the form logic and state management.
+// We only render this once the account data is loaded.
+type EditAccountSheetInternalProps = {
+  accountData: EditAccount;
+};
 
+const EditAccountSheetInternal: React.FC<EditAccountSheetInternalProps> = ({
+  accountData,
+}) => {
+  const navigate = useNavigate();
+  const { editAccount } = useEditAccount();
   const [error, setError] = useState<DisplayError | null>(null);
 
-  // Use placeholder defaults to prevent uncontrolled-to-controlled warnings.
-  // Always reset with real data when it loads (see useEffect below).
+  const defaultValues = useMemo(
+    () => ({
+      bsb: accountData.bsb,
+      number: accountData.number,
+      description: accountData.description,
+      balance: accountData.balance,
+      reserved: accountData.reserved,
+    }),
+    [accountData],
+  );
+
   const form = useForm<AccountFormData>({
     resolver: zodResolver(accountFormSchema),
     mode: 'onSubmit',
-    defaultValues: {
-      bsb: '',
-      number: '',
-      description: '',
-      balance: 0,
-      reserved: 0,
-    },
+    defaultValues,
+    values: defaultValues, // Use current values to avoid initial blank form
   });
-
-  // React Hook Form only uses defaultValues on first mount. If incomeData changes (e.g. after import/cache refresh),
-  // we must manually reset the form to reflect the latest data. Otherwise, the form will show stale values.
-  useEffect(() => {
-    if (accountResult?.success) {
-      form.reset({
-        bsb: accountResult.value.bsb,
-        number: accountResult.value.number,
-        description: accountResult.value.description,
-        balance: accountResult.value.balance,
-        reserved: accountResult.value.reserved,
-      });
-    }
-  }, [accountResult, form]);
-
-  if (isAccountLoading) {
-    return (
-      <AccountSheet title="Edit Account">
-        <LoadingMessage isLoading={true} />
-      </AccountSheet>
-    );
-  }
-
-  // Deal with failure to load data
-  if (accountResult && !accountResult.success) {
-    return (
-      <ErrorSheet
-        title={accountResult.error.code}
-        description={accountResult.error.description}
-        onDismiss={() => navigate('/accounts')}
-      />
-    );
-  }
-
-  const { rowId, etag } = accountResult.value;
 
   const onSubmit = async (values: AccountFormData) => {
     const updatedAccount: EditAccount = {
-      rowId,
-      etag,
+      rowId: accountData.rowId,
+      etag: accountData.etag,
       ...values,
     };
 
@@ -112,6 +85,35 @@ function EditAccountSheet() {
       />
     </AccountSheet>
   );
+};
+
+function EditAccountSheet() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { data: accountResult, isLoading: isAccountLoading } =
+    useApiGetAccountById(id!);
+
+  // Show loading state before any data is available
+  if (isAccountLoading) {
+    return <LoadingMessage />;
+  }
+
+  // Handle API errors before mounting the sheet
+  if (!accountResult?.success) {
+    return (
+      <ErrorSheet
+        title={accountResult?.error?.code ?? 'Error Loading Account'}
+        description={
+          accountResult?.error?.description ??
+          'Failed to load the account details. Please try again.'
+        }
+        onDismiss={() => navigate('/accounts')}
+      />
+    );
+  }
+
+  // Only mount the sheet once we have the data
+  return <EditAccountSheetInternal accountData={accountResult.value} />;
 }
 
 export default EditAccountSheet;

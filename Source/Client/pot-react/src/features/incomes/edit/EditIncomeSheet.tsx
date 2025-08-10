@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router';
 
@@ -28,28 +28,8 @@ const EditIncomeSheetInternal: React.FC<EditIncomeSheetInternalProps> = ({
   const navigate = useNavigate();
   const { editIncome } = useEditIncome();
 
-  // Use placeholder defaults to prevent uncontrolled-to-controlled warnings.
-  // Always reset with real data when it loads (see useEffect below).
-  const form = useForm<IncomeFormData>({
-    resolver: zodResolver(incomeFormSchema),
-    mode: 'onSubmit',
-    defaultValues: {
-      excludeFromCalcs: false,
-      description: '',
-      nextDue: '',
-      endDate: undefined,
-      frequency: undefined,
-      frequencyCount: 0,
-      amount: 0,
-      accountRowId: '',
-      note: '',
-    },
-  });
-
-  // React Hook Form only uses defaultValues on first mount. If incomeData changes (e.g. after import/cache refresh),
-  // we must manually reset the form to reflect the latest data. Otherwise, the form will show stale values.
-  useEffect(() => {
-    form.reset({
+  const defaultValues = useMemo(
+    () => ({
       excludeFromCalcs: incomeData.excludeFromCalcs,
       description: incomeData.description,
       nextDue: incomeData.nextDue,
@@ -59,8 +39,16 @@ const EditIncomeSheetInternal: React.FC<EditIncomeSheetInternalProps> = ({
       amount: incomeData.amount,
       accountRowId: incomeData.account.rowId,
       note: incomeData.note ?? '',
-    });
-  }, [incomeData, form]);
+    }),
+    [incomeData],
+  );
+
+  const form = useForm<IncomeFormData>({
+    resolver: zodResolver(incomeFormSchema),
+    mode: 'onSubmit',
+    defaultValues,
+    values: defaultValues, // Use current values to avoid initial blank form
+  });
 
   const [error, setError] = useState<DisplayError | null>(null);
 
@@ -114,22 +102,18 @@ function EditIncomeSheet() {
   const { data: accountsResult, isLoading: isAccountsLoading } =
     useApiGetAllAccounts();
 
-  // Show loading state while either API call is in progress
+  // Show loading state before any data is available
   if (isIncomeLoading || isAccountsLoading) {
-    return (
-      <IncomeSheet title="Edit Income">
-        <LoadingMessage isLoading={true} />
-      </IncomeSheet>
-    );
+    return <LoadingMessage />;
   }
 
-  // Handle failure to load income
-  if (!incomeResult || !incomeResult.success) {
+  // Handle API errors before mounting the sheet
+  if (!incomeResult?.success) {
     return (
       <ErrorSheet
-        title={incomeResult?.error?.code || 'Error Loading Income'}
+        title={incomeResult?.error?.code ?? 'Error Loading Income'}
         description={
-          incomeResult?.error?.description ||
+          incomeResult?.error?.description ??
           'Failed to load the income details. Please try again.'
         }
         onDismiss={() => navigate('/incomes')}
@@ -137,13 +121,12 @@ function EditIncomeSheet() {
     );
   }
 
-  // Handle failure to load accounts
-  if (!accountsResult || !accountsResult.success) {
+  if (!accountsResult?.success) {
     return (
       <ErrorSheet
-        title={accountsResult?.error?.code || 'Error Loading Accounts'}
+        title={accountsResult?.error?.code ?? 'Error Loading Accounts'}
         description={
-          accountsResult?.error?.description ||
+          accountsResult?.error?.description ??
           'Failed to load accounts. Please try again.'
         }
         onDismiss={() => navigate('/incomes')}
