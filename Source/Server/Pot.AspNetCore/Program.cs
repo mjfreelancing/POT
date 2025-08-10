@@ -4,6 +4,7 @@ using Pot.AspNetCore.Features.Expenses.Extensions;
 using Pot.AspNetCore.Features.Incomes.Extensions;
 using Pot.AspNetCore.Features.Maintenance.Extensions;
 using Pot.AspNetCore.Features.Projections.Extensions;
+using Pot.Data;
 using Pot.Data.Extensions;
 
 namespace Pot.AspNetCore;
@@ -15,6 +16,10 @@ public class Program
         // ASPNETCORE_ENVIRONMENT => Environment name
 
         var builder = WebApplication.CreateBuilder(args);
+
+        builder.Services
+            .AddHealthChecks()
+            .AddDbContextCheck<PotDbContext>();
 
         builder.Services.AddCors();
 
@@ -55,6 +60,7 @@ public class Program
 
         app.Logger.LogInformation("POT Startup: {AppStartup}", new { Local = DateTime.Now });
 
+        app.MapHealthChecks("/_health");
 
 
         //app.UseAuthentication();
@@ -67,7 +73,6 @@ public class Program
            .AllowAnyHeader()
            .WithExposedHeaders("content-disposition"));
         //.AllowCredentials()); // If using authentication
-
 
         app.UseCorrelationId()
            .UseScalarOpenApi()
