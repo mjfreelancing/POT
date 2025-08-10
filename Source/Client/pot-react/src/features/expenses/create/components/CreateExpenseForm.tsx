@@ -43,6 +43,7 @@ function CreateExpenseForm({
         amount: duplicateExpense.amount,
         accountRowId: duplicateExpense.account.rowId,
         note: duplicateExpense.note ?? '',
+        excludeFromCalcs: duplicateExpense.excludeFromCalcs,
       };
     }
 
@@ -56,6 +57,7 @@ function CreateExpenseForm({
       amount: 0,
       accountRowId: '',
       note: '',
+      excludeFromCalcs: false,
     };
   };
 

@@ -42,6 +42,7 @@ function CreateIncomeForm({
         amount: duplicateIncome.amount,
         accountRowId: duplicateIncome.account.rowId,
         note: duplicateIncome.note ?? '',
+        excludeFromCalcs: duplicateIncome.excludeFromCalcs,
       };
     }
 
@@ -54,6 +55,7 @@ function CreateIncomeForm({
       amount: 0,
       accountRowId: '',
       note: '',
+      excludeFromCalcs: false,
     };
   };
 

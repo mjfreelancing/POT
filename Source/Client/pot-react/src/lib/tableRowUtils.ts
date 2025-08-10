@@ -6,9 +6,10 @@ const TABLE_ROW_STYLES = {
   OVERDUE: 'text-red-600 dark:text-red-400 italic',
 } as const;
 
+// Only applicable to incomes and expenses
 type TableRowItem = {
-  excludeFromCalcs: boolean; // applicable to incomes, accounts, and expenses
-  nextDue?: string; // applicable to incomes and expenses
+  excludeFromCalcs: boolean;
+  nextDue?: string;
 };
 
 type StyleCheck = keyof typeof TABLE_ROW_STYLES;
