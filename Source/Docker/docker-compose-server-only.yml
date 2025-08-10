@@ -41,7 +41,7 @@ services:
     ports:
       - "5241:5241"
     healthcheck:
-      test: "curl -f http://localhost:5241 || exit 1"
+      test: "wget -q --spider http://localhost:5241/_health || exit 1"
       interval: 10s
       timeout: 5s
       retries: 5

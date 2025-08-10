@@ -1,0 +1,24 @@
+flowchart TD
+    subgraph Docker Network
+        subgraph "pot-postgres" [PostgreSQL Container]
+            DB[(Database)]
+            DB_Health["Healthcheck:<br>pg_isready"]
+        end
+
+        subgraph "pot-aspnet" [ASP.NET Container]
+            API["ASP.NET API<br>Port: 5241"]
+            API_Health["Healthcheck<br>_health endpoint"]
+        end
+
+        DB --> DB_Health
+        API --> API_Health
+        DB_Health -->|"depends_on condition:<br>service_healthy"| API
+    end
+
+    subgraph "Host System"
+        Dev["Developer Machine<br>React App (Dev Mode)"]
+    end
+
+    Port_DB["Host Port: 5444"] -->|mapped to| DB
+    Port_API["Host Port: 5241"] -->|mapped to| API
+    Dev -->|"VITE_API_BASE_URL=localhost:5241/api"| Port_API

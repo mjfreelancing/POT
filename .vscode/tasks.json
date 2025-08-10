@@ -2,9 +2,9 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "docker-start-pot",
+      "label": "docker-start-pot-server-only",
       "type": "shell",
-      "command": "docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose.yml up --build -d",
+      "command": "docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-server-only.yml up --build -d",
       "options": {
         "cwd": "${workspaceFolder}/Source/Docker"
       },
@@ -15,9 +15,9 @@
       "problemMatcher": []
     },
     {
-      "label": "docker-stop-pot",
+      "label": "docker-stop-pot-server-only",
       "type": "shell",
-      "command": "docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose.yml down",
+      "command": "docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-server-only.yml down",
       "options": {
         "cwd": "${workspaceFolder}/Source/Docker"
       },
@@ -28,9 +28,9 @@
       "problemMatcher": []
     },
     {
-      "label": "docker-start-pot-production",
+      "label": "docker-start-pot-client-server",
       "type": "shell",
-      "command": "docker-compose --env-file .env --env-file .env.production -p pot -f docker-compose.yml up --build -d",
+      "command": "docker-compose --env-file .env --env-file .env.production -p pot -f docker-compose-client-server.yml up --build -d",
       "options": {
         "cwd": "${workspaceFolder}/Source/Docker"
       },
@@ -41,9 +41,9 @@
       "problemMatcher": []
     },
     {
-      "label": "docker-stop-pot-production",
+      "label": "docker-stop-pot-client-server",
       "type": "shell",
-      "command": "docker-compose --env-file .env --env-file .env.production -p pot -f docker-compose.yml down",
+      "command": "docker-compose --env-file .env --env-file .env.production -p pot -f docker-compose-client-server.yml down",
       "options": {
         "cwd": "${workspaceFolder}/Source/Docker"
       },

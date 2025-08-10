@@ -1,6 +1,21 @@
-# Docker Setup for POT Project
+﻿# Docker Setup for POT Project
 
 This guide provides instructions for building, running, and managing the POT project's Dockerized services.
+
+## Deployment Configurations
+
+The POT project supports two deployment configurations:
+
+1. **Server-Only Configuration** (`docker-compose-server-only.yml`):
+
+   - Used for local development
+   - Runs PostgreSQL database and .NET server only
+   - Client application can be run separately in development mode
+
+2. **Full-Stack Configuration** (`docker-compose-client-server.yml`):
+   - Self-contained production deployment
+   - Runs PostgreSQL database, .NET server, and React client
+   - All components are containerized and integrated
 
 ## Directory Structure and Key Files
 
@@ -11,20 +26,23 @@ This guide provides instructions for building, running, and managing the POT pro
   - Build context: project root (one level up from `Docker`)
   - Dockerfile: `Docker/Server/Dockerfile`
   - Entrypoint script: `Docker/Server/entrypoint.sh`
+- **Client Service** (client-server configuration only)
+  - Build context: project root (one level up from `Docker`)
+  - Dockerfile: `Docker/Client/Dockerfile`
 - **Solution File**
   - Located at the project root: `pot.sln`
 
 ## Ports
 
-- The Dockerized server is exposed on port **5241**. Access the API at `http://localhost:5241/` when running via Docker Compose.
-- The Dockerized Postgres database is exposed on port **5444** (host) mapped to **5432** (container). Connect to `localhost:5444` from database tools on the host.
-- The local development version of the server (when running directly with .NET tooling) uses port **5242**, as defined in the server's `launchSettings.json`.
+- **PostgreSQL**: Port **5444** (host) mapped to **5432** (container)
+- **ASP.NET Server**: Port **5241**
+- **React Client** (client-server configuration only): Port **5175** mapped to container port 80
 
 ## Environment Variables
 
 ### Docker Compose Environment Files
 
-Docker Compose supports environment-specific configuration files, similar to ASP.NET Core's appsettings pattern:
+Docker Compose supports environment-specific configuration files:
 
 - **`.env`** - Default/shared environment variables (committed to version control)
 - **`.env.development`** - Development-specific overrides (excluded from version control)
@@ -46,38 +64,16 @@ Contain sensitive or environment-specific values:
 - `POSTGRES_PASSWORD`: Database password
 - `RSA_PRIVATE_KEY`: The RSA private key used for decrypting export data
 
-### Using Environment-Specific Files
-
-#### Development (Default)
-
-```bash
-# Uses .env + .env.development
-docker-compose --env-file .env --env-file .env.development up -d --build
-```
-
-#### Production
-
-```bash
-# Uses .env + .env.production
-docker-compose --env-file .env --env-file .env.production up -d --build
-```
-
-**Important Security Notes**:
-
-- Environment-specific files (`.env.development`, `.env.production`, `.env.local`) are excluded from version control
-- In production deployments, sensitive values should be managed through secure secret management systems
-- The `.env.production` file is a template - replace placeholder values with actual production secrets
-
 ### Configuration Structure
 
 The application uses a hierarchical configuration structure in the appsettings files. When using Docker Compose, environment variables are automatically mapped by ASP.NET Core to this hierarchical structure:
 
 - Database configuration:
-  - `POSTGRES_USER` → `Database:Username`
-  - `POSTGRES_PASSWORD` → `Database:Password`
-  - `POSTGRES_DB` → `Database:DatabaseName`
+  - `POSTGRES_USER` `Database:Username`
+  - `POSTGRES_PASSWORD` `Database:Password`
+  - `POSTGRES_DB` `Database:DatabaseName`
 - RSA configuration:
-  - `RSA_PRIVATE_KEY` → `Rsa:PrivateKey`
+  - `RSA_PRIVATE_KEY` `Rsa:PrivateKey`
 
 Note: The public key is not configured in the server as it is provided by the client with each request.
 
@@ -85,17 +81,23 @@ Note: The public key is not configured in the server as it is provided by the cl
 
 Frontend environment variables must be defined in a `.env` file at the root of the React project (`Source/Client/pot-react/`). Only variables prefixed with `VITE_` are available to the frontend code.
 
-Example:
+While developing the React app use the following (in `.env.development`) to communicate with the API server in the docker container (production data, Postgres listening on port 5444):
 
 ```
 VITE_API_BASE_URL=http://localhost:5241/api
+```
+
+And use this to communicate with the API server running locally (requires another docker container running Postgres that listens on the default port 5432):
+
+```
+VITE_API_BASE_URL=http://localhost:5242/api
 ```
 
 ## RSA Encryption for Data Export/Import
 
 The application includes RSA encryption for securing exported data:
 
-- **Public Key**: Provided by the client application for each request, not stored in server configuration
+- **Public Key**: Provided by the client application for each request
 - **Private Key**: Stored separately for security:
   - Development: In `appsettings.Development.json` (excluded from version control)
   - Production: Via environment variable `RSA_PRIVATE_KEY` in Docker
@@ -106,29 +108,35 @@ The application includes RSA encryption for securing exported data:
 - The server only requires the private key in its configuration
 - Each export/import request includes the public key in its headers
 
+## Health Checks
+
+Both configurations include health checks to ensure proper service readiness:
+
+- **PostgreSQL**: Uses `pg_isready` to verify the database is ready
+- **ASP.NET Server**: Checks the `_health` endpoint at `http://localhost:5241/_health` (Port 5242 if running locally)
+- Services are configured with appropriate dependencies to ensure proper startup order
+
 ## Building and Running Docker Services
 
-- **Development Environment**:
+### Local Development (Server-Only Configuration)
 
-  ```bash
-  # Start services
-  docker-compose -p pot -f docker-compose.yml --env-file .env --env-file .env.development up --build -d
+```bash
+# Start services
+docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-server-only.yml up --build -d
 
-  # Stop services
-  docker-compose -p pot -f docker-compose.yml down
-  ```
+# Stop services
+docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-server-only.yml down
+```
 
-- **Production Environment**:
+### Production Deployment (Client-Server Configuration)
 
-  ```bash
-  # Start services
-  docker-compose -p pot -f docker-compose.yml --env-file .env --env-file .env.production up --build -d
+```bash
+# Start services
+docker-compose --env-file .env --env-file .env.production -p pot -f docker-compose-client-server.yml up --build -d
 
-  # Stop services
-  docker-compose -p pot -f docker-compose.yml down
-  ```
-
-These commands are encapsulated in VS Code tasks for convenience. See the "Managing Docker Containers via Visual Studio Code" section below for details.
+# Stop services
+docker-compose --env-file .env --env-file .env.production -p pot -f docker-compose-client-server.yml down
+```
 
 ## Managing Docker Containers via Visual Studio Code
 
@@ -138,14 +146,11 @@ Predefined VS Code tasks are available for managing containers:
 2. Select `Run Task`
 3. Choose one of the following:
 
-### Development Tasks (Default)
+### Available Tasks
 
-- `docker-start-pot`: Builds and starts containers using development environment
-- `docker-stop-pot`: Stops and removes containers using development environment
+- `docker-start-pot-server-only`: Builds and starts the database and server containers (development)
+- `docker-stop-pot-server-only`: Stops and removes the database and server containers
+- `docker-start-pot-client-server`: Builds and starts all containers (production deployment)
+- `docker-stop-pot-client-server`: Stops and removes all containers
 
-### Production Tasks
-
-- `docker-start-pot-production`: Builds and starts containers using production environment
-- `docker-stop-pot-production`: Stops and removes containers using production environment
-
-These tasks are defined in `.vscode/tasks.json` and automatically use the appropriate environment files.
+These tasks are defined in `.vscode/tasks.json` and automatically use the appropriate environment files and Docker Compose configurations.
