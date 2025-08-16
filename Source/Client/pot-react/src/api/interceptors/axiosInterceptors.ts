@@ -104,5 +104,5 @@ export const setupInterceptors = () => {
  */
 export const setupAxiosDefaults = () => {
   axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL;
-  axios.defaults.timeout = 10000;
+  axios.defaults.timeout = import.meta.env.VITE_API_TIMEOUT_MS;
 };
