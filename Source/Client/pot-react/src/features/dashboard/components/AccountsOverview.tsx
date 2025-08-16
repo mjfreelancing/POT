@@ -2,10 +2,10 @@ import { ColumnDef } from '@tanstack/react-table';
 import { Banknote, Calendar, DollarSign, PieChart } from 'lucide-react';
 import { useEffect } from 'react';
 
-import { LoadingMessage } from '@/components/feedback';
 import StatusBadge from '@/components/feedback/badge/StatusBadge';
 import { createMoneyValueColumn, DataTable } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Account } from '@/data';
 import { formatMoneyValue } from '@/lib';
 
@@ -138,8 +138,6 @@ function AccountsOverview() {
     return 'text-destructive-high-contrast';
   }
 
-  // Update to use a skeleton when loading
-
   return (
     <>
       <Card>
@@ -148,12 +146,18 @@ function AccountsOverview() {
           title="Accounts Overview"
           description="Your bank accounts at a glance"
         />
-        {accountsIsLoading ? (
-          <LoadingMessage isLoading={true} />
-        ) : (
-          <CardContent className="px-4 -mt-2">
-            <div className="flex flex-col xl:flex-row gap-6">
-              <div className="flex-1 w-full max-w-2xl">
+        <CardContent className="px-4 -mt-2">
+          <div className="flex flex-col xl:flex-row gap-6">
+            <div className="flex-1 w-full max-w-2xl">
+              {accountsIsLoading ? (
+                <div className="grid grid-cols-2 gap-4">
+                  {Array(4)
+                    .fill(0)
+                    .map((_, i) => (
+                      <Skeleton key={i} className="h-[120px] rounded-lg" />
+                    ))}
+                </div>
+              ) : (
                 <SummaryCardsGrid
                   cards={[
                     {
@@ -222,13 +226,17 @@ function AccountsOverview() {
                     },
                   ]}
                 />
-              </div>
-              <div className="flex-1 w-full min-w-0 flex flex-col min-h-0 h-[292px]">
-                <DataTable columns={columns} data={accounts} />
-              </div>
+              )}
             </div>
-          </CardContent>
-        )}
+            <div className="flex-1 w-full min-w-0 flex flex-col min-h-0 h-[292px]">
+              {accountsIsLoading ? (
+                <Skeleton className="h-[256px] w-full rounded-lg" />
+              ) : (
+                <DataTable columns={columns} data={accounts} />
+              )}
+            </div>
+          </div>
+        </CardContent>
       </Card>
     </>
   );
