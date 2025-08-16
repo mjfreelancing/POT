@@ -5,7 +5,8 @@ namespace Pot.App.Calculators;
 
 internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
 {
-    public void Renew(IEnumerable<ExpenseEntity> expenses, DateOnly advanceUntilDate, bool debitAccount = false)
+    // advanceUntilDate is typically 'today' (except when calculating projections)
+    public void Renew(IEnumerable<ExpenseEntity> expenses, DateOnly advanceUntilDate)
     {
         foreach (var expense in expenses)
         {
@@ -17,6 +18,7 @@ internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
 
             var endDate = expense.EndDate.GetValueOrDefault(DateOnly.MaxValue);
 
+            // if 'today' (or projection date) is the end date when don't need to renew
             if (advanceUntilDate >= endDate)
             {
                 continue;
@@ -26,7 +28,7 @@ internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
 
             // Do not process items due on the advanceUntilDate - theoretically 'still due' and it would affect how projections
             // are calculated because the expenses would continue to advance before the debit could be considered.
-            while (nextDue < advanceUntilDate)
+            while (nextDue <= advanceUntilDate)
             {
                 var days = expense.Frequency.GetDaysToNext(expense.NextDue, expense.FrequencyCount);
                 nextDue = expense.NextDue.AddDays(days);
@@ -34,12 +36,8 @@ internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
                 // Don't advance beyond the end date
                 if (nextDue <= endDate)
                 {
-                    if (debitAccount)
-                    {
-                        expense.Account.Balance -= expense.Amount;
-                    }
-
-                    // Not resetting / updating expense.Accrued since this impacts the account's accrued amount
+                    // Not resetting / updating expense.Accrued since this impacts the account's accrued amount.
+                    // The expense.Accrued will be updated next time the account's 'accrue expenses' is performed.
                     expense.AccrualStart = expense.NextDue;
                     expense.NextDue = nextDue;
                 }

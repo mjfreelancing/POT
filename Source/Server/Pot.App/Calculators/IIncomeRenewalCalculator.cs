@@ -5,5 +5,5 @@ namespace Pot.App.Calculators;
 
 public interface IIncomeRenewalCalculator : IPotSingletonDependency
 {
-    void Renew(IEnumerable<IncomeEntity> incomes, DateOnly advanceUtilDate, bool creditAccount = false);
+    void Renew(IEnumerable<IncomeEntity> incomes, DateOnly advanceUtilDate);
 }

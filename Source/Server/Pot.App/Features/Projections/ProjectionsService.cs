@@ -33,6 +33,7 @@ internal sealed class ProjectionsService : IProjectionsService
         _logger = logger.WhenNotNull();
     }
 
+    // TODO: Move the logic in this service to a projection calculator (keep repository access here)
     public async Task<EnrichedResult<Output>> GetProjectionsAsync(ProjectionOptions options, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
@@ -65,12 +66,6 @@ internal sealed class ProjectionsService : IProjectionsService
                 var expenses = accountExpenses[account];
                 var incomes = accountIncomes[account];
 
-                // Apply debit/credit to accounts otherwise the projections will be based on the current balance
-                _expenseRenewalCalculator.Renew(expenses, date, day == 0);
-                _incomeRenewalCalculator.Renew(incomes, date, day == 0);
-
-                _accrueExpenseCalculator.AccrueExpenses(account, expenses, date);
-
                 var incomeReceived = incomes
                     .Where(income => IsDueOnDate(income, date))
                     .Sum(income => income.Amount);
@@ -78,6 +73,10 @@ internal sealed class ProjectionsService : IProjectionsService
                 var expensesPaid = expenses
                     .Where(expense => IsDueOnDate(expense, date))
                     .Sum(expense => expense.Amount);
+
+                _expenseRenewalCalculator.Renew(expenses, date);
+                _incomeRenewalCalculator.Renew(incomes, date);
+                _accrueExpenseCalculator.AccrueExpenses(account, expenses, date);
 
                 var dateValues = new DateProjectionValues
                 {

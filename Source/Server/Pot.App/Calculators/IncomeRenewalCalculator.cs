@@ -5,7 +5,8 @@ namespace Pot.App.Calculators;
 
 internal sealed class IncomeRenewalCalculator : IIncomeRenewalCalculator
 {
-    public void Renew(IEnumerable<IncomeEntity> incomes, DateOnly advanceUtilDate, bool creditAccount = false)
+    // advanceUntilDate is typically 'today' (except when calculating projections)
+    public void Renew(IEnumerable<IncomeEntity> incomes, DateOnly advanceUntilDate)
     {
         foreach (var income in incomes)
         {
@@ -17,7 +18,8 @@ internal sealed class IncomeRenewalCalculator : IIncomeRenewalCalculator
 
             var endDate = income.EndDate.GetValueOrDefault(DateOnly.MaxValue);
 
-            if (advanceUtilDate >= endDate)
+            // if 'today' (or projection date) is the end date when don't need to renew
+            if (advanceUntilDate >= endDate)
             {
                 continue;
             }
@@ -26,18 +28,13 @@ internal sealed class IncomeRenewalCalculator : IIncomeRenewalCalculator
 
             // Do not process items due on the advanceUtilDate - theoretically 'still due' and it would affect how projections
             // are calculated because the expenses would continue to advance before the credit could be considered.
-            while (nextDue < advanceUtilDate)
+            while (nextDue <= advanceUntilDate)
             {
                 var days = income.Frequency.GetDaysToNext(income.NextDue, income.FrequencyCount);
                 nextDue = income.NextDue.AddDays(days);
 
                 if (nextDue <= endDate)
                 {
-                    if (creditAccount)
-                    {
-                        income.Account.Balance += income.Amount;
-                    }
-
                     income.NextDue = nextDue;
                 }
             }
