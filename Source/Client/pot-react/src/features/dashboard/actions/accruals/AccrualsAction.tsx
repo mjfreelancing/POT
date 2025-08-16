@@ -1,49 +1,40 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { BarChart3 } from 'lucide-react';
 import { CheckCircle } from 'lucide-react';
-import { useState } from 'react';
 import { toast } from 'sonner';
 
 import {
   useApiAccrueExpenses,
-  useApiGetAllAccounts,
-  useApiGetAllExpenses,
-  useApiGetAllIncomes,
   useApiRenewExpenses,
   useApiRenewIncomes,
 } from '@/api/hooks';
 import { ActionCard } from '@/components/cards';
-import LoadingMessage from '@/components/feedback/message/LoadingMessage';
-import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { SuccessToast } from '@/components/feedback/toast';
 import { accrueAllExpenses } from '@/features/accounts/utils/bulkActions';
+import { useDashboardContext } from '@/features/dashboard/context';
 import { renewAllExpenses } from '@/features/expenses/utils/bulkActions';
 import { renewAllIncomes } from '@/features/incomes/utils/bulkActions';
-import type { DisplayError } from '@/lib';
 
 function AccrualsAction() {
+  const {
+    accounts,
+    expenses,
+    incomes,
+    accountsIsLoading,
+    expensesIsLoading,
+    incomesIsLoading,
+    setError, // propagated back to the DashboardPage
+  } = useDashboardContext();
+
   const queryClient = useQueryClient();
-  const { data: accountsResult, isLoading: accountsLoading } =
-    useApiGetAllAccounts();
-  const { data: expensesResult, isLoading: expensesLoading } =
-    useApiGetAllExpenses();
-  const { data: incomesResult, isLoading: incomesLoading } =
-    useApiGetAllIncomes();
   const renewExpensesMutation = useApiRenewExpenses();
   const renewIncomesMutation = useApiRenewIncomes();
   const accrueExpensesMutation = useApiAccrueExpenses();
-  const [error, setError] = useState<DisplayError | null>(null);
 
-  const isLoading = accountsLoading || expensesLoading || incomesLoading;
+  const isLoading = accountsIsLoading || expensesIsLoading || incomesIsLoading;
 
   async function handleBulkAction() {
     setError(null);
-
-    const accounts = accountsResult?.success ? accountsResult.value : [];
-    const expenses = expensesResult?.success
-      ? expensesResult.value.results
-      : [];
-    const incomes = incomesResult?.success ? incomesResult.value : [];
 
     // Need to renew Expenses and Incomes before accruing accounts
 
@@ -97,19 +88,10 @@ function AccrualsAction() {
       <ActionCard
         title="Renew & Accrue All"
         description="Renew all incomes and expenses, and accrue all accounts"
+        isLoading={isLoading}
         icon={<BarChart3 className="text-information" />}
         onClick={handleBulkAction}
       />
-
-      <LoadingMessage isLoading={isLoading} />
-
-      {error && (
-        <ErrorSheet
-          title={error.title}
-          description={error.description}
-          onDismiss={() => setError(null)}
-        />
-      )}
     </>
   );
 }

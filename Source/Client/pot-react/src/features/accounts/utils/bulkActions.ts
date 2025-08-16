@@ -2,9 +2,11 @@ import { QueryClient } from '@tanstack/react-query';
 
 import { useApiAccrueExpenses } from '@/api/hooks';
 import { Account } from '@/data';
-import { BulkActionResult } from '@/lib';
+import { ActionResultFail, ActionResultSuccess } from '@/lib';
 
-export async function accrueAllExpenses(
+type BulkActionResult = ActionResultSuccess | ActionResultFail;
+
+async function accrueAllExpenses(
   accounts: Account[],
   accrueExpensesMutation: ReturnType<typeof useApiAccrueExpenses>,
   queryClient: QueryClient,
@@ -26,3 +28,6 @@ export async function accrueAllExpenses(
     },
   };
 }
+
+export { accrueAllExpenses };
+export type { BulkActionResult };

@@ -2,12 +2,14 @@ import { ColumnDef } from '@tanstack/react-table';
 import { Banknote, Calendar, DollarSign, PieChart } from 'lucide-react';
 import { useEffect } from 'react';
 
+import { LoadingMessage } from '@/components/feedback';
 import StatusBadge from '@/components/feedback/badge/StatusBadge';
 import { createMoneyValueColumn, DataTable } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Account } from '@/data';
 import { formatMoneyValue } from '@/lib';
 
+import { useDashboardContext } from '../context';
 import accountsSummaryStore, {
   AccountsSummary,
 } from '../stores/useAccountsSummary';
@@ -83,11 +85,9 @@ const columns: ColumnDef<Account>[] = [
   },
 ];
 
-type AccountsOverviewProps = {
-  accounts: Account[];
-};
+function AccountsOverview() {
+  const { accounts, accountsIsLoading } = useDashboardContext();
 
-function AccountsOverview({ accounts }: AccountsOverviewProps) {
   const setSummary = accountsSummaryStore(
     (state: AccountsSummary) => state.setSummary,
   );
@@ -138,6 +138,8 @@ function AccountsOverview({ accounts }: AccountsOverviewProps) {
     return 'text-destructive-high-contrast';
   }
 
+  // Update to use a skeleton when loading
+
   return (
     <>
       <Card>
@@ -146,87 +148,90 @@ function AccountsOverview({ accounts }: AccountsOverviewProps) {
           title="Accounts Overview"
           description="Your bank accounts at a glance"
         />
-        <CardContent className="px-4 -mt-2">
-          <div className="flex flex-col xl:flex-row gap-6">
-            <div className="flex-1 w-full max-w-2xl">
-              <SummaryCardsGrid
-                cards={[
-                  {
-                    title: 'Total Balance',
-                    icon: (
-                      <DollarSign
-                        className={`h-6 w-6 ${getAmountClass(totalBalance)}`}
-                        aria-hidden="true"
-                      />
-                    ),
-                    value: (
-                      <div
-                        className={`text-xl font-bold ${getAmountClass(totalBalance)}`}
-                      >
-                        {formatMoneyValue(totalBalance)}
-                      </div>
-                    ),
-                  },
-                  {
-                    title: 'Reserved Funds',
-                    icon: (
-                      <Banknote
-                        className={`h-6 w-6 ${getAmountClass(totalReserved)}`}
-                        aria-hidden="true"
-                      />
-                    ),
-                    value: (
-                      <div
-                        className={`text-xl font-bold ${getAmountClass(totalReserved)}`}
-                      >
-                        {formatMoneyValue(totalReserved)}
-                      </div>
-                    ),
-                  },
-                  {
-                    title: 'Total Available',
-                    icon: (
-                      <Banknote
-                        className={`h-6 w-6 ${getAmountClass(totalAvailable)}`}
-                        aria-hidden="true"
-                      />
-                    ),
-                    value: (
-                      <div
-                        className={`text-xl font-bold ${getAmountClass(totalAvailable)}`}
-                      >
-                        {formatMoneyValue(totalAvailable)}
-                      </div>
-                    ),
-                  },
-                  {
-                    title: 'Daily Accrual',
-                    icon: (
-                      <Calendar
-                        className={`h-6 w-6 ${getAmountClass(totalDailyAccrual)}`}
-                        aria-hidden="true"
-                      />
-                    ),
-                    value: (
-                      <div
-                        className={`text-xl font-bold ${getAmountClass(totalDailyAccrual)}`}
-                      >
-                        {formatMoneyValue(totalDailyAccrual)}
-                      </div>
-                    ),
-                  },
-                ]}
-              />
+        {accountsIsLoading ? (
+          <LoadingMessage isLoading={true} />
+        ) : (
+          <CardContent className="px-4 -mt-2">
+            <div className="flex flex-col xl:flex-row gap-6">
+              <div className="flex-1 w-full max-w-2xl">
+                <SummaryCardsGrid
+                  cards={[
+                    {
+                      title: 'Total Balance',
+                      icon: (
+                        <DollarSign
+                          className={`h-6 w-6 ${getAmountClass(totalBalance)}`}
+                          aria-hidden="true"
+                        />
+                      ),
+                      value: (
+                        <div
+                          className={`text-xl font-bold ${getAmountClass(totalBalance)}`}
+                        >
+                          {formatMoneyValue(totalBalance)}
+                        </div>
+                      ),
+                    },
+                    {
+                      title: 'Reserved Funds',
+                      icon: (
+                        <Banknote
+                          className={`h-6 w-6 ${getAmountClass(totalReserved)}`}
+                          aria-hidden="true"
+                        />
+                      ),
+                      value: (
+                        <div
+                          className={`text-xl font-bold ${getAmountClass(totalReserved)}`}
+                        >
+                          {formatMoneyValue(totalReserved)}
+                        </div>
+                      ),
+                    },
+                    {
+                      title: 'Total Available',
+                      icon: (
+                        <Banknote
+                          className={`h-6 w-6 ${getAmountClass(totalAvailable)}`}
+                          aria-hidden="true"
+                        />
+                      ),
+                      value: (
+                        <div
+                          className={`text-xl font-bold ${getAmountClass(totalAvailable)}`}
+                        >
+                          {formatMoneyValue(totalAvailable)}
+                        </div>
+                      ),
+                    },
+                    {
+                      title: 'Daily Accrual',
+                      icon: (
+                        <Calendar
+                          className={`h-6 w-6 ${getAmountClass(totalDailyAccrual)}`}
+                          aria-hidden="true"
+                        />
+                      ),
+                      value: (
+                        <div
+                          className={`text-xl font-bold ${getAmountClass(totalDailyAccrual)}`}
+                        >
+                          {formatMoneyValue(totalDailyAccrual)}
+                        </div>
+                      ),
+                    },
+                  ]}
+                />
+              </div>
+              <div className="flex-1 w-full min-w-0 flex flex-col min-h-0 h-[292px]">
+                <DataTable columns={columns} data={accounts} />
+              </div>
             </div>
-            <div className="flex-1 w-full min-w-0 flex flex-col min-h-0 h-[292px]">
-              <DataTable columns={columns} data={accounts} />
-            </div>
-          </div>
-        </CardContent>
+          </CardContent>
+        )}
       </Card>
     </>
   );
 }
 
 export default AccountsOverview;
-export type { AccountsOverviewProps };

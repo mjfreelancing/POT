@@ -1,8 +1,35 @@
 import { RotateCw } from 'lucide-react';
-import { ReactNode } from 'react';
+import { JSX, ReactNode } from 'react';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+
+import Spinner from '../feedback/spinner/LoadingSpinner';
+
+/**
+ * Component for handling the display of description text or loading message
+ */
+function DescriptionContent({
+  text,
+  isLoading,
+}: {
+  text?: string;
+  isLoading?: boolean;
+}): JSX.Element | null {
+  if (!text) {
+    return null;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="mt-2">
+        <Spinner />
+      </div>
+    );
+  }
+
+  return <div className="text-sm text-muted-foreground mt-1">{text}</div>;
+}
 
 /**
  * Props for the ActionCard component.
@@ -14,6 +41,8 @@ type ActionCardProps = {
   title: string;
   /** Optional description text displayed below the title in muted colors */
   description?: string;
+  /** Optional boolean to indicate data is loading. The description will be replaced with a loading indicator when true. */
+  isLoading?: boolean;
   /** Additional CSS classes to apply to the card for custom styling */
   className?: string;
   /** Optional additional content to display below the description */
@@ -30,6 +59,7 @@ type ActionCardProps = {
  * @param props.icon - The icon to display on the left side of the card. Can be any React element (typically a Lucide icon)
  * @param props.title - The main title text displayed prominently in the card
  * @param props.description - Optional description text displayed below the title in muted colors
+ * @param props.isLoading - Optional boolean to indicate data is loading. The description will be replaced with a loading indicator when true
  * @param props.className - Additional CSS classes to apply to the card for custom styling
  * @param props.children - Optional additional content to display below the description
  * @param props.onClick - Optional click handler. When provided, the card becomes visually interactive with hover effects, cursor pointer, and clickable behavior
@@ -57,11 +87,11 @@ function ActionCard({
   icon,
   title,
   description,
+  isLoading,
   className,
   children,
   onClick,
 }: ActionCardProps) {
-  // Keyboard handler for accessibility
   function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
     if (onClick) {
       if (event.key === 'Enter' || event.key === ' ') {
@@ -101,11 +131,7 @@ function ActionCard({
             <div role="heading" aria-level={1} className="text-xl font-medium">
               {title}
             </div>
-            {description && (
-              <div className="text-sm text-muted-foreground mt-1">
-                {description}
-              </div>
-            )}
+            <DescriptionContent text={description} isLoading={isLoading} />
             {children}
           </div>
         </div>

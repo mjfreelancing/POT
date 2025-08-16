@@ -2,6 +2,7 @@ import { ColumnDef, Row } from '@tanstack/react-table';
 import { ClockFading, DollarSign, ShoppingCart } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 
+import { LoadingMessage } from '@/components/feedback';
 import StatusBadge from '@/components/feedback/badge/StatusBadge';
 import {
   createDateColumn,
@@ -18,15 +19,12 @@ import {
   localToday,
 } from '@/lib';
 
+import { useDashboardContext } from '../context';
 import expensesSummaryStore, {
   ExpensesSummary,
 } from '../stores/useExpensesSummary';
 import DashboardCardHeader from './DashboardCardHeader';
 import SummaryCardsGrid from './SummaryCardsGrid';
-
-type ExpensesOverviewProps = {
-  expenses: Expense[];
-};
 
 type FilteredExpenses = {
   count: number;
@@ -121,7 +119,9 @@ function filteredExpenseInfo(
   };
 }
 
-function ExpensesOverview({ expenses }: ExpensesOverviewProps) {
+function ExpensesOverview() {
+  const { expenses, expensesIsLoading } = useDashboardContext();
+
   const setSummary = expensesSummaryStore(
     (state: ExpensesSummary) => state.setSummary,
   );
@@ -161,6 +161,8 @@ function ExpensesOverview({ expenses }: ExpensesOverviewProps) {
     [expenses],
   );
 
+  // Update to use a skeleton when loading
+
   return (
     <>
       <Card>
@@ -169,85 +171,88 @@ function ExpensesOverview({ expenses }: ExpensesOverviewProps) {
           title="Expenses Overview"
           description="Your expenses at a glance"
         />
-        <CardContent className="px-4 -mt-2">
-          <div className="flex flex-col xl:flex-row gap-6">
-            <div className="flex-1 w-full max-w-2xl">
-              <SummaryCardsGrid
-                cards={[
-                  {
-                    title: 'Due Next 7 Days',
-                    icon: (
-                      <ClockFading
-                        className="h-6 w-6 text-information"
-                        aria-hidden="true"
-                      />
-                    ),
-                    value: (
-                      <div className="text-xl font-bold text-information">
-                        {dueIn7Days}
-                      </div>
-                    ),
-                  },
-                  {
-                    title: 'Total Next 7 Days',
-                    icon: (
-                      <DollarSign
-                        className="h-6 w-6 text-information"
-                        aria-hidden="true"
-                      />
-                    ),
-                    value: (
-                      <div className="text-xl font-bold text-information">
-                        {formatMoneyValue(totalNext7Days)}
-                      </div>
-                    ),
-                  },
-                  {
-                    title: 'Due Next 30 Days',
-                    icon: (
-                      <ClockFading
-                        className="h-6 w-6 text-information"
-                        aria-hidden="true"
-                      />
-                    ),
-                    value: (
-                      <div className="text-xl font-bold text-information">
-                        {dueIn30Days}
-                      </div>
-                    ),
-                  },
-                  {
-                    title: 'Total Next 30 Days',
-                    icon: (
-                      <DollarSign
-                        className="h-6 w-6 text-information"
-                        aria-hidden="true"
-                      />
-                    ),
-                    value: (
-                      <div className="text-xl font-bold text-information">
-                        {formatMoneyValue(totalNext30Days)}
-                      </div>
-                    ),
-                  },
-                ]}
-              />
+        {expensesIsLoading ? (
+          <LoadingMessage isLoading={true} />
+        ) : (
+          <CardContent className="px-4 -mt-2">
+            <div className="flex flex-col xl:flex-row gap-6">
+              <div className="flex-1 w-full max-w-2xl">
+                <SummaryCardsGrid
+                  cards={[
+                    {
+                      title: 'Due Next 7 Days',
+                      icon: (
+                        <ClockFading
+                          className="h-6 w-6 text-information"
+                          aria-hidden="true"
+                        />
+                      ),
+                      value: (
+                        <div className="text-xl font-bold text-information">
+                          {dueIn7Days}
+                        </div>
+                      ),
+                    },
+                    {
+                      title: 'Total Next 7 Days',
+                      icon: (
+                        <DollarSign
+                          className="h-6 w-6 text-information"
+                          aria-hidden="true"
+                        />
+                      ),
+                      value: (
+                        <div className="text-xl font-bold text-information">
+                          {formatMoneyValue(totalNext7Days)}
+                        </div>
+                      ),
+                    },
+                    {
+                      title: 'Due Next 30 Days',
+                      icon: (
+                        <ClockFading
+                          className="h-6 w-6 text-information"
+                          aria-hidden="true"
+                        />
+                      ),
+                      value: (
+                        <div className="text-xl font-bold text-information">
+                          {dueIn30Days}
+                        </div>
+                      ),
+                    },
+                    {
+                      title: 'Total Next 30 Days',
+                      icon: (
+                        <DollarSign
+                          className="h-6 w-6 text-information"
+                          aria-hidden="true"
+                        />
+                      ),
+                      value: (
+                        <div className="text-xl font-bold text-information">
+                          {formatMoneyValue(totalNext30Days)}
+                        </div>
+                      ),
+                    },
+                  ]}
+                />
+              </div>
+              <div className="flex-1 w-full min-w-0 flex flex-col min-h-0 h-[292px]">
+                <DataTable
+                  columns={columns}
+                  data={dueIn30DaysExpenses}
+                  getRowClassName={(row: Row<Expense>) =>
+                    getTableRowClassName(row.original, { exclude: ['OVERDUE'] })
+                  }
+                />
+              </div>
             </div>
-            <div className="flex-1 w-full min-w-0 flex flex-col min-h-0 h-[292px]">
-              <DataTable
-                columns={columns}
-                data={dueIn30DaysExpenses}
-                getRowClassName={(row: Row<Expense>) =>
-                  getTableRowClassName(row.original, { exclude: ['OVERDUE'] })
-                }
-              />
-            </div>
-          </div>
-        </CardContent>
+          </CardContent>
+        )}
       </Card>
     </>
   );
 }
 
 export default ExpensesOverview;
-export type { ExpensesOverviewProps };
