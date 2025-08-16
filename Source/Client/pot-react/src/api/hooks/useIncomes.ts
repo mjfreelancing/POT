@@ -1,4 +1,5 @@
 import {
+  compareIncomeNextDue,
   CreateIncome,
   EditIncome,
   Identity,
@@ -19,7 +20,10 @@ const useApiGetAllIncomes = () => {
   // - returns undefined immediately and while loading
   // - returns the result when the query is successful
   if (result?.success) {
-    data = new SuccessResult(result.value);
+    // spreading [...result.value] to create a shallow copy of the array since
+    // sort() mutates the source array in the react-query cache.
+    const sortedResults = [...result.value].sort(compareIncomeNextDue);
+    data = new SuccessResult(sortedResults);
   } else {
     // type narrowed to FailResult<FailResultBase> since result cannot be undefined at this point
     data = result;

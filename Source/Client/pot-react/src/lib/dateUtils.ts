@@ -20,6 +20,29 @@ function localToday(): Date {
 }
 
 /**
+ * Compares two dates and returns their difference in milliseconds (ignoring time)
+ * @param date1 - First date to compare (left-hand side)
+ * @param date2 - Second date to compare (right-hand side)
+ * @returns A negative number if date1 is earlier than date2, positive if date1 is later than date2, or zero if they are the same date
+ *
+ * @example
+ * // Returns negative number (first date is earlier)
+ * compareDates(new Date('2025-01-01'), new Date('2025-01-02'))
+ *
+ * // Returns positive number (first date is later)
+ * compareDates(new Date('2025-01-02'), new Date('2025-01-01'))
+ *
+ * // Returns 0 (same date)
+ * compareDates(new Date('2025-01-01T12:00:00'), new Date('2025-01-01T15:30:00'))
+ */
+function compareDates(date1: Date | string, date2: Date | string): number {
+  const lhsDate = normalizeToLocalMidnight(date1);
+  const rhsDate = normalizeToLocalMidnight(date2);
+
+  return lhsDate.getTime() - rhsDate.getTime();
+}
+
+/**
  * Checks if two dates represent the same calendar date (ignoring time)
  * @param date1 - First date to compare
  * @param date2 - Second date to compare
@@ -121,6 +144,7 @@ function formatDate(
 }
 
 export {
+  compareDates,
   dateIsoFormat,
   dayOfYear,
   formatDate,

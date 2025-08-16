@@ -16,12 +16,9 @@ const useApiGetAllAccounts = () => {
 
   let data: Result<Account[], FailResultBase>;
 
-  // useGet() uses React Query which:
-  // - returns undefined immediately and while loading
-  // - returns the result when the query is successful
   if (result?.success) {
-    // spreading [...result.value] to create a shallow copy of the array since sort()
-    // mutates the source array in the react-query cache.
+    // spreading [...result.value] to create a shallow copy of the array since
+    // sort() mutates the source array in the react-query cache.
     const sortedResults = [...result.value].sort(compareAccountBsbNumber);
     data = new SuccessResult(sortedResults);
   } else {

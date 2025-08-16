@@ -16,21 +16,9 @@ const useApiGetAllExpenses = () => {
 
   let data: Result<PagedExpense, FailResultBase>;
 
-  // useGet() uses React Query which:
-  // - returns undefined immediately and while loading
-  // - returns the result when the query is successful
   if (result?.success) {
     // Not sorting client-side since the server performs this to ensure pagination is consistent.
-
-    // // spreading [...result.value.results] to create a shallow copy of the array since sort()
-    // // mutates the source array in the react-query cache.
-    // const sortedResults = [...result.value.results].sort(compareExpenseNextDue);
-
-    // const paged: PagedExpense = {
-    //   ...result.value,
-    //   results: sortedResults,
-    // };
-
+    // ...although we are requesting all data at this stage.
     const paged: PagedExpense = {
       ...result.value,
     };

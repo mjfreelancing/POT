@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { Frequency } from '@/lib';
+import { compareDates, Frequency } from '@/lib';
 
 import { IdentitySchema } from './identity';
 
@@ -45,8 +45,13 @@ type CreateIncome = z.infer<typeof CreateIncomeSchema>;
 type EditIncome = z.infer<typeof EditIncomeSchema>;
 type RenewIncomes = z.infer<typeof RenewIncomesSchema>;
 
+const compareIncomeNextDue = (lhs: Income, rhs: Income): number => {
+  return compareDates(lhs.nextDue, rhs.nextDue);
+};
+
 export {
   BaseIncomeSchema,
+  compareIncomeNextDue,
   CreateIncomeSchema,
   EditIncomeSchema,
   IncomeAccountSchema,
