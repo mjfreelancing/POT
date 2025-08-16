@@ -27,7 +27,7 @@ function checkExcluded<T extends TableRowItem>(item: T): string | undefined {
 }
 
 function checkOverdue<T extends TableRowItem>(item: T): string | undefined {
-  if (item.nextDue && normalizeToLocalMidnight(item.nextDue) < localToday()) {
+  if (item.nextDue && normalizeToLocalMidnight(item.nextDue) <= localToday()) {
     return TABLE_ROW_STYLES.OVERDUE;
   }
 
