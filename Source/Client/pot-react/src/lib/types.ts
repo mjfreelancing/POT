@@ -43,10 +43,14 @@ type ActionResultFail = {
   error: DisplayError;
 };
 
+type BulkActionResult = ActionResultSuccess | ActionResultFail;
+
 export { Frequency, FrequencyDisplay, FrequencyOptions };
+
 export type {
   ActionResultFail,
   ActionResultSuccess,
+  BulkActionResult,
   DisplayError,
   Frequency as FrequencyType,
   MoneyValue,

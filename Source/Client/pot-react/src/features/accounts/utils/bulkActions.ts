@@ -2,9 +2,7 @@ import { QueryClient } from '@tanstack/react-query';
 
 import { useApiAccrueExpenses } from '@/api/hooks';
 import { Account } from '@/data';
-import { ActionResultFail, ActionResultSuccess } from '@/lib';
-
-type BulkActionResult = ActionResultSuccess | ActionResultFail;
+import { BulkActionResult } from '@/lib';
 
 async function accrueAllExpenses(
   accounts: Account[],
