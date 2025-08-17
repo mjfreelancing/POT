@@ -35,8 +35,13 @@ type EditAccount = z.infer<typeof EditAccountSchema>;
 type AccrueExpenses = z.infer<typeof AccrueExpensesSchema>;
 
 const compareAccountBsbNumber = (lhs: Account, rhs: Account): number => {
-  const bsbCompare = lhs.bsb.localeCompare(rhs.bsb);
-  return bsbCompare !== 0 ? bsbCompare : lhs.number.localeCompare(rhs.number);
+  const bsbCompare = lhs.bsb.localeCompare(rhs.bsb, 'en', {
+    sensitivity: 'base',
+  });
+
+  return bsbCompare !== 0
+    ? bsbCompare
+    : lhs.number.localeCompare(rhs.number, 'en', { sensitivity: 'base' });
 };
 
 export {
