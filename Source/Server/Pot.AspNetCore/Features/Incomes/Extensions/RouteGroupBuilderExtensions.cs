@@ -94,4 +94,19 @@ internal static class RouteGroupBuilderExtensions
 
         return routeGroupBuilder;
     }
+
+    public static RouteGroupBuilder ExcludeIncomes(this RouteGroupBuilder routeGroupBuilder)
+    {
+        routeGroupBuilder
+            .MapPost(IncomesEndpoints.Exclude, Exclude.Handler.Invoke)
+            .WithName(nameof(ExcludeIncomes))
+            .WithSummary("Exclude incomes")
+            .WithDescription("Sets the 'exclude from calculations' status of selected incomes")
+            .WithTags("Incomes")
+            .ProducesProblem((int)HttpStatusCode.OK)
+            .ProducesProblem((int)HttpStatusCode.NotFound)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+
+        return routeGroupBuilder;
+    }
 }
