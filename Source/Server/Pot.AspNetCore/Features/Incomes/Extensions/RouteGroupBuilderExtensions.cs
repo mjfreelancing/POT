@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using Pot.AspNetCore.Features.Incomes.ToggleExclude;
+using System.Net;
 
 namespace Pot.AspNetCore.Features.Incomes.Extensions;
 
@@ -95,13 +96,13 @@ internal static class RouteGroupBuilderExtensions
         return routeGroupBuilder;
     }
 
-    public static RouteGroupBuilder ExcludeIncomes(this RouteGroupBuilder routeGroupBuilder)
+    public static RouteGroupBuilder ToggleExcludeIncomes(this RouteGroupBuilder routeGroupBuilder)
     {
         routeGroupBuilder
-            .MapPost(IncomesEndpoints.Exclude, Exclude.Handler.Invoke)
-            .WithName(nameof(ExcludeIncomes))
-            .WithSummary("Exclude incomes")
-            .WithDescription("Sets the 'exclude from calculations' status of selected incomes")
+            .MapPost(IncomesEndpoints.ToggleExclude, Handler.Invoke)
+            .WithName(nameof(ToggleExcludeIncomes))
+            .WithSummary("Toggle exclude incomes")
+            .WithDescription("Toggles the 'exclude from calculations' status of selected incomes")
             .WithTags("Incomes")
             .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.NotFound)

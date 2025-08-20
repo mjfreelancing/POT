@@ -6,5 +6,5 @@ namespace Pot.App.Features.Expenses.Exclude;
 
 public interface IExcludeExpensesService : IPotScopedDependency
 {
-    Task<EnrichedResult<bool>> ExcludeAsync(Input input, CancellationToken cancellationToken);
+    Task<EnrichedResult<bool>> ToggleExclusionAsync(Input input, CancellationToken cancellationToken);
 }

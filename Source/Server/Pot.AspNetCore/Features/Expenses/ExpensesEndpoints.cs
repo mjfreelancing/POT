@@ -11,5 +11,5 @@ internal static class ExpensesEndpoints
     public const string Update = "";
     public const string Delete = "/{id:guid}";
     public const string Renew = "/renew";
-    public const string Exclude = "/exclude";
+    public const string ToggleExclude = "/toggleExclude";
 }

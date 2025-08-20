@@ -19,7 +19,7 @@ internal sealed class ExcludeIncomesService : IExcludeIncomesService
         _logger = logger.WhenNotNull();
     }
 
-    public async Task<EnrichedResult<bool>> ExcludeAsync(Input input, CancellationToken cancellationToken)
+    public async Task<EnrichedResult<bool>> ToggleExclusionAsync(Input input, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
@@ -43,7 +43,7 @@ internal sealed class ExcludeIncomesService : IExcludeIncomesService
 
             foreach (var income in incomes)
             {
-                income.ExcludeFromCalcs = input.ExcludeFromCalcs;
+                income.ExcludeFromCalcs = !income.ExcludeFromCalcs;
             }
 
             await _incomeRepository.SaveAsync(cancellationToken);

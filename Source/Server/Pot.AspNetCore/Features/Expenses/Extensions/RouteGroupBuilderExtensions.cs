@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Pot.AspNetCore.Features.Expenses.ToggleExclude;
 using System.Net;
 
 namespace Pot.AspNetCore.Features.Expenses.Extensions;
@@ -98,13 +99,13 @@ internal static class RouteGroupBuilderExtensions
         return routeGroupBuilder;
     }
 
-    public static RouteGroupBuilder ExcludeExpenses(this RouteGroupBuilder routeGroupBuilder)
+    public static RouteGroupBuilder ToggleExcludeExpenses(this RouteGroupBuilder routeGroupBuilder)
     {
         routeGroupBuilder
-            .MapPost(ExpensesEndpoints.Exclude, Exclude.Handler.Invoke)
-            .WithName(nameof(ExcludeExpenses))
-            .WithSummary("Exclude expenses")
-            .WithDescription("Sets the 'exclude from calculations' status of selected expenses")
+            .MapPost(ExpensesEndpoints.ToggleExclude, Handler.Invoke)
+            .WithName(nameof(ToggleExcludeExpenses))
+            .WithSummary("Toggle exclude expenses")
+            .WithDescription("Toggles the 'exclude from calculations' status of selected expenses")
             .WithTags("Expenses")
             .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.NotFound)
