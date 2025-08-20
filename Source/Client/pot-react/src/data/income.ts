@@ -35,6 +35,10 @@ const EditIncomeSchema = BaseIncomeSchema.extend({
   accountRowId: z.string(),
 });
 
+const ToggleExcludeIncomesSchema = z.object({
+  rowIds: z.string().array(),
+});
+
 const RenewIncomesSchema = z.object({
   rowIds: z.string().array(),
   untilDate: z.string(),
@@ -44,6 +48,7 @@ type Income = z.infer<typeof IncomeSchema>;
 type CreateIncome = z.infer<typeof CreateIncomeSchema>;
 type EditIncome = z.infer<typeof EditIncomeSchema>;
 type RenewIncomes = z.infer<typeof RenewIncomesSchema>;
+type ToggleExcludeIncomes = z.infer<typeof ToggleExcludeIncomesSchema>;
 
 const compareIncomeNextDue = (lhs: Income, rhs: Income): number => {
   return compareDates(lhs.nextDue, rhs.nextDue);
@@ -57,6 +62,13 @@ export {
   IncomeAccountSchema,
   IncomeSchema,
   RenewIncomesSchema,
+  ToggleExcludeIncomesSchema,
 };
 
-export type { CreateIncome, EditIncome, Income, RenewIncomes };
+export type {
+  CreateIncome,
+  EditIncome,
+  Income,
+  RenewIncomes,
+  ToggleExcludeIncomes,
+};

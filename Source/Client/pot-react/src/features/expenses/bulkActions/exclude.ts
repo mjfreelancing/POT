@@ -1,17 +1,17 @@
 import { QueryClient } from '@tanstack/react-query';
 
-import { useApiRenewExpenses } from '@/api/hooks/useExpenses';
+import { useApiToggleExcludeExpenses } from '@/api/hooks/useExpenses';
 import { Expense } from '@/data';
-import { BulkActionResult, todayIsoFormat } from '@/lib';
+import { BulkActionResult } from '@/lib';
 
-async function renewExpenses(
+async function toggleExcludeExpenses(
   expenses: Expense[],
-  renewExpensesMutation: ReturnType<typeof useApiRenewExpenses>,
+  excludeExpensesMutation: ReturnType<typeof useApiToggleExcludeExpenses>,
   queryClient: QueryClient,
 ): Promise<BulkActionResult> {
   const rowIds = expenses.map(expense => expense.rowId);
-  const result = await renewExpensesMutation.mutateAsync({
-    data: { rowIds, untilDate: todayIsoFormat() },
+  const result = await excludeExpensesMutation.mutateAsync({
+    data: { rowIds },
   });
 
   if (result.success) {
@@ -28,4 +28,4 @@ async function renewExpenses(
   };
 }
 
-export { renewExpenses };
+export { toggleExcludeExpenses };

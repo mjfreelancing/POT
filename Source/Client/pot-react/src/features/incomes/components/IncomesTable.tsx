@@ -4,7 +4,7 @@ import { Ban } from 'lucide-react';
 import { useState } from 'react';
 import { useParams } from 'react-router';
 
-import { useApiRenewIncomes } from '@/api/hooks';
+import { useApiRenewIncomes, useApiToggleExcludeIncomes } from '@/api/hooks';
 import { ErrorSheet, NotePopover, StatusBadge } from '@/components/feedback';
 import {
   BulkAction,
@@ -19,7 +19,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Income } from '@/data';
 import { DisplayError, Frequency, getTableRowClassName } from '@/lib';
 
-import { renewAllIncomes } from '../bulkActions/renew';
+import { renewIncomes, toggleExcludeIncomes } from '../bulkActions';
 import IncomeActions from './IncomeActions';
 
 type IncomesTableProps = {
@@ -104,15 +104,30 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
   const { id: editingId } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const renewIncomesMutation = useApiRenewIncomes();
+  const excludeIncomesMutation = useApiToggleExcludeIncomes();
   const [error, setError] = useState<DisplayError | null>(null);
 
   const bulkActions: BulkAction<Income>[] = [
     {
       label: 'Auto Renew',
       onClick: async (selectedItems: Income[]) => {
-        const result = await renewAllIncomes(
+        const result = await renewIncomes(
           selectedItems,
           renewIncomesMutation,
+          queryClient,
+        );
+
+        if (!result.success) {
+          setError(result.error);
+        }
+      },
+    },
+    {
+      label: 'Toggle Exclusion',
+      onClick: async (selectedItems: Income[]) => {
+        const result = await toggleExcludeIncomes(
+          selectedItems,
+          excludeIncomesMutation,
           queryClient,
         );
 

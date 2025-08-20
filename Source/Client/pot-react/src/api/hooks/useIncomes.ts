@@ -5,6 +5,7 @@ import {
   Identity,
   Income,
   RenewIncomes,
+  ToggleExcludeIncomes,
 } from '@/data';
 import { FailResultBase, Result, SuccessResult } from '@/lib';
 
@@ -75,6 +76,17 @@ const useApiDeleteIncome = (id: string) => {
   };
 };
 
+const useApiToggleExcludeIncomes = () => {
+  const mutation = usePost<void, ToggleExcludeIncomes>(
+    '/incomes/toggleExclude',
+  );
+
+  return {
+    ...mutation,
+    data: mutation.data as Result<void, FailResultBase>,
+  };
+};
+
 // Returning the mutation data as Result<void, FailResultBase> type to enable TypeScript's discriminated union type narrowing.
 const useApiRenewIncomes = () => {
   const mutation = usePost<void, RenewIncomes>('/incomes/renew');
@@ -91,5 +103,6 @@ export {
   useApiGetAllIncomes,
   useApiGetIncomeById,
   useApiRenewIncomes,
+  useApiToggleExcludeIncomes,
   useApiUpdateIncome,
 };

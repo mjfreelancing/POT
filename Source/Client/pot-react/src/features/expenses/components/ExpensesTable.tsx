@@ -3,7 +3,10 @@ import { ColumnDef, Row } from '@tanstack/react-table';
 import { useState } from 'react';
 import { useParams } from 'react-router';
 
-import { useApiRenewExpenses } from '@/api/hooks/useExpenses';
+import {
+  useApiRenewExpenses,
+  useApiToggleExcludeExpenses,
+} from '@/api/hooks/useExpenses';
 import { ErrorSheet } from '@/components/feedback';
 import {
   BulkAction,
@@ -23,7 +26,7 @@ import {
   getTableRowClassName,
 } from '@/lib';
 
-import { renewAllExpenses } from '../bulkActions/renew';
+import { renewExpenses, toggleExcludeExpenses } from '../bulkActions';
 import ExpenseActions from './ExpenseActions';
 
 const columns: ColumnDef<Expense>[] = [
@@ -110,15 +113,30 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
   const { id: editingId } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const renewExpensesMutation = useApiRenewExpenses();
+  const excludeExpensesMutation = useApiToggleExcludeExpenses();
   const [error, setError] = useState<DisplayError | null>(null);
 
   const bulkActions: BulkAction<Expense>[] = [
     {
       label: 'Auto Renew',
       onClick: async (selectedItems: Expense[]) => {
-        const result = await renewAllExpenses(
+        const result = await renewExpenses(
           selectedItems,
           renewExpensesMutation,
+          queryClient,
+        );
+
+        if (!result.success) {
+          setError(result.error);
+        }
+      },
+    },
+    {
+      label: 'Toggle Exclusion',
+      onClick: async (selectedItems: Expense[]) => {
+        const result = await toggleExcludeExpenses(
+          selectedItems,
+          excludeExpensesMutation,
           queryClient,
         );
 

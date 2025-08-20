@@ -1,17 +1,17 @@
 import { QueryClient } from '@tanstack/react-query';
 
-import { useApiRenewIncomes } from '@/api/hooks';
+import { useApiToggleExcludeIncomes } from '@/api/hooks/useIncomes';
 import { Income } from '@/data';
-import { BulkActionResult, todayIsoFormat } from '@/lib';
+import { BulkActionResult } from '@/lib';
 
-async function renewIncomes(
+async function toggleExcludeIncomes(
   incomes: Income[],
-  renewIncomesMutation: ReturnType<typeof useApiRenewIncomes>,
+  excludeIncomesMutation: ReturnType<typeof useApiToggleExcludeIncomes>,
   queryClient: QueryClient,
 ): Promise<BulkActionResult> {
   const rowIds = incomes.map(income => income.rowId);
-  const result = await renewIncomesMutation.mutateAsync({
-    data: { rowIds, untilDate: todayIsoFormat() },
+  const result = await excludeIncomesMutation.mutateAsync({
+    data: { rowIds },
   });
 
   if (result.success) {
@@ -28,4 +28,4 @@ async function renewIncomes(
   };
 }
 
-export { renewIncomes };
+export { toggleExcludeIncomes };

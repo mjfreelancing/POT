@@ -12,8 +12,8 @@ import { ActionCard } from '@/components/cards';
 import { SuccessToast } from '@/components/feedback/toast';
 import { accrueAllExpenses } from '@/features/accounts/utils/bulkActions';
 import { useDashboardContext } from '@/features/dashboard/context';
-import { renewAllExpenses } from '@/features/expenses/bulkActions/renew';
-import { renewAllIncomes } from '@/features/incomes/bulkActions/renew';
+import { renewExpenses } from '@/features/expenses/bulkActions/renew';
+import { renewIncomes } from '@/features/incomes/bulkActions/renew';
 
 function AccrualsAction() {
   const {
@@ -38,7 +38,7 @@ function AccrualsAction() {
 
     // Need to renew Expenses and Incomes before accruing accounts
 
-    const expenseResult = await renewAllExpenses(
+    const expenseResult = await renewExpenses(
       expenses,
       renewExpensesMutation,
       queryClient,
@@ -49,7 +49,7 @@ function AccrualsAction() {
       return;
     }
 
-    const incomeResult = await renewAllIncomes(
+    const incomeResult = await renewIncomes(
       incomes,
       renewIncomesMutation,
       queryClient,

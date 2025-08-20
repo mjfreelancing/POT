@@ -5,6 +5,7 @@ import {
   Identity,
   PagedExpense,
   RenewExpenses,
+  ToggleExcludeExpenses,
 } from '@/data';
 import { FailResultBase, Result, SuccessResult } from '@/lib';
 
@@ -75,6 +76,17 @@ const useApiDeleteExpense = (id: string) => {
   };
 };
 
+const useApiToggleExcludeExpenses = () => {
+  const mutation = usePost<void, ToggleExcludeExpenses>(
+    '/expenses/toggleExclude',
+  );
+
+  return {
+    ...mutation,
+    data: mutation.data as Result<void, FailResultBase>,
+  };
+};
+
 const useApiRenewExpenses = () => {
   const mutation = usePost<void, RenewExpenses>('/expenses/renew');
 
@@ -90,5 +102,6 @@ export {
   useApiGetAllExpenses,
   useApiGetExpenseById,
   useApiRenewExpenses,
+  useApiToggleExcludeExpenses,
   useApiUpdateExpense,
 };
