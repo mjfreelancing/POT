@@ -98,6 +98,21 @@ internal static class RouteGroupBuilderExtensions
         return routeGroupBuilder;
     }
 
+    public static RouteGroupBuilder ExcludeExpenses(this RouteGroupBuilder routeGroupBuilder)
+    {
+        routeGroupBuilder
+            .MapPost(ExpensesEndpoints.Exclude, Exclude.Handler.Invoke)
+            .WithName(nameof(ExcludeExpenses))
+            .WithSummary("Exclude expenses")
+            .WithDescription("Sets the 'exclude from calculations' status of selected expenses")
+            .WithTags("Expenses")
+            .ProducesProblem((int)HttpStatusCode.OK)
+            .ProducesProblem((int)HttpStatusCode.NotFound)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+
+        return routeGroupBuilder;
+    }
+
     public static RouteGroupBuilder ImportExpenses(this RouteGroupBuilder routeGroupBuilder, long maxImportPayloadBytes)
     {
         routeGroupBuilder
