@@ -23,7 +23,7 @@ import {
   getTableRowClassName,
 } from '@/lib';
 
-import { renewAllExpenses } from '../utils/bulkActions';
+import { renewAllExpenses } from '../bulkActions/renew';
 import ExpenseActions from './ExpenseActions';
 
 const columns: ColumnDef<Expense>[] = [

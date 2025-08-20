@@ -19,7 +19,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Income } from '@/data';
 import { DisplayError, Frequency, getTableRowClassName } from '@/lib';
 
-import { renewAllIncomes } from '../utils/bulkActions';
+import { renewAllIncomes } from '../bulkActions/renew';
 import IncomeActions from './IncomeActions';
 
 type IncomesTableProps = {

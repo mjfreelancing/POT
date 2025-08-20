@@ -12,8 +12,8 @@ import { ActionCard } from '@/components/cards';
 import { SuccessToast } from '@/components/feedback/toast';
 import { accrueAllExpenses } from '@/features/accounts/utils/bulkActions';
 import { useDashboardContext } from '@/features/dashboard/context';
-import { renewAllExpenses } from '@/features/expenses/utils/bulkActions';
-import { renewAllIncomes } from '@/features/incomes/utils/bulkActions';
+import { renewAllExpenses } from '@/features/expenses/bulkActions/renew';
+import { renewAllIncomes } from '@/features/incomes/bulkActions/renew';
 
 function AccrualsAction() {
   const {
