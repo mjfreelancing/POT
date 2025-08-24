@@ -11,6 +11,9 @@ type ProjectionMetric =
   | 'incomeReceived'
   | 'expensesPaid';
 
+// Default projection metric to use
+const DEFAULT_PROJECTION_METRIC: ProjectionMetric = 'balance';
+
 type MetricConfig = {
   label: string;
   shortLabel: string;
@@ -55,6 +58,24 @@ const PROJECTION_METRICS: Record<ProjectionMetric, MetricConfig> = {
   },
 } as const;
 
+// Period options for projections
+type PeriodOption = {
+  label: string;
+  value: number;
+};
+
+const PROJECTION_PERIODS: readonly PeriodOption[] = [
+  { label: '1 mo', value: 1 },
+  { label: '2 mo', value: 2 },
+  { label: '3 mo', value: 3 },
+  { label: '6 mo', value: 6 },
+  { label: '9 mo', value: 9 },
+  { label: '12 mo', value: 12 },
+] as const;
+
+// Default projection period to use
+const DEFAULT_PROJECTION_PERIOD = 6;
+
 const DateValuesSchema = z.object({
   date: z.string(), // ISO date string
   balance: z.number(),
@@ -84,7 +105,10 @@ type Projection = z.infer<typeof ProjectionSchema>;
 export {
   AccountDailyValuesSchema,
   DateValuesSchema,
+  DEFAULT_PROJECTION_METRIC,
+  DEFAULT_PROJECTION_PERIOD,
   PROJECTION_METRICS,
+  PROJECTION_PERIODS,
   ProjectionSchema,
 };
 
@@ -93,6 +117,7 @@ export type {
   ChartType,
   DateValues,
   MetricConfig,
+  PeriodOption,
   Projection,
   ProjectionMetric,
 };

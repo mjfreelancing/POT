@@ -10,7 +10,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PROJECTION_METRICS, ProjectionMetric } from '@/data/projection';
+import {
+  PROJECTION_METRICS,
+  PROJECTION_PERIODS,
+  ProjectionMetric,
+} from '@/data/projection';
 import { localToday } from '@/lib';
 
 type ChartControlsProps = {
@@ -38,21 +42,6 @@ function ChartControls({
   onToggleSeries,
   chartConfig,
 }: ChartControlsProps) {
-  // Helper to determine which period is currently selected (months)
-  const periodOptions = [
-    { label: '1 mo', value: 1 },
-    { label: '2 mo', value: 2 },
-    { label: '3 mo', value: 3 },
-    { label: '6 mo', value: 6 }, // default
-    { label: '9 mo', value: 9 },
-    { label: '12 mo', value: 12 },
-  ];
-
-  // When a period button is clicked, set period in months
-  function setMonthPeriod(months: number) {
-    onPeriodChange(months);
-  }
-
   // Period button style variables
   const selectedPeriodButtonClass =
     'group h-8 px-3 font-medium border border-black dark:border-white bg-black text-white dark:bg-white dark:text-slate-900';
@@ -149,14 +138,14 @@ function ChartControls({
                 role="radiogroup"
                 aria-labelledby="period-label"
               >
-                {periodOptions.map(opt => {
+                {PROJECTION_PERIODS.map(opt => {
                   const isSelected = period === opt.value;
                   return (
                     <Button
                       key={opt.value}
                       variant="outline"
                       size="sm"
-                      onClick={() => setMonthPeriod(opt.value)}
+                      onClick={() => onPeriodChange(opt.value)}
                       className={
                         isSelected
                           ? `${selectedPeriodButtonClass} ${selectedPeriodButtonHoverClass}`

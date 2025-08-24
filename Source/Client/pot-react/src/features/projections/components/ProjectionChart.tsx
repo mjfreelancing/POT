@@ -35,8 +35,12 @@ type ProjectionChartProps = {
   data: Projection;
   startDate: Date;
   period: number;
+  selectedMetric: ProjectionMetric;
+  hiddenSeries: string[];
   onStartDateChange: (date: Date | undefined) => void;
   onPeriodChange: (period: number) => void;
+  onMetricChange: (metric: ProjectionMetric) => void;
+  onHiddenSeriesChange: (hiddenSeries: string[]) => void;
 };
 
 type SeriesVisibility = Record<string, boolean>;
@@ -45,13 +49,13 @@ function ProjectionChart({
   data,
   startDate,
   period,
+  selectedMetric,
+  hiddenSeries,
   onStartDateChange,
   onPeriodChange,
+  onMetricChange,
+  onHiddenSeriesChange,
 }: ProjectionChartProps) {
-  // Metric selection state
-  const [selectedMetric, setSelectedMetric] =
-    useState<ProjectionMetric>('balance');
-
   // Transform data for chart consumption using custom hook
   const {
     chartData: allChartData,
@@ -81,13 +85,15 @@ function ProjectionChart({
     return afterStart && beforeEnd;
   });
 
-  // State for series visibility - show all series by default since all accounts have data
+  // State for series visibility - initialize from saved hidden series
   const [seriesVisibility, setSeriesVisibility] = useState<SeriesVisibility>(
     () => {
       const initial: SeriesVisibility = {};
 
+      // Initialize all series as visible
       seriesKeys.forEach(key => {
-        initial[key] = true; // All series have data
+        // If the series is in the hiddenSeries list, mark it as hidden
+        initial[key] = !hiddenSeries.includes(key);
       });
 
       return initial;
@@ -125,10 +131,20 @@ function ProjectionChart({
 
   // Toggle series visibility
   const toggleSeries = (seriesKey: string) => {
-    setSeriesVisibility(prev => ({
-      ...prev,
-      [seriesKey]: !prev[seriesKey],
-    }));
+    setSeriesVisibility(prev => {
+      const newState = {
+        ...prev,
+        [seriesKey]: !prev[seriesKey],
+      };
+
+      // Calculate which series are now hidden
+      const newHiddenSeries = seriesKeys.filter(key => !newState[key]);
+
+      // Update parent component with only the hidden series keys
+      onHiddenSeriesChange(newHiddenSeries);
+
+      return newState;
+    });
   };
 
   // Calculate min and max for visible series only
@@ -239,7 +255,7 @@ function ProjectionChart({
       </CardHeader>
       <ChartControls
         selectedMetric={selectedMetric}
-        onMetricChange={setSelectedMetric}
+        onMetricChange={onMetricChange}
         startDate={startDate}
         onStartDateChange={onStartDateChange}
         period={period}
