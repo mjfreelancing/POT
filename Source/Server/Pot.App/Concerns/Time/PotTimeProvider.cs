@@ -22,8 +22,10 @@ internal sealed class PotTimeProvider : ITimeProvider
     {
         var utcNow = TimeProvider.GetUtcNow();
 
-        return utc
+        var dateTime = utc
             ? utcNow.DateTime
             : utcNow.ToOffset(_appContext.TimeZoneOffset).DateTime;
+
+        return DateTime.SpecifyKind(dateTime, utc ? DateTimeKind.Utc : DateTimeKind.Local);
     }
 }
