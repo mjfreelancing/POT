@@ -1,13 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 
+import { setupAxiosDefaults, setupAxiosInterceptors } from '@/api/axios';
 import { ErrorSheet } from '@/components/feedback';
 import { Toaster } from '@/components/ui/sonner';
+import { createAuthTokenProvider } from '@/features/auth/authTokenProvider';
 import { DisplayError } from '@/lib';
 
 import { AppSidebar } from './components/nav';
 import { ThemeProvider } from './components/theme';
 import { SidebarProvider } from './components/ui/sidebar';
+import { AuthProvider } from './features/auth/AuthContext';
 import { AppRoutes } from './routes/AppRoutes';
 
 const AppContent = () => (
@@ -31,6 +34,13 @@ const AppContent = () => (
 const App = () => {
   console.info(`Running mode: ${import.meta.env.MODE}`);
 
+  // Setup axios with default config and interceptors
+  useEffect(() => {
+    setupAxiosDefaults();
+    const tokenProvider = createAuthTokenProvider();
+    setupAxiosInterceptors(tokenProvider);
+  }, []);
+
   const [error, setError] = useState<DisplayError | undefined>();
 
   const handleError = (error: Error) => {
@@ -50,37 +60,39 @@ const App = () => {
   };
 
   return (
-    <ThemeProvider defaultTheme="system" storageKey="pot-ui-theme">
-      <div className="flex h-screen w-screen">
-        <ErrorBoundary
-          fallbackRender={({ error }) => (
-            <div
-              role="alert"
-              className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4"
-            >
+    <AuthProvider>
+      <ThemeProvider defaultTheme="system" storageKey="pot-ui-theme">
+        <div className="flex h-screen w-screen">
+          <ErrorBoundary
+            fallbackRender={({ error }) => (
               <div
-                className={`bg-white dark:bg-gray-800 text-red-700 p-6 rounded-lg shadow-lg ${getErrorWidthClass(error.message)} w-full text-center`}
+                role="alert"
+                className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4"
               >
-                <p className="text-lg font-medium mb-2">
-                  Something went wrong !
-                </p>
-                <pre className="whitespace-pre-wrap">{error.message}</pre>
+                <div
+                  className={`bg-white dark:bg-gray-800 text-red-700 p-6 rounded-lg shadow-lg ${getErrorWidthClass(error.message)} w-full text-center`}
+                >
+                  <p className="text-lg font-medium mb-2">
+                    Something went wrong !
+                  </p>
+                  <pre className="whitespace-pre-wrap">{error.message}</pre>
+                </div>
               </div>
-            </div>
-          )}
-          onError={handleError}
-        >
-          <AppContent />
-        </ErrorBoundary>
-      </div>
-      {error && (
-        <ErrorSheet
-          title={error.title}
-          description={error.description}
-          onDismiss={() => setError(undefined)}
-        />
-      )}
-    </ThemeProvider>
+            )}
+            onError={handleError}
+          >
+            <AppContent />
+          </ErrorBoundary>
+        </div>
+        {error && (
+          <ErrorSheet
+            title={error.title}
+            description={error.description}
+            onDismiss={() => setError(undefined)}
+          />
+        )}
+      </ThemeProvider>
+    </AuthProvider>
   );
 };
 

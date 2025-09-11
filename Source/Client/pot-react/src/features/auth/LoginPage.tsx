@@ -1,0 +1,68 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router';
+
+import { AuthenticationError } from '@/api/errors/apiErrors';
+import type { LoginCredentials } from '@/api/types/auth';
+import { ErrorSheet } from '@/components/feedback';
+import { useAuth } from '@/features/auth/AuthContext';
+import useLogin from '@/features/auth/hooks/useLogin';
+import LoginForm from '@/features/auth/LoginForm';
+import { DisplayError } from '@/lib';
+
+function LoginPage() {
+  const [authError, setAuthError] = useState<DisplayError | null>(null);
+  const [otherError, setOtherError] = useState<DisplayError | null>(null);
+  const navigate = useNavigate();
+  const loginMutation = useLogin();
+  const { login } = useAuth();
+
+  const handleLogin = async (values: LoginCredentials) => {
+    setAuthError(null);
+    setOtherError(null);
+    const controller = new AbortController();
+    try {
+      const result = await loginMutation.mutateAsync({
+        data: values,
+        signal: controller.signal,
+      });
+      if (result.success) {
+        login(result.value);
+        navigate('/');
+      } else {
+        if (result.error instanceof AuthenticationError) {
+          setAuthError({
+            title: result.error.code,
+            description: result.error.description,
+          });
+        } else {
+          setOtherError({
+            title: result.error.code,
+            description: result.error.description,
+          });
+        }
+      }
+    } finally {
+      controller.abort();
+    }
+  };
+
+  return (
+    <div className="flex min-h-screen w-full items-center justify-center p-6 md:p-10">
+      <div className="w-full max-w-sm">
+        <LoginForm
+          onSubmit={handleLogin}
+          error={authError ? authError.description : undefined}
+        />
+        {otherError && (
+          <ErrorSheet
+            title={otherError.title}
+            description={otherError.description}
+            onDismiss={() => setOtherError(null)}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default LoginPage;

@@ -1,11 +1,11 @@
-export type ApiErrorDetail = {
+type ApiErrorDetail = {
   propertyName: string;
   errorCode: string;
   attemptedValue: string;
   errorMessage: string;
 };
 
-export type ApiErrorResponse = {
+type ApiErrorResponse = {
   type?: string;
   title?: string;
   status?: number;
@@ -17,11 +17,16 @@ export type ApiErrorResponse = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getNotFoundMessage = (_error: ApiErrorResponse): string => {
+const getNotFoundMessage = (_error: ApiErrorResponse): string => {
   return 'The requested resource was not found';
 };
 
-export const getConflictMessage = (error: ApiErrorResponse): string => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const getAuthenticationMessage = (_error: ApiErrorResponse): string => {
+  return 'Invalid username or password';
+};
+
+const getConflictMessage = (error: ApiErrorResponse): string => {
   if (error.errors && error.errors.length > 0) {
     return error.errors
       .map(err => {
@@ -37,7 +42,7 @@ export const getConflictMessage = (error: ApiErrorResponse): string => {
   return error.detail ?? 'A conflict error occurred';
 };
 
-export const getValidationMessage = (error: ApiErrorResponse): string => {
+const getValidationMessage = (error: ApiErrorResponse): string => {
   if (error.errors && error.errors.length > 0) {
     return error.errors.map(err => err.errorMessage).join('\n');
   }
@@ -45,6 +50,15 @@ export const getValidationMessage = (error: ApiErrorResponse): string => {
   return error.detail ?? 'A validation error occurred';
 };
 
-export const getErrorTitle = (error: ApiErrorResponse): string => {
+const getErrorTitle = (error: ApiErrorResponse): string => {
   return error.detail ?? error.title ?? 'An unknown error occurred';
+};
+
+export type { ApiErrorDetail, ApiErrorResponse };
+export {
+  getAuthenticationMessage,
+  getConflictMessage,
+  getErrorTitle,
+  getNotFoundMessage,
+  getValidationMessage,
 };

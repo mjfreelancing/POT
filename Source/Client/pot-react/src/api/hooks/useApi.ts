@@ -3,11 +3,6 @@ import axios, { AxiosResponse } from 'axios';
 
 import { FailResult, FailResultBase, Result, SuccessResult } from '@/lib';
 
-import {
-  setupAxiosDefaults,
-  setupInterceptors,
-} from '../interceptors/axiosInterceptors';
-
 type MutationData<TData> = {
   data: TData;
   signal?: AbortSignal;
@@ -17,12 +12,10 @@ type DeleteMutationData = {
   signal?: AbortSignal;
 };
 
-// Set up axios defaults and interceptors
-setupAxiosDefaults();
-setupInterceptors();
+type MutationOperation<TResponse> = () => Promise<AxiosResponse<TResponse>>;
 
 const performOperation = async <TResponse>(
-  operation: () => Promise<AxiosResponse<TResponse>>,
+  operation: MutationOperation<TResponse>,
 ): Promise<Result<TResponse, FailResultBase>> => {
   try {
     const response = await operation();

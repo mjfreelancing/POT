@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 type Theme = 'dark' | 'light' | 'system';
 
-export type ThemeProviderProps = {
+type ThemeProviderProps = {
   children: React.ReactNode;
   defaultTheme?: Theme;
   storageKey?: string;
@@ -20,7 +20,7 @@ const initialState: ThemeProviderState = {
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
-export function ThemeProvider({
+function ThemeProvider({
   children,
   defaultTheme = 'system',
   storageKey = 'app-ui-theme',
@@ -63,7 +63,7 @@ export function ThemeProvider({
   );
 }
 
-export const useTheme = () => {
+const useTheme = () => {
   const context = useContext(ThemeProviderContext);
 
   if (context === undefined) {
@@ -72,3 +72,6 @@ export const useTheme = () => {
 
   return context;
 };
+
+export type { ThemeProviderProps };
+export { ThemeProvider, useTheme };

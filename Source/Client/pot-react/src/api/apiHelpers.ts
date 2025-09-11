@@ -5,7 +5,7 @@ import { NetworkError } from './errors/apiErrors';
 /**
  * Gets a readable message for network errors
  */
-export const getNetworkErrorMessage = (error: AxiosError): string => {
+function getNetworkErrorMessage(error: AxiosError): string {
   switch (error.code) {
     case AxiosError.ECONNABORTED:
       return 'The connection was aborted';
@@ -34,24 +34,24 @@ export const getNetworkErrorMessage = (error: AxiosError): string => {
     default:
       return `Network error: ${error.message}`;
   }
-};
+}
 
 /**
  * Creates a NetworkError instance from an AxiosError
  */
-export const getNetworkError = (error: AxiosError): NetworkError => {
+function getNetworkError(error: AxiosError): NetworkError {
   const message = getNetworkErrorMessage(error);
   const code = error.code ?? 'UNKNOWN';
 
   return new NetworkError(`${message} (${code})`);
-};
+}
 
 /**
  * Adds correlation ID to request headers
  */
-export const addCorrelationId = (
+function addCorrelationId(
   config: InternalAxiosRequestConfig,
-): InternalAxiosRequestConfig => {
+): InternalAxiosRequestConfig {
   config.headers = config.headers || {};
 
   // Only set X-Correlation-ID if it doesn't already exist
@@ -60,4 +60,6 @@ export const addCorrelationId = (
   }
 
   return config;
-};
+}
+
+export { addCorrelationId, getNetworkError, getNetworkErrorMessage };

@@ -1,4 +1,6 @@
-export type Identity = {
+type Identity = {
   rowId: string;
   eTag: number;
 };
+
+export type { Identity };

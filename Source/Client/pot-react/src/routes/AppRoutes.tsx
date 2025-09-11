@@ -1,5 +1,8 @@
 import { lazy, Suspense } from 'react';
-import { Navigate, Route, Routes } from 'react-router';
+import { Navigate, Outlet, Route, Routes } from 'react-router';
+
+import { useAuth } from '@/features/auth/AuthContext';
+import LoginPage from '@/features/auth/LoginPage';
 
 import LoadingMessage from '../components/feedback/message/LoadingMessage';
 
@@ -30,25 +33,36 @@ const EditExpenseSheet = lazy(
   () => import('../features/expenses/edit/EditExpenseSheet'),
 );
 
-// Suspense provides a loading fallback while the lazy-loaded components are being downloaded
+// PrivateRoute component for protecting routes
+function PrivateRoute() {
+  const { isAuthenticated } = useAuth();
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  return <Outlet />;
+}
+
 function AppRoutes() {
   return (
     <Suspense fallback={<LoadingMessage />}>
       <Routes>
-        <Route path="/" element={<Navigate replace to="dashboard" />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/projections" element={<ProjectionsPage />} />
-        <Route path="/accounts" element={<AccountsPage />}>
-          <Route path="create" element={<CreateAccountSheet />} />
-          <Route path="edit/:id" element={<EditAccountSheet />} />
-        </Route>
-        <Route path="/incomes" element={<IncomesPage />}>
-          <Route path="create" element={<CreateIncomeSheet />} />
-          <Route path="edit/:id" element={<EditIncomeSheet />} />
-        </Route>
-        <Route path="/expenses" element={<ExpensesPage />}>
-          <Route path="create" element={<CreateExpenseSheet />} />
-          <Route path="edit/:id" element={<EditExpenseSheet />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route element={<PrivateRoute />}>
+          <Route path="/" element={<Navigate replace to="dashboard" />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/projections" element={<ProjectionsPage />} />
+          <Route path="/accounts" element={<AccountsPage />}>
+            <Route path="create" element={<CreateAccountSheet />} />
+            <Route path="edit/:id" element={<EditAccountSheet />} />
+          </Route>
+          <Route path="/incomes" element={<IncomesPage />}>
+            <Route path="create" element={<CreateIncomeSheet />} />
+            <Route path="edit/:id" element={<EditIncomeSheet />} />
+          </Route>
+          <Route path="/expenses" element={<ExpensesPage />}>
+            <Route path="create" element={<CreateExpenseSheet />} />
+            <Route path="edit/:id" element={<EditExpenseSheet />} />
+          </Route>
         </Route>
       </Routes>
     </Suspense>

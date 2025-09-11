@@ -38,6 +38,9 @@ services:
       - DATABASE__PASSWORD=${POSTGRES_PASSWORD}
       - RSA__PRIVATEKEY=${RSA_PRIVATE_KEY}
       - ASPNETCORE_URLS=http://+:5241
+      - JWT__ISSUER=${JWT_ISSUER}
+      - JWT__AUDIENCE=${JWT_AUDIENCE}
+      - JWT__SECRETKEY=${JWT_SECRET_KEY}
     ports:
       - "5241:5241"
     healthcheck:

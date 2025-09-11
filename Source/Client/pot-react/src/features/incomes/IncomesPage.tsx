@@ -79,13 +79,11 @@ function IncomesPage() {
             }
           } else {
             // Account exists but has no items - clear the URL filter
-            console.log('Clearing account filter - no items:', urlAccountId);
             setSelectedAccountId(null);
             setSearchParams(new URLSearchParams());
           }
         } else {
           // Invalid account - clear the URL filter
-          console.log('Clearing invalid account filter:', urlAccountId);
           setSelectedAccountId(null);
           setSearchParams(new URLSearchParams());
         }
@@ -113,7 +111,6 @@ function IncomesPage() {
     ) {
       // We have a filter active, but no filtered results while there are total items
       // This means the last item for this account was deleted
-      console.log('Last filtered item deleted, clearing filter');
       setSelectedAccountId(null);
       setSearchParams(new URLSearchParams());
     }

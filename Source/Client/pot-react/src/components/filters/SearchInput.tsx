@@ -4,7 +4,7 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 
 // Generic search input with a clear (x) button
-export type SearchInputProps = {
+type SearchInputProps = {
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
@@ -63,4 +63,5 @@ function SearchInput({
   );
 }
 
+export type { SearchInputProps };
 export default SearchInput;

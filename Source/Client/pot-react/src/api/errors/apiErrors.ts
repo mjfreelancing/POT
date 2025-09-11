@@ -1,13 +1,14 @@
 import { FailResultBase } from '@/lib';
 
 // These const objects exist at runtime
-export const ErrorType = {
+const ErrorType = {
   Api: 'Api',
   Network: 'Network',
   Unexpected: 'Unexpected',
 } as const;
 
-export const ErrorCode = {
+const ErrorCode = {
+  Authentication: 'Authentication Error',
   Validation: 'Validation Error',
   NotFound: 'Not Found',
   Conflict: 'Conflict Error',
@@ -21,38 +22,56 @@ export const ErrorCode = {
 type ErrorType = (typeof ErrorType)[keyof typeof ErrorType];
 type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
 
-export abstract class ApiError extends FailResultBase {
+abstract class ApiError extends FailResultBase {
   constructor(code: ErrorCode, description: string) {
     super(ErrorType.Api, code, description);
   }
 }
 
-export class ValidationError extends ApiError {
+class AuthenticationError extends ApiError {
+  constructor(description: string) {
+    super(ErrorCode.Authentication, description);
+  }
+}
+
+class ValidationError extends ApiError {
   constructor(description: string) {
     super(ErrorCode.Validation, description);
   }
 }
 
-export class NotFoundError extends ApiError {
+class NotFoundError extends ApiError {
   constructor(description: string) {
     super(ErrorCode.NotFound, description);
   }
 }
 
-export class ConflictError extends ApiError {
+class ConflictError extends ApiError {
   constructor(description: string) {
     super(ErrorCode.Conflict, description);
   }
 }
 
-export class UnexpectedError extends ApiError {
+class UnexpectedError extends ApiError {
   constructor(description: string) {
     super(ErrorCode.Unexpected, description);
   }
 }
 
-export class NetworkError extends FailResultBase {
+class NetworkError extends FailResultBase {
   constructor(description: string) {
     super(ErrorType.Network, ErrorCode.Network, description);
   }
 }
+
+export type { ErrorCode, ErrorType };
+
+export {
+  ApiError,
+  AuthenticationError,
+  ConflictError,
+  NetworkError,
+  NotFoundError,
+  UnexpectedError,
+  ValidationError,
+};
