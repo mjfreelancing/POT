@@ -228,7 +228,7 @@ function DataTable<TData, TValue>({
                  Hover effects were not working when applied to the <tr> so using the Tailwind arbitrary value syntax [&_tr:hover] to create a higher
                  specifity selector, which means "apply this style to any tr element that is being hovered and is a descendant of this element".
                */}
-              <tbody className="[&_tr:hover]:bg-gray-100 dark:[&_tr:hover]:bg-gray-800">
+              <tbody className="[&_tr:hover]:bg-gray-100 dark:[&_tr:hover]:bg-gray-700 dark:bg-gray-900">
                 {table.getRowModel().rows?.length ? (
                   table.getRowModel().rows.map(row => (
                     <tr
@@ -239,7 +239,7 @@ function DataTable<TData, TValue>({
                           ? highlightClassName
                           : undefined,
                         getRowClassName ? getRowClassName(row) : undefined,
-                        'even:bg-gray-100 dark:even:bg-gray-900',
+                        'even:bg-gray-100 dark:even:bg-gray-800',
                       ]
                         .filter(Boolean)
                         .join(' ')}
