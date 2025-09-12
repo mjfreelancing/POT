@@ -26,6 +26,11 @@ const getAuthenticationMessage = (_error: ApiErrorResponse): string => {
   return 'Invalid username or password';
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const getForbiddenMessage = (_error: ApiErrorResponse): string => {
+  return 'You do not have permission to access this resource';
+};
+
 const getConflictMessage = (error: ApiErrorResponse): string => {
   if (error.errors && error.errors.length > 0) {
     return error.errors
@@ -59,6 +64,7 @@ export {
   getAuthenticationMessage,
   getConflictMessage,
   getErrorTitle,
+  getForbiddenMessage,
   getNotFoundMessage,
   getValidationMessage,
 };

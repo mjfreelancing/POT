@@ -8,12 +8,12 @@ import { ErrorSheet, LoadingMessage } from '@/components/feedback';
 import { SearchInput } from '@/components/filters';
 import Toolbar from '@/components/toolbar/Toolbar';
 import { Button } from '@/components/ui/button';
-import { DisplayError } from '@/lib';
+import { DisplayError, logger } from '@/lib';
 
 import { AccountsHeader, AccountsTable } from './components';
 
 function AccountsPage() {
-  console.info('Rendering AccountsPage');
+  logger.info('AccountsPage', 'Rendering');
 
   const [error, setError] = useState<DisplayError | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');

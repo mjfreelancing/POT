@@ -5,7 +5,7 @@ import { setupAxiosDefaults, setupAxiosInterceptors } from '@/api/axios';
 import { ErrorSheet } from '@/components/feedback';
 import { Toaster } from '@/components/ui/sonner';
 import { createAuthTokenProvider } from '@/features/auth/authTokenProvider';
-import { DisplayError } from '@/lib';
+import { DisplayError, logger } from '@/lib';
 
 import { AppSidebar } from './components/nav';
 import { ThemeProvider } from './components/theme';
@@ -32,7 +32,7 @@ const AppContent = () => (
 );
 
 const App = () => {
-  console.info(`Running mode: ${import.meta.env.MODE}`);
+  logger.info('App', `Running mode: ${import.meta.env.MODE}`);
 
   // Setup axios with default config and interceptors
   useEffect(() => {
@@ -44,7 +44,7 @@ const App = () => {
   const [error, setError] = useState<DisplayError | undefined>();
 
   const handleError = (error: Error) => {
-    console.error('Error boundary caught an error:', error);
+    logger.error('App', 'Error boundary caught an error', error);
 
     setError({
       title: 'Application Error',

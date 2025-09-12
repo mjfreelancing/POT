@@ -1,5 +1,6 @@
 import { format, parseISO } from 'date-fns';
 
+import { logger } from '@/lib';
 import { ChartDataPoint } from '../hooks/useProjectionChartData';
 
 /**
@@ -36,7 +37,7 @@ function formatXAxisLabel(value: string, chartData: ChartDataPoint[]): string {
 
     return '';
   } catch (error) {
-    console.warn('Error formatting X-axis label:', error);
+    logger.warn('chartHelpers', 'Error formatting X-axis label', error);
     return '';
   }
 }

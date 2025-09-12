@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { WindowOpenFile } from '@/lib';
+import { WindowOpenFile, logger } from '@/lib';
 
 import { useImport } from '../hooks/useImport';
 
@@ -52,12 +52,12 @@ function ImportModal({ isOpen, onClose }: ImportModalProps) {
         const file = await fileHandle.getFile();
         setSelectedFile(file);
       } catch (error: unknown) {
-        // User cancelled or error occurred
         if (error instanceof Error && error.name === 'AbortError') {
           // User cancelled, do nothing
           return;
         }
-        console.error('Error selecting file:', error);
+
+        logger.error('ImportModal', 'Error selecting file', error);
       }
     } else {
       // Fallback to traditional file input for browsers that don't support File System Access API

@@ -11,12 +11,12 @@ import Toolbar from '@/components/toolbar/Toolbar';
 import { Button } from '@/components/ui/button';
 import { Expense } from '@/data/expense';
 import { useAccountFilter } from '@/hooks';
-import { DisplayError } from '@/lib';
+import { DisplayError, logger } from '@/lib';
 
 import { ExpensesHeader, ExpensesTable } from './components';
 
 function ExpensesPage() {
-  console.info('Rendering ExpensesPage');
+  logger.info('ExpensesPage', 'Rendering');
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [error, setError] = useState<DisplayError | null>(null);

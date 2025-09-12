@@ -2,6 +2,7 @@ import { Download } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { ErrorToast, SuccessToast } from '@/components/feedback/toast';
+import { logger } from '@/lib';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -45,6 +46,8 @@ function ExportModal({ isOpen, onClose }: ExportModalProps) {
           { duration: 5000 },
         );
       } else {
+        logger.error('ExportModal', 'Export failed', result.error);
+
         toast(
           () => (
             <ErrorToast
@@ -63,7 +66,9 @@ function ExportModal({ isOpen, onClose }: ExportModalProps) {
         return;
       }
 
-      // For any other error, show error toast
+      // For any other error, log and show error toast
+      logger.error('ExportModal', 'Export error', error);
+
       toast(
         () => (
           <ErrorToast

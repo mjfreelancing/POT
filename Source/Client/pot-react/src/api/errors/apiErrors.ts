@@ -14,6 +14,7 @@ const ErrorCode = {
   Conflict: 'Conflict Error',
   Network: 'Network Error',
   Unexpected: 'Unexpected Error',
+  Forbidden: 'Forbidden Error',
 } as const;
 
 // These type declarations only exist at compile time
@@ -58,6 +59,12 @@ class UnexpectedError extends ApiError {
   }
 }
 
+class ForbiddenError extends ApiError {
+  constructor(description: string) {
+    super(ErrorCode.Forbidden, description);
+  }
+}
+
 class NetworkError extends FailResultBase {
   constructor(description: string) {
     super(ErrorType.Network, ErrorCode.Network, description);
@@ -70,6 +77,7 @@ export {
   ApiError,
   AuthenticationError,
   ConflictError,
+  ForbiddenError,
   NetworkError,
   NotFoundError,
   UnexpectedError,

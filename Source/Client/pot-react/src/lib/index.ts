@@ -1,6 +1,7 @@
 export * from './apiUtils';
 export * from './dateUtils';
 export * from './errorUtils';
+export * from './logging';
 export * from './expenseTableRowUtils';
 export * from './fileSystem';
 export * from './moneyUtils';

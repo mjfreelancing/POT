@@ -1,4 +1,4 @@
-import { DisplayError,getErrorMessage } from '@/lib';
+import { DisplayError, getErrorMessage, logger } from '@/lib';
 
 type LocalStorageProps<T> = {
   key: string;
@@ -22,8 +22,9 @@ const useLocalStorage = <T = Record<string, unknown>>({
     try {
       window.localStorage.setItem(key, JSON.stringify(value));
     } catch (error) {
-      console.error(
-        `Error setting localStorage item with key "${key}":`,
+      logger.error(
+        'useLocalStorage',
+        `Error setting item with key "${key}"`,
         error,
       );
 
@@ -37,8 +38,9 @@ const useLocalStorage = <T = Record<string, unknown>>({
 
       return item ? JSON.parse(item) : initialValue;
     } catch (error) {
-      console.error(
-        `Error getting localStorage item with key "${key}":`,
+      logger.error(
+        'useLocalStorage',
+        `Error getting item with key "${key}"`,
         error,
       );
 
@@ -51,8 +53,9 @@ const useLocalStorage = <T = Record<string, unknown>>({
     try {
       window.localStorage.removeItem(key);
     } catch (error) {
-      console.error(
-        `Error removing localStorage item with key "${key}":`,
+      logger.error(
+        'useLocalStorage',
+        `Error removing item with key "${key}"`,
         error,
       );
 

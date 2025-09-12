@@ -48,35 +48,27 @@ function DashboardProvider({ children }: DashboardProviderProps) {
     useApiGetAllIncomes();
 
   useEffect(() => {
-    if (accountsResult && expensesResult && incomesResult) {
-      if (!accountsResult.success) {
+    // Only set error if we don't already have one to prevent infinite loops
+    if (error === null) {
+      // Check results in order of importance
+      if (accountsResult?.success === false) {
         setError({
           title: accountsResult.error.code,
           description: accountsResult.error.description,
         });
-
-        return;
-      }
-
-      if (!expensesResult.success) {
+      } else if (expensesResult?.success === false) {
         setError({
           title: expensesResult.error.code,
           description: expensesResult.error.description,
         });
-
-        return;
-      }
-
-      if (!incomesResult.success) {
+      } else if (incomesResult?.success === false) {
         setError({
           title: incomesResult.error.code,
           description: incomesResult.error.description,
         });
-
-        return;
       }
     }
-  }, [accountsResult, expensesResult, incomesResult]);
+  }, [accountsResult, expensesResult, incomesResult, error]);
 
   const accounts = accountsResult?.success ? accountsResult.value : [];
   const expenses = expensesResult?.success ? expensesResult.value.results : [];

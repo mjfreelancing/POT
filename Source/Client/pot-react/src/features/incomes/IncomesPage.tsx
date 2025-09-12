@@ -11,12 +11,12 @@ import Toolbar from '@/components/toolbar/Toolbar';
 import { Button } from '@/components/ui/button';
 import type { Income } from '@/data/income';
 import { useAccountFilter } from '@/hooks';
-import { DisplayError } from '@/lib';
+import { DisplayError, logger } from '@/lib';
 
 import { IncomesHeader, IncomesTable } from './components';
 
 function IncomesPage() {
-  console.info('Rendering IncomesPage');
+  logger.info('IncomesPage', 'Rendering');
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [error, setError] = useState<DisplayError | null>(null);

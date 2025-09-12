@@ -41,9 +41,7 @@ function getNetworkErrorMessage(error: AxiosError): string {
  */
 function getNetworkError(error: AxiosError): NetworkError {
   const message = getNetworkErrorMessage(error);
-  const code = error.code ?? 'UNKNOWN';
-
-  return new NetworkError(`${message} (${code})`);
+  return new NetworkError(message);
 }
 
 /**

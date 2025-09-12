@@ -1,3 +1,42 @@
+/**
+ * This file implements Axios interceptors for handling API responses and errors.
+ *
+ * Key Implementation Notes:
+ * 1. Error Flow:
+ *    - HTTP errors first hit the responseErrorHandler
+ *    - They are transformed into domain-specific errors (ForbiddenError, ValidationError, etc.)
+ *    - These are wrapped in a FailResult and rejected
+ *    - Due to Axios Promise chains, the error handler may be called twice:
+ *      a) First with the HTTP error
+ *      b) Then with our wrapped FailResult
+ *
+ * 2. Error Processing:
+ *    - Cancelled requests (ERR_CANCELED) are passed through unchanged
+ *    - HTTP errors (error.response exists) are mapped to domain errors
+ *    - Network errors (error.isAxiosError) get wrapped as NetworkError
+ *    - FailResults are passed through unchanged to avoid double-wrapping
+ *    - Unknown errors become UnexpectedError
+ *
+ * 3. Debug Considerations:
+ *    - If you see an error processed twice, this is normal due to Promise chains
+ *    - Check the error.response for HTTP errors
+ *    - Check error.isAxiosError for network-level issues
+ *    - Check instanceof FailResult for our domain errors
+ *
+ * 4. Common Issues:
+ *    - "Unexpected Error" usually means the error wasn't matched in the switch
+ *    - Double-processing is normal and handled by the FailResult check
+ *    - Missing error messages may mean apiError is empty - check the data structure
+ *
+ * 5. Future Considerations:
+ *    - When adding new error types:
+ *      a) Add the error class to apiErrors.ts
+ *      b) Add the status code case here
+ *      c) Add the message generator in apiErrorResponse.ts
+ *    - Keep error transformation centralized in this interceptor
+ *    - Maintain the pattern of wrapping all errors in FailResult
+ */
+
 import axios, { AxiosError, AxiosResponse } from 'axios';
 
 import { FailResult } from '@/lib';
@@ -8,51 +47,62 @@ import {
   getAuthenticationMessage,
   getConflictMessage,
   getErrorTitle,
+  getForbiddenMessage,
   getNotFoundMessage,
   getValidationMessage,
 } from '../errors/apiErrorResponse';
 import {
+  ApiError,
   AuthenticationError,
   ConflictError,
+  ForbiddenError,
   NotFoundError,
   UnexpectedError,
   ValidationError,
 } from '../errors/apiErrors';
 
-type ApiError =
-  | AuthenticationError
-  | ConflictError
-  | NotFoundError
-  | UnexpectedError
-  | ValidationError;
-
 const responseSuccessHandler = (response: AxiosResponse): AxiosResponse => {
-  console.log(
-    `API Response [${response.config.headers['X-Correlation-ID']}]`,
-    response.data,
-  );
-
   return response;
 };
 
+/**
+ * Handles all response errors from Axios requests.
+ * This is called in two scenarios:
+ * 1. For HTTP errors (status codes 4xx/5xx)
+ * 2. For previously transformed errors (FailResult instances)
+ *
+ * The error parameter could be:
+ * - AxiosError with response (HTTP errors)
+ * - AxiosError without response (network errors)
+ * - FailResult (our transformed errors)
+ * - Unknown error type (caught by final fallback)
+ */
 const responseErrorHandler = async (error: AxiosError) => {
-  // Ignore cancelled requests
+  // Handle cancelled requests (e.g., from React Query unmounts or cache invalidations)
+  // These should pass through unchanged to avoid masking intentional cancellations
   if (error.code === AxiosError.ERR_CANCELED) {
     return Promise.reject(error);
   }
 
+  // Handle HTTP errors with response data
+  // These are mapped to specific domain errors based on status code
+  // If response.data is empty, we still create the error but with default messages
   if (error.response) {
-    const { status, data, config } = error.response;
-    const apiError = data as ApiErrorResponse;
-
-    console.error(
-      `API Error [${config.headers['X-Correlation-ID']}]: ${status}`,
-      apiError,
-    );
-
+    const { status, data } = error.response;
+    const apiError = (data as ApiErrorResponse) || {}; // Handle empty response
     let errorResult: ApiError;
 
     switch (status) {
+      case 401:
+        errorResult = new AuthenticationError(
+          getAuthenticationMessage(apiError),
+        );
+        break;
+
+      case 403:
+        errorResult = new ForbiddenError(getForbiddenMessage(apiError));
+        break;
+
       case 404:
         errorResult = new NotFoundError(getNotFoundMessage(apiError));
         break;
@@ -65,31 +115,31 @@ const responseErrorHandler = async (error: AxiosError) => {
         errorResult = new ValidationError(getValidationMessage(apiError));
         break;
 
-      // Let auth interceptor handle 401s, but wrap any unhandled auth errors
-      case 401:
-        if (error.response?.data instanceof AuthenticationError) {
-          errorResult = error.response.data;
-        } else {
-          errorResult = new AuthenticationError(
-            getAuthenticationMessage(apiError),
-          );
-        }
-        break;
-
       case 500:
       default:
         errorResult = new UnexpectedError(getErrorTitle(apiError));
         break;
     }
 
-    return Promise.reject(new FailResult(errorResult));
+    const failResult = new FailResult(errorResult);
+    return Promise.reject(failResult);
   }
 
+  // Handle network-level errors (CORS, timeout, no connection, etc.)
+  // These don't have response data but are marked as Axios errors
   if (error.isAxiosError) {
-    console.error('API Error', error);
+    return Promise.reject(new FailResult(getNetworkError(error)));
   }
 
-  return Promise.reject(new FailResult(getNetworkError(error)));
+  // If this is already a FailResult from a previous error transformation, return it directly
+  if (error instanceof FailResult) {
+    return Promise.reject(error);
+  }
+
+  // Last resort - unexpected error
+  return Promise.reject(
+    new FailResult(new UnexpectedError('An unexpected error occurred')),
+  );
 };
 
 /**
