@@ -1,8 +1,16 @@
 import { WindowSaveFile } from '@/lib';
 
+class FileOperationCancelledError extends Error {
+  constructor(message = 'File operation was cancelled by the user') {
+    super(message);
+    this.name = 'FileOperationCancelledError';
+  }
+}
+
 /**
  * Downloads a blob as a file with the specified filename
  * Returns a Promise that resolves when file is saved or rejects when cancelled
+ * @throws {FileOperationCancelledError} When the user cancels the file save operation
  */
 async function downloadBlob(blob: Blob, filename: string): Promise<void> {
   // Check if File System Access API is supported
@@ -27,7 +35,7 @@ async function downloadBlob(blob: Blob, filename: string): Promise<void> {
     } catch (error: unknown) {
       // User cancelled or error occurred
       if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error('User cancelled file save');
+        throw new FileOperationCancelledError();
       }
       throw error;
     }
@@ -71,4 +79,4 @@ function extractFilename(headers: Record<string, string>): string {
   return 'financial-data-export.zip';
 }
 
-export { downloadBlob, extractFilename };
+export { downloadBlob, extractFilename, FileOperationCancelledError };

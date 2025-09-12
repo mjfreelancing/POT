@@ -12,14 +12,15 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
+import { useState } from 'react';
+
 import { useExport } from '../hooks/useExport';
+import { FileOperationCancelledError } from '../utils/fileUtils';
 
 type ExportModalProps = {
   isOpen: boolean;
   onClose: () => void;
 };
-
-import { useState } from 'react';
 
 function ExportModal({ isOpen, onClose }: ExportModalProps) {
   const [isExporting, setIsExporting] = useState(false);
@@ -28,21 +29,41 @@ function ExportModal({ isOpen, onClose }: ExportModalProps) {
   async function handleExport() {
     setIsExporting(true);
 
-    const result = await exportData();
+    try {
+      const result = await exportData();
 
-    if (result.success) {
-      toast(
-        () => (
-          <SuccessToast
-            icon={Download}
-            title="Export Complete"
-            description="Data exported successfully"
-            details={result.value.filename}
-          />
-        ),
-        { duration: 5000 },
-      );
-    } else {
+      if (result.success) {
+        toast(
+          () => (
+            <SuccessToast
+              icon={Download}
+              title="Export Complete"
+              description="Data exported successfully"
+              details={result.value.filename}
+            />
+          ),
+          { duration: 5000 },
+        );
+      } else {
+        toast(
+          () => (
+            <ErrorToast
+              icon={Download}
+              title="Export Failed"
+              description="There was an error exporting the data."
+            />
+          ),
+          { duration: 5000 },
+        );
+      }
+    } catch (error) {
+      // If the error is due to user cancelling, just close silently
+      if (error instanceof FileOperationCancelledError) {
+        onClose();
+        return;
+      }
+
+      // For any other error, show error toast
       toast(
         () => (
           <ErrorToast
@@ -53,10 +74,10 @@ function ExportModal({ isOpen, onClose }: ExportModalProps) {
         ),
         { duration: 5000 },
       );
+    } finally {
+      setIsExporting(false);
+      onClose();
     }
-
-    setIsExporting(false);
-    onClose();
   }
 
   return (
