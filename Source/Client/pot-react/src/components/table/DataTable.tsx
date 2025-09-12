@@ -239,6 +239,7 @@ function DataTable<TData, TValue>({
                           ? highlightClassName
                           : undefined,
                         getRowClassName ? getRowClassName(row) : undefined,
+                        'even:bg-gray-100 dark:even:bg-gray-900',
                       ]
                         .filter(Boolean)
                         .join(' ')}
