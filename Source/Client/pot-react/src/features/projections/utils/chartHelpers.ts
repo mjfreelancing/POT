@@ -1,6 +1,7 @@
 import { format, parseISO } from 'date-fns';
 
 import { logger } from '@/lib';
+
 import { ChartDataPoint } from '../hooks/useProjectionChartData';
 
 /**
