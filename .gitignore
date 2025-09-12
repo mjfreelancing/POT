@@ -403,4 +403,5 @@ Source/Client/pot-react/coverage
 Source/Docker/postgres-data
 
 # Environment-specific configuration files
-.env.production
+*.development*
+*.production*
