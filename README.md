@@ -256,16 +256,55 @@ Track your income sources:
 
 ## Data Management
 
-Secure and flexible data handling:
+POT provides comprehensive data management capabilities for backing up and restoring your financial data:
 
-- Export all financial data to a portable file format
+### Exporting Data
 
-  - Creates a secure backup of your financial information
-  - Includes all accounts, expenses, and income data
+- From the Maintenance page, click "Export Data"
+- Choose a location to save the export file
+- The exported file will be named: `pot-YYYY-MM-DD_HHMMSS.export`
+- The export file contains:
+  - All account information and balances
+  - Expense definitions and schedules
+  - Income definitions and schedules
+  - All data is encrypted using RSA encryption
 
-- Import previously exported data
-  - Restore your financial setup from backups
-  - Transfer data between different installations
+### Importing Data
+
+1. **Preparing for Import**
+
+   - Ensure you have a valid export file (`.export` extension)
+   - The server must have the matching RSA private key
+   - You can import data while the system has existing data
+
+2. **Import Process**
+
+   - Navigate to the Maintenance page
+   - Click "Import Data"
+   - Select your export file using the Browse button
+   - Click "Import Data" to proceed
+   - A success message will show the total number of items imported
+
+3. **Import Validation**
+
+   - The system checks for:
+     - File integrity and encryption
+     - Data format version compatibility
+     - Duplicate account numbers
+     - Valid expense/income configurations
+   - Any validation errors will be displayed
+
+4. **After Import**
+   - The system will show a success message
+   - New data will be immediately available
+   - Projections will update automatically
+
+### Data Security
+
+- Export files are encrypted using RSA public/private key pairs
+- Keys are configured in environment variables
+- Export files can only be imported by servers with the matching private key
+- Imported data is validated for integrity and correctness
 
 # Quick Start Guide
 
@@ -309,9 +348,23 @@ Run the client and server in docker:
 
 ### **Manually**
 
-- Start the server found in the `Source/Server` folder.
+- Start the server found in the `Source/Server` folder:
 
-  - TODO: Update instructions here
+  ```bash
+  # Navigate to the server directory
+  cd Source/Server
+
+  # Restore dependencies
+  dotnet restore pot.sln
+
+  # Set up the development database (first time only)
+  dotnet ef database update --project Pot.Data.Migrations
+
+  # Run the server
+  dotnet run --project Pot.AspNetCore
+  ```
+
+  The server will start on http://localhost:5242
 
 - Start the client
 
@@ -391,6 +444,8 @@ VITE_EXPORT_PUBLIC_KEY=<value here>
 
 ### Server Environment Variables
 
+The server configuration is managed through environment files and appsettings.json files:
+
 #### **Docker Configuration**
 
 Located in Docker environment files:
@@ -399,38 +454,76 @@ Located in Docker environment files:
 - `/Source/Docker/.env.development` - Development configuration
 - `/Source/Docker/.env.production` - Production settings
 
-```
-POSTGRES_USER=<value here>
-POSTGRES_PASSWORD=<value here>
-RSA_PRIVATE_KEY=<value here>
+```bash
+# PostgreSQL configuration
+POSTGRES_USER=<value>                 # Database user
+POSTGRES_PASSWORD=<value>             # Database password
 
+# RSA key for data encryption/decryption
+RSA_PRIVATE_KEY=<value>              # Private key for decrypting exported data
+
+# JWT Authentication (if not using default values)
+JWT_ISSUER=<value>                   # JWT token issuer
+JWT_AUDIENCE=<value>                 # JWT token audience
+JWT_SECRET_KEY=<value>               # JWT signing key
 ```
 
 #### **Local Configuration**
 
 The common settings are located in `Source/Server/Pot.AspNetCore/appsettings.json`
 
-```
+```json
 {
   "AllowedHosts": "*",
   "Database": {
-    "Host": "localhost",
-    "Username": "postgres",
-    "Password": "password"
+    "Host": "localhost", // PostgreSQL server host
+    "Username": "postgres", // Database user
+    "Password": "password" // Database password
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
   }
 }
-
 ```
 
 The development settings are located in `Source/Server/Pot.AspNetCore/appsettings.Development.json`
 
-```
+```json
 {
   "Rsa": {
-    "PrivateKey": "<value here>"
+    "PrivateKey": "<value>" // Private key for decrypting exported data
+  },
+  "Jwt": {
+    "Issuer": "<value>", // JWT token issuer
+    "Audience": "<value>", // JWT token audience
+    "SecretKey": "<value>" // JWT signing key
   }
 }
 ```
+
+#### Environment Variable Details
+
+- **Database Configuration**
+
+  - `Host`: The PostgreSQL server address
+  - `Username`/`Password`: Database credentials
+  - For Docker, these are set via POSTGRES_USER/POSTGRES_PASSWORD
+
+- **RSA Keys**
+
+  - Used for encrypting/decrypting exported data
+  - Public key on client for encryption
+  - Private key on server for decryption
+  - Must be a matching key pair
+
+- **JWT Settings**
+  - `Issuer`/`Audience`: Identifies token origin and intended recipient
+  - `SecretKey`: Used for signing JWT tokens
+  - Should be at least 256 bits (32 characters) long
+  - Must be kept secure and consistent across deployments
 
 # Scripts
 

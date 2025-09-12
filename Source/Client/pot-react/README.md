@@ -122,12 +122,42 @@ Choose one of the setup options above based on your testing needs.
 
 ## Technology Stack
 
-- React 19
-- TypeScript
-- Vite
-- TailwindCSS
-- Radix UI Components
-- React Query
+### Core Libraries
+
+- React 18
+- TypeScript 5
+- Vite 4 (build tool)
+- TailwindCSS (utility-first CSS)
+
+### UI Components
+
+- shadcn/ui (component library)
+- Radix UI (headless components)
+- Lucide React (icons)
+- React Table (table components)
+- Recharts (charting library)
+
+### State Management
+
+- TanStack Query (React Query v4)
+- Zustand (global state)
+- React Context (component state)
+
+### Forms and Validation
+
 - React Hook Form
-- React Router
-- Vitest for testing
+- Zod (schema validation)
+
+### Routing and Navigation
+
+- React Router v6
+- useNavigate for programmatic navigation
+- Protected routes for authentication
+
+### Development Tools
+
+- ESLint with TypeScript support
+- Prettier for code formatting
+- Vitest with UI and coverage reporting
+- React Testing Library with Jest DOM
+- @faker-js/faker for test data generation

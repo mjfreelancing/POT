@@ -126,6 +126,9 @@ docker-compose --env-file .env --env-file .env.development -p pot -f docker-comp
 
 # Stop services
 docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-server-only.yml down
+
+# View logs
+docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-server-only.yml logs -f
 ```
 
 ### Production Deployment (Client-Server Configuration)
@@ -136,7 +139,110 @@ docker-compose --env-file .env --env-file .env.production -p pot -f docker-compo
 
 # Stop services
 docker-compose --env-file .env --env-file .env.production -p pot -f docker-compose-client-server.yml down
+
+# View logs
+docker-compose --env-file .env --env-file .env.production -p pot -f docker-compose-client-server.yml logs -f
 ```
+
+## Troubleshooting Common Issues
+
+### Database Connection Issues
+
+If the ASP.NET server can't connect to PostgreSQL:
+
+1. Check if PostgreSQL container is running:
+
+   ```bash
+   docker ps | grep pot-postgres
+   ```
+
+2. View PostgreSQL logs:
+
+   ```bash
+   docker logs pot-postgres
+   ```
+
+3. Common fixes:
+   - Ensure PostgreSQL is accepting connections:
+     ```bash
+     docker exec pot-postgres pg_isready
+     ```
+   - Check environment variables are correctly set
+   - Verify PostgreSQL port (5444) is not in use
+   - Clear PostgreSQL data volume if needed:
+     ```bash
+     docker-compose -f docker-compose-server-only.yml down -v
+     ```
+
+### ASP.NET Server Issues
+
+1. Check server logs:
+
+   ```bash
+   docker logs pot-server
+   ```
+
+2. Access health endpoint:
+
+   ```bash
+   curl http://localhost:5241/_health
+   ```
+
+3. Common fixes:
+   - Rebuild server container:
+     ```bash
+     docker-compose -f docker-compose-server-only.yml build pot-server
+     ```
+   - Check database connection string
+   - Verify environment variables are set correctly
+
+### React Client Issues (Production)
+
+1. Check nginx logs:
+
+   ```bash
+   docker logs pot-client
+   ```
+
+2. Verify nginx configuration:
+
+   ```bash
+   docker exec pot-client nginx -t
+   ```
+
+3. Common fixes:
+   - Clear browser cache
+   - Check API base URL configuration
+   - Rebuild client container:
+     ```bash
+     docker-compose -f docker-compose-client-server.yml build pot-client
+     ```
+
+### General Docker Issues
+
+1. View all container statuses:
+
+   ```bash
+   docker-compose -f <compose-file> ps
+   ```
+
+2. View resource usage:
+
+   ```bash
+   docker stats
+   ```
+
+3. Common fixes:
+   - Remove all containers and volumes:
+     ```bash
+     docker-compose -f <compose-file> down -v
+     ```
+   - Prune unused Docker resources:
+     ```bash
+     docker system prune -a
+     ```
+   - Restart Docker daemon
+   - Check disk space
 
 ## Managing Docker Containers via Visual Studio Code
 
