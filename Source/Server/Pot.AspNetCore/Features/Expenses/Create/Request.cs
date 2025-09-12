@@ -6,7 +6,7 @@ namespace Pot.AspNetCore.Features.Expenses.Create;
 public sealed class Request
 {
     [Description("A description of the Expense.")]
-    public string Description { get; init; } = string.Empty;
+    public required string Description { get; init; }
 
     [Description("When automatic allocations will begin accruing for this expense.")]
     public DateOnly AccrualStart { get; init; }

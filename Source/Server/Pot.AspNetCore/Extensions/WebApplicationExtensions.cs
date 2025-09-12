@@ -5,9 +5,10 @@ namespace Pot.AspNetCore.Extensions;
 
 internal static class WebApplicationExtensions
 {
-    public static WebApplication UseCorrelationId(this WebApplication app)
+    public static WebApplication UsePotMiddleware(this WebApplication app)
     {
         app.UseMiddleware<CorrelationIdMiddleware>();
+        app.UseMiddleware<UserContextMiddleware>();
 
         return app;
     }

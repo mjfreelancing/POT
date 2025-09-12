@@ -36,6 +36,6 @@ internal sealed class Handler
 
         return incomeOutput.IsSuccess
             ? Response.Created(incomeOutput.Value!)
-            : TypedResults.Problem(incomeOutput.Error!.GetProblemDetails());
+            : TypedResults.Problem(incomeOutput.Error!.ToProblemDetails());
     }
 }

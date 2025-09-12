@@ -33,8 +33,8 @@ const EditExpenseSheet = lazy(
   () => import('../features/expenses/edit/EditExpenseSheet'),
 );
 
-// PrivateRoute component for protecting routes
-function PrivateRoute() {
+// ProtectedRoute component for protecting routes
+function ProtectedRoute() {
   const { isAuthenticated } = useAuth();
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -47,7 +47,7 @@ function AppRoutes() {
     <Suspense fallback={<LoadingMessage />}>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route element={<PrivateRoute />}>
+        <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Navigate replace to="dashboard" />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/projections" element={<ProjectionsPage />} />

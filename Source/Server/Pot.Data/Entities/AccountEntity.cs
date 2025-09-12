@@ -26,6 +26,7 @@ namespace Pot.Data.Entities
         public double TotalExpenseAccrued { get; set; }
         public double DailyExpenseAccrual { get; set; }
 
+        public required SiteEntity Site { get; set; }
         public ICollection<IncomeEntity> Incomes { get; set; } = [];
         public ICollection<ExpenseEntity> Expenses { get; set; } = [];
     }

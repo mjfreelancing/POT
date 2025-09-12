@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Pot.AspNetCore.Features.Expenses.ToggleExclude;
+﻿using Pot.AspNetCore.Features.Expenses.ToggleExclude;
 using System.Net;
 
 namespace Pot.AspNetCore.Features.Expenses.Extensions;
@@ -110,21 +109,6 @@ internal static class RouteGroupBuilderExtensions
             .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.NotFound)
             .ProducesProblem((int)HttpStatusCode.InternalServerError);
-
-        return routeGroupBuilder;
-    }
-
-    public static RouteGroupBuilder ImportExpenses(this RouteGroupBuilder routeGroupBuilder, long maxImportPayloadBytes)
-    {
-        routeGroupBuilder
-            .MapPost("/import", Import.Handler.Invoke)
-            .WithName(nameof(ImportExpenses))
-            .WithSummary("Import Expenses")
-            .WithDescription("Import new / update existing expense details")
-            .WithTags("Expenses", "Import")
-            .WithMetadata(new RequestSizeLimitAttribute(maxImportPayloadBytes)) // Will raise 413 Payload Too Large if the file exceeds this limit
-            .DisableAntiforgery()
-            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity);
 
         return routeGroupBuilder;
     }

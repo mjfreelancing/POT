@@ -6,11 +6,11 @@ namespace Pot.AspNetCore.Concerns.ExceptionHandlers;
 // Note: Exception handlers are registered as a Singleton.
 internal sealed class IgnoreExceptionHandler : IExceptionHandler
 {
-    private static readonly Type[] _ignoredExceptionTypes = [typeof(OperationCanceledException), typeof(TaskCanceledException)];
+    private static readonly Type[] IgnoredExceptionTypes = [typeof(OperationCanceledException), typeof(TaskCanceledException)];
 
     public ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
-        var ignoreException = _ignoredExceptionTypes.Contains(exception.GetType());
+        var ignoreException = IgnoredExceptionTypes.Contains(exception.GetType());
 
         if (ignoreException)
         {

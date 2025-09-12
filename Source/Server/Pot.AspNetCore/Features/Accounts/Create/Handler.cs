@@ -30,6 +30,6 @@ internal sealed class Handler
 
         return accountOutput.IsSuccess
             ? Response.Created(accountOutput.Value!)
-            : TypedResults.Problem(accountOutput.Error!.GetProblemDetails());
+            : TypedResults.Problem(accountOutput.Error!.ToProblemDetails());
     }
 }

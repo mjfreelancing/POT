@@ -7,7 +7,7 @@ namespace Pot.AspNetCore.Features.Maintenance.Rsa.Keys;
 
 internal sealed class Handler
 {
-    public static Task<Ok<Response>> Invoke(ILogger<Handler> logger, IConfiguration config, CancellationToken _)
+    public static Task<Ok<Response>> Invoke(ILogger<Handler> logger, CancellationToken _)
     {
         logger.LogCall(null);
 

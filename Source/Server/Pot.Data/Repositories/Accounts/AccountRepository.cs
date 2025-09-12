@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AllOverIt.Assertion;
+using Microsoft.EntityFrameworkCore;
 using Pot.Data.Entities;
 using Pot.Data.Extensions;
 using Pot.Data.Repositories.Accounts.Dtos;
@@ -8,14 +9,17 @@ namespace Pot.Data.Repositories.Accounts;
 
 internal sealed class AccountRepository : GenericRepository<PotDbContext, AccountEntity>, IPersistableAccountRepository
 {
-    public AccountRepository(PotDbContext dbContext)
+    private readonly ICurrentUserDataContext _currentUserDataContext;
+
+    public AccountRepository(PotDbContext dbContext, ICurrentUserDataContext currentUserDataContext)
         : base(dbContext)
     {
+        _currentUserDataContext = currentUserDataContext.WhenNotNull();
     }
 
     public Task<bool> AccountExistsAsync(Guid id, CancellationToken cancellationToken)
     {
-        return AsQueryable().AnyAsync(id, cancellationToken);
+        return Current.AnyAsync(id, cancellationToken);
         // Same as:
         // return AnyAsync(EntitySpecifications.IsSameId<AccountEntity>(id).Expression, cancellationToken);
     }
@@ -34,7 +38,7 @@ internal sealed class AccountRepository : GenericRepository<PotDbContext, Accoun
     {
         // Same as:
         // return SingleAsync(EntitySpecifications.IsSameId<AccountEntity>(id).Expression, cancellationToken);
-        return AsQueryable().SingleAsync(id, cancellationToken);
+        return Current.SingleAsync(id, cancellationToken);
     }
 
     public Task<AccountEntity?> GetAccountOrDefaultAsync(Guid id, CancellationToken cancellationToken)
@@ -44,10 +48,12 @@ internal sealed class AccountRepository : GenericRepository<PotDbContext, Accoun
         return SingleOrDefaultAsync(EntitySpecifications.IsSameId<AccountEntity>(id).Expression, cancellationToken);
     }
 
-    public Task<GetAccountDto?> GetAccountWithLinkedCountsAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<GetAccountDto?> GetAccountWithLinkedCountsAsync(Guid id, CancellationToken cancellationToken)
     {
-        return AsQueryable()
-            .Where(EntitySpecifications.IsSameId<AccountEntity>(id).Expression)
+        var user = await _currentUserDataContext.GetUserAsync().ConfigureAwait(false);
+
+        return await Current
+            .Where(AccountSpecifications.IsSameAccount(user.Site.RowId, id).Expression)
             .Select(item => new GetAccountDto
             {
                 Account = item,
@@ -59,7 +65,7 @@ internal sealed class AccountRepository : GenericRepository<PotDbContext, Accoun
 
     public Task<GetAccountDto[]> GetAllAccountsWithLinkedCountsAsync(CancellationToken cancellationToken)
     {
-        return AsQueryable()
+        return Current
             .Select(item => new GetAccountDto
             {
                 Account = item,
@@ -81,7 +87,7 @@ internal sealed class AccountRepository : GenericRepository<PotDbContext, Accoun
 
     public Task<List<AccountEntity>> GetAccountsWithIncomesAsync(Guid[] rowIds, CancellationToken cancellationToken)
     {
-        return AsQueryable()
+        return Current
             .Include(account => account.Incomes)
             .Where(account => rowIds.Contains(account.RowId))
             .ToListAsync(cancellationToken);
@@ -89,7 +95,7 @@ internal sealed class AccountRepository : GenericRepository<PotDbContext, Accoun
 
     public Task<List<AccountEntity>> GetAccountsWithExpensesAsync(Guid[] rowIds, CancellationToken cancellationToken)
     {
-        return AsQueryable()
+        return Current
             .Include(account => account.Expenses)
             .Where(account => rowIds.Contains(account.RowId))
             .ToListAsync(cancellationToken);

@@ -2,6 +2,7 @@
 
 public enum ProblemType
 {
+    Auth,
     NotFound,
     Conflict,
     Constraint,

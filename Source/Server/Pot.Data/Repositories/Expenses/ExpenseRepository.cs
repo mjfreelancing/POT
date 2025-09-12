@@ -21,14 +21,14 @@ internal sealed class ExpenseRepository : GenericRepository<PotDbContext, Expens
 
     public Task<List<ExpenseEntity>> GetAllExpensesAsync(CancellationToken cancellationToken)
     {
-        return AsQueryable()
+        return Current
             .Include(expense => expense.Account)
             .ToListAsync(cancellationToken);
     }
 
     public Task<PageResult<ExpenseEntity>> GetAllExpensesPagedAsync(Paging paging, CancellationToken cancellationToken)
     {
-        var incomeQuery = AsQueryable().Include(expense => expense.Account);
+        var incomeQuery = Current.Include(expense => expense.Account);
 
         var paginatorConfig = new QueryPaginatorConfiguration
         {
@@ -51,14 +51,14 @@ internal sealed class ExpenseRepository : GenericRepository<PotDbContext, Expens
 
     public Task<ExpenseEntity?> GetExpenseOrDefaultAsync(Guid rowId, CancellationToken cancellationToken)
     {
-        return AsQueryable()
+        return Current
             .Include(expense => expense.Account)
             .SingleOrDefaultAsync(rowId, cancellationToken);
     }
 
     public Task<List<ExpenseEntity>> GetExpensesAsync(Guid[] rowIds, CancellationToken cancellationToken)
     {
-        return AsQueryable()
+        return Current
             .Include(expense => expense.Account)
             .Where(expense => rowIds.Contains(expense.RowId))
             .ToListAsync(cancellationToken);
@@ -66,7 +66,7 @@ internal sealed class ExpenseRepository : GenericRepository<PotDbContext, Expens
 
     public Task<List<ExpenseEntity>> GetRenewableExpensesForAccountAsync(Guid accountRowId, CancellationToken cancellationToken)
     {
-        return AsQueryable()
+        return Current
             .Include(expense => expense.Account)
             .Where(expense => expense.Account.RowId == accountRowId && !expense.ExcludeFromCalcs)
             .ToListAsync(cancellationToken);

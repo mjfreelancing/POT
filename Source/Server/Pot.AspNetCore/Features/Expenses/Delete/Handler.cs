@@ -17,15 +17,6 @@ internal sealed class Handler
 
         return result.IsSuccess
             ? TypedResults.Ok()
-            : TypedResults.Problem(result.Error!.GetProblemDetails());
-
-        //if (deletedResult.IsSuccess)
-        //{
-        //    return deletedResult.Value
-        //        ? TypedResults.Ok()
-        //        : TypedResults.NotFound();
-        //}
-
-        //return TypedResults.Problem(deletedResult.Error!.GetProblemDetails());
+            : TypedResults.Problem(result.Error!.ToProblemDetails());
     }
 }

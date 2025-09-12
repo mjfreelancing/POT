@@ -1,5 +1,6 @@
 using Pot.AspNetCore.Extensions;
 using Pot.AspNetCore.Features.Accounts.Extensions;
+using Pot.AspNetCore.Features.Auth.Extensions;
 using Pot.AspNetCore.Features.Expenses.Extensions;
 using Pot.AspNetCore.Features.Incomes.Extensions;
 using Pot.AspNetCore.Features.Maintenance.Extensions;
@@ -24,6 +25,7 @@ public class Program
         builder.Services.AddCors();
 
         builder
+            .AddPotAuth()
             .AddCorrelationId()
             .AddOpenApi()
             .AddHttpJsonOptions()
@@ -34,47 +36,28 @@ public class Program
             .AddAspNetValidation()
             .AddPotData(builder.Configuration.GetConnectionString());
 
-        // https://www.youtube.com/watch?v=3XoXzEPHdTA Nick Chapsas
-        // https://www.youtube.com/watch?v=6DWJIyipxzw Milan Jovanovic
-
-        //builder.Services.AddAuthorization();
-
-        //builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-        //    .AddJwtBearer(options =>
-        //    {
-        //        options.TokenValidationParameters = new TokenValidationParameters
-        //        {
-        //            ValidateIssuer = true,
-        //            ValidateAudience = true,
-        //            ValidateLifetime = true,
-        //            ValidateIssuerSigningKey = true,
-        //            ValidIssuer = "https://pot.mjfreelancing.com",
-        //            ValidAudience = "https://pot.mjfreelancing.com",
-        //            IssuerSigningKey = new SymmetricSecurityKey("some_secret_key"u8.ToArray())
-        //        };
-        //    });
-
-
-
         var app = builder.Build();
 
         app.Logger.LogInformation("POT Startup: {AppStartup}", new { Local = DateTime.Now });
 
         app.MapHealthChecks("/_health");
 
+        // UseCors must be called before UseAuthentication() and UseAuthorization() to ensure CORS headers are on all responses (including errors)
+        app.UseCors(policy => policy
+            .WithOrigins("http://localhost:5175" /*, "http://localhost:4173"*/ ) // Allow frontend URL
+            .AllowAnyMethod()
+            .AllowAnyHeader()
 
-        //app.UseAuthentication();
-        //app.UseAuthorization();
+            // Required when using authentication (note, WithOrigins() cannot use * with AllowCredentials)
+            .AllowCredentials()
 
+            // Exposing 'content-disposition' allows the client to handle the file download correctly (get the filename)
+            .WithExposedHeaders("content-disposition"));
 
-        // Exposing 'content-disposition' allows the client to handle the file download correctly (get the filename)
-        app.UseCors(policy => policy.WithOrigins("http://localhost:5175" /*, "http://localhost:4173"*/ ) // Allow frontend URL
-           .AllowAnyMethod()
-           .AllowAnyHeader()
-           .WithExposedHeaders("content-disposition"));
-        //.AllowCredentials()); // If using authentication
+        app.UseAuthentication();
+        app.UseAuthorization();
 
-        app.UseCorrelationId()
+        app.UsePotMiddleware()
            .UseScalarOpenApi()
            .UseExceptionHandler();
 
@@ -83,10 +66,12 @@ public class Program
 
         // 200 - Success
         // 304 - Not Modified
+        // 401 - Unauthorized
         // 422 - Validation and other errors that occur due to data related problems
         //       (such as conflicts, constraints, etc) when processing the input data
         // 500 - Unexpected errors
-        app.AddAccountEndpoints()
+        app.AddAuthEndpoints()
+           .AddAccountEndpoints()
            .AddIncomeEndpoints()
            .AddExpenseEndpoints()
            .AddProjectionsEndpoints()

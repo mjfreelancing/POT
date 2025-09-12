@@ -59,4 +59,4 @@ async function refreshTokens(
   }
 }
 
-export { refreshTokens };
+export { authClient, refreshTokens };

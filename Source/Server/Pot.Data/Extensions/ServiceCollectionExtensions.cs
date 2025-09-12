@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Pot.Data.Repositories;
 using Pot.Data.UnitOfWork;
+using Pot.Shared;
 using Pot.Shared.DependencyInjection;
 
 namespace Pot.Data.Extensions;
@@ -27,6 +28,12 @@ public static class ServiceCollectionExtensions
                 return serviceType != typeof(IPotSingletonDependency);
             });
         });
+
+        // Make sure ICurrentUserContext and ICurrentUserDataContext resolve the same instance.
+        // AutoRegisterScoped<PotDataRegistrar, IPotScopedDependency>() doesn't resolve the same instance.
+        // TODO: LOOK INTO SEEING IF THIS IS POSSIBLE !!!!
+        services.AddScoped<ICurrentUserDataContext, CurrentUserDataContext>();
+        services.AddScoped<ICurrentUserContext>(provider => provider.GetRequiredService<ICurrentUserDataContext>());
     }
 
     public static IServiceCollection AddUnitOfWork(this IServiceCollection services)

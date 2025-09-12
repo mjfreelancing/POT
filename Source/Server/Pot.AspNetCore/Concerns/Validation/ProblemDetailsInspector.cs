@@ -8,8 +8,6 @@ namespace Pot.AspNetCore.Concerns.Validation;
 
 internal sealed class ProblemDetailsInspector : IProblemDetailsInspector
 {
-    private sealed class For<TType>;
-
     private readonly ILifetimeValidationInvoker _validationInvoker;
 
     public ProblemDetailsInspector(ILifetimeValidationInvoker validationInvoker)

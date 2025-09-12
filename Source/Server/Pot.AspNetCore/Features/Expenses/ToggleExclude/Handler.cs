@@ -29,6 +29,6 @@ internal sealed class Handler
 
         return excludeResult.IsSuccess
             ? TypedResults.Ok()
-            : TypedResults.Problem(excludeResult.Error!.GetProblemDetails());
+            : TypedResults.Problem(excludeResult.Error!.ToProblemDetails());
     }
 }

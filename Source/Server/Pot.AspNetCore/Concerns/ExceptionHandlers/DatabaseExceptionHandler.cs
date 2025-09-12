@@ -13,7 +13,7 @@ namespace Pot.AspNetCore.Concerns.ExceptionHandlers;
 internal sealed class DatabaseExceptionHandler : IExceptionHandler
 {
     // Will also catch UniqueConstraintException and ReferenceConstraintException
-    private static readonly Type _dbUpdateExceptionType = typeof(DbUpdateException);
+    private static readonly Type DbUpdateExceptionType = typeof(DbUpdateException);
 
     private readonly IProblemDetailsService _problemDetailsService;
 
@@ -26,7 +26,7 @@ internal sealed class DatabaseExceptionHandler : IExceptionHandler
     {
         var exceptionType = exception.GetType();
 
-        if (exceptionType.IsDerivedFrom(_dbUpdateExceptionType))
+        if (exceptionType.IsDerivedFrom(DbUpdateExceptionType))
         {
             ProblemDetailsContext problemContext;
 

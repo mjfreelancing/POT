@@ -10,7 +10,7 @@ namespace Pot.App.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static void AddAppDependencies(this IServiceCollection services)
+    public static IServiceCollection AddAppDependencies(this IServiceCollection services)
     {
         services.AutoRegisterScoped<DependencyRegistrar, IPotScopedDependency>(config =>
         {
@@ -29,7 +29,17 @@ public static class ServiceCollectionExtensions
             });
         });
 
-        services.AutoRegisterScoped<DependencyRegistrar, IPotSingletonDependency>();
+        services.AutoRegisterSingleton<DependencyRegistrar, IPotSingletonDependency>(config =>
+        {
+            // Exclude interfaces we know we don't want to register
+            config.Filter((serviceType, implementationType) =>
+            {
+                return serviceType != typeof(IPotSingletonDependency);
+            });
+        });
+
         services.AddDataDependencies();
+
+        return services;
     }
 }

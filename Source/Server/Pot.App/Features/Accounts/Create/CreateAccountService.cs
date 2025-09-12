@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Pot.App.Features.Accounts.Create.EntityChecks;
 using Pot.App.Features.Accounts.Create.Mappings;
 using Pot.App.Features.Accounts.Create.Models;
+using Pot.Data;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
 
@@ -14,12 +15,15 @@ internal sealed class CreateAccountService : ICreateAccountService
 {
     private readonly IPersistableAccountRepository _accountRepository;
     private readonly IPreCreateChecker _preCreateChecker;
+    private readonly ICurrentUserDataContext _currentUserDataContext;
     private readonly ILogger _logger;
 
-    public CreateAccountService(IPersistableAccountRepository accountRepository, IPreCreateChecker preCreateChecker, ILogger<CreateAccountService> logger)
+    public CreateAccountService(IPersistableAccountRepository accountRepository, IPreCreateChecker preCreateChecker,
+        ICurrentUserDataContext currentUserContext, ILogger<CreateAccountService> logger)
     {
         _accountRepository = accountRepository.WhenNotNull();
         _preCreateChecker = preCreateChecker.WhenNotNull();
+        _currentUserDataContext = currentUserContext.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
@@ -27,28 +31,39 @@ internal sealed class CreateAccountService : ICreateAccountService
     {
         _logger.LogCall(this);
 
-        var accountToCreate = new AccountEntity
+        using (_accountRepository.WithTracking())
         {
-            Bsb = input.Bsb,
-            Number = input.Number,
-            Description = input.Description,
-            Balance = input.Balance,
-            Reserved = input.Reserved
-        };
 
-        var problemDetails = await _preCreateChecker.CanSaveAsync(accountToCreate, cancellationToken);
+            // ??? Add a method on the respository so the ICurrentUserDataContext can be added there instead of here ???
 
-        if (problemDetails is not null)
-        {
-            return EnrichedResult.Fail<Output>(problemDetails);
+
+
+            var user = await _currentUserDataContext.GetUserAsync();
+
+            var accountToCreate = new AccountEntity
+            {
+                Site = user.Site,
+                Bsb = input.Bsb,
+                Number = input.Number,
+                Description = input.Description,
+                Balance = input.Balance,
+                Reserved = input.Reserved
+            };
+
+            var problemDetails = await _preCreateChecker.CanSaveAsync(accountToCreate, cancellationToken);
+
+            if (problemDetails is not null)
+            {
+                return EnrichedResult.Fail<Output>(problemDetails);
+            }
+
+            await _accountRepository
+                .AddAndSaveAsync(accountToCreate, cancellationToken)
+                .ConfigureAwait(false);
+
+            var createdAccount = accountToCreate.MapToOutput();
+
+            return EnrichedResult.Success(createdAccount);
         }
-
-        await _accountRepository
-            .AddAndSaveAsync(accountToCreate, cancellationToken)
-            .ConfigureAwait(false);
-
-        var createdAccount = accountToCreate.MapToOutput();
-
-        return EnrichedResult.Success(createdAccount);
     }
 }

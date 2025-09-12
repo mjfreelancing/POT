@@ -1,0 +1,11 @@
+﻿using AllOverIt.Patterns.Result;
+using Pot.AspNetCore.Concerns.Auth.Models;
+using Pot.Shared.DependencyInjection;
+
+namespace Pot.AspNetCore.Concerns.Auth;
+
+public interface IAuthService : IPotScopedDependency
+{
+    Task<EnrichedResult<AuthTokens?>> LoginAsync(string username, string password, CancellationToken cancellationToken);
+    Task<EnrichedResult<AuthTokens?>> RefreshAsync(string accessToken, string refreshToken, CancellationToken cancellationToken);
+}

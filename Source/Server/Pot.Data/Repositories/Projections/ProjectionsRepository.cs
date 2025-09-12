@@ -12,7 +12,7 @@ internal sealed class ProjectionsRepository : GenericRepository<PotDbContext, Ac
 
     public Task<List<AccountEntity>> GetAllAccountsWithCandidateIncomesAndExpensesAsync(CancellationToken cancellationToken)
     {
-        return AsQueryable()
+        return Current
             .Include(account => account.Incomes.Where(income => !income.ExcludeFromCalcs))
             .Include(account => account.Expenses.Where(expense => !expense.ExcludeFromCalcs))
             .ToListAsync(cancellationToken);

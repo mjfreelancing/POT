@@ -13,14 +13,14 @@ internal sealed class IncomeRepository : GenericRepository<PotDbContext, IncomeE
 
     public Task<List<IncomeEntity>> GetAllIncomesAsync(CancellationToken cancellationToken)
     {
-        return AsQueryable()
+        return Current
             .Include(income => income.Account)
             .ToListAsync(cancellationToken);
     }
 
     public Task<List<IncomeEntity>> GetIncomesAsync(Guid[] rowIds, CancellationToken cancellationToken)
     {
-        return AsQueryable()
+        return Current
             .Include(income => income.Account)
             .Where(income => rowIds.Contains(income.RowId))
             .ToListAsync(cancellationToken);
@@ -28,7 +28,7 @@ internal sealed class IncomeRepository : GenericRepository<PotDbContext, IncomeE
 
     public Task<IncomeEntity?> GetIncomeOrDefaultAsync(Guid incomeId, CancellationToken cancellationToken)
     {
-        return AsQueryable()
+        return Current
             .Include(income => income.Account)
             .SingleOrDefaultAsync(incomeId, cancellationToken);
     }

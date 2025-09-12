@@ -1,5 +1,7 @@
 ﻿using AllOverIt.Assertion;
+using AllOverIt.Logging.Extensions;
 using CsvHelper;
+using Microsoft.Extensions.Logging;
 using Pot.App.Features.Maintenance.Import.Incomes.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
@@ -12,15 +14,19 @@ internal sealed class IncomesImporter : IIncomesImporter
 {
     private readonly IPersistableAccountRepository _accountRepository;
     private readonly IIncomeRepository _incomeRepository;
+    private readonly ILogger<IncomesImporter> _logger;
 
-    public IncomesImporter(IPersistableAccountRepository accountRepository, IIncomeRepository incomeRepository)
+    public IncomesImporter(IPersistableAccountRepository accountRepository, IIncomeRepository incomeRepository, ILogger<IncomesImporter> logger)
     {
         _accountRepository = accountRepository.WhenNotNull();
         _incomeRepository = incomeRepository.WhenNotNull();
+        _logger = logger.WhenNotNull();
     }
 
     public async Task<int> ImportAsync(Stream dataStream, CancellationToken cancellationToken)
     {
+        _logger.LogCall(this);
+
         using StreamReader reader = new(dataStream);
 
         using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);

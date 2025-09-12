@@ -12,6 +12,7 @@ using Pot.App.Features.Maintenance.Metadata.Models;
 using Pot.App.Features.Maintenance.Metadata.Serializer;
 
 namespace Pot.App.Features.Maintenance.Export;
+
 internal sealed class ExportDataService : IExportDataService
 {
     private readonly IAccountsExporter _accountsExporter;
@@ -40,6 +41,8 @@ internal sealed class ExportDataService : IExportDataService
         _logger.LogCall(this);
 
         using var zipPackage = _zipPackageFactory.CreateZipPackage();
+
+        // TODO: The import currently assigns the site associated with the user performing the import. Need to update the export/import to consider how this should all now work.
 
         await AddToZipAsync(zipPackage, "metadata", false, publicKey, (token) => ExportMetadataAsync(), cancellationToken).ConfigureAwait(false);
         await AddToZipAsync(zipPackage, "accounts", true, publicKey, _accountsExporter.ExportAllAsync, cancellationToken).ConfigureAwait(false);

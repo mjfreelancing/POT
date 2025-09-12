@@ -22,6 +22,6 @@ internal sealed class Handler
                 : TypedResults.NotFound();
         }
 
-        return TypedResults.Problem(deletedResult.Error!.GetProblemDetails());
+        return TypedResults.Problem(deletedResult.Error!.ToProblemDetails());
     }
 }

@@ -37,6 +37,6 @@ internal sealed class Handler
 
         return result.IsSuccess
             ? Response.Ok(result.Value!)
-            : TypedResults.Problem(result.Error!.GetProblemDetails());
+            : TypedResults.Problem(result.Error!.ToProblemDetails());
     }
 }

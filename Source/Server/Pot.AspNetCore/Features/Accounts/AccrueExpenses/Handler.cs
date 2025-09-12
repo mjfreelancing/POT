@@ -19,6 +19,6 @@ internal sealed class Handler
 
         return accrueResult.IsSuccess
             ? TypedResults.Ok()
-            : TypedResults.Problem(accrueResult.Error!.GetProblemDetails());
+            : TypedResults.Problem(accrueResult.Error!.ToProblemDetails());
     }
 }

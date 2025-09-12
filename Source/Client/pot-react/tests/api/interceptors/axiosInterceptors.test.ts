@@ -35,6 +35,7 @@ describe('Axios Interceptors', () => {
   describe('Request Interceptor', () => {
     it('should add a correlation ID header when not present', () => {
       const mockUuid = '12345678-1234-1234-1234-123456789012';
+
       // Mock randomUUID to return consistent value
       vi.spyOn(crypto, 'randomUUID').mockReturnValue(mockUuid);
 
@@ -84,6 +85,7 @@ describe('Axios Interceptors', () => {
           `API Response [${res.config.headers['X-Correlation-ID']}]`,
           res.data,
         );
+
         return res;
       };
 
@@ -91,16 +93,16 @@ describe('Axios Interceptors', () => {
       expect(result).toBe(response);
     });
 
-    it('should convert 400 responses to NotFoundError', async () => {
+    it('should convert 404 responses to NotFoundError', async () => {
       const apiErrorResponse: ApiErrorResponse = {
         title: 'Not Found',
         detail: 'Resource not found',
-        status: 400,
+        status: 404,
       };
 
       const axiosError = new AxiosError('Not Found');
       axiosError.response = {
-        status: 400,
+        status: 404,
         data: apiErrorResponse,
         headers: {},
         config: {

@@ -18,12 +18,12 @@ internal sealed class PotUnitOfWork : UnitOfWork<PotDbContext>, IPotUnitOfWork
     public IExpenseRepository ExpenseRepository => _expenseRepository.Value;
     public IIncomeRepository IncomeRepository => _incomeRepository.Value;
 
-    public PotUnitOfWork(PotDbContext dbContext, IQueryPaginatorFactory queryPaginatorFactory)
+    public PotUnitOfWork(PotDbContext dbContext, IQueryPaginatorFactory queryPaginatorFactory, ICurrentUserDataContext currentUserDataContext)
         : base(dbContext)
     {
         _queryPaginatorFactory = queryPaginatorFactory.WhenNotNull();
 
-        _accountRepository = new Lazy<IAccountRepository>(() => new AccountRepository(DbContext));
+        _accountRepository = new Lazy<IAccountRepository>(() => new AccountRepository(DbContext, currentUserDataContext));
         _expenseRepository = new Lazy<IExpenseRepository>(() => new ExpenseRepository(DbContext, _queryPaginatorFactory));
         _incomeRepository = new Lazy<IIncomeRepository>(() => new IncomeRepository(DbContext));
     }

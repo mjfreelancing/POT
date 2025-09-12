@@ -27,6 +27,17 @@ public static class ProblemDetailsErrorFactory
         };
     }
 
+    public static ProblemDetailsError CreateAuthError(string errorMessage)
+    {
+        return new ProblemDetailsError(ProblemType.Auth)
+        {
+            ErrorCode = ErrorCodes.Auth,
+            PropertyName = string.Empty,
+            AttemptedValue = string.Empty,
+            ErrorMessage = errorMessage
+        };
+    }
+
     public static ProblemDetailsError CreateEntityNotFoundError(object? attemptedValue, string errorMessage)
     {
         return new ProblemDetailsError(ProblemType.NotFound)

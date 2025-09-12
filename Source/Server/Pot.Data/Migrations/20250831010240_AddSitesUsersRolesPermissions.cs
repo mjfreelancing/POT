@@ -1,0 +1,237 @@
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+
+#nullable disable
+
+namespace Pot.Data.Migrations
+{
+    /// <inheritdoc />
+    public partial class AddSitesUsersRolesPermissions : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.CreateTable(
+                name: "Permission",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    RowId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Etag = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Permission", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Role",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    RowId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Etag = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Role", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Site",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Description = table.Column<string>(type: "citext", maxLength: 100, nullable: false),
+                    RowId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Etag = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Site", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RolePermission",
+                columns: table => new
+                {
+                    PermissionsId = table.Column<int>(type: "integer", nullable: false),
+                    RolesId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RolePermission", x => new { x.PermissionsId, x.RolesId });
+                    table.ForeignKey(
+                        name: "FK_RolePermission_Permission_PermissionsId",
+                        column: x => x.PermissionsId,
+                        principalTable: "Permission",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_RolePermission_Role_RolesId",
+                        column: x => x.RolesId,
+                        principalTable: "Role",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "User",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Username = table.Column<string>(type: "citext", maxLength: 100, nullable: false),
+                    PasswordHash = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    SiteId = table.Column<int>(type: "integer", nullable: true),
+                    RowId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Etag = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_User", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_User_Site_SiteId",
+                        column: x => x.SiteId,
+                        principalTable: "Site",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserRole",
+                columns: table => new
+                {
+                    RolesId = table.Column<int>(type: "integer", nullable: false),
+                    UsersId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserRole", x => new { x.RolesId, x.UsersId });
+                    table.ForeignKey(
+                        name: "FK_UserRole_Role_RolesId",
+                        column: x => x.RolesId,
+                        principalTable: "Role",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserRole_User_UsersId",
+                        column: x => x.UsersId,
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Permission_Etag",
+                table: "Permission",
+                column: "Etag");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Permission_Name",
+                table: "Permission",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Permission_RowId",
+                table: "Permission",
+                column: "RowId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Role_Etag",
+                table: "Role",
+                column: "Etag");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Role_Name",
+                table: "Role",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Role_RowId",
+                table: "Role",
+                column: "RowId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RolePermission_RolesId",
+                table: "RolePermission",
+                column: "RolesId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Site_Description",
+                table: "Site",
+                column: "Description",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Site_Etag",
+                table: "Site",
+                column: "Etag");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Site_RowId",
+                table: "Site",
+                column: "RowId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_User_Etag",
+                table: "User",
+                column: "Etag");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_User_RowId",
+                table: "User",
+                column: "RowId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_User_SiteId",
+                table: "User",
+                column: "SiteId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_User_Username",
+                table: "User",
+                column: "Username",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserRole_UsersId",
+                table: "UserRole",
+                column: "UsersId");
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(
+                name: "RolePermission");
+
+            migrationBuilder.DropTable(
+                name: "UserRole");
+
+            migrationBuilder.DropTable(
+                name: "Permission");
+
+            migrationBuilder.DropTable(
+                name: "Role");
+
+            migrationBuilder.DropTable(
+                name: "User");
+
+            migrationBuilder.DropTable(
+                name: "Site");
+        }
+    }
+}

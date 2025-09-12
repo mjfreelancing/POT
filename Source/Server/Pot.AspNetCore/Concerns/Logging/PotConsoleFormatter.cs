@@ -16,8 +16,8 @@ internal sealed class PotConsoleFormatter : ConsoleFormatter, IDisposable
     private const string LogLevelPadding = ": ";
     private const string TimestampPadding = " ";
     private const string CorrelationIdPadding = " ";
-    private static readonly string _messagePadding = new(' ', GetLogLevelString(LogLevel.Information).Length + LogLevelPadding.Length);
-    private static readonly string _newLineWithMessagePadding = Environment.NewLine + _messagePadding;
+    private static readonly string MessagePadding = new(' ', GetLogLevelString(LogLevel.Information).Length + LogLevelPadding.Length);
+    private static readonly string NewLineWithMessagePadding = Environment.NewLine + MessagePadding;
 
     private IDisposable? _optionsReloadToken;
     private PotConsoleFormatterOptions _formatterOptions;
@@ -173,8 +173,8 @@ internal sealed class PotConsoleFormatter : ConsoleFormatter, IDisposable
             }
             else
             {
-                textWriter.Write(_messagePadding);
-                WriteReplacing(textWriter, Environment.NewLine, _newLineWithMessagePadding, message);
+                textWriter.Write(MessagePadding);
+                WriteReplacing(textWriter, Environment.NewLine, NewLineWithMessagePadding, message);
                 textWriter.Write(Environment.NewLine);
             }
         }
@@ -218,7 +218,7 @@ internal sealed class PotConsoleFormatter : ConsoleFormatter, IDisposable
                 if (paddingNeeded)
                 {
                     paddingNeeded = false;
-                    state.Write(_messagePadding);
+                    state.Write(MessagePadding);
                     state.Write("=> ");
                 }
                 else

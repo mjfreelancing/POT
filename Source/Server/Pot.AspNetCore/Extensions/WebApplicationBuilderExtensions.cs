@@ -4,8 +4,12 @@ using AllOverIt.Serialization.Json.SystemText.Converters;
 using AllOverIt.Validation;
 using AllOverIt.Validation.Extensions;
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Pot.App.Concerns.Validation;
 using Pot.App.Extensions;
+using Pot.AspNetCore.Concerns.Auth;
+using Pot.AspNetCore.Concerns.Auth.Setup;
 using Pot.AspNetCore.Concerns.Converters.JsonSerialization;
 using Pot.AspNetCore.Concerns.DependencyInjection;
 using Pot.AspNetCore.Concerns.ExceptionHandlers;
@@ -22,6 +26,30 @@ namespace Pot.AspNetCore.Extensions;
 internal static class WebApplicationBuilderExtensions
 {
     private static readonly Type ScopedLifetimeValidatorType = typeof(IScopedLifetimeValidator);
+
+    public static WebApplicationBuilder AddPotAuth(this WebApplicationBuilder builder)
+    {
+        builder.Services
+            // Binds configuration from the "Jwt" section onto a JwtOptions instance, which is later injected into JwtBearerOptionsSetup.
+            .ConfigureOptions<JwtOptionsSetup>()
+
+            // Sets up Jwt Bearer validation options - alternative approach to setting with AddJwtBearer().
+            .ConfigureOptions<JwtBearerOptionsSetup>()
+
+            .AddAuthorization()
+            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                // Prevent the default mapping of claims. For example, A JwtRegisteredClaimNames.Sub claim would normally get mapped
+                // to ClaimTypes.NameIdentifier (http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier).
+                options.MapInboundClaims = false;
+            });
+
+        builder.Services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
+        builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+
+        return builder;
+    }
 
     public static WebApplicationBuilder AddCorrelationId(this WebApplicationBuilder builder)
     {
@@ -137,6 +165,14 @@ internal static class WebApplicationBuilderExtensions
                     }
 
                     return serviceType != typeof(IPotScopedDependency);
+                });
+            })
+            .AutoRegisterSingleton<DependencyRegistrar, IPotSingletonDependency>(config =>
+            {
+                // Exclude interfaces we know we don't want to register
+                config.Filter((serviceType, implementationType) =>
+                {
+                    return serviceType != typeof(IPotSingletonDependency);
                 });
             })
             .AddAppDependencies();

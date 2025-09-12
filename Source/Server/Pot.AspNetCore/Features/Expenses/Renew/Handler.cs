@@ -29,6 +29,6 @@ internal sealed class Handler
 
         return renewResult.IsSuccess
             ? TypedResults.Ok()
-            : TypedResults.Problem(renewResult.Error!.GetProblemDetails());
+            : TypedResults.Problem(renewResult.Error!.ToProblemDetails());
     }
 }

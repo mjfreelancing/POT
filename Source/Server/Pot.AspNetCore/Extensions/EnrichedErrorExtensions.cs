@@ -8,12 +8,13 @@ namespace Pot.AspNetCore.Extensions;
 
 internal static class EnrichedErrorExtensions
 {
-    public static Microsoft.AspNetCore.Mvc.ProblemDetails GetProblemDetails(this EnrichedError enrichedError)
+    public static Microsoft.AspNetCore.Mvc.ProblemDetails ToProblemDetails(this EnrichedError enrichedError)
     {
         var error = enrichedError as ProblemDetailsErrorBase;
 
         var statusCode = error!.ErrorType switch
         {
+            ProblemType.Auth => StatusCodes.Status401Unauthorized,
             ProblemType.NotFound => StatusCodes.Status404NotFound,
             ProblemType.Conflict => StatusCodes.Status409Conflict,
             ProblemType.Constraint => StatusCodes.Status422UnprocessableEntity,

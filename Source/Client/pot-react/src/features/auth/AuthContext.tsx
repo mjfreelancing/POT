@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 
@@ -12,6 +13,10 @@ import useLocalStorage from '@/hooks/useLocalStorage';
 import { DisplayError } from '@/lib';
 
 import logoutManager from './logoutManager';
+import {
+  createTokenRefreshTimer,
+  type TokenRefreshHandle,
+} from './tokenRefreshTimer';
 import { AUTH_STORAGE_KEY, type AuthTokens } from './types';
 
 // Type for the AuthContext value
@@ -57,6 +62,26 @@ function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     logoutManager.setLogoutCallback(logout);
   }, [logout]);
+
+  // Setup proactive token refresh
+  const refreshTimerRef = useRef<TokenRefreshHandle | undefined>(undefined);
+
+  // Setup refresh timer when tokens change
+  useEffect(() => {
+    if (tokens) {
+      refreshTimerRef.current = createTokenRefreshTimer({
+        currentTokens: tokens,
+        onRefreshSuccess: login,
+        onRefreshError: () => logout(),
+      });
+
+      refreshTimerRef.current.start();
+    }
+
+    return () => {
+      refreshTimerRef.current?.stop();
+    };
+  }, [tokens, login, logout]);
 
   // Memoize context value
   const value = useMemo(

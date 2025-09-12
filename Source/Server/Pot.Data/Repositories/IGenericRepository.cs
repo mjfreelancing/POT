@@ -8,13 +8,14 @@ public interface IGenericRepository<TDbContext, TEntity>
     where TEntity : EntityBase
     where TDbContext : DbContextBase
 {
+    IQueryable<TEntity> Current { get; }
+
     IDisposable WithTracking();
 
 
     // IQueryable
 
     // =======================
-    IQueryable<TEntity> AsQueryable();
     IQueryable<TEntity> Where(Expression<Func<TEntity, bool>> predicate);
 
     Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken);

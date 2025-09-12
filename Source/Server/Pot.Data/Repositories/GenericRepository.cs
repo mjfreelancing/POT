@@ -15,6 +15,17 @@ internal abstract class GenericRepository<TDbContext, TEntity> : IGenericReposit
 {
     // Note: Not awaiting in these methods for performance reasons. Exceptions will be reported at the point of awaiting.
 
+    private IQueryable<TEntity>? _queryable;
+
+    public IQueryable<TEntity> Current
+    {
+        get
+        {
+            _queryable ??= DbContext.Set<TEntity>();
+            return _queryable;
+        }
+    }
+
     public TDbContext DbContext { get; private set; }
 
     protected GenericRepository(TDbContext dbContext)
@@ -24,37 +35,31 @@ internal abstract class GenericRepository<TDbContext, TEntity> : IGenericReposit
 
     public IDisposable WithTracking() => DbContext.WithAutoTracking();
 
-    // IQueryable
-    public IQueryable<TEntity> AsQueryable()
-    {
-        return DbContext.Set<TEntity>();
-    }
-
     public IQueryable<TEntity> Where(Expression<Func<TEntity, bool>> predicate)
     {
-        return AsQueryable().Where(predicate);
+        return Current.Where(predicate);
     }
 
     public Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken)
     {
-        return AsQueryable().AnyAsync(predicate, cancellationToken);
+        return Current.AnyAsync(predicate, cancellationToken);
     }
 
     public Task<TEntity?> SingleOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken)
     {
-        return AsQueryable().SingleOrDefaultAsync(predicate, cancellationToken);
+        return Current.SingleOrDefaultAsync(predicate, cancellationToken);
     }
 
     public Task<TEntity> SingleAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken)
     {
-        return AsQueryable().SingleAsync(predicate, cancellationToken);
+        return Current.SingleAsync(predicate, cancellationToken);
     }
 
     // Get data
     // =======================
     public Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken)
     {
-        return AsQueryable().ToListAsync(cancellationToken);
+        return Current.ToListAsync(cancellationToken);
     }
 
     public ValueTask<TEntity?> GetByPrimaryKeyAsync<TKey>(TKey id, CancellationToken cancellationToken)

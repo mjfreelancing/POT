@@ -17,7 +17,7 @@ namespace Pot.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.7")
+                .HasAnnotation("ProductVersion", "9.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "citext");
@@ -62,6 +62,9 @@ namespace Pot.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int>("SiteId")
+                        .HasColumnType("integer");
+
                     b.Property<double>("TotalExpenseAccrued")
                         .HasColumnType("double precision");
 
@@ -74,6 +77,8 @@ namespace Pot.Data.Migrations
 
                     b.HasIndex("RowId")
                         .IsUnique();
+
+                    b.HasIndex("SiteId");
 
                     b.HasIndex("Bsb", "Number")
                         .IsUnique();
@@ -209,6 +214,196 @@ namespace Pot.Data.Migrations
                     b.ToTable("Income");
                 });
 
+            modelBuilder.Entity("Pot.Data.Entities.PermissionEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<long>("Etag")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("RowId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Etag");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.HasIndex("RowId")
+                        .IsUnique();
+
+                    b.ToTable("Permission");
+                });
+
+            modelBuilder.Entity("Pot.Data.Entities.RoleEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<long>("Etag")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("RowId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Etag");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.HasIndex("RowId")
+                        .IsUnique();
+
+                    b.ToTable("Role");
+                });
+
+            modelBuilder.Entity("Pot.Data.Entities.SiteEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("citext");
+
+                    b.Property<long>("Etag")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("RowId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Description")
+                        .IsUnique();
+
+                    b.HasIndex("Etag");
+
+                    b.HasIndex("RowId")
+                        .IsUnique();
+
+                    b.ToTable("Site");
+                });
+
+            modelBuilder.Entity("Pot.Data.Entities.UserEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<long>("Etag")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("RefreshToken")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("RefreshTokenExpiryUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("RowId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("SiteId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("citext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Etag");
+
+                    b.HasIndex("RowId")
+                        .IsUnique();
+
+                    b.HasIndex("SiteId");
+
+                    b.HasIndex("Username")
+                        .IsUnique();
+
+                    b.ToTable("User");
+                });
+
+            modelBuilder.Entity("RolePermission", b =>
+                {
+                    b.Property<int>("PermissionsId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RolesId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("PermissionsId", "RolesId");
+
+                    b.HasIndex("RolesId");
+
+                    b.ToTable("RolePermission");
+                });
+
+            modelBuilder.Entity("UserRole", b =>
+                {
+                    b.Property<int>("RolesId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UsersId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("RolesId", "UsersId");
+
+                    b.HasIndex("UsersId");
+
+                    b.ToTable("UserRole");
+                });
+
+            modelBuilder.Entity("Pot.Data.Entities.AccountEntity", b =>
+                {
+                    b.HasOne("Pot.Data.Entities.SiteEntity", "Site")
+                        .WithMany("Accounts")
+                        .HasForeignKey("SiteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Site");
+                });
+
             modelBuilder.Entity("Pot.Data.Entities.ExpenseEntity", b =>
                 {
                     b.HasOne("Pot.Data.Entities.AccountEntity", "Account")
@@ -231,11 +426,59 @@ namespace Pot.Data.Migrations
                     b.Navigation("Account");
                 });
 
+            modelBuilder.Entity("Pot.Data.Entities.UserEntity", b =>
+                {
+                    b.HasOne("Pot.Data.Entities.SiteEntity", "Site")
+                        .WithMany("Users")
+                        .HasForeignKey("SiteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Site");
+                });
+
+            modelBuilder.Entity("RolePermission", b =>
+                {
+                    b.HasOne("Pot.Data.Entities.PermissionEntity", null)
+                        .WithMany()
+                        .HasForeignKey("PermissionsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Pot.Data.Entities.RoleEntity", null)
+                        .WithMany()
+                        .HasForeignKey("RolesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UserRole", b =>
+                {
+                    b.HasOne("Pot.Data.Entities.RoleEntity", null)
+                        .WithMany()
+                        .HasForeignKey("RolesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Pot.Data.Entities.UserEntity", null)
+                        .WithMany()
+                        .HasForeignKey("UsersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Pot.Data.Entities.AccountEntity", b =>
                 {
                     b.Navigation("Expenses");
 
                     b.Navigation("Incomes");
+                });
+
+            modelBuilder.Entity("Pot.Data.Entities.SiteEntity", b =>
+                {
+                    b.Navigation("Accounts");
+
+                    b.Navigation("Users");
                 });
 #pragma warning restore 612, 618
         }
