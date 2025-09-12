@@ -4,20 +4,28 @@ import {
   ChartSpline,
   Landmark,
   LayoutDashboard,
+  LogOut,
   Receipt,
   TrendingUp,
 } from 'lucide-react';
 import { useState } from 'react';
 
 import { SidebarContent } from '@/components/ui/sidebar';
+import { useAuth } from '@/features/auth/AuthContext';
 import { ExportModal } from '@/features/export/components/ExportModal';
 import { ImportModal } from '@/features/import/components/ImportModal';
 
 import MenuGroup, { MenuGroupDefinition } from './MenuGroup';
 
 function AppSidebarMenus() {
+  const { logout, isAuthenticated } = useAuth();
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
+  // Only show menu items when authenticated
+  if (!isAuthenticated) {
+    return <SidebarContent />;
+  }
 
   const menuGroups: Record<string, MenuGroupDefinition> = {
     analysis: {
@@ -79,6 +87,18 @@ function AppSidebarMenus() {
         },
       ],
     },
+
+    user: {
+      label: 'User',
+      items: [
+        {
+          type: 'onClick',
+          label: 'Log Out',
+          icon: LogOut,
+          onClick: logout,
+        },
+      ],
+    },
   };
 
   return (
@@ -87,6 +107,7 @@ function AppSidebarMenus() {
         <MenuGroup group={menuGroups.analysis} />
         <MenuGroup group={menuGroups.manage} />
         <MenuGroup group={menuGroups.maintenance} />
+        <MenuGroup group={menuGroups.user} />
       </SidebarContent>
 
       <ExportModal
