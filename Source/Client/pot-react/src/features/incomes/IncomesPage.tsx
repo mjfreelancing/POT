@@ -4,7 +4,6 @@ import { Outlet, useSearchParams } from 'react-router';
 import { useNavigate } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetAllIncomes } from '@/api/hooks';
-import useIncomeStorage from './hooks/useIncomeStorage';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { AccountFilter, SearchInput } from '@/components/filters';
@@ -15,6 +14,7 @@ import { useAccountFilter } from '@/hooks';
 import { DisplayError, logger } from '@/lib';
 
 import { IncomesHeader, IncomesTable } from './components';
+import useIncomeStorage from './hooks/useIncomeStorage';
 
 function IncomesPage() {
   logger.info('IncomesPage', 'Rendering');

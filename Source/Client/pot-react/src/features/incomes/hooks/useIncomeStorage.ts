@@ -1,5 +1,5 @@
-import { DisplayError } from '@/lib';
 import useLocalStorage from '@/hooks/useLocalStorage';
+import { DisplayError } from '@/lib';
 
 type IncomeStorageData = {
   selectedAccountId: string | null;
