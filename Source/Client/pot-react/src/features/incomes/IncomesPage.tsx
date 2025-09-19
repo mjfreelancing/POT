@@ -61,7 +61,7 @@ function IncomesPage() {
       newSearchParams.set('accountId', storedData.selectedAccountId);
       setSearchParams(newSearchParams);
     }
-  }, [isEditing]);
+  }, [isEditing, urlAccountId, storedData?.selectedAccountId, setSearchParams]);
 
   // Use the shared account filtering hook with controlled state
   const {

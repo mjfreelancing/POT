@@ -151,7 +151,7 @@ function useAccountFilter<T extends ItemWithAccount>({
         onAccountChange(null);
       }
     }
-  }, [selectedAccountId, accountsInItems]);
+  }, [selectedAccountId, accountsInItems, onAccountChange]);
 
   // This block applies the actual filtering logic to show only items
   // that match the selected account. It automatically updates when
