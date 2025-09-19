@@ -49,85 +49,51 @@ function IncomesPage() {
 
   const isLoading = incomesLoading || accountsLoading;
 
-  // Get account filter from URL
+  // Get account filter from storage and/or URL
   const urlAccountId = searchParams.get('accountId');
+  const storedData = getIncomeData();
+  const isEditing = window.location.pathname.includes('/edit/');
 
-  // Use the shared account filtering hook to manage filtering state
+  // When returning from edit mode, restore URL from storage if needed
+  useEffect(() => {
+    if (!isEditing && !urlAccountId && storedData?.selectedAccountId) {
+      const newSearchParams = new URLSearchParams();
+      newSearchParams.set('accountId', storedData.selectedAccountId);
+      setSearchParams(newSearchParams);
+    }
+  }, [isEditing]);
+
+  // Use the shared account filtering hook with controlled state
   const {
     accountsInItems,
-    selectedAccountId,
-    setSelectedAccountId,
     filteredItems: filteredIncomes,
+    setSelectedAccountId: handleAccountChange,
   } = useAccountFilter<Income>({
     accounts,
     items: incomes,
-  });
+    selectedAccountId: urlAccountId || storedData?.selectedAccountId || null,
+    onAccountChange: accountId => {
+      if (accountId) {
+        // Always update storage
+        setIncomeData({ selectedAccountId: accountId });
 
-  // One-time initial hydration from storage if no URL parameter
-  useEffect(() => {
-    // Skip if no data yet or if URL parameter exists (URL takes precedence)
-    if (accounts.length === 0 || incomes.length === 0 || urlAccountId) {
-      return;
-    }
-
-    const storedData = getIncomeData();
-    const storedAccountId = storedData?.selectedAccountId;
-
-    if (storedAccountId) {
-      // Check if account exists and has items
-      const accountExists = accounts.some(
-        account => account.rowId.toString() === storedAccountId,
-      );
-
-      const hasItems =
-        !storedAccountId ||
-        incomes.some(
-          income => income.account?.rowId?.toString() === storedAccountId,
-        );
-
-      if (accountExists && hasItems) {
-        setSelectedAccountId(storedAccountId);
-
-        const newSearchParams = new URLSearchParams(searchParams);
-        newSearchParams.set('accountId', storedAccountId);
-
-        setSearchParams(newSearchParams);
-      }
-    }
-  }, [accounts.length, incomes.length]); // Only run on initial data load
-
-  // Keep selectedAccountId in sync with URL
-  useEffect(() => {
-    if (urlAccountId) {
-      // URL has an account - sync state to match
-      if (selectedAccountId !== urlAccountId) {
-        setSelectedAccountId(urlAccountId);
-        setIncomeData({ selectedAccountId: urlAccountId });
-      }
-    } else {
-      // URL has no account - ensure state is cleared
-      if (selectedAccountId !== null) {
-        setSelectedAccountId(null);
+        // Only update URL if not editing
+        if (!isEditing) {
+          const newSearchParams = new URLSearchParams();
+          newSearchParams.set('accountId', accountId);
+          setSearchParams(newSearchParams);
+        }
+      } else {
+        // Always update storage
         setIncomeData({ selectedAccountId: null });
+
+        // Only update URL if not editing
+        if (!isEditing) {
+          setSearchParams(new URLSearchParams());
+        }
       }
-    }
-  }, [urlAccountId]);
-
-  // Handle account filter changes from header
-  const handleAccountChange = (accountId: string | null) => {
-    if (!accountId) {
-      setSelectedAccountId(null);
-      setSearchParams(new URLSearchParams());
-      setIncomeData({ selectedAccountId: null });
-    } else {
-      const newSearchParams = new URLSearchParams();
-      newSearchParams.set('accountId', accountId);
-
-      setSelectedAccountId(accountId);
-      setSearchParams(newSearchParams);
-      setIncomeData({ selectedAccountId: accountId });
-    }
-  };
+    },
+  });
 
   // Validate the selected account ID for display in header
   const validatedSelectedAccountId = useMemo(() => {

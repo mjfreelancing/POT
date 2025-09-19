@@ -20,6 +20,10 @@ type UseAccountFilterOptions = {
   accounts: Account[];
   /** Array of items (expenses, incomes, etc.) that can be filtered by account */
   items: ItemWithAccount[];
+  /** Currently selected account ID for filtering */
+  selectedAccountId: string | null;
+  /** Function to update the selected account filter */
+  onAccountChange: (accountId: string | null) => void;
 };
 
 /**
@@ -78,12 +82,9 @@ type UseAccountFilterReturn<T extends ItemWithAccount> = {
 function useAccountFilter<T extends ItemWithAccount>({
   accounts,
   items,
+  selectedAccountId,
+  onAccountChange,
 }: UseAccountFilterOptions & { items: T[] }): UseAccountFilterReturn<T> {
-  // State to track which account is currently selected for filtering
-  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
-    null,
-  );
-
   // This block handles both account addition and removal by dynamically
   // building the filter list based on which accounts actually have items.
   // When data changes, the filter automatically updates to show only
@@ -147,7 +148,7 @@ function useAccountFilter<T extends ItemWithAccount>({
 
       if (!isSelectedAccountPresent) {
         // Selected account is no longer available, clear the filter
-        setSelectedAccountId(null);
+        onAccountChange(null);
       }
     }
   }, [selectedAccountId, accountsInItems]);
@@ -176,7 +177,7 @@ function useAccountFilter<T extends ItemWithAccount>({
   return {
     accountsInItems,
     selectedAccountId,
-    setSelectedAccountId,
+    setSelectedAccountId: onAccountChange,
     filteredItems,
   };
 }
