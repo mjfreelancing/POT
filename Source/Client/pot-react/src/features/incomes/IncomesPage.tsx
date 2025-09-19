@@ -4,6 +4,7 @@ import { Outlet, useSearchParams } from 'react-router';
 import { useNavigate } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetAllIncomes } from '@/api/hooks';
+import useIncomeStorage from './hooks/useIncomeStorage';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { AccountFilter, SearchInput } from '@/components/filters';
@@ -21,6 +22,14 @@ function IncomesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [error, setError] = useState<DisplayError | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
+
+  // Setup local storage for persistent filters
+  const { getIncomeData, setIncomeData } = useIncomeStorage(error => {
+    setError({
+      title: 'Storage Error',
+      description: error.description,
+    });
+  });
 
   // Get data
   const { data: incomesResult, isLoading: incomesLoading } =
@@ -54,90 +63,77 @@ function IncomesPage() {
     items: incomes,
   });
 
-  // Validate and sync filter state with URL, handling all edge cases
+  // One-time initial hydration from storage if no URL parameter
   useEffect(() => {
-    if (accounts.length > 0 && incomes.length > 0) {
-      if (urlAccountId) {
-        // Check if the account from URL exists
-        const accountExists = accounts.some(
-          account => account.rowId.toString() === urlAccountId,
+    // Skip if no data yet or if URL parameter exists (URL takes precedence)
+    if (accounts.length === 0 || incomes.length === 0 || urlAccountId) {
+      return;
+    }
+
+    const storedData = getIncomeData();
+    const storedAccountId = storedData?.selectedAccountId;
+
+    if (storedAccountId) {
+      // Check if account exists and has items
+      const accountExists = accounts.some(
+        account => account.rowId.toString() === storedAccountId,
+      );
+
+      const hasItems =
+        !storedAccountId ||
+        incomes.some(
+          income => income.account?.rowId?.toString() === storedAccountId,
         );
 
-        if (accountExists) {
-          // Check if the account has items after filtering
-          const accountHasItems = incomes.some(income => {
-            if (urlAccountId === 'not-assigned') {
-              return !income.account?.rowId;
-            }
-            return income.account?.rowId?.toString() === urlAccountId;
-          });
+      if (accountExists && hasItems) {
+        setSelectedAccountId(storedAccountId);
 
-          if (accountHasItems) {
-            // Valid account with items - set the filter
-            if (selectedAccountId !== urlAccountId) {
-              setSelectedAccountId(urlAccountId);
-            }
-          } else {
-            // Account exists but has no items - clear the URL filter
-            setSelectedAccountId(null);
-            setSearchParams(new URLSearchParams());
-          }
-        } else {
-          // Invalid account - clear the URL filter
-          setSelectedAccountId(null);
-          setSearchParams(new URLSearchParams());
-        }
-      } else if (selectedAccountId) {
-        // No URL filter but component has selection - clear it
-        setSelectedAccountId(null);
+        const newSearchParams = new URLSearchParams(searchParams);
+        newSearchParams.set('accountId', storedAccountId);
+
+        setSearchParams(newSearchParams);
       }
     }
-  }, [
-    urlAccountId,
-    accounts,
-    incomes,
-    selectedAccountId,
-    setSelectedAccountId,
-    setSearchParams,
-  ]);
+  }, [accounts.length, incomes.length]); // Only run on initial data load
 
-  // Monitor filtered results and clear URL if last item was deleted
+  // Keep selectedAccountId in sync with URL
   useEffect(() => {
-    if (
-      urlAccountId &&
-      selectedAccountId === urlAccountId &&
-      filteredIncomes.length === 0 &&
-      incomes.length > 0
-    ) {
-      // We have a filter active, but no filtered results while there are total items
-      // This means the last item for this account was deleted
-      setSelectedAccountId(null);
-      setSearchParams(new URLSearchParams());
+    if (urlAccountId) {
+      // URL has an account - sync state to match
+      if (selectedAccountId !== urlAccountId) {
+        setSelectedAccountId(urlAccountId);
+        setIncomeData({ selectedAccountId: urlAccountId });
+      }
+    } else {
+      // URL has no account - ensure state is cleared
+      if (selectedAccountId !== null) {
+        setSelectedAccountId(null);
+        setIncomeData({ selectedAccountId: null });
+      }
     }
-  }, [
-    urlAccountId,
-    selectedAccountId,
-    filteredIncomes.length,
-    incomes.length,
-    setSelectedAccountId,
-    setSearchParams,
-  ]);
+  }, [urlAccountId]);
 
   // Handle account filter changes from header
   const handleAccountChange = (accountId: string | null) => {
-    setSelectedAccountId(accountId);
-    const newSearchParams = new URLSearchParams(searchParams);
-    if (accountId && accountId !== 'not-assigned') {
-      newSearchParams.set('accountId', accountId);
+    if (!accountId) {
+      setSelectedAccountId(null);
+      setSearchParams(new URLSearchParams());
+      setIncomeData({ selectedAccountId: null });
     } else {
-      newSearchParams.delete('accountId');
+      const newSearchParams = new URLSearchParams();
+      newSearchParams.set('accountId', accountId);
+
+      setSelectedAccountId(accountId);
+      setSearchParams(newSearchParams);
+      setIncomeData({ selectedAccountId: accountId });
     }
-    setSearchParams(newSearchParams);
   };
 
   // Validate the selected account ID for display in header
   const validatedSelectedAccountId = useMemo(() => {
-    if (!urlAccountId) return null;
+    if (!urlAccountId) {
+      return null;
+    }
 
     // Check if it's a valid account that has items
     const isValidAccount = accountsInItems.some(
