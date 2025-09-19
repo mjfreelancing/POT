@@ -95,19 +95,25 @@ function IncomesPage() {
     },
   });
 
+  // Get initial account ID from URL or storage
+  const initialAccountId = useMemo(
+    () => urlAccountId || storedData?.selectedAccountId || null,
+    [urlAccountId, storedData?.selectedAccountId],
+  );
+
   // Validate the selected account ID for display in header
   const validatedSelectedAccountId = useMemo(() => {
-    if (!urlAccountId) {
+    if (!initialAccountId) {
       return null;
     }
 
     // Check if it's a valid account that has items
     const isValidAccount = accountsInItems.some(
-      account => account.rowId.toString() === urlAccountId,
+      account => account.rowId.toString() === initialAccountId,
     );
 
-    return isValidAccount ? urlAccountId : null;
-  }, [urlAccountId, accountsInItems]);
+    return isValidAccount ? initialAccountId : null;
+  }, [initialAccountId, accountsInItems]);
 
   // Filter incomes by description (case-insensitive)
   const descriptionFilteredIncomes = useMemo(() => {
