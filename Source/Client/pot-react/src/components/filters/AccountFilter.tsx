@@ -31,7 +31,7 @@ function AccountFilter({
         name="account-filter"
       >
         <SelectTrigger
-          className="w-[200px]"
+          className="w-[280px]"
           id="account-filter-trigger"
           aria-label="Filter by account"
         >
