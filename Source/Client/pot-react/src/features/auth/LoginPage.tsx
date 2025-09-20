@@ -8,7 +8,7 @@ import { ErrorSheet } from '@/components/feedback';
 import { useAuth } from '@/features/auth/AuthContext';
 import useLogin from '@/features/auth/hooks/useLogin';
 import LoginForm from '@/features/auth/LoginForm';
-import { DisplayError } from '@/lib';
+import { DisplayError, logger } from '@/lib';
 
 function LoginPage() {
   const [authError, setAuthError] = useState<DisplayError | null>(null);
@@ -29,6 +29,8 @@ function LoginPage() {
       });
 
       if (result.success) {
+        logger.info('Auth', 'Login successful');
+
         // First set the tokens to enable authenticated API calls
         login(result.value);
 
@@ -37,6 +39,8 @@ function LoginPage() {
 
         navigate('/');
       } else {
+        logger.warn('Auth', 'Login failed', result.error);
+
         if (result.error instanceof AuthenticationError) {
           setAuthError({
             title: result.error.code,

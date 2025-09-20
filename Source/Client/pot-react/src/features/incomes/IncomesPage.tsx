@@ -1,5 +1,5 @@
 import { Plus } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Outlet, useSearchParams } from 'react-router';
 import { useNavigate } from 'react-router';
 
@@ -11,14 +11,22 @@ import Toolbar from '@/components/toolbar/Toolbar';
 import { Button } from '@/components/ui/button';
 import type { Income } from '@/data/income';
 import { useAccountFilter } from '@/hooks';
-import { DisplayError, logger } from '@/lib';
+import { DisplayError } from '@/lib';
 
+import { useEffect } from 'react';
+import { logger } from '@/lib/logging';
 import { WithPermission } from '../auth/components';
 import { IncomesHeader, IncomesTable } from './components';
 import useIncomeStorage from './hooks/useIncomeStorage';
 
 function IncomesPage() {
-  logger.info('IncomesPage', 'Rendering');
+  useEffect(() => {
+    logger.info('IncomesPage', 'Mounted');
+
+    return () => {
+      logger.info('IncomesPage', 'Unmounted');
+    };
+  }, []);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [error, setError] = useState<DisplayError | null>(null);

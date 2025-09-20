@@ -13,6 +13,7 @@ import type { UserInfo } from '@/api/types/userInfo';
 import { DisplayError } from '@/lib';
 
 import logoutManager from './logoutManager';
+import { logger } from '@/lib/logging';
 import { usePermissionStore } from './stores/usePermissionStore';
 import {
   createTokenRefreshTimer,
@@ -65,15 +66,19 @@ function AuthProviderContent({ children }: { children: ReactNode }) {
   }, [userInfo, permissionStore]);
 
   // Login: store tokens
+
   const login = useCallback(
     (newTokens: AuthTokens) => {
+      logger.info('Auth', 'User logged in');
       setTokens(newTokens);
     },
     [setTokens],
   );
 
   // Logout: remove tokens and clear permissions
+
   const logout = useCallback(() => {
+    logger.info('Auth', 'User logged out');
     setTokens(undefined);
     permissionStore.clearUserInfo();
   }, [setTokens, permissionStore]);

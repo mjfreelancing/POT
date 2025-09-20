@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useApiCreateAccount } from '@/api/hooks';
 import { CreateAccount, Identity } from '@/data';
 import { FailResultBase, Result } from '@/lib';
+import { logger } from '@/lib/logging';
 
 function useCreateAccount() {
   const queryClient = useQueryClient();
@@ -13,6 +14,7 @@ function useCreateAccount() {
   ): Promise<Result<Identity, FailResultBase>> => {
     const controller = new AbortController();
 
+    logger.info('Accounts', 'Create account started', account);
     try {
       // Not using onSuccess callback because both success/fails are returned
       const result = await apiCreateAccount.mutateAsync({
@@ -21,10 +23,16 @@ function useCreateAccount() {
       });
 
       if (result.success) {
+        logger.info('Accounts', 'Create account successful', result.value);
         queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      } else {
+        logger.error('Accounts', 'Create account failed', result.error);
       }
 
       return result;
+    } catch (error) {
+      logger.error('Accounts', 'Create account error', error);
+      throw error;
     } finally {
       controller.abort();
     }

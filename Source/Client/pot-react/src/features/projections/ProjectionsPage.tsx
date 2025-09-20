@@ -1,5 +1,6 @@
 import { addDays, addMonths } from 'date-fns';
 import { useEffect, useState } from 'react';
+import { logger } from '@/lib/logging';
 
 import { useApiGetProjection } from '@/api/hooks/useProjections';
 import { ErrorSheet, LoadingMessage } from '@/components/feedback';
@@ -13,6 +14,14 @@ import useProjectionStorage, {
 } from './hooks/useProjectionStorage';
 
 function ProjectionsPage() {
+  useEffect(() => {
+    logger.info('ProjectionsPage', 'Mounted');
+
+    return () => {
+      logger.info('ProjectionsPage', 'Unmounted');
+    };
+  }, []);
+
   // Separate error states for API and storage is needed to ensure the success
   // of one does not clear the error shown for the other.
   const [apiError, setApiError] = useState<DisplayError | null>(null);
@@ -54,10 +63,13 @@ function ProjectionsPage() {
   const apiEndDate = addDays(addMonths(startDate, 12), -1);
 
   function handleStartDateChange(date?: Date) {
-    setStartDate(normalizeToLocalMidnight(date ?? today));
+    const newDate = normalizeToLocalMidnight(date ?? today);
+    logger.info('ProjectionsPage', 'Start date changed', newDate);
+    setStartDate(newDate);
   }
 
   function handlePeriodChange(months: number) {
+    logger.info('ProjectionsPage', 'Projection period changed', months);
     setPeriod(months);
 
     const existingData = getProjectionData();
@@ -70,6 +82,7 @@ function ProjectionsPage() {
   }
 
   function handleMetricChange(value: ProjectionMetric) {
+    logger.info('ProjectionsPage', 'Metric changed', value);
     setMetric(value);
 
     const existingData = getProjectionData();
@@ -82,6 +95,7 @@ function ProjectionsPage() {
   }
 
   function handleHiddenSeriesChange(hiddenSeriesKeys: string[]) {
+    logger.info('ProjectionsPage', 'Hidden series changed', hiddenSeriesKeys);
     setHiddenSeries(hiddenSeriesKeys);
 
     const existingData = getProjectionData();

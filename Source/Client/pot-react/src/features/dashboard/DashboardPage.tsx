@@ -1,5 +1,7 @@
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 
+import { useEffect } from 'react';
+import { logger } from '@/lib/logging';
 import { PermissionGuard } from '../auth/components';
 import {
   AccountsOverview,
@@ -40,6 +42,14 @@ function DashboardContent() {
 }
 
 function DashboardPage() {
+  useEffect(() => {
+    logger.info('DashboardPage', 'Mounted');
+
+    return () => {
+      logger.info('DashboardPage', 'Unmounted');
+    };
+  }, []);
+
   return (
     <DashboardProvider>
       <DashboardContent />

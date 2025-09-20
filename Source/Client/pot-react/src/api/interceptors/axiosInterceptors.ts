@@ -38,6 +38,7 @@
  */
 
 import axios, { AxiosError, AxiosResponse } from 'axios';
+import { logger } from '@/lib/logging';
 
 import { FailResult } from '@/lib';
 
@@ -62,6 +63,14 @@ import {
 } from '../errors/apiErrors';
 
 const responseSuccessHandler = (response: AxiosResponse): AxiosResponse => {
+  const correlationId = response.config.headers?.['X-Correlation-ID'];
+
+  logger.info(
+    'API',
+    `Response: [${response.status}] ${response.config.url} [Correlation-ID: ${correlationId}]`,
+    response.data,
+  );
+
   return response;
 };
 
@@ -78,9 +87,16 @@ const responseSuccessHandler = (response: AxiosResponse): AxiosResponse => {
  * - Unknown error type (caught by final fallback)
  */
 const responseErrorHandler = async (error: AxiosError) => {
+  const correlationId = error.config?.headers?.['X-Correlation-ID'];
+
   // Handle cancelled requests (e.g., from React Query unmounts or cache invalidations)
   // These should pass through unchanged to avoid masking intentional cancellations
   if (error.code === AxiosError.ERR_CANCELED) {
+    logger.info(
+      'API',
+      `Request cancelled [${error.config?.url}] [Correlation-ID: ${correlationId}]`,
+    );
+
     return Promise.reject(error);
   }
 
@@ -88,6 +104,12 @@ const responseErrorHandler = async (error: AxiosError) => {
   // These are mapped to specific domain errors based on status code
   // If response.data is empty, we still create the error but with default messages
   if (error.response) {
+    logger.error(
+      'API',
+      `HTTP Error: [${error.response.status}] ${error.config?.url} [Correlation-ID: ${correlationId}]`,
+      error,
+    );
+
     const { status, data } = error.response;
     const apiError = (data as ApiErrorResponse) || {}; // Handle empty response
     let errorResult: ApiError;
@@ -128,15 +150,24 @@ const responseErrorHandler = async (error: AxiosError) => {
   // Handle network-level errors (CORS, timeout, no connection, etc.)
   // These don't have response data but are marked as Axios errors
   if (error.isAxiosError) {
+    logger.error(
+      'API',
+      `Network error: ${error.config?.url} [Correlation-ID: ${correlationId}]`,
+      error,
+    );
+
     return Promise.reject(new FailResult(getNetworkError(error)));
   }
 
   // If this is already a FailResult from a previous error transformation, return it directly
   if (error instanceof FailResult) {
+    logger.error('API', `FailResult error: ${error}`);
     return Promise.reject(error);
   }
 
   // Last resort - unexpected error
+  logger.error('API', 'Unexpected error in responseErrorHandler', error);
+
   return Promise.reject(
     new FailResult(new UnexpectedError('An unexpected error occurred')),
   );
