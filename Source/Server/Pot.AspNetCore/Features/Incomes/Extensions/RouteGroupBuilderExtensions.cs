@@ -9,6 +9,7 @@ internal static class RouteGroupBuilderExtensions
     {
         routeGroupBuilder
             .MapGet(IncomesEndpoints.GetAll, GetAll.Handler.Invoke)
+            .RequireAuthorization("income:view")
             .WithName(nameof(GetAllIncomes))
             .WithSummary("Get all incomes")
             .WithDescription("Get all income details")
@@ -23,6 +24,7 @@ internal static class RouteGroupBuilderExtensions
     {
         routeGroupBuilder
             .MapGet(IncomesEndpoints.Get, Get.Handler.Invoke)
+            .RequireAuthorization("income:view")
             .WithName(nameof(GetIncome))
             .WithSummary("Get income")
             .WithDescription("Get details for an existing income source")
@@ -39,6 +41,7 @@ internal static class RouteGroupBuilderExtensions
     {
         routeGroupBuilder
             .MapPost(IncomesEndpoints.Create, Create.Handler.Invoke)
+            .RequireAuthorization("income:manage")
             .WithName(nameof(CreateIncome))
             .WithSummary("Create income")
             .WithDescription("Create a new income source")
@@ -54,6 +57,7 @@ internal static class RouteGroupBuilderExtensions
     {
         routeGroupBuilder
             .MapPut(IncomesEndpoints.Update, Update.Handler.Invoke)
+            .RequireAuthorization("income:manage")
             .WithName(nameof(UpdateIncome))
             .WithSummary("Update income")
             .WithDescription("Updates existing income details")
@@ -70,6 +74,7 @@ internal static class RouteGroupBuilderExtensions
     {
         routeGroupBuilder
             .MapDelete(IncomesEndpoints.Delete, Delete.Handler.Invoke)
+            .RequireAuthorization("income:manage")
             .WithName(nameof(DeleteIncome))
             .WithSummary("Delete income")
             .WithDescription("Deletes existing income details")
@@ -85,6 +90,7 @@ internal static class RouteGroupBuilderExtensions
     {
         routeGroupBuilder
             .MapPost(IncomesEndpoints.Renew, Renew.Handler.Invoke)
+            .RequireAuthorization("income:manage")
             .WithName(nameof(RenewIncomes))
             .WithSummary("Renew incomes")
             .WithDescription("Renews selected incomes")
@@ -100,6 +106,7 @@ internal static class RouteGroupBuilderExtensions
     {
         routeGroupBuilder
             .MapPost(IncomesEndpoints.ToggleExclude, Handler.Invoke)
+            .RequireAuthorization("income:manage")
             .WithName(nameof(ToggleExcludeIncomes))
             .WithSummary("Toggle exclude incomes")
             .WithDescription("Toggles the 'exclude from calculations' status of selected incomes")

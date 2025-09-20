@@ -10,6 +10,7 @@ internal static class RouteGroupBuilderExtensions
     {
         routeGroupBuilder
             .MapGet(ProjectionsEndpoints.Get, Get.Handler.Invoke)
+            .RequireAuthorization("account:view")
             .WithName(nameof(GetProjections))
             .WithSummary("Get projections")
             .WithDescription("Get projected financial position")

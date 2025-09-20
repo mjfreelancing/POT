@@ -11,6 +11,7 @@ internal static class RouteGroupBuilderExtensions
     {
         routeGroupBuilder
             .MapGet(MaintenanceEndpoints.Export, Export.Handler.Invoke)
+            .RequireAuthorization("maintenance:export")
             .WithName(nameof(Export))
             .WithSummary("Export data")
             .WithDescription("Export Accounts, Incomes, and Expense data")
@@ -25,6 +26,7 @@ internal static class RouteGroupBuilderExtensions
     {
         routeGroupBuilder
             .MapPost(MaintenanceEndpoints.Import, Import.Handler.Invoke)
+            .RequireAuthorization("maintenance:import")
             .WithName(nameof(Import))
             .WithSummary("Import data")
             .WithDescription("Import Accounts, Incomes, and Expense data")

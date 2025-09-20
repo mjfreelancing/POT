@@ -11,6 +11,7 @@ internal static class RouteGroupBuilderExtensions
     {
         routeGroupBuilder
             .MapGet(ExpensesEndpoints.GetAll, GetAll.Handler.Invoke)
+            .RequireAuthorization("expense:view")
             .WithName(nameof(GetAllExpenses))
             .WithSummary("Get all expenses")
             .WithDescription("Get all expense details")
@@ -25,6 +26,7 @@ internal static class RouteGroupBuilderExtensions
     {
         routeGroupBuilder
             .MapGet(ExpensesEndpoints.Get, Get.Handler.Invoke)
+            .RequireAuthorization("expense:view")
             .WithName(nameof(GetExpense))
             .WithSummary("Get expense")
             .WithDescription("Get details for an existing expense")
@@ -41,6 +43,7 @@ internal static class RouteGroupBuilderExtensions
     {
         routeGroupBuilder
             .MapPost(ExpensesEndpoints.Create, Create.Handler.Invoke)
+            .RequireAuthorization("expense:manage")
             .WithName(nameof(CreateExpense))
             .WithSummary("Create expense")
             .WithDescription("Create new expense details")
@@ -56,6 +59,7 @@ internal static class RouteGroupBuilderExtensions
     {
         routeGroupBuilder
             .MapPut(ExpensesEndpoints.Update, Update.Handler.Invoke)
+            .RequireAuthorization("expense:manage")
             .WithName(nameof(UpdateExpense))
             .WithSummary("Update expense")
             .WithDescription("Updates existing expense details")
@@ -72,6 +76,7 @@ internal static class RouteGroupBuilderExtensions
     {
         routeGroupBuilder
             .MapDelete(ExpensesEndpoints.Delete, Delete.Handler.Invoke)
+            .RequireAuthorization("expense:manage")
             .WithName(nameof(DeleteExpense))
             .WithSummary("Delete expense")
             .WithDescription("Deletes an existing expense")
@@ -87,6 +92,7 @@ internal static class RouteGroupBuilderExtensions
     {
         routeGroupBuilder
             .MapPost(ExpensesEndpoints.Renew, Renew.Handler.Invoke)
+            .RequireAuthorization("expense:manage")
             .WithName(nameof(RenewExpenses))
             .WithSummary("Renew expenses")
             .WithDescription("Renews selected expenses")
@@ -102,6 +108,7 @@ internal static class RouteGroupBuilderExtensions
     {
         routeGroupBuilder
             .MapPost(ExpensesEndpoints.ToggleExclude, Handler.Invoke)
+            .RequireAuthorization("expense:manage")
             .WithName(nameof(ToggleExcludeExpenses))
             .WithSummary("Toggle exclude expenses")
             .WithDescription("Toggles the 'exclude from calculations' status of selected expenses")
