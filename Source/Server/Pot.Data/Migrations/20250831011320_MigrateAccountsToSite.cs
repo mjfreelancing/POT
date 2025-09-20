@@ -14,12 +14,11 @@ namespace Pot.Data.Migrations
             migrationBuilder.Sql(@"
                 DO $$
                 BEGIN
-                    -- Check if any accounts exist
-                    IF EXISTS (SELECT 1 FROM ""Account"") THEN
+                    -- Check if no sites exist
+                    IF NOT EXISTS (SELECT 1 FROM ""Site"") THEN
                         -- Create default site
                         INSERT INTO ""Site"" (""Description"", ""RowId"", ""Etag"")
-                        SELECT 'Default', gen_random_uuid(), 1
-                        WHERE NOT EXISTS (SELECT 1 FROM ""Site"" WHERE ""Description"" = 'Default');
+                        VALUES ('Default', gen_random_uuid(), 1);
 
                         -- Create roles
                         INSERT INTO ""Role"" (""Name"", ""RowId"", ""Etag"")
@@ -39,7 +38,9 @@ namespace Pot.Data.Migrations
                             ('expense:manage', gen_random_uuid(), 1),
                             ('expense:view', gen_random_uuid(), 1),
                             ('income:manage', gen_random_uuid(), 1),
-                            ('income:view', gen_random_uuid(), 1);
+                            ('income:view', gen_random_uuid(), 1),
+                            ('maintenance:export', gen_random_uuid(), 1),
+                            ('maintenance:import', gen_random_uuid(), 1);
 
                         -- Link roles to permissions
                         -- Admin gets all permissions
@@ -66,7 +67,10 @@ namespace Pot.Data.Migrations
                         INSERT INTO ""UserRole"" (""RolesId"", ""UsersId"")
                         SELECT (SELECT ""Id"" FROM ""Role"" WHERE ""Name"" = 'Admin'),
                                (SELECT ""Id"" FROM ""User"" WHERE ""Username"" = 'Admin');
+                    END IF;
 
+                    -- Check if any accounts exist
+                    IF EXISTS (SELECT 1 FROM ""Account"") THEN
                         -- Link existing accounts to default site
                         UPDATE ""Account""
                         SET ""SiteId"" = (SELECT ""Id"" FROM ""Site"" WHERE ""Description"" = 'Default')

@@ -5,12 +5,18 @@ namespace Pot.Shared;
 
 public sealed class Permission : EnrichedEnum<Permission>
 {
-    public static readonly Permission SiteManage = new(0, "site:manage");
-    public static readonly Permission SiteView = new(1, "site:view");
-    public static readonly Permission UserManage = new(2, "user:manage");
-    public static readonly Permission UserView = new(3, "user:view");
-    public static readonly Permission FinanceManage = new(4, "finance:manage");
-    public static readonly Permission FinanceView = new(5, "finance:view");
+    public static readonly Permission SiteManage = new(1, "site:manage");
+    public static readonly Permission SiteView = new(2, "site:view");
+    public static readonly Permission UserManage = new(3, "user:manage");
+    public static readonly Permission UserView = new(4, "user:view");
+    public static readonly Permission AccountManage = new(5, "account:manage");
+    public static readonly Permission AccountView = new(6, "account:view");
+    public static readonly Permission ExpenseManage = new(7, "expense:manage");
+    public static readonly Permission ExpenseView = new(8, "expense:view");
+    public static readonly Permission IncomeManage = new(9, "income:manage");
+    public static readonly Permission IncomeView = new(10, "income:view");
+    public static readonly Permission MaintenanceExport = new(11, "maintenance:export");
+    public static readonly Permission MaintenancImport = new(12, "maintenance:import");
 
     private Permission(int value, [CallerMemberName] string? name = default)
         : base(value, name!)
