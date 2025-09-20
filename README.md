@@ -2138,6 +2138,113 @@ Vitest is configured for comprehensive testing:
 
 # Security and Data Privacy
 
+## Authentication Architecture
+
+The authentication system in POT is designed to ensure reliable, race-condition-free authentication state across the entire application. It uses a layered approach to separate core token management from higher-level authentication features.
+
+### Token Management Layer
+
+The base layer handles secure token storage and validation:
+
+```typescript
+type TokenContextType = {
+  tokens: AuthTokens | undefined;
+  isAuthenticated: boolean;
+  setTokens: (tokens: AuthTokens) => void;
+};
+```
+
+TokenContext provides:
+- Secure localStorage integration for token persistence
+- Basic authentication state (isAuthenticated)
+- Token manipulation methods
+- Type-safe token management
+
+### Authentication Layer
+
+Built on top of TokenContext, AuthContext provides higher-level authentication features:
+
+```typescript
+type AuthContextType = {
+  tokens: AuthTokens | undefined;
+  userInfo: UserInfo | undefined;
+  isAuthenticated: boolean;
+  login: (tokens: AuthTokens) => void;
+  logout: () => void;
+};
+```
+
+Features include:
+- User information management
+- Login/logout operations
+- Permission management
+- Automatic token refresh
+- Session maintenance
+
+### Authentication Flow
+
+1. **Application Initialization**
+   ```typescript
+   // main.tsx - Runs before React initialization
+   setupAxiosDefaults();
+   const tokenProvider = createAuthTokenProvider();
+   setupAxiosInterceptors(tokenProvider);
+   ```
+   This ensures all API calls have proper authentication headers.
+
+2. **Initial Load Flow**
+   - TokenContext loads any stored tokens
+   - Axios interceptors initialize with tokens
+   - App mounts with authenticated state
+   - User info automatically fetched if tokens exist
+
+3. **Login Flow**
+   - Credentials sent to `/login` endpoint
+   - Response tokens stored in TokenContext
+   - AuthContext updates authentication state
+   - User info automatically fetched
+   - Permissions updated in store
+
+4. **Session Management**
+   - Automatic token refresh before expiry
+   - Failed requests queue during refresh
+   - Requests retry after successful refresh
+   - Session cleared on refresh failure
+
+### Troubleshooting Authentication
+
+Common symptoms and their likely causes:
+
+1. **HTML Response Instead of JSON**
+   - Check that axios interceptors are initialized in `main.tsx` before any React code
+   - Verify token provider is properly set up
+   - Ensure the request has proper auth headers
+
+2. **Auth State Inconsistency**
+   - Check localStorage for token presence
+   - Verify TokenContext is mounted before AuthContext
+   - Check React Query cache state for `/me` endpoint
+   - Consider clearing React Query cache
+
+3. **Token Refresh Issues**
+   - Check token expiry calculation in refresh timer
+   - Verify refresh token is being stored
+   - Look for failed refresh requests in network tab
+   - Check for queued requests during refresh
+
+4. **Initial Load Auth Problems**
+   - Verify initialization order in `main.tsx`
+   - Check TokenContext state immediately after mount
+   - Monitor `/me` request timing
+   - Verify auth headers on initial requests
+
+Remember:
+- Always check network requests in dev tools
+- Verify token presence in localStorage
+- Monitor React Query cache state
+- Check component mount order
+- Inspect auth headers on requests
+
 ## Authentication and Authorization
 
 POT implements a comprehensive security system combining JWT-based authentication with role-based authorization.

@@ -6,12 +6,10 @@ import {
   useEffect,
   useMemo,
   useRef,
-  useState,
 } from 'react';
 
 import { useMe } from '@/api/hooks/useMe';
 import type { UserInfo } from '@/api/types/userInfo';
-import useLocalStorage from '@/hooks/useLocalStorage';
 import { DisplayError } from '@/lib';
 
 import logoutManager from './logoutManager';
@@ -20,9 +18,14 @@ import {
   createTokenRefreshTimer,
   type TokenRefreshHandle,
 } from './tokenRefreshTimer';
-import { AUTH_STORAGE_KEY, type AuthTokens } from './types';
+import { TokenProvider, useTokens } from './TokenContext';
+import type { AuthTokens } from './types';
 
-// Type for the AuthContext value
+// Feature layer of auth system - builds on TokenContext to provide:
+// 1. Full authentication state with user info
+// 2. Permission management
+// 3. Automatic token refresh
+// 4. Login/logout operations
 type AuthContextType = {
   tokens: AuthTokens | undefined;
   userInfo: UserInfo | undefined;
@@ -34,61 +37,60 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-function AuthProvider({ children }: { children: ReactNode }) {
-  const [error, setError] = useState<DisplayError | undefined>(undefined);
-  const { getItem, setItem, removeItem } = useLocalStorage<AuthTokens>({
-    key: AUTH_STORAGE_KEY,
-    onError: setError,
-  });
-
+// Split into separate component to ensure TokenProvider is mounted before
+// attempting to use tokens or start the auth flow
+function AuthProviderContent({ children }: { children: ReactNode }) {
+  // Only fetch user info if we have tokens
   const { data: userInfo } = useMe();
   const permissionStore = usePermissionStore();
+  const { tokens, setTokens } = useTokens();
   const prevUserInfoRef = useRef<typeof userInfo>(undefined);
 
   // Update permission store when userInfo changes
   useEffect(() => {
     // Only update if userInfo has actually changed and is successful
     if (userInfo?.success && userInfo !== prevUserInfoRef.current) {
-      permissionStore.setUserInfo(
-        userInfo.value.username,
-        userInfo.value.permissions,
-      );
+      // Ensure we have valid user info before updating permissions
+      const username = userInfo.value?.username;
+      const permissions = userInfo.value?.permissions ?? [];
 
-      prevUserInfoRef.current = userInfo;
+      if (username) {
+        permissionStore.setUserInfo(username, permissions);
+        prevUserInfoRef.current = userInfo;
+      } else {
+        // If we don't have a valid username, clear permissions
+        permissionStore.clearUserInfo();
+      }
     }
   }, [userInfo, permissionStore]);
-
-  // Read tokens from localStorage on mount
-  const [tokens, setTokens] = useState<AuthTokens | undefined>(() => getItem());
 
   // Login: store tokens
   const login = useCallback(
     (newTokens: AuthTokens) => {
-      setItem(newTokens);
       setTokens(newTokens);
     },
-    [setItem],
+    [setTokens],
   );
 
   // Logout: remove tokens and clear permissions
   const logout = useCallback(() => {
-    removeItem();
     setTokens(undefined);
     permissionStore.clearUserInfo();
-  }, [removeItem, permissionStore]);
-
-  // isAuthenticated: true if accessToken exists
-  const isAuthenticated = Boolean(tokens && tokens.accessToken);
+  }, [setTokens, permissionStore]);
 
   // Register logout callback with the logout manager
   useEffect(() => {
     logoutManager.setLogoutCallback(logout);
   }, [logout]);
 
-  // Setup proactive token refresh
+  // Proactive token refresh system:
+  // 1. Calculates optimal refresh time before token expires
+  // 2. Ensures only one refresh timer runs at a time
+  // 3. Cleans up on unmount or token changes
   const refreshTimerRef = useRef<TokenRefreshHandle | undefined>(undefined);
 
   // Setup refresh timer when tokens change
+  // Critical: This must run after TokenContext is mounted and tokens are loaded
   useEffect(() => {
     if (tokens) {
       refreshTimerRef.current = createTokenRefreshTimer({
@@ -110,15 +112,22 @@ function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       tokens,
       userInfo: userInfo?.success ? userInfo.value : undefined,
-      isAuthenticated,
+      isAuthenticated: Boolean(tokens?.accessToken),
       login,
       logout,
-      error,
     }),
-    [tokens, userInfo, isAuthenticated, login, logout, error],
+    [tokens, userInfo, login, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+function AuthProvider({ children }: { children: ReactNode }) {
+  return (
+    <TokenProvider>
+      <AuthProviderContent>{children}</AuthProviderContent>
+    </TokenProvider>
+  );
 }
 
 function useAuth() {

@@ -1,10 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 
-import { setupAxiosDefaults, setupAxiosInterceptors } from '@/api/axios';
 import { ErrorSheet } from '@/components/feedback';
 import { Toaster } from '@/components/ui/sonner';
-import { createAuthTokenProvider } from '@/features/auth/authTokenProvider';
 import { DisplayError, logger } from '@/lib';
 
 import { AppSidebar } from './components/nav';
@@ -33,14 +31,6 @@ const AppContent = () => (
 
 const App = () => {
   logger.info('App', `Running mode: ${import.meta.env.MODE}`);
-
-  // Setup axios with default config and interceptors
-  useEffect(() => {
-    setupAxiosDefaults();
-    const tokenProvider = createAuthTokenProvider();
-    setupAxiosInterceptors(tokenProvider);
-  }, []);
-
   const [error, setError] = useState<DisplayError | undefined>();
 
   const handleError = (error: Error) => {

@@ -1,13 +1,31 @@
 import type { UserInfo } from '@/api/types/userInfo';
+import { useTokens } from '@/features/auth/TokenContext';
 import { FailResultBase, Result } from '@/lib';
 
 import { useGet } from './useApi';
 
 export function useMe() {
+  // Uses TokenContext directly to avoid circular dependency with AuthContext
+  // AuthContext depends on useMe for user info, so useMe must only depend on tokens
+  const { tokens } = useTokens();
+  const hasValidToken = tokens ? !!tokens.accessToken : false;
+
   const query = useGet<UserInfo>('/auth/me', ['me'], {
-    refetchOnMount: true, // Always get fresh permissions on mount
-    refetchOnWindowFocus: false, // Don't spam the auth endpoint on window focus
-    retry: false, // Auth failures won't be fixed by retrying
+    // Critical for auth flow: This endpoint initializes user permissions
+    // and must run whenever a component mounts that needs fresh auth state
+    refetchOnMount: true,
+
+    // Avoid token refresh loops by preventing auto-refresh on window focus
+    refetchOnWindowFocus: false,
+
+    // Auth failures are terminal and require user action (re-login)
+    retry: false,
+
+    // Prevent unnecessary calls when we know we don't have a token
+    enabled: hasValidToken,
+
+    // Prevents UI flicker by keeping previous auth state during refresh
+    placeholderData: prev => prev,
   });
 
   return {
