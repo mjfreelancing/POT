@@ -673,6 +673,312 @@ const accountFormSchema = z.object({
 });
 ```
 
+### Technical Implementation
+
+#### Account Filter Architecture
+
+The account filtering system is built on a shared `useAccountFilter` hook that provides consistent filtering behavior across expenses and income management. This hook is the cornerstone of the filter implementation and works together with page-level state management:
+
+1. **Filter Hook Implementation**
+
+   ```typescript
+   type UseAccountFilterOptions = {
+     accounts: Account[]; // All available accounts
+     items: ItemWithAccount[]; // Items to filter (expenses/income)
+     selectedAccountId: string | null; // Current filter selection
+     onAccountChange: (accountId: string | null) => void;
+   };
+   ```
+
+   The filtering system combines:
+
+   - Core filtering logic in the `useAccountFilter` hook
+   - URL parameters in the page components for shareable filters
+   - Local storage in the page components for persistent preferences
+
+2. **State Management**
+
+   ```typescript
+   // Page-level state management (in ExpensesPage/IncomesPage)
+   const urlAccountId = searchParams.get("accountId");
+   const storedData = getStorageData();
+   const isEditing = window.location.pathname.includes("/edit/");
+
+   // When returning from edit mode, restore URL from storage
+   useEffect(() => {
+     if (!isEditing && !urlAccountId && storedData?.selectedAccountId) {
+       const newSearchParams = new URLSearchParams();
+       newSearchParams.set("accountId", storedData.selectedAccountId);
+       setSearchParams(newSearchParams);
+     }
+   }, [isEditing, urlAccountId, storedData?.selectedAccountId]);
+   ```
+
+   Key features:
+
+   - URL parameters for shareable filters
+   - Local storage for persistent preferences
+   - Edit mode handling to prevent URL updates during edits
+   - Automatic filter restoration after edit completion
+
+3. **Virtual Account Handling**
+
+   ```typescript
+   // Dynamic account list building with virtual accounts
+   const accountsInItems = useMemo(() => {
+     const uniqueAccountIds = new Set<string>();
+     const accountsMap = new Map<string, Account>();
+     let hasUnassignedItems = false;
+
+     // Create a map of all accounts for quick lookup
+     accounts.forEach((account) => {
+       accountsMap.set(account.rowId.toString(), account);
+     });
+
+     // Find which accounts are actually used
+     items.forEach((item) => {
+       if (item.account?.rowId) {
+         uniqueAccountIds.add(item.account.rowId.toString());
+       } else {
+         hasUnassignedItems = true;
+       }
+     });
+
+     // Build list of accounts that have items
+     const accountsInUse = Array.from(uniqueAccountIds)
+       .map((id) => accountsMap.get(id))
+       .filter((account): account is Account => account !== undefined)
+       .sort((a, b) => a.description.localeCompare(b.description));
+
+     // Add virtual "Not Assigned" account if needed
+     if (hasUnassignedItems) {
+       accountsInUse.unshift({
+         rowId: "not-assigned",
+         description: "Not Assigned",
+         bsb: "",
+         number: "",
+         balance: 0,
+         reserved: 0,
+         totalExpenseAccrued: 0,
+         dailyExpenseAccrual: 0,
+         available: 0,
+         linkedExpenses: 0,
+         linkedIncomes: 0,
+         etag: 0n,
+       });
+     }
+     return accountsInUse;
+   }, [items, accounts]);
+   ```
+
+   The system provides:
+
+   - Efficient account lookup using Map and Set
+   - Type-safe filtering with proper TypeScript type guards
+   - Automatic inclusion of virtual "Not Assigned" account when needed
+   - Alphabetically sorted accounts by description
+   - Memory-efficient implementation using useMemo
+   - Full Account type compatibility for the virtual account
+
+4. **Edit Mode Handling**
+
+   ```typescript
+   // Page component implementation
+   const isEditing = window.location.pathname.includes("/edit/");
+
+   // Filter change handler with edit mode awareness
+   const handleAccountChange = (accountId) => {
+     if (accountId) {
+       // Always update storage
+       setStorageData({ selectedAccountId: accountId });
+
+       // Only update URL if not editing
+       if (!isEditing) {
+         const newSearchParams = new URLSearchParams();
+         newSearchParams.set("accountId", accountId);
+         setSearchParams(newSearchParams);
+       }
+     } else {
+       // Clear filter state
+       setStorageData({ selectedAccountId: null });
+
+       // Only update URL if not editing
+       if (!isEditing) {
+         setSearchParams(new URLSearchParams());
+       }
+     }
+   };
+   ```
+
+   The system provides:
+
+   - Simple edit mode detection via URL path
+   - Consistent storage updates regardless of edit state
+   - Deferred URL updates until edit completion
+   - Clean separation between storage and URL state
+
+5. **Auto-Validation System**
+
+   ```typescript
+   // Automatic filter validation
+   useEffect(() => {
+     if (selectedAccountId && accountsInItems.length > 0) {
+       const isSelectedAccountPresent = accountsInItems.some(
+         (account) => account.rowId.toString() === selectedAccountId
+       );
+
+       if (!isSelectedAccountPresent) {
+         // Clear invalid filter selection
+         onAccountChange(null);
+       }
+     }
+   }, [selectedAccountId, accountsInItems]);
+   ```
+
+   Validation features:
+
+   - Checks filter validity on data changes
+   - Clears invalid selections automatically
+   - Handles account deletion scenarios
+   - Maintains consistent filter state
+
+This implementation ensures:
+
+- Consistent filtering behavior across features
+- Reliable state persistence
+- Proper handling of edge cases
+- Type-safe implementation with TypeScript
+- Clean separation of concerns
+
+#### Edge Case Handling
+
+The filter system handles several complex scenarios to ensure a robust user experience:
+
+1. **Account Deletion**
+
+   ```typescript
+   // Auto-cleanup when filtered account is deleted
+   useEffect(() => {
+     if (selectedAccountId && accountsInItems.length > 0) {
+       const isSelectedAccountPresent = accountsInItems.some(
+         (account) => account.rowId.toString() === selectedAccountId
+       );
+
+       if (!isSelectedAccountPresent) {
+         onAccountChange(null); // Clear invalid selection
+       }
+     }
+   }, [selectedAccountId, accountsInItems]);
+   ```
+
+   - Automatically clears filter if selected account is deleted
+   - Updates UI to show all items
+   - Maintains URL and storage consistency
+
+2. **Concurrent Edit Operations**
+
+   ```typescript
+   // Edit state management
+   const isEditing = window.location.pathname.includes("/edit/");
+   const urlAccountId = searchParams.get("accountId");
+   const storedData = getStorageData();
+
+   // Filter state resolution with edit priority
+   const selectedAccountId = useMemo(
+     () => (isEditing ? storedData?.selectedAccountId : urlAccountId) || null,
+     [isEditing, urlAccountId, storedData]
+   );
+   ```
+
+   - Prevents filter changes during active edits
+   - Handles multiple concurrent edit sessions
+   - Maintains separate filter state per edit
+   - Resolves conflicts on save/cancel
+
+3. **Edit Cancellation Recovery**
+
+   ```typescript
+   // URL state restoration after cancel
+   useEffect(() => {
+     if (!isEditing && storedData?.selectedAccountId) {
+       const newSearchParams = new URLSearchParams();
+       newSearchParams.set("accountId", storedData.selectedAccountId);
+       setSearchParams(newSearchParams);
+     }
+   }, [isEditing, storedData?.selectedAccountId]);
+   ```
+
+   - Restores previous filter state
+   - Handles browser navigation
+   - Preserves user's filter context
+   - Cleans up temporary state
+
+4. **State Synchronization Timing**
+
+   ```typescript
+   // Storage and URL sync management
+   const handleAccountChange = (accountId: string | null) => {
+     // Always update storage immediately
+     setStorageData({ selectedAccountId: accountId });
+
+     // Defer URL updates if editing
+     if (!isEditing) {
+       const newSearchParams = new URLSearchParams();
+       if (accountId) {
+         newSearchParams.set("accountId", accountId);
+       }
+       setSearchParams(newSearchParams);
+     }
+   };
+   ```
+
+   - Immediate storage updates
+   - Deferred URL changes
+   - Batched state updates
+   - Race condition prevention
+
+5. **Filter State Validation**
+
+   The system validates filter state at two levels:
+
+   ```typescript
+   // Hook-level validation
+   useEffect(() => {
+     if (selectedAccountId && accountsInItems.length > 0) {
+       const isSelectedAccountPresent = accountsInItems.some(
+         (account) => account.rowId.toString() === selectedAccountId
+       );
+
+       if (!isSelectedAccountPresent) {
+         // Selected account no longer available, clear the filter
+         onAccountChange(null);
+       }
+     }
+   }, [selectedAccountId, accountsInItems, onAccountChange]);
+
+   // Page-level validation for display
+   const validatedSelectedAccountId = useMemo(() => {
+     if (!initialAccountId) {
+       return null;
+     }
+
+     const isValidAccount = accountsInItems.some(
+       (account) => account.rowId.toString() === initialAccountId
+     );
+
+     return isValidAccount ? initialAccountId : null;
+   }, [initialAccountId, accountsInItems]);
+   ```
+
+   Key validation features:
+
+   - Automatic cleanup of invalid selections
+   - Validation in both hook and page components
+   - Proper type checking of account IDs
+   - Safe handling of deleted accounts
+
+These validation mechanisms ensure the filter system remains robust and user-friendly even in edge cases.
+
 ### Key Components
 
 1. **AccountsPage**
@@ -776,46 +1082,81 @@ POT implements a comprehensive error handling system that manages errors effecti
 
 #### Client-Side Error Types
 
-The application defines several error types to handle different scenarios:
+The application implements a type-safe error hierarchy:
 
-- `NetworkError` - For connection and HTTP-related issues
-- `AuthenticationError` - For authentication and authorization failures
-- `ValidationError` - For input validation failures
-- `NotFoundError` - For requested resources not found
-- `ConflictError` - For concurrent modification issues
-- `UnexpectedError` - For unhandled server errors
-- `ForbiddenError` - For permission-related issues
+```typescript
+// Base error types
+const ErrorType = {
+  Api: "Api",
+  Network: "Network",
+  Unexpected: "Unexpected",
+} as const;
 
-#### API Error Handling
+const ErrorCode = {
+  Authentication: "Authentication Error",
+  Validation: "Validation Error",
+  NotFound: "Not Found",
+  Conflict: "Conflict Error",
+  Network: "Network Error",
+  Unexpected: "Unexpected Error",
+  Forbidden: "Forbidden Error",
+} as const;
 
-1. Network Errors
+// Type-safe error classes
+abstract class ApiError extends FailResultBase {
+  constructor(code: ErrorCode, description: string) {
+    super(ErrorType.Api, code, description);
+  }
+}
+```
 
-   - Connection issues (timeout, aborted, etc.)
-   - Bad requests/responses
-   - Invalid URLs
-   - Too many redirects
+Specific error implementations:
 
-2. HTTP Status Code Mapping
+- `NetworkError`: Connection and HTTP issues
+- `AuthenticationError`: Login and authorization failures
+- `ValidationError`: Form and input validation errors
+- `NotFoundError`: Resource not found errors
+- `ConflictError`: Concurrent modification conflicts
+- `UnexpectedError`: Unhandled server errors
+- `ForbiddenError`: Permission denied errors
 
-   - 401 → Authentication errors
-   - 403 → Permission errors
-   - 404 → Not found errors
-   - 409 → Conflict errors
-   - 422 → Validation errors
-   - 500 → Server errors
+#### API Error Response Handling
 
-3. Error Response Format
+1. Error Response Type
+
    ```typescript
    type ApiErrorResponse = {
-     title: string;
-     detail: string;
-     status: number;
+     type?: string;
+     title?: string;
+     status?: number;
+     detail?: string;
      errors?: Array<{
-       errorCode: string;
        propertyName: string;
+       errorCode: string;
        attemptedValue: string;
        errorMessage: string;
      }>;
+     traceId?: string;
+     correlationId?: string;
+     instance?: string;
+   };
+   ```
+
+2. Error Message Generation
+   ```typescript
+   // Example: Conflict error handling
+   const getConflictMessage = (error: ApiErrorResponse): string => {
+     if (error.errors?.length > 0) {
+       return error.errors
+         .map((err) => {
+           if (err.propertyName.toLowerCase() === "etag") {
+             return "A conflicting update has been performed by another user. Refresh and try again.";
+           }
+           return `The '${err.propertyName}' conflicts with another record that has the same value '${err.attemptedValue}'`;
+         })
+         .join("\n");
+     }
+     return error.detail ?? "A conflict error occurred";
    };
    ```
 
@@ -836,45 +1177,41 @@ The server uses FluentValidation for request validation:
 
 #### Form Validation
 
-1. **Component Level**
+The application implements type-safe form validation using Zod schemas:
 
-   The application uses a robust form validation system integrating several key technologies:
-
-   - `react-hook-form` for form state management and validation
-   - `zod` for type-safe schema validation
-   - Custom form components with accessibility support
-   - Real-time validation feedback
-   - Integration with UI components via `FormField` pattern
-
-2. **Schema Validation**
-
-   The application uses Zod for comprehensive schema validation across all features:
-
-   a. **Base Domain Schemas**
+1. **Base Value Schemas**
 
    ```typescript
-   // Base schemas define core validation rules
-   const BaseExpenseSchema = z.object({
-     description: z.string(),
-     nextDue: z.string(),
-     accrualStart: z.string(),
-     endDate: z.string().nullable(),
-     frequency: z.nativeEnum(Frequency),
-     frequencyCount: z.number(),
-     amount: z.number(),
-     note: z.string().nullable(),
+   // Reusable money value validation
+   const MoneyValueSchema = z
+     .number({
+       required_error: "This field is required",
+     })
+     .min(0, "Value must be 0 or greater");
+   ```
+
+2. **Type-Safe Form Schemas**
+
+   ```typescript
+   // Account form validation schema
+   const accountFormSchema = z.object({
+     bsb: z
+       .string()
+       .regex(/^\d{3}-\d{3}$/, "BSB must be in the format XXX-XXX"),
+     number: z.string().min(1),
+     description: z.string().min(1),
+     balance: MoneyValueSchema,
+     reserved: MoneyValueSchema,
    });
 
-   const BaseIncomeSchema = z.object({
-     description: z.string(),
-     nextDue: z.string(),
-     endDate: z.string().nullable(),
-     frequency: z.nativeEnum(Frequency),
-     frequencyCount: z.number(),
-     amount: z.number(),
-     note: z.string().nullable(),
-   });
+   // Type inference for form data
+   type AccountFormData = z.infer<typeof accountFormSchema>;
+   ```
 
+3. **Domain Model Schemas**
+
+   ```typescript
+   // Base account schema
    const BaseAccountSchema = z.object({
      bsb: z.string(),
      number: z.string(),
@@ -882,56 +1219,48 @@ The server uses FluentValidation for request validation:
      balance: z.number(),
      reserved: z.number(),
    });
+
+   // Identity schema for models
+   const IdentitySchema = z.object({
+     rowId: z.string(),
+     etag: z.bigint(),
+   });
+
+   // Extended account schema
+   const AccountSchema = BaseAccountSchema.extend({
+     ...IdentitySchema.shape,
+     totalExpenseAccrued: z.number(),
+     dailyExpenseAccrual: z.number(),
+     available: z.number(),
+     linkedExpenses: z.number(),
+     linkedIncomes: z.number(),
+   });
    ```
 
-   b. **Extended Model Schemas**
+4. **Operation-Specific Schemas**
 
    ```typescript
-   // Schemas extend base types with additional fields
-   const ExpenseSchema = BaseExpenseSchema.extend({
-     ...IdentitySchema.shape,
-     excludeFromCalcs: z.boolean(),
-     account: ExpenseAccountSchema,
+   // Expense accrual operation schema
+   const AccrueExpensesSchema = z.object({
+     rowId: z.string(),
      accrued: z.number(),
    });
 
-   const CreateExpenseSchema = BaseExpenseSchema.extend({
-     accountRowId: z.string(),
-   });
-
-   const EditExpenseSchema = BaseExpenseSchema.extend({
-     ...IdentitySchema.shape,
-     excludeFromCalcs: z.boolean(),
-     accountRowId: z.string(),
+   // Toggle exclusion operation schema
+   const ToggleExcludeExpensesSchema = z.object({
+     rowIds: z.array(z.string()),
+     exclude: z.boolean(),
    });
    ```
 
-   c. **Form-Specific Schemas**
+Key Features:
 
-   ```typescript
-   // Additional validation rules for form inputs
-   const accountFormSchema = z.object({
-     bsb: z
-       .string()
-       .regex(/^\d{3}-\d{3}$/, "BSB must be in the format XXX-XXX"),
-     number: z.string().min(1, "Account number is required"),
-     description: z.string().min(1, "Description is required"),
-     balance: MoneyValueSchema, // Custom schema ensuring valid monetary values
-     reserved: MoneyValueSchema,
-   });
-
-   const expenseFormSchema = z.object({
-     description: z.string().min(1, "Description is required"),
-     amount: MoneyValueSchema,
-     nextDue: z.string().min(1, "Next due date is required"),
-     accrualStart: z.string().min(1, "Accrual start date is required"),
-     endDate: z.string().nullable(),
-     frequency: z.nativeEnum(Frequency),
-     frequencyCount: z.number().min(0),
-     note: z.string().nullable(),
-     accountRowId: z.string().min(1, "Account is required"),
-   });
-   ```
+- Strict type inference for form data
+- Reusable validation schemas
+- Custom error messages
+- Operation-specific validation rules
+- Domain model validation
+- Integration with react-hook-form
 
 3. **Server-Side Validation**
 
@@ -1045,20 +1374,36 @@ The server uses FluentValidation for request validation:
    - Authentication token storage
    - User preferences storage
 
-#### User Notifications
+#### Error Display Components
 
-1. Toast Notifications (Transient)
+1. ErrorSheet Component
+   ```typescript
+   type SheetErrorProps = DisplayError & {
+     onDismiss: () => void;
+   };
+   ```
 
-   - Success confirmations
-   - Warning messages
-   - Brief error notifications
-   - Import/Export status updates
+   - Fixed-position error sheet at top of viewport
+   - Supports multi-line error descriptions
+   - Dismissible with X button
+   - Styled with destructive theme color
+   - Accessible with screen reader support
+   - Responsive with max-width constraint
 
-2. Error Sheets (Modal)
-   - API connection failures
-   - Data validation errors
-   - Concurrent modification conflicts
-   - Server-side errors
+2. Toast System
+   ```typescript
+   type ErrorToastProps = {
+     icon: LucideIcon;
+     title: string;
+     description: string;
+   };
+   ```
+
+   - Icon-based error toasts with consistent styling
+   - Customizable icons for different error types
+   - Red color theme for error states
+   - Clear title and description structure
+   - Shared base IconToast component
 
 #### Error Boundaries
 
@@ -1871,16 +2216,133 @@ API Integration:
 
 ### Authentication System
 
-#### Token Management
+The authentication system is built around React Context with type-safe implementations:
 
-```typescript
-// Storage key: 'pot-auth'
-type AuthTokens = {
-  accessToken: string; // JWT access token
-  refreshToken: string; // JWT refresh token
-  expiresAt: number; // Token expiry timestamp
-};
-```
+1. **AuthContext Implementation**
+   ```typescript
+   type AuthContextType = {
+     tokens: AuthTokens | undefined;
+     isAuthenticated: boolean;
+     login: (tokens: AuthTokens) => void;
+     logout: () => void;
+     error?: DisplayError;
+   };
+
+   function AuthProvider({ children }: { children: ReactNode }) {
+     // Local storage integration
+     const { getItem, setItem, removeItem } = useLocalStorage<AuthTokens>({
+       key: AUTH_STORAGE_KEY,
+       onError: setError,
+     });
+
+     // Memoized auth state
+     const isAuthenticated = Boolean(tokens?.accessToken);
+
+     // Login/logout handlers
+     const login = useCallback((newTokens: AuthTokens) => {
+       setItem(newTokens);
+       setTokens(newTokens);
+     }, [setItem]);
+
+     const logout = useCallback(() => {
+       removeItem();
+       setTokens(undefined);
+     }, [removeItem]);
+
+     // Token refresh management
+     useEffect(() => {
+       if (tokens) {
+         refreshTimerRef.current = createTokenRefreshTimer({
+           currentTokens: tokens,
+           onRefreshSuccess: login,
+           onRefreshError: () => logout(),
+         });
+       }
+     }, [tokens, login, logout]);
+
+     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+   }
+   ```
+
+2. **Token Management**
+   ```typescript
+   // Type-safe token structure
+   type AuthTokens = {
+     accessToken: string;    // JWT access token
+     refreshToken: string;   // JWT refresh token
+     expiresAt: number;     // Token expiry timestamp
+   };
+
+   // Token refresh timer
+   type TokenRefreshConfig = {
+     currentTokens: AuthTokens;
+     onRefreshSuccess: (tokens: AuthTokens) => void;
+     onRefreshError: () => void;
+   };
+   ```
+
+3. **Token Refresh System**
+   ```typescript
+   type TokenRefreshConfig = {
+     currentTokens: AuthTokens;
+     onRefreshSuccess: (tokens: AuthTokens) => void;
+     onRefreshError: (error: unknown) => void;
+   };
+
+   function createTokenRefreshTimer({
+     currentTokens,
+     onRefreshSuccess,
+     onRefreshError,
+   }: TokenRefreshConfig): TokenRefreshHandle {
+     // Proactive refresh before expiry
+     const refreshTimeMs = calculateRefreshTime(currentTokens.accessToken);
+
+     // Token refresh logic
+     const refresh = async () => {
+       try {
+         const response = await authClient.post<AuthTokens>(
+           '/auth/refresh',
+           { refreshToken: currentTokens.refreshToken },
+           { headers: { Authorization: `Bearer ${currentTokens.accessToken}` } }
+         );
+         onRefreshSuccess(response.data);
+       } catch (error) {
+         onRefreshError(error);
+       }
+     };
+
+     return {
+       start: () => setTimeout(refresh, refreshTimeMs),
+       stop: () => clearTimeout(timerId)
+     };
+   }
+   ```
+
+4. **Logout Management**
+   ```typescript
+   // Global logout manager
+   const logoutManager = (() => {
+     let logoutCallback: (() => void) | undefined;
+
+     return {
+       setLogoutCallback: (callback: () => void) => {
+         logoutCallback = callback;
+       },
+       logout: () => {
+         logoutCallback?.();
+       },
+     };
+   })();
+   ```
+
+Key Features:
+- Type-safe implementation
+- Proactive token refresh
+- Global logout handling
+- Secure storage integration
+- Automatic cleanup
+- Error handling with types
+- React Query integration
 
 - Short-lived access tokens (60 minute expiry) for API authorization
 - Refresh tokens with 30 day expiry
@@ -1910,7 +2372,114 @@ type AuthTokens = {
 
 ### Authorization System
 
-The authorization system uses a combination of JWT claims and database-backed permissions for secure access control.
+The authorization system uses a combination of JWT claims and database-backed permissions for secure access control, with a dynamic authorization policy provider pattern.
+
+#### Authorization Pattern
+
+1. **Dynamic Policy Provider**
+
+   The `PermissionAuthorizationPolicyProvider` dynamically creates authorization policies from permission strings:
+
+   ```csharp
+   internal sealed class PermissionAuthorizationPolicyProvider : DefaultAuthorizationPolicyProvider
+   {
+       public override async Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
+       {
+           // Check for existing policy first
+           var policy = await base.GetPolicyAsync(policyName);
+
+           if (policy is not null)
+           {
+               return policy;
+           }
+
+           // Create a new policy with the permission requirement
+           return new AuthorizationPolicyBuilder()
+               .AddRequirements(new PermissionRequirement(policyName))
+               .Build();
+       }
+   }
+   ```
+
+2. **Permission Handler**
+
+   The `PermissionAuthorizationHandler` validates permissions against the user's assigned permissions:
+
+   ```csharp
+   internal sealed class PermissionAuthorizationHandler : AuthorizationHandler<PermissionRequirement>
+   {
+       protected override async Task HandleRequirementAsync(
+           AuthorizationHandlerContext context,
+           PermissionRequirement requirement)
+       {
+           var userRowId = context.User.Claims
+               .SingleOrDefault(claim => claim.Type == JwtRegisteredClaimNames.Sub)
+               ?.Value;
+
+           if (!Guid.TryParse(userRowId, out var parsedUserRowId))
+           {
+               return;
+           }
+
+           // Get user's permissions from the service
+           var permissions = await permissionService
+               .GetPermissionsAsync(parsedUserRowId)
+               .ConfigureAwait(false);
+
+           // Succeed if user has the required permission
+           if (permissions.Contains(requirement.Permission))
+           {
+               context.Succeed(requirement);
+           }
+       }
+   }
+   ```
+
+3. **Endpoint Configuration**
+
+   Endpoints that require authorization use the `RequireAuthorization()` method:
+
+   - For general authentication (any valid user):
+     ```csharp
+     // Only requires a valid JWT token
+     routeGroupBuilder
+         .MapGet("/me", Me.Handler.Invoke)
+         .RequireAuthorization("AuthenticatedUser")
+     ```
+
+   - For specific permissions:
+     ```csharp
+     // Requires the 'account:view' permission
+     routeGroupBuilder
+         .MapGet("/accounts", GetAll.Handler.Invoke)
+         .RequireAuthorization("account:view")
+     ```
+
+4. **Policy Configuration**
+
+   The authorization setup in the DI container:
+
+   ```csharp
+   builder.Services
+       .AddAuthorization(options =>
+       {
+           // Add the "AuthenticatedUser" policy that only requires authentication
+           options.AddPolicy("AuthenticatedUser", policy =>
+               policy.RequireAuthenticatedUser());
+       })
+       .AddAuthentication(JwtBearerDefaults.AuthenticationScheme);
+
+   // Register the authorization handlers
+   builder.Services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
+   builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+   ```
+
+This pattern allows for:
+- Dynamic creation of authorization policies from permission strings
+- Separation of authentication and permission checks
+- Flexible permission management through the database
+- Type-safe permission requirements
+- Clear distinction between authentication-only and permission-required endpoints
 
 #### Database Structure
 
@@ -2048,23 +2617,50 @@ POT stores all financial data in a PostgreSQL database:
 
 ## Project Structure
 
-The POT application follows a clear structure:
+The POT application follows a modular architecture:
 
 ```
 Source/
-├── Client/                  # Frontend React application
+├── Client/                      # Frontend React application
 │   └── pot-react/
 │       ├── src/
-│       │   ├── api/         # API clients and hooks
-│       │   ├── components/  # Reusable UI components
-│       │   ├── features/    # Feature-specific components and logic
-│       │   ├── hooks/       # Custom React hooks
-│       │   ├── lib/         # Utility functions and helpers
-│       │   └── routes/      # Application routing
-│       └── ...
-├── Docker/                  # Docker configuration
-│   ├── Client/              # Client container setup
-│   ├── Postgres/            # Database container setup
+│       │   ├── api/            # API integration
+│       │   │   ├── errors/     # Error types and handling
+│       │   │   ├── hooks/      # React Query hooks
+│       │   │   └── interceptors/ # Axios interceptors
+│       │   ├── assets/        # Static assets
+│       │   ├── components/    # Shared components
+│       │   │   ├── feedback/  # Error/loading components
+│       │   │   ├── filters/   # Filter components
+│       │   │   ├── input/     # Form inputs
+│       │   │   ├── nav/       # Navigation components
+│       │   │   ├── table/     # Table components
+│       │   │   └── ui/        # Base UI components
+│       │   ├── data/         # Type definitions & schemas
+│       │   ├── features/     # Feature modules
+│       │   │   ├── accounts/
+│       │   │   ├── auth/
+│       │   │   ├── dashboard/
+│       │   │   ├── expenses/
+│       │   │   ├── export/
+│       │   │   ├── import/
+│       │   │   ├── incomes/
+│       │   │   └── projections/
+│       │   ├── hooks/        # Shared hooks
+│       │   ├── lib/          # Utilities
+│       │   └── routes/       # Routing
+│       └── tests/           # Test files
+├── Docker/                  # Container configuration
+│   ├── Client/             # Client container
+│   ├── Postgres/           # Database container
+│   ├── Server/             # Server container
+│   └── Diagrams/           # Architecture diagrams
+├── Server/                 # .NET backend
+    ├── Pot.App/           # Business logic
+    ├── Pot.AspNetCore/    # Web API
+    ├── Pot.Data/          # Data access
+    ├── Pot.Data.Migrations/ # Database migrations
+    └── Pot.Shared/        # Shared code
 │   └── Server/              # API server container setup
 └── Server/                  # Backend .NET Core application
     ├── Pot.App/             # Core application logic
