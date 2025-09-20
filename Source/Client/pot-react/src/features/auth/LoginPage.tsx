@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -15,6 +16,7 @@ function LoginPage() {
   const navigate = useNavigate();
   const loginMutation = useLogin();
   const { login } = useAuth();
+  const queryClient = useQueryClient();
 
   const handleLogin = async (values: LoginCredentials) => {
     setAuthError(null);
@@ -25,8 +27,14 @@ function LoginPage() {
         data: values,
         signal: controller.signal,
       });
+
       if (result.success) {
+        // First set the tokens to enable authenticated API calls
         login(result.value);
+
+        // Force an immediate me query to get user info and permissions
+        await queryClient.invalidateQueries({ queryKey: ['me'] });
+
         navigate('/');
       } else {
         if (result.error instanceof AuthenticationError) {
