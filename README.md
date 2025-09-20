@@ -160,43 +160,9 @@ Modal error sheets for more serious issues:
 - Concurrent modification conflicts
 - Server-side errors
 
-#### Error Types
-
-The application handles various error scenarios:
-
-- Account Management Errors
-
-  - Duplicate BSB/Account number combination
-  - Invalid BSB format
-  - Duplicate Account description
-  - Concurrent modification detected
-  - Invalid balance or reserved amount
-  - Account no longer exists
-
-- Expense & Income Management Errors
-
-  - Invalid amount values
-  - Missing required fields
-  - Date range errors (end date before start date)
-  - Overlapping recurring expenses
-  - Frequency configuration errors
-
-- Data Import/Export Errors
-
-  - Invalid file format
-  - Corrupted data
-  - Incompatible version
-  - File system permission issues
-
-- API and Network Errors
-  - Network connectivity issues
-  - Server availability problems
-  - Authentication failures
-  - Rate limiting errors
-
 #### Error Boundaries
 
-React error boundaries catch and handle unexpected rendering errors to prevent the entire application from crashing.
+React error boundaries catch and handle unexpected rendering errors to prevent the entire application from crashing. The application uses the `ErrorBoundary` component from `@/components/error/ErrorBoundary` to wrap sections that might throw rendering errors.
 
 ## Expenses Management
 
@@ -504,27 +470,6 @@ The development settings are located in `Source/Server/Pot.AspNetCore/appsetting
 }
 ```
 
-#### Environment Variable Details
-
-- **Database Configuration**
-
-  - `Host`: The PostgreSQL server address
-  - `Username`/`Password`: Database credentials
-  - For Docker, these are set via POSTGRES_USER/POSTGRES_PASSWORD
-
-- **RSA Keys**
-
-  - Used for encrypting/decrypting exported data
-  - Public key on client for encryption
-  - Private key on server for decryption
-  - Must be a matching key pair
-
-- **JWT Settings**
-  - `Issuer`/`Audience`: Identifies token origin and intended recipient
-  - `SecretKey`: Used for signing JWT tokens
-  - Should be at least 256 bits (32 characters) long
-  - Must be kept secure and consistent across deployments
-
 # Scripts
 
 ## Development
@@ -663,30 +608,234 @@ Vitest is configured for comprehensive testing:
 - Use JSDOM for DOM simulation
 - Component testing with React Testing Library
 
-# Performance and Monitoring
-
-## Performance Optimization
-
-POT is optimized for efficient operation:
-
-- **Code Splitting**: Lazy-loaded components reduce initial bundle size
-- **Memoization**: React memo and useMemo optimize rendering
-- **Virtualization**: Efficient rendering of large data sets
-- **API Caching**: React Query reduces unnecessary API calls
-- **Database Indexes**: Key fields are indexed for faster queries
-
-## Resource Monitoring
-
-Monitor POT's resource usage:
-
-- **Docker Stats**: Monitor container resource usage with:
-  ```bash
-  docker stats pot-client pot-server pot-postgres
-  ```
-- **Client Performance**: Use browser DevTools performance panel
-- **Server Performance**: Check ASP.NET Core logs for request durations
-
 # Security and Data Privacy
+
+## Authentication and Authorization
+
+POT implements a comprehensive security system combining JWT-based authentication with role-based authorization.
+
+### Implementation Location
+
+#### Client-Side Implementation
+
+The client-side authentication uses React Context for global state management with the following key implementation details:
+
+##### Component Architecture
+
+- AuthProvider wraps the application root for global auth state
+- AuthContext exposes tokens, authentication state, login/logout methods
+- ProtectedRoute component enforces authentication on sensitive routes
+- All components use the useAuth hook to access auth state
+
+##### Token Management Implementation
+
+- AuthTokens type defines access token, refresh token, and expiry
+- TokenProvider interface manages token operations (get, refresh, clear)
+- Type-safe localStorage wrapper for secure token storage
+- Token refresh mechanism with automatic retry of failed requests
+
+##### API Integration
+
+- Axios interceptors automatically add Authorization headers
+- 401 responses trigger token refresh flow
+- Failed requests are queued and retried after token refresh
+- Correlation IDs added to all auth-related requests
+
+##### Centralized Logout
+
+- Global logout manager handles application-wide logout
+- Cleans up tokens, state, and redirects to login
+- Registered callbacks for component cleanup
+
+Key files and their responsibilities:
+
+- `/Source/Client/pot-react/src/features/auth/` - Core authentication components and hooks
+- `/Source/Client/pot-react/src/features/auth/AuthContext.tsx` - Global auth state management
+- `/Source/Client/pot-react/src/features/auth/LoginPage.tsx` - Login implementation
+- `/Source/Client/pot-react/src/api/hooks/useLogin.ts` - API integration for authentication
+
+Error Handling:
+
+- `/Source/Client/pot-react/src/api/errors/apiErrors.ts` - Centralized error types
+- `/Source/Client/pot-react/src/components/feedback/ErrorSheet.tsx` - Error display component
+- `/Source/Client/pot-react/src/lib/errors/` - Error utilities and type definitions
+
+Storage and State:
+
+- `/Source/Client/pot-react/src/hooks/useLocalStorage.ts` - Type-safe localStorage wrapper with error handling and logging
+- Includes error handling and logging for storage operations
+- Type safety for stored values
+- Integration with application-wide error handling
+
+API Integration:
+
+- `/Source/Client/pot-react/src/api/hooks/useApi.ts` - Base API hook with error handling
+- `/Source/Client/pot-react/src/api/client.ts` - Axios client configuration
+- `/Source/Client/pot-react/src/api/interceptors/` - Request/response interceptors
+
+#### Server-Side Implementation
+
+- Authentication:
+
+  - `/Source/Server/Pot.AspNetCore/Features/Auth/` - Authentication endpoints and handlers
+  - `/Source/Server/Pot.App/Features/Auth/` - Core authentication business logic
+  - `/Source/Server/Pot.AspNetCore/appsettings.json` - JWT configuration
+
+- Authorization:
+  - `/Source/Server/Pot.AspNetCore/Security/` - JWT token generation, validation, and permission handlers
+  - `/Source/Server/Pot.App/Security/` - Password hashing and crypto utilities
+  - `/Source/Server/Pot.Data/Security/` - Security-related database models and permission storage
+
+### Authentication System
+
+#### Token Management
+
+- Short-lived access tokens (60 minute expiry) for API authorization
+- Refresh tokens with 30 day expiry
+- Automatic token refresh via interceptors with queued request retry
+- Secure token storage using type-safe localStorage wrapper
+- Global authentication state management through React Context
+- Token validation with strict issuer, audience, and signing key checks
+
+#### Authentication Flow
+
+1. Login Process
+
+   - Credential validation and token generation
+   - Secure token storage
+   - State update and redirection
+
+2. Protected Routes
+
+   - Auth-protected route guards
+   - Automatic redirect for unauthenticated users
+   - Fresh authentication for sensitive operations
+
+3. Token Lifecycle
+   - Automatic refresh of expired tokens
+   - Failed request retry with new tokens
+   - Secure token cleanup on logout
+
+### Authorization System
+
+The authorization system uses a combination of JWT claims and database-backed permissions for secure access control.
+
+#### Database Structure
+
+The permission system uses four main entities:
+
+1. `UserEntity`
+
+   - Core user information
+   - Links to roles via many-to-many relationship
+
+2. `RoleEntity`
+
+   - Named role definitions
+   - Links to permissions via many-to-many relationship
+   - Many-to-many relationship with users
+
+3. `PermissionEntity`
+
+   - Individual permission definitions
+   - Stored as resource:action strings
+   - Many-to-many relationship with roles
+
+4. `SiteEntity`
+   - Represents a tenant in the system
+   - Users and accounts belong to sites
+
+#### Authentication Flow
+
+1. Request arrives with JWT token in Authorization header
+2. `JwtSecurityTokenHandler.ValidateToken()` (see `JwtService`) validates the token using parameters configured by `JwtBearerOptionsSetup`:
+   - Token lifetime validation
+   - Issuer validation against configured value
+   - Audience validation against configured value
+   - Signature validation using configured signing key
+3. JWT claims are extracted with MapInboundClaims=false to preserve original claim types
+4. User identity is established from the subject claim (JwtRegisteredClaimNames.Sub)
+5. Request proceeds to authorization check
+
+#### Authorization Flow
+
+When an endpoint requires authorization:
+
+1. Request arrives with validated JWT token
+2. Framework extracts user identity and claims
+3. Authorization middleware checks for required permissions
+4. PermissionAuthorizationPolicyProvider creates policy from permission string
+5. PermissionAuthorizationHandler evaluates the permission
+6. PermissionService loads actual permissions from database
+7. Access is granted or denied based on permission match
+
+#### Permission Model
+
+1. Resource-based Permissions
+
+   - Format: `resource:action` (e.g., `account:view`)
+   - Granular access control per feature
+   - Dynamic policy creation from permission strings
+
+2. Role Structure
+
+   - Admin Role: Full system access to all features
+   - Viewer Role: Read-only access across all features (all :view permissions)
+   - Custom roles: Can be defined with specific permission sets
+   - Role inheritance: Users can have multiple roles
+   - Permission aggregation: User's effective permissions are the union of all their roles' permissions
+
+3. Permission Categories
+
+   - Site Management (`site:manage`, `site:view`)
+   - User Management (`user:manage`, `user:view`)
+   - Account Management (`account:manage`, `account:view`)
+   - Expense Management (`expense:manage`, `expense:view`)
+   - Income Management (`income:manage`, `income:view`)
+
+4. Endpoint Protection
+
+   To require permissions on an endpoint:
+
+   ```csharp
+   routeGroupBuilder
+       .MapGet(AccountsEndpoints.GetAll, GetAll.Handler.Invoke)
+       .RequireAuthorization("account:view")
+   ```
+
+   The permission string automatically becomes a policy requirement through `PermissionAuthorizationPolicyProvider`.
+
+5. Permission and Role Management
+
+   Adding New Permissions:
+
+   - Add permission to database through migration
+   - Update role assignments as needed
+   - Follow the resource:action naming pattern
+   - Use lowercase consistently
+   - Consider permission grouping with roles
+   - Document the new permission
+
+### Core Security Components
+
+- JWT authentication via `JwtService` and `JwtBearerOptionsSetup`
+- Permission-based authorization via `PermissionAuthorizationHandler`
+- Role-based access control using database relationships
+- Token management through `AuthContext` and `TokenProvider`
+- Client-side route protection using `ProtectedRoute` component
+
+### Implementation Guidelines
+
+1. **Permission Implementation**
+
+   - Use lowercase resource:action format for permission strings (e.g., `account:view`)
+   - Add new permissions through database migrations
+   - Update the permission documentation when adding new ones
+
+2. **Role Implementation**
+   - Use the many-to-many relationships in the database for role-permission assignments
+   - Implement new roles through database migrations
+   - Use `PermissionService` to load user permissions through role relationships
 
 ## Data Storage
 
@@ -698,9 +847,12 @@ POT stores all financial data in a PostgreSQL database:
 
 ## Security Considerations
 
+- JWT-based authentication for API access
 - Docker containers isolate application components
 - Database access is restricted to the application
-- No sensitive financial data is stored in client-side storage
+- No sensitive financial data in client-side storage
+- All auth operations logged with correlation IDs
+- Type-safe implementations throughout
 
 ## Project Structure
 
