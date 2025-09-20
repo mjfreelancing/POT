@@ -1486,13 +1486,6 @@ The application uses a type-safe localStorage wrapper for persistent data storag
      };
      ```
 
-### Error Handling
-
-- Includes logging via application logger
-- Type-safe error boundaries
-- Integration with global error handling
-- Optional error callbacks per feature
-
 ## Path Aliases
 
 The `@/*` path alias is configured for importing from the `src` directory:
