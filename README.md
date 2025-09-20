@@ -2585,6 +2585,57 @@ When an endpoint requires authorization:
 - Token management through `AuthContext` and `TokenProvider`
 - Client-side route protection using `ProtectedRoute` component
 
+### UI Permission Components
+
+1. **PermissionGuard**
+
+   Conditionally renders content based on permissions. Use when you want to completely hide content from unauthorized users.
+   Supports both single and multiple permission checks.
+
+   ```tsx
+   // Single permission
+   <PermissionGuard permission="account:manage">
+     <RestrictedContent />
+   </PermissionGuard>
+
+   // Multiple permissions (all required)
+   <PermissionGuard permission={["expense:manage", "expense:view"]}>
+     <RestrictedContent />
+   </PermissionGuard>
+   ```
+
+2. **WithPermission**
+
+   Renders interactive elements in a disabled state when permissions are missing. Use for buttons, inputs, etc.
+   to show functionality exists but is not available.
+
+   ```tsx
+   // Single permission
+   <WithPermission permission="income:manage">
+     <Button>Manage Income</Button>
+   </WithPermission>
+
+   // Multiple permissions (all required)
+   <WithPermission permission={["account:manage", "account:view"]}>
+     <Button>View and Manage Account</Button>
+   </WithPermission>
+   ```
+
+3. **Permission Caching**
+
+   For performance and UI stability, permissions can be cached at the component level to prevent flicker:
+
+   ```tsx
+   const permissionCache = React.useMemo(() => {
+     return items.reduce((acc, item) => {
+       if (item.permission) {
+         acc[item.permission] = permissions.includes(item.permission);
+       }
+       return acc;
+     }, {} as Record<string, boolean>);
+   }, [items, permissions]);
+   ```
+
 ### Implementation Guidelines
 
 1. **Permission Implementation**
