@@ -33,7 +33,7 @@ internal sealed class AuthService : IAuthService
 
     public async Task<EnrichedResult<AuthTokens?>> LoginAsync(string username, string password, CancellationToken cancellationToken)
     {
-        _logger.LogCall(this);
+        _logger.LogCall(this, new { username });
 
         using (_userRepository.WithTracking())
         {
@@ -61,7 +61,7 @@ internal sealed class AuthService : IAuthService
 
     public async Task<EnrichedResult<AuthTokens?>> RefreshAsync(string accessToken, string refreshToken, CancellationToken cancellationToken)
     {
-        _logger.LogCall(this);
+        _logger.LogCall(this, new { refreshToken });
 
         var principal = _jwtService.GetPrincipalFromExpiredToken(accessToken);
 

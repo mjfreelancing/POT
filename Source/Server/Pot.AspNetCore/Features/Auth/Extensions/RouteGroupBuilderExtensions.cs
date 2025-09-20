@@ -31,4 +31,20 @@ internal static class RouteGroupBuilderExtensions
 
         return routeGroupBuilder;
     }
+
+    public static RouteGroupBuilder GetMe(this RouteGroupBuilder routeGroupBuilder)
+    {
+        routeGroupBuilder
+            .MapGet(AuthEndpoints.Me, Me.Handler.Invoke)
+            .RequireAuthorization("AuthenticatedUser")
+            .WithName(nameof(GetMe))
+            .WithSummary("Get User Info")
+            .WithDescription("Get the current user's information and permissions")
+            .WithTags("Auth")
+            .ProducesProblem((int)HttpStatusCode.OK)
+            .ProducesProblem((int)HttpStatusCode.Unauthorized)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+
+        return routeGroupBuilder;
+    }
 }

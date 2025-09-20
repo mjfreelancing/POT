@@ -4,5 +4,5 @@ namespace Pot.AspNetCore.Concerns.Auth;
 
 public interface IPermissionService : IPotScopedDependency
 {
-    Task<HashSet<string>> GetPermissionsAsync(Guid memberId);
+    Task<HashSet<string>> GetPermissionsAsync(Guid userId, CancellationToken cancellationToken);
 }

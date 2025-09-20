@@ -36,7 +36,11 @@ internal static class WebApplicationBuilderExtensions
             // Sets up Jwt Bearer validation options - alternative approach to setting with AddJwtBearer().
             .ConfigureOptions<JwtBearerOptionsSetup>()
 
-            .AddAuthorization()
+            .AddAuthorization(options =>
+            {
+                // Required for /me endpoint where the user needs to be authenticated, but no specific permissions are required.
+                options.AddPolicy("AuthenticatedUser", policy => policy.RequireAuthenticatedUser());
+            })
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
