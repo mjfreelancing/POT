@@ -1,19 +1,19 @@
 import { Plus } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { useEffect } from 'react';
 import { Outlet } from 'react-router';
 import { useNavigate } from 'react-router';
 
 import { useApiGetAllAccounts } from '@/api/hooks';
-import { AccountsHeader, AccountsTable } from './components';
 import { ErrorSheet, LoadingMessage } from '@/components/feedback';
 import { SearchInput } from '@/components/filters';
 import Toolbar from '@/components/toolbar/Toolbar';
 import { Button } from '@/components/ui/button';
 import { WithPermission } from '@/features/auth/components';
 import { DisplayError } from '@/lib';
-
-import { useEffect } from 'react';
 import { logger } from '@/lib/logging';
+
+import { AccountsHeader, AccountsTable } from './components';
 
 function AccountsPage() {
   useEffect(() => {

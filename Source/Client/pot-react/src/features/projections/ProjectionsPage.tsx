@@ -1,12 +1,12 @@
 import { addDays, addMonths } from 'date-fns';
 import { useEffect, useState } from 'react';
-import { logger } from '@/lib/logging';
 
 import { useApiGetProjection } from '@/api/hooks/useProjections';
 import { ErrorSheet, LoadingMessage } from '@/components/feedback';
 import { ProjectionMetric } from '@/data/projection';
 import { DisplayError } from '@/lib';
 import { dateIsoFormat, normalizeToLocalMidnight } from '@/lib/dateUtils';
+import { logger } from '@/lib/logging';
 
 import { ProjectionChart, ProjectionsHeader } from './components';
 import useProjectionStorage, {

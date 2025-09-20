@@ -11,15 +11,15 @@ import {
 import { useMe } from '@/api/hooks/useMe';
 import type { UserInfo } from '@/api/types/userInfo';
 import { DisplayError } from '@/lib';
+import { logger } from '@/lib/logging';
 
 import logoutManager from './logoutManager';
-import { logger } from '@/lib/logging';
 import { usePermissionStore } from './stores/usePermissionStore';
+import { TokenProvider, useTokens } from './TokenContext';
 import {
   createTokenRefreshTimer,
   type TokenRefreshHandle,
 } from './tokenRefreshTimer';
-import { TokenProvider, useTokens } from './TokenContext';
 import type { AuthTokens } from './types';
 
 // Feature layer of auth system - builds on TokenContext to provide:

@@ -1,5 +1,6 @@
 import { Plus } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { useEffect } from 'react';
 import { Outlet, useSearchParams } from 'react-router';
 import { useNavigate } from 'react-router';
 
@@ -12,9 +13,8 @@ import { Button } from '@/components/ui/button';
 import { Expense } from '@/data/expense';
 import { useAccountFilter } from '@/hooks';
 import { DisplayError } from '@/lib';
-
-import { useEffect } from 'react';
 import { logger } from '@/lib/logging';
+
 import { WithPermission } from '../auth/components';
 import { ExpensesHeader, ExpensesTable } from './components';
 import useExpenseStorage from './hooks/useExpenseStorage';

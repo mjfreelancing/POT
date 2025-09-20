@@ -38,9 +38,9 @@
  */
 
 import axios, { AxiosError, AxiosResponse } from 'axios';
-import { logger } from '@/lib/logging';
 
 import { FailResult } from '@/lib';
+import { logger } from '@/lib/logging';
 
 import { addCorrelationId, getNetworkError } from '../apiHelpers';
 import type { ApiErrorResponse } from '../errors/apiErrorResponse';

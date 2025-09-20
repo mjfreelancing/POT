@@ -1,7 +1,8 @@
-import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
-
 import { useEffect } from 'react';
+
+import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { logger } from '@/lib/logging';
+
 import { PermissionGuard } from '../auth/components';
 import {
   AccountsOverview,
