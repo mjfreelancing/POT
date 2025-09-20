@@ -1,18 +1,11 @@
-import { AppSidebarTrigger } from '@/components/nav';
+import { PageHeader } from '@/components/layout';
 
 function AccountsHeader() {
   return (
-    <div className="page-header">
-      <div className="flex items-center">
-        <AppSidebarTrigger />
-        <div>
-          <h1 className="page-title">Account Management</h1>
-          <p className="page-subtitle">
-            Monitor and manage your financial accounts
-          </p>
-        </div>
-      </div>
-    </div>
+    <PageHeader
+      title="Account Management"
+      subtitle="Monitor and manage your financial accounts"
+    />
   );
 }
 

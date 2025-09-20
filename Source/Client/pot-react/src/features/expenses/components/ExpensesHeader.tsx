@@ -1,18 +1,11 @@
-import { AppSidebarTrigger } from '@/components/nav';
+import { PageHeader } from '@/components/layout';
 
 function ExpensesHeader() {
   return (
-    <div className="page-header">
-      <div className="flex items-center">
-        <AppSidebarTrigger />
-        <div className="flex items-center gap-3">
-          <div>
-            <h1 className="page-title">Expense Management</h1>
-            <p className="page-subtitle">Track and manage your expenses</p>
-          </div>
-        </div>
-      </div>
-    </div>
+    <PageHeader
+      title="Expense Management"
+      subtitle="Track and manage your expenses"
+    />
   );
 }
 

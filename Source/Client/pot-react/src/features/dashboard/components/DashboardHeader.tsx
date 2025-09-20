@@ -1,16 +1,11 @@
-import { AppSidebarTrigger } from '@/components/nav';
+import { PageHeader } from '@/components/layout';
 
 function DashboardHeader() {
   return (
-    <div className="page-header">
-      <div className="flex items-center">
-        <AppSidebarTrigger />
-        <div>
-          <h1 className="page-title">Financial Dashboard</h1>
-          <p className="page-subtitle">Overview of your financial status</p>
-        </div>
-      </div>
-    </div>
+    <PageHeader
+      title="Financial Dashboard"
+      subtitle="Overview of your financial status"
+    />
   );
 }
 

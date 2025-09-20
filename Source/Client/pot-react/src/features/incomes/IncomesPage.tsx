@@ -8,7 +8,7 @@ import { useApiGetAllAccounts, useApiGetAllIncomes } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { AccountFilter, SearchInput } from '@/components/filters';
-import Toolbar from '@/components/toolbar/Toolbar';
+import { Toolbar } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import type { Income } from '@/data/income';
 import { useAccountFilter } from '@/hooks';

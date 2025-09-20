@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router';
 import { useApiGetAllAccounts } from '@/api/hooks';
 import { ErrorSheet, LoadingMessage } from '@/components/feedback';
 import { SearchInput } from '@/components/filters';
-import Toolbar from '@/components/toolbar/Toolbar';
+import { Toolbar } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { WithPermission } from '@/features/auth/components';
 import { DisplayError } from '@/lib';

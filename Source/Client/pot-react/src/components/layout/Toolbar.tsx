@@ -23,3 +23,4 @@ function Toolbar({ children, className = '' }: ToolbarProps) {
 
 export default Toolbar;
 export type { ToolbarProps };
+// ...existing code from Toolbar.tsx...
