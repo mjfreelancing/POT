@@ -611,29 +611,327 @@ Manage your bank accounts with the following capabilities:
 
 ### Error Handling
 
-POT implements a comprehensive error handling system with multiple notification mechanisms:
+POT implements a comprehensive error handling system that manages errors effectively across both client and server sides:
 
-#### Toast Notifications
+#### Client-Side Error Types
 
-Transient, non-blocking notifications for:
+The application defines several error types to handle different scenarios:
 
-- Success confirmations (e.g., "Account created successfully")
-- Warning messages
-- Brief error notifications
-- Import/Export status updates
+- `NetworkError` - For connection and HTTP-related issues
+- `AuthenticationError` - For authentication and authorization failures
+- `ValidationError` - For input validation failures
+- `NotFoundError` - For requested resources not found
+- `ConflictError` - For concurrent modification issues
+- `UnexpectedError` - For unhandled server errors
+- `ForbiddenError` - For permission-related issues
 
-#### Error Sheets
+#### API Error Handling
 
-Modal error sheets for more serious issues:
+1. Network Errors
 
-- API connection failures
-- Data validation errors
-- Concurrent modification conflicts
-- Server-side errors
+   - Connection issues (timeout, aborted, etc.)
+   - Bad requests/responses
+   - Invalid URLs
+   - Too many redirects
+
+2. HTTP Status Code Mapping
+
+   - 401 → Authentication errors
+   - 403 → Permission errors
+   - 404 → Not found errors
+   - 409 → Conflict errors
+   - 422 → Validation errors
+   - 500 → Server errors
+
+3. Error Response Format
+   ```typescript
+   type ApiErrorResponse = {
+     title: string;
+     detail: string;
+     status: number;
+     errors?: Array<{
+       errorCode: string;
+       propertyName: string;
+       attemptedValue: string;
+       errorMessage: string;
+     }>;
+   };
+   ```
+
+#### Server-Side Validation
+
+The server uses FluentValidation for request validation:
+
+1. Request Validation
+
+   - Property-level validation with specific error codes
+   - Custom validation rules with contextual data
+   - ETag validation for concurrency control
+
+2. Problem Details
+   - RFC 7807 compliant problem details
+   - Structured error responses with property details
+   - Custom error states and metadata
+
+#### Form Validation
+
+1. **Component Level**
+
+   The application uses a robust form validation system integrating several key technologies:
+
+   - `react-hook-form` for form state management and validation
+   - `zod` for type-safe schema validation
+   - Custom form components with accessibility support
+   - Real-time validation feedback
+   - Integration with UI components via `FormField` pattern
+
+2. **Schema Validation**
+
+   The application uses Zod for comprehensive schema validation across all features:
+
+   a. **Base Domain Schemas**
+
+   ```typescript
+   // Base schemas define core validation rules
+   const BaseExpenseSchema = z.object({
+     description: z.string(),
+     nextDue: z.string(),
+     accrualStart: z.string(),
+     endDate: z.string().nullable(),
+     frequency: z.nativeEnum(Frequency),
+     frequencyCount: z.number(),
+     amount: z.number(),
+     note: z.string().nullable(),
+   });
+
+   const BaseIncomeSchema = z.object({
+     description: z.string(),
+     nextDue: z.string(),
+     endDate: z.string().nullable(),
+     frequency: z.nativeEnum(Frequency),
+     frequencyCount: z.number(),
+     amount: z.number(),
+     note: z.string().nullable(),
+   });
+
+   const BaseAccountSchema = z.object({
+     bsb: z.string(),
+     number: z.string(),
+     description: z.string(),
+     balance: z.number(),
+     reserved: z.number(),
+   });
+   ```
+
+   b. **Extended Model Schemas**
+
+   ```typescript
+   // Schemas extend base types with additional fields
+   const ExpenseSchema = BaseExpenseSchema.extend({
+     ...IdentitySchema.shape,
+     excludeFromCalcs: z.boolean(),
+     account: ExpenseAccountSchema,
+     accrued: z.number(),
+   });
+
+   const CreateExpenseSchema = BaseExpenseSchema.extend({
+     accountRowId: z.string(),
+   });
+
+   const EditExpenseSchema = BaseExpenseSchema.extend({
+     ...IdentitySchema.shape,
+     excludeFromCalcs: z.boolean(),
+     accountRowId: z.string(),
+   });
+   ```
+
+   c. **Form-Specific Schemas**
+
+   ```typescript
+   // Additional validation rules for form inputs
+   const accountFormSchema = z.object({
+     bsb: z
+       .string()
+       .regex(/^\d{3}-\d{3}$/, "BSB must be in the format XXX-XXX"),
+     number: z.string().min(1, "Account number is required"),
+     description: z.string().min(1, "Description is required"),
+     balance: MoneyValueSchema, // Custom schema ensuring valid monetary values
+     reserved: MoneyValueSchema,
+   });
+
+   const expenseFormSchema = z.object({
+     description: z.string().min(1, "Description is required"),
+     amount: MoneyValueSchema,
+     nextDue: z.string().min(1, "Next due date is required"),
+     accrualStart: z.string().min(1, "Accrual start date is required"),
+     endDate: z.string().nullable(),
+     frequency: z.nativeEnum(Frequency),
+     frequencyCount: z.number().min(0),
+     note: z.string().nullable(),
+     accountRowId: z.string().min(1, "Account is required"),
+   });
+   ```
+
+3. **Server-Side Validation**
+
+   The server uses FluentValidation with custom rules and validation contexts:
+
+   a. **Base Validators**
+
+   ```csharp
+   internal sealed class RequestValidator : ValidatorBase<Request>
+   {
+       public RequestValidator()
+       {
+           RuleFor(request => request.Description).IsNotEmpty();
+           RuleFor(request => request.Amount).IsGreaterThanOrEqualTo(0.0d);
+           RuleFor(request => request.AccountRowId).IsNotEmpty();
+       }
+   }
+   ```
+
+   b. **Custom Validation Rules**
+
+   ```csharp
+   this.CustomRuleFor(request => request.EndDate, (value, context) =>
+   {
+       if (value.HasValue)
+       {
+           var validationContext = context.GetContextData<Request, RequestValidationContext>();
+
+           if (validationContext.NextDue > value.Value)
+           {
+               var failure = new ValidationFailure(
+                   nameof(Request.EndDate),
+                   "Cannot be earlier than the next due date",
+                   value
+               )
+               {
+                   ErrorCode = ErrorCodes.Invalid
+               };
+
+               context.AddFailure(failure);
+           }
+       }
+   });
+   ```
+
+   c. **Frequency Validation**
+
+   ```csharp
+   this.CustomRuleFor(request => request.FrequencyCount, (value, context) =>
+   {
+       var validationContext = context.GetContextData<Request, RequestValidationContext>();
+
+       if (validationContext.Frequency == Frequency.OneTime)
+       {
+           if (value != 0)
+           {
+               var failure = new ValidationFailure(
+                   nameof(Request.FrequencyCount),
+                   $"Must be zero when Frequency is {Frequency.OneTime.Name}",
+                   value
+               )
+               {
+                   ErrorCode = ErrorCodes.Invalid
+               };
+
+               context.AddFailure(failure);
+           }
+       }
+       else
+       {
+           if (value < 1)
+           {
+               var failure = new ValidationFailure(
+                   nameof(Request.FrequencyCount),
+                   "Must be greater than zero",
+                   value
+               )
+               {
+                   ErrorCode = ErrorCodes.Invalid
+               };
+
+               context.AddFailure(failure);
+           }
+       }
+   });
+   ```
+
+#### Local Storage
+
+1. Type-Safe Storage Hook
+   ```typescript
+   type LocalStorageProps<T> = {
+     key: string;
+     initialValue?: T;
+     onError?: (error: DisplayError) => void;
+   };
+   ```
+
+````
+
+2. Error Handling
+
+   - Storage operation error catching
+   - Type validation on retrieval
+   - Error reporting via callbacks
+   - Integration with global error handling
+
+3. Feature-Specific Storage
+   - Projection settings storage
+   - Income/Expense filters storage
+   - Authentication token storage
+   - User preferences storage
+
+#### User Notifications
+
+1. Toast Notifications (Transient)
+
+   - Success confirmations
+   - Warning messages
+   - Brief error notifications
+   - Import/Export status updates
+
+2. Error Sheets (Modal)
+   - API connection failures
+   - Data validation errors
+   - Concurrent modification conflicts
+   - Server-side errors
 
 #### Error Boundaries
 
-React error boundaries catch and handle unexpected rendering errors to prevent the entire application from crashing. The application uses the `ErrorBoundary` component from `@/components/error/ErrorBoundary` to wrap sections that might throw rendering errors.
+React error boundaries catch and handle unexpected rendering errors:
+
+- Prevents application crashes
+- Provides fallback UI
+- Uses `ErrorBoundary` component from `@/components/error/ErrorBoundary`
+- Can be reset using `useResetErrorBoundary` hook
+
+#### Context Error Management
+
+1. Feature Contexts
+   ```typescript
+   type ContextErrorState = {
+     error: DisplayError | null;
+     setError: (error: DisplayError | null) => void;
+   };
+   ```
+   - Centralized error state per feature
+   - Error propagation to parent contexts
+   - Error boundary integration
+   - Error reset capabilities
+
+#### Logging
+
+The application includes error logging:
+
+- Client-side errors logged with context
+- Network errors with request details
+- Validation failures with attempted values
+- Unexpected errors with stack traces
+- Storage operation errors with keys
+- Form validation errors with field context
 
 ## Expenses Management
 
@@ -1011,6 +1309,93 @@ POT is built with a modern web development stack:
 - **UI Framework**: Custom components based on shadcn/ui and TailwindCSS
 - **State Management**: React Query for server state, React Context and Zustand for local state
 - **Routing**: React Router v6
+
+### State Management Architecture
+
+POT uses a layered state management approach:
+
+1. **Server State (React Query)**
+
+   ```typescript
+   // Query client configuration (main.tsx)
+   const queryClient = new QueryClient({
+     defaultOptions: {
+       queries: {
+         staleTime: 1000 * 60 * 5, // Data fresh for 5 minutes
+         gcTime: 1000 * 60 * 30, // Cache for 30 minutes
+       },
+     },
+   });
+   ```
+
+   Key features:
+
+   - Automatic data caching and revalidation
+   - Optimistic updates for mutations
+   - Cache invalidation on data changes
+   - Error and loading states
+
+2. **Global UI State (Zustand)**
+
+   ```typescript
+   // Example: Dashboard summary state (accountsSummaryStore)
+   type AccountsSummary = {
+     totalBalance: number;
+     totalReserved: number;
+     totalAvailable: number;
+     totalDailyAccrual: number;
+     setSummary: (
+       balance: number,
+       reserved: number,
+       available: number,
+       dailyAccrual: number
+     ) => void;
+   };
+   ```
+
+   Usage cases:
+
+   - Dashboard summaries and statistics
+   - Application-wide UI state
+   - Cross-component coordination
+   - Persistent settings
+
+3. **Component State (React Context)**
+
+   ```typescript
+   // Example: Theme context
+   type ThemeProviderState = {
+     theme: "dark" | "light" | "system";
+     setTheme: (theme: Theme) => void;
+   };
+
+   const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
+   ```
+
+   Implementation patterns:
+
+   - Provider wraps feature-specific components
+   - useContext hook for consuming state
+   - State isolation for feature modules
+   - Proper error handling for missing context
+
+4. **Local Storage Integration**
+
+   ```typescript
+   // Type-safe storage hook
+   const { getItem, setItem } = useLocalStorage<T>({
+     key: STORAGE_KEY,
+     initialValue,
+     onError: handleError,
+   });
+   ```
+
+   Storage patterns:
+
+   - Theme preferences
+   - User settings
+   - Feature-specific data
+   - Authentication tokens
 
 ## UI/UX Design
 
@@ -1480,3 +1865,4 @@ POT makes use of the following open-source libraries and tools:
   - Data import/export
 - Docker support for development and production
 - Modern React frontend with TypeScript
+````
