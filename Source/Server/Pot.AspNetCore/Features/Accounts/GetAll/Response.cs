@@ -9,9 +9,6 @@ namespace Pot.AspNetCore.Features.Accounts.GetAll;
 
 internal sealed class Response : ResponseBase
 {
-    [Description("Indicates if the account is excluded from calculations such as accruals")]
-    public bool ExcludeFromCalcs { get; set; }
-
     [Description("The account BSB.")]
     public string Bsb { get; init; }
 
