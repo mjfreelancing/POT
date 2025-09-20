@@ -1,4 +1,4 @@
-import { type HTMLProps, type ReactElement, cloneElement } from 'react';
+import { cloneElement, type HTMLProps, type ReactElement } from 'react';
 
 import { usePermissions } from '../usePermissions';
 

@@ -6,7 +6,6 @@ import { useParams } from 'react-router';
 
 import { useApiRenewIncomes, useApiToggleExcludeIncomes } from '@/api/hooks';
 import { ErrorSheet, NotePopover, StatusBadge } from '@/components/feedback';
-import { usePermissions } from '@/features/auth/usePermissions';
 import {
   BulkAction,
   createDateColumn,
@@ -18,6 +17,7 @@ import {
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Income } from '@/data';
+import { usePermissions } from '@/features/auth/usePermissions';
 import { DisplayError, Frequency, getTableRowClassName } from '@/lib';
 
 import { renewIncomes, toggleExcludeIncomes } from '../bulkActions';

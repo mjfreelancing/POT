@@ -7,7 +7,6 @@ import {
   useApiRenewExpenses,
   useApiToggleExcludeExpenses,
 } from '@/api/hooks/useExpenses';
-import { usePermissions } from '@/features/auth/usePermissions';
 import { ErrorSheet } from '@/components/feedback';
 import {
   BulkAction,
@@ -20,6 +19,7 @@ import {
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Expense } from '@/data';
+import { usePermissions } from '@/features/auth/usePermissions';
 import {
   DisplayError,
   Frequency,

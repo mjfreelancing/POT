@@ -14,10 +14,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Expense } from '@/data';
+import { WithPermission } from '@/features/auth/components';
 import { DisplayError } from '@/lib';
 
 import useDeleteExpense from '../delete/hooks/useDeleteExpense';
-import { WithPermission } from '@/features/auth/components';
 
 type ExpenseActionsProps = {
   expense: Expense;

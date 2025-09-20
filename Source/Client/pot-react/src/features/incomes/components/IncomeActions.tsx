@@ -14,10 +14,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Income } from '@/data';
+import { WithPermission } from '@/features/auth/components';
 import { DisplayError } from '@/lib';
 
 import useDeleteIncome from '../delete/hooks/useDeleteIncome';
-import { WithPermission } from '@/features/auth/components';
 
 type IncomeActionsProps = {
   income: Income;

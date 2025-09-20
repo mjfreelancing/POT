@@ -2,7 +2,6 @@ import React from 'react';
 import { matchPath, useLocation } from 'react-router';
 import { Link } from 'react-router';
 
-import { usePermissions } from '@/features/auth/usePermissions';
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -11,6 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { usePermissions } from '@/features/auth/usePermissions';
 
 type MenuGroupItemBase = {
   readonly label: string;

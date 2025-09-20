@@ -1,10 +1,10 @@
 import { Zap } from 'lucide-react';
 
 import { Card, CardContent } from '@/components/ui/card';
+import { PermissionGuard } from '@/features/auth/components';
 import AccrualsAction from '@/features/dashboard/actions/accruals/AccrualsAction';
 
 import DashboardCardHeader from './DashboardCardHeader';
-import { PermissionGuard } from '@/features/auth/components';
 
 function QuickActions() {
   return (

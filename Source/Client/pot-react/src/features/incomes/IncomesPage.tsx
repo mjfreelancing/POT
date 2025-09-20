@@ -13,9 +13,9 @@ import type { Income } from '@/data/income';
 import { useAccountFilter } from '@/hooks';
 import { DisplayError, logger } from '@/lib';
 
+import { WithPermission } from '../auth/components';
 import { IncomesHeader, IncomesTable } from './components';
 import useIncomeStorage from './hooks/useIncomeStorage';
-import { WithPermission } from '../auth/components';
 
 function IncomesPage() {
   logger.info('IncomesPage', 'Rendering');

@@ -13,9 +13,9 @@ import { Expense } from '@/data/expense';
 import { useAccountFilter } from '@/hooks';
 import { DisplayError, logger } from '@/lib';
 
+import { WithPermission } from '../auth/components';
 import { ExpensesHeader, ExpensesTable } from './components';
 import useExpenseStorage from './hooks/useExpenseStorage';
-import { WithPermission } from '../auth/components';
 
 function ExpensesPage() {
   logger.info('ExpensesPage', 'Rendering');

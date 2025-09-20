@@ -6,7 +6,6 @@ import { useParams } from 'react-router';
 
 import { useApiAccrueExpenses } from '@/api/hooks';
 import { ErrorSheet, StatusBadge } from '@/components/feedback';
-import { usePermissions } from '@/features/auth/usePermissions';
 import {
   BulkAction,
   createMoneyValueColumn,
@@ -16,6 +15,7 @@ import {
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Account } from '@/data';
+import { usePermissions } from '@/features/auth/usePermissions';
 import { DisplayError } from '@/lib';
 
 import { accrueAllExpenses } from '../utils/bulkActions';

@@ -1,5 +1,6 @@
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 
+import { PermissionGuard } from '../auth/components';
 import {
   AccountsOverview,
   DashboardHeader,
@@ -7,7 +8,6 @@ import {
   QuickActions,
 } from './components';
 import { DashboardProvider, useDashboardContext } from './context';
-import { PermissionGuard } from '../auth/components';
 
 function DashboardContent() {
   const { error, setError } = useDashboardContext();
