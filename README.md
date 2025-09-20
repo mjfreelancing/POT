@@ -92,12 +92,483 @@ A centralized overview of your financial situation:
 
 ## Financial Projections
 
-Visualize your financial future:
+The projections feature provides a comprehensive visualization system for financial data:
 
-- Interactive chart displaying projected account balances
-- Configurable projection period (up to 12 months)
-- Ability to change the start date for projections
-- Visual indicators of potential financial issues
+### Component Implementation
+
+#### ProjectionChart Component
+
+Main visualization component with the following features:
+
+- Smart chart type switching (line/bar) based on metric type
+- Line charts for continuous trend data (Balance/Available)
+- Bar charts for discrete events (Income/Expenses)
+- Empty state handling with accessible UI
+- Currency formatting via `formatMoneyValue`
+- Series visibility management with state indicators
+
+Props:
+
+- `data`: Projection data from API
+- `startDate`: Chart start date
+- `period`: Display period in months
+- `selectedMetric`: Active metric
+- `hiddenSeries`: Series to hide
+- `onStartDateChange`: Date change handler
+- `onPeriodChange`: Period change handler
+- `onMetricChange`: Metric change handler
+- `onHiddenSeriesChange`: Series visibility handler
+
+#### ChartControls Component
+
+Manages user interaction with these features:
+
+- Metric selection via dropdown
+- Period selection (1, 2, 3, 6, 9, 12 months)
+- Custom date range selection
+- Series visibility toggles
+- Fixed-width layout prevention
+- Left/right aligned control groups
+
+Props:
+
+- `selectedMetric`: Current metric
+- `onMetricChange`: Metric change callback
+- `startDate`: Current start date
+- `onStartDateChange`: Date change callback
+- `period`: Current period
+- `onPeriodChange`: Period change callback
+- `seriesKeys`: Available series
+- `seriesVisibility`: Visibility state
+- `onToggleSeries`: Toggle callback
+- `chartConfig`: Styling configuration
+
+### Data Architecture
+
+- **Metric Configuration System**
+
+  - Balance/Available/Daily Accrual: Line charts for trend visualization
+  - Income/Expenses: Bar charts for transaction events
+  - Zod schema validation for type safety
+  - Extensible metric configuration using TypeScript discriminated unions
+
+- **Data Schema**
+  - Per-account daily balances with metrics
+  - Global totals for aggregated view
+  - Handles missing dates and empty datasets
+  - Supports 30-365+ day ranges
+
+### Technical Implementation
+
+#### Chart Configuration
+
+1. **Chart Type System**
+
+   ```typescript
+   type ProjectionMetric =
+     | "balance"
+     | "available"
+     | "incomeReceived"
+     | "expensesPaid";
+
+   type MetricConfig = {
+     label: string;
+     shortLabel: string;
+     chartType: "line" | "bar";
+     description?: string;
+   };
+   ```
+
+2. **Data Schema**
+
+   ```typescript
+   type DateBalance = {
+     date: string; // ISO date string
+     balance: number; // Account balance
+     available: number; // Available amount
+     incomeReceived: number;
+     expensesPaid: number;
+   };
+
+   type AccountDailyBalances = {
+     rowId: string; // Unique account identifier
+     description: string;
+     dates: DateBalance[];
+   };
+   ```
+
+3. **Style Configuration**
+   - Chart colors: `--chart-1` through `--chart-5`
+   - Global line: `--foreground`
+   - Theme integration: Uses CSS variables for colors
+   - Required margin: 20px all sides for label spacing
+
+#### Integration Points
+
+1. **Data Transformation**
+
+   - Transform raw API data in `useProjectionChartData` hook
+   - Fill missing dates with zero values
+   - Separate global totals from account data
+   - Memoize transformations for performance
+
+2. **Chart Customization**
+
+   - Line Chart Settings
+
+     ```typescript
+     // Fixed curve settings - do not change
+     <Line type="basis" dataKey={key} stroke={color} />
+     ```
+
+   - Label Configuration
+
+     ```typescript
+     // Date label formatting
+     function formatXAxisLabel(
+       value: string,
+       chartData: ChartDataPoint[]
+     ): string {
+       // 8-12 labels for optimal spacing
+       const targetLabels = Math.min(
+         12,
+         Math.max(4, Math.floor(chartData.length / 8))
+       );
+       const interval = Math.ceil(chartData.length / targetLabels);
+
+       // Always show first, last, and interval dates
+       if (
+         index === 0 ||
+         index === chartData.length - 1 ||
+         index % interval === 0
+       ) {
+         return format(parseISO(value), "MMM dd");
+       }
+       return "";
+     }
+     ```
+
+   - Title/Description Format
+
+     ```typescript
+     // Required format
+     <CardTitle>{getChartTitle()}</CardTitle>
+     <CardDescription>{getDateRangeDescription()}</CardDescription>
+     ```
+
+   - Fixed Settings
+     - Label rotation: -45 degrees
+     - Money formatting: Uses global `formatMoneyValue`
+     - Min chart margin: { top: 20, right: 20, left: 20, bottom: 20 }
+
+3. **Container Requirements**
+
+   ```typescript
+   // Required container structure
+   <Card className="flex flex-col h-full pb-0">
+     <CardHeader className="flex-shrink-0">
+       {/* Title and description */}
+     </CardHeader>
+     <CardContent className="flex-1 flex flex-col p-0">
+       <div
+         className="flex-1 w-full min-h-0 px-6"
+         style={{
+           background: "linear-gradient(...)",
+           minHeight: "400px",
+         }}
+       >
+         {/* Chart content */}
+       </div>
+     </CardContent>
+   </Card>
+   ```
+
+   Key Requirements:
+
+   - Parent flex layout required
+   - Minimum height: 400px
+   - Container queries for responsiveness
+   - Fixed control widths to prevent shifts
+   - Gradient background for depth
+   - Zero padding on card content
+
+- **Responsive Design**
+
+  - Minimum chart area of 400 pixels in height
+  - Fixed -45 degree label rotation for consistent readability
+  - Flexbox-based legend layout
+  - Responsive control group layout
+
+#### Technical Requirements
+
+1. **Type Extensions**
+
+   ```typescript
+   // Add new metrics here
+   type ProjectionMetric =
+     | "balance"
+     | "available"
+     | "incomeReceived"
+     | "expensesPaid";
+   // | 'newMetric';  // Example extension point
+
+   // Update API response type to match
+   type DateBalance = {
+     date: string;
+     balance: number;
+     available: number;
+     incomeReceived: number;
+     expensesPaid: number;
+     // newMetric: number;  // Add corresponding field
+   };
+   ```
+
+2. **Storage Integration**
+
+   ```typescript
+   // Key for local storage
+   const PROJECTION_STORAGE_KEY = "pot-projections";
+
+   // Stored data shape
+   type ProjectionStorageData = {
+     metric?: ProjectionMetric;
+     period?: number;
+     hiddenSeries?: string[];
+   };
+   ```
+
+3. **CSS Requirements**
+
+   ```css
+   /* Required theme variables */
+   :root {
+     --chart-1: #color1; /* Primary series */
+     --chart-2: #color2; /* Secondary series */
+     --chart-3: #color3; /* Tertiary series */
+     --chart-4: #color4; /* Quaternary series */
+     --chart-5: #color5; /* Quinary series */
+     --foreground: #color6; /* Global totals */
+   }
+   ```
+
+4. **Tooltip Implementation**
+
+   ```typescript
+   // Required tooltip props
+   type TooltipProps = {
+     active?: boolean;
+     payload?: {
+       color?: string;
+       dataKey?: string | number;
+       value?: string | number | (string | number)[];
+     }[];
+     label?: string | number;
+   };
+
+   // Tooltip structure requirement
+   <div className="rounded-lg border bg-background p-3 shadow-md">
+     <div className="mb-2 font-medium text-foreground">
+       {formatTooltipDate(label)}
+     </div>
+     <div className="space-y-1">{/* One entry per data point */}</div>
+   </div>;
+   ```
+
+   Required Tooltip Features:
+
+   - Date header with `formatTooltipDate`
+   - Color indicators matching series
+   - Entry per visible data point
+   - Money value formatting with `formatMoneyValue`
+   - Theme-aware background/text colors
+
+### Extension Points
+
+- **New Metrics**
+
+  - Add to `ProjectionMetric` type union
+  - Define in `PROJECTION_METRICS` with chart type
+  - Implement in `DateValues` schema
+  - Update API response type
+
+- **New Chart Features**
+  - Chart styling via CSS variables (--chart-1 through --chart-5)
+  - Tooltip customization through ChartTooltip component
+  - Series styling through chartConfig object
+  - Custom formatters for axes and tooltips
+
+#### Additional Technical Requirements
+
+1. **Empty State Handling**
+
+   ```typescript
+   // Required checks before rendering
+   const hasData = data && data.accounts.length > 0;
+   const hasSeriesData = (key: string) =>
+     data?.accounts.some((account) =>
+       account.dates.some((d) => d[key as keyof DateBalance] !== 0)
+     );
+
+   // Empty state must preserve controls
+   {
+     !hasData && <NoProjectionData />;
+   }
+   ```
+
+2. **Series Management**
+
+   ```typescript
+   // Required visibility state structure
+   type SeriesVisibility = Record<string, boolean>;
+
+   // Visibility toggle must update storage
+   const toggleSeries = (key: string) => {
+     const newHidden = hiddenSeries.includes(key)
+       ? hiddenSeries.filter((k) => k !== key)
+       : [...hiddenSeries, key];
+     onHiddenSeriesChange(newHidden);
+   };
+   ```
+
+3. **Data Validation Requirements**
+   - All dates must be ISO format strings
+   - Numeric values must be valid numbers
+   - Account IDs must be unique
+   - Date arrays must be same length across accounts
+   - All metric fields must exist on each date entry
+
+#### Performance Requirements
+
+1. **Memory Optimization**
+
+   ```typescript
+   // Memoized calculations for chart data
+   const { chartData, chartConfig } = useMemo(
+     () => ({
+       // Transform raw data to chart format
+       chartData: transformData(data),
+       // Build chart configuration
+       chartConfig: buildChartConfig(data),
+     }),
+     [data]
+   );
+
+   // Container dimension caching
+   const [dimensions, setDimensions] = useState(() => ({
+     width: container.current?.clientWidth ?? 0,
+     height: container.current?.clientHeight ?? 0,
+   }));
+   ```
+
+2. **Event Handling**
+
+   ```typescript
+   // Efficient resize handling
+   useEffect(() => {
+     const handleResize = debounce(() => {
+       if (!container.current) return;
+       setDimensions({
+         width: container.current.clientWidth,
+         height: container.current.clientHeight,
+       });
+     }, 100);
+
+     window.addEventListener("resize", handleResize);
+     return () => window.removeEventListener("resize", handleResize);
+   }, []);
+   ```
+
+#### Browser Compatibility
+
+- **Modern Browser Support**:
+  - Uses standard DOM APIs
+  - Full flexbox layout support required
+  - High contrast mode support via CSS custom properties
+
+#### Accessibility Requirements
+
+1. **ARIA Attributes**
+
+   ```typescript
+   // Required ARIA roles and labels
+   <div role="group" aria-labelledby="legend-label">
+     <span id="legend-label">Show:</span>
+     <button
+       aria-label={`${isVisible ? "Hide" : "Show"} ${config.label} series`}
+       aria-pressed={isVisible}
+     >
+       {config.label}
+     </button>
+   </div>
+   ```
+
+2. **Keyboard Navigation**
+
+   ```typescript
+   // Focus management for controls
+   <Button
+     role="radio"
+     aria-checked={isSelected}
+     tabIndex={isSelected ? 0 : -1}
+     onKeyDown={(e) => {
+       if (e.key === "Enter" || e.key === " ") {
+         onPeriodChange(opt.value);
+       }
+     }}
+   >
+     {opt.label}
+   </Button>
+   ```
+
+3. **Screen Reader Support**
+   - All charts must have descriptive titles
+   - Data points need clear numeric values
+   - Status messages for loading and errors
+   - Announcements for data updates
+
+#### Testing Requirements
+
+1. **Visual Testing**
+
+   - Visual regression testing for charts
+   - Screenshot comparisons across viewport sizes
+   - Color scheme validation for all themes
+
+2. **Unit Tests**
+
+   ```typescript
+   // Data transformation tests
+   test("should transform projection data correctly", () => {
+     const { chartData } = useProjectionChartData(mockData, "balance");
+     expect(chartData).toMatchSnapshot();
+   });
+
+   // Chart type selection tests
+   test("should use correct chart type for metric", () => {
+     expect(PROJECTION_METRICS["balance"].chartType).toBe("line");
+     expect(PROJECTION_METRICS["incomeReceived"].chartType).toBe("bar");
+   });
+   ```
+
+3. **Integration Tests**
+   - API data flow validation
+   - Storage persistence verification
+   - Error handling scenarios
+
+#### Known Limitations
+
+- **Data Points**: Maximum determined by chart width
+- **Chart Height**: Minimum 400px required
+- **Label Rotation**: Fixed at -45 degrees
+- **Browser Support**: Modern browsers only
+
+Files and their responsibilities:
+
+- `/features/projections/components/ProjectionChart.tsx`: Main chart component
+- `/features/projections/components/ChartControls.tsx`: User interaction controls
+- `/features/projections/hooks/useProjectionChartData.ts`: Data transformation
+- `/features/projections/utils/chartHelpers.ts`: Formatting utilities
+- `/data/projection.ts`: Type definitions and configuration
 
 ## Accounts Management
 
@@ -566,6 +1037,77 @@ The codebase strictly enforces TypeScript best practices:
 - No use of 'any' type allowed
 - Strict type checking enabled
 
+## Local Storage Implementation
+
+The application uses a type-safe localStorage wrapper for persistent data storage across features:
+
+### Core Storage Hook
+
+- `/hooks/useLocalStorage.ts`: Type-safe wrapper with error handling
+  ```typescript
+  type LocalStorageProps<T> = {
+    key: string;
+    initialValue?: T;
+    onError?: (error: DisplayError) => void;
+  };
+  ```
+
+### Feature-Specific Storage
+
+1. **Authentication Storage**
+
+   - Key: 'pot-auth'
+   - File: `/features/auth/hooks/useAuthStorage.ts`
+   - Stored data:
+     ```typescript
+     type AuthTokens = {
+       accessToken: string; // JWT access token
+       refreshToken: string; // JWT refresh token
+       expiresAt: number; // Token expiry timestamp
+     };
+     ```
+
+2. **Projections Storage**
+
+   - Key: 'pot-projections'
+   - File: `/features/projections/hooks/useProjectionStorage.ts`
+   - Stored data:
+     ```typescript
+     type ProjectionStorageData = {
+       metric?: ProjectionMetric; // Selected chart metric
+       period?: number; // Display period in months
+       hiddenSeries?: string[]; // Hidden series identifiers
+     };
+     ```
+
+3. **Expenses Storage**
+
+   - Key: 'pot-expenses'
+   - File: `/features/expenses/hooks/useExpenseStorage.ts`
+   - Stored data:
+     ```typescript
+     type ExpenseStorageData = {
+       selectedAccountId: string | null; // Selected account filter
+     };
+     ```
+
+4. **Income Storage**
+   - Key: 'pot-incomes'
+   - File: `/features/incomes/hooks/useIncomeStorage.ts`
+   - Stored data:
+     ```typescript
+     type IncomeStorageData = {
+       selectedAccountId: string | null; // Selected account filter
+     };
+     ```
+
+### Error Handling
+
+- Includes logging via application logger
+- Type-safe error boundaries
+- Integration with global error handling
+- Optional error callbacks per feature
+
 ## Path Aliases
 
 The `@/*` path alias is configured for importing from the `src` directory:
@@ -689,6 +1231,15 @@ API Integration:
 ### Authentication System
 
 #### Token Management
+
+```typescript
+// Storage key: 'pot-auth'
+type AuthTokens = {
+  accessToken: string; // JWT access token
+  refreshToken: string; // JWT refresh token
+  expiresAt: number; // Token expiry timestamp
+};
+```
 
 - Short-lived access tokens (60 minute expiry) for API authorization
 - Refresh tokens with 30 day expiry
