@@ -21,11 +21,11 @@ internal sealed class AuthService : IAuthService
     private readonly ITimeProvider _timeProvider;
     private readonly ILogger _logger;
 
-    public AuthService(IJwtService jwtProvider, IUserPasswordHasher passwordHasher, IPersistableUserRepository userRepository,
+    public AuthService(IJwtService jwtService, IUserPasswordHasher passwordHasher, IPersistableUserRepository userRepository,
         ITimeProvider timeProvider, ILogger<AuthService> logger)
     {
         _userRepository = userRepository.WhenNotNull();
-        _jwtService = jwtProvider.WhenNotNull();
+        _jwtService = jwtService.WhenNotNull();
         _passwordHasher = passwordHasher.WhenNotNull();
         _timeProvider = timeProvider.WhenNotNull();
         _logger = logger.WhenNotNull();
