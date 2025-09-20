@@ -572,30 +572,191 @@ Files and their responsibilities:
 
 ## Accounts Management
 
-Manage your bank accounts with the following capabilities:
+### Overview
 
-- View all accounts in a table format showing:
+The accounts feature provides comprehensive bank account management with the following capabilities:
 
-  - BSB and Account Number
+#### Account Information Display
+
+- **Account List View**
+  - BSB and Account Number (formatted as XXX-XXX)
   - Description
   - Current Balance
-  - Reserved Amount
-  - Accrued Funds
-  - Daily Accrual
-  - Available Balance
+  - Reserved Amount (funds set aside)
+  - Accrued Funds (from expenses)
+  - Daily Accrual Rate
+  - Available Balance (Balance - Reserved - Accrued)
+  - Account Status (Healthy/Low/Overdrawn)
 
-- Create new accounts with:
+#### Account Operations
 
-  - BSB and Account Number
-  - Description
-  - Initial Balance
-  - Reserved Amount
+1. **Create Account**
 
-- Edit existing accounts:
-  - Update Description
-  - Modify Balance
-  - Adjust Reserved Amount
-  - BSB and Account Number are read-only after creation
+   ```typescript
+   type CreateAccount = {
+     bsb: string; // Format: XXX-XXX
+     number: string; // Account number
+     description: string;
+     balance: number; // Initial balance
+     reserved: number; // Reserved amount
+   };
+   ```
+
+2. **Edit Account**
+
+   ```typescript
+   type EditAccount = {
+     rowId: string; // Unique identifier
+     etag: string; // For concurrency control
+     description: string;
+     balance: number;
+     reserved: number;
+   };
+   ```
+
+3. **Delete Account**
+   - Validation prevents deletion if account has:
+     - Associated expenses
+     - Associated income
+     - Active projections
+
+### Implementation Details
+
+#### State Management
+
+1. **Account Summary Store**
+
+   ```typescript
+   type AccountsSummary = {
+     totalBalance: number;
+     totalReserved: number;
+     totalAvailable: number;
+     totalDailyAccrual: number;
+     setSummary: (
+       balance: number,
+       reserved: number,
+       available: number,
+       dailyAccrual: number
+     ) => void;
+   };
+   ```
+
+2. **Account Filtering**
+   ```typescript
+   type UseAccountFilterOptions = {
+     accounts: Account[];
+     items: ItemWithAccount[];
+     selectedAccountId: string | null;
+     onAccountChange: (accountId: string | null) => void;
+   };
+   ```
+
+#### Status Calculation
+
+```typescript
+const getAccountStatus = (balance: number, available: number) => {
+  if (available < 0) return "overdrawn";
+  if (available < balance * 0.1) return "low";
+  return "active";
+};
+```
+
+#### Account Form Validation
+
+```typescript
+const accountFormSchema = z.object({
+  bsb: z.string().regex(/^\d{3}-\d{3}$/, "BSB must be in format XXX-XXX"),
+  number: z.string().min(1, "Account number is required"),
+  description: z.string().min(1, "Description is required"),
+  balance: MoneyValueSchema,
+  reserved: MoneyValueSchema,
+});
+```
+
+### Key Components
+
+1. **AccountsPage**
+
+   - Main accounts listing and management
+   - Description filtering with state persistence:
+
+     ```typescript
+     // State for search term
+     const [searchTerm, setSearchTerm] = useState<string>("");
+
+     // Memoized description filtering
+     const descriptionFilteredAccounts = useMemo(() => {
+       if (!searchTerm.trim()) {
+         return accounts;
+       }
+
+       return accounts.filter((account) =>
+         account.description
+           ?.toLowerCase()
+           .includes(searchTerm.trim().toLowerCase())
+       );
+     }, [accounts, searchTerm]);
+
+     // SearchInput component usage
+     <SearchInput
+       value={searchTerm}
+       onChange={setSearchTerm}
+       placeholder="Search by description..."
+       ariaLabel="Search accounts by description"
+       name="account-search"
+     />;
+     ```
+
+   - Filter State Management:
+
+     - Description search is maintained in component state
+     - Real-time filtering as user types
+     - Case-insensitive matching
+     - Handles special characters and spaces
+     - Resets on navigation/refresh
+
+   - Integration with Navigation:
+
+     - Preserves current search during account edits
+     - Resets search when navigating away
+     - Works with browser history navigation
+     - Maintains filter during page refreshes
+
+   - Real-time updates via React Query
+   - Account status monitoring with live updates
+   - Actions menu for CRUD operations
+
+2. **AccountsOverview**
+
+   - Dashboard widget showing account summaries
+   - Real-time balance updates
+   - Status indicators
+   - Quick access to account details
+
+3. **AccountForm**
+   - Shared form component for create/edit
+   - Real-time validation
+   - Money value formatting
+   - Error handling and display
+
+### Feature Integration
+
+1. **With Expenses**
+
+   - Tracks expense accrual per account
+   - Updates daily accrual rates
+   - Maintains expense associations
+
+2. **With Income**
+
+   - Records expected income
+   - Updates available balances
+   - Maintains income associations
+
+3. **With Projections**
+   - Calculates future balances
+   - Tracks financial health indicators
+   - Projects cash flow
 
 ### Accessing Account Features
 
@@ -935,59 +1096,161 @@ The application includes error logging:
 
 ## Expenses Management
 
-Manage your recurring and one-time expenses:
+### Overview
 
-- View all expenses in a table format showing:
+The expenses feature manages recurring and one-time expenses with comprehensive filtering and state persistence:
 
-  - Description
-  - Amount
-  - Category
-  - Frequency (one-time or recurring)
-  - Start and end dates for recurring expenses
-  - Next due date
-  - Associated account
+### Display and Filtering
 
-- Create new expenses with:
+1. **Expense List View**
+   - Description and Amount
+   - Category and Frequency type
+   - Date information (Next Due, Start, End)
+   - Associated account details
+   - Status indicators
 
-  - Description
-  - Amount
-  - Category
-  - Frequency options (one-time, daily, weekly, monthly, etc.)
-  - Start and end dates (for recurring expenses)
-  - Associated account selection
+2. **Filter System**
 
-- Edit existing expenses:
-  - Update all expense details
-  - Modify payment schedules
-  - Change associated accounts
+   a. **Account Filtering**
+   ```typescript
+   // Local storage persisted state
+   type ExpenseStorageData = {
+     selectedAccountId: string | null;
+   };
+
+   // URL state synchronization
+   useEffect(() => {
+     if (!isEditing && !urlAccountId && storedData?.selectedAccountId) {
+       const newSearchParams = new URLSearchParams();
+       newSearchParams.set('accountId', storedData.selectedAccountId);
+       setSearchParams(newSearchParams);
+     }
+   }, [isEditing, urlAccountId, storedData?.selectedAccountId]);
+   ```
+
+   b. **Description Search**
+   ```typescript
+   const filteredExpenses = useMemo(() => {
+     return expenses.filter(expense =>
+       expense.description
+         .toLowerCase()
+         .includes(searchTerm.toLowerCase())
+     );
+   }, [expenses, searchTerm]);
+   ```
+
+   c. **Filter State Management**
+   - URL params for shareable filters
+   - Local storage for persistent preferences
+   - State reset on navigation
+   - Edit mode filter preservation
+
+### Operations
+
+1. **Create Expense**
+   - Form with validation
+   - Account selection
+   - Frequency configuration
+   - Date validation rules
+
+2. **Edit Expense**
+   - Maintains filter state during edit
+   - Returns to filtered view after save
+   - Preserves account filter in URL
+   - Updates local storage state
+
+3. **Delete Expense**
+   - Validation checks
+   - Account balance updates
+   - Projection recalculation
 
 ## Income Management
 
-Track your income sources:
+### Overview
 
-- View all income entries in a table format showing:
+The income feature manages recurring and one-time income sources with integrated filtering and state management:
 
-  - Description
-  - Amount
-  - Category
-  - Frequency (one-time or recurring)
-  - Start and end dates for recurring income
-  - Next expected date
-  - Associated account
+### Display and Filtering
 
-- Create new income entries with:
+1. **Income List View**
+   - Description and Amount
+   - Category and Frequency type
+   - Date information (Next Due, End)
+   - Associated account details
+   - Status indicators
 
-  - Description
-  - Amount
-  - Category
-  - Frequency options (one-time, daily, weekly, monthly, etc.)
-  - Start and end dates (for recurring income)
-  - Associated account selection
+2. **Filter Implementation**
 
-- Edit existing income entries:
-  - Update all income details
-  - Modify income schedules
-  - Change associated accounts
+   a. **Account Filter**
+   ```typescript
+   // Local storage structure
+   type IncomeStorageData = {
+     selectedAccountId: string | null;
+   };
+
+   // Shared account filtering hook usage
+   const {
+     accountsInItems,
+     filteredItems: filteredIncomes,
+     setSelectedAccountId: handleAccountChange,
+   } = useAccountFilter<Income>({
+     accounts,
+     items: incomes,
+     selectedAccountId: urlAccountId || storedData?.selectedAccountId || null,
+     onAccountChange: accountId => {
+       // Update storage
+       setIncomeData({ selectedAccountId: accountId });
+
+       // Update URL if not in edit mode
+       if (!isEditing && accountId) {
+         const newSearchParams = new URLSearchParams();
+         newSearchParams.set('accountId', accountId);
+         setSearchParams(newSearchParams);
+       }
+     },
+   });
+   ```
+
+   b. **Description Search**
+   ```typescript
+   // Real-time search filtering
+   const searchFiltered = useMemo(() => {
+     if (!searchTerm) {
+       return incomes;
+     }
+
+     return incomes.filter(income =>
+       income.description
+         .toLowerCase()
+         .includes(searchTerm.toLowerCase())
+     );
+   }, [incomes, searchTerm]);
+   ```
+
+   c. **Filter State Handling**
+   - URL parameters for shareable filters
+   - Local storage for user preferences
+   - Edit mode state preservation
+   - Filter restoration after edit
+
+### Operations
+
+1. **Create Income**
+   - Validated form inputs
+   - Account selection
+   - Frequency configuration
+   - Date range validation
+
+2. **Edit Income**
+   - Maintains filter context
+   - Preserves URL state
+   - Updates local storage
+   - Handles concurrent edits
+
+3. **Delete Income**
+   - Validation rules
+   - Account updates
+   - Projection recalculation
 
 ## Data Management
 
