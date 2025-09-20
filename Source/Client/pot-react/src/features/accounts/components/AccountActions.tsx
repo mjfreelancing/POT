@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Account } from '@/data';
+import { WithPermission } from '@/features/auth/components';
 import { DisplayError } from '@/lib';
 
 import useDeleteAccount from '../delete/hooks/useDeleteAccount';
@@ -70,41 +71,51 @@ function AccountActions({ account }: AccountActionsProps) {
           <DropdownMenuLabel className="text-sm font-semibold">
             Actions
           </DropdownMenuLabel>
-          <DropdownMenuItem
-            onClick={() => navigate(`/accounts/edit/${account.rowId}`)}
-          >
-            <Pencil className="mr-2 h-4 w-4" />
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className="text-destructive-high-contrast"
-            disabled={account.linkedExpenses > 0 || account.linkedIncomes > 0}
-            onClick={() => setShowDeleteDialog(true)}
-          >
-            <Trash2 className="mr-2 h-4 w-4 text-destructive-high-contrast" />
-            Delete
-          </DropdownMenuItem>
+          <WithPermission permission="account:manage">
+            <DropdownMenuItem
+              onClick={() => navigate(`/accounts/edit/${account.rowId}`)}
+            >
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit
+            </DropdownMenuItem>
+          </WithPermission>
+
+          <WithPermission permission="account:manage">
+            <DropdownMenuItem
+              className="text-destructive-high-contrast"
+              disabled={account.linkedExpenses > 0 || account.linkedIncomes > 0}
+              onClick={() => setShowDeleteDialog(true)}
+            >
+              <Trash2 className="mr-2 h-4 w-4 text-destructive-high-contrast" />
+              Delete
+            </DropdownMenuItem>
+          </WithPermission>
           <DropdownMenuSeparator />
           <DropdownMenuLabel className="text-sm font-semibold">
             Linked Data
           </DropdownMenuLabel>
-          <DropdownMenuItem
-            disabled={account.linkedExpenses === 0}
-            // Navigate to expenses with the account ID as a query parameter
-            onClick={() => navigate(`/expenses?accountId=${account.rowId}`)}
-          >
-            <Receipt className="mr-2 h-4 w-4" />
-            Expenses
-            {account.linkedExpenses > 0 && `(${account.linkedExpenses})`}
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            disabled={account.linkedIncomes === 0}
-            // Navigate to income with the account ID as a query parameter
-            onClick={() => navigate(`/incomes?accountId=${account.rowId}`)}
-          >
-            <TrendingUp className="mr-2 h-4 w-4" />
-            Income {account.linkedIncomes > 0 && `(${account.linkedIncomes})`}
-          </DropdownMenuItem>
+          <WithPermission permission="expense:view">
+            <DropdownMenuItem
+              disabled={account.linkedExpenses === 0}
+              // Navigate to expenses with the account ID as a query parameter
+              onClick={() => navigate(`/expenses?accountId=${account.rowId}`)}
+            >
+              <Receipt className="mr-2 h-4 w-4" />
+              Expenses
+              {account.linkedExpenses > 0 && `(${account.linkedExpenses})`}
+            </DropdownMenuItem>
+          </WithPermission>
+
+          <WithPermission permission="income:view">
+            <DropdownMenuItem
+              disabled={account.linkedIncomes === 0}
+              // Navigate to income with the account ID as a query parameter
+              onClick={() => navigate(`/incomes?accountId=${account.rowId}`)}
+            >
+              <TrendingUp className="mr-2 h-4 w-4" />
+              Income {account.linkedIncomes > 0 && `(${account.linkedIncomes})`}
+            </DropdownMenuItem>
+          </WithPermission>
           <DropdownMenuSeparator />
         </DropdownMenuContent>
       </DropdownMenu>

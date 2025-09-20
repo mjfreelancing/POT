@@ -17,6 +17,7 @@ import { Income } from '@/data';
 import { DisplayError } from '@/lib';
 
 import useDeleteIncome from '../delete/hooks/useDeleteIncome';
+import { WithPermission } from '@/features/auth/components';
 
 type IncomeActionsProps = {
   income: Income;
@@ -64,27 +65,37 @@ function IncomeActions({ income }: IncomeActionsProps) {
           <DropdownMenuLabel className="text-sm font-semibold">
             Actions
           </DropdownMenuLabel>
-          <DropdownMenuItem
-            onClick={() => navigate(`/incomes/edit/${income.rowId}`)}
-          >
-            <Pencil className="mr-2 h-4 w-4" />
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() =>
-              navigate(`/incomes/create?duplicate=${income.rowId}`)
-            }
-          >
-            <Copy className="mr-2 h-4 w-4" />
-            Duplicate
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className="text-destructive-high-contrast"
-            onClick={() => setShowDeleteDialog(true)}
-          >
-            <Trash2 className="mr-2 h-4 w-4 text-destructive-high-contrast" />
-            Delete
-          </DropdownMenuItem>
+
+          <WithPermission permission="income:manage">
+            <DropdownMenuItem
+              onClick={() => navigate(`/incomes/edit/${income.rowId}`)}
+            >
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit
+            </DropdownMenuItem>
+          </WithPermission>
+
+          <WithPermission permission="income:manage">
+            <DropdownMenuItem
+              onClick={() =>
+                navigate(`/incomes/create?duplicate=${income.rowId}`)
+              }
+            >
+              <Copy className="mr-2 h-4 w-4" />
+              Duplicate
+            </DropdownMenuItem>
+          </WithPermission>
+
+          <WithPermission permission="income:manage">
+            <DropdownMenuItem
+              className="text-destructive-high-contrast"
+              onClick={() => setShowDeleteDialog(true)}
+            >
+              <Trash2 className="mr-2 h-4 w-4 text-destructive-high-contrast" />
+              Delete
+            </DropdownMenuItem>
+          </WithPermission>
+
           <DropdownMenuSeparator />
         </DropdownMenuContent>
       </DropdownMenu>

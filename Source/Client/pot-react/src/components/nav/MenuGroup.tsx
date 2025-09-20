@@ -2,6 +2,7 @@ import React from 'react';
 import { matchPath, useLocation } from 'react-router';
 import { Link } from 'react-router';
 
+import { usePermissions } from '@/features/auth/usePermissions';
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -14,6 +15,7 @@ import {
 type MenuGroupItemBase = {
   readonly label: string;
   readonly icon: React.ElementType;
+  readonly permission?: string;
 };
 
 export type HrefLink = MenuGroupItemBase & {
@@ -37,20 +39,6 @@ export type MenuGroupProps = {
   readonly group: MenuGroupDefinition;
 };
 
-/*
-  The original code used to determine if a menu item matched the current location relied on react hooks.
-
-    import { useMatch, useResolvedPath } from 'react-router';
-
-    // What's the path associated with the menu item (within group.items.map)
-    const resolvedPath = useResolvedPath(item.href);
-
-    // Does it match the current path?
-    isMatch = !!useMatch({ path: resolvedPath.pathname, end: true });
-
-  This cannot be used, however, because the hooks cannot be called within a callback.
-*/
-
 const isActivePath = (currentPath: string, href: string) => {
   const resolvedPath = new URL(href, window.location.origin).pathname;
   return !!matchPath({ path: resolvedPath, end: true }, currentPath);
@@ -66,6 +54,32 @@ const isHrefLink = (item: MenuGroupItem): item is HrefLink => {
 
 const MenuGroup: React.FC<MenuGroupProps> = ({ group }) => {
   const location = useLocation();
+  const { permissions } = usePermissions();
+
+  // Pre-calculate all permission checks once for the group - not using <PermissionGuard> as there was too much flicker on a page refresh
+  const permissionCache = React.useMemo(() => {
+    return group.items.reduce(
+      (acc, item) => {
+        if (item.permission) {
+          acc[item.permission] = permissions.includes(item.permission);
+        }
+
+        return acc;
+      },
+      {} as Record<string, boolean>,
+    );
+  }, [group.items, permissions]);
+
+  // Skip rendering the group if no items have permission
+  const hasAnyVisibleItems = React.useMemo(() => {
+    return group.items.some(
+      item => !item.permission || permissionCache[item.permission],
+    );
+  }, [group.items, permissionCache]);
+
+  if (!hasAnyVisibleItems) {
+    return null;
+  }
 
   return (
     <SidebarGroup>
@@ -75,43 +89,55 @@ const MenuGroup: React.FC<MenuGroupProps> = ({ group }) => {
           {group.items.map((item, index) => {
             const Icon = item.icon;
 
-            if (isOnClickLink(item)) {
-              return (
-                <SidebarMenuItem key={index}>
-                  <SidebarMenuButton
-                    tooltip={item.label}
-                    onClick={item.onClick}
-                    className="pl-6"
-                  >
-                    <Icon />
-                    <span>{item.label}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              );
-            }
-
-            if (isHrefLink(item)) {
-              const isActive = isActivePath(location.pathname, item.href);
-
-              return (
-                <SidebarMenuItem key={index}>
-                  <SidebarMenuButton
-                    isActive={isActive}
-                    tooltip={item.label}
-                    asChild
-                    className="pl-6"
-                  >
-                    <Link to={item.href} aria-label={item.label}>
+            const menuItem = (() => {
+              if (isOnClickLink(item)) {
+                return (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      tooltip={item.label}
+                      onClick={item.onClick}
+                      className="pl-6"
+                    >
                       <Icon />
                       <span>{item.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              );
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              }
+
+              if (isHrefLink(item)) {
+                const isActive = isActivePath(location.pathname, item.href);
+
+                return (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={isActive}
+                      tooltip={item.label}
+                      asChild
+                      className="pl-6"
+                    >
+                      <Link to={item.href} aria-label={item.label}>
+                        <Icon />
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              }
+
+              return null;
+            })();
+
+            if (!menuItem) {
+              return null;
             }
 
-            // This should never happen with proper typing, but TypeScript requires it
-            return null;
+            // Skip items without permission
+            if (item.permission && !permissionCache[item.permission]) {
+              return null;
+            }
+
+            return <React.Fragment key={index}>{menuItem}</React.Fragment>;
           })}
         </SidebarMenu>
       </SidebarGroupContent>

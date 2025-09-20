@@ -18,6 +18,8 @@ type BulkAction<TData> = {
   label: string;
   /** Function called when the action is triggered, receives all selected items */
   onClick: (selectedItems: TData[]) => void;
+  /** Whether this action is currently disabled */
+  isDisabled?: boolean;
 };
 
 /**
@@ -106,15 +108,32 @@ function BulkActionsBar<TData>({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
           {/* Render each bulk action as a dropdown menu item */}
-          {bulkActions.map((action, index) => (
-            <DropdownMenuItem
-              key={index}
-              onClick={() => action.onClick(selectedItems)}
-              disabled={selectedCount === 0}
-            >
-              {action.label}
-            </DropdownMenuItem>
-          ))}
+          {bulkActions.map((action, index) => {
+            const isDisabled = selectedCount === 0 || action.isDisabled;
+
+            if (!isDisabled) {
+              return (
+                <DropdownMenuItem
+                  key={index}
+                  onClick={() => action.onClick(selectedItems)}
+                >
+                  {action.label}
+                </DropdownMenuItem>
+              );
+            }
+
+            return (
+              <div key={index} className="cursor-not-allowed">
+                <DropdownMenuItem
+                  disabled={true}
+                  aria-disabled={true}
+                  className="pointer-events-none"
+                >
+                  {action.label}
+                </DropdownMenuItem>
+              </div>
+            );
+          })}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import AccrualsAction from '@/features/dashboard/actions/accruals/AccrualsAction';
 
 import DashboardCardHeader from './DashboardCardHeader';
+import { PermissionGuard } from '@/features/auth/components';
 
 function QuickActions() {
   return (
@@ -16,7 +17,13 @@ function QuickActions() {
       <CardContent className="px-4 -mt-2">
         <div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl w-full">
-            <AccrualsAction />
+            {/* expenses and incomes are renewed, and accounts are accrued */}
+            <PermissionGuard
+              permission={['expense:manage', 'income:manage', 'account:manage']}
+            >
+              <AccrualsAction />
+            </PermissionGuard>
+
             {/* other actions can be added here */}
           </div>
         </div>

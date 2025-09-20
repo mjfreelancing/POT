@@ -7,6 +7,7 @@ import {
   QuickActions,
 } from './components';
 import { DashboardProvider, useDashboardContext } from './context';
+import { PermissionGuard } from '../auth/components';
 
 function DashboardContent() {
   const { error, setError } = useDashboardContext();
@@ -17,8 +18,14 @@ function DashboardContent() {
 
       <div className="flex-1 p-6 space-y-6">
         <QuickActions />
-        <ExpensesOverview />
-        <AccountsOverview />
+
+        <PermissionGuard permission="expense:view">
+          <ExpensesOverview />
+        </PermissionGuard>
+
+        <PermissionGuard permission="account:view">
+          <AccountsOverview />
+        </PermissionGuard>
 
         {error && (
           <ErrorSheet

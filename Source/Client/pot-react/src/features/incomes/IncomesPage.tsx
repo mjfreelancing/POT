@@ -15,6 +15,7 @@ import { DisplayError, logger } from '@/lib';
 
 import { IncomesHeader, IncomesTable } from './components';
 import useIncomeStorage from './hooks/useIncomeStorage';
+import { WithPermission } from '../auth/components';
 
 function IncomesPage() {
   logger.info('IncomesPage', 'Rendering');
@@ -165,15 +166,17 @@ function IncomesPage() {
               name="income-search"
             />
           </div>
-          <Button
-            onClick={() => navigate('create')}
-            aria-label="Add a new income"
-            className="gap-2 min-w-[132px]"
-            disabled={accounts.length === 0}
-          >
-            <Plus className="h-4 w-4" />
-            Add Income
-          </Button>
+          <WithPermission permission="income:manage">
+            <Button
+              onClick={() => navigate('create')}
+              aria-label="Add a new income"
+              className="gap-2 min-w-[132px]"
+              disabled={accounts.length === 0}
+            >
+              <Plus className="h-4 w-4" />
+              Add Income
+            </Button>
+          </WithPermission>
         </Toolbar>
         <div className="flex-1 min-h-0 flex flex-col">
           <IncomesTable filteredIncomes={descriptionFilteredIncomes} />

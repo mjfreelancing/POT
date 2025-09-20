@@ -7,6 +7,7 @@ import {
   useApiRenewExpenses,
   useApiToggleExcludeExpenses,
 } from '@/api/hooks/useExpenses';
+import { usePermissions } from '@/features/auth/usePermissions';
 import { ErrorSheet } from '@/components/feedback';
 import {
   BulkAction,
@@ -116,9 +117,13 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
   const excludeExpensesMutation = useApiToggleExcludeExpenses();
   const [error, setError] = useState<DisplayError | null>(null);
 
+  const { hasPermission } = usePermissions();
+  const canManageExpenses = hasPermission('expense:manage');
+
   const bulkActions: BulkAction<Expense>[] = [
     {
       label: 'Auto Renew',
+      isDisabled: !canManageExpenses,
       onClick: async (selectedItems: Expense[]) => {
         const result = await renewExpenses(
           selectedItems,
@@ -133,6 +138,7 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
     },
     {
       label: 'Toggle Exclusion',
+      isDisabled: !canManageExpenses,
       onClick: async (selectedItems: Expense[]) => {
         const result = await toggleExcludeExpenses(
           selectedItems,

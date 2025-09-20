@@ -6,6 +6,7 @@ import { useParams } from 'react-router';
 
 import { useApiRenewIncomes, useApiToggleExcludeIncomes } from '@/api/hooks';
 import { ErrorSheet, NotePopover, StatusBadge } from '@/components/feedback';
+import { usePermissions } from '@/features/auth/usePermissions';
 import {
   BulkAction,
   createDateColumn,
@@ -107,9 +108,13 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
   const excludeIncomesMutation = useApiToggleExcludeIncomes();
   const [error, setError] = useState<DisplayError | null>(null);
 
+  const { hasPermission } = usePermissions();
+  const canManageIncomes = hasPermission('income:manage');
+
   const bulkActions: BulkAction<Income>[] = [
     {
       label: 'Auto Renew',
+      isDisabled: !canManageIncomes,
       onClick: async (selectedItems: Income[]) => {
         const result = await renewIncomes(
           selectedItems,
@@ -124,6 +129,7 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
     },
     {
       label: 'Toggle Exclusion',
+      isDisabled: !canManageIncomes,
       onClick: async (selectedItems: Income[]) => {
         const result = await toggleExcludeIncomes(
           selectedItems,

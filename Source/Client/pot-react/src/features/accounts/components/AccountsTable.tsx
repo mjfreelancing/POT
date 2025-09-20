@@ -6,6 +6,7 @@ import { useParams } from 'react-router';
 
 import { useApiAccrueExpenses } from '@/api/hooks';
 import { ErrorSheet, StatusBadge } from '@/components/feedback';
+import { usePermissions } from '@/features/auth/usePermissions';
 import {
   BulkAction,
   createMoneyValueColumn,
@@ -141,9 +142,13 @@ function AccountsTable({ accounts }: AccountsTableProps) {
   const accrueExpensesMutation = useApiAccrueExpenses();
   const [error, setError] = useState<DisplayError | null>(null);
 
+  const { hasPermission } = usePermissions();
+  const canManageExpenses = hasPermission('expense:manage');
+
   const bulkActions: BulkAction<Account>[] = [
     {
       label: 'Accrue Expenses',
+      isDisabled: !canManageExpenses,
       onClick: async (selectedItems: Account[]) => {
         const result = await accrueAllExpenses(
           selectedItems,

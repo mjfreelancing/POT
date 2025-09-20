@@ -35,8 +35,28 @@ const useDelete = <TResponse>(url: string) => {
   });
 };
 
-const useGet = <TResponse>(url: string, queryKey: string[]) => {
+import type { UseQueryOptions } from '@tanstack/react-query';
+
+// Options type for useGet that excludes queryKey and queryFn since they are
+// handled internally by the hook. This ensures type safety while allowing
+// consumers to customize other React Query options like caching and refetching.
+type GetOptions<TResponse> = Omit<
+  UseQueryOptions<
+    Result<TResponse, FailResultBase>,
+    unknown,
+    Result<TResponse, FailResultBase>,
+    string[]
+  >,
+  'queryKey' | 'queryFn'
+>;
+
+const useGet = <TResponse>(
+  url: string,
+  queryKey: string[],
+  options: GetOptions<TResponse> = {},
+) => {
   return useQuery({
+    ...options,
     queryKey,
     queryFn: async ({ signal }): Promise<Result<TResponse, FailResultBase>> => {
       return performOperation(() => axios.get<TResponse>(url, { signal }));

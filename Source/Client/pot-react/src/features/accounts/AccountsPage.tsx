@@ -8,6 +8,7 @@ import { ErrorSheet, LoadingMessage } from '@/components/feedback';
 import { SearchInput } from '@/components/filters';
 import Toolbar from '@/components/toolbar/Toolbar';
 import { Button } from '@/components/ui/button';
+import { WithPermission } from '@/features/auth/components';
 import { DisplayError, logger } from '@/lib';
 
 import { AccountsHeader, AccountsTable } from './components';
@@ -68,14 +69,16 @@ function AccountsPage() {
               name="account-search"
             />
           </div>
-          <Button
-            onClick={() => navigate('create')}
-            aria-label="Add a new account"
-            className="gap-2 min-w-[132px]"
-          >
-            <Plus className="h-4 w-4" />
-            Add Account
-          </Button>
+          <WithPermission permission="account:manage">
+            <Button
+              onClick={() => navigate('create')}
+              aria-label="Add a new account"
+              className="gap-2 min-w-[132px]"
+            >
+              <Plus className="h-4 w-4" />
+              Add Account
+            </Button>
+          </WithPermission>
         </Toolbar>
         <div className="flex-1 min-h-0 flex flex-col">
           <AccountsTable accounts={descriptionFilteredAccounts} />

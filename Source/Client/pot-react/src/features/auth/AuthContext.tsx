@@ -9,10 +9,13 @@ import {
   useState,
 } from 'react';
 
+import { useMe } from '@/api/hooks/useMe';
+import type { UserInfo } from '@/api/types/userInfo';
 import useLocalStorage from '@/hooks/useLocalStorage';
 import { DisplayError } from '@/lib';
 
 import logoutManager from './logoutManager';
+import { usePermissionStore } from './stores/usePermissionStore';
 import {
   createTokenRefreshTimer,
   type TokenRefreshHandle,
@@ -22,6 +25,7 @@ import { AUTH_STORAGE_KEY, type AuthTokens } from './types';
 // Type for the AuthContext value
 type AuthContextType = {
   tokens: AuthTokens | undefined;
+  userInfo: UserInfo | undefined;
   isAuthenticated: boolean;
   login: (tokens: AuthTokens) => void;
   logout: () => void;
@@ -37,6 +41,23 @@ function AuthProvider({ children }: { children: ReactNode }) {
     onError: setError,
   });
 
+  const { data: userInfo } = useMe();
+  const permissionStore = usePermissionStore();
+  const prevUserInfoRef = useRef<typeof userInfo>(undefined);
+
+  // Update permission store when userInfo changes
+  useEffect(() => {
+    // Only update if userInfo has actually changed and is successful
+    if (userInfo?.success && userInfo !== prevUserInfoRef.current) {
+      permissionStore.setUserInfo(
+        userInfo.value.username,
+        userInfo.value.permissions,
+      );
+
+      prevUserInfoRef.current = userInfo;
+    }
+  }, [userInfo, permissionStore]);
+
   // Read tokens from localStorage on mount
   const [tokens, setTokens] = useState<AuthTokens | undefined>(() => getItem());
 
@@ -49,11 +70,12 @@ function AuthProvider({ children }: { children: ReactNode }) {
     [setItem],
   );
 
-  // Logout: remove tokens
+  // Logout: remove tokens and clear permissions
   const logout = useCallback(() => {
     removeItem();
     setTokens(undefined);
-  }, [removeItem]);
+    permissionStore.clearUserInfo();
+  }, [removeItem, permissionStore]);
 
   // isAuthenticated: true if accessToken exists
   const isAuthenticated = Boolean(tokens && tokens.accessToken);
@@ -87,12 +109,13 @@ function AuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       tokens,
+      userInfo: userInfo?.success ? userInfo.value : undefined,
       isAuthenticated,
       login,
       logout,
       error,
     }),
-    [tokens, isAuthenticated, login, logout, error],
+    [tokens, userInfo, isAuthenticated, login, logout, error],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

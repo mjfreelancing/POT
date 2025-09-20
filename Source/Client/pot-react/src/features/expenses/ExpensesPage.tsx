@@ -15,6 +15,7 @@ import { DisplayError, logger } from '@/lib';
 
 import { ExpensesHeader, ExpensesTable } from './components';
 import useExpenseStorage from './hooks/useExpenseStorage';
+import { WithPermission } from '../auth/components';
 
 function ExpensesPage() {
   logger.info('ExpensesPage', 'Rendering');
@@ -169,15 +170,17 @@ function ExpensesPage() {
               name="expense-search"
             />
           </div>
-          <Button
-            onClick={() => navigate('create')}
-            aria-label="Add a new expense"
-            className="gap-2 min-w-[132px]"
-            disabled={accounts.length === 0}
-          >
-            <Plus className="h-4 w-4" />
-            Add Expense
-          </Button>
+          <WithPermission permission="expense:manage">
+            <Button
+              onClick={() => navigate('create')}
+              aria-label="Add a new expense"
+              className="gap-2 min-w-[132px]"
+              disabled={accounts.length === 0}
+            >
+              <Plus className="h-4 w-4" />
+              Add Expense
+            </Button>
+          </WithPermission>
         </Toolbar>
         {/* Table container: flex-1 min-h-0 for proper flexbox, no overflow here */}
         <div className="flex-1 min-h-0 flex flex-col">
