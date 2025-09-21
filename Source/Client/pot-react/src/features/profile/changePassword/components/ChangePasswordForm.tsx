@@ -1,19 +1,29 @@
-import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  changePasswordSchema,
-  ChangePasswordFields,
-} from '../schemas/changePasswordSchema';
+import { Key } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+
+import useChangePassword from '@/api/hooks/useChangePassword';
+import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
+import { SuccessToast } from '@/components/feedback/toast';
+import { Button } from '@/components/ui/button';
 import {
   Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import type { DisplayError } from '@/lib';
+import { logger } from '@/lib/logging';
+
+import {
+  ChangePasswordFields,
+  changePasswordSchema,
+} from '../schemas/changePasswordSchema';
 
 function ChangePasswordForm() {
   const form = useForm<ChangePasswordFields>({
@@ -26,28 +36,68 @@ function ChangePasswordForm() {
     mode: 'onSubmit',
   });
 
-  function onSubmit(values: ChangePasswordFields) {
-    // Placeholder for submit logic
-    // TODO: Implement password change API call
-    // eslint-disable-next-line no-console
-    console.log('Change password form submitted:', values);
+  const { changePassword, isPending } = useChangePassword();
+  const [error, setError] = useState<DisplayError | null>(null);
+
+  useEffect(() => {
+    logger.info('ChangePasswordForm', 'Mounted');
+    return () => {
+      logger.info('ChangePasswordForm', 'Unmounted');
+    };
+  }, []);
+
+  async function onSubmit(values: ChangePasswordFields) {
+    const result = await changePassword({
+      currentPassword: values.currentPassword,
+      newPassword: values.newPassword,
+    });
+
+    if (result && !result.success) {
+      setError({
+        title: result.error.code || 'Error',
+        description: result.error.description || 'Failed to change password',
+      });
+      return;
+    }
+
+    if (result && result.success) {
+      toast(
+        () => (
+          <SuccessToast
+            icon={Key}
+            title="Password Changed"
+            description="Your password was updated successfully."
+          />
+        ),
+        { duration: 5000 },
+      );
+      form.reset();
+    }
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {error && (
+          <ErrorSheet
+            title={error.title}
+            description={error.description}
+            onDismiss={() => setError(null)}
+          />
+        )}
         <FormField
           control={form.control}
           name="currentPassword"
           render={({ field }) => (
             <FormItem className="space-y-1">
-              <FormLabel>Current Password</FormLabel>
+              <FormLabel htmlFor="current-password">Current Password</FormLabel>
               <FormControl>
                 <Input
                   {...field}
                   id="current-password"
                   type="password"
                   autoComplete="current-password"
+                  disabled={isPending}
                 />
               </FormControl>
               <FormMessage />
@@ -59,13 +109,14 @@ function ChangePasswordForm() {
           name="newPassword"
           render={({ field }) => (
             <FormItem className="space-y-1">
-              <FormLabel>New Password</FormLabel>
+              <FormLabel htmlFor="new-password">New Password</FormLabel>
               <FormControl>
                 <Input
                   {...field}
                   id="new-password"
                   type="password"
                   autoComplete="new-password"
+                  disabled={isPending}
                 />
               </FormControl>
               <FormMessage />
@@ -77,21 +128,25 @@ function ChangePasswordForm() {
           name="confirmPassword"
           render={({ field }) => (
             <FormItem className="space-y-1">
-              <FormLabel>Confirm New Password</FormLabel>
+              <FormLabel htmlFor="confirm-password">
+                Confirm New Password
+              </FormLabel>
               <FormControl>
                 <Input
                   {...field}
                   id="confirm-password"
                   type="password"
                   autoComplete="new-password"
+                  disabled={isPending}
                 />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full mt-2">
-          Change Password
+
+        <Button type="submit" className="w-full mt-2" disabled={isPending}>
+          {isPending ? 'Changing...' : 'Change Password'}
         </Button>
       </form>
     </Form>

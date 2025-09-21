@@ -1,19 +1,16 @@
-import { JSX } from 'react';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetClose,
-} from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
 import { XIcon } from 'lucide-react';
+import { JSX } from 'react';
+
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { Button } from '@/components/ui/button';
+import { DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { Sheet, SheetClose, SheetContent } from '@/components/ui/sheet';
+
 import { ChangePasswordForm } from './changePassword/components/ChangePasswordForm';
 
 type ProfileSheetProps = {
@@ -33,9 +30,14 @@ function ProfileSheet(props: ProfileSheetProps): JSX.Element {
         className="w-full max-w-md p-6 h-full flex flex-col [&>button:first-of-type]:hidden"
       >
         <div className="flex items-center justify-between mb-6">
-          <SheetTitle className="text-2xl font-bold tracking-tight text-primary">
-            Profile
-          </SheetTitle>
+          <div>
+            <DialogTitle className="text-2xl font-bold tracking-tight text-primary">
+              Profile
+            </DialogTitle>
+            <DialogDescription className="sr-only">
+              Manage your profile settings, including changing your password.
+            </DialogDescription>
+          </div>
           <SheetClose asChild>
             <Button
               variant="ghost"

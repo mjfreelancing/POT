@@ -48,6 +48,11 @@ const handleAuthError =
     }
 
     if (response.status === 401) {
+      // If the request is to an /auth/* endpoint, do not attempt token refresh
+      if (config.url && config.url.includes('/auth/')) {
+        return Promise.reject(error);
+      }
+
       if (!isRefreshing) {
         isRefreshing = true;
 
