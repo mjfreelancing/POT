@@ -1,4 +1,4 @@
-import { KeyRound, LogOut } from 'lucide-react';
+import { LogOut, User } from 'lucide-react';
 import { JSX } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -25,8 +25,8 @@ function UserMenu(): JSX.Element {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem>
-          <KeyRound className="mr-2 size-4" />
-          Change Password
+          <User className="mr-2 size-4" />
+          Profile
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={logout}>
