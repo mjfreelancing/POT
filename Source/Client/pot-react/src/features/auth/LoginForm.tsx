@@ -41,14 +41,16 @@ function LoginForm({ className, onSubmit, error, ...props }: LoginFormProps) {
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle>Login to your account</CardTitle>
+          <CardTitle className="text-lg font-bold tracking-tight text-primary">
+            Login to your account
+          </CardTitle>
           <CardDescription>
             Enter your credentials to login to your account
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col mt-4 gap-6">
               <div className="grid gap-3">
                 <Label htmlFor="usernameOrEmail">Username</Label>
                 <Input
@@ -61,7 +63,7 @@ function LoginForm({ className, onSubmit, error, ...props }: LoginFormProps) {
                   autoComplete="username"
                 />
               </div>
-              <div className="grid gap-3">
+              <div className="grid mb-4 gap-3">
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
                   <a
