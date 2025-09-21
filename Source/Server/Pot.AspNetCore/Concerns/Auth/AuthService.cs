@@ -6,6 +6,7 @@ using Pot.App.Errors;
 using Pot.AspNetCore.Concerns.Auth.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Users;
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 
@@ -89,6 +90,36 @@ internal sealed class AuthService : IAuthService
 
             return EnrichedResult.Success<AuthTokens?>(authTokens);
         }
+    }
+
+    public async Task<EnrichedResult<bool>> ChangePasswordAsync(Guid userId, string currentPassword, string newPassword, CancellationToken cancellationToken)
+    {
+        _logger.LogCall(this);
+
+        using (_userRepository.WithTracking())
+        {
+            var user = await _userRepository
+                .SingleOrDefaultAsync(user => user.RowId == userId, cancellationToken)
+                .ConfigureAwait(false);
+
+            Throw<UnreachableException>.WhenNull(user, "The user should exist");
+
+            var isValidHash = _passwordHasher.IsValidPasswordHash(user, currentPassword, user.PasswordHash);
+
+            if (!isValidHash)
+            {
+                var authError = ProblemDetailsErrorFactory.CreateAuthError("The current password is invalid.");
+                return EnrichedResult.Fail<bool>(authError);
+            }
+
+            user.PasswordHash = _passwordHasher.GetHash(user, newPassword);
+
+            await _userRepository
+                .SaveAsync(cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        return EnrichedResult.Success(true);
     }
 
     private async Task<AuthTokens> UpdateUserAuthTokensAsync(UserEntity user, CancellationToken cancellationToken)

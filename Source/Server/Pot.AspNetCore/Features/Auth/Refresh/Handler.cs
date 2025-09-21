@@ -2,7 +2,6 @@
 using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Pot.App.Errors;
 using Pot.AspNetCore.Concerns.Auth;
 using Pot.AspNetCore.Concerns.Auth.Models;
 using Pot.AspNetCore.Concerns.Validation;
@@ -17,18 +16,18 @@ internal sealed class Handler
 
     public static async Task<Results<Ok<AuthTokens>, ProblemHttpResult>> Invoke(Request request,
 
-    [FromHeader(Name = "Authorization")]
-    [Description("The access token to be refreshed")]
-    string? accessToken,
+        [FromHeader(Name = "Authorization")]
+        [Description("The access token to be refreshed")]
+        string? accessToken,
 
-    IAuthService authService, IProblemDetailsInspector problemDetailsInspector,
+        IAuthService authService, IProblemDetailsInspector problemDetailsInspector,
         ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);
 
         if (accessToken.IsNullOrEmpty())
         {
-            return CreateAuthErrorResult();
+            return AuthUtils.CreateAuthErrorResult();
         }
 
         var problemDetails = problemDetailsInspector.Validate(request);
@@ -50,13 +49,6 @@ internal sealed class Handler
         return authTokens.IsSuccess
             ? TypedResults.Ok<AuthTokens>(authTokens.Value!)
             : TypedResults.Problem(authTokens.Error!.ToProblemDetails());
-    }
-
-    private static ProblemHttpResult CreateAuthErrorResult()
-    {
-        var authError = ProblemDetailsErrorFactory.CreateAuthError("The username or password is invalid.");
-
-        return TypedResults.Problem(authError.ToProblemDetails());
     }
 }
 

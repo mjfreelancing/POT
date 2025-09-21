@@ -8,5 +8,6 @@ internal static class AuthEndpoints
     public const string Login = "/login";
     public const string Refresh = "/refresh";
     public const string Me = "/me";
+    public const string ChangePassword = "/change-password";
 }
 

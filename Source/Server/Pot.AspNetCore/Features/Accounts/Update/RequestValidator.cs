@@ -1,16 +1,10 @@
-﻿using AllOverIt.Validation;
-using AllOverIt.Validation.Extensions;
+﻿using AllOverIt.Validation.Extensions;
+using Pot.AspNetCore.Concerns.Validation;
 
 namespace Pot.AspNetCore.Features.Accounts.Update;
 
-internal sealed class RequestValidator : ValidatorBase<Request>
+internal sealed class RequestValidator : PotValidatorBase<Request>
 {
-    static RequestValidator()
-    {
-        // Prevent RowId from being split into two words
-        DisablePropertyNameSplitting();
-    }
-
     public RequestValidator()
     {
         RuleFor(request => request.RowId).IsNotEmpty();

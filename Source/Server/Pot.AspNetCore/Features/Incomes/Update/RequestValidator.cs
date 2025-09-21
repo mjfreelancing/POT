@@ -1,12 +1,12 @@
-﻿using AllOverIt.Validation;
-using AllOverIt.Validation.Extensions;
+﻿using AllOverIt.Validation.Extensions;
 using FluentValidation.Results;
 using Pot.App.Errors;
+using Pot.AspNetCore.Concerns.Validation;
 using Pot.Shared;
 
 namespace Pot.AspNetCore.Features.Incomes.Update;
 
-internal sealed class RequestValidator : ValidatorBase<Request>
+internal sealed class RequestValidator : PotValidatorBase<Request>
 {
     public RequestValidator()
     {
