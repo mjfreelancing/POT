@@ -26,12 +26,15 @@ const CreateIncomeSheet = lazy(
 const EditIncomeSheet = lazy(
   () => import('../features/incomes/edit/EditIncomeSheet'),
 );
+
 const CreateExpenseSheet = lazy(
   () => import('../features/expenses/create/CreateExpenseSheet'),
 );
 const EditExpenseSheet = lazy(
   () => import('../features/expenses/edit/EditExpenseSheet'),
 );
+
+const ProfilePage = lazy(() => import('../features/profile/ProfilePage'));
 
 // ProtectedRoute component for protecting routes
 function ProtectedRoute() {
@@ -49,6 +52,7 @@ function AppRoutes() {
         <Route path="/login" element={<LoginPage />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Navigate replace to="dashboard" />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/projections" element={<ProjectionsPage />} />
           <Route path="/accounts" element={<AccountsPage />}>
