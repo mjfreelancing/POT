@@ -1,5 +1,4 @@
 import { addDays, addMonths, format, parseISO } from 'date-fns';
-import { useState } from 'react';
 import {
   Bar,
   BarChart,
@@ -85,20 +84,14 @@ function ProjectionChart({
     return afterStart && beforeEnd;
   });
 
-  // State for series visibility - initialize from saved hidden series
-  const [seriesVisibility, setSeriesVisibility] = useState<SeriesVisibility>(
-    () => {
-      const initial: SeriesVisibility = {};
-
-      // Initialize all series as visible
-      seriesKeys.forEach(key => {
-        // If the series is in the hiddenSeries list, mark it as hidden
-        initial[key] = !hiddenSeries.includes(key);
-      });
-
-      return initial;
-    },
-  );
+  // Derive seriesVisibility from props instead of state.
+  // This avoids React errors about updating a parent component during render,
+  // because derived values are always in sync with the latest props and do not
+  // require setState or useEffect, which could cause updates during render.
+  const seriesVisibility: SeriesVisibility = {};
+  seriesKeys.forEach(key => {
+    seriesVisibility[key] = !hiddenSeries.includes(key);
+  });
 
   // Get dynamic title based on selected metric
   const getChartTitle = () => {
@@ -130,22 +123,17 @@ function ProjectionChart({
   };
 
   // Toggle series visibility
-  const toggleSeries = (seriesKey: string) => {
-    setSeriesVisibility(prev => {
-      const newState = {
-        ...prev,
-        [seriesKey]: !prev[seriesKey],
-      };
-
-      // Calculate which series are now hidden
-      const newHiddenSeries = seriesKeys.filter(key => !newState[key]);
-
-      // Update parent component with only the hidden series keys
-      onHiddenSeriesChange(newHiddenSeries);
-
-      return newState;
+  function toggleSeries(seriesKey: string) {
+    // Compute new hidden series based on current visibility
+    const newHiddenSeries = seriesKeys.filter(key => {
+      if (key === seriesKey) {
+        return seriesVisibility[key]; // will be toggled
+      }
+      return !seriesVisibility[key];
     });
-  };
+
+    onHiddenSeriesChange(newHiddenSeries);
+  }
 
   // Calculate min and max for visible series only
   function getVisibleYDomain(): [number, number] {
