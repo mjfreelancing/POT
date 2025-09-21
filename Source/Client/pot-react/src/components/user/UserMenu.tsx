@@ -1,4 +1,4 @@
-import { LogOut, User } from 'lucide-react';
+import { LogOut, Settings } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -9,8 +9,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { AccountSettingsSheet } from '@/features/accountSettings/AccountSettingsSheet';
 import { useAuth } from '@/features/auth/AuthContext';
-import { ProfileSheet } from '@/features/profile/ProfileSheet';
 
 function UserMenu() {
   const { userInfo, logout } = useAuth();
@@ -36,8 +36,8 @@ function UserMenu() {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={handleProfileOpen}>
-            <User className="mr-2 size-4" />
-            Profile
+            <Settings className="mr-2 size-4" />
+            Account Settings
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={logout}>
@@ -46,7 +46,7 @@ function UserMenu() {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <ProfileSheet
+      <AccountSettingsSheet
         open={isProfileOpen}
         onOpenChange={setIsProfileOpen}
         onClose={handleProfileClose}

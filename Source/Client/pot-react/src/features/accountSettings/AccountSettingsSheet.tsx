@@ -13,13 +13,13 @@ import { Sheet, SheetClose, SheetContent } from '@/components/ui/sheet';
 
 import { ChangePasswordForm } from './changePassword/components/ChangePasswordForm';
 
-type ProfileSheetProps = {
+type AccountSettingsSheetProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onClose: () => void;
 };
 
-function ProfileSheet(props: ProfileSheetProps): JSX.Element {
+function AccountSettingsSheet(props: AccountSettingsSheetProps): JSX.Element {
   const { open, onOpenChange, onClose } = props;
 
   return (
@@ -32,17 +32,17 @@ function ProfileSheet(props: ProfileSheetProps): JSX.Element {
         <div className="flex items-center justify-between mb-6">
           <div>
             <DialogTitle className="text-2xl font-bold tracking-tight text-primary">
-              Profile
+              Account Settings
             </DialogTitle>
             <DialogDescription className="sr-only">
-              Manage your profile settings, including changing your password.
+              Manage your account settings
             </DialogDescription>
           </div>
           <SheetClose asChild>
             <Button
               variant="ghost"
               size="icon"
-              aria-label="Close profile"
+              aria-label="Close account settings"
               onClick={onClose}
             >
               <XIcon className="size-5" />
@@ -68,4 +68,4 @@ function ProfileSheet(props: ProfileSheetProps): JSX.Element {
   );
 }
 
-export { ProfileSheet };
+export { AccountSettingsSheet };
