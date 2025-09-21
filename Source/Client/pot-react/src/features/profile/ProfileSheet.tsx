@@ -61,7 +61,6 @@ function ProfileSheet(props: ProfileSheetProps): JSX.Element {
             {/* Add more AccordionItem components here as needed */}
           </Accordion>
         </div>
-        {/* Close button moved to header */}
       </SheetContent>
     </Sheet>
   );

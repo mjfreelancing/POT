@@ -1,4 +1,9 @@
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  changePasswordSchema,
+  ChangePasswordFields,
+} from '../schemas/changePasswordSchema';
 import {
   Form,
   FormField,
@@ -10,14 +15,9 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
-type ChangePasswordFields = {
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-};
-
 function ChangePasswordForm() {
   const form = useForm<ChangePasswordFields>({
+    resolver: zodResolver(changePasswordSchema),
     defaultValues: {
       currentPassword: '',
       newPassword: '',
@@ -28,9 +28,9 @@ function ChangePasswordForm() {
 
   function onSubmit(values: ChangePasswordFields) {
     // Placeholder for submit logic
-    // TODO: Implement password change
+    // TODO: Implement password change API call
     // eslint-disable-next-line no-console
-    console.log(values);
+    console.log('Change password form submitted:', values);
   }
 
   return (
