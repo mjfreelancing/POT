@@ -1,4 +1,5 @@
 import { LogOut, User } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -8,14 +9,18 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/features/auth/AuthContext';
-import { useNavigate } from 'react-router';
+import { ProfileSheet } from '@/features/profile/ProfileSheet';
 
 function UserMenu() {
   const { userInfo, logout } = useAuth();
-  const navigate = useNavigate();
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   function handleProfileOpen(): void {
-    navigate('/profile');
+    setIsProfileOpen(true);
+  }
+
+  function handleProfileClose(): void {
+    setIsProfileOpen(false);
   }
 
   return (
@@ -40,6 +45,11 @@ function UserMenu() {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      <ProfileSheet
+        open={isProfileOpen}
+        onOpenChange={setIsProfileOpen}
+        onClose={handleProfileClose}
+      />
     </>
   );
 }

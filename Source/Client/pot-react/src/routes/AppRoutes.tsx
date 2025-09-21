@@ -34,8 +34,6 @@ const EditExpenseSheet = lazy(
   () => import('../features/expenses/edit/EditExpenseSheet'),
 );
 
-const ProfilePage = lazy(() => import('../features/profile/ProfilePage'));
-
 // ProtectedRoute component for protecting routes
 function ProtectedRoute() {
   const { isAuthenticated } = useAuth();
@@ -52,7 +50,6 @@ function AppRoutes() {
         <Route path="/login" element={<LoginPage />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Navigate replace to="dashboard" />} />
-          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/projections" element={<ProjectionsPage />} />
           <Route path="/accounts" element={<AccountsPage />}>
