@@ -1,7 +1,7 @@
 using AllOverIt.Assertion;
 using AllOverIt.Extensions;
 using Pot.App.Features.Auth.Me;
-using Pot.AspNetCore.Features.Auth.Services.Models;
+using Pot.App.Features.Auth.Me.Models;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace Pot.AspNetCore.Features.Auth.Services;
@@ -24,11 +24,9 @@ internal sealed class HttpUserService : IHttpUserService
             return null;
         }
 
-        var username = await _userService
-            .GetUsernameAsync(userId.Value, cancellationToken)
+        return await _userService
+            .GetUserInfoAsync(userId.Value, cancellationToken)
             .ConfigureAwait(false);
-
-        return username is null ? null : new UserInfo(userId.Value, username);
     }
 
     private static Guid? GetUserId(HttpContext httpContext)

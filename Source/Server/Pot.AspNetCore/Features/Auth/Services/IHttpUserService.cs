@@ -1,4 +1,4 @@
-using Pot.AspNetCore.Features.Auth.Services.Models;
+using Pot.App.Features.Auth.Me.Models;
 using Pot.Shared.DependencyInjection;
 
 namespace Pot.AspNetCore.Features.Auth.Services;

@@ -22,6 +22,6 @@ internal sealed class Handler
 
         var permissions = await permissionService.GetPermissionsAsync(userInfo.UserId, cancellationToken);
 
-        return Response.Ok(userInfo.Username, permissions);
+        return Response.Ok(userInfo.Username, userInfo.DisplayName, userInfo.Email, permissions);
     }
 }
