@@ -12,8 +12,8 @@ using Pot.Data;
 namespace Pot.Data.Migrations
 {
     [DbContext(typeof(PotDbContext))]
-    [Migration("20250831010240_AddSitesUsersRolesPermissions")]
-    partial class AddSitesUsersRolesPermissions
+    [Migration("20250923095549_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -65,6 +65,9 @@ namespace Pot.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int>("SiteId")
+                        .HasColumnType("integer");
+
                     b.Property<double>("TotalExpenseAccrued")
                         .HasColumnType("double precision");
 
@@ -77,6 +80,8 @@ namespace Pot.Data.Migrations
 
                     b.HasIndex("RowId")
                         .IsUnique();
+
+                    b.HasIndex("SiteId");
 
                     b.HasIndex("Bsb", "Number")
                         .IsUnique();
@@ -319,6 +324,16 @@ namespace Pot.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("citext");
+
                     b.Property<long>("Etag")
                         .HasColumnType("bigint");
 
@@ -327,11 +342,18 @@ namespace Pot.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("RefreshToken")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("RefreshTokenExpiryUtc")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<Guid>("RowId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int?>("SiteId")
+                    b.Property<int>("SiteId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Username")
@@ -340,6 +362,8 @@ namespace Pot.Data.Migrations
                         .HasColumnType("citext");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Email");
 
                     b.HasIndex("Etag");
 
@@ -384,6 +408,17 @@ namespace Pot.Data.Migrations
                     b.ToTable("UserRole");
                 });
 
+            modelBuilder.Entity("Pot.Data.Entities.AccountEntity", b =>
+                {
+                    b.HasOne("Pot.Data.Entities.SiteEntity", "Site")
+                        .WithMany("Accounts")
+                        .HasForeignKey("SiteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Site");
+                });
+
             modelBuilder.Entity("Pot.Data.Entities.ExpenseEntity", b =>
                 {
                     b.HasOne("Pot.Data.Entities.AccountEntity", "Account")
@@ -409,9 +444,10 @@ namespace Pot.Data.Migrations
             modelBuilder.Entity("Pot.Data.Entities.UserEntity", b =>
                 {
                     b.HasOne("Pot.Data.Entities.SiteEntity", "Site")
-                        .WithMany()
+                        .WithMany("Users")
                         .HasForeignKey("SiteId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Site");
                 });
@@ -451,6 +487,13 @@ namespace Pot.Data.Migrations
                     b.Navigation("Expenses");
 
                     b.Navigation("Incomes");
+                });
+
+            modelBuilder.Entity("Pot.Data.Entities.SiteEntity", b =>
+                {
+                    b.Navigation("Accounts");
+
+                    b.Navigation("Users");
                 });
 #pragma warning restore 612, 618
         }

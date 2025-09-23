@@ -12,8 +12,8 @@ using Pot.Data;
 namespace Pot.Data.Migrations
 {
     [DbContext(typeof(PotDbContext))]
-    [Migration("20250831014543_ForceNonNullableAssociations")]
-    partial class ForceNonNullableAssociations
+    [Migration("20250923095924_AddRolesAndPermissions")]
+    partial class AddRolesAndPermissions
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -324,6 +324,16 @@ namespace Pot.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("citext");
+
                     b.Property<long>("Etag")
                         .HasColumnType("bigint");
 
@@ -331,6 +341,13 @@ namespace Pot.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<string>("RefreshToken")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("RefreshTokenExpiryUtc")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("RowId")
                         .ValueGeneratedOnAdd()
@@ -345,6 +362,8 @@ namespace Pot.Data.Migrations
                         .HasColumnType("citext");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Email");
 
                     b.HasIndex("Etag");
 
