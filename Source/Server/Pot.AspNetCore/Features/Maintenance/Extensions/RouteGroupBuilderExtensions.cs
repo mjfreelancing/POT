@@ -42,9 +42,10 @@ internal static class RouteGroupBuilderExtensions
 
     public static RouteGroupBuilder CreateRsaKeys(this RouteGroupBuilder routeGroupBuilder)
     {
-        // TODO: Needs to be locked down as this is not a public endpoint
+        // TODO: Needs to be locked down to a super-user as this is not a public endpoint
         routeGroupBuilder
             .MapPost(MaintenanceEndpoints.RsaKeys, Rsa.Keys.Handler.Invoke)
+            .RequireAuthorization("AuthenticatedUser")
             .WithName(nameof(CreateRsaKeys))
             .WithSummary("Create Rsa Keys")
             .WithDescription("Create Rsa Public/Private Keys")
