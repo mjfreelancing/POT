@@ -30,7 +30,7 @@ function UserMenu() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="flex items-center gap-2 px-3">
             <span className="font-medium text-base md:text-lg">
-              {userInfo?.username ?? 'User'}
+              {userInfo?.displayName ?? 'User'}
             </span>
           </Button>
         </DropdownMenuTrigger>
