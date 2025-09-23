@@ -1269,7 +1269,7 @@ Key Features:
    a. **Base Validators**
 
    ```csharp
-   internal sealed class RequestValidator : ValidatorBase<Request>
+   internal sealed class RequestValidator : PotValidatorBase<Request>
    {
        public RequestValidator()
        {
