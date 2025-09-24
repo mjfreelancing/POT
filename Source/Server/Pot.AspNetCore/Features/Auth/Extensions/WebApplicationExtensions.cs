@@ -13,7 +13,6 @@ internal static class WebApplicationExtensions
                 .WithTags(AuthEndpoints.Tag)
                 .LoginUser()
                 .RefreshToken()
-                .GetMe()
                 .ChangePassword();
         }
 

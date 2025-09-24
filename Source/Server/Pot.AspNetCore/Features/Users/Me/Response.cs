@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using System.ComponentModel;
 
-namespace Pot.AspNetCore.Features.Auth.Me;
+namespace Pot.AspNetCore.Features.Users.Me;
 
 internal sealed class Response
 {

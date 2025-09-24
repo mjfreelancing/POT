@@ -1,9 +1,10 @@
 using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.AspNetCore.Concerns.Auth;
+using Pot.AspNetCore.Features.Auth;
 using Pot.AspNetCore.Features.Auth.Services;
 
-namespace Pot.AspNetCore.Features.Auth.Me;
+namespace Pot.AspNetCore.Features.Users.Me;
 
 internal sealed class Handler
 {
