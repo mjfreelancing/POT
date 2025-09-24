@@ -5,16 +5,16 @@ namespace Pot.AspNetCore.Features.Users.Me;
 
 internal sealed class Response
 {
-    [Description("The user's username.")]
+    [Description("The user's username")]
     public string Username { get; init; }
 
-    [Description("The user's display name.")]
+    [Description("The user's display name")]
     public string DisplayName { get; init; }
 
-    [Description("The user's email.")]
+    [Description("The user's email")]
     public string Email { get; init; }
 
-    [Description("The user's permissions.")]
+    [Description("The user's permissions")]
     public string[] Permissions { get; init; }
 
     public static Ok<Response> Ok(string username, string displayName, string email, IEnumerable<string> permissions)

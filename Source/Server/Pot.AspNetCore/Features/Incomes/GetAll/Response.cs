@@ -19,25 +19,25 @@ internal sealed class Response : ResponseBase
     [Description("Indicates if the income is excluded from calculations")]
     public bool ExcludeFromCalcs { get; set; }
 
-    [Description("A description of the income.")]
+    [Description("A description of the income")]
     public string Description { get; init; }
 
     [Description("When the income is next due.")]
     public DateOnly NextDue { get; init; }
 
-    [Description("When the income is no longer a recurring source.")]
+    [Description("When the income is no longer a recurring source")]
     public DateOnly? EndDate { get; init; }
 
-    [Description("The income frequency type.")]
+    [Description("The income frequency type")]
     public Frequency Frequency { get; init; }   // Serialized via EnrichedEnumJsonConverter<Frequency>
 
-    [Description("The income frequency count.")]
+    [Description("The income frequency count")]
     public int FrequencyCount { get; init; }
 
-    [Description("The income amount.")]
+    [Description("The income amount")]
     public double Amount { get; init; }
 
-    [Description("The account this income is associated with.")]
+    [Description("The account this income is associated with")]
     public AccountModel? Account { get; init; }
 
     [Description("A note about the income")]

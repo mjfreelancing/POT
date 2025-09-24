@@ -4,9 +4,9 @@ namespace Pot.AspNetCore.Models;
 
 public abstract class ResponseBase
 {
-    [Description("The resource identifier.")]
+    [Description("The resource identifier")]
     public Guid RowId { get; init; }
 
-    [Description("A tag indicating when the resource was created or updated.")]
+    [Description("A tag indicating when the resource was created or updated")]
     public long Etag { get; init; }
 }

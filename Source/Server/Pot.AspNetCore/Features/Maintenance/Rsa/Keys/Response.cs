@@ -5,10 +5,10 @@ namespace Pot.AspNetCore.Features.Maintenance.Rsa.Keys;
 
 internal sealed class Response
 {
-    [Description("The public key.")]
+    [Description("The public key")]
     public required string PublicKey { get; init; }
 
-    [Description("The private key.")]
+    [Description("The private key")]
     public required string PrivateKey { get; init; }
 
     public static Ok<Response> Ok(string publicKey, string privateKey)

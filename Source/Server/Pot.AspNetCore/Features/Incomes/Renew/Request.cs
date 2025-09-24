@@ -4,9 +4,9 @@ namespace Pot.AspNetCore.Features.Incomes.Renew;
 
 public sealed class Request
 {
-    [Description("The Income Ids.")]
+    [Description("The Income Ids")]
     public Guid[] RowIds { get; init; } = [];
 
-    [Description("The incomes will be renewed to the next due date exceeds this date.")]
+    [Description("The incomes will be renewed to the next due date exceeds this date")]
     public required DateOnly UntilDate { get; init; }
 }

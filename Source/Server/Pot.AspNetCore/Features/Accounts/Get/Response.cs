@@ -8,34 +8,34 @@ namespace Pot.AspNetCore.Features.Accounts.Get;
 
 internal sealed class Response : ResponseBase
 {
-    [Description("The account BSB.")]
+    [Description("The account BSB")]
     public string Bsb { get; init; } = string.Empty;
 
-    [Description("The account number.")]
+    [Description("The account number")]
     public string Number { get; init; } = string.Empty;
 
-    [Description("A description of the account.")]
+    [Description("A description of the account")]
     public string Description { get; init; } = string.Empty;
 
-    [Description("The account balance.")]
+    [Description("The account balance")]
     public double Balance { get; init; }
 
-    [Description("The minimum reserved amount.")]
+    [Description("The minimum reserved amount")]
     public double Reserved { get; init; }
 
-    [Description("The total amount accrued to pay for future expenses.")]
+    [Description("The total amount accrued to pay for future expenses")]
     public double TotalExpenseAccrued { get; init; }
 
-    [Description("The daily accrual required to meet all future expenses.")]
+    [Description("The daily accrual required to meet all future expenses")]
     public double DailyExpenseAccrual { get; init; }
 
-    [Description("The number of expenses recorded against this account.")]
+    [Description("The number of expenses recorded against this account")]
     public int LinkedExpenses { get; init; }
 
-    [Description("The number of incomes recorded against this account.")]
+    [Description("The number of incomes recorded against this account")]
     public int LinkedIncomes { get; init; }
 
-    [Description("The available balance after consider the Reserved and TotalExpenseAccrued amounts.")]
+    [Description("The available balance after consider the Reserved and TotalExpenseAccrued amounts")]
     public double Available => Balance - Reserved - TotalExpenseAccrued;
 
     public static Ok<Response> Ok(Output account)

@@ -6,7 +6,7 @@ namespace Pot.AspNetCore.Features.Maintenance.Import;
 internal sealed class Response
 {
     // TODO: ? break this down to the number of accounts, incomes and expenses ?
-    [Description("The number of records in the ZIP file that were imported.")]
+    [Description("The number of records in the ZIP file that were imported")]
     public int Imported { get; init; }
 
     public static Ok<Response> Ok(int imported)

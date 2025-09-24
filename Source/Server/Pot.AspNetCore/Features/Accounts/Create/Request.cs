@@ -4,19 +4,19 @@ namespace Pot.AspNetCore.Features.Accounts.Create;
 
 public sealed class Request
 {
-    [Description("The account BSB.")]
+    [Description("The account BSB")]
     public string Bsb { get; init; } = string.Empty;
 
-    [Description("The account number.")]
+    [Description("The account number")]
     public string Number { get; init; } = string.Empty;
 
-    [Description("A description of the account.")]
+    [Description("A description of the account")]
     public string Description { get; init; } = string.Empty;
 
-    [Description("The account balance.")]
+    [Description("The account balance")]
     public double Balance { get; init; }
 
-    [Description("The minimum reserved amount.")]
+    [Description("The minimum reserved amount")]
     public double Reserved { get; init; }
 
     // TotalExpenseAccrued and DailyExpenseAccrual are calculated based on linked expenses

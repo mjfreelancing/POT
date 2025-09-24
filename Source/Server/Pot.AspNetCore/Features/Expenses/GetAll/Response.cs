@@ -20,31 +20,31 @@ internal sealed class Response : ResponseBase
     [Description("Indicates if the expense is excluded from calculations such as accruals")]
     public bool ExcludeFromCalcs { get; set; }
 
-    [Description("A description of the expense.")]
+    [Description("A description of the expense")]
     public string Description { get; init; }
 
-    [Description("When automatic allocations will begin accruing for this expense.")]
+    [Description("When automatic allocations will begin accruing for this expense")]
     public DateOnly AccrualStart { get; init; }
 
-    [Description("When the expense is next due.")]
+    [Description("When the expense is next due")]
     public DateOnly NextDue { get; init; }
 
-    [Description("When the Expense is no longer recurring.")]
+    [Description("When the Expense is no longer recurring")]
     public DateOnly? EndDate { get; init; }
 
-    [Description("The expense frequency type.")]
+    [Description("The expense frequency type")]
     public Frequency Frequency { get; init; }
 
-    [Description("The expense frequency count.")]
+    [Description("The expense frequency count")]
     public int FrequencyCount { get; init; }
 
-    [Description("The expense amount.")]
+    [Description("The expense amount")]
     public double Amount { get; init; }
 
-    [Description("The amount accrued towards this expense.")]
+    [Description("The amount accrued towards this expense")]
     public double Accrued { get; init; }
 
-    [Description("The account this expense is associated with.")]
+    [Description("The account this expense is associated with")]
     public AccountModel? Account { get; init; }
 
     [Description("A note about the expense")]
