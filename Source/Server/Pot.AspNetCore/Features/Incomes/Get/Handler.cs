@@ -9,7 +9,7 @@ using OkGetResult = Ok<Response>;
 
 internal sealed class Handler
 {
-    public static async Task<Results<OkGetResult, NotFound, ProblemHttpResult>> Invoke([Description("The income Id.")] Guid id,
+    public static async Task<Results<OkGetResult, NotFound, ProblemHttpResult>> Invoke([Description("The income Id")] Guid id,
         IGetIncomeService incomeService, ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);

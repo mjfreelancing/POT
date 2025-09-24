@@ -8,7 +8,7 @@ namespace Pot.AspNetCore.Features.Accounts.Delete;
 
 internal sealed class Handler
 {
-    public static async Task<Results<Ok, ProblemHttpResult>> Invoke([Description("The account Id.")] Guid id,
+    public static async Task<Results<Ok, ProblemHttpResult>> Invoke([Description("The account Id")] Guid id,
         IDeleteAccountService accountService, ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);

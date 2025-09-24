@@ -7,7 +7,6 @@ internal sealed class RequestValidator : PotValidatorBase<Request>
 {
     public RequestValidator()
     {
-        RuleFor(request => request.RowId).IsNotEmpty();
         RuleFor(request => request.Bsb).IsNotEmpty();
         RuleFor(request => request.Number).IsNotEmpty();
         RuleFor(request => request.Description).IsNotEmpty();

@@ -8,7 +8,7 @@ internal static class IncomesEndpoints
     public const string GetAll = "";
     public const string Get = "/{id:guid}";
     public const string Create = "";
-    public const string Update = "";
+    public const string Update = "/{id:guid}";
     public const string Delete = "/{id:guid}";
     public const string Renew = "/renew";
     public const string ToggleExclude = "/toggleExclude";

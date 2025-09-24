@@ -4,11 +4,11 @@ namespace Pot.AspNetCore.Features.Accounts.Update.Mappings;
 
 internal static class RequestMapping
 {
-    public static Input MapToInput(this Request request)
+    public static Input MapToInput(this Request request, Guid accountId)
     {
         return new Input
         {
-            RowId = request.RowId,
+            RowId = accountId,
             Etag = request.Etag,
             Bsb = request.Bsb,
             Number = request.Number,

@@ -8,7 +8,7 @@ namespace Pot.AspNetCore.Features.Incomes.Delete;
 
 internal sealed class Handler
 {
-    public static async Task<Results<Ok, NotFound, ProblemHttpResult>> Invoke([Description("The income Id.")] Guid id,
+    public static async Task<Results<Ok, NotFound, ProblemHttpResult>> Invoke([Description("The income Id")] Guid id,
         IDeleteIncomeService incomeService, ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);

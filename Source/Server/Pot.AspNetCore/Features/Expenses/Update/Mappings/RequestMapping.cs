@@ -4,11 +4,11 @@ namespace Pot.AspNetCore.Features.Expenses.Update.Mappings;
 
 internal static class RequestMapping
 {
-    public static Input MapToInput(this Request request)
+    public static Input MapToInput(this Request request, Guid expenseId)
     {
         return new Input
         {
-            RowId = request.RowId,
+            RowId = expenseId,
             Etag = request.Etag,
             ExcludeFromCalcs = request.ExcludeFromCalcs!.Value, // Will have been validated
             Description = request.Description,

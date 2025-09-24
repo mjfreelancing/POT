@@ -4,13 +4,14 @@ using Pot.App.Features.Incomes.Update;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Extensions;
 using Pot.AspNetCore.Features.Incomes.Update.Mappings;
+using System.ComponentModel;
 
 namespace Pot.AspNetCore.Features.Incomes.Update;
 
 internal sealed class Handler
 {
-    public static async Task<Results<Ok<Response>, NotFound, ProblemHttpResult>> Invoke(Request request,
-        IUpdateIncomeService incomeService, IProblemDetailsInspector problemDetailsInspector,
+    public static async Task<Results<Ok<Response>, NotFound, ProblemHttpResult>> Invoke([Description("The income Id")] Guid id,
+        Request request, IUpdateIncomeService incomeService, IProblemDetailsInspector problemDetailsInspector,
         ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);
@@ -30,7 +31,7 @@ internal sealed class Handler
             return TypedResults.Problem(problemDetails);
         }
 
-        var incomeInput = request.MapToInput();
+        var incomeInput = request.MapToInput(id);
 
         var result = await incomeService.UpdateIncomeAsync(incomeInput, cancellationToken);
 

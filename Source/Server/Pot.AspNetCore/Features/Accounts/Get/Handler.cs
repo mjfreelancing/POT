@@ -10,7 +10,7 @@ using OkGetResult = Ok<Response>;
 
 internal sealed class Handler
 {
-    public static async Task<Results<OkGetResult, ProblemHttpResult>> Invoke([Description("The account Id.")] Guid id,
+    public static async Task<Results<OkGetResult, ProblemHttpResult>> Invoke([Description("The account Id")] Guid id,
         IGetAccountService accountService, ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);
