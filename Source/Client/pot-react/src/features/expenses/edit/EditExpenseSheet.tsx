@@ -58,14 +58,13 @@ const EditExpenseSheetInternal: React.FC<EditExpenseSheetInternalProps> = ({
 
   const onSubmit = async (values: ExpenseFormData) => {
     const payload: EditExpense = {
-      rowId: expenseData.rowId,
       etag: expenseData.etag,
       ...values,
       endDate: values.endDate ?? null,
       accountRowId: values.accountRowId,
     };
 
-    const result = await editExpense(payload);
+    const result = await editExpense(expenseData.rowId, payload);
 
     if (result.success) {
       navigate('/expenses');

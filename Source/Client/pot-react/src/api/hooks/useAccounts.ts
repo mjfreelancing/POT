@@ -8,7 +8,7 @@ import {
 } from '@/data';
 import { FailResultBase, Result, SuccessResult } from '@/lib';
 
-import { useDelete, useGet, usePost, usePut } from './useApi';
+import { useDelete, useGet, usePost, usePutWithId } from './useApi';
 
 const useApiGetAllAccounts = () => {
   const query = useGet<Account[]>('/accounts', ['accounts']);
@@ -54,8 +54,9 @@ const useApiCreateAccount = () => {
 
 // Returning the mutation data as Result<Identity, FailResultBase> type to enable TypeScript's discriminated union type narrowing.
 const useApiUpdateAccount = () => {
-  const mutation = usePut<Identity, EditAccount>('/accounts');
-
+  const mutation = usePutWithId<Identity, EditAccount>(
+    (id: string) => `/accounts/${id}`,
+  );
   return {
     ...mutation,
     data: mutation.data as Result<Identity, FailResultBase>,

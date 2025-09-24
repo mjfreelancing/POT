@@ -10,6 +10,7 @@ function useEditExpense() {
   const apiUpdateExpense = useApiUpdateExpense();
 
   async function editExpense(
+    id: string,
     expense: EditExpense,
   ): Promise<Result<Identity, FailResultBase>> {
     const controller = new AbortController();
@@ -17,6 +18,7 @@ function useEditExpense() {
     try {
       // Not using onSuccess callback because both success/fails are returned
       const result = await apiUpdateExpense.mutateAsync({
+        id,
         data: expense,
         signal: controller.signal,
       });

@@ -6,7 +6,7 @@ import { useNavigate, useParams } from 'react-router';
 import { useApiGetAccountById } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
-import { EditAccount } from '@/data';
+import { Account, EditAccount } from '@/data';
 import { DisplayError } from '@/lib';
 
 import AccountForm from '../components/AccountForm';
@@ -20,7 +20,7 @@ import useEditAccount from './hooks/useEditAccount';
 // This internal sheet is used to encapsulate the form logic and state management.
 // We only render this once the account data is loaded.
 type EditAccountSheetInternalProps = {
-  accountData: EditAccount;
+  accountData: Account;
 };
 
 const EditAccountSheetInternal: React.FC<EditAccountSheetInternalProps> = ({
@@ -50,12 +50,11 @@ const EditAccountSheetInternal: React.FC<EditAccountSheetInternalProps> = ({
 
   const onSubmit = async (values: AccountFormData) => {
     const updatedAccount: EditAccount = {
-      rowId: accountData.rowId,
       etag: accountData.etag,
       ...values,
     };
 
-    const editResult = await editAccount(updatedAccount);
+    const editResult = await editAccount(accountData.rowId, updatedAccount);
 
     if (editResult.success) {
       navigate('/accounts');

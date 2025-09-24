@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { IdentitySchema } from './identity';
+import { EtagSchema, IdentitySchema } from './identity';
 
 const BaseAccountSchema = z.object({
   bsb: z.string(),
@@ -22,7 +22,7 @@ const AccountSchema = BaseAccountSchema.extend({
 const CreateAccountSchema = BaseAccountSchema;
 
 const EditAccountSchema = BaseAccountSchema.extend({
-  ...IdentitySchema.shape,
+  ...EtagSchema.shape,
 });
 
 const AccrueExpensesSchema = z.object({

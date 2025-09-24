@@ -10,6 +10,7 @@ function useEditAccount() {
   const apiUpdateAccount = useApiUpdateAccount();
 
   async function editAccount(
+    id: string,
     account: EditAccount,
   ): Promise<Result<Identity, FailResultBase>> {
     const controller = new AbortController();
@@ -18,6 +19,7 @@ function useEditAccount() {
     try {
       // Not using onSuccess callback because both success/fails are returned
       const result = await apiUpdateAccount.mutateAsync({
+        id,
         data: account,
         signal: controller.signal,
       });

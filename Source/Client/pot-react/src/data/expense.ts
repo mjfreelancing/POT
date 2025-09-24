@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { Frequency } from '@/lib';
 
-import { IdentitySchema } from './identity';
+import { EtagSchema, IdentitySchema } from './identity';
 import { Paged } from './types';
 
 const ExpenseAccountSchema = z.object({
@@ -33,7 +33,7 @@ const CreateExpenseSchema = BaseExpenseSchema.extend({
 });
 
 const EditExpenseSchema = BaseExpenseSchema.extend({
-  ...IdentitySchema.shape,
+  ...EtagSchema.shape,
   excludeFromCalcs: z.boolean(),
   accountRowId: z.string(),
 });

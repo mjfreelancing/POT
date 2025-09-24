@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { compareDates, Frequency } from '@/lib';
 
-import { IdentitySchema } from './identity';
+import { EtagSchema, IdentitySchema } from './identity';
 
 const IncomeAccountSchema = z.object({
   rowId: z.string(),
@@ -30,7 +30,7 @@ const CreateIncomeSchema = BaseIncomeSchema.extend({
 });
 
 const EditIncomeSchema = BaseIncomeSchema.extend({
-  ...IdentitySchema.shape,
+  ...EtagSchema.shape,
   excludeFromCalcs: z.boolean(),
   accountRowId: z.string(),
 });

@@ -8,6 +8,12 @@ type MutationData<TData> = {
   signal?: AbortSignal;
 };
 
+type MutationDataWithId<TData> = {
+  id: string;
+  data: TData;
+  signal?: AbortSignal;
+};
+
 type DeleteMutationData = {
   signal?: AbortSignal;
 };
@@ -91,4 +97,22 @@ const usePut = <TResponse, TData>(url: string) => {
   });
 };
 
-export { useDelete, useGet, usePost, usePut };
+const usePutWithId = <TResponse, TData>(urlFn: (id: string) => string) => {
+  return useMutation({
+    mutationFn: async ({
+      id,
+      data,
+      signal,
+    }: MutationDataWithId<TData>): Promise<
+      Result<TResponse, FailResultBase>
+    > => {
+      const url = urlFn(id);
+      return performOperation(() =>
+        axios.put<TResponse>(url, data, { signal: signal }),
+      );
+    },
+  });
+};
+
+export type { DeleteMutationData, MutationData, MutationDataWithId };
+export { useDelete, useGet, usePost, usePut, usePutWithId };

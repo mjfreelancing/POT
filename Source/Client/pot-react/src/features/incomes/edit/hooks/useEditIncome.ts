@@ -10,6 +10,7 @@ function useEditIncome() {
   const apiUpdateIncome = useApiUpdateIncome();
 
   async function editIncome(
+    id: string,
     income: EditIncome,
   ): Promise<Result<Identity, FailResultBase>> {
     const controller = new AbortController();
@@ -17,6 +18,7 @@ function useEditIncome() {
     try {
       // Not using onSuccess callback because both success/fails are returned
       const result = await apiUpdateIncome.mutateAsync({
+        id,
         data: income,
         signal: controller.signal,
       });

@@ -54,14 +54,13 @@ const EditIncomeSheetInternal: React.FC<EditIncomeSheetInternalProps> = ({
 
   const onSubmit = async (values: IncomeFormData) => {
     const payload: EditIncome = {
-      rowId: incomeData.rowId,
-      etag: incomeData.etag,
       ...values,
       endDate: values.endDate ?? null,
       accountRowId: values.accountRowId,
+      etag: incomeData.etag,
     };
 
-    const result = await editIncome(payload);
+    const result = await editIncome(incomeData.rowId, payload);
 
     if (result.success) {
       navigate('/incomes');

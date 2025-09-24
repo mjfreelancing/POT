@@ -9,7 +9,7 @@ import {
 } from '@/data';
 import { FailResultBase, Result, SuccessResult } from '@/lib';
 
-import { useDelete, useGet, usePost, usePut } from './useApi';
+import { useDelete, useGet, usePost, usePutWithId } from './useApi';
 
 const useApiGetAllExpenses = () => {
   const query = useGet<PagedExpense>('/expenses', ['expenses']);
@@ -58,8 +58,9 @@ const useApiCreateExpense = () => {
 
 // Returning the mutation data as Result<Identity, FailResultBase> type to enable TypeScript's discriminated union type narrowing.
 const useApiUpdateExpense = () => {
-  const mutation = usePut<Identity, EditExpense>('/expenses');
-
+  const mutation = usePutWithId<Identity, EditExpense>(
+    (id: string) => `/expenses/${id}`,
+  );
   return {
     ...mutation,
     data: mutation.data as Result<Identity, FailResultBase>,
