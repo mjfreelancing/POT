@@ -8,7 +8,9 @@ type ChangePasswordRequest = {
 };
 
 function useChangePassword() {
-  const mutation = usePut<null, ChangePasswordRequest>('/auth/change-password');
+  const mutation = usePut<null, ChangePasswordRequest>(
+    '/users/change-password',
+  );
 
   return {
     ...mutation,

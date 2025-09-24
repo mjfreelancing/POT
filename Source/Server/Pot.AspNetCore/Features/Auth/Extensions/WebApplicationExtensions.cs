@@ -12,8 +12,7 @@ internal static class WebApplicationExtensions
                 .MapGroup(AuthEndpoints.Group)
                 .WithTags(AuthEndpoints.Tag)
                 .LoginUser()
-                .RefreshToken()
-                .ChangePassword();
+                .RefreshToken();
         }
 
         return app;

@@ -4,7 +4,7 @@ using Pot.App.Features.Auth.Me;
 using Pot.App.Features.Auth.Me.Models;
 using System.IdentityModel.Tokens.Jwt;
 
-namespace Pot.AspNetCore.Features.Auth.Services;
+namespace Pot.AspNetCore.Features.Users.Services;
 
 internal sealed class HttpUserService : IHttpUserService
 {

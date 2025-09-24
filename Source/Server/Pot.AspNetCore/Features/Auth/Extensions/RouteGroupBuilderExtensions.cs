@@ -29,18 +29,4 @@ internal static class RouteGroupBuilderExtensions
 
         return routeGroupBuilder;
     }
-
-    public static RouteGroupBuilder ChangePassword(this RouteGroupBuilder routeGroupBuilder)
-    {
-        routeGroupBuilder
-            .MapPut(AuthEndpoints.ChangePassword, Auth.ChangePassword.Handler.Invoke)
-            .RequireAuthorization("AuthenticatedUser")
-            .WithName(nameof(ChangePassword))
-            .WithSummary("Change Password")
-            .WithDescription("Change the user password")
-            .ProducesProblem((int)HttpStatusCode.OK)
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
-
-        return routeGroupBuilder;
-    }
 }

@@ -6,4 +6,5 @@ internal static class UsersEndpoints
     public const string Tag = "Users Api";
 
     public const string Me = "/me";
+    public const string ChangePassword = "/change-password";
 }

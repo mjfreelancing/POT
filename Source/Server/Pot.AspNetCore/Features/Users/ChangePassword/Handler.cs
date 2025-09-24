@@ -1,11 +1,12 @@
 ﻿using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Pot.App.Errors;
 using Pot.AspNetCore.Concerns.Auth;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Extensions;
-using Pot.AspNetCore.Features.Auth.Services;
+using Pot.AspNetCore.Features.Users.Services;
 
-namespace Pot.AspNetCore.Features.Auth.ChangePassword;
+namespace Pot.AspNetCore.Features.Users.ChangePassword;
 
 internal sealed class Handler
 {
@@ -28,13 +29,19 @@ internal sealed class Handler
 
         if (userInfo is null)
         {
-            return AuthUtils.CreateAuthErrorResult();
+            return CreateInvalidUserOrPasswordError();
         }
 
         var passwordChanged = await authService.ChangePasswordAsync(userInfo.UserId, request.CurrentPassword, request.NewPassword, cancellationToken);
 
         return passwordChanged.IsSuccess
             ? TypedResults.Ok()
-            : AuthUtils.CreateAuthErrorResult();
+            : CreateInvalidUserOrPasswordError();
+    }
+
+    private static ProblemHttpResult CreateInvalidUserOrPasswordError()
+    {
+        var problemDetailsError = ProblemDetailsErrorFactory.CreateUnprocessableEntityError("Invalid user or password");
+        return TypedResults.Problem(problemDetailsError.ToProblemDetails());
     }
 }

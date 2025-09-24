@@ -2,7 +2,7 @@ using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.AspNetCore.Concerns.Auth;
 using Pot.AspNetCore.Features.Auth;
-using Pot.AspNetCore.Features.Auth.Services;
+using Pot.AspNetCore.Features.Users.Services;
 
 namespace Pot.AspNetCore.Features.Users.Me;
 
