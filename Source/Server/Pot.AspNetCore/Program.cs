@@ -25,12 +25,12 @@ public class Program
         builder.Services.AddCors();
 
         builder
+            .AddExceptionHandlers()
             .AddPotAuth()
             .AddCorrelationId()
             .AddOpenApi()
             .AddHttpJsonOptions()
             .AddLogging()
-            .AddExceptionHandlers()
             .AddCustomProblemDetails()
             .AddAspNetDependencies()
             .AddAspNetValidation()
@@ -40,6 +40,7 @@ public class Program
 
         app.Logger.LogInformation("POT Startup: {AppStartup}", new { Local = DateTime.Now });
 
+        app.UseExceptionHandler();
         app.MapHealthChecks("/_health");
 
         // UseCors must be called before UseAuthentication() and UseAuthorization() to ensure CORS headers are on all responses (including errors)
@@ -58,11 +59,7 @@ public class Program
         app.UseAuthorization();
 
         app.UsePotMiddleware()
-           .UseScalarOpenApi()
-           .UseExceptionHandler();
-
-        // TODO: POT-14
-        app.MapGet("/", () => "POT Summary");
+           .UseScalarOpenApi();
 
         // 200 - Success
         // 304 - Not Modified

@@ -9,7 +9,6 @@ internal static class WebApplicationExtensions
             app.Logger.LogInformation("Adding income endpoints");
 
             app.MapGroup(IncomesEndpoints.Group)
-                //.RequireAuthorization()
                 .WithTags(IncomesEndpoints.Tag)
                 .GetAllIncomes()
                 .GetIncome()

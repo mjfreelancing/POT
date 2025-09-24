@@ -15,7 +15,6 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(Export))
             .WithSummary("Export data")
             .WithDescription("Export Accounts, Incomes, and Expense data")
-            .WithTags("Maintenance")
             .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.InternalServerError);
 
@@ -30,7 +29,6 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(Import))
             .WithSummary("Import data")
             .WithDescription("Import Accounts, Incomes, and Expense data")
-            .WithTags("Maintenance")
             .WithMetadata(new RequestSizeLimitAttribute(maxImportPayloadBytes)) // Will raise 413 Payload Too Large if the file exceeds this limit
             .DisableAntiforgery()
             .ProducesProblem((int)HttpStatusCode.OK)
@@ -49,7 +47,6 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(CreateRsaKeys))
             .WithSummary("Create Rsa Keys")
             .WithDescription("Create Rsa Public/Private Keys")
-            .WithTags("Maintenance")
             .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.InternalServerError);
 

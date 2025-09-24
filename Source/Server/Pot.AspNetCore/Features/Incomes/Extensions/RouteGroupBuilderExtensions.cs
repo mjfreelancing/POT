@@ -13,7 +13,6 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(GetAllIncomes))
             .WithSummary("Get all incomes")
             .WithDescription("Get all income details")
-            .WithTags("Incomes")
             .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.InternalServerError);
 
@@ -28,7 +27,6 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(GetIncome))
             .WithSummary("Get income")
             .WithDescription("Get details for an existing income source")
-            .WithTags("Incomes")
             .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.NotFound)
             .ProducesProblem((int)HttpStatusCode.UnprocessableEntity)
@@ -45,7 +43,6 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(CreateIncome))
             .WithSummary("Create income")
             .WithDescription("Create a new income source")
-            .WithTags("Incomes")
             .ProducesProblem((int)HttpStatusCode.Created)
             .ProducesProblem((int)HttpStatusCode.UnprocessableEntity)
             .ProducesProblem((int)HttpStatusCode.InternalServerError);
@@ -61,7 +58,6 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(UpdateIncome))
             .WithSummary("Update income")
             .WithDescription("Updates existing income details")
-            .WithTags("Incomes")
             .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.NotFound)
             .ProducesProblem((int)HttpStatusCode.UnprocessableEntity)
@@ -78,7 +74,6 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(DeleteIncome))
             .WithSummary("Delete income")
             .WithDescription("Deletes existing income details")
-            .WithTags("Incomes")
             .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.NotFound)
             .ProducesProblem((int)HttpStatusCode.InternalServerError);
@@ -94,7 +89,6 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(RenewIncomes))
             .WithSummary("Renew incomes")
             .WithDescription("Renews selected incomes")
-            .WithTags("Incomes")
             .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.NotFound)
             .ProducesProblem((int)HttpStatusCode.InternalServerError);
@@ -110,7 +104,6 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(ToggleExcludeIncomes))
             .WithSummary("Toggle exclude incomes")
             .WithDescription("Toggles the 'exclude from calculations' status of selected incomes")
-            .WithTags("Incomes")
             .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.NotFound)
             .ProducesProblem((int)HttpStatusCode.InternalServerError);

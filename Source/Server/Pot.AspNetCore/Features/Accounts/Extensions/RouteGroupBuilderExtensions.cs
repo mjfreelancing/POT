@@ -12,7 +12,6 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(GetAllAccounts))
             .WithSummary("Get all accounts")
             .WithDescription("Get all account details")
-            .WithTags("Accounts")
             .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.InternalServerError);
 
@@ -27,7 +26,6 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(GetAccount))
             .WithSummary("Get account")
             .WithDescription("Get details for an existing account")
-            .WithTags("Accounts")
             .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.NotFound)
             .ProducesProblem((int)HttpStatusCode.UnprocessableEntity)
@@ -44,7 +42,6 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(CreateAccount))
             .WithSummary("Create account")
             .WithDescription("Create new account details")
-            .WithTags("Accounts")
             .ProducesProblem((int)HttpStatusCode.Created)
             .ProducesProblem((int)HttpStatusCode.UnprocessableEntity)
             .ProducesProblem((int)HttpStatusCode.InternalServerError);
@@ -60,7 +57,6 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(UpdateAccount))
             .WithSummary("Update account")
             .WithDescription("Updates existing account details")
-            .WithTags("Accounts")
             .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.NotFound)
             .ProducesProblem((int)HttpStatusCode.UnprocessableEntity)
@@ -77,7 +73,6 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(DeleteAccount))
             .WithSummary("Delete account")
             .WithDescription("Deletes existing account details")
-            .WithTags("Accounts")
             .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.NotFound)
             .ProducesProblem((int)HttpStatusCode.InternalServerError);
@@ -93,7 +88,6 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(AccrueExpenses))
             .WithSummary("Accrue expenses")
             .WithDescription("Accrue expenses associated with the account")
-            .WithTags("Accounts")
             .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.NotFound)
             .ProducesProblem((int)HttpStatusCode.InternalServerError);

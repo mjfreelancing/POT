@@ -11,7 +11,6 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(LoginUser))
             .WithSummary("Login")
             .WithDescription("Login the user")
-            .WithTags("Auth")
             .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.InternalServerError);
 
@@ -25,7 +24,6 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(RefreshToken))
             .WithSummary("Refresh Token")
             .WithDescription("Refresh the user access token")
-            .WithTags("Auth")
             .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.InternalServerError);
 
@@ -40,7 +38,6 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(GetMe))
             .WithSummary("Get User Info")
             .WithDescription("Get the current user's information and permissions")
-            .WithTags("Auth")
             .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.Unauthorized)
             .ProducesProblem((int)HttpStatusCode.InternalServerError);
@@ -56,7 +53,6 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(ChangePassword))
             .WithSummary("Change Password")
             .WithDescription("Change the user password")
-            .WithTags("Auth")
             .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.InternalServerError);
 
