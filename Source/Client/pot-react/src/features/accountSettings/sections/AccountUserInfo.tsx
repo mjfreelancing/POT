@@ -1,25 +1,46 @@
-import { JSX } from 'react';
+import { JSX, useEffect, useState } from 'react';
 
 import { useMe } from '@/api/hooks/useMe';
+import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
+import { Skeleton } from '@/components/ui/skeleton';
+import { logger } from '@/lib/logging';
 
 function AccountUserInfo(): JSX.Element {
-  const { data, isLoading, isError } = useMe();
+  const { data, isLoading } = useMe();
+  const [error, setError] = useState<null | {
+    title: string;
+    description: string;
+  }>(null);
+
+  useEffect(() => {
+    logger.info('AccountUserInfo', 'Mounted');
+
+    return () => {
+      logger.info('AccountUserInfo', 'Unmounted');
+    };
+  }, []);
 
   if (isLoading) {
+    return <Skeleton className="mb-6 px-4 py-3 h-20 w-full rounded-lg" />;
+  }
+
+  if (error) {
     return (
-      <div
-        className="mb-6 px-4 py-3 bg-muted rounded-lg animate-pulse h-20"
-        aria-busy="true"
+      <ErrorSheet
+        title={error.title}
+        description={error.description}
+        onDismiss={() => setError(null)}
       />
     );
   }
 
-  if (isError || !data || !data.success) {
-    return (
-      <div className="mb-6 px-4 py-3 bg-destructive/10 text-destructive rounded-lg">
-        Unable to load user info
-      </div>
-    );
+  if (data && !data.success) {
+    setError({
+      title: data.error.code,
+      description: data.error.description,
+    });
+
+    return <div />;
   }
 
   const { username, displayName, email } = data.value;

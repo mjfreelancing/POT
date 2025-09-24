@@ -17,6 +17,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   ChangePasswordFields,
   changePasswordSchema,
@@ -40,6 +41,7 @@ function ChangePasswordForm() {
 
   useEffect(() => {
     logger.info('ChangePasswordForm', 'Mounted');
+
     return () => {
       logger.info('ChangePasswordForm', 'Unmounted');
     };
@@ -53,9 +55,10 @@ function ChangePasswordForm() {
 
     if (result && !result.success) {
       setError({
-        title: result.error.code || 'Error',
-        description: result.error.description || 'Failed to change password',
+        title: result.error.code,
+        description: result.error.description,
       });
+
       return;
     }
 
@@ -72,6 +75,10 @@ function ChangePasswordForm() {
       );
       form.reset();
     }
+  }
+
+  if (isPending) {
+    return <Skeleton className="mb-6 px-4 py-3 h-64 w-full rounded-lg" />;
   }
 
   return (
@@ -145,7 +152,7 @@ function ChangePasswordForm() {
         />
 
         <Button type="submit" className="w-full mt-2" disabled={isPending}>
-          {isPending ? 'Changing...' : 'Change Password'}
+          Change Password
         </Button>
       </form>
     </Form>
