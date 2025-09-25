@@ -21,8 +21,8 @@ internal sealed class Handler
             return AuthUtils.CreateAuthErrorResult();
         }
 
-        var permissions = await permissionService.GetPermissionsAsync(userInfo.UserId, cancellationToken);
+        var permissions = await permissionService.GetPermissionsAsync(userInfo.RowId, cancellationToken);
 
-        return Response.Ok(userInfo.Username, userInfo.DisplayName, userInfo.Email, permissions);
+        return Response.Ok(userInfo, permissions);
     }
 }

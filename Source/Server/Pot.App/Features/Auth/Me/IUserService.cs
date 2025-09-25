@@ -5,5 +5,5 @@ namespace Pot.App.Features.Auth.Me;
 
 public interface IUserService : IPotScopedDependency
 {
-    Task<UserInfo?> GetUserInfoAsync(Guid userId, CancellationToken cancellationToken);
+    Task<Output?> GetUserInfoAsync(Guid userId, CancellationToken cancellationToken);
 }

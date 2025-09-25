@@ -15,7 +15,7 @@ internal sealed class HttpUserService : IHttpUserService
         _userService = userService.WhenNotNull();
     }
 
-    public async Task<UserInfo?> GetUserInfoAsync(HttpContext httpContext, CancellationToken cancellationToken)
+    public async Task<Output?> GetUserInfoAsync(HttpContext httpContext, CancellationToken cancellationToken)
     {
         var userId = GetUserId(httpContext);
 

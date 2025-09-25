@@ -32,7 +32,7 @@ internal sealed class Handler
             return CreateInvalidUserOrPasswordError();
         }
 
-        var passwordChanged = await authService.ChangePasswordAsync(userInfo.UserId, request.CurrentPassword, request.NewPassword, cancellationToken);
+        var passwordChanged = await authService.ChangePasswordAsync(userInfo.RowId, request.CurrentPassword, request.NewPassword, cancellationToken);
 
         return passwordChanged.IsSuccess
             ? TypedResults.Ok()

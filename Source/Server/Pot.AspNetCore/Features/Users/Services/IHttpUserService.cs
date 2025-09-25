@@ -5,5 +5,5 @@ namespace Pot.AspNetCore.Features.Users.Services;
 
 public interface IHttpUserService : IPotScopedDependency
 {
-    Task<UserInfo?> GetUserInfoAsync(HttpContext httpContext, CancellationToken cancellationToken);
+    Task<Output?> GetUserInfoAsync(HttpContext httpContext, CancellationToken cancellationToken);
 }
