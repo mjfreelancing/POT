@@ -5,7 +5,12 @@ import { useApiGetProjection } from '@/api/hooks/useProjections';
 import { ErrorSheet, LoadingMessage } from '@/components/feedback';
 import { ProjectionMetric } from '@/data/projection';
 import { DisplayError } from '@/lib';
-import { dateIsoFormat, normalizeToLocalMidnight } from '@/lib/dateUtils';
+import {
+  dateIsoFormat,
+  isAfterDate,
+  isSameDate,
+  normalizeToLocalMidnight,
+} from '@/lib/dateUtils';
 import { logger } from '@/lib/logging';
 
 import { ProjectionChart, ProjectionsHeader } from './components';
@@ -30,12 +35,30 @@ function ProjectionsPage() {
   // Computed property that combines errors for display
   const error = storageError || apiError;
 
-  const { getProjectionData, setProjectionData } =
+  const { getProjectionData, setProjectionData, removeStartDate } =
     useProjectionStorage(setStorageError);
 
   // State for start date and period (in months)
   const today = normalizeToLocalMidnight(new Date());
-  const [startDate, setStartDate] = useState<Date>(today);
+
+  // Use the max of stored startDate and today, or today if not present
+  const [startDate, setStartDate] = useState<Date>(() => {
+    const data = getProjectionData();
+    if (data && data.startDate) {
+      const stored = normalizeToLocalMidnight(data.startDate);
+
+      if (isAfterDate(stored, today)) {
+        return stored;
+      }
+
+      // If stored date is before today, clean up local storage
+      if (isAfterDate(today, stored)) {
+        removeStartDate();
+      }
+    }
+
+    return today;
+  });
 
   const [period, setPeriod] = useState<number>(() => {
     const data = getProjectionData();
@@ -66,6 +89,17 @@ function ProjectionsPage() {
     const newDate = normalizeToLocalMidnight(date ?? today);
     logger.info('ProjectionsPage', 'Start date changed', newDate);
     setStartDate(newDate);
+
+    // If the new date is today, remove from storage; else, persist
+    if (isSameDate(newDate, today)) {
+      removeStartDate();
+    } else {
+      const existingData = getProjectionData();
+      setProjectionData({
+        ...existingData,
+        startDate: dateIsoFormat(newDate),
+      });
+    }
   }
 
   function handlePeriodChange(months: number) {

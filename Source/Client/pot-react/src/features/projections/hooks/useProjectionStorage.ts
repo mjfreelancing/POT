@@ -7,6 +7,7 @@ import useLocalStorage from '@/hooks/useLocalStorage';
 import { DisplayError } from '@/lib';
 
 type ProjectionStorageData = {
+  startDate?: string;
   metric?: ProjectionMetric;
   period?: number;
   hiddenSeries?: string[];
@@ -39,6 +40,16 @@ function useProjectionStorage(onError?: StorageErrorHandler) {
   return {
     getProjectionData: getItem,
     setProjectionData: setItem,
+    removeStartDate: () => {
+      const data = getItem();
+
+      if (data && data.startDate) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { startDate, ...rest } = data; // Intentionally omit startDate from storage
+
+        setItem(rest);
+      }
+    },
   };
 }
 
