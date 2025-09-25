@@ -1,9 +1,13 @@
 import { useCallback } from 'react';
 
-import { usePermissionStore } from './stores/usePermissionStore';
+import { useUserStore } from './stores/useUserStore';
 
-export function usePermissions() {
-  const permissions = usePermissionStore(state => state.permissions);
+function usePermissions() {
+  // Using this to avoid warning 'The 'permissions' logical expression could make the dependencies of useCallback Hook (at line 12) change on every render.'
+  const EMPTY_ARRAY: string[] = [];
+
+  const permissions =
+    useUserStore(state => state.userInfo?.permissions) || EMPTY_ARRAY;
 
   const hasPermission = useCallback(
     (permission: string) => {
@@ -33,3 +37,5 @@ export function usePermissions() {
     permissions,
   };
 }
+
+export { usePermissions };

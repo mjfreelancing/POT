@@ -14,7 +14,7 @@ import { DisplayError } from '@/lib';
 import { logger } from '@/lib/logging';
 
 import logoutManager from './logoutManager';
-import { usePermissionStore } from './stores/usePermissionStore';
+import { useUserStore } from './stores/useUserStore';
 import { TokenProvider, useTokens } from './TokenContext';
 import {
   createTokenRefreshTimer,
@@ -43,7 +43,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 function AuthProviderContent({ children }: { children: ReactNode }) {
   // Only fetch user info if we have tokens
   const { data: userInfo } = useMe();
-  const permissionStore = usePermissionStore();
+  const userStore = useUserStore();
   const { tokens, setTokens } = useTokens();
   const prevUserInfoRef = useRef<typeof userInfo>(undefined);
 
@@ -52,18 +52,17 @@ function AuthProviderContent({ children }: { children: ReactNode }) {
     // Only update if userInfo has actually changed and is successful
     if (userInfo?.success && userInfo !== prevUserInfoRef.current) {
       // Ensure we have valid user info before updating permissions
-      const username = userInfo.value?.username;
-      const permissions = userInfo.value?.permissions ?? [];
+      const userDetails = userInfo.value;
 
-      if (username) {
-        permissionStore.setUserInfo(username, permissions);
+      if (userDetails) {
+        userStore.setUserInfo(userDetails);
         prevUserInfoRef.current = userInfo;
       } else {
-        // If we don't have a valid username, clear permissions
-        permissionStore.clearUserInfo();
+        // If we don't have a valid user, clear permissions
+        userStore.clearUserInfo();
       }
     }
-  }, [userInfo, permissionStore]);
+  }, [userInfo, userStore]);
 
   // Login: store tokens
 
@@ -80,8 +79,8 @@ function AuthProviderContent({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     logger.info('Auth', 'User logged out');
     setTokens(undefined);
-    permissionStore.clearUserInfo();
-  }, [setTokens, permissionStore]);
+    userStore.clearUserInfo();
+  }, [setTokens, userStore]);
 
   // Register logout callback with the logout manager
   useEffect(() => {
