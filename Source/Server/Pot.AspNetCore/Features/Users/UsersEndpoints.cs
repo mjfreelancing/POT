@@ -7,4 +7,5 @@ internal static class UsersEndpoints
 
     public const string Me = "/me";
     public const string ChangePassword = "/change-password";
+    public const string Update = "/{id:guid}";
 }
