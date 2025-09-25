@@ -1,182 +1,260 @@
-# Gemini Code Assistant Context
+# POT Developer Guide
 
-This document provides context for the Gemini code assistant to understand the "POT" project.
+This guide provides essential knowledge for developers working on the POT project. It covers the architecture, conventions, and workflows specific to this codebase.
 
-## Project Overview
+## Big Picture Architecture
 
-POT (Paid On Time) is a full-stack financial management application designed to help users project their financial status based on bank account balances, income, and expenses.
+POT is a full-stack application with a C#/.NET backend and a React/TypeScript frontend.
 
-- **Backend:** ASP.NET Core (C#) API that provides data to the client. It uses Entity Framework Core for data access. The main projects are `Pot.AspNetCore` (the web host), `Pot.App` (business logic), and `Pot.Data` (data layer).
-- **Frontend:** A single-page application (SPA) built with React and TypeScript, using Vite as the build tool. It features a modern UI using TailwindCSS and shadcn/ui components.
-- **Database:** PostgreSQL is used for data storage.
-- **Containerization:** The entire application (client, server, database) is designed to be run using Docker and Docker Compose, which is the recommended method for development and production.
+-   **Backend:** A .NET 8 API built with ASP.NET Core. It follows a **CQRS-like pattern** where features are separated into commands (e.g., `Create`, `Update`, `Delete`) and queries (e.g., `Get`, `GetAll`). It uses **Entity Framework Core** with the repository pattern for data access to a **PostgreSQL** database.
+-   **Frontend:** A React application built with Vite and TypeScript. It uses **React Query** for server state management, with a set of custom hooks that standardize API interactions. The UI is built with **Tailwind CSS** and **shadcn/ui**.
+-   **Containerization:** The entire application (backend, frontend, database) can be run using **Docker Compose**, which is the recommended approach for local development.
 
-## Building and Running
+### Key Files & Directories
 
-The primary method for running the application is via Docker Compose.
+-   `Source/Server/Pot.App`: The core backend logic, organized by features.
+-   `Source/Server/Pot.AspNetCore`: The API layer, responsible for exposing endpoints.
+-   `Source/Client/pot-react`: The React frontend application.
+-   `Source/Docker`: Dockerfiles and `docker-compose` files for running the application.
 
-### Docker (Recommended)
+## Backend Conventions
 
-- **Services:** The `docker-compose-client-server.yml` defines three services:
-  - `pot-postgres`: The PostgreSQL database.
-  - `pot-aspnet`: The .NET backend server.
-  - `pot-react`: The React frontend client.
-- **Run all services:** From the project root, execute:
-  ```bash
-  docker-compose -f "Source\Docker\docker-compose-client-server.yml" up --build
-  ```
-- **Access:**
-  - **Client:** `http://localhost:5175`
-  - **Server API:** `http://localhost:5241`
+### CQRS-like Feature Organization
 
-### Manual (Local Development)
+The backend code in `Pot.App` is organized by features (e.g., `Expenses`, `Incomes`, `Accounts`). Inside each feature, the code is further divided into vertical slices representing commands and queries.
 
-#### Backend (.NET)
+For example, the `Source/Server/Pot.App/Features/Expenses` directory contains:
+- `Create/`: Logic for creating a new expense.
+- `Delete/`: Logic for deleting an expense.
+- `GetAll/`: Logic for retrieving all expenses.
+- ...and so on.
 
-1.  **Navigate to the server directory:**
-    ```bash
-    cd Source/Server
-    ```
-2.  **Restore dependencies:**
-    ```bash
-    dotnet restore pot.sln
-    ```
-3.  **Run the web application:**
-    ```bash
-    dotnet run --project Pot.AspNetCore
-    ```
-    The API will be available at `http://localhost:5242`.
+This pattern keeps related code together and makes it easy to find and modify the logic for a specific use case.
 
-#### Frontend (React)
+### API Response Pattern: Direct Data or ProblemDetails
 
-1.  **Navigate to the client directory:**
-    ```bash
-    cd Source/Client/pot-react
-    ```
-2.  **Install dependencies:**
-    ```bash
-    npm install
-    ```
-3.  **Run the development server:**
-    ```bash
-    npm run dev
-    ```
-    The client will be available at `http://localhost:5175`.
+A key convention to understand is how the backend communicates success and failure:
 
-## Key Scripts (Frontend)
+-   **On Success:** The API returns the requested data **directly** as a JSON payload. There is no special wrapper object.
+-   **On Failure:** The API returns a standard `ProblemDetails` JSON object (RFC 7807). This object contains details about the error, such as the status code, a title, and a list of validation errors.
 
-All frontend scripts are run from the `Source/Client/pot-react` directory.
+This approach relies on HTTP status codes to differentiate between success (`2xx`) and failure (`4xx`, `5xx`).
 
-- **`npm run dev`**: Starts the Vite development server.
-- **`npm run build`**: Builds the application for production.
-- **`npm run lint`**: Lints the TypeScript and TSX files.
-- **`npm run test`**: Runs unit tests using Vitest.
-- **`npm run type:check`**: Performs a TypeScript type check without emitting files.
+## Frontend Conventions
 
-## Development Conventions
+### Client-Side Result Pattern
 
-### Backend
+To standardize the handling of API responses, the frontend uses a **client-side Result pattern**. All API calls made through the custom `useApi` hooks return a `Result` object, which is either a `SuccessResult<T>` or a `FailResult<T>`.
 
-- **Code Organization:**
+This is defined in `Source/Client/pot-react/src/lib/result.ts`:
 
-  - Follows standard C# and ASP.NET Core conventions
-  - Uses an `.editorconfig` file for code styling
-  - Modular solution structure:
-    - `Pot.AspNetCore`: Web host and API endpoints
-    - `Pot.App`: Core business logic and services
-    - `Pot.Data`: Entity Framework context and models
-    - `Pot.Data.Migrations`: Database migrations
-    - `Pot.Shared`: DTOs and shared utilities
+```typescript
+// Simplified for clarity
+class SuccessResult<TSuccess> {
+  public readonly success = true;
+  constructor(public value: TSuccess) {}
+}
 
-- **Database Management:**
+class FailResult<TFail extends FailResultBase> {
+  public readonly success = false;
+  constructor(public error: TFail) {}
+}
 
-  - Entity Framework Core for data access
-  - Code-first migrations in `Pot.Data.Migrations`
-  - Migration commands:
+type Result<TSuccess, TFail extends FailResultBase> =
+  | SuccessResult<TSuccess>
+  | FailResult<TFail>;
+```
 
-    ```bash
-    # Add a new migration
-    dotnet ef migrations add MigrationName --project Pot.Data.Migrations
+This forces developers to explicitly handle both success and error states in their components, leading to more robust code.
 
-    # Update database to latest
-    dotnet ef database update --project Pot.Data.Migrations
+### API Interaction: `useApi` Hooks
 
-    # Generate SQL script
-    dotnet ef migrations script --project Pot.Data.Migrations
-    ```
+All communication with the backend is handled by a set of custom hooks defined in `Source/Client/pot-react/src/api/hooks/useApi.ts`. These hooks wrap `react-query`'s `useQuery` and `useMutation` and incorporate the client-side **Result pattern**.
 
-  - Each migration includes:
-    - Up() method for applying changes
-    - Down() method for reverting changes
-    - Generated SQL for review
+-   `useGet`: For fetching data (`GET` requests).
+-   `usePost`, `usePut`, `useDelete`: For mutating data (`POST`, `PUT`, `DELETE` requests).
 
-- **Testing Practices:**
-  - Unit tests for business logic
-  - Integration tests for API endpoints
-  - Test data builders for complex objects
-  - Mock repositories for data access
-  - Fixtures for common test scenarios
-  - Recommended test command:
-    ```bash
-    dotnet test --collect:"XPlat Code Coverage"
-    ```
+The core of this system is the `performOperation` function, which wraps an `axios` call:
 
-### Frontend
+```typescript
+const performOperation = async <TResponse>(
+  operation: () => Promise<AxiosResponse<TResponse>>,
+): Promise<Result<TResponse, FailResultBase>> => {
+  try {
+    const response = await operation();
+    return new SuccessResult(response.data); // On success, wrap data in SuccessResult
+  } catch (error) {
+    return error as FailResult<FailResultBase>; // On error, cast to FailResult
+  }
+};
+```
 
-- **Code Quality:**
+When a component uses one of these hooks, it receives a `Result` object and can render accordingly:
 
-  - Uses `prettier` for code formatting
-  - ESLint for linting with custom rules
-  - Component-based architecture
-  - Path alias `@/*` points to `src` directory
+```tsx
+const { data: result } = useGet<Account[]>('/api/accounts', ['accounts']);
 
-- **Feature Organization:**
+if (result && result.success) {
+  // Render the accounts
+  return <AccountsList accounts={result.value} />;
+} else {
+  // Render an error message
+  return <ErrorDisplay error={result?.error} />;
+}
+```
 
-  - `src/features/`: Feature-specific components and logic
-    - `auth/`: Authentication and authorization
-    - `accounts/`: Account management
-    - `expenses/`: Expense tracking
-    - `income/`: Income management
-    - `projections/`: Financial projections
+### Logging Important Events
 
-- **State Management:**
-  - React Query for server state
-  - Zustand for global UI state
-  - React Context for localized state
-  - Strict TypeScript usage
+The project uses a simple logging utility in `Source/Client/pot-react/src/lib/logging.ts` to standardize console output. It provides `info`, `warn`, and `error` functions.
 
-### Security Model
+**Convention:** There is no automatic logging of component lifecycle events (e.g., mount/unmount). Instead, developers should use the `logger` to record significant events, user actions, or errors that are helpful for debugging.
 
-- **Authentication:**
+**Example:**
+```typescript
+import { logger } from '@/lib/logging';
 
-  - JWT-based authentication
-  - Secure token storage
-  - Automatic token refresh
-  - Session management
+const MyComponent = () => {
+  const handleAction = () => {
+    logger.info('MyComponent', 'User performed an important action.');
+    // ...
+  };
+  // ...
+};
+```
 
-- **Authorization:**
+### Error Handling and User Feedback
 
-  - Role-based access control
-  - Feature-level permissions
-  - Secure route guards
+The application uses a combination of a persistent **Error Sheet** for critical errors and temporary **Toasts** for less critical feedback.
 
-- **Data Protection:**
+#### The Error Sheet
 
-  - RSA encryption for exports
-  - HTTPS-only communication
-  - SQL injection prevention
-  - XSS protection
-  - CSRF protection
+The `ErrorSheet` is a persistent, dismissible banner displayed at the top of the screen. It is designed to inform the user about critical errors that require their attention, such as a failed API request or an unexpected application state.
 
-- **Audit Trail:**
-  - Activity logging
-  - Change tracking
-  - Error logging
-  - Security event monitoring
+There are two primary ways the `ErrorSheet` is used:
 
-### General
+**1. Feature-Level for API Errors (Expected Errors)**
 
-- The `README.md` is the primary source of truth
-- Docker is the preferred environment
-- Consistent coding standards across all projects
-- Regular security updates and dependency scanning
+The most common pattern is to use the `ErrorSheet` within a feature's main component to display errors related to that feature's API calls.
+
+-   A local state variable (e.g., `error`) is used to hold the error details.
+-   A `useEffect` hook watches the result of an `useApi` hook. If the result is a `FailResult`, the `error` state is updated.
+-   The `ErrorSheet` is rendered conditionally based on the `error` state.
+
+**Example from `AccountsPage.tsx`:**
+
+```tsx
+function AccountsPage() {
+  const [error, setError] = useState<DisplayError | null>(null);
+  const { data: accountsResult, isLoading } = useApiGetAllAccounts();
+
+  // ...
+
+  // Handle errors from the API call
+  useEffect(() => {
+    if (accountsResult) {
+      setError(
+        accountsResult.success
+          ? null
+          : {
+              title: accountsResult.error.code,
+              description: accountsResult.error.description,
+            },
+      );
+    }
+  }, [accountsResult]);
+
+  return (
+    <div>
+      {/* ... */}
+      {error && (
+        <ErrorSheet
+          title={error.title}
+          description={error.description}
+          onDismiss={() => setError(null)}
+        />
+      )}
+      {/* ... */}
+    </div>
+  );
+}
+```
+
+**2. Global for Application Errors (Unexpected Errors)**
+
+A single, application-wide `ErrorSheet` is rendered in `App.tsx` to handle unexpected errors caught by a global `ErrorBoundary`.
+
+-   The `ErrorBoundary` wraps the entire application content.
+-   If any component in the tree throws a rendering error, the `onError` callback of the `ErrorBoundary` is triggered.
+-   This callback updates a state variable in `App.tsx`, which in turn renders the `ErrorSheet`.
+
+This provides a safety net for the entire application, ensuring that even unexpected errors are presented to the user in a controlled way.
+
+**Example from `App.tsx`:**
+
+```tsx
+const App = () => {
+  const [error, setError] = useState<DisplayError | undefined>();
+
+  const handleError = (error: Error) => {
+    setError({
+      title: 'Application Error',
+      description: error.message,
+    });
+  };
+
+  return (
+    <AuthProvider>
+      <ThemeProvider>
+        <ErrorBoundary onError={handleError}>
+          <AppContent />
+        </ErrorBoundary>
+        {error && (
+          <ErrorSheet
+            title={error.title}
+            description={error.description}
+            onDismiss={() => setError(undefined)}
+          />
+        )}
+      </ThemeProvider>
+    </AuthProvider>
+  );
+};
+```
+
+#### Toasts
+
+**Toasts** are small, temporary notifications used for less critical feedback, such as:
+
+-   Confirming a successful action (e.g., "Account created successfully").
+-   Displaying validation errors on a form.
+-   Notifying the user of a background process.
+
+They are managed by the `sonner` library and can be triggered from anywhere in the application.
+
+## Critical Developer Workflows
+
+### Running the Application (Docker - Recommended)
+
+The easiest way to get started is to use the provided Docker Compose tasks in VS Code.
+
+1.  **Server-Only Mode:**
+    -   Press `Ctrl+Shift+P` and select `Tasks: Run Task`.
+    -   Choose `docker-start-pot-server-only`.
+    -   This starts the backend API and the database in Docker.
+    -   Navigate to `Source/Client/pot-react` and run `npm run dev` to start the frontend.
+
+2.  **Client and Server Mode:**
+    -   Press `Ctrl+Shift+P` and select `Tasks: Run Task`.
+    -   Choose `docker-start-pot-client-server`.
+    -   This starts the entire stack in Docker.
+    -   The application will be available at `http://localhost:5175`.
+
+### Frontend Scripts
+
+The following scripts are available in `Source/Client/pot-react/package.json`:
+
+-   `npm run dev`: Starts the Vite development server.
+-   `npm run build`: Builds the application for production.
+-   `npm run lint`: Lints the code using ESLint.
+-   `npm run test`: Runs the tests using Vitest.
+-   `npm run type:check`: Performs a TypeScript type check.
