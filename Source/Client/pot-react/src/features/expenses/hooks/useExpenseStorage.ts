@@ -1,16 +1,17 @@
-import useLocalStorage from '@/hooks/useLocalStorage';
+import useLocalStorageManager from '@/hooks/useLocalStorageManager';
 import { DisplayError } from '@/lib';
+
+const EXPENSE_STORAGE_KEY = 'pot-expenses';
 
 type ExpenseStorageData = {
   selectedAccountId: string | null;
+  filterDescription: string | null;
 };
 
-// Default - no default filter
 const expenseStorageDefaults: ExpenseStorageData = {
   selectedAccountId: null,
+  filterDescription: null,
 };
-
-const EXPENSE_STORAGE_KEY = 'pot-expenses';
 
 type StorageErrorHandler = (error: DisplayError) => void;
 
@@ -20,15 +21,27 @@ type StorageErrorHandler = (error: DisplayError) => void;
  * @returns Storage utilities for expense data
  */
 function useExpenseStorage(onError?: StorageErrorHandler) {
-  const { getItem, setItem } = useLocalStorage<ExpenseStorageData>({
-    key: EXPENSE_STORAGE_KEY,
-    initialValue: expenseStorageDefaults,
-    onError: onError,
-  });
+  const { getProperty, setProperty } =
+    useLocalStorageManager<ExpenseStorageData>(EXPENSE_STORAGE_KEY, onError);
 
   return {
-    getExpenseData: getItem,
-    setExpenseData: setItem,
+    getExpenseData: () => ({
+      selectedAccountId: getProperty('selectedAccountId'),
+      filterDescription: getProperty('filterDescription'),
+    }),
+
+    setExpenseData: (data: Partial<ExpenseStorageData>) => {
+      if (data.selectedAccountId !== undefined) {
+        setProperty('selectedAccountId', data.selectedAccountId);
+      }
+
+      if (data.filterDescription !== undefined) {
+        setProperty(
+          'filterDescription',
+          data.filterDescription === '' ? null : data.filterDescription,
+        );
+      }
+    },
   };
 }
 

@@ -40,6 +40,20 @@ function IncomesPage() {
     });
   });
 
+  // Apply stored description filter on mount
+  useEffect(() => {
+    const storedFilter = getIncomeData().filterDescription;
+
+    if (storedFilter) {
+      setSearchTerm(storedFilter);
+    }
+  }, [getIncomeData]);
+
+  const handleSearchTermChange = (term: string) => {
+    setSearchTerm(term);
+    setIncomeData({ filterDescription: term });
+  };
+
   // Get data
   const { data: incomesResult, isLoading: incomesLoading } =
     useApiGetAllIncomes();
@@ -168,7 +182,7 @@ function IncomesPage() {
             )}
             <SearchInput
               value={searchTerm}
-              onChange={setSearchTerm}
+              onChange={handleSearchTermChange}
               placeholder="Search by description..."
               ariaLabel="Search incomes by description"
               name="income-search"

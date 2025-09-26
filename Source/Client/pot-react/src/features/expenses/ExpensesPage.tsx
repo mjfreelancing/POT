@@ -40,6 +40,15 @@ function ExpensesPage() {
     });
   });
 
+  // Apply stored description filter on mount
+  useEffect(() => {
+    const storedFilter = getExpenseData().filterDescription;
+
+    if (storedFilter) {
+      setSearchTerm(storedFilter);
+    }
+  }, [getExpenseData]);
+
   // Get data
   const { data: expensesResult, isLoading: expensesLoading } =
     useApiGetAllExpenses();
@@ -156,6 +165,11 @@ function ExpensesPage() {
 
   const navigate = useNavigate();
 
+  const handleSearchTermChange = (term: string) => {
+    setSearchTerm(term);
+    setExpenseData({ filterDescription: term });
+  };
+
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20">
       <ExpensesHeader />
@@ -172,7 +186,7 @@ function ExpensesPage() {
             )}
             <SearchInput
               value={searchTerm}
-              onChange={setSearchTerm}
+              onChange={handleSearchTermChange}
               placeholder="Search by description..."
               ariaLabel="Search expenses by description"
               name="expense-search"

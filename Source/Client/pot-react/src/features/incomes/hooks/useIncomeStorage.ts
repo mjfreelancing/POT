@@ -1,16 +1,17 @@
-import useLocalStorage from '@/hooks/useLocalStorage';
+import useLocalStorageManager from '@/hooks/useLocalStorageManager';
 import { DisplayError } from '@/lib';
+
+const INCOME_STORAGE_KEY = 'pot-incomes';
 
 type IncomeStorageData = {
   selectedAccountId: string | null;
+  filterDescription: string | null;
 };
 
-// Default - no default filter
 const incomeStorageDefaults: IncomeStorageData = {
   selectedAccountId: null,
+  filterDescription: null,
 };
-
-const INCOME_STORAGE_KEY = 'pot-incomes';
 
 type StorageErrorHandler = (error: DisplayError) => void;
 
@@ -20,15 +21,27 @@ type StorageErrorHandler = (error: DisplayError) => void;
  * @returns Storage utilities for income data
  */
 function useIncomeStorage(onError?: StorageErrorHandler) {
-  const { getItem, setItem } = useLocalStorage<IncomeStorageData>({
-    key: INCOME_STORAGE_KEY,
-    initialValue: incomeStorageDefaults,
-    onError: onError,
-  });
+  const { getProperty, setProperty } =
+    useLocalStorageManager<IncomeStorageData>(INCOME_STORAGE_KEY, onError);
 
   return {
-    getIncomeData: getItem,
-    setIncomeData: setItem,
+    getIncomeData: () => ({
+      selectedAccountId: getProperty('selectedAccountId'),
+      filterDescription: getProperty('filterDescription'),
+    }),
+
+    setIncomeData: (data: Partial<IncomeStorageData>) => {
+      if (data.selectedAccountId !== undefined) {
+        setProperty('selectedAccountId', data.selectedAccountId);
+      }
+
+      if (data.filterDescription !== undefined) {
+        setProperty(
+          'filterDescription',
+          data.filterDescription === '' ? null : data.filterDescription,
+        );
+      }
+    },
   };
 }
 

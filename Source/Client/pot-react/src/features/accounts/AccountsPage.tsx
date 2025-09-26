@@ -14,6 +14,7 @@ import { DisplayError } from '@/lib';
 import { logger } from '@/lib/logging';
 
 import { AccountsHeader, AccountsTable } from './components';
+import useAccountStorage from './hooks/useAccountStorage';
 
 function AccountsPage() {
   useEffect(() => {
@@ -63,6 +64,27 @@ function AccountsPage() {
     }
   }, [accountsResult]);
 
+  const { getAccountData, setAccountData } = useAccountStorage(error => {
+    setError({
+      title: 'Storage Error',
+      description: error.description,
+    });
+  });
+
+  // Apply stored description filter on mount
+  useEffect(() => {
+    const storedFilter = getAccountData().filterDescription;
+
+    if (storedFilter) {
+      setSearchTerm(storedFilter);
+    }
+  }, [getAccountData]);
+
+  const handleSearchTermChange = (term: string) => {
+    setSearchTerm(term);
+    setAccountData({ filterDescription: term });
+  };
+
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20">
       <AccountsHeader />
@@ -71,7 +93,7 @@ function AccountsPage() {
           <div className="flex items-center gap-4">
             <SearchInput
               value={searchTerm}
-              onChange={setSearchTerm}
+              onChange={handleSearchTermChange}
               placeholder="Search by description..."
               ariaLabel="Search accounts by description"
               name="account-search"

@@ -2,7 +2,7 @@ import { DisplayError, getErrorMessage, logger } from '@/lib';
 
 type LocalStorageProps<T> = {
   key: string;
-  initialValue?: T;
+  defaultValue?: T;
   onError?: (error: DisplayError) => void;
 };
 
@@ -15,7 +15,7 @@ function getDisplayError(error: unknown): DisplayError {
 
 const useLocalStorage = <T = Record<string, unknown>>({
   key,
-  initialValue,
+  defaultValue,
   onError,
 }: LocalStorageProps<T>) => {
   const setItem = (value: T) => {
@@ -36,7 +36,7 @@ const useLocalStorage = <T = Record<string, unknown>>({
     try {
       const item = window.localStorage.getItem(key);
 
-      return item ? JSON.parse(item) : initialValue;
+      return item ? JSON.parse(item) : defaultValue;
     } catch (error) {
       logger.error(
         'useLocalStorage',

@@ -33,7 +33,7 @@ type StorageErrorHandler = (error: DisplayError) => void;
 function useProjectionStorage(onError?: StorageErrorHandler) {
   const { getItem, setItem } = useLocalStorage<ProjectionStorageData>({
     key: PROJECTION_STORAGE_KEY,
-    initialValue: projectionStorageDefaults,
+    defaultValue: projectionStorageDefaults,
     onError: onError,
   });
 
