@@ -37,7 +37,7 @@ function UserMenu() {
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={handleProfileOpen}>
             <Settings className="mr-2 size-4" />
-            Account Settings
+            Settings
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={logout}>
