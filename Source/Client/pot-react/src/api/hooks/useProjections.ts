@@ -8,6 +8,7 @@ const useApiGetProjection = (startDate: string, endDate: string) => {
     `/projections?startDate=${startDate}&endDate=${endDate}`,
     ['projections', startDate, endDate],
   );
+
   const result = query.data as Result<Projection, FailResultBase>;
 
   let data: Result<Projection, FailResultBase>;

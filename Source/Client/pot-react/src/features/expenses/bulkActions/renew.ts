@@ -16,6 +16,7 @@ async function renewExpenses(
 
   if (result.success) {
     await queryClient.invalidateQueries({ queryKey: ['expenses'] });
+    await queryClient.invalidateQueries({ queryKey: ['projections'] });
     return { success: true };
   }
 

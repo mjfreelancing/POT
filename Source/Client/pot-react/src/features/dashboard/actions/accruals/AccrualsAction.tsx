@@ -71,6 +71,8 @@ function AccrualsAction() {
       return;
     }
 
+    await queryClient.invalidateQueries({ queryKey: ['projections'] });
+
     toast(
       () => (
         <SuccessToast

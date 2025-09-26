@@ -15,6 +15,7 @@ async function accrueAllExpenses(
   if (result.success) {
     await queryClient.invalidateQueries({ queryKey: ['accounts'] });
     await queryClient.invalidateQueries({ queryKey: ['expenses'] });
+    await queryClient.invalidateQueries({ queryKey: ['projections'] });
     return { success: true };
   }
 

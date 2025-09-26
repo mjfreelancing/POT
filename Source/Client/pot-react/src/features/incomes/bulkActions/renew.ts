@@ -16,6 +16,7 @@ async function renewIncomes(
 
   if (result.success) {
     await queryClient.invalidateQueries({ queryKey: ['incomes'] });
+    await queryClient.invalidateQueries({ queryKey: ['projections'] });
     return { success: true };
   }
 
