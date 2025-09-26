@@ -25,5 +25,9 @@ type User = z.infer<typeof UserSchema>;
 type CreateUser = z.infer<typeof CreateUserSchema>;
 type EditUser = z.infer<typeof EditUserSchema>;
 
-export { CreateUserSchema, EditUserSchema, UserSchema };
+const compareUserDisplayName = (lhs: User, rhs: User): number => {
+  return lhs.displayName.localeCompare(rhs.displayName);
+};
+
+export { compareUserDisplayName, CreateUserSchema, EditUserSchema, UserSchema };
 export type { CreateUser, EditUser, User };

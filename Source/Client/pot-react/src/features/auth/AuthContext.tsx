@@ -29,7 +29,7 @@ import type { AuthTokens } from './types';
 // 4. Login/logout operations
 type AuthContextType = {
   tokens: AuthTokens | undefined;
-  userInfo: User | undefined;
+  userInfo: User | null;
   isAuthenticated: boolean;
   login: (tokens: AuthTokens) => void;
   logout: () => void;
@@ -115,12 +115,12 @@ function AuthProviderContent({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       tokens,
-      userInfo: userInfo?.success ? userInfo.value : undefined,
+      userInfo: userStore.userInfo,
       isAuthenticated: Boolean(tokens?.accessToken),
       login,
       logout,
     }),
-    [tokens, userInfo, login, logout],
+    [tokens, userStore, login, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -136,9 +136,11 @@ function AuthProvider({ children }: { children: ReactNode }) {
 
 function useAuth() {
   const context = useContext(AuthContext);
+
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
+
   return context;
 }
 

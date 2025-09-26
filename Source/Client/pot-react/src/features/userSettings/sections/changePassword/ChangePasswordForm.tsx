@@ -17,7 +17,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
 import type { DisplayError } from '@/lib';
 import { logger } from '@/lib/logging';
 
@@ -74,12 +73,9 @@ function ChangePasswordForm() {
         ),
         { duration: 5000 },
       );
+
       form.reset();
     }
-  }
-
-  if (isPending) {
-    return <Skeleton className="mb-6 px-4 py-3 h-64 w-full rounded-lg" />;
   }
 
   return (
@@ -160,4 +156,4 @@ function ChangePasswordForm() {
   );
 }
 
-export { ChangePasswordForm };
+export default ChangePasswordForm;

@@ -12,7 +12,8 @@ import { DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetClose, SheetContent } from '@/components/ui/sheet';
 
-import { AccountUserInfo, ChangePasswordForm } from './sections';
+import ChangePasswordForm from './sections/changePassword/ChangePasswordForm';
+import UserDetailsForm from './sections/userDetails/UserDetailsForm';
 
 type AccountSettingsSheetProps = {
   open: boolean;
@@ -49,21 +50,34 @@ function AccountSettingsSheet(props: AccountSettingsSheetProps): JSX.Element {
               </Button>
             </SheetClose>
           </div>
+
           <Separator />
-          <AccountUserInfo />
-          <div className="border border-border rounded-lg bg-background">
-            <Accordion type="single" collapsible defaultValue="change-password">
+
+          <Accordion type="single" collapsible defaultValue="user-details">
+            <div className="border border-border rounded-lg bg-background">
+              <AccordionItem className="px-4" value="user-details">
+                <AccordionTrigger className="text-lg font-semibold text-primary">
+                  User Details
+                </AccordionTrigger>
+                <AccordionContent className="flex flex-col gap-4">
+                  <UserDetailsForm />
+                </AccordionContent>
+              </AccordionItem>
+            </div>
+
+            <div className="py-4" />
+
+            <div className="border border-border rounded-lg bg-background">
               <AccordionItem className="px-4" value="change-password">
                 <AccordionTrigger className="text-lg font-semibold text-primary">
                   Change Password
                 </AccordionTrigger>
-                <AccordionContent className="px-4 pt-4">
+                <AccordionContent className="flex flex-col gap-4">
                   <ChangePasswordForm />
                 </AccordionContent>
               </AccordionItem>
-              {/* Add more AccordionItem components here as needed */}
-            </Accordion>
-          </div>
+            </div>
+          </Accordion>
         </div>
       </SheetContent>
     </Sheet>

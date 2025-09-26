@@ -1,2 +1,2 @@
-export { AccountUserInfo } from './AccountUserInfo';
-export { ChangePasswordForm } from './changePassword/ChangePasswordForm';
+export * from './changePassword/ChangePasswordForm';
+export * from './userDetails/UserDetailsForm';
