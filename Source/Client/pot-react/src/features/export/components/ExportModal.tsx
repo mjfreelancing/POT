@@ -96,6 +96,7 @@ function ExportModal({ isOpen, onClose }: ExportModalProps) {
             Export all your financial data to prevent accidental data loss.
           </DialogDescription>
         </DialogHeader>
+        <div className="mb-4" />
         <DialogFooter className="gap-4">
           <Button variant="outline" onClick={onClose} className="w-28">
             Cancel
