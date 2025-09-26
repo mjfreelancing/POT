@@ -1,6 +1,6 @@
 import { cloneElement, type HTMLProps, type ReactElement } from 'react';
 
-import { usePermissions } from '../usePermissions';
+import { usePermissions } from '@/hooks';
 
 /**
  * A component that renders its child with a disabled state when the user

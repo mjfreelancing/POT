@@ -13,8 +13,8 @@ import type { UserInfo } from '@/api/types/userInfo';
 import { DisplayError } from '@/lib';
 import { logger } from '@/lib/logging';
 
+import { useUserStore } from '../../stores/useUserStore';
 import logoutManager from './logoutManager';
-import { useUserStore } from './stores/useUserStore';
 import { TokenProvider, useTokens } from './TokenContext';
 import {
   createTokenRefreshTimer,

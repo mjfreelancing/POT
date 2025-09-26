@@ -30,4 +30,4 @@ function useScreenDimensions(): ScreenDimensions {
   return dimensions;
 }
 
-export { useScreenDimensions };
+export default useScreenDimensions;

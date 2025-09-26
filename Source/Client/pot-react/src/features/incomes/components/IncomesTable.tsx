@@ -17,7 +17,7 @@ import {
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Income } from '@/data';
-import { usePermissions } from '@/features/auth/usePermissions';
+import { usePermissions } from '@/hooks';
 import { DisplayError, Frequency, getTableRowClassName } from '@/lib';
 
 import { renewIncomes, toggleExcludeIncomes } from '../bulkActions';

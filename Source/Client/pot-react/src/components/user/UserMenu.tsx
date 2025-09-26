@@ -9,8 +9,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { AccountSettingsSheet } from '@/features/accountSettings/AccountSettingsSheet';
 import { useAuth } from '@/features/auth/AuthContext';
+import { AccountSettingsSheet } from '@/features/userSettings/UserSettingsSheet';
 
 function UserMenu() {
   const { userInfo, logout } = useAuth();

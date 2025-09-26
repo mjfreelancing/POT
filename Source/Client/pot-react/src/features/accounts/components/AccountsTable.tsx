@@ -15,7 +15,7 @@ import {
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Account } from '@/data';
-import { usePermissions } from '@/features/auth/usePermissions';
+import { usePermissions } from '@/hooks';
 import { DisplayError } from '@/lib';
 
 import { accrueAllExpenses } from '../utils/bulkActions';

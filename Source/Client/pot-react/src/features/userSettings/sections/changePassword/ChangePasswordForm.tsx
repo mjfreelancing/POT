@@ -18,12 +18,13 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { DisplayError } from '@/lib';
+import { logger } from '@/lib/logging';
+
 import {
   ChangePasswordFields,
   changePasswordSchema,
-} from '@/features/accountSettings/sections/changePassword/changePasswordSchema';
-import type { DisplayError } from '@/lib';
-import { logger } from '@/lib/logging';
+} from './changePasswordSchema';
 
 function ChangePasswordForm() {
   const form = useForm<ChangePasswordFields>({

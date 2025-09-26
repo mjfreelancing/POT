@@ -10,7 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { usePermissions } from '@/features/auth/usePermissions';
+import usePermissions from '@/hooks/usePermissions';
 
 type MenuGroupItemBase = {
   readonly label: string;
