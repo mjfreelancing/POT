@@ -2167,7 +2167,7 @@ Built on top of TokenContext, AuthContext provides higher-level authentication f
 ```typescript
 type AuthContextType = {
   tokens: AuthTokens | undefined;
-  userInfo: UserInfo | undefined;
+  userInfo: User | undefined;
   isAuthenticated: boolean;
   login: (tokens: AuthTokens) => void;
   logout: () => void;
