@@ -17,15 +17,19 @@ import UserDetailsForm from './sections/userDetails/UserDetailsForm';
 
 type AccountSettingsSheetProps = {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
   onClose: () => void;
 };
 
 function AccountSettingsSheet(props: AccountSettingsSheetProps): JSX.Element {
-  const { open, onOpenChange, onClose } = props;
+  const { open, onClose } = props;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet
+      open={open}
+      onOpenChange={() => {
+        /* Prevent closing on outside click */
+      }}
+    >
       {/* Hide the default close (X) button using [&>button:first-of-type]:hidden */}
       <SheetContent
         side="right"
