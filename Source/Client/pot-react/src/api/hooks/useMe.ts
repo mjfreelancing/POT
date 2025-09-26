@@ -1,4 +1,4 @@
-import type { UserInfo } from '@/api/types/userInfo';
+import { User } from '@/data/user';
 import { useTokens } from '@/features/auth/TokenContext';
 import { FailResultBase, Result } from '@/lib';
 
@@ -10,7 +10,7 @@ export function useMe() {
   const { tokens } = useTokens();
   const hasValidToken = tokens ? !!tokens.accessToken : false;
 
-  const query = useGet<UserInfo>('/users/me', ['me'], {
+  const query = useGet<User>('/users/me', ['me'], {
     // Critical for auth flow: This endpoint initializes user permissions
     // and must run whenever a component mounts that needs fresh auth state
     refetchOnMount: true,
@@ -30,6 +30,6 @@ export function useMe() {
 
   return {
     ...query,
-    data: query.data as Result<UserInfo, FailResultBase>,
+    data: query.data as Result<User, FailResultBase>,
   };
 }

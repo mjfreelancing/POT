@@ -9,7 +9,7 @@ import {
 } from 'react';
 
 import { useMe } from '@/api/hooks/useMe';
-import type { UserInfo } from '@/api/types/userInfo';
+import { User } from '@/data/user';
 import { DisplayError } from '@/lib';
 import { logger } from '@/lib/logging';
 
@@ -29,7 +29,7 @@ import type { AuthTokens } from './types';
 // 4. Login/logout operations
 type AuthContextType = {
   tokens: AuthTokens | undefined;
-  userInfo: UserInfo | undefined;
+  userInfo: User | undefined;
   isAuthenticated: boolean;
   login: (tokens: AuthTokens) => void;
   logout: () => void;

@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 
-import { UserInfo } from '@/api/types';
+import { User } from '@/data/user';
 
 type UserStore = {
-  userInfo: UserInfo | null;
-  setUserInfo: (userInfo: UserInfo) => void;
+  userInfo: User | null;
+  setUserInfo: (userInfo: User) => void;
   clearUserInfo: () => void;
 };
 
