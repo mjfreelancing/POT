@@ -3,7 +3,7 @@ using Pot.App.Features.Auth.Me.Models;
 using Pot.AspNetCore.Models;
 using System.ComponentModel;
 
-namespace Pot.AspNetCore.Features.Users.Me;
+namespace Pot.AspNetCore.Features.Me.Get;
 
 internal sealed class Response : ResponseBase
 {

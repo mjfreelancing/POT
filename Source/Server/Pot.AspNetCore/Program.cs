@@ -4,6 +4,7 @@ using Pot.AspNetCore.Features.Auth.Extensions;
 using Pot.AspNetCore.Features.Expenses.Extensions;
 using Pot.AspNetCore.Features.Incomes.Extensions;
 using Pot.AspNetCore.Features.Maintenance.Extensions;
+using Pot.AspNetCore.Features.Me.Extensions;
 using Pot.AspNetCore.Features.Projections.Extensions;
 using Pot.AspNetCore.Features.Users.Extensions;
 using Pot.Data;
@@ -68,8 +69,9 @@ public class Program
         // 422 - Validation and other errors that occur due to data related problems
         //       (such as conflicts, constraints, etc) when processing the input data
         // 500 - Unexpected errors
-        app.AddUserEndpoints()
-           .AddAuthEndpoints()
+        app.AddAuthEndpoints()
+           .AddMeEndpoints()
+           .AddUserEndpoints()
            .AddAccountEndpoints()
            .AddIncomeEndpoints()
            .AddExpenseEndpoints()

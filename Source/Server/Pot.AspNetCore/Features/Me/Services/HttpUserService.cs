@@ -4,7 +4,7 @@ using Pot.App.Features.Auth.Me;
 using Pot.App.Features.Auth.Me.Models;
 using System.IdentityModel.Tokens.Jwt;
 
-namespace Pot.AspNetCore.Features.Users.Services;
+namespace Pot.AspNetCore.Features.Me.Services;
 
 internal sealed class HttpUserService : IHttpUserService
 {
@@ -15,9 +15,9 @@ internal sealed class HttpUserService : IHttpUserService
         _userService = userService.WhenNotNull();
     }
 
-    public async Task<Output?> GetUserInfoAsync(HttpContext httpContext, CancellationToken cancellationToken)
+    public async Task<Output?> GetMeInfoAsync(HttpContext httpContext, CancellationToken cancellationToken)
     {
-        var userId = GetUserId(httpContext);
+        var userId = GetMeId(httpContext);
 
         if (!userId.HasValue)
         {
@@ -29,7 +29,7 @@ internal sealed class HttpUserService : IHttpUserService
             .ConfigureAwait(false);
     }
 
-    private static Guid? GetUserId(HttpContext httpContext)
+    private static Guid? GetMeId(HttpContext httpContext)
     {
         var user = httpContext?.User;
 

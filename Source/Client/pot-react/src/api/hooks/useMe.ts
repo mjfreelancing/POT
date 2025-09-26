@@ -10,7 +10,7 @@ export function useMe() {
   const { tokens } = useTokens();
   const hasValidToken = tokens ? !!tokens.accessToken : false;
 
-  const query = useGet<User>('/users/me', ['me'], {
+  const query = useGet<User>('/me', ['me'], {
     // Critical for auth flow: This endpoint initializes user permissions
     // and must run whenever a component mounts that needs fresh auth state
     refetchOnMount: true,

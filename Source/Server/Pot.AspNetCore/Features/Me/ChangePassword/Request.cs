@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Pot.AspNetCore.Features.Users.ChangePassword;
+namespace Pot.AspNetCore.Features.Me.ChangePassword;
 
 public sealed class Request
 {

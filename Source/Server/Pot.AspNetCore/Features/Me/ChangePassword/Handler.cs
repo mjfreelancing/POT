@@ -4,9 +4,9 @@ using Pot.App.Errors;
 using Pot.AspNetCore.Concerns.Auth;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Extensions;
-using Pot.AspNetCore.Features.Users.Services;
+using Pot.AspNetCore.Features.Me.Services;
 
-namespace Pot.AspNetCore.Features.Users.ChangePassword;
+namespace Pot.AspNetCore.Features.Me.ChangePassword;
 
 internal sealed class Handler
 {
@@ -25,7 +25,7 @@ internal sealed class Handler
             return TypedResults.Problem(problemDetails);
         }
 
-        var userInfo = await userService.GetUserInfoAsync(httpContext, cancellationToken);
+        var userInfo = await userService.GetMeInfoAsync(httpContext, cancellationToken);
 
         if (userInfo is null)
         {

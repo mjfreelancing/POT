@@ -2,7 +2,7 @@
 using FluentValidation;
 using Pot.AspNetCore.Concerns.Validation;
 
-namespace Pot.AspNetCore.Features.Users.ChangePassword;
+namespace Pot.AspNetCore.Features.Me.ChangePassword;
 
 internal sealed class RequestValidator : PotValidatorBase<Request>
 {

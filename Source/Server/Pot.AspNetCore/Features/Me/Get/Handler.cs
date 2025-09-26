@@ -2,9 +2,9 @@ using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.AspNetCore.Concerns.Auth;
 using Pot.AspNetCore.Features.Auth;
-using Pot.AspNetCore.Features.Users.Services;
+using Pot.AspNetCore.Features.Me.Services;
 
-namespace Pot.AspNetCore.Features.Users.Me;
+namespace Pot.AspNetCore.Features.Me.Get;
 
 internal sealed class Handler
 {
@@ -14,7 +14,7 @@ internal sealed class Handler
     {
         logger.LogCall(null);
 
-        var userInfo = await userService.GetUserInfoAsync(httpContext, cancellationToken);
+        var userInfo = await userService.GetMeInfoAsync(httpContext, cancellationToken);
 
         if (userInfo is null)
         {
