@@ -38,9 +38,9 @@ function useProjectionStorage(onError?: StorageErrorHandler) {
   });
 
   return {
-    getProjectionData: getItem,
-    setProjectionData: setItem,
-    removeStartDate: () => {
+    getProjectionStorageData: getItem,
+    setProjectionStorageData: setItem,
+    removeStorageStartDate: () => {
       const data = getItem();
 
       if (data && data.startDate) {

@@ -35,15 +35,19 @@ function ProjectionsPage() {
   // Computed property that combines errors for display
   const error = storageError || apiError;
 
-  const { getProjectionData, setProjectionData, removeStartDate } =
-    useProjectionStorage(setStorageError);
+  const {
+    getProjectionStorageData,
+    setProjectionStorageData,
+    removeStorageStartDate,
+  } = useProjectionStorage(setStorageError);
 
   // State for start date and period (in months)
   const today = normalizeToLocalMidnight(new Date());
 
   // Use the max of stored startDate and today, or today if not present
   const [startDate, setStartDate] = useState<Date>(() => {
-    const data = getProjectionData();
+    const data = getProjectionStorageData();
+
     if (data && data.startDate) {
       const stored = normalizeToLocalMidnight(data.startDate);
 
@@ -53,7 +57,7 @@ function ProjectionsPage() {
 
       // If stored date is before today, clean up local storage
       if (isAfterDate(today, stored)) {
-        removeStartDate();
+        removeStorageStartDate();
       }
     }
 
@@ -61,7 +65,7 @@ function ProjectionsPage() {
   });
 
   const [period, setPeriod] = useState<number>(() => {
-    const data = getProjectionData();
+    const data = getProjectionStorageData();
 
     return (
       (data && data.period) || (projectionStorageDefaults.period as number)
@@ -69,7 +73,7 @@ function ProjectionsPage() {
   });
 
   const [metric, setMetric] = useState<ProjectionMetric>(() => {
-    const data = getProjectionData();
+    const data = getProjectionStorageData();
 
     return (
       (data && data.metric) ||
@@ -78,7 +82,7 @@ function ProjectionsPage() {
   });
 
   const [hiddenSeries, setHiddenSeries] = useState<string[]>(() => {
-    const data = getProjectionData();
+    const data = getProjectionStorageData();
     return data?.hiddenSeries || [];
   });
 
@@ -92,10 +96,11 @@ function ProjectionsPage() {
 
     // If the new date is today, remove from storage; else, persist
     if (isSameDate(newDate, today)) {
-      removeStartDate();
+      removeStorageStartDate();
     } else {
-      const existingData = getProjectionData();
-      setProjectionData({
+      const existingData = getProjectionStorageData();
+
+      setProjectionStorageData({
         ...existingData,
         startDate: dateIsoFormat(newDate),
       });
@@ -106,69 +111,69 @@ function ProjectionsPage() {
     logger.info('ProjectionsPage', 'Projection period changed', months);
     setPeriod(months);
 
-    const existingData = getProjectionData();
+    const existingData = getProjectionStorageData();
     const newData = {
       ...existingData,
       period: months,
     };
 
-    setProjectionData(newData);
+    setProjectionStorageData(newData);
   }
 
   function handleMetricChange(value: ProjectionMetric) {
     logger.info('ProjectionsPage', 'Metric changed', value);
     setMetric(value);
 
-    const existingData = getProjectionData();
+    const existingData = getProjectionStorageData();
     const newData = {
       ...existingData,
       metric: value,
     };
 
-    setProjectionData(newData);
+    setProjectionStorageData(newData);
   }
 
   function handleHiddenSeriesChange(hiddenSeriesKeys: string[]) {
     logger.info('ProjectionsPage', 'Hidden series changed', hiddenSeriesKeys);
     setHiddenSeries(hiddenSeriesKeys);
 
-    const existingData = getProjectionData();
+    const existingData = getProjectionStorageData();
     const newData = {
       ...existingData,
       hiddenSeries: hiddenSeriesKeys,
     };
 
-    setProjectionData(newData);
+    setProjectionStorageData(newData);
   }
 
   // Call API with local date strings for 12 months
-  const { data: projectionResult, isLoading } = useApiGetProjection(
+  const { data: projectionData, isLoading } = useApiGetProjection(
     dateIsoFormat(startDate),
     dateIsoFormat(apiEndDate),
   );
 
   useEffect(() => {
-    if (!projectionResult) {
+    if (!projectionData) {
       return;
     }
 
-    if (projectionResult.success) {
+    if (projectionData.success) {
       setApiError(null);
     } else {
       setApiError({
-        title: projectionResult.error.code,
-        description: projectionResult.error.description,
+        title: projectionData.error.code,
+        description: projectionData.error.description,
       });
     }
-  }, [projectionResult]);
+  }, [projectionData]);
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20">
       <ProjectionsHeader />
-      {projectionResult?.success && (
+      {projectionData?.success && (
         <div className="p-6 flex-1 min-h-0">
           <ProjectionChart
-            data={projectionResult.value}
+            data={projectionData.value}
             startDate={startDate}
             period={period}
             selectedMetric={metric}
