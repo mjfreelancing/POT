@@ -6,11 +6,9 @@ using System.ComponentModel;
 
 namespace Pot.AspNetCore.Features.Expenses.Get;
 
-using OkGetResult = Ok<Response>;
-
 internal sealed class Handler
 {
-    public static async Task<Results<OkGetResult, ProblemHttpResult>> Invoke([Description("The Expense Id")] Guid id,
+    public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke([Description("The Expense Id")] Guid id,
         IGetExpenseService expenseService, ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);

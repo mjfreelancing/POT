@@ -9,11 +9,9 @@ using Pot.Shared.Extensions;
 
 namespace Pot.AspNetCore.Features.Projections.Get;
 
-using OkGetResult = Ok<Response>;
-
 internal sealed class Handler
 {
-    public static async Task<Results<OkGetResult, NotFound, ProblemHttpResult>> Invoke([AsParameters] Request request,
+    public static async Task<Results<Ok<Response>, NotFound, ProblemHttpResult>> Invoke([AsParameters] Request request,
          IProblemDetailsInspector problemDetailsInspector, IProjectionsService projectionsService, ITimeProvider timeProvider,
          ILogger<Handler> logger, CancellationToken cancellationToken)
     {
