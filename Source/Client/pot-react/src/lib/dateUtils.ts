@@ -143,11 +143,42 @@ function formatDate(
   return new Intl.DateTimeFormat(locale, options).format(dateObj);
 }
 
+/**
+ * Formats a date and time using internationalization
+ * @param date The Date, or a string that can be parsed by the Date constructor, to format
+ * @param locale The BCP 47 language tag for formatting (defaults to 'en-AU')
+ * @param options Optional Intl.DateTimeFormatOptions for custom formatting
+ * @returns A formatted date and time string
+ *
+ * @example
+ * Australian English locale (default)
+ *   formatDateTime(new Date('2025-08-02T15:30:00'))                   // '02/08/2025, 3:30 PM'
+ *
+ * US English locale
+ *   formatDateTime(new Date('2025-08-02T15:30:00'), 'en-US')          // '8/2/2025, 3:30 PM'
+ *
+ * Custom format (full month name, numeric day, year, time)
+ *   formatDateTime(new Date('2025-08-02T15:30:00'), 'en-AU',
+ *     { day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: 'numeric' }) // '2 August 2025, 3:30 PM'
+ */
+function formatDateTime(
+  date: Date | string,
+  locale = 'en-AU',
+  options: Intl.DateTimeFormatOptions = {
+    dateStyle: 'medium',
+    timeStyle: 'medium',
+  },
+): string {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return new Intl.DateTimeFormat(locale, options).format(dateObj);
+}
+
 export {
   compareDates,
   dateIsoFormat,
   dayOfYear,
   formatDate,
+  formatDateTime,
   isAfterDate,
   isBeforeDate,
   isSameDate,

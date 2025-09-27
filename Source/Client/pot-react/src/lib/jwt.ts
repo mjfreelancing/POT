@@ -1,4 +1,4 @@
-import { formatDate } from './dateUtils';
+import { formatDateTime } from './dateUtils';
 import { logger } from './logging';
 
 const JWT_LOGGER = 'JWT';
@@ -32,10 +32,7 @@ function getTokenExpirationTime(token: string): number | null {
   logger.info(
     JWT_LOGGER,
     'JWT token expires at:',
-    formatDate(expirationDate, 'en-AU', {
-      dateStyle: 'medium',
-      timeStyle: 'medium',
-    }),
+    formatDateTime(expirationDate, 'en-AU'),
   );
 
   return expirationMs;
@@ -78,6 +75,7 @@ function calculateRefreshTime(
   bufferMs = 5 * 60 * 1000,
 ): number | null {
   const expirationTime = getTokenExpirationTime(token);
+
   if (!expirationTime) {
     return null;
   }
@@ -88,7 +86,9 @@ function calculateRefreshTime(
 
   logger.info(
     JWT_LOGGER,
-    `Token refresh scheduled in ${Math.round(timeUntilRefresh / 1000)} seconds`,
+    `Token refresh scheduled in ${Math.round(timeUntilRefresh / 1000)} seconds at ${formatDateTime(
+      new Date(now + timeUntilRefresh),
+    )}`,
   );
 
   return timeUntilRefresh;
