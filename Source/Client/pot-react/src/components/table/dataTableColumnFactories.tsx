@@ -109,9 +109,6 @@ const createDateColumn = <TData,>(
           const nullContent = getNullValue(row);
 
           if (typeof nullContent === 'string' && nullContent.length > 0) {
-            // By applying opacity instead of a text color, we can let the
-            // parent's color show through but with reduced opacity.
-            // return <span className="opacity-70">{nullContent}</span>;
             return nullContent;
           }
         }
