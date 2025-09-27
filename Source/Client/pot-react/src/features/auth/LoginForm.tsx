@@ -52,15 +52,16 @@ function LoginForm({ className, onSubmit, error, ...props }: LoginFormProps) {
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col mt-4 gap-6">
               <div className="grid gap-3">
-                <Label htmlFor="usernameOrEmail">Username</Label>
+                <Label htmlFor="username">Username</Label>
                 <Input
-                  placeholder="Enter your username or email"
-                  id="usernameOrEmail"
+                  placeholder="Enter your username"
+                  id="username"
+                  name="username"
+                  autoComplete="username"
                   type="text"
                   required
                   value={username}
                   onChange={e => setUsername(e.target.value)}
-                  autoComplete="username"
                 />
               </div>
               <div className="grid mb-4 gap-3">
@@ -76,12 +77,13 @@ function LoginForm({ className, onSubmit, error, ...props }: LoginFormProps) {
                 </div>
                 <Input
                   id="password"
+                  name="password"
+                  autoComplete="password"
                   type="password"
                   placeholder="Enter your password"
                   required
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  autoComplete="current-password"
                 />
               </div>
               {error && <div className="text-red-600 text-sm">{error}</div>}

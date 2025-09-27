@@ -98,8 +98,10 @@ function ChangePasswordForm() {
                 <Input
                   {...field}
                   id="current-password"
-                  type="password"
+                  name="current-password"
                   autoComplete="current-password"
+                  type="password"
+                  placeholder="Enter your current password"
                   disabled={isPending}
                 />
               </FormControl>
@@ -117,8 +119,10 @@ function ChangePasswordForm() {
                 <Input
                   {...field}
                   id="new-password"
-                  type="password"
+                  name="new-password"
                   autoComplete="new-password"
+                  type="password"
+                  placeholder="Enter your new password"
                   disabled={isPending}
                 />
               </FormControl>
@@ -138,8 +142,10 @@ function ChangePasswordForm() {
                 <Input
                   {...field}
                   id="confirm-password"
+                  name="confirm-password"
+                  autoComplete="confirm-password"
                   type="password"
-                  autoComplete="new-password"
+                  placeholder="Enter your new password again"
                   disabled={isPending}
                 />
               </FormControl>
