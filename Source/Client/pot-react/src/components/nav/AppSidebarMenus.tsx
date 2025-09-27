@@ -10,14 +10,14 @@ import {
 import { useState } from 'react';
 
 import { SidebarContent } from '@/components/ui/sidebar';
-import { useAuth } from '@/features/auth/AuthContext';
+import useAuthContext from '@/features/auth/AuthContext';
 import { ExportModal } from '@/features/export/components/ExportModal';
 import { ImportModal } from '@/features/import/components/ImportModal';
 
 import MenuGroup, { MenuGroupDefinition } from './MenuGroup';
 
 function AppSidebarMenus() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuthContext();
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 

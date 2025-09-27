@@ -3,10 +3,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { AuthenticationError } from '@/api/errors/apiErrors';
+import { useLogin } from '@/api/hooks/useAuth';
 import type { LoginCredentials } from '@/api/types/auth';
 import { ErrorSheet } from '@/components/feedback';
-import { useAuth } from '@/features/auth/AuthContext';
-import useLogin from '@/features/auth/hooks/useLogin';
+import useAuthContext from '@/features/auth/AuthContext';
 import LoginForm from '@/features/auth/LoginForm';
 import { DisplayError, logger } from '@/lib';
 
@@ -15,7 +15,7 @@ function LoginPage() {
   const [otherError, setOtherError] = useState<DisplayError | null>(null);
   const navigate = useNavigate();
   const loginMutation = useLogin();
-  const { login } = useAuth();
+  const { login } = useAuthContext();
   const queryClient = useQueryClient();
 
   const handleLogin = async (values: LoginCredentials) => {

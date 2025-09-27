@@ -4,7 +4,6 @@
 type AuthTokens = {
   accessToken: string;
   refreshToken: string;
-  refreshTokenExpiryUtc: string;
 };
 
 /**

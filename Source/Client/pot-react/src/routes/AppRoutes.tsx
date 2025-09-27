@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Navigate, Outlet, Route, Routes } from 'react-router';
 
-import { useAuth } from '@/features/auth/AuthContext';
+import useAuthContext from '@/features/auth/AuthContext';
 import LoginPage from '@/features/auth/LoginPage';
 
 import LoadingMessage from '../components/feedback/message/LoadingMessage';
@@ -36,7 +36,7 @@ const EditExpenseSheet = lazy(
 
 // ProtectedRoute component for protecting routes
 function ProtectedRoute() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuthContext();
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }

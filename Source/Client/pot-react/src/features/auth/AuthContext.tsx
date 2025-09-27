@@ -134,7 +134,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-function useAuth() {
+function useAuthContext() {
   const context = useContext(AuthContext);
 
   if (!context) {
@@ -145,4 +145,5 @@ function useAuth() {
 }
 
 export type { AuthContextType };
-export { AuthProvider, useAuth };
+export default useAuthContext;
+export { AuthProvider };

@@ -9,11 +9,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useAuth } from '@/features/auth/AuthContext';
+import useAuthContext from '@/features/auth/AuthContext';
 import { AccountSettingsSheet } from '@/features/userSettings/UserSettingsSheet';
 
 function UserMenu() {
-  const { userInfo, logout } = useAuth();
+  const { userInfo, logout } = useAuthContext();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   function handleProfileOpen(): void {
