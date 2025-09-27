@@ -3,7 +3,6 @@ using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pot.AspNetCore.Concerns.Auth;
-using Pot.AspNetCore.Concerns.Auth.Models;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Extensions;
 using System.ComponentModel;
@@ -14,7 +13,7 @@ internal sealed class Handler
 {
     private const string AuthPrefix = "Bearer ";
 
-    public static async Task<Results<Ok<AuthTokens>, ProblemHttpResult>> Invoke(Request request,
+    public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke(Request request,
 
         [FromHeader(Name = "Authorization")]
         [Description("The access token to be refreshed")]
@@ -47,7 +46,7 @@ internal sealed class Handler
         var authTokens = await authService.RefreshAsync(accessToken, request.RefreshToken, cancellationToken);
 
         return authTokens.IsSuccess
-            ? TypedResults.Ok<AuthTokens>(authTokens.Value!)
+            ? Response.Ok(authTokens.Value!)
             : TypedResults.Problem(authTokens.Error!.ToProblemDetails());
     }
 }

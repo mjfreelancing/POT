@@ -124,6 +124,7 @@ internal sealed class AuthService : IAuthService
 
     private async Task<AuthTokens> UpdateUserAuthTokensAsync(UserEntity user, CancellationToken cancellationToken)
     {
+        // This includes generating a new refresh token
         var authTokens = CreateUserAuthTokens(user);
 
         user.RefreshToken = authTokens.RefreshToken;

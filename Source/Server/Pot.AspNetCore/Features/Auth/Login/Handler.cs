@@ -1,7 +1,6 @@
 ﻿using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.AspNetCore.Concerns.Auth;
-using Pot.AspNetCore.Concerns.Auth.Models;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Extensions;
 
@@ -9,7 +8,7 @@ namespace Pot.AspNetCore.Features.Auth.Login;
 
 internal sealed class Handler
 {
-    public static async Task<Results<Ok<AuthTokens>, ProblemHttpResult>> Invoke(Request request,
+    public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke(Request request,
         IAuthService authService, IProblemDetailsInspector problemDetailsInspector,
         ILogger<Handler> logger, CancellationToken cancellationToken)
     {
@@ -27,8 +26,7 @@ internal sealed class Handler
         var authTokens = await authService.LoginAsync(request.Username, request.Password, cancellationToken);
 
         return authTokens.IsSuccess
-            ? TypedResults.Ok<AuthTokens>(authTokens.Value!)
+            ? Response.Ok(authTokens.Value!)
             : TypedResults.Problem(authTokens.Error!.ToProblemDetails());
     }
 }
-
