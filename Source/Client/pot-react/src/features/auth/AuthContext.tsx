@@ -8,6 +8,7 @@ import {
   useRef,
 } from 'react';
 
+import { useLogout } from '@/api/hooks/useAuth';
 import { useMe } from '@/api/hooks/useMe';
 import { User } from '@/data/user';
 import { DisplayError } from '@/lib';
@@ -45,6 +46,7 @@ function AuthProviderContent({ children }: { children: ReactNode }) {
   const { data: userInfo } = useMe();
   const userStore = useUserStore();
   const { tokens, setTokens } = useTokens();
+  const logoutMutation = useLogout();
   const prevUserInfoRef = useRef<typeof userInfo>(undefined);
 
   // Update permission store when userInfo changes
@@ -65,7 +67,6 @@ function AuthProviderContent({ children }: { children: ReactNode }) {
   }, [userInfo, userStore]);
 
   // Login: store tokens
-
   const login = useCallback(
     (newTokens: AuthTokens) => {
       logger.info('Auth', 'User logged in');
@@ -75,12 +76,20 @@ function AuthProviderContent({ children }: { children: ReactNode }) {
   );
 
   // Logout: remove tokens and clear permissions
+  const logout = useCallback(async () => {
+    // log out from the server first since we need the auth token
+    try {
+      await logoutMutation.mutateAsync({});
+      logger.info('Auth', 'Logged out from the server');
+    } catch (error) {
+      logger.error('Auth', 'Error while logging out from the server', error);
+    }
 
-  const logout = useCallback(() => {
     logger.info('Auth', 'User logged out');
+
     setTokens(undefined);
     userStore.clearUserInfo();
-  }, [setTokens, userStore]);
+  }, [setTokens, userStore, logoutMutation]);
 
   // Register logout callback with the logout manager
   useEffect(() => {

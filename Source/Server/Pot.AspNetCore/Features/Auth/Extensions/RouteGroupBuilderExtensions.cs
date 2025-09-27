@@ -17,6 +17,19 @@ internal static class RouteGroupBuilderExtensions
         return routeGroupBuilder;
     }
 
+    public static RouteGroupBuilder LogoutUser(this RouteGroupBuilder routeGroupBuilder)
+    {
+        routeGroupBuilder
+            .MapPost(AuthEndpoints.Logout, Logout.Handler.Invoke)
+            .WithName(nameof(LogoutUser))
+            .WithSummary("Logout")
+            .WithDescription("Logout the user")
+            .ProducesProblem((int)HttpStatusCode.OK)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+
+        return routeGroupBuilder;
+    }
+
     public static RouteGroupBuilder RefreshToken(this RouteGroupBuilder routeGroupBuilder)
     {
         routeGroupBuilder

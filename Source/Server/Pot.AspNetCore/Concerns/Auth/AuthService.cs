@@ -60,6 +60,31 @@ internal sealed class AuthService : IAuthService
         }
     }
 
+    public async Task<EnrichedResult<bool>> LogoutAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        _logger.LogCall(this, new { userId });
+
+        using (_userRepository.WithTracking())
+        {
+            var user = await _userRepository
+                .SingleOrDefaultAsync(user => user.RowId == userId, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (user is null)
+            {
+                // Not doing anything with this result - merely indicating the user is not logged out since not found)
+                return EnrichedResult.Success(false);
+            }
+
+            user.RefreshToken = null;
+            user.RefreshTokenExpiryUtc = null;
+
+            await _userRepository.SaveAsync(cancellationToken).ConfigureAwait(false);
+
+            return EnrichedResult.Success(true);
+        }
+    }
+
     public async Task<EnrichedResult<AuthTokens?>> RefreshAsync(string accessToken, string refreshToken, CancellationToken cancellationToken)
     {
         _logger.LogCall(this, new { refreshToken });

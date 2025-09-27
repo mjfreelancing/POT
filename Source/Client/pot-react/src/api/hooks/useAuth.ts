@@ -12,4 +12,13 @@ function useLogin() {
   };
 }
 
-export { useLogin };
+function useLogout() {
+  const mutation = usePost<void, void>('/auth/logout');
+
+  return {
+    ...mutation,
+    data: mutation.data as Result<void, FailResultBase>,
+  };
+}
+
+export { useLogin, useLogout };

@@ -6,6 +6,7 @@ internal static class AuthEndpoints
     public const string Tag = "Auth Api";
 
     public const string Login = "/login";
+    public const string Logout = "/logout";
     public const string Refresh = "/refresh";
 }
 
