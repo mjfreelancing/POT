@@ -18,6 +18,7 @@ import UserDetailsForm from './sections/userDetails/UserDetailsForm';
 type AccountSettingsSheetProps = {
   open: boolean;
   onClose: () => void;
+  onOpenChange?: (open: boolean) => void;
 };
 
 function AccountSettingsSheet(props: AccountSettingsSheetProps): JSX.Element {
