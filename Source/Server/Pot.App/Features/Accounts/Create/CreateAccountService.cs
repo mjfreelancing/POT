@@ -33,11 +33,6 @@ internal sealed class CreateAccountService : ICreateAccountService
 
         using (_accountRepository.WithTracking())
         {
-
-            // ??? Add a method on the respository so the ICurrentUserDataContext can be added there instead of here ???
-
-
-
             var user = await _currentUserDataContext.GetUserAsync();
 
             var accountToCreate = new AccountEntity
