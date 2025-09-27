@@ -207,6 +207,96 @@ public class UserSiteEntity : EntityBase
    - Use appropriate fetch strategies (eager vs lazy loading)
    - Monitor query performance during development
 
+## Database Sequences
+
+This section explains how to manage and correct database sequences if they become out of sync during development. Using the `Account`, `Expense`, and `Income` tables as examples:
+
+### Determining the Sequence Names
+
+To find the sequence names for your tables, run the following query:
+
+```sql
+SELECT c.relname AS sequence_name
+FROM pg_class c
+JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE c.relkind = 'S'; -- 'S' stands for sequence
+```
+
+This will return the names of all sequences in the database. For example:
+
+- `Account_Id_seq`
+- `Expense_Id_seq`
+- `Income_Id_seq`
+
+### Updating the Sequences
+
+If a sequence becomes out of sync (e.g., after manual imports), you can update it to match the highest `Id` in the corresponding table. Use the following commands:
+
+```sql
+-- Update the Account sequence
+SELECT MAX("Id") AS max_id FROM "Account";
+SELECT setval('public."Account_Id_seq"', (SELECT MAX("Id") FROM "Account"));
+
+-- Update the Expense sequence
+SELECT MAX("Id") AS max_id FROM "Expense";
+SELECT setval('public."Expense_Id_seq"', (SELECT MAX("Id") FROM "Expense"));
+
+-- Update the Income sequence
+SELECT MAX("Id") AS max_id FROM "Income";
+SELECT setval('public."Income_Id_seq"', (SELECT MAX("Id") FROM "Income"));
+```
+
+### Verifying the Sequence Values
+
+After updating the sequences, you can verify their current values using the following queries:
+
+```sql
+-- Check the current value of the Account sequence
+SELECT last_value, is_called
+FROM public."Account_Id_seq";
+
+-- Check the current value of the Expense sequence
+SELECT last_value, is_called
+FROM public."Expense_Id_seq";
+
+-- Check the current value of the Income sequence
+SELECT last_value, is_called
+FROM public."Income_Id_seq";
+```
+
+### Explanation of Commands
+
+1. **Determining the Maximum ID**:
+
+   - `SELECT MAX("Id") AS max_id FROM "Account";`
+     - Finds the highest `Id` currently in the `Account` table.
+
+2. **Updating the Sequence**:
+
+   - `SELECT setval('public."Account_Id_seq"', (SELECT MAX("Id") FROM "Account"));`
+     - Sets the sequence to start at the highest `Id` in the `Account` table.
+
+3. **Verifying the Sequence**:
+   - `SELECT last_value, is_called FROM public."Account_Id_seq";`
+     - Confirms the current value of the sequence (`last_value`) and whether it has been used (`is_called`).
+
+### Reference for all tables
+
+```sql
+SELECT c.relname AS sequence_name
+FROM pg_class c
+JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE c.relkind = 'S' -- 'S' stands for sequence
+
+SELECT setval('public."Permission_Id_seq"', (SELECT MAX("Id") FROM "Permission"));
+SELECT setval('public."Role_Id_seq"', (SELECT MAX("Id") FROM "Role"));
+SELECT setval('public."Site_Id_seq"', (SELECT MAX("Id") FROM "Site"));
+SELECT setval('public."Account_Id_seq"', (SELECT MAX("Id") FROM "Account"));
+SELECT setval('public."User_Id_seq"', (SELECT MAX("Id") FROM "User"));
+SELECT setval('public."Expense_Id_seq"', (SELECT MAX("Id") FROM "Expense"));
+SELECT setval('public."Income_Id_seq"', (SELECT MAX("Id") FROM "Income"));
+```
+
 ## Additional Resources
 
 - [EF Core Migrations Documentation](https://learn.microsoft.com/en-us/ef/core/managing-schemas/migrations/)
