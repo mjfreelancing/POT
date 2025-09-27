@@ -12,7 +12,7 @@ namespace Pot.AspNetCore.Concerns.Auth;
 
 internal sealed class JwtService : IJwtService
 {
-    private const int AccessTokenExpiryMins = 60;   // Recommended is 15-60 minutes
+    private const int AccessTokenExpiryMins = 15;   // Recommended is 15-60 minutes
 
     private readonly JwtOptions _options;
     private readonly ITimeProvider _timeProvider;

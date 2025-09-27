@@ -86,7 +86,7 @@ function calculateRefreshTime(
 
   logger.info(
     JWT_LOGGER,
-    `Token refresh scheduled in ${Math.round(timeUntilRefresh / 1000)} seconds at ${formatDateTime(
+    `Token refresh scheduled for ${formatDateTime(
       new Date(now + timeUntilRefresh),
     )}`,
   );

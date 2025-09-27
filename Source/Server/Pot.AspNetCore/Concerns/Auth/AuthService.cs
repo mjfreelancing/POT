@@ -138,7 +138,13 @@ internal sealed class AuthService : IAuthService
     {
         var accessToken = _jwtService.CreateAccessToken(user);
         var refreshToken = GenerateRefreshToken();
-        var refreshTokenExpiry = _timeProvider.GetUtcDateTimeNow().AddDays(RefreshTokenExpiryDays);
+
+        // Expire the refresh token at midnight in the user's local time zone to minimise risk of expiring mid-session
+        var refreshTokenExpiry = _timeProvider
+            .GetLocalDateNow()
+            .AddDays(RefreshTokenExpiryDays)
+            .ToDateTime(TimeOnly.MinValue)
+            .ToUniversalTime(); // Stored as UTC in the database
 
         return new AuthTokens(accessToken, refreshToken, refreshTokenExpiry);
     }
