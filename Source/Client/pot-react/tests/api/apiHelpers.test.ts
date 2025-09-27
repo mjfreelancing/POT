@@ -93,9 +93,7 @@ describe('API helper utilities', () => {
       const result = getNetworkError(error);
 
       expect(result).toBeInstanceOf(NetworkError);
-      expect(result.description).toEqual(
-        'The connection was aborted (ECONNABORTED)',
-      );
+      expect(result.description).toEqual('The connection was aborted');
     });
 
     it('should handle connection timeout', () => {
@@ -104,7 +102,7 @@ describe('API helper utilities', () => {
 
       expect(result).toBeInstanceOf(NetworkError);
       expect(result.description).toEqual(
-        'Request timed out while waiting for the server (ETIMEDOUT)',
+        'Request timed out while waiting for the server',
       );
     });
 
@@ -113,9 +111,7 @@ describe('API helper utilities', () => {
       const result = getNetworkError(error);
 
       expect(result).toBeInstanceOf(NetworkError);
-      expect(result.description).toEqual(
-        'Unable to connect to the server (ERR_NETWORK)',
-      );
+      expect(result.description).toEqual('Unable to connect to the server');
     });
 
     it('should handle bad requests', () => {
@@ -123,7 +119,7 @@ describe('API helper utilities', () => {
       const result = getNetworkError(error);
 
       expect(result).toBeInstanceOf(NetworkError);
-      expect(result.description).toEqual('Invalid request (ERR_BAD_REQUEST)');
+      expect(result.description).toEqual('Invalid request');
     });
 
     it('should handle bad responses', () => {
@@ -131,9 +127,7 @@ describe('API helper utilities', () => {
       const result = getNetworkError(error);
 
       expect(result).toBeInstanceOf(NetworkError);
-      expect(result.description).toEqual(
-        'Server returned an invalid response (ERR_BAD_RESPONSE)',
-      );
+      expect(result.description).toEqual('Server returned an invalid response');
     });
 
     it('should handle unsupported operation', () => {
@@ -141,9 +135,7 @@ describe('API helper utilities', () => {
       const result = getNetworkError(error);
 
       expect(result).toBeInstanceOf(NetworkError);
-      expect(result.description).toEqual(
-        'Operation not supported (ERR_NOT_SUPPORT)',
-      );
+      expect(result.description).toEqual('Operation not supported');
     });
 
     it('should handle invalid url', () => {
@@ -151,9 +143,7 @@ describe('API helper utilities', () => {
       const result = getNetworkError(error);
 
       expect(result).toBeInstanceOf(NetworkError);
-      expect(result.description).toEqual(
-        'Invalid server URL (ERR_INVALID_URL)',
-      );
+      expect(result.description).toEqual('Invalid server URL');
     });
 
     it('should handle too many redirects', () => {
@@ -161,9 +151,7 @@ describe('API helper utilities', () => {
       const result = getNetworkError(error);
 
       expect(result).toBeInstanceOf(NetworkError);
-      expect(result.description).toEqual(
-        'Too many redirects (ERR_FR_TOO_MANY_REDIRECTS)',
-      );
+      expect(result.description).toEqual('Too many redirects');
     });
 
     it('should handle unknown errors', () => {
@@ -171,7 +159,7 @@ describe('API helper utilities', () => {
       const result = getNetworkError(error);
 
       expect(result).toBeInstanceOf(NetworkError);
-      expect(result.description).toEqual(`Network error: ${message} (UNKNOWN)`);
+      expect(result.description).toEqual(`Network error: ${message}`);
     });
 
     it('should handle errors without a code', () => {
@@ -180,7 +168,7 @@ describe('API helper utilities', () => {
       const result = getNetworkError(error);
 
       expect(result).toBeInstanceOf(NetworkError);
-      expect(result.description).toEqual(`Network error: ${message} (UNKNOWN)`);
+      expect(result.description).toEqual(`Network error: ${message}`);
     });
 
     it('should handle errors with an unkown code', () => {
@@ -188,9 +176,7 @@ describe('API helper utilities', () => {
       const result = getNetworkError(error);
 
       expect(result).toBeInstanceOf(NetworkError);
-      expect(result.description).toEqual(
-        `Network error: ${message} (${error.code})`,
-      );
+      expect(result.description).toEqual(`Network error: ${message}`);
     });
   });
 

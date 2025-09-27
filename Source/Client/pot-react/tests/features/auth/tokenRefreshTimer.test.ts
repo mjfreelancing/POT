@@ -26,13 +26,11 @@ describe('tokenRefreshTimer', () => {
   const mockTokens: AuthTokens = {
     accessToken: 'mock-access-token',
     refreshToken: 'mock-refresh-token',
-    refreshTokenExpiryUtc: '2025-09-12T00:00:00Z',
   };
 
   const mockNewTokens: AuthTokens = {
     accessToken: 'mock-new-access-token',
     refreshToken: 'mock-new-refresh-token',
-    refreshTokenExpiryUtc: '2025-09-13T00:00:00Z',
   };
 
   beforeEach(() => {
