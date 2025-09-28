@@ -157,6 +157,43 @@ This guide provides essential, actionable rules for AI coding agents working in 
 - Use `Copilot prompt.md` for review/analysis tools and process
 - Cross-reference code and docs when updating features or patterns
 
+### 10. Helper Methods and Performance Considerations
+
+- **Memoization:**
+
+  - When adding helper methods, consider whether they should be wrapped in `useCallback` or `useMemo` to prevent unnecessary re-renders or recalculations.
+  - Use `useCallback` for functions that are passed as dependencies to `useEffect` or as props to child components.
+    - Example:
+      ```tsx
+      const handleClick = useCallback(() => {
+        console.log("Button clicked");
+      }, []);
+      ```
+  - Use `useMemo` for expensive calculations or derived values that depend on state or props.
+    - Example:
+      ```tsx
+      const computedValue = useMemo(() => {
+        return expensiveCalculation(input);
+      }, [input]);
+      ```
+
+- **Dependencies:**
+
+  - Always include all dependencies in the dependency array of `useCallback` or `useMemo` to ensure correctness.
+  - Use ESLint rules (e.g., `react-hooks/exhaustive-deps`) to catch missing dependencies.
+
+- **Avoid Overuse:**
+
+  - Do not wrap every function or calculation in `useCallback` or `useMemo`. Use them only when necessary to optimize performance.
+  - Premature optimization can lead to unnecessary complexity.
+
+- **Testing:**
+
+  - Test the behavior of memoized functions and values to ensure they update correctly when dependencies change.
+
+- **Documentation:**
+  - Document the rationale for using `useCallback` or `useMemo` in comments to help future developers understand the decision.
+
 ---
 
 **Example: Adding a new permission**
