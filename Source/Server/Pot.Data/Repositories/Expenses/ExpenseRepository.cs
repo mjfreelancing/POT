@@ -71,4 +71,20 @@ internal sealed class ExpenseRepository : GenericRepository<PotDbContext, Expens
             .Where(expense => expense.Account.RowId == accountRowId && !expense.ExcludeFromCalcs)
             .ToListAsync(cancellationToken);
     }
+
+    public Task<Guid[]> RenewalsRequiredAsync(Guid[] accountRowIds, DateOnly beforeDate, CancellationToken cancellationToken)
+    {
+        return Current
+            .Where(expense => accountRowIds.Contains(expense.Account.RowId) && expense.NextDue < beforeDate)
+            .Select(expense => expense.RowId)
+            .ToArrayAsync(cancellationToken);
+    }
+
+    public Task<Guid[]> AccrualsRequiredAsync(Guid[] accountRowIds, DateOnly beforeDate, CancellationToken cancellationToken)
+    {
+        return Current
+            .Where(expense => accountRowIds.Contains(expense.Account.RowId) && (expense.AccruedIsDirty || expense.LastAccruedUpdate < beforeDate))
+            .Select(expense => expense.RowId)
+            .ToArrayAsync(cancellationToken);
+    }
 }

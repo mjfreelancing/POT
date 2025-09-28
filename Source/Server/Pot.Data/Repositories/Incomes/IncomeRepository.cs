@@ -32,4 +32,12 @@ internal sealed class IncomeRepository : GenericRepository<PotDbContext, IncomeE
             .Include(income => income.Account)
             .SingleOrDefaultAsync(incomeId, cancellationToken);
     }
+
+    public Task<Guid[]> RenewalsRequiredAsync(Guid[] accountRowIds, DateOnly beforeDate, CancellationToken cancellationToken)
+    {
+        return Current
+            .Where(income => accountRowIds.Contains(income.Account.RowId) && income.NextDue < beforeDate)
+            .Select(income => income.RowId)
+            .ToArrayAsync(cancellationToken);
+    }
 }

@@ -15,6 +15,7 @@ internal sealed class Request : PagedRequest
         }
         catch
         {
+            // Returning null indicates binding failure
             return ValueTask.FromResult<Request?>(null);
         }
     }
