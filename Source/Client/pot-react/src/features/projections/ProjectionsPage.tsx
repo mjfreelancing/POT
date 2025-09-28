@@ -7,6 +7,7 @@ import { ProjectionMetric } from '@/data/projection';
 import { DisplayError } from '@/lib';
 import {
   dateIsoFormat,
+  formatDate,
   isAfterDate,
   isSameDate,
   normalizeToLocalMidnight,
@@ -86,12 +87,11 @@ function ProjectionsPage() {
     return data?.hiddenSeries || [];
   });
 
-  // Always fetch 12 months of data from the selected start date
-  const apiEndDate = addDays(addMonths(startDate, 12), -1);
-
   function handleStartDateChange(date?: Date) {
     const newDate = normalizeToLocalMidnight(date ?? today);
+
     logger.info('ProjectionsPage', 'Start date changed', newDate);
+
     setStartDate(newDate);
 
     // If the new date is today, remove from storage; else, persist
@@ -109,6 +109,7 @@ function ProjectionsPage() {
 
   function handlePeriodChange(months: number) {
     logger.info('ProjectionsPage', 'Projection period changed', months);
+
     setPeriod(months);
 
     const existingData = getProjectionStorageData();
@@ -122,6 +123,7 @@ function ProjectionsPage() {
 
   function handleMetricChange(value: ProjectionMetric) {
     logger.info('ProjectionsPage', 'Metric changed', value);
+
     setMetric(value);
 
     const existingData = getProjectionStorageData();
@@ -135,6 +137,7 @@ function ProjectionsPage() {
 
   function handleHiddenSeriesChange(hiddenSeriesKeys: string[]) {
     logger.info('ProjectionsPage', 'Hidden series changed', hiddenSeriesKeys);
+
     setHiddenSeries(hiddenSeriesKeys);
 
     const existingData = getProjectionStorageData();
@@ -146,7 +149,35 @@ function ProjectionsPage() {
     setProjectionStorageData(newData);
   }
 
-  // Call API with local date strings for 12 months
+  // This ensures the start date is never before today, which can occur if
+  // the user leaves the page open overnight. If it is, update it to today.
+  function ensureValidStartDate() {
+    const currentToday = normalizeToLocalMidnight(new Date());
+
+    if (isAfterDate(currentToday, startDate)) {
+      logger.info(
+        'ProjectionsPage',
+        'startDate is earlier than today. Updating startDate.',
+        formatDate(currentToday),
+      );
+
+      handleStartDateChange(currentToday);
+
+      return currentToday;
+    }
+
+    return startDate;
+  }
+
+  // Validate startDate on page mount or re-render to ensure it's not before today
+  // which can occur if the user leaves the page open overnight.
+  useEffect(() => {
+    ensureValidStartDate();
+  }, []);
+
+  // Always fetch 12 months of data from the selected start date
+  const apiEndDate = addDays(addMonths(startDate, 12), -1);
+
   const { data: projectionData, isLoading } = useApiGetProjection(
     dateIsoFormat(startDate),
     dateIsoFormat(apiEndDate),
