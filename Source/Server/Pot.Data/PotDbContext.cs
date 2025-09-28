@@ -19,6 +19,10 @@ namespace Pot.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<ExpenseEntity>()
+                .Property(expense => expense.AccruedIsDirty)
+                .HasDefaultValue(true);
+
             // Sets up the many-to-many UserRole join table without an explicit model
             modelBuilder.Entity<UserEntity>()
                 .HasMany(user => user.Roles)
