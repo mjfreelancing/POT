@@ -1,4 +1,4 @@
-﻿using Pot.App.Features.Accounts.AccrueExpenses.Models;
+﻿using Pot.App.Features.Accruals.AccrueExpenses.Models;
 using Pot.AspNetCore.Features.Accruals.AccrueExpenses;
 
 namespace Pot.AspNetCore.Features.Accruals.AccrueExpenses.Mappings;

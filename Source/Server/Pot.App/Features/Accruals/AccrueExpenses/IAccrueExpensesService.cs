@@ -1,8 +1,8 @@
 ﻿using AllOverIt.Patterns.Result;
-using Pot.App.Features.Accounts.AccrueExpenses.Models;
+using Pot.App.Features.Accruals.AccrueExpenses.Models;
 using Pot.Shared.DependencyInjection;
 
-namespace Pot.App.Features.Accounts.AccrueExpenses;
+namespace Pot.App.Features.Accruals.AccrueExpenses;
 
 public interface IAccrueExpensesService : IPotScopedDependency
 {

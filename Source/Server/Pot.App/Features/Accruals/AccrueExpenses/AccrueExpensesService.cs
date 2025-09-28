@@ -5,11 +5,11 @@ using Microsoft.Extensions.Logging;
 using Pot.App.Calculators;
 using Pot.App.Errors;
 using Pot.App.Extensions;
-using Pot.App.Features.Accounts.AccrueExpenses.Models;
+using Pot.App.Features.Accruals.AccrueExpenses.Models;
 using Pot.Data.Repositories.Accounts;
 using Pot.Data.Repositories.Expenses;
 
-namespace Pot.App.Features.Accounts.AccrueExpenses;
+namespace Pot.App.Features.Accruals.AccrueExpenses;
 
 internal sealed class AccrueExpensesService : IAccrueExpensesService
 {
