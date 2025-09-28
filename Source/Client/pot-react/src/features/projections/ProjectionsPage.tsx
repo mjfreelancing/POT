@@ -1,5 +1,5 @@
 import { addDays, addMonths } from 'date-fns';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useApiGetProjection } from '@/api/hooks/useProjections';
 import { ErrorSheet, LoadingMessage } from '@/components/feedback';
@@ -87,71 +87,62 @@ function ProjectionsPage() {
     return data?.hiddenSeries || [];
   });
 
-  function handleStartDateChange(date?: Date) {
-    const newDate = normalizeToLocalMidnight(date ?? today);
+  const updateStorage = useCallback(
+    <T,>(key: string, value: T) => {
+      logger.info('ProjectionsPage', `${key} updated in storage`, value);
 
-    logger.info('ProjectionsPage', 'Start date changed', newDate);
-
-    setStartDate(newDate);
-
-    // If the new date is today, remove from storage; else, persist
-    if (isSameDate(newDate, today)) {
-      removeStorageStartDate();
-    } else {
       const existingData = getProjectionStorageData();
 
       setProjectionStorageData({
         ...existingData,
-        startDate: dateIsoFormat(newDate),
+        [key]: value,
       });
-    }
-  }
+    },
+    [getProjectionStorageData, setProjectionStorageData],
+  );
+
+  const handleStartDateChange = useCallback(
+    (date?: Date) => {
+      const newDate = normalizeToLocalMidnight(date ?? today);
+
+      logger.info('ProjectionsPage', 'Start date changed', formatDate(newDate));
+
+      setStartDate(newDate);
+
+      // If the new date is today, remove from storage; else, persist
+      if (isSameDate(newDate, today)) {
+        removeStorageStartDate();
+      } else {
+        updateStorage('startDate', dateIsoFormat(newDate));
+      }
+    },
+    [today, removeStorageStartDate, updateStorage],
+  );
 
   function handlePeriodChange(months: number) {
     logger.info('ProjectionsPage', 'Projection period changed', months);
 
     setPeriod(months);
-
-    const existingData = getProjectionStorageData();
-    const newData = {
-      ...existingData,
-      period: months,
-    };
-
-    setProjectionStorageData(newData);
+    updateStorage('period', months);
   }
 
   function handleMetricChange(value: ProjectionMetric) {
     logger.info('ProjectionsPage', 'Metric changed', value);
 
     setMetric(value);
-
-    const existingData = getProjectionStorageData();
-    const newData = {
-      ...existingData,
-      metric: value,
-    };
-
-    setProjectionStorageData(newData);
+    updateStorage('metric', value);
   }
 
   function handleHiddenSeriesChange(hiddenSeriesKeys: string[]) {
     logger.info('ProjectionsPage', 'Hidden series changed', hiddenSeriesKeys);
 
     setHiddenSeries(hiddenSeriesKeys);
-
-    const existingData = getProjectionStorageData();
-    const newData = {
-      ...existingData,
-      hiddenSeries: hiddenSeriesKeys,
-    };
-
-    setProjectionStorageData(newData);
+    updateStorage('hiddenSeries', hiddenSeriesKeys);
   }
 
   // This ensures the start date is never before today, which can occur if
   // the user leaves the page open overnight. If it is, update it to today.
-  function ensureValidStartDate() {
+  const ensureValidStartDate = useCallback(() => {
     const currentToday = normalizeToLocalMidnight(new Date());
 
     if (isAfterDate(currentToday, startDate)) {
@@ -167,13 +158,13 @@ function ProjectionsPage() {
     }
 
     return startDate;
-  }
+  }, [startDate, handleStartDateChange]);
 
   // Validate startDate on page mount or re-render to ensure it's not before today
   // which can occur if the user leaves the page open overnight.
   useEffect(() => {
     ensureValidStartDate();
-  }, []);
+  }, [ensureValidStartDate]);
 
   // Always fetch 12 months of data from the selected start date
   const apiEndDate = addDays(addMonths(startDate, 12), -1);
