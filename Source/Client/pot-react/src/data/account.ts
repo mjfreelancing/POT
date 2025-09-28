@@ -25,14 +25,9 @@ const EditAccountSchema = BaseAccountSchema.extend({
   ...EtagSchema.shape,
 });
 
-const AccrueExpensesSchema = z.object({
-  rowIds: z.string().array(),
-});
-
 type Account = z.infer<typeof AccountSchema>;
 type CreateAccount = z.infer<typeof CreateAccountSchema>;
 type EditAccount = z.infer<typeof EditAccountSchema>;
-type AccrueExpenses = z.infer<typeof AccrueExpensesSchema>;
 
 const compareAccountBsbNumber = (lhs: Account, rhs: Account): number => {
   const bsbCompare = lhs.bsb.localeCompare(rhs.bsb, 'en', {
@@ -46,11 +41,10 @@ const compareAccountBsbNumber = (lhs: Account, rhs: Account): number => {
 
 export {
   AccountSchema,
-  AccrueExpensesSchema,
   BaseAccountSchema,
   compareAccountBsbNumber,
   CreateAccountSchema,
   EditAccountSchema,
 };
 
-export type { Account, AccrueExpenses, CreateAccount, EditAccount };
+export type { Account, CreateAccount, EditAccount };
