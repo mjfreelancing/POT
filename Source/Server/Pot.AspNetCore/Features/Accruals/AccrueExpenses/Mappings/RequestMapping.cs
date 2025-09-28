@@ -1,6 +1,7 @@
 ﻿using Pot.App.Features.Accounts.AccrueExpenses.Models;
+using Pot.AspNetCore.Features.Accruals.AccrueExpenses;
 
-namespace Pot.AspNetCore.Features.Accounts.AccrueExpenses.Mappings;
+namespace Pot.AspNetCore.Features.Accruals.AccrueExpenses.Mappings;
 
 internal static class RequestMapping
 {

@@ -1,5 +1,6 @@
 using Pot.AspNetCore.Extensions;
 using Pot.AspNetCore.Features.Accounts.Extensions;
+using Pot.AspNetCore.Features.Accruals.Extensions;
 using Pot.AspNetCore.Features.Auth.Extensions;
 using Pot.AspNetCore.Features.Expenses.Extensions;
 using Pot.AspNetCore.Features.Incomes.Extensions;
@@ -75,6 +76,7 @@ public class Program
            .AddAccountEndpoints()
            .AddIncomeEndpoints()
            .AddExpenseEndpoints()
+           .AddAccrualsEndpoints()
            .AddProjectionsEndpoints()
            .AddMaintenanceEndpoints();
 

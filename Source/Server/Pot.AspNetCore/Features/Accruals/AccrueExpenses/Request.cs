@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Pot.AspNetCore.Features.Accounts.AccrueExpenses;
+namespace Pot.AspNetCore.Features.Accruals.AccrueExpenses;
 
 public sealed class Request
 {

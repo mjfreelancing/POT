@@ -14,8 +14,7 @@ internal static class WebApplicationExtensions
                 .GetAccount()
                 .CreateAccount()
                 .UpdateAccount()
-                .DeleteAccount()
-                .AccrueAccountExpenses();
+                .DeleteAccount();
 
 
 

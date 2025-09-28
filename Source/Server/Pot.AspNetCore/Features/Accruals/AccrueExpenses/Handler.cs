@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.App.Features.Accounts.AccrueExpenses;
 using Pot.AspNetCore.Extensions;
-using Pot.AspNetCore.Features.Accounts.AccrueExpenses.Mappings;
+using Pot.AspNetCore.Features.Accruals.AccrueExpenses.Mappings;
 
-namespace Pot.AspNetCore.Features.Accounts.AccrueExpenses;
+namespace Pot.AspNetCore.Features.Accruals.AccrueExpenses;
 
 internal sealed class Handler
 {

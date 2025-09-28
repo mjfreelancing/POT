@@ -79,19 +79,4 @@ internal static class RouteGroupBuilderExtensions
 
         return routeGroupBuilder;
     }
-
-    public static RouteGroupBuilder AccrueAccountExpenses(this RouteGroupBuilder routeGroupBuilder)
-    {
-        routeGroupBuilder
-            .MapPost(AccountsEndpoints.AccrueExpenses, AccrueExpenses.Handler.Invoke)
-            .RequireAuthorization("account:manage")
-            .WithName(nameof(AccrueExpenses))
-            .WithSummary("Accrue expenses")
-            .WithDescription("Accrue expenses associated with the account")
-            .ProducesProblem((int)HttpStatusCode.OK)
-            .ProducesProblem((int)HttpStatusCode.NotFound)
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
-
-        return routeGroupBuilder;
-    }
 }
