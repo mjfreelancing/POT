@@ -1,13 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router';
 
 import { useApiGetAccountById } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
+import { useErrorContext } from '@/contexts';
 import { Account, EditAccount } from '@/data';
-import { DisplayError } from '@/lib';
 
 import AccountForm from '../components/AccountForm';
 import AccountSheet from '../components/AccountSheet';
@@ -28,7 +28,7 @@ const EditAccountSheetInternal: React.FC<EditAccountSheetInternalProps> = ({
 }) => {
   const navigate = useNavigate();
   const { editAccount } = useEditAccount();
-  const [error, setError] = useState<DisplayError | null>(null);
+  const { error, setError } = useErrorContext();
 
   const defaultValues = useMemo(
     () => ({

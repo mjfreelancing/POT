@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 import {
   compareIncomeNextDue,
   CreateIncome,
@@ -15,20 +17,17 @@ const useApiGetAllIncomes = () => {
   const query = useGet<Income[]>('/incomes', ['incomes']);
   const result = query.data as Result<Income[], FailResultBase>;
 
-  let data: Result<Income[], FailResultBase>;
+  const data = useMemo(() => {
+    if (result?.success) {
+      // spreading [...result.value] to create a shallow copy of the array since
+      // sort() mutates the source array in the react-query cache.
+      const sortedResults = [...result.value].sort(compareIncomeNextDue);
+      return new SuccessResult(sortedResults);
+    }
 
-  // useGet() uses React Query which:
-  // - returns undefined immediately and while loading
-  // - returns the result when the query is successful
-  if (result?.success) {
-    // spreading [...result.value] to create a shallow copy of the array since
-    // sort() mutates the source array in the react-query cache.
-    const sortedResults = [...result.value].sort(compareIncomeNextDue);
-    data = new SuccessResult(sortedResults);
-  } else {
     // type narrowed to FailResult<FailResultBase> since result cannot be undefined at this point
-    data = result;
-  }
+    return result;
+  }, [result]);
 
   // Returns isLoading, isError, error, and data (and anything else from React Query)
   return { ...query, data };

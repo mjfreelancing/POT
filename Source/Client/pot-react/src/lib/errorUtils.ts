@@ -1,7 +1,11 @@
-// Workaround for: Catch clause variable type annotation must be 'any' or 'unknown' if specified.
+// Workaround for: Catch clause variable type annotation.
 // ie., cannot use catch(error: Error) {}
+// since error is always unknown
 function getErrorMessage(error: unknown) {
-  if (error instanceof Error) return error.message;
+  if (error instanceof Error) {
+    return error.message;
+  }
+
   return String(error);
 }
 

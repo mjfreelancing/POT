@@ -29,6 +29,8 @@ type Account = z.infer<typeof AccountSchema>;
 type CreateAccount = z.infer<typeof CreateAccountSchema>;
 type EditAccount = z.infer<typeof EditAccountSchema>;
 
+const EMPTY_ACCOUNT_ARRAY: Account[] = [];
+
 const compareAccountBsbNumber = (lhs: Account, rhs: Account): number => {
   const bsbCompare = lhs.bsb.localeCompare(rhs.bsb, 'en', {
     sensitivity: 'base',
@@ -45,6 +47,7 @@ export {
   compareAccountBsbNumber,
   CreateAccountSchema,
   EditAccountSchema,
+  EMPTY_ACCOUNT_ARRAY,
 };
 
 export type { Account, CreateAccount, EditAccount };

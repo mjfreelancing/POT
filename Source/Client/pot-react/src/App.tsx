@@ -8,6 +8,7 @@ import { DisplayError, logger } from '@/lib';
 import { AppSidebar } from './components/nav';
 import { ThemeProvider } from './components/theme';
 import { SidebarProvider } from './components/ui/sidebar';
+import { ErrorProvider } from './contexts';
 import { AuthProvider } from './features/auth/AuthContext';
 import { AppRoutes } from './routes/AppRoutes';
 
@@ -31,7 +32,7 @@ const AppContent = () => (
 
 const App = () => {
   logger.info('App', `Running mode: ${import.meta.env.MODE}`);
-  const [error, setError] = useState<DisplayError | undefined>();
+  const [error, setError] = useState<DisplayError | null>();
 
   const handleError = (error: Error) => {
     logger.error('App', 'Error boundary caught an error', error);
@@ -50,39 +51,41 @@ const App = () => {
   };
 
   return (
-    <AuthProvider>
-      <ThemeProvider defaultTheme="system" storageKey="pot-ui-theme">
-        <div className="flex h-screen w-screen">
-          <ErrorBoundary
-            fallbackRender={({ error }) => (
-              <div
-                role="alert"
-                className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4"
-              >
+    <ErrorProvider>
+      <AuthProvider>
+        <ThemeProvider defaultTheme="system" storageKey="pot-ui-theme">
+          <div className="flex h-screen w-screen">
+            <ErrorBoundary
+              fallbackRender={({ error }) => (
                 <div
-                  className={`bg-white dark:bg-gray-800 text-red-700 p-6 rounded-lg shadow-lg ${getErrorWidthClass(error.message)} w-full text-center`}
+                  role="alert"
+                  className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4"
                 >
-                  <p className="text-lg font-medium mb-2">
-                    Something went wrong !
-                  </p>
-                  <pre className="whitespace-pre-wrap">{error.message}</pre>
+                  <div
+                    className={`bg-white dark:bg-gray-800 text-red-700 p-6 rounded-lg shadow-lg ${getErrorWidthClass(error.message)} w-full text-center`}
+                  >
+                    <p className="text-lg font-medium mb-2">
+                      Something went wrong !
+                    </p>
+                    <pre className="whitespace-pre-wrap">{error.message}</pre>
+                  </div>
                 </div>
-              </div>
-            )}
-            onError={handleError}
-          >
-            <AppContent />
-          </ErrorBoundary>
-        </div>
-        {error && (
-          <ErrorSheet
-            title={error.title}
-            description={error.description}
-            onDismiss={() => setError(undefined)}
-          />
-        )}
-      </ThemeProvider>
-    </AuthProvider>
+              )}
+              onError={handleError}
+            >
+              <AppContent />
+            </ErrorBoundary>
+          </div>
+          {error && (
+            <ErrorSheet
+              title={error.title}
+              description={error.description}
+              onDismiss={() => setError(null)}
+            />
+          )}
+        </ThemeProvider>
+      </AuthProvider>
+    </ErrorProvider>
   );
 };
 

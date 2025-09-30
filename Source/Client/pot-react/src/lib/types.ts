@@ -45,7 +45,10 @@ type ActionResultFail = {
 
 type BulkActionResult = ActionResultSuccess | ActionResultFail;
 
-export { Frequency, FrequencyDisplay, FrequencyOptions };
+// Using this to avoid warning 'The 'permissions' logical expression could make the dependencies of useCallback Hook change on every render.'
+const EMPTY_STRING_ARRAY: string[] = [];
+
+export { EMPTY_STRING_ARRAY, Frequency, FrequencyDisplay, FrequencyOptions };
 
 export type {
   ActionResultFail,

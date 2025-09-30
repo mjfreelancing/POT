@@ -1,7 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { BanknoteArrowDown, BanknoteArrowUp } from 'lucide-react';
-import { useState } from 'react';
 import { useParams } from 'react-router';
 
 import { useApiAccrueExpenses } from '@/api/hooks';
@@ -14,9 +13,9 @@ import {
   DataTableColumnHeader,
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
+import { useErrorContext } from '@/contexts';
 import { Account } from '@/data';
 import { usePermissions } from '@/hooks';
-import { DisplayError } from '@/lib';
 
 import { accrueAllExpenses } from '../utils/bulkActions';
 import AccountActions from './AccountActions';
@@ -140,7 +139,7 @@ function AccountsTable({ accounts }: AccountsTableProps) {
   const { id: editingId } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const accrueExpensesMutation = useApiAccrueExpenses();
-  const [error, setError] = useState<DisplayError | null>(null);
+  const { error, setError } = useErrorContext();
 
   const { hasPermission } = usePermissions();
   const canManageExpenses = hasPermission('expense:manage');

@@ -50,6 +50,8 @@ type EditIncome = z.infer<typeof EditIncomeSchema>;
 type RenewIncomes = z.infer<typeof RenewIncomesSchema>;
 type ToggleExcludeIncomes = z.infer<typeof ToggleExcludeIncomesSchema>;
 
+const EMPTY_INCOME_ARRAY: Income[] = [];
+
 const compareIncomeNextDue = (lhs: Income, rhs: Income): number => {
   return compareDates(lhs.nextDue, rhs.nextDue);
 };
@@ -59,6 +61,7 @@ export {
   compareIncomeNextDue,
   CreateIncomeSchema,
   EditIncomeSchema,
+  EMPTY_INCOME_ARRAY,
   IncomeAccountSchema,
   IncomeSchema,
   RenewIncomesSchema,

@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 import {
   Account,
   compareAccountBsbNumber,
@@ -13,17 +15,17 @@ const useApiGetAllAccounts = () => {
   const query = useGet<Account[]>('/accounts', ['accounts']);
   const result = query.data as Result<Account[], FailResultBase>;
 
-  let data: Result<Account[], FailResultBase>;
+  const data = useMemo(() => {
+    if (result?.success) {
+      // spreading [...result.value] to create a shallow copy of the array since
+      // sort() mutates the source array in the react-query cache.
+      const sortedResults = [...result.value].sort(compareAccountBsbNumber);
+      return new SuccessResult(sortedResults);
+    }
 
-  if (result?.success) {
-    // spreading [...result.value] to create a shallow copy of the array since
-    // sort() mutates the source array in the react-query cache.
-    const sortedResults = [...result.value].sort(compareAccountBsbNumber);
-    data = new SuccessResult(sortedResults);
-  } else {
     // type narrowed to FailResult<FailResultBase> since result cannot be undefined at this point
-    data = result;
-  }
+    return result;
+  }, [result]);
 
   // Returns isLoading, isError, error, and data (and anything else from React Query)
   return { ...query, data };
@@ -56,6 +58,7 @@ const useApiUpdateAccount = () => {
   const mutation = usePutWithId<Identity, EditAccount>(
     (id: string) => `/accounts/${id}`,
   );
+
   return {
     ...mutation,
     data: mutation.data as Result<Identity, FailResultBase>,

@@ -13,8 +13,8 @@ import { useMe } from '@/api/hooks/useMe';
 import { User } from '@/data/user';
 import { DisplayError } from '@/lib';
 import { logger } from '@/lib/logging';
+import { useUserStore } from '@/stores';
 
-import { useUserStore } from '../../stores/useUserStore';
 import logoutManager from './logoutManager';
 import { TokenProvider, useTokens } from './TokenContext';
 import {
@@ -153,6 +153,6 @@ function useAuthContext() {
   return context;
 }
 
+export { AuthProvider };
 export type { AuthContextType };
 export default useAuthContext;
-export { AuthProvider };

@@ -1,11 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
+import { useErrorContext } from '@/contexts';
 import { CreateAccount } from '@/data';
-import { DisplayError } from '@/lib';
 
 import AccountForm from '../components/AccountForm';
 import AccountSheet from '../components/AccountSheet';
@@ -16,7 +15,7 @@ import {
 import useCreateAccount from './hooks/useCreateAccount';
 
 function CreateAccountSheet() {
-  const [error, setError] = useState<DisplayError | null>(null);
+  const { error, setError } = useErrorContext();
   const navigate = useNavigate();
   const { createAccount } = useCreateAccount();
 

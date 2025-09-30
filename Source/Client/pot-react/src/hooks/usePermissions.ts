@@ -1,13 +1,11 @@
 import { useCallback } from 'react';
 
-import { useUserStore } from '../stores/useUserStore';
+import { EMPTY_STRING_ARRAY } from '@/lib';
+import { useUserStore } from '@/stores';
 
 function usePermissions() {
-  // Using this to avoid warning 'The 'permissions' logical expression could make the dependencies of useCallback Hook change on every render.'
-  const EMPTY_ARRAY: string[] = [];
-
   const permissions =
-    useUserStore(state => state.userInfo?.permissions) || EMPTY_ARRAY;
+    useUserStore(state => state.userInfo?.permissions) || EMPTY_STRING_ARRAY;
 
   const hasPermission = useCallback(
     (permission: string) => {

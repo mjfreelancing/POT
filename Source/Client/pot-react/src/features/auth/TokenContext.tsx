@@ -7,6 +7,7 @@ import {
   useState,
 } from 'react';
 
+import { useErrorContext } from '@/contexts';
 import useLocalStorage from '@/hooks/useLocalStorage';
 import { DisplayError } from '@/lib';
 
@@ -19,13 +20,13 @@ type TokenContextType = {
   tokens: AuthTokens | undefined;
   isAuthenticated: boolean;
   setTokens: (tokens: AuthTokens | undefined) => void;
-  error?: DisplayError;
+  error?: DisplayError | null;
 };
 
 const TokenContext = createContext<TokenContextType | undefined>(undefined);
 
 function TokenProvider({ children }: { children: ReactNode }) {
-  const [error, setError] = useState<DisplayError | undefined>(undefined);
+  const { error, setError } = useErrorContext();
   const { getItem, setItem, removeItem } = useLocalStorage<AuthTokens>({
     key: AUTH_STORAGE_KEY,
     onError: setError,

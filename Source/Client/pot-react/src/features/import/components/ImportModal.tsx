@@ -51,7 +51,7 @@ function ImportModal({ isOpen, onClose }: ImportModalProps) {
 
         const file = await fileHandle.getFile();
         setSelectedFile(file);
-      } catch (error: unknown) {
+      } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {
           // User cancelled, do nothing
           return;

@@ -1,18 +1,16 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { Banknote, Calendar, DollarSign, PieChart } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
+import { useApiGetAllAccounts } from '@/api/hooks';
 import StatusBadge from '@/components/feedback/badge/StatusBadge';
 import { createMoneyValueColumn, DataTable } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Account } from '@/data';
+import { Account, EMPTY_ACCOUNT_ARRAY } from '@/data';
 import { formatMoneyValue } from '@/lib';
 
-import { useDashboardContext } from '../context';
-import accountsSummaryStore, {
-  AccountsSummary,
-} from '../stores/useAccountsSummary';
+import { AccountsSummary, accountsSummaryStore } from '../stores';
 import DashboardCardHeader from './DashboardCardHeader';
 import SummaryCardsGrid from './SummaryCardsGrid';
 
@@ -86,7 +84,13 @@ const columns: ColumnDef<Account>[] = [
 ];
 
 function AccountsOverview() {
-  const { accounts, accountsIsLoading } = useDashboardContext();
+  const { data: accountsData, isLoading: accountsIsLoading } =
+    useApiGetAllAccounts();
+
+  const accounts = useMemo(
+    () => (accountsData?.success ? accountsData.value : EMPTY_ACCOUNT_ARRAY),
+    [accountsData],
+  );
 
   const setSummary = accountsSummaryStore(
     (state: AccountsSummary) => state.setSummary,

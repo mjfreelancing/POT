@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
+import { useErrorContext } from '@/contexts';
 import { logger } from '@/lib/logging';
 
 import { PermissionGuard } from '../auth/components';
@@ -10,10 +11,17 @@ import {
   ExpensesOverview,
   QuickActions,
 } from './components';
-import { DashboardProvider, useDashboardContext } from './context';
 
-function DashboardContent() {
-  const { error, setError } = useDashboardContext();
+function DashboardPage() {
+  useEffect(() => {
+    logger.info('DashboardPage', 'Mounted');
+
+    return () => {
+      logger.info('DashboardPage', 'Unmounted');
+    };
+  }, []);
+
+  const { error, setError } = useErrorContext();
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20 overflow-x-hidden">
@@ -39,22 +47,6 @@ function DashboardContent() {
         )}
       </div>
     </div>
-  );
-}
-
-function DashboardPage() {
-  useEffect(() => {
-    logger.info('DashboardPage', 'Mounted');
-
-    return () => {
-      logger.info('DashboardPage', 'Unmounted');
-    };
-  }, []);
-
-  return (
-    <DashboardProvider>
-      <DashboardContent />
-    </DashboardProvider>
   );
 }
 

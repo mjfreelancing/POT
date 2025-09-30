@@ -10,9 +10,9 @@ import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { AccountFilter, SearchInput } from '@/components/filters';
 import { Toolbar } from '@/components/layout';
 import { Button } from '@/components/ui/button';
+import { useErrorContext } from '@/contexts';
 import { Expense } from '@/data/expense';
 import { useAccountFilter } from '@/hooks';
-import { DisplayError } from '@/lib';
 import { logger } from '@/lib/logging';
 
 import { WithPermission } from '../auth/components';
@@ -29,7 +29,7 @@ function ExpensesPage() {
   }, []);
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const [error, setError] = useState<DisplayError | null>(null);
+  const { error, setError } = useErrorContext();
   const [searchTerm, setSearchTerm] = useState<string>('');
 
   // Setup local storage for persistent filters
@@ -161,7 +161,7 @@ function ExpensesPage() {
             },
       );
     }
-  }, [expensesResult]);
+  }, [expensesResult, setError]);
 
   const navigate = useNavigate();
 

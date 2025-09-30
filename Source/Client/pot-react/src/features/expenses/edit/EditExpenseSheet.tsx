@@ -1,13 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetExpenseById } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
+import { useErrorContext } from '@/contexts';
 import type { Account, EditExpense, Expense } from '@/data';
-import type { DisplayError } from '@/lib';
 
 import ExpenseForm from '../components/ExpenseForm';
 import ExpenseSheet from '../components/ExpenseSheet';
@@ -54,7 +54,7 @@ const EditExpenseSheetInternal: React.FC<EditExpenseSheetInternalProps> = ({
     values: defaultValues, // Use current values to avoid initial blank form
   });
 
-  const [error, setError] = useState<DisplayError | null>(null);
+  const { error, setError } = useErrorContext();
 
   const onSubmit = async (values: ExpenseFormData) => {
     const payload: EditExpense = {

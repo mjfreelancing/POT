@@ -54,10 +54,13 @@ type ToggleExcludeExpenses = z.infer<typeof ToggleExcludeExpensesSchema>;
 type RenewExpenses = z.infer<typeof RenewExpensesSchema>;
 type PagedExpense = Paged<Expense>;
 
+const EMPTY_EXPENSE_ARRAY: Expense[] = [];
+
 export {
   BaseExpenseSchema,
   CreateExpenseSchema,
   EditExpenseSchema,
+  EMPTY_EXPENSE_ARRAY,
   ExpenseAccountSchema,
   ExpenseSchema,
   RenewExpensesSchema,

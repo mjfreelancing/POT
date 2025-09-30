@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Key } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -17,7 +17,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import type { DisplayError } from '@/lib';
+import { useErrorContext } from '@/contexts';
 import { logger } from '@/lib/logging';
 
 import {
@@ -37,7 +37,7 @@ function ChangePasswordForm() {
   });
 
   const { changePassword, isPending } = useChangePassword();
-  const [error, setError] = useState<DisplayError | null>(null);
+  const { error, setError } = useErrorContext();
 
   useEffect(() => {
     logger.info('ChangePasswordForm', 'Mounted');

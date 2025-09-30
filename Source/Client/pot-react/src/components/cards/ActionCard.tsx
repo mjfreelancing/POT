@@ -49,6 +49,8 @@ type ActionCardProps = {
   children?: ReactNode;
   /** Optional click handler. When provided, the card becomes visually interactive with hover effects, cursor pointer, and clickable behavior */
   onClick?: () => void;
+  /** Optional boolean to indicate if the card is enabled. Defaults to true. */
+  enabled?: boolean;
 };
 
 /**
@@ -91,9 +93,12 @@ function ActionCard({
   className,
   children,
   onClick,
+  enabled = true,
 }: ActionCardProps) {
+  const canCallAction = enabled && onClick;
+
   function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
-    if (onClick) {
+    if (canCallAction) {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
         onClick();
@@ -103,20 +108,21 @@ function ActionCard({
 
   return (
     <Card
-      role={onClick ? 'button' : undefined}
-      tabIndex={onClick ? 0 : undefined}
-      onKeyDown={onClick ? handleKeyDown : undefined}
+      role={canCallAction ? 'button' : undefined}
+      tabIndex={canCallAction ? 0 : undefined}
+      onKeyDown={canCallAction ? handleKeyDown : undefined}
       className={cn(
         'border-l border-primary/40 bg-slate-100 dark:bg-slate-900 transition-all duration-200',
-        onClick && [
+        canCallAction && [
           'cursor-pointer hover:shadow-lg hover:scale-[1.02] hover:border-primary/80 hover:shadow-primary/10',
         ],
+        !enabled && 'opacity-50 cursor-not-allowed', // Add disabled style
         className,
         'relative', // Make Card relative for absolute positioning of the icon when clickable
       )}
-      onClick={onClick}
+      onClick={canCallAction ? onClick : undefined}
     >
-      {onClick && (
+      {canCallAction && (
         <RotateCw
           className="h-4 w-4 text-muted-foreground absolute right-4 top-4 z-10 cursor-pointer"
           aria-hidden="true"

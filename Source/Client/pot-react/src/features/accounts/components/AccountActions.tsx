@@ -19,9 +19,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useErrorContext } from '@/contexts';
 import { Account } from '@/data';
 import { WithPermission } from '@/features/auth/components';
-import { DisplayError } from '@/lib';
 
 import useDeleteAccount from '../delete/hooks/useDeleteAccount';
 
@@ -31,7 +31,7 @@ type AccountActionsProps = {
 
 function AccountActions({ account }: AccountActionsProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [error, setError] = useState<DisplayError | null>(null);
+  const { error, setError } = useErrorContext();
   const navigate = useNavigate();
   const { deleteAccount } = useDeleteAccount(account.rowId);
 

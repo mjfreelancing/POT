@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Key } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -17,20 +17,16 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { useErrorContext } from '@/contexts';
 import { logger } from '@/lib/logging';
-import { useUserStore } from '@/stores/useUserStore';
+import { useUserStore } from '@/stores';
 
 import { UserDetailsFields, userDetailsSchema } from './userDetailsSchema';
-
-type DisplayError = {
-  title: string;
-  description: string;
-};
 
 function UserDetailsForm() {
   const { userInfo, setUserInfo } = useUserStore();
   const updateUser = useApiUpdateUser();
-  const [error, setError] = useState<DisplayError | null>(null);
+  const { error, setError } = useErrorContext();
 
   // Will not be null once the user has logged in - can't get here until then
   const userDetails = userInfo!;

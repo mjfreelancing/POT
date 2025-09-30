@@ -1,13 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetIncomeById } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
+import { useErrorContext } from '@/contexts';
 import type { Account, EditIncome, Income } from '@/data';
-import type { DisplayError } from '@/lib';
 
 import IncomeForm from '../components/IncomeForm';
 import IncomeSheet from '../components/IncomeSheet';
@@ -50,7 +50,7 @@ const EditIncomeSheetInternal: React.FC<EditIncomeSheetInternalProps> = ({
     values: defaultValues, // Use current values to avoid initial blank form
   });
 
-  const [error, setError] = useState<DisplayError | null>(null);
+  const { error, setError } = useErrorContext();
 
   const onSubmit = async (values: IncomeFormData) => {
     const payload: EditIncome = {

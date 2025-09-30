@@ -8,8 +8,8 @@ internal static class RequestMapping
     {
         return new Input
         {
-            RowIds = request.RowIds,
-            beforeDate = asOfDate
+            AccountRowIds = request.AccountRowIds,
+            BeforeDate = asOfDate
         };
     }
 }

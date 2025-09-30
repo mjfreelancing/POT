@@ -32,7 +32,7 @@ async function downloadBlob(blob: Blob, filename: string): Promise<void> {
       await writable.write(blob);
       await writable.close();
       return; // File saved successfully
-    } catch (error: unknown) {
+    } catch (error) {
       // User cancelled or error occurred
       if (error instanceof Error && error.name === 'AbortError') {
         throw new FileOperationCancelledError();

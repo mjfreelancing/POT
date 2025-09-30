@@ -7,5 +7,5 @@ public interface IIncomeRepository : IGenericRepository<PotDbContext, IncomeEnti
     Task<List<IncomeEntity>> GetAllIncomesAsync(CancellationToken cancellationToken);
     Task<List<IncomeEntity>> GetIncomesAsync(Guid[] rowIds, CancellationToken cancellationToken);
     Task<IncomeEntity?> GetIncomeOrDefaultAsync(Guid incomeId, CancellationToken cancellationToken);
-    Task<Guid[]> RenewalsRequiredAsync(Guid[] accountRowIds, DateOnly beforeDate, CancellationToken cancellationToken);
+    Task<Guid[]> GetRequiredRenewalsAsync(Guid[] accountRowIds, DateOnly beforeDate, CancellationToken cancellationToken);
 }

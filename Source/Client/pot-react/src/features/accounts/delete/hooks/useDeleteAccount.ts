@@ -12,6 +12,7 @@ function useDeleteAccount(rowId: string) {
     const controller = new AbortController();
 
     logger.info('Accounts', 'Delete account started', rowId);
+
     try {
       // Not using onSuccess callback because both success/fails are returned
       const result = await apiDeleteAccount.mutateAsync({

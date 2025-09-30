@@ -1,16 +1,16 @@
 import { QueryClient } from '@tanstack/react-query';
 
-import { useApiAccrueExpenses } from '@/api/hooks';
-import { Account } from '@/data';
+import { useApiAccrueAccountExpenses } from '@/api/hooks';
 import { BulkActionResult } from '@/lib';
 
-async function accrueAllExpenses(
-  accounts: Account[],
-  accrueExpensesMutation: ReturnType<typeof useApiAccrueExpenses>,
+async function accrueAllAccountExpenses(
+  accountRowIds: string[],
+  accrueExpensesMutation: ReturnType<typeof useApiAccrueAccountExpenses>,
   queryClient: QueryClient,
 ): Promise<BulkActionResult> {
-  const rowIds = accounts.map(account => account.rowId);
-  const result = await accrueExpensesMutation.mutateAsync({ data: { rowIds } });
+  const result = await accrueExpensesMutation.mutateAsync({
+    data: { rowIds: accountRowIds },
+  });
 
   if (result.success) {
     await queryClient.invalidateQueries({ queryKey: ['accounts'] });
@@ -28,5 +28,5 @@ async function accrueAllExpenses(
   };
 }
 
-export { accrueAllExpenses };
+export { accrueAllAccountExpenses };
 export type { BulkActionResult };

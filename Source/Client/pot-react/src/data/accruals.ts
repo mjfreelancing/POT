@@ -1,11 +1,15 @@
-import { z } from 'zod';
+type AccrueAccountExpensesInput = {
+  rowIds: string[];
+};
 
-const AccrueExpensesSchema = z.object({
-  rowIds: z.string().array(),
-});
+type AccrualsStatusInput = {
+  accountRowIds: string[];
+};
 
-type AccrueExpenses = z.infer<typeof AccrueExpensesSchema>;
+type AccrualsStatus = {
+  expenseRenewalsRequired: string[];
+  incomeRenewalsRequired: string[];
+  accountAccrualsRequired: string[];
+};
 
-export { AccrueExpensesSchema };
-
-export type { AccrueExpenses };
+export type { AccrualsStatus, AccrualsStatusInput, AccrueAccountExpensesInput };

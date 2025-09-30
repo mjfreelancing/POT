@@ -2,6 +2,7 @@ import { ColumnDef, Row } from '@tanstack/react-table';
 import { ClockFading, DollarSign, ShoppingCart } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 
+import { useApiGetAllExpenses } from '@/api/hooks';
 import StatusBadge from '@/components/feedback/badge/StatusBadge';
 import {
   createDateColumn,
@@ -10,7 +11,7 @@ import {
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Expense } from '@/data';
+import { EMPTY_EXPENSE_ARRAY, Expense } from '@/data';
 import {
   dayOfYear,
   formatMoneyValue,
@@ -19,10 +20,7 @@ import {
   localToday,
 } from '@/lib';
 
-import { useDashboardContext } from '../context';
-import expensesSummaryStore, {
-  ExpensesSummary,
-} from '../stores/useExpensesSummary';
+import { ExpensesSummary, expensesSummaryStore } from '../stores';
 import DashboardCardHeader from './DashboardCardHeader';
 import SummaryCardsGrid from './SummaryCardsGrid';
 
@@ -120,7 +118,14 @@ function filteredExpenseInfo(
 }
 
 function ExpensesOverview() {
-  const { expenses, expensesIsLoading } = useDashboardContext();
+  const { data: expensesData, isLoading: expensesIsLoading } =
+    useApiGetAllExpenses();
+
+  const expenses = useMemo(
+    () =>
+      expensesData?.success ? expensesData.value.results : EMPTY_EXPENSE_ARRAY,
+    [expensesData],
+  );
 
   const setSummary = expensesSummaryStore(
     (state: ExpensesSummary) => state.setSummary,

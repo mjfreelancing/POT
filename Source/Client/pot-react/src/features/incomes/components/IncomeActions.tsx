@@ -13,9 +13,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useErrorContext } from '@/contexts';
 import { Income } from '@/data';
 import { WithPermission } from '@/features/auth/components';
-import { DisplayError } from '@/lib';
 
 import useDeleteIncome from '../delete/hooks/useDeleteIncome';
 
@@ -25,7 +25,7 @@ type IncomeActionsProps = {
 
 function IncomeActions({ income }: IncomeActionsProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [error, setError] = useState<DisplayError | null>(null);
+  const { error, setError } = useErrorContext();
   const navigate = useNavigate();
   const { deleteIncome } = useDeleteIncome(income.rowId);
 

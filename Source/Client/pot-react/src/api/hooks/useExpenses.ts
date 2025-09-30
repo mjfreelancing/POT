@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 import {
   CreateExpense,
   EditExpense,
@@ -15,20 +17,20 @@ const useApiGetAllExpenses = () => {
   const query = useGet<PagedExpense>('/expenses', ['expenses']);
   const result = query.data as Result<PagedExpense, FailResultBase>;
 
-  let data: Result<PagedExpense, FailResultBase>;
+  const data = useMemo(() => {
+    if (result?.success) {
+      // Not sorting client-side since the server performs this to ensure pagination is consistent.
+      // ...although we are requesting all data at this stage.
+      const paged: PagedExpense = {
+        ...result.value,
+      };
 
-  if (result?.success) {
-    // Not sorting client-side since the server performs this to ensure pagination is consistent.
-    // ...although we are requesting all data at this stage.
-    const paged: PagedExpense = {
-      ...result.value,
-    };
+      return new SuccessResult(paged);
+    }
 
-    data = new SuccessResult(paged);
-  } else {
     // type narrowed to FailResult<FailResultBase> since result cannot be undefined at this point
-    data = result;
-  }
+    return result;
+  }, [result]);
 
   // Returns isLoading, isError, error, and data (and anything else from React Query)
   return { ...query, data };

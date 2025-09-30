@@ -1,6 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { ColumnDef, Row } from '@tanstack/react-table';
-import { useState } from 'react';
 import { useParams } from 'react-router';
 
 import {
@@ -18,10 +17,10 @@ import {
   DataTableColumnHeader,
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
+import { useErrorContext } from '@/contexts';
 import { Expense } from '@/data';
 import { usePermissions } from '@/hooks';
 import {
-  DisplayError,
   Frequency,
   getAdornedExpenseDescription,
   getTableRowClassName,
@@ -115,7 +114,7 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
   const queryClient = useQueryClient();
   const renewExpensesMutation = useApiRenewExpenses();
   const excludeExpensesMutation = useApiToggleExcludeExpenses();
-  const [error, setError] = useState<DisplayError | null>(null);
+  const { error, setError } = useErrorContext();
 
   const { hasPermission } = usePermissions();
   const canManageExpenses = hasPermission('expense:manage');

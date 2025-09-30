@@ -2,7 +2,6 @@
 
 public sealed class Input
 {
-    // Account RowId's
-    public Guid[] RowIds { get; init; } = [];
-    public DateOnly beforeDate { get; init; }
+    public Guid[] AccountRowIds { get; init; } = [];
+    public DateOnly BeforeDate { get; init; }
 }

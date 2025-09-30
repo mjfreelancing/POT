@@ -9,8 +9,8 @@ import { ErrorSheet, LoadingMessage } from '@/components/feedback';
 import { SearchInput } from '@/components/filters';
 import { Toolbar } from '@/components/layout';
 import { Button } from '@/components/ui/button';
+import { useErrorContext } from '@/contexts';
 import { WithPermission } from '@/features/auth/components';
-import { DisplayError } from '@/lib';
 import { logger } from '@/lib/logging';
 
 import { AccountsHeader, AccountsTable } from './components';
@@ -25,16 +25,16 @@ function AccountsPage() {
     };
   }, []);
 
-  const [error, setError] = useState<DisplayError | null>(null);
+  const { error, setError } = useErrorContext();
   const [searchTerm, setSearchTerm] = useState<string>('');
   const navigate = useNavigate();
 
-  const { data: accountsResult, isLoading } = useApiGetAllAccounts();
+  const { data: accountsData, isLoading } = useApiGetAllAccounts();
 
   // Memoize accounts array to prevent unnecessary re-renders
   const accounts = useMemo(
-    () => (accountsResult?.success ? accountsResult.value : []),
-    [accountsResult],
+    () => (accountsData?.success ? accountsData.value : []),
+    [accountsData],
   );
 
   // Filter accounts by description (case-insensitive)
@@ -52,17 +52,17 @@ function AccountsPage() {
 
   // Handle errors
   useEffect(() => {
-    if (accountsResult) {
+    if (accountsData) {
       setError(
-        accountsResult.success
+        accountsData.success
           ? null
           : {
-              title: accountsResult.error.code,
-              description: accountsResult.error.description,
+              title: accountsData.error.code,
+              description: accountsData.error.description,
             },
       );
     }
-  }, [accountsResult]);
+  }, [accountsData, setError]);
 
   const { getAccountData, setAccountData } = useAccountStorage(error => {
     setError({

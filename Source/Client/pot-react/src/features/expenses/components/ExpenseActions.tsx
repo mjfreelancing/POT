@@ -13,9 +13,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useErrorContext } from '@/contexts';
 import { Expense } from '@/data';
 import { WithPermission } from '@/features/auth/components';
-import { DisplayError } from '@/lib';
 
 import useDeleteExpense from '../delete/hooks/useDeleteExpense';
 
@@ -25,7 +25,7 @@ type ExpenseActionsProps = {
 
 function ExpenseActions({ expense }: ExpenseActionsProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [error, setError] = useState<DisplayError | null>(null);
+  const { error, setError } = useErrorContext();
   const navigate = useNavigate();
   const { deleteExpense } = useDeleteExpense(expense.rowId);
 

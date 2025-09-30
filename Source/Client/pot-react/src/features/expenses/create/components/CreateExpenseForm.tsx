@@ -1,11 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
+import { useErrorContext } from '@/contexts';
 import type { Account, CreateExpense, Expense } from '@/data';
-import { DisplayError, Frequency, todayIsoFormat } from '@/lib';
+import { Frequency, todayIsoFormat } from '@/lib';
 
 import ExpenseForm from '../../components/ExpenseForm';
 import ExpenseSheet from '../../components/ExpenseSheet';
@@ -67,7 +67,7 @@ function CreateExpenseForm({
     defaultValues: getDefaultValues(),
   });
 
-  const [error, setError] = useState<DisplayError | null>(null);
+  const { error, setError } = useErrorContext();
 
   const onSubmit = async (values: ExpenseFormData) => {
     const expense: CreateExpense = {
