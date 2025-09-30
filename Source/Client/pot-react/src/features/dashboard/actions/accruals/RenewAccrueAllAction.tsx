@@ -20,13 +20,12 @@ import { logger } from '@/lib/logging';
 
 function RenewAccrueAllAction() {
   const {
-    accounts,
     expenseRenewals,
     incomeRenewals,
     accountAccruals,
     isLoading,
-    hasData,
     error: accrualsError,
+    refresh,
   } = useAccrualsContext();
 
   const { setError } = useErrorContext();
@@ -88,7 +87,7 @@ function RenewAccrueAllAction() {
     if (accountAccruals.length > 0) {
       logger.info(
         'RenewAccrueAllAction',
-        `Accruing ${accounts.length} accounts`,
+        `Accruing ${accountAccruals.length} accounts`,
       );
 
       const accrueResult = await accrueAllAccountExpenses(
@@ -121,13 +120,15 @@ function RenewAccrueAllAction() {
       return;
     }
 
+    refresh();
+
     await queryClient.invalidateQueries({ queryKey: ['projections'] });
 
     toast(
       () => (
         <SuccessToast
           icon={CheckCircle}
-          title="Accruals Complete"
+          title="Renew / Accruals Complete"
           description="All renewals and accruals have successfully processed"
         />
       ),
@@ -135,10 +136,15 @@ function RenewAccrueAllAction() {
     );
   }
 
+  const hasData =
+    expenseRenewals.length > 0 ||
+    incomeRenewals.length > 0 ||
+    accountAccruals.length > 0;
+
   return (
     <ActionCard
       title="Renew & Accrue All"
-      description="Renew all incomes and expenses, and accrue all accounts"
+      description="Renew all overdue incomes and expenses, and accrue accounts"
       isLoading={isLoading}
       icon={<BarChart3 className="text-information" />}
       onClick={hasData ? handleBulkAction : undefined}

@@ -3,7 +3,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { BanknoteArrowDown, BanknoteArrowUp } from 'lucide-react';
 import { useParams } from 'react-router';
 
-import { useApiAccrueExpenses } from '@/api/hooks';
+import { useApiAccrueAccountExpenses } from '@/api/hooks';
 import { ErrorSheet, StatusBadge } from '@/components/feedback';
 import {
   BulkAction,
@@ -17,7 +17,7 @@ import { useErrorContext } from '@/contexts';
 import { Account } from '@/data';
 import { usePermissions } from '@/hooks';
 
-import { accrueAllExpenses } from '../utils/bulkActions';
+import { accrueAllAccountExpenses } from '../utils/bulkActions';
 import AccountActions from './AccountActions';
 
 type AccountsTableProps = {
@@ -138,7 +138,7 @@ const columns: ColumnDef<Account>[] = [
 function AccountsTable({ accounts }: AccountsTableProps) {
   const { id: editingId } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
-  const accrueExpensesMutation = useApiAccrueExpenses();
+  const accrueExpensesMutation = useApiAccrueAccountExpenses();
   const { error, setError } = useErrorContext();
 
   const { hasPermission } = usePermissions();
@@ -149,8 +149,10 @@ function AccountsTable({ accounts }: AccountsTableProps) {
       label: 'Accrue Expenses',
       isDisabled: !canManageExpenses,
       onClick: async (selectedItems: Account[]) => {
-        const result = await accrueAllExpenses(
-          selectedItems,
+        const accountRowIds = selectedItems.map(item => item.rowId);
+
+        const result = await accrueAllAccountExpenses(
+          accountRowIds,
           accrueExpensesMutation,
           queryClient,
         );

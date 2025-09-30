@@ -5,6 +5,11 @@ import { PermissionGuard } from '@/features/auth/components';
 import RenewAccrueAllAction from '@/features/dashboard/actions/accruals/RenewAccrueAllAction';
 import { AccrualsProvider } from '@/features/dashboard/contexts/AccrualsContext';
 
+import {
+  AccrueAccountExpensesAction,
+  RenewExpensesAction,
+  RenewIncomesAction,
+} from '../actions/accruals';
 import DashboardCardHeader from './DashboardCardHeader';
 
 function QuickActions() {
@@ -17,17 +22,33 @@ function QuickActions() {
       />
       <CardContent className="px-4 -mt-2">
         <div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl w-full">
-            {/* expenses and incomes are renewed, and accounts are accrued */}
-            <PermissionGuard
-              permission={['expense:manage', 'income:manage', 'account:manage']}
-            >
-              <AccrualsProvider>
-                <RenewAccrueAllAction />
-              </AccrualsProvider>
-            </PermissionGuard>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <AccrualsProvider>
+              <PermissionGuard permission={['expense:manage']}>
+                <RenewExpensesAction />
+              </PermissionGuard>
 
-            {/* other actions can be added here */}
+              <PermissionGuard permission={['income:manage']}>
+                <RenewIncomesAction />
+              </PermissionGuard>
+
+              <PermissionGuard
+                permission={['expense:manage', 'account:manage']}
+              >
+                <AccrueAccountExpensesAction />
+              </PermissionGuard>
+
+              {/* expenses and incomes are renewed, and accounts are accrued */}
+              <PermissionGuard
+                permission={[
+                  'expense:manage',
+                  'income:manage',
+                  'account:manage',
+                ]}
+              >
+                <RenewAccrueAllAction />
+              </PermissionGuard>
+            </AccrualsProvider>
           </div>
         </div>
       </CardContent>

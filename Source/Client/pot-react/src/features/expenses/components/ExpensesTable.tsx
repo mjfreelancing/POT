@@ -124,8 +124,10 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
       label: 'Auto Renew',
       isDisabled: !canManageExpenses,
       onClick: async (selectedItems: Expense[]) => {
+        const expenseRowIds = selectedItems.map(item => item.rowId);
+
         const result = await renewExpenses(
-          selectedItems,
+          expenseRowIds,
           renewExpensesMutation,
           queryClient,
         );

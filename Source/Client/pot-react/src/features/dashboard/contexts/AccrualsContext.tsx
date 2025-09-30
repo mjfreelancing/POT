@@ -7,17 +7,16 @@ import React, {
 } from 'react';
 
 import { useApiAccrualsStatus, useApiGetAllAccounts } from '@/api/hooks';
-import { EMPTY_ACCOUNT_ARRAY } from '@/data';
+import { logger } from '@/lib/logging';
 import { DisplayError, EMPTY_STRING_ARRAY } from '@/lib/types';
 
 type AccrualsContextProps = {
-  accounts: typeof EMPTY_ACCOUNT_ARRAY;
   expenseRenewals: typeof EMPTY_STRING_ARRAY;
   incomeRenewals: typeof EMPTY_STRING_ARRAY;
   accountAccruals: typeof EMPTY_STRING_ARRAY;
   isLoading: boolean;
-  hasData: boolean;
   error: DisplayError | null;
+  refresh: () => void;
 };
 
 const AccrualsContext = createContext<AccrualsContextProps | undefined>(
@@ -41,16 +40,25 @@ const AccrualsProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [error, setError] = useState<DisplayError | null>(null);
 
-  const { data: accountsData, isLoading: accountsIsLoading } =
-    useApiGetAllAccounts();
+  const {
+    data: accountsData,
+    isLoading: accountsIsLoading,
+    refetch: refetchAccounts,
+  } = useApiGetAllAccounts();
 
-  const accounts = useMemo(
-    () => (accountsData?.success ? accountsData.value : EMPTY_ACCOUNT_ARRAY),
+  const accountRowIds = useMemo(
+    () =>
+      accountsData?.success
+        ? accountsData.value.map(account => account.rowId)
+        : EMPTY_STRING_ARRAY,
     [accountsData],
   );
 
-  const { data: accrualsStatusData, isLoading: accrualsStatusIsLoading } =
-    useApiAccrualsStatus({ accountRowIds: accounts.map(a => a.rowId) });
+  const {
+    data: accrualsStatusData,
+    isLoading: accrualsStatusIsLoading,
+    refetch: refetchAccrualsStatus,
+  } = useApiAccrualsStatus({ accountRowIds });
 
   const { expenseRenewals, incomeRenewals, accountAccruals } = useMemo(
     () => ({
@@ -89,22 +97,24 @@ const AccrualsProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const isLoading = accountsIsLoading || accrualsStatusIsLoading;
 
-  const hasData =
-    error === null &&
-    (expenseRenewals.length > 0 ||
-      incomeRenewals.length > 0 ||
-      accountAccruals.length > 0);
+  const refresh = () => {
+    // Not really needed, but it's an edge case that another account could have been added by another user
+    logger.info('AccrualsContext', 'Refreshing accounts');
+    refetchAccounts();
+
+    logger.info('AccrualsContext', 'Refreshing accruals status');
+    refetchAccrualsStatus();
+  };
 
   return (
     <AccrualsContext.Provider
       value={{
-        accounts,
         expenseRenewals,
         incomeRenewals,
         accountAccruals,
         isLoading,
-        hasData,
         error,
+        refresh,
       }}
     >
       {children}

@@ -116,8 +116,10 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
       label: 'Auto Renew',
       isDisabled: !canManageIncomes,
       onClick: async (selectedItems: Income[]) => {
+        const incomeRowIds = selectedItems.map(item => item.rowId);
+
         const result = await renewIncomes(
-          selectedItems,
+          incomeRowIds,
           renewIncomesMutation,
           queryClient,
         );
