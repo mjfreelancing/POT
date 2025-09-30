@@ -3,6 +3,7 @@ import { Zap } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { PermissionGuard } from '@/features/auth/components';
 import RenewAccrueAllAction from '@/features/dashboard/actions/accruals/RenewAccrueAllAction';
+import { AccrualsProvider } from '@/features/dashboard/contexts/AccrualsContext';
 
 import DashboardCardHeader from './DashboardCardHeader';
 
@@ -21,7 +22,9 @@ function QuickActions() {
             <PermissionGuard
               permission={['expense:manage', 'income:manage', 'account:manage']}
             >
-              <RenewAccrueAllAction />
+              <AccrualsProvider>
+                <RenewAccrueAllAction />
+              </AccrualsProvider>
             </PermissionGuard>
 
             {/* other actions can be added here */}

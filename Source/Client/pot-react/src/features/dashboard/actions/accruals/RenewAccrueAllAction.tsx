@@ -1,89 +1,46 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { BarChart3 } from 'lucide-react';
 import { CheckCircle } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 
 import {
-  useApiAccrualsStatus,
   useApiAccrueAccountExpenses,
-  useApiGetAllAccounts,
   useApiRenewExpenses,
   useApiRenewIncomes,
 } from '@/api/hooks';
 import { ActionCard } from '@/components/cards';
 import { SuccessToast } from '@/components/feedback/toast';
 import { useErrorContext } from '@/contexts';
-import { EMPTY_ACCOUNT_ARRAY } from '@/data';
 import { accrueAllAccountExpenses } from '@/features/accounts/utils/bulkActions';
+import { useAccrualsContext } from '@/features/dashboard/contexts/AccrualsContext';
 import { renewExpenses } from '@/features/expenses/bulkActions/renew';
 import { renewIncomes } from '@/features/incomes/bulkActions/renew';
-import { EMPTY_STRING_ARRAY } from '@/lib';
 import { logger } from '@/lib/logging';
 
 function RenewAccrueAllAction() {
-  const { error, setError } = useErrorContext();
+  const {
+    accounts,
+    expenseRenewals,
+    incomeRenewals,
+    accountAccruals,
+    isLoading,
+    hasData,
+    error: accrualsError,
+  } = useAccrualsContext();
+
+  const { setError } = useErrorContext();
   const queryClient = useQueryClient();
   const renewExpensesMutation = useApiRenewExpenses();
   const renewIncomesMutation = useApiRenewIncomes();
   const accrueAccountExpensesMutation = useApiAccrueAccountExpenses();
 
-  const { data: accountsData, isLoading: accountsIsLoading } =
-    useApiGetAllAccounts();
-
-  const accounts = useMemo(
-    () => (accountsData?.success ? accountsData.value : EMPTY_ACCOUNT_ARRAY),
-    [accountsData],
-  );
-
-  const { data: accrualsStatusData, isLoading: accrualsStatusIsLoading } =
-    useApiAccrualsStatus({ accountRowIds: accounts.map(a => a.rowId) });
-
-  const { expenseRenewals, incomeRenewals, accountAccruals } = useMemo(
-    () => ({
-      // Expenses that need to be renewed
-      expenseRenewals: accrualsStatusData?.success
-        ? accrualsStatusData.value.expenseRenewalsRequired
-        : EMPTY_STRING_ARRAY,
-
-      // Incomes that need to be renewed
-      incomeRenewals: accrualsStatusData?.success
-        ? accrualsStatusData.value.incomeRenewalsRequired
-        : EMPTY_STRING_ARRAY,
-
-      // Accounts that need to be accrued
-      accountAccruals: accrualsStatusData?.success
-        ? accrualsStatusData.value.accountAccrualsRequired
-        : EMPTY_STRING_ARRAY,
-    }),
-    [accrualsStatusData],
-  );
-
-  const isLoading = accountsIsLoading || accrualsStatusIsLoading;
-  const hasData =
-    expenseRenewals.length > 0 ||
-    incomeRenewals.length > 0 ||
-    accountAccruals.length > 0;
-
+  // Reactively handle errors from the context, or clear any previous error
   useEffect(() => {
-    // Only set error if we don't already have one to prevent infinite loops
-    if (error === null) {
-      // Check results in order of importance
-      if (accountsData?.success === false) {
-        setError({
-          title: accountsData.error.code,
-          description: accountsData.error.description,
-        });
-      } else if (accrualsStatusData?.success === false) {
-        setError({
-          title: accrualsStatusData.error.code,
-          description: accrualsStatusData.error.description,
-        });
-      }
-    }
-  }, [accountsData, accrualsStatusData, error, setError]);
+    setError(accrualsError);
+  }, [accrualsError, setError]);
 
-  async function handleExpenseRenewals() {
+  async function performExpenseRenewals() {
     if (expenseRenewals.length > 0) {
       logger.info(
         'RenewAccrueAllAction',
@@ -101,10 +58,11 @@ function RenewAccrueAllAction() {
         return false;
       }
     }
+
     return true;
   }
 
-  async function handleIncomeRenewals() {
+  async function performIncomeRenewals() {
     if (incomeRenewals.length > 0) {
       logger.info(
         'RenewAccrueAllAction',
@@ -122,10 +80,11 @@ function RenewAccrueAllAction() {
         return false;
       }
     }
+
     return true;
   }
 
-  async function handleAccountAccruals() {
+  async function performAccountAccruals() {
     if (accountAccruals.length > 0) {
       logger.info(
         'RenewAccrueAllAction',
@@ -143,22 +102,22 @@ function RenewAccrueAllAction() {
         return false;
       }
     }
+
     return true;
   }
 
+  // This method will never be called if there is an existing error since hasData will be false
   async function handleBulkAction() {
-    setError(null);
-
     // Need to renew Expenses and Incomes before accruing accounts
-    if (!(await handleExpenseRenewals())) {
+    if (!(await performExpenseRenewals())) {
       return;
     }
 
-    if (!(await handleIncomeRenewals())) {
+    if (!(await performIncomeRenewals())) {
       return;
     }
 
-    if (!(await handleAccountAccruals())) {
+    if (!(await performAccountAccruals())) {
       return;
     }
 
@@ -177,16 +136,14 @@ function RenewAccrueAllAction() {
   }
 
   return (
-    <>
-      <ActionCard
-        enabled={hasData}
-        isLoading={isLoading}
-        title="Renew & Accrue All"
-        description="Renew all incomes and expenses, and accrue all accounts"
-        icon={<BarChart3 className="text-information" />}
-        onClick={handleBulkAction}
-      />
-    </>
+    <ActionCard
+      title="Renew & Accrue All"
+      description="Renew all incomes and expenses, and accrue all accounts"
+      isLoading={isLoading}
+      icon={<BarChart3 className="text-information" />}
+      onClick={hasData ? handleBulkAction : undefined}
+      enabled={hasData}
+    />
   );
 }
 
