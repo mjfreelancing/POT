@@ -171,3 +171,9 @@ When making documentation updates:
 3. Update table of contents
 4. Verify code snippets
 5. Check for broken links
+
+### Error Handling Review
+
+- Verify that all components use the `ErrorContext` for managing errors.
+- Check that the `useErrorContext` hook is used instead of local error state, except where the `ErrorProvder` cannot be used.
+- Ensure that errors are displayed using the `ErrorSheet` component.

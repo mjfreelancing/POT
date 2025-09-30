@@ -1439,6 +1439,62 @@ The application includes error logging:
 - Storage operation errors with keys
 - Form validation errors with field context
 
+### ErrorProvider
+
+The `ErrorProvider` is a centralized context for managing and displaying errors across the application. It simplifies error handling by providing a consistent interface for setting, retrieving, and clearing errors.
+
+#### Key Features
+
+- **Centralized Error State**: All errors are managed in a single context, reducing the need for local error state management.
+- **Integration with ErrorSheet**: Automatically displays critical errors using the `ErrorSheet` component.
+- **Type-Safe Error Management**: Ensures all errors conform to the `DisplayError` type.
+- **Error Reset**: Provides methods to clear errors programmatically.
+
+#### Usage
+
+1. **Wrapping the Application**
+
+   The `ErrorProvider` should wrap the root of your application to ensure all components have access to the error context:
+
+   ```tsx
+   import { ErrorProvider } from "@/components/feedback/ErrorProvider";
+
+   function App() {
+     return (
+       <ErrorProvider>
+         <YourAppComponents />
+       </ErrorProvider>
+     );
+   }
+   ```
+
+2. **Accessing the Error Context**
+
+   Use the `useErrorContext` hook to interact with the error state:
+
+   ```tsx
+   import { useErrorContext } from "@/components/feedback/ErrorProvider";
+
+   function SomeComponent() {
+     const { setError, clearError } = useErrorContext();
+
+     const handleError = () => {
+       setError({
+         title: "An error occurred",
+         description: "Something went wrong while processing your request."
+       });
+     };
+
+     return (
+       <button onClick={handleError}>Trigger Error</button>
+     );
+   }
+   ```
+
+3. **Displaying Errors**
+
+   The `ErrorProvider` integrates seamlessly with the `ErrorSheet` component to display errors at the top of the viewport. Errors are automatically dismissed when cleared from the context.
+
 ## Expenses Management
 
 ### Overview
@@ -2827,52 +2883,4 @@ Source/
     ├── Pot.Data.Migrations/ # Database migrations
     └── Pot.Shared/          # Shared utilities and DTOs
 ```
-
-# License
-
-POT is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-# Acknowledgments
-
-POT makes use of the following open-source libraries and tools:
-
-## Frontend
-
-- [React](https://reactjs.org/) - UI library
-- [TypeScript](https://www.typescriptlang.org/) - Type-safe JavaScript
-- [Vite](https://vitejs.dev/) - Frontend build tool
-- [TailwindCSS](https://tailwindcss.com/) - Utility-first CSS framework
-- [shadcn/ui](https://ui.shadcn.com/) - UI component collection
-- [Recharts](https://recharts.org/) - Charting library
-- [React Query](https://tanstack.com/query/latest) - Data fetching library
-- [React Router](https://reactrouter.com/) - Routing library
-- [Vitest](https://vitest.dev/) - Testing framework
-- [Zustand](https://github.com/pmndrs/zustand) - State Management library
-
-## Backend
-
-- [ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/) - Web framework
-- [Entity Framework Core](https://docs.microsoft.com/en-us/ef/core/) - ORM
-- [PostgreSQL](https://www.postgresql.org/) - Database
-
-## DevOps
-
-- [Docker](https://www.docker.com/) - Containerization
-- [Docker Compose](https://docs.docker.com/compose/) - Multi-container applications
-
-# Version History
-
-## Release Notes
-
-### v0.1.0 (Current)
-
-- Initial public release
-- Core features implemented:
-  - Account management
-  - Expense management
-  - Income management
-  - Financial projections
-  - Data import/export
-- Docker support for development and production
-- Modern React frontend with TypeScript
 ````

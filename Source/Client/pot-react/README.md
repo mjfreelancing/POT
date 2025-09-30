@@ -161,3 +161,25 @@ Choose one of the setup options above based on your testing needs.
 - Vitest with UI and coverage reporting
 - React Testing Library with Jest DOM
 - @faker-js/faker for test data generation
+
+## Error Handling
+
+The application uses a centralized `ErrorContext` for managing errors across components. To use the `ErrorContext`, wrap your components with the `ErrorProvider` and access the `error` and `setError` methods using the `useErrorContext` hook.
+
+Example:
+
+```tsx
+import { useErrorContext } from '@/contexts';
+
+function MyComponent() {
+  const { error, setError } = useErrorContext();
+
+  useEffect(() => {
+    setError({ title: 'Error Title', description: 'Error Description' });
+  }, []);
+
+  return error ? <ErrorSheet error={error} /> : <div>No Errors</div>;
+}
+```
+
+This ensures consistent error handling and display across the application.

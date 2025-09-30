@@ -210,3 +210,8 @@ This guide provides essential, actionable rules for AI coding agents working in 
 - `GEMINI.md` (architecture, security, conventions)
 - `Copilot prompt.md` (AI review process)
 - `Source/Docker/Readme.md` (Docker workflows)
+
+### Error Handling Conventions
+
+- Use the centralized `ErrorContext` for managing errors in the client application.
+- Ensure all errors are normalized and displayed using the `ErrorSheet` component.

@@ -6,16 +6,16 @@ This guide provides essential knowledge for developers working on the POT projec
 
 POT is a full-stack application with a C#/.NET backend and a React/TypeScript frontend.
 
--   **Backend:** A .NET 8 API built with ASP.NET Core. It follows a **CQRS-like pattern** where features are separated into commands (e.g., `Create`, `Update`, `Delete`) and queries (e.g., `Get`, `GetAll`). It uses **Entity Framework Core** with the repository pattern for data access to a **PostgreSQL** database.
--   **Frontend:** A React application built with Vite and TypeScript. It uses **React Query** for server state management, with a set of custom hooks that standardize API interactions. The UI is built with **Tailwind CSS** and **shadcn/ui**.
--   **Containerization:** The entire application (backend, frontend, database) can be run using **Docker Compose**, which is the recommended approach for local development.
+- **Backend:** A .NET 8 API built with ASP.NET Core. It follows a **CQRS-like pattern** where features are separated into commands (e.g., `Create`, `Update`, `Delete`) and queries (e.g., `Get`, `GetAll`). It uses **Entity Framework Core** with the repository pattern for data access to a **PostgreSQL** database.
+- **Frontend:** A React application built with Vite and TypeScript. It uses **React Query** for server state management, with a set of custom hooks that standardize API interactions. The UI is built with **Tailwind CSS** and **shadcn/ui**.
+- **Containerization:** The entire application (backend, frontend, database) can be run using **Docker Compose**, which is the recommended approach for local development.
 
 ### Key Files & Directories
 
--   `Source/Server/Pot.App`: The core backend logic, organized by features.
--   `Source/Server/Pot.AspNetCore`: The API layer, responsible for exposing endpoints.
--   `Source/Client/pot-react`: The React frontend application.
--   `Source/Docker`: Dockerfiles and `docker-compose` files for running the application.
+- `Source/Server/Pot.App`: The core backend logic, organized by features.
+- `Source/Server/Pot.AspNetCore`: The API layer, responsible for exposing endpoints.
+- `Source/Client/pot-react`: The React frontend application.
+- `Source/Docker`: Dockerfiles and `docker-compose` files for running the application.
 
 ## Backend Conventions
 
@@ -24,6 +24,7 @@ POT is a full-stack application with a C#/.NET backend and a React/TypeScript fr
 The backend code in `Pot.App` is organized by features (e.g., `Expenses`, `Incomes`, `Accounts`). Inside each feature, the code is further divided into vertical slices representing commands and queries.
 
 For example, the `Source/Server/Pot.App/Features/Expenses` directory contains:
+
 - `Create/`: Logic for creating a new expense.
 - `Delete/`: Logic for deleting an expense.
 - `GetAll/`: Logic for retrieving all expenses.
@@ -35,8 +36,8 @@ This pattern keeps related code together and makes it easy to find and modify th
 
 A key convention to understand is how the backend communicates success and failure:
 
--   **On Success:** The API returns the requested data **directly** as a JSON payload. There is no special wrapper object.
--   **On Failure:** The API returns a standard `ProblemDetails` JSON object (RFC 7807). This object contains details about the error, such as the status code, a title, and a list of validation errors.
+- **On Success:** The API returns the requested data **directly** as a JSON payload. There is no special wrapper object.
+- **On Failure:** The API returns a standard `ProblemDetails` JSON object (RFC 7807). This object contains details about the error, such as the status code, a title, and a list of validation errors.
 
 This approach relies on HTTP status codes to differentiate between success (`2xx`) and failure (`4xx`, `5xx`).
 
@@ -71,14 +72,14 @@ This forces developers to explicitly handle both success and error states in the
 
 All communication with the backend is handled by a set of custom hooks defined in `Source/Client/pot-react/src/api/hooks/useApi.ts`. These hooks wrap `react-query`'s `useQuery` and `useMutation` and incorporate the client-side **Result pattern**.
 
--   `useGet`: For fetching data (`GET` requests).
--   `usePost`, `usePut`, `useDelete`: For mutating data (`POST`, `PUT`, `DELETE` requests).
+- `useGet`: For fetching data (`GET` requests).
+- `usePost`, `usePut`, `useDelete`: For mutating data (`POST`, `PUT`, `DELETE` requests).
 
 The core of this system is the `performOperation` function, which wraps an `axios` call:
 
 ```typescript
 const performOperation = async <TResponse>(
-  operation: () => Promise<AxiosResponse<TResponse>>,
+  operation: () => Promise<AxiosResponse<TResponse>>
 ): Promise<Result<TResponse, FailResultBase>> => {
   try {
     const response = await operation();
@@ -92,7 +93,7 @@ const performOperation = async <TResponse>(
 When a component uses one of these hooks, it receives a `Result` object and can render accordingly:
 
 ```tsx
-const { data: result } = useGet<Account[]>('/api/accounts', ['accounts']);
+const { data: result } = useGet<Account[]>("/api/accounts", ["accounts"]);
 
 if (result && result.success) {
   // Render the accounts
@@ -110,12 +111,13 @@ The project uses a simple logging utility in `Source/Client/pot-react/src/lib/lo
 **Convention:** There is no automatic logging of component lifecycle events (e.g., mount/unmount). Instead, developers should use the `logger` to record significant events, user actions, or errors that are helpful for debugging.
 
 **Example:**
+
 ```typescript
-import { logger } from '@/lib/logging';
+import { logger } from "@/lib/logging";
 
 const MyComponent = () => {
   const handleAction = () => {
-    logger.info('MyComponent', 'User performed an important action.');
+    logger.info("MyComponent", "User performed an important action.");
     // ...
   };
   // ...
@@ -136,15 +138,15 @@ There are two primary ways the `ErrorSheet` is used:
 
 The most common pattern is to use the `ErrorSheet` within a feature's main component to display errors related to that feature's API calls.
 
--   A local state variable (e.g., `error`) is used to hold the error details.
--   A `useEffect` hook watches the result of an `useApi` hook. If the result is a `FailResult`, the `error` state is updated.
--   The `ErrorSheet` is rendered conditionally based on the `error` state.
+- A local state variable (e.g., `error`) is used to hold the error details.
+- A `useEffect` hook watches the result of an `useApi` hook. If the result is a `FailResult`, the `error` state is updated.
+- The `ErrorSheet` is rendered conditionally based on the `error` state.
 
 **Example from `AccountsPage.tsx`:**
 
 ```tsx
 function AccountsPage() {
-  const [error, setError] = useState<DisplayError | null>(null);
+  const { error, setError } = useErrorContext();
   const { data: accountsResult, isLoading } = useApiGetAllAccounts();
 
   // ...
@@ -158,7 +160,7 @@ function AccountsPage() {
           : {
               title: accountsResult.error.code,
               description: accountsResult.error.description,
-            },
+            }
       );
     }
   }, [accountsResult]);
@@ -183,9 +185,9 @@ function AccountsPage() {
 
 A single, application-wide `ErrorSheet` is rendered in `App.tsx` to handle unexpected errors caught by a global `ErrorBoundary`.
 
--   The `ErrorBoundary` wraps the entire application content.
--   If any component in the tree throws a rendering error, the `onError` callback of the `ErrorBoundary` is triggered.
--   This callback updates a state variable in `App.tsx`, which in turn renders the `ErrorSheet`.
+- The `ErrorBoundary` wraps the entire application content.
+- If any component in the tree throws a rendering error, the `onError` callback of the `ErrorBoundary` is triggered.
+- This callback updates a state variable in `App.tsx`, which in turn renders the `ErrorSheet`.
 
 This provides a safety net for the entire application, ensuring that even unexpected errors are presented to the user in a controlled way.
 
@@ -197,7 +199,7 @@ const App = () => {
 
   const handleError = (error: Error) => {
     setError({
-      title: 'Application Error',
+      title: "Application Error",
       description: error.message,
     });
   };
@@ -225,11 +227,15 @@ const App = () => {
 
 **Toasts** are small, temporary notifications used for less critical feedback, such as:
 
--   Confirming a successful action (e.g., "Account created successfully").
--   Displaying validation errors on a form.
--   Notifying the user of a background process.
+- Confirming a successful action (e.g., "Account created successfully").
+- Displaying validation errors on a form.
+- Notifying the user of a background process.
 
 They are managed by the `sonner` library and can be triggered from anywhere in the application.
+
+### Error Handling
+
+The client application uses a centralized `ErrorContext` for managing errors. This context provides a consistent way to handle and display errors across components. All components should use the `useErrorContext` hook to access the `error` and `setError` methods.
 
 ## Critical Developer Workflows
 
@@ -238,23 +244,24 @@ They are managed by the `sonner` library and can be triggered from anywhere in t
 The easiest way to get started is to use the provided Docker Compose tasks in VS Code.
 
 1.  **Server-Only Mode:**
-    -   Press `Ctrl+Shift+P` and select `Tasks: Run Task`.
-    -   Choose `docker-start-pot-server-only`.
-    -   This starts the backend API and the database in Docker.
-    -   Navigate to `Source/Client/pot-react` and run `npm run dev` to start the frontend.
+
+    - Press `Ctrl+Shift+P` and select `Tasks: Run Task`.
+    - Choose `docker-start-pot-server-only`.
+    - This starts the backend API and the database in Docker.
+    - Navigate to `Source/Client/pot-react` and run `npm run dev` to start the frontend.
 
 2.  **Client and Server Mode:**
-    -   Press `Ctrl+Shift+P` and select `Tasks: Run Task`.
-    -   Choose `docker-start-pot-client-server`.
-    -   This starts the entire stack in Docker.
-    -   The application will be available at `http://localhost:5175`.
+    - Press `Ctrl+Shift+P` and select `Tasks: Run Task`.
+    - Choose `docker-start-pot-client-server`.
+    - This starts the entire stack in Docker.
+    - The application will be available at `http://localhost:5175`.
 
 ### Frontend Scripts
 
 The following scripts are available in `Source/Client/pot-react/package.json`:
 
--   `npm run dev`: Starts the Vite development server.
--   `npm run build`: Builds the application for production.
--   `npm run lint`: Lints the code using ESLint.
--   `npm run test`: Runs the tests using Vitest.
--   `npm run type:check`: Performs a TypeScript type check.
+- `npm run dev`: Starts the Vite development server.
+- `npm run build`: Builds the application for production.
+- `npm run lint`: Lints the code using ESLint.
+- `npm run test`: Runs the tests using Vitest.
+- `npm run type:check`: Performs a TypeScript type check.
