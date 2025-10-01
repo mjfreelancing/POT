@@ -22,21 +22,25 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
 
         ResetAccountAccruals(account);
 
-        var sortedExpenses = expenses
-            .Where(expense => !expense.ExcludeFromCalcs)
-
-            // Negated: If the expense is a one-time expense and the current date is after the next due date, no accrual is needed.
-            .Where(expense => expense.Frequency != Shared.Frequency.OneTime || currentDate <= expense.NextDue)
-
-            // Negated: If the accrual start date is in the future, no accrual is needed.
-            .Where(expense => expense.AccrualStart <= currentDate)
-
-            // Sorted will be important if there's ever an option to not allow negative balances.
-            .OrderByDescending(expense => expense.NextDue);
+        // Sorted will be important if there's ever an option to not allow negative balances.
+        // Can't pre-filter since we need to set AccruedIsDirty = false even if the expense is not processed.
+        var sortedExpenses = expenses.OrderByDescending(expense => expense.NextDue);
 
         sortedExpenses.ForEach((expense, index) =>
         {
-            AccrueExpense(expense, currentDate.Value);
+            expense.AccruedIsDirty = false;
+            expense.LastAccruedUpdate = currentDate.Value;
+
+            // The current implementation does not include 'ExcludeFromCalcs' items, but keep here for now so we're not making assumptions
+            var processExpense =
+                !expense.ExcludeFromCalcs &&
+                (expense.Frequency != Shared.Frequency.OneTime || currentDate <= expense.NextDue) &&
+                expense.AccrualStart <= currentDate;
+
+            if (processExpense)
+            {
+                AccrueExpense(expense, currentDate.Value);
+            }
         });
     }
 

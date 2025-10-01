@@ -1,4 +1,4 @@
-﻿using Pot.App.Features.Expenses.Exclude.Models;
+﻿using Pot.App.Features.Expenses.ToggleExclude.Models;
 
 namespace Pot.AspNetCore.Features.Expenses.ToggleExclude.Mappings;
 

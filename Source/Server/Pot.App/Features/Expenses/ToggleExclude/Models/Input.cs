@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Features.Expenses.Exclude.Models;
+﻿namespace Pot.App.Features.Expenses.ToggleExclude.Models;
 
 public sealed class Input
 {

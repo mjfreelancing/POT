@@ -10,6 +10,8 @@ internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
     {
         foreach (var expense in expenses)
         {
+            // Leave expense.AccruedIsDirty in its current state - if it was dirty then the accruals should still be updated
+
             // Frequency.OneTime expenses do not renew
             if (expense.ExcludeFromCalcs || expense.Frequency == Shared.Frequency.OneTime)
             {
@@ -40,6 +42,7 @@ internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
                     // The expense.Accrued will be updated next time the account's 'accrue expenses' is performed.
                     expense.AccrualStart = expense.NextDue;
                     expense.NextDue = nextDue;
+                    expense.AccruedIsDirty = true;
                 }
             }
         }

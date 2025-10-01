@@ -1,8 +1,8 @@
 ﻿using AllOverIt.Patterns.Result;
-using Pot.App.Features.Expenses.Exclude.Models;
+using Pot.App.Features.Expenses.ToggleExclude.Models;
 using Pot.Shared.DependencyInjection;
 
-namespace Pot.App.Features.Expenses.Exclude;
+namespace Pot.App.Features.Expenses.ToggleExclude;
 
 public interface IExcludeExpensesService : IPotScopedDependency
 {

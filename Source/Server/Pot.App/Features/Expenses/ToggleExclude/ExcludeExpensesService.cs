@@ -3,10 +3,10 @@ using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
 using Pot.App.Errors;
-using Pot.App.Features.Expenses.Exclude.Models;
+using Pot.App.Features.Expenses.ToggleExclude.Models;
 using Pot.Data.Repositories.Expenses;
 
-namespace Pot.App.Features.Expenses.Exclude;
+namespace Pot.App.Features.Expenses.ToggleExclude;
 
 internal sealed class ExcludeExpensesService : IExcludeExpensesService
 {
@@ -44,6 +44,7 @@ internal sealed class ExcludeExpensesService : IExcludeExpensesService
             foreach (var expense in expenses)
             {
                 expense.ExcludeFromCalcs = !expense.ExcludeFromCalcs;
+                expense.AccruedIsDirty = true;
             }
 
             await _expenseRepository.SaveAsync(cancellationToken);

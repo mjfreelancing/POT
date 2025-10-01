@@ -64,7 +64,7 @@ internal sealed class ExpenseRepository : GenericRepository<PotDbContext, Expens
             .ToListAsync(cancellationToken);
     }
 
-    public Task<List<ExpenseEntity>> GetRenewableExpensesForAccountAsync(Guid accountRowId, CancellationToken cancellationToken)
+    public Task<List<ExpenseEntity>> GetExpensesForAccountAsync(Guid accountRowId, CancellationToken cancellationToken)
     {
         return Current
             .Include(expense => expense.Account)
@@ -75,7 +75,10 @@ internal sealed class ExpenseRepository : GenericRepository<PotDbContext, Expens
     public Task<Guid[]> GetRequiredRenewalsAsync(Guid[] accountRowIds, DateOnly beforeDate, CancellationToken cancellationToken)
     {
         return Current
-            .Where(expense => accountRowIds.Contains(expense.Account.RowId) && expense.NextDue < beforeDate)
+            .Where(expense =>
+                !expense.ExcludeFromCalcs &&
+                expense.NextDue < beforeDate &&
+                accountRowIds.Contains(expense.Account.RowId))
             .Select(expense => expense.RowId)
             .ToArrayAsync(cancellationToken);
     }
@@ -83,7 +86,10 @@ internal sealed class ExpenseRepository : GenericRepository<PotDbContext, Expens
     public Task<Guid[]> GetRequiredAccountAccrualsAsync(Guid[] accountRowIds, DateOnly beforeDate, CancellationToken cancellationToken)
     {
         return Current
-            .Where(expense => accountRowIds.Contains(expense.Account.RowId) && (expense.AccruedIsDirty || expense.LastAccruedUpdate < beforeDate))
+            .Where(expense =>
+                !expense.ExcludeFromCalcs &&
+                (expense.AccruedIsDirty || expense.LastAccruedUpdate == null || expense.LastAccruedUpdate < beforeDate) &&
+                accountRowIds.Contains(expense.Account.RowId))
             .Select(expense => expense.Account.RowId)
             .Distinct()
             .ToArrayAsync(cancellationToken);

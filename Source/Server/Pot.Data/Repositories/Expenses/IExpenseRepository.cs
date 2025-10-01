@@ -10,7 +10,7 @@ public interface IExpenseRepository : IGenericRepository<PotDbContext, ExpenseEn
     Task<PageResult<ExpenseEntity>> GetAllExpensesPagedAsync(Paging paging, CancellationToken cancellationToken);
     Task<ExpenseEntity?> GetExpenseOrDefaultAsync(Guid rowId, CancellationToken cancellationToken);
     Task<List<ExpenseEntity>> GetExpensesAsync(Guid[] rowIds, CancellationToken cancellationToken);
-    Task<List<ExpenseEntity>> GetRenewableExpensesForAccountAsync(Guid accountRowId, CancellationToken cancellationToken);
+    Task<List<ExpenseEntity>> GetExpensesForAccountAsync(Guid accountRowId, CancellationToken cancellationToken);
     Task<Guid[]> GetRequiredRenewalsAsync(Guid[] accountRowId, DateOnly beforeDate, CancellationToken cancellationToken);
     Task<Guid[]> GetRequiredAccountAccrualsAsync(Guid[] accountRowId, DateOnly beforeDate, CancellationToken cancellationToken);
 }

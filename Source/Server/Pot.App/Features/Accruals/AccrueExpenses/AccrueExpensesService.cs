@@ -46,7 +46,7 @@ internal sealed class AccrueExpensesService : IAccrueExpensesService
                     return EnrichedResult.Fail<bool>(accountNotFoundDetails);
                 }
 
-                var expenses = await _expenseRepository.GetRenewableExpensesForAccountAsync(accountRowId, cancellationToken).ConfigureAwait(false);
+                var expenses = await _expenseRepository.GetExpensesForAccountAsync(accountRowId, cancellationToken).ConfigureAwait(false);
 
                 _accrueExpenseCalculator.AccrueExpenses(account, expenses);
             }
