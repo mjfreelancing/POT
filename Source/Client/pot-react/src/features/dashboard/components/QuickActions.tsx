@@ -18,7 +18,7 @@ function QuickActions() {
       <DashboardCardHeader
         icon={<Zap className="h-5 w-5" aria-hidden="true" />}
         title="Quick Actions"
-        description="Quick actions"
+        description="One-Click actions for common tasks"
       />
       <CardContent className="px-4 -mt-2">
         <div>
