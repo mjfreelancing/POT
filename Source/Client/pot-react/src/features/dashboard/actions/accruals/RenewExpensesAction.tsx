@@ -17,7 +17,7 @@ function RenewExpensesAction() {
     expenseRenewals,
     isLoading,
     error: accrualsError,
-    refresh,
+    invalidate: invalidateAccrualsStatus,
   } = useAccrualsContext();
 
   const { setError } = useErrorContext();
@@ -58,7 +58,7 @@ function RenewExpensesAction() {
       return;
     }
 
-    refresh();
+    invalidateAccrualsStatus();
 
     await queryClient.invalidateQueries({ queryKey: ['projections'] });
 
@@ -84,6 +84,11 @@ function RenewExpensesAction() {
       icon={<CreditCard className="text-information" />}
       onClick={hasData ? handleBulkAction : undefined}
       enabled={hasData}
+      hint={[
+        'Renews all expenses that were due before today, updates their due dates based on the original recurrence pattern, and marking the associated account accruals as dirty.',
+        '',
+        "Expenses marked as 'excluded from calculations' will not be renewed.",
+      ].join('\n')}
     />
   );
 }

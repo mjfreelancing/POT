@@ -17,7 +17,7 @@ function RenewIncomesAction() {
     incomeRenewals,
     isLoading,
     error: accrualsError,
-    refresh,
+    invalidate: invalidateAccrualsStatus,
   } = useAccrualsContext();
 
   const { setError } = useErrorContext();
@@ -59,7 +59,7 @@ function RenewIncomesAction() {
 
     await queryClient.invalidateQueries({ queryKey: ['projections'] });
 
-    refresh();
+    invalidateAccrualsStatus();
 
     toast(
       () => (
@@ -83,6 +83,11 @@ function RenewIncomesAction() {
       icon={<Coins className="text-information" />}
       onClick={hasData ? handleBulkAction : undefined}
       enabled={hasData}
+      hint={[
+        'Renews all incomes that were due before today and updates their due dates based on the original recurrence pattern.',
+        '',
+        "Incomes marked as 'excluded from calculations' will not be renewed.",
+      ].join('\n')}
     />
   );
 }

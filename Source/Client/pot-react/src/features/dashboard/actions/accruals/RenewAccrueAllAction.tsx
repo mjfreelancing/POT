@@ -25,7 +25,7 @@ function RenewAccrueAllAction() {
     accountAccruals,
     isLoading,
     error: accrualsError,
-    refresh,
+    invalidate: invalidateAccrualsStatus,
   } = useAccrualsContext();
 
   const { setError } = useErrorContext();
@@ -120,7 +120,7 @@ function RenewAccrueAllAction() {
       return;
     }
 
-    refresh();
+    invalidateAccrualsStatus();
 
     await queryClient.invalidateQueries({ queryKey: ['projections'] });
 
@@ -136,9 +136,10 @@ function RenewAccrueAllAction() {
     );
   }
 
+  // Only enable if there's renewals AND accruals to process - there are other actions
+  // that can handle the case where there's only one or the other.
   const hasData =
-    expenseRenewals.length > 0 ||
-    incomeRenewals.length > 0 ||
+    (expenseRenewals.length > 0 || incomeRenewals.length > 0) &&
     accountAccruals.length > 0;
 
   return (
@@ -149,6 +150,11 @@ function RenewAccrueAllAction() {
       icon={<BarChart3 className="text-information" />}
       onClick={hasData ? handleBulkAction : undefined}
       enabled={hasData}
+      hint={[
+        "Renews all expenses and incomes that were due before today, updates their due dates based on the original recurrence pattern, and re-aggregates the expense's account accruals.",
+        '',
+        "All expenses and incomes marked as 'excluded from calculations' will not be renewed or accrued.",
+      ].join('\n')}
     />
   );
 }

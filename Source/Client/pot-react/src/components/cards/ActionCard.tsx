@@ -2,6 +2,11 @@ import { RotateCw } from 'lucide-react';
 import { JSX, ReactNode } from 'react';
 
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 import Spinner from '../feedback/spinner/LoadingSpinner';
@@ -51,6 +56,8 @@ type ActionCardProps = {
   onClick?: () => void;
   /** Optional boolean to indicate if the card is enabled. Defaults to true. */
   enabled?: boolean;
+  /** Optional hint text displayed in a tooltip when hovering over the card */
+  hint?: string;
 };
 
 /**
@@ -65,6 +72,8 @@ type ActionCardProps = {
  * @param props.className - Additional CSS classes to apply to the card for custom styling
  * @param props.children - Optional additional content to display below the description
  * @param props.onClick - Optional click handler. When provided, the card becomes visually interactive with hover effects, cursor pointer, and clickable behavior
+ * @param props.enabled - Optional boolean to indicate if the card is enabled. When false, the card appears disabled and is not interactive
+ * @param props.hint - Optional text displayed in a tooltip when hovering over the card's content area
  *
  * @example
  * // Basic card with icon and title
@@ -94,6 +103,7 @@ function ActionCard({
   children,
   onClick,
   enabled = true,
+  hint,
 }: ActionCardProps) {
   const canCallAction = enabled && onClick;
 
@@ -105,6 +115,16 @@ function ActionCard({
       }
     }
   }
+
+  const mainContent = (
+    <div className="flex flex-col justify-center text-left flex-1">
+      <div role="heading" aria-level={1} className="text-xl font-medium">
+        {title}
+      </div>
+      <DescriptionContent text={description} isLoading={isLoading} />
+      {children}
+    </div>
+  );
 
   return (
     <Card
@@ -133,13 +153,19 @@ function ActionCard({
           <div className="p-4 rounded-lg bg-primary/5 flex-shrink-0 flex items-center justify-center">
             {icon}
           </div>
-          <div className="flex flex-col justify-center text-left flex-1">
-            <div role="heading" aria-level={1} className="text-xl font-medium">
-              {title}
-            </div>
-            <DescriptionContent text={description} isLoading={isLoading} />
-            {children}
-          </div>
+          {hint && enabled ? (
+            <Tooltip>
+              <TooltipTrigger asChild>{mainContent}</TooltipTrigger>
+              <TooltipContent
+                side="bottom"
+                className="max-w-[300px] whitespace-pre-line"
+              >
+                {hint}
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            mainContent
+          )}
         </div>
       </CardContent>
     </Card>

@@ -1,5 +1,6 @@
 import React, {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -16,7 +17,7 @@ type AccrualsContextProps = {
   accountAccruals: typeof EMPTY_STRING_ARRAY;
   isLoading: boolean;
   error: DisplayError | null;
-  refresh: () => void;
+  invalidate: () => void;
 };
 
 const AccrualsContext = createContext<AccrualsContextProps | undefined>(
@@ -93,18 +94,18 @@ const AccrualsProvider: React.FC<{ children: React.ReactNode }> = ({
         });
       }
     }
-  }, [accountsData, accrualsStatusData, error]);
+  }, [accountsData, accrualsStatusData, error, setError]);
 
   const isLoading = accountsIsLoading || accrualsStatusIsLoading;
 
-  const refresh = () => {
+  const invalidate = useCallback(() => {
     // Not really needed, but it's an edge case that another account could have been added by another user
     logger.info('AccrualsContext', 'Refreshing accounts');
     refetchAccounts();
 
     logger.info('AccrualsContext', 'Refreshing accruals status');
     refetchAccrualsStatus();
-  };
+  }, [refetchAccounts, refetchAccrualsStatus]);
 
   return (
     <AccrualsContext.Provider
@@ -114,7 +115,7 @@ const AccrualsProvider: React.FC<{ children: React.ReactNode }> = ({
         accountAccruals,
         isLoading,
         error,
-        refresh,
+        invalidate,
       }}
     >
       {children}

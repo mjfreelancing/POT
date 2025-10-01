@@ -17,7 +17,7 @@ function AccrueAccountExpensesAction() {
     accountAccruals,
     isLoading,
     error: accrualsError,
-    refresh,
+    invalidate: invalidateAccrualsStatus,
   } = useAccrualsContext();
 
   const { setError } = useErrorContext();
@@ -59,7 +59,7 @@ function AccrueAccountExpensesAction() {
 
     await queryClient.invalidateQueries({ queryKey: ['projections'] });
 
-    refresh();
+    invalidateAccrualsStatus();
 
     toast(
       () => (
@@ -83,6 +83,7 @@ function AccrueAccountExpensesAction() {
       icon={<Wallet className="text-information" />}
       onClick={hasData ? handleBulkAction : undefined}
       enabled={hasData}
+      hint="Recalculates the expense accruals (aggregated to their associated account) based on their current due dates, even if they are in the past."
     />
   );
 }
