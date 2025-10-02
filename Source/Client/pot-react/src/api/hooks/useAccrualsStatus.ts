@@ -26,6 +26,8 @@ const useApiAccrualsStatus = (input: AccrualsStatusInput) => {
     ? `accountRowIds=${input.accountRowIds.join(',')}`
     : undefined;
 
+  // Always querying the status since the collection of account id's is rarely going to change.
+  // Even though the cache will expire, it's best to ensure the dashboard is reflective of the actual status.
   const query = useGet<Result<AccrualsStatus, FailResultBase>>(
     `/accruals/status?${queryString}`,
     ['accruals', ...input.accountRowIds],

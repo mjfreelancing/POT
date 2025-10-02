@@ -1,5 +1,5 @@
 export * from './useAccounts';
-export * from './useAccruals';
+export * from './useAccrualsStatus';
 export * from './useApi';
 export * from './useAuth';
 export * from './useChangePassword';
