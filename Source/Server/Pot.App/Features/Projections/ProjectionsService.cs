@@ -47,7 +47,7 @@ internal sealed class ProjectionsService : IProjectionsService
         var accountExpenses = accounts.ToDictionary(account => account, account => account.Expenses);
         var accountIncomes = accounts.ToDictionary(account => account, account => account.Incomes);
 
-        var accountDaily = accounts.ToDictionary(account => account.RowId, account => new List<DateProjectionValues>());
+        var accountDaily = accounts.ToDictionary(account => account.RowId, account => new List<DateProjectionValues>(options.DaysForecast));
         var globalDailyProjections = new List<DateProjectionValues>(options.DaysForecast);
 
         for (int day = 0; day < options.DaysForecast + preStartDays; day++)
@@ -91,13 +91,11 @@ internal sealed class ProjectionsService : IProjectionsService
 
                 account.Balance += dateValues.IncomeReceived - dateValues.ExpensesPaid;
 
-                if (!accountDaily.TryGetValue(account.RowId, out var dailyList))
+                if (date >= options.StartDate)
                 {
-                    dailyList = new List<DateProjectionValues>(options.DaysForecast);
-                    accountDaily[account.RowId] = dailyList;
+                    var dailyList = accountDaily[account.RowId];
+                    dailyList.Add(dateValues);
                 }
-
-                dailyList.Add(dateValues);
 
                 globalStarting += dateValues.StartingBalance;
                 globalIncome += dateValues.IncomeReceived;
@@ -125,7 +123,7 @@ internal sealed class ProjectionsService : IProjectionsService
         var accountDailyProjections = accounts
             .SelectToList(account =>
             {
-                var projectionValues = accountDaily[account.RowId].Where(item => item.Date >= options.StartDate);
+                var projectionValues = accountDaily[account.RowId];
 
                 return new AccountDailyProjection
                 {
