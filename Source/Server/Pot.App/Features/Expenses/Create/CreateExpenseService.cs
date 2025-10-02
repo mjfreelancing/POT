@@ -52,6 +52,7 @@ internal sealed class CreateExpenseService : ICreateExpenseService
             Amount = input.Amount,
             Note = input.Note,
             Account = expenseAccount,
+            AccruedIsDirty = true       // The default is true, but being explicit
         };
 
         var problemDetails = await _preCreateChecker.CanSaveAsync(expenseToCreate, cancellationToken);
