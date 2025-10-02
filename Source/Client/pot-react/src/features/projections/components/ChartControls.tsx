@@ -87,7 +87,7 @@ function ChartControls({
               <SelectContent>
                 {Object.entries(PROJECTION_METRICS).map(([key, config]) => (
                   <SelectItem key={key} value={key}>
-                    {config.label}
+                    {config.filterLabel}
                   </SelectItem>
                 ))}
               </SelectContent>

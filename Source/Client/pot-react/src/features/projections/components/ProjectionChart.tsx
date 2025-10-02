@@ -95,7 +95,7 @@ function ProjectionChart({
 
   // Get dynamic title based on selected metric
   const getChartTitle = () => {
-    return PROJECTION_METRICS[selectedMetric].label;
+    return PROJECTION_METRICS[selectedMetric].title;
   };
 
   // Get chart type based on selected metric

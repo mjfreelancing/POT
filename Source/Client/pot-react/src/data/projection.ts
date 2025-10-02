@@ -15,46 +15,40 @@ type ProjectionMetric =
 const DEFAULT_PROJECTION_METRIC: ProjectionMetric = 'balance';
 
 type MetricConfig = {
-  label: string;
-  shortLabel: string;
+  title: string;
+  filterLabel: string;
   chartType: ChartType;
-  description?: string;
 };
 
 const PROJECTION_METRICS: Record<ProjectionMetric, MetricConfig> = {
   balance: {
-    label: 'Account Balances',
-    shortLabel: 'Balance',
+    title: 'Account Balances',
+    filterLabel: 'Account Balances',
     chartType: 'line',
-    description: 'Account balance trends over time',
   },
 
   available: {
-    label: 'Available Balances',
-    shortLabel: 'Available',
+    title: 'Available Balances',
+    filterLabel: 'Available Balances',
     chartType: 'line',
-    description: 'Available balance trends over time',
   },
 
   dailyAccrual: {
-    label: 'Daily Accruals',
-    shortLabel: 'Accruals',
+    title: 'Daily Accruals',
+    filterLabel: 'Daily Accruals',
     chartType: 'line',
-    description: 'Daily accrual amounts over time',
   },
 
   incomeReceived: {
-    label: 'Income Received',
-    shortLabel: 'Income',
+    title: 'Future Income',
+    filterLabel: 'Income',
     chartType: 'bar',
-    description: 'Income received by date',
   },
 
   expensesPaid: {
-    label: 'Expenses Paid',
-    shortLabel: 'Expenses',
+    title: 'Future Expenses',
+    filterLabel: 'Expenses',
     chartType: 'bar',
-    description: 'Expenses paid by date',
   },
 } as const;
 
