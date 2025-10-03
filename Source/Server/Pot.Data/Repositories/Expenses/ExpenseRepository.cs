@@ -88,7 +88,7 @@ internal sealed class ExpenseRepository : GenericRepository<PotDbContext, Expens
         return Current
             .Where(expense =>
                 !expense.ExcludeFromCalcs &&
-                (expense.AccruedIsDirty || expense.LastAccruedUpdate == null || expense.LastAccruedUpdate <= asOfDate) &&
+                (expense.AccruedIsDirty || expense.LastAccruedUpdate == null || expense.LastAccruedUpdate < asOfDate) &&
                 accountRowIds.Contains(expense.Account.RowId))
             .Select(expense => expense.Account.RowId)
             .Distinct()
