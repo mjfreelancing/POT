@@ -27,9 +27,9 @@ internal sealed class AccrualsStatusService : IAccrualsStatusService
         _logger.LogCall(this);
 
         // Can't perform these in parallel without using a DbContextFactory to create separate DbContexts
-        var expenseRenewalsRequired = await _expenseRepository.GetRequiredRenewalsAsync(input.AccountRowIds, input.BeforeDate, cancellationToken).ConfigureAwait(false);
-        var accountAccrualsRequired = await _expenseRepository.GetRequiredAccountAccrualsAsync(input.AccountRowIds, input.BeforeDate, cancellationToken).ConfigureAwait(false);
-        var incomeRenewalsRequired = await _incomeRepository.GetRequiredRenewalsAsync(input.AccountRowIds, input.BeforeDate, cancellationToken).ConfigureAwait(false);
+        var expenseRenewalsRequired = await _expenseRepository.GetRequiredRenewalsAsync(input.AccountRowIds, input.AsOfDate, cancellationToken).ConfigureAwait(false);
+        var accountAccrualsRequired = await _expenseRepository.GetRequiredAccountAccrualsAsync(input.AccountRowIds, input.AsOfDate, cancellationToken).ConfigureAwait(false);
+        var incomeRenewalsRequired = await _incomeRepository.GetRequiredRenewalsAsync(input.AccountRowIds, input.AsOfDate, cancellationToken).ConfigureAwait(false);
 
         var output = new Output
         {

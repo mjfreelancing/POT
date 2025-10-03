@@ -9,7 +9,7 @@ internal static class RequestMapping
         return new Input
         {
             AccountRowIds = request.AccountRowIds,
-            BeforeDate = asOfDate
+            AsOfDate = asOfDate
         };
     }
 }

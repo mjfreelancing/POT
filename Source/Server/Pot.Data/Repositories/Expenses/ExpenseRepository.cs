@@ -72,23 +72,23 @@ internal sealed class ExpenseRepository : GenericRepository<PotDbContext, Expens
             .ToListAsync(cancellationToken);
     }
 
-    public Task<Guid[]> GetRequiredRenewalsAsync(Guid[] accountRowIds, DateOnly beforeDate, CancellationToken cancellationToken)
+    public Task<Guid[]> GetRequiredRenewalsAsync(Guid[] accountRowIds, DateOnly asOfDate, CancellationToken cancellationToken)
     {
         return Current
             .Where(expense =>
                 !expense.ExcludeFromCalcs &&
-                expense.NextDue < beforeDate &&
+                expense.NextDue <= asOfDate &&
                 accountRowIds.Contains(expense.Account.RowId))
             .Select(expense => expense.RowId)
             .ToArrayAsync(cancellationToken);
     }
 
-    public Task<Guid[]> GetRequiredAccountAccrualsAsync(Guid[] accountRowIds, DateOnly beforeDate, CancellationToken cancellationToken)
+    public Task<Guid[]> GetRequiredAccountAccrualsAsync(Guid[] accountRowIds, DateOnly asOfDate, CancellationToken cancellationToken)
     {
         return Current
             .Where(expense =>
                 !expense.ExcludeFromCalcs &&
-                (expense.AccruedIsDirty || expense.LastAccruedUpdate == null || expense.LastAccruedUpdate < beforeDate) &&
+                (expense.AccruedIsDirty || expense.LastAccruedUpdate == null || expense.LastAccruedUpdate <= asOfDate) &&
                 accountRowIds.Contains(expense.Account.RowId))
             .Select(expense => expense.Account.RowId)
             .Distinct()
