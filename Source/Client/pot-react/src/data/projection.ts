@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 // Chart type for displaying metrics
 type ChartType = 'line' | 'bar';
 
@@ -70,40 +68,55 @@ const PROJECTION_PERIODS: readonly PeriodOption[] = [
 // Default projection period to use
 const DEFAULT_PROJECTION_PERIOD = 6;
 
-const DateValuesSchema = z.object({
-  date: z.string(), // ISO date string
-  balance: z.number(),
-  available: z.number(),
-  dailyAccrual: z.number(),
-  incomeReceived: z.number(),
-  expensesPaid: z.number(),
-});
+// API types for income/expense items
+type ProjectionIncomeItem = {
+  rowId: string;
+  description: string;
+  amount: number;
+};
 
-type DateValues = z.infer<typeof DateValuesSchema>;
+type ProjectionExpenseItem = {
+  rowId: string;
+  description: string;
+  amount: number;
+};
 
-const AccountDailyValuesSchema = z.object({
-  rowId: z.string(), // Unique identifier for the account
-  description: z.string(), // Description of the account
-  dates: z.array(DateValuesSchema), // Array of date balances
-});
+// UI types that include the account reference
+type ProjectionIncomeItemWithAccount = ProjectionIncomeItem & {
+  accountRowId: string;
+};
 
-type AccountDailyValues = z.infer<typeof AccountDailyValuesSchema>;
+type ProjectionExpenseItemWithAccount = ProjectionExpenseItem & {
+  accountRowId: string;
+};
 
-const ProjectionSchema = z.object({
-  accounts: z.array(AccountDailyValuesSchema), // Array of accounts with their daily balances
-  global: z.array(DateValuesSchema), // Golobal daily balances
-});
+type DateValues = {
+  date: string; // ISO date string
+  balance: number;
+  available: number;
+  dailyAccrual: number;
+  incomeReceived: number;
+  expensesPaid: number;
+  expenseItems: ProjectionExpenseItem[];
+  incomeItems: ProjectionIncomeItem[];
+};
 
-type Projection = z.infer<typeof ProjectionSchema>;
+type AccountDailyValues = {
+  rowId: string; // Unique identifier for the account
+  description: string; // Description of the account
+  dates: DateValues[]; // Array of date balances
+};
+
+type Projection = {
+  accounts: AccountDailyValues[]; // Array of accounts with their daily balances
+  global: DateValues[]; // Global daily balances
+};
 
 export {
-  AccountDailyValuesSchema,
-  DateValuesSchema,
   DEFAULT_PROJECTION_METRIC,
   DEFAULT_PROJECTION_PERIOD,
   PROJECTION_METRICS,
   PROJECTION_PERIODS,
-  ProjectionSchema,
 };
 
 export type {
@@ -113,5 +126,9 @@ export type {
   MetricConfig,
   PeriodOption,
   Projection,
+  ProjectionExpenseItem,
+  ProjectionExpenseItemWithAccount,
+  ProjectionIncomeItem,
+  ProjectionIncomeItemWithAccount,
   ProjectionMetric,
 };

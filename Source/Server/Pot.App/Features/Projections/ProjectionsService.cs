@@ -48,6 +48,7 @@ internal sealed class ProjectionsService : IProjectionsService
         var accountIncomes = accounts.ToDictionary(account => account, account => account.Incomes);
 
         var accountDaily = accounts.ToDictionary(account => account.RowId, account => new List<DateProjectionValues>(options.DaysForecast));
+
         var globalDailyProjections = new List<DateProjectionValues>(options.DaysForecast);
 
         for (int day = 0; day < options.DaysForecast + preStartDays; day++)
@@ -60,19 +61,26 @@ internal sealed class ProjectionsService : IProjectionsService
             var globalDailyAccrual = 0.0d;
             var globalAccrued = 0.0d;
             var globalReserved = 0.0d;
+            var globalExpenseItems = new List<ProjectionExpenseModel>();
+            var globalIncomeItems = new List<ProjectionIncomeModel>();
 
             foreach (var account in accounts)
             {
                 var expenses = accountExpenses[account];
+
+                var expensesDue = expenses
+                    .Where(expense => expense.Amount > 0 && IsDueOnDate(expense, date))
+                    .ToArray();
+
+                var expensesPaid = expensesDue.Sum(expense => expense.Amount);
+
                 var incomes = accountIncomes[account];
 
-                var incomeReceived = incomes
-                    .Where(income => IsDueOnDate(income, date))
-                    .Sum(income => income.Amount);
+                var incomesDue = incomes
+                    .Where(income => income.Amount > 0 && IsDueOnDate(income, date))
+                    .ToArray();
 
-                var expensesPaid = expenses
-                    .Where(expense => IsDueOnDate(expense, date))
-                    .Sum(expense => expense.Amount);
+                var incomeReceived = incomesDue.Sum(income => income.Amount);
 
                 _expenseRenewalCalculator.Renew(expenses, date);
                 _incomeRenewalCalculator.Renew(incomes, date);
@@ -86,7 +94,19 @@ internal sealed class ProjectionsService : IProjectionsService
                     ExpensesPaid = expensesPaid,
                     DailyAccrual = account.DailyExpenseAccrual,
                     Accrued = account.TotalExpenseAccrued,
-                    Reserved = account.Reserved
+                    Reserved = account.Reserved,
+                    ExpenseItems = expensesDue.SelectToArray(expense => new ProjectionExpenseModel
+                    {
+                        RowId = expense.RowId,
+                        Description = expense.Description,
+                        Amount = expense.Amount
+                    }),
+                    IncomeItems = incomesDue.SelectToArray(income => new ProjectionIncomeModel
+                    {
+                        RowId = income.RowId,
+                        Description = income.Description,
+                        Amount = income.Amount
+                    })
                 };
 
                 account.Balance += dateValues.IncomeReceived - dateValues.ExpensesPaid;
@@ -103,6 +123,8 @@ internal sealed class ProjectionsService : IProjectionsService
                 globalDailyAccrual += dateValues.DailyAccrual;
                 globalAccrued += dateValues.Accrued;
                 globalReserved += dateValues.Reserved;
+                globalExpenseItems.AddRange(dateValues.ExpenseItems);
+                globalIncomeItems.AddRange(dateValues.IncomeItems);
             }
 
             if (date >= options.StartDate)
@@ -115,17 +137,20 @@ internal sealed class ProjectionsService : IProjectionsService
                     ExpensesPaid = globalExpenses,
                     DailyAccrual = globalDailyAccrual,
                     Accrued = globalAccrued,
-                    Reserved = globalReserved
+                    Reserved = globalReserved,
+                    ExpenseItems = globalExpenseItems.ToArray(),
+                    IncomeItems = globalIncomeItems.ToArray()
                 });
             }
         }
 
-        var accountDailyProjections = accounts
+        // Financial projections for each account
+        var accountDailyFinancialProjections = accounts
             .SelectToList(account =>
             {
                 var projectionValues = accountDaily[account.RowId];
 
-                return new AccountDailyProjection
+                return new AccountDailyFinancialProjection
                 {
                     RowId = account.RowId,
                     Description = account.Description,
@@ -135,7 +160,7 @@ internal sealed class ProjectionsService : IProjectionsService
 
         var output = new Output
         {
-            Accounts = accountDailyProjections,
+            Accounts = accountDailyFinancialProjections,
             Global = MapToDateBalanceAvailable(globalDailyProjections)
         };
 
@@ -169,7 +194,9 @@ internal sealed class ProjectionsService : IProjectionsService
                 Available = balance - item.Reserved - item.Accrued,
                 DailyAccrual = item.DailyAccrual,
                 IncomeReceived = item.IncomeReceived,
-                ExpensesPaid = item.ExpensesPaid
+                ExpensesPaid = item.ExpensesPaid,
+                ExpenseItems = item.ExpenseItems,
+                IncomeItems = item.IncomeItems
             };
         });
     }

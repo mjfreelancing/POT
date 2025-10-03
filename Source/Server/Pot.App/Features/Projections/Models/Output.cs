@@ -2,6 +2,6 @@
 
 public sealed class Output
 {
-    public required List<AccountDailyProjection> Accounts { get; init; }
+    public required List<AccountDailyFinancialProjection> Accounts { get; init; }
     public required List<DateProjection> Global { get; init; }
 }

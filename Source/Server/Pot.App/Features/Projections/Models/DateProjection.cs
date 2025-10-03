@@ -8,4 +8,6 @@ public sealed class DateProjection
     public required double DailyAccrual { get; init; }
     public required double IncomeReceived { get; init; }
     public required double ExpensesPaid { get; init; }
+    public required ProjectionExpenseModel[] ExpenseItems { get; init; }
+    public required ProjectionIncomeModel[] IncomeItems { get; init; }
 }

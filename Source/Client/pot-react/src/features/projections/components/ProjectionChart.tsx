@@ -20,6 +20,8 @@ import { ChartContainer, ChartTooltip } from '@/components/ui/chart';
 import {
   Projection,
   PROJECTION_METRICS,
+  ProjectionExpenseItem,
+  ProjectionIncomeItem,
   ProjectionMetric,
 } from '@/data/projection';
 import { normalizeToLocalMidnight } from '@/lib/dateUtils';
@@ -28,6 +30,8 @@ import { formatMoneyValue } from '@/lib/moneyUtils';
 import { useProjectionChartData } from '../hooks/useProjectionChartData';
 import { formatTooltipDate, getStrokeWidth } from '../utils/chartHelpers';
 import ChartControls from './ChartControls';
+import ExpenseDetails from './ExpenseDetails';
+import IncomeDetails from './IncomeDetails';
 import NoProjectionData from './NoProjectionData';
 
 type ProjectionChartProps = {
@@ -40,6 +44,10 @@ type ProjectionChartProps = {
   onPeriodChange: (period: number) => void;
   onMetricChange: (metric: ProjectionMetric) => void;
   onHiddenSeriesChange: (hiddenSeries: string[]) => void;
+  // New props for details sheet
+  isDetailsOpen: boolean;
+  selectedDate: Date | null;
+  onToggleDetails: (date: Date | null) => void;
 };
 
 type SeriesVisibility = Record<string, boolean>;
@@ -54,6 +62,9 @@ function ProjectionChart({
   onPeriodChange,
   onMetricChange,
   onHiddenSeriesChange,
+  isDetailsOpen,
+  selectedDate,
+  onToggleDetails,
 }: ProjectionChartProps) {
   // Transform data for chart consumption using custom hook
   const {
@@ -63,11 +74,17 @@ function ProjectionChart({
     hasData,
   } = useProjectionChartData(data, selectedMetric);
 
+  // Type assertion for chart data to include our transaction items
+  type ChartDataPoint = (typeof allChartData)[number] & {
+    incomeItems?: ProjectionIncomeItem[];
+    expenseItems?: ProjectionExpenseItem[];
+  };
+
   // Calculate the end date for the selected period (for filtering only)
   const periodEndDate = addDays(addMonths(startDate, period), -1);
 
   // Filter chart data based on selected period
-  const chartData = allChartData.filter(point => {
+  const chartData = allChartData.filter((point): point is ChartDataPoint => {
     const pointDate = normalizeToLocalMidnight(parseISO(point.date));
 
     const normalizedStart = startDate
@@ -320,6 +337,14 @@ function ProjectionChart({
                 <BarChart
                   data={chartData}
                   margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
+                  onClick={event => {
+                    if (event?.activePayload?.[0]) {
+                      const date = parseISO(
+                        event.activePayload[0].payload.date,
+                      );
+                      onToggleDetails(date);
+                    }
+                  }}
                 >
                   <CartesianGrid
                     strokeDasharray="3 3"
@@ -354,6 +379,7 @@ function ProjectionChart({
                         fill={fillColor}
                         hide={!isVisible}
                         opacity={0.8}
+                        cursor="pointer"
                         isAnimationActive={true}
                         animationDuration={700}
                         animationEasing="ease-in-out"
@@ -368,6 +394,60 @@ function ProjectionChart({
           <NoProjectionData />
         )}
       </CardContent>
+
+      {/* Render Income details based on selected metric */}
+      {selectedMetric === 'incomeReceived' && selectedDate && (
+        <IncomeDetails
+          isOpen={isDetailsOpen}
+          onOpenChange={open => onToggleDetails(open ? selectedDate : null)}
+          date={selectedDate}
+          items={data.accounts
+            .map(account => {
+              const dateData = account.dates.find(
+                d => d.date === format(selectedDate, 'yyyy-MM-dd'),
+              );
+
+              if (!dateData?.incomeItems) {
+                return [];
+              }
+
+              return dateData.incomeItems.map(item => ({
+                ...item,
+                accountRowId: account.rowId,
+              }));
+            })
+            .flat()}
+          chartConfig={chartConfig}
+          hiddenSeries={hiddenSeries}
+        />
+      )}
+
+      {/* Render Expense details based on selected metric */}
+      {selectedMetric === 'expensesPaid' && selectedDate && (
+        <ExpenseDetails
+          isOpen={isDetailsOpen}
+          onOpenChange={open => onToggleDetails(open ? selectedDate : null)}
+          date={selectedDate}
+          items={data.accounts
+            .map(account => {
+              const dateData = account.dates.find(
+                d => d.date === format(selectedDate, 'yyyy-MM-dd'),
+              );
+
+              if (!dateData?.expenseItems) {
+                return [];
+              }
+
+              return dateData.expenseItems.map(item => ({
+                ...item,
+                accountRowId: account.rowId,
+              }));
+            })
+            .flat()}
+          chartConfig={chartConfig}
+          hiddenSeries={hiddenSeries}
+        />
+      )}
     </Card>
   );
 }

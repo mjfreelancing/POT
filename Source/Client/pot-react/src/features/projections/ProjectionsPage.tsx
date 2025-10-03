@@ -87,6 +87,10 @@ function ProjectionsPage() {
     return data?.hiddenSeries || [];
   });
 
+  // State for details panel
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
   const updateStorage = useCallback(
     <T,>(key: string, value: T) => {
       logger.info('ProjectionsPage', `${key} updated in storage`, value);
@@ -138,6 +142,24 @@ function ProjectionsPage() {
 
     setHiddenSeries(hiddenSeriesKeys);
     updateStorage('hiddenSeries', hiddenSeriesKeys);
+  }
+
+  // Opens or closes the details panel for a specific date
+  function handleToggleDetails(date: Date | null) {
+    logger.info(
+      'ProjectionsPage',
+      'Toggle details',
+      date ? formatDate(date) : 'closed',
+    );
+
+    if (date) {
+      setSelectedDate(date);
+      setIsDetailsOpen(true);
+    } else {
+      setIsDetailsOpen(false);
+      // Keep the selected date until the sheet is closed for smooth animation
+      setTimeout(() => setSelectedDate(null), 300);
+    }
   }
 
   // This ensures the start date is never before today, which can occur if
@@ -204,6 +226,9 @@ function ProjectionsPage() {
             onPeriodChange={handlePeriodChange}
             onMetricChange={handleMetricChange}
             onHiddenSeriesChange={handleHiddenSeriesChange}
+            isDetailsOpen={isDetailsOpen}
+            selectedDate={selectedDate}
+            onToggleDetails={handleToggleDetails}
           />
         </div>
       )}
