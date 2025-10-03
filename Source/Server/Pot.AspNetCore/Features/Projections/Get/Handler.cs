@@ -37,7 +37,7 @@ internal sealed class Handler
             DaysForecast = request.StartDate.DaysUntil(request.EndDate) + 1
         };
 
-        var output = await projectionsService.GetProjectionsAsync(options, cancellationToken);
+        var output = await projectionsService.GetFinancialProjectionsAsync(options, cancellationToken);
 
         return output.IsSuccess
             ? Response.Ok(output.Value!)

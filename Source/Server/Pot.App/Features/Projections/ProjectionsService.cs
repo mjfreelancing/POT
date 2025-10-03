@@ -34,7 +34,7 @@ internal sealed class ProjectionsService : IProjectionsService
     }
 
     // TODO: Move the logic in this service to a projection calculator (keep repository access here)
-    public async Task<EnrichedResult<Output>> GetProjectionsAsync(ProjectionOptions options, CancellationToken cancellationToken)
+    public async Task<EnrichedResult<Output>> GetFinancialProjectionsAsync(ProjectionOptions options, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 

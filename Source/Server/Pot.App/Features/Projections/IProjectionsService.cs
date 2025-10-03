@@ -6,5 +6,5 @@ namespace Pot.App.Features.Projections;
 
 public interface IProjectionsService : IPotScopedDependency
 {
-    Task<EnrichedResult<Output>> GetProjectionsAsync(ProjectionOptions options, CancellationToken cancellationToken);
+    Task<EnrichedResult<Output>> GetFinancialProjectionsAsync(ProjectionOptions options, CancellationToken cancellationToken);
 }
