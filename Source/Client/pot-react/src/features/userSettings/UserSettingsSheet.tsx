@@ -48,7 +48,8 @@
  * - Use consistent spacing patterns for visual rhythm
  * - Ensure accessibility with sufficient text contrast
  * - Reinforce brand identity through consistent color usage
- */ import { UserIcon, XIcon, KeyIcon } from 'lucide-react';
+ */
+import { KeyIcon, UserIcon, XIcon } from 'lucide-react';
 import { JSX } from 'react';
 
 import {
