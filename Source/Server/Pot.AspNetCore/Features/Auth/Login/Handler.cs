@@ -12,7 +12,7 @@ internal sealed class Handler
         IAuthService authService, IProblemDetailsInspector problemDetailsInspector,
         ILogger<Handler> logger, CancellationToken cancellationToken)
     {
-        logger.LogCall(null);
+        logger.LogCall(null, new { request.Username });
 
         var problemDetails = problemDetailsInspector.Validate(request);
 
