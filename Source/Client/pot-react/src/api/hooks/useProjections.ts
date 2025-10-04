@@ -7,6 +7,9 @@ const useApiGetProjection = (startDate: string, endDate: string) => {
   const query = useGet<Projection>(
     `/projections?startDate=${startDate}&endDate=${endDate}`,
     ['projections', startDate, endDate],
+    // The projections are currently invalidated from multiple locations - we could remove all
+    // of those and use these options instead, but for now leave as is and monitor / review.
+    //{ staleTime: 0, gcTime: 0 },
   );
 
   const result = query.data as Result<Projection, FailResultBase>;

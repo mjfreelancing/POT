@@ -28,10 +28,18 @@ const useApiAccrualsStatus = (input: AccrualsStatusInput) => {
 
   // Always querying the status since the collection of account id's is rarely going to change.
   // Even though the cache will expire, it's best to ensure the dashboard is reflective of the actual status.
+  // We don't really need the refetch options since a custom hook is currently being used to track focus due
+  // to this hook being used in a context provider. Leave it for now in case this hook is used elsewhere.
   const query = useGet<Result<AccrualsStatus, FailResultBase>>(
     `/accruals/status?${queryString}`,
     ['accruals', ...input.accountRowIds],
-    { enabled: hasAccounts, staleTime: 0, gcTime: 0 },
+    {
+      enabled: hasAccounts,
+      staleTime: 0,
+      gcTime: 0,
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
+    },
   );
 
   return {

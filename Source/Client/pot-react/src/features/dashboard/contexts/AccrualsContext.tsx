@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 
 import { useApiAccrualsStatus, useApiGetAllAccounts } from '@/api/hooks';
+import { useWindowFocus } from '@/hooks/useWindowFocus';
 import { logger } from '@/lib/logging';
 import { DisplayError, EMPTY_STRING_ARRAY } from '@/lib/types';
 
@@ -106,6 +107,14 @@ const AccrualsProvider: React.FC<{ children: React.ReactNode }> = ({
     logger.info('AccrualsContext', 'Refreshing accruals status');
     refetchAccrualsStatus();
   }, [refetchAccounts, refetchAccrualsStatus]);
+
+  const refreshAccrualsOnly = useCallback(() => {
+    logger.info('AccrualsContext', 'Focus/Visibility refresh - accruals only');
+    refetchAccrualsStatus();
+  }, [refetchAccrualsStatus]);
+
+  // Refresh accruals when the window regains focus (which implies the page is visible)
+  useWindowFocus(refreshAccrualsOnly);
 
   return (
     <AccrualsContext.Provider
