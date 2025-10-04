@@ -6,6 +6,7 @@ using AllOverIt.Validation.Extensions;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Options;
 using Pot.App.Concerns.Validation;
 using Pot.App.Extensions;
 using Pot.AspNetCore.Concerns.Auth;
@@ -207,15 +208,19 @@ internal static class WebApplicationBuilderExtensions
         return builder;
     }
 
-    public static WebApplicationBuilder AddPotData(this WebApplicationBuilder builder, string connectionString)
+    public static WebApplicationBuilder AddPotData(this WebApplicationBuilder builder)
     {
-        builder.Services.AddDbContext<PotDbContext>(options =>
-        {
-            options.ConfigurePostgres(connectionString);
-        });
+        builder.Services
+            .AddDatabaseConfiguration(builder.Configuration)
+            .AddDbContext<PotDbContext>((provider, options) =>
+            {
+                var databaseConfiguration = provider.GetRequiredService<IOptions<DatabaseConfiguration>>().Value;
+                var connectionString = databaseConfiguration.GetConnectionString();
 
-        builder.Services.AddQueryPagination();
-        builder.Services.AddUnitOfWork();
+                options.ConfigurePostgres(connectionString);
+            })
+            .AddQueryPagination()
+            .AddUnitOfWork();
 
         return builder;
     }

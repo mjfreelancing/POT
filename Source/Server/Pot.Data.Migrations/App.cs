@@ -4,6 +4,7 @@ using AllOverIt.GenericHost;
 using AllOverIt.Logging.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Npgsql;
 using Polly;
 using Pot.Data.Extensions;
@@ -16,13 +17,13 @@ internal sealed class App : ConsoleAppBase
     private readonly ILogger _logger;
     private readonly string _connectionString;
 
-    public App(IDatabaseMigrator databaseMigrator, IConfiguration configuration, ILogger<App> logger)
+    public App(IDatabaseMigrator databaseMigrator, IOptions<DatabaseConfiguration> databaseConfiguration, ILogger<App> logger)
     {
         _databaseMigrator = databaseMigrator.WhenNotNull();
-        _ = configuration.WhenNotNull();
+        _ = databaseConfiguration.WhenNotNull();
         _logger = logger.WhenNotNull();
 
-        _connectionString = configuration.GetConnectionString();
+        _connectionString = databaseConfiguration.Value.GetConnectionString();
     }
 
 

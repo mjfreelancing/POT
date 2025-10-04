@@ -9,7 +9,6 @@ using Pot.AspNetCore.Features.Me.Extensions;
 using Pot.AspNetCore.Features.Projections.Extensions;
 using Pot.AspNetCore.Features.Users.Extensions;
 using Pot.Data;
-using Pot.Data.Extensions;
 
 namespace Pot.AspNetCore;
 
@@ -37,7 +36,7 @@ public class Program
             .AddCustomProblemDetails()
             .AddAspNetDependencies()
             .AddAspNetValidation()
-            .AddPotData(builder.Configuration.GetConnectionString());
+            .AddPotData();
 
         var app = builder.Build();
 
