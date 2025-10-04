@@ -172,10 +172,9 @@ Props:
      | "expensesPaid";
 
    type MetricConfig = {
-     label: string;
-     shortLabel: string;
+     title: string;
+     filterLabel: string;
      chartType: "line" | "bar";
-     description?: string;
    };
    ```
 
@@ -1473,10 +1472,11 @@ The `ErrorProvider` is a centralized context for managing and displaying errors 
    Use the `useErrorContext` hook to interact with the error state:
 
    ```tsx
-   import { useErrorContext } from "@/components/feedback/ErrorProvider";
+   import { useErrorContext } from "@/contexts";
+   import ErrorSheet from "@/components/feedback/sheet/ErrorSheet";
 
    function SomeComponent() {
-     const { setError, clearError } = useErrorContext();
+     const { error, setError } = useErrorContext();
 
      const handleError = () => {
        setError({
@@ -1486,7 +1486,16 @@ The `ErrorProvider` is a centralized context for managing and displaying errors 
      };
 
      return (
-       <button onClick={handleError}>Trigger Error</button>
+       <>
+         <button onClick={handleError}>Trigger Error</button>
+         {error && (
+           <ErrorSheet
+             title={error.title}
+             description={error.description}
+             onDismiss={() => setError(null)}
+           />
+         )}
+       </>
      );
    }
    ```
@@ -1966,13 +1975,13 @@ The development settings are located in `Source/Server/Pot.AspNetCore/appsetting
 
 POT is built with a modern web development stack:
 
-- **Frontend**: React 18 with TypeScript, built using Vite
+- **Frontend**: React 19 with TypeScript, built using Vite 6
 - **Backend**: ASP.NET Core API
 - **Database**: PostgreSQL
 - **Containerization**: Docker for both development and production
 - **UI Framework**: Custom components based on shadcn/ui and TailwindCSS
 - **State Management**: React Query for server state, React Context and Zustand for local state
-- **Routing**: React Router v6
+- **Routing**: React Router v7
 
 ### State Management Architecture
 

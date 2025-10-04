@@ -124,9 +124,9 @@ Choose one of the setup options above based on your testing needs.
 
 ### Core Libraries
 
-- React 18
+- React 19
 - TypeScript 5
-- Vite 4 (build tool)
+- Vite 6 (build tool)
 - TailwindCSS (utility-first CSS)
 
 ### UI Components
@@ -170,6 +170,7 @@ Example:
 
 ```tsx
 import { useErrorContext } from '@/contexts';
+import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 
 function MyComponent() {
   const { error, setError } = useErrorContext();
@@ -178,7 +179,15 @@ function MyComponent() {
     setError({ title: 'Error Title', description: 'Error Description' });
   }, []);
 
-  return error ? <ErrorSheet error={error} /> : <div>No Errors</div>;
+  return error ? (
+    <ErrorSheet
+      title={error.title}
+      description={error.description}
+      onDismiss={() => setError(null)}
+    />
+  ) : (
+    <div>No Errors</div>
+  );
 }
 ```
 

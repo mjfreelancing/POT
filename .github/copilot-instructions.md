@@ -4,7 +4,7 @@ This guide provides essential, actionable rules for AI coding agents working in 
 
 ### 1. Project Architecture
 
-- **Frontend**: React 18 + TypeScript (Vite, Zustand, React Query, TailwindCSS)
+- **Frontend**: React 19 + TypeScript (Vite 6, Zustand, React Query, TailwindCSS)
   - Located in `Source/Client/pot-react/`
   - Feature-based structure: `src/features/`, `src/api/`, `src/components/`
 - **Backend**: ASP.NET Core (C#)
@@ -57,7 +57,7 @@ This guide provides essential, actionable rules for AI coding agents working in 
 
 ### ErrorSheet for Critical Errors
 
-- Use `ErrorSheet` (`src/components/feedback/ErrorSheet.tsx`) to present critical or blocking errors (e.g., API failures, authentication issues, validation errors) in a prominent sheet at the top of the UI.
+- Use `ErrorSheet` (`src/components/feedback/sheet/ErrorSheet.tsx`) to present critical or blocking errors (e.g., API failures, authentication issues, validation errors) in a prominent sheet at the top of the UI.
 - Pass normalized error objects (see `DisplayError` type) to ErrorSheet for clear messaging.
 - Dismissal should clear the error state in the parent component.
 - Example usage:

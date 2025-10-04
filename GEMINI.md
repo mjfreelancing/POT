@@ -7,7 +7,7 @@ This guide provides essential knowledge for developers working on the POT projec
 POT is a full-stack application with a C#/.NET backend and a React/TypeScript frontend.
 
 - **Backend:** A .NET 8 API built with ASP.NET Core. It follows a **CQRS-like pattern** where features are separated into commands (e.g., `Create`, `Update`, `Delete`) and queries (e.g., `Get`, `GetAll`). It uses **Entity Framework Core** with the repository pattern for data access to a **PostgreSQL** database.
-- **Frontend:** A React application built with Vite and TypeScript. It uses **React Query** for server state management, with a set of custom hooks that standardize API interactions. The UI is built with **Tailwind CSS** and **shadcn/ui**.
+- **Frontend:** A React 19 application built with Vite 6 and TypeScript. It uses **React Query** for server state management, with a set of custom hooks that standardize API interactions. The UI is built with **Tailwind CSS** and **shadcn/ui**.
 - **Containerization:** The entire application (backend, frontend, database) can be run using **Docker Compose**, which is the recommended approach for local development.
 
 ### Key Files & Directories
@@ -145,6 +145,9 @@ The most common pattern is to use the `ErrorSheet` within a feature's main compo
 **Example from `AccountsPage.tsx`:**
 
 ```tsx
+import ErrorSheet from "@/components/feedback/sheet/ErrorSheet";
+import { useErrorContext } from "@/contexts";
+
 function AccountsPage() {
   const { error, setError } = useErrorContext();
   const { data: accountsResult, isLoading } = useApiGetAllAccounts();
