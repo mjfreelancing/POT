@@ -17,6 +17,7 @@ using Pot.AspNetCore.Concerns.ExceptionHandlers;
 using Pot.AspNetCore.Concerns.Logging;
 using Pot.AspNetCore.Concerns.Middleware;
 using Pot.AspNetCore.Concerns.Validation;
+using Pot.AspNetCore.Features.DbBackup.Extensions;
 using Pot.Data;
 using Pot.Data.Extensions;
 using Pot.Shared;
@@ -220,7 +221,8 @@ internal static class WebApplicationBuilderExtensions
                 options.ConfigurePostgres(connectionString);
             })
             .AddQueryPagination()
-            .AddUnitOfWork();
+            .AddUnitOfWork()
+            .AddDbBackupWorker();
 
         return builder;
     }

@@ -12,6 +12,7 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     ports:
       - "5444:5432"
+    # Persist the database data on the host machine. The folder must exist.
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -37,6 +38,7 @@ services:
       - DATABASE__USERNAME=${POSTGRES_USER}
       - DATABASE__PASSWORD=${POSTGRES_PASSWORD}
       - DATABASE__NAME=${POSTGRES_DB}
+      - DATABASE__BACKUPPATH=${POSTGRES_BACKUP_PATH}
       - RSA__PRIVATEKEY=${RSA_PRIVATE_KEY}
       - ASPNETCORE_URLS=http://+:5241
       - JWT__ISSUER=${JWT_ISSUER}
@@ -44,6 +46,10 @@ services:
       - JWT__SECRETKEY=${JWT_SECRET_KEY}
     ports:
       - "5241:5241"
+    # Map the backups directory inside the container to a local directory
+    # The folder must exist on the host machine
+    volumes:
+      - ./postgres-backups:/backups
     restart: always
     networks:
       - pot-network

@@ -12,6 +12,7 @@ internal sealed class PotTimeProvider : ITimeProvider
     public DateTime GetUtcDateTimeNow() => GetUtcNowOffset(true);
     public DateOnly GetLocalDateNow() => DateOnly.FromDateTime(GetLocalDateTimeNow());
     public DateTime GetLocalDateTimeNow() => GetUtcNowOffset(false);
+    public TimeSpan GetLocalTimeZoneOffset() => _appContext.TimeZoneOffset;
 
     public PotTimeProvider(IAppContext appContext)
     {
