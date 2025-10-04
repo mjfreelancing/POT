@@ -11,8 +11,8 @@ import { useState } from 'react';
 
 import { SidebarContent } from '@/components/ui/sidebar';
 import useAuthContext from '@/features/auth/AuthContext';
-import { ExportModal } from '@/features/export/components/ExportModal';
-import { ImportModal } from '@/features/import/components/ImportModal';
+import { ExportModal } from '@/features/maintenance/export/components/ExportModal';
+import { ImportModal } from '@/features/maintenance/import/components/ImportModal';
 
 import MenuGroup, { MenuGroupDefinition } from './MenuGroup';
 
