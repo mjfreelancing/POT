@@ -5,6 +5,7 @@ using AllOverIt.Pagination.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Pot.Data.Entities;
 using Pot.Data.Extensions;
+using Pot.Data.Specifications;
 using Pot.Shared;
 
 namespace Pot.Data.Repositories.Expenses;
@@ -66,9 +67,11 @@ internal sealed class ExpenseRepository : GenericRepository<PotDbContext, Expens
 
     public Task<List<ExpenseEntity>> GetExpensesForAccountAsync(Guid accountRowId, CancellationToken cancellationToken)
     {
+        // Don't exclude expenses that are marked as ExcludeFromCalcs as they may still be relevant to the caller,
+        // such as updating accruals when toggling the flag.
         return Current
             .Include(expense => expense.Account)
-            .Where(expense => expense.Account.RowId == accountRowId && !expense.ExcludeFromCalcs)
+            .Where(expense => expense.Account.RowId == accountRowId)
             .ToListAsync(cancellationToken);
     }
 
@@ -85,11 +88,13 @@ internal sealed class ExpenseRepository : GenericRepository<PotDbContext, Expens
 
     public Task<Guid[]> GetRequiredAccountAccrualsAsync(Guid[] accountRowIds, DateOnly asOfDate, CancellationToken cancellationToken)
     {
+        var requiresAccrualUpdate = ExpenseSpecifications.RequiresAccrualUpdate(asOfDate).Expression;
+
+        // Not excluding expenses marked as ExcludeFromCalcs as they may still require an accrual update,
+        // such as when toggling the flag.
         return Current
-            .Where(expense =>
-                !expense.ExcludeFromCalcs &&
-                (expense.AccruedIsDirty || expense.LastAccruedUpdate == null || expense.LastAccruedUpdate < asOfDate) &&
-                accountRowIds.Contains(expense.Account.RowId))
+            .Where(requiresAccrualUpdate)
+            .Where(expense => accountRowIds.Contains(expense.Account.RowId))
             .Select(expense => expense.Account.RowId)
             .Distinct()
             .ToArrayAsync(cancellationToken);
