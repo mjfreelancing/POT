@@ -9,6 +9,7 @@ namespace Pot.Data
         public DbSet<AccountEntity> Accounts { get; set; }
         public DbSet<ExpenseEntity> Expenses { get; set; }
         public DbSet<IncomeEntity> Incomes { get; set; }
+        public DbSet<SettingEntity> Settings { get; set; }
 
         public PotDbContext(DbContextOptions<PotDbContext> options)
             : base(options)
