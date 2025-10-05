@@ -1,8 +1,11 @@
 ﻿using AllOverIt.Assertion;
+using AllOverIt.Logging.Extensions;
 using Microsoft.Extensions.Options;
 using Pot.App.Concerns.Time;
 using Pot.AspNetCore.Extensions;
 using Pot.Data;
+using Pot.Data.Repositories.Settings;
+using Pot.Data.Repositories.Settings.Models;
 
 namespace Pot.AspNetCore.Features.DbBackup;
 
@@ -11,35 +14,48 @@ internal sealed class PostgresqlBackup : IPostgresqlBackup
     private readonly bool _isProduction;
     private readonly ITimeProvider _timeProvider;
     private readonly DatabaseConfiguration _databaseConfiguration;
+    private readonly ISettingsRepository _settingsRepository;
     private readonly ILogger _logger;
 
     public PostgresqlBackup(IConfiguration configuration, ITimeProvider timeProvider,
-        IOptions<DatabaseConfiguration> databaseConfiguration, ILogger<PostgresqlBackup> logger)
+        IOptions<DatabaseConfiguration> databaseConfiguration,
+        ISettingsRepository settingsRepository, ILogger<PostgresqlBackup> logger)
     {
         _isProduction = configuration.WhenNotNull().IsProduction();
         _timeProvider = timeProvider.WhenNotNull();
         _databaseConfiguration = databaseConfiguration.WhenNotNull().Value;
+        _settingsRepository = settingsRepository.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
-    public async Task ExecuteAsync(CancellationToken cancellationToken)
+    public async Task<BackupSettings> GetBackupSettingsAsync(CancellationToken cancellationToken)
     {
+        return await _settingsRepository
+            .GetDatabaseSettingsAsync(cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public async Task ExecuteAsync(string backupPath, CancellationToken cancellationToken)
+    {
+        _ = backupPath.WhenNotNullOrEmpty();
+
+        _logger.LogCall(this, new { backupPath });
+
         var dbHost = _databaseConfiguration.Host;
         var dbName = _databaseConfiguration.Name;
         var dbUser = _databaseConfiguration.Username;
         var dbPassword = _databaseConfiguration.Password;
-        var dbBackupPath = _databaseConfiguration.BackupPath;
 
         var timestamp = _timeProvider.GetLocalDateTimeNow();
         var prefix = _isProduction ? "prod" : "dev";
-        var fileName = $"{prefix}-pot-backup-{timestamp:yyyy-MM-dd_HHmmss}_utc_custom.backup";
+        var fileName = $"{prefix}-pot-backup-{timestamp:yyyy-MM-dd_HHmmss}_utc.backup";
 
         using var process = new System.Diagnostics.Process
         {
             StartInfo = new System.Diagnostics.ProcessStartInfo
             {
                 FileName = "pg_dump",
-                Arguments = $"-h {dbHost} -U {dbUser} -d {dbName} -Fc -f {dbBackupPath}/{fileName}",
+                Arguments = $"-h {dbHost} -U {dbUser} -d {dbName} -Fc -f {backupPath}/{fileName}",
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,

@@ -1,7 +1,9 @@
 ﻿using AllOverIt.Assertion;
+using AllOverIt.Extensions;
 using AllOverIt.GenericHost;
 using Cronos;
 using Pot.App.Concerns.Time;
+using Pot.Data.Repositories.Settings.Models;
 
 namespace Pot.AspNetCore.Features.DbBackup;
 
@@ -20,28 +22,8 @@ internal sealed class DbBackupWorker : BackgroundWorker
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // The database backup is for all sites, so this is NOT site specific - hence based on UTC
-        var cronExpression = CronExpression.Parse("15 * * * *"); // 15 minutes past the hour, every hour
-
         while (!stoppingToken.IsCancellationRequested)
         {
-            var currentUtc = _timeProvider.GetUtcDateTimeNow();
-            var nextUtc = cronExpression.GetNextOccurrence(currentUtc);
-
-            if (!nextUtc.HasValue)
-            {
-                LogError($"Failed to determine the next Db Backup occurrence from the cron expression {cronExpression}");
-                break;
-            }
-
-            var delayTimespan = nextUtc.Value - currentUtc;
-
-            if (delayTimespan.TotalMilliseconds > 0)
-            {
-                await Task.Delay(delayTimespan, stoppingToken).ConfigureAwait(false);
-            }
-
-            // Limit the lifetime of the scope to this backup iteration
             using var scope = _scopeFactory.CreateScope();
 
             var logger = scope.ServiceProvider.GetRequiredService<ILogger<DbBackupWorker>>();
@@ -49,7 +31,35 @@ internal sealed class DbBackupWorker : BackgroundWorker
             try
             {
                 var postgresqlBackup = scope.ServiceProvider.GetRequiredService<IPostgresqlBackup>();
-                await postgresqlBackup.ExecuteAsync(stoppingToken).ConfigureAwait(false);
+
+                var backupSettings = await postgresqlBackup.GetBackupSettingsAsync(stoppingToken).ConfigureAwait(false);
+
+                if (!backupSettings.Enabled || !ValidBackupSettings(backupSettings, logger))
+                {
+                    // Try again later in case the backup is enabled
+                    await WaitAMinuteAsync(stoppingToken).ConfigureAwait(false);
+                    continue;
+                }
+
+                // The database backup is for all sites, so this is NOT site specific - hence based on UTC
+                var cronExpression = CronExpression.Parse(backupSettings.Schedule);
+
+                // Perform an initial backup immediately on startup
+                await postgresqlBackup.ExecuteAsync(backupSettings.Path!, stoppingToken).ConfigureAwait(false);
+
+                var currentUtc = _timeProvider.GetUtcDateTimeNow();
+
+                // Should never fail since the cron expression has already been validated
+                var nextUtc = cronExpression.GetNextOccurrence(currentUtc)!;
+
+                logger.LogInformation("Next database backup scheduled for {NextBackupTimeUtc:O} (UTC)", nextUtc);
+
+                var delayTimespan = nextUtc.Value - currentUtc;
+
+                if (delayTimespan.TotalMilliseconds > 0)
+                {
+                    await Task.Delay(delayTimespan, stoppingToken).ConfigureAwait(false);
+                }
             }
             catch (OperationCanceledException)
             {
@@ -62,11 +72,28 @@ internal sealed class DbBackupWorker : BackgroundWorker
         }
     }
 
-    private void LogError(string message)
+    private static bool ValidBackupSettings(BackupSettings backupSettings, ILogger logger)
     {
-        using var scope = _scopeFactory.CreateScope();
+        var hasError = false;
 
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<DbBackupWorker>>();
-        logger.LogError("{ErrorMesage}", message);
+        if (backupSettings.Path.IsNullOrEmpty())
+        {
+            logger.LogError("Database backup path is not configured");
+            hasError = true;
+        }
+
+        // The database backup is for all sites, so this is NOT site specific - hence based on UTC
+        if (!CronExpression.TryParse(backupSettings.Schedule, out var cronExpression))
+        {
+            logger.LogError("Database backup schedule is not a valid cron expression: {BackupSchedule}", backupSettings.Schedule);
+            hasError = true;
+        }
+
+        return !hasError;
+    }
+
+    private static Task WaitAMinuteAsync(CancellationToken cancellationToken)
+    {
+        return Task.Delay(TimeSpan.FromMinutes(1), cancellationToken);
     }
 }
