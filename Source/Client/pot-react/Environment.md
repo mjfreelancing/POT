@@ -21,9 +21,6 @@ The application uses multiple environment files for different scenarios:
   ```properties
   # Development API URL (local ASP.NET server)
   VITE_API_BASE_URL=http://localhost:5242/api
-
-  # RSA public key for development environment
-  VITE_EXPORT_PUBLIC_KEY=<development-public-key>
   ```
 
 - `.env.production` - Production settings
@@ -31,9 +28,6 @@ The application uses multiple environment files for different scenarios:
   ```properties
   # Production API URL (Docker container)
   VITE_API_BASE_URL=http://localhost:5241/api
-
-  # RSA public key for production environment
-  VITE_EXPORT_PUBLIC_KEY=<production-public-key>
   ```
 
 - `.env.local` - Local developer overrides (git-ignored)
@@ -62,15 +56,6 @@ Where `${mode}` is either `development` or `production` based on the command bei
 ### Required Variables
 
 - `VITE_API_BASE_URL` - The base URL for API requests
-- `VITE_EXPORT_PUBLIC_KEY` - RSA public key for data export/import. Sent to the server as a header called 'export-public-key'
-
-### RSA Encryption Details
-
-The RSA encryption flow is as follows:
-
-1. The client stores only the public key in its environment configuration
-2. When making export/import requests, the client sends the public key in the request headers
-3. The server uses its private key (from its own configuration) along with the provided public key to perform encryption/decryption
 
 ### Optional Variables
 

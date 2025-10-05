@@ -5,7 +5,7 @@ namespace Pot.AspNetCore.Features.Maintenance.Extensions;
 
 internal static class RouteGroupBuilderExtensions
 {
-    // TODO: Update ProducesProblem() across all routes
+    private const long MaxImportPayloadBytes = 10 * 1024 * 1024;
 
     public static RouteGroupBuilder ExportData(this RouteGroupBuilder routeGroupBuilder)
     {
@@ -21,7 +21,7 @@ internal static class RouteGroupBuilderExtensions
         return routeGroupBuilder;
     }
 
-    public static RouteGroupBuilder ImportData(this RouteGroupBuilder routeGroupBuilder, long maxImportPayloadBytes)
+    public static RouteGroupBuilder ImportData(this RouteGroupBuilder routeGroupBuilder)
     {
         routeGroupBuilder
             .MapPost(MaintenanceEndpoints.Import, Import.Handler.Invoke)
@@ -29,25 +29,10 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(Import))
             .WithSummary("Import data")
             .WithDescription("Import Accounts, Incomes, and Expense data")
-            .WithMetadata(new RequestSizeLimitAttribute(maxImportPayloadBytes)) // Will raise 413 Payload Too Large if the file exceeds this limit
+            .WithMetadata(new RequestSizeLimitAttribute(MaxImportPayloadBytes)) // Will raise 413 Payload Too Large if the file exceeds this limit
             .DisableAntiforgery()
             .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.RequestEntityTooLarge)
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
-
-        return routeGroupBuilder;
-    }
-
-    public static RouteGroupBuilder CreateRsaKeys(this RouteGroupBuilder routeGroupBuilder)
-    {
-        // TODO: Needs to be locked down to a super-user as this is not a public endpoint
-        routeGroupBuilder
-            .MapPost(MaintenanceEndpoints.RsaKeys, Rsa.Keys.Handler.Invoke)
-            .RequireAuthorization("AuthenticatedUser")
-            .WithName(nameof(CreateRsaKeys))
-            .WithSummary("Create Rsa Keys")
-            .WithDescription("Create Rsa Public/Private Keys")
-            .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.InternalServerError);
 
         return routeGroupBuilder;

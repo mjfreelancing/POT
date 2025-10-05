@@ -3,7 +3,6 @@ using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
 using Pot.App.Errors;
-using Pot.App.Features.Maintenance.Encryptor;
 using Pot.App.Features.Maintenance.Import.Accounts;
 using Pot.App.Features.Maintenance.Import.Expenses;
 using Pot.App.Features.Maintenance.Import.Incomes;
@@ -20,21 +19,19 @@ internal sealed class ImportDataService : IImportDataService
     private readonly IIncomesImporter _incomesImporter;
     private readonly IExpensesImporter _expensesImporter;
     private readonly IMetadataSerializer _metadataSerializer;
-    private readonly IExportEncryptor _exportEncryptor;
     private readonly ILogger _logger;
 
     public ImportDataService(IAccountsImporter accountImporter, IIncomesImporter incomesImporter, IExpensesImporter expenseImporter,
-        IMetadataSerializer metadataSerializer, IExportEncryptor exportEncryptor, ILogger<ImportDataService> logger)
+        IMetadataSerializer metadataSerializer, ILogger<ImportDataService> logger)
     {
         _accountsImporter = accountImporter.WhenNotNull();
         _incomesImporter = incomesImporter.WhenNotNull();
         _expensesImporter = expenseImporter.WhenNotNull();
         _metadataSerializer = metadataSerializer.WhenNotNull();
-        _exportEncryptor = exportEncryptor.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
-    public async Task<EnrichedResult<int>> ImportAsync(string publicKey, Stream zipStream, CancellationToken cancellationToken)
+    public async Task<EnrichedResult<int>> ImportAsync(Stream zipStream, CancellationToken cancellationToken)
     {
         _ = zipStream.WhenNotNull();
 
@@ -61,9 +58,9 @@ internal sealed class ImportDataService : IImportDataService
         }
 
         var totalCount = 0;
-        totalCount += await ImportAccountsAsync(entries["accounts"], publicKey, cancellationToken);    // Must be first
-        totalCount += await ImportIncomesAsync(entries["incomes"], publicKey, cancellationToken);
-        totalCount += await ImportExpensesAsync(entries["expenses"], publicKey, cancellationToken);
+        totalCount += await ImportAccountsAsync(entries["accounts"], cancellationToken);    // Must be first
+        totalCount += await ImportIncomesAsync(entries["incomes"], cancellationToken);
+        totalCount += await ImportExpensesAsync(entries["expenses"], cancellationToken);
 
         return EnrichedResult.Success(totalCount);
     }
@@ -74,27 +71,26 @@ internal sealed class ImportDataService : IImportDataService
         return _metadataSerializer.Deserialize(stream);
     }
 
-    private Task<int> ImportAccountsAsync(ZipArchiveEntry entry, string publicKey, CancellationToken cancellationToken)
+    private Task<int> ImportAccountsAsync(ZipArchiveEntry entry, CancellationToken cancellationToken)
     {
-        return HandleEntry(entry, publicKey, _accountsImporter.ImportAsync, cancellationToken);
+        return HandleEntry(entry, _accountsImporter.ImportAsync, cancellationToken);
     }
 
-    private Task<int> ImportIncomesAsync(ZipArchiveEntry entry, string publicKey, CancellationToken cancellationToken)
+    private Task<int> ImportIncomesAsync(ZipArchiveEntry entry, CancellationToken cancellationToken)
     {
-        return HandleEntry(entry, publicKey, _incomesImporter.ImportAsync, cancellationToken);
+        return HandleEntry(entry, _incomesImporter.ImportAsync, cancellationToken);
     }
 
-    private Task<int> ImportExpensesAsync(ZipArchiveEntry entry, string publicKey, CancellationToken cancellationToken)
+    private Task<int> ImportExpensesAsync(ZipArchiveEntry entry, CancellationToken cancellationToken)
     {
-        return HandleEntry(entry, publicKey, _expensesImporter.ImportAsync, cancellationToken);
+        return HandleEntry(entry, _expensesImporter.ImportAsync, cancellationToken);
     }
 
-    private async Task<int> HandleEntry(ZipArchiveEntry entry, string publicKey, Func<Stream, CancellationToken, Task<int>> handler,
+    private static async Task<int> HandleEntry(ZipArchiveEntry entry, Func<Stream, CancellationToken, Task<int>> handler,
         CancellationToken token)
     {
         using var stream = entry.Open();
-        using var memoryStream = _exportEncryptor.Decrypt(publicKey, stream);
 
-        return await handler.Invoke(memoryStream, token);
+        return await handler.Invoke(stream, token);
     }
 }

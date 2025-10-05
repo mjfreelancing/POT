@@ -14,7 +14,7 @@ internal sealed class Handler
 
         using var zipStream = request.File.OpenReadStream();
 
-        var result = await importDataService.ImportAsync(request.ExportPublicKey, zipStream, cancellationToken);
+        var result = await importDataService.ImportAsync(zipStream, cancellationToken);
 
         return result.IsSuccess
             ? Response.Ok(result.Value!)

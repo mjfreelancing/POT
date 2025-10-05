@@ -35,6 +35,8 @@ internal sealed class ExpensesExporter : MemoryCsvExporterBase<ExpenseData>, IEx
                 FrequencyCount = expense.FrequencyCount,
                 Amount = expense.Amount,
                 Accrued = expense.Accrued,
+                LastAccruedUpdate = expense.LastAccruedUpdate,
+                AccruedIsDirty = expense.AccruedIsDirty,
                 Note = expense.Note,
                 AccountRowId = expense.Account.RowId
             };
@@ -59,6 +61,8 @@ internal sealed class ExpensesExporter : MemoryCsvExporterBase<ExpenseData>, IEx
         serializer.AddField(nameof(ExpenseData.FrequencyCount), entity => entity.FrequencyCount);
         serializer.AddField(nameof(ExpenseData.Amount), entity => entity.Amount);
         serializer.AddField(nameof(ExpenseData.Accrued), entity => entity.Accrued);
+        serializer.AddField(nameof(ExpenseData.AccruedIsDirty), entity => entity.AccruedIsDirty);
+        serializer.AddField(nameof(ExpenseData.LastAccruedUpdate), entity => entity.LastAccruedUpdate?.ToString(format: "yyyy-MM-dd"));
         serializer.AddField(nameof(ExpenseData.Note), entity => entity.Note);
         serializer.AddField(nameof(ExpenseData.AccountRowId), entity => entity.AccountRowId);
 

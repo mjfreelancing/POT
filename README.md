@@ -1675,14 +1675,12 @@ POT provides comprehensive data management capabilities for backing up and resto
   - All account information and balances
   - Expense definitions and schedules
   - Income definitions and schedules
-  - All data is encrypted using RSA encryption
 
 ### Importing Data
 
 1. **Preparing for Import**
 
    - Ensure you have a valid export file (`.export` extension)
-   - The server must have the matching RSA private key
    - You can import data while the system has existing data
 
 2. **Import Process**
@@ -1696,7 +1694,7 @@ POT provides comprehensive data management capabilities for backing up and resto
 3. **Import Validation**
 
    - The system checks for:
-     - File integrity and encryption
+     - File integrity
      - Data format version compatibility
      - Duplicate account numbers
      - Valid expense/income configurations
@@ -1709,9 +1707,6 @@ POT provides comprehensive data management capabilities for backing up and resto
 
 ### Data Security
 
-- Export files are encrypted using RSA public/private key pairs
-- Keys are configured in environment variables
-- Export files can only be imported by servers with the matching private key
 - Imported data is validated for integrity and correctness
 
 # Quick Start Guide
@@ -1844,11 +1839,7 @@ When connecting to the server running in docker:
 VITE_API_BASE_URL=http://localhost:5241/api
 ```
 
-The application uses a public/private key pair to encrypt exported data. The `.env.development` file includes the public key:
 
-```
-VITE_EXPORT_PUBLIC_KEY=<value here>
-```
 
 ### Server Environment Variables
 
@@ -1866,9 +1857,6 @@ Located in Docker environment files:
 # PostgreSQL configuration
 POSTGRES_USER=<value>                 # Database user
 POSTGRES_PASSWORD=<value>             # Database password
-
-# RSA key for data encryption/decryption
-RSA_PRIVATE_KEY=<value>              # Private key for decrypting exported data
 
 # JWT Authentication (if not using default values)
 JWT_ISSUER=<value>                   # JWT token issuer
@@ -1901,9 +1889,6 @@ The development settings are located in `Source/Server/Pot.AspNetCore/appsetting
 
 ```json
 {
-  "Rsa": {
-    "PrivateKey": "<value>" // Private key for decrypting exported data
-  },
   "Jwt": {
     "Issuer": "<value>", // JWT token issuer
     "Audience": "<value>", // JWT token audience
@@ -2827,7 +2812,7 @@ POT stores all financial data in a PostgreSQL database:
 
 - Account information is stored locally in the database
 - No data is sent to external servers
-- Import/export files use a proprietary, encrypted, format with data validation
+- Import/export files use a proprietary format with data validation
 
 ## Security Considerations
 

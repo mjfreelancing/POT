@@ -20,6 +20,8 @@ internal static class EntityMapping
             FrequencyCount = expense.FrequencyCount,
             Amount = expense.Amount,
             Accrued = expense.Accrued,
+            AccruedIsDirty = expense.AccruedIsDirty,
+            LastAccruedUpdate = expense.LastAccruedUpdate,
             Note = expense.Note,
             Account = new Output.AccountModel
             {

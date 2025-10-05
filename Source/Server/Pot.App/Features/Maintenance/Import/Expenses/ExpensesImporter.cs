@@ -99,6 +99,8 @@ internal sealed class ExpensesImporter : IExpensesImporter
             FrequencyCount = import.FrequencyCount,
             Amount = import.Amount,
             Accrued = import.Accrued,
+            AccruedIsDirty = import.AccruedIsDirty,
+            LastAccruedUpdate = import.LastAccruedUpdate,
             Note = import.Note,
             Account = account
         };
@@ -117,6 +119,8 @@ internal sealed class ExpensesImporter : IExpensesImporter
         entity.FrequencyCount = import.FrequencyCount;
         entity.Amount = import.Amount;
         entity.Accrued = import.Accrued;
+        entity.AccruedIsDirty = import.AccruedIsDirty;
+        entity.LastAccruedUpdate = import.LastAccruedUpdate;
         entity.Note = import.Note;
     }
 }

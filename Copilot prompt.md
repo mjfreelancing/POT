@@ -139,7 +139,6 @@ semantic_search("project structure documentation");
 
    - Authentication implementation
    - Authorization rules
-   - Data encryption
    - Token management
 
 2. Data integrity features:

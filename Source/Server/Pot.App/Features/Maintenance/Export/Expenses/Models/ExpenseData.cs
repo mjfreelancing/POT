@@ -14,6 +14,8 @@ public sealed class ExpenseData
     public required int FrequencyCount { get; set; }
     public required double Amount { get; set; }
     public required double Accrued { get; set; }
+    public required bool AccruedIsDirty { get; set; }
+    public DateOnly? LastAccruedUpdate { get; init; }
     public string? Note { get; set; }
     public required Guid AccountRowId { get; set; }
 }

@@ -62,7 +62,6 @@ Contain sensitive or environment-specific values:
 
 - `POSTGRES_USER`: Database user account
 - `POSTGRES_PASSWORD`: Database password
-- `RSA_PRIVATE_KEY`: The RSA private key used for decrypting export data
 
 ### Configuration Structure
 
@@ -72,10 +71,6 @@ The application uses a hierarchical configuration structure in the appsettings f
   - `POSTGRES_USER` `Database:Username`
   - `POSTGRES_PASSWORD` `Database:Password`
   - `POSTGRES_DB` `Database:DatabaseName`
-- RSA configuration:
-  - `RSA_PRIVATE_KEY` `Rsa:PrivateKey`
-
-Note: The public key is not configured in the server as it is provided by the client with each request.
 
 ### Frontend (Vite/React) `.env` File
 
@@ -92,21 +87,6 @@ And use this to communicate with the API server running locally (requires anothe
 ```
 VITE_API_BASE_URL=http://localhost:5242/api
 ```
-
-## RSA Encryption for Data Export/Import
-
-The application includes RSA encryption for securing exported data:
-
-- **Public Key**: Provided by the client application for each request
-- **Private Key**: Stored separately for security:
-  - Development: In `appsettings.Development.json` (excluded from version control)
-  - Production: Via environment variable `RSA_PRIVATE_KEY` in Docker
-
-### RSA Key Management
-
-- The React client application requires the public key in its environment configuration
-- The server only requires the private key in its configuration
-- Each export/import request includes the public key in its headers
 
 ## Health Checks
 
