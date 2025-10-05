@@ -50,16 +50,11 @@ internal sealed class DbBackupWorker : BackgroundWorker
                 var currentUtc = _timeProvider.GetUtcDateTimeNow();
 
                 // Should never fail since the cron expression has already been validated
-                var nextUtc = cronExpression.GetNextOccurrence(currentUtc)!;
+                var nextUtc = cronExpression.GetNextOccurrence(currentUtc)!.Value;
 
                 logger.LogInformation("Next database backup scheduled for {NextBackupTimeUtc:O} (UTC)", nextUtc);
 
-                var delayTimespan = nextUtc.Value - currentUtc;
-
-                if (delayTimespan.TotalMilliseconds > 0)
-                {
-                    await Task.Delay(delayTimespan, stoppingToken).ConfigureAwait(false);
-                }
+                await WaitUntilAsync(nextUtc, stoppingToken);
             }
             catch (OperationCanceledException)
             {
@@ -95,5 +90,27 @@ internal sealed class DbBackupWorker : BackgroundWorker
     private static Task WaitAMinuteAsync(CancellationToken cancellationToken)
     {
         return Task.Delay(TimeSpan.FromMinutes(1), cancellationToken);
+    }
+
+    private async Task WaitUntilAsync(DateTime targetUtc, CancellationToken cancellationToken)
+    {
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Checking more than once in case the system time changes or there is drift that may 
+            // result in the next occurrence being a matter of seconds later rather than the expected
+            // cron schedule (the latter has been observed).
+            var currentUtc = _timeProvider.GetUtcDateTimeNow();
+
+            var delayTimespan = targetUtc - currentUtc;
+
+            if (delayTimespan <= TimeSpan.Zero)
+            {
+                return;
+            }
+
+            await Task.Delay(delayTimespan, cancellationToken);
+        }
     }
 }
