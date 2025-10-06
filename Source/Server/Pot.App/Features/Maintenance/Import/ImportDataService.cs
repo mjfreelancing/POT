@@ -6,24 +6,27 @@ using Pot.App.Errors;
 using Pot.App.Features.Maintenance.Import.Accounts;
 using Pot.App.Features.Maintenance.Import.Expenses;
 using Pot.App.Features.Maintenance.Import.Incomes;
+using Pot.App.Features.Maintenance.Import.Reader;
 using Pot.App.Features.Maintenance.Metadata.Models;
 using Pot.App.Features.Maintenance.Metadata.Serializer;
-using System.IO.Compression;
 
 namespace Pot.App.Features.Maintenance.Import;
 
 internal sealed class ImportDataService : IImportDataService
 {
     private readonly string[] _expectedEntryNames = ["metadata", "accounts", "incomes", "expenses"];
+    private readonly IImportStreamReaderFactory _importStreamReader;
     private readonly IAccountsImporter _accountsImporter;
     private readonly IIncomesImporter _incomesImporter;
     private readonly IExpensesImporter _expensesImporter;
     private readonly IMetadataSerializer _metadataSerializer;
     private readonly ILogger _logger;
 
-    public ImportDataService(IAccountsImporter accountImporter, IIncomesImporter incomesImporter, IExpensesImporter expenseImporter,
+    public ImportDataService(IImportStreamReaderFactory importStreamReader,
+        IAccountsImporter accountImporter, IIncomesImporter incomesImporter, IExpensesImporter expenseImporter,
         IMetadataSerializer metadataSerializer, ILogger<ImportDataService> logger)
     {
+        _importStreamReader = importStreamReader.WhenNotNull();
         _accountsImporter = accountImporter.WhenNotNull();
         _incomesImporter = incomesImporter.WhenNotNull();
         _expensesImporter = expenseImporter.WhenNotNull();
@@ -37,18 +40,16 @@ internal sealed class ImportDataService : IImportDataService
 
         _logger.LogCall(this);
 
-        using ZipArchive archive = new(zipStream, ZipArchiveMode.Read);
+        var importReader = _importStreamReader.CreateReader(zipStream);
 
-        var entries = archive.Entries.ToDictionary(kvp => kvp.Name);
-
-        if (!_expectedEntryNames.All(entries.ContainsKey))
+        if (!_expectedEntryNames.All(importReader.EntryNames.Contains))
         {
             var problemDetailsError = ProblemDetailsErrorFactory.CreateUnprocessableEntityError("The import file is not supported.");
 
             return EnrichedResult.Fail<int>(problemDetailsError);
         }
 
-        MetadataBase metadataBase = GetMetadata(entries["metadata"]);
+        MetadataBase metadataBase = GetMetadata(importReader);
 
         // There's only 1 version at the moment
         if (metadataBase.Version == 1)
@@ -58,38 +59,38 @@ internal sealed class ImportDataService : IImportDataService
         }
 
         var totalCount = 0;
-        totalCount += await ImportAccountsAsync(entries["accounts"], cancellationToken);    // Must be first
-        totalCount += await ImportIncomesAsync(entries["incomes"], cancellationToken);
-        totalCount += await ImportExpensesAsync(entries["expenses"], cancellationToken);
+        totalCount += await ImportAccountsAsync(importReader, cancellationToken);    // Must be first (incomes/expenses reference accounts)
+        totalCount += await ImportIncomesAsync(importReader, cancellationToken);
+        totalCount += await ImportExpensesAsync(importReader, cancellationToken);
 
         return EnrichedResult.Success(totalCount);
     }
 
-    private MetadataBase GetMetadata(ZipArchiveEntry zipArchiveEntry)
+    private MetadataBase GetMetadata(IImportStreamReader importReader)
     {
-        using var stream = zipArchiveEntry.Open();
+        using var stream = importReader.GetEntry("metadata");
         return _metadataSerializer.Deserialize(stream);
     }
 
-    private Task<int> ImportAccountsAsync(ZipArchiveEntry entry, CancellationToken cancellationToken)
+    private Task<int> ImportAccountsAsync(IImportStreamReader importReader, CancellationToken cancellationToken)
     {
-        return HandleEntry(entry, _accountsImporter.ImportAsync, cancellationToken);
+        return HandleEntry(importReader, "accounts", _accountsImporter.ImportAsync, cancellationToken);
     }
 
-    private Task<int> ImportIncomesAsync(ZipArchiveEntry entry, CancellationToken cancellationToken)
+    private Task<int> ImportIncomesAsync(IImportStreamReader importReader, CancellationToken cancellationToken)
     {
-        return HandleEntry(entry, _incomesImporter.ImportAsync, cancellationToken);
+        return HandleEntry(importReader, "incomes", _incomesImporter.ImportAsync, cancellationToken);
     }
 
-    private Task<int> ImportExpensesAsync(ZipArchiveEntry entry, CancellationToken cancellationToken)
+    private Task<int> ImportExpensesAsync(IImportStreamReader importReader, CancellationToken cancellationToken)
     {
-        return HandleEntry(entry, _expensesImporter.ImportAsync, cancellationToken);
+        return HandleEntry(importReader, "expenses", _expensesImporter.ImportAsync, cancellationToken);
     }
 
-    private static async Task<int> HandleEntry(ZipArchiveEntry entry, Func<Stream, CancellationToken, Task<int>> handler,
+    private static async Task<int> HandleEntry(IImportStreamReader importReader, string name, Func<Stream, CancellationToken, Task<int>> handler,
         CancellationToken token)
     {
-        using var stream = entry.Open();
+        using var stream = importReader.GetEntry(name);
 
         return await handler.Invoke(stream, token);
     }
