@@ -1,8 +1,8 @@
 ﻿using CsvHelper.Configuration.Attributes;
 
-namespace Pot.App.Features.Maintenance.Import.Accounts.Models;
+namespace Pot.App.Features.Maintenance.Import.Models;
 
-internal sealed class AccountCsvRow
+internal sealed class AccountCsvRow : IAccountCsvRow
 {
     [Index(0)]
     public Guid RowId { get; init; }

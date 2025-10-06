@@ -1,12 +1,10 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
-using CsvHelper;
 using Microsoft.Extensions.Logging;
-using Pot.App.Features.Maintenance.Import.Accounts.Models;
+using Pot.App.Features.Maintenance.Import.Models;
 using Pot.Data;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
-using System.Globalization;
 
 namespace Pot.App.Features.Maintenance.Import.Accounts;
 
@@ -16,25 +14,19 @@ internal sealed class AccountsImporter : IAccountsImporter
     private readonly ICurrentUserDataContext _currentUserDataContext;
     private readonly ILogger<AccountsImporter> _logger;
 
-    public AccountsImporter(IPersistableAccountRepository accountRepository, ICurrentUserDataContext currentUserContext, ILogger<AccountsImporter> logger)
+    public AccountsImporter(IPersistableAccountRepository accountRepository, ICurrentUserDataContext currentUserContext,
+        ILogger<AccountsImporter> logger)
     {
         _accountRepository = accountRepository.WhenNotNull();
         _currentUserDataContext = currentUserContext.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
-    public async Task<int> ImportAsync(Stream dataStream, CancellationToken cancellationToken)
+    public async Task<int> ImportAsync(IEnumerable<IAccountCsvRow> csvRows, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
-        using StreamReader reader = new(dataStream);
-
-        using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
-
-        csv.Read();
-        csv.ReadHeader();
-
-        var csvRows = csv.GetRecords<AccountCsvRow>().ToList();
+        var count = 0;
 
         using (_accountRepository.WithTracking())
         {
@@ -44,6 +36,8 @@ internal sealed class AccountsImporter : IAccountsImporter
             foreach (var csvRow in csvRows)
             {
                 await CreateOrUpdateAccountAsync(user.Site, csvRow, cancellationToken).ConfigureAwait(false);
+
+                count++;
             }
 
             // Could throw UniqueConstraintException (or a related database exception),
@@ -53,10 +47,10 @@ internal sealed class AccountsImporter : IAccountsImporter
                 .ConfigureAwait(false);
         }
 
-        return csvRows.Count;
+        return count;
     }
 
-    private async Task CreateOrUpdateAccountAsync(SiteEntity site, AccountCsvRow csvRow, CancellationToken cancellationToken)
+    private async Task CreateOrUpdateAccountAsync(SiteEntity site, IAccountCsvRow csvRow, CancellationToken cancellationToken)
     {
         var csvAccountId = csvRow.RowId;
 
@@ -74,7 +68,7 @@ internal sealed class AccountsImporter : IAccountsImporter
         }
     }
 
-    private AccountEntity CreateAccountEntity(SiteEntity site, AccountCsvRow import)
+    private AccountEntity CreateAccountEntity(SiteEntity site, IAccountCsvRow import)
     {
         var accountEntity = new AccountEntity
         {
@@ -94,7 +88,7 @@ internal sealed class AccountsImporter : IAccountsImporter
         return accountEntity;
     }
 
-    private static void UpdateExistingAccount(AccountEntity entity, AccountCsvRow import)
+    private static void UpdateExistingAccount(AccountEntity entity, IAccountCsvRow import)
     {
         // Don't need to explicitly call _accountRepository.Update(entity).
         // The entity will be marked as modified if anything has changed.

@@ -1,6 +1,6 @@
 using Pot.Shared;
 
-namespace Pot.App.Features.Maintenance.Export.Expenses.Models;
+namespace Pot.App.Features.Maintenance.Export.Models;
 
 public sealed class ExpenseData
 {

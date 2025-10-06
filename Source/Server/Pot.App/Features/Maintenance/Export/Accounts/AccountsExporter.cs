@@ -2,7 +2,7 @@
 using AllOverIt.Csv;
 using AllOverIt.Csv.Exporter;
 using Pot.App.Features.Accounts.GetAll;
-using Pot.App.Features.Maintenance.Export.Accounts.Models;
+using Pot.App.Features.Maintenance.Export.Models;
 
 namespace Pot.App.Features.Maintenance.Export.Accounts;
 

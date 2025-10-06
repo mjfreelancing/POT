@@ -1,8 +1,9 @@
-﻿using Pot.Shared.DependencyInjection;
+﻿using Pot.App.Features.Maintenance.Import.Models;
+using Pot.Shared.DependencyInjection;
 
 namespace Pot.App.Features.Maintenance.Import.Incomes;
 
 public interface IIncomesImporter : IPotScopedDependency
 {
-    Task<int> ImportAsync(Stream dataStream, CancellationToken cancellationToken);
+    Task<int> ImportAsync(IEnumerable<IIncomeCsvRow> csvRows, CancellationToken cancellationToken);
 }

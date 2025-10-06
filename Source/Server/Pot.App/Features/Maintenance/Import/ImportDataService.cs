@@ -8,29 +8,25 @@ using Pot.App.Features.Maintenance.Import.Expenses;
 using Pot.App.Features.Maintenance.Import.Incomes;
 using Pot.App.Features.Maintenance.Import.Reader;
 using Pot.App.Features.Maintenance.Metadata.Models;
-using Pot.App.Features.Maintenance.Metadata.Serializer;
 
 namespace Pot.App.Features.Maintenance.Import;
 
 internal sealed class ImportDataService : IImportDataService
 {
     private readonly string[] _expectedEntryNames = ["metadata", "accounts", "incomes", "expenses"];
-    private readonly IImportStreamReaderFactory _importStreamReader;
+    private readonly IImportStreamReader _importStreamReader;
     private readonly IAccountsImporter _accountsImporter;
     private readonly IIncomesImporter _incomesImporter;
     private readonly IExpensesImporter _expensesImporter;
-    private readonly IMetadataSerializer _metadataSerializer;
     private readonly ILogger _logger;
 
-    public ImportDataService(IImportStreamReaderFactory importStreamReader,
-        IAccountsImporter accountImporter, IIncomesImporter incomesImporter, IExpensesImporter expenseImporter,
-        IMetadataSerializer metadataSerializer, ILogger<ImportDataService> logger)
+    public ImportDataService(IImportStreamReader importStreamReader, IAccountsImporter accountImporter,
+        IIncomesImporter incomesImporter, IExpensesImporter expenseImporter, ILogger<ImportDataService> logger)
     {
         _importStreamReader = importStreamReader.WhenNotNull();
         _accountsImporter = accountImporter.WhenNotNull();
         _incomesImporter = incomesImporter.WhenNotNull();
         _expensesImporter = expenseImporter.WhenNotNull();
-        _metadataSerializer = metadataSerializer.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
@@ -40,58 +36,51 @@ internal sealed class ImportDataService : IImportDataService
 
         _logger.LogCall(this);
 
-        var importReader = _importStreamReader.CreateReader(zipStream);
-
-        if (!_expectedEntryNames.All(importReader.EntryNames.Contains))
+        using (_importStreamReader.Open(zipStream))
         {
-            var problemDetailsError = ProblemDetailsErrorFactory.CreateUnprocessableEntityError("The import file is not supported.");
+            if (!_expectedEntryNames.All(_importStreamReader.EntryNames.Contains))
+            {
+                var problemDetailsError = ProblemDetailsErrorFactory.CreateUnprocessableEntityError("The import file is not supported.");
 
-            return EnrichedResult.Fail<int>(problemDetailsError);
+                return EnrichedResult.Fail<int>(problemDetailsError);
+            }
+
+            MetadataBase metadataBase = _importStreamReader.GetMetadata();
+
+            // There's only 1 version at the moment
+            if (metadataBase.Version == 1)
+            {
+                var metadataV1 = (MetadataV1)metadataBase;
+                _logger.LogInformation("Importing data (as v{MetadataVersion}) from {MetadataCreatedAt}", metadataV1.Version, metadataV1.CreatedAt);
+            }
+
+            var totalCount = 0;
+            totalCount += await ImportAccountsAsync(cancellationToken);    // Must be first (incomes/expenses reference accounts)
+            totalCount += await ImportExpensesAsync(cancellationToken);
+            totalCount += await ImportIncomesAsync(cancellationToken);
+
+            return EnrichedResult.Success(totalCount);
         }
-
-        MetadataBase metadataBase = GetMetadata(importReader);
-
-        // There's only 1 version at the moment
-        if (metadataBase.Version == 1)
-        {
-            var metadataV1 = (MetadataV1)metadataBase;
-            _logger.LogInformation("Importing data (as v{MetadataVersion}) from {MetadataCreatedAt}", metadataV1.Version, metadataV1.CreatedAt);
-        }
-
-        var totalCount = 0;
-        totalCount += await ImportAccountsAsync(importReader, cancellationToken);    // Must be first (incomes/expenses reference accounts)
-        totalCount += await ImportIncomesAsync(importReader, cancellationToken);
-        totalCount += await ImportExpensesAsync(importReader, cancellationToken);
-
-        return EnrichedResult.Success(totalCount);
     }
 
-    private MetadataBase GetMetadata(IImportStreamReader importReader)
+    private async Task<int> ImportAccountsAsync(CancellationToken cancellationToken)
     {
-        using var stream = importReader.GetEntry("metadata");
-        return _metadataSerializer.Deserialize(stream);
+        // Awaiting in here to ensure we don't return until the deferred operation is complete.
+        var accounts = _importStreamReader.GetAccounts();
+        return await _accountsImporter.ImportAsync(accounts, cancellationToken);
     }
 
-    private Task<int> ImportAccountsAsync(IImportStreamReader importReader, CancellationToken cancellationToken)
+    private async Task<int> ImportExpensesAsync(CancellationToken cancellationToken)
     {
-        return HandleEntry(importReader, "accounts", _accountsImporter.ImportAsync, cancellationToken);
+        // Awaiting in here to ensure we don't return until the deferred operation is complete.
+        var expenses = _importStreamReader.GetExpenses();
+        return await _expensesImporter.ImportAsync(expenses, cancellationToken);
     }
 
-    private Task<int> ImportIncomesAsync(IImportStreamReader importReader, CancellationToken cancellationToken)
+    private async Task<int> ImportIncomesAsync(CancellationToken cancellationToken)
     {
-        return HandleEntry(importReader, "incomes", _incomesImporter.ImportAsync, cancellationToken);
-    }
-
-    private Task<int> ImportExpensesAsync(IImportStreamReader importReader, CancellationToken cancellationToken)
-    {
-        return HandleEntry(importReader, "expenses", _expensesImporter.ImportAsync, cancellationToken);
-    }
-
-    private static async Task<int> HandleEntry(IImportStreamReader importReader, string name, Func<Stream, CancellationToken, Task<int>> handler,
-        CancellationToken token)
-    {
-        using var stream = importReader.GetEntry(name);
-
-        return await handler.Invoke(stream, token);
+        // Awaiting in here to ensure we don't return until the deferred operation is complete.
+        var incomes = _importStreamReader.GetIncomes();
+        return await _incomesImporter.ImportAsync(incomes, cancellationToken);
     }
 }

@@ -1,10 +1,17 @@
-﻿namespace Pot.App.Features.Maintenance.Import.Reader;
+﻿using Pot.App.Features.Maintenance.Import.Models;
+using Pot.App.Features.Maintenance.Metadata.Models;
+using Pot.Shared.DependencyInjection;
 
-public interface IImportStreamReader : IDisposable
+namespace Pot.App.Features.Maintenance.Import.Reader;
+
+public interface IImportStreamReader : IPotScopedDependency
 {
     string[] EntryNames { get; }
 
-    // Will throw if the entry does not exist.
-    // The caller must dispose the stream.
-    Stream GetEntry(string name);
+    IDisposable Open(Stream stream);
+
+    MetadataBase GetMetadata();
+    IEnumerable<IAccountCsvRow> GetAccounts();
+    IEnumerable<IExpenseCsvRow> GetExpenses();
+    IEnumerable<IIncomeCsvRow> GetIncomes();
 }

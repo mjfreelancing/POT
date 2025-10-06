@@ -3,9 +3,9 @@ using CsvHelper.TypeConversion;
 using Pot.App.Concerns.Csv;
 using Pot.Shared;
 
-namespace Pot.App.Features.Maintenance.Import.Incomes.Models;
+namespace Pot.App.Features.Maintenance.Import.Models;
 
-internal sealed class IncomeCsvRow
+internal sealed class IncomeCsvRow : IIncomeCsvRow
 {
     [Index(0)]
     public Guid RowId { get; init; }

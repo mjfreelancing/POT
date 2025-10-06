@@ -1,12 +1,10 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
-using CsvHelper;
 using Microsoft.Extensions.Logging;
-using Pot.App.Features.Maintenance.Import.Expenses.Models;
+using Pot.App.Features.Maintenance.Import.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
 using Pot.Data.Repositories.Expenses;
-using System.Globalization;
 
 namespace Pot.App.Features.Maintenance.Import.Expenses;
 
@@ -23,38 +21,31 @@ internal sealed class ExpensesImporter : IExpensesImporter
         _logger = logger.WhenNotNull();
     }
 
-    public async Task<int> ImportAsync(Stream dataStream, CancellationToken cancellationToken)
+    public async Task<int> ImportAsync(IEnumerable<IExpenseCsvRow> csvRows, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
-        using StreamReader reader = new(dataStream);
-
-        using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
-
-        csv.Read();
-        csv.ReadHeader();
-
-        var csvRows = csv.GetRecords<ExpenseCsvRow>().ToList();
+        var count = 0;
 
         using (_accountRepository.WithTracking())
         {
-            var accountRowIds = csvRows
-                .Select(record => record.AccountRowId)
-                .Distinct()
-                .ToArray();
-
-            var accounts = await _accountRepository
-                .GetAccountsWithExpensesAsync(accountRowIds, cancellationToken)
-                .ConfigureAwait(false);
-
-            var accountLookup = accounts.ToDictionary(account => account.RowId, account => account);
+            var accounts = new Dictionary<Guid, AccountEntity>();
 
             foreach (var csvRow in csvRows)
             {
-                // Not validating the rows since the CSV file is expected to be valid (the data was previously exported).
-                var account = accountLookup[csvRow.AccountRowId];
+                if (!accounts.TryGetValue(csvRow.AccountRowId, out var account))
+                {
+                    // Not validating the rows since the CSV file is expected to be valid (the data was previously exported).
+                    account = await _accountRepository
+                        .GetAccountAsync(csvRow.AccountRowId, cancellationToken)
+                        .ConfigureAwait(false);
+
+                    accounts.Add(csvRow.AccountRowId, account);
+                }
 
                 await CreateOrUpdateExpenseAsync(account, csvRow, cancellationToken).ConfigureAwait(false);
+
+                count++;
             }
 
             await _accountRepository
@@ -63,10 +54,10 @@ internal sealed class ExpensesImporter : IExpensesImporter
         }
 
 
-        return csvRows.Count;
+        return count;
     }
 
-    private async Task CreateOrUpdateExpenseAsync(AccountEntity account, ExpenseCsvRow csvRow, CancellationToken cancellationToken)
+    private async Task CreateOrUpdateExpenseAsync(AccountEntity account, IExpenseCsvRow csvRow, CancellationToken cancellationToken)
     {
         var csvExpenseId = csvRow.RowId;
 
@@ -85,7 +76,7 @@ internal sealed class ExpensesImporter : IExpensesImporter
         }
     }
 
-    private static ExpenseEntity CreateExpenseEntity(AccountEntity account, ExpenseCsvRow import)
+    private static ExpenseEntity CreateExpenseEntity(AccountEntity account, IExpenseCsvRow import)
     {
         var expenseEntity = new ExpenseEntity
         {
@@ -108,7 +99,7 @@ internal sealed class ExpensesImporter : IExpensesImporter
         return expenseEntity;
     }
 
-    private static void UpdateExistingExpense(ExpenseEntity entity, ExpenseCsvRow import)
+    private static void UpdateExistingExpense(ExpenseEntity entity, IExpenseCsvRow import)
     {
         entity.ExcludeFromCalcs = import.ExcludeFromCalcs;
         entity.Description = import.Description;

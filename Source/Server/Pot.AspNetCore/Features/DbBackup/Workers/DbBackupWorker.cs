@@ -3,9 +3,10 @@ using AllOverIt.Extensions;
 using AllOverIt.GenericHost;
 using Cronos;
 using Pot.App.Concerns.Time;
+using Pot.Data.Repositories.Settings;
 using Pot.Data.Repositories.Settings.Models;
 
-namespace Pot.AspNetCore.Features.DbBackup;
+namespace Pot.AspNetCore.Features.DbBackup.Workers;
 
 internal sealed class DbBackupWorker : BackgroundWorker
 {
@@ -24,47 +25,63 @@ internal sealed class DbBackupWorker : BackgroundWorker
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            using var scope = _scopeFactory.CreateScope();
+            ILogger logger;
+            DateTime? nextUtc = null;
 
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger<DbBackupWorker>>();
-
-            try
+            using (var scope = _scopeFactory.CreateScope())
             {
-                var postgresqlBackup = scope.ServiceProvider.GetRequiredService<IPostgresqlBackup>();
+                var serviceProvider = scope.ServiceProvider;
 
-                var backupSettings = await postgresqlBackup.GetBackupSettingsAsync(stoppingToken).ConfigureAwait(false);
+                logger = serviceProvider.GetRequiredService<ILogger<DbBackupWorker>>();
 
-                if (!backupSettings.Enabled || !ValidBackupSettings(backupSettings, logger))
+                try
                 {
-                    // Try again later in case the backup is enabled
-                    await WaitAMinuteAsync(stoppingToken).ConfigureAwait(false);
-                    continue;
+                    var settingsRepository = serviceProvider.GetRequiredService<ISettingsRepository>();
+                    var backupSettings = await GetBackupSettingsAsync(settingsRepository, stoppingToken).ConfigureAwait(false);
+
+                    if (!backupSettings.Enabled || !ValidBackupSettings(backupSettings, logger))
+                    {
+                        // Try again later in case the backup is enabled
+                        nextUtc = _timeProvider.GetUtcDateTimeNow().AddMinutes(1);
+                        continue;
+                    }
+
+                    // The database backup is for all sites, so this is NOT site specific - hence based on UTC
+                    var cronExpression = CronExpression.Parse(backupSettings.Schedule);
+
+                    // Perform an initial backup immediately on startup
+                    var postgresqlBackup = serviceProvider.GetRequiredService<IPostgresqlBackup>();
+                    await postgresqlBackup.ExecuteAsync(backupSettings.Path!, stoppingToken).ConfigureAwait(false);
+
+                    var currentUtc = _timeProvider.GetUtcDateTimeNow();
+
+                    // Should never fail since the cron expression has already been validated
+                    nextUtc = cronExpression.GetNextOccurrence(currentUtc);
                 }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch (Exception exception)
+                {
+                    logger.LogError(exception, "An error occurred during the database backup process: {ExceptionMessage}", exception.Message);
+                }
+            }
 
-                // The database backup is for all sites, so this is NOT site specific - hence based on UTC
-                var cronExpression = CronExpression.Parse(backupSettings.Schedule);
-
-                // Perform an initial backup immediately on startup
-                await postgresqlBackup.ExecuteAsync(backupSettings.Path!, stoppingToken).ConfigureAwait(false);
-
-                var currentUtc = _timeProvider.GetUtcDateTimeNow();
-
-                // Should never fail since the cron expression has already been validated
-                var nextUtc = cronExpression.GetNextOccurrence(currentUtc)!.Value;
-
+            if (nextUtc.HasValue)
+            {
                 logger.LogInformation("Next database backup scheduled for {NextBackupTimeUtc:O} (UTC)", nextUtc);
 
-                await WaitUntilAsync(nextUtc, stoppingToken);
-            }
-            catch (OperationCanceledException)
-            {
-                break;
-            }
-            catch (Exception exception)
-            {
-                logger.LogError(exception, "An error occurred during the database backup process: {ExceptionMessage}", exception.Message);
+                await WaitUntilAsync(nextUtc.Value, stoppingToken);
             }
         }
+    }
+
+    private static async Task<BackupSettings> GetBackupSettingsAsync(ISettingsRepository settingsRepository, CancellationToken cancellationToken)
+    {
+        return await settingsRepository
+            .GetDatabaseSettingsAsync(cancellationToken)
+            .ConfigureAwait(false);
     }
 
     private static bool ValidBackupSettings(BackupSettings backupSettings, ILogger logger)
@@ -85,11 +102,6 @@ internal sealed class DbBackupWorker : BackgroundWorker
         }
 
         return !hasError;
-    }
-
-    private static Task WaitAMinuteAsync(CancellationToken cancellationToken)
-    {
-        return Task.Delay(TimeSpan.FromMinutes(1), cancellationToken);
     }
 
     private async Task WaitUntilAsync(DateTime targetUtc, CancellationToken cancellationToken)
