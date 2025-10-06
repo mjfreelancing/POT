@@ -11,6 +11,24 @@ function normalizeToLocalMidnight(date: Date | string): Date {
 }
 
 /**
+ * Returns the epoch timestamp (milliseconds since 1970-01-01) for a date normalized to local midnight
+ * @param date - A Date object or a string that can be parsed by the Date constructor
+ * @returns The epoch timestamp in milliseconds for the date at midnight (00:00:00) in local time
+ *
+ * @example
+ * // Get epoch for a specific date
+ * normalizeToEpoch(new Date('2025-10-06T15:30:00'))  // Returns epoch for 2025-10-06 00:00:00
+ * normalizeToEpoch('2025-10-06')                     // Returns epoch for 2025-10-06 00:00:00
+ *
+ * // Useful for date arithmetic
+ * const today = normalizeToEpoch(localToday());
+ * const tomorrow = today + (24 * 60 * 60 * 1000);
+ */
+function normalizeToEpoch(date: Date | string): number {
+  return normalizeToLocalMidnight(date).getTime();
+}
+
+/**
  * Returns today as a date at local midnight (00:00:00)
  */
 function localToday(): Date {
@@ -102,17 +120,6 @@ function todayIsoFormat(): string {
 }
 
 /**
- * Returns the day of the year (1-366) for a given date
- */
-function dayOfYear(date: Date): number {
-  const start = new Date(date.getFullYear(), 0, 1);
-
-  return (
-    Math.floor((date.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
-  );
-}
-
-/**
  * Formats a date using internationalization
  * @param date The Date, or a string that can be parsed by the Date constructor, to format
  * @param locale The BCP 47 language tag for formatting (defaults to 'en-AU')
@@ -176,7 +183,6 @@ function formatDateTime(
 export {
   compareDates,
   dateIsoFormat,
-  dayOfYear,
   formatDate,
   formatDateTime,
   isAfterDate,
@@ -184,5 +190,6 @@ export {
   isSameDate,
   localToday,
   normalizeToLocalMidnight,
+  normalizeToEpoch,
   todayIsoFormat,
 };

@@ -13,11 +13,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EMPTY_EXPENSE_ARRAY, Expense } from '@/data';
 import {
-  dayOfYear,
   formatMoneyValue,
   getAdornedExpenseDescription,
   getTableRowClassName,
   localToday,
+  normalizeToEpoch,
 } from '@/lib';
 
 import { ExpensesSummary, expensesSummaryStore } from '../stores';
@@ -84,20 +84,21 @@ const columns: ColumnDef<Expense>[] = [
 ];
 
 function getDaysDue(nextDue: string): number {
-  const today = localToday();
-  const dueDate = new Date(nextDue);
+  const todayEpoch = normalizeToEpoch(localToday());
+  const dueDateEpoch = normalizeToEpoch(nextDue);
 
-  return dayOfYear(dueDate) - dayOfYear(today);
+  // Calculate difference in milliseconds and convert to days
+  const diffMs = dueDateEpoch - todayEpoch;
+  return Math.floor(diffMs / (1000 * 60 * 60 * 24));
 }
 
 function filterExpenses(days: number, expenses: Expense[]): Expense[] {
-  const today = localToday();
-  const inDays = new Date(today);
-  inDays.setDate(today.getDate() + days);
+  const todayEpoch = normalizeToEpoch(localToday());
+  const targetDateEpoch = todayEpoch + days * 24 * 60 * 60 * 1000;
 
   return expenses.filter(expense => {
-    const dueDate = new Date(expense.nextDue);
-    return dueDate <= inDays;
+    const dueDateEpoch = normalizeToEpoch(expense.nextDue);
+    return dueDateEpoch <= targetDateEpoch;
   });
 }
 
@@ -105,10 +106,6 @@ function filteredExpenseInfo(
   days: number,
   expenses: Expense[],
 ): FilteredExpenses {
-  const today = localToday();
-  const inDays = new Date(today);
-  inDays.setDate(today.getDate() + days);
-
   const filtered = filterExpenses(days, expenses);
 
   return {
