@@ -11,7 +11,9 @@ public interface IImportStreamReader : IPotScopedDependency
     IDisposable Open(Stream stream);
 
     MetadataBase GetMetadata();
-    IEnumerable<IAccountCsvRow> GetAccounts();
-    IEnumerable<IExpenseCsvRow> GetExpenses();
-    IEnumerable<IIncomeCsvRow> GetIncomes();
+
+    // Note: ICsvRowEnumerator<T> is IDisposable
+    ICsvRowEnumerator<IAccountCsvRow> GetAccounts();
+    ICsvRowEnumerator<IExpenseCsvRow> GetExpenses();
+    ICsvRowEnumerator<IIncomeCsvRow> GetIncomes();
 }

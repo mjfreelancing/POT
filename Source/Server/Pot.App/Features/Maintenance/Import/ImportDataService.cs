@@ -65,22 +65,22 @@ internal sealed class ImportDataService : IImportDataService
 
     private async Task<int> ImportAccountsAsync(CancellationToken cancellationToken)
     {
-        // Awaiting in here to ensure we don't return until the deferred operation is complete.
-        var accounts = _importStreamReader.GetAccounts();
+        using var accounts = _importStreamReader.GetAccounts();
+
         return await _accountsImporter.ImportAsync(accounts, cancellationToken);
     }
 
     private async Task<int> ImportExpensesAsync(CancellationToken cancellationToken)
     {
-        // Awaiting in here to ensure we don't return until the deferred operation is complete.
-        var expenses = _importStreamReader.GetExpenses();
+        using var expenses = _importStreamReader.GetExpenses();
+
         return await _expensesImporter.ImportAsync(expenses, cancellationToken);
     }
 
     private async Task<int> ImportIncomesAsync(CancellationToken cancellationToken)
     {
-        // Awaiting in here to ensure we don't return until the deferred operation is complete.
-        var incomes = _importStreamReader.GetIncomes();
+        using var incomes = _importStreamReader.GetIncomes();
+
         return await _incomesImporter.ImportAsync(incomes, cancellationToken);
     }
 }

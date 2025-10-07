@@ -6,21 +6,25 @@ using System.Globalization;
 namespace Pot.App.Features.Maintenance.Import.Reader;
 
 // This helper is responsible for enumerating the CSV rows from a stream while managing the lifecycle of the reader objects.
-// The underlying streams will be disposed only when iteration is complete.
-internal sealed class CsvRowEnumerator<TType, TAs> : IEnumerable<TAs> where TType : TAs
+internal sealed class CsvRowEnumerator<TType, TAs> : ICsvRowEnumerator<TAs> where TType : TAs
 {
-    private readonly Stream _dataStream;
+    private bool _disposed;
+    private StreamReader? _streamReader;
 
+    // The stream is owned by this instance and will be disposed when enumeration is complete.
     public CsvRowEnumerator(Stream dataStream)
     {
-        _dataStream = dataStream.WhenNotNull();
+        _ = dataStream.WhenNotNull();
+
+        _streamReader = new(dataStream);
     }
 
     public IEnumerator<TAs> GetEnumerator()
     {
-        using StreamReader reader = new(_dataStream);
+        ObjectDisposedException.ThrowIf(_disposed, this);
 
-        using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+        using var csv = new CsvReader(_streamReader!, CultureInfo.InvariantCulture);
+
         csv.Read();
         csv.ReadHeader();
 
@@ -29,6 +33,19 @@ internal sealed class CsvRowEnumerator<TType, TAs> : IEnumerable<TAs> where TTyp
         foreach (var csvRow in csvRows)
         {
             yield return csvRow;
+        }
+    }
+
+    public void Dispose()
+    {
+        if (!_disposed)
+        {
+            _streamReader?.Dispose();
+            _streamReader = null;
+
+            _disposed = true;
+
+            GC.SuppressFinalize(this);
         }
     }
 

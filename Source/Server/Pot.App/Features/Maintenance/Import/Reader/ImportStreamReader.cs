@@ -47,7 +47,7 @@ internal sealed class ImportStreamReader : IImportStreamReader
         return _metadataSerializer.Deserialize(stream);
     }
 
-    public IEnumerable<IAccountCsvRow> GetAccounts()
+    public ICsvRowEnumerator<IAccountCsvRow> GetAccounts()
     {
         _logger.LogCall(this);
 
@@ -55,7 +55,7 @@ internal sealed class ImportStreamReader : IImportStreamReader
         return new CsvRowEnumerator<AccountCsvRow, IAccountCsvRow>(dataStream);
     }
 
-    public IEnumerable<IExpenseCsvRow> GetExpenses()
+    public ICsvRowEnumerator<IExpenseCsvRow> GetExpenses()
     {
         _logger.LogCall(this);
 
@@ -63,7 +63,7 @@ internal sealed class ImportStreamReader : IImportStreamReader
         return new CsvRowEnumerator<ExpenseCsvRow, IExpenseCsvRow>(dataStream);
     }
 
-    public IEnumerable<IIncomeCsvRow> GetIncomes()
+    public ICsvRowEnumerator<IIncomeCsvRow> GetIncomes()
     {
         _logger.LogCall(this);
 
