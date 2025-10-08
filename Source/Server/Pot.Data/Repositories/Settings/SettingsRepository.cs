@@ -32,18 +32,15 @@ internal sealed class SettingsRepository : GenericRepository<PotDbContext, Setti
 
         var keyedSettings = settings.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-        // Using the environment variable POSTGRES_BACKUP_PATH if present since this is what a container will be using so it can mount a volume.
-        // If not running in a container, then use the value from the database settings.
-        var backupPath = _databaseConfiguration.BackupPath.IsNullOrEmpty()
-            ? ValueConversionHelper.GetString(keyedSettings, nameof(BackupSettings.Path), null)
-            : _databaseConfiguration.BackupPath;
-
         return new BackupSettings
         {
             Enabled = ValueConversionHelper.GetBool(keyedSettings, nameof(BackupSettings.Enabled), false),
-            Path = backupPath,
+
+            // Comes from the environment variable DATABASE:BACKUPPATH - must match the path used by the docker container
+            Path = _databaseConfiguration.BackupPath,
+
             RetentionDays = ValueConversionHelper.GetInt(keyedSettings, nameof(BackupSettings.RetentionDays), 7),
-            Schedule = ValueConversionHelper.GetString(keyedSettings, nameof(BackupSettings.Schedule), "15 * * *")! // Default: 15 minutes past the hour, every hour
+            Schedule = ValueConversionHelper.GetString(keyedSettings, nameof(BackupSettings.Schedule), "0 */4 * * *")! // Default: every 4 hours
         };
     }
 }

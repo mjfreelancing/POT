@@ -2,18 +2,18 @@
 
 public sealed class DatabaseConfiguration
 {
-    // Environment variable: POSTGRES_DB
+    // Environment variable: DATABASE:NAME
     public required string Name { get; init; }
 
-    // Environment variable: POSTGRES_HOST
+    // Environment variable: DATABASE:HOST
     public required string Host { get; init; }
 
-    // Environment variable: POSTGRES_USER
+    // Environment variable: DATABASE:USERNAME
     public required string Username { get; init; }
 
-    // Environment variable: POSTGRES_PASSWORD
+    // Environment variable: DATABASE:PASSWORD
     public required string Password { get; init; }
 
-    // Environment variable: POSTGRES_BACKUP_PATH
+    // Environment variable: DATABASE:BACKUPPATH
     public required string BackupPath { get; init; }
 }

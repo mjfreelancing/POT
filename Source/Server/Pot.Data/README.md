@@ -295,6 +295,7 @@ SELECT setval('public."Account_Id_seq"', (SELECT MAX("Id") FROM "Account"));
 SELECT setval('public."User_Id_seq"', (SELECT MAX("Id") FROM "User"));
 SELECT setval('public."Expense_Id_seq"', (SELECT MAX("Id") FROM "Expense"));
 SELECT setval('public."Income_Id_seq"', (SELECT MAX("Id") FROM "Income"));
+SELECT setval('public."Setting_Id_seq"', (SELECT MAX("Id") FROM "Setting"));
 ```
 
 ## Additional Resources
