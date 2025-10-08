@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Reflection;
 
 namespace Pot.AspNetCore.Features.Accruals.Status;
 
@@ -10,7 +9,7 @@ public sealed class Request
 
     // Binds to query string parameters such as ?RowIds=val1,val2,val3
     // Whitespace around the commas is stripped
-    public static ValueTask<Request?> BindAsync(HttpContext context, ParameterInfo _)
+    public static ValueTask<Request?> BindAsync(HttpContext context/*, ParameterInfo _*/)
     {
         var rowids = context.Request.Query
             .Where(item => item.Key.Equals(nameof(AccountRowIds), StringComparison.CurrentCultureIgnoreCase))
