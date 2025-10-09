@@ -136,11 +136,12 @@ function RenewAccrueAllAction() {
     );
   }
 
-  // Only enable if there's renewals AND accruals to process - there are other actions
-  // that can handle the case where there's only one or the other.
+  // Only enable if there's something:
+  // * expense renewals (will require accruals once renewed) OR
+  // * income renewals (does not affect accruals) AND accruals
   const hasData =
-    (expenseRenewals.length > 0 || incomeRenewals.length > 0) &&
-    accountAccruals.length > 0;
+    expenseRenewals.length > 0 ||
+    (incomeRenewals.length > 0 && accountAccruals.length > 0);
 
   return (
     <ActionCard
