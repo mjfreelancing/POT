@@ -9,152 +9,151 @@ using Pot.Data.Entities;
 using Pot.Shared.Extensions;
 using System.Diagnostics;
 
-namespace Pot.Data
+namespace Pot.Data;
+
+public abstract class DbContextBase : DbContext
 {
-    public abstract class DbContextBase : DbContext
+    private const string EntitySuffix = "Entity";
+    private static readonly Type EntityBaseType = typeof(EntityBase);
+
+    protected DbContextBase(DbContextOptions dbContextOptions)
+        : base(dbContextOptions)
     {
-        private const string EntitySuffix = "Entity";
-        private static readonly Type EntityBaseType = typeof(EntityBase);
+    }
 
-        protected DbContextBase(DbContextOptions dbContextOptions)
-            : base(dbContextOptions)
+    public override int SaveChanges()
+    {
+        OnBeforeSave();
+
+        return base.SaveChanges();
+    }
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        OnBeforeSave();
+
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        OnBeforeSave();
+
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        OnBeforeSave();
+
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    public static string GetTableNameFromEntity(EntityBase entity)
+    {
+        return entity.GetType().Name[..^EntitySuffix.Length];
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+
+        optionsBuilder.UseExceptionProcessor();
+
+        // Set to no tracking with identity resolution by default
+        // This will help with read performance while ensuring duplicate entities with the same key are not created
+        // https://docs.microsoft.com/en-us/ef/core/change-tracking/identity-resolution#identity-resolution-and-queries
+        optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution);
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.HasPostgresExtension("citext");
+
+        ConfigureEntities(modelBuilder);
+        ConfigureEnrichedEnum(modelBuilder);
+    }
+
+    private static void ConfigureEntities(ModelBuilder modelBuilder)
+    {
+        // Exclude anything that is not an EntityBase, such as EnrichedEnum<>
+        var entityTypes = modelBuilder.Model
+            .GetEntityTypes()
+            .Where(entity => entity.ClrType.IsDerivedFrom(typeof(EntityBase)));
+
+        foreach (var entityType in entityTypes)
         {
+            var entityName = entityType.DisplayName();
+
+            ValidateEntity(entityType, entityName);
+            SetTableName(entityType, entityName);
+            DisableCascadeDelete(entityType);
+            GenerateRowIdColumns(modelBuilder, entityType);
+        }
+    }
+
+    [Conditional("DEBUG")]
+    private static void ValidateEntity(IMutableEntityType entityType, string entityName)
+    {
+        if (!entityName.EndsWith(EntitySuffix))
+        {
+            throw new InvalidOperationException($"The entity '{entityType.ClrType}' does not have a suffix of '{EntitySuffix}'.");
         }
 
-        public override int SaveChanges()
+        if (!entityType.ClrType.IsDerivedFrom(EntityBaseType))
         {
-            OnBeforeSave();
-
-            return base.SaveChanges();
+            throw new InvalidOperationException($"The entity '{entityType.ClrType}' does not inherit '{EntityBaseType}'.");
         }
+    }
 
-        public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    private static void SetTableName(IMutableEntityType entityType, string entityName)
+    {
+        var tableName = entityName[..^EntitySuffix.Length];
+
+        entityType.SetTableName(tableName);
+    }
+
+    private static void DisableCascadeDelete(IMutableEntityType entityType)
+    {
+        var foreignKeys = entityType.GetForeignKeys();
+
+        foreach (var foreignKey in foreignKeys)
         {
-            OnBeforeSave();
-
-            return base.SaveChanges(acceptAllChangesOnSuccess);
+            foreignKey.DeleteBehavior = DeleteBehavior.Restrict;
         }
+    }
 
-        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    private static void GenerateRowIdColumns(ModelBuilder modelBuilder, IMutableEntityType entityType)
+    {
+        modelBuilder
+           .Entity(entityType.ClrType)
+           .Property(nameof(EntityBase.RowId))
+           .HasValueGenerator<GuidValueGenerator>()
+           .ValueGeneratedOnAdd();
+    }
+
+    private static void ConfigureEnrichedEnum(ModelBuilder modelBuilder)
+    {
+        // All enriched enum's across all entities will be stored as strings
+        modelBuilder.UseEnrichedEnum(options => options.AsName(maxLength: 10));
+    }
+
+    private void OnBeforeSave()
+    {
+        // For all create or update operations auto set the entity etag
+        var entries = ChangeTracker
+            .Entries()
+            .Where(entry => entry.State is EntityState.Added or EntityState.Modified);
+
+        foreach (var entry in entries)
         {
-            OnBeforeSave();
+            var entity = entry.Entity as EntityBase;
 
-            return base.SaveChangesAsync(cancellationToken);
-        }
-
-        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
-        {
-            OnBeforeSave();
-
-            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-        }
-
-        public static string GetTableNameFromEntity(EntityBase entity)
-        {
-            return entity.GetType().Name[..^EntitySuffix.Length];
-        }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            base.OnConfiguring(optionsBuilder);
-
-            optionsBuilder.UseExceptionProcessor();
-
-            // Set to no tracking with identity resolution by default
-            // This will help with read performance while ensuring duplicate entities with the same key are not created
-            // https://docs.microsoft.com/en-us/ef/core/change-tracking/identity-resolution#identity-resolution-and-queries
-            optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution);
-        }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            modelBuilder.HasPostgresExtension("citext");
-
-            ConfigureEntities(modelBuilder);
-            ConfigureEnrichedEnum(modelBuilder);
-        }
-
-        private static void ConfigureEntities(ModelBuilder modelBuilder)
-        {
-            // Exclude anything that is not an EntityBase, such as EnrichedEnum<>
-            var entityTypes = modelBuilder.Model
-                .GetEntityTypes()
-                .Where(entity => entity.ClrType.IsDerivedFrom(typeof(EntityBase)));
-
-            foreach (var entityType in entityTypes)
+            if (entity is not null)
             {
-                var entityName = entityType.DisplayName();
-
-                ValidateEntity(entityType, entityName);
-                SetTableName(entityType, entityName);
-                DisableCascadeDelete(entityType);
-                GenerateRowIdColumns(modelBuilder, entityType);
-            }
-        }
-
-        [Conditional("DEBUG")]
-        private static void ValidateEntity(IMutableEntityType entityType, string entityName)
-        {
-            if (!entityName.EndsWith(EntitySuffix))
-            {
-                throw new InvalidOperationException($"The entity '{entityType.ClrType}' does not have a suffix of '{EntitySuffix}'.");
-            }
-
-            if (!entityType.ClrType.IsDerivedFrom(EntityBaseType))
-            {
-                throw new InvalidOperationException($"The entity '{entityType.ClrType}' does not inherit '{EntityBaseType}'.");
-            }
-        }
-
-        private static void SetTableName(IMutableEntityType entityType, string entityName)
-        {
-            var tableName = entityName[..^EntitySuffix.Length];
-
-            entityType.SetTableName(tableName);
-        }
-
-        private static void DisableCascadeDelete(IMutableEntityType entityType)
-        {
-            var foreignKeys = entityType.GetForeignKeys();
-
-            foreach (var foreignKey in foreignKeys)
-            {
-                foreignKey.DeleteBehavior = DeleteBehavior.Restrict;
-            }
-        }
-
-        private static void GenerateRowIdColumns(ModelBuilder modelBuilder, IMutableEntityType entityType)
-        {
-            modelBuilder
-               .Entity(entityType.ClrType)
-               .Property(nameof(EntityBase.RowId))
-               .HasValueGenerator<GuidValueGenerator>()
-               .ValueGeneratedOnAdd();
-        }
-
-        private static void ConfigureEnrichedEnum(ModelBuilder modelBuilder)
-        {
-            // All enriched enum's across all entities will be stored as strings
-            modelBuilder.UseEnrichedEnum(options => options.AsName(maxLength: 10));
-        }
-
-        private void OnBeforeSave()
-        {
-            // For all create or update operations auto set the entity etag
-            var entries = ChangeTracker
-                .Entries()
-                .Where(entry => entry.State is EntityState.Added or EntityState.Modified);
-
-            foreach (var entry in entries)
-            {
-                var entity = entry.Entity as EntityBase;
-
-                if (entity is not null)
-                {
-                    entity.Etag = DateTime.UtcNow.GetEtag();
-                }
+                entity.Etag = DateTime.UtcNow.GetEtag();
             }
         }
     }

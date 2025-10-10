@@ -1,8 +1,7 @@
-﻿namespace Pot.Data.Entities
+﻿namespace Pot.Data.Entities;
+
+public interface IHasNextDue
 {
-    public interface IHasNextDue
-    {
-        DateOnly NextDue { get; }
-        DateOnly? EndDate { get; }
-    }
+    DateOnly NextDue { get; }
+    DateOnly? EndDate { get; }
 }
