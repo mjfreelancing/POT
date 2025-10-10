@@ -212,7 +212,7 @@ OneTimePasswords {
   Id: guid (PK)
   UserId: guid (nullable, FK to Users.Id) -- null for signup, populated for password reset
   Email: varchar (indexed) -- always populated for all use cases
-  Purpose: varchar -- 'PASSWORD_RESET', 'EMAIL_VERIFICATION', 'SIGNUP'
+  Reason: varchar(50) -- 'PasswordReset', 'Signup'
   OtpCode: varchar(6) -- 6-digit numeric code
   ExpiryDateTimeUtc: datetime -- when OTP expires
   IsUsed: boolean (default false) -- prevents replay attacks
@@ -416,7 +416,7 @@ public sealed class OneTimePasswordEntity : EntityBase
     [Required][MediumString] public required string CorrelationId { get; set; }
     [Required][MediumString][Citext] public required string Email { get; set; }
     [Required] public required OtpReason Reason { get; set; }
-    [Required][OtpCode] public required string OtpCode { get; set; }
+    [Required][MaxLength(6)][OtpCode] public required string OtpCode { get; set; }
     [Required] public required bool IsUsed { get; set; }
     [Required] public required DateTime CreatedUtc { get; set; }
     [Required] public required DateTime ExpiryUtc { get; set; }
@@ -427,7 +427,7 @@ public sealed class OneTimePasswordEntity : EntityBase
 
 #### Supporting Components
 
-- **OtpReason**: EnrichedEnum with `Signup`, `PasswordReset`
+- **OtpReason**: EnrichedEnum with `Signup`, `PasswordReset` (varchar(50) in database)
 - **OtpCodeAttribute**: RegularExpressionAttribute for `^\d{6}$` validation
 
 ### 🎯 Index Strategy (6 Indexes)
@@ -448,8 +448,9 @@ public sealed class OneTimePasswordEntity : EntityBase
 3. **Email always required** - common query field for both flows
 4. **UTC timestamps** - proper timezone handling
 5. **RegularExpressionAttribute** - built-in validation instead of custom
-6. **Comprehensive indexing** - covers all query patterns efficiently
-7. **No Metadata column** - cleaner separation with PendingUsers table for signup
+6. **EnrichedEnum varchar(50)** - all enums configured for 50-character database storage
+7. **Comprehensive indexing** - covers all query patterns efficiently
+8. **No Metadata column** - cleaner separation with PendingUsers table for signup
 
 ### 🔍 Query Examples
 
