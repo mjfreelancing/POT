@@ -137,7 +137,7 @@ public abstract class DbContextBase : DbContext
     private static void ConfigureEnrichedEnum(ModelBuilder modelBuilder)
     {
         // All enriched enum's across all entities will be stored as strings
-        modelBuilder.UseEnrichedEnum(options => options.AsName(maxLength: 10));
+        modelBuilder.UseEnrichedEnum(options => options.AsName(maxLength: 50));
     }
 
     private void OnBeforeSave()
