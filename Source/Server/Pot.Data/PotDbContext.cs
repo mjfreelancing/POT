@@ -10,6 +10,7 @@ public sealed class PotDbContext : DbContextBase
     public DbSet<ExpenseEntity> Expenses { get; set; }
     public DbSet<IncomeEntity> Incomes { get; set; }
     public DbSet<SettingEntity> Settings { get; set; }
+    public DbSet<OneTimePasswordEntity> OneTimePasswords { get; set; }
 
     public PotDbContext(DbContextOptions<PotDbContext> options)
         : base(options)
