@@ -3,7 +3,6 @@
 public sealed class BackupSettings
 {
     public bool Enabled { get; init; }
-    public string? Path { get; init; }
     public required int RetentionDays { get; init; }
     public required string Schedule { get; init; }
 }

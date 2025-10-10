@@ -1,5 +1,4 @@
 ﻿using AllOverIt.Assertion;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Pot.App.Concerns.Time;
 using Pot.AspNetCore.Concerns.Auth.Models;
@@ -17,9 +16,9 @@ internal sealed class JwtService : IJwtService
     private readonly JwtOptions _options;
     private readonly ITimeProvider _timeProvider;
 
-    public JwtService(IOptions<JwtOptions> options, ITimeProvider timeProvider)
+    public JwtService(JwtOptions options, ITimeProvider timeProvider)
     {
-        _options = options.Value.WhenNotNull();
+        _options = options.WhenNotNull();
         _timeProvider = timeProvider.WhenNotNull();
     }
 

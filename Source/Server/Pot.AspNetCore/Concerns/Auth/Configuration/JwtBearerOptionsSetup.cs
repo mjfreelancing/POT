@@ -4,7 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using Pot.AspNetCore.Concerns.Auth.Models;
 using System.Text;
 
-namespace Pot.AspNetCore.Concerns.Auth.Setup;
+namespace Pot.AspNetCore.Concerns.Auth.Configuration;
 
 public class JwtBearerOptionsSetup : IPostConfigureOptions<JwtBearerOptions>
 {

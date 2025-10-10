@@ -1,6 +1,7 @@
-﻿using AllOverIt.Assertion;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Pot.Data.Configuration;
+using Pot.Shared.Extensions;
 
 namespace Pot.Data.Extensions;
 
@@ -9,17 +10,10 @@ public static class DatabaseConfigurationExtensions
     public static IServiceCollection AddDatabaseConfiguration(this IServiceCollection services, IConfiguration configuration)
     {
         services
-            .Configure<DatabaseConfiguration>(options => configuration.GetSection("DATABASE")
-            .Bind(options));
+            .ConfigureOptions<DbBackupConfigurationSetup>()
 
-        // Validate required fields
-        services.PostConfigure<DatabaseConfiguration>(options =>
-        {
-            _ = options.Host.WhenNotNullOrEmpty();
-            _ = options.Name.WhenNotNullOrEmpty();
-            _ = options.Username.WhenNotNullOrEmpty();
-            _ = options.Password.WhenNotNullOrEmpty();
-        });
+            // Allow for injection of DatabaseConfiguration instead of IOptions<DatabaseConfiguration>
+            .AddSingletonFromOptions<DatabaseConfiguration>();
 
         return services;
     }

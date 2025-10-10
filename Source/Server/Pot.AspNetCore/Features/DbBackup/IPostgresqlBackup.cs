@@ -4,5 +4,5 @@ namespace Pot.AspNetCore.Features.DbBackup;
 
 public interface IPostgresqlBackup : IPotScopedDependency
 {
-    Task ExecuteAsync(string backupPath, CancellationToken cancellationToken);
+    Task ExecuteAsync(CancellationToken cancellationToken);
 }

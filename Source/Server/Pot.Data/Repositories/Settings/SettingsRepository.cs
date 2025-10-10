@@ -1,9 +1,7 @@
-﻿using AllOverIt.Assertion;
-using AllOverIt.Extensions;
+﻿using AllOverIt.Extensions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Pot.Data.Entities;
-using Pot.Data.Repositories.Settings.Helpers;
+using Pot.Data.Repositories.Settings.Extensions;
 using Pot.Data.Repositories.Settings.Models;
 using Pot.Shared;
 
@@ -11,12 +9,9 @@ namespace Pot.Data.Repositories.Settings;
 
 internal sealed class SettingsRepository : GenericRepository<PotDbContext, SettingEntity>, ISettingsRepository
 {
-    private readonly DatabaseConfiguration _databaseConfiguration;
-
-    public SettingsRepository(PotDbContext dbContext, IOptions<DatabaseConfiguration> databaseConfiguration)
+    public SettingsRepository(PotDbContext dbContext)
         : base(dbContext)
     {
-        _databaseConfiguration = databaseConfiguration.WhenNotNull().Value;
     }
 
     public async Task<BackupSettings> GetDatabaseSettingsAsync(CancellationToken cancellationToken)
@@ -34,13 +29,9 @@ internal sealed class SettingsRepository : GenericRepository<PotDbContext, Setti
 
         return new BackupSettings
         {
-            Enabled = ValueConversionHelper.GetBool(keyedSettings, nameof(BackupSettings.Enabled), false),
-
-            // Comes from the environment variable DATABASE:BACKUPPATH - must match the path used by the docker container
-            Path = _databaseConfiguration.BackupPath,
-
-            RetentionDays = ValueConversionHelper.GetInt(keyedSettings, nameof(BackupSettings.RetentionDays), 7),
-            Schedule = ValueConversionHelper.GetString(keyedSettings, nameof(BackupSettings.Schedule), "0 */4 * * *")! // Default: every 4 hours
+            Enabled = keyedSettings.GetBool(nameof(BackupSettings.Enabled), false),
+            RetentionDays = keyedSettings.GetInt(nameof(BackupSettings.RetentionDays), 7),
+            Schedule = keyedSettings.GetString(nameof(BackupSettings.Schedule), "0 */6 * * *") // Default: every 6 hours
         };
     }
 }

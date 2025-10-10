@@ -2,7 +2,7 @@
 using AllOverIt.GenericHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
+using Pot.Data.Configuration;
 using Pot.Data.Extensions;
 
 namespace Pot.Data.Migrations;
@@ -19,7 +19,7 @@ internal class Program
                     .AddDatabaseConfiguration(hostContext.Configuration)
                     .AddDbContextFactory<PotDbContext>((provider, options) =>
                     {
-                        var databaseConfiguration = provider.GetRequiredService<IOptions<DatabaseConfiguration>>().Value;
+                        var databaseConfiguration = provider.GetRequiredService<DatabaseConfiguration>();
                         var connectionString = databaseConfiguration.GetConnectionString();
 
                         options.ConfigurePostgres(connectionString);

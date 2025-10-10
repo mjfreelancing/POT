@@ -1,7 +1,7 @@
 ﻿using AllOverIt.Assertion;
-using AllOverIt.Extensions;
 using AllOverIt.GenericHost;
 using Pot.App.Concerns.Time;
+using Pot.AspNetCore.Features.DbBackup.Configuration;
 using Pot.Data.Repositories.Settings;
 using Pot.Data.Repositories.Settings.Models;
 
@@ -11,13 +11,15 @@ internal sealed class DbCleanupWorker : BackgroundWorker
 {
     private readonly ITimeProvider _timeProvider;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly BackupConfiguration _backupOptions;        // Never changes, so doesn't need to be scoped to each backup
 
     public DbCleanupWorker(IHostApplicationLifetime applicationLifetime, ITimeProvider timeProvider,
-        IServiceScopeFactory scopeFactory)
+        IServiceScopeFactory scopeFactory, BackupConfiguration backupOptions)
         : base(applicationLifetime)
     {
         _timeProvider = timeProvider.WhenNotNull();
         _scopeFactory = scopeFactory.WhenNotNull();
+        _backupOptions = backupOptions.WhenNotNull();
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -38,7 +40,7 @@ internal sealed class DbCleanupWorker : BackgroundWorker
                     var settingsRepository = serviceProvider.GetRequiredService<ISettingsRepository>();
                     var backupSettings = await GetBackupSettingsAsync(settingsRepository, stoppingToken).ConfigureAwait(false);
 
-                    if (!backupSettings.Enabled || backupSettings.RetentionDays < 1 || !ValidBackupSettings(backupSettings, logger))
+                    if (!backupSettings.Enabled || backupSettings.RetentionDays < 1)
                     {
                         // Try again later in case the backup is enabled
                         nextUtc = _timeProvider.GetUtcDateTimeNow().AddMinutes(1);
@@ -48,7 +50,7 @@ internal sealed class DbCleanupWorker : BackgroundWorker
                     var backupFileCleaner = serviceProvider.GetRequiredService<IBackupFileCleaner>();
 
                     await backupFileCleaner
-                        .RemoveOldFilesAsync(backupSettings.Path!, backupSettings.RetentionDays, stoppingToken)
+                        .RemoveOldFilesAsync(_backupOptions.BackupPath, backupSettings.RetentionDays, stoppingToken)
                         .ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
@@ -77,17 +79,6 @@ internal sealed class DbCleanupWorker : BackgroundWorker
         return await settingsRepository
             .GetDatabaseSettingsAsync(cancellationToken)
             .ConfigureAwait(false);
-    }
-
-    private static bool ValidBackupSettings(BackupSettings backupSettings, ILogger logger)
-    {
-        if (backupSettings.Path.IsNullOrEmpty())
-        {
-            logger.LogError("Database backup path is not configured");
-            return false;
-        }
-
-        return true;
     }
 
     private async Task WaitUntilAsync(DateTime targetUtc, CancellationToken cancellationToken)

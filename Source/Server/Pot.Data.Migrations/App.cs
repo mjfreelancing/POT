@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Npgsql;
 using Polly;
+using Pot.Data.Configuration;
 using Pot.Data.Extensions;
 
 namespace Pot.Data.Migrations;

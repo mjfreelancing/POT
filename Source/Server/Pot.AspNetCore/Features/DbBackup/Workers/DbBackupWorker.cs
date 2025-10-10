@@ -1,7 +1,7 @@
 ﻿using AllOverIt.Assertion;
-using AllOverIt.Extensions;
 using AllOverIt.GenericHost;
 using Cronos;
+using Microsoft.Extensions.Options;
 using Pot.App.Concerns.Time;
 using Pot.Data.Repositories.Settings;
 using Pot.Data.Repositories.Settings.Models;
@@ -51,7 +51,7 @@ internal sealed class DbBackupWorker : BackgroundWorker
 
                     // Perform an initial backup immediately on startup
                     var postgresqlBackup = serviceProvider.GetRequiredService<IPostgresqlBackup>();
-                    await postgresqlBackup.ExecuteAsync(backupSettings.Path!, stoppingToken).ConfigureAwait(false);
+                    await postgresqlBackup.ExecuteAsync(stoppingToken).ConfigureAwait(false);
 
                     var currentUtc = _timeProvider.GetUtcDateTimeNow();
 
@@ -61,6 +61,15 @@ internal sealed class DbBackupWorker : BackgroundWorker
                 catch (OperationCanceledException)
                 {
                     break;
+                }
+                catch (OptionsValidationException exception)
+                {
+                    // PostgresqlBackup depends on BackupConfiguration, which is validated on startup via IValidateOptions on BackupConfigurationSetup
+                    logger.LogError(exception, "The database backup configuration is invalid: {ExceptionMessage}", exception.Message);
+
+                    // TODO: Report this somewhere more visible than just the logs - ? admin user(s)?
+
+                    return; // No point continuing if the configuration is invalid since it won't change until the app restarts
                 }
                 catch (Exception exception)
                 {
@@ -86,22 +95,14 @@ internal sealed class DbBackupWorker : BackgroundWorker
 
     private static bool ValidBackupSettings(BackupSettings backupSettings, ILogger logger)
     {
-        var hasError = false;
-
-        if (backupSettings.Path.IsNullOrEmpty())
-        {
-            logger.LogError("Database backup path is not configured");
-            hasError = true;
-        }
-
         // The database backup is for all sites, so this is NOT site specific - hence based on UTC
         if (!CronExpression.TryParse(backupSettings.Schedule, out var cronExpression))
         {
             logger.LogError("Database backup schedule is not a valid cron expression: {BackupSchedule}", backupSettings.Schedule);
-            hasError = true;
+            return false;
         }
 
-        return !hasError;
+        return true;
     }
 
     private async Task WaitUntilAsync(DateTime targetUtc, CancellationToken cancellationToken)

@@ -1,4 +1,4 @@
-﻿namespace Pot.Data;
+﻿namespace Pot.Data.Configuration;
 
 public sealed class DatabaseConfiguration
 {
@@ -13,7 +13,4 @@ public sealed class DatabaseConfiguration
 
     // Environment variable: DATABASE:PASSWORD
     public required string Password { get; init; }
-
-    // Environment variable: DATABASE:BACKUPPATH
-    public required string BackupPath { get; init; }
 }

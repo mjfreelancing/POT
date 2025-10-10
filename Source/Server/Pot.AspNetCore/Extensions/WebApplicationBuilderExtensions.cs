@@ -6,11 +6,11 @@ using AllOverIt.Validation.Extensions;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Options;
 using Pot.App.Concerns.Validation;
 using Pot.App.Extensions;
 using Pot.AspNetCore.Concerns.Auth;
-using Pot.AspNetCore.Concerns.Auth.Setup;
+using Pot.AspNetCore.Concerns.Auth.Configuration;
+using Pot.AspNetCore.Concerns.Auth.Models;
 using Pot.AspNetCore.Concerns.Converters.JsonSerialization;
 using Pot.AspNetCore.Concerns.DependencyInjection;
 using Pot.AspNetCore.Concerns.ExceptionHandlers;
@@ -19,9 +19,11 @@ using Pot.AspNetCore.Concerns.Middleware;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Features.DbBackup.Extensions;
 using Pot.Data;
+using Pot.Data.Configuration;
 using Pot.Data.Extensions;
 using Pot.Shared;
 using Pot.Shared.DependencyInjection;
+using Pot.Shared.Extensions;
 
 namespace Pot.AspNetCore.Extensions;
 
@@ -37,6 +39,9 @@ internal static class WebApplicationBuilderExtensions
 
             // Sets up Jwt Bearer validation options - alternative approach to setting with AddJwtBearer().
             .ConfigureOptions<JwtBearerOptionsSetup>()
+
+            // Allow for injection of JwtOptions instead of IOptions<JwtOptions>
+            .AddSingletonFromOptions<JwtOptions>()
 
             .AddAuthorization(options =>
             {
@@ -215,14 +220,14 @@ internal static class WebApplicationBuilderExtensions
             .AddDatabaseConfiguration(builder.Configuration)
             .AddDbContext<PotDbContext>((provider, options) =>
             {
-                var databaseConfiguration = provider.GetRequiredService<IOptions<DatabaseConfiguration>>().Value;
+                var databaseConfiguration = provider.GetRequiredService<DatabaseConfiguration>();
                 var connectionString = databaseConfiguration.GetConnectionString();
 
                 options.ConfigurePostgres(connectionString);
             })
             .AddQueryPagination()
             .AddUnitOfWork()
-            .AddDbBackupWorker();
+            .AddDbBackup(builder.Environment, builder.Configuration);
 
         return builder;
     }
