@@ -9,6 +9,7 @@ namespace Pot.Data.Entities;
 public sealed class AccountEntity : EntityBase
 {
     [Required]
+    [AccountBsb]
     [MaxLength(7)]
     public required string Bsb { get; set; }
 
