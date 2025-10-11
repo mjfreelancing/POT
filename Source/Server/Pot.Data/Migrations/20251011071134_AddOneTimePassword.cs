@@ -22,7 +22,7 @@ namespace Pot.Data.Migrations
                     Email = table.Column<string>(type: "citext", maxLength: 100, nullable: false),
                     Reason = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     OtpCode = table.Column<string>(type: "character varying(6)", maxLength: 6, nullable: false),
-                    IsUsed = table.Column<bool>(type: "boolean", nullable: false),
+                    Status = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     CreatedUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ExpiryUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     VerifiedUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -52,9 +52,9 @@ namespace Pot.Data.Migrations
                 columns: new[] { "Email", "CreatedUtc" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_OneTimePassword_Email_Reason_ExpiryUtc_IsUsed",
+                name: "IX_OneTimePassword_Email_Reason_ExpiryUtc_Status",
                 table: "OneTimePassword",
-                columns: new[] { "Email", "Reason", "ExpiryUtc", "IsUsed" });
+                columns: new[] { "Email", "Reason", "ExpiryUtc", "Status" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_OneTimePassword_Etag",
@@ -78,9 +78,9 @@ namespace Pot.Data.Migrations
                 columns: new[] { "UserId", "CreatedUtc" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_OneTimePassword_UserId_Reason_ExpiryUtc_IsUsed",
+                name: "IX_OneTimePassword_UserId_Reason_ExpiryUtc_Status",
                 table: "OneTimePassword",
-                columns: new[] { "UserId", "Reason", "ExpiryUtc", "IsUsed" });
+                columns: new[] { "UserId", "Reason", "ExpiryUtc", "Status" });
         }
 
         /// <inheritdoc />

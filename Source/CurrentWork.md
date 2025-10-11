@@ -413,14 +413,14 @@ This approach gives us faster time-to-value and a more robust foundation for the
 ```csharp
 public sealed class OneTimePasswordEntity : EntityBase
 {
-    [Required][MediumString] public required string CorrelationId { get; set; }
+    [Required][SmallString] public required string CorrelationId { get; set; }
     [Required][MediumString][Citext] public required string Email { get; set; }
     [Required] public required OtpReason Reason { get; set; }
     [Required][MaxLength(6)][OtpCode] public required string OtpCode { get; set; }
-    [Required] public required bool IsUsed { get; set; }
+    [Required] public required OtpStatus Status { get; set; } = OtpStatus.Active;
     [Required] public required DateTime CreatedUtc { get; set; }
     [Required] public required DateTime ExpiryUtc { get; set; }
-    public DateTime? VerifiedUtc { get; set; }
+    public DateTime? VerifiedUtc { get; set; } // Set when Status becomes Used
     public UserEntity? User { get; set; } // FK: UserId (nullable)
 }
 ```
@@ -428,14 +428,15 @@ public sealed class OneTimePasswordEntity : EntityBase
 #### Supporting Components
 
 - **OtpReason**: EnrichedEnum with `Signup`, `PasswordReset` (varchar(50) in database)
+- **OtpStatus**: EnrichedEnum with `Active`, `Used`, `Invalidated`, `Expired` (varchar(50) in database)
 - **OtpCodeAttribute**: RegularExpressionAttribute for `^\d{6}$` validation
 
 ### 🎯 Index Strategy (6 Indexes)
 
 **Optimized for all query patterns**:
 
-1. **Password Reset**: `UserId + Reason + ExpiryUtc + IsUsed`
-2. **Signup Validation**: `Email + Reason + ExpiryUtc + IsUsed`
+1. **Password Reset**: `UserId + Reason + ExpiryUtc + Status`
+2. **Signup Validation**: `Email + Reason + ExpiryUtc + Status`
 3. **Cleanup Operations**: `ExpiryUtc`
 4. **Debugging/Tracing**: `CorrelationId`
 5. **Rate Limiting (User)**: `UserId + CreatedUtc`
@@ -448,17 +449,20 @@ public sealed class OneTimePasswordEntity : EntityBase
 3. **Email always required** - common query field for both flows
 4. **UTC timestamps** - proper timezone handling
 5. **RegularExpressionAttribute** - built-in validation instead of custom
-6. **EnrichedEnum varchar(50)** - all enums configured for 50-character database storage
-7. **Comprehensive indexing** - covers all query patterns efficiently
-8. **No Metadata column** - cleaner separation with PendingUsers table for signup
+6. **OtpStatus enum** - explicit state management (Active, Used, Invalidated, Expired)
+7. **EnrichedEnum varchar(50)** - all enums configured for 50-character database storage
+8. **Implicit attempt tracking** - failed attempts create new records, trackable via CreatedUtc + Status
+9. **Comprehensive indexing** - covers all query patterns efficiently
+10. **No Metadata column** - cleaner separation with PendingUsers table for signup
 
 ### 🔍 Query Examples
 
-Each index supports specific query patterns documented in entity comments:
+Each index supports specific query patterns:
 
-- **Validation queries**: Find valid, non-expired, unused OTPs
-- **Rate limiting queries**: Count recent attempts per user/email
-- **Cleanup queries**: Find expired records for archival
+- **Validation queries**: Find active OTPs (`Status = 'Active'`)
+- **Rate limiting queries**: Count recent attempts per user/email via `CreatedUtc`
+- **Attempt tracking**: Count failed attempts (`Status != 'Used'` + time window)
+- **Cleanup queries**: Find expired records for archival via `ExpiryUtc`
 - **Debugging queries**: Lookup by correlation ID for tracing
 
 ### 🚀 Next Steps
@@ -472,7 +476,246 @@ This entity design provides a solid, performant foundation for both password res
 
 ---
 
-## 📚 References
+## � API DESIGN DECISIONS: Password Reset Implementation
+
+**Date**: October 11, 2025  
+**Status**: 🎯 **DESIGN FINALIZED**
+
+### 🏗️ API Architecture Decision
+
+**Chosen Approach**: Focused endpoints per feature with shared OTP infrastructure
+
+```csharp
+// Current Implementation: Password Reset
+POST /api/auth/password-reset/request   // Generate & send OTP for password reset
+POST /api/auth/password-reset/verify    // Verify OTP & reset password
+
+// Future Implementation: Signup (when needed)
+POST /api/auth/signup/request           // Create pending user & send OTP
+POST /api/auth/signup/verify            // Verify OTP & create user + site
+```
+
+**Rationale**:
+
+- ✅ **Clear semantics** - endpoints clearly indicate their purpose
+- ✅ **Focused scope** - each endpoint handles one specific business case
+- ✅ **Shared infrastructure** - unified OneTimePasswordEntity supports both
+- ✅ **Future flexibility** - easy to add new OTP-based features
+- ✅ **Simple implementation** - start with password reset, add signup later
+
+### � Data Flow Comparison
+
+#### Password Reset Flow
+
+```csharp
+// Step 1: Request OTP
+POST /api/auth/password-reset/request
+{
+  "email": "user@example.com"
+}
+// Creates OTP with Reason='PasswordReset', UserId populated
+
+// Step 2: Verify OTP & Reset Password
+POST /api/auth/password-reset/verify
+{
+  "email": "user@example.com",
+  "otpCode": "123456",
+  "newPassword": "newSecurePassword"
+}
+// Validates OTP, updates existing user's password
+```
+
+#### Future Signup Flow
+
+```csharp
+// Step 1: Create Pending User & Request OTP
+POST /api/auth/signup/request
+{
+  "email": "newuser@example.com",
+  "username": "newuser",
+  "displayName": "New User",
+  "password": "password123"
+}
+// Creates PendingUser + OTP with Reason='Signup', UserId=null
+
+// Step 2: Verify OTP & Complete Signup
+POST /api/auth/signup/verify
+{
+  "email": "newuser@example.com",
+  "otpCode": "123456"
+}
+// Validates OTP, creates User + Site, assigns roles
+```
+
+**Key Differences**:
+
+- **Data Requirements**: Password reset only needs email; signup needs full user profile
+- **Business Logic**: Password reset updates existing user; signup creates new user + site
+- **Database State**: Password reset has UserId; signup uses separate PendingUsers table
+
+### �🛡️ Security Scenarios & Solutions
+
+#### **Scenario 1: Bad Actor Attack**
+
+```
+1. Attacker sends reset request for victim@example.com
+2. Victim receives unexpected reset email
+3. Victim initiates legitimate reset request
+```
+
+**Solution**: Auto-invalidate previous OTPs by setting `Status = OtpStatus.Invalidated`
+
+#### **Scenario 2: Multiple Failed Attempts**
+
+```
+User repeatedly enters wrong OTP codes
+```
+
+**Solution**: Each failed attempt requires new OTP request (natural rate limiting via email)
+
+- No complex attempt tracking needed in entity
+- Rate limiting prevents spam requests
+- User-friendly: "Wrong code? Request a new one"
+
+#### **Scenario 3: Time vs Status Validation**
+
+```
+OTP can be Status = 'Active' but ExpiryUtc < now (expired by time)
+```
+
+**Solution**: Validation requires BOTH conditions:
+
+```sql
+WHERE Status = 'Active' AND ExpiryUtc > @now
+```
+
+### 🔄 OTP Invalidation Strategy
+
+**Decision**: Use `OtpStatus.Invalidated` instead of manipulating expiry times
+
+```csharp
+// When new OTP requested, invalidate previous ones
+var existingOtps = await GetActiveOtpsByEmailAndReason(email, reason);
+foreach (var otp in existingOtps)
+{
+    otp.Status = OtpStatus.Invalidated; // Clear semantic meaning
+}
+```
+
+**Benefits**:
+
+- ✅ **Clear audit trail** - explicitly shows invalidation vs natural expiry
+- ✅ **Database clarity** - Status tells the story
+- ✅ **No confusion** - unlike setting `IsUsed = true` which implies success
+
+### 📊 Implicit Attempt Tracking
+
+**Discovery**: With new OTP created per failed attempt, we get automatic tracking:
+
+```sql
+-- Count failed attempts in time window
+SELECT COUNT(*) FROM OneTimePasswords
+WHERE Email = @email
+AND Reason = @reason
+AND CreatedUtc > @timeWindow
+AND Status IN ('Invalidated', 'Expired'); -- Failed attempts
+
+-- Current rate limiting (all attempts)
+SELECT COUNT(*) FROM OneTimePasswords
+WHERE Email = @email AND CreatedUtc > @timeWindow;
+```
+
+**Benefits**:
+
+- ✅ **No additional entity fields** needed
+- ✅ **Automatic tracking** via existing data
+- ✅ **Flexible analysis** - can query by time windows, success rates, etc.
+
+### 🎯 Validation Logic
+
+```csharp
+public async Task<Result<VerifyOtpResponse, VerifyOtpError>> Handle(VerifyOtpCommand request)
+{
+    // Find active OTP
+    var otp = await otpRepository.GetActiveOtp(request.Email, request.Reason);
+
+    // Validate status and expiry
+    if (otp == null || otp.Status != OtpStatus.Active || otp.ExpiryUtc <= DateTime.UtcNow)
+    {
+        return OtpNotValidError("Please request a new code");
+    }
+
+    // Validate code
+    if (otp.OtpCode != request.OtpCode)
+    {
+        return InvalidOtpCodeError("Invalid code. Request a new one?");
+    }
+
+    // Success - mark as used
+    otp.Status = OtpStatus.Used;
+    otp.VerifiedUtc = DateTime.UtcNow;
+    await otpRepository.UpdateAsync(otp);
+
+    return VerifyOtpResponse.Success();
+}
+```
+
+### 🔒 Rate Limiting Strategy
+
+**Email-based rate limiting** (primary security mechanism):
+
+```csharp
+// Check recent requests in last 15 minutes
+var recentRequests = await CountRecentOtpRequests(email, TimeSpan.FromMinutes(15));
+if (recentRequests >= 3)
+{
+    return RateLimitError("Too many requests. Try again in 15 minutes.");
+}
+```
+
+**No OTP attempt limiting** - users simply request new codes for failed attempts
+
+- ✅ **User-friendly** - no account lockouts
+- ✅ **Self-limiting** - email rate limiting prevents abuse
+- ✅ **Simpler logic** - no complex attempt state management
+
+### 🚀 Implementation Strategy
+
+#### Phase 1: Password Reset (Current Focus)
+
+- Implement `POST /api/auth/password-reset/request`
+- Implement `POST /api/auth/password-reset/verify`
+- Use `OtpReason.PasswordReset` with populated UserId
+- Test email delivery and OTP validation flow
+
+#### Phase 2: Signup (Future)
+
+- Implement `POST /api/auth/signup/request`
+- Implement `POST /api/auth/signup/verify`
+- Use `OtpReason.Signup` with UserId=null
+- Create PendingUsers table and user creation logic
+
+#### Shared Components
+
+- **OneTimePasswordEntity** - supports both flows via Reason field
+- **Email service** - sends OTPs for both password reset and signup
+- **Rate limiting** - applies to both flows using same email-based logic
+- **Frontend OTP component** - reusable for both verification dialogs
+
+### ✅ Final Architectural Decisions
+
+1. **OtpStatus enum** - explicit state management over boolean flags
+2. **Feature-focused endpoints** - separate endpoints per business case
+3. **Email rate limiting** - primary abuse prevention mechanism
+4. **No attempt tracking** - rely on natural request rate limiting
+5. **Clear invalidation** - use Status field for semantic clarity
+6. **Dual validation** - both Status and ExpiryUtc must be valid
+7. **Implicit analytics** - leverage existing data for attempt analysis
+8. **Shared infrastructure** - unified OTP system supports multiple features
+
+---
+
+## �📚 References
 
 - POT Architecture: See `.github/copilot-instructions.md`
 - Review Process: See `Copilot prompt.md`

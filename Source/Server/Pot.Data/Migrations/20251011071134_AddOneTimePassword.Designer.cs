@@ -12,7 +12,7 @@ using Pot.Data;
 namespace Pot.Data.Migrations
 {
     [DbContext(typeof(PotDbContext))]
-    [Migration("20251010121412_AddOneTimePassword")]
+    [Migration("20251011071134_AddOneTimePassword")]
     partial class AddOneTimePassword
     {
         /// <inheritdoc />
@@ -252,9 +252,6 @@ namespace Pot.Data.Migrations
                     b.Property<DateTime>("ExpiryUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("IsUsed")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("OtpCode")
                         .IsRequired()
                         .HasMaxLength(6)
@@ -268,6 +265,11 @@ namespace Pot.Data.Migrations
                     b.Property<Guid>("RowId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("integer");
@@ -290,9 +292,9 @@ namespace Pot.Data.Migrations
 
                     b.HasIndex("UserId", "CreatedUtc");
 
-                    b.HasIndex("Email", "Reason", "ExpiryUtc", "IsUsed");
+                    b.HasIndex("Email", "Reason", "ExpiryUtc", "Status");
 
-                    b.HasIndex("UserId", "Reason", "ExpiryUtc", "IsUsed");
+                    b.HasIndex("UserId", "Reason", "ExpiryUtc", "Status");
 
                     b.ToTable("OneTimePassword");
                 });
