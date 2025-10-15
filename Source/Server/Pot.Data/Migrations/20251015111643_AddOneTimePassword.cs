@@ -19,9 +19,12 @@ namespace Pot.Data.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     CorrelationId = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Username = table.Column<string>(type: "citext", maxLength: 100, nullable: false),
                     Email = table.Column<string>(type: "citext", maxLength: 100, nullable: false),
                     Reason = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    RefCode = table.Column<string>(type: "character varying(6)", maxLength: 6, nullable: false),
                     OtpCode = table.Column<string>(type: "character varying(6)", maxLength: 6, nullable: false),
+                    AttemptCount = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     Status = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     CreatedUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ExpiryUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -42,21 +45,6 @@ namespace Pot.Data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_OneTimePassword_CorrelationId",
-                table: "OneTimePassword",
-                column: "CorrelationId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OneTimePassword_Email_CreatedUtc",
-                table: "OneTimePassword",
-                columns: new[] { "Email", "CreatedUtc" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OneTimePassword_Email_Reason_ExpiryUtc_Status",
-                table: "OneTimePassword",
-                columns: new[] { "Email", "Reason", "ExpiryUtc", "Status" });
-
-            migrationBuilder.CreateIndex(
                 name: "IX_OneTimePassword_Etag",
                 table: "OneTimePassword",
                 column: "Etag");
@@ -67,20 +55,30 @@ namespace Pot.Data.Migrations
                 column: "ExpiryUtc");
 
             migrationBuilder.CreateIndex(
+                name: "IX_OneTimePassword_Reason_Username_RefCode",
+                table: "OneTimePassword",
+                columns: new[] { "Reason", "Username", "RefCode" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OneTimePassword_RowId",
                 table: "OneTimePassword",
                 column: "RowId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_OneTimePassword_UserId_CreatedUtc",
+                name: "IX_OneTimePassword_Status_ExpiryUtc",
                 table: "OneTimePassword",
-                columns: new[] { "UserId", "CreatedUtc" });
+                columns: new[] { "Status", "ExpiryUtc" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_OneTimePassword_UserId_Reason_ExpiryUtc_Status",
+                name: "IX_OneTimePassword_UserId",
                 table: "OneTimePassword",
-                columns: new[] { "UserId", "Reason", "ExpiryUtc", "Status" });
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OneTimePassword_Username_Status_CreatedUtc",
+                table: "OneTimePassword",
+                columns: new[] { "Username", "Status", "CreatedUtc" });
         }
 
         /// <inheritdoc />

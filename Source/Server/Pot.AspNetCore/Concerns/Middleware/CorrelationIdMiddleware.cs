@@ -1,6 +1,6 @@
 ﻿using AllOverIt.Assertion;
-using AllOverIt.Extensions;
 using Microsoft.AspNetCore.Http.Features;
+using Pot.AspNetCore.Extensions;
 using System.Net;
 
 namespace Pot.AspNetCore.Concerns.Middleware;
@@ -16,25 +16,23 @@ internal sealed class CorrelationIdMiddleware : IMiddleware
         _problemDetailsService = problemDetailsService;
     }
 
-    public async Task InvokeAsync(HttpContext context, RequestDelegate next)
+    public async Task InvokeAsync(HttpContext httpContext, RequestDelegate next)
     {
-        if (context.Request.Headers.TryGetValue("X-Correlation-Id", out var values))
+        if (httpContext.Request.TryGetCorrelationId(out var correlationId))
         {
-            var correlationId = values.First()!;
-
             if (correlationId.Length > 128)
             {
-                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                httpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
 
                 var problemDetails = new Microsoft.AspNetCore.Mvc.ProblemDetails
                 {
                     Detail = "CorrelationId exceeds max length of 128 chars",
-                    Status = context.Response.StatusCode
+                    Status = httpContext.Response.StatusCode
                 };
 
                 var problemDetailsContext = new ProblemDetailsContext
                 {
-                    HttpContext = context,
+                    HttpContext = httpContext,
                     ProblemDetails = problemDetails
                 };
 
@@ -43,14 +41,14 @@ internal sealed class CorrelationIdMiddleware : IMiddleware
                 return;
             }
 
-            context.TraceIdentifier = correlationId;
+            httpContext.TraceIdentifier = correlationId;
         }
 
-        var activityFeature = context.Features.GetRequiredFeature<IHttpActivityFeature>();
+        var activityFeature = httpContext.Features.GetRequiredFeature<IHttpActivityFeature>();
         var activity = activityFeature.Activity;
 
-        activity.AddTag("correlationId", context.TraceIdentifier);
+        activity.AddTag("correlationId", httpContext.TraceIdentifier);
 
-        await next(context);
+        await next(httpContext);
     }
 }

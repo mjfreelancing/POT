@@ -5,35 +5,27 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Pot.Data.Entities;
 
-// Example queries for each index:
+// Actual repository query patterns:
 // 
-// 1. Password reset for existing user:
-//    WHERE UserId = @userId AND Reason = 'PasswordReset' AND Status = 'Active' AND ExpiryUtc > @now
+// 1. GetPendingExpiredAsync - Find expired OTPs for cleanup:
+//    WHERE Status = 'Active' AND ExpiryUtc <= @now [AND Reason = @reason (optional)]
 // 
-// 2. Signup for new user:
-//    WHERE Email = @email AND Reason = 'Signup' AND Status = 'Active' AND ExpiryUtc > @now
+// 2. CountFailedRequestsForUsernameAsync - Rate limiting (account-level):
+//    WHERE Username = @username AND Status = 'Failed' AND CreatedUtc >= @afterDate [AND Reason = @reason (optional)]
 // 
-// 3. Find expired records for cleanup:
-//    WHERE ExpiryUtc < @now
+// 3. GetActiveRequestsForUsernameAsync - Invalidate previous active OTPs:
+//    WHERE Username = @username AND Status = 'Active' [AND Reason = @reason (optional)]
 // 
-// 4. Lookup by correlation ID for debugging/tracing:
-//    WHERE CorrelationId = @correlationId
-// 
-// 5. Count recent attempts per user (rate limiting):
-//    WHERE UserId = @userId AND CreatedUtc > @timeWindow
-// 
-// 6. Count recent attempts per email (rate limiting):
-//    WHERE Email = @email AND CreatedUtc > @timeWindow
+// 4. GetRequestsForUsernameAndRefCodeAsync - Verify OTP:
+//    WHERE Reason = @reason AND Username = @username AND RefCode = @refCode
 //
-// Additional capability - Count failed attempts for security analysis:
-//    WHERE Email = @email AND CreatedUtc > @timeWindow AND Status != 'Used'
-//
-[Index("UserId", nameof(Reason), nameof(ExpiryUtc), nameof(Status))]        // 1 - Password reset for existing user
-[Index(nameof(Email), nameof(Reason), nameof(ExpiryUtc), nameof(Status))]   // 2 - Signup for new user
-[Index(nameof(ExpiryUtc))]                                                  // 3 - Find expired records
-[Index(nameof(CorrelationId))]                                              // 4 - Lookup by correlation id
-[Index("UserId", nameof(CreatedUtc))]                                       // 5 - Count recent attempts per user
-[Index(nameof(Email), nameof(CreatedUtc))]                                  // 6 - Count recent attempts per email
+// Note: Reason is optional in methods 1-3, so indexes cannot rely on Reason as leading column
+
+
+[Index(nameof(Status), nameof(ExpiryUtc))]  // GetPendingExpiredAsync (with or without Reason filter)
+[Index(nameof(Username), nameof(Status), nameof(CreatedUtc))]  // CountFailedRequestsForUsernameAsync + GetActiveRequestsForUsernameAsync
+[Index(nameof(Reason), nameof(Username), nameof(RefCode))]  // GetRequestsForUsernameAndRefCodeAsync (Reason is required)
+[Index(nameof(ExpiryUtc))]  // General expiry cleanup queries
 public sealed class OneTimePasswordEntity : EntityBase
 {
     // For correlation with telemetry and logs
@@ -41,7 +33,14 @@ public sealed class OneTimePasswordEntity : EntityBase
     [SmallString]
     public required string CorrelationId { get; set; }
 
-    // Required for user when not an existing user
+    // Username and Email is required for when not an existing user (sign up) and
+    // we need the Username because an email can be associated with multiple sites.
+
+    [Required]
+    [MediumString]
+    [Citext]
+    public required string Username { get; set; }
+
     [Required]
     [MediumString]
     [Citext]
@@ -52,7 +51,14 @@ public sealed class OneTimePasswordEntity : EntityBase
     [Required]
     [MaxLength(6)]
     [OtpCode]
+    public required string RefCode { get; set; }
+
+    [Required]
+    [MaxLength(6)]
+    [OtpCode]
     public required string OtpCode { get; set; }
+
+    public int AttemptCount { get; set; } = 0;
 
     public required OtpStatus Status { get; set; }
     public required DateTime CreatedUtc { get; set; }

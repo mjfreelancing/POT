@@ -230,6 +230,11 @@ namespace Pot.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("AttemptCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
                     b.Property<string>("CorrelationId")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -259,6 +264,11 @@ namespace Pot.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<string>("RefCode")
+                        .IsRequired()
+                        .HasMaxLength(6)
+                        .HasColumnType("character varying(6)");
+
                     b.Property<Guid>("RowId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
@@ -271,12 +281,15 @@ namespace Pot.Data.Migrations
                     b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("citext");
+
                     b.Property<DateTime?>("VerifiedUtc")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CorrelationId");
 
                     b.HasIndex("Etag");
 
@@ -285,13 +298,13 @@ namespace Pot.Data.Migrations
                     b.HasIndex("RowId")
                         .IsUnique();
 
-                    b.HasIndex("Email", "CreatedUtc");
+                    b.HasIndex("UserId");
 
-                    b.HasIndex("UserId", "CreatedUtc");
+                    b.HasIndex("Status", "ExpiryUtc");
 
-                    b.HasIndex("Email", "Reason", "ExpiryUtc", "Status");
+                    b.HasIndex("Reason", "Username", "RefCode");
 
-                    b.HasIndex("UserId", "Reason", "ExpiryUtc", "Status");
+                    b.HasIndex("Username", "Status", "CreatedUtc");
 
                     b.ToTable("OneTimePassword");
                 });

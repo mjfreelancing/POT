@@ -21,20 +21,28 @@ public sealed class PotDbContext : DbContextBase
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<ExpenseEntity>()
+        modelBuilder
+            .Entity<ExpenseEntity>()
             .Property(expense => expense.AccruedIsDirty)
             .HasDefaultValue(true);
 
         // Sets up the many-to-many UserRole join table without an explicit model
-        modelBuilder.Entity<UserEntity>()
+        modelBuilder
+            .Entity<UserEntity>()
             .HasMany(user => user.Roles)
             .WithMany(role => role.Users)
             .UsingEntity("UserRole");
 
         // Sets up the many-to-many RolePermission join table without an explicit model
-        modelBuilder.Entity<RoleEntity>()
+        modelBuilder
+            .Entity<RoleEntity>()
             .HasMany(role => role.Permissions)
             .WithMany(permission => permission.Roles)
             .UsingEntity("RolePermission");
+
+        modelBuilder
+            .Entity<OneTimePasswordEntity>()
+            .Property(otp => otp.AttemptCount)
+            .HasDefaultValue(0);
     }
 }

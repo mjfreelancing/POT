@@ -13,16 +13,27 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
+import { PasswordResetDialog } from './passwordReset';
+import type { DisplayError } from './passwordReset/types/passwordResetTypes';
+
 type LoginFormProps = Omit<ComponentPropsWithoutRef<'div'>, 'onSubmit'> & {
   className?: string;
   onSubmit?: (data: LoginCredentials) => Promise<void>;
   error?: string;
+  onPasswordResetError: (error: DisplayError | null) => void;
 };
 
-function LoginForm({ className, onSubmit, error, ...props }: LoginFormProps) {
+function LoginForm({
+  className,
+  onSubmit,
+  error,
+  onPasswordResetError,
+  ...props
+}: LoginFormProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -62,18 +73,20 @@ function LoginForm({ className, onSubmit, error, ...props }: LoginFormProps) {
                   required
                   value={username}
                   onChange={e => setUsername(e.target.value)}
+                  tabIndex={1}
                 />
               </div>
               <div className="grid mb-4 gap-3">
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
-                  <a
-                    href="#"
-                    tabIndex={-1}
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswordReset(true)}
+                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline text-muted-foreground hover:text-primary transition-colors"
+                    tabIndex={3}
                   >
                     Forgot your password?
-                  </a>
+                  </button>
                 </div>
                 <Input
                   id="password"
@@ -84,6 +97,7 @@ function LoginForm({ className, onSubmit, error, ...props }: LoginFormProps) {
                   required
                   value={password}
                   onChange={e => setPassword(e.target.value)}
+                  tabIndex={2}
                 />
               </div>
               {error && <div className="text-red-600 text-sm">{error}</div>}
@@ -96,6 +110,7 @@ function LoginForm({ className, onSubmit, error, ...props }: LoginFormProps) {
                     username.trim() === '' ||
                     password.trim() === ''
                   }
+                  tabIndex={4}
                 >
                   {isLoading ? 'Logging in...' : 'Login'}
                 </Button>
@@ -115,6 +130,12 @@ function LoginForm({ className, onSubmit, error, ...props }: LoginFormProps) {
           </form>
         </CardContent>
       </Card>
+
+      <PasswordResetDialog
+        open={showPasswordReset}
+        onOpenChange={setShowPasswordReset}
+        onError={onPasswordResetError}
+      />
     </div>
   );
 }

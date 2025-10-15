@@ -1,4 +1,4 @@
-namespace Pot.App.Features.Auth.Me.Models;
+namespace Pot.App.Features.Me.Models;
 
 public sealed class Output
 {

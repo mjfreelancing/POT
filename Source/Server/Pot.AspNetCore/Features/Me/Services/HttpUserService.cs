@@ -1,7 +1,7 @@
 using AllOverIt.Assertion;
 using AllOverIt.Extensions;
-using Pot.App.Features.Auth.Me;
-using Pot.App.Features.Auth.Me.Models;
+using Pot.App.Features.Me;
+using Pot.App.Features.Me.Models;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace Pot.AspNetCore.Features.Me.Services;

@@ -8,5 +8,6 @@ export * from './useExports';
 export * from './useImports';
 export * from './useIncomes';
 export * from './useMe';
+export * from './usePasswordReset';
 export * from './useProjections';
 export * from './useUser';

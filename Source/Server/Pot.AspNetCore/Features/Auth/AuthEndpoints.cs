@@ -8,5 +8,7 @@ internal static class AuthEndpoints
     public const string Login = "/login";
     public const string Logout = "/logout";
     public const string Refresh = "/refresh";
+    public const string PasswordResetSend = "/password-reset/send";
+    public const string PasswordResetVerify = "/password-reset/verify";
 }
 
