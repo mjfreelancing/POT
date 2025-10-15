@@ -1,4 +1,5 @@
-import { DisplayError, getErrorMessage, logger } from '@/lib';
+import type { DisplayError} from '@/lib';
+import { getErrorMessage, logger } from '@/lib';
 
 type LocalStorageProps<T> = {
   key: string;

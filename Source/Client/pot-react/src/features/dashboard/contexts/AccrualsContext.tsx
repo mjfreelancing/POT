@@ -10,7 +10,8 @@ import React, {
 import { useApiAccrualsStatus, useApiGetAllAccounts } from '@/api/hooks';
 import { useWindowFocus } from '@/hooks/useWindowFocus';
 import { logger } from '@/lib/logging';
-import { DisplayError, EMPTY_STRING_ARRAY } from '@/lib/types';
+import type { DisplayError } from '@/lib/types';
+import { EMPTY_STRING_ARRAY } from '@/lib/types';
 
 type AccrualsContextProps = {
   expenseRenewals: typeof EMPTY_STRING_ARRAY;

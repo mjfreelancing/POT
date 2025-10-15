@@ -1,5 +1,6 @@
 import { useApiExport } from '@/api/hooks/useExports';
-import { FailResultBase, Result, SuccessResult } from '@/lib';
+import type { FailResultBase, Result } from '@/lib';
+import { SuccessResult } from '@/lib';
 import { logger } from '@/lib/logging';
 
 import { downloadBlob, extractFilename } from '../utils/fileUtils';

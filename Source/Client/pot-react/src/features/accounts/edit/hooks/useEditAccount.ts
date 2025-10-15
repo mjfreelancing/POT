@@ -1,8 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiUpdateAccount } from '@/api/hooks';
-import { EditAccount, Identity } from '@/data';
-import { FailResultBase, Result } from '@/lib';
+import type { EditAccount, Identity } from '@/data';
+import type { FailResultBase, Result } from '@/lib';
 import { logger } from '@/lib/logging';
 
 function useEditAccount() {
@@ -32,9 +32,6 @@ function useEditAccount() {
       }
 
       return result;
-    } catch (error) {
-      logger.error('Accounts', 'Edit account error', error);
-      throw error;
     } finally {
       controller.abort();
     }

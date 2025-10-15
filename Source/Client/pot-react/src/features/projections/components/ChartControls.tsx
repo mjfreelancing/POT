@@ -2,7 +2,7 @@ import { format } from 'date-fns';
 
 import { EnrichedDatePicker } from '@/components/picker/EnrichedDatePicker';
 import { Button } from '@/components/ui/button';
-import { ChartConfig } from '@/components/ui/chart';
+import type { ChartConfig } from '@/components/ui/chart';
 import {
   Select,
   SelectContent,
@@ -10,11 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  PROJECTION_METRICS,
-  PROJECTION_PERIODS,
-  ProjectionMetric,
-} from '@/data/projection';
+import type { ProjectionMetric } from '@/data/projection';
+import { PROJECTION_METRICS, PROJECTION_PERIODS } from '@/data/projection';
 import { localToday } from '@/lib';
 
 type ChartControlsProps = {

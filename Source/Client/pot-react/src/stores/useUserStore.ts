@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import { User } from '@/data/user';
+import type { User } from '@/data/user';
 
 type UserStore = {
   userInfo: User | null;

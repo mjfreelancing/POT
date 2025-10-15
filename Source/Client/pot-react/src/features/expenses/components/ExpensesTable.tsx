@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { ColumnDef, Row } from '@tanstack/react-table';
+import type { ColumnDef, Row } from '@tanstack/react-table';
 import { useParams } from 'react-router';
 
 import {
@@ -7,8 +7,8 @@ import {
   useApiToggleExcludeExpenses,
 } from '@/api/hooks/useExpenses';
 import { ErrorSheet } from '@/components/feedback';
+import type { BulkAction } from '@/components/table';
 import {
-  BulkAction,
   createDateColumn,
   createFrequencyColumn,
   createMoneyValueColumn,
@@ -18,7 +18,7 @@ import {
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { useErrorContext } from '@/contexts';
-import { Expense } from '@/data';
+import type { Expense } from '@/data';
 import { usePermissions } from '@/hooks';
 import {
   Frequency,

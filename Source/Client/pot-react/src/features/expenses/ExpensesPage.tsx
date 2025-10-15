@@ -11,7 +11,7 @@ import { AccountFilter, SearchInput } from '@/components/filters';
 import { Toolbar } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { useErrorContext } from '@/contexts';
-import { Expense } from '@/data/expense';
+import type { Expense } from '@/data/expense';
 import { useAccountFilter } from '@/hooks';
 import { logger } from '@/lib/logging';
 

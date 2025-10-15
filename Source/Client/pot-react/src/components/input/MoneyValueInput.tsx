@@ -1,9 +1,5 @@
-import {
-  ComponentPropsWithoutRef,
-  forwardRef,
-  useEffect,
-  useState,
-} from 'react';
+import type { ComponentPropsWithoutRef } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 
 import { isNumber } from '@/lib';
 

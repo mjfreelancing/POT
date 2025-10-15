@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 
-import { ChartConfig } from '@/components/ui/chart';
+import type { ChartConfig } from '@/components/ui/chart';
 import {
   Sheet,
   SheetContent,
@@ -8,7 +8,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { ProjectionIncomeItemWithAccount } from '@/data/projection';
+import type { ProjectionIncomeItemWithAccount } from '@/data/projection';
 import { formatMoneyValue } from '@/lib/moneyUtils';
 
 type IncomeDetailsProps = {

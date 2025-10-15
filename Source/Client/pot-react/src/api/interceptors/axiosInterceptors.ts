@@ -37,7 +37,8 @@
  *    - Maintain the pattern of wrapping all errors in FailResult
  */
 
-import axios, { AxiosError, AxiosResponse } from 'axios';
+import type { AxiosResponse } from 'axios';
+import axios, { AxiosError } from 'axios';
 
 import { FailResult } from '@/lib';
 import { logger } from '@/lib/logging';
@@ -52,8 +53,8 @@ import {
   getNotFoundMessage,
   getValidationMessage,
 } from '../errors/apiErrorResponse';
+import type { ApiError } from '../errors/apiErrors';
 import {
-  ApiError,
   AuthenticationError,
   ConflictError,
   ForbiddenError,

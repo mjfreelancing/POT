@@ -9,10 +9,8 @@ import { Frequency, todayIsoFormat } from '@/lib';
 
 import IncomeForm from '../../components/IncomeForm';
 import IncomeSheet from '../../components/IncomeSheet';
-import {
-  IncomeFormData,
-  incomeFormSchema,
-} from '../../schemas/incomeFormSchema';
+import type { IncomeFormData } from '../../schemas/incomeFormSchema';
+import { incomeFormSchema } from '../../schemas/incomeFormSchema';
 import useCreateIncome from '../hooks/useCreateIncome';
 
 type CreateIncomeFormProps = {

@@ -1,5 +1,5 @@
 import useLocalStorageManager from '@/hooks/useLocalStorageManager';
-import { DisplayError } from '@/lib';
+import type { DisplayError } from '@/lib';
 
 const INCOME_STORAGE_KEY = 'pot-incomes';
 

@@ -1,7 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiImport } from '@/api/hooks/useImports';
-import { FailResultBase, Result, SuccessResult } from '@/lib';
+import type { FailResultBase, Result } from '@/lib';
+import { SuccessResult } from '@/lib';
 import { logger } from '@/lib/logging';
 
 type ImportResult = {

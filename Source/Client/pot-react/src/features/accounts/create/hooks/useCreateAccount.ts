@@ -1,8 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiCreateAccount } from '@/api/hooks';
-import { CreateAccount, Identity } from '@/data';
-import { FailResultBase, Result } from '@/lib';
+import type { CreateAccount, Identity } from '@/data';
+import type { FailResultBase, Result } from '@/lib';
 import { logger } from '@/lib/logging';
 
 function useCreateAccount() {
@@ -30,9 +30,6 @@ function useCreateAccount() {
       }
 
       return result;
-    } catch (error) {
-      logger.error('Accounts', 'Create account error', error);
-      throw error;
     } finally {
       controller.abort();
     }

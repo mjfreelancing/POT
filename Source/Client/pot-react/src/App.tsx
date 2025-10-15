@@ -3,7 +3,8 @@ import { ErrorBoundary } from 'react-error-boundary';
 
 import { ErrorSheet } from '@/components/feedback';
 import { Toaster } from '@/components/ui/sonner';
-import { DisplayError, logger } from '@/lib';
+import type { DisplayError } from '@/lib';
+import { logger } from '@/lib';
 
 import { AppSidebar } from './components/nav';
 import { ThemeProvider } from './components/theme';

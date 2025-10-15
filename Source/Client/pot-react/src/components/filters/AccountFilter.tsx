@@ -5,7 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Account } from '@/data';
+import type { Account } from '@/data';
 
 type AccountFilterProps = {
   accounts: Account[];

@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiDeleteIncome } from '@/api/hooks';
-import { FailResultBase, Result } from '@/lib';
+import type { FailResultBase, Result } from '@/lib';
 
 function useDeleteIncome(rowId: string) {
   const queryClient = useQueryClient();

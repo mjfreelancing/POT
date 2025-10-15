@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiDeleteAccount } from '@/api/hooks';
-import { FailResultBase, Result } from '@/lib';
+import type { FailResultBase, Result } from '@/lib';
 import { logger } from '@/lib/logging';
 
 function useDeleteAccount(rowId: string) {
@@ -27,9 +27,6 @@ function useDeleteAccount(rowId: string) {
       }
 
       return result;
-    } catch (error) {
-      logger.error('Accounts', 'Delete account error', error);
-      throw error;
     } finally {
       controller.abort();
     }

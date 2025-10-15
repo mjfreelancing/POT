@@ -9,10 +9,8 @@ import { Frequency, todayIsoFormat } from '@/lib';
 
 import ExpenseForm from '../../components/ExpenseForm';
 import ExpenseSheet from '../../components/ExpenseSheet';
-import {
-  ExpenseFormData,
-  expenseFormSchema,
-} from '../../schemas/expenseFormSchema';
+import type { ExpenseFormData } from '../../schemas/expenseFormSchema';
+import { expenseFormSchema } from '../../schemas/expenseFormSchema';
 import useCreateExpense from '../hooks/useCreateExpense';
 
 type CreateExpenseFormProps = {

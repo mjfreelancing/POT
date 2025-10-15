@@ -1,5 +1,5 @@
 import { RotateCw } from 'lucide-react';
-import { JSX, ReactNode } from 'react';
+import type { JSX, ReactNode } from 'react';
 
 import { Card, CardContent } from '@/components/ui/card';
 import {

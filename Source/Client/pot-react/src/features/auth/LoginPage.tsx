@@ -8,7 +8,7 @@ import type { LoginCredentials } from '@/api/types/auth';
 import { ErrorSheet } from '@/components/feedback';
 import useAuthContext from '@/features/auth/AuthContext';
 import LoginForm from '@/features/auth/LoginForm';
-import type { DisplayError} from '@/lib';
+import type { DisplayError } from '@/lib';
 import { logger } from '@/lib';
 
 function LoginPage() {

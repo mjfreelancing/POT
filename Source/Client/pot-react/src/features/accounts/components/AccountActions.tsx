@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useErrorContext } from '@/contexts';
-import { Account } from '@/data';
+import type { Account } from '@/data';
 import { WithPermission } from '@/features/auth/components';
 
 import useDeleteAccount from '../delete/hooks/useDeleteAccount';

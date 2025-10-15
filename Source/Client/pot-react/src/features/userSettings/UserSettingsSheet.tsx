@@ -50,7 +50,7 @@
  * - Reinforce brand identity through consistent color usage
  */
 import { KeyIcon, UserIcon, XIcon } from 'lucide-react';
-import { JSX } from 'react';
+import type { JSX } from 'react';
 
 import {
   Accordion,

@@ -1,8 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiCreateIncome } from '@/api/hooks';
-import { CreateIncome, Identity } from '@/data';
-import { FailResultBase, Result } from '@/lib';
+import type { CreateIncome, Identity } from '@/data';
+import type { FailResultBase, Result } from '@/lib';
 
 function useCreateIncome() {
   const queryClient = useQueryClient();

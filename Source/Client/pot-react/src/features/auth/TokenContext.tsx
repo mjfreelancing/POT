@@ -1,6 +1,6 @@
+import type { ReactNode } from 'react';
 import {
   createContext,
-  ReactNode,
   useCallback,
   useContext,
   useMemo,
@@ -9,7 +9,7 @@ import {
 
 import { useErrorContext } from '@/contexts';
 import useLocalStorage from '@/hooks/useLocalStorage';
-import { DisplayError } from '@/lib';
+import type { DisplayError } from '@/lib';
 
 import { AUTH_STORAGE_KEY, type AuthTokens } from './types';
 

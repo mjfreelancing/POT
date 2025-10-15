@@ -3,8 +3,8 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { useApiGetProjection } from '@/api/hooks/useProjections';
 import { ErrorSheet, LoadingMessage } from '@/components/feedback';
-import { ProjectionMetric } from '@/data/projection';
-import { DisplayError } from '@/lib';
+import type { ProjectionMetric } from '@/data/projection';
+import type { DisplayError } from '@/lib';
 import {
   dateIsoFormat,
   formatDate,

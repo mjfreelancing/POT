@@ -1,4 +1,4 @@
-import { ColumnDef } from '@tanstack/react-table';
+import type { ColumnDef } from '@tanstack/react-table';
 import { Banknote, Calendar, DollarSign, PieChart } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 
@@ -7,10 +7,12 @@ import StatusBadge from '@/components/feedback/badge/StatusBadge';
 import { createMoneyValueColumn, DataTable } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Account, EMPTY_ACCOUNT_ARRAY } from '@/data';
+import type { Account } from '@/data';
+import { EMPTY_ACCOUNT_ARRAY } from '@/data';
 import { formatMoneyValue } from '@/lib';
 
-import { AccountsSummary, accountsSummaryStore } from '../stores';
+import type { AccountsSummary } from '../stores';
+import { accountsSummaryStore } from '../stores';
 import DashboardCardHeader from './DashboardCardHeader';
 import SummaryCardsGrid from './SummaryCardsGrid';
 

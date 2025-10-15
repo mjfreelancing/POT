@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import type { UseFormReturn } from 'react-hook-form';
 
-import { MoneyValueChangeEvent, MoneyValueInput } from '@/components/input';
+import type { MoneyValueChangeEvent } from '@/components/input';
+import { MoneyValueInput } from '@/components/input';
 import { EnrichedDatePicker } from '@/components/picker';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,7 +31,7 @@ import {
   todayIsoFormat,
 } from '@/lib';
 
-import { IncomeFormData } from '../schemas/incomeFormSchema';
+import type { IncomeFormData } from '../schemas/incomeFormSchema';
 
 type IncomeFormProps = {
   form: UseFormReturn<IncomeFormData>;

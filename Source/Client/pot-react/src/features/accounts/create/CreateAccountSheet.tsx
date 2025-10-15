@@ -4,14 +4,12 @@ import { useNavigate } from 'react-router';
 
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { useErrorContext } from '@/contexts';
-import { CreateAccount } from '@/data';
+import type { CreateAccount } from '@/data';
 
 import AccountForm from '../components/AccountForm';
 import AccountSheet from '../components/AccountSheet';
-import {
-  AccountFormData,
-  accountFormSchema,
-} from '../schemas/accountFormSchema';
+import type { AccountFormData } from '../schemas/accountFormSchema';
+import { accountFormSchema } from '../schemas/accountFormSchema';
 import useCreateAccount from './hooks/useCreateAccount';
 
 function CreateAccountSheet() {
