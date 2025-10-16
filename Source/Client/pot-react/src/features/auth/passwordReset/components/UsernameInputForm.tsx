@@ -17,12 +17,7 @@ function UsernameInputForm({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    const trimmedUsername = username.trim();
-
-    if (trimmedUsername) {
-      await onSubmit(trimmedUsername);
-    }
+    await onSubmit(username.trim());
   };
 
   return (
@@ -35,7 +30,7 @@ function UsernameInputForm({
           type="text"
           placeholder="Enter your username"
           value={username}
-          onChange={e => setUsername(e.target.value)}
+          onChange={e => setUsername(e.target.value.trim())}
           required
           disabled={isLoading}
         />

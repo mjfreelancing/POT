@@ -109,7 +109,7 @@ function OtpVerificationForm({
 
   const handleVerificationCodeChange = (value: string) => {
     setVerificationCode(value);
-    // Remove auto-submit - let user click "Verify Code" button
+    // User can click "Verify Code" button
   };
 
   // Format countdown time as mm:ss for better UX

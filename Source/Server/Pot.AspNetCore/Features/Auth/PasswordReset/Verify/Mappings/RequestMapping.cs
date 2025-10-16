@@ -8,7 +8,7 @@ internal static class RequestMapping
     {
         return new Input
         {
-            Username = request.Username,
+            Username = request.Username.Trim(),
             ReferenceCode = request.ReferenceCode,
             VerificationCode = request.VerificationCode
         };

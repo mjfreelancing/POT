@@ -72,7 +72,7 @@ function LoginForm({
                   type="text"
                   required
                   value={username}
-                  onChange={e => setUsername(e.target.value)}
+                  onChange={e => setUsername(e.target.value.trim())}
                   tabIndex={1}
                 />
               </div>
