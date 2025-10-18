@@ -19,6 +19,7 @@ using Pot.AspNetCore.Concerns.ExceptionHandlers;
 using Pot.AspNetCore.Concerns.Logging;
 using Pot.AspNetCore.Concerns.Middleware;
 using Pot.AspNetCore.Concerns.Validation;
+using Pot.AspNetCore.Features.Auth.Extensions;
 using Pot.AspNetCore.Features.DbBackup.Extensions;
 using Pot.Data;
 using Pot.Data.Configuration;
@@ -37,7 +38,9 @@ internal static class WebApplicationBuilderExtensions
 
     public static WebApplicationBuilder AddPotAuth(this WebApplicationBuilder builder)
     {
-        builder.Services
+        var services = builder.Services;
+
+        services
             // Binds configuration from the "Jwt" section onto a JwtOptions instance, which is later injected into JwtBearerOptionsSetup.
             .ConfigureOptions<JwtOptionsSetup>()
 
@@ -60,8 +63,10 @@ internal static class WebApplicationBuilderExtensions
                 options.MapInboundClaims = false;
             });
 
-        builder.Services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
-        builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+        services
+            .AddOtpCleanup()
+            .AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>()
+            .AddSingleton<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
 
         return builder;
     }

@@ -9,6 +9,8 @@ namespace Pot.AspNetCore.Features.DbBackup.Workers;
 
 internal sealed class DbCleanupWorker : BackgroundWorker
 {
+    private const int DelayMinutes = 15;
+
     private readonly ITimeProvider _timeProvider;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly BackupConfiguration _backupOptions;        // Never changes, so doesn't need to be scoped to each backup
@@ -62,12 +64,12 @@ internal sealed class DbCleanupWorker : BackgroundWorker
                     logger.LogError(exception, "An error occurred during the database cleanup process: {ExceptionMessage}", exception.Message);
                 }
 
-                nextUtc = _timeProvider.GetUtcDateTimeNow().AddMinutes(15);
+                nextUtc = _timeProvider.GetUtcDateTimeNow().AddMinutes(DelayMinutes);
             }
 
             if (nextUtc.HasValue)
             {
-                logger.LogInformation("Next database cleaned scheduled for {NextBackupTimeUtc:O} (UTC)", nextUtc);
+                logger.LogInformation("Next database cleanup scheduled for {NextBackupTimeUtc:O} (UTC)", nextUtc);
 
                 await WaitUntilAsync(nextUtc.Value, stoppingToken);
             }
