@@ -127,8 +127,8 @@ namespace Pot.Data.Migrations
 
                     b.Property<string>("Frequency")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<int>("FrequencyCount")
                         .HasColumnType("integer");
@@ -191,8 +191,8 @@ namespace Pot.Data.Migrations
 
                     b.Property<string>("Frequency")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<int>("FrequencyCount")
                         .HasColumnType("integer");
@@ -222,6 +222,97 @@ namespace Pot.Data.Migrations
                     b.ToTable("Income");
                 });
 
+            modelBuilder.Entity("Pot.Data.Entities.OneTimePasswordEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AttemptCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("CorrelationId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("citext");
+
+                    b.Property<long>("Etag")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("ExpiryUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("OtpCode")
+                        .IsRequired()
+                        .HasMaxLength(6)
+                        .HasColumnType("character varying(6)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("RefCode")
+                        .IsRequired()
+                        .HasMaxLength(6)
+                        .HasColumnType("character varying(6)");
+
+                    b.Property<Guid>("RowId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("TempPasswordHash")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("citext");
+
+                    b.Property<DateTime?>("VerifiedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Etag");
+
+                    b.HasIndex("ExpiryUtc");
+
+                    b.HasIndex("RowId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("Status", "ExpiryUtc");
+
+                    b.HasIndex("Reason", "Username", "RefCode");
+
+                    b.HasIndex("Username", "Status", "CreatedUtc");
+
+                    b.ToTable("OneTimePassword");
+                });
+
             modelBuilder.Entity("Pot.Data.Entities.PermissionEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -235,8 +326,8 @@ namespace Pot.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<Guid>("RowId")
                         .ValueGeneratedOnAdd()
@@ -268,8 +359,8 @@ namespace Pot.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<Guid>("RowId")
                         .ValueGeneratedOnAdd()
@@ -298,8 +389,8 @@ namespace Pot.Data.Migrations
 
                     b.Property<string>("Category")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -494,6 +585,16 @@ namespace Pot.Data.Migrations
                     b.Navigation("Account");
                 });
 
+            modelBuilder.Entity("Pot.Data.Entities.OneTimePasswordEntity", b =>
+                {
+                    b.HasOne("Pot.Data.Entities.UserEntity", "User")
+                        .WithMany("OneTimePasswords")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Pot.Data.Entities.SettingEntity", b =>
                 {
                     b.HasOne("Pot.Data.Entities.SiteEntity", "Site")
@@ -557,6 +658,11 @@ namespace Pot.Data.Migrations
                     b.Navigation("Accounts");
 
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("Pot.Data.Entities.UserEntity", b =>
+                {
+                    b.Navigation("OneTimePasswords");
                 });
 #pragma warning restore 612, 618
         }

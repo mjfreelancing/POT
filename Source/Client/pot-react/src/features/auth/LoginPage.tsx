@@ -8,7 +8,8 @@ import type { LoginCredentials } from '@/api/types/auth';
 import { ErrorSheet } from '@/components/feedback';
 import useAuthContext from '@/features/auth/AuthContext';
 import LoginForm from '@/features/auth/LoginForm';
-import { DisplayError, logger } from '@/lib';
+import type { DisplayError } from '@/lib';
+import { logger } from '@/lib';
 
 function LoginPage() {
   const [authError, setAuthError] = useState<DisplayError | null>(null);
@@ -64,6 +65,7 @@ function LoginPage() {
         <LoginForm
           onSubmit={handleLogin}
           error={authError ? authError.description : undefined}
+          onPasswordResetError={setOtherError}
         />
         {otherError && (
           <ErrorSheet

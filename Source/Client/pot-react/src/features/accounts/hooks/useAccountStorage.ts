@@ -1,5 +1,5 @@
 import useLocalStorageManager from '@/hooks/useLocalStorageManager';
-import { DisplayError } from '@/lib';
+import type { DisplayError } from '@/lib';
 
 type AccountStorageData = {
   filterDescription: string | null;

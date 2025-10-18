@@ -1,8 +1,8 @@
-import { QueryClient } from '@tanstack/react-query';
+import type { QueryClient } from '@tanstack/react-query';
 
-import { useApiToggleExcludeIncomes } from '@/api/hooks/useIncomes';
-import { Income } from '@/data';
-import { BulkActionResult } from '@/lib';
+import type { useApiToggleExcludeIncomes } from '@/api/hooks/useIncomes';
+import type { Income } from '@/data';
+import type { BulkActionResult } from '@/lib';
 
 async function toggleExcludeIncomes(
   incomes: Income[],

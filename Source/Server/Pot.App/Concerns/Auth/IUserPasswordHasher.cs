@@ -1,7 +1,7 @@
 ﻿using Pot.Data.Entities;
 using Pot.Shared.DependencyInjection;
 
-namespace Pot.AspNetCore.Concerns.Auth;
+namespace Pot.App.Concerns.Auth;
 
 public interface IUserPasswordHasher : IPotScopedDependency
 {

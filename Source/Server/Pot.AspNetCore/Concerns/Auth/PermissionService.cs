@@ -33,6 +33,6 @@ internal sealed class PermissionService : IPermissionService
         return [.. roles
             .SelectMany(role => role)
             .SelectMany(role => role.Permissions)
-            .Select(permission => permission.Name)];
+            .Select(permission => permission.Name.Name)];
     }
 }

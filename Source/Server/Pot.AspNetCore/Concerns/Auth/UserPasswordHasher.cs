@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Pot.App.Concerns.Auth;
 using Pot.Data.Entities;
 
 namespace Pot.AspNetCore.Concerns.Auth;

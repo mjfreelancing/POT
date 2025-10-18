@@ -1,7 +1,7 @@
-﻿using Pot.App.Features.Auth.Me.Models;
+﻿using Pot.App.Features.Me.Models;
 using Pot.Shared.DependencyInjection;
 
-namespace Pot.App.Features.Auth.Me;
+namespace Pot.App.Features.Me;
 
 public interface IUserService : IPotScopedDependency
 {

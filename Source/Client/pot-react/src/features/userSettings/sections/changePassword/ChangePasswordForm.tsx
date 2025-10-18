@@ -20,10 +20,8 @@ import { Input } from '@/components/ui/input';
 import { useErrorContext } from '@/contexts';
 import { logger } from '@/lib/logging';
 
-import {
-  ChangePasswordFields,
-  changePasswordSchema,
-} from './changePasswordSchema';
+import type { ChangePasswordFields } from './changePasswordSchema';
+import { changePasswordSchema } from './changePasswordSchema';
 
 function ChangePasswordForm() {
   const form = useForm<ChangePasswordFields>({

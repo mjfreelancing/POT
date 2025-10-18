@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 
-import { Account } from '@/data';
+import type { Account } from '@/data';
 
 /**
  * Represents any item that can be associated with an account.

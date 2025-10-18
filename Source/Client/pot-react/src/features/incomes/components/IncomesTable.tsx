@@ -1,12 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { ColumnDef, Row } from '@tanstack/react-table';
+import type { ColumnDef, Row } from '@tanstack/react-table';
 import { Ban } from 'lucide-react';
 import { useParams } from 'react-router';
 
 import { useApiRenewIncomes, useApiToggleExcludeIncomes } from '@/api/hooks';
 import { ErrorSheet, NotePopover, StatusBadge } from '@/components/feedback';
+import type { BulkAction } from '@/components/table';
 import {
-  BulkAction,
   createDateColumn,
   createFrequencyColumn,
   createMoneyValueColumn,
@@ -16,7 +16,7 @@ import {
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { useErrorContext } from '@/contexts';
-import { Income } from '@/data';
+import type { Income } from '@/data';
 import { usePermissions } from '@/hooks';
 import { Frequency, getTableRowClassName } from '@/lib';
 

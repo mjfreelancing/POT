@@ -1,4 +1,4 @@
-import { WindowSaveFile } from '@/lib';
+import type { WindowSaveFile } from '@/lib';
 
 class FileOperationCancelledError extends Error {
   constructor(message = 'File operation was cancelled by the user') {

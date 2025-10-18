@@ -1,7 +1,8 @@
-import { QueryClient } from '@tanstack/react-query';
+import type { QueryClient } from '@tanstack/react-query';
 
-import { useApiRenewIncomes } from '@/api/hooks';
-import { BulkActionResult, todayIsoFormat } from '@/lib';
+import type { useApiRenewIncomes } from '@/api/hooks';
+import type { BulkActionResult } from '@/lib';
+import { todayIsoFormat } from '@/lib';
 
 async function renewIncomes(
   incomesRowIds: string[],

@@ -1,4 +1,4 @@
-using Pot.App.Features.Auth.Me.Models;
+using Pot.App.Features.Me.Models;
 using Pot.Shared.DependencyInjection;
 
 namespace Pot.AspNetCore.Features.Me.Services;

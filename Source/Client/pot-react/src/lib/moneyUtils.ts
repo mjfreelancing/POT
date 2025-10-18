@@ -1,4 +1,4 @@
-import { MoneyValue } from './types';
+import type { MoneyValue } from './types';
 
 /**
  * Formats a numeric value as a localized currency string

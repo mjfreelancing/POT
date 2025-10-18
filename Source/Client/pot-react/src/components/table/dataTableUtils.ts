@@ -1,4 +1,4 @@
-import { Identity } from '@/data';
+import type { Identity } from '@/data';
 
 /**
  * Creates a getRowId function for DataTable that uses the rowId property from Identity-based objects.

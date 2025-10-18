@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Http.HttpResults;
-using Pot.App.Features.Auth.Me.Models;
+using Pot.App.Features.Me.Models;
 using Pot.AspNetCore.Models;
 using System.ComponentModel;
 

@@ -1,6 +1,6 @@
-import { User } from '@/data/user';
+import type { User } from '@/data/user';
 import { useTokens } from '@/features/auth/TokenContext';
-import { FailResultBase, Result } from '@/lib';
+import type { FailResultBase, Result } from '@/lib';
 
 import { useGet } from './useApi';
 

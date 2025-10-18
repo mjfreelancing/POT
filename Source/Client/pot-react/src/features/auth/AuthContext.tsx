@@ -1,6 +1,6 @@
+import type { ReactNode } from 'react';
 import {
   createContext,
-  ReactNode,
   useCallback,
   useContext,
   useEffect,
@@ -10,8 +10,8 @@ import {
 
 import { useLogout } from '@/api/hooks/useAuth';
 import { useMe } from '@/api/hooks/useMe';
-import { User } from '@/data/user';
-import { DisplayError } from '@/lib';
+import type { User } from '@/data/user';
+import type { DisplayError } from '@/lib';
 import { logger } from '@/lib/logging';
 import { useUserStore } from '@/stores';
 

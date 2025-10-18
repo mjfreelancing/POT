@@ -1,8 +1,8 @@
-import { Row } from '@tanstack/react-table';
+import type { Row } from '@tanstack/react-table';
 import { Ban } from 'lucide-react';
 
 import { NotePopover, StatusBadge } from '@/components/feedback';
-import { Expense } from '@/data';
+import type { Expense } from '@/data';
 
 function getAdornedExpenseDescription(row: Row<Expense>) {
   return (

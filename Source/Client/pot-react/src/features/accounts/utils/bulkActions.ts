@@ -1,7 +1,7 @@
-import { QueryClient } from '@tanstack/react-query';
+import type { QueryClient } from '@tanstack/react-query';
 
-import { useApiAccrueAccountExpenses } from '@/api/hooks';
-import { BulkActionResult } from '@/lib';
+import type { useApiAccrueAccountExpenses } from '@/api/hooks';
+import type { BulkActionResult } from '@/lib';
 
 async function accrueAllAccountExpenses(
   accountRowIds: string[],

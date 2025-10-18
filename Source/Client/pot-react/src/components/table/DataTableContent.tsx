@@ -1,9 +1,9 @@
-import {
+import type {
   ColumnDef,
-  flexRender,
   Row,
   Table as ReactTable,
 } from '@tanstack/react-table';
+import { flexRender } from '@tanstack/react-table';
 
 import { TableBody, TableCell, TableRow } from '../ui/table';
 

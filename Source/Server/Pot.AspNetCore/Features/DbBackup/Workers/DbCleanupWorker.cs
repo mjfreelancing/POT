@@ -1,6 +1,7 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.GenericHost;
 using Pot.App.Concerns.Time;
+using Pot.App.Concerns.Time.Extensions;
 using Pot.AspNetCore.Features.DbBackup.Configuration;
 using Pot.Data.Repositories.Settings;
 using Pot.Data.Repositories.Settings.Models;
@@ -9,6 +10,8 @@ namespace Pot.AspNetCore.Features.DbBackup.Workers;
 
 internal sealed class DbCleanupWorker : BackgroundWorker
 {
+    private const int DelayMinutes = 15;
+
     private readonly ITimeProvider _timeProvider;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly BackupConfiguration _backupOptions;        // Never changes, so doesn't need to be scoped to each backup
@@ -62,14 +65,14 @@ internal sealed class DbCleanupWorker : BackgroundWorker
                     logger.LogError(exception, "An error occurred during the database cleanup process: {ExceptionMessage}", exception.Message);
                 }
 
-                nextUtc = _timeProvider.GetUtcDateTimeNow().AddMinutes(15);
+                nextUtc = _timeProvider.GetUtcDateTimeNow().AddMinutes(DelayMinutes);
             }
 
             if (nextUtc.HasValue)
             {
-                logger.LogInformation("Next database cleaned scheduled for {NextBackupTimeUtc:O} (UTC)", nextUtc);
+                logger.LogInformation("Next database cleanup scheduled for {NextBackupTimeUtc:O} (UTC)", nextUtc);
 
-                await WaitUntilAsync(nextUtc.Value, stoppingToken);
+                await _timeProvider.WaitUntilUtcAsync(nextUtc.Value, stoppingToken);
             }
         }
     }
@@ -79,27 +82,5 @@ internal sealed class DbCleanupWorker : BackgroundWorker
         return await settingsRepository
             .GetDatabaseSettingsAsync(cancellationToken)
             .ConfigureAwait(false);
-    }
-
-    private async Task WaitUntilAsync(DateTime targetUtc, CancellationToken cancellationToken)
-    {
-        while (true)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            // Checking more than once in case the system time changes or there is drift that may 
-            // result in the next occurrence being a matter of seconds later rather than the expected
-            // cron schedule (the latter has been observed).
-            var currentUtc = _timeProvider.GetUtcDateTimeNow();
-
-            var delayTimespan = targetUtc - currentUtc;
-
-            if (delayTimespan <= TimeSpan.Zero)
-            {
-                return;
-            }
-
-            await Task.Delay(delayTimespan, cancellationToken);
-        }
     }
 }

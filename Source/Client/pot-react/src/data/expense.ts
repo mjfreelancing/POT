@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { Frequency } from '@/lib';
 
 import { EtagSchema, IdentitySchema } from './identity';
-import { Paged } from './types';
+import type { Paged } from './types';
 
 const ExpenseAccountSchema = z.object({
   rowId: z.string(),

@@ -1,6 +1,7 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
+using Pot.App.Concerns.Auth;
 using Pot.App.Concerns.Time;
 using Pot.App.Errors;
 using Pot.AspNetCore.Concerns.Auth.Models;

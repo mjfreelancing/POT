@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import type { UseFormReturn } from 'react-hook-form';
 
-import { MoneyValueChangeEvent, MoneyValueInput } from '@/components/input';
+import type { MoneyValueChangeEvent } from '@/components/input';
+import { MoneyValueInput } from '@/components/input';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -13,7 +14,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 
-import { AccountFormData } from '../schemas/accountFormSchema';
+import type { AccountFormData } from '../schemas/accountFormSchema';
 
 type AccountFormProps = {
   form: UseFormReturn<AccountFormData>;

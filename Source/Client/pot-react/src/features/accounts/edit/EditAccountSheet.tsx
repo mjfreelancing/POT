@@ -7,14 +7,12 @@ import { useApiGetAccountById } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { useErrorContext } from '@/contexts';
-import { Account, EditAccount } from '@/data';
+import type { Account, EditAccount } from '@/data';
 
 import AccountForm from '../components/AccountForm';
 import AccountSheet from '../components/AccountSheet';
-import {
-  AccountFormData,
-  accountFormSchema,
-} from '../schemas/accountFormSchema';
+import type { AccountFormData } from '../schemas/accountFormSchema';
+import { accountFormSchema } from '../schemas/accountFormSchema';
 import useEditAccount from './hooks/useEditAccount';
 
 // This internal sheet is used to encapsulate the form logic and state management.

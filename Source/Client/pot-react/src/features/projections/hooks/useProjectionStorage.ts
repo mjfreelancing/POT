@@ -1,10 +1,10 @@
+import type { ProjectionMetric } from '@/data/projection';
 import {
   DEFAULT_PROJECTION_METRIC,
   DEFAULT_PROJECTION_PERIOD,
-  ProjectionMetric,
 } from '@/data/projection';
 import useLocalStorage from '@/hooks/useLocalStorage';
-import { DisplayError } from '@/lib';
+import type { DisplayError } from '@/lib';
 
 type ProjectionStorageData = {
   startDate?: string;

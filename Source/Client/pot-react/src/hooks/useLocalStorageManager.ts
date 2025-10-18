@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 
 import useLocalStorage from '@/hooks/useLocalStorage';
-import { DisplayError } from '@/lib';
+import type { DisplayError } from '@/lib';
 
 // Type definition for the local storage manager
 // - `getProperty`: Retrieves a specific property from the local storage object

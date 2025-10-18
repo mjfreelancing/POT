@@ -189,7 +189,7 @@ export {
   isBeforeDate,
   isSameDate,
   localToday,
-  normalizeToLocalMidnight,
   normalizeToEpoch,
+  normalizeToLocalMidnight,
   todayIsoFormat,
 };

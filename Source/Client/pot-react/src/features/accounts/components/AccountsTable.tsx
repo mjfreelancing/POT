@@ -1,12 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { ColumnDef } from '@tanstack/react-table';
+import type { ColumnDef } from '@tanstack/react-table';
 import { BanknoteArrowDown, BanknoteArrowUp } from 'lucide-react';
 import { useParams } from 'react-router';
 
 import { useApiAccrueAccountExpenses } from '@/api/hooks';
 import { ErrorSheet, StatusBadge } from '@/components/feedback';
+import type { BulkAction } from '@/components/table';
 import {
-  BulkAction,
   createMoneyValueColumn,
   createRowIdGetter,
   DataTable,
@@ -14,7 +14,7 @@ import {
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { useErrorContext } from '@/contexts';
-import { Account } from '@/data';
+import type { Account } from '@/data';
 import { usePermissions } from '@/hooks';
 
 import { accrueAllAccountExpenses } from '../utils/bulkActions';

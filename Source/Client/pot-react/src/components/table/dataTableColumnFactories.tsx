@@ -1,12 +1,7 @@
-import { ColumnDef, Row } from '@tanstack/react-table';
+import type { ColumnDef, Row } from '@tanstack/react-table';
 
-import {
-  formatDate,
-  formatMoneyValue,
-  Frequency,
-  FrequencyDisplay,
-  MoneyValue,
-} from '../../lib';
+import type { Frequency, MoneyValue } from '../../lib';
+import { formatDate, formatMoneyValue, FrequencyDisplay } from '../../lib';
 import DataTableColumnHeader from './DataTableColumnHeader';
 
 // Parameter types for our column factory functions

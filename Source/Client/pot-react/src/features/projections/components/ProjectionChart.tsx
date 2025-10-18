@@ -17,13 +17,13 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip } from '@/components/ui/chart';
-import {
+import type {
   Projection,
-  PROJECTION_METRICS,
   ProjectionExpenseItem,
   ProjectionIncomeItem,
   ProjectionMetric,
 } from '@/data/projection';
+import { PROJECTION_METRICS } from '@/data/projection';
 import { normalizeToLocalMidnight } from '@/lib/dateUtils';
 import { formatMoneyValue } from '@/lib/moneyUtils';
 

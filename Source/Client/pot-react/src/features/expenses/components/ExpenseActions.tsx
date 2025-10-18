@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useErrorContext } from '@/contexts';
-import { Expense } from '@/data';
+import type { Expense } from '@/data';
 import { WithPermission } from '@/features/auth/components';
 
 import useDeleteExpense from '../delete/hooks/useDeleteExpense';

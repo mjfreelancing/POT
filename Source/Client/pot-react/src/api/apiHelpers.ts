@@ -1,4 +1,5 @@
-import { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import type { InternalAxiosRequestConfig } from 'axios';
+import { AxiosError } from 'axios';
 
 import { NetworkError } from './errors/apiErrors';
 

@@ -1,8 +1,8 @@
 import { format, parseISO } from 'date-fns';
 import { useMemo } from 'react';
 
-import { ChartConfig } from '@/components/ui/chart';
-import { Projection, ProjectionMetric } from '@/data/projection';
+import type { ChartConfig } from '@/components/ui/chart';
+import type { Projection, ProjectionMetric } from '@/data/projection';
 
 // Predefined colors for different accounts in the chart
 // These are used in a round-robin fashion if there are more accounts than colors
@@ -17,7 +17,7 @@ const ACCOUNT_COLORS = [
 // Color used for the combined total of all accounts
 const GLOBAL_SERIES_COLOR = '#2563eb'; // Blue
 
-import {
+import type {
   ProjectionExpenseItemWithAccount,
   ProjectionIncomeItemWithAccount,
 } from '@/data/projection';

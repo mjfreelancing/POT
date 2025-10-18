@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 
-import {
-  compareIncomeNextDue,
+import type {
   CreateIncome,
   EditIncome,
   Identity,
@@ -9,7 +8,9 @@ import {
   RenewIncomes,
   ToggleExcludeIncomes,
 } from '@/data';
-import { FailResultBase, Result, SuccessResult } from '@/lib';
+import { compareIncomeNextDue } from '@/data';
+import type { FailResultBase, Result } from '@/lib';
+import { SuccessResult } from '@/lib';
 
 import { useDelete, useGet, usePost, usePutWithId } from './useApi';
 

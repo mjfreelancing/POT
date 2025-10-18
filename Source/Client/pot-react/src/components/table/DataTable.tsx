@@ -1,19 +1,22 @@
-import {
+import type {
   ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
   HeaderContext,
   Row,
   RowSelectionState,
   SortingState,
   TableOptions,
+} from '@tanstack/react-table';
+import {
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
 import React, { useEffect, useState } from 'react';
 
 import { Checkbox } from '../ui/checkbox';
-import BulkActionsBar, { BulkAction } from './BulkActionsBar';
+import type { BulkAction } from './BulkActionsBar';
+import BulkActionsBar from './BulkActionsBar';
 import DataTableHeader from './DataTableHeader';
 
 const DEFAULT_HIGHLIGHT_ROW_CLASS = 'bg-yellow-200 dark:bg-yellow-800';

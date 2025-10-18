@@ -14,7 +14,8 @@ import useAuthContext from '@/features/auth/AuthContext';
 import { ExportModal } from '@/features/maintenance/export/components/ExportModal';
 import { ImportModal } from '@/features/maintenance/import/components/ImportModal';
 
-import MenuGroup, { MenuGroupDefinition } from './MenuGroup';
+import type { MenuGroupDefinition } from './MenuGroup';
+import MenuGroup from './MenuGroup';
 
 function AppSidebarMenus() {
   const { isAuthenticated } = useAuthContext();

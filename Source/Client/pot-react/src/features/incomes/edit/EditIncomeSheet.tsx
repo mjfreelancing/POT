@@ -11,7 +11,8 @@ import type { Account, EditIncome, Income } from '@/data';
 
 import IncomeForm from '../components/IncomeForm';
 import IncomeSheet from '../components/IncomeSheet';
-import { IncomeFormData, incomeFormSchema } from '../schemas/incomeFormSchema';
+import type { IncomeFormData } from '../schemas/incomeFormSchema';
+import { incomeFormSchema } from '../schemas/incomeFormSchema';
 import useEditIncome from './hooks/useEditIncome';
 
 type EditIncomeSheetInternalProps = {

@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useErrorContext } from '@/contexts';
-import { Income } from '@/data';
+import type { Income } from '@/data';
 import { WithPermission } from '@/features/auth/components';
 
 import useDeleteIncome from '../delete/hooks/useDeleteIncome';

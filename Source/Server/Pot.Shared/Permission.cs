@@ -5,6 +5,7 @@ namespace Pot.Shared;
 
 public sealed class Permission : EnrichedEnum<Permission>
 {
+    // Note: The enums stored in the database have a max length of 50 characters
     public static readonly Permission SiteManage = new(1, "site:manage");
     public static readonly Permission SiteView = new(2, "site:view");
     public static readonly Permission UserManage = new(3, "user:manage");
@@ -16,11 +17,10 @@ public sealed class Permission : EnrichedEnum<Permission>
     public static readonly Permission IncomeManage = new(9, "income:manage");
     public static readonly Permission IncomeView = new(10, "income:view");
     public static readonly Permission MaintenanceExport = new(11, "maintenance:export");
-    public static readonly Permission MaintenancImport = new(12, "maintenance:import");
+    public static readonly Permission MaintenanceImport = new(12, "maintenance:import");
 
     private Permission(int value, [CallerMemberName] string? name = default)
         : base(value, name!)
     {
     }
 }
-

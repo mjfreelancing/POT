@@ -1,9 +1,9 @@
-import {
+import type {
   AccrualsStatus,
   AccrualsStatusInput,
   AccrueAccountExpensesInput,
 } from '@/data';
-import { FailResultBase, Result } from '@/lib';
+import type { FailResultBase, Result } from '@/lib';
 
 import { useGet, usePost } from './useApi';
 

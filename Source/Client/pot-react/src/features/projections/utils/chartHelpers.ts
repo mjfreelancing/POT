@@ -2,7 +2,7 @@ import { format, parseISO } from 'date-fns';
 
 import { logger } from '@/lib';
 
-import { ChartDataPoint } from '../hooks/useProjectionChartData';
+import type { ChartDataPoint } from '../hooks/useProjectionChartData';
 
 /**
  * Format X-axis labels based on the data range to avoid overcrowding

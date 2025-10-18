@@ -1,4 +1,4 @@
-import { ColumnDef, Row } from '@tanstack/react-table';
+import type { ColumnDef, Row } from '@tanstack/react-table';
 import { ClockFading, DollarSign, ShoppingCart } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 
@@ -11,7 +11,8 @@ import {
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { EMPTY_EXPENSE_ARRAY, Expense } from '@/data';
+import type { Expense } from '@/data';
+import { EMPTY_EXPENSE_ARRAY } from '@/data';
 import {
   formatMoneyValue,
   getAdornedExpenseDescription,
@@ -20,7 +21,8 @@ import {
   normalizeToEpoch,
 } from '@/lib';
 
-import { ExpensesSummary, expensesSummaryStore } from '../stores';
+import type { ExpensesSummary } from '../stores';
+import { expensesSummaryStore } from '../stores';
 import DashboardCardHeader from './DashboardCardHeader';
 import SummaryCardsGrid from './SummaryCardsGrid';
 

@@ -1,11 +1,8 @@
-import { Identity } from '@/data';
-import {
-  compareUserDisplayName,
-  CreateUser,
-  EditUser,
-  User,
-} from '@/data/user';
-import { FailResultBase, Result, SuccessResult } from '@/lib';
+import type { Identity } from '@/data';
+import type { CreateUser, EditUser, User } from '@/data/user';
+import { compareUserDisplayName } from '@/data/user';
+import type { FailResultBase, Result } from '@/lib';
+import { SuccessResult } from '@/lib';
 
 import { useDelete, useGet, usePost, usePutWithId } from './useApi';
 

@@ -2,11 +2,11 @@
 using AllOverIt.Logging.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Pot.App.Features.Auth.Me.Mappings;
-using Pot.App.Features.Auth.Me.Models;
+using Pot.App.Features.Me.Mappings;
+using Pot.App.Features.Me.Models;
 using Pot.Data.Repositories.Users;
 
-namespace Pot.App.Features.Auth.Me;
+namespace Pot.App.Features.Me;
 
 internal sealed class UserService : IUserService
 {

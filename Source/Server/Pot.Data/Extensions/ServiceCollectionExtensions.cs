@@ -9,7 +9,7 @@ namespace Pot.Data.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static void AddDataDependencies(this IServiceCollection services)
+    public static IServiceCollection AddDataDependencies(this IServiceCollection services)
     {
         services.AutoRegisterScoped<PotDataRegistrar>([typeof(IGenericRepository<,>)], config =>
         {
@@ -34,6 +34,8 @@ public static class ServiceCollectionExtensions
         // TODO: LOOK INTO SEEING IF THIS IS POSSIBLE !!!!
         services.AddScoped<ICurrentUserDataContext, CurrentUserDataContext>();
         services.AddScoped<ICurrentUserContext>(provider => provider.GetRequiredService<ICurrentUserDataContext>());
+
+        return services;
     }
 
     public static IServiceCollection AddUnitOfWork(this IServiceCollection services)

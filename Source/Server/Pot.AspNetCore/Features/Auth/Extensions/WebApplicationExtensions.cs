@@ -13,7 +13,9 @@ internal static class WebApplicationExtensions
                 .WithTags(AuthEndpoints.Tag)
                 .LoginUser()
                 .LogoutUser()
-                .RefreshToken();
+                .RefreshToken()
+                .PasswordResetSend()
+                .PasswordResetVerify();
         }
 
         return app;

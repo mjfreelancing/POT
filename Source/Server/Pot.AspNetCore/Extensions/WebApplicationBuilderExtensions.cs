@@ -6,6 +6,7 @@ using AllOverIt.Validation.Extensions;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Pot.App.Concerns.Email.Configuration;
 using Pot.App.Concerns.Validation;
 using Pot.App.Extensions;
 using Pot.AspNetCore.Concerns.Auth;
@@ -13,10 +14,12 @@ using Pot.AspNetCore.Concerns.Auth.Configuration;
 using Pot.AspNetCore.Concerns.Auth.Models;
 using Pot.AspNetCore.Concerns.Converters.JsonSerialization;
 using Pot.AspNetCore.Concerns.DependencyInjection;
+using Pot.AspNetCore.Concerns.Email.Configuration;
 using Pot.AspNetCore.Concerns.ExceptionHandlers;
 using Pot.AspNetCore.Concerns.Logging;
 using Pot.AspNetCore.Concerns.Middleware;
 using Pot.AspNetCore.Concerns.Validation;
+using Pot.AspNetCore.Features.Auth.Extensions;
 using Pot.AspNetCore.Features.DbBackup.Extensions;
 using Pot.Data;
 using Pot.Data.Configuration;
@@ -27,13 +30,17 @@ using Pot.Shared.Extensions;
 
 namespace Pot.AspNetCore.Extensions;
 
+
+
 internal static class WebApplicationBuilderExtensions
 {
     private static readonly Type ScopedLifetimeValidatorType = typeof(IScopedLifetimeValidator);
 
     public static WebApplicationBuilder AddPotAuth(this WebApplicationBuilder builder)
     {
-        builder.Services
+        var services = builder.Services;
+
+        services
             // Binds configuration from the "Jwt" section onto a JwtOptions instance, which is later injected into JwtBearerOptionsSetup.
             .ConfigureOptions<JwtOptionsSetup>()
 
@@ -56,8 +63,10 @@ internal static class WebApplicationBuilderExtensions
                 options.MapInboundClaims = false;
             });
 
-        builder.Services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
-        builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+        services
+            .AddOtpCleanup()
+            .AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>()
+            .AddSingleton<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
 
         return builder;
     }
@@ -210,6 +219,18 @@ internal static class WebApplicationBuilderExtensions
         });
 
         builder.Services.AddSingleton<IProblemDetailsInspector, ProblemDetailsInspector>();
+
+        return builder;
+    }
+
+    public static WebApplicationBuilder AddSmtp(this WebApplicationBuilder builder)
+    {
+        builder.Services
+            // Binds configuration from the "Smtp" section onto a SmtpConfiguration instance.
+            .ConfigureOptions<SmtpConfigurationSetup>()
+
+            // Allow for injection of SmtpConfiguration instead of IOptions<SmtpConfiguration>
+            .AddSingletonFromOptions<SmtpConfiguration>();
 
         return builder;
     }

@@ -35,8 +35,34 @@ internal static class RouteGroupBuilderExtensions
         routeGroupBuilder
             .MapPost(AuthEndpoints.Refresh, Refresh.Handler.Invoke)
             .WithName(nameof(RefreshToken))
-            .WithSummary("Refresh Token")
+            .WithSummary("Refresh Access Token")
             .WithDescription("Refresh the user access token")
+            .ProducesProblem((int)HttpStatusCode.OK)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+
+        return routeGroupBuilder;
+    }
+
+    public static RouteGroupBuilder PasswordResetSend(this RouteGroupBuilder routeGroupBuilder)
+    {
+        routeGroupBuilder
+            .MapPost(AuthEndpoints.PasswordResetSend, PasswordReset.Send.Handler.Invoke)
+            .WithName(nameof(PasswordResetSend))
+            .WithSummary("Request a password reset")
+            .WithDescription("Request a password reset")
+            .ProducesProblem((int)HttpStatusCode.OK)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+
+        return routeGroupBuilder;
+    }
+
+    public static RouteGroupBuilder PasswordResetVerify(this RouteGroupBuilder routeGroupBuilder)
+    {
+        routeGroupBuilder
+            .MapPost(AuthEndpoints.PasswordResetVerify, PasswordReset.Verify.Handler.Invoke)
+            .WithName(nameof(PasswordResetVerify))
+            .WithSummary("Verify a password reset")
+            .WithDescription("Verify a password reset")
             .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.InternalServerError);
 

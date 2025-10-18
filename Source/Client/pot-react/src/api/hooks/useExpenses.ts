@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import {
+import type {
   CreateExpense,
   EditExpense,
   Expense,
@@ -9,7 +9,8 @@ import {
   RenewExpenses,
   ToggleExcludeExpenses,
 } from '@/data';
-import { FailResultBase, Result, SuccessResult } from '@/lib';
+import type { FailResultBase, Result } from '@/lib';
+import { SuccessResult } from '@/lib';
 
 import { useDelete, useGet, usePost, usePutWithId } from './useApi';
 

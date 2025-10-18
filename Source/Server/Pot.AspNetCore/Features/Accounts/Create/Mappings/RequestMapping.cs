@@ -2,7 +2,7 @@
 
 namespace Pot.AspNetCore.Features.Accounts.Create.Mappings;
 
-internal static class ContractMapping
+internal static class RequestMapping
 {
     public static Input MapToInput(this Request request)
     {

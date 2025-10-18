@@ -1,12 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Pot.Data.Annotations
+namespace Pot.Data.Annotations;
+
+internal sealed class CitextAttribute : ColumnAttribute
 {
-    internal sealed class CitextAttribute : ColumnAttribute
+    public CitextAttribute()
     {
-        public CitextAttribute()
-        {
-            TypeName = "citext";
-        }
+        TypeName = "citext";
     }
 }

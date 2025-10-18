@@ -21,7 +21,8 @@ import { useErrorContext } from '@/contexts';
 import { logger } from '@/lib/logging';
 import { useUserStore } from '@/stores';
 
-import { UserDetailsFields, userDetailsSchema } from './userDetailsSchema';
+import type { UserDetailsFields } from './userDetailsSchema';
+import { userDetailsSchema } from './userDetailsSchema';
 
 function UserDetailsForm() {
   const { userInfo, setUserInfo } = useUserStore();

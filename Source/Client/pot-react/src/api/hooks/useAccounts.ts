@@ -1,13 +1,9 @@
 import { useMemo } from 'react';
 
-import {
-  Account,
-  compareAccountBsbNumber,
-  CreateAccount,
-  EditAccount,
-  Identity,
-} from '@/data';
-import { FailResultBase, Result, SuccessResult } from '@/lib';
+import type { Account, CreateAccount, EditAccount, Identity } from '@/data';
+import { compareAccountBsbNumber } from '@/data';
+import type { FailResultBase, Result } from '@/lib';
+import { SuccessResult } from '@/lib';
 
 import { useDelete, useGet, usePost, usePutWithId } from './useApi';
 

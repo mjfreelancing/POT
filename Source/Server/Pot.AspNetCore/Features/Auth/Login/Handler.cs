@@ -23,7 +23,7 @@ internal sealed class Handler
             return TypedResults.Problem(problemDetails);
         }
 
-        var authTokens = await authService.LoginAsync(request.Username, request.Password, cancellationToken);
+        var authTokens = await authService.LoginAsync(request.Username.Trim(), request.Password, cancellationToken);
 
         return authTokens.IsSuccess
             ? Response.Ok(authTokens.Value!)

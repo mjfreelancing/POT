@@ -1,7 +1,7 @@
-﻿using Pot.App.Features.Auth.Me.Models;
+﻿using Pot.App.Features.Me.Models;
 using Pot.Data.Entities;
 
-namespace Pot.App.Features.Auth.Me.Mappings;
+namespace Pot.App.Features.Me.Mappings;
 
 internal static class EntityMapping
 {
