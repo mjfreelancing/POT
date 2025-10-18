@@ -17,7 +17,6 @@ type OtpVerificationFormProps = {
   referenceCode: string;
   onSubmit: (verificationCode: string) => Promise<void>;
   onResendCode: () => Promise<void>;
-  onGoBack: () => void;
   onCountdownChange?: (hasActiveCountdown: boolean) => void; // Notify parent of countdown state
   isLoading?: boolean;
   isResending?: boolean;
@@ -31,7 +30,6 @@ function OtpVerificationForm({
   referenceCode,
   onSubmit,
   onResendCode,
-  onGoBack,
   onCountdownChange,
   isLoading = false,
   isResending = false,
@@ -253,34 +251,21 @@ function OtpVerificationForm({
         </Button>
       </form>
 
-      {/* Resend and Go Back Options */}
-      <div className="space-y-3">
-        <div className="flex justify-center">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={handleResend}
-            disabled={!canResend || isResending}
-            className="text-sm"
-          >
-            {isResending
-              ? 'Sending...'
-              : canResend
-                ? 'Resend Code'
-                : `Resend in ${formatCountdown(resendCountdown)}`}
-          </Button>
-        </div>
-
-        <div className="text-center">
-          <button
-            type="button"
-            onClick={onGoBack}
-            disabled={!canResend}
-            className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:no-underline"
-          >
-            Go back to username
-          </button>
-        </div>
+      {/* Resend Option */}
+      <div className="flex justify-center">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={handleResend}
+          disabled={!canResend || isResending}
+          className="text-sm"
+        >
+          {isResending
+            ? 'Sending...'
+            : canResend
+              ? 'Resend Code'
+              : `Resend in ${formatCountdown(resendCountdown)}`}
+        </Button>
       </div>
     </div>
   );

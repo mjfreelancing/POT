@@ -42,7 +42,6 @@ function PasswordResetDialog({
     updateOtpCode,
     goToOtpVerification,
     goToSuccess,
-    goBackToUsername,
     reset,
   } = usePasswordResetFlow();
 
@@ -174,15 +173,6 @@ function PasswordResetDialog({
     }
   };
 
-  const handleGoBackToUsername = () => {
-    // Clear all error states when going back
-    clearErrorStates();
-    // Clear parent error as well
-    onError(null);
-    // Use flow hook to go back and clear flow data
-    goBackToUsername();
-  };
-
   const handleStartOver = () => {
     // Clear all dialog state and go back to username input
     clearErrorStates();
@@ -243,7 +233,6 @@ function PasswordResetDialog({
             referenceCode={data.referenceCode}
             onSubmit={handleOtpSubmit}
             onResendCode={handleResendCode}
-            onGoBack={handleGoBackToUsername}
             onCountdownChange={setHasActiveCountdown}
             isLoading={isVerifying}
             isResending={isSending}

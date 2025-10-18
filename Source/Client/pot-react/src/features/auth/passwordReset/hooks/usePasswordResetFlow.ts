@@ -32,16 +32,6 @@ function usePasswordResetFlow() {
     setState('success');
   }, []);
 
-  const goBackToUsername = useCallback(() => {
-    setState('username-input');
-    // Keep username data but clear reference code and OTP
-    setData(prev => ({
-      ...prev,
-      referenceCode: '',
-      otpCode: '',
-    }));
-  }, []);
-
   const reset = useCallback(() => {
     setState('username-input');
     setData({ username: '', referenceCode: '' });
@@ -55,7 +45,6 @@ function usePasswordResetFlow() {
     updateOtpCode,
     goToOtpVerification,
     goToSuccess,
-    goBackToUsername,
     reset,
   };
 }
