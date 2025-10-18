@@ -181,7 +181,7 @@ function OtpVerificationForm({
                   maxLength={6}
                   value={verificationCode}
                   onChange={handleVerificationCodeChange}
-                  disabled={isLoading}
+                  disabled={isLoading || verificationStatus === 'Expired'}
                 >
                   <InputOTPGroup className="gap-2">
                     <InputOTPSlot
@@ -239,14 +239,13 @@ function OtpVerificationForm({
           disabled={
             isLoading ||
             verificationCode.length !== 6 ||
-            !referenceCode ||
-            referenceCode.length !== 6
+            verificationStatus === 'Expired'
           }
         >
           {isLoading
             ? 'Verifying...'
-            : !referenceCode || referenceCode.length !== 6
-              ? 'Request Code First'
+            : verificationStatus === 'Expired'
+              ? 'Code Expired'
               : 'Verify Code'}
         </Button>
       </form>

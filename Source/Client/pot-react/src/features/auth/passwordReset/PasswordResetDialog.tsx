@@ -57,8 +57,11 @@ function PasswordResetDialog({
     if (open) {
       logger.info('PasswordResetDialog', 'Mounted');
     } else {
-      // Only reset if there was a rate limit - otherwise preserve state for accidental closes
-      if (verificationStatus === 'TooManyAttempts') {
+      // Reset if there was a rate limit or expired code - otherwise preserve state for accidental closes
+      if (
+        verificationStatus === 'TooManyAttempts' ||
+        verificationStatus === 'Expired'
+      ) {
         clearErrorStates();
         setHasActiveCountdown(false);
         onError(null);
