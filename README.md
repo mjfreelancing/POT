@@ -56,6 +56,7 @@
 - [Security and Data Privacy](#security-and-data-privacy)
   - [Data Storage](#data-storage)
   - [Security Considerations](#security-considerations)
+    - [Password Reset System](#password-reset-system)
   - [Project Structure](#project-structure)
 - [License](#license)
 - [Acknowledgments](#acknowledgments)
@@ -1350,6 +1351,7 @@ Key Features:
 #### Local Storage
 
 1. Type-Safe Storage Hook
+
    ```typescript
    type LocalStorageProps<T> = {
      key: string;
@@ -1357,8 +1359,6 @@ Key Features:
      onError?: (error: DisplayError) => void;
    };
    ```
-
-````
 
 2. Error Handling
 
@@ -1376,6 +1376,7 @@ Key Features:
 #### Error Display Components
 
 1. ErrorSheet Component
+
    ```typescript
    type SheetErrorProps = DisplayError & {
      onDismiss: () => void;
@@ -1390,6 +1391,7 @@ Key Features:
    - Responsive with max-width constraint
 
 2. Toast System
+
    ```typescript
    type ErrorToastProps = {
      icon: LucideIcon;
@@ -1481,7 +1483,7 @@ The `ErrorProvider` is a centralized context for managing and displaying errors 
      const handleError = () => {
        setError({
          title: "An error occurred",
-         description: "Something went wrong while processing your request."
+         description: "Something went wrong while processing your request.",
        });
      };
 
@@ -1513,6 +1515,7 @@ The expenses feature manages recurring and one-time expenses with comprehensive 
 ### Display and Filtering
 
 1. **Expense List View**
+
    - Description and Amount
    - Category and Frequency type
    - Date information (Next Due, Start, End)
@@ -1522,6 +1525,7 @@ The expenses feature manages recurring and one-time expenses with comprehensive 
 2. **Filter System**
 
    a. **Account Filtering**
+
    ```typescript
    // Local storage persisted state
    type ExpenseStorageData = {
@@ -1532,24 +1536,24 @@ The expenses feature manages recurring and one-time expenses with comprehensive 
    useEffect(() => {
      if (!isEditing && !urlAccountId && storedData?.selectedAccountId) {
        const newSearchParams = new URLSearchParams();
-       newSearchParams.set('accountId', storedData.selectedAccountId);
+       newSearchParams.set("accountId", storedData.selectedAccountId);
        setSearchParams(newSearchParams);
      }
    }, [isEditing, urlAccountId, storedData?.selectedAccountId]);
    ```
 
    b. **Description Search**
+
    ```typescript
    const filteredExpenses = useMemo(() => {
-     return expenses.filter(expense =>
-       expense.description
-         .toLowerCase()
-         .includes(searchTerm.toLowerCase())
+     return expenses.filter((expense) =>
+       expense.description.toLowerCase().includes(searchTerm.toLowerCase())
      );
    }, [expenses, searchTerm]);
    ```
 
    c. **Filter State Management**
+
    - URL params for shareable filters
    - Local storage for persistent preferences
    - State reset on navigation
@@ -1558,12 +1562,14 @@ The expenses feature manages recurring and one-time expenses with comprehensive 
 ### Operations
 
 1. **Create Expense**
+
    - Form with validation
    - Account selection
    - Frequency configuration
    - Date validation rules
 
 2. **Edit Expense**
+
    - Maintains filter state during edit
    - Returns to filtered view after save
    - Preserves account filter in URL
@@ -1583,6 +1589,7 @@ The income feature manages recurring and one-time income sources with integrated
 ### Display and Filtering
 
 1. **Income List View**
+
    - Description and Amount
    - Category and Frequency type
    - Date information (Next Due, End)
@@ -1592,6 +1599,7 @@ The income feature manages recurring and one-time income sources with integrated
 2. **Filter Implementation**
 
    a. **Account Filter**
+
    ```typescript
    // Local storage structure
    type IncomeStorageData = {
@@ -1607,14 +1615,14 @@ The income feature manages recurring and one-time income sources with integrated
      accounts,
      items: incomes,
      selectedAccountId: urlAccountId || storedData?.selectedAccountId || null,
-     onAccountChange: accountId => {
+     onAccountChange: (accountId) => {
        // Update storage
        setIncomeData({ selectedAccountId: accountId });
 
        // Update URL if not in edit mode
        if (!isEditing && accountId) {
          const newSearchParams = new URLSearchParams();
-         newSearchParams.set('accountId', accountId);
+         newSearchParams.set("accountId", accountId);
          setSearchParams(newSearchParams);
        }
      },
@@ -1622,6 +1630,7 @@ The income feature manages recurring and one-time income sources with integrated
    ```
 
    b. **Description Search**
+
    ```typescript
    // Real-time search filtering
    const searchFiltered = useMemo(() => {
@@ -1629,15 +1638,14 @@ The income feature manages recurring and one-time income sources with integrated
        return incomes;
      }
 
-     return incomes.filter(income =>
-       income.description
-         .toLowerCase()
-         .includes(searchTerm.toLowerCase())
+     return incomes.filter((income) =>
+       income.description.toLowerCase().includes(searchTerm.toLowerCase())
      );
    }, [incomes, searchTerm]);
    ```
 
    c. **Filter State Handling**
+
    - URL parameters for shareable filters
    - Local storage for user preferences
    - Edit mode state preservation
@@ -1646,12 +1654,14 @@ The income feature manages recurring and one-time income sources with integrated
 ### Operations
 
 1. **Create Income**
+
    - Validated form inputs
    - Account selection
    - Frequency configuration
    - Date range validation
 
 2. **Edit Income**
+
    - Maintains filter context
    - Preserves URL state
    - Updates local storage
@@ -1838,8 +1848,6 @@ When connecting to the server running in docker:
 ```
 VITE_API_BASE_URL=http://localhost:5241/api
 ```
-
-
 
 ### Server Environment Variables
 
@@ -2205,6 +2213,7 @@ type TokenContextType = {
 ```
 
 TokenContext provides:
+
 - Secure localStorage integration for token persistence
 - Basic authentication state (isAuthenticated)
 - Token manipulation methods
@@ -2225,6 +2234,7 @@ type AuthContextType = {
 ```
 
 Features include:
+
 - User information management
 - Login/logout operations
 - Permission management
@@ -2234,21 +2244,25 @@ Features include:
 ### Authentication Flow
 
 1. **Application Initialization**
+
    ```typescript
    // main.tsx - Runs before React initialization
    setupAxiosDefaults();
    const tokenProvider = createAuthTokenProvider();
    setupAxiosInterceptors(tokenProvider);
    ```
+
    This ensures all API calls have proper authentication headers.
 
 2. **Initial Load Flow**
+
    - TokenContext loads any stored tokens
    - Axios interceptors initialize with tokens
    - App mounts with authenticated state
    - User info automatically fetched if tokens exist
 
 3. **Login Flow**
+
    - Credentials sent to `/login` endpoint
    - Response tokens stored in TokenContext
    - AuthContext updates authentication state
@@ -2266,17 +2280,20 @@ Features include:
 Common symptoms and their likely causes:
 
 1. **HTML Response Instead of JSON**
+
    - Check that axios interceptors are initialized in `main.tsx` before any React code
    - Verify token provider is properly set up
    - Ensure the request has proper auth headers
 
 2. **Auth State Inconsistency**
+
    - Check localStorage for token presence
    - Verify TokenContext is mounted before AuthContext
    - Check React Query cache state for `/me` endpoint
    - Consider clearing React Query cache
 
 3. **Token Refresh Issues**
+
    - Check token expiry calculation in refresh timer
    - Verify refresh token is being stored
    - Look for failed refresh requests in network tab
@@ -2289,6 +2306,7 @@ Common symptoms and their likely causes:
    - Verify auth headers on initial requests
 
 Remember:
+
 - Always check network requests in dev tools
 - Verify token presence in localStorage
 - Monitor React Query cache state
@@ -2376,6 +2394,7 @@ API Integration:
 The authentication system is built around React Context with type-safe implementations:
 
 1. **AuthContext Implementation**
+
    ```typescript
    type AuthContextType = {
      tokens: AuthTokens | undefined;
@@ -2396,10 +2415,13 @@ The authentication system is built around React Context with type-safe implement
      const isAuthenticated = Boolean(tokens?.accessToken);
 
      // Login/logout handlers
-     const login = useCallback((newTokens: AuthTokens) => {
-       setItem(newTokens);
-       setTokens(newTokens);
-     }, [setItem]);
+     const login = useCallback(
+       (newTokens: AuthTokens) => {
+         setItem(newTokens);
+         setTokens(newTokens);
+       },
+       [setItem]
+     );
 
      const logout = useCallback(() => {
        removeItem();
@@ -2417,17 +2439,20 @@ The authentication system is built around React Context with type-safe implement
        }
      }, [tokens, login, logout]);
 
-     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+     return (
+       <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+     );
    }
    ```
 
 2. **Token Management**
+
    ```typescript
    // Type-safe token structure
    type AuthTokens = {
-     accessToken: string;    // JWT access token
-     refreshToken: string;   // JWT refresh token
-     expiresAt: number;     // Token expiry timestamp
+     accessToken: string; // JWT access token
+     refreshToken: string; // JWT refresh token
+     expiresAt: number; // Token expiry timestamp
    };
 
    // Token refresh timer
@@ -2439,6 +2464,7 @@ The authentication system is built around React Context with type-safe implement
    ```
 
 3. **Token Refresh System**
+
    ```typescript
    type TokenRefreshConfig = {
      currentTokens: AuthTokens;
@@ -2458,7 +2484,7 @@ The authentication system is built around React Context with type-safe implement
      const refresh = async () => {
        try {
          const response = await authClient.post<AuthTokens>(
-           '/auth/refresh',
+           "/auth/refresh",
            { refreshToken: currentTokens.refreshToken },
            { headers: { Authorization: `Bearer ${currentTokens.accessToken}` } }
          );
@@ -2470,12 +2496,13 @@ The authentication system is built around React Context with type-safe implement
 
      return {
        start: () => setTimeout(refresh, refreshTimeMs),
-       stop: () => clearTimeout(timerId)
+       stop: () => clearTimeout(timerId),
      };
    }
    ```
 
 4. **Logout Management**
+
    ```typescript
    // Global logout manager
    const logoutManager = (() => {
@@ -2493,6 +2520,7 @@ The authentication system is built around React Context with type-safe implement
    ```
 
 Key Features:
+
 - Type-safe implementation
 - Proactive token refresh
 - Global logout handling
@@ -2597,6 +2625,7 @@ The authorization system uses a combination of JWT claims and database-backed pe
    Endpoints that require authorization use the `RequireAuthorization()` method:
 
    - For general authentication (any valid user):
+
      ```csharp
      // Only requires a valid JWT token
      routeGroupBuilder
@@ -2632,6 +2661,7 @@ The authorization system uses a combination of JWT claims and database-backed pe
    ```
 
 This pattern allows for:
+
 - Dynamic creation of authorization policies from permission strings
 - Separation of authentication and permission checks
 - Flexible permission management through the database
@@ -2823,13 +2853,160 @@ POT stores all financial data in a PostgreSQL database:
 - All auth operations logged with correlation IDs
 - Type-safe implementations throughout
 
+### Password Reset System
+
+POT implements a secure password reset system with One-Time Password (OTP) verification and automatic temporary password generation.
+
+#### Overview
+
+The password reset flow uses a dual-code verification system:
+
+- **Reference Code**: 6-digit code displayed in both the UI and email for visual confirmation
+- **Verification Code**: 6-digit code that must be entered to complete the reset
+- **Temporary Password**: 12-character auto-generated password for immediate login after reset
+
+#### Security Features
+
+1. **Multi-Layer Rate Limiting**
+
+   - Per-request attempt tracking (maximum 3 attempts per OTP request)
+   - Account-level rate limiting (5-minute cooldown after multiple failed requests)
+   - Automatic OTP invalidation when new requests are made
+
+2. **OTP Security**
+
+   - 15-minute expiration window for all codes
+   - Single-use codes (marked as used after successful verification)
+   - Cryptographically secure random generation
+   - Status tracking (Active, Used, Invalidated, Expired, Failed)
+
+3. **Temporary Password Security**
+
+   - 12-character cryptographically secure passwords
+   - Character exclusions to prevent confusion (i, I, l, L, o, O, 0, 1)
+   - Guaranteed character mix (lowercase, uppercase, numbers, special characters)
+   - Fisher-Yates shuffle to prevent predictable patterns
+   - Password applied atomically during OTP verification
+
+4. **Attack Prevention**
+   - No username enumeration (consistent responses for valid and invalid usernames)
+   - Proactive cleanup of expired OTPs
+   - Background worker for periodic OTP expiration
+   - Correlation IDs for request tracing and audit trails
+
+#### API Endpoints
+
+The password reset system exposes two endpoints:
+
+- **POST** `/api/auth/password-reset/send`
+
+  - Initiates password reset for a username
+  - Generates Reference Code, Verification Code, and Temporary Password
+  - Sends verification email with all three codes
+  - Returns Reference Code to display in UI (no username enumeration)
+
+- **POST** `/api/auth/password-reset/verify`
+  - Verifies Reference Code and Verification Code match
+  - Applies temporary password hash to user account
+  - Tracks verification attempts and enforces rate limits
+  - Returns status (Success, Invalid, Expired, TooManyAttempts)
+
+#### Email Infrastructure
+
+**SMTP Configuration**:
+
+- Uses MailKit library for reliable email delivery
+- TLS encryption supported
+- Configuration via environment variables for Docker deployment
+- Configurable via `appsettings.json` for local development
+
+**Email Template**:
+
+- Professional HTML email with Razor components (`VerifyPasswordEmail.razor`)
+- Table-based layout for maximum email client compatibility
+- Inline styles for consistent rendering across clients (Outlook, Gmail, Apple Mail)
+- Dark mode support with tested color schemes
+- Three distinct code sections with clear visual hierarchy
+- Step-by-step instructions for password reset process
+
+**Email Content**:
+
+- Username identification (critical for users with multiple sites)
+- Reference Code (gray background, for UI confirmation)
+- Verification Code (blue background, for verification input)
+- Temporary Password (blue background, for login after reset)
+- Instructions provided for completing reset
+- Security notice with expiration warnings
+
+#### Database Architecture
+
+**OneTimePassword Entity**:
+
+- Stores all OTP requests with comprehensive metadata
+- Append-only design for complete audit trail
+- Indexed for efficient querying (Status, ExpiryUtc, Username, RefCode)
+- Links to UserEntity via foreign key (nullable for future signup feature)
+- Tracks attempt count per OTP request
+- Stores temporary password hash for atomic application
+
+**OTP Maintenance**:
+
+- Background worker runs every 5 minutes to expire old OTPs
+- Proactive cleanup on each new password reset request
+- Separate status tracking (Active → Used/Failed/Invalidated/Expired)
+- Comprehensive query patterns for rate limiting and verification
+
+#### User Experience
+
+1. **Request Flow**:
+
+   - User clicks "Forgot your password?" on login dialog
+   - Enters username and submits
+   - Reference Code displayed in UI
+   - Email sent with all three codes
+
+2. **Verification Flow**:
+
+   - User confirms Reference Code matches email
+   - Enters Verification Code from email
+   - System verifies codes and applies temporary password
+   - Success message instructs user to log in with temporary password
+
+3. **Login Flow**:
+   - User logs in with username and temporary password
+   - User changes password at their convenience via app settings
+
+#### Implementation Details
+
+**Backend Services**:
+
+- `RequestPasswordResetService`: Handles OTP generation and email sending
+- `VerifyPasswordResetService`: Handles OTP verification and password application
+- `OtpService`: Shared OTP operations (expiration, rate limiting)
+- `EmailSender`: SMTP email delivery with Razor template rendering
+- `ExpiredOtpCleanupWorker`: Background worker for periodic OTP maintenance
+
+**Frontend Components**:
+
+- `PasswordResetDialog`: Main dialog with multi-step flow
+- `UsernameInputForm`: Initial username collection
+- `OtpVerificationForm`: Reference and verification code input with countdown timer
+- `usePasswordResetFlow`: State management hook for dialog flow
+- `useRequestPasswordReset`: API hook for OTP request
+- `useVerifyPasswordReset`: API hook for OTP verification
+
+**Security Utilities**:
+
+- `OtpGenerator`: 6-digit numeric code generation
+- `PasswordGenerator`: Secure temporary password generation with character exclusions
+
 ## Project Structure
 
 The POT application follows a modular architecture:
 
 ```
 Source/
-├── Client/                      # Frontend React application
+├── Client/                     # Frontend React application
 │   └── pot-react/
 │       ├── src/
 │       │   ├── api/            # API integration
@@ -2844,8 +3021,8 @@ Source/
 │       │   │   ├── nav/       # Navigation components
 │       │   │   ├── table/     # Table components
 │       │   │   └── ui/        # Base UI components
-│       │   ├── data/         # Type definitions & schemas
-│       │   ├── features/     # Feature modules
+│       │   ├── data/          # Type definitions & schemas
+│       │   ├── features/      # Feature modules
 │       │   │   ├── accounts/
 │       │   │   ├── auth/
 │       │   │   ├── dashboard/
@@ -2857,24 +3034,23 @@ Source/
 │       │   ├── hooks/        # Shared hooks
 │       │   ├── lib/          # Utilities
 │       │   └── routes/       # Routing
-│       └── tests/           # Test files
-├── Docker/                  # Container configuration
-│   ├── Client/             # Client container
-│   ├── Postgres/           # Database container
-│   ├── Server/             # Server container
-│   └── Diagrams/           # Architecture diagrams
-├── Server/                 # .NET backend
-    ├── Pot.App/           # Business logic
-    ├── Pot.AspNetCore/    # Web API
-    ├── Pot.Data/          # Data access
-    ├── Pot.Data.Migrations/ # Database migrations
-    └── Pot.Shared/        # Shared code
-│   └── Server/              # API server container setup
-└── Server/                  # Backend .NET Core application
-    ├── Pot.App/             # Core application logic
-    ├── Pot.AspNetCore/      # API endpoints and controllers
-    ├── Pot.Data/            # Data access and models
-    ├── Pot.Data.Migrations/ # Database migrations
-    └── Pot.Shared/          # Shared utilities and DTOs
+│       └── tests/            # Test files
+├── Docker/                   # Container configuration
+│   ├── Client/               # Client container
+│   ├── Postgres/             # Database container
+│   ├── Server/               # Server container
+│   └── Diagrams/             # Architecture diagrams
+├── Server/                   # .NET backend
+│   ├── Pot.App/              # Business logic
+│   ├── Pot.AspNetCore/       # Web API
+│   ├── Pot.Data/             # Data access
+│   ├── Pot.Data.Migrations/  # Database migrations
+│   └── Pot.Shared/           # Shared code
+│   └── Server/               # API server container setup
+└── Server/                   # Backend .NET Core application
+    ├── Pot.App/              # Core application logic
+    ├── Pot.AspNetCore/       # API endpoints and controllers
+    ├── Pot.Data/             # Data access and models
+    ├── Pot.Data.Migrations/  # Database migrations
+    └── Pot.Shared/           # Shared utilities and DTOs
 ```
-````
