@@ -1,6 +1,7 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.GenericHost;
 using Pot.App.Concerns.Time;
+using Pot.App.Concerns.Time.Extensions;
 using Pot.App.Features.Otp;
 
 namespace Pot.AspNetCore.Features.Auth.PasswordReset.Workers;
@@ -57,30 +58,8 @@ internal sealed class ExpiredOtpCleanupWorker : BackgroundWorker
             {
                 logger.LogInformation("Next Expired OTP cleanup scheduled for {NextBackupTimeUtc:O} (UTC)", nextUtc);
 
-                await WaitUntilAsync(nextUtc.Value, stoppingToken);
+                await _timeProvider.WaitUntilUtcAsync(nextUtc.Value, stoppingToken);
             }
-        }
-    }
-
-    private async Task WaitUntilAsync(DateTime targetUtc, CancellationToken cancellationToken)
-    {
-        while (true)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            // Checking more than once in case the system time changes or there is drift that may 
-            // result in the next occurrence being a matter of seconds later rather than the expected
-            // cron schedule (the latter has been observed).
-            var currentUtc = _timeProvider.GetUtcDateTimeNow();
-
-            var delayTimespan = targetUtc - currentUtc;
-
-            if (delayTimespan <= TimeSpan.Zero)
-            {
-                return;
-            }
-
-            await Task.Delay(delayTimespan, cancellationToken);
         }
     }
 }

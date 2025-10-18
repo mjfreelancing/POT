@@ -3,6 +3,7 @@ using AllOverIt.GenericHost;
 using Cronos;
 using Microsoft.Extensions.Options;
 using Pot.App.Concerns.Time;
+using Pot.App.Concerns.Time.Extensions;
 using Pot.Data.Repositories.Settings;
 using Pot.Data.Repositories.Settings.Models;
 
@@ -81,7 +82,7 @@ internal sealed class DbBackupWorker : BackgroundWorker
             {
                 logger.LogInformation("Next database backup scheduled for {NextBackupTimeUtc:O} (UTC)", nextUtc);
 
-                await WaitUntilAsync(nextUtc.Value, stoppingToken);
+                await _timeProvider.WaitUntilUtcAsync(nextUtc.Value, stoppingToken);
             }
         }
     }
@@ -103,27 +104,5 @@ internal sealed class DbBackupWorker : BackgroundWorker
         }
 
         return true;
-    }
-
-    private async Task WaitUntilAsync(DateTime targetUtc, CancellationToken cancellationToken)
-    {
-        while (true)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            // Checking more than once in case the system time changes or there is drift that may 
-            // result in the next occurrence being a matter of seconds later rather than the expected
-            // cron schedule (the latter has been observed).
-            var currentUtc = _timeProvider.GetUtcDateTimeNow();
-
-            var delayTimespan = targetUtc - currentUtc;
-
-            if (delayTimespan <= TimeSpan.Zero)
-            {
-                return;
-            }
-
-            await Task.Delay(delayTimespan, cancellationToken);
-        }
     }
 }
