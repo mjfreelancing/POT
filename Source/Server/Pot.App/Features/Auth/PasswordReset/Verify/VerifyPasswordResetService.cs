@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Pot.App.Concerns.Time;
 using Pot.App.Features.Auth.PasswordReset.Verify.Models;
 using Pot.App.Features.Otp;
+using Pot.Data.Entities;
 using Pot.Data.Repositories.Otp;
 using Pot.Data.Repositories.Users;
 using Pot.Shared;
@@ -42,12 +43,12 @@ internal sealed class VerifyPasswordResetService : IVerifyPasswordResetService
     });
 
     private readonly IPersistableOtpRepository _otpRepository;
-    private readonly IUserRepository _userRepository;
+    private readonly IPersistableUserRepository _userRepository;
     private readonly IOtpService _otpService;
     private readonly ITimeProvider _timeProvider;
     private readonly ILogger _logger;
 
-    public VerifyPasswordResetService(IPersistableOtpRepository otpRepository, IUserRepository userRepository,
+    public VerifyPasswordResetService(IPersistableOtpRepository otpRepository, IPersistableUserRepository userRepository,
         IOtpService otpService, ITimeProvider timeProvider, ILogger<VerifyPasswordResetService> logger)
     {
         _otpRepository = otpRepository.WhenNotNull();
@@ -66,28 +67,31 @@ internal sealed class VerifyPasswordResetService : IVerifyPasswordResetService
             .UpdateExpiredRequestsAsync(OtpReason.PasswordReset, cancellationToken)
             .ConfigureAwait(false);
 
-        using (_otpRepository.WithTracking())
+        // _userRepository and _otpRepository share the same DbContext so only need to track / update one of them
+        using var otpTracking = _otpRepository.WithTracking();
+
+        // Check the user exists and get their email
+        var user = await _userRepository
+            .GetByUsernameAsync(input.Username, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (user?.Email is null)
         {
-            // Check the user exists and get their email - must be performed within the tracking block so that
-            // OneTimePasswordEntity updates are persisted without error (due to FK).
-            var user = await _userRepository
-                .GetByUsernameAsync(input.Username, cancellationToken)
-                .ConfigureAwait(false);
+            _logger.LogInformation("No user found for username '{Username}' or no associated email", input.Username);
+            return InvalidOutput;
+        }
 
-            if (user?.Email is null)
-            {
-                _logger.LogInformation("No user found for username '{Username}' or no associated email", input.Username);
-                return InvalidOutput;
-            }
+        // Validate the latest OneTimePassword entity and update the user's password hash if verified
+        var output = await ProcessVerificationAsync(user, input, cancellationToken).ConfigureAwait(false);
 
-            var output = await ProcessVerificationAsync(input.Username, input.ReferenceCode, input.VerificationCode, cancellationToken).ConfigureAwait(false);
-
+        if (output.IsSuccess)
+        {
             await _otpRepository
                 .SaveAsync(cancellationToken)
                 .ConfigureAwait(false);
-
-            return output;
         }
+
+        return output;
     }
 
     private async Task<bool> IsUserRateLimitedAsync(string username, CancellationToken cancellationToken)
@@ -106,14 +110,13 @@ internal sealed class VerifyPasswordResetService : IVerifyPasswordResetService
         return isRateLimited;
     }
 
-    private async Task<EnrichedResult<Output>> ProcessVerificationAsync(string username, string referenceCode, string verificationCode,
-        CancellationToken cancellationToken)
+    private async Task<EnrichedResult<Output>> ProcessVerificationAsync(UserEntity user, Input input, CancellationToken cancellationToken)
     {
-        _logger.LogDebug("Processing verification for username '{Username}'", username);
+        _logger.LogDebug("Processing verification for username '{Username}'", input.Username);
 
         // Most likely will only be one, but there is a chance of duplicates
         var otpEntities = await _otpRepository
-            .GetRequestsForUsernameAndRefCodeAsync(OtpReason.PasswordReset, username, referenceCode, cancellationToken)
+            .GetRequestsForUsernameAndRefCodeAsync(OtpReason.PasswordReset, input.Username, input.ReferenceCode, cancellationToken)
             .ConfigureAwait(false);
 
         if (otpEntities.Count == 0)
@@ -131,12 +134,12 @@ internal sealed class VerifyPasswordResetService : IVerifyPasswordResetService
             return ExpiredOutput;
         }
 
-        if (mostRecentOtp.Status == OtpStatus.Active && mostRecentOtp.OtpCode == verificationCode)
+        if (mostRecentOtp.Status == OtpStatus.Active && mostRecentOtp.OtpCode == input.VerificationCode)
         {
             mostRecentOtp.Status = OtpStatus.Used;
             mostRecentOtp.VerifiedUtc = _timeProvider.GetUtcDateTimeNow();
 
-            _otpRepository.Update(mostRecentOtp);
+            user.PasswordHash = mostRecentOtp.TempPasswordHash!;
 
             return SuccessOutput;
         }
@@ -144,7 +147,7 @@ internal sealed class VerifyPasswordResetService : IVerifyPasswordResetService
         // Requests for a new OTP will always create a new record so bad actors think all is good and to keep the
         // client-side logic simple. So, if the verification code was invalid we always check rate limiting
         // before further processing the verification.
-        var isRateLimited = await IsUserRateLimitedAsync(username, cancellationToken).ConfigureAwait(false);
+        var isRateLimited = await IsUserRateLimitedAsync(input.Username, cancellationToken).ConfigureAwait(false);
 
         if (isRateLimited)
         {

@@ -6,6 +6,7 @@ using AllOverIt.Validation.Extensions;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Pot.App.Concerns.Email.Configuration;
 using Pot.App.Concerns.Validation;
 using Pot.App.Extensions;
 using Pot.AspNetCore.Concerns.Auth;
@@ -13,6 +14,7 @@ using Pot.AspNetCore.Concerns.Auth.Configuration;
 using Pot.AspNetCore.Concerns.Auth.Models;
 using Pot.AspNetCore.Concerns.Converters.JsonSerialization;
 using Pot.AspNetCore.Concerns.DependencyInjection;
+using Pot.AspNetCore.Concerns.Email.Configuration;
 using Pot.AspNetCore.Concerns.ExceptionHandlers;
 using Pot.AspNetCore.Concerns.Logging;
 using Pot.AspNetCore.Concerns.Middleware;
@@ -26,6 +28,8 @@ using Pot.Shared.DependencyInjection;
 using Pot.Shared.Extensions;
 
 namespace Pot.AspNetCore.Extensions;
+
+
 
 internal static class WebApplicationBuilderExtensions
 {
@@ -210,6 +214,18 @@ internal static class WebApplicationBuilderExtensions
         });
 
         builder.Services.AddSingleton<IProblemDetailsInspector, ProblemDetailsInspector>();
+
+        return builder;
+    }
+
+    public static WebApplicationBuilder AddSmtp(this WebApplicationBuilder builder)
+    {
+        builder.Services
+            // Binds configuration from the "Smtp" section onto a SmtpConfiguration instance.
+            .ConfigureOptions<SmtpConfigurationSetup>()
+
+            // Allow for injection of SmtpConfiguration instead of IOptions<SmtpConfiguration>
+            .AddSingletonFromOptions<SmtpConfiguration>();
 
         return builder;
     }

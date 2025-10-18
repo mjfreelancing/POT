@@ -12,7 +12,7 @@ using Pot.Data;
 namespace Pot.Data.Migrations
 {
     [DbContext(typeof(PotDbContext))]
-    [Migration("20251015111643_AddOneTimePassword")]
+    [Migration("20251017234539_AddOneTimePassword")]
     partial class AddOneTimePassword
     {
         /// <inheritdoc />
@@ -280,6 +280,10 @@ namespace Pot.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
+
+                    b.Property<string>("TempPasswordHash")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("integer");

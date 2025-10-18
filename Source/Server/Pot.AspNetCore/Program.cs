@@ -36,6 +36,7 @@ public class Program
             .AddCustomProblemDetails()
             .AddAspNetDependencies()
             .AddAspNetValidation()
+            .AddSmtp()
             .AddPotData();
 
         var app = builder.Build();

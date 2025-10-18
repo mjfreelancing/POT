@@ -26,6 +26,7 @@ namespace Pot.Data.Migrations
                     OtpCode = table.Column<string>(type: "character varying(6)", maxLength: 6, nullable: false),
                     AttemptCount = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     Status = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    TempPasswordHash = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     CreatedUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ExpiryUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     VerifiedUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),

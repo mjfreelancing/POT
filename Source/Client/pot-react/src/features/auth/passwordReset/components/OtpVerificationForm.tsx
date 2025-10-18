@@ -133,7 +133,7 @@ function OtpVerificationForm({
               htmlFor="reference-code"
               className="text-sm font-medium text-muted-foreground"
             >
-              Reference Code
+              REFERENCE CODE
             </Label>
             <div className="flex justify-center">
               <div className="p-2 bg-muted/50 rounded-lg border border-muted">
@@ -175,7 +175,7 @@ function OtpVerificationForm({
               htmlFor="verification-code"
               className="text-sm font-semibold"
             >
-              Verification Code
+              VERIFICATION CODE
             </Label>
             <div className="flex justify-center">
               <div className="p-2 border-2 border-dashed border-primary/30 rounded-lg bg-background">

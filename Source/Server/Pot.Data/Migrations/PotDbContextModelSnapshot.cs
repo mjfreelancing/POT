@@ -278,6 +278,10 @@ namespace Pot.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<string>("TempPasswordHash")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<int?>("UserId")
                         .HasColumnType("integer");
 

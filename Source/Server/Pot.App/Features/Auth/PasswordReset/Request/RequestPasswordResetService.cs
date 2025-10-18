@@ -1,32 +1,61 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using Microsoft.Extensions.Logging;
+using Pot.App.Concerns.Auth;
+using Pot.App.Concerns.Email;
 using Pot.App.Concerns.Time;
 using Pot.App.Features.Auth.PasswordReset.Request.Models;
 using Pot.App.Features.Otp;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Otp;
 using Pot.Data.Repositories.Users;
+using Pot.RazorComponents.Models;
 using Pot.Shared;
 
 namespace Pot.App.Features.Auth.PasswordReset.Request;
 
 internal sealed class RequestPasswordResetService : IRequestPasswordResetService
 {
+    internal sealed class UserPasswordVerificationModel
+    {
+        public static UserPasswordVerificationModel None = new();
+
+        public UserEntity? User { get; init; }
+        public string? TempPassword { get; init; }
+        public string? VerificationCode { get; init; }
+
+        private UserPasswordVerificationModel()
+        {
+        }
+
+        public UserPasswordVerificationModel(UserEntity? user, string? tempPassword, string? verificationCode)
+        {
+            User = user;
+            TempPassword = tempPassword;
+            VerificationCode = verificationCode;
+        }
+    }
+
     private const int OtpExpiryMinutes = 15;
+    private const int TempPasswordLenth = 12;
 
     private readonly IPersistableOtpRepository _otpRepository;
     private readonly IUserRepository _userRepository;
     private readonly IOtpService _otpService;
+    private readonly IUserPasswordHasher _passwordHaser;
+    private readonly IEmailSender _emailSender;
     private readonly ITimeProvider _timeProvider;
     private readonly ILogger _logger;
 
     public RequestPasswordResetService(IPersistableOtpRepository otpRepository, IUserRepository userRepository,
-        IOtpService otpService, ITimeProvider timeProvider, ILogger<RequestPasswordResetService> logger)
+        IOtpService otpService, IUserPasswordHasher passwordHaser, IEmailSender emailSender, ITimeProvider timeProvider,
+        ILogger<RequestPasswordResetService> logger)
     {
         _otpRepository = otpRepository.WhenNotNull();
         _userRepository = userRepository.WhenNotNull();
-        _otpService = otpService;
+        _otpService = otpService.WhenNotNull();
+        _passwordHaser = passwordHaser.WhenNotNull();
+        _emailSender = emailSender.WhenNotNull();
         _timeProvider = timeProvider.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
@@ -44,6 +73,32 @@ internal sealed class RequestPasswordResetService : IRequestPasswordResetService
         // potential attackers any information about the validity of the username or other issue.
         var referenceCode = OtpGenerator.Create();
 
+        var userPasswordVerification = await PreparePasswordVerificationCodeAsync(input, referenceCode, cancellationToken);
+
+        if (userPasswordVerification.User is null)
+        {
+            // We don't know this user - return a reference code in case it is a bad actor
+            return referenceCode;
+        }
+
+        var emailConfig = new VerifyPasswordEmailConfig
+        {
+            Username = input.Username,
+            Email = userPasswordVerification.User.Email,
+            ReferenceCode = referenceCode,
+            VerificationCode = userPasswordVerification.VerificationCode!,
+            TempPassword = userPasswordVerification.TempPassword!,
+            OtpExpiryMinutes = OtpExpiryMinutes
+        };
+
+        await _emailSender.SendVerifyPasswordAsync(emailConfig, cancellationToken);
+
+        return referenceCode;
+    }
+
+    private async Task<UserPasswordVerificationModel> PreparePasswordVerificationCodeAsync(Input input, string referenceCode,
+        CancellationToken cancellationToken)
+    {
         using (_otpRepository.WithTracking())
         {
             // Check the user exists and get their email - must be performed within the tracking block so that
@@ -55,20 +110,20 @@ internal sealed class RequestPasswordResetService : IRequestPasswordResetService
             if (user?.Email is null)
             {
                 _logger.LogInformation("No user found for username '{Username}' or no associated email", input.Username);
-                return referenceCode;   // We don't know this user - return a reference code in case it is a bad actor
+                return UserPasswordVerificationModel.None;   // We don't know this user - return a reference code in case it is a bad actor
             }
 
             // Invalidate any existing active OTPs for this user
             await InvalidateActiveOtpsAsync(input.Username, cancellationToken).ConfigureAwait(false);
 
-            // Create (and persist) a new OTP
-            AddNewOtp(user, referenceCode, input.CorrelationId);
+            // Create (and persist) a new temporary password and OTP (verification code)
+            var (tempPassword, verificationCode) = AddOtpData(user, referenceCode, input.CorrelationId);
 
             await _otpRepository
                 .SaveAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            return referenceCode;
+            return new UserPasswordVerificationModel(user, tempPassword, verificationCode);
         }
     }
 
@@ -87,10 +142,13 @@ internal sealed class RequestPasswordResetService : IRequestPasswordResetService
         }
     }
 
-    private string AddNewOtp(UserEntity user, string referenceCode, string correlationId)
+    private (string TempPassword, string VerificationCode) AddOtpData(UserEntity user, string referenceCode, string correlationId)
     {
-        var otpCode = OtpGenerator.Create();
         var currentUtc = _timeProvider.GetUtcDateTimeNow();
+        var verificationCode = OtpGenerator.Create();
+
+        var tempPassword = PasswordGenerator.Create(TempPasswordLenth);
+        var tempPasswordHash = _passwordHaser.GetHash(user, tempPassword);
 
         var otpEntity = new OneTimePasswordEntity
         {
@@ -99,7 +157,8 @@ internal sealed class RequestPasswordResetService : IRequestPasswordResetService
             Email = user.Email,
             Reason = OtpReason.PasswordReset,
             RefCode = referenceCode,
-            OtpCode = otpCode,
+            OtpCode = verificationCode,
+            TempPasswordHash = tempPasswordHash,
             Status = OtpStatus.Active,
             CreatedUtc = currentUtc,
             ExpiryUtc = currentUtc.AddMinutes(OtpExpiryMinutes),
@@ -108,6 +167,6 @@ internal sealed class RequestPasswordResetService : IRequestPasswordResetService
 
         _otpRepository.Add(otpEntity);
 
-        return referenceCode;
+        return (tempPassword, verificationCode);
     }
 }

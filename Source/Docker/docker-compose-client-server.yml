@@ -43,6 +43,13 @@ services:
       - JWT__ISSUER=${JWT_ISSUER}
       - JWT__AUDIENCE=${JWT_AUDIENCE}
       - JWT__SECRETKEY=${JWT_SECRET_KEY}
+      - SMTP__HOST=${SMTP_HOST}
+      - SMTP__PORT=${SMTP_PORT}
+      - SMTP__REQUIRETLS=${SMTP_REQUIRE_TLS}
+      - SMTP__AUTHENTICATION__USERNAME=${SMTP_AUTH_USERNAME}
+      - SMTP__AUTHENTICATION__PASSWORD=${SMTP_AUTH_PASSWORD}
+      - SMTP__FROM__NAME=${SMTP_FROM_NAME}
+      - SMTP__FROM__ADDRESS=${SMTP_FROM_ADDRESS}
     ports:
       - "5241:5241"
     # Map the backups directory inside the container to a local directory

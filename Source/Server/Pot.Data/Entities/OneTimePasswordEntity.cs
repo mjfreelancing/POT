@@ -61,6 +61,10 @@ public sealed class OneTimePasswordEntity : EntityBase
     public int AttemptCount { get; set; } = 0;
 
     public required OtpStatus Status { get; set; }
+
+    [MediumString]  // Hash is not a fixed length, but typically a little over 80 - see comment in UserPasswordHasher
+    public string? TempPasswordHash { get; set; }
+
     public required DateTime CreatedUtc { get; set; }
     public required DateTime ExpiryUtc { get; set; }
     public DateTime? VerifiedUtc { get; set; }
