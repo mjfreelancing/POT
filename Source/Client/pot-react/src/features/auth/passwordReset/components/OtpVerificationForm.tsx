@@ -136,7 +136,7 @@ function OtpVerificationForm({
             <div className="flex justify-center">
               <div className="p-2 bg-muted/50 rounded-lg border border-muted">
                 <InputOTP maxLength={6} value={referenceCode} disabled={true}>
-                  <InputOTPGroup className="gap-2">
+                  <InputOTPGroup>
                     <InputOTPSlot
                       index={0}
                       className="w-12 h-12 text-lg font-semibold"
@@ -183,7 +183,7 @@ function OtpVerificationForm({
                   onChange={handleVerificationCodeChange}
                   disabled={isLoading || verificationStatus === 'Expired'}
                 >
-                  <InputOTPGroup className="gap-2">
+                  <InputOTPGroup>
                     <InputOTPSlot
                       index={0}
                       className="w-12 h-12 text-lg font-bold"
