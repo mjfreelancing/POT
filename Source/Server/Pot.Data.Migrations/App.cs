@@ -1,8 +1,11 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.EntityFrameworkCore.Migrator;
+using AllOverIt.EntityFrameworkCore.Migrator.Events;
 using AllOverIt.GenericHost;
 using AllOverIt.Logging.Extensions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Npgsql;
@@ -14,19 +17,25 @@ namespace Pot.Data.Migrations;
 
 internal sealed class App : ConsoleAppBase
 {
-    private readonly IDatabaseMigrator _databaseMigrator;
-    private readonly ILogger _logger;
     private readonly string _connectionString;
 
-    public App(IDatabaseMigrator databaseMigrator, IOptions<DatabaseConfiguration> databaseConfiguration, ILogger<App> logger)
+    private readonly IDatabaseMigrator _databaseMigrator;
+    private readonly IHostEnvironment _environment;
+    private readonly ErdExporter _erdExporter;
+    private readonly ILogger _logger;
+
+    public App(IDatabaseMigrator databaseMigrator, IOptions<DatabaseConfiguration> databaseConfiguration,
+        IHostEnvironment environment, ErdExporter erdExporter, ILogger<App> logger)
     {
-        _databaseMigrator = databaseMigrator.WhenNotNull();
         _ = databaseConfiguration.WhenNotNull();
+
+        _databaseMigrator = databaseMigrator.WhenNotNull();
+        _environment = environment.WhenNotNull();
+        _erdExporter = erdExporter;
         _logger = logger.WhenNotNull();
 
         _connectionString = databaseConfiguration.Value.GetConnectionString();
     }
-
 
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
@@ -41,6 +50,11 @@ internal sealed class App : ConsoleAppBase
             _logger.LogInformation("Checking for new migrations");
 
             await _databaseMigrator.MigrateAsync();
+
+            if (_environment.IsDevelopment())
+            {
+                await _erdExporter.ExportSchemaAsDiagramAsync("..\\..\\..\\..\\..\\..\\Docs\\pot_erd.d2");
+            }
         }
         catch (Exception exception)
         {
@@ -66,7 +80,7 @@ internal sealed class App : ConsoleAppBase
                 sleepDurationProvider: retryAttempt => TimeSpan.FromSeconds(2),
                 onRetry: (exception, timeSpan, retryCount, context) =>
                 {
-                    _logger.LogWarning("Retry {retryCount} for database connection. Waiting {waitSeconds} seconds...", retryCount, timeSpan.TotalSeconds);
+                    _logger.LogWarning("Retry {retryCount} for database connection. Waiting {WaitSeconds} seconds...", retryCount, timeSpan.TotalSeconds);
                 });
 
         // Use the retry policy to ensure the database is ready
@@ -79,7 +93,7 @@ internal sealed class App : ConsoleAppBase
         }, cancellationToken);
     }
 
-    private void OnNewMigration(object? sender, AllOverIt.EntityFrameworkCore.Migrator.Events.MigrationEventArgs eventArgs)
+    private void OnNewMigration(object? sender, MigrationEventArgs eventArgs)
     {
         _logger.LogInformation("Applying migration {Migration}", eventArgs.Migration);
     }

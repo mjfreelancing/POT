@@ -1,0 +1,293 @@
+direction: right
+
+role_perm: Roles / Permissions {
+  style: {
+    fill: \#ffffcc
+    stroke: \#cccc99
+  }
+}
+
+finance: Finance {
+  style: {
+    fill: \#ccffcc
+    stroke: \#99cc99
+  }
+}
+
+site: Site {
+  style: {
+    fill: \#ffcccc
+    stroke: \#cc9999
+  }
+}
+
+auth: Auth {
+  style: {
+    fill: \#ccccff
+    stroke: \#9999cc
+  }
+}
+
+finance.Account: {
+  shape: sql_table
+
+  Id: integer \[NOT NULL\] {constraint: primary_key}
+  RowId: uuid \[NOT NULL\]
+  Etag: bigint \[NOT NULL\]
+  Bsb: character varying(7)(7) \[NOT NULL\]
+  Number: character varying(20)(20) \[NOT NULL\]
+  Description: citext(100) \[NOT NULL\]
+  Balance: double precision \[NOT NULL\]
+  Reserved: double precision \[NOT NULL\]
+  TotalExpenseAccrued: double precision \[NOT NULL\]
+  DailyExpenseAccrual: double precision \[NOT NULL\]
+  SiteId: integer \[NOT NULL\] {constraint: foreign_key}
+}
+
+finance.Expense: {
+  shape: sql_table
+
+  Id: integer \[NOT NULL\] {constraint: primary_key}
+  RowId: uuid \[NOT NULL\]
+  Etag: bigint \[NOT NULL\]
+  ExcludeFromCalcs: boolean \[NOT NULL\]
+  Description: citext(100) \[NOT NULL\]
+  AccrualStart: date \[NOT NULL\]
+  NextDue: date \[NOT NULL\]
+  EndDate: date
+  Frequency: character varying(50)(50) \[NOT NULL\]
+  FrequencyCount: integer \[NOT NULL\]
+  Amount: double precision \[NOT NULL\]
+  Accrued: double precision \[NOT NULL\]
+  AccruedIsDirty: boolean \[NOT NULL\]
+  LastAccruedUpdate: date
+  Note: text
+  AccountId: integer \[NOT NULL\] {constraint: foreign_key}
+}
+
+finance.Income: {
+  shape: sql_table
+
+  Id: integer \[NOT NULL\] {constraint: primary_key}
+  RowId: uuid \[NOT NULL\]
+  Etag: bigint \[NOT NULL\]
+  ExcludeFromCalcs: boolean \[NOT NULL\]
+  Description: citext(100) \[NOT NULL\]
+  NextDue: date \[NOT NULL\]
+  EndDate: date
+  Frequency: character varying(50)(50) \[NOT NULL\]
+  FrequencyCount: integer \[NOT NULL\]
+  Amount: double precision \[NOT NULL\]
+  Note: text
+  AccountId: integer \[NOT NULL\] {constraint: foreign_key}
+}
+
+auth.OneTimePassword: {
+  shape: sql_table
+
+  Id: integer \[NOT NULL\] {constraint: primary_key}
+  RowId: uuid \[NOT NULL\]
+  Etag: bigint \[NOT NULL\]
+  CorrelationId: character varying(50)(50) \[NOT NULL\]
+  Username: citext(100) \[NOT NULL\]
+  Email: citext(100) \[NOT NULL\]
+  Reason: character varying(50)(50) \[NOT NULL\]
+  RefCode: character varying(6)(6) \[NOT NULL\]
+  OtpCode: character varying(6)(6) \[NOT NULL\]
+  AttemptCount: integer \[NOT NULL\]
+  Status: character varying(50)(50) \[NOT NULL\]
+  TempPasswordHash: character varying(100)(100)
+  CreatedUtc: timestamp with time zone \[NOT NULL\]
+  ExpiryUtc: timestamp with time zone \[NOT NULL\]
+  VerifiedUtc: timestamp with time zone
+  UserId: integer {constraint: foreign_key}
+}
+
+role_perm.Permission: {
+  shape: sql_table
+
+  Id: integer \[NOT NULL\] {constraint: primary_key}
+  RowId: uuid \[NOT NULL\]
+  Etag: bigint \[NOT NULL\]
+  Name: character varying(50)(50) \[NOT NULL\]
+}
+
+role_perm.Role: {
+  shape: sql_table
+
+  Id: integer \[NOT NULL\] {constraint: primary_key}
+  RowId: uuid \[NOT NULL\]
+  Etag: bigint \[NOT NULL\]
+  Name: character varying(50)(50) \[NOT NULL\]
+}
+
+site.Setting: {
+  shape: sql_table
+
+  Id: integer \[NOT NULL\] {constraint: primary_key}
+  RowId: uuid \[NOT NULL\]
+  Etag: bigint \[NOT NULL\]
+  Category: character varying(50)(50) \[NOT NULL\]
+  Key: text \[NOT NULL\]
+  Value: text
+  Description: citext(100) \[NOT NULL\]
+  SiteId: integer {constraint: foreign_key}
+}
+
+site.Site: {
+  shape: sql_table
+
+  Id: integer \[NOT NULL\] {constraint: primary_key}
+  RowId: uuid \[NOT NULL\]
+  Etag: bigint \[NOT NULL\]
+  Description: citext(100) \[NOT NULL\]
+}
+
+auth.User: {
+  shape: sql_table
+
+  Id: integer \[NOT NULL\] {constraint: primary_key}
+  RowId: uuid \[NOT NULL\]
+  Etag: bigint \[NOT NULL\]
+  Username: citext(100) \[NOT NULL\]
+  Email: citext(100) \[NOT NULL\]
+  DisplayName: character varying(100)(100) \[NOT NULL\]
+  PasswordHash: character varying(100)(100) \[NOT NULL\]
+  RefreshToken: character varying(100)(100)
+  RefreshTokenExpiryUtc: timestamp with time zone
+  SiteId: integer \[NOT NULL\] {constraint: foreign_key}
+}
+
+role_perm.RolePermission: {
+  shape: sql_table
+
+  PermissionsId: integer \[NOT NULL\] {constraint: foreign_key}
+  RolesId: integer \[NOT NULL\] {constraint: foreign_key}
+}
+
+role_perm.UserRole: {
+  shape: sql_table
+
+  RolesId: integer \[NOT NULL\] {constraint: foreign_key}
+  UsersId: integer \[NOT NULL\] {constraint: foreign_key}
+}
+
+site.Site.Id <-> finance.Account.SiteId: ONE-TO-MANY {
+  source-arrowhead: {
+    shape: cf-one-required
+  }
+  target-arrowhead: {
+    shape: cf-many
+  }
+  style: {
+    font-size: 24
+  }
+}
+
+finance.Account.Id <-> finance.Expense.AccountId: ONE-TO-MANY {
+  source-arrowhead: {
+    shape: cf-one-required
+  }
+  target-arrowhead: {
+    shape: cf-many
+  }
+  style: {
+    font-size: 24
+  }
+}
+
+finance.Account.Id <-> finance.Income.AccountId: ONE-TO-MANY {
+  source-arrowhead: {
+    shape: cf-one-required
+  }
+  target-arrowhead: {
+    shape: cf-many
+  }
+  style: {
+    font-size: 24
+  }
+}
+
+auth.User.Id <-> auth.OneTimePassword.UserId: ONE-TO-MANY {
+  source-arrowhead: {
+    shape: cf-one-required
+  }
+  target-arrowhead: {
+    shape: cf-many
+  }
+  style: {
+    font-size: 24
+  }
+}
+
+site.Site.Id <-> site.Setting.SiteId: ONE-TO-MANY {
+  source-arrowhead: {
+    shape: cf-one-required
+  }
+  target-arrowhead: {
+    shape: cf-many
+  }
+  style: {
+    font-size: 24
+  }
+}
+
+site.Site.Id <-> auth.User.SiteId: ONE-TO-MANY {
+  source-arrowhead: {
+    shape: cf-one-required
+  }
+  target-arrowhead: {
+    shape: cf-many
+  }
+  style: {
+    font-size: 24
+  }
+}
+
+role_perm.Permission.Id <-> role_perm.RolePermission.PermissionsId: ONE-TO-MANY {
+  source-arrowhead: {
+    shape: cf-one-required
+  }
+  target-arrowhead: {
+    shape: cf-many
+  }
+  style: {
+    font-size: 24
+  }
+}
+
+role_perm.Role.Id <-> role_perm.RolePermission.RolesId: ONE-TO-MANY {
+  source-arrowhead: {
+    shape: cf-one-required
+  }
+  target-arrowhead: {
+    shape: cf-many
+  }
+  style: {
+    font-size: 24
+  }
+}
+
+role_perm.Role.Id <-> role_perm.UserRole.RolesId: ONE-TO-MANY {
+  source-arrowhead: {
+    shape: cf-one-required
+  }
+  target-arrowhead: {
+    shape: cf-many
+  }
+  style: {
+    font-size: 24
+  }
+}
+
+auth.User.Id <-> role_perm.UserRole.UsersId: ONE-TO-MANY {
+  source-arrowhead: {
+    shape: cf-one-required
+  }
+  target-arrowhead: {
+    shape: cf-many
+  }
+  style: {
+    font-size: 24
+  }
+}

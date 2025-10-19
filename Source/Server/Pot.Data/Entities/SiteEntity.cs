@@ -14,4 +14,5 @@ public sealed class SiteEntity : EntityBase
 
     public ICollection<UserEntity> Users { get; set; } = [];
     public ICollection<AccountEntity> Accounts { get; set; } = [];
+    public ICollection<SettingEntity> Settings { get; set; } = [];
 }

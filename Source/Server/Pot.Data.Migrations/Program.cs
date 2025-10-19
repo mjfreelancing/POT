@@ -24,7 +24,8 @@ internal class Program
 
                         options.ConfigurePostgres(connectionString);
                     })
-                    .AddScoped<IDatabaseMigrator, PotDbMigrator>();
+                    .AddSingleton<ErdExporter>()
+                    .AddSingleton<IDatabaseMigrator, PotDbMigrator>();
             })
             .RunConsoleAsync(options => options.SuppressStatusMessages = true);
     }
