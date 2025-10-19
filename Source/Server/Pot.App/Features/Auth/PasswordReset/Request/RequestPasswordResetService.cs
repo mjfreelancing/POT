@@ -2,13 +2,13 @@
 using AllOverIt.Logging.Extensions;
 using Microsoft.Extensions.Logging;
 using Pot.App.Concerns.Auth;
-using Pot.App.Concerns.Email;
 using Pot.App.Concerns.Time;
 using Pot.App.Features.Auth.PasswordReset.Request.Models;
 using Pot.App.Features.Otp;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Otp;
 using Pot.Data.Repositories.Users;
+using Pot.EmailSender;
 using Pot.RazorComponents.Models;
 using Pot.Shared;
 
@@ -43,19 +43,19 @@ internal sealed class RequestPasswordResetService : IRequestPasswordResetService
     private readonly IUserRepository _userRepository;
     private readonly IOtpService _otpService;
     private readonly IUserPasswordHasher _passwordHaser;
-    private readonly IEmailSender _emailSender;
+    private readonly ISendEmailChannelWriter _sendEmailChannelWriter;
     private readonly ITimeProvider _timeProvider;
     private readonly ILogger _logger;
 
     public RequestPasswordResetService(IPersistableOtpRepository otpRepository, IUserRepository userRepository,
-        IOtpService otpService, IUserPasswordHasher passwordHaser, IEmailSender emailSender, ITimeProvider timeProvider,
-        ILogger<RequestPasswordResetService> logger)
+        IOtpService otpService, IUserPasswordHasher passwordHaser, ISendEmailChannelWriter sendEmailChannelWriter,
+        ITimeProvider timeProvider, ILogger<RequestPasswordResetService> logger)
     {
         _otpRepository = otpRepository.WhenNotNull();
         _userRepository = userRepository.WhenNotNull();
         _otpService = otpService.WhenNotNull();
         _passwordHaser = passwordHaser.WhenNotNull();
-        _emailSender = emailSender.WhenNotNull();
+        _sendEmailChannelWriter = sendEmailChannelWriter.WhenNotNull();
         _timeProvider = timeProvider.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
@@ -75,25 +75,29 @@ internal sealed class RequestPasswordResetService : IRequestPasswordResetService
 
         var userPasswordVerification = await PreparePasswordVerificationCodeAsync(input, referenceCode, cancellationToken);
 
-        if (userPasswordVerification.User is null)
+        // If we don't know this user, we'll simply return the reference code in case it is a bad actor
+        if (userPasswordVerification.User is not null)
         {
-            // We don't know this user - return a reference code in case it is a bad actor
-            return referenceCode;
+            await SendVerificationEmailAsync(input, referenceCode, userPasswordVerification, cancellationToken).ConfigureAwait(false);
         }
 
+        return referenceCode;
+    }
+
+    private ValueTask SendVerificationEmailAsync(Input input, string referenceCode, UserPasswordVerificationModel userPasswordVerification,
+        CancellationToken cancellationToken)
+    {
         var emailConfig = new VerifyPasswordEmailConfig
         {
             Username = input.Username,
-            Email = userPasswordVerification.User.Email,
+            Email = userPasswordVerification.User!.Email,
             ReferenceCode = referenceCode,
             VerificationCode = userPasswordVerification.VerificationCode!,
             TempPassword = userPasswordVerification.TempPassword!,
             OtpExpiryMinutes = OtpExpiryMinutes
         };
 
-        await _emailSender.SendVerifyPasswordAsync(emailConfig, cancellationToken);
-
-        return referenceCode;
+        return _sendEmailChannelWriter.SubmitAsync(emailConfig, cancellationToken);
     }
 
     private async Task<UserPasswordVerificationModel> PreparePasswordVerificationCodeAsync(Input input, string referenceCode,

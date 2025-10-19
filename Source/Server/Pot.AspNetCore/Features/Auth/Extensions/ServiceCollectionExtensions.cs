@@ -6,7 +6,9 @@ internal static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddOtpCleanup(this IServiceCollection services)
     {
-        services.AddHostedService<ExpiredOtpCleanupWorker>();
+        services
+            .AddHostedService<ExpiredOtpCleanupWorker>()
+            .AddHostedService<SendEmailWorker>();
 
         return services;
     }

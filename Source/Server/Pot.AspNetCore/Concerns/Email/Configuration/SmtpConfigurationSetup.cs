@@ -1,6 +1,6 @@
 ﻿using AllOverIt.Extensions;
 using Microsoft.Extensions.Options;
-using Pot.App.Concerns.Email.Configuration;
+using Pot.EmailSender.Configuration;
 
 namespace Pot.AspNetCore.Concerns.Email.Configuration;
 

@@ -1,7 +1,7 @@
 ﻿using Pot.RazorComponents.Models;
 using Pot.Shared.DependencyInjection;
 
-namespace Pot.App.Concerns.Email;
+namespace Pot.EmailSender;
 
 public interface IEmailSender : IPotScopedDependency
 {

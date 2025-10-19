@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.0.11111.16 d18.0
+VisualStudioVersion = 18.0.11111.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pot.AspNetCore", "Pot.AspNetCore\Pot.AspNetCore.csproj", "{20BC0095-21EF-4B5C-8141-0F4BD714E5E7}"
 EndProject
@@ -20,6 +20,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pot.App", "Pot.App\Pot.App.csproj", "{02265247-F8F1-4F17-A1FB-A31581B1E502}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pot.RazorComponents", "Pot.RazorComponents\Pot.RazorComponents.csproj", "{114F1F6B-DBB6-45D9-99A2-3D085AF67CF2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pot.EmailSender", "Pot.EmailSender\Pot.EmailSender.csproj", "{958D1828-D1A9-4578-B7C4-54EAB30F1D0D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{114F1F6B-DBB6-45D9-99A2-3D085AF67CF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{114F1F6B-DBB6-45D9-99A2-3D085AF67CF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{114F1F6B-DBB6-45D9-99A2-3D085AF67CF2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{958D1828-D1A9-4578-B7C4-54EAB30F1D0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{958D1828-D1A9-4578-B7C4-54EAB30F1D0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{958D1828-D1A9-4578-B7C4-54EAB30F1D0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{958D1828-D1A9-4578-B7C4-54EAB30F1D0D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

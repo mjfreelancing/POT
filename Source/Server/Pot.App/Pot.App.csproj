@@ -1,18 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<ItemGroup>
-		<PackageReference Include="AllOverIt.Cryptography" Version="9.0.0-rc.6" />
-		<PackageReference Include="AllOverIt.Csv" Version="9.0.0-rc.6" />
-		<PackageReference Include="AllOverIt.Logging" Version="9.0.0-rc.6" />
-		<PackageReference Include="AllOverIt.Serialization.Binary" Version="9.0.0-rc.6" />
-		<PackageReference Include="AllOverIt.Validation" Version="9.0.0-rc.6" />
-		<PackageReference Include="MailKit" Version="4.14.1" />
-		<PackageReference Include="TimeZoneConverter" Version="7.0.0" />
+		<PackageReference Include="AllOverIt.Cryptography" Version="9.0.0-rc.8" />
+		<PackageReference Include="AllOverIt.Csv" Version="9.0.0-rc.8" />
+		<PackageReference Include="AllOverIt.Logging" Version="9.0.0-rc.8" />
+		<PackageReference Include="AllOverIt.Serialization.Binary" Version="9.0.0-rc.8" />
+		<PackageReference Include="AllOverIt.Validation" Version="9.0.0-rc.8" />
+		<PackageReference Include="TimeZoneConverter" Version="7.1.0" />
 	</ItemGroup>
-	
-  <ItemGroup>
-    <ProjectReference Include="..\Pot.Data\Pot.Data.csproj" />
-    <ProjectReference Include="..\Pot.RazorComponents\Pot.RazorComponents.csproj" />
-  </ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Pot.Data\Pot.Data.csproj" />
+		<ProjectReference Include="..\Pot.EmailSender\Pot.EmailSender.csproj" />
+	</ItemGroup>
 
 </Project>

@@ -2,9 +2,7 @@
 using AllOverIt.Validation;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using Pot.App.Concerns.DependencyInjection;
 using Pot.Data.Extensions;
-using Pot.RazorComponents.Extensions;
 using Pot.Shared.DependencyInjection;
 
 namespace Pot.App.Extensions;
@@ -39,17 +37,7 @@ public static class ServiceCollectionExtensions
             });
         });
 
-        services
-            .AddDataDependencies()
-            .AddRazorToHtmlRendering();
-
-        return services;
-    }
-
-    public static IServiceCollection AddRazorToHtmlRendering(this IServiceCollection services)
-    {
-        // IRazorComponentRenderer
-        services.AddRazorComponentRendering();
+        services.AddDataDependencies();
 
         return services;
     }

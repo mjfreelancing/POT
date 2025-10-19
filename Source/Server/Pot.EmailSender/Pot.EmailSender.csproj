@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<ItemGroup>
+		<PackageReference Include="AllOverIt.DependencyInjection" Version="9.0.0-rc.8" />
+		<PackageReference Include="AllOverIt.Logging" Version="9.0.0-rc.8" />
+		<PackageReference Include="MailKit" Version="4.14.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Pot.RazorComponents\Pot.RazorComponents.csproj" />
+		<ProjectReference Include="..\Pot.Shared\Pot.Shared.csproj" />
+	</ItemGroup>
+
+</Project>

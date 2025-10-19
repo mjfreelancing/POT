@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Concerns.Email.Configuration;
+﻿namespace Pot.EmailSender.Configuration;
 
 public sealed class SmtpConfiguration
 {

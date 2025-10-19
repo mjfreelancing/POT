@@ -4,11 +4,11 @@ using AllOverIt.Logging.Extensions;
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Logging;
 using MimeKit;
-using Pot.App.Concerns.Email.Configuration;
+using Pot.EmailSender.Configuration;
 using Pot.RazorComponents;
 using Pot.RazorComponents.Models;
 
-namespace Pot.App.Concerns.Email;
+namespace Pot.EmailSender;
 
 internal sealed class EmailSender : IEmailSender
 {
