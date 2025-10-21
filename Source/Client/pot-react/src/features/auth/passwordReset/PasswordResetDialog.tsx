@@ -11,14 +11,11 @@ import {
 } from '@/components/ui/dialog';
 import { logger } from '@/lib';
 
-import OtpVerificationForm from './components/OtpVerificationForm';
-import SuccessMessage from './components/SuccessMessage';
-import UsernameInputForm from './components/UsernameInputForm';
+import type { OtpVerificationStatus } from '../shared';
+import { OtpVerificationForm } from '../shared';
+import { PasswordResetForm, SuccessMessage } from './components';
 import usePasswordResetFlow from './hooks/usePasswordResetFlow';
-import type {
-  OtpVerificationStatus,
-  PasswordResetDialogProps,
-} from './types/passwordResetTypes';
+import type { PasswordResetDialogProps } from './types/passwordResetTypes';
 
 function PasswordResetDialog({
   open,
@@ -224,7 +221,7 @@ function PasswordResetDialog({
     switch (state) {
       case 'username-input':
         return (
-          <UsernameInputForm
+          <PasswordResetForm
             onSubmit={handleUsernameSubmit}
             isLoading={isSending}
           />

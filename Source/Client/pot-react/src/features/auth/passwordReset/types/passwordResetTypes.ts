@@ -18,11 +18,6 @@ type PasswordResetData = {
 };
 
 /**
- * OTP verification error statuses from API responses
- */
-type OtpVerificationStatus = 'InvalidCode' | 'Expired' | 'TooManyAttempts';
-
-/**
  * Props for the main password reset dialog
  */
 type PasswordResetDialogProps = {
@@ -33,7 +28,6 @@ type PasswordResetDialogProps = {
 
 export type {
   DisplayError,
-  OtpVerificationStatus,
   PasswordResetData,
   PasswordResetDialogProps,
   PasswordResetState,

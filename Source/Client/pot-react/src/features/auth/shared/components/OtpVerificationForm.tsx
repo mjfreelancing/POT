@@ -8,22 +8,9 @@ import {
 } from '@/components/ui/input-otp';
 import { Label } from '@/components/ui/label';
 
-import type { OtpVerificationStatus } from '../types/passwordResetTypes';
+import type { OtpVerificationFormProps } from '../types/otpTypes';
 
 const defaultCountdownSeconds = 60; // seconds
-
-type OtpVerificationFormProps = {
-  username: string;
-  referenceCode: string;
-  onSubmit: (verificationCode: string) => Promise<void>;
-  onResendCode: () => Promise<void>;
-  onCountdownChange?: (hasActiveCountdown: boolean) => void; // Notify parent of countdown state
-  isLoading?: boolean;
-  isResending?: boolean;
-  verificationMessage?: string;
-  verificationStatus?: OtpVerificationStatus; // API status for logic decisions
-  retryMinutes?: number; // From TooManyAttempts API response
-};
 
 function OtpVerificationForm({
   username,

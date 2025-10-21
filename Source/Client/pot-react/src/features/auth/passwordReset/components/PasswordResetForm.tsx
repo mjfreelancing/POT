@@ -4,15 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-type UsernameInputFormProps = {
+type PasswordResetFormProps = {
   onSubmit: (username: string) => Promise<void>;
   isLoading?: boolean;
 };
 
-function UsernameInputForm({
+function PasswordResetForm({
   onSubmit,
   isLoading = false,
-}: UsernameInputFormProps) {
+}: PasswordResetFormProps) {
   const [username, setUsername] = useState('');
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -47,4 +47,4 @@ function UsernameInputForm({
   );
 }
 
-export default UsernameInputForm;
+export default PasswordResetForm;

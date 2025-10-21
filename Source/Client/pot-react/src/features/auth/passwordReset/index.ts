@@ -1,3 +1,2 @@
-export { default as OtpVerificationForm } from './components/OtpVerificationForm';
-export { default as SuccessMessage } from './components/SuccessMessage';
+export { PasswordResetForm, SuccessMessage } from './components';
 export { default as PasswordResetDialog } from './PasswordResetDialog';
