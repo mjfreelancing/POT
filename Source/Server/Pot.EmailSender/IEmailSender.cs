@@ -5,5 +5,5 @@ namespace Pot.EmailSender;
 
 public interface IEmailSender : IPotScopedDependency
 {
-    Task SendVerifyPasswordAsync(VerifyPasswordEmailConfig config, CancellationToken cancellationToken);
+    Task SendVerifyChangePasswordAsync(VerifyPasswordEmailConfig config, CancellationToken cancellationToken);
 }

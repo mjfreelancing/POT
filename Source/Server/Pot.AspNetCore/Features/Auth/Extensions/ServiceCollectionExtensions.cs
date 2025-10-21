@@ -1,4 +1,4 @@
-﻿using Pot.AspNetCore.Features.Auth.PasswordReset.Workers;
+﻿using Pot.AspNetCore.Features.Auth.Workers;
 
 namespace Pot.AspNetCore.Features.Auth.Extensions;
 

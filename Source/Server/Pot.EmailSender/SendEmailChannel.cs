@@ -54,7 +54,7 @@ internal sealed class SendEmailChannel : ISendEmailChannelReader, ISendEmailChan
                 var emailSender = scope.ServiceProvider.GetRequiredService<IEmailSender>();
 
                 await emailSender
-                    .SendVerifyPasswordAsync(emailConfig, cancellationToken)
+                    .SendVerifyChangePasswordAsync(emailConfig, cancellationToken)
                     .ConfigureAwait(false);
             }
             catch (OperationCanceledException)
