@@ -140,7 +140,8 @@ site.Site: {
   Id: integer \[NOT NULL\] {constraint: primary_key}
   RowId: uuid \[NOT NULL\]
   Etag: bigint \[NOT NULL\]
-  Description: citext(100) \[NOT NULL\]
+  Name: citext(50) \[NOT NULL\]
+  Description: character varying(100)(100)
 }
 
 auth.User: {

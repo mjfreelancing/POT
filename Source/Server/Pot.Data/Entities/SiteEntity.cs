@@ -4,13 +4,16 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Pot.Data.Entities;
 
-[Index(nameof(Description), IsUnique = true)]
+[Index(nameof(Name), IsUnique = true)]
 public sealed class SiteEntity : EntityBase
 {
     [Required]
-    [MediumString]
+    [SmallString]
     [Citext]
-    public required string Description { get; set; }
+    public required string Name { get; set; }
+
+    [MediumString]
+    public string? Description { get; set; }
 
     public ICollection<UserEntity> Users { get; set; } = [];
     public ICollection<AccountEntity> Accounts { get; set; } = [];
