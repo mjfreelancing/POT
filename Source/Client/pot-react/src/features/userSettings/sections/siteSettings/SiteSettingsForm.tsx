@@ -25,7 +25,11 @@ import { useUserStore } from '@/stores';
 import type { SiteSettingsFields } from './siteSettingsSchema';
 import { siteSettingsSchema } from './siteSettingsSchema';
 
-function SiteSettingsForm() {
+type SiteSettingsFormProps = {
+  readonly?: boolean;
+};
+
+function SiteSettingsForm({ readonly = false }: SiteSettingsFormProps) {
   const { userInfo, setUserInfo } = useUserStore();
   const updateSite = useApiUpdateSite();
   const { error, setError } = useErrorContext();
@@ -124,6 +128,7 @@ function SiteSettingsForm() {
                   {...field}
                   id="site-name"
                   type="text"
+                  disabled={readonly}
                   aria-description="The name of your financial management site"
                 />
               </FormControl>
@@ -142,6 +147,7 @@ function SiteSettingsForm() {
                   {...field}
                   id="site-description"
                   rows={3}
+                  disabled={readonly}
                   aria-description="Optional description for your site"
                   placeholder="Enter a description for your site (optional)"
                 />
@@ -151,8 +157,8 @@ function SiteSettingsForm() {
           )}
         />
 
-        <Button type="submit" className="w-full mt-2">
-          Update Site Settings
+        <Button type="submit" className="w-full mt-2" disabled={readonly}>
+          {readonly ? 'View Site Settings' : 'Update Site Settings'}
         </Button>
       </form>
     </Form>
