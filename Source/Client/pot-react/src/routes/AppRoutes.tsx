@@ -14,6 +14,7 @@ const ExpensesPage = lazy(() => import('../features/expenses/ExpensesPage'));
 const ProjectionsPage = lazy(
   () => import('../features/projections/ProjectionsPage'),
 );
+const UsersPage = lazy(() => import('../features/users/UsersPage'));
 const CreateAccountSheet = lazy(
   () => import('../features/accounts/create/CreateAccountSheet'),
 );
@@ -64,6 +65,7 @@ function AppRoutes() {
             <Route path="create" element={<CreateExpenseSheet />} />
             <Route path="edit/:id" element={<EditExpenseSheet />} />
           </Route>
+          <Route path="/users" element={<UsersPage />} />
         </Route>
       </Routes>
     </Suspense>

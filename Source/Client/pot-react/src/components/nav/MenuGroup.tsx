@@ -15,7 +15,7 @@ import usePermissions from '@/hooks/usePermissions';
 type MenuGroupItemBase = {
   readonly label: string;
   readonly icon: React.ElementType;
-  readonly permission?: string;
+  readonly permissions?: string[];
 };
 
 export type HrefLink = MenuGroupItemBase & {
@@ -54,26 +54,27 @@ const isHrefLink = (item: MenuGroupItem): item is HrefLink => {
 
 const MenuGroup: React.FC<MenuGroupProps> = ({ group }) => {
   const location = useLocation();
-  const { permissions } = usePermissions();
+  const { hasAnyPermission } = usePermissions();
 
   // Pre-calculate all permission checks once for the group - not using <PermissionGuard> as there was too much flicker on a page refresh
   const permissionCache = React.useMemo(() => {
     return group.items.reduce(
-      (acc, item) => {
-        if (item.permission) {
-          acc[item.permission] = permissions.includes(item.permission);
+      (acc, item, index) => {
+        if (item.permissions) {
+          const key = `item-${index}`;
+          acc[key] = hasAnyPermission(item.permissions);
         }
 
         return acc;
       },
       {} as Record<string, boolean>,
     );
-  }, [group.items, permissions]);
+  }, [group.items, hasAnyPermission]);
 
   // Skip rendering the group if no items have permission
   const hasAnyVisibleItems = React.useMemo(() => {
     return group.items.some(
-      item => !item.permission || permissionCache[item.permission],
+      (item, index) => !item.permissions || permissionCache[`item-${index}`],
     );
   }, [group.items, permissionCache]);
 
@@ -133,7 +134,7 @@ const MenuGroup: React.FC<MenuGroupProps> = ({ group }) => {
             }
 
             // Skip items without permission
-            if (item.permission && !permissionCache[item.permission]) {
+            if (item.permissions && !permissionCache[`item-${index}`]) {
               return null;
             }
 
