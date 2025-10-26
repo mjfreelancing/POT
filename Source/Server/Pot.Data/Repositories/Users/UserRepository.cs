@@ -29,11 +29,6 @@ internal sealed class UserRepository : PersistableRepository, IPersistableUserRe
         return query.Single(user => user.RowId == _currentUserContext.UserRowId);
     }
 
-    public Task<UserEntity?> GetByRowIdOrDefaultAsync(Guid rowId, CancellationToken cancellationToken)
-    {
-        return Users.SingleOrDefaultAsync(user => user.RowId == rowId, cancellationToken);
-    }
-
     public Task<UserEntity?> GetByUsernameOrDefaultAsync(string username, CancellationToken cancellationToken)
     {
         return Users.SingleOrDefaultAsync(user => user.Username == username, cancellationToken);
