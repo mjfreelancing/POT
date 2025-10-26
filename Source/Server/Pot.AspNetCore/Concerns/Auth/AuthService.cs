@@ -56,7 +56,13 @@ internal sealed class AuthService : IAuthService
                 return CreateAuthError();
             }
 
-            var authTokens = await UpdateUserAuthTokensAsync(user, cancellationToken).ConfigureAwait(false);
+            var authTokens = SetUserAuthTokens(user);
+
+            user.LastLoggedInUtc = _timeProvider.GetUtcDateTimeNow();
+
+            await _userRepository
+                .SaveAsync(cancellationToken)
+                .ConfigureAwait(false);
 
             return EnrichedResult.Success<AuthTokens?>(authTokens);
         }
@@ -81,7 +87,9 @@ internal sealed class AuthService : IAuthService
             user.RefreshToken = null;
             user.RefreshTokenExpiryUtc = null;
 
-            await _userRepository.SaveAsync(cancellationToken).ConfigureAwait(false);
+            await _userRepository
+                .SaveAsync(cancellationToken)
+                .ConfigureAwait(false);
 
             return EnrichedResult.Success(true);
         }
@@ -113,7 +121,11 @@ internal sealed class AuthService : IAuthService
                 return CreateAuthError();
             }
 
-            var authTokens = await UpdateUserAuthTokensAsync(user, cancellationToken).ConfigureAwait(false);
+            var authTokens = SetUserAuthTokens(user);
+
+            await _userRepository
+                .SaveAsync(cancellationToken)
+                .ConfigureAwait(false);
 
             return EnrichedResult.Success<AuthTokens?>(authTokens);
         }
@@ -149,15 +161,13 @@ internal sealed class AuthService : IAuthService
         return EnrichedResult.Success(true);
     }
 
-    private async Task<AuthTokens> UpdateUserAuthTokensAsync(UserEntity user, CancellationToken cancellationToken)
+    private AuthTokens SetUserAuthTokens(UserEntity user)
     {
         // This includes generating a new refresh token
         var authTokens = CreateUserAuthTokens(user);
 
         user.RefreshToken = authTokens.RefreshToken;
         user.RefreshTokenExpiryUtc = authTokens.RefreshTokenExpiryUtc;
-
-        await _userRepository.SaveAsync(cancellationToken).ConfigureAwait(false);
 
         return authTokens;
     }
