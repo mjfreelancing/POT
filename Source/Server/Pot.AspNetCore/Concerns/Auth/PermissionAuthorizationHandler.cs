@@ -15,7 +15,7 @@ internal sealed class PermissionAuthorizationHandler : AuthorizationHandler<Perm
 
     protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, PermissionRequirement requirement)
     {
-        // return early from this method to simulate a 403 Forbidden
+        // return early from this method to simulate a 401 Unauthorized
 
         var userRowId = context.User.Claims.SingleOrDefault(claim => claim.Type == JwtRegisteredClaimNames.Sub)?.Value;
 
