@@ -4,6 +4,20 @@ namespace Pot.AspNetCore.Features.Users.Extensions;
 
 internal static class RouteGroupBuilderExtensions
 {
+    public static RouteGroupBuilder GetAllUsers(this RouteGroupBuilder routeGroupBuilder)
+    {
+        routeGroupBuilder
+            .MapGet(UsersEndpoints.GetAll, GetAll.Handler.Invoke)
+            .RequireAuthorization("user:view")
+            .WithName(nameof(GetAllUsers))
+            .WithSummary("Get all users")
+            .WithDescription("Get all users")
+            .ProducesProblem((int)HttpStatusCode.OK)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+
+        return routeGroupBuilder;
+    }
+
     public static RouteGroupBuilder UpdateUser(this RouteGroupBuilder routeGroupBuilder)
     {
         routeGroupBuilder

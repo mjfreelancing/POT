@@ -1,6 +1,7 @@
 ﻿using AllOverIt.Assertion;
 using Microsoft.EntityFrameworkCore;
 using Pot.Data.Entities;
+using Pot.Data.Repositories.Users.Dtos;
 using Pot.Shared;
 
 namespace Pot.Data.Repositories.Users;
@@ -27,6 +28,36 @@ internal sealed class UserRepository : PersistableRepository, IPersistableUserRe
         }
 
         return query.Single(user => user.RowId == _currentUserContext.UserRowId);
+    }
+
+    public async Task<List<GetAllUserInfo>> GetAllForCurrentSiteAsync(CancellationToken cancellationToken)
+    {
+        var currentUser = GetCurrentUser(true);
+
+        var users = await Users
+            .Where(user => user.Site.Id == currentUser.Site.Id)
+            .Select(user => new
+            {
+                user.RowId,
+                user.Etag,
+                user.Username,
+                user.DisplayName,
+                user.Email,
+                Roles = user.Roles.Select(role => role.Name),   // 'Name' is the Role enum, hence using an anonymous type first (can't project to the string Name)
+                user.LastLoggedInUtc
+            })
+            .ToListAsync(cancellationToken);
+
+        return [.. users.Select(user => new GetAllUserInfo
+            {
+                RowId = user.RowId,
+                Etag = user.Etag,
+                Username = user.Username,
+                DisplayName = user.DisplayName,
+                Email = user.Email,
+                Roles = [.. user.Roles.Select(role => role.Name)],
+                LastLoggedInUtc = user.LastLoggedInUtc
+            })];
     }
 
     public Task<UserEntity?> GetByUsernameOrDefaultAsync(string username, CancellationToken cancellationToken)

@@ -8,4 +8,5 @@ public interface IRoleRepository : IRepositoryBase
     IQueryable<RoleEntity> Roles { get; }
 
     Task<RoleEntity> GetByNameAsync(Role role, CancellationToken cancellationToken);
+    Task<List<RoleEntity>> GetRolesForUserAsync(Guid userRowId, bool includePermissions, CancellationToken cancellationToken);
 }

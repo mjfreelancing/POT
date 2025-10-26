@@ -1,20 +1,18 @@
 ﻿using AllOverIt.Assertion;
-using AllOverIt.Extensions;
 using AllOverIt.Logging.Extensions;
-using Microsoft.EntityFrameworkCore;
-using Pot.Data.Repositories.Users;
+using Pot.Data.Repositories.Roles;
 using System.Data;
 
 namespace Pot.AspNetCore.Concerns.Auth;
 
 internal sealed class PermissionService : IPermissionService
 {
-    private readonly IUserRepository _userRepository;
+    private readonly IRoleRepository _roleRepository;
     private readonly ILogger _logger;
 
-    public PermissionService(IUserRepository userRepository, ILogger<PermissionService> logger)
+    public PermissionService(IRoleRepository roleRepository, ILogger<PermissionService> logger)
     {
-        _userRepository = userRepository.WhenNotNull();
+        _roleRepository = roleRepository.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
@@ -22,16 +20,11 @@ internal sealed class PermissionService : IPermissionService
     {
         _logger.LogCall(this, new { userId });
 
-        var roles = await _userRepository.Users
-            .Include(user => user.Roles)
-            .ThenInclude(role => role.Permissions)
-            .Where(user => user.RowId == userId)
-            .Select(user => user.Roles)
-            .ToArrayAsync(cancellationToken)
+        var roles = await _roleRepository
+            .GetRolesForUserAsync(userId, true, cancellationToken)
             .ConfigureAwait(false);
 
         return [.. roles
-            .SelectMany(role => role)
             .SelectMany(role => role.Permissions)
             .Select(permission => permission.Name.Name)];
     }
