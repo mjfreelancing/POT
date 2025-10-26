@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Pot.Data.Configuration;
 using Pot.Data.Extensions;
+using Pot.Shared;
 
 namespace Pot.Data.Migrations;
 
@@ -16,6 +17,7 @@ internal class Program
             .ConfigureServices((hostContext, services) =>
             {
                 services
+                    .AddSingleton<ICurrentUserContext, NullCurrentUserContext>()
                     .AddDatabaseConfiguration(hostContext.Configuration)
                     .AddDbContextFactory<PotDbContext>((provider, options) =>
                     {

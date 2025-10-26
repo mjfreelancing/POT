@@ -53,6 +53,8 @@ internal sealed class App : ConsoleAppBase
 
             if (_environment.IsDevelopment())
             {
+                _logger.LogInformation("Generating ERD...");
+
                 await _erdExporter.ExportSchemaAsDiagramAsync("..\\..\\..\\..\\..\\..\\Docs\\pot_erd.d2");
             }
         }

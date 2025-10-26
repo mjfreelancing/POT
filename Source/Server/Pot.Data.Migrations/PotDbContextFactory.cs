@@ -16,7 +16,7 @@ public class PotDbContextFactory : IDesignTimeDbContextFactory<PotDbContext>
 
         optionsBuilder.ConfigurePostgres(connectionString);
 
-        return new PotDbContext(optionsBuilder.Options);
+        return new PotDbContext(optionsBuilder.Options, new NullCurrentUserContext());
     }
 
     private static IConfiguration CreateConfiguration()
