@@ -31,6 +31,7 @@
   - [Expenses Management](#expenses-management)
   - [Income Management](#income-management)
   - [Data Management](#data-management)
+  - [User Settings](#user-settings)
 - [Quick Start Guide](#quick-start-guide)
   - [Clone the repository](#clone-the-repository)
   - [Run the application(s)](#run-the-applications)
@@ -184,7 +185,7 @@ Once registration is complete:
 
 1. **First Login:** Use your username and the temporary password from the welcome email
 2. **Password Reset:** Set a permanent password during your first login
-3. **Site Customization:** Visit Settings → Site Details to customize your site information
+3. **Site Customization:** Access the user menu (top-right) → Settings → Site Settings to customize your site name and description
 4. **Account Setup:** Add your bank accounts and financial information
 5. **Data Entry:** Begin tracking your income, expenses, and financial goals
 
@@ -1831,6 +1832,47 @@ POT provides comprehensive data management capabilities for backing up and resto
 
 - Imported data is validated for integrity and correctness
 
+## User Settings
+
+POT provides a comprehensive account settings dialog for managing user preferences and site configuration:
+
+### Accessing Account Settings
+
+- Click your display name in the top-right corner of the application
+- Select "Settings" from the dropdown menu
+- The settings dialog opens as a slide-out panel from the right
+
+### Available Settings Sections
+
+#### User Details
+
+- **Display Name**: Update how your name appears in the application
+- **Email Address**: Change your email address for communications
+- **Username**: View your unique username (read-only)
+
+#### Change Password
+
+- **Current Password**: Enter your existing password for verification
+- **New Password**: Set a new secure password
+- **Confirm Password**: Confirm your new password
+
+#### Site Settings
+
+- **Site Name**: Customize the name of your financial management site
+- **Description**: Add an optional description for your site
+- **Permission-based Access**:
+  - Requires `site:view` permission to see the section
+  - Requires `site:manage` permission to edit site details
+  - Read-only mode when only `site:view` permission is available
+
+### Settings Features
+
+- **Real-time Validation**: Form validation with clear error messages
+- **Success Feedback**: Toast notifications for successful updates
+- **Error Handling**: Comprehensive error display with recovery options
+- **Automatic State Updates**: Changes reflect immediately in the application
+- **Optimistic Concurrency**: ETag-based conflict resolution for concurrent edits
+
 # Quick Start Guide
 
 ## **Clone the repository**
@@ -1916,6 +1958,7 @@ The POT application is organized into the following main sections:
 - **Income** - Track your income sources and recurring payments
 - **Accounts** - Manage your bank accounts and track balances
 - **Maintenance** - Export and import your financial data
+- **Account Settings** - Manage user profile, passwords, and site configuration (accessible via user menu)
 
 ## Accessibility Features
 
