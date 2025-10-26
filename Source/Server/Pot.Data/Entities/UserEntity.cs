@@ -30,6 +30,7 @@ public sealed class UserEntity : EntityBase
     public string? RefreshToken { get; set; }
 
     public DateTime? RefreshTokenExpiryUtc { get; set; }
+    public DateTime? LastLoggedInUtc { get; set; }
 
     public required SiteEntity Site { get; set; }
 
