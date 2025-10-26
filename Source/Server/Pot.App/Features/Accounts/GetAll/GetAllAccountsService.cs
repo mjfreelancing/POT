@@ -13,7 +13,7 @@ internal sealed class GetAllAccountsService : IGetAllAccountsService
     private readonly IAccountRepository _accountRepository;
     private readonly ILogger _logger;
 
-    public GetAllAccountsService(IPersistableAccountRepository accountRepository, ILogger<GetAllAccountsService> logger)
+    public GetAllAccountsService(IAccountRepository accountRepository, ILogger<GetAllAccountsService> logger)
     {
         _accountRepository = accountRepository.WhenNotNull();
         _logger = logger.WhenNotNull();

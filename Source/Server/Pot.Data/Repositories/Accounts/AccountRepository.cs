@@ -46,11 +46,11 @@ internal sealed class AccountRepository : PersistableRepository, IPersistableAcc
         return Accounts.SingleOrDefaultAsync(EntitySpecifications.IsSameId<AccountEntity>(rowId).Expression, cancellationToken);
     }
 
-    public async Task<GetAccountDto?> GetAccountWithLinkedCountsOrDefaultAsync(Guid rowId, CancellationToken cancellationToken)
+    public async Task<AccountWithLinkedCounts?> GetAccountWithLinkedCountsOrDefaultAsync(Guid rowId, CancellationToken cancellationToken)
     {
         return await Accounts
             .Where(account => account.RowId == rowId)
-            .Select(item => new GetAccountDto
+            .Select(item => new AccountWithLinkedCounts
             {
                 Account = item,
                 LinkedIncomes = item.Incomes.Count,
@@ -59,10 +59,10 @@ internal sealed class AccountRepository : PersistableRepository, IPersistableAcc
             .SingleOrDefaultAsync(cancellationToken);
     }
 
-    public Task<GetAccountDto[]> GetAllAccountsWithLinkedCountsAsync(CancellationToken cancellationToken)
+    public Task<AccountWithLinkedCounts[]> GetAllAccountsWithLinkedCountsAsync(CancellationToken cancellationToken)
     {
         return Accounts
-            .Select(item => new GetAccountDto
+            .Select(item => new AccountWithLinkedCounts
             {
                 Account = item,
                 LinkedIncomes = item.Incomes.Count,

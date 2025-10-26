@@ -5,7 +5,7 @@ namespace Pot.App.Features.Accounts.GetAll.Mappings;
 
 internal static class EntityMapping
 {
-    public static Output MapToOutput(this GetAccountDto dto)
+    public static Output MapToOutput(this AccountWithLinkedCounts dto)
     {
         var account = dto.Account;
 

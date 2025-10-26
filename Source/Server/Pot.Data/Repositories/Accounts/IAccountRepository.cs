@@ -12,8 +12,8 @@ public interface IAccountRepository : IRepositoryBase
     Task<bool> HasIncomesAsync(Guid rowId, CancellationToken cancellationToken);
     Task<AccountEntity> GetAccountAsync(Guid rowId, CancellationToken cancellationToken);
     Task<AccountEntity?> GetAccountOrDefaultAsync(Guid rowId, CancellationToken cancellationToken);
-    Task<GetAccountDto?> GetAccountWithLinkedCountsOrDefaultAsync(Guid rowId, CancellationToken cancellationToken);
-    Task<GetAccountDto[]> GetAllAccountsWithLinkedCountsAsync(CancellationToken cancellationToken);
+    Task<AccountWithLinkedCounts?> GetAccountWithLinkedCountsOrDefaultAsync(Guid rowId, CancellationToken cancellationToken);
+    Task<AccountWithLinkedCounts[]> GetAllAccountsWithLinkedCountsAsync(CancellationToken cancellationToken);
     Task<bool> AccountExistsAsync(string bsb, string number, CancellationToken cancellationToken);
     Task<AccountEntity?> GetAccountOrDefaultAsync(string bsb, string number, CancellationToken cancellationToken);
 }
