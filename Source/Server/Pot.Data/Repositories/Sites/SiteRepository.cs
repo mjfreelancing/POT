@@ -4,9 +4,11 @@ using Pot.Data.Repositories.Users;
 
 namespace Pot.Data.Repositories.Sites;
 
-internal sealed class SiteRepository : RepositoryBase, ISiteRepository
+internal sealed class SiteRepository : PersistableRepository, IPersistableSiteRepository
 {
     private readonly IUserRepository _userRepository;
+
+    public IQueryable<SiteEntity> Sites => Set<SiteEntity>();
 
     public SiteRepository(PotDbContext dbContext, IUserRepository userRepository)
         : base(dbContext)

@@ -10,7 +10,7 @@ internal static class RouteGroupBuilderExtensions
             .MapPut(UsersEndpoints.Update, Update.Handler.Invoke)
             .RequireAuthorization("user:manage")
             .WithName(nameof(UpdateUser))
-            .WithSummary("Update user")
+            .WithSummary("Update user details")
             .WithDescription("Updates existing user details")
             .ProducesProblem((int)HttpStatusCode.OK)
             .ProducesProblem((int)HttpStatusCode.NotFound)

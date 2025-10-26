@@ -7,6 +7,7 @@ using Pot.AspNetCore.Features.Incomes.Extensions;
 using Pot.AspNetCore.Features.Maintenance.Extensions;
 using Pot.AspNetCore.Features.Me.Extensions;
 using Pot.AspNetCore.Features.Projections.Extensions;
+using Pot.AspNetCore.Features.Sites.Extensions;
 using Pot.AspNetCore.Features.Users.Extensions;
 using Pot.Data;
 
@@ -73,6 +74,7 @@ public class Program
         app.AddAuthEndpoints()
            .AddMeEndpoints()
            .AddUserEndpoints()
+           .AddSiteEndpoints()
            .AddAccountEndpoints()
            .AddIncomeEndpoints()
            .AddExpenseEndpoints()

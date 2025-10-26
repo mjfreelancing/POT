@@ -49,7 +49,7 @@
  * - Ensure accessibility with sufficient text contrast
  * - Reinforce brand identity through consistent color usage
  */
-import { KeyIcon, UserIcon, XIcon } from 'lucide-react';
+import { Building2, KeyIcon, UserIcon, XIcon } from 'lucide-react';
 import type { JSX } from 'react';
 
 import {
@@ -64,6 +64,7 @@ import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetClose, SheetContent } from '@/components/ui/sheet';
 
 import ChangePasswordForm from './sections/changePassword/ChangePasswordForm';
+import SiteSettingsForm from './sections/siteSettings/SiteSettingsForm';
 import UserDetailsForm from './sections/userDetails/UserDetailsForm';
 
 type AccountSettingsSheetProps = {
@@ -150,6 +151,29 @@ function AccountSettingsSheet(props: AccountSettingsSheetProps): JSX.Element {
                 </AccordionTrigger>
                 <AccordionContent className="flex flex-col gap-4 pt-2">
                   <ChangePasswordForm />
+                </AccordionContent>
+              </AccordionItem>
+            </div>
+
+            <div className="py-3" />
+
+            <div className="border border-border/40 rounded-lg bg-gradient-to-br from-blue-500/5 to-blue-500/10 hover:from-blue-500/10 hover:to-blue-500/15 transition-all shadow-sm">
+              <AccordionItem className="px-4" value="site-settings">
+                <AccordionTrigger className="text-lg font-semibold text-primary [&[data-state=open]>div]:text-primary/90 hover:no-underline [&>div]:transition-all group">
+                  <div className="flex items-center gap-3 opacity-80 group-hover:opacity-100">
+                    <div className="p-2 rounded-md bg-blue-500/10 transition-colors group-hover:bg-blue-500/15">
+                      <Building2 className="size-5 text-blue-400" />
+                    </div>
+                    <div className="flex flex-col items-start">
+                      <span>Site Settings</span>
+                      <span className="text-sm font-normal text-muted-foreground group-hover:text-muted-foreground/80">
+                        Update your site name and description
+                      </span>
+                    </div>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="flex flex-col gap-4 pt-2">
+                  <SiteSettingsForm />
                 </AccordionContent>
               </AccordionItem>
             </div>

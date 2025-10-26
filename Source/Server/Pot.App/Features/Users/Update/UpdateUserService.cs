@@ -61,8 +61,6 @@ internal sealed class UpdateUserService : IUpdateUserService
 
             UpdateUserEntity(userToUpdate, input);
 
-            // Not calling _userRepository.Update(account) as this will mark the
-            // entity as modified even if nothing was changed.
             _ = await _userRepository.SaveAsync(cancellationToken);
 
             var output = userToUpdate.MapToOutput();

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { EtagSchema, IdentitySchema } from './';
+import { SiteSchema } from './site';
 
 const BaseUserSchema = z.object({
   displayName: z.string(),
@@ -11,6 +12,7 @@ const UserSchema = BaseUserSchema.extend({
   ...IdentitySchema.shape,
   username: z.string(),
   permissions: z.array(z.string()),
+  site: SiteSchema,
 });
 
 const CreateUserSchema = BaseUserSchema.extend({
