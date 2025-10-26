@@ -19,7 +19,7 @@ internal sealed class UserContextMiddleware
 
         if (userId.IsNotNullOrEmpty() && Guid.TryParse(userId, out var userRowId))
         {
-            userContext.SetUser(userRowId);
+            userContext.SetUserRowId(userRowId);
         }
 
         await _next(context);

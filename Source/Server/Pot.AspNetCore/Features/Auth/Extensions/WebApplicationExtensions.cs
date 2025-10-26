@@ -15,7 +15,9 @@ internal static class WebApplicationExtensions
                 .LogoutUser()
                 .RefreshToken()
                 .PasswordResetSend()
-                .PasswordResetVerify();
+                .PasswordResetVerify()
+                .SignupSend()
+                .SignupComplete();
         }
 
         return app;

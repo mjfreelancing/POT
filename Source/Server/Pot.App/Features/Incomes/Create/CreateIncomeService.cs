@@ -42,7 +42,7 @@ internal sealed class CreateIncomeService : ICreateIncomeService
 
         var incomeToCreate = new IncomeEntity
         {
-            ExcludeFromCalcs = false,   // Just being explicit
+            ExcludeFromCalcs = input.ExcludeFromCalcs,  // Will be false for new incomes, may be true for imported data
             Description = input.Description,
             NextDue = input.NextDue,
             EndDate = input.EndDate,

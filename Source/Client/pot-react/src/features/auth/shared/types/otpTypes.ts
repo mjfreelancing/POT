@@ -1,8 +1,9 @@
 /**
- * OTP verification error statuses from API responses
+ * OTP verification statuses from API responses
  * Shared between password reset and signup flows
  */
 export type OtpVerificationStatus =
+  | 'Success'
   | 'InvalidCode'
   | 'Expired'
   | 'TooManyAttempts';

@@ -3,6 +3,7 @@ import { Upload } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+import { ErrorSheet } from '@/components/feedback';
 import { ErrorToast, SuccessToast } from '@/components/feedback/toast';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,6 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useErrorContext } from '@/contexts';
 import type { WindowOpenFile } from '@/lib';
 import { logger } from '@/lib';
 
@@ -28,6 +30,7 @@ type ImportModalProps = {
 function ImportModal({ isOpen, onClose }: ImportModalProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isImporting, setIsImporting] = useState(false);
+  const { error, setError } = useErrorContext();
   const { importData, isPending } = useImport();
 
   const queryClient = useQueryClient();
@@ -109,6 +112,11 @@ function ImportModal({ isOpen, onClose }: ImportModalProps) {
         />,
         { duration: 5000 },
       );
+
+      setError({
+        title: result.error.code,
+        description: result.error.description,
+      });
     }
 
     setIsImporting(false);
@@ -124,54 +132,65 @@ function ImportModal({ isOpen, onClose }: ImportModalProps) {
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Upload className="h-5 w-5" />
-            Import Financial Data
-          </DialogTitle>
-          <DialogDescription>
-            Select a previously exported zip file to import your financial data.
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      {error && (
+        <ErrorSheet
+          title={error.title}
+          description={error.description}
+          onDismiss={() => setError(null)}
+        />
+      )}
 
-        <div className="space-y-4 mt-4">
-          <div>
-            <Label className="block gap-0 mb-2">Select Export File</Label>
-            <div className="flex gap-2 mt-2">
-              <Input
-                value={selectedFile?.name || 'No file selected'}
-                readOnly
-                placeholder="Click Browse to select a .export file"
-                className="flex-1"
-              />
-              <Button variant="outline" onClick={handleFileSelect}>
-                Browse
-              </Button>
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Upload className="h-5 w-5" />
+              Import Financial Data
+            </DialogTitle>
+            <DialogDescription>
+              Select a previously exported zip file to import your financial
+              data.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-4">
+            <div>
+              <Label className="block gap-0 mb-2">Select Export File</Label>
+              <div className="flex gap-2 mt-2">
+                <Input
+                  value={selectedFile?.name || 'No file selected'}
+                  readOnly
+                  placeholder="Click Browse to select a .export file"
+                  className="flex-1"
+                />
+                <Button variant="outline" onClick={handleFileSelect}>
+                  Browse
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1 h-4">
+                {selectedFile
+                  ? `File size: ${Math.round(selectedFile.size / 1024)} KB`
+                  : ''}
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground mt-1 h-4">
-              {selectedFile
-                ? `File size: ${Math.round(selectedFile.size / 1024)} KB`
-                : ''}
-            </p>
           </div>
-        </div>
 
-        <DialogFooter className="gap-4">
-          <Button variant="outline" onClick={handleClose} className="w-28">
-            Cancel
-          </Button>
-          <Button
-            onClick={handleImport}
-            disabled={!selectedFile || isPending || isImporting}
-            className="w-28"
-          >
-            Import Data
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <DialogFooter className="gap-4">
+            <Button variant="outline" onClick={handleClose} className="w-28">
+              Cancel
+            </Button>
+            <Button
+              onClick={handleImport}
+              disabled={!selectedFile || isPending || isImporting}
+              className="w-28"
+            >
+              Import Data
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

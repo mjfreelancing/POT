@@ -4,5 +4,7 @@ namespace Pot.Shared;
 
 public interface ICurrentUserContext : IPotScopedDependency
 {
-    void SetUser(Guid userRowId);
+    Guid UserRowId { get; }
+
+    void SetUserRowId(Guid userRowId);
 }

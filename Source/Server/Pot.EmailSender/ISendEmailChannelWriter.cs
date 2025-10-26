@@ -4,5 +4,5 @@ namespace Pot.EmailSender;
 
 public interface ISendEmailChannelWriter
 {
-    ValueTask SubmitAsync(VerifyPasswordEmailConfig emailConfig, CancellationToken cancellationToken);
+    ValueTask SubmitAsync(EmailType emailType, EmailOtpInfo emailConfig, CancellationToken cancellationToken);
 }

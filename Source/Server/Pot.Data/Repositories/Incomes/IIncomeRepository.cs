@@ -2,8 +2,10 @@
 
 namespace Pot.Data.Repositories.Incomes;
 
-public interface IIncomeRepository : IGenericRepository<PotDbContext, IncomeEntity>
+public interface IIncomeRepository : IRepositoryBase
 {
+    IQueryable<IncomeEntity> Incomes { get; }
+
     Task<List<IncomeEntity>> GetAllIncomesAsync(CancellationToken cancellationToken);
     Task<List<IncomeEntity>> GetIncomesAsync(Guid[] rowIds, CancellationToken cancellationToken);
     Task<IncomeEntity?> GetIncomeOrDefaultAsync(Guid incomeId, CancellationToken cancellationToken);

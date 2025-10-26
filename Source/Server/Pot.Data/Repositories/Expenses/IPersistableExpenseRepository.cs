@@ -1,5 +1,3 @@
-﻿using Pot.Data.Entities;
+﻿namespace Pot.Data.Repositories.Expenses;
 
-namespace Pot.Data.Repositories.Expenses;
-
-public interface IPersistableExpenseRepository : IExpenseRepository, IPersistableRepository<ExpenseEntity>;
+public interface IPersistableExpenseRepository : IExpenseRepository, IPersistableRepository;

@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import {
   createContext,
@@ -47,6 +48,7 @@ function AuthProviderContent({ children }: { children: ReactNode }) {
   const userStore = useUserStore();
   const { tokens, setTokens } = useTokens();
   const logoutMutation = useLogout();
+  const queryClient = useQueryClient();
   const prevUserInfoRef = useRef<typeof userInfo>(undefined);
 
   // Update permission store when userInfo changes
@@ -89,7 +91,10 @@ function AuthProviderContent({ children }: { children: ReactNode }) {
 
     setTokens(undefined);
     userStore.clearUserInfo();
-  }, [setTokens, userStore, logoutMutation]);
+
+    // Clear all React Query cache to prevent data leakage between users
+    queryClient.clear();
+  }, [setTokens, userStore, logoutMutation, queryClient]);
 
   // Register logout callback with the logout manager
   useEffect(() => {

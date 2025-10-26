@@ -1,5 +1,6 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pot.App.Errors;
 using Pot.Data.Entities;
@@ -27,7 +28,7 @@ internal sealed class CheckDescriptionDoesNotExist : PreCreateCheckBase
 
         var predicate = ExpenseSpecifications.IsSameDescription(state.ExpenseToCreate.Account.Id, expenseToCreate.Description).Expression;
 
-        var descriptionExists = await _expenseRepository
+        var descriptionExists = await _expenseRepository.Expenses
             .AnyAsync(predicate, cancellationToken)
             .ConfigureAwait(false);
 

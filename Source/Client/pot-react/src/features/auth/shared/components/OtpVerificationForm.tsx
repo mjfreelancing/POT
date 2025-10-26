@@ -226,14 +226,11 @@ function OtpVerificationForm({
           disabled={
             isLoading ||
             verificationCode.length !== 6 ||
-            verificationStatus === 'Expired'
+            verificationStatus === 'Expired' ||
+            verificationStatus === 'TooManyAttempts'
           }
         >
-          {isLoading
-            ? 'Verifying...'
-            : verificationStatus === 'Expired'
-              ? 'Code Expired'
-              : 'Verify Code'}
+          {isLoading ? 'Verifying...' : 'Verify Code'}
         </Button>
       </form>
 

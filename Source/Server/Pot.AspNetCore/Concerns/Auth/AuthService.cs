@@ -1,6 +1,7 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
+using Microsoft.EntityFrameworkCore;
 using Pot.App.Concerns.Auth;
 using Pot.App.Concerns.Time;
 using Pot.App.Errors;
@@ -39,7 +40,7 @@ internal sealed class AuthService : IAuthService
 
         using (_userRepository.WithTracking())
         {
-            var user = await _userRepository
+            var user = await _userRepository.Users
                 .SingleOrDefaultAsync(user => user.Username == username, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -67,7 +68,7 @@ internal sealed class AuthService : IAuthService
 
         using (_userRepository.WithTracking())
         {
-            var user = await _userRepository
+            var user = await _userRepository.Users
                 .SingleOrDefaultAsync(user => user.RowId == userId, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -101,7 +102,7 @@ internal sealed class AuthService : IAuthService
 
         using (_userRepository.WithTracking())
         {
-            var user = await _userRepository
+            var user = await _userRepository.Users
                 .SingleOrDefaultAsync(user => user.RowId == userRowId, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -124,7 +125,7 @@ internal sealed class AuthService : IAuthService
 
         using (_userRepository.WithTracking())
         {
-            var user = await _userRepository
+            var user = await _userRepository.Users
                 .SingleOrDefaultAsync(user => user.RowId == userId, cancellationToken)
                 .ConfigureAwait(false);
 

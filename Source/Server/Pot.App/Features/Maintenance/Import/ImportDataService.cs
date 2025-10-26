@@ -1,4 +1,5 @@
 ﻿using AllOverIt.Assertion;
+using AllOverIt.Extensions;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
@@ -8,6 +9,7 @@ using Pot.App.Features.Maintenance.Import.Expenses;
 using Pot.App.Features.Maintenance.Import.Incomes;
 using Pot.App.Features.Maintenance.Import.Reader;
 using Pot.App.Features.Maintenance.Metadata.Models;
+using Pot.Data;
 
 namespace Pot.App.Features.Maintenance.Import;
 
@@ -18,15 +20,18 @@ internal sealed class ImportDataService : IImportDataService
     private readonly IAccountsImporter _accountsImporter;
     private readonly IIncomesImporter _incomesImporter;
     private readonly IExpensesImporter _expensesImporter;
+    private readonly IPotTransactionFactory _transactionFactory;
     private readonly ILogger _logger;
 
     public ImportDataService(IImportStreamReader importStreamReader, IAccountsImporter accountImporter,
-        IIncomesImporter incomesImporter, IExpensesImporter expenseImporter, ILogger<ImportDataService> logger)
+        IIncomesImporter incomesImporter, IExpensesImporter expenseImporter, IPotTransactionFactory transactionFactory,
+        ILogger<ImportDataService> logger)
     {
         _importStreamReader = importStreamReader.WhenNotNull();
         _accountsImporter = accountImporter.WhenNotNull();
         _incomesImporter = incomesImporter.WhenNotNull();
         _expensesImporter = expenseImporter.WhenNotNull();
+        _transactionFactory = transactionFactory.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
@@ -54,30 +59,53 @@ internal sealed class ImportDataService : IImportDataService
                 _logger.LogInformation("Importing data (as v{MetadataVersion}) from {MetadataCreatedAt}", metadataV1.Version, metadataV1.CreatedAt);
             }
 
-            var totalCount = 0;
-            totalCount += await ImportAccountsAsync(cancellationToken);    // Must be first (incomes/expenses reference accounts)
-            totalCount += await ImportExpensesAsync(cancellationToken);
-            totalCount += await ImportIncomesAsync(cancellationToken);
+            using var transaction = await _transactionFactory.CreateTransactionAsync(cancellationToken);
+
+            // Must be first (incomes/expenses reference accounts)
+            var accountsResult = await ImportAccountsAsync(cancellationToken);
+
+            if (accountsResult.IsFail)
+            {
+                return EnrichedResult.Fail<int>(accountsResult.Error);
+            }
+
+            var expensesResult = await ImportExpensesAsync(cancellationToken);
+
+            if (expensesResult.IsFail)
+            {
+                return EnrichedResult.Fail<int>(expensesResult.Error);
+            }
+
+            var incomesResult = await ImportIncomesAsync(cancellationToken);
+
+            if (incomesResult.IsFail)
+            {
+                return EnrichedResult.Fail<int>(incomesResult.Error);
+            }
+
+            await transaction.CommitAsync(cancellationToken);
+
+            var totalCount = accountsResult.Value + expensesResult.Value + incomesResult.Value;
 
             return EnrichedResult.Success(totalCount);
         }
     }
 
-    private async Task<int> ImportAccountsAsync(CancellationToken cancellationToken)
+    private async Task<EnrichedResult<int>> ImportAccountsAsync(CancellationToken cancellationToken)
     {
         using var accounts = _importStreamReader.GetAccounts();
 
         return await _accountsImporter.ImportAsync(accounts, cancellationToken);
     }
 
-    private async Task<int> ImportExpensesAsync(CancellationToken cancellationToken)
+    private async Task<EnrichedResult<int>> ImportExpensesAsync(CancellationToken cancellationToken)
     {
         using var expenses = _importStreamReader.GetExpenses();
 
         return await _expensesImporter.ImportAsync(expenses, cancellationToken);
     }
 
-    private async Task<int> ImportIncomesAsync(CancellationToken cancellationToken)
+    private async Task<EnrichedResult<int>> ImportIncomesAsync(CancellationToken cancellationToken)
     {
         using var incomes = _importStreamReader.GetIncomes();
 

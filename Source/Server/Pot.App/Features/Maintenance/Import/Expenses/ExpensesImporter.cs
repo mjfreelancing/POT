@@ -1,6 +1,9 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
+using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
+using Pot.App.Features.Expenses.Create;
+using Pot.App.Features.Expenses.Update;
 using Pot.App.Features.Maintenance.Import.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
@@ -12,16 +15,22 @@ internal sealed class ExpensesImporter : IExpensesImporter
 {
     private readonly IPersistableAccountRepository _accountRepository;
     private readonly IExpenseRepository _expenseRepository;
+    private readonly ICreateExpenseService _createExpenseService;
+    private readonly IUpdateExpenseService _updateExpenseService;
     private readonly ILogger<ExpensesImporter> _logger;
 
-    public ExpensesImporter(IPersistableAccountRepository accountRepository, IExpenseRepository expenseRepository, ILogger<ExpensesImporter> logger)
+    public ExpensesImporter(IPersistableAccountRepository accountRepository, IExpenseRepository expenseRepository,
+        ICreateExpenseService createExpenseService, IUpdateExpenseService updateExpenseService,
+        ILogger<ExpensesImporter> logger)
     {
         _accountRepository = accountRepository.WhenNotNull();
         _expenseRepository = expenseRepository.WhenNotNull();
+        _createExpenseService = createExpenseService.WhenNotNull();
+        _updateExpenseService = updateExpenseService.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
-    public async Task<int> ImportAsync(IEnumerable<IExpenseCsvRow> csvRows, CancellationToken cancellationToken)
+    public async Task<EnrichedResult<int>> ImportAsync(IEnumerable<IExpenseCsvRow> csvRows, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
@@ -53,11 +62,10 @@ internal sealed class ExpensesImporter : IExpensesImporter
                 .ConfigureAwait(false);
         }
 
-
-        return count;
+        return EnrichedResult.Success(count);
     }
 
-    private async Task CreateOrUpdateExpenseAsync(AccountEntity account, IExpenseCsvRow csvRow, CancellationToken cancellationToken)
+    private async Task<EnrichedResult<int>> CreateOrUpdateExpenseAsync(AccountEntity account, IExpenseCsvRow csvRow, CancellationToken cancellationToken)
     {
         var csvExpenseId = csvRow.RowId;
 
@@ -65,22 +73,16 @@ internal sealed class ExpensesImporter : IExpensesImporter
             .GetExpenseOrDefaultAsync(csvExpenseId, cancellationToken)
             .ConfigureAwait(false);
 
-        if (expenseEntity is null)
-        {
-            var expense = CreateExpenseEntity(account, csvRow);
-            account.Expenses.Add(expense);
-        }
-        else
-        {
-            UpdateExistingExpense(expenseEntity, csvRow);
-        }
+        return expenseEntity is null
+            ? await CreateExpenseAsync(account.RowId, csvRow, cancellationToken).ConfigureAwait(false)
+            : await UpdateExpenseAsync(account.RowId, expenseEntity.Etag, csvRow, cancellationToken).ConfigureAwait(false);
     }
 
-    private static ExpenseEntity CreateExpenseEntity(AccountEntity account, IExpenseCsvRow import)
+    private async Task<EnrichedResult<int>> CreateExpenseAsync(Guid accountRowId, IExpenseCsvRow import,
+        CancellationToken cancellationToken)
     {
-        var expenseEntity = new ExpenseEntity
+        var input = new Features.Expenses.Create.Models.Input
         {
-            RowId = import.RowId,
             ExcludeFromCalcs = import.ExcludeFromCalcs,
             Description = import.Description,
             AccrualStart = import.AccrualStart,
@@ -89,29 +91,54 @@ internal sealed class ExpensesImporter : IExpensesImporter
             Frequency = import.Frequency,
             FrequencyCount = import.FrequencyCount,
             Amount = import.Amount,
-            Accrued = import.Accrued,
-            AccruedIsDirty = import.AccruedIsDirty,
-            LastAccruedUpdate = import.LastAccruedUpdate,
             Note = import.Note,
-            Account = account
+            AccountRowId = accountRowId
+
+            // Not imported - all calculations would need to be refreshed anyway
+            // Accrued = import.Accrued,
+            // AccruedIsDirty = import.AccruedIsDirty,
+            // LastAccruedUpdate = import.LastAccruedUpdate,
         };
 
-        return expenseEntity;
+        var createResult = await _createExpenseService
+            .CreateExpenseAsync(input, cancellationToken)
+            .ConfigureAwait(false);
+
+        return createResult.IsSuccess
+            ? EnrichedResult.Success<int>()
+            : EnrichedResult.Fail<int>(createResult.Error);
     }
 
-    private static void UpdateExistingExpense(ExpenseEntity entity, IExpenseCsvRow import)
+    private async Task<EnrichedResult<int>> UpdateExpenseAsync(Guid accountRowId, long expenseEtag, IExpenseCsvRow csvRow,
+        CancellationToken cancellationToken)
     {
-        entity.ExcludeFromCalcs = import.ExcludeFromCalcs;
-        entity.Description = import.Description;
-        entity.AccrualStart = import.AccrualStart;
-        entity.NextDue = import.NextDue;
-        entity.EndDate = import.EndDate;
-        entity.Frequency = import.Frequency;
-        entity.FrequencyCount = import.FrequencyCount;
-        entity.Amount = import.Amount;
-        entity.Accrued = import.Accrued;
-        entity.AccruedIsDirty = import.AccruedIsDirty;
-        entity.LastAccruedUpdate = import.LastAccruedUpdate;
-        entity.Note = import.Note;
+        var input = new Features.Expenses.Update.Models.Input
+        {
+            RowId = csvRow.RowId,
+            Etag = expenseEtag,
+            ExcludeFromCalcs = csvRow.ExcludeFromCalcs,
+            Description = csvRow.Description,
+            AccrualStart = csvRow.AccrualStart,
+            NextDue = csvRow.NextDue,
+            EndDate = csvRow.EndDate,
+            Frequency = csvRow.Frequency,
+            FrequencyCount = csvRow.FrequencyCount,
+            Amount = csvRow.Amount,
+            Note = csvRow.Note,
+            AccountRowId = accountRowId
+
+            // Not imported - all calculations would need to be refreshed anyway
+            // Accrued = import.Accrued,
+            // AccruedIsDirty = import.AccruedIsDirty,
+            // LastAccruedUpdate = import.LastAccruedUpdate,
+        };
+
+        var updateResult = await _updateExpenseService
+            .UpdateExpenseAsync(input, cancellationToken)
+            .ConfigureAwait(false);
+
+        return updateResult.IsSuccess
+            ? EnrichedResult.Success<int>()
+            : EnrichedResult.Fail<int>(updateResult.Error);
     }
 }

@@ -22,6 +22,7 @@ function useCreateIncome() {
 
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: ['incomes'] });
+        queryClient.invalidateQueries({ queryKey: ['accounts'] });
       }
 
       return result;

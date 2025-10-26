@@ -68,4 +68,30 @@ internal static class RouteGroupBuilderExtensions
 
         return routeGroupBuilder;
     }
+
+    public static RouteGroupBuilder SignupSend(this RouteGroupBuilder routeGroupBuilder)
+    {
+        routeGroupBuilder
+            .MapPost(AuthEndpoints.SignupSend, Signup.Send.Handler.Invoke)
+            .WithName(nameof(SignupSend))
+            .WithSummary("Request to signup")
+            .WithDescription("Request to signup")
+            .ProducesProblem((int)HttpStatusCode.OK)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+
+        return routeGroupBuilder;
+    }
+
+    public static RouteGroupBuilder SignupComplete(this RouteGroupBuilder routeGroupBuilder)
+    {
+        routeGroupBuilder
+            .MapPost(AuthEndpoints.SignupComplete, Signup.Complete.Handler.Invoke)
+            .WithName(nameof(SignupComplete))
+            .WithSummary("Complete a signup request")
+            .WithDescription("Complete a signup request")
+            .ProducesProblem((int)HttpStatusCode.OK)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+
+        return routeGroupBuilder;
+    }
 }

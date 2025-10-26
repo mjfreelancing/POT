@@ -15,12 +15,14 @@ import { cn } from '@/lib/utils';
 
 import { PasswordResetDialog } from './passwordReset';
 import type { DisplayError } from './passwordReset/types/passwordResetTypes';
+import { SignupDialog } from './signup';
 
 type LoginFormProps = Omit<ComponentPropsWithoutRef<'div'>, 'onSubmit'> & {
   className?: string;
   onSubmit?: (data: LoginCredentials) => Promise<void>;
   error?: string;
   onPasswordResetError: (error: DisplayError | null) => void;
+  onSignupError: (error: DisplayError | null) => void;
 };
 
 function LoginForm({
@@ -28,12 +30,14 @@ function LoginForm({
   onSubmit,
   error,
   onPasswordResetError,
+  onSignupError,
   ...props
 }: LoginFormProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [showSignup, setShowSignup] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -119,13 +123,14 @@ function LoginForm({
             <div className="mt-4 text-center text-sm">
               <span>Don&apos;t have an account?</span>
               <span className="inline-block w-2" />
-              <a
-                href="#"
-                tabIndex={-1}
-                className="underline underline-offset-4"
+              <button
+                type="button"
+                onClick={() => setShowSignup(true)}
+                className="underline underline-offset-4 text-foreground hover:text-primary transition-colors"
+                tabIndex={5}
               >
                 Sign up
-              </a>
+              </button>
             </div>
           </form>
         </CardContent>
@@ -135,6 +140,12 @@ function LoginForm({
         open={showPasswordReset}
         onOpenChange={setShowPasswordReset}
         onError={onPasswordResetError}
+      />
+
+      <SignupDialog
+        open={showSignup}
+        onOpenChange={setShowSignup}
+        onError={onSignupError}
       />
     </div>
   );

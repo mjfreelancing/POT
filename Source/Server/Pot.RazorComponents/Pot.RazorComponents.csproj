@@ -6,13 +6,24 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Emails\Signup\SignupEmail.text" />
+    <None Remove="SendChangePasswordEmail.text" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Emails\ChangePassword\ChangePasswordEmail.text" />
+    <EmbeddedResource Include="Emails\Signup\SignupEmail.text" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <SupportedPlatform Include="browser" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.10" />
+	  <PackageReference Include="AllOverIt" Version="9.0.0-rc.8" />
+	  <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.10" />
   </ItemGroup>
 
   <ItemGroup>

@@ -7,8 +7,10 @@ using Pot.Shared;
 
 namespace Pot.Data.Repositories.Settings;
 
-internal sealed class SettingsRepository : GenericRepository<PotDbContext, SettingEntity>, ISettingsRepository
+internal sealed class SettingsRepository : RepositoryBase, ISettingsRepository
 {
+    public IQueryable<SettingEntity> Settings => _dbContext.Settings;
+
     public SettingsRepository(PotDbContext dbContext)
         : base(dbContext)
     {
@@ -16,7 +18,8 @@ internal sealed class SettingsRepository : GenericRepository<PotDbContext, Setti
 
     public async Task<BackupSettings> GetDatabaseSettingsAsync(CancellationToken cancellationToken)
     {
-        var settings = await Current
+        var settings = await Settings
+            .IgnoreQueryFilters()
             .Where(setting => setting.Category == SettingCategory.Backup)
             .Select(setting => new
             {

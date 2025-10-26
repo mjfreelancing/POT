@@ -1,6 +1,5 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pot.App.Features.Me.Mappings;
 using Pot.App.Features.Me.Models;
@@ -23,9 +22,7 @@ internal sealed class UserService : IUserService
     {
         _logger.LogCall(this, new { userId });
 
-        var user = await _userRepository.Current
-            .Where(user => user.RowId == userId)
-            .SingleOrDefaultAsync(cancellationToken);
+        var user = await _userRepository.GetByRowIdOrDefaultAsync(userId, cancellationToken);
 
         return user?.MapToOutput();
     }

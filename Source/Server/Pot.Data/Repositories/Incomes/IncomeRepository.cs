@@ -4,8 +4,10 @@ using Pot.Data.Extensions;
 
 namespace Pot.Data.Repositories.Incomes;
 
-internal sealed class IncomeRepository : GenericRepository<PotDbContext, IncomeEntity>, IPersistableIncomeRepository
+internal sealed class IncomeRepository : PersistableRepository, IPersistableIncomeRepository
 {
+    public IQueryable<IncomeEntity> Incomes => _dbContext.Incomes;
+
     public IncomeRepository(PotDbContext dbContext)
         : base(dbContext)
     {
@@ -13,14 +15,14 @@ internal sealed class IncomeRepository : GenericRepository<PotDbContext, IncomeE
 
     public Task<List<IncomeEntity>> GetAllIncomesAsync(CancellationToken cancellationToken)
     {
-        return Current
+        return Incomes
             .Include(income => income.Account)
             .ToListAsync(cancellationToken);
     }
 
     public Task<List<IncomeEntity>> GetIncomesAsync(Guid[] rowIds, CancellationToken cancellationToken)
     {
-        return Current
+        return Incomes
             .Include(income => income.Account)
             .Where(income => rowIds.Contains(income.RowId))
             .ToListAsync(cancellationToken);
@@ -28,14 +30,14 @@ internal sealed class IncomeRepository : GenericRepository<PotDbContext, IncomeE
 
     public Task<IncomeEntity?> GetIncomeOrDefaultAsync(Guid incomeId, CancellationToken cancellationToken)
     {
-        return Current
+        return Incomes
             .Include(income => income.Account)
             .SingleOrDefaultAsync(incomeId, cancellationToken);
     }
 
     public Task<Guid[]> GetRequiredRenewalsAsync(Guid[] accountRowIds, DateOnly asOfDate, CancellationToken cancellationToken)
     {
-        return Current
+        return Incomes
             .Where(income =>
                 !income.ExcludeFromCalcs &&
                 income.NextDue <= asOfDate &&

@@ -1,5 +1,6 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pot.App.Errors;
 using Pot.Data.Entities;
@@ -27,7 +28,9 @@ internal sealed class CheckDescriptionDoesNotExist : PreCreateCheckBase
 
         var predicate = AccountSpecifications.IsSameDescription(account.Description).Expression;
 
-        var descriptionExists = await _accountRepository
+        // Account descriptions are globally unique
+        var descriptionExists = await _accountRepository.Accounts
+            .IgnoreQueryFilters()
             .AnyAsync(predicate, cancellationToken)
             .ConfigureAwait(false);
 

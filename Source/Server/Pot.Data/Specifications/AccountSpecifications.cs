@@ -5,11 +5,6 @@ namespace Pot.Data.Specifications;
 
 public static class AccountSpecifications
 {
-    public static ILinqSpecification<AccountEntity> IsSameAccount(Guid siteId, Guid accountId)
-    {
-        return LinqSpecification<AccountEntity>.Create(account => account.Site.RowId == siteId && account.RowId == accountId);
-    }
-
     public static ILinqSpecification<AccountEntity> IsSameBsbNumber(string bsb, string number)
     {
         return LinqSpecification<AccountEntity>.Create(account => account.Bsb == bsb && account.Number == number);

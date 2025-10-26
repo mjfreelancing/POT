@@ -22,7 +22,7 @@ internal sealed class PermissionService : IPermissionService
     {
         _logger.LogCall(this, new { userId });
 
-        var roles = await _userRepository.Current
+        var roles = await _userRepository.Users
             .Include(user => user.Roles)
             .ThenInclude(role => role.Permissions)
             .Where(user => user.RowId == userId)

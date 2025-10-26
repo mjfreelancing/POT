@@ -10,4 +10,5 @@ export * from './useIncomes';
 export * from './useMe';
 export * from './usePasswordReset';
 export * from './useProjections';
+export * from './useSignup';
 export * from './useUser';

@@ -18,6 +18,7 @@ function useDeleteExpense(rowId: string) {
 
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: ['expenses'] });
+        queryClient.invalidateQueries({ queryKey: ['accounts'] });
       }
 
       return result;

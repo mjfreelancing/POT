@@ -10,9 +10,11 @@ using Pot.Shared;
 
 namespace Pot.Data.Repositories.Expenses;
 
-internal sealed class ExpenseRepository : GenericRepository<PotDbContext, ExpenseEntity>, IPersistableExpenseRepository
+internal sealed class ExpenseRepository : PersistableRepository, IPersistableExpenseRepository
 {
     private readonly IQueryPaginatorFactory _queryPaginatorFactory;
+
+    public IQueryable<ExpenseEntity> Expenses => _dbContext.Expenses;
 
     public ExpenseRepository(PotDbContext dbContext, IQueryPaginatorFactory queryPaginatorFactory)
         : base(dbContext)
@@ -22,14 +24,14 @@ internal sealed class ExpenseRepository : GenericRepository<PotDbContext, Expens
 
     public Task<List<ExpenseEntity>> GetAllExpensesAsync(CancellationToken cancellationToken)
     {
-        return Current
+        return Expenses
             .Include(expense => expense.Account)
             .ToListAsync(cancellationToken);
     }
 
     public Task<PageResult<ExpenseEntity>> GetAllExpensesPagedAsync(Paging paging, CancellationToken cancellationToken)
     {
-        var incomeQuery = Current.Include(expense => expense.Account);
+        var incomeQuery = Expenses.Include(expense => expense.Account);
 
         var paginatorConfig = new QueryPaginatorConfiguration
         {
@@ -52,14 +54,14 @@ internal sealed class ExpenseRepository : GenericRepository<PotDbContext, Expens
 
     public Task<ExpenseEntity?> GetExpenseOrDefaultAsync(Guid rowId, CancellationToken cancellationToken)
     {
-        return Current
+        return Expenses
             .Include(expense => expense.Account)
             .SingleOrDefaultAsync(rowId, cancellationToken);
     }
 
     public Task<List<ExpenseEntity>> GetExpensesAsync(Guid[] rowIds, CancellationToken cancellationToken)
     {
-        return Current
+        return Expenses
             .Include(expense => expense.Account)
             .Where(expense => rowIds.Contains(expense.RowId))
             .ToListAsync(cancellationToken);
@@ -69,7 +71,7 @@ internal sealed class ExpenseRepository : GenericRepository<PotDbContext, Expens
     {
         // Don't exclude expenses that are marked as ExcludeFromCalcs as they may still be relevant to the caller,
         // such as updating accruals when toggling the flag.
-        return Current
+        return Expenses
             .Include(expense => expense.Account)
             .Where(expense => expense.Account.RowId == accountRowId)
             .ToListAsync(cancellationToken);
@@ -77,7 +79,7 @@ internal sealed class ExpenseRepository : GenericRepository<PotDbContext, Expens
 
     public Task<Guid[]> GetRequiredRenewalsAsync(Guid[] accountRowIds, DateOnly asOfDate, CancellationToken cancellationToken)
     {
-        return Current
+        return Expenses
             .Where(expense =>
                 !expense.ExcludeFromCalcs &&
                 expense.NextDue <= asOfDate &&
@@ -92,7 +94,7 @@ internal sealed class ExpenseRepository : GenericRepository<PotDbContext, Expens
 
         // Not excluding expenses marked as ExcludeFromCalcs as they may still require an accrual update,
         // such as when toggling the flag.
-        return Current
+        return Expenses
             .Where(requiresAccrualUpdate)
             .Where(expense => accountRowIds.Contains(expense.Account.RowId))
             .Select(expense => expense.Account.RowId)

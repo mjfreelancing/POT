@@ -5,8 +5,10 @@ using Pot.Shared;
 
 namespace Pot.Data.Repositories.Otp;
 
-internal sealed class OtpRepository : GenericRepository<PotDbContext, OneTimePasswordEntity>, IPersistableOtpRepository
+internal sealed class OtpRepository : PersistableRepository, IPersistableOtpRepository
 {
+    public IQueryable<OneTimePasswordEntity> OneTimePasswords => _dbContext.OneTimePasswords;
+
     public OtpRepository(PotDbContext dbContext)
         : base(dbContext)
     {
@@ -16,8 +18,8 @@ internal sealed class OtpRepository : GenericRepository<PotDbContext, OneTimePas
     public Task<List<OneTimePasswordEntity>> GetPendingExpiredAsync(OtpReason? reason, DateTime currentDateUtc, CancellationToken cancellationToken)
     {
         var current = reason is null
-            ? Current
-            : Current.Where(otp => otp.Reason == reason);
+            ? OneTimePasswords
+            : OneTimePasswords.Where(otp => otp.Reason == reason);
 
         return current
             .Where(otp => otp.Status == OtpStatus.Active && otp.ExpiryUtc <= currentDateUtc)
@@ -27,8 +29,8 @@ internal sealed class OtpRepository : GenericRepository<PotDbContext, OneTimePas
     public Task<int> CountFailedRequestsForUsernameAsync(OtpReason? reason, string? username, DateTime afterDateUtc, CancellationToken cancellationToken)
     {
         var current = reason is null
-            ? Current
-            : Current.Where(otp => otp.Reason == reason);
+            ? OneTimePasswords
+            : OneTimePasswords.Where(otp => otp.Reason == reason);
 
         return current
             .Where(otp => otp.Username == username && otp.Status == OtpStatus.Failed && otp.CreatedUtc >= afterDateUtc)
@@ -38,8 +40,8 @@ internal sealed class OtpRepository : GenericRepository<PotDbContext, OneTimePas
     public Task<List<OneTimePasswordEntity>> GetActiveRequestsForUsernameAsync(OtpReason? reason, string username, CancellationToken cancellationToken)
     {
         var current = reason is null
-            ? Current
-            : Current.Where(otp => otp.Reason == reason);
+            ? OneTimePasswords
+            : OneTimePasswords.Where(otp => otp.Reason == reason);
 
         return current
             .Where(otp => otp.Username == username && otp.Status == OtpStatus.Active)
@@ -50,7 +52,7 @@ internal sealed class OtpRepository : GenericRepository<PotDbContext, OneTimePas
         string referenceCode, CancellationToken cancellationToken)
     {
         // There should only be one, but there IS a chance of duplicates
-        return Current
+        return OneTimePasswords
             .Where(otp => otp.Reason == reason && otp.Username == username && otp.RefCode == referenceCode)
             .ToListAsync(cancellationToken);
     }

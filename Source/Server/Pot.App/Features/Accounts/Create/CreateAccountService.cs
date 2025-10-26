@@ -5,25 +5,25 @@ using Microsoft.Extensions.Logging;
 using Pot.App.Features.Accounts.Create.EntityChecks;
 using Pot.App.Features.Accounts.Create.Mappings;
 using Pot.App.Features.Accounts.Create.Models;
-using Pot.Data;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
+using Pot.Data.Repositories.Sites;
 
 namespace Pot.App.Features.Accounts.Create;
 
 internal sealed class CreateAccountService : ICreateAccountService
 {
     private readonly IPersistableAccountRepository _accountRepository;
+    private readonly ISiteRepository _siteRepository;
     private readonly IPreCreateChecker _preCreateChecker;
-    private readonly ICurrentUserDataContext _currentUserDataContext;
     private readonly ILogger _logger;
 
-    public CreateAccountService(IPersistableAccountRepository accountRepository, IPreCreateChecker preCreateChecker,
-        ICurrentUserDataContext currentUserContext, ILogger<CreateAccountService> logger)
+    public CreateAccountService(IPersistableAccountRepository accountRepository, ISiteRepository siteRepository,
+        IPreCreateChecker preCreateChecker, ILogger<CreateAccountService> logger)
     {
         _accountRepository = accountRepository.WhenNotNull();
+        _siteRepository = siteRepository.WhenNotNull();
         _preCreateChecker = preCreateChecker.WhenNotNull();
-        _currentUserDataContext = currentUserContext.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
@@ -33,11 +33,11 @@ internal sealed class CreateAccountService : ICreateAccountService
 
         using (_accountRepository.WithTracking())
         {
-            var user = await _currentUserDataContext.GetUserAsync();
+            var userSite = _siteRepository.GetCurrentSite();
 
             var accountToCreate = new AccountEntity
             {
-                Site = user.Site,
+                Site = userSite,
                 Bsb = input.Bsb,
                 Number = input.Number,
                 Description = input.Description,

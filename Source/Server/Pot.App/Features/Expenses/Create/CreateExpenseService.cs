@@ -42,7 +42,7 @@ internal sealed class CreateExpenseService : ICreateExpenseService
 
         var expenseToCreate = new ExpenseEntity
         {
-            ExcludeFromCalcs = false,   // Just being explicit
+            ExcludeFromCalcs = input.ExcludeFromCalcs,  // Will be false for new expenses, may be true for imported data
             Description = input.Description,
             NextDue = input.NextDue,
             AccrualStart = input.AccrualStart,
@@ -52,7 +52,7 @@ internal sealed class CreateExpenseService : ICreateExpenseService
             Amount = input.Amount,
             Note = input.Note,
             Account = expenseAccount,
-            AccruedIsDirty = true       // The default is true, but being explicit
+            AccruedIsDirty = true                       // The default is true, but being explicit
         };
 
         var problemDetails = await _preCreateChecker.CanSaveAsync(expenseToCreate, cancellationToken);

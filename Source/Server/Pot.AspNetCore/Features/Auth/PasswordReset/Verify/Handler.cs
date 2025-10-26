@@ -11,8 +11,7 @@ namespace Pot.AspNetCore.Features.Auth.PasswordReset.Verify;
 internal sealed class Handler
 {
     public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke(Request request,
-        HttpContext httpContext, IVerifyPasswordResetService passwordResetService,
-        IProblemDetailsInspector problemDetailsInspector,
+        IVerifyPasswordResetService passwordResetService, IProblemDetailsInspector problemDetailsInspector,
         ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null, new { request.Username, request.ReferenceCode, request.VerificationCode });

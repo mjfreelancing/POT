@@ -1,5 +1,3 @@
-﻿using Pot.Data.Entities;
+﻿namespace Pot.Data.Repositories.Incomes;
 
-namespace Pot.Data.Repositories.Incomes;
-
-public interface IPersistableIncomeRepository : IIncomeRepository, IPersistableRepository<IncomeEntity>;
+public interface IPersistableIncomeRepository : IIncomeRepository, IPersistableRepository;

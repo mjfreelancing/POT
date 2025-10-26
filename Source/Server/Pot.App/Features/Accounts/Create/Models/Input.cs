@@ -3,7 +3,6 @@
 public sealed class Input
 {
     public Guid RowId { get; init; }
-    public long Etag { get; init; }
     public string Bsb { get; init; } = string.Empty;
     public string Number { get; init; } = string.Empty;
     public string Description { get; init; } = string.Empty;

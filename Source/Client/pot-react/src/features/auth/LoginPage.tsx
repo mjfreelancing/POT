@@ -66,6 +66,7 @@ function LoginPage() {
           onSubmit={handleLogin}
           error={authError ? authError.description : undefined}
           onPasswordResetError={setOtherError}
+          onSignupError={setOtherError}
         />
         {otherError && (
           <ErrorSheet

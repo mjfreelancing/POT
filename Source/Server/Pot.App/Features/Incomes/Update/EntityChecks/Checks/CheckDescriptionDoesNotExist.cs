@@ -1,4 +1,5 @@
 ﻿using AllOverIt.Assertion;
+using AllOverIt.Expressions;
 using AllOverIt.Logging.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -27,11 +28,12 @@ internal sealed class CheckDescriptionDoesNotExist : PreUpdateCheckBase
 
         var input = state.Input;
 
-        var predicate = IncomeSpecifications.IsSameDescription(state.IncomeAccount.Id, input.Description).Expression;
+        var predicate = IncomeSpecifications
+            .IsSameDescription(state.IncomeAccount.Id, input.Description).Expression
+            .And(entity => entity.Id != state.IncomeToUpdate.Id);
 
-        var descriptionExists = await _incomeRepository
-            .Where(predicate)
-            .AnyAsync(entity => entity.Id != state.IncomeToUpdate.Id, cancellationToken)
+        var descriptionExists = await _incomeRepository.Incomes
+            .AnyAsync(predicate, cancellationToken)
             .ConfigureAwait(false);
 
         if (descriptionExists)

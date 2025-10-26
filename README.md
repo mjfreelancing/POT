@@ -12,6 +12,12 @@
 
 - [About POT](#about-pot)
   - [Why POT?](#why-pot)
+- [User Registration & Account Creation](#user-registration--account-creation)
+  - [Signup Process](#signup-process)
+  - [Email Verification System](#email-verification-system)
+  - [Security Features](#security-features)
+  - [User Experience Features](#user-experience-features)
+  - [Getting Started After Signup](#getting-started-after-signup)
 - [Features](#features)
   - [Dashboard](#dashboard)
   - [Financial Projections](#financial-projections)
@@ -44,6 +50,7 @@
   - [Type Checking](#type-checking)
 - [Development Configuration](#development-configuration)
   - [Architecture and Technology Stack](#architecture-and-technology-stack)
+  - [Email System Architecture](#email-system-architecture)
   - [UI/UX Design](#uiux-design)
   - [TypeScript Configuration](#typescript-configuration)
   - [Path Aliases](#path-aliases)
@@ -77,6 +84,111 @@
 - 💰 **Income Management** - Track multiple income sources and payment schedules
 - 🏦 **Account Management** - Monitor balances across all your financial accounts
 - 🔄 **Data Portability** - Export and import your financial data with ease
+
+## User Registration & Account Creation
+
+POT provides a comprehensive user registration system that combines email verification with automatic site setup, ensuring new users can quickly get started with their financial management.
+
+### Signup Process
+
+The registration process follows a secure three-phase workflow:
+
+1. **User Information Collection**
+
+   - Username and email address input
+   - Real-time username availability checking
+   - Form validation with clear error messaging
+
+2. **Email Verification**
+
+   - Dual-code OTP system for enhanced security
+   - Reference Code (6 digits) - displayed for verification
+   - Verification Code (6 digits) - entered by user
+   - 15-minute expiry window for security
+   - Resend functionality with countdown timer
+
+3. **Account Activation**
+   - Automatic user account creation
+   - Site setup with default configuration
+   - Super-admin role assignment
+   - Temporary password generation for first login
+
+### Email Verification System
+
+**Welcome Email Features:**
+
+- HTML email with plain text fallback for accessibility
+- Clear visual design with step-by-step instructions
+- Reference Code display for verification matching
+- Verification Code for entry
+- Temporary password for first login
+- Security notices and expiry information
+
+**Email Content:**
+
+- Welcome message with username personalization
+- Visual code displays with clear formatting
+- Step-by-step verification instructions
+- Security best practices and warnings
+- Support information and next steps
+
+### Security Features
+
+**Username Protection:**
+
+- Unique username validation across the system
+- Race condition handling between registration and verification
+- Real-time availability checking during signup
+
+**OTP Security:**
+
+- 6-digit codes with 1-million possible combinations
+- 15-minute expiry window
+- Single-use verification (codes invalidate after use)
+- Automatic cleanup of expired OTPs
+- Rate limiting on failed verification attempts
+
+**Account Security:**
+
+- Temporary password generation for initial access
+- Secure password requirements enforcement
+- Automatic site creation with proper permissions
+- Super-admin role assignment for site owner
+
+### User Experience Features
+
+**Intelligent Error Handling:**
+
+- Username taken detection with auto-navigation back to form
+- Clear error messages with actionable guidance
+- Inline validation feedback
+- Graceful handling of network issues
+
+**Accessibility Support:**
+
+- Screen reader compatible error messages
+- Keyboard navigation throughout the flow
+- High contrast code displays in emails
+- Plain text email fallback
+
+**Progress Management:**
+
+- Visual progress indicators
+- State preservation during dialog interactions
+- Cancel and restart functionality
+- Clear success confirmation
+
+### Getting Started After Signup
+
+Once registration is complete:
+
+1. **First Login:** Use your username and the temporary password from the welcome email
+2. **Password Reset:** Set a permanent password during your first login
+3. **Site Customization:** Visit Settings → Site Details to customize your site information
+4. **Account Setup:** Add your bank accounts and financial information
+5. **Data Entry:** Begin tracking your income, expenses, and financial goals
+
+The signup system is designed to get new users operational quickly while maintaining the highest security standards for financial data protection.
 
 # Features
 
@@ -1970,11 +2082,13 @@ POT is built with a modern web development stack:
 
 - **Frontend**: React 19 with TypeScript, built using Vite 6
 - **Backend**: ASP.NET Core API
-- **Database**: PostgreSQL
+- **Database**: PostgreSQL with Entity Framework Core
+- **Email System**: MailKit with Razor email templates (HTML + plain text)
 - **Containerization**: Docker for both development and production
 - **UI Framework**: Custom components based on shadcn/ui and TailwindCSS
 - **State Management**: React Query for server state, React Context and Zustand for local state
 - **Routing**: React Router v7
+- **Authentication**: JWT-based with refresh tokens and OTP verification
 
 ### State Management Architecture
 
@@ -2062,6 +2176,87 @@ POT uses a layered state management approach:
    - User settings
    - Feature-specific data
    - Authentication tokens
+
+## Email System Architecture
+
+POT includes a comprehensive email system built on MailKit with support for both HTML and plain text email formats:
+
+**Email Templates:**
+
+```csharp
+// Razor HTML template with embedded CSS
+@using Models
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Welcome to POT - Verify Your Account</title>
+</head>
+<body style="background-color:#f4f6f9;">
+    <!-- Email content with visual OTP codes -->
+</body>
+</html>
+
+@code {
+    [Parameter] public required string Username { get; set; }
+    [Parameter] public required string ReferenceCode { get; set; }
+    [Parameter] public required string VerificationCode { get; set; }
+    [Parameter] public required string TempPassword { get; set; }
+    [Parameter] public required int OtpExpiryMinutes { get; set; }
+}
+```
+
+**Plain Text Templates (Embedded Resources):**
+
+```text
+Welcome to POT!
+
+Hello [Username],
+
+Thank you for signing up! Please use these codes to verify your account:
+
+REFERENCE CODE: [ReferenceCode]
+VERIFICATION CODE: [VerificationCode]
+TEMPORARY PASSWORD: [TempPassword]
+
+These codes will expire in [OtpExpiryMinutes] minutes.
+```
+
+**Email Service Integration:**
+
+```csharp
+// Multipart MIME email with HTML + plain text
+public async Task SendSignupEmailAsync(EmailOtpInfo config, CancellationToken cancellationToken)
+{
+    var bodyBuilder = new BodyBuilder();
+
+    // HTML version
+    bodyBuilder.HtmlBody = await RenderRazorTemplate<SignupEmail>(config);
+
+    // Plain text version
+    bodyBuilder.TextBody = await LoadAndProcessPlainTextTemplate(
+        PlainTextEmailTemplateLoader.Signup, config);
+
+    var message = new MimeMessage();
+    message.Body = bodyBuilder.ToMessageBody();
+
+    await _smtpClient.SendAsync(message, cancellationToken);
+}
+```
+
+**Background Email Processing:**
+
+- Channel-based email queue for performance
+- Background worker for email delivery
+- Retry logic for failed email sends
+- Email delivery status tracking
+
+**Email Accessibility Features:**
+
+- Plain text fallback for all email clients
+- High contrast visual design
+- Screen reader compatible formatting
+- Clear, structured content layout
 
 ## UI/UX Design
 
@@ -2315,7 +2510,89 @@ Remember:
 
 ## Authentication and Authorization
 
-POT implements a comprehensive security system combining JWT-based authentication with role-based authorization.
+POT implements a comprehensive security system combining JWT-based authentication with role-based authorization, including a complete user registration workflow with email verification.
+
+### Registration and Signup System
+
+**API Endpoints:**
+
+- `POST /api/auth/signup/send` - Initialize user registration with email verification
+- `POST /api/auth/signup/complete` - Complete registration after OTP verification
+
+**Signup Flow Implementation:**
+
+1. **Registration Request** (`/api/auth/signup/send`)
+
+   ```typescript
+   type SignupSendRequest = {
+     username: string;
+     email: string;
+   };
+
+   type SignupSendResponse = {
+     status: "Success" | "UsernameTaken";
+     message: string;
+     referenceCode?: string; // Present when status is Success
+   };
+   ```
+
+2. **OTP Verification** (`/api/auth/signup/complete`)
+
+   ```typescript
+   type SignupCompleteRequest = {
+     username: string;
+     referenceCode: string;
+     verificationCode: string;
+   };
+
+   type SignupCompleteResponse = {
+     status: OtpVerificationStatus | "UsernameTaken";
+     message: string;
+     retryMinutes?: number; // Present for rate limiting
+   };
+   ```
+
+**One-Time Password (OTP) System:**
+
+The unified OTP infrastructure supports both signup and password reset workflows:
+
+```sql
+-- OneTimePasswordEntity table structure
+CREATE TABLE OneTimePassword (
+    Id SERIAL PRIMARY KEY,
+    CorrelationId VARCHAR(50) NOT NULL,
+    Username CITEXT(100) NOT NULL,
+    Email CITEXT(100) NOT NULL,
+    Reason VARCHAR(50) NOT NULL, -- 'Signup' or 'PasswordReset'
+    RefCode CHAR(6) NOT NULL,    -- Reference code (displayed)
+    OtpCode CHAR(6) NOT NULL,    -- Verification code (entered)
+    AttemptCount INTEGER DEFAULT 0,
+    Status VARCHAR(50) NOT NULL, -- 'Active', 'Used', 'Failed', 'Invalidated', 'Expired'
+    TempPasswordHash VARCHAR(100), -- For signup only
+    CreatedUtc TIMESTAMP WITH TIME ZONE NOT NULL,
+    ExpiryUtc TIMESTAMP WITH TIME ZONE NOT NULL,
+    VerifiedUtc TIMESTAMP WITH TIME ZONE,
+    UserId INTEGER REFERENCES User(Id) -- NULL for signup, populated for password reset
+);
+```
+
+**OTP Security Features:**
+
+- 15-minute expiry window
+- Single-use verification codes
+- Rate limiting on failed attempts
+- Automatic cleanup of expired OTPs
+- Status-based state management
+- Correlation ID tracking for audit trails
+
+**Email Integration:**
+
+The system sends multipart MIME emails with both HTML and plain text versions:
+
+- **HTML Template:** Rich formatting with visual code displays
+- **Plain Text Template:** Accessible fallback for all email clients
+- **Email Content:** Reference code, verification code, temporary password
+- **Security Notices:** Expiry times, usage instructions, warnings
 
 ### Implementation Location
 
@@ -2352,10 +2629,54 @@ The client-side authentication uses React Context for global state management wi
 
 Key files and their responsibilities:
 
+**Core Authentication:**
+
 - `/Source/Client/pot-react/src/features/auth/` - Core authentication components and hooks
 - `/Source/Client/pot-react/src/features/auth/AuthContext.tsx` - Global auth state management
 - `/Source/Client/pot-react/src/features/auth/LoginPage.tsx` - Login implementation
 - `/Source/Client/pot-react/src/api/hooks/useLogin.ts` - API integration for authentication
+
+**User Registration:**
+
+- `/Source/Client/pot-react/src/features/auth/signup/` - Complete signup feature implementation
+- `/Source/Client/pot-react/src/features/auth/signup/SignupDialog.tsx` - Main signup dialog orchestrator
+- `/Source/Client/pot-react/src/features/auth/signup/components/SignupForm.tsx` - Username/email input form
+- `/Source/Client/pot-react/src/features/auth/signup/components/SignupSuccessMessage.tsx` - Success confirmation
+- `/Source/Client/pot-react/src/features/auth/signup/hooks/useSignupFlow.ts` - State management for signup process
+- `/Source/Client/pot-react/src/api/hooks/useSignup.ts` - API integration for signup endpoints
+
+**Shared OTP Components:**
+
+- `/Source/Client/pot-react/src/features/auth/shared/components/OtpVerificationForm.tsx` - Reusable OTP input form
+- `/Source/Client/pot-react/src/features/auth/shared/types/otpTypes.ts` - Shared OTP type definitions
+
+**Signup Architecture:**
+
+The signup feature follows a three-phase state machine:
+
+```typescript
+type SignupState = "user-input" | "otp-verification" | "success";
+
+type SignupData = {
+  username: string;
+  email: string;
+  referenceCode: string;
+  otpCode: string;
+};
+```
+
+**State Management Flow:**
+
+1. `user-input` - Username and email collection with validation
+2. `otp-verification` - Email verification using dual-code OTP system
+3. `success` - Registration completion with next steps
+
+**Error Handling Features:**
+
+- Username taken detection with auto-navigation back to form
+- Inline error messages with clear guidance
+- Rate limiting feedback with retry timers
+- Network error recovery with user-friendly messages
 
 Error Handling:
 
@@ -2378,11 +2699,43 @@ API Integration:
 
 #### Server-Side Implementation
 
-- Authentication:
+**User Registration Services:**
 
-  - `/Source/Server/Pot.AspNetCore/Features/Auth/` - Authentication endpoints and handlers
-  - `/Source/Server/Pot.App/Features/Auth/` - Core authentication business logic
-  - `/Source/Server/Pot.AspNetCore/appsettings.json` - JWT configuration
+- `/Source/Server/Pot.App/Features/Auth/Signup/Request/RequestSignupService.cs` - Handles signup initiation
+- `/Source/Server/Pot.App/Features/Auth/Signup/Complete/VerifySignupService.cs` - Handles OTP verification and account creation
+- `/Source/Server/Pot.AspNetCore/Features/Auth/Extensions/RouteGroupBuilderExtensions.cs` - API endpoint registration
+
+**OTP Infrastructure:**
+
+- `/Source/Server/Pot.Data/Entities/OneTimePasswordEntity.cs` - Database entity with comprehensive indexing
+- `/Source/Server/Pot.App/Features/Otp/OtpService.cs` - Core OTP generation and validation logic
+- `/Source/Server/Pot.App/Features/Auth/OtpGenerator.cs` - Secure random code generation
+- `/Source/Server/Pot.App/Features/Auth/PasswordGenerator.cs` - Temporary password generation
+
+**Email System:**
+
+- `/Source/Server/Pot.EmailSender/EmailSender.cs` - MailKit-based email service with multipart MIME support
+- `/Source/Server/Pot.RazorComponents/Emails/Signup/SignupEmail.razor` - HTML email template
+- `/Source/Server/Pot.RazorComponents/Emails/Signup/SignupEmail.text` - Plain text email template
+- `/Source/Server/Pot.EmailSender/SendEmailChannel.cs` - Background email processing
+
+**Database Migration:**
+
+- `/Source/Server/Pot.Data/Migrations/20251017234539_AddOneTimePassword.cs` - OTP table creation with indexes
+
+**Security Features:**
+
+- Rate limiting based on failed verification attempts
+- Username uniqueness validation with race condition handling
+- Secure OTP generation using cryptographically secure random numbers
+- Automatic cleanup of expired OTPs via background workers
+- Correlation ID tracking for audit trails and debugging
+
+**Authentication:**
+
+- `/Source/Server/Pot.AspNetCore/Features/Auth/` - Authentication endpoints and handlers
+- `/Source/Server/Pot.App/Features/Auth/` - Core authentication business logic
+- `/Source/Server/Pot.AspNetCore/appsettings.json` - JWT configuration
 
 - Authorization:
   - `/Source/Server/Pot.AspNetCore/Security/` - JWT token generation, validation, and permission handlers
@@ -2690,8 +3043,15 @@ The permission system uses four main entities:
    - Many-to-many relationship with roles
 
 4. `SiteEntity`
+
    - Represents a tenant in the system
    - Users and accounts belong to sites
+
+5. `OneTimePasswordEntity`
+   - Unified OTP system supporting signup and password reset workflows
+   - Comprehensive audit trail with status tracking
+   - Rate limiting and security features
+   - Links to UserEntity (nullable for signup, populated for password reset)
 
 #### Authentication Flow
 
@@ -2945,7 +3305,7 @@ The password reset system exposes two endpoints:
 - Stores all OTP requests with comprehensive metadata
 - Append-only design for complete audit trail
 - Indexed for efficient querying (Status, ExpiryUtc, Username, RefCode)
-- Links to UserEntity via foreign key (nullable for future signup feature)
+- Links to UserEntity via foreign key (nullable for signup, populated for password reset)
 - Tracks attempt count per OTP request
 - Stores temporary password hash for atomic application
 
@@ -3040,17 +3400,129 @@ Source/
 │   ├── Postgres/             # Database container
 │   ├── Server/               # Server container
 │   └── Diagrams/             # Architecture diagrams
-├── Server/                   # .NET backend
-│   ├── Pot.App/              # Business logic
-│   ├── Pot.AspNetCore/       # Web API
-│   ├── Pot.Data/             # Data access
-│   ├── Pot.Data.Migrations/  # Database migrations
-│   └── Pot.Shared/           # Shared code
-│   └── Server/               # API server container setup
-└── Server/                   # Backend .NET Core application
-    ├── Pot.App/              # Core application logic
-    ├── Pot.AspNetCore/       # API endpoints and controllers
-    ├── Pot.Data/             # Data access and models
-    ├── Pot.Data.Migrations/  # Database migrations
-    └── Pot.Shared/           # Shared utilities and DTOs
+└── Server/                   # .NET backend
+    ├── Pot.App/              # Business logic
+    │   ├── Features/         # Feature-based services
+    │   │   ├── Auth/         # Authentication & authorization
+    │   │   │   ├── Signup/   # User registration
+    │   │   │   └── PasswordReset/ # Password recovery
+    │   │   └── Otp/          # One-time password system
+    │   └── Calculators/      # Financial calculation logic
+    ├── Pot.AspNetCore/       # Web API
+    │   ├── Features/         # API endpoints
+    │   │   └── Auth/         # Authentication endpoints
+    │   └── Workers/          # Background services
+    ├── Pot.Data/             # Data access
+    │   ├── Entities/         # Database entities
+    │   ├── Repositories/     # Data repositories
+    │   └── Migrations/       # Entity Framework migrations
+    ├── Pot.Data.Migrations/  # Migration runner
+    ├── Pot.EmailSender/      # Email service
+    ├── Pot.RazorComponents/  # Email templates
+    │   └── Emails/           # Razor email templates
+    │       ├── Signup/       # Registration emails
+    │       └── PasswordReset/ # Password recovery emails
+    └── Pot.Shared/           # Shared code and DTOs
 ```
+
+# License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+# Acknowledgments
+
+## Frontend
+
+- **React 19** - Modern React with concurrent features
+- **TypeScript** - Type safety and developer experience
+- **Vite 6** - Fast build tool and development server
+- **TailwindCSS** - Utility-first CSS framework
+- **shadcn/ui** - Beautiful and accessible component library
+- **React Query** - Powerful data synchronization for React
+- **Zustand** - Lightweight state management
+- **React Router v7** - Declarative routing for React
+
+## Backend
+
+- **ASP.NET Core** - High-performance web framework
+- **Entity Framework Core** - Modern object-database mapper
+- **PostgreSQL** - Advanced open source database
+- **MailKit** - Comprehensive email library for .NET
+- **FluentValidation** - Validation library for .NET
+- **AllOverIt** - Utility libraries for .NET development
+
+## DevOps
+
+- **Docker** - Containerization platform
+- **Docker Compose** - Multi-container Docker applications
+- **GitHub Actions** - CI/CD automation
+- **ESLint** - JavaScript and TypeScript linting
+- **Prettier** - Code formatting tool
+
+# Version History
+
+## Release Notes
+
+### v0.1.0 (October 2025)
+
+**🎉 Initial Release - Complete Financial Management System**
+
+**Core Features:**
+
+- ✅ **Dashboard** - Comprehensive overview of financial status
+- ✅ **Financial Projections** - Interactive charts with multi-metric visualization
+- ✅ **Account Management** - Complete CRUD operations for bank accounts
+- ✅ **Expense Tracking** - Recurring and one-time expense management
+- ✅ **Income Management** - Multiple income source tracking
+- ✅ **Data Import/Export** - Complete data portability
+
+**🔐 Authentication & User Management:**
+
+- ✅ **User Registration** - Complete signup workflow with email verification
+- ✅ **Email Verification** - Dual-code OTP system with HTML/plain text emails
+- ✅ **Password Reset** - Secure password recovery with temporary passwords
+- ✅ **JWT Authentication** - Secure token-based authentication with refresh
+- ✅ **Role-Based Authorization** - Comprehensive permission system
+- ✅ **Site Management** - Multi-tenant architecture with automatic site creation
+
+**🛡️ Security Features:**
+
+- ✅ **OTP System** - 15-minute expiry, single-use codes, rate limiting
+- ✅ **Email Security** - Multipart MIME with accessibility features
+- ✅ **User Protection** - Username uniqueness, race condition handling
+- ✅ **Audit Trail** - Comprehensive logging and correlation ID tracking
+
+**🏗️ Technical Architecture:**
+
+- ✅ **Frontend** - React 19 + TypeScript with Vite 6
+- ✅ **Backend** - ASP.NET Core with Entity Framework Core
+- ✅ **Database** - PostgreSQL with optimized indexing
+- ✅ **Email System** - MailKit with Razor templates
+- ✅ **Containerization** - Docker Compose for development and production
+- ✅ **State Management** - React Query + Zustand + Context
+- ✅ **Error Handling** - Comprehensive error boundaries and user feedback
+
+**📊 Data & Analytics:**
+
+- ✅ **Interactive Charts** - Line and bar charts with customizable metrics
+- ✅ **Financial Projections** - Multi-month forecasting with account breakdowns
+- ✅ **Real-time Updates** - Live data synchronization across components
+- ✅ **Export/Import** - Complete data backup and restoration
+
+**🎨 User Experience:**
+
+- ✅ **Responsive Design** - Mobile-first approach with accessibility features
+- ✅ **Dark/Light Themes** - System preference detection and manual override
+- ✅ **Loading States** - Skeleton screens and progress indicators
+- ✅ **Error Recovery** - Graceful error handling with retry mechanisms
+- ✅ **Keyboard Navigation** - Full accessibility compliance
+
+**🔧 Developer Experience:**
+
+- ✅ **TypeScript** - Strict type checking with comprehensive coverage
+- ✅ **Testing** - Unit tests with Vitest and React Testing Library
+- ✅ **Code Quality** - ESLint, Prettier, and automated formatting
+- ✅ **Development Tools** - Hot reloading, error boundaries, debugging tools
+- ✅ **Documentation** - Comprehensive README with setup instructions
+
+This initial release provides a complete, production-ready financial management system with enterprise-grade security, modern architecture, and exceptional user experience.

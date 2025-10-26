@@ -1,5 +1,3 @@
-﻿using Pot.Data.Entities;
+﻿namespace Pot.Data.Repositories.Accounts;
 
-namespace Pot.Data.Repositories.Accounts;
-
-public interface IPersistableAccountRepository : IAccountRepository, IPersistableRepository<AccountEntity>;
+public interface IPersistableAccountRepository : IAccountRepository, IPersistableRepository;

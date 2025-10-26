@@ -105,14 +105,21 @@ const AccrualsProvider: React.FC<{ children: React.ReactNode }> = ({
     logger.info('AccrualsContext', 'Refreshing accounts');
     refetchAccounts();
 
-    logger.info('AccrualsContext', 'Refreshing accruals status');
-    refetchAccrualsStatus();
-  }, [refetchAccounts, refetchAccrualsStatus]);
+    if (accountRowIds.length > 0) {
+      logger.info('AccrualsContext', 'Refreshing accruals status');
+      refetchAccrualsStatus();
+    }
+  }, [accountRowIds, refetchAccounts, refetchAccrualsStatus]);
 
   const refreshAccrualsOnly = useCallback(() => {
-    logger.info('AccrualsContext', 'Focus/Visibility refresh - accruals only');
-    refetchAccrualsStatus();
-  }, [refetchAccrualsStatus]);
+    if (accountRowIds.length > 0) {
+      logger.info(
+        'AccrualsContext',
+        'Focus/Visibility refresh - accruals only',
+      );
+      refetchAccrualsStatus();
+    }
+  }, [accountRowIds, refetchAccrualsStatus]);
 
   // Refresh accruals when the window regains focus (which implies the page is visible)
   useWindowFocus(refreshAccrualsOnly);

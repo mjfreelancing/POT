@@ -3,7 +3,7 @@ using Pot.Shared;
 
 namespace Pot.Data.Repositories.Otp;
 
-public interface IOtpRepository : IGenericRepository<PotDbContext, OneTimePasswordEntity>
+public interface IOtpRepository : IRepositoryBase
 {
     Task<List<OneTimePasswordEntity>> GetPendingExpiredAsync(OtpReason? reason, DateTime currentDateUtc, CancellationToken cancellationToken);
     Task<int> CountFailedRequestsForUsernameAsync(OtpReason? reason, string? username, DateTime afterDateUtc, CancellationToken cancellationToken);

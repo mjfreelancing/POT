@@ -4,6 +4,7 @@ namespace Pot.App.Features.Incomes.Create.Models;
 
 public sealed class Input
 {
+    public bool ExcludeFromCalcs { get; init; }
     public string Description { get; init; } = string.Empty;
     public DateOnly NextDue { get; init; }
     public DateOnly? EndDate { get; init; }

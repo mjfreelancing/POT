@@ -18,7 +18,8 @@ internal sealed class UpdateAccountService : IUpdateAccountService
     private readonly IPreUpdateChecker _preUpdateChecker;
     private readonly ILogger _logger;
 
-    public UpdateAccountService(IPersistableAccountRepository accountRepository, IPreUpdateChecker preUpdateChecker, ILogger<UpdateAccountService> logger)
+    public UpdateAccountService(IPersistableAccountRepository accountRepository, IPreUpdateChecker preUpdateChecker,
+        ILogger<UpdateAccountService> logger)
     {
         _accountRepository = accountRepository.WhenNotNull();
         _preUpdateChecker = preUpdateChecker.WhenNotNull();
@@ -59,8 +60,6 @@ internal sealed class UpdateAccountService : IUpdateAccountService
 
             UpdateAccountEntity(accountToUpdate, input);
 
-            // Not calling _accountRepository.Update(account) as this will mark the
-            // entity as modified even if nothing was changed.
             _ = await _accountRepository.SaveAsync(cancellationToken);
 
             var output = accountToUpdate.MapToOutput();
@@ -76,6 +75,6 @@ internal sealed class UpdateAccountService : IUpdateAccountService
         accountToUpdate.Description = request.Description;
         accountToUpdate.Balance = request.Balance;
         accountToUpdate.Reserved = request.Reserved;
-        // account.TotalExpenseAccrued and account.DailyExpenseAccrual - will need to be re-calculated
+        // TotalExpenseAccrued and DailyExpenseAccrual will need to be re-calculated
     }
 }

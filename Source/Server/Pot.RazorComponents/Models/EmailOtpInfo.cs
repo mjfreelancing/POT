@@ -1,6 +1,6 @@
 ﻿namespace Pot.RazorComponents.Models;
 
-public sealed class VerifyPasswordEmailConfig : EmailConfigBase
+public sealed class EmailOtpInfo : EmailConfigBase
 {
     public required string ReferenceCode { get; init; }
     public required string VerificationCode { get; init; }

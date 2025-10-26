@@ -10,5 +10,7 @@ internal static class AuthEndpoints
     public const string Refresh = "/refresh";
     public const string PasswordResetSend = "/password-reset/send";
     public const string PasswordResetVerify = "/password-reset/verify";
+    public const string SignupSend = "/signup/send";
+    public const string SignupComplete = "/signup/complete";
 }
 

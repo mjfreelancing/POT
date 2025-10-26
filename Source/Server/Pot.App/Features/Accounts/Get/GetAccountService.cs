@@ -25,7 +25,7 @@ internal sealed class GetAccountService : IGetAccountService
     {
         _logger.LogCall(this);
 
-        var account = await _accountRepository.GetAccountWithLinkedCountsAsync(accountId, cancellationToken);
+        var account = await _accountRepository.GetAccountWithLinkedCountsOrDefaultAsync(accountId, cancellationToken);
 
         if (account is null)
         {

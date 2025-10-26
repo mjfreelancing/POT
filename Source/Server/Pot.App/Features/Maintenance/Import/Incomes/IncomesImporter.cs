@@ -1,6 +1,9 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
+using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
+using Pot.App.Features.Incomes.Create;
+using Pot.App.Features.Incomes.Update;
 using Pot.App.Features.Maintenance.Import.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
@@ -12,16 +15,22 @@ internal sealed class IncomesImporter : IIncomesImporter
 {
     private readonly IPersistableAccountRepository _accountRepository;
     private readonly IIncomeRepository _incomeRepository;
+    private readonly ICreateIncomeService _createIncomeService;
+    private readonly IUpdateIncomeService _updateIncomeService;
     private readonly ILogger<IncomesImporter> _logger;
 
-    public IncomesImporter(IPersistableAccountRepository accountRepository, IIncomeRepository incomeRepository, ILogger<IncomesImporter> logger)
+    public IncomesImporter(IPersistableAccountRepository accountRepository, IIncomeRepository incomeRepository,
+        ICreateIncomeService createIncomeService, IUpdateIncomeService updateIncomeService,
+        ILogger<IncomesImporter> logger)
     {
         _accountRepository = accountRepository.WhenNotNull();
         _incomeRepository = incomeRepository.WhenNotNull();
+        _createIncomeService = createIncomeService.WhenNotNull();
+        _updateIncomeService = updateIncomeService.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
-    public async Task<int> ImportAsync(IEnumerable<IIncomeCsvRow> csvRows, CancellationToken cancellationToken)
+    public async Task<EnrichedResult<int>> ImportAsync(IEnumerable<IIncomeCsvRow> csvRows, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
@@ -53,35 +62,27 @@ internal sealed class IncomesImporter : IIncomesImporter
                 .ConfigureAwait(false);
         }
 
-
-        return count;
+        return EnrichedResult.Success(count);
     }
 
-    private async Task CreateOrUpdateIncomeAsync(AccountEntity account, IIncomeCsvRow csvRow, CancellationToken cancellationToken)
+    private async Task<EnrichedResult<int>> CreateOrUpdateIncomeAsync(AccountEntity account, IIncomeCsvRow csvRow, CancellationToken cancellationToken)
     {
-        var csvExpenseId = csvRow.RowId;
+        var csvIncomeId = csvRow.RowId;
 
         var incomeEntity = await _incomeRepository
-            .GetIncomeOrDefaultAsync(csvExpenseId, cancellationToken)
+            .GetIncomeOrDefaultAsync(csvIncomeId, cancellationToken)
             .ConfigureAwait(false);
 
-        if (incomeEntity is null)
-        {
-            var income = CreateIncomeEntity(account, csvRow);
-            account.Incomes.Add(income);
-        }
-        else
-        {
-            UpdateExistingIncome(incomeEntity, csvRow);
-        }
+        return incomeEntity is null
+            ? await CreateIncomeAsync(account.RowId, csvRow, cancellationToken).ConfigureAwait(false)
+            : await UpdateIncomeAsync(account.RowId, incomeEntity.Etag, csvRow, cancellationToken).ConfigureAwait(false);
     }
 
-    private static IncomeEntity CreateIncomeEntity(AccountEntity account, IIncomeCsvRow import)
+    private async Task<EnrichedResult<int>> CreateIncomeAsync(Guid accountRowId, IIncomeCsvRow import,
+        CancellationToken cancellationToken)
     {
-        var incomeEntity = new IncomeEntity
+        var input = new Features.Incomes.Create.Models.Input
         {
-            RowId = import.RowId,
-            ExcludeFromCalcs = import.ExcludeFromCalcs,
             Description = import.Description,
             NextDue = import.NextDue,
             EndDate = import.EndDate,
@@ -89,21 +90,42 @@ internal sealed class IncomesImporter : IIncomesImporter
             FrequencyCount = import.FrequencyCount,
             Amount = import.Amount,
             Note = import.Note,
-            Account = account
+            AccountRowId = accountRowId
         };
 
-        return incomeEntity;
+        var createResult = await _createIncomeService
+            .CreateIncomeAsync(input, cancellationToken)
+            .ConfigureAwait(false);
+
+        return createResult.IsSuccess
+            ? EnrichedResult.Success<int>()
+            : EnrichedResult.Fail<int>(createResult.Error);
     }
 
-    private static void UpdateExistingIncome(IncomeEntity entity, IIncomeCsvRow import)
+    private async Task<EnrichedResult<int>> UpdateIncomeAsync(Guid accountRowId, long incomeEtag, IIncomeCsvRow csvRow,
+        CancellationToken cancellationToken)
     {
-        entity.ExcludeFromCalcs = import.ExcludeFromCalcs;
-        entity.Description = import.Description;
-        entity.NextDue = import.NextDue;
-        entity.EndDate = import.EndDate;
-        entity.Frequency = import.Frequency;
-        entity.FrequencyCount = import.FrequencyCount;
-        entity.Amount = import.Amount;
-        entity.Note = import.Note;
+        var input = new Features.Incomes.Update.Models.Input
+        {
+            RowId = csvRow.RowId,
+            Etag = incomeEtag,
+            ExcludeFromCalcs = csvRow.ExcludeFromCalcs,
+            Description = csvRow.Description,
+            NextDue = csvRow.NextDue,
+            EndDate = csvRow.EndDate,
+            Frequency = csvRow.Frequency,
+            FrequencyCount = csvRow.FrequencyCount,
+            Amount = csvRow.Amount,
+            Note = csvRow.Note,
+            AccountRowId = accountRowId
+        };
+
+        var updateResult = await _updateIncomeService
+            .UpdateIncomeAsync(input, cancellationToken)
+            .ConfigureAwait(false);
+
+        return updateResult.IsSuccess
+            ? EnrichedResult.Success<int>()
+            : EnrichedResult.Fail<int>(updateResult.Error);
     }
 }

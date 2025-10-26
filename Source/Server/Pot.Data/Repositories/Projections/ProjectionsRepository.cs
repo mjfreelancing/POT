@@ -3,7 +3,7 @@ using Pot.Data.Entities;
 
 namespace Pot.Data.Repositories.Projections;
 
-internal sealed class ProjectionsRepository : GenericRepository<PotDbContext, AccountEntity>, IProjectionsRepository
+internal sealed class ProjectionsRepository : RepositoryBase, IProjectionsRepository
 {
     public ProjectionsRepository(PotDbContext dbContext)
         : base(dbContext)
@@ -12,7 +12,7 @@ internal sealed class ProjectionsRepository : GenericRepository<PotDbContext, Ac
 
     public Task<List<AccountEntity>> GetAllAccountsWithCandidateIncomesAndExpensesAsync(CancellationToken cancellationToken)
     {
-        return Current
+        return Set<AccountEntity>()
             .Include(account => account.Incomes.Where(income => !income.ExcludeFromCalcs))
             .Include(account => account.Expenses.Where(expense => !expense.ExcludeFromCalcs))
             .ToListAsync(cancellationToken);

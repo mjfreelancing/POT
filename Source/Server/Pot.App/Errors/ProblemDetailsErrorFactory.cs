@@ -7,12 +7,17 @@ public static class ProblemDetailsErrorFactory
     // TODO: Update these so the caller passes a more contextual message
     public static ProblemDetailsError CreateEntityExistsError(string entityType, string propertyName, object? attemptedValue)
     {
+        return CreateConflict(propertyName, attemptedValue, $"The operation would conflict with another {entityType} entity.");
+    }
+
+    public static ProblemDetailsError CreateConflict(string propertyName, object? attemptedValue, string errorMessage)
+    {
         return new ProblemDetailsError(ProblemType.Conflict)
         {
             ErrorCode = ErrorCodes.Conflict,
             PropertyName = propertyName,
             AttemptedValue = attemptedValue,
-            ErrorMessage = $"The operation would conflict with another {entityType} entity."
+            ErrorMessage = errorMessage
         };
     }
 

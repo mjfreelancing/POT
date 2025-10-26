@@ -4,8 +4,10 @@ using Pot.Shared;
 
 namespace Pot.Data.Repositories.Expenses;
 
-public interface IExpenseRepository : IGenericRepository<PotDbContext, ExpenseEntity>
+public interface IExpenseRepository : IRepositoryBase
 {
+    IQueryable<ExpenseEntity> Expenses { get; }
+
     Task<List<ExpenseEntity>> GetAllExpensesAsync(CancellationToken cancellationToken);
     Task<PageResult<ExpenseEntity>> GetAllExpensesPagedAsync(Paging paging, CancellationToken cancellationToken);
     Task<ExpenseEntity?> GetExpenseOrDefaultAsync(Guid rowId, CancellationToken cancellationToken);
