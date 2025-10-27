@@ -2,7 +2,7 @@
 using FluentValidation.Results;
 using Pot.App.Errors;
 using Pot.AspNetCore.Concerns.Validation;
-using Pot.Shared;
+using Pot.Shared.Enumerations;
 
 namespace Pot.AspNetCore.Features.Expenses.Create;
 

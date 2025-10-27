@@ -8,7 +8,7 @@ using Pot.App.Features.Otp;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Otp;
 using Pot.Data.Repositories.Users;
-using Pot.Shared;
+using Pot.Shared.Enumerations;
 
 namespace Pot.App.Features.Auth.PasswordReset.Verify;
 

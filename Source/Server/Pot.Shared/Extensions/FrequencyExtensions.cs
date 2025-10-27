@@ -1,4 +1,6 @@
-﻿namespace Pot.Shared.Extensions;
+﻿using Pot.Shared.Enumerations;
+
+namespace Pot.Shared.Extensions;
 
 public static class FrequencyExtensions
 {

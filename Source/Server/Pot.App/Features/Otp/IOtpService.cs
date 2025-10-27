@@ -1,7 +1,7 @@
 ﻿using Pot.App.Features.Otp.Models;
 using Pot.Data.Entities;
-using Pot.Shared;
 using Pot.Shared.DependencyInjection;
+using Pot.Shared.Enumerations;
 
 namespace Pot.App.Features.Otp;
 

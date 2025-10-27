@@ -3,6 +3,7 @@ using AllOverIt.Extensions;
 using Pot.App.Concerns.Time;
 using Pot.Data.Entities;
 using Pot.Data.Extensions;
+using Pot.Shared.Enumerations;
 using Pot.Shared.Extensions;
 
 namespace Pot.App.Calculators;
@@ -34,7 +35,7 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
             // The current implementation does not include 'ExcludeFromCalcs' items, but keep here for now so we're not making assumptions
             var processExpense =
                 !expense.ExcludeFromCalcs &&
-                (expense.Frequency != Shared.Frequency.OneTime || currentDate <= expense.NextDue) &&
+                (expense.Frequency != Frequency.OneTime || currentDate <= expense.NextDue) &&
                 expense.AccrualStart <= currentDate;
 
             if (processExpense)
@@ -68,7 +69,7 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
         // Accrual must be applied after the expense allocation has been set
         if (expense.NextDue == currentDate)
         {
-            if (expense.Frequency == Shared.Frequency.OneTime)
+            if (expense.Frequency == Frequency.OneTime)
             {
                 // One-time expenses will not further accrue
                 return;

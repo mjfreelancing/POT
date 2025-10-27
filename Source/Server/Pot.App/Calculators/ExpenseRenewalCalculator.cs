@@ -1,4 +1,5 @@
 ﻿using Pot.Data.Entities;
+using Pot.Shared.Enumerations;
 using Pot.Shared.Extensions;
 
 namespace Pot.App.Calculators;
@@ -13,7 +14,7 @@ internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
             // Leave expense.AccruedIsDirty in its current state - if it was dirty then the accruals should still be updated
 
             // Frequency.OneTime expenses do not renew
-            if (expense.ExcludeFromCalcs || expense.Frequency == Shared.Frequency.OneTime)
+            if (expense.ExcludeFromCalcs || expense.Frequency == Frequency.OneTime)
             {
                 continue;
             }

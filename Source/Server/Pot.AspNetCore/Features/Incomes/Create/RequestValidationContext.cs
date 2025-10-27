@@ -1,4 +1,4 @@
-﻿using Pot.Shared;
+﻿using Pot.Shared.Enumerations;
 
 namespace Pot.AspNetCore.Features.Incomes.Create;
 

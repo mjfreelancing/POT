@@ -7,7 +7,7 @@ using Pot.App.Features.Auth;
 using Pot.App.Features.Otp.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Otp;
-using Pot.Shared;
+using Pot.Shared.Enumerations;
 
 namespace Pot.App.Features.Otp;
 

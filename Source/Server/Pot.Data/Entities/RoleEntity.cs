@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Pot.Shared;
+using Pot.Shared.Enumerations;
 
 namespace Pot.Data.Entities;
 

@@ -24,8 +24,8 @@ using Pot.Data.Configuration;
 using Pot.Data.Extensions;
 using Pot.EmailSender.Configuration;
 using Pot.EmailSender.Extensions;
-using Pot.Shared;
 using Pot.Shared.DependencyInjection;
+using Pot.Shared.Enumerations;
 using Pot.Shared.Extensions;
 
 namespace Pot.AspNetCore.Extensions;

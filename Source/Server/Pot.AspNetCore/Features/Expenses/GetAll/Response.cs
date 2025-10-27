@@ -4,7 +4,7 @@ using AllOverIt.Pagination;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.App.Features.Expenses.GetAll.Models;
 using Pot.AspNetCore.Models;
-using Pot.Shared;
+using Pot.Shared.Enumerations;
 using System.ComponentModel;
 
 namespace Pot.AspNetCore.Features.Expenses.GetAll;

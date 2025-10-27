@@ -8,7 +8,7 @@ using Pot.Data.Entities;
 using Pot.Data.Repositories.Users;
 using Pot.EmailSender;
 using Pot.RazorComponents.Models;
-using Pot.Shared;
+using Pot.Shared.Enumerations;
 
 namespace Pot.App.Features.Auth.PasswordReset.Request;
 

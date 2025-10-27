@@ -8,7 +8,7 @@ using Pot.App.Features.Otp.Models;
 using Pot.Data.Repositories.Users;
 using Pot.EmailSender;
 using Pot.RazorComponents.Models;
-using Pot.Shared;
+using Pot.Shared.Enumerations;
 
 namespace Pot.App.Features.Auth.Signup.Request;
 

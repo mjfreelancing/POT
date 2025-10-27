@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.App.Features.Incomes.Get.Models;
 using Pot.AspNetCore.Models;
-using Pot.Shared;
+using Pot.Shared.Enumerations;
 using System.ComponentModel;
 
 namespace Pot.AspNetCore.Features.Incomes.Get;

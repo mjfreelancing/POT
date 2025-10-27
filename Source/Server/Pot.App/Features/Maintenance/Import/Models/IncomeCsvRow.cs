@@ -1,7 +1,7 @@
 ﻿using CsvHelper.Configuration.Attributes;
 using CsvHelper.TypeConversion;
 using Pot.App.Concerns.Csv;
-using Pot.Shared;
+using Pot.Shared.Enumerations;
 
 namespace Pot.App.Features.Maintenance.Import.Models;
 

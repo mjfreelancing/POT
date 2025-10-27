@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Pot.Data.Entities;
-using Pot.Shared;
+using Pot.Shared.Enumerations;
 
 namespace Pot.Data.Repositories.Roles;
 

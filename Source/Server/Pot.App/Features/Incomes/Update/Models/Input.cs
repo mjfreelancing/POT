@@ -1,4 +1,4 @@
-﻿using Pot.Shared;
+﻿using Pot.Shared.Enumerations;
 
 namespace Pot.App.Features.Incomes.Update.Models;
 

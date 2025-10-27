@@ -1,7 +1,7 @@
 ﻿using AllOverIt.Patterns.Enumeration;
 using System.Runtime.CompilerServices;
 
-namespace Pot.Shared;
+namespace Pot.Shared.Enumerations;
 
 public sealed class Role : EnrichedEnum<Role>
 {

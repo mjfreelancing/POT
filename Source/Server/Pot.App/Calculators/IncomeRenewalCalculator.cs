@@ -1,4 +1,5 @@
 ﻿using Pot.Data.Entities;
+using Pot.Shared.Enumerations;
 using Pot.Shared.Extensions;
 
 namespace Pot.App.Calculators;
@@ -11,7 +12,7 @@ internal sealed class IncomeRenewalCalculator : IIncomeRenewalCalculator
         foreach (var income in incomes)
         {
             // Frequency.OneTime incomes do not renew
-            if (income.ExcludeFromCalcs || income.Frequency == Shared.Frequency.OneTime)
+            if (income.ExcludeFromCalcs || income.Frequency == Frequency.OneTime)
             {
                 continue;
             }
