@@ -43,6 +43,7 @@ internal sealed class UserRepository : PersistableRepository, IPersistableUserRe
                 user.Username,
                 user.DisplayName,
                 user.Email,
+                user.Status,
                 Roles = user.Roles.Select(role => role.Name),   // 'Name' is the Role enum, hence using an anonymous type first (can't project to the string Name)
                 user.LastLoggedInUtc
             })
@@ -55,6 +56,7 @@ internal sealed class UserRepository : PersistableRepository, IPersistableUserRe
                 Username = user.Username,
                 DisplayName = user.DisplayName,
                 Email = user.Email,
+                Status = user.Status.Name,
                 Roles = [.. user.Roles.Select(role => role.Name)],
                 LastLoggedInUtc = user.LastLoggedInUtc
             })];

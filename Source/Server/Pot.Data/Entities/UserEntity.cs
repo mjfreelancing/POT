@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Pot.Data.Annotations;
+using Pot.Shared.Enumerations;
 using System.ComponentModel.DataAnnotations;
 
 namespace Pot.Data.Entities;
@@ -21,6 +22,8 @@ public sealed class UserEntity : EntityBase
     [Required]
     [MediumString]
     public required string DisplayName { get; set; }
+
+    public required UserStatus Status { get; set; }
 
     [Required]
     [MediumString]  // Hash is not a fixed length, but typically a little over 80 - see comment in UserPasswordHasher

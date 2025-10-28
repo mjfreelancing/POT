@@ -18,6 +18,9 @@ internal sealed class Response : ResponseBase
     [Description("The user's email")]
     public string Email { get; init; }
 
+    [Description("The user's status")]
+    public string Status { get; init; }
+
     [Description("The user's assigned roles")]
     public string[] Roles { get; init; }
 
@@ -40,6 +43,7 @@ internal sealed class Response : ResponseBase
         Username = user.Username;
         DisplayName = user.DisplayName;
         Email = user.Email;
+        Status = user.Status;
         Roles = user.Roles;
         LastLoggedInUtc = user.LastLoggedInUtc;
     }

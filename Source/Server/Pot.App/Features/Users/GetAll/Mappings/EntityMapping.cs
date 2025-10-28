@@ -14,6 +14,7 @@ internal static class EntityMapping
             Username = userInfo.Username,
             DisplayName = userInfo.DisplayName,
             Email = userInfo.Email,
+            Status = userInfo.Status,
             Roles = userInfo.Roles,
             LastLoggedInUtc = userInfo.LastLoggedInUtc
         };

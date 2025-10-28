@@ -148,14 +148,10 @@ internal sealed class VerifySignupService : VerificationServiceBase, IVerifySign
             Name = GetDefaultSiteNameForUser(mostRecentOtp.Username),
         };
 
-
-
         // Need to make this easier !!!!
         var role = await _roleRepository
             .GetByNameAsync(Role.Admin, cancellationToken)
             .ConfigureAwait(false);
-
-
 
         // Create a new user entity since the username is available - but handle conflict when saved in case it was 'just' taken
         user = new UserEntity
@@ -163,6 +159,7 @@ internal sealed class VerifySignupService : VerificationServiceBase, IVerifySign
             Username = mostRecentOtp.Username,
             Email = mostRecentOtp.Email,
             DisplayName = mostRecentOtp.Username,
+            Status = UserStatus.Enabled,
             PasswordHash = mostRecentOtp.TempPasswordHash!,
             Site = site,
             Roles = [role]
