@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiImport } from '@/api/hooks/useImports';
 import type { FailResultBase, Result } from '@/lib';
-import { SuccessResult } from '@/lib';
+import { SuccessResult, useCacheInvalidation } from '@/lib';
 import { logger } from '@/lib/logging';
 
 type ImportResult = {
@@ -11,6 +11,7 @@ type ImportResult = {
 
 function useImport() {
   const queryClient = useQueryClient();
+  const invalidateCache = useCacheInvalidation(queryClient);
   const apiImport = useApiImport();
 
   async function importData(
@@ -30,9 +31,7 @@ function useImport() {
         logger.info('Import', 'Import successful', {
           imported: result.value.imported,
         });
-        await queryClient.invalidateQueries({ queryKey: ['accounts'] });
-        await queryClient.invalidateQueries({ queryKey: ['incomes'] });
-        await queryClient.invalidateQueries({ queryKey: ['expenses'] });
+        invalidateCache(['expenses', 'incomes', 'accounts']);
 
         return new SuccessResult<ImportResult>({
           ...result.value,

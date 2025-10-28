@@ -1,8 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query';
 
 import type { useApiRenewExpenses } from '@/api/hooks/useExpenses';
-import type { BulkActionResult } from '@/lib';
-import { todayIsoFormat } from '@/lib';
+import { invalidateCache, todayIsoFormat, type BulkActionResult } from '@/lib';
 
 async function renewExpenses(
   expenseRowIds: string[],
@@ -14,8 +13,7 @@ async function renewExpenses(
   });
 
   if (result.success) {
-    await queryClient.invalidateQueries({ queryKey: ['expenses'] });
-    await queryClient.invalidateQueries({ queryKey: ['projections'] });
+    invalidateCache(queryClient, ['expenses']);
     return { success: true };
   }
 

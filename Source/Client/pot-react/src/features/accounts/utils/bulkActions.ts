@@ -2,6 +2,7 @@ import type { QueryClient } from '@tanstack/react-query';
 
 import type { useApiAccrueAccountExpenses } from '@/api/hooks';
 import type { BulkActionResult } from '@/lib';
+import { invalidateCache } from '@/lib';
 
 async function accrueAllAccountExpenses(
   accountRowIds: string[],
@@ -13,9 +14,7 @@ async function accrueAllAccountExpenses(
   });
 
   if (result.success) {
-    await queryClient.invalidateQueries({ queryKey: ['accounts'] });
-    await queryClient.invalidateQueries({ queryKey: ['expenses'] });
-    await queryClient.invalidateQueries({ queryKey: ['projections'] });
+    invalidateCache(queryClient, ['accounts', 'expenses']);
     return { success: true };
   }
 

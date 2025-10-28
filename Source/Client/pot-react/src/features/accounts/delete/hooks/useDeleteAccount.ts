@@ -2,10 +2,11 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiDeleteAccount } from '@/api/hooks';
 import type { FailResultBase, Result } from '@/lib';
-import { logger } from '@/lib/logging';
+import { logger, useCacheInvalidation } from '@/lib';
 
 function useDeleteAccount(rowId: string) {
   const queryClient = useQueryClient();
+  const invalidateCache = useCacheInvalidation(queryClient);
   const apiDeleteAccount = useApiDeleteAccount(rowId);
 
   async function deleteAccount(): Promise<Result<void, FailResultBase>> {
@@ -21,7 +22,7 @@ function useDeleteAccount(rowId: string) {
 
       if (result.success) {
         logger.info('Accounts', 'Delete account successful', rowId);
-        queryClient.invalidateQueries({ queryKey: ['accounts'] });
+        invalidateCache(['accounts']);
       } else {
         logger.error('Accounts', 'Delete account failed', result.error);
       }

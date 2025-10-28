@@ -2,9 +2,11 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiDeleteExpense } from '@/api/hooks';
 import type { FailResultBase, Result } from '@/lib';
+import { useCacheInvalidation } from '@/lib';
 
 function useDeleteExpense(rowId: string) {
   const queryClient = useQueryClient();
+  const invalidateCache = useCacheInvalidation(queryClient);
   const apiDeleteExpense = useApiDeleteExpense(rowId);
 
   async function deleteExpense(): Promise<Result<void, FailResultBase>> {
@@ -17,8 +19,7 @@ function useDeleteExpense(rowId: string) {
       });
 
       if (result.success) {
-        queryClient.invalidateQueries({ queryKey: ['expenses'] });
-        queryClient.invalidateQueries({ queryKey: ['accounts'] });
+        invalidateCache(['expenses']);
       }
 
       return result;

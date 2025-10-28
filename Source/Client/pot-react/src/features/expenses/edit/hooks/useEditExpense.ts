@@ -3,10 +3,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useApiUpdateExpense } from '@/api/hooks';
 import type { EditExpense, Identity } from '@/data';
 import type { FailResultBase, Result } from '@/lib';
+import { useCacheInvalidation } from '@/lib';
 
 // Hook to handle editing an existing expense entry
 function useEditExpense() {
   const queryClient = useQueryClient();
+  const invalidateCache = useCacheInvalidation(queryClient);
   const apiUpdateExpense = useApiUpdateExpense();
 
   async function editExpense(
@@ -24,7 +26,7 @@ function useEditExpense() {
       });
 
       if (result.success) {
-        queryClient.invalidateQueries({ queryKey: ['expenses'] });
+        invalidateCache(['expenses']);
       }
 
       return result;

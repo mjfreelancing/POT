@@ -3,9 +3,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useApiCreateIncome } from '@/api/hooks';
 import type { CreateIncome, Identity } from '@/data';
 import type { FailResultBase, Result } from '@/lib';
+import { useCacheInvalidation } from '@/lib';
 
 function useCreateIncome() {
   const queryClient = useQueryClient();
+  const invalidateCache = useCacheInvalidation(queryClient);
   const apiCreateIncome = useApiCreateIncome();
 
   const createIncome = async (
@@ -21,8 +23,7 @@ function useCreateIncome() {
       });
 
       if (result.success) {
-        queryClient.invalidateQueries({ queryKey: ['incomes'] });
-        queryClient.invalidateQueries({ queryKey: ['accounts'] });
+        invalidateCache(['incomes']);
       }
 
       return result;

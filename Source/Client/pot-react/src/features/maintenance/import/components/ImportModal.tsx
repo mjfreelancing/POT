@@ -1,4 +1,3 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { Upload } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -32,8 +31,6 @@ function ImportModal({ isOpen, onClose }: ImportModalProps) {
   const [isImporting, setIsImporting] = useState(false);
   const { error, setError } = useErrorContext();
   const { importData, isPending } = useImport();
-
-  const queryClient = useQueryClient();
 
   async function handleFileSelect() {
     // Check if File System Access API is supported
@@ -87,13 +84,10 @@ function ImportModal({ isOpen, onClose }: ImportModalProps) {
 
     setIsImporting(true);
 
+    // This will invalidate the query cache
     const result = await importData(selectedFile);
 
     if (result.success) {
-      queryClient.invalidateQueries({ queryKey: ['accounts'] });
-      queryClient.invalidateQueries({ queryKey: ['incomes'] });
-      queryClient.invalidateQueries({ queryKey: ['expenses'] });
-
       toast(
         <SuccessToast
           icon={Upload}

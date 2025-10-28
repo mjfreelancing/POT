@@ -1,8 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query';
 
 import type { useApiRenewIncomes } from '@/api/hooks';
-import type { BulkActionResult } from '@/lib';
-import { todayIsoFormat } from '@/lib';
+import { invalidateCache, todayIsoFormat, type BulkActionResult } from '@/lib';
 
 async function renewIncomes(
   incomesRowIds: string[],
@@ -14,8 +13,7 @@ async function renewIncomes(
   });
 
   if (result.success) {
-    await queryClient.invalidateQueries({ queryKey: ['incomes'] });
-    await queryClient.invalidateQueries({ queryKey: ['projections'] });
+    invalidateCache(queryClient, ['incomes']);
     return { success: true };
   }
 

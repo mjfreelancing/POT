@@ -2,7 +2,7 @@ import type { QueryClient } from '@tanstack/react-query';
 
 import type { useApiToggleExcludeExpenses } from '@/api/hooks/useExpenses';
 import type { Expense } from '@/data';
-import type { BulkActionResult } from '@/lib';
+import { invalidateCache, type BulkActionResult } from '@/lib';
 
 async function toggleExcludeExpenses(
   expenses: Expense[],
@@ -15,7 +15,7 @@ async function toggleExcludeExpenses(
   });
 
   if (result.success) {
-    await queryClient.invalidateQueries({ queryKey: ['expenses'] });
+    invalidateCache(queryClient, ['expenses']);
     return { success: true };
   }
 

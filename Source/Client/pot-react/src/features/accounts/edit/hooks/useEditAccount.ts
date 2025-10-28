@@ -3,10 +3,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useApiUpdateAccount } from '@/api/hooks';
 import type { EditAccount, Identity } from '@/data';
 import type { FailResultBase, Result } from '@/lib';
-import { logger } from '@/lib/logging';
+import { logger, useCacheInvalidation } from '@/lib';
 
 function useEditAccount() {
   const queryClient = useQueryClient();
+  const invalidateCache = useCacheInvalidation(queryClient);
   const apiUpdateAccount = useApiUpdateAccount();
 
   async function editAccount(
@@ -26,7 +27,7 @@ function useEditAccount() {
 
       if (result.success) {
         logger.info('Accounts', 'Edit account successful', result.value);
-        queryClient.invalidateQueries({ queryKey: ['accounts'] });
+        invalidateCache(['accounts']);
       } else {
         logger.error('Accounts', 'Edit account failed', result.error);
       }

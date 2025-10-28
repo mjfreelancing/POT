@@ -3,9 +3,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useApiCreateExpense } from '@/api/hooks';
 import type { CreateExpense, Identity } from '@/data';
 import type { FailResultBase, Result } from '@/lib';
+import { useCacheInvalidation } from '@/lib';
 
 function useCreateExpense() {
   const queryClient = useQueryClient();
+  const invalidateCache = useCacheInvalidation(queryClient);
   const apiCreateExpense = useApiCreateExpense();
 
   const createExpense = async (
@@ -21,8 +23,7 @@ function useCreateExpense() {
       });
 
       if (result.success) {
-        queryClient.invalidateQueries({ queryKey: ['expenses'] });
-        queryClient.invalidateQueries({ queryKey: ['accounts'] });
+        invalidateCache(['expenses']);
       }
 
       return result;

@@ -1,4 +1,5 @@
 export * from './apiUtils';
+export * from './cacheInvalidation';
 export * from './dateUtils';
 export * from './errorUtils';
 export * from './expenseTableRowUtils';

@@ -3,10 +3,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useApiCreateAccount } from '@/api/hooks';
 import type { CreateAccount, Identity } from '@/data';
 import type { FailResultBase, Result } from '@/lib';
-import { logger } from '@/lib/logging';
+import { logger, useCacheInvalidation } from '@/lib';
 
 function useCreateAccount() {
   const queryClient = useQueryClient();
+  const invalidateCache = useCacheInvalidation(queryClient);
   const apiCreateAccount = useApiCreateAccount();
 
   const createAccount = async (
@@ -24,7 +25,7 @@ function useCreateAccount() {
 
       if (result.success) {
         logger.info('Accounts', 'Create account successful', result.value);
-        queryClient.invalidateQueries({ queryKey: ['accounts'] });
+        invalidateCache(['accounts']);
       } else {
         logger.error('Accounts', 'Create account failed', result.error);
       }

@@ -2,9 +2,11 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiDeleteIncome } from '@/api/hooks';
 import type { FailResultBase, Result } from '@/lib';
+import { useCacheInvalidation } from '@/lib';
 
 function useDeleteIncome(rowId: string) {
   const queryClient = useQueryClient();
+  const invalidateCache = useCacheInvalidation(queryClient);
   const apiDeleteIncome = useApiDeleteIncome(rowId);
 
   async function deleteIncome(): Promise<Result<void, FailResultBase>> {
@@ -17,8 +19,7 @@ function useDeleteIncome(rowId: string) {
       });
 
       if (result.success) {
-        queryClient.invalidateQueries({ queryKey: ['incomes'] });
-        queryClient.invalidateQueries({ queryKey: ['accounts'] });
+        invalidateCache(['incomes']);
       }
 
       return result;

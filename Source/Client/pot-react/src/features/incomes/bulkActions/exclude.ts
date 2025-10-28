@@ -2,7 +2,7 @@ import type { QueryClient } from '@tanstack/react-query';
 
 import type { useApiToggleExcludeIncomes } from '@/api/hooks/useIncomes';
 import type { Income } from '@/data';
-import type { BulkActionResult } from '@/lib';
+import { invalidateCache, type BulkActionResult } from '@/lib';
 
 async function toggleExcludeIncomes(
   incomes: Income[],
@@ -15,7 +15,7 @@ async function toggleExcludeIncomes(
   });
 
   if (result.success) {
-    await queryClient.invalidateQueries({ queryKey: ['incomes'] });
+    invalidateCache(queryClient, ['incomes']);
     return { success: true };
   }
 
