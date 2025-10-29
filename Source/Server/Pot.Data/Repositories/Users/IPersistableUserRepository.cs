@@ -1,3 +1,8 @@
-﻿namespace Pot.Data.Repositories.Users;
+﻿using Pot.Data.Entities;
 
-public interface IPersistableUserRepository : IUserRepository, IPersistableRepository;
+namespace Pot.Data.Repositories.Users;
+
+public interface IPersistableUserRepository : IUserRepository, IPersistableRepository
+{
+    Task UpdateUserRolesAsync(UserEntity user, Guid[] roleIds, CancellationToken cancellationToken);
+}

@@ -40,15 +40,19 @@ internal sealed class UserPasswordHasher : IUserPasswordHasher
 {
     private readonly PasswordHasher<UserEntity> _passwordHasher = new();
 
-    public string GetHash(UserEntity user, string password)
+    public string GetHash(UserEntity? user, string password)
     {
         // The hash is not idempotent. IsValidPasswordHash(), however, will correctly verify two hashes are for the same password.
-        return _passwordHasher.HashPassword(user, password);
+        // The user parameter can be null during signup - ASP.NET Core PasswordHasher doesn't actually use the user instance
+        // for default hashing operations, so we use null-forgiving operator
+        return _passwordHasher.HashPassword(user!, password);
     }
 
+    // Unlike GetHash which will not have a user during signup, this method will always have a user
+    // since it is only used to verify when the user is logging in or changing their password.
     public bool IsValidPasswordHash(UserEntity user, string password, string passwordHash)
     {
-        var verificationResult = _passwordHasher.VerifyHashedPassword(user, passwordHash, password);
+        var verificationResult = _passwordHasher.VerifyHashedPassword(user!, passwordHash, password);
 
         return verificationResult == PasswordVerificationResult.Success;
     }

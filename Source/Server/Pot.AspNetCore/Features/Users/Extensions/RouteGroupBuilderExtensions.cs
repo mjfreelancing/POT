@@ -33,4 +33,20 @@ internal static class RouteGroupBuilderExtensions
 
         return routeGroupBuilder;
     }
+
+    public static RouteGroupBuilder UpdateUserRoles(this RouteGroupBuilder routeGroupBuilder)
+    {
+        routeGroupBuilder
+            .MapPut(UsersEndpoints.UpdateRoles, UpdateRoles.Handler.Invoke)
+            .RequireAuthorization("user:manage")
+            .WithName(nameof(UpdateUserRoles))
+            .WithSummary("Update user roles")
+            .WithDescription("Updates user roles")
+            .ProducesProblem((int)HttpStatusCode.OK)
+            .ProducesProblem((int)HttpStatusCode.NotFound)
+            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+
+        return routeGroupBuilder;
+    }
 }

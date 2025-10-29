@@ -3,11 +3,11 @@ using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.ChainOfResponsibility;
 using Microsoft.Extensions.Logging;
 using Pot.App.Errors;
-using Pot.App.Features.Users.Update.EntityChecks.Checks;
-using Pot.App.Features.Users.Update.Models;
+using Pot.App.Features.Users.UpdateRoles.EntityChecks.Checks;
+using Pot.App.Features.Users.UpdateRoles.Models;
 using Pot.Data.Entities;
 
-namespace Pot.App.Features.Users.Update.EntityChecks;
+namespace Pot.App.Features.Users.UpdateRoles.EntityChecks;
 
 internal sealed class PreUpdateChecker : ChainOfResponsibilityAsyncComposer<InputState, ProblemDetailsError>, IPreUpdateChecker
 {
@@ -26,7 +26,8 @@ internal sealed class PreUpdateChecker : ChainOfResponsibilityAsyncComposer<Inpu
         var state = new InputState
         {
             Input = input,
-            UserEtag = userToUpdate.Etag
+            UserEtag = userToUpdate.Etag,
+            RoleIds = input.RoleIds
         };
 
         return HandleAsync(state, cancellationToken);

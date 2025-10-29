@@ -3,7 +3,7 @@ using AllOverIt.Logging.Extensions;
 using Microsoft.Extensions.Logging;
 using Pot.App.Errors;
 
-namespace Pot.App.Features.Users.Update.EntityChecks.Checks;
+namespace Pot.App.Features.Users.UpdateRoles.EntityChecks.Checks;
 
 internal sealed class CheckHasSameEtag : PreUpdateCheckBase
 {

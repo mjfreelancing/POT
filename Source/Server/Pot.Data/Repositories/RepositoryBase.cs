@@ -1,4 +1,5 @@
 ﻿using AllOverIt.Assertion;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Pot.Data.Entities;
 using Pot.Data.Extensions;
 
@@ -18,6 +19,11 @@ internal abstract class RepositoryBase : IRepositoryBase
     public IQueryable<TEntity> Set<TEntity>() where TEntity : EntityBase
     {
         return _dbContext.Set<TEntity>();
+    }
+
+    public EntityEntry GetEntry<TEntity>(TEntity entity) where TEntity : EntityBase
+    {
+        return _dbContext.Entry(entity);
     }
 
     public ValueTask<TEntity?> GetByPrimaryKeyAsync<TEntity, TKey>(TKey id, CancellationToken cancellationToken) where TEntity : EntityBase

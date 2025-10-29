@@ -7,4 +7,5 @@ internal static class UsersEndpoints
 
     public const string GetAll = "";
     public const string Update = "/{id:guid}";
+    public const string UpdateRoles = "/{id:guid}/roles";
 }

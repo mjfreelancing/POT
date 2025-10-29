@@ -1,11 +1,24 @@
-import { useEffect } from 'react';
+import { UserPlus } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
-import { PageHeader } from '@/components/layout';
+import { useUsers } from '@/api/hooks/useUsers';
+import { ErrorSheet, LoadingMessage } from '@/components/feedback';
+import { PageHeader, Toolbar } from '@/components/layout';
+import { Button } from '@/components/ui/button';
+import { useErrorContext } from '@/contexts';
+import type { SiteUser } from '@/data/siteUser';
 import { usePermissions } from '@/hooks';
 import { logger } from '@/lib/logging';
 
+import { InviteUserSheet, UserRoleDialog, UsersTable } from './components';
+
 function UsersPage() {
   const { hasAnyPermission } = usePermissions();
+  const [userRoleDialogOpen, setUserRoleDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<SiteUser | null>(null);
+  const { error, setError } = useErrorContext();
+
+  const { data: usersData, isLoading } = useUsers();
 
   useEffect(() => {
     logger.info('UsersPage', 'Mounted');
@@ -15,25 +28,77 @@ function UsersPage() {
     };
   }, []);
 
-  // Only show page if user has either user:manage OR user:view permission
-  if (!hasAnyPermission(['user:manage', 'user:view'])) {
-    return null;
+  // Check permissions
+  const canManageUsers = hasAnyPermission(['user:manage']);
+  const canViewUsers = hasAnyPermission(['user:view', 'user:manage']);
+
+  // Extract users array from response
+  const users = usersData?.success ? usersData.value : [];
+
+  const handleChangeRole = (user: SiteUser) => {
+    setSelectedUser(user);
+    setUserRoleDialogOpen(true);
+  };
+
+  // Handle errors
+  useEffect(() => {
+    if (usersData) {
+      setError(
+        usersData.success
+          ? null
+          : {
+              title: usersData.error.code,
+              description: usersData.error.description,
+            },
+      );
+    }
+  }, [usersData, setError]);
+
+  if (!canViewUsers) {
+    return <div>You do not have permission to view users.</div>;
   }
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20">
       <PageHeader
-        title="User Management"
+        title="Users"
         subtitle="Manage user accounts and permissions"
       />
-      {/* Main content area: flex-1 min-h-0 for proper flexbox scrolling */}
       <div className="flex-1 min-h-0 flex flex-col p-6 gap-4">
-        <div className="bg-card border rounded-lg p-6">
-          <p className="text-muted-foreground">
-            User management functionality will be implemented here.
-          </p>
+        <Toolbar>
+          <div className="flex items-center gap-4">
+            {/* Search functionality can be added here later */}
+          </div>
+          {canManageUsers && (
+            <InviteUserSheet>
+              <Button className="gap-2 min-w-[132px]">
+                <UserPlus className="h-4 w-4" />
+                Invite User
+              </Button>
+            </InviteUserSheet>
+          )}
+        </Toolbar>
+
+        <div className="flex-1 min-h-0 flex flex-col">
+          <UsersTable users={users} onChangeRole={handleChangeRole} />
         </div>
       </div>
+
+      <LoadingMessage isLoading={isLoading} />
+
+      {error && (
+        <ErrorSheet
+          title={error.title}
+          description={error.description}
+          onDismiss={() => setError(null)}
+        />
+      )}
+
+      <UserRoleDialog
+        user={selectedUser}
+        isOpen={userRoleDialogOpen}
+        onClose={() => setUserRoleDialogOpen(false)}
+      />
     </div>
   );
 }

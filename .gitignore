@@ -406,3 +406,4 @@ Source/Docker/postgres-backups
 # Environment-specific configuration files
 *.development*
 *.production*
+Source/Client/pot-react/.vite

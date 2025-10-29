@@ -100,7 +100,6 @@ function ImportModal({ isOpen, onClose }: ImportModalProps) {
     } else {
       toast(
         <ErrorToast
-          icon={Upload}
           title="Import Failed"
           description="There was an error importing the data."
         />,

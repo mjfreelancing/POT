@@ -50,7 +50,6 @@ function ExportModal({ isOpen, onClose }: ExportModalProps) {
         toast(
           () => (
             <ErrorToast
-              icon={Download}
               title="Export Failed"
               description="There was an error exporting the data."
             />
@@ -71,7 +70,6 @@ function ExportModal({ isOpen, onClose }: ExportModalProps) {
       toast(
         () => (
           <ErrorToast
-            icon={Download}
             title="Export Failed"
             description="There was an error exporting the data."
           />

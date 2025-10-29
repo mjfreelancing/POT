@@ -12,7 +12,8 @@ internal static class WebApplicationExtensions
                 .MapGroup(UsersEndpoints.Group)
                 .WithTags(UsersEndpoints.Tag)
                 .GetAllUsers()
-                .UpdateUser();
+                .UpdateUser()
+                .UpdateUserRoles();
         }
 
         return app;
