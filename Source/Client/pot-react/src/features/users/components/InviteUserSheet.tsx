@@ -137,7 +137,7 @@ function InviteUserSheet() {
                     <FormLabel>Username</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="john.doe"
+                        placeholder="Enter your unique username"
                         {...field}
                         disabled={inviteUserMutation.isPending}
                       />
@@ -156,7 +156,7 @@ function InviteUserSheet() {
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="john@example.com"
+                        placeholder="Enter your email address"
                         {...field}
                         disabled={inviteUserMutation.isPending}
                       />
@@ -214,7 +214,9 @@ function InviteUserSheet() {
                   </Button>
                   <Button
                     type="submit"
-                    disabled={inviteUserMutation.isPending || roles.length === 0}
+                    disabled={
+                      inviteUserMutation.isPending || roles.length === 0
+                    }
                   >
                     {inviteUserMutation.isPending && (
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
