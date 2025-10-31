@@ -18,7 +18,7 @@ public sealed class Request
     public DateOnly? EndDate { get; init; }
 
     [Description("The frequency unit the associated account will be credited")]
-    public Frequency Frequency { get; init; } = Frequency.Months;
+    public required Frequency Frequency { get; init; };
 
     [Description("The frequency count the associated account will be credited")]
     public int FrequencyCount { get; init; }
