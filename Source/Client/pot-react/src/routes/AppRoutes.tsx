@@ -82,6 +82,8 @@ function AppRoutes() {
           <Route path="/users" element={<UsersPage />}>
             <Route path="invite" element={<InviteUserSheet />} />
           </Route>
+          {/* Catch-all route: redirect unknown paths to dashboard */}
+          <Route path="*" element={<Navigate replace to="/dashboard" />} />
         </Route>
       </Routes>
     </Suspense>
