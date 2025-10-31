@@ -8,7 +8,8 @@ import { z } from 'zod';
 
 import { useRoles } from '@/api/hooks/useRoles';
 import { useUpdateUserRole } from '@/api/hooks/useUsers';
-import { ErrorToast, SuccessToast } from '@/components/feedback/toast';
+import { ErrorSheet } from '@/components/feedback';
+import { SuccessToast } from '@/components/feedback/toast';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -33,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useErrorContext } from '@/contexts';
 import type { Role } from '@/data/role';
 import type { SiteUser } from '@/data/siteUser';
 import { useCacheInvalidation } from '@/lib';
@@ -63,6 +65,7 @@ export function UserRoleDialog({ user, isOpen, onClose }: UserRoleDialogProps) {
   const updateRoleMutation = useUpdateUserRole();
   const queryClient = useQueryClient();
   const invalidateCache = useCacheInvalidation(queryClient);
+  const { error, setError } = useErrorContext();
 
   const roles: Role[] = rolesQuery.data?.success ? rolesQuery.data.value : [];
   const isLoadingRoles = rolesQuery.isLoading;
@@ -96,13 +99,12 @@ export function UserRoleDialog({ user, isOpen, onClose }: UserRoleDialogProps) {
       },
     });
 
-    // Handle result based on success/failure
     if (result.success) {
       // Manually invalidate cache since we're using mutateAsync
       invalidateCache(['users']);
 
-      // Show success toast
       const selectedRole = roles.find(role => role.rowId === data.roleId);
+
       toast(
         <SuccessToast
           icon={RotateCcw}
@@ -115,14 +117,10 @@ export function UserRoleDialog({ user, isOpen, onClose }: UserRoleDialogProps) {
       // Close dialog only on success
       onClose();
     } else {
-      // Show error toast
-      toast(
-        <ErrorToast
-          title="Failed to Update Role"
-          description={result.error.description}
-        />,
-        { duration: 5000 },
-      );
+      setError({
+        title: result.error.code,
+        description: result.error.description,
+      });
 
       logger.error(
         'UserRoleDialog',
@@ -149,23 +147,20 @@ export function UserRoleDialog({ user, isOpen, onClose }: UserRoleDialogProps) {
   if (!user) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Change Role</DialogTitle>
-          <DialogDescription>
-            Update the role assignment for{' '}
-            <span className="font-medium text-foreground">{user.username}</span>
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      {error && (
+        <ErrorSheet
+          title={error.title}
+          description={error.description}
+          onDismiss={() => setError(null)}
+        />
+      )}
 
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4 mt-4"
-          >
-            <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-4 items-center">
-              <label className="text-sm font-medium">Current Role</label>
+      <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-3">
+              <DialogTitle>Change Role</DialogTitle>
               <div className="flex items-center gap-1">
                 {user.roles.length > 0 ? (
                   user.roles.map((role, index) => (
@@ -182,77 +177,86 @@ export function UserRoleDialog({ user, isOpen, onClose }: UserRoleDialogProps) {
                   </span>
                 )}
               </div>
+            </div>
+            <DialogDescription>
+              Update the role assignment for{' '}
+              <span className="font-medium text-foreground">
+                {user.username}
+              </span>
+            </DialogDescription>
+          </DialogHeader>
 
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4 mt-4"
+            >
               <FormField
                 control={form.control}
                 name="roleId"
                 render={({ field }) => (
-                  <FormItem className="contents">
+                  <FormItem>
                     <FormLabel className="text-sm font-medium">
                       New Role
                     </FormLabel>
-                    <div>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                        disabled={
-                          updateRoleMutation.isPending || isLoadingRoles
-                        }
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a role" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {availableRoles.length > 0 ? (
-                            availableRoles.map(role => (
-                              <SelectItem key={role.rowId} value={role.rowId}>
-                                {role.name}
-                              </SelectItem>
-                            ))
-                          ) : (
-                            <SelectItem value="" disabled>
-                              No roles available
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      disabled={updateRoleMutation.isPending || isLoadingRoles}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a role" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {availableRoles.length > 0 ? (
+                          availableRoles.map(role => (
+                            <SelectItem key={role.rowId} value={role.rowId}>
+                              {role.name}
                             </SelectItem>
-                          )}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </div>
+                          ))
+                        ) : (
+                          <SelectItem value="" disabled>
+                            No roles available
+                          </SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
 
-            <DialogFooter className="gap-4 pt-4 border-t border-border/50">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleOpenChange(false)}
-                disabled={updateRoleMutation.isPending}
-                className="w-28"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={
-                  updateRoleMutation.isPending ||
-                  isLoadingRoles ||
-                  availableRoles.length === 0
-                }
-                className="w-32"
-              >
-                {updateRoleMutation.isPending && (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                )}
-                Update Role
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+              <DialogFooter className="gap-4 pt-4 border-t border-border/50">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleOpenChange(false)}
+                  disabled={updateRoleMutation.isPending}
+                  className="w-28"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={
+                    updateRoleMutation.isPending ||
+                    isLoadingRoles ||
+                    availableRoles.length === 0
+                  }
+                  className="w-32"
+                >
+                  {updateRoleMutation.isPending && (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  )}
+                  Update Role
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
