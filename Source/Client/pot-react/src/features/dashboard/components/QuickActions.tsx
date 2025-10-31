@@ -3,13 +3,13 @@ import { Zap } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { PermissionGuard } from '@/features/auth/components';
 import RenewAccrueAllAction from '@/features/dashboard/actions/accruals/RenewAccrueAllAction';
-import { AccrualsProvider } from '@/features/dashboard/contexts/AccrualsContext';
 
 import {
   AccrueAccountExpensesAction,
   RenewExpensesAction,
   RenewIncomesAction,
 } from '../actions/accruals';
+import { AccrualsProvider } from '../contexts/AccrualsContext';
 import DashboardCardHeader from './DashboardCardHeader';
 
 function QuickActions() {
