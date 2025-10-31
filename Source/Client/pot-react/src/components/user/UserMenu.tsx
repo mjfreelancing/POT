@@ -10,10 +10,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import useAuthContext from '@/features/auth/AuthContext';
+import logoutManager from '@/features/auth/logoutManager';
 import { AccountSettingsSheet } from '@/features/userSettings/UserSettingsSheet';
 
 function UserMenu() {
-  const { userInfo, logout } = useAuthContext();
+  const { userInfo } = useAuthContext();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   function handleProfileOpen(): void {
@@ -40,7 +41,7 @@ function UserMenu() {
             Settings
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={logout}>
+          <DropdownMenuItem onClick={logoutManager.logout}>
             <LogOut className="mr-2 size-4" />
             Log Out
           </DropdownMenuItem>

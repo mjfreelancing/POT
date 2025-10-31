@@ -3,6 +3,7 @@ import { Navigate, Outlet, Route, Routes } from 'react-router';
 
 import useAuthContext from '@/features/auth/AuthContext';
 import LoginPage from '@/features/auth/LoginPage';
+import logoutManager from '@/features/auth/logoutManager';
 
 import LoadingMessage from '../components/feedback/message/LoadingMessage';
 
@@ -47,11 +48,21 @@ function ProtectedRoute() {
   return <Outlet />;
 }
 
+// LogoutRoute component for handling forced logout
+function LogoutRoute() {
+  // Use the global logout manager to trigger logout - same as other parts of the app
+  logoutManager.logout();
+
+  // Always redirect to login after logout attempt
+  return <Navigate to="/login" replace />;
+}
+
 function AppRoutes() {
   return (
     <Suspense fallback={<LoadingMessage />}>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/logout" element={<LogoutRoute />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Navigate replace to="dashboard" />} />
           <Route path="/dashboard" element={<DashboardPage />} />
