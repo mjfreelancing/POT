@@ -69,14 +69,14 @@ function UsersPage() {
           <div className="flex items-center gap-4">
             {/* Search functionality can be added here later */}
           </div>
-          <InviteUserSheet>
-            <WithPermission permissions={['user:manage']} mode="all">
+          <WithPermission permissions={['user:manage']} mode="all">
+            <InviteUserSheet>
               <Button className="gap-2 min-w-[132px]">
                 <UserPlus className="h-4 w-4" />
                 Invite User
               </Button>
-            </WithPermission>
-          </InviteUserSheet>
+            </InviteUserSheet>
+          </WithPermission>
         </Toolbar>
 
         <div className="flex-1 min-h-0 flex flex-col">
