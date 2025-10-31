@@ -4,7 +4,7 @@ using Pot.App.Concerns.Time;
 using Pot.App.Concerns.Time.Extensions;
 using Pot.App.Features.Otp;
 
-namespace Pot.AspNetCore.Features.Auth.Workers;
+namespace Pot.AspNetCore.Features.Workers;
 
 internal sealed class ExpiredOtpCleanupWorker : BackgroundWorker
 {

@@ -1,4 +1,4 @@
-﻿using Pot.AspNetCore.Features.Auth.Workers;
+﻿using Pot.AspNetCore.Features.Workers;
 
 namespace Pot.AspNetCore.Features.Auth.Extensions;
 

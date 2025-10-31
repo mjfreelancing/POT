@@ -2,7 +2,7 @@
 using AllOverIt.GenericHost;
 using Pot.EmailSender;
 
-namespace Pot.AspNetCore.Features.Auth.Workers;
+namespace Pot.AspNetCore.Features.Workers;
 
 internal sealed class SendEmailWorker : BackgroundWorker
 {
