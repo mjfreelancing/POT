@@ -44,24 +44,23 @@ import { FailResult } from '@/lib';
 import { logger } from '@/lib/logging';
 
 import { addCorrelationId, getNetworkError } from '../apiHelpers';
-import type { ApiErrorResponse } from '../errors/apiErrorResponse';
-import {
-  getAuthenticationMessage,
-  getConflictMessage,
-  getErrorTitle,
-  getForbiddenMessage,
-  getNotFoundMessage,
-  getValidationMessage,
-} from '../errors/apiErrorResponse';
-import type { ApiError } from '../errors/apiErrors';
+import type { ApiError, ApiErrorResponse } from '../errors';
 import {
   AuthenticationError,
   ConflictError,
   ForbiddenError,
+  getAuthenticationMessage,
+  getConflictMessage,
+  getErrorTitle,
+  getForbiddenMessage,
+  getMethodNotAllowedMessage,
+  getNotFoundMessage,
+  getValidationMessage,
+  MethodNotAllowedError,
   NotFoundError,
   UnexpectedError,
   ValidationError,
-} from '../errors/apiErrors';
+} from '../errors';
 
 const responseSuccessHandler = (response: AxiosResponse): AxiosResponse => {
   const correlationId = response.config.headers?.['X-Correlation-ID'];
@@ -128,6 +127,12 @@ const responseErrorHandler = async (error: AxiosError) => {
 
       case 404:
         errorResult = new NotFoundError(getNotFoundMessage(apiError));
+        break;
+
+      case 405:
+        errorResult = new MethodNotAllowedError(
+          getMethodNotAllowedMessage(apiError),
+        );
         break;
 
       case 409:

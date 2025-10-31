@@ -1,6 +1,9 @@
-import { useQueryClient } from '@tanstack/react-query';
-
-import { useGet, usePost, usePutWithId } from '@/api/hooks/useApi';
+import {
+  useGet,
+  usePost,
+  usePutWithId,
+  usePutWithIdNoData,
+} from '@/api/hooks/useApi';
 import type { Identity } from '@/data';
 import type {
   SiteUser,
@@ -9,7 +12,6 @@ import type {
   UserStatusUpdate,
 } from '@/data/siteUser';
 import type { FailResultBase, Result } from '@/lib';
-import { useCacheInvalidation } from '@/lib';
 
 /**
  * Hook to fetch all site users with their roles and status
@@ -24,23 +26,11 @@ export function useUsers() {
  * Requires user:manage permission
  */
 export function useInviteUser() {
-  const queryClient = useQueryClient();
-  const invalidateCache = useCacheInvalidation(queryClient);
   const mutation = usePost<Identity, UserInvitation>('/users/invite');
 
   return {
     ...mutation,
     data: mutation.data as Result<Identity, FailResultBase>,
-    mutate: (data: UserInvitation) => {
-      mutation.mutate(
-        { data },
-        {
-          onSuccess: () => {
-            invalidateCache(['users']);
-          },
-        },
-      );
-    },
   };
 }
 
@@ -49,8 +39,6 @@ export function useInviteUser() {
  * Requires user:manage permission
  */
 export function useUpdateUserRole() {
-  const queryClient = useQueryClient();
-  const invalidateCache = useCacheInvalidation(queryClient);
   const mutation = usePutWithId<Identity, UserRoleUpdate>(
     userId => `/users/${userId}/roles`,
   );
@@ -58,16 +46,6 @@ export function useUpdateUserRole() {
   return {
     ...mutation,
     data: mutation.data as Result<Identity, FailResultBase>,
-    mutate: (userId: string, data: UserRoleUpdate) => {
-      mutation.mutate(
-        { id: userId, data },
-        {
-          onSuccess: () => {
-            invalidateCache(['users']);
-          },
-        },
-      );
-    },
   };
 }
 
@@ -76,8 +54,6 @@ export function useUpdateUserRole() {
  * Requires user:manage permission
  */
 export function useUpdateUserStatus() {
-  const queryClient = useQueryClient();
-  const invalidateCache = useCacheInvalidation(queryClient);
   const mutation = usePutWithId<void, UserStatusUpdate>(
     userId => `/users/${userId}/status`,
   );
@@ -85,16 +61,6 @@ export function useUpdateUserStatus() {
   return {
     ...mutation,
     data: mutation.data as Result<void, FailResultBase>,
-    mutateAsync: async (params: { id: string; data: UserStatusUpdate }) => {
-      const result = await mutation.mutateAsync(params);
-
-      if (result.success) {
-        // Manually invalidate cache since we're using mutateAsync
-        invalidateCache(['users']);
-      }
-
-      return result;
-    },
   };
 }
 
@@ -103,26 +69,12 @@ export function useUpdateUserStatus() {
  * Requires user:manage permission
  */
 export function useResendInvitation() {
-  const queryClient = useQueryClient();
-  const invalidateCache = useCacheInvalidation(queryClient);
-
-  // Use usePutWithId pattern for dynamic URL with userId
-  const mutation = usePutWithId<void, void>(
+  const mutation = usePutWithIdNoData<void>(
     userId => `/users/${userId}/resend-invitation`,
   );
 
   return {
     ...mutation,
     data: mutation.data as Result<void, FailResultBase>,
-    mutate: (userId: string) => {
-      mutation.mutate(
-        { id: userId, data: undefined as void },
-        {
-          onSuccess: () => {
-            invalidateCache(['users']);
-          },
-        },
-      );
-    },
   };
 }

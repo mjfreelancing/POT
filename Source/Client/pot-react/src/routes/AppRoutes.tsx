@@ -34,6 +34,9 @@ const CreateExpenseSheet = lazy(
 const EditExpenseSheet = lazy(
   () => import('../features/expenses/edit/EditExpenseSheet'),
 );
+const InviteUserSheet = lazy(
+  () => import('../features/users/components/InviteUserSheet'),
+);
 
 // ProtectedRoute component for protecting routes
 function ProtectedRoute() {
@@ -65,7 +68,9 @@ function AppRoutes() {
             <Route path="create" element={<CreateExpenseSheet />} />
             <Route path="edit/:id" element={<EditExpenseSheet />} />
           </Route>
-          <Route path="/users" element={<UsersPage />} />
+          <Route path="/users" element={<UsersPage />}>
+            <Route path="invite" element={<InviteUserSheet />} />
+          </Route>
         </Route>
       </Routes>
     </Suspense>

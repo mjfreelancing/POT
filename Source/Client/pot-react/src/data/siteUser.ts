@@ -21,18 +21,8 @@ export type SiteUser = z.infer<typeof siteUserSchema>;
 
 // User invitation schema for POST /api/users/invite
 export const userInvitationSchema = z.object({
-  username: z
-    .string()
-    .min(3, 'Username must be at least 3 characters')
-    .max(50, 'Username must be less than 50 characters')
-    .regex(
-      /^[a-zA-Z0-9._-]+$/,
-      'Username can only contain letters, numbers, dots, hyphens, and underscores',
-    ),
-  email: z
-    .string()
-    .email('Please enter a valid email address')
-    .max(254, 'Email must be less than 254 characters'),
+  username: z.string().nonempty('Username must be provided'),
+  email: z.string().email('Please enter a valid email address'),
   roleId: z.string().uuid('Please select a role'),
 });
 

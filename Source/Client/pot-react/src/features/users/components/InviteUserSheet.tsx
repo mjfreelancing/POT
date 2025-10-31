@@ -1,13 +1,16 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useQueryClient } from '@tanstack/react-query';
 import { Loader2, UserPlus } from 'lucide-react';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 
 import { useRoles } from '@/api/hooks/useRoles';
 import { useInviteUser } from '@/api/hooks/useUsers';
+import { ErrorSheet, LoadingMessage } from '@/components/feedback';
 import { SuccessToast } from '@/components/feedback/toast';
 import { Button } from '@/components/ui/button';
+import { DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -24,25 +27,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+import { Separator } from '@/components/ui/separator';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { useErrorContext } from '@/contexts';
 import type { Role } from '@/data/role';
 import type { UserInvitation } from '@/data/siteUser';
 import { userInvitationSchema } from '@/data/siteUser';
+import { useCacheInvalidation } from '@/lib';
 import { logger } from '@/lib/logging';
 
-type InviteUserSheetProps = {
-  children?: React.ReactNode;
-};
-
-export function InviteUserSheet({ children }: InviteUserSheetProps) {
-  const [isOpen, setIsOpen] = useState(false);
+function InviteUserSheet() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const invalidateCache = useCacheInvalidation(queryClient);
+  const { error, setError } = useErrorContext();
 
   const form = useForm<UserInvitation>({
     resolver: zodResolver(userInvitationSchema),
@@ -60,148 +58,177 @@ export function InviteUserSheet({ children }: InviteUserSheetProps) {
   const roles: Role[] = rolesQuery.data?.success ? rolesQuery.data.value : [];
   const isLoadingRoles = rolesQuery.isLoading;
 
+  // Show loading state if roles are still loading
+  if (isLoadingRoles) {
+    return <LoadingMessage />;
+  }
+
+  // Handle roles API errors
+  if (!rolesQuery.data?.success) {
+    return (
+      <ErrorSheet
+        title={rolesQuery.data?.error?.code ?? 'Error Loading Roles'}
+        description={
+          rolesQuery.data?.error?.description ??
+          'Failed to load the available roles. Please try again.'
+        }
+        onDismiss={() => navigate('/users')}
+      />
+    );
+  }
+
   const onSubmit = async (data: UserInvitation) => {
     logger.info('InviteUserSheet', 'Submitting invitation', {
       username: data.username,
       email: data.email,
     });
 
-    inviteUserMutation.mutate(data);
+    const result = await inviteUserMutation.mutateAsync({ data });
 
-    // Note: In a real implementation, we'd handle the response properly
-    // For now, we'll show success toast and reset the form
-    toast(
-      <SuccessToast
-        icon={UserPlus}
-        title="Invitation Sent"
-        description={`User ${data.username} has been invited successfully.`}
-      />,
-    );
+    if (result.success) {
+      // Invalidate users cache
+      invalidateCache(['users']);
 
-    // Reset form and close sheet
-    form.reset();
-    setIsOpen(false);
-  };
+      toast(
+        <SuccessToast
+          icon={UserPlus}
+          title="Invitation Sent"
+          description={`User ${data.username} has been invited successfully.`}
+        />,
+      );
 
-  const handleOpenChange = (open: boolean) => {
-    setIsOpen(open);
-    if (!open) {
-      form.reset();
+      // Navigate back to users page on success
+      navigate('/users');
+    } else {
+      setError({
+        title: result.error.code,
+        description: result.error.description,
+      });
     }
   };
 
-  const defaultTrigger = (
-    <Button>
-      <UserPlus className="h-4 w-4 mr-2" />
-      Invite User
-    </Button>
-  );
-
   return (
-    <Sheet open={isOpen} onOpenChange={handleOpenChange}>
-      <SheetTrigger asChild>{children || defaultTrigger}</SheetTrigger>
-      <SheetContent className="sm:max-w-md">
-        <SheetHeader>
-          <SheetTitle>Invite New User</SheetTitle>
-          <SheetDescription>
-            Send an invitation to a new user with a role assignment. They will
-            receive login credentials via email.
-          </SheetDescription>
-        </SheetHeader>
+    <Sheet open modal={false}>
+      <SheetContent className="p-6 sm:max-w-lg [&>button:first-of-type]:hidden">
+        <div className="space-y-6 pr-6 pl-6">
+          <DialogTitle className="text-lg font-semibold">
+            Invite New User
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            Invite New User form
+          </DialogDescription>
+          <Separator />
 
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4 mt-4"
-          >
-            <FormField
-              control={form.control}
-              name="username"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Username</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="john.doe"
-                      {...field}
-                      disabled={inviteUserMutation.isPending}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+          {error && (
+            <ErrorSheet
+              title={error.title}
+              description={error.description}
+              onDismiss={() => setError(null)}
             />
+          )}
 
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email Address</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="john@example.com"
-                      {...field}
-                      disabled={inviteUserMutation.isPending}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="roleId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Assign Role</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    disabled={inviteUserMutation.isPending || isLoadingRoles}
-                  >
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel>Username</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a role" />
-                      </SelectTrigger>
+                      <Input
+                        placeholder="john.doe"
+                        {...field}
+                        disabled={inviteUserMutation.isPending}
+                      />
                     </FormControl>
-                    <SelectContent>
-                      {roles.map(role => (
-                        <SelectItem key={role.rowId} value={role.rowId}>
-                          {role.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleOpenChange(false)}
-                disabled={inviteUserMutation.isPending}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={inviteUserMutation.isPending || isLoadingRoles}
-              >
-                {inviteUserMutation.isPending && (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <FormMessage />
+                  </FormItem>
                 )}
-                Send Invitation
-              </Button>
-            </div>
-          </form>
-        </Form>
+              />
+
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel>Email Address</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="john@example.com"
+                        {...field}
+                        disabled={inviteUserMutation.isPending}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="roleId"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel>Assign Role</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      disabled={inviteUserMutation.isPending || isLoadingRoles}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a role" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {roles.length > 0 ? (
+                          roles.map(role => (
+                            <SelectItem key={role.rowId} value={role.rowId}>
+                              {role.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="" disabled>
+                            No roles available
+                          </SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="space-y-4 pt-2">
+                <Separator className="opacity-80" />
+                <div className="flex justify-end space-x-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => navigate('/users')}
+                    disabled={inviteUserMutation.isPending}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={inviteUserMutation.isPending || roles.length === 0}
+                  >
+                    {inviteUserMutation.isPending && (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    )}
+                    Send Invitation
+                  </Button>
+                </div>
+              </div>
+            </form>
+          </Form>
+        </div>
       </SheetContent>
     </Sheet>
   );
 }
+
+export default InviteUserSheet;

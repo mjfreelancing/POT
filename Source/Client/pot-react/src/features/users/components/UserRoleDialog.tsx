@@ -100,7 +100,6 @@ export function UserRoleDialog({ user, isOpen, onClose }: UserRoleDialogProps) {
     });
 
     if (result.success) {
-      // Manually invalidate cache since we're using mutateAsync
       invalidateCache(['users']);
 
       const selectedRole = roles.find(role => role.rowId === data.roleId);

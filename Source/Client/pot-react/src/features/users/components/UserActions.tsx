@@ -6,6 +6,7 @@ import {
   UserCheck,
   UserX,
 } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { useResendInvitation, useUpdateUserStatus } from '@/api/hooks/useUsers';
@@ -23,6 +24,7 @@ import { useErrorContext } from '@/contexts';
 import type { SiteUser } from '@/data/siteUser';
 import useAuthContext from '@/features/auth/AuthContext';
 import { usePermissions } from '@/hooks';
+import { useCacheInvalidation } from '@/lib';
 import { logger } from '@/lib/logging';
 
 type UserActionsProps = {
@@ -31,6 +33,8 @@ type UserActionsProps = {
 };
 
 function UserActions({ user, onChangeRole }: UserActionsProps) {
+  const queryClient = useQueryClient();
+  const invalidateCache = useCacheInvalidation(queryClient);
   const resendInvitationMutation = useResendInvitation();
   const updateStatusMutation = useUpdateUserStatus();
   const { error, setError } = useErrorContext();
@@ -38,8 +42,32 @@ function UserActions({ user, onChangeRole }: UserActionsProps) {
   const { userInfo } = useAuthContext();
   const canManageUsers = hasPermission('user:manage');
 
-  const handleResendInvitation = () => {
-    resendInvitationMutation.mutate(user.rowId);
+  const handleResendInvitation = async () => {
+    logger.info('UserActions', 'Resending invitation', {
+      userId: user.rowId,
+      username: user.username,
+    });
+
+    const result = await resendInvitationMutation.mutateAsync({
+      id: user.rowId,
+    });
+
+    if (result.success) {
+      toast(
+        <SuccessToast
+          icon={Mail}
+          title="Invitation Resent"
+          description={`Invitation has been sent to ${user.username}.`}
+        />,
+      );
+    } else {
+      setError({
+        title: result.error.code,
+        description: result.error.description,
+      });
+
+      logger.error('UserActions', 'Failed to resend invitation', result.error);
+    }
   };
 
   const handleToggleStatus = async () => {
@@ -61,6 +89,8 @@ function UserActions({ user, onChangeRole }: UserActionsProps) {
     });
 
     if (result.success) {
+      invalidateCache(['users']);
+
       toast(
         <SuccessToast
           icon={CheckCircle}
@@ -69,7 +99,6 @@ function UserActions({ user, onChangeRole }: UserActionsProps) {
         />,
       );
     } else {
-      // Critical error - API endpoint should exist
       setError({
         title: result.error.code,
         description: result.error.description,

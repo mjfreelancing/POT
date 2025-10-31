@@ -187,9 +187,16 @@ const usePut = <TResponse, TData>(url: string) => {
  * A mutation object from react-query, with the mutation function and state.
  *
  * ### Usage:
+ * #### With Data:
  * ```typescript
  * const mutation = usePutWithId<MyResponseType, MyRequestType>((id) => `/api/resource/${id}`);
  * mutation.mutate({ id: '123', data: { key: 'value' } });
+ * ```
+ *
+ * #### Without Data (void):
+ * ```typescript
+ * const mutation = usePutWithId<MyResponseType, void>((id) => `/api/resource/${id}`);
+ * mutation.mutate({ id: '123' });
  * ```
  */
 
@@ -204,11 +211,44 @@ const usePutWithId = <TResponse, TData>(urlFn: (id: string) => string) => {
     > => {
       const url = urlFn(id);
       return performOperation(() =>
-        axios.put<TResponse>(url, data, { signal: signal }),
+        axios.put<TResponse>(url, data, { signal }),
+      );
+    },
+  });
+};
+
+/**
+ * usePutWithIdNoData is a utility hook for making PUT requests to endpoints requiring an ID but no request body.
+ *
+ * @template TResponse - The expected response type from the API.
+ *
+ * @param {(id: string) => string} urlFn - A function that generates the endpoint URL using an ID.
+ *
+ * @returns {UseMutationResult<Result<TResponse, FailResultBase>, unknown, { id: string; signal?: AbortSignal }, unknown>} -
+ * A mutation object from react-query, with the mutation function and state.
+ *
+ * ### Usage:
+ * ```typescript
+ * const mutation = usePutWithIdNoData<MyResponseType>((id) => `/api/resource/${id}/action`);
+ * mutation.mutate({ id: '123' });
+ * ```
+ */
+const usePutWithIdNoData = <TResponse>(urlFn: (id: string) => string) => {
+  return useMutation({
+    mutationFn: async ({
+      id,
+      signal,
+    }: {
+      id: string;
+      signal?: AbortSignal;
+    }): Promise<Result<TResponse, FailResultBase>> => {
+      const url = urlFn(id);
+      return performOperation(() =>
+        axios.put<TResponse>(url, undefined, { signal }),
       );
     },
   });
 };
 
 export type { DeleteMutationData, MutationData, MutationDataWithId };
-export { useDelete, useGet, usePost, usePut, usePutWithId };
+export { useDelete, useGet, usePost, usePut, usePutWithId, usePutWithIdNoData };

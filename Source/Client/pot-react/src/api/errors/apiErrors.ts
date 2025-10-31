@@ -11,6 +11,7 @@ const ErrorCode = {
   Authentication: 'Authentication Error',
   Validation: 'Validation Error',
   NotFound: 'Not Found',
+  MethodNotAllowed: 'Method Not Allowed',
   Conflict: 'Conflict Error',
   Network: 'Network Error',
   Unexpected: 'Unexpected Error',
@@ -47,6 +48,12 @@ class NotFoundError extends ApiError {
   }
 }
 
+class MethodNotAllowedError extends ApiError {
+  constructor(description: string) {
+    super(ErrorCode.MethodNotAllowed, description);
+  }
+}
+
 class ConflictError extends ApiError {
   constructor(description: string) {
     super(ErrorCode.Conflict, description);
@@ -80,6 +87,7 @@ export {
   ForbiddenError,
   NetworkError,
   NotFoundError,
+  MethodNotAllowedError,
   UnexpectedError,
   ValidationError,
 };

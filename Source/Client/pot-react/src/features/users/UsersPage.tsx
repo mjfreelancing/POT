@@ -1,5 +1,6 @@
 import { UserPlus } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Outlet, useNavigate } from 'react-router';
 
 import { useUsers } from '@/api/hooks/useUsers';
 import { ErrorSheet, LoadingMessage } from '@/components/feedback';
@@ -11,10 +12,11 @@ import { WithPermission } from '@/features/auth/components';
 import { usePermissions } from '@/hooks';
 import { logger } from '@/lib/logging';
 
-import { InviteUserSheet, UserRoleDialog, UsersTable } from './components';
+import { UserRoleDialog, UsersTable } from './components';
 
 function UsersPage() {
   const { hasAnyPermission } = usePermissions();
+  const navigate = useNavigate();
   const [userRoleDialogOpen, setUserRoleDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<SiteUser | null>(null);
   const { error, setError } = useErrorContext();
@@ -70,12 +72,14 @@ function UsersPage() {
             {/* Search functionality can be added here later */}
           </div>
           <WithPermission permissions={['user:manage']} mode="all">
-            <InviteUserSheet>
-              <Button className="gap-2 min-w-[132px]">
-                <UserPlus className="h-4 w-4" />
-                Invite User
-              </Button>
-            </InviteUserSheet>
+            <Button
+              onClick={() => navigate('invite')}
+              aria-label="Invite a new user"
+              className="gap-2 min-w-[132px]"
+            >
+              <UserPlus className="h-4 w-4" />
+              Invite User
+            </Button>
           </WithPermission>
         </Toolbar>
 
@@ -99,6 +103,9 @@ function UsersPage() {
         isOpen={userRoleDialogOpen}
         onClose={() => setUserRoleDialogOpen(false)}
       />
+
+      {/* The Outlet is used to render nested routes, such as when inviting users */}
+      <Outlet />
     </div>
   );
 }

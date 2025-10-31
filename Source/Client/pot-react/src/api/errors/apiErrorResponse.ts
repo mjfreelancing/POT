@@ -22,6 +22,11 @@ const getNotFoundMessage = (_error: ApiErrorResponse): string => {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+const getMethodNotAllowedMessage = (_error: ApiErrorResponse): string => {
+  return 'The requested method is not allowed for this resource';
+};
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getAuthenticationMessage = (_error: ApiErrorResponse): string => {
   return 'Invalid username or password';
 };
@@ -65,6 +70,7 @@ export {
   getConflictMessage,
   getErrorTitle,
   getForbiddenMessage,
+  getMethodNotAllowedMessage,
   getNotFoundMessage,
   getValidationMessage,
 };
