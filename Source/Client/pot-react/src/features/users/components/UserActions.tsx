@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import {
   CheckCircle,
   Mail,
@@ -6,7 +7,6 @@ import {
   UserCheck,
   UserX,
 } from 'lucide-react';
-import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { useResendInvitation, useUpdateUserStatus } from '@/api/hooks/useUsers';

@@ -85,9 +85,9 @@ export {
   AuthenticationError,
   ConflictError,
   ForbiddenError,
+  MethodNotAllowedError,
   NetworkError,
   NotFoundError,
-  MethodNotAllowedError,
   UnexpectedError,
   ValidationError,
 };
