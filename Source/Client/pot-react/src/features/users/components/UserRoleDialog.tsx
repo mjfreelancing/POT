@@ -27,6 +27,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { Separator } from '@/components/ui/separator';
 import {
   Select,
   SelectContent,
@@ -227,31 +228,34 @@ export function UserRoleDialog({ user, isOpen, onClose }: UserRoleDialogProps) {
                 )}
               />
 
-              <DialogFooter className="gap-4 pt-4 border-t border-border/50">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => handleOpenChange(false)}
-                  disabled={updateRoleMutation.isPending}
-                  className="w-28"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={
-                    updateRoleMutation.isPending ||
-                    isLoadingRoles ||
-                    availableRoles.length === 0
-                  }
-                  className="w-32"
-                >
-                  {updateRoleMutation.isPending && (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  )}
-                  Update Role
-                </Button>
-              </DialogFooter>
+              <div className="space-y-4 pt-2">
+                <Separator className="opacity-80" />
+                <DialogFooter className="gap-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => handleOpenChange(false)}
+                    disabled={updateRoleMutation.isPending}
+                    className="w-28"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={
+                      updateRoleMutation.isPending ||
+                      isLoadingRoles ||
+                      availableRoles.length === 0
+                    }
+                    className="w-32"
+                  >
+                    {updateRoleMutation.isPending && (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    )}
+                    Update Role
+                  </Button>
+                </DialogFooter>
+              </div>
             </form>
           </Form>
         </DialogContent>

@@ -13,6 +13,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
 
 import type { AccountFormData } from '../schemas/accountFormSchema';
 
@@ -155,22 +156,25 @@ function AccountForm({
           )}
         />
 
-        <div className="flex justify-end space-x-4">
-          {/* type="button" prevents this button from triggering a form submission - there's a scenario
-            where the user may press ENTER but the server reports a validation error and the sheet
-            closes, thereby not providing the user an opportunity to correct the data. */}
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-            className="w-24"
-          >
-            Cancel
-          </Button>
+        <div className="space-y-4 pt-2">
+          <Separator className="opacity-80" />
+          <div className="flex justify-end space-x-4">
+            {/* type="button" prevents this button from triggering a form submission - there's a scenario
+              where the user may press ENTER but the server reports a validation error and the sheet
+              closes, thereby not providing the user an opportunity to correct the data. */}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              className="w-24"
+            >
+              Cancel
+            </Button>
 
-          <Button type="submit" className="w-24">
-            {submitLabel}
-          </Button>
+            <Button type="submit" className="w-24">
+              {submitLabel}
+            </Button>
+          </div>
         </div>
       </form>
     </Form>

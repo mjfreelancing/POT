@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
 import { logger } from '@/lib';
 
 import type { OtpVerificationStatus } from '../shared';
@@ -260,16 +261,19 @@ function SignupDialog({ open, onOpenChange, onError }: SignupDialogProps) {
         <div className="mt-6">{renderCurrentPhase()}</div>
 
         {showStartOverButton && (
-          <DialogFooter className="pt-4 border-t border-border/50">
-            <button
-              type="button"
-              onClick={handleStartOver}
-              disabled={isStartOverDisabled}
-              className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:no-underline"
-            >
-              Start over
-            </button>
-          </DialogFooter>
+          <div className="space-y-4 pt-2">
+            <Separator className="opacity-80" />
+            <DialogFooter>
+              <button
+                type="button"
+                onClick={handleStartOver}
+                disabled={isStartOverDisabled}
+                className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:no-underline"
+              >
+                Start over
+              </button>
+            </DialogFooter>
+          </div>
         )}
       </DialogContent>
     </Dialog>
