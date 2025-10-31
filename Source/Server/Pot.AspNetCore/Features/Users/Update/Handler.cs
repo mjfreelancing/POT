@@ -4,6 +4,7 @@ using Pot.App.Features.Users.Update;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Extensions;
 using Pot.AspNetCore.Features.Users.Update.Mappings;
+using Pot.AspNetCore.Features.Users.UpdateStatus.Mappings;
 using System.ComponentModel;
 
 namespace Pot.AspNetCore.Features.Users.Update;

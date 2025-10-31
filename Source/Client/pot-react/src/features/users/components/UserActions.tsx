@@ -1,17 +1,29 @@
-import { Mail, MoreHorizontal, RotateCcw } from 'lucide-react';
+import {
+  CheckCircle,
+  Mail,
+  MoreHorizontal,
+  RotateCcw,
+  UserCheck,
+  UserX,
+} from 'lucide-react';
+import { toast } from 'sonner';
 
-import { useResendInvitation } from '@/api/hooks/useUsers';
+import { useResendInvitation, useUpdateUserStatus } from '@/api/hooks/useUsers';
+import { ErrorSheet } from '@/components/feedback';
+import { SuccessToast } from '@/components/feedback/toast';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useErrorContext } from '@/contexts';
 import type { SiteUser } from '@/data/siteUser';
 import useAuthContext from '@/features/auth/AuthContext';
 import { usePermissions } from '@/hooks';
+import { logger } from '@/lib/logging';
 
 type UserActionsProps = {
   user: SiteUser;
@@ -20,12 +32,51 @@ type UserActionsProps = {
 
 function UserActions({ user, onChangeRole }: UserActionsProps) {
   const resendInvitationMutation = useResendInvitation();
+  const updateStatusMutation = useUpdateUserStatus();
+  const { error, setError } = useErrorContext();
   const { hasPermission } = usePermissions();
   const { userInfo } = useAuthContext();
   const canManageUsers = hasPermission('user:manage');
 
   const handleResendInvitation = () => {
     resendInvitationMutation.mutate(user.rowId);
+  };
+
+  const handleToggleStatus = async () => {
+    const newStatus = user.status === 'Enabled' ? 'Disabled' : 'Enabled';
+
+    logger.info('UserActions', 'Updating user status', {
+      userId: user.rowId,
+      username: user.username,
+      currentStatus: user.status,
+      newStatus,
+    });
+
+    const result = await updateStatusMutation.mutateAsync({
+      id: user.rowId,
+      data: {
+        etag: user.etag,
+        status: newStatus,
+      },
+    });
+
+    if (result.success) {
+      toast(
+        <SuccessToast
+          icon={CheckCircle}
+          title="Status Updated"
+          description={`${user.username} has been ${newStatus.toLowerCase()}.`}
+        />,
+      );
+    } else {
+      // Critical error - API endpoint should exist
+      setError({
+        title: result.error.code,
+        description: result.error.description,
+      });
+
+      logger.error('UserActions', 'Failed to update user status', result.error);
+    }
   };
 
   // Don't show actions for the current user to prevent self-lockout
@@ -36,29 +87,56 @@ function UserActions({ user, onChangeRole }: UserActionsProps) {
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0">
-          <span className="sr-only">Open menu</span>
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => onChangeRole(user)}>
-          <RotateCcw className="mr-2 h-4 w-4" />
-          Change Role
-        </DropdownMenuItem>
-        {user.status === 'Pending' && (
-          <>
-            <DropdownMenuSeparator />
+    <>
+      {error && (
+        <ErrorSheet
+          title={error.title}
+          description={error.description}
+          onDismiss={() => setError(null)}
+        />
+      )}
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel className="text-sm font-semibold">
+            Actions
+          </DropdownMenuLabel>
+          <DropdownMenuItem onClick={() => onChangeRole(user)}>
+            <RotateCcw className="mr-2 h-4 w-4" />
+            Change Role
+          </DropdownMenuItem>
+
+          {(user.status === 'Enabled' || user.status === 'Disabled') && (
+            <DropdownMenuItem onClick={handleToggleStatus}>
+              {user.status === 'Enabled' ? (
+                <>
+                  <UserX className="mr-2 h-4 w-4" />
+                  Disable User
+                </>
+              ) : (
+                <>
+                  <UserCheck className="mr-2 h-4 w-4" />
+                  Enable User
+                </>
+              )}
+            </DropdownMenuItem>
+          )}
+
+          {user.status === 'Pending' && (
             <DropdownMenuItem onClick={handleResendInvitation}>
               <Mail className="mr-2 h-4 w-4" />
               Resend Invitation
             </DropdownMenuItem>
-          </>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
   );
 }
 

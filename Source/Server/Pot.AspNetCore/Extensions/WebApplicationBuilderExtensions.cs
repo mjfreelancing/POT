@@ -91,6 +91,7 @@ internal static class WebApplicationBuilderExtensions
         builder.Services.ConfigureHttpJsonOptions(options =>
         {
             options.SerializerOptions.Converters.Add(EnrichedEnumJsonConverter<Frequency>.Create());
+            options.SerializerOptions.Converters.Add(EnrichedEnumJsonConverter<UserStatus>.Create());
             options.SerializerOptions.Converters.Add(new NullableGuidConverter());
         });
 

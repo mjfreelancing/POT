@@ -51,6 +51,7 @@ export type UserRoleUpdate = z.infer<typeof userRoleUpdateSchema>;
 
 // User status update schema for PUT /api/users/{userId}/status
 export const userStatusUpdateSchema = z.object({
+  etag: z.bigint(),
   status: z.enum(['Enabled', 'Disabled']),
 });
 

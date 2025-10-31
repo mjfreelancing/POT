@@ -13,6 +13,7 @@ internal static class WebApplicationExtensions
                 .WithTags(UsersEndpoints.Tag)
                 .GetAllUsers()
                 .UpdateUser()
+                .UpdateUserStatus()
                 .UpdateUserRoles();
         }
 

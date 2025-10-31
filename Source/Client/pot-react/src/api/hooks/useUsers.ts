@@ -2,7 +2,12 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useGet, usePost, usePutWithId } from '@/api/hooks/useApi';
 import type { Identity } from '@/data';
-import type { SiteUser, UserInvitation, UserRoleUpdate } from '@/data/siteUser';
+import type {
+  SiteUser,
+  UserInvitation,
+  UserRoleUpdate,
+  UserStatusUpdate,
+} from '@/data/siteUser';
 import type { FailResultBase, Result } from '@/lib';
 import { useCacheInvalidation } from '@/lib';
 
@@ -62,6 +67,33 @@ export function useUpdateUserRole() {
           },
         },
       );
+    },
+  };
+}
+
+/**
+ * Hook to update user status (enable/disable)
+ * Requires user:manage permission
+ */
+export function useUpdateUserStatus() {
+  const queryClient = useQueryClient();
+  const invalidateCache = useCacheInvalidation(queryClient);
+  const mutation = usePutWithId<void, UserStatusUpdate>(
+    userId => `/users/${userId}/status`,
+  );
+
+  return {
+    ...mutation,
+    data: mutation.data as Result<void, FailResultBase>,
+    mutateAsync: async (params: { id: string; data: UserStatusUpdate }) => {
+      const result = await mutation.mutateAsync(params);
+
+      if (result.success) {
+        // Manually invalidate cache since we're using mutateAsync
+        invalidateCache(['users']);
+      }
+
+      return result;
     },
   };
 }
