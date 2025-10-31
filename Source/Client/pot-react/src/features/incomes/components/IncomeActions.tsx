@@ -61,7 +61,6 @@ function IncomeActions({ income }: IncomeActionsProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuSeparator />
           <DropdownMenuLabel className="text-sm font-semibold">
             Actions
           </DropdownMenuLabel>
@@ -95,8 +94,6 @@ function IncomeActions({ income }: IncomeActionsProps) {
               Delete
             </DropdownMenuItem>
           </WithPermission>
-
-          <DropdownMenuSeparator />
         </DropdownMenuContent>
       </DropdownMenu>
 

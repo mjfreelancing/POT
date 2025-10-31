@@ -67,7 +67,6 @@ function AccountActions({ account }: AccountActionsProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuSeparator />
           <DropdownMenuLabel className="text-sm font-semibold">
             Actions
           </DropdownMenuLabel>
@@ -116,7 +115,6 @@ function AccountActions({ account }: AccountActionsProps) {
               Income {account.linkedIncomes > 0 && `(${account.linkedIncomes})`}
             </DropdownMenuItem>
           </WithPermission>
-          <DropdownMenuSeparator />
         </DropdownMenuContent>
       </DropdownMenu>
 

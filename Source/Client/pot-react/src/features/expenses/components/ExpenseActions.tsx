@@ -61,7 +61,6 @@ function ExpenseActions({ expense }: ExpenseActionsProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuSeparator />
           <DropdownMenuLabel className="text-sm font-semibold">
             Actions
           </DropdownMenuLabel>
@@ -95,8 +94,6 @@ function ExpenseActions({ expense }: ExpenseActionsProps) {
               Delete
             </DropdownMenuItem>
           </WithPermission>
-
-          <DropdownMenuSeparator />
         </DropdownMenuContent>
       </DropdownMenu>
 
