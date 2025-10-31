@@ -66,7 +66,7 @@ function ExpenseActions({ expense }: ExpenseActionsProps) {
             Actions
           </DropdownMenuLabel>
 
-          <WithPermission permission="expense:manage">
+          <WithPermission permissions={['expense:manage']} mode="all">
             <DropdownMenuItem
               onClick={() => navigate(`/expenses/edit/${expense.rowId}`)}
             >
@@ -75,7 +75,7 @@ function ExpenseActions({ expense }: ExpenseActionsProps) {
             </DropdownMenuItem>
           </WithPermission>
 
-          <WithPermission permission="expense:manage">
+          <WithPermission permissions={['expense:manage']} mode="all">
             <DropdownMenuItem
               onClick={() =>
                 navigate(`/expenses/create?duplicate=${expense.rowId}`)
@@ -86,7 +86,7 @@ function ExpenseActions({ expense }: ExpenseActionsProps) {
             </DropdownMenuItem>
           </WithPermission>
 
-          <WithPermission permission="expense:manage">
+          <WithPermission permissions={['expense:manage']} mode="all">
             <DropdownMenuItem
               className="text-destructive-high-contrast"
               onClick={() => setShowDeleteDialog(true)}

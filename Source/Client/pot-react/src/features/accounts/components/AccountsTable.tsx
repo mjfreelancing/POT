@@ -164,6 +164,10 @@ function AccountsTable({ accounts }: AccountsTableProps) {
     },
   ];
 
+  // Enable multi-select only if user has permission for any bulk action
+  // (isDisabled is based on permissions within each bulk action)
+  const hasAnyBulkPermission = bulkActions.some(action => !action.isDisabled);
+
   return (
     <>
       {error && (
@@ -178,7 +182,7 @@ function AccountsTable({ accounts }: AccountsTableProps) {
           <DataTable
             columns={columns}
             data={accounts}
-            enableRowSelection={true}
+            enableRowSelection={hasAnyBulkPermission}
             bulkActions={bulkActions}
             getRowId={createRowIdGetter<Account>()}
             highlightRowFilter={row =>

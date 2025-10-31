@@ -1,28 +1,30 @@
 import { useCallback } from 'react';
 
-import { EMPTY_STRING_ARRAY } from '@/lib';
+import type { Permission } from '@/lib/permissions';
+import { EMPTY_PERMISSION_ARRAY } from '@/lib/types';
 import { useUserStore } from '@/stores';
 
 function usePermissions() {
   const permissions =
-    useUserStore(state => state.userInfo?.permissions) || EMPTY_STRING_ARRAY;
+    useUserStore(state => state.userInfo?.permissions) ||
+    EMPTY_PERMISSION_ARRAY;
 
   const hasPermission = useCallback(
-    (permission: string) => {
+    (permission: Permission) => {
       return permissions.includes(permission);
     },
     [permissions],
   );
 
   const hasAnyPermission = useCallback(
-    (permissions: string[]) => {
+    (permissions: Permission[]) => {
       return permissions.some(hasPermission);
     },
     [hasPermission],
   );
 
   const hasAllPermissions = useCallback(
-    (permissions: string[]) => {
+    (permissions: Permission[]) => {
       return permissions.every(hasPermission);
     },
     [hasPermission],

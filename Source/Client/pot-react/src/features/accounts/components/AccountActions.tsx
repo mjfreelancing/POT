@@ -71,7 +71,7 @@ function AccountActions({ account }: AccountActionsProps) {
           <DropdownMenuLabel className="text-sm font-semibold">
             Actions
           </DropdownMenuLabel>
-          <WithPermission permission="account:manage">
+          <WithPermission permissions={['account:manage']} mode="all">
             <DropdownMenuItem
               onClick={() => navigate(`/accounts/edit/${account.rowId}`)}
             >
@@ -80,7 +80,7 @@ function AccountActions({ account }: AccountActionsProps) {
             </DropdownMenuItem>
           </WithPermission>
 
-          <WithPermission permission="account:manage">
+          <WithPermission permissions={['account:manage']} mode="all">
             <DropdownMenuItem
               className="text-destructive-high-contrast"
               disabled={account.linkedExpenses > 0 || account.linkedIncomes > 0}
@@ -94,7 +94,7 @@ function AccountActions({ account }: AccountActionsProps) {
           <DropdownMenuLabel className="text-sm font-semibold">
             Linked Data
           </DropdownMenuLabel>
-          <WithPermission permission="expense:view">
+          <WithPermission permissions={['expense:view']} mode="all">
             <DropdownMenuItem
               disabled={account.linkedExpenses === 0}
               // Navigate to expenses with the account ID as a query parameter
@@ -106,7 +106,7 @@ function AccountActions({ account }: AccountActionsProps) {
             </DropdownMenuItem>
           </WithPermission>
 
-          <WithPermission permission="income:view">
+          <WithPermission permissions={['income:view']} mode="all">
             <DropdownMenuItem
               disabled={account.linkedIncomes === 0}
               // Navigate to income with the account ID as a query parameter

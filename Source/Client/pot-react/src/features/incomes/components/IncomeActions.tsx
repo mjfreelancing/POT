@@ -66,7 +66,7 @@ function IncomeActions({ income }: IncomeActionsProps) {
             Actions
           </DropdownMenuLabel>
 
-          <WithPermission permission="income:manage">
+          <WithPermission permissions={['income:manage']} mode="all">
             <DropdownMenuItem
               onClick={() => navigate(`/incomes/edit/${income.rowId}`)}
             >
@@ -75,7 +75,7 @@ function IncomeActions({ income }: IncomeActionsProps) {
             </DropdownMenuItem>
           </WithPermission>
 
-          <WithPermission permission="income:manage">
+          <WithPermission permissions={['income:manage']} mode="all">
             <DropdownMenuItem
               onClick={() =>
                 navigate(`/incomes/create?duplicate=${income.rowId}`)
@@ -86,7 +86,7 @@ function IncomeActions({ income }: IncomeActionsProps) {
             </DropdownMenuItem>
           </WithPermission>
 
-          <WithPermission permission="income:manage">
+          <WithPermission permissions={['income:manage']} mode="all">
             <DropdownMenuItem
               className="text-destructive-high-contrast"
               onClick={() => setShowDeleteDialog(true)}

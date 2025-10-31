@@ -99,7 +99,7 @@ function AccountsPage() {
               name="account-search"
             />
           </div>
-          <WithPermission permission="account:manage">
+          <WithPermission permissions={['account:manage']} mode="all">
             <Button
               onClick={() => navigate('create')}
               aria-label="Add a new account"

@@ -1,3 +1,5 @@
+import type { Permission } from './permissions';
+
 type MoneyValue = number;
 
 // Define the frequency enum values (keys) for API communication
@@ -47,8 +49,15 @@ type BulkActionResult = ActionResultSuccess | ActionResultFail;
 
 // Using this to avoid warning 'The 'permissions' logical expression could make the dependencies of useCallback Hook change on every render.'
 const EMPTY_STRING_ARRAY: string[] = [];
+const EMPTY_PERMISSION_ARRAY: Permission[] = [];
 
-export { EMPTY_STRING_ARRAY, Frequency, FrequencyDisplay, FrequencyOptions };
+export {
+  EMPTY_PERMISSION_ARRAY,
+  EMPTY_STRING_ARRAY,
+  Frequency,
+  FrequencyDisplay,
+  FrequencyOptions,
+};
 
 export type {
   ActionResultFail,

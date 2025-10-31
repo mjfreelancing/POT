@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useQueryClient } from '@tanstack/react-query';
 import { Loader2, RotateCcw } from 'lucide-react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
@@ -8,7 +9,6 @@ import { z } from 'zod';
 import { useRoles } from '@/api/hooks/useRoles';
 import { useUpdateUserRole } from '@/api/hooks/useUsers';
 import { ErrorToast, SuccessToast } from '@/components/feedback/toast';
-import { useCacheInvalidation } from '@/lib';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -35,8 +35,8 @@ import {
 } from '@/components/ui/select';
 import type { Role } from '@/data/role';
 import type { SiteUser } from '@/data/siteUser';
+import { useCacheInvalidation } from '@/lib';
 import { logger } from '@/lib/logging';
-import { useQueryClient } from '@tanstack/react-query';
 
 const roleUpdateSchema = z.object({
   roleId: z.string().min(1, 'Please select a role'),

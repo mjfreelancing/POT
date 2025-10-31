@@ -6,6 +6,7 @@ export * from './expenseTableRowUtils';
 export * from './fileSystem';
 export * from './logging';
 export * from './moneyUtils';
+export * from './permissions';
 export * from './result';
 export * from './tableRowUtils';
 export * from './types';

@@ -7,6 +7,7 @@ import { PageHeader, Toolbar } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { useErrorContext } from '@/contexts';
 import type { SiteUser } from '@/data/siteUser';
+import { WithPermission } from '@/features/auth/components';
 import { usePermissions } from '@/hooks';
 import { logger } from '@/lib/logging';
 
@@ -29,7 +30,6 @@ function UsersPage() {
   }, []);
 
   // Check permissions
-  const canManageUsers = hasAnyPermission(['user:manage']);
   const canViewUsers = hasAnyPermission(['user:view', 'user:manage']);
 
   // Extract users array from response
@@ -69,14 +69,14 @@ function UsersPage() {
           <div className="flex items-center gap-4">
             {/* Search functionality can be added here later */}
           </div>
-          {canManageUsers && (
-            <InviteUserSheet>
+          <InviteUserSheet>
+            <WithPermission permissions={['user:manage']} mode="all">
               <Button className="gap-2 min-w-[132px]">
                 <UserPlus className="h-4 w-4" />
                 Invite User
               </Button>
-            </InviteUserSheet>
-          )}
+            </WithPermission>
+          </InviteUserSheet>
         </Toolbar>
 
         <div className="flex-1 min-h-0 flex flex-col">

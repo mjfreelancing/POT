@@ -177,13 +177,6 @@ function ExpensesPage() {
       <div className="flex-1 min-h-0 flex flex-col p-6 gap-4">
         <Toolbar>
           <div className="flex items-center gap-4">
-            {accountsInItems.length > 1 && (
-              <AccountFilter
-                accounts={accountsInItems}
-                selectedAccountId={validatedSelectedAccountId}
-                onAccountChange={handleAccountChange}
-              />
-            )}
             <SearchInput
               value={searchTerm}
               onChange={handleSearchTermChange}
@@ -191,8 +184,15 @@ function ExpensesPage() {
               ariaLabel="Search expenses by description"
               name="expense-search"
             />
+            {accountsInItems.length > 1 && (
+              <AccountFilter
+                accounts={accountsInItems}
+                selectedAccountId={validatedSelectedAccountId}
+                onAccountChange={handleAccountChange}
+              />
+            )}
           </div>
-          <WithPermission permission="expense:manage">
+          <WithPermission permissions={['expense:manage']} mode="all">
             <Button
               onClick={() => navigate('create')}
               aria-label="Add a new expense"

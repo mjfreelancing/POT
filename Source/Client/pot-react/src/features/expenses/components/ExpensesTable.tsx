@@ -154,6 +154,10 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
     },
   ];
 
+  // Enable multi-select only if user has permission for any bulk action
+  // (isDisabled is based on permissions within each bulk action)
+  const hasAnyBulkPermission = bulkActions.some(action => !action.isDisabled);
+
   return (
     <>
       {error && (
@@ -169,7 +173,7 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
           <DataTable
             columns={columns}
             data={filteredExpenses}
-            enableRowSelection={true}
+            enableRowSelection={hasAnyBulkPermission}
             bulkActions={bulkActions}
             getRowId={createRowIdGetter<Expense>()}
             highlightRowFilter={(row: Row<Expense>) =>

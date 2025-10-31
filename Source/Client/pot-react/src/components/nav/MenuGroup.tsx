@@ -11,11 +11,12 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import usePermissions from '@/hooks/usePermissions';
+import type { Permission } from '@/lib/permissions';
 
 type MenuGroupItemBase = {
   readonly label: string;
   readonly icon: React.ElementType;
-  readonly permissions?: string[];
+  readonly permissions?: Permission[];
 };
 
 export type HrefLink = MenuGroupItemBase & {

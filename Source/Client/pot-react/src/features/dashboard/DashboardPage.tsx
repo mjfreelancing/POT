@@ -28,13 +28,18 @@ function DashboardPage() {
       <DashboardHeader />
 
       <div className="flex-1 p-6 space-y-6">
-        <QuickActions />
+        <PermissionGuard
+          permissions={['account:manage', 'expense:manage', 'income:manage']}
+          mode="any"
+        >
+          <QuickActions />
+        </PermissionGuard>
 
-        <PermissionGuard permission="expense:view">
+        <PermissionGuard permissions={['expense:view']} mode="all">
           <ExpensesOverview />
         </PermissionGuard>
 
-        <PermissionGuard permission="account:view">
+        <PermissionGuard permissions={['account:view']} mode="all">
           <AccountsOverview />
         </PermissionGuard>
 

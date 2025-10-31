@@ -24,27 +24,29 @@ function QuickActions() {
         <div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <AccrualsProvider>
-              <PermissionGuard permission={['expense:manage']}>
+              <PermissionGuard permissions={['expense:manage']} mode="all">
                 <RenewExpensesAction />
               </PermissionGuard>
 
-              <PermissionGuard permission={['income:manage']}>
+              <PermissionGuard permissions={['income:manage']} mode="all">
                 <RenewIncomesAction />
               </PermissionGuard>
 
               <PermissionGuard
-                permission={['expense:manage', 'account:manage']}
+                permissions={['expense:manage', 'account:manage']}
+                mode="all"
               >
                 <AccrueAccountExpensesAction />
               </PermissionGuard>
 
               {/* expenses and incomes are renewed, and accounts are accrued */}
               <PermissionGuard
-                permission={[
+                permissions={[
                   'expense:manage',
                   'income:manage',
                   'account:manage',
                 ]}
+                mode="all"
               >
                 <RenewAccrueAllAction />
               </PermissionGuard>
