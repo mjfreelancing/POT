@@ -225,7 +225,7 @@ function DataTable<TData, TValue>({
               <DataTableHeader
                 headerGroups={table.getHeaderGroups()}
                 headerClassName="sticky top-0 z-20 bg-gray-200 dark:bg-gray-700"
-                cellClassName="font-semibold uppercase"
+                cellClassName="font-semibold uppercase px-4"
               />
               {/*
                  Hover effects were not working when applied to the <tr> so using the Tailwind arbitrary value syntax [&_tr:hover] to create a higher
