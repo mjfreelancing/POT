@@ -71,6 +71,21 @@ This guide provides essential, actionable rules for AI coding agents working in 
 
 - **Correlation IDs:** All auth requests include a correlation ID for traceability.
 
+#### API Hook Methods Available
+
+The `useApi.ts` module provides the following HTTP method hooks:
+
+- **`useGet<TResponse>(url, queryKey, options?)`**: GET requests with React Query caching
+- **`usePost<TResponse, TData>(url)`**: POST requests with optional request body
+- **`usePut<TResponse, TData>(url)`**: PUT requests with required request body
+- **`useDelete<TResponse>(url)`**: DELETE requests
+- **`usePutWithId<TResponse, TData>(urlFn)`**: PUT to endpoints requiring ID parameter
+- **`usePutWithIdNoData<TResponse>(urlFn)`**: PUT to ID endpoints without request body
+- **`usePostWithId<TResponse, TData>(urlFn)`**: POST to endpoints requiring ID parameter
+- **`usePostWithIdNoData<TResponse>(urlFn)`**: POST to ID endpoints without request body (ideal for actions like resend invitations)
+
+All mutation hooks accept optional `signal?: AbortSignal` for request cancellation.
+
 ### ErrorSheet for Critical Errors
 
 - Use `ErrorSheet` (`src/components/feedback/sheet/ErrorSheet.tsx`) to present critical or blocking errors (e.g., API failures, authentication issues, validation errors) in a prominent sheet at the top of the UI.
