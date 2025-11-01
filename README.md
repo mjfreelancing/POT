@@ -1969,12 +1969,24 @@ cd POT
 
 ### **Using Docker**
 
+#### **Docker Image Versioning System**
+
+POT uses **automatic timestamp-based versioning** for Docker images to preserve development history:
+
+- **Every build** creates a unique versioned image (e.g., `pot-server:20251101-143022`)
+- **VS Code tasks** automatically run the latest built version
+- **Previous versions** are preserved for rollback capabilities
+- **Manual rollback** available through Docker Desktop
+
 #### **Option 1 - Server Only**
 
 Run the server in docker:
 
 - Press `Ctrl+Shift+P` to open the Command Palette
 - Select "Run Task" and choose "docker-start-pot-server-only"
+  - **Automatically builds**: `pot-server:YYYYMMDD-HHMMSS` (PostgreSQL uses standard build)
+  - **Tags as latest**: Server image also tagged as `latest`
+  - **Runs**: The `latest` versions for consistent development
 - Start the client manually:
 
   - Within the terminal, navigate to `Source/Client/pot-react`
@@ -1994,7 +2006,37 @@ Run the client and server in docker:
 
 - Press `Ctrl+Shift+P` to open the Command Palette
 - Select "Run Task" and choose "docker-start-pot-client-server"
+  - **Automatically builds**: `pot-server:YYYYMMDD-HHMMSS`, `pot-client:YYYYMMDD-HHMMSS` (PostgreSQL uses standard build)
+  - **Tags as latest**: Server and client images also tagged as `latest`
+  - **Runs**: The `latest` versions for consistent development
 - Open your browser at http://localhost:5175
+
+#### **Running Previous Versions**
+
+To rollback to an earlier version:
+
+1. **Docker Desktop Method** (recommended):
+
+   - Open Docker Desktop
+   - Go to **Images** tab
+   - Find the timestamped image you want (e.g., `pot-server:20251101-140530`)
+   - Click **Run** button next to the desired image
+
+2. **Command Line Method**:
+
+   ```bash
+   # Stop current containers first
+   docker-compose -p pot down
+
+   # Run specific version
+   docker run -d -p 5241:5241 pot-server:20251101-140530
+   ```
+
+#### **Image Management**
+
+- **Clean up old images**: Run `docker image prune` periodically to remove unused images
+- **View all versions**: Use `docker images pot-server pot-client` to see all timestamped versions
+- **Storage**: Each version is preserved until manually removed
 
 ### **Manually**
 

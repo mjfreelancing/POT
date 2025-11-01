@@ -25,6 +25,7 @@ services:
 
   server:
     container_name: pot-aspnet
+    image: pot-server:${IMAGE_TAG:-latest}
     build:
       # The context needs to be up one level so the server source code can be found
       context: ..
@@ -62,6 +63,7 @@ services:
 
   client:
     container_name: pot-react
+    image: pot-client:${IMAGE_TAG:-latest}
     build:
       context: ..
       dockerfile: Docker/Client/Dockerfile

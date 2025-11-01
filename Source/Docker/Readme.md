@@ -96,12 +96,71 @@ Both configurations include health checks to ensure proper service readiness:
 - **ASP.NET Server**: Checks the `_health` endpoint at `http://localhost:5241/_health` (Port 5242 if running locally)
 - Services are configured with appropriate dependencies to ensure proper startup order
 
+## Docker Image Versioning System
+
+POT implements **automatic timestamp-based versioning** for application Docker images (server and client) to preserve development history and enable easy rollbacks.
+
+### How Versioning Works
+
+1. **Build Process**:
+
+   - Each build creates a unique timestamp (format: `YYYYMMDD-HHMMSS`)
+   - **Server and Client**: Built with timestamp tags (e.g., `pot-server:20251101-143022`, `pot-client:20251101-143022`)
+   - **PostgreSQL**: Uses standard Docker build (no versioning - rarely changes)
+   - Application images are also tagged as `latest` for consistent development
+   - Previous versions are automatically preserved
+
+2. **Development Workflow**:
+
+   - VS Code tasks always run the `latest` tagged images
+   - Every build creates new timestamped versions for server/client
+   - No manual version management required
+
+3. **Version History**:
+   - All previous application builds remain available
+   - Easy rollback to any previous server/client version
+   - Automatic cleanup can be done with `docker image prune`
+
+### Running Previous Versions
+
+**Method 1: Docker Desktop (Recommended)**
+
+1. Open Docker Desktop
+2. Navigate to **Images** tab
+3. Find the desired timestamped image (e.g., `pot-server:20251101-140530`)
+4. Click **Run** button
+
+**Method 2: Command Line**
+
+```bash
+# Stop current containers
+docker-compose -p pot -f docker-compose-server-only.yml down
+
+# Set specific version and run
+export IMAGE_TAG="20251101-140530"
+docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-server-only.yml up -d
+```
+
+**Method 3: Manual Container Run**
+
+```bash
+# Run individual service with specific version
+docker run -d -p 5241:5241 pot-server:20251101-140530
+```
+
 ## Building and Running Docker Services
 
 ### Local Development (Server-Only Configuration)
 
+**Using VS Code Tasks (Recommended)**:
+
+- Press `Ctrl+Shift+P` → "Run Task" → "docker-start-pot-server-only"
+- Automatically handles versioning and runs latest versions
+
+**Manual Command Line**:
+
 ```bash
-# Start services
+# Start services (creates timestamped versions + latest)
 docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-server-only.yml up --build -d
 
 # Stop services
@@ -113,8 +172,15 @@ docker-compose --env-file .env --env-file .env.development -p pot -f docker-comp
 
 ### Production Deployment (Client-Server Configuration)
 
+**Using VS Code Tasks (Recommended)**:
+
+- Press `Ctrl+Shift+P` → "Run Task" → "docker-start-pot-client-server"
+- Automatically handles versioning and runs latest versions
+
+**Manual Command Line**:
+
 ```bash
-# Start services
+# Start services (creates timestamped versions + latest)
 docker-compose --env-file .env --env-file .env.production -p pot -f docker-compose-client-server.yml up --build -d
 
 # Stop services
@@ -122,6 +188,25 @@ docker-compose --env-file .env --env-file .env.production -p pot -f docker-compo
 
 # View logs
 docker-compose --env-file .env --env-file .env.production -p pot -f docker-compose-client-server.yml logs -f
+```
+
+### Image Management Commands
+
+```bash
+# View all versioned POT images with timestamps
+docker images pot-server pot-client
+
+# Clean up unused images (keeps currently running versions)
+docker image prune
+
+# Force cleanup of all unused images
+docker image prune -a
+
+# Remove specific version
+docker rmi pot-server:20251101-140530
+
+# View image history and sizes
+docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}"
 ```
 
 ## Troubleshooting Common Issues
@@ -226,7 +311,7 @@ If the ASP.NET server can't connect to PostgreSQL:
 
 ## Managing Docker Containers via Visual Studio Code
 
-Predefined VS Code tasks are available for managing containers:
+Predefined VS Code tasks are available for managing containers with automatic versioning:
 
 1. Open the Command Palette (`Shift+Ctrl+P` or `Shift+Cmd+P` on macOS)
 2. Select `Run Task`
@@ -234,9 +319,54 @@ Predefined VS Code tasks are available for managing containers:
 
 ### Available Tasks
 
-- `docker-start-pot-server-only`: Builds and starts the database and server containers (development)
-- `docker-stop-pot-server-only`: Stops and removes the database and server containers
-- `docker-start-pot-client-server`: Builds and starts all containers (production deployment)
-- `docker-stop-pot-client-server`: Stops and removes all containers
+- **`docker-start-pot-server-only`**:
 
-These tasks are defined in `.vscode/tasks.json` and automatically use the appropriate environment files and Docker Compose configurations.
+  - Builds timestamped server image (`pot-server:YYYYMMDD-HHMMSS`)
+  - Builds PostgreSQL with standard Docker build (no versioning)
+  - Tags server image as `latest`
+  - Starts database and server containers using `latest` versions
+  - Preserves all previous server versions for rollback
+
+- **`docker-stop-pot-server-only`**:
+
+  - Stops and removes the database and server containers
+  - Preserves all built images
+
+- **`docker-start-pot-client-server`**:
+
+  - Builds timestamped application images (`pot-server:YYYYMMDD-HHMMSS`, `pot-client:YYYYMMDD-HHMMSS`)
+  - Builds PostgreSQL with standard Docker build (no versioning)
+  - Tags application images as `latest`
+  - Starts all containers using `latest` versions
+  - Preserves all previous application versions for rollback
+
+- **`docker-stop-pot-client-server`**:
+  - Stops and removes all containers
+  - Preserves all built images
+
+### Versioning Benefits
+
+- **Automatic**: No manual version management required
+- **Consistent**: Development always uses `latest` for predictable behavior
+- **Safe**: All previous versions preserved for rollback
+- **Shareable**: Timestamp format makes versions easy to identify and communicate
+
+### Task Implementation
+
+These tasks are defined in `.vscode/tasks.json` and automatically:
+
+- Generate unique timestamps for each build
+- Create both versioned and `latest` tagged images
+- Use appropriate environment files and Docker Compose configurations
+- Preserve version history without manual intervention
+
+**Example task execution**:
+
+```bash
+# What happens when you run docker-start-pot-server-only:
+$env:IMAGE_TAG = Get-Date -Format 'yyyyMMdd-HHmmss'  # Creates: 20251101-143022
+docker-compose build                                  # Builds: pot-server:20251101-143022, postgres (no version)
+docker tag pot-server:20251101-143022 pot-server:latest  # Tags server as: latest
+$env:IMAGE_TAG = 'latest'                            # Switch to latest
+docker-compose up -d                                 # Runs: latest versions
+```

@@ -4,7 +4,7 @@
     {
       "label": "docker-start-pot-server-only",
       "type": "shell",
-      "command": "docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-server-only.yml up --build -d",
+      "command": "$env:IMAGE_TAG = Get-Date -Format 'yyyyMMdd-HHmmss'; docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-server-only.yml build; docker tag pot-server:$env:IMAGE_TAG pot-server:latest; $env:IMAGE_TAG = 'latest'; docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-server-only.yml up -d",
       "options": {
         "cwd": "${workspaceFolder}/Source/Docker"
       },
@@ -30,7 +30,7 @@
     {
       "label": "docker-start-pot-client-server",
       "type": "shell",
-      "command": "docker-compose --env-file .env --env-file .env.production -p pot -f docker-compose-client-server.yml up --build -d",
+      "command": "$env:IMAGE_TAG = Get-Date -Format 'yyyyMMdd-HHmmss'; docker-compose --env-file .env --env-file .env.production -p pot -f docker-compose-client-server.yml build; docker tag pot-server:$env:IMAGE_TAG pot-server:latest; docker tag pot-client:$env:IMAGE_TAG pot-client:latest; $env:IMAGE_TAG = 'latest'; docker-compose --env-file .env --env-file .env.production -p pot -f docker-compose-client-server.yml up -d",
       "options": {
         "cwd": "${workspaceFolder}/Source/Docker"
       },
