@@ -31,13 +31,13 @@ import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { useErrorContext } from '@/contexts';
 import type { Role } from '@/data/role';
+import { useCacheInvalidation } from '@/lib';
 import { logger } from '@/lib/logging';
 
 import {
-  userInvitationFormSchema,
   type UserInvitationFormData,
+  userInvitationFormSchema,
 } from '../schemas';
-import { useCacheInvalidation } from '@/lib';
 
 function InviteUserSheet() {
   const navigate = useNavigate();

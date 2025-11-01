@@ -41,8 +41,8 @@ import { useCacheInvalidation } from '@/lib';
 import { logger } from '@/lib/logging';
 
 import {
-  userRoleUpdateFormSchema,
   type UserRoleUpdateFormData,
+  userRoleUpdateFormSchema,
 } from '../schemas';
 
 type UserRoleDialogProps = {
