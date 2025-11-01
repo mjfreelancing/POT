@@ -242,7 +242,7 @@ internal sealed class AuthService : IAuthService
     {
         // This also applies to attempting to refresh an access token with a refresh token that has expired,
         // and users that are disabled.
-        var loginProblem = ProblemDetailsErrorFactory.CreateAuthError("Cannot login this user");
+        var loginProblem = ProblemDetailsErrorFactory.CreateAuthError("Invalid username or password");
 
         return EnrichedResult.Fail<AuthTokens?>(loginProblem);
     }
