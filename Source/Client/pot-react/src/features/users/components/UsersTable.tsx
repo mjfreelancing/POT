@@ -62,17 +62,19 @@ function UsersTable({ users, onChangeRole }: UsersTableProps) {
         const roles = row.original.roles;
 
         const getRoleColor = (role: string) => {
-          // You can customize these colors based on specific role names
-          const colors = [
-            'bg-purple-100 text-purple-800 ring-purple-600/20',
-            'bg-indigo-100 text-indigo-800 ring-indigo-600/20',
-            'bg-teal-100 text-teal-800 ring-teal-600/20',
-            'bg-orange-100 text-orange-800 ring-orange-600/20',
-          ];
+          // Specific colors for each role to avoid confusion with status badges
+          const roleColors: Record<string, string> = {
+            Admin:
+              'bg-purple-100 text-purple-800 ring-purple-600/20 dark:bg-purple-900/30 dark:text-purple-300 dark:ring-purple-400/30',
+            Viewer:
+              'bg-amber-100 text-amber-800 ring-amber-600/20 dark:bg-amber-900/30 dark:text-amber-300 dark:ring-amber-400/30',
+          };
 
-          // Use role name hash to consistently assign colors
-          const hash = role.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
-          return colors[hash % colors.length];
+          // Return specific color for known roles, or default to gray for unknown roles
+          return (
+            roleColors[role] ||
+            'bg-gray-100 text-gray-800 ring-gray-600/20 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-400/30'
+          );
         };
 
         return (

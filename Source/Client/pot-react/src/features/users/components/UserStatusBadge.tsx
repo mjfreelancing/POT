@@ -24,7 +24,7 @@ export function UserStatusBadge({ status, className }: UserStatusBadgeProps) {
     },
     Pending: {
       className:
-        'bg-blue-100 text-blue-800 border-blue-200 min-w-[80px] justify-center',
+        'bg-orange-100 text-orange-800 border-orange-200 min-w-[80px] justify-center',
       icon: Clock,
       label: 'Pending',
     },
