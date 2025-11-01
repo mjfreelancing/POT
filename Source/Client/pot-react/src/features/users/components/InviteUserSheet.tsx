@@ -31,19 +31,19 @@ import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { useErrorContext } from '@/contexts';
 import type { Role } from '@/data/role';
-import type { UserInvitation } from '@/data/siteUser';
-import { userInvitationSchema } from '@/data/siteUser';
-import { useCacheInvalidation } from '@/lib';
 import { logger } from '@/lib/logging';
+
+import {
+  userInvitationFormSchema,
+  type UserInvitationFormData,
+} from '../schemas';
 
 function InviteUserSheet() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const invalidateCache = useCacheInvalidation(queryClient);
   const { error, setError } = useErrorContext();
 
-  const form = useForm<UserInvitation>({
-    resolver: zodResolver(userInvitationSchema),
+  const form = useForm<UserInvitationFormData>({
+    resolver: zodResolver(userInvitationFormSchema),
     defaultValues: {
       username: '',
       email: '',
@@ -77,18 +77,24 @@ function InviteUserSheet() {
     );
   }
 
-  const onSubmit = async (data: UserInvitation) => {
+  const onSubmit = async (data: UserInvitationFormData) => {
     logger.info('InviteUserSheet', 'Submitting invitation', {
       username: data.username,
       email: data.email,
     });
 
-    const result = await inviteUserMutation.mutateAsync({ data });
+    // Transform single roleId to roleIds array for server API
+    const invitationData = {
+      username: data.username,
+      email: data.email,
+      roleIds: [data.roleId],
+    };
+
+    const result = await inviteUserMutation.mutateAsync({
+      data: invitationData,
+    });
 
     if (result.success) {
-      // Invalidate users cache
-      invalidateCache(['users']);
-
       toast(
         <SuccessToast
           icon={UserPlus}

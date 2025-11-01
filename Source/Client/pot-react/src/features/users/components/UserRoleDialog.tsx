@@ -4,7 +4,6 @@ import { Loader2, RotateCcw } from 'lucide-react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { z } from 'zod';
 
 import { useRoles } from '@/api/hooks/useRoles';
 import { useUpdateUserRole } from '@/api/hooks/useUsers';
@@ -41,11 +40,10 @@ import type { SiteUser } from '@/data/siteUser';
 import { useCacheInvalidation } from '@/lib';
 import { logger } from '@/lib/logging';
 
-const roleUpdateSchema = z.object({
-  roleId: z.string().min(1, 'Please select a role'),
-});
-
-type RoleUpdateForm = z.infer<typeof roleUpdateSchema>;
+import {
+  userRoleUpdateFormSchema,
+  type UserRoleUpdateFormData,
+} from '../schemas';
 
 type UserRoleDialogProps = {
   user: SiteUser | null;
@@ -54,8 +52,8 @@ type UserRoleDialogProps = {
 };
 
 export function UserRoleDialog({ user, isOpen, onClose }: UserRoleDialogProps) {
-  const form = useForm<RoleUpdateForm>({
-    resolver: zodResolver(roleUpdateSchema),
+  const form = useForm<UserRoleUpdateFormData>({
+    resolver: zodResolver(userRoleUpdateFormSchema),
     defaultValues: {
       roleId: '',
     },
@@ -81,7 +79,7 @@ export function UserRoleDialog({ user, isOpen, onClose }: UserRoleDialogProps) {
     role => role.rowId !== currentRole?.rowId,
   );
 
-  const onSubmit = async (data: RoleUpdateForm) => {
+  const onSubmit = async (data: UserRoleUpdateFormData) => {
     if (!user) return;
 
     logger.info('UserRoleDialog', 'Updating user role', {
@@ -90,8 +88,8 @@ export function UserRoleDialog({ user, isOpen, onClose }: UserRoleDialogProps) {
       newRoleId: data.roleId,
     });
 
-    // API expects a complete replacement array of role ids. The UI selects a
-    // single role, so send it as a single-element array with the user's current ETag.
+    // Transform single roleId to roleIds array for server API
+    // API expects a complete replacement array of role ids with current ETag
     const result = await updateRoleMutation.mutateAsync({
       id: user.rowId,
       data: {
