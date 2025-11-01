@@ -13,6 +13,6 @@ public interface IOtpService : IPotScopedDependency
     // Used for new signup
     Task<UserOtpData> AddOtpDataForUserAsync(OtpReason reason, string username, string email, string correlationId, CancellationToken cancellationToken);
 
-    // Used for anything other than new signup, such as password reset
+    // Used for anything other than new signup, such as password reset (since there's an existing user)
     Task<UserOtpData> AddOtpDataForUserAsync(OtpReason reason, UserEntity user, string correlationId, CancellationToken cancellationToken);
 }

@@ -68,8 +68,6 @@ internal sealed class VerifySignupService : VerificationServiceBase, IVerifySign
     {
         _logger.LogCall(this, new { input.Username, input.ReferenceCode, input.VerificationCode });
 
-        cancellationToken = CancellationToken.None;
-
         // _userRepository and _otpRepository share the same DbContext so only need to track / update one of them
         using var otpTracking = _otpRepository.WithTracking();
 

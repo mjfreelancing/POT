@@ -34,8 +34,6 @@ internal abstract class VerificationServiceBase
     protected async Task<EnrichedResult> ProcessVerificationAsync(string username, string referenceCode, string verificationCode,
         Action<OneTimePasswordEntity> onStatusUsed, CancellationToken cancellationToken)
     {
-        cancellationToken = CancellationToken.None;
-
         // Pro-actively expire old requests in case the background job hasn't run recently
         await _otpService
             .UpdateExpiredRequestsAsync(_verifyReason, cancellationToken)

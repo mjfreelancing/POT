@@ -20,9 +20,10 @@ internal static class RouteGroupBuilderExtensions
 
     public static RouteGroupBuilder UpdateUser(this RouteGroupBuilder routeGroupBuilder)
     {
+        // There's no RequireAuthorization here since the user needs to be able to change their own display / email details
         routeGroupBuilder
             .MapPut(UsersEndpoints.Update, Update.Handler.Invoke)
-            .RequireAuthorization("user:manage")
+            //.RequireAuthorization("user:manage")
             .WithName(nameof(UpdateUser))
             .WithSummary("Update user details")
             .WithDescription("Updates existing user details")

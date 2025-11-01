@@ -12,7 +12,7 @@ internal sealed class CheckValidRoles : PreUpdateCheckBase
     private readonly IRoleRepository _roleRepository;
     private readonly ILogger _logger;
 
-    public CheckValidRoles(IRoleRepository roleRepository, ILogger<CheckHasSameEtag> logger)
+    public CheckValidRoles(IRoleRepository roleRepository, ILogger<CheckValidRoles> logger)
     {
         _roleRepository = roleRepository;
         _logger = logger.WhenNotNull();

@@ -15,15 +15,7 @@ internal sealed class Handler
         IProblemDetailsInspector problemDetailsInspector,
         ILogger<Handler> logger, CancellationToken cancellationToken)
     {
-        cancellationToken = CancellationToken.None;
-
         logger.LogCall(null, new { request.Username });
-
-        if (!httpContext.Request.TryGetCorrelationId(out var correlationId))
-        {
-            // Bad actors are unlikely to set a correlation id so we capture the trace identifier
-            correlationId = httpContext.TraceIdentifier;
-        }
 
         var problemDetails = problemDetailsInspector.Validate(request);
 
@@ -34,6 +26,12 @@ internal sealed class Handler
             // Don't give any clues to bad actors
             var authProblem = ProblemDetailsErrorFactory.CreateAuthError("Invalid Request");
             return TypedResults.Problem(authProblem.ToProblemDetails());
+        }
+
+        if (!httpContext.Request.TryGetCorrelationId(out var correlationId))
+        {
+            // Bad actors are unlikely to set a correlation id so we capture the trace identifier
+            correlationId = httpContext.TraceIdentifier;
         }
 
         var input = request.MapToInput(correlationId);
