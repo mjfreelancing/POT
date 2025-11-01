@@ -8,6 +8,7 @@ using MimeKit;
 using Pot.EmailSender.Configuration;
 using Pot.RazorComponents;
 using Pot.RazorComponents.Emails.ChangePassword;
+using Pot.RazorComponents.Emails.Invitation;
 using Pot.RazorComponents.Emails.Signup;
 using Pot.RazorComponents.Models;
 
@@ -15,7 +16,9 @@ namespace Pot.EmailSender;
 
 internal sealed class EmailSender : IEmailSender
 {
-    private const string ChangePasswordSubject = "POT request to change password";
+    private const string ChangePasswordSubject = "POT - Change Password";
+    private const string SignupSubject = "POT - Signup";
+    private const string InvitationSubject = "POT - Invitation";
 
     private readonly IRazorComponentRenderer _razorRenderer;
     private readonly SmtpConfiguration _smtpConfiguration;
@@ -32,23 +35,31 @@ internal sealed class EmailSender : IEmailSender
     {
         _logger.LogCall(this, new { config.Username, config.ReferenceCode, config.OtpExpiryMinutes });
 
-        return SendEmailAsync<ChangePasswordEmail>(config, PlainTextEmailTemplateLoader.ChangePassword, cancellationToken);
+        return SendEmailAsync<ChangePasswordEmail>(config, ChangePasswordSubject, PlainTextEmailTemplateLoader.ChangePassword, cancellationToken);
     }
 
     public Task SendSignupEmailAsync(EmailOtpInfo config, CancellationToken cancellationToken)
     {
         _logger.LogCall(this, new { config.Username, config.ReferenceCode, config.OtpExpiryMinutes });
 
-        return SendEmailAsync<SignupEmail>(config, PlainTextEmailTemplateLoader.Signup, cancellationToken);
+        return SendEmailAsync<SignupEmail>(config, SignupSubject, PlainTextEmailTemplateLoader.Signup, cancellationToken);
     }
 
-    private async Task SendEmailAsync<TEmailComponent>(EmailOtpInfo config, string plainTextTemplateName, CancellationToken cancellationToken) where TEmailComponent : IComponent
+    public Task SendInvitationEmailAsync(EmailInvitationInfo config, CancellationToken cancellationToken)
+    {
+        _logger.LogCall(this, new { config.Username });
+
+        return SendEmailAsync<InvitationEmail>(config, InvitationSubject, PlainTextEmailTemplateLoader.Signup, cancellationToken);
+    }
+
+    private async Task SendEmailAsync<TEmailComponent>(EmailConfigBase config, string subject, string plainTextTemplateName,
+        CancellationToken cancellationToken) where TEmailComponent : IComponent
     {
         var dictionary = config.ToPropertyDictionary();
 
         var message = new MimeMessage
         {
-            Subject = ChangePasswordSubject
+            Subject = subject
         };
 
         message.From.Add(new MailboxAddress(_smtpConfiguration.From.Name, _smtpConfiguration.From.Address));

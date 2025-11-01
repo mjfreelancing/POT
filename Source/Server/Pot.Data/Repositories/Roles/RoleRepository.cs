@@ -18,6 +18,13 @@ internal sealed class RoleRepository : RepositoryBase, IRoleRepository
         return Roles.SingleAsync(entity => entity.Name == role, cancellationToken);
     }
 
+    public Task<List<RoleEntity>> GetRolesAsync(Guid[] roleIds, CancellationToken cancellationToken)
+    {
+        return _dbContext.Roles
+            .Where(role => roleIds.Contains(role.RowId))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<List<RoleEntity>> GetRolesForUserAsync(Guid userRowId, bool includePermissions, CancellationToken cancellationToken)
     {
         var userQuery = _dbContext.Users.Where(user => user.RowId == userRowId);

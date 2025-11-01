@@ -14,7 +14,8 @@ internal static class WebApplicationExtensions
                 .GetAllUsers()
                 .UpdateUser()
                 .UpdateUserStatus()
-                .UpdateUserRoles();
+                .UpdateUserRoles()
+                .InviteUser();
         }
 
         return app;

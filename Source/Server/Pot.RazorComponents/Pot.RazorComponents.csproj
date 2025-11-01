@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Emails\ChangePassword\ChangePasswordEmail.text" />
+    <EmbeddedResource Include="Emails\Invitation\InvitationEmail.text" />
     <EmbeddedResource Include="Emails\Signup\SignupEmail.text" />
   </ItemGroup>
 

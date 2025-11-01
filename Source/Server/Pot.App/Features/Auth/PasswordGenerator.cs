@@ -5,6 +5,8 @@ namespace Pot.App.Features.Auth;
 
 public static class PasswordGenerator
 {
+    public const int DefaultLength = 8;
+
     // Exclude confusing characters: i, I, l, L, o, O, 0, 1
     private const string LowercaseLetters = "abcdefghjkmnpqrstuvwxyz";
     private const string UppercaseLetters = "ABCDEFGHJKMNPQRSTUVWXYZ";

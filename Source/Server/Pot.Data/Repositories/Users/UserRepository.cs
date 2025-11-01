@@ -67,21 +67,4 @@ internal sealed class UserRepository : PersistableRepository, IPersistableUserRe
     {
         return Users.SingleOrDefaultAsync(user => user.Username == username, cancellationToken);
     }
-
-    public async Task UpdateUserRolesAsync(UserEntity user, Guid[] roleIds, CancellationToken cancellationToken)
-    {
-        // user is expected to already be tracked and have the current roles loaded.
-        // If the caller is performing other updates, a transaction should be used to ensure all updates are applied atomically.
-        using (WithTracking())
-        {
-            var roles = await _dbContext.Roles
-                .Where(role => roleIds.Contains(role.RowId))
-                .ToListAsync(cancellationToken)
-                .ConfigureAwait(false);
-
-            user.Roles = roles;
-
-            await SaveAsync(cancellationToken).ConfigureAwait(false);
-        }
-    }
 }

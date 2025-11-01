@@ -13,10 +13,11 @@ namespace Pot.App.Features.Otp;
 
 internal sealed class OtpService : IOtpService
 {
+    private sealed record OtpDataContext(OneTimePasswordEntity OtpEntity, string TempPassword);
+
     private const int RateLimitMinutes = 5;
     private const int RateLimitMaxCount = 3;
     private const int OtpExpiryMinutes = 15;
-    private const int TempPasswordLenth = 12;
 
     private readonly IPersistableOtpRepository _otpRepository;
     private readonly IUserPasswordHasher _passwordHasher;
@@ -95,7 +96,8 @@ internal sealed class OtpService : IOtpService
             // Invalidate any existing active OTPs for this username (cannot use user entity as it may be null for sign up requests)
             await InvalidateActiveOtpsAsync(reason, username, cancellationToken).ConfigureAwait(false);
 
-            var (tempPassword, otpEntity) = AddOtpData(reason, user, username, email, correlationId);
+            // destructure OtpDataContext
+            var (otpEntity, tempPassword) = AddOtpData(reason, user, username, email, correlationId);
 
             await _otpRepository
                 .SaveAsync(cancellationToken)
@@ -104,6 +106,7 @@ internal sealed class OtpService : IOtpService
             return new UserOtpData
             {
                 TempPassword = tempPassword,
+                TempPasswordHash = otpEntity.TempPasswordHash!,
                 ReferenceCode = otpEntity.RefCode,
                 OtpCode = otpEntity.OtpCode,
                 OtpExpiryMinutes = OtpExpiryMinutes
@@ -126,12 +129,13 @@ internal sealed class OtpService : IOtpService
     }
 
     // Cannot use username and email from user entity as it may be null for sign up requests
-    private (string TempPassword, OneTimePasswordEntity OtpEntity) AddOtpData(OtpReason reason, UserEntity? user,
-        string username, string email, string correlationId)
+    private OtpDataContext AddOtpData(OtpReason reason, UserEntity? user, string username, string email, string correlationId)
     {
         var currentUtc = _timeProvider.GetUtcDateTimeNow();
-        var tempPassword = PasswordGenerator.Create(TempPasswordLenth);
+
+        var tempPassword = PasswordGenerator.Create(PasswordGenerator.DefaultLength);
         var tempPasswordHash = _passwordHasher.GetHash(user, tempPassword);
+
         var referenceCode = OtpGenerator.Create();
         var verificationCode = OtpGenerator.Create();
 
@@ -152,6 +156,6 @@ internal sealed class OtpService : IOtpService
 
         _otpRepository.Add(otpEntity);
 
-        return (tempPassword, otpEntity);
+        return new OtpDataContext(otpEntity, tempPassword);
     }
 }

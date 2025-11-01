@@ -9,6 +9,7 @@ using Pot.App.Features.Users.UpdateRoles.EntityChecks;
 using Pot.App.Features.Users.UpdateRoles.Mappings;
 using Pot.App.Features.Users.UpdateRoles.Models;
 using Pot.Data;
+using Pot.Data.Repositories.Roles;
 using Pot.Data.Repositories.Users;
 
 namespace Pot.App.Features.Users.UpdateRoles;
@@ -16,16 +17,18 @@ namespace Pot.App.Features.Users.UpdateRoles;
 internal sealed class UpdateUserRolesService : IUpdateUserRolesService
 {
     private readonly IPersistableUserRepository _userRepository;
-    private readonly IPreUpdateChecker _preUpdateChecker;
+    private readonly IRoleRepository _roleRepository;
     private readonly IPotTransactionFactory _transactionFactory;
+    private readonly IPreUpdateChecker _preUpdateChecker;
     private readonly ILogger _logger;
 
-    public UpdateUserRolesService(IPersistableUserRepository userRepository, IPreUpdateChecker preUpdateChecker,
-        IPotTransactionFactory transactionFactory, ILogger<UpdateUserRolesService> logger)
+    public UpdateUserRolesService(IPersistableUserRepository userRepository, IRoleRepository roleRepository,
+        IPotTransactionFactory transactionFactory, IPreUpdateChecker preUpdateChecker, ILogger<UpdateUserRolesService> logger)
     {
         _userRepository = userRepository.WhenNotNull();
-        _preUpdateChecker = preUpdateChecker.WhenNotNull();
+        _roleRepository = roleRepository.WhenNotNull();
         _transactionFactory = transactionFactory.WhenNotNull();
+        _preUpdateChecker = preUpdateChecker.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
@@ -65,14 +68,15 @@ internal sealed class UpdateUserRolesService : IUpdateUserRolesService
                 return EnrichedResult.Fail<Output>(problemDetails);
             }
 
+            var roles = await _roleRepository
+                .GetRolesAsync(input.RoleIds, cancellationToken)
+                .ConfigureAwait(false);
+
+            userToUpdate.Roles = roles;
+
             // The user is already tracked, so this will not hit the database
             var userEntry = _userRepository.GetEntry(userToUpdate);
             userEntry.State = EntityState.Modified;    // force the user etag to be updated
-
-            // This performs the role updates (save)
-            await _userRepository
-                .UpdateUserRolesAsync(userToUpdate, input.RoleIds, cancellationToken)
-                .ConfigureAwait(false);
 
             _ = await _userRepository.SaveAsync(cancellationToken);
 

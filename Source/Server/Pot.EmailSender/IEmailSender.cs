@@ -7,4 +7,5 @@ public interface IEmailSender : IPotScopedDependency
 {
     Task SendChangePasswordEmailAsync(EmailOtpInfo config, CancellationToken cancellationToken);
     Task SendSignupEmailAsync(EmailOtpInfo config, CancellationToken cancellationToken);
+    Task SendInvitationEmailAsync(EmailInvitationInfo config, CancellationToken cancellationToken);
 }

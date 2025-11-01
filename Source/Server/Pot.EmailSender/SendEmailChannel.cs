@@ -12,7 +12,7 @@ internal sealed class SendEmailChannel : ISendEmailChannelReader, ISendEmailChan
     private sealed class EmailChannelConfig
     {
         public EmailType EmailType { get; init; }
-        public required EmailOtpInfo EmailInfo { get; init; }
+        public required EmailConfigBase EmailInfo { get; init; }
     }
 
     private const int DelaySeconds = 30;
@@ -72,7 +72,7 @@ internal sealed class SendEmailChannel : ISendEmailChannelReader, ISendEmailChan
         }
     }
 
-    public ValueTask SubmitAsync(EmailType emailType, EmailOtpInfo emailConfig, CancellationToken cancellationToken)
+    public ValueTask SubmitAsync(EmailType emailType, EmailConfigBase emailConfig, CancellationToken cancellationToken)
     {
         using var scope = _serviceScopeFactory.CreateScope();
 
@@ -97,10 +97,12 @@ internal sealed class SendEmailChannel : ISendEmailChannelReader, ISendEmailChan
 
     private static Task SendEmailAsync(IEmailSender emailSender, EmailChannelConfig channelConfig, CancellationToken cancellationToken)
     {
-        Func<EmailOtpInfo, CancellationToken, Task> emailAction = channelConfig.EmailType switch
+        Func<EmailConfigBase, CancellationToken, Task> emailAction = channelConfig.EmailType switch
         {
-            EmailType.ChangePassword => emailSender.SendChangePasswordEmailAsync,
-            EmailType.Signup => emailSender.SendSignupEmailAsync,
+            EmailType.ChangePassword => (config, token) => emailSender.SendChangePasswordEmailAsync((EmailOtpInfo)config, token),
+            EmailType.Signup => (config, token) => emailSender.SendSignupEmailAsync((EmailOtpInfo)config, token),
+            EmailType.Invitation => (config, token) => emailSender.SendInvitationEmailAsync((EmailInvitationInfo)config, token),
+
             _ => throw new NotSupportedException($"The email type '{channelConfig.EmailType}' is not supported.")
         };
 
