@@ -1,6 +1,8 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
+using AllOverIt.Patterns.Specification;
+using AllOverIt.Patterns.Specification.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Pot.App.Concerns.Auth;
 using Pot.App.Concerns.Time;
@@ -8,6 +10,7 @@ using Pot.App.Errors;
 using Pot.AspNetCore.Concerns.Auth.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Users;
+using Pot.Shared.Enumerations;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
@@ -16,6 +19,40 @@ namespace Pot.AspNetCore.Concerns.Auth;
 
 internal sealed class AuthService : IAuthService
 {
+    private sealed class UserIsNotDisabledSpecification : Specification<UserEntity?>
+    {
+        public override bool IsSatisfiedBy(UserEntity? candidate)
+        {
+            var status = candidate?.Status;
+
+            return status is not null && status != Shared.Enumerations.UserStatus.Disabled;
+        }
+    }
+
+    private sealed class UserProvidedCorrectPasswordSpecification : Specification<UserEntity?>
+    {
+        private readonly IUserPasswordHasher _passwordHasher;
+        private readonly string _password;
+
+        public UserProvidedCorrectPasswordSpecification(IUserPasswordHasher passwordHasher, string password)
+        {
+            _passwordHasher = passwordHasher.WhenNotNull();
+            _password = password;
+        }
+
+        public override bool IsSatisfiedBy(UserEntity? candidate)
+        {
+            if (candidate is null)
+            {
+                return false;
+            }
+
+            return _passwordHasher.IsValidPasswordHash(candidate, _password, candidate.PasswordHash);
+        }
+    }
+
+    private static readonly UserIsNotDisabledSpecification _userIsNotDisabledSpecification = new();
+
     private const int RefreshTokenExpiryDays = 30;
 
     private readonly IPersistableUserRepository _userRepository;
@@ -49,11 +86,16 @@ internal sealed class AuthService : IAuthService
                 return CreateAuthError();
             }
 
-            var isValidHash = _passwordHasher.IsValidPasswordHash(user, password, user.PasswordHash);
+            var userSpecification = CreateValidUserSpecification(_passwordHasher, password);
 
-            if (!isValidHash)
+            if (!userSpecification.IsSatisfiedBy(user))
             {
                 return CreateAuthError();
+            }
+
+            if (user.Status == UserStatus.Pending)
+            {
+                user.Status = UserStatus.Enabled;
             }
 
             var authTokens = SetUserAuthTokens(user);
@@ -198,9 +240,15 @@ internal sealed class AuthService : IAuthService
 
     private static EnrichedResult<AuthTokens?> CreateAuthError()
     {
-        // This also applies to attempting to refresh an access token with a refresh token that has expired.
-        var loginProblem = ProblemDetailsErrorFactory.CreateAuthError("The username or password is invalid.");
+        // This also applies to attempting to refresh an access token with a refresh token that has expired,
+        // and users that are disabled.
+        var loginProblem = ProblemDetailsErrorFactory.CreateAuthError("Cannot login this user");
 
         return EnrichedResult.Fail<AuthTokens?>(loginProblem);
+    }
+
+    private static ISpecification<UserEntity?> CreateValidUserSpecification(IUserPasswordHasher passwordHasher, string password)
+    {
+        return _userIsNotDisabledSpecification.And(new UserProvidedCorrectPasswordSpecification(passwordHasher, password));
     }
 }
