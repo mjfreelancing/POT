@@ -10,4 +10,5 @@ internal static class UsersEndpoints
     public const string UpdateRoles = "/{id:guid}/roles";
     public const string UpdateStatus = "/{id:guid}/status";
     public const string Invite = "/invite";
+    public const string ResendInvite = "/{id:guid}/resend-invite";
 }

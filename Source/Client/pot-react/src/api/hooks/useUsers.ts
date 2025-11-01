@@ -2,7 +2,7 @@ import {
   useGet,
   usePost,
   usePutWithId,
-  usePutWithIdNoData,
+  usePostWithIdNoData,
 } from '@/api/hooks/useApi';
 import type { Identity } from '@/data';
 import type {
@@ -69,8 +69,8 @@ export function useUpdateUserStatus() {
  * Requires user:manage permission
  */
 export function useResendInvitation() {
-  const mutation = usePutWithIdNoData<void>(
-    userId => `/users/${userId}/resend-invitation`,
+  const mutation = usePostWithIdNoData<void>(
+    userId => `/users/${userId}/resend-invite`,
   );
 
   return {

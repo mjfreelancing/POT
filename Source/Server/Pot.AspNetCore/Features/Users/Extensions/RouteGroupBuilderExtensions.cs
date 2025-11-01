@@ -82,4 +82,20 @@ internal static class RouteGroupBuilderExtensions
 
         return routeGroupBuilder;
     }
+
+    public static RouteGroupBuilder ResendInviteUser(this RouteGroupBuilder routeGroupBuilder)
+    {
+        routeGroupBuilder
+            .MapPost(UsersEndpoints.ResendInvite, ResendInvite.Handler.Invoke)
+            .RequireAuthorization("user:manage")
+            .WithName(nameof(ResendInviteUser))
+            .WithSummary("Resends a user invitation")
+            .WithDescription("Resends a user invitation")
+            .ProducesProblem((int)HttpStatusCode.OK)
+            .ProducesProblem((int)HttpStatusCode.NotFound)
+            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity)
+            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+
+        return routeGroupBuilder;
+    }
 }
