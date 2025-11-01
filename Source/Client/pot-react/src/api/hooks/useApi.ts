@@ -250,5 +250,89 @@ const usePutWithIdNoData = <TResponse>(urlFn: (id: string) => string) => {
   });
 };
 
+/**
+ * usePostWithId is a utility hook for making POST requests to endpoints requiring an ID.
+ *
+ * @template TResponse - The expected response type from the API.
+ * @template TData - The type of data to be sent in the request body.
+ *
+ * @param {(id: string) => string} urlFn - A function that generates the endpoint URL using an ID.
+ *
+ * @returns {UseMutationResult<Result<TResponse, FailResultBase>, unknown, { id: string; data: TData }, unknown>} -
+ * A mutation object from react-query, with the mutation function and state.
+ *
+ * ### Usage:
+ * #### With Data:
+ * ```typescript
+ * const mutation = usePostWithId<MyResponseType, MyRequestType>((id) => `/api/resource/${id}`);
+ * mutation.mutate({ id: '123', data: { key: 'value' } });
+ * ```
+ *
+ * #### Without Data (void):
+ * ```typescript
+ * const mutation = usePostWithId<MyResponseType, void>((id) => `/api/resource/${id}`);
+ * mutation.mutate({ id: '123' });
+ * ```
+ */
+
+const usePostWithId = <TResponse, TData>(urlFn: (id: string) => string) => {
+  return useMutation({
+    mutationFn: async ({
+      id,
+      data,
+      signal,
+    }: MutationDataWithId<TData>): Promise<
+      Result<TResponse, FailResultBase>
+    > => {
+      const url = urlFn(id);
+      return performOperation(() =>
+        axios.post<TResponse>(url, data, { signal }),
+      );
+    },
+  });
+};
+
+/**
+ * usePostWithIdNoData is a utility hook for making POST requests to endpoints requiring an ID but no request body.
+ *
+ * @template TResponse - The expected response type from the API.
+ *
+ * @param {(id: string) => string} urlFn - A function that generates the endpoint URL using an ID.
+ *
+ * @returns {UseMutationResult<Result<TResponse, FailResultBase>, unknown, { id: string; signal?: AbortSignal }, unknown>} -
+ * A mutation object from react-query, with the mutation function and state.
+ *
+ * ### Usage:
+ * ```typescript
+ * const mutation = usePostWithIdNoData<MyResponseType>((id) => `/api/resource/${id}/action`);
+ * mutation.mutate({ id: '123' });
+ * ```
+ */
+const usePostWithIdNoData = <TResponse>(urlFn: (id: string) => string) => {
+  return useMutation({
+    mutationFn: async ({
+      id,
+      signal,
+    }: {
+      id: string;
+      signal?: AbortSignal;
+    }): Promise<Result<TResponse, FailResultBase>> => {
+      const url = urlFn(id);
+      return performOperation(() =>
+        axios.post<TResponse>(url, undefined, { signal }),
+      );
+    },
+  });
+};
+
 export type { DeleteMutationData, MutationData, MutationDataWithId };
-export { useDelete, useGet, usePost, usePut, usePutWithId, usePutWithIdNoData };
+export {
+  useDelete,
+  useGet,
+  usePost,
+  usePut,
+  usePutWithId,
+  usePutWithIdNoData,
+  usePostWithId,
+  usePostWithIdNoData,
+};
