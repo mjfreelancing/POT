@@ -32,6 +32,7 @@
   - [Income Management](#income-management)
   - [Data Management](#data-management)
   - [User Settings](#user-settings)
+  - [User Management](#user-management)
 - [Quick Start Guide](#quick-start-guide)
   - [Clone the repository](#clone-the-repository)
   - [Run the application(s)](#run-the-applications)
@@ -1873,6 +1874,88 @@ POT provides a comprehensive account settings dialog for managing user preferenc
 - **Automatic State Updates**: Changes reflect immediately in the application
 - **Optimistic Concurrency**: ETag-based conflict resolution for concurrent edits
 
+## User Management
+
+POT provides comprehensive user management capabilities for administrators to control access and manage user accounts within their site.
+
+### Accessing User Management
+
+- Navigate to the "Users" section in the main application menu
+- Requires `user:view` permission to access the users list
+- Requires `user:manage` permission for administrative actions
+
+### User Management Features
+
+#### User Invitations
+
+**Inviting New Users:**
+
+- Click the "Invite User" button in the users list
+- Fill out the invitation form:
+  - **Username**: Unique username for the new user
+  - **Email Address**: Email where the invitation will be sent
+  - **Role Assignment**: Select the role for the invited user (Admin or Viewer)
+- Send the invitation to create a pending user account
+
+**Invitation Process:**
+
+- Creates a user account in "Pending" status
+- Sends an email with temporary login credentials
+- User receives username and temporary password
+- No verification codes required - direct login with temporary credentials
+
+#### User Status Management
+
+**Enable/Disable Users:**
+
+- Users can be enabled or disabled through the actions menu
+- **Enabled**: User can log in and access the application
+- **Disabled**: User cannot log in (account suspended)
+- **Pending**: Newly invited users awaiting first login
+
+**Status Indicators:**
+
+- **Green badge**: Enabled users
+- **Orange badge**: Pending invitations
+- **Red badge**: Disabled users
+
+#### Role Management
+
+**Changing User Roles:**
+
+- Click the "Change Role" action for any user
+- Select from available roles:
+  - **Admin**: Full access to all features and user management
+  - **Viewer**: Read-only access to financial data
+- Role changes take effect immediately
+- Cannot change your own role (prevents self-lockout)
+
+### User Management Permissions
+
+- **`user:view`**: Required to access the users list and view user information
+- **`user:manage`**: Required to invite users, change roles, and modify user status
+- **Self-Protection**: Users cannot perform administrative actions on their own account
+
+### Visual Design
+
+**Role Badges:**
+
+- **Admin**: Purple badge for administrative users
+- **Viewer**: Amber badge for read-only users
+
+**Status Badges:**
+
+- **Enabled**: Green badge with checkmark icon
+- **Pending**: Orange badge with clock icon
+- **Disabled**: Red badge with X icon
+
+### Security Features
+
+- **Permission-based Access**: All actions respect role-based permissions
+- **Self-Action Prevention**: Users cannot disable themselves or change their own roles
+- **Audit Trail**: All user management actions are logged
+- **Secure Invitations**: Temporary passwords expire after first use
+
 # Quick Start Guide
 
 ## **Clone the repository**
@@ -3527,6 +3610,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - ✅ **JWT Authentication** - Secure token-based authentication with refresh
 - ✅ **Role-Based Authorization** - Comprehensive permission system
 - ✅ **Site Management** - Multi-tenant architecture with automatic site creation
+- ✅ **User Invitations** - Admin can invite users with role assignment and email notifications
+- ✅ **User Status Management** - Enable/disable user accounts with visual status indicators
+- ✅ **Role Management** - Change user roles with self-protection mechanisms
 
 **🛡️ Security Features:**
 
