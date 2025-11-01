@@ -37,9 +37,12 @@ import {
   userInvitationFormSchema,
   type UserInvitationFormData,
 } from '../schemas';
+import { useCacheInvalidation } from '@/lib';
 
 function InviteUserSheet() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const invalidateCache = useCacheInvalidation(queryClient);
   const { error, setError } = useErrorContext();
 
   const form = useForm<UserInvitationFormData>({
@@ -95,6 +98,9 @@ function InviteUserSheet() {
     });
 
     if (result.success) {
+      // Invalidate users cache to show the pending invite
+      invalidateCache(['users']);
+
       toast(
         <SuccessToast
           icon={UserPlus}
