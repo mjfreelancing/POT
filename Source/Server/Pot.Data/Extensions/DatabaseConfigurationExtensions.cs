@@ -10,7 +10,7 @@ public static class DatabaseConfigurationExtensions
     public static IServiceCollection AddDatabaseConfiguration(this IServiceCollection services, IConfiguration configuration)
     {
         services
-            .ConfigureOptions<DbBackupConfigurationSetup>()
+            .ConfigureOptions<DatabaseConfigurationSetup>()
 
             // Allow for injection of DatabaseConfiguration instead of IOptions<DatabaseConfiguration>
             .AddSingletonFromOptions<DatabaseConfiguration>();

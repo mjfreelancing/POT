@@ -17,13 +17,13 @@ namespace Pot.Data.Configuration;
 //           _ = options.Password.WhenNotNullOrEmpty();
 //       });
 
-public class DbBackupConfigurationSetup : IConfigureOptions<DatabaseConfiguration>, IValidateOptions<DatabaseConfiguration>
+public class DatabaseConfigurationSetup : IConfigureOptions<DatabaseConfiguration>, IValidateOptions<DatabaseConfiguration>
 {
     private const string SectionName = "Database";
 
     private readonly IConfiguration _configuration;
 
-    public DbBackupConfigurationSetup(IConfiguration configuration)
+    public DatabaseConfigurationSetup(IConfiguration configuration)
     {
         _configuration = configuration.WhenNotNull();
     }
