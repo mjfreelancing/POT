@@ -78,20 +78,21 @@ internal sealed class ExpensesImporter : IExpensesImporter
             : await UpdateExpenseAsync(account.RowId, expenseEntity.Etag, csvRow, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<EnrichedResult<int>> CreateExpenseAsync(Guid accountRowId, IExpenseCsvRow import,
+    private async Task<EnrichedResult<int>> CreateExpenseAsync(Guid accountRowId, IExpenseCsvRow csvRow,
         CancellationToken cancellationToken)
     {
         var input = new Features.Expenses.Create.Models.Input
         {
-            ExcludeFromCalcs = import.ExcludeFromCalcs,
-            Description = import.Description,
-            AccrualStart = import.AccrualStart,
-            NextDue = import.NextDue,
-            EndDate = import.EndDate,
-            Frequency = import.Frequency,
-            FrequencyCount = import.FrequencyCount,
-            Amount = import.Amount,
-            Note = import.Note,
+            RowId = csvRow.RowId,
+            ExcludeFromCalcs = csvRow.ExcludeFromCalcs,
+            Description = csvRow.Description,
+            AccrualStart = csvRow.AccrualStart,
+            NextDue = csvRow.NextDue,
+            EndDate = csvRow.EndDate,
+            Frequency = csvRow.Frequency,
+            FrequencyCount = csvRow.FrequencyCount,
+            Amount = csvRow.Amount,
+            Note = csvRow.Note,
             AccountRowId = accountRowId
 
             // Not imported - all calculations would need to be refreshed anyway

@@ -2,7 +2,9 @@
 
 public sealed class Input
 {
-    public Guid RowId { get; init; }
+    // Provided when importing - required so income and expense items can be linked correctly
+    public Guid? RowId { get; init; }
+
     public string Bsb { get; init; } = string.Empty;
     public string Number { get; init; } = string.Empty;
     public string Description { get; init; } = string.Empty;
