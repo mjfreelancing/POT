@@ -49,8 +49,10 @@ public class Program
         app.MapHealthChecks("/_health");
 
         // UseCors must be called before UseAuthentication() and UseAuthorization() to ensure CORS headers are on all responses (including errors)
+        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string>() ?? string.Empty;
+
         app.UseCors(policy => policy
-            .WithOrigins("http://localhost:5175" /*, "http://localhost:4173"*/ ) // Allow frontend URL
+            .WithOrigins(allowedOrigins) // Allow frontend URLs
             .AllowAnyMethod()
             .AllowAnyHeader()
 
