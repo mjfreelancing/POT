@@ -31,6 +31,7 @@ public class Program
         builder
             .AddExceptionHandlers()
             .AddPotAuth()
+            .AddPotCors()
             .AddCorrelationId()
             .AddOpenApi()
             .AddHttpJsonOptions()
@@ -48,33 +49,16 @@ public class Program
         app.UseExceptionHandler();
         app.MapHealthChecks("/_health");
 
-        // UseCors must be called before UseAuthentication() and UseAuthorization() to ensure CORS headers are on all responses (including errors)
-        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string>() ?? string.Empty;
-
-        app.UseCors(policy => policy
-            .WithOrigins(allowedOrigins) // Allow frontend URLs
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-
-            // Required when using authentication (note, WithOrigins() cannot use * with AllowCredentials)
-            .AllowCredentials()
-
-            // Exposing 'content-disposition' allows the client to handle the file download correctly (get the filename)
-            .WithExposedHeaders("content-disposition"));
+        // UseCors must be called before UseAuthentication() and UseAuthorization() to ensure CORS headers are on all responses (including errors).
+        // See AddPotCors() and CorsOptionsSetup for configuration setup - not using the overload with Action<CorsPolicyBuilder> since we need to load from configuration.
+        app.UseCors();
 
         app.UseAuthentication();
         app.UseAuthorization();
 
         app.UsePotMiddleware()
-           .UseScalarOpenApi();
-
-        // 200 - Success
-        // 304 - Not Modified
-        // 401 - Unauthorized
-        // 422 - Validation and other errors that occur due to data related problems
-        //       (such as conflicts, constraints, etc) when processing the input data
-        // 500 - Unexpected errors
-        app.AddAuthEndpoints()
+           .UseScalarOpenApi()
+           .AddAuthEndpoints()
            .AddMeEndpoints()
            .AddUserEndpoints()
            .AddRoleEndpoints()
