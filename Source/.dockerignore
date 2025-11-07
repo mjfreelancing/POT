@@ -1,0 +1,47 @@
+# Docker ignore file for POT project
+# Located in Source/ directory - paths are relative to Source/
+# Prevents local development files from being copied into Docker build context
+
+# Client - Environment files
+# .env.production is needed for local Docker builds (contains VITE_API_BASE_URL=/api)
+# Azure builds use --build-arg to override
+Client/pot-react/.env
+Client/pot-react/.env.local
+Client/pot-react/.env.development
+
+# Client - Build artifacts and dependencies
+Client/pot-react/node_modules
+Client/pot-react/dist
+Client/pot-react/coverage
+
+# Server - Build artifacts and dependencies
+Server/**/bin
+Server/**/obj
+Server/**/.vs
+
+# Git and version control
+../.git
+../.gitignore
+../.github
+
+# Documentation and development files
+*.md
+../Docs/
+../Data/
+
+# IDE and editor files
+../.vscode
+.idea
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker files (we don't need these in the build context)
+Docker/postgres-data
+Docker/postgres-backups
+Docker/docker-compose*.yml
