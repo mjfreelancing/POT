@@ -4,7 +4,7 @@ using Pot.EmailSender.Configuration;
 
 namespace Pot.AspNetCore.Concerns.Email.Configuration;
 
-public class SmtpConfigurationSetup : IConfigureOptions<SmtpConfiguration>, IValidateOptions<SmtpConfiguration>
+public sealed class SmtpConfigurationSetup : IConfigureOptions<SmtpConfiguration>, IValidateOptions<SmtpConfiguration>
 {
     private const string SectionName = "Smtp";
 
