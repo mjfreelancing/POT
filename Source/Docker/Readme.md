@@ -503,8 +503,22 @@ Predefined VS Code tasks are available for managing containers with automatic ve
   - Preserves all previous application versions for rollback
 
 - **`docker-stop-pot-client-server`**:
+
   - Stops and removes all containers
   - Preserves all built images
+
+- **`pot-server-build-and-deploy`**:
+
+  - Builds the POT server Docker image with `ghcr.io/mjfreelancing/pot-server:latest` tag
+  - Pushes the image to GitHub Container Registry
+  - Used for deploying server updates to production
+
+- **`pot-client-build-and-deploy`**:
+  - Builds the POT client Docker image with Azure configuration
+  - Includes production API URL (`https://api.payontime.com.au/api`)
+  - Uses `nginx.azure.conf` for Azure deployment
+  - Pushes the image to GitHub Container Registry with `ghcr.io/mjfreelancing/pot-client:latest` tag
+  - Used for deploying client updates to production
 
 ### Versioning Benefits
 
