@@ -12,11 +12,14 @@ using Npgsql;
 using Polly;
 using Pot.Data.Configuration;
 using Pot.Data.Extensions;
+using System.Data.Common;
 
 namespace Pot.Data.Migrations;
 
 internal sealed class App : ConsoleAppBase
 {
+    private const string DatabaseDoesNotExist = "3D000"; // invalid_catalog_name
+
     private readonly string _connectionString;
 
     private readonly IDatabaseMigrator _databaseMigrator;
@@ -75,7 +78,7 @@ internal sealed class App : ConsoleAppBase
     private async Task WaitForDatabaseIsReadyAsync(CancellationToken cancellationToken)
     {
         var retryPolicy = Policy
-            .Handle<NpgsqlException>()
+            .Handle<DbException>(dbException => dbException.SqlState != DatabaseDoesNotExist)
             .Or<TimeoutException>()
             .WaitAndRetryAsync(
                 retryCount: 10,
@@ -85,14 +88,21 @@ internal sealed class App : ConsoleAppBase
                     _logger.LogWarning("Retry {retryCount} for database connection. Waiting {WaitSeconds} seconds...", retryCount, timeSpan.TotalSeconds);
                 });
 
-        // Use the retry policy to ensure the database is ready
-        await retryPolicy.ExecuteAsync(async token =>
+        try
         {
-            using var connection = new NpgsqlConnection(_connectionString);
-            await connection.OpenAsync(token);
+            // Use the retry policy to ensure the database is ready
+            await retryPolicy.ExecuteAsync(async token =>
+            {
+                using var connection = new NpgsqlConnection(_connectionString);
+                await connection.OpenAsync(token);
 
-            _logger.LogInformation("Database is ready.");
-        }, cancellationToken);
+                _logger.LogInformation("Database is ready.");
+            }, cancellationToken);
+        }
+        catch (DbException exception) when (exception.SqlState == DatabaseDoesNotExist)
+        {
+            _logger.LogInformation("Database connection failed with '3D000' (invalid_catalog_name). Continuing execution.");
+        }
     }
 
     private void OnNewMigration(object? sender, MigrationEventArgs eventArgs)

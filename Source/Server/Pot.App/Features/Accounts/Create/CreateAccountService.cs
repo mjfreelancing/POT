@@ -45,6 +45,12 @@ internal sealed class CreateAccountService : ICreateAccountService
                 Reserved = input.Reserved
             };
 
+            // Provided when importing - required so income and expense items can be linked correctly
+            if (input.RowId.HasValue)
+            {
+                accountToCreate.RowId = input.RowId.Value;
+            }
+
             var problemDetails = await _preCreateChecker.CanSaveAsync(accountToCreate, cancellationToken);
 
             if (problemDetails is not null)

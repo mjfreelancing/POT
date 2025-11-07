@@ -4,6 +4,9 @@ namespace Pot.App.Features.Expenses.Create.Models;
 
 public sealed class Input
 {
+    // Provided when importing
+    public Guid? RowId { get; init; }
+
     public bool ExcludeFromCalcs { get; init; }
     public string Description { get; init; } = string.Empty;
     public DateOnly AccrualStart { get; init; }

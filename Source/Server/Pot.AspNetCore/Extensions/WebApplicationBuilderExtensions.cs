@@ -12,13 +12,13 @@ using Pot.AspNetCore.Concerns.Auth;
 using Pot.AspNetCore.Concerns.Auth.Configuration;
 using Pot.AspNetCore.Concerns.Auth.Models;
 using Pot.AspNetCore.Concerns.Converters.JsonSerialization;
+using Pot.AspNetCore.Concerns.Cors.Configuration;
 using Pot.AspNetCore.Concerns.Email.Configuration;
 using Pot.AspNetCore.Concerns.ExceptionHandlers;
 using Pot.AspNetCore.Concerns.Logging;
 using Pot.AspNetCore.Concerns.Middleware;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Features.Auth.Extensions;
-using Pot.AspNetCore.Features.DbBackup.Extensions;
 using Pot.Data;
 using Pot.Data.Configuration;
 using Pot.Data.Extensions;
@@ -65,6 +65,23 @@ internal static class WebApplicationBuilderExtensions
             .AddOtpCleanup()
             .AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>()
             .AddSingleton<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+
+        return builder;
+    }
+
+    public static WebApplicationBuilder AddPotCors(this WebApplicationBuilder builder)
+    {
+        builder.Services
+            // Binds configuration from the "Cors" section onto a CorsConfiguration instance.
+            .ConfigureOptions<CorsConfigurationSetup>()
+
+            // Allow for injection of CorsConfiguration instead of IOptions<CorsConfigurationSetup>
+            .AddSingletonFromOptions<CorsConfiguration>()
+
+            // Sets up CORS policy options - applies the default policy configuration
+            .ConfigureOptions<CorsOptionsSetup>()
+
+            .AddCors();
 
         return builder;
     }
@@ -248,8 +265,7 @@ internal static class WebApplicationBuilderExtensions
                 options.ConfigurePostgres(connectionString);
             })
             .AddQueryPagination()
-            .AddUnitOfWork()
-            .AddDbBackup(builder.Environment, builder.Configuration);
+            .AddUnitOfWork();
 
         return builder;
     }

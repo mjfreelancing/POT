@@ -20,6 +20,6 @@ public static class DatabaseConfigurationExtensions
 
     public static string GetConnectionString(this DatabaseConfiguration configuration)
     {
-        return $"Host={configuration.Host};Database={configuration.Name};Username={configuration.Username};Password={configuration.Password}";
+        return $"Host={configuration.Host};Database={configuration.Name};Username={configuration.Username};Password={configuration.Password};Port={configuration.Port};SSLMode={configuration.SSLMode}";
     }
 }

@@ -53,6 +53,12 @@ internal sealed class CreateIncomeService : ICreateIncomeService
             Account = incomeAccount
         };
 
+        // Provided when importing
+        if (input.RowId.HasValue)
+        {
+            incomeToCreate.RowId = input.RowId.Value;
+        }
+
         var problemDetails = await _preCreateChecker.CanSaveAsync(incomeToCreate, cancellationToken);
 
         if (problemDetails is not null)

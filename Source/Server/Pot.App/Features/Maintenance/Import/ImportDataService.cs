@@ -16,6 +16,7 @@ namespace Pot.App.Features.Maintenance.Import;
 internal sealed class ImportDataService : IImportDataService
 {
     private readonly string[] _expectedEntryNames = ["metadata", "accounts", "incomes", "expenses"];
+
     private readonly IImportStreamReader _importStreamReader;
     private readonly IAccountsImporter _accountsImporter;
     private readonly IIncomesImporter _incomesImporter;

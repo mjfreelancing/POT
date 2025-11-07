@@ -78,18 +78,19 @@ internal sealed class IncomesImporter : IIncomesImporter
             : await UpdateIncomeAsync(account.RowId, incomeEntity.Etag, csvRow, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<EnrichedResult<int>> CreateIncomeAsync(Guid accountRowId, IIncomeCsvRow import,
+    private async Task<EnrichedResult<int>> CreateIncomeAsync(Guid accountRowId, IIncomeCsvRow csvRow,
         CancellationToken cancellationToken)
     {
         var input = new Features.Incomes.Create.Models.Input
         {
-            Description = import.Description,
-            NextDue = import.NextDue,
-            EndDate = import.EndDate,
-            Frequency = import.Frequency,
-            FrequencyCount = import.FrequencyCount,
-            Amount = import.Amount,
-            Note = import.Note,
+            RowId = csvRow.RowId,
+            Description = csvRow.Description,
+            NextDue = csvRow.NextDue,
+            EndDate = csvRow.EndDate,
+            Frequency = csvRow.Frequency,
+            FrequencyCount = csvRow.FrequencyCount,
+            Amount = csvRow.Amount,
+            Note = csvRow.Note,
             AccountRowId = accountRowId
         };
 

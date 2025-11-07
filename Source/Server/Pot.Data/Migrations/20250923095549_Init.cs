@@ -12,6 +12,11 @@ namespace Pot.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // Create citext extension - required for Azure PostgreSQL
+            // Azure requires admin privileges to create extensions, but once created,
+            // the migration can proceed. This SQL command is idempotent.
+            migrationBuilder.Sql("CREATE EXTENSION IF NOT EXISTS citext;");
+
             migrationBuilder.AlterDatabase()
                 .Annotation("Npgsql:PostgresExtension:citext", ",,");
 

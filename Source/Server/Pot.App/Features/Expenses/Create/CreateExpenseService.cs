@@ -55,6 +55,12 @@ internal sealed class CreateExpenseService : ICreateExpenseService
             AccruedIsDirty = true                       // The default is true, but being explicit
         };
 
+        // Provided when importing
+        if (input.RowId.HasValue)
+        {
+            expenseToCreate.RowId = input.RowId.Value;
+        }
+
         var problemDetails = await _preCreateChecker.CanSaveAsync(expenseToCreate, cancellationToken);
 
         if (problemDetails is not null)

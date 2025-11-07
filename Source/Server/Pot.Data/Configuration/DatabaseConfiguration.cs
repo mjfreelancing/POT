@@ -13,4 +13,10 @@ public sealed class DatabaseConfiguration
 
     // Environment variable: DATABASE:PASSWORD
     public required string Password { get; init; }
+
+    // Environment variable: DATABASE:Port
+    public int Port { get; init; }
+
+    // Environment variable: DATABASE:SSLMode
+    public required string SSLMode { get; init; }
 }

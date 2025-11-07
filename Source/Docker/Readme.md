@@ -72,20 +72,182 @@ The application uses a hierarchical configuration structure in the appsettings f
   - `POSTGRES_PASSWORD` `Database:Password`
   - `POSTGRES_DB` `Database:DatabaseName`
 
-### Frontend (Vite/React) `.env` File
+### Frontend (Vite/React) Environment Configuration
 
-Frontend environment variables must be defined in a `.env` file at the root of the React project (`Source/Client/pot-react/`). Only variables prefixed with `VITE_` are available to the frontend code.
+The client application uses Vite environment variables for configuration. Understanding how these work across different deployment scenarios is critical.
 
-While developing the React app use the following (in `.env.development`) to communicate with the API server in the docker container (production data, Postgres listening on port 5444):
+#### How Vite Environment Variables Work
 
+**Important**: Vite environment variables are **build-time values**, NOT runtime values. They are:
+
+- Embedded into the JavaScript bundle during `npm run build`
+- Baked into the compiled code and cannot be changed after build
+- Read from `.env` files during the build process
+- Only variables prefixed with `VITE_` are exposed to the application code
+
+#### Environment File Hierarchy
+
+Vite loads environment files in this order (later files override earlier ones):
+
+1. `.env` - Base configuration (all environments)
+2. `.env.production` - Production builds (`npm run build`)
+3. `.env.development` - Development builds (`npm run dev`)
+4. `.env.local` - Local overrides (never committed to git)
+
+**Current Configuration**:
+
+**`.env`** (Base - used by all builds):
+
+```bash
+VITE_API_TIMEOUT_MS=30000
+# Note: VITE_API_BASE_URL is NOT defined here to allow environment-specific files to set it
 ```
+
+**`.env.production`** (Used by `npm run build` - Docker builds use this):
+
+```bash
+# For local Docker Compose: /api (nginx proxy forwards /api/* to server container)
+VITE_API_BASE_URL=/api
+
+# For Azure Container Apps: Use --build-arg to override with full URL
+# docker build --build-arg VITE_API_BASE_URL=https://pot-api-prod.../api
+```
+
+**`.env.development`** (Used by `npm run dev` - local development outside Docker):
+
+```bash
+# For local development with API in Docker container
 VITE_API_BASE_URL=http://localhost:5241/api
+
+# Or for local development with API running locally (port 5242)
+# VITE_API_BASE_URL=http://localhost:5242/api
 ```
 
-And use this to communicate with the API server running locally (requires another docker container running Postgres that listens on the default port 5432):
+#### Three Deployment Scenarios Explained
+
+**Scenario 1: Local Docker Compose (Full Stack)**
+
+- **Command**: VS Code task `docker-start-pot-client-server` or `docker-compose build`
+- **Build mode**: `npm run build` (production mode)
+- **Environment file used**: `.env.production`
+- **VITE_API_BASE_URL value**: `/api` (relative path)
+- **Why `/api`?**:
+  - React app runs in nginx container at `http://localhost:5175`
+  - User makes request to `/api/auth/login`
+  - Browser sends to `http://localhost:5175/api/auth/login`
+  - nginx proxy rule forwards `/api/*` → `http://server:5241/api/*` (server container)
+  - Containers share Docker network, can communicate via service names
+- **Dockerfile behavior**: No `--build-arg` provided, uses `.env.production` file
+- **nginx configuration**: `nginx.conf` with API proxy enabled
+
+**Scenario 2: Azure Container Apps (Production Cloud)**
+
+- **Command**: `docker build --build-arg VITE_API_BASE_URL=https://pot-api-prod.../api`
+- **Build mode**: `npm run build` (production mode)
+- **Environment file used**: `.env.production` (but overridden by build args)
+- **VITE_API_BASE_URL value**: Full API URL with `/api` path (e.g., `https://pot-api-prod.whiteground-afd18a05.australiaeast.azurecontainerapps.io/api`)
+- **Why full URL?**:
+  - React app runs in `pot-client-prod` container
+  - API runs in separate `pot-api-prod` container
+  - Containers are isolated (no shared network like Docker Compose)
+  - Browser must call API directly using public internet URL
+  - Request goes from browser → Azure CDN → API container
+- **Dockerfile behavior**: `--build-arg` overrides `.env.production` value
+- **nginx configuration**: `nginx.azure.conf` with NO API proxy (static files only)
+
+**Scenario 3: Local Development (npm run dev)**
+
+- **Command**: `npm run dev` from `Source/Client/pot-react/`
+- **Build mode**: Development mode (no build, hot reload)
+- **Environment file used**: `.env.development`
+- **VITE_API_BASE_URL value**: `http://localhost:5241/api` (or 5242 for local API)
+- **Why full URL?**:
+  - React dev server runs on `http://localhost:5175` (Vite)
+  - No nginx proxy involved
+  - Must call API directly at Docker container port (5241) or local API port (5242)
+- **nginx**: Not used in development mode
+
+#### Critical Files for Each Scenario
+
+**`.dockerignore`** (Controls what files are copied into Docker build context):
 
 ```
-VITE_API_BASE_URL=http://localhost:5242/api
+# Excludes local development files from Docker builds
+Client/pot-react/.env
+Client/pot-react/.env.local
+Client/pot-react/.env.development
+
+# .env.production is NOT excluded - needed for local Docker builds!
+# Azure builds override it with --build-arg
+```
+
+**`Dockerfile`** (Client build process):
+
+```dockerfile
+# Build arguments for Azure builds only
+ARG VITE_API_BASE_URL
+ARG VITE_API_TIMEOUT_MS
+
+# Copy application code (includes .env.production from source)
+COPY Client/pot-react/ .
+
+# Build with production environment
+ENV NODE_ENV=production
+# Only set ENV if ARG is provided (Azure), otherwise use .env.production (local Docker)
+RUN if [ -n "$VITE_API_BASE_URL" ]; then \
+      export VITE_API_BASE_URL=$VITE_API_BASE_URL; \
+      export VITE_API_TIMEOUT_MS=$VITE_API_TIMEOUT_MS; \
+    fi && \
+    npm run build
+```
+
+**nginx Configurations**:
+
+- `nginx.conf` (local Docker): Has `/api/` proxy to forward requests to server container
+- `nginx.azure.conf` (Azure): NO proxy, serves static files only
+
+#### Common Mistakes to Avoid
+
+1. **Don't set `VITE_API_BASE_URL` in `.env`**
+
+   - This overrides environment-specific files
+   - Keep it undefined in `.env` to allow `.env.development` and `.env.production` to work
+
+2. **Don't exclude `.env.production` from `.dockerignore`**
+
+   - Local Docker builds need this file
+   - Azure builds override it with `--build-arg`
+
+3. **Don't forget the `/api` path in URLs**
+
+   - All API routes are prefixed with `/api` (server code: `ApiBase = "api"`)
+   - Both local Docker (`/api`) and Azure (`https://.../api`) need this
+
+4. **Don't confuse Docker Compose env files with Vite env files**
+   - `Source/Docker/.env.development` - PostgreSQL passwords, JWT secrets (server config)
+   - `Source/Client/pot-react/.env.development` - API URLs (client config)
+   - These are completely separate systems!
+
+#### Verification Commands
+
+**Check what's baked into Docker image**:
+
+```bash
+# View the built JavaScript to verify API URL
+docker run --rm pot-client:latest sh -c 'cat /usr/share/nginx/html/assets/index-*.js | grep -o "baseURL.*" | head -1'
+```
+
+**Check nginx configuration in container**:
+
+```bash
+docker exec pot-react cat /etc/nginx/conf.d/default.conf
+```
+
+**Test API routing**:
+
+```bash
+# From browser console (F12):
+axios.defaults.baseURL  # Should show: "/api" for local Docker, "https://..." for Azure
 ```
 
 ## Health Checks
@@ -341,8 +503,22 @@ Predefined VS Code tasks are available for managing containers with automatic ve
   - Preserves all previous application versions for rollback
 
 - **`docker-stop-pot-client-server`**:
+
   - Stops and removes all containers
   - Preserves all built images
+
+- **`pot-server-build-and-deploy`**:
+
+  - Builds the POT server Docker image with `ghcr.io/mjfreelancing/pot-server:latest` tag
+  - Pushes the image to GitHub Container Registry
+  - Used for deploying server updates to production
+
+- **`pot-client-build-and-deploy`**:
+  - Builds the POT client Docker image with Azure configuration
+  - Includes production API URL (`https://api.payontime.com.au/api`)
+  - Uses `nginx.azure.conf` for Azure deployment
+  - Pushes the image to GitHub Container Registry with `ghcr.io/mjfreelancing/pot-client:latest` tag
+  - Used for deploying client updates to production
 
 ### Versioning Benefits
 

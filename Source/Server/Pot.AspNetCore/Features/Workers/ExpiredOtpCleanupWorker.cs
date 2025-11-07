@@ -56,7 +56,7 @@ internal sealed class ExpiredOtpCleanupWorker : BackgroundWorker
 
             if (nextUtc.HasValue)
             {
-                logger.LogInformation("Next Expired OTP cleanup scheduled for {NextBackupTimeUtc:O} (UTC)", nextUtc);
+                logger.LogInformation("Next Expired OTP cleanup scheduled for {NextOtpCleanupTimeUtc:O} (UTC)", nextUtc);
 
                 await _timeProvider.WaitUntilUtcAsync(nextUtc.Value, stoppingToken);
             }
