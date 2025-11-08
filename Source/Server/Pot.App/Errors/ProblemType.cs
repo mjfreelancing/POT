@@ -7,5 +7,6 @@ public enum ProblemType
     Conflict,
     Constraint,
     UnprocessableEntity,
+    TooManyRequests,
     Server
 }

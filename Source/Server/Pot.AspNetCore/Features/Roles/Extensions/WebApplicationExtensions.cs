@@ -1,4 +1,6 @@
-﻿namespace Pot.AspNetCore.Features.Roles.Extensions;
+﻿using Pot.AspNetCore.Concerns.RateLimiting;
+
+namespace Pot.AspNetCore.Features.Roles.Extensions;
 
 internal static class WebApplicationExtensions
 {
@@ -9,6 +11,7 @@ internal static class WebApplicationExtensions
             app.Logger.LogInformation("Adding role endpoints");
 
             app.MapGroup(RolesEndpoints.Group)
+                .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .WithTags(RolesEndpoints.Tag)
                 .GetAllRoles();
         }

@@ -1,4 +1,6 @@
-﻿namespace Pot.AspNetCore.Features.Users.Extensions;
+﻿using Pot.AspNetCore.Concerns.RateLimiting;
+
+namespace Pot.AspNetCore.Features.Users.Extensions;
 
 internal static class WebApplicationExtensions
 {
@@ -11,6 +13,7 @@ internal static class WebApplicationExtensions
             var group = app
                 .MapGroup(UsersEndpoints.Group)
                 .WithTags(UsersEndpoints.Tag)
+                .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .GetAllUsers()
                 .UpdateUser()
                 .UpdateUserStatus()

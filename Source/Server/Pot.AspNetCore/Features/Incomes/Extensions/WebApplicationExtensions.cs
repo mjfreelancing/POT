@@ -1,4 +1,6 @@
-﻿namespace Pot.AspNetCore.Features.Incomes.Extensions;
+﻿using Pot.AspNetCore.Concerns.RateLimiting;
+
+namespace Pot.AspNetCore.Features.Incomes.Extensions;
 
 internal static class WebApplicationExtensions
 {
@@ -10,6 +12,7 @@ internal static class WebApplicationExtensions
 
             app.MapGroup(IncomesEndpoints.Group)
                 .WithTags(IncomesEndpoints.Tag)
+                .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .GetAllIncomes()
                 .GetIncome()
                 .CreateIncome()

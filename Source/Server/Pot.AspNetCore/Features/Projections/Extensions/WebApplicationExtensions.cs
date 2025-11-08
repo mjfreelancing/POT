@@ -1,4 +1,6 @@
-﻿namespace Pot.AspNetCore.Features.Projections.Extensions;
+﻿using Pot.AspNetCore.Concerns.RateLimiting;
+
+namespace Pot.AspNetCore.Features.Projections.Extensions;
 
 internal static class WebApplicationExtensions
 {
@@ -11,6 +13,7 @@ internal static class WebApplicationExtensions
             var group = app
                 .MapGroup(ProjectionsEndpoints.Group)
                 .WithTags(ProjectionsEndpoints.Tag)
+                .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .GetProjections();
         }
 

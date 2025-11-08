@@ -32,6 +32,7 @@ public class Program
             .AddExceptionHandlers()
             .AddPotAuth()
             .AddPotCors()
+            .AddPotRateLimiting()
             .AddCorrelationId()
             .AddOpenApi()
             .AddHttpJsonOptions()
@@ -53,8 +54,9 @@ public class Program
         // See AddPotCors() and CorsOptionsSetup for configuration setup - not using the overload with Action<CorsPolicyBuilder> since we need to load from configuration.
         app.UseCors();
 
-        app.UseAuthentication();
-        app.UseAuthorization();
+        app.UseAuthentication()
+           .UseAuthorization()
+           .UseRateLimiter();
 
         app.UsePotMiddleware()
            .UseScalarOpenApi()

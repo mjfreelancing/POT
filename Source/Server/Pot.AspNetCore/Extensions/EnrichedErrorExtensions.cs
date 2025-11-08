@@ -19,6 +19,7 @@ internal static class EnrichedErrorExtensions
             ProblemType.Conflict => StatusCodes.Status409Conflict,
             ProblemType.Constraint => StatusCodes.Status422UnprocessableEntity,
             ProblemType.UnprocessableEntity => StatusCodes.Status422UnprocessableEntity,
+            ProblemType.TooManyRequests => StatusCodes.Status429TooManyRequests,
             ProblemType.Server => StatusCodes.Status500InternalServerError,
             _ => throw new UnreachableException($"Unknown problem type: {error.ErrorType}")
         };

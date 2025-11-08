@@ -1,9 +1,9 @@
-﻿namespace Pot.AspNetCore.Features.Expenses.Extensions;
+﻿using Pot.AspNetCore.Concerns.RateLimiting;
+
+namespace Pot.AspNetCore.Features.Expenses.Extensions;
 
 internal static class WebApplicationExtensions
 {
-    private const long MaxImportPayloadBytes = 1 * 1024 * 1024;
-
     public static WebApplication AddExpenseEndpoints(this WebApplication app)
     {
         using (app.Logger.BeginScope("[Setup Expense Routes]"))
@@ -13,6 +13,7 @@ internal static class WebApplicationExtensions
             var group = app
                 .MapGroup(ExpensesEndpoints.Group)
                 .WithTags(ExpensesEndpoints.Tag)
+                .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .GetAllExpenses()
                 .GetExpense()
                 .CreateExpense()

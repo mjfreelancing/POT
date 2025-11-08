@@ -84,4 +84,13 @@ public static class ProblemDetailsErrorFactory
             ErrorMessage = $"The entity tag for the {entityType} does not match the current record."
         };
     }
+
+    public static ProblemDetailsError CreateTooManyRequests(double totalSeconds)
+    {
+        return new ProblemDetailsError(ProblemType.TooManyRequests)
+        {
+            ErrorCode = ErrorCodes.TooManyRequests,
+            ErrorMessage = $"Too many requests. Please wait and try again after {totalSeconds} seconds."
+        };
+    }
 }

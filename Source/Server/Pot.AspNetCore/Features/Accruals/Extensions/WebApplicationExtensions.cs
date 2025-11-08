@@ -1,4 +1,6 @@
-﻿namespace Pot.AspNetCore.Features.Accruals.Extensions;
+﻿using Pot.AspNetCore.Concerns.RateLimiting;
+
+namespace Pot.AspNetCore.Features.Accruals.Extensions;
 
 internal static class WebApplicationExtensions
 {
@@ -10,6 +12,7 @@ internal static class WebApplicationExtensions
 
             app.MapGroup(AccrualsEndpoints.Group)
                 .WithTags(AccrualsEndpoints.Tag)
+                .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .GetStatus()
                 .AccrueAccountExpenses();
         }

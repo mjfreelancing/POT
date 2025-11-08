@@ -9,4 +9,5 @@ public static class ErrorCodes
     public const string Constraint = nameof(Constraint);
     public const string Duplicate = nameof(Duplicate);
     public const string Database = nameof(Database);
+    public const string TooManyRequests = nameof(TooManyRequests);
 }

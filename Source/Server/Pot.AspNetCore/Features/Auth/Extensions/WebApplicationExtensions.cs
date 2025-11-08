@@ -1,4 +1,6 @@
-﻿namespace Pot.AspNetCore.Features.Auth.Extensions;
+﻿using Pot.AspNetCore.Concerns.RateLimiting;
+
+namespace Pot.AspNetCore.Features.Auth.Extensions;
 
 internal static class WebApplicationExtensions
 {
@@ -11,6 +13,7 @@ internal static class WebApplicationExtensions
             var group = app
                 .MapGroup(AuthEndpoints.Group)
                 .WithTags(AuthEndpoints.Tag)
+                .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .LoginUser()
                 .LogoutUser()
                 .RefreshToken()

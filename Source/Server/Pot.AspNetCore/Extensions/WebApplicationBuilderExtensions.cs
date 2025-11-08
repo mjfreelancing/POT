@@ -7,6 +7,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Pot.App.Concerns.Validation;
+using Pot.App.Errors;
 using Pot.App.Extensions;
 using Pot.AspNetCore.Concerns.Auth;
 using Pot.AspNetCore.Concerns.Auth.Configuration;
@@ -17,6 +18,7 @@ using Pot.AspNetCore.Concerns.Email.Configuration;
 using Pot.AspNetCore.Concerns.ExceptionHandlers;
 using Pot.AspNetCore.Concerns.Logging;
 using Pot.AspNetCore.Concerns.Middleware;
+using Pot.AspNetCore.Concerns.RateLimiting;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Features.Auth.Extensions;
 using Pot.Data;
@@ -27,6 +29,7 @@ using Pot.EmailSender.Extensions;
 using Pot.Shared.DependencyInjection;
 using Pot.Shared.Enumerations;
 using Pot.Shared.Extensions;
+using System.Threading.RateLimiting;
 
 namespace Pot.AspNetCore.Extensions;
 
@@ -82,6 +85,30 @@ internal static class WebApplicationBuilderExtensions
             .ConfigureOptions<CorsOptionsSetup>()
 
             .AddCors();
+
+        return builder;
+    }
+
+    public static WebApplicationBuilder AddPotRateLimiting(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddRateLimiter(limiterOptions =>
+        {
+            limiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            limiterOptions.OnRejected = async (context, cancellationToken) =>
+            {
+                if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+                {
+                    context.HttpContext.Response.Headers.RetryAfter = $"{retryAfter.TotalSeconds}";
+                }
+
+                var errorDetail = ProblemDetailsErrorFactory.CreateTooManyRequests(retryAfter.TotalSeconds);
+
+                await context.HttpContext.Response.WriteAsJsonAsync(errorDetail.ToProblemDetails(), cancellationToken);
+            };
+
+            limiterOptions.AddPolicy(RateLimiterPolicy.Chained, RateLimiterPolicy.CreateChainedPolicy);
+        });
 
         return builder;
     }

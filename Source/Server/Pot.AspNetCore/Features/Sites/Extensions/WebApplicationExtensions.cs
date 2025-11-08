@@ -1,4 +1,6 @@
-﻿namespace Pot.AspNetCore.Features.Sites.Extensions;
+﻿using Pot.AspNetCore.Concerns.RateLimiting;
+
+namespace Pot.AspNetCore.Features.Sites.Extensions;
 
 internal static class WebApplicationExtensions
 {
@@ -10,6 +12,7 @@ internal static class WebApplicationExtensions
 
             var group = app
                 .MapGroup(SitesEndpoints.Group)
+                .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .WithTags(SitesEndpoints.Tag)
                 .UpdateSite();
         }

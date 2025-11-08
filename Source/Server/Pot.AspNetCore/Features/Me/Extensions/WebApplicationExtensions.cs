@@ -1,4 +1,6 @@
-﻿namespace Pot.AspNetCore.Features.Me.Extensions;
+﻿using Pot.AspNetCore.Concerns.RateLimiting;
+
+namespace Pot.AspNetCore.Features.Me.Extensions;
 
 internal static class WebApplicationExtensions
 {
@@ -11,6 +13,7 @@ internal static class WebApplicationExtensions
             var group = app
                 .MapGroup(MeEndpoints.Group)
                 .WithTags(MeEndpoints.Tag)
+                .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .GetMe()
                 .ChangePassword();
         }
