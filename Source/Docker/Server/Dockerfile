@@ -11,11 +11,11 @@ WORKDIR /app/Server
 RUN dotnet restore
 RUN dotnet build -c Release --no-restore
 
-# Publish the server project
-RUN dotnet publish Pot.AspNetCore/Pot.AspNetCore.csproj -c Release -o /app/server
+# Publish the server project (UseAppHost=false for containerized deployment)
+RUN dotnet publish Pot.AspNetCore/Pot.AspNetCore.csproj -c Release -o /app/server -p:UseAppHost=false
 
 # Publish the migrations project
-RUN dotnet publish Pot.Data.Migrations/Pot.Data.Migrations.csproj -c Release -o /app/migrations
+RUN dotnet publish Pot.Data.Migrations/Pot.Data.Migrations.csproj -c Release -o /app/migrations -p:UseAppHost=false
 
 # Runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:${DOTNET_VERSION}-alpine
