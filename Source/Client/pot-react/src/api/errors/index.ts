@@ -8,6 +8,7 @@ export {
   getForbiddenMessage,
   getMethodNotAllowedMessage,
   getNotFoundMessage,
+  getRateLimitedMessage,
   getValidationMessage,
 } from './apiErrorResponse';
 
@@ -20,6 +21,7 @@ export {
   MethodNotAllowedError,
   NetworkError,
   NotFoundError,
+  RateLimitedError,
   UnexpectedError,
   ValidationError,
 } from './apiErrors';

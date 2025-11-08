@@ -55,9 +55,11 @@ import {
   getForbiddenMessage,
   getMethodNotAllowedMessage,
   getNotFoundMessage,
+  getRateLimitedMessage,
   getValidationMessage,
   MethodNotAllowedError,
   NotFoundError,
+  RateLimitedError,
   UnexpectedError,
   ValidationError,
 } from '../errors';
@@ -141,6 +143,10 @@ const responseErrorHandler = async (error: AxiosError) => {
 
       case 422:
         errorResult = new ValidationError(getValidationMessage(apiError));
+        break;
+
+      case 429:
+        errorResult = new RateLimitedError(getRateLimitedMessage(apiError));
         break;
 
       case 500:

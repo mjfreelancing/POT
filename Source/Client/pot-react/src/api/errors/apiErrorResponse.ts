@@ -36,6 +36,11 @@ const getForbiddenMessage = (_error: ApiErrorResponse): string => {
   return 'You do not have permission to access this resource';
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const getRateLimitedMessage = (_error: ApiErrorResponse): string => {
+  return 'Too many requests. Please wait a moment and try again.';
+};
+
 const getConflictMessage = (error: ApiErrorResponse): string => {
   if (error.errors && error.errors.length > 0) {
     return error.errors
@@ -72,5 +77,6 @@ export {
   getForbiddenMessage,
   getMethodNotAllowedMessage,
   getNotFoundMessage,
+  getRateLimitedMessage,
   getValidationMessage,
 };
