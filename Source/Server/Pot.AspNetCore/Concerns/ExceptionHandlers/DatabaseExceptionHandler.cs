@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Pot.App.Errors;
 using Pot.AspNetCore.Concerns.ProblemDetails;
-using System.Net;
 
 namespace Pot.AspNetCore.Concerns.ExceptionHandlers;
 
@@ -38,7 +37,11 @@ internal sealed class DatabaseExceptionHandler : IExceptionHandler
                     ErrorMessage = postgresException.MessageText
                 };
 
-                problemContext = ProblemDetailsContextFactory.Create(httpContext, (int)HttpStatusCode.InternalServerError, postgresException.MessageText, exception, [errorDetail]);
+                problemContext = ProblemDetailsContextFactory.Create(
+                    httpContext,
+                    StatusCodes.Status500InternalServerError,
+                    postgresException.MessageText,
+                    exception, [errorDetail]);
             }
             else
             {
@@ -48,7 +51,12 @@ internal sealed class DatabaseExceptionHandler : IExceptionHandler
                     ErrorMessage = exception.Message
                 };
 
-                problemContext = ProblemDetailsContextFactory.Create(httpContext, (int)HttpStatusCode.InternalServerError, exception.Message, exception, [errorDetail]);
+                problemContext = ProblemDetailsContextFactory.Create(
+                    httpContext,
+                    StatusCodes.Status500InternalServerError,
+                    exception.Message,
+                    exception,
+                    [errorDetail]);
             }
 
             return await _problemDetailsService.TryWriteAsync(problemContext);

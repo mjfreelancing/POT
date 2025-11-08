@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-namespace Pot.AspNetCore.Features.Users.Extensions;
+﻿namespace Pot.AspNetCore.Features.Users.Extensions;
 
 internal static class RouteGroupBuilderExtensions
 {
@@ -12,8 +10,8 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(GetAllUsers))
             .WithSummary("Get all users")
             .WithDescription("Get all users")
-            .ProducesProblem((int)HttpStatusCode.OK)
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+            .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
     }
@@ -27,10 +25,10 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(UpdateUser))
             .WithSummary("Update user details")
             .WithDescription("Updates existing user details")
-            .ProducesProblem((int)HttpStatusCode.OK)
-            .ProducesProblem((int)HttpStatusCode.NotFound)
-            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity)
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+            .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
     }
@@ -43,10 +41,10 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(UpdateUserStatus))
             .WithSummary("Update user status")
             .WithDescription("Updates user status")
-            .ProducesProblem((int)HttpStatusCode.OK)
-            .ProducesProblem((int)HttpStatusCode.NotFound)
-            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity)
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+            .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
     }
@@ -59,10 +57,10 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(UpdateUserRoles))
             .WithSummary("Update user roles")
             .WithDescription("Updates user roles")
-            .ProducesProblem((int)HttpStatusCode.OK)
-            .ProducesProblem((int)HttpStatusCode.NotFound)
-            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity)
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+            .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
     }
@@ -75,10 +73,10 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(InviteUser))
             .WithSummary("Invite a new user")
             .WithDescription("Invite a new user to the same site as the caller")
-            .ProducesProblem((int)HttpStatusCode.OK)
-            .ProducesProblem((int)HttpStatusCode.NotFound)
-            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity)
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+            .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
     }
@@ -91,10 +89,10 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(ResendInviteUser))
             .WithSummary("Resends a user invitation")
             .WithDescription("Resends a user invitation")
-            .ProducesProblem((int)HttpStatusCode.OK)
-            .ProducesProblem((int)HttpStatusCode.NotFound)
-            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity)
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+            .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
     }

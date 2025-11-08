@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-namespace Pot.AspNetCore.Features.Sites.Extensions;
+﻿namespace Pot.AspNetCore.Features.Sites.Extensions;
 
 internal static class RouteGroupBuilderExtensions
 {
@@ -12,10 +10,10 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(UpdateSite))
             .WithSummary("Update site details")
             .WithDescription("Updates existing site details")
-            .ProducesProblem((int)HttpStatusCode.OK)
-            .ProducesProblem((int)HttpStatusCode.NotFound)
-            .ProducesProblem((int)HttpStatusCode.UnprocessableEntity)
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+            .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
     }

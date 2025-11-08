@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-namespace Pot.AspNetCore.Features.Roles.Extensions;
+﻿namespace Pot.AspNetCore.Features.Roles.Extensions;
 
 internal static class RouteGroupBuilderExtensions
 {
@@ -12,8 +10,8 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(GetAllRoles))
             .WithSummary("Get all roles")
             .WithDescription("Get all roles")
-            .ProducesProblem((int)HttpStatusCode.OK)
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+            .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
     }

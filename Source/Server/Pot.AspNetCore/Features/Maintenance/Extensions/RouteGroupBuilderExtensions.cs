@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Net;
 
 namespace Pot.AspNetCore.Features.Maintenance.Extensions;
 
@@ -15,8 +14,8 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(Export))
             .WithSummary("Export data")
             .WithDescription("Export Accounts, Incomes, and Expense data")
-            .ProducesProblem((int)HttpStatusCode.OK)
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+            .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
     }
@@ -31,9 +30,9 @@ internal static class RouteGroupBuilderExtensions
             .WithDescription("Import Accounts, Incomes, and Expense data")
             .WithMetadata(new RequestSizeLimitAttribute(MaxImportPayloadBytes)) // Will raise 413 Payload Too Large if the file exceeds this limit
             .DisableAntiforgery()
-            .ProducesProblem((int)HttpStatusCode.OK)
-            .ProducesProblem((int)HttpStatusCode.RequestEntityTooLarge)
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+            .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status413RequestEntityTooLarge)
+            .ProducesProblem(StatusCodes.Status500InternalServerError); ;
 
         return routeGroupBuilder;
     }

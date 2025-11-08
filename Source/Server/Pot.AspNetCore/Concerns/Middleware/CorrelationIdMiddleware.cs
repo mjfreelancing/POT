@@ -1,7 +1,6 @@
 ﻿using AllOverIt.Assertion;
 using Microsoft.AspNetCore.Http.Features;
 using Pot.AspNetCore.Extensions;
-using System.Net;
 
 namespace Pot.AspNetCore.Concerns.Middleware;
 
@@ -22,7 +21,7 @@ internal sealed class CorrelationIdMiddleware : IMiddleware
         {
             if (correlationId.Length > 128)
             {
-                httpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
 
                 var problemDetails = new Microsoft.AspNetCore.Mvc.ProblemDetails
                 {

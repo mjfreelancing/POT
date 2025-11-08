@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
-using System.Net;
 
 namespace Pot.AspNetCore.Concerns.ExceptionHandlers;
 
@@ -14,7 +13,7 @@ internal sealed class IgnoreExceptionHandler : IExceptionHandler
 
         if (ignoreException)
         {
-            httpContext.Response.StatusCode = (int)HttpStatusCode.OK;
+            httpContext.Response.StatusCode = StatusCodes.Status200OK;
         }
 
         return ValueTask.FromResult(ignoreException);

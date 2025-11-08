@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-namespace Pot.AspNetCore.Features.Me.Extensions;
+﻿namespace Pot.AspNetCore.Features.Me.Extensions;
 
 internal static class RouteGroupBuilderExtensions
 {
@@ -12,9 +10,9 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(GetMe))
             .WithSummary("Get User Info")
             .WithDescription("Get the current user's information and permissions")
-            .ProducesProblem((int)HttpStatusCode.OK)
-            .ProducesProblem((int)HttpStatusCode.Unauthorized)
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+            .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status500InternalServerError); ;
 
         return routeGroupBuilder;
     }
@@ -27,8 +25,8 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(ChangePassword))
             .WithSummary("Change Password")
             .WithDescription("Change the user password")
-            .ProducesProblem((int)HttpStatusCode.OK)
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+            .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
     }

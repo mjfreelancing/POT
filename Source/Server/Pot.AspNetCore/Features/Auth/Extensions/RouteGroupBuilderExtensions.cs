@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-namespace Pot.AspNetCore.Features.Auth.Extensions;
+﻿namespace Pot.AspNetCore.Features.Auth.Extensions;
 
 internal static class RouteGroupBuilderExtensions
 {
@@ -11,8 +9,8 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(LoginUser))
             .WithSummary("Login")
             .WithDescription("Login the user")
-            .ProducesProblem((int)HttpStatusCode.OK)
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+            .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
     }
@@ -24,8 +22,8 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(LogoutUser))
             .WithSummary("Logout")
             .WithDescription("Logout the user")
-            .ProducesProblem((int)HttpStatusCode.OK)
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+            .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
     }
@@ -37,8 +35,8 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(RefreshToken))
             .WithSummary("Refresh Access Token")
             .WithDescription("Refresh the user access token")
-            .ProducesProblem((int)HttpStatusCode.OK)
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+            .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
     }
@@ -50,8 +48,8 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(PasswordResetSend))
             .WithSummary("Request a password reset")
             .WithDescription("Request a password reset")
-            .ProducesProblem((int)HttpStatusCode.OK)
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+            .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
     }
@@ -63,8 +61,8 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(PasswordResetVerify))
             .WithSummary("Verify a password reset")
             .WithDescription("Verify a password reset")
-            .ProducesProblem((int)HttpStatusCode.OK)
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+            .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
     }
@@ -76,8 +74,8 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(SignupSend))
             .WithSummary("Request to signup")
             .WithDescription("Request to signup")
-            .ProducesProblem((int)HttpStatusCode.OK)
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+            .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
     }
@@ -89,8 +87,8 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(SignupComplete))
             .WithSummary("Complete a signup request")
             .WithDescription("Complete a signup request")
-            .ProducesProblem((int)HttpStatusCode.OK)
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+            .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
     }

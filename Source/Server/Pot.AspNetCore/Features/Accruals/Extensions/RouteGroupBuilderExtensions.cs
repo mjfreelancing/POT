@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-namespace Pot.AspNetCore.Features.Accruals.Extensions;
+﻿namespace Pot.AspNetCore.Features.Accruals.Extensions;
 
 internal static class RouteGroupBuilderExtensions
 {
@@ -12,9 +10,9 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(GetStatus))
             .WithSummary("Accruals status")
             .WithDescription("Get accruals status for all accounts")
-            .ProducesProblem((int)HttpStatusCode.OK)
-            .ProducesProblem((int)HttpStatusCode.NotFound)
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+            .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
     }
@@ -27,9 +25,9 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(AccrueAccountExpenses))
             .WithSummary("Accrue expenses")
             .WithDescription("Accrue expenses associated with one or more accounts")
-            .ProducesProblem((int)HttpStatusCode.OK)
-            .ProducesProblem((int)HttpStatusCode.NotFound)
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+            .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
     }
