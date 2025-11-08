@@ -8,6 +8,48 @@
 
 ---
 
+## Azure Architecture Diagram
+
+![POT Architecture](./pot-azure-diagram.png)
+
+**Architecture Overview:**
+
+- **Entry Points**: Custom domains (apex, www, api) with Azure-managed SSL certificates
+- **Frontend**: React SPA served by Nginx, static files compiled with Vite
+- **Backend**: ASP.NET Core API with JWT authentication, CORS, health checks
+- **Database**: PostgreSQL 17.6 with SSL-required connections, automated backups
+- **Secrets**: Key Vault integration via Managed Identity (no passwords in env vars)
+- **Monitoring**: Centralized logging in Log Analytics, visual dashboard with 14 metrics tiles
+- **Deployment**: Container images from GitHub Container Registry (private)
+- **Networking**: Shared Container Apps Environment, HTTPS termination at ingress, internal HTTP
+- **Email**: External SMTP server for notifications (password reset, invitations)
+
+**Key Security Features:**
+
+- All external traffic uses HTTPS with Let's Encrypt certificates
+- Database requires SSL connections
+- Secrets stored in Key Vault, accessed via Managed Identity
+- API uses JWT token authentication
+- CORS restricts API access to client domain only
+- Container images in private registry with PAT authentication
+  **Diagram Source**: [`Azure-Diagram.mmd`](./Azure-Diagram.mmd)
+
+**Generate High-Quality PNG**:
+
+```powershell
+mmdc -i Azure-Diagram.mmd -o pot-azure-diagram.png -w 3840 -H 2160 -s 2
+```
+
+**Command Options Explained**:
+
+- `-i Azure-Diagram.mmd` - Input Mermaid diagram file
+- `-o pot-azure-diagram.png` - Output PNG filename
+- `-w 3840` - Width in pixels (4K resolution for high detail)
+- `-H 2160` - Height in pixels (4K resolution, maintains aspect ratio)
+- `-s 2` - Scale factor (2x scaling for crisp text and sharp lines at high DPI)
+
+---
+
 ## Requirements & Decisions
 
 ### Infrastructure & Architecture

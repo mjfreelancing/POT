@@ -1,0 +1,79 @@
+%%{init: {'theme':'base', 'themeVariables': { 'fontSize':'16px'}}}%%
+graph TB
+    Users["👤 Users (Browser)"]
+    
+    subgraph DNSLayer["🌐 DNS Layer: payontime.com.au"]
+        Domain["payontime.com.au<br/>A Record"]
+        WWW["www.payontime.com.au<br/>CNAME"]
+        API["api.payontime.com.au<br/>CNAME"]
+    end
+    
+    Ingress["🌐 Ingress Layer<br/>HTTPS Termination<br/>Let's Encrypt SSL"]
+    
+    subgraph CAE["🏢 Container Apps Environment: cae-pot-prod"]
+        Client["📱 Client Container<br/>pot-client-prod<br/>React + Nginx<br/>Port 80"]
+        APIContainer["🔧 API Container<br/>pot-api-prod<br/>ASP.NET Core<br/>Port 5241"]
+    end
+    
+    DB["🗄️ PostgreSQL<br/>pot-postgres-prod<br/>PostgreSQL 17.6"]
+    
+    KV["🔐 Key Vault<br/>kv-potapp-prod"]
+    
+    MI["🔑 Managed Identity<br/>System Assigned"]
+    
+    LAW["📊 Log Analytics<br/>law-pot-prod"]
+    
+    Dashboard["📈 Dashboard<br/>14 tiles"]
+    
+    SMTP["📧 SMTP Server<br/>mail.mjfreelancing.com"]
+    GHCR["📦 GitHub Registry<br/>ghcr.io"]
+
+    Users -->|HTTPS| Domain
+    Users -->|HTTPS| WWW
+    Users -->|HTTPS| API
+
+    Domain --> Ingress
+    WWW --> Ingress
+    API --> Ingress
+
+    Ingress -->|"/"| Client
+    Ingress -->|"/api/*"| APIContainer
+
+    Client -.->|API Calls| APIContainer
+
+    APIContainer -->|PostgreSQL<br/>SSL| DB
+    APIContainer -->|SMTP<br/>TLS| SMTP
+
+    APIContainer -.->|Uses| MI
+    MI -.->|Get Secrets| KV
+    KV -.->|Returns Values| APIContainer
+
+    Client -.->|Logs| LAW
+    APIContainer -.->|Logs| LAW
+    DB -.->|Metrics| LAW
+
+    LAW -.->|KQL| Dashboard
+    Client -.->|Metrics| Dashboard
+    APIContainer -.->|Metrics| Dashboard
+    DB -.->|Metrics| Dashboard
+
+    GHCR -.->|Pull Images| Client
+    GHCR -.->|Pull Images| APIContainer
+
+    style Users fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    style Domain fill:#fff4e6,stroke:#e65100,stroke-width:2px
+    style WWW fill:#fff4e6,stroke:#e65100,stroke-width:2px
+    style API fill:#fff4e6,stroke:#e65100,stroke-width:2px
+    style Client fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style APIContainer fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style DB fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px
+    style KV fill:#ffebee,stroke:#c62828,stroke-width:2px
+    style LAW fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    style Dashboard fill:#e0f2f1,stroke:#00695c,stroke-width:2px
+    style MI fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    style SMTP fill:#f5f5f5,stroke:#616161,stroke-width:2px
+    style GHCR fill:#f5f5f5,stroke:#616161,stroke-width:2px
+    style Ingress fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style CAE fill:#f1f8e9,stroke:#2e7d32,stroke-width:3px
+    style DNSLayer fill:#fff4e6,stroke:#e65100,stroke-width:3px
+
