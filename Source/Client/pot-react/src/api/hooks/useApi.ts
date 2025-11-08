@@ -330,9 +330,9 @@ export {
   useDelete,
   useGet,
   usePost,
+  usePostWithId,
+  usePostWithIdNoData,
   usePut,
   usePutWithId,
   usePutWithIdNoData,
-  usePostWithId,
-  usePostWithIdNoData,
 };

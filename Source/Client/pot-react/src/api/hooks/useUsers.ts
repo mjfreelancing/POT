@@ -1,8 +1,8 @@
 import {
   useGet,
   usePost,
-  usePutWithId,
   usePostWithIdNoData,
+  usePutWithId,
 } from '@/api/hooks/useApi';
 import type { Identity } from '@/data';
 import type {
