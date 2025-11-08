@@ -20,14 +20,18 @@ function RenewExpensesAction() {
     invalidate: invalidateAccrualsStatus,
   } = useAccrualsContext();
 
-  const { setError } = useErrorContext();
+  const { error, setError } = useErrorContext();
   const queryClient = useQueryClient();
   const renewExpensesMutation = useApiRenewExpenses();
 
-  // Reactively handle errors from the context, or clear any previous error
+  // Only set error if we don't already have one and there's an accruals error
   useEffect(() => {
-    setError(accrualsError);
-  }, [accrualsError, setError]);
+    if (accrualsError !== null && accrualsError !== undefined) {
+      if (error === null) {
+        setError(accrualsError);
+      }
+    }
+  }, [accrualsError, error, setError]);
 
   async function performExpenseRenewals() {
     if (expenseRenewals.length > 0) {

@@ -7,9 +7,11 @@ import StatusBadge from '@/components/feedback/badge/StatusBadge';
 import { createMoneyValueColumn, DataTable } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useErrorContext } from '@/contexts';
 import type { Account } from '@/data';
 import { EMPTY_ACCOUNT_ARRAY } from '@/data';
 import { formatMoneyValue } from '@/lib';
+import { logger } from '@/lib/logging';
 
 import type { AccountsSummary } from '../stores';
 import { accountsSummaryStore } from '../stores';
@@ -86,8 +88,18 @@ const columns: ColumnDef<Account>[] = [
 ];
 
 function AccountsOverview() {
+  useEffect(() => {
+    logger.info('AccountsOverview', 'Component mounted');
+
+    return () => {
+      logger.info('AccountsOverview', 'Component unmounted');
+    };
+  }, []);
+
   const { data: accountsData, isLoading: accountsIsLoading } =
     useApiGetAllAccounts();
+
+  const { error, setError } = useErrorContext();
 
   const accounts = useMemo(
     () => (accountsData?.success ? accountsData.value : EMPTY_ACCOUNT_ARRAY),
@@ -97,6 +109,19 @@ function AccountsOverview() {
   const setSummary = accountsSummaryStore(
     (state: AccountsSummary) => state.setSummary,
   );
+
+  // Handle API errors - only set errors, never clear them (DashboardPage handles clearing)
+  useEffect(() => {
+    // Only evaluate when we have data (not undefined)
+    if (accountsData !== undefined) {
+      if (error === null && accountsData.success === false) {
+        setError({
+          title: accountsData.error.code,
+          description: accountsData.error.description,
+        });
+      }
+    }
+  }, [accountsData, error, setError]);
 
   // Recalculate and update summary when accounts change
   useEffect(() => {

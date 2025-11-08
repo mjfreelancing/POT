@@ -20,14 +20,18 @@ function AccrueAccountExpensesAction() {
     invalidate: invalidateAccrualsStatus,
   } = useAccrualsContext();
 
-  const { setError } = useErrorContext();
+  const { error, setError } = useErrorContext();
   const queryClient = useQueryClient();
   const accrueAccountExpensesMutation = useApiAccrueAccountExpenses();
 
-  // Reactively handle errors from the context, or clear any previous error
+  // Only set error if we don't already have one and there's an accruals error
   useEffect(() => {
-    setError(accrualsError);
-  }, [accrualsError, setError]);
+    if (accrualsError !== null && accrualsError !== undefined) {
+      if (error === null) {
+        setError(accrualsError);
+      }
+    }
+  }, [accrualsError, error, setError]);
 
   async function performAccountAccruals() {
     if (accountAccruals.length > 0) {

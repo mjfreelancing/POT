@@ -11,6 +11,7 @@ import {
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useErrorContext } from '@/contexts';
 import type { Expense } from '@/data';
 import { EMPTY_EXPENSE_ARRAY } from '@/data';
 import {
@@ -20,6 +21,7 @@ import {
   localToday,
   normalizeToEpoch,
 } from '@/lib';
+import { logger } from '@/lib/logging';
 
 import type { ExpensesSummary } from '../stores';
 import { expensesSummaryStore } from '../stores';
@@ -117,8 +119,18 @@ function filteredExpenseInfo(
 }
 
 function ExpensesOverview() {
+  useEffect(() => {
+    logger.info('ExpensesOverview', 'Component mounted');
+
+    return () => {
+      logger.info('ExpensesOverview', 'Component unmounted');
+    };
+  }, []);
+
   const { data: expensesData, isLoading: expensesIsLoading } =
     useApiGetAllExpenses();
+
+  const { error, setError } = useErrorContext();
 
   const expenses = useMemo(
     () =>
@@ -129,6 +141,19 @@ function ExpensesOverview() {
   const setSummary = expensesSummaryStore(
     (state: ExpensesSummary) => state.setSummary,
   );
+
+  // Handle API errors - only set errors, never clear them (DashboardPage handles clearing)
+  useEffect(() => {
+    // Only evaluate when we have data (not undefined)
+    if (expensesData !== undefined) {
+      if (error === null && expensesData.success === false) {
+        setError({
+          title: expensesData.error.code,
+          description: expensesData.error.description,
+        });
+      }
+    }
+  }, [expensesData, error, setError]);
 
   // Recalculate and update summary when expenses change
   useEffect(() => {
