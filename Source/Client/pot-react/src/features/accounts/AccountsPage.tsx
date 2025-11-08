@@ -5,7 +5,7 @@ import { Outlet } from 'react-router';
 import { useNavigate } from 'react-router';
 
 import { useApiGetAllAccounts } from '@/api/hooks';
-import { ErrorSheet, LoadingMessage } from '@/components/feedback';
+import { ErrorSheet, LoadingOverlay } from '@/components/feedback';
 import { SearchInput } from '@/components/filters';
 import { Toolbar } from '@/components/layout';
 import { Button } from '@/components/ui/button';
@@ -29,7 +29,16 @@ function AccountsPage() {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const navigate = useNavigate();
 
-  const { data: accountsData, isLoading } = useApiGetAllAccounts();
+  const {
+    data: accountsData,
+    isLoading: accountsLoading,
+    isFetching: accountsFetching,
+  } = useApiGetAllAccounts();
+
+  const isLoading = useMemo(
+    () => accountsLoading || accountsFetching,
+    [accountsLoading, accountsFetching],
+  );
 
   // Memoize accounts array to prevent unnecessary re-renders
   const accounts = useMemo(
@@ -110,12 +119,11 @@ function AccountsPage() {
             </Button>
           </WithPermission>
         </Toolbar>
-        <div className="flex-1 min-h-0 flex flex-col">
+        <div className="flex-1 min-h-0 flex flex-col relative">
+          {isLoading && <LoadingOverlay />}
           <AccountsTable accounts={descriptionFilteredAccounts} />
         </div>
       </div>
-
-      <LoadingMessage isLoading={isLoading} />
 
       {error && (
         <ErrorSheet

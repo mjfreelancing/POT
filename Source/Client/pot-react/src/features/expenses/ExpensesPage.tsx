@@ -5,8 +5,7 @@ import { Outlet, useSearchParams } from 'react-router';
 import { useNavigate } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetAllExpenses } from '@/api/hooks';
-import LoadingMessage from '@/components/feedback/message/LoadingMessage';
-import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
+import { ErrorSheet, LoadingOverlay } from '@/components/feedback';
 import { AccountFilter, SearchInput } from '@/components/filters';
 import { Toolbar } from '@/components/layout';
 import { Button } from '@/components/ui/button';
@@ -49,12 +48,17 @@ function ExpensesPage() {
     }
   }, [getExpenseData]);
 
-  // Get data
-  const { data: expensesResult, isLoading: expensesLoading } =
-    useApiGetAllExpenses();
+  const {
+    data: expensesResult,
+    isLoading: expensesLoading,
+    isFetching: expensesFetching,
+  } = useApiGetAllExpenses();
 
-  const { data: accountsResult, isLoading: accountsLoading } =
-    useApiGetAllAccounts();
+  const {
+    data: accountsResult,
+    isLoading: accountsLoading,
+    isFetching: accountsFetching,
+  } = useApiGetAllAccounts();
 
   // Memoize data arrays to prevent unnecessary re-renders
   const expenses = useMemo(
@@ -66,7 +70,14 @@ function ExpensesPage() {
     [accountsResult],
   );
 
-  const isLoading = expensesLoading || accountsLoading;
+  const isLoading = useMemo(
+    () =>
+      expensesLoading ||
+      accountsLoading ||
+      expensesFetching ||
+      accountsFetching,
+    [expensesLoading, accountsLoading, expensesFetching, accountsFetching],
+  );
 
   // Get account filter from storage and/or URL
   const urlAccountId = searchParams.get('accountId');
@@ -205,12 +216,11 @@ function ExpensesPage() {
           </WithPermission>
         </Toolbar>
         {/* Table container: flex-1 min-h-0 for proper flexbox, no overflow here */}
-        <div className="flex-1 min-h-0 flex flex-col">
+        <div className="flex-1 min-h-0 flex flex-col relative">
+          {isLoading && <LoadingOverlay />}
           <ExpensesTable filteredExpenses={descriptionFilteredExpenses} />
         </div>
       </div>
-
-      <LoadingMessage isLoading={isLoading} />
 
       {error && (
         <ErrorSheet

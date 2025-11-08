@@ -5,8 +5,7 @@ import { Outlet, useSearchParams } from 'react-router';
 import { useNavigate } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetAllIncomes } from '@/api/hooks';
-import LoadingMessage from '@/components/feedback/message/LoadingMessage';
-import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
+import { ErrorSheet, LoadingOverlay } from '@/components/feedback';
 import { AccountFilter, SearchInput } from '@/components/filters';
 import { Toolbar } from '@/components/layout';
 import { Button } from '@/components/ui/button';
@@ -54,11 +53,17 @@ function IncomesPage() {
     setIncomeData({ filterDescription: term });
   };
 
-  // Get data
-  const { data: incomesResult, isLoading: incomesLoading } =
-    useApiGetAllIncomes();
-  const { data: accountsResult, isLoading: accountsLoading } =
-    useApiGetAllAccounts();
+  const {
+    data: incomesResult,
+    isLoading: incomesLoading,
+    isFetching: incomesFetching,
+  } = useApiGetAllIncomes();
+
+  const {
+    data: accountsResult,
+    isLoading: accountsLoading,
+    isFetching: accountsFetching,
+  } = useApiGetAllAccounts();
 
   // Memoize data arrays to prevent unnecessary re-renders
   const incomes = useMemo(
@@ -70,7 +75,11 @@ function IncomesPage() {
     [accountsResult],
   );
 
-  const isLoading = incomesLoading || accountsLoading;
+  const isLoading = useMemo(
+    () =>
+      incomesLoading || accountsLoading || incomesFetching || accountsFetching,
+    [incomesLoading, accountsLoading, incomesFetching, accountsFetching],
+  );
 
   // Get account filter from storage and/or URL
   const urlAccountId = searchParams.get('accountId');
@@ -200,12 +209,11 @@ function IncomesPage() {
             </Button>
           </WithPermission>
         </Toolbar>
-        <div className="flex-1 min-h-0 flex flex-col">
+        <div className="flex-1 min-h-0 flex flex-col relative">
+          {isLoading && <LoadingOverlay />}
           <IncomesTable filteredIncomes={descriptionFilteredIncomes} />
         </div>
       </div>
-
-      <LoadingMessage isLoading={isLoading} />
 
       {error && (
         <ErrorSheet

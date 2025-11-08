@@ -1,8 +1,8 @@
 import { addDays, addMonths } from 'date-fns';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useApiGetProjection } from '@/api/hooks/useProjections';
-import { ErrorSheet, LoadingMessage } from '@/components/feedback';
+import { ErrorSheet, LoadingOverlay } from '@/components/feedback';
 import type { ProjectionMetric } from '@/data/projection';
 import type { DisplayError } from '@/lib';
 import {
@@ -191,9 +191,15 @@ function ProjectionsPage() {
   // Always fetch 12 months of data from the selected start date
   const apiEndDate = addDays(addMonths(startDate, 12), -1);
 
-  const { data: projectionData, isLoading } = useApiGetProjection(
-    dateIsoFormat(startDate),
-    dateIsoFormat(apiEndDate),
+  const {
+    data: projectionData,
+    isLoading: projectionLoading,
+    isFetching: projectionFetching,
+  } = useApiGetProjection(dateIsoFormat(startDate), dateIsoFormat(apiEndDate));
+
+  const isLoading = useMemo(
+    () => projectionLoading || projectionFetching,
+    [projectionLoading, projectionFetching],
   );
 
   useEffect(() => {
@@ -214,8 +220,9 @@ function ProjectionsPage() {
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20">
       <ProjectionsHeader />
-      {projectionData?.success && (
-        <div className="p-6 flex-1 min-h-0">
+      <div className="p-6 flex-1 min-h-0 relative">
+        {isLoading && <LoadingOverlay />}
+        {projectionData?.success && (
           <ProjectionChart
             data={projectionData.value}
             startDate={startDate}
@@ -230,8 +237,8 @@ function ProjectionsPage() {
             selectedDate={selectedDate}
             onToggleDetails={handleToggleDetails}
           />
-        </div>
-      )}
+        )}
+      </div>
 
       {error && (
         <ErrorSheet
@@ -247,8 +254,6 @@ function ProjectionsPage() {
           }}
         />
       )}
-
-      <LoadingMessage isLoading={isLoading} />
     </div>
   );
 }

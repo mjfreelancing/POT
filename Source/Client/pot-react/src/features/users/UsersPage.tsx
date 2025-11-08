@@ -1,9 +1,9 @@
 import { UserPlus } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router';
 
 import { useUsers } from '@/api/hooks/useUsers';
-import { ErrorSheet, LoadingMessage } from '@/components/feedback';
+import { ErrorSheet, LoadingOverlay } from '@/components/feedback';
 import { PageHeader, Toolbar } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { useErrorContext } from '@/contexts';
@@ -21,7 +21,16 @@ function UsersPage() {
   const [selectedUser, setSelectedUser] = useState<SiteUser | null>(null);
   const { error, setError } = useErrorContext();
 
-  const { data: usersData, isLoading } = useUsers();
+  const {
+    data: usersData,
+    isLoading: usersLoading,
+    isFetching: usersFetching,
+  } = useUsers();
+
+  const isLoading = useMemo(
+    () => usersLoading || usersFetching,
+    [usersLoading, usersFetching],
+  );
 
   useEffect(() => {
     logger.info('UsersPage', 'Mounted');
@@ -56,7 +65,8 @@ function UsersPage() {
     }
   }, [usersData, setError]);
 
-  if (!canViewUsers) {
+  // Only show permission denial when not loading and no error
+  if (!canViewUsers && !isLoading && !error) {
     return <div>You do not have permission to view users.</div>;
   }
 
@@ -83,12 +93,11 @@ function UsersPage() {
           </WithPermission>
         </Toolbar>
 
-        <div className="flex-1 min-h-0 flex flex-col">
+        <div className="flex-1 min-h-0 flex flex-col relative">
+          {isLoading && <LoadingOverlay />}
           <UsersTable users={users} onChangeRole={handleChangeRole} />
         </div>
       </div>
-
-      <LoadingMessage isLoading={isLoading} />
 
       {error && (
         <ErrorSheet
