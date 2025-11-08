@@ -48,6 +48,10 @@ public class Program
         app.Logger.LogInformation("POT Startup: {AppStartup}", new { Local = DateTime.Now });
 
         app.UseExceptionHandler();
+
+        // Not required since we are behind a reverse proxy in Azure that handles HTTPS
+        // app.UseHttpsRedirection();
+
         app.MapHealthChecks("/_health");
 
         // UseCors must be called before UseAuthentication() and UseAuthorization() to ensure CORS headers are on all responses (including errors).
