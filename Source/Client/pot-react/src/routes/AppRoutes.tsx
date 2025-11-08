@@ -5,8 +5,6 @@ import useAuthContext from '@/features/auth/AuthContext';
 import LoginPage from '@/features/auth/LoginPage';
 import logoutManager from '@/features/auth/logoutManager';
 
-import LoadingMessage from '../components/feedback/message/LoadingMessage';
-
 // Lazy load page components to enable code splitting and reduce the initial bundle size
 const AccountsPage = lazy(() => import('../features/accounts/AccountsPage'));
 const DashboardPage = lazy(() => import('../features/dashboard/DashboardPage'));
@@ -59,7 +57,7 @@ function LogoutRoute() {
 
 function AppRoutes() {
   return (
-    <Suspense fallback={<LoadingMessage />}>
+    <Suspense>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/logout" element={<LogoutRoute />} />
