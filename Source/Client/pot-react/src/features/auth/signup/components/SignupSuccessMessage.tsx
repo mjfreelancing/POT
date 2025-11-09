@@ -49,8 +49,8 @@ function SignupSuccessMessage({ onComplete }: SignupSuccessMessageProps) {
                   1.
                 </span>
                 <p>
-                  You will receive an email with a temporary password. Keep this
-                  safe as it cannot be recovered.
+                  You have received an email with a temporary password. Keep
+                  this safe as it cannot be recovered.
                 </p>
               </div>
               <div className="flex gap-3">

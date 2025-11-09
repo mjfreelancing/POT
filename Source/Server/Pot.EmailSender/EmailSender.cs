@@ -24,7 +24,7 @@ internal sealed class EmailSender : IEmailSender
     private const string InvitationSubject = "POT - Invitation";
     private const string PendingApprovalSubject = "POT - Pending Approval";
     private const string ApprovalAcceptedSubject = "POT - Approval Accepted";
-    private const string ApprovalRejectedSubject = "POT - Approval Rejected";
+    private const string ApprovalRejectedSubject = "POT - Approval Denied";
 
     private readonly IRazorComponentRenderer _razorRenderer;
     private readonly SmtpConfiguration _smtpConfiguration;
