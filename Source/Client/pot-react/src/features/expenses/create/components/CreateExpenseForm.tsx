@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 
@@ -59,11 +60,20 @@ function CreateExpenseForm({
     };
   };
 
+  // Memoize default values to track when duplicateExpense changes - this fixes an issue where
+  // a user edits an item, then navigates to duplicate it, and the form shows stale data.
+  const defaultValues = useMemo(() => getDefaultValues(), [duplicateExpense]);
+
   const form = useForm<ExpenseFormData>({
     resolver: zodResolver(expenseFormSchema),
     mode: 'onSubmit',
-    defaultValues: getDefaultValues(),
+    defaultValues,
   });
+
+  // Reset form when duplicateExpense changes (e.g., when fresh data arrives from API)
+  useEffect(() => {
+    form.reset(defaultValues);
+  }, [defaultValues, form]);
 
   const { error, setError } = useErrorContext();
 
