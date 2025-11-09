@@ -16,11 +16,11 @@ With interactive visualizations and projections, POT provides a clear picture of
 
 ### Key Features
 
-- **Financial Projections** - Visualize your account balances months in advance
-- **Expense Tracking** - Manage recurring and one-time expenses
-- **Income Management** - Track multiple income sources and payment schedules
-- **Account Management** - Monitor balances across all your financial accounts
-- **Data Import/Export** - Backup and restore your financial data
+- 📊 **Financial Projections** - Visualize your account balances months in advance
+- 💰 **Expense Tracking** - Manage recurring and one-time expenses
+- 💵 **Income Management** - Track multiple income sources and payment schedules
+- 🏦 **Account Management** - Monitor balances across all your financial accounts
+- 📁 **Data Import/Export** - Backup and restore your financial data
 
 ---
 
