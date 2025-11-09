@@ -10,19 +10,29 @@ const AccountsPage = lazy(() => import('../features/accounts/AccountsPage'));
 const DashboardPage = lazy(() => import('../features/dashboard/DashboardPage'));
 const IncomesPage = lazy(() => import('../features/incomes/IncomesPage'));
 const ExpensesPage = lazy(() => import('../features/expenses/ExpensesPage'));
+
+const PendingApprovalsPage = lazy(
+  () => import('../features/approvals/pages/PendingApprovalsPage'),
+);
+
 const ProjectionsPage = lazy(
   () => import('../features/projections/ProjectionsPage'),
 );
+
 const UsersPage = lazy(() => import('../features/users/UsersPage'));
+
 const CreateAccountSheet = lazy(
   () => import('../features/accounts/create/CreateAccountSheet'),
 );
+
 const EditAccountSheet = lazy(
   () => import('../features/accounts/edit/EditAccountSheet'),
 );
+
 const CreateIncomeSheet = lazy(
   () => import('../features/incomes/create/CreateIncomeSheet'),
 );
+
 const EditIncomeSheet = lazy(
   () => import('../features/incomes/edit/EditIncomeSheet'),
 );
@@ -30,9 +40,11 @@ const EditIncomeSheet = lazy(
 const CreateExpenseSheet = lazy(
   () => import('../features/expenses/create/CreateExpenseSheet'),
 );
+
 const EditExpenseSheet = lazy(
   () => import('../features/expenses/edit/EditExpenseSheet'),
 );
+
 const InviteUserSheet = lazy(
   () => import('../features/users/components/InviteUserSheet'),
 );
@@ -80,6 +92,7 @@ function AppRoutes() {
           <Route path="/users" element={<UsersPage />}>
             <Route path="invite" element={<InviteUserSheet />} />
           </Route>
+          <Route path="/approvals/pending" element={<PendingApprovalsPage />} />
           {/* Catch-all route: redirect unknown paths to dashboard */}
           <Route path="*" element={<Navigate replace to="/dashboard" />} />
         </Route>

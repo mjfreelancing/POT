@@ -9,6 +9,12 @@ type UserStatusBadgeProps = {
 };
 
 export function UserStatusBadge({ status, className }: UserStatusBadgeProps) {
+  // Approval status users should not appear in site user tables
+  // They are managed separately in the platform approvals page
+  if (status === 'Approval') {
+    return null;
+  }
+
   const config = {
     Enabled: {
       className:

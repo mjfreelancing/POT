@@ -2,6 +2,7 @@ import {
   Archive,
   ArchiveRestore,
   ChartSpline,
+  ClipboardCheck,
   Landmark,
   LayoutDashboard,
   Receipt,
@@ -82,6 +83,19 @@ function AppSidebarMenus() {
       ],
     },
 
+    platform: {
+      label: 'Platform',
+      items: [
+        {
+          type: 'href',
+          label: 'Approvals',
+          icon: ClipboardCheck,
+          href: '/approvals/pending',
+          permissions: ['platform:manage'],
+        },
+      ],
+    },
+
     maintenance: {
       label: 'Maintenance',
       items: [
@@ -110,6 +124,7 @@ function AppSidebarMenus() {
       <SidebarContent>
         <MenuGroup group={menuGroups.analysis} />
         <MenuGroup group={menuGroups.manage} />
+        <MenuGroup group={menuGroups.platform} />
         <MenuGroup group={menuGroups.maintenance} />
       </SidebarContent>
 

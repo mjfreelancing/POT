@@ -7,6 +7,21 @@ type AuthTokens = {
 };
 
 /**
+ * Login response status
+ */
+type LoginStatus = 'Success' | 'Approval';
+
+/**
+ * Login response from the server
+ */
+type LoginResponse = {
+  status: LoginStatus;
+  accessToken?: string;
+  refreshToken?: string;
+  message?: string;
+};
+
+/**
  * Request body for refreshing tokens
  */
 type RefreshTokenRequest = {
@@ -33,6 +48,8 @@ type LoginCredentials = {
 export type {
   AuthTokens,
   LoginCredentials,
+  LoginResponse,
+  LoginStatus,
   RefreshTokenRequest,
   TokenProvider,
 };

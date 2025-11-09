@@ -3,7 +3,12 @@ Welcome to POT - Verify Your Account
 
 Hello {Username},
 
-Thank you for signing up! To complete your account setup, please verify your email address using the codes below. We've created default site details for you that can be customized after logging in.
+Thank you for signing up! To complete your account setup, please verify your email address using the codes below.
+
+
+📋 APPROVAL REQUIRED
+--------------------
+After verification, your account will be PENDING APPROVAL. You'll receive a separate approval email when your account is activated. SAVE THE TEMPORARY PASSWORD BELOW — the approval email will not include it as passwords are not stored.
 
 
 REFERENCE CODE
@@ -21,16 +26,20 @@ Enter this code to complete verification
 TEMPORARY PASSWORD
 ------------------
 {TempPassword}
-Use this password to log in after verification
+Use this password to log in after approval
+
+💾 IMPORTANT: Save this password! Your approval email will NOT contain it.
 
 
-How to complete account setup:
--------------------------------
+How to complete verification:
+-----------------------------
 1. Return to the signup screen in your browser
 2. Confirm the Reference Code matches {ReferenceCode}
 3. Enter the Verification Code {VerificationCode}
-4. After verification, log in with your username and the Temporary Password above
-5. Go to Settings → Site Details to customize your site information
+4. Your account will enter PENDING APPROVAL status
+5. Wait for the approval email (you'll be notified when your account is activated)
+6. After approval, log in at https://payontime.com.au/login with your username and the Temporary Password above
+7. Customize your site details in Settings → Site Details
 
 
 SECURITY NOTICE
@@ -47,4 +56,5 @@ This is an automated message from POT.
 Please do not reply to this email.
 If you continue to have issues, please contact support.
 
-POT
+POT - Pay On Time
+https://payontime.com.au

@@ -93,9 +93,17 @@ internal sealed class AuthService : IAuthService
                 return CreateAuthError();
             }
 
+            // Auto-enable invited users on first login
             if (user.Status == UserStatus.Pending)
             {
                 user.Status = UserStatus.Enabled;
+            }
+
+            // Return pending approval status for users awaiting approval
+            if (user.Status == UserStatus.Approval)
+            {
+                // Return null tokens to indicate no authentication, service layer will handle response
+                return EnrichedResult.Success<AuthTokens?>(null);
             }
 
             var authTokens = SetUserAuthTokens(user);

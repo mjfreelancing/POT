@@ -7,8 +7,11 @@ using Microsoft.Extensions.Logging;
 using MimeKit;
 using Pot.EmailSender.Configuration;
 using Pot.RazorComponents;
+using Pot.RazorComponents.Emails.ApprovalAccepted;
+using Pot.RazorComponents.Emails.ApprovalRejected;
 using Pot.RazorComponents.Emails.ChangePassword;
 using Pot.RazorComponents.Emails.Invitation;
+using Pot.RazorComponents.Emails.PendingApproval;
 using Pot.RazorComponents.Emails.Signup;
 using Pot.RazorComponents.Models;
 
@@ -19,6 +22,9 @@ internal sealed class EmailSender : IEmailSender
     private const string ChangePasswordSubject = "POT - Change Password";
     private const string SignupSubject = "POT - Signup";
     private const string InvitationSubject = "POT - Invitation";
+    private const string PendingApprovalSubject = "POT - Pending Approval";
+    private const string ApprovalAcceptedSubject = "POT - Approval Accepted";
+    private const string ApprovalRejectedSubject = "POT - Approval Rejected";
 
     private readonly IRazorComponentRenderer _razorRenderer;
     private readonly SmtpConfiguration _smtpConfiguration;
@@ -49,13 +55,35 @@ internal sealed class EmailSender : IEmailSender
     {
         _logger.LogCall(this, new { config.Username });
 
-        return SendEmailAsync<InvitationEmail>(config, InvitationSubject, PlainTextEmailTemplateLoader.Signup, cancellationToken);
+        return SendEmailAsync<InvitationEmail>(config, InvitationSubject, PlainTextEmailTemplateLoader.Invitation, cancellationToken);
+    }
+
+    public Task SendPendingApprovalEmailAsync(EmailPendingApprovalInfo config, CancellationToken cancellationToken)
+    {
+        _logger.LogCall(this, new { config.Username, config.UserUsername });
+
+        return SendEmailAsync<PendingApprovalEmail>(config, PendingApprovalSubject, PlainTextEmailTemplateLoader.PendingApproval, cancellationToken);
+    }
+
+    public Task SendApprovalAcceptedEmailAsync(EmailApprovalStatusInfo config, CancellationToken cancellationToken)
+    {
+        _logger.LogCall(this, new { config.Username });
+
+        return SendEmailAsync<ApprovalAcceptedEmail>(config, ApprovalAcceptedSubject, PlainTextEmailTemplateLoader.ApprovalAccepted, cancellationToken);
+    }
+
+    public Task SendApprovalRejectedEmailAsync(EmailApprovalStatusInfo config, CancellationToken cancellationToken)
+    {
+        _logger.LogCall(this, new { config.Username });
+
+        return SendEmailAsync<ApprovalRejectedEmail>(config, ApprovalRejectedSubject, PlainTextEmailTemplateLoader.ApprovalRejected, cancellationToken);
     }
 
     private async Task SendEmailAsync<TEmailComponent>(EmailConfigBase config, string subject, string plainTextTemplateName,
         CancellationToken cancellationToken) where TEmailComponent : IComponent
     {
         var dictionary = config.ToPropertyDictionary();
+        dictionary.Remove(nameof(EmailConfigBase.Email));   // Not used in the emails
 
         var message = new MimeMessage
         {

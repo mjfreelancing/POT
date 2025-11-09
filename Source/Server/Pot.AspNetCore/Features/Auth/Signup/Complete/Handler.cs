@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.App.Errors;
 using Pot.App.Features.Auth.Signup.Complete;
+using Pot.AspNetCore.Concerns.Auth.Configuration;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Extensions;
 using Pot.AspNetCore.Features.Auth.Signup.Complete.Mappings;
@@ -10,8 +11,8 @@ namespace Pot.AspNetCore.Features.Auth.Signup.Complete;
 
 internal sealed class Handler
 {
-    public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke(Request request,
-        IVerifySignupService verifySignupService, IProblemDetailsInspector problemDetailsInspector,
+    public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke(Request request, IVerifySignupService verifySignupService,
+        IProblemDetailsInspector problemDetailsInspector, PlatformAdminOptions platformAdminOptions,
         ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null, new { request.Username, request.ReferenceCode, request.VerificationCode });
@@ -27,7 +28,7 @@ internal sealed class Handler
             return TypedResults.Problem(authProblem.ToProblemDetails());
         }
 
-        var input = request.MapToInput();
+        var input = request.MapToInput(platformAdminOptions.GetUserRowIds());
 
         var output = await verifySignupService.VerifySignupAsync(input, cancellationToken);
 

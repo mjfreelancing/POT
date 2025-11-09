@@ -93,11 +93,11 @@ internal sealed class InviteUserService : IInviteUserService
                 Site = currentSite
             };
 
-            await SendInvitationEmail(user, tempPassword, cancellationToken).ConfigureAwait(false);
-
             await _userRepository
                 .AddAndSaveAsync(user, cancellationToken)
                 .ConfigureAwait(false);
+
+            await SendInvitationEmail(user, tempPassword, cancellationToken).ConfigureAwait(false);
 
             return EnrichedResult.Success(true);
         }

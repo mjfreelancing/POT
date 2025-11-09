@@ -23,10 +23,7 @@ internal sealed class CheckHasSameEtag : PreUpdateCheckBase
 
         if (incomeToUpdate.Etag != input.Etag)
         {
-            if (incomeToUpdate.Etag != input.Etag)
-            {
-                return ProblemDetailsErrorFactory.CreateEtagConflict("Income", input.Etag);
-            }
+            return ProblemDetailsErrorFactory.CreateEtagConflict("Income", input.Etag);
         }
 
         return await base.HandleAsync(state, cancellationToken);

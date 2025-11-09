@@ -1,6 +1,7 @@
 using Pot.AspNetCore.Extensions;
 using Pot.AspNetCore.Features.Accounts.Extensions;
 using Pot.AspNetCore.Features.Accruals.Extensions;
+using Pot.AspNetCore.Features.Approvals.Extensions;
 using Pot.AspNetCore.Features.Auth.Extensions;
 using Pot.AspNetCore.Features.Expenses.Extensions;
 using Pot.AspNetCore.Features.Incomes.Extensions;
@@ -65,6 +66,7 @@ public class Program
         app.UsePotMiddleware()
            .UseScalarOpenApi()
            .AddAuthEndpoints()
+           .AddApprovalEndpoints()
            .AddMeEndpoints()
            .AddUserEndpoints()
            .AddRoleEndpoints()

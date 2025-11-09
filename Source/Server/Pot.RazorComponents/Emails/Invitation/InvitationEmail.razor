@@ -38,7 +38,7 @@
                         <div style="color:#111827;font-size:14px;font-weight:700;margin:0 0 4px 0;">How to get started</div>
                         <div style="border-top:2px solid #60A5FA;width:100%;height:0;margin:0 0 10px 0;"></div>
                         <ol style="margin:0 0 0 18px;padding:0;color:#374151;font-size:13px;line-height:1.5;">
-                            <li style="margin-bottom:6px;">Go to POT and log in with your username and the <strong style="color:#111827;">Temporary Password</strong> above</li>
+                            <li style="margin-bottom:6px;">Go to POT at <a href="https://payontime.com.au/login" style="color:#4f46e5;text-decoration:none;font-weight:600;">https://payontime.com.au/login</a> and log in with your username and the <strong style="color:#111827;">Temporary Password</strong> above</li>
                             <li style="margin-bottom:6px;">Go to <strong style="color:#111827;">Settings</strong> to change your password</li>
                         </ol>
                     </div>
@@ -60,7 +60,10 @@
                     <div style="margin-bottom:4px;color:#374151;">This is an automated message from POT.</div>
                     <div style="margin-bottom:4px;color:#374151;">Please do not reply to this email.</div>
                     <div style="font-size:11px;color:#9ca3af;margin-bottom:10px;">If you continue to have issues, please contact support.</div>
-                    <div style="padding-top:10px;border-top:1px solid #e5e7eb;color:#4f46e5;font-weight:700;font-size:13px;">POT</div>
+                    <div style="padding-top:10px;border-top:1px solid #e5e7eb;">
+                        <div style="color:#4f46e5;font-weight:700;font-size:13px;margin-bottom:4px;">POT - Pay On Time</div>
+                        <div style="font-size:11px;"><a href="https://payontime.com.au" style="color:#4f46e5;text-decoration:none;">https://payontime.com.au</a></div>
+                    </div>
                 </td>
             </tr>
         </table>
@@ -72,9 +75,6 @@
 @code {
     [Parameter]
     public required string Username { get; set; }
-
-    [Parameter]
-    public required string Email { get; set; }
 
     [Parameter]
     public required string TempPassword { get; set; }

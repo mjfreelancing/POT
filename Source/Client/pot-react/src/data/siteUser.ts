@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 // User status enum
-const userStatusSchema = z.enum(['Enabled', 'Disabled', 'Pending']);
+const userStatusSchema = z.enum(['Enabled', 'Disabled', 'Pending', 'Approval']);
 type UserStatus = z.infer<typeof userStatusSchema>;
 
 // Site user schema based on actual API response from GET /api/users

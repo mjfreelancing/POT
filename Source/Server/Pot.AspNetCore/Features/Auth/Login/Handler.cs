@@ -23,10 +23,21 @@ internal sealed class Handler
             return TypedResults.Problem(problemDetails);
         }
 
-        var authTokens = await authService.LoginAsync(request.Username.Trim(), request.Password, cancellationToken);
+        var authResult = await authService.LoginAsync(request.Username.Trim(), request.Password, cancellationToken);
 
-        return authTokens.IsSuccess
-            ? Response.Ok(authTokens.Value!)
-            : TypedResults.Problem(authTokens.Error!.ToProblemDetails());
+        if (!authResult.IsSuccess)
+        {
+            // Authentication failed - bad credentials
+            return TypedResults.Problem(authResult.Error!.ToProblemDetails());
+        }
+
+        if (authResult.Value is null)
+        {
+            // Successful credential validation but account pending approval
+            return Response.Approval("Your account is pending approval. You'll receive an email when your account is activated.");
+        }
+
+        // Successful login with tokens
+        return Response.Success(authResult.Value);
     }
 }

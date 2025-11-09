@@ -4,13 +4,14 @@ namespace Pot.AspNetCore.Features.Auth.Signup.Complete.Mappings;
 
 internal static class RequestMapping
 {
-    public static Input MapToInput(this Request request)
+    public static Input MapToInput(this Request request, Guid[] platformAdminRowIds)
     {
         return new Input
         {
             Username = request.Username.Trim(),
             ReferenceCode = request.ReferenceCode,
-            VerificationCode = request.VerificationCode
+            VerificationCode = request.VerificationCode,
+            PlatformAdminRowIds = platformAdminRowIds
         };
     }
 }

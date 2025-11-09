@@ -4,5 +4,8 @@ public enum EmailType
 {
     Signup,
     ChangePassword,
-    Invitation
+    Invitation,
+    PendingApproval,
+    ApprovalAccepted,
+    ApprovalRejected
 }

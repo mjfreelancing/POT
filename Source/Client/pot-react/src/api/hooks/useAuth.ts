@@ -1,14 +1,14 @@
 import { usePost } from '@/api/hooks/useApi';
-import type { AuthTokens, LoginCredentials } from '@/api/types/auth';
+import type { LoginCredentials, LoginResponse } from '@/api/types/auth';
 import type { FailResultBase, Result } from '@/lib';
 
 function useLogin() {
-  const mutation = usePost<AuthTokens, LoginCredentials>('/auth/login');
+  const mutation = usePost<LoginResponse, LoginCredentials>('/auth/login');
 
-  // Return mutation with data typed as Result<AuthTokens, FailResultBase>
+  // Return mutation with data typed as Result<LoginResponse, FailResultBase>
   return {
     ...mutation,
-    data: mutation.data as Result<AuthTokens, FailResultBase>,
+    data: mutation.data as Result<LoginResponse, FailResultBase>,
   };
 }
 

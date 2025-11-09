@@ -102,6 +102,9 @@ internal sealed class SendEmailChannel : ISendEmailChannelReader, ISendEmailChan
             EmailType.ChangePassword => (config, token) => emailSender.SendChangePasswordEmailAsync((EmailOtpInfo)config, token),
             EmailType.Signup => (config, token) => emailSender.SendSignupEmailAsync((EmailOtpInfo)config, token),
             EmailType.Invitation => (config, token) => emailSender.SendInvitationEmailAsync((EmailInvitationInfo)config, token),
+            EmailType.PendingApproval => (config, token) => emailSender.SendPendingApprovalEmailAsync((EmailPendingApprovalInfo)config, token),
+            EmailType.ApprovalAccepted => (config, token) => emailSender.SendApprovalAcceptedEmailAsync((EmailApprovalStatusInfo)config, token),
+            EmailType.ApprovalRejected => (config, token) => emailSender.SendApprovalRejectedEmailAsync((EmailApprovalStatusInfo)config, token),
 
             _ => throw new NotSupportedException($"The email type '{channelConfig.EmailType}' is not supported.")
         };

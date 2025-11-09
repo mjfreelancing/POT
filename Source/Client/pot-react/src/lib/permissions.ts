@@ -15,6 +15,7 @@ const PERMISSIONS = {
   incomeView: 'income:view',
   maintenanceExport: 'maintenance:export',
   maintenanceImport: 'maintenance:import',
+  platformManage: 'platform:manage',
 } as const;
 
 /**

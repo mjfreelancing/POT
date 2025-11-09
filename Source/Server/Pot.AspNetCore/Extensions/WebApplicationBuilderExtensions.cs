@@ -51,6 +51,12 @@ internal static class WebApplicationBuilderExtensions
             // Allow for injection of JwtOptions instead of IOptions<JwtOptions>
             .AddSingletonFromOptions<JwtOptions>()
 
+            // Binds configuration from the "PlatformAdmin" section onto a PlatformAdminOptions instance.
+            .ConfigureOptions<PlatformAdminOptionsSetup>()
+
+            // Allow for injection of PlatformAdminOptions instead of IOptions<PlatformAdminOptions>
+            .AddSingletonFromOptions<PlatformAdminOptions>()
+
             .AddAuthorization(options =>
             {
                 // Required for /me endpoint where the user needs to be authenticated, but no specific permissions are required.
@@ -136,6 +142,7 @@ internal static class WebApplicationBuilderExtensions
         {
             options.SerializerOptions.Converters.Add(EnrichedEnumJsonConverter<Frequency>.Create());
             options.SerializerOptions.Converters.Add(EnrichedEnumJsonConverter<UserStatus>.Create());
+            options.SerializerOptions.Converters.Add(EnrichedEnumJsonConverter<ApprovalStatus>.Create());
             options.SerializerOptions.Converters.Add(new NullableGuidConverter());
         });
 

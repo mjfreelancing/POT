@@ -2,6 +2,7 @@
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using EntityFramework.Exceptions.Common;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pot.App.Concerns.Time;
 using Pot.App.Features.Auth.Signup.Complete.Models;
@@ -10,6 +11,8 @@ using Pot.Data.Entities;
 using Pot.Data.Repositories.Otp;
 using Pot.Data.Repositories.Roles;
 using Pot.Data.Repositories.Users;
+using Pot.EmailSender;
+using Pot.RazorComponents.Models;
 using Pot.Shared.Enumerations;
 
 namespace Pot.App.Features.Auth.Signup.Complete;
@@ -50,16 +53,19 @@ internal sealed class VerifySignupService : VerificationServiceBase, IVerifySign
     private readonly IPersistableOtpRepository _otpRepository;
     private readonly IPersistableUserRepository _userRepository;
     private readonly IRoleRepository _roleRepository;
+    private readonly ISendEmailChannelWriter _sendEmailChannelWriter;
     private readonly ITimeProvider _timeProvider;
     private readonly ILogger _logger;
 
     public VerifySignupService(IPersistableOtpRepository otpRepository, IPersistableUserRepository userRepository,
-        IRoleRepository roleRepository, IOtpService otpService, ITimeProvider timeProvider, ILogger<VerifySignupService> logger)
+        IRoleRepository roleRepository, IOtpService otpService, ISendEmailChannelWriter sendEmailChannelWriter,
+        ITimeProvider timeProvider, ILogger<VerifySignupService> logger)
         : base(OtpReason.Signup, otpService, otpRepository, logger)
     {
         _otpRepository = otpRepository.WhenNotNull();
         _userRepository = userRepository.WhenNotNull();
         _roleRepository = roleRepository;
+        _sendEmailChannelWriter = sendEmailChannelWriter.WhenNotNull();
         _timeProvider = timeProvider.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
@@ -88,10 +94,14 @@ internal sealed class VerifySignupService : VerificationServiceBase, IVerifySign
                 await _otpRepository
                     .SaveAsync(cancellationToken)
                     .ConfigureAwait(false);
+
+                // There is a chance this could fail
+                await SendApprovalsToPlatformAdminsAsync(input.Username, input.PlatformAdminRowIds, cancellationToken).ConfigureAwait(false);
             }
             catch (UniqueConstraintException ex)
             {
-                // TODO: Create a constant for "IX_User_Username" - or even an extension method on UniqueConstraintException to check for specific constraint
+                // TODO: Create a constant for "IX_User_Username" - or even an extension method on UniqueConstraintException to check for specific constraint.
+                //       Or, even better, create an interceptor that might be able to deal with this explicitly and raise a more specific exception.
                 if (string.Compare(ex.ConstraintName, "IX_User_Username", StringComparison.OrdinalIgnoreCase) == 0)
                 {
                     _logger.LogError(ex, "Failed to create user for username '{Username}' - likely taken since signup request", input.Username);
@@ -151,13 +161,14 @@ internal sealed class VerifySignupService : VerificationServiceBase, IVerifySign
             .GetByNameAsync(Role.Admin, cancellationToken)
             .ConfigureAwait(false);
 
-        // Create a new user entity since the username is available - but handle conflict when saved in case it was 'just' taken
+        // Create a new user entity since the username is available - but handle conflict when saved in case it was 'just' taken.
+        // Start off as Approval so a platform admin can approve before allowing login
         user = new UserEntity
         {
             Username = mostRecentOtp.Username,
             Email = mostRecentOtp.Email,
             DisplayName = mostRecentOtp.Username,
-            Status = UserStatus.Enabled,
+            Status = UserStatus.Approval,
             PasswordHash = mostRecentOtp.TempPasswordHash!,
             Site = site,
             Roles = [role]
@@ -174,5 +185,32 @@ internal sealed class VerifySignupService : VerificationServiceBase, IVerifySign
     private static string GetDefaultSiteNameForUser(string username)
     {
         return $"{username}'s Site";
+    }
+
+    private async Task SendApprovalsToPlatformAdminsAsync(string username, Guid[] platformAdminRowIds, CancellationToken cancellationToken)
+    {
+        var userEmail = await _userRepository.Users
+            .Where(user => user.Username == username)
+            .Select(user => user.Email)
+            .SingleAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        var platformAdmins = await _userRepository.Users
+            .Where(user => platformAdminRowIds.Contains(user.RowId))
+            .Select(user => new { user.DisplayName, user.Email })
+            .ToListAsync(cancellationToken);
+
+        foreach (var platformAdmin in platformAdmins)
+        {
+            await _sendEmailChannelWriter.SubmitAsync(EmailType.PendingApproval, new EmailPendingApprovalInfo
+            {
+                // The platform admin is approving this user - use their display name
+                Username = platformAdmin.DisplayName,
+                Email = platformAdmin.Email,
+
+                UserUsername = username,
+                UserEmail = userEmail
+            }, cancellationToken);
+        }
     }
 }

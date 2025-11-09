@@ -7,6 +7,8 @@ export type CacheKey =
   | 'accounts'
   | 'expenses'
   | 'incomes'
+  | 'me'
+  | 'pending-approvals'
   | 'projections'
   | 'users';
 
@@ -16,7 +18,9 @@ export type CacheKey =
  */
 const INVALIDATION_DEPENDENCIES: Record<CacheKey, CacheKey[]> = {
   // Core entities - no dependencies
+  me: [],
   users: [],
+  'pending-approvals': [],
 
   // Accounts changes affect projections
   accounts: ['projections'],
