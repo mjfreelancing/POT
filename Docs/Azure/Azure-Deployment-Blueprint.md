@@ -687,7 +687,7 @@ citext | 1.6 | | data type for case-insensitive character strings
    - Click **+ Generate/Import**
    - **Upload options**: `Manual`
    - **Name**: `SmtpUsername`
-   - **Value**: (SMTP username)
+   - **Value**: `pot-admin@mjfreelancing.com`
    - Click **Create**
 
 4. **Add SMTP Password**:
@@ -1093,8 +1093,8 @@ Add the following environment variables one by one:
 | -------------------------------- | ------------------ | ------------------------------------ |
 | `Smtp__Host`                     | Manual entry       | `mail.mjfreelancing.com`             |
 | `Smtp__Port`                     | Manual entry       | `465`                                |
-| `Smtp__From__Name`               | Manual entry       | `POT`                                |
-| `Smtp__From__Address`            | Manual entry       | `malcolm@mjfreelancing.com`          |
+| `Smtp__From__Name`               | Manual entry       | `POT Admin - Do Not Reply`           |
+| `Smtp__From__Address`            | Manual entry       | `pot-admin@mjfreelancing.com`        |
 | `Smtp__Authentication__Username` | Reference a secret | Select `smtp-username` from dropdown |
 | `Smtp__Authentication__Password` | Reference a secret | Select `smtp-password` from dropdown |
 
