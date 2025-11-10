@@ -1,4 +1,6 @@
 import { authClient } from '@/api/authClient';
+import { AuthenticationError } from '@/api/errors/apiErrors';
+import { FailResult } from '@/lib';
 import { calculateRefreshTime } from '@/lib/jwt';
 import { logger } from '@/lib/logging';
 
@@ -42,6 +44,7 @@ function createTokenRefreshTimer({
     stopTimer();
 
     const refreshTimeMs = calculateRefreshTime(currentTokens.accessToken);
+
     if (!refreshTimeMs) {
       return;
     }
@@ -68,7 +71,14 @@ function createTokenRefreshTimer({
         onRefreshSuccess(response.data);
       } catch (error) {
         logger.error('Auth', 'Failed to refresh token', error);
-        onRefreshError(error);
+
+        // Ensure error is wrapped in FailResult for consistent handling
+        const normalizedError =
+          error instanceof FailResult
+            ? error
+            : new FailResult(new AuthenticationError('Token refresh failed'));
+
+        onRefreshError(normalizedError);
       }
     }, refreshTimeMs);
   };

@@ -1,6 +1,9 @@
 import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import axios from 'axios';
 
+import { FailResult } from '@/lib';
+import { logger } from '@/lib/logging';
+
 import { AuthenticationError } from '../errors/apiErrors';
 import type { TokenProvider } from '../types/auth';
 
@@ -38,7 +41,22 @@ const addAuthHeader =
   };
 
 /**
- * Handle 401 errors with token refresh
+ * Handle 401 errors with token refresh.
+ *
+ * This interceptor handles reactive token refresh when API calls receive 401 responses.
+ * It works in conjunction with the proactive refresh timer in tokenRefreshTimer.ts.
+ *
+ * ERROR HANDLING:
+ * - 401 on /auth/* endpoints: Do not attempt refresh (prevents infinite loops)
+ * - 401 on other endpoints: Attempt to refresh and retry the original request
+ * - Refresh success: Process queued requests and retry
+ * - Refresh failure: Clear queue, logout user, propagate normalized error
+ *
+ * NOTES:
+ * - Only one refresh attempt happens at a time (isRefreshing flag)
+ * - Concurrent 401s are queued and retried after refresh completes
+ * - Errors are normalized to FailResult<AuthenticationError> for consistent handling
+ * - This catches cases where proactive refresh failed or didn't trigger in time
  */
 const handleAuthError =
   (tokenProvider: TokenProvider) => async (error: AxiosError) => {
@@ -50,6 +68,7 @@ const handleAuthError =
 
     if (response.status === 401) {
       // If the request is to an /auth/* endpoint, do not attempt token refresh
+      // This prevents infinite loops when the refresh endpoint itself returns 401
       if (config.url && config.url.includes('/auth/')) {
         return Promise.reject(error);
       }
@@ -70,22 +89,21 @@ const handleAuthError =
           // Retry the original request
           return axios(config);
         } catch (refreshError) {
-          // Clear the queue with the refresh error
-          clearQueue(refreshError);
+          logger.error('API', 'Token refresh failed', refreshError);
+
+          // Normalize the error to FailResult for consistent handling
+          const normalizedError =
+            refreshError instanceof FailResult
+              ? refreshError
+              : new FailResult(new AuthenticationError('Token refresh failed'));
+
+          // Clear the queue with the normalized error
+          clearQueue(normalizedError);
 
           // Logout the user since refresh token is invalid/expired
           tokenProvider.clearTokens();
 
-          // Make sure we propagate an AuthenticationError
-          if (refreshError instanceof Error) {
-            return Promise.reject(
-              new AuthenticationError(refreshError.message),
-            );
-          }
-
-          return Promise.reject(
-            new AuthenticationError('Failed to refresh token'),
-          );
+          return Promise.reject(normalizedError);
         } finally {
           isRefreshing = false;
         }

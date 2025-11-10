@@ -102,18 +102,31 @@ const responseErrorHandler = async (error: AxiosError) => {
     return Promise.reject(error);
   }
 
+  // If this is already a FailResult from a previous error transformation, return it directly
+  // This prevents double-wrapping and allows proper error propagation from auth interceptor
+  if (error instanceof FailResult) {
+    logger.info(
+      'API',
+      `FailResult passthrough [${error.error.title}]`,
+      error.error,
+    );
+
+    return Promise.reject(error);
+  }
+
   // Handle HTTP errors with response data
   // These are mapped to specific domain errors based on status code
   // If response.data is empty, we still create the error but with default messages
   if (error.response) {
+    const { status, data } = error.response;
+    const apiError = (data as ApiErrorResponse) || {}; // Handle empty response
+
     logger.error(
       'API',
-      `HTTP Error: [${error.response.status}] ${error.config?.url} [Correlation-ID: ${correlationId}]`,
+      `HTTP Error: [${status}] ${error.config?.url} [Correlation-ID: ${correlationId}]`,
       error,
     );
 
-    const { status, data } = error.response;
-    const apiError = (data as ApiErrorResponse) || {}; // Handle empty response
     let errorResult: ApiError;
 
     switch (status) {
@@ -169,12 +182,6 @@ const responseErrorHandler = async (error: AxiosError) => {
     );
 
     return Promise.reject(new FailResult(getNetworkError(error)));
-  }
-
-  // If this is already a FailResult from a previous error transformation, return it directly
-  if (error instanceof FailResult) {
-    logger.error('API', `FailResult error: ${error}`);
-    return Promise.reject(error);
   }
 
   // Last resort - unexpected error
