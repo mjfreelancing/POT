@@ -28,7 +28,7 @@
       "problemMatcher": []
     },
     {
-      "label": "pot-server-build-and-deploy-azure",
+      "label": "azure-pot-server-build-and-deploy",
       "type": "shell",
       "command": "docker build -t ghcr.io/mjfreelancing/pot-server:latest -f Docker/Server/Dockerfile .; docker push ghcr.io/mjfreelancing/pot-server:latest",
       "options": {
@@ -41,7 +41,7 @@
       "problemMatcher": []
     },
     {
-      "label": "pot-client-build-and-deploy-azure",
+      "label": "azure-pot-client-build-and-deploy",
       "type": "shell",
       "command": "docker build --build-arg NGINX_CONFIG=nginx.azure.conf --build-arg VITE_API_BASE_URL=https://api.payontime.com.au/api --build-arg VITE_API_TIMEOUT_MS=30000 -t ghcr.io/mjfreelancing/pot-client:latest -f Docker/Client/Dockerfile .; docker push ghcr.io/mjfreelancing/pot-client:latest",
       "options": {
