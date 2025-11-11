@@ -29,18 +29,23 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
 
         sortedExpenses.ForEach((expense, index) =>
         {
+            expense.Accrued = 0.0d;
             expense.AccruedIsDirty = false;
             expense.LastAccruedUpdate = currentDate.Value;
 
-            // The current implementation does not include 'ExcludeFromCalcs' items, but keep here for now so we're not making assumptions
             var processExpense =
+                // The current implementation does not include 'ExcludeFromCalcs' items, but keep here for now so we're not making assumptions.
                 !expense.ExcludeFromCalcs &&
-                (expense.Frequency != Frequency.OneTime || currentDate <= expense.NextDue) &&
+
+                // We process while currentDate < expense.NextDue since it's going to be paid off on the due date. The expense's Accrued
+                // amount has been reset to 0.0d above - we don't want projections double-dipping the accrued and paid amounts.
+                (expense.Frequency != Frequency.OneTime || currentDate < expense.NextDue) &&
+
                 expense.AccrualStart <= currentDate;
 
             if (processExpense)
             {
-                AccrueExpense(expense, currentDate.Value);
+                AccrueExpense(currentDate.Value, expense);
             }
         });
     }
@@ -51,10 +56,8 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
         account.DailyExpenseAccrual = 0.0d;
     }
 
-    private static void AccrueExpense(ExpenseEntity expense, DateOnly currentDate)
+    private static void AccrueExpense(DateOnly currentDate, ExpenseEntity expense)
     {
-        expense.Accrued = 0.0d;
-
         var account = expense.Account;
 
         var allocated = Math.Round(expense.DailyAccrual() * expense.DaysFromAccrualStart(currentDate), 2, MidpointRounding.AwayFromZero);
