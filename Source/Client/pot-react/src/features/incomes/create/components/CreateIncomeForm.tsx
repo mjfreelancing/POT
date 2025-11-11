@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 
@@ -30,7 +30,7 @@ function CreateIncomeForm({
   const navigate = useNavigate();
   const { createIncome } = useCreateIncome();
 
-  const getDefaultValues = (): IncomeFormData => {
+  const getDefaultValues = useCallback((): IncomeFormData => {
     if (duplicateIncome) {
       return {
         description: `Copy of ${duplicateIncome.description}`,
@@ -56,11 +56,11 @@ function CreateIncomeForm({
       note: '',
       excludeFromCalcs: false,
     };
-  };
+  }, [duplicateIncome]);
 
   // Memoize default values to track when duplicateIncome changes - this fixes an issue where
   // a user edits an item, then navigates to duplicate it, and the form shows stale data.
-  const defaultValues = useMemo(() => getDefaultValues(), [duplicateIncome]);
+  const defaultValues = useMemo(() => getDefaultValues(), [getDefaultValues]);
 
   const form = useForm<IncomeFormData>({
     resolver: zodResolver(incomeFormSchema),
