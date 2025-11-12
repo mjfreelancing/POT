@@ -2154,6 +2154,12 @@ POSTGRES_PASSWORD=<value>             # Database password
 JWT_ISSUER=<value>                   # JWT token issuer
 JWT_AUDIENCE=<value>                 # JWT token audience
 JWT_SECRET_KEY=<value>               # JWT signing key
+
+# ASP.NET Core Security (optional)
+ASPNETCORE__ALLOWEDHOSTS=<value>     # Allowed host headers (semicolon-separated)
+                                     # Example: api.yourdomain.com;yourdomain.com
+                                     # Leave empty or use "*" for local development
+                                     # Required for production (Azure) deployment
 ```
 
 #### **Local Configuration**
@@ -2176,6 +2182,13 @@ The common settings are located in `Source/Server/Pot.AspNetCore/appsettings.jso
   }
 }
 ```
+
+**Note on AllowedHosts**:
+
+- Empty string `""` or `"*"` disables Host header filtering (acceptable for local development)
+- For production (Azure), configure via environment variable `ASPNETCORE__ALLOWEDHOSTS`
+- Host header validation protects against Host header attacks
+- Example Azure value: `api.payontime.com.au;payontime.com.au`
 
 The development settings are located in `Source/Server/Pot.AspNetCore/appsettings.Development.json`
 

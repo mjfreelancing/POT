@@ -9,16 +9,22 @@ Before you begin, ensure you have the following installed:
 ### Required Software
 
 - **Node.js** (v20 or later) - [Download](https://nodejs.org/)
+  - Required for frontend development and Docker builds
 - **npm** (comes with Node.js)
 - **.NET 9 SDK** - [Download](https://dotnet.microsoft.com/download/dotnet/9.0)
+  - **Only required if** building/running the backend locally outside Docker
+  - **Not needed** if using Docker for development (Docker handles the .NET runtime)
 - **Git** - [Download](https://git-scm.com/)
+  - **Only required if** your IDE doesn't have built-in Git support (VS Code, Visual Studio, etc. include Git)
+  - Used to clone the repository and manage source control
 
 ### Highly Recommended
 
 - **Docker Desktop** - [Download](https://www.docker.com/products/docker-desktop/)
   - Simplifies setup and ensures consistent environment
-  - Handles PostgreSQL database automatically
-  - Can run everything without Docker, but Docker is the easiest path
+  - **Includes PostgreSQL database** - no separate database installation needed
+  - Can run the entire stack (database, backend, frontend) in containers
+  - Docker is the recommended approach for development
 
 ### Optional (only if not using Docker)
 
@@ -70,142 +76,11 @@ POT/
 
 ---
 
-**Next:** Choose your setup method - [Docker Setup](#docker-setup-recommended) (recommended) or [Manual Setup](#manual-setup)
+## Configuration
 
-## Docker Setup (Recommended)
+Before running POT, you need to configure environment settings including database credentials, SMTP for email verification, JWT secrets, and CORS settings.
 
-Docker provides the easiest way to run POT. It automatically sets up PostgreSQL, the backend API, and the frontend with minimal configuration.
-
-### What Docker Provides
-
-The Docker setup runs the complete stack:
-
-- **PostgreSQL database** (port 5444) - Uses non-default port to avoid conflicts with local PostgreSQL installations
-- **ASP.NET Core API** (port 5241) - ASP.NET Core typically uses ports 5000-5300; if this conflicts with your local setup, see configuration details <!-- TODO-DOC: Link to port configuration section when created -->
-- **React frontend** (port 5175) - Uses port 5175 instead of Vite's default 5173
-
-### Choose Your Method
-
-> **Important:** Before starting Docker, ensure the `Source/Docker/postgres-data/` directory exists. If it doesn't exist, the PostgreSQL container will fail to start. Create it manually if needed:
->
-> ```bash
-> # From the project root
-> mkdir -p Source/Docker/postgres-data
-> ```
-
-**Using VS Code?** → [Quick Start with VS Code Tasks](#option-a-using-vs-code-tasks-recommended) (easiest)
-
-**Prefer command line?** → [Manual Setup with Docker Compose](#option-b-manual-docker-compose-commands)
-
----
-
-### Option A: Using VS Code Tasks (Recommended)
-
-If you're using VS Code, you can start everything with built-in tasks.
-
-> **Note:** The VS Code task creates timestamped Docker images (e.g., `pot-server:20251109-143052`) for versioning. These images will accumulate over time and consume disk space. You'll need to periodically clean them up using `docker image prune` or manually delete old images with `docker rmi <image-name>`.
-
-#### Step 1: Start Services
-
-1. Press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (Mac)
-2. Type "Run Task" and press Enter
-3. Select `docker-start-pot-client-server`
-
-The task will build and start all services. This may take several minutes on the first run.
-
-#### Step 2: Verify Services are Running
-
-Check that all containers are running:
-
-```bash
-docker ps
-```
-
-You should see three containers:
-
-- `pot-postgres` - PostgreSQL database
-- `pot-aspnet` - ASP.NET Core API
-- `pot-react` - React frontend (nginx)
-
-#### Step 3: Verify and Access
-
-##### 3.1 Verify the API
-
-Check that the API is responding:
-
-```bash
-curl http://localhost:5241/_health
-```
-
-Expected response should look something like this:
-
-```
-StatusCode        : 200
-StatusDescription : OK
-Content           : Healthy
-RawContent        : HTTP/1.1 200 OK
-                    Pragma: no-cache
-                    Transfer-Encoding: chunked
-                    Cache-Control: no-store, no-cache
-                    Content-Type: text/plain
-                    Date: Sun, 09 Nov 2025 11:44:40 GMT
-                    Expires: Thu, 01 Jan 1970 00:00:00 GMT...
-Forms             : {}
-Headers           : {[Pragma, no-cache], [Transfer-Encoding, chunked], [Cache-Control, no-store, no-cache],
-                    [Content-Type, text/plain]...}
-Images            : {}
-InputFields       : {}
-Links             : {}
-ParsedHtml        : mshtml.HTMLDocumentClass
-RawContentLength  : 7
-```
-
-##### 3.2 Verify the Frontend
-
-Check that the frontend is responding:
-
-```bash
-curl http://localhost:5175/health
-```
-
-Expected response should look something like this:
-
-```
-StatusCode        : 200
-StatusDescription : OK
-Content           : {104, 101, 97, 108...}
-RawContent        : HTTP/1.1 200 OK
-                    Connection: keep-alive
-                    Content-Length: 7
-                    Content-Type: application/octet-stream,text/plain
-                    Date: Sun, 09 Nov 2025 11:49:09 GMT
-                    Server: nginx/1.29.3
-
-                    healthy
-Headers           : {[Connection, keep-alive], [Content-Length, 7], [Content-Type,
-                    application/octet-stream,text/plain], [Date, Sun, 09 Nov 2025 11:49:09 GMT]...}
-RawContentLength  : 7
-```
-
-##### 3.3 Open the Application in Your Browser
-
-Navigate to:
-
-- **POT Application**: http://localhost:5175
-
-You should see the POT login/signup page.
-
-#### Stopping Services
-
-1. Press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (Mac)
-2. Type "Run Task" and press Enter
-3. Select `docker-stop-pot-client-server`
-
----
-
-### Option B: Manual Docker Compose Commands
-
-#### Step 1: Start Docker Services
+### Step 1: Locate and Create Environment Files
 
 Navigate to the Docker directory:
 
@@ -213,179 +88,140 @@ Navigate to the Docker directory:
 cd Source/Docker
 ```
 
-Start all services using Docker Compose:
+You'll find one environment file in version control:
+
+- `.env` - Base configuration (database name, Docker Compose project name) - **already exists**
+
+You need to create a second file for local secrets:
+
+- `.env.development` - Development-specific settings (passwords, SMTP, JWT secrets) - **you must create this**
+
+> **Important:** `.env.development` is excluded from version control (`.gitignore`) because it contains sensitive information. Each developer must create their own copy with their credentials.
+
+### Step 2: Create `.env.development` File
+
+Create a new file named `.env.development` in the `Source/Docker/` directory with the following template:
 
 ```bash
-docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-client-server.yml up -d
+# Development environment overrides
+
+# Database Configuration
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=password
+
+# JWT Configuration
+JWT_ISSUER=http://localhost:5241
+JWT_AUDIENCE=http://localhost:5241
+JWT_SECRET_KEY=YOUR-128-CHARACTER-SECRET-KEY-HERE-REPLACE-THIS-ENTIRE-STRING-WITH-RANDOM-CHARACTERS-MUST-BE-EXACTLY-128-CHARS-LONG-XXXXXXXX
+
+# SMTP Configuration
+SMTP_HOST=your-smtp-server.com
+SMTP_PORT=587
+SMTP_REQUIRE_TLS=true
+SMTP_AUTH_USERNAME=your-email@domain.com
+SMTP_AUTH_PASSWORD=your-email-app-password
+SMTP_FROM_NAME=POT - Do Not Reply
+SMTP_FROM_ADDRESS=your-email@domain.com
+
+# CORS Configuration
+CORS_ALLOWED_ORIGINS=http://localhost:5175
+
+# Platform Admin Configuration
+# Leave empty for initial setup - add your user GUID after first signup
+PLATFORM_ADMIN_USERIDS=
 ```
 
-This command will:
+### Step 3: Configure Each Setting
 
-- Download required Docker images (first time only)
-- Build the server and client containers
-- Start PostgreSQL database on port 5444
-- Start the ASP.NET API server on port 5241
-- Start the React frontend on port 5175
-- Run in detached mode (background)
+Now update each setting in your `.env.development` file:
 
-> **First-time build:** The initial build can take several minutes as it installs dependencies and compiles both frontend and backend.
+#### Database Settings
 
-#### Step 2: Verify Services are Running
-
-Check that all containers are running:
+These are already in the template with defaults suitable for Docker:
 
 ```bash
-docker ps
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=password
 ```
 
-You should see three containers:
+> **Important:** The `POSTGRES_PASSWORD` must match the password configured in `Source/Docker/Postgres/Dockerfile`. The default value is `password`. If you change the password in the Dockerfile, you must update it here to match, otherwise the application will not be able to connect to the database.
 
-- `pot-postgres` - PostgreSQL database
-- `pot-aspnet` - ASP.NET Core API
-- `pot-react` - React frontend (nginx)
+> **Note:** These defaults work for local development. For production, use stronger credentials.
 
-#### Step 3: Access the Application
+#### JWT Settings
 
-##### 3.1 Verify the API
-
-Check that the API is responding:
+Update these values in your `.env.development`:
 
 ```bash
-curl http://localhost:5241/_health
+JWT_ISSUER=http://localhost:5241
+JWT_AUDIENCE=http://localhost:5241
+JWT_SECRET_KEY=<generate-128-character-key>
 ```
 
-Expected response should look something like this:
+> **Note:** The `JWT_SECRET_KEY` must be **exactly 128 characters** (uses HMACSHA512 algorithm). Generate a random 128-character string using a password generator or random string tool. Both issuer and audience should point to the API server (the service that issues and validates tokens). For production, generate a new 128-character secret key and update both values to your API domain (e.g., both set to `https://api.yourdomain.com`).
 
-```
-StatusCode        : 200
-StatusDescription : OK
-Content           : Healthy
-RawContent        : HTTP/1.1 200 OK
-                    Pragma: no-cache
-                    Transfer-Encoding: chunked
-                    Cache-Control: no-store, no-cache
-                    Content-Type: text/plain
-                    Date: Sun, 09 Nov 2025 11:44:40 GMT
-                    Expires: Thu, 01 Jan 1970 00:00:00 GMT...
-Forms             : {}
-Headers           : {[Pragma, no-cache], [Transfer-Encoding, chunked], [Cache-Control, no-store, no-cache],
-                    [Content-Type, text/plain]...}
-Images            : {}
-InputFields       : {}
-Links             : {}
-ParsedHtml        : mshtml.HTMLDocumentClass
-RawContentLength  : 7
-```
+#### SMTP Configuration
 
-##### 3.2 Verify the Frontend
-
-Check that the frontend is responding:
+Update the SMTP settings with your email provider details:
 
 ```bash
-curl http://localhost:5175/health
+# SMTP Configuration
+SMTP_HOST=your-smtp-server.com          # Your SMTP server hostname
+SMTP_PORT=587                            # SMTP port (587 for TLS, 465 for SSL)
+SMTP_REQUIRE_TLS=true                    # Use true for secure connection
+SMTP_AUTH_USERNAME=your-email@domain.com # Your email address
+SMTP_AUTH_PASSWORD=your-password         # Your email password or app password
+SMTP_FROM_NAME=POT - Do Not Reply        # Display name for outgoing emails
+SMTP_FROM_ADDRESS=your-email@domain.com  # From email address
 ```
 
-Expected response should look something like this:
+#### CORS Settings
 
-```
-StatusCode        : 200
-StatusDescription : OK
-Content           : {104, 101, 97, 108...}
-RawContent        : HTTP/1.1 200 OK
-                    Connection: keep-alive
-                    Content-Length: 7
-                    Content-Type: application/octet-stream,text/plain
-                    Date: Sun, 09 Nov 2025 11:49:09 GMT
-                    Server: nginx/1.29.3
-
-                    healthy
-Headers           : {[Connection, keep-alive], [Content-Length, 7], [Content-Type,
-                    application/octet-stream,text/plain], [Date, Sun, 09 Nov 2025 11:49:09 GMT]...}
-RawContentLength  : 7
-```
-
-##### 3.3 Open the Application in Your Browser
-
-Navigate to:
-
-- **POT Application**: http://localhost:5175
-
-You should see the POT login/signup page.
-
-#### Stopping the Services
-
-When you're done:
+Already configured for local development:
 
 ```bash
-cd Source/Docker
-docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-client-server.yml down
+CORS_ALLOWED_ORIGINS=http://localhost:5175
 ```
+
+> **Note:** This allows the React frontend (running on port 5175) to make API requests to the backend.
+
+#### Platform Admin
+
+Leave empty for initial setup:
+
+```bash
+PLATFORM_ADMIN_USERIDS=
+```
+
+> **Note:** After creating your first user account, you'll add your user GUID here to grant platform admin permissions. See [First-Time Configuration](#first-time-configuration) for details.
+
+### Step 4: Create Required Directories
+
+Create the PostgreSQL data directory for persistent storage:
+
+```bash
+# From the project root
+mkdir -p Source/Docker/postgres-data
+```
+
+> **Note:** The PostgreSQL Docker container uses this directory as a mounted volume to persist database data. Without this directory, the container will fail to start. The data stored here survives container restarts, allowing you to maintain your database state across Docker sessions.
 
 ---
 
-### Useful Docker Commands
+## Next Steps
 
-View logs from a specific container:
+Once configuration is complete, proceed to:
 
-```bash
-docker logs pot-aspnet      # Backend API logs
-docker logs pot-postgres    # Database logs
-docker logs pot-react       # Frontend logs
-```
-
-Follow logs in real-time:
-
-```bash
-docker logs -f pot-aspnet
-```
-
-Restart a specific container:
-
-```bash
-docker restart pot-aspnet
-```
-
-Stop all POT containers:
-
-```bash
-docker stop pot-aspnet pot-postgres pot-react
-```
-
-Remove containers (keeps images and data):
-
-```bash
-docker rm pot-aspnet pot-postgres pot-react
-```
-
-List all Docker images (including timestamped ones):
-
-```bash
-docker images | grep pot
-```
-
-Remove old timestamped images (if using VS Code tasks):
-
-```bash
-# Remove a specific image
-docker rmi pot-server:20251109-143052
-docker rmi pot-client:20251109-143052
-
-# Or remove all unused images
-docker image prune -a
-```
-
-### Configuration Files
-
-The Docker setup uses these files (in `Source/Docker/`):
-
-- `docker-compose-client-server.yml` - Main configuration for all services
-- `.env` - Base environment variables
-- `.env.development` - Development-specific settings (database passwords, JWT secrets, etc.)
-
-> **Note:** Database data is persisted in `Source/Docker/postgres-data/` so your data survives container restarts.
-
-> **For more details:** See [Docker Setup Guide](Development/DOCKER.md) for advanced configuration options
+1. **[Docker Setup](DOCKER-SETUP.md)** (recommended) - Run POT using Docker containers
+2. **[Local Setup](LOCAL-SETUP.md)** (coming soon) - Run API and React locally (with or without Docker PostgreSQL)
+3. **[First-Time Configuration](FIRST-TIME-SETUP.md)** - Create your first user and configure platform admin access
 
 ---
 
-**Next:** [First-Time Configuration](#first-time-configuration) or skip to [Manual Setup](#manual-setup)
+## Additional Resources
+
+- [Azure Deployment Guide](Azure/Azure-Deployment-Blueprint.md) - Deploying POT to Azure
+- [Platform Admin Documentation](DRAFT/Root/PLATFORM_ADMIN.md) - Managing platform admin permissions
+- [Main README](../README.md) - Project overview and architecture
+
+---

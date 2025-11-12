@@ -1122,16 +1122,80 @@ Add the following environment variables one by one:
 
 **Other**:
 
-| Name                     | Source       | Value           |
-| ------------------------ | ------------ | --------------- |
-| `ASPNETCORE_ENVIRONMENT` | Manual entry | `Production`    |
-| `ASPNETCORE_URLS`        | Manual entry | `http://+:5241` |
+| Name                       | Source       | Value                                                                   |
+| -------------------------- | ------------ | ----------------------------------------------------------------------- |
+| `ASPNETCORE_ENVIRONMENT`   | Manual entry | `Production`                                                            |
+| `ASPNETCORE_URLS`          | Manual entry | `http://+:5241`                                                         |
+| `ASPNETCORE__AllowedHosts` | Manual entry | `pot-api-prod.whiteground-afd18a05.australiaeast.azurecontainerapps.io` |
+| `PlatformAdmin__UserIds`   | Manual entry | (Your user GUID - see note below)                                       |
 
 **Note on ASPNETCORE_URLS**: The `http://+:5241` value configures the ASP.NET Core app to listen on HTTP port 5241 **inside the container**. Azure Container Apps handles HTTPS termination at the ingress layer:
 
 - **Client → Azure**: HTTPS (encrypted, port 443) with automatic Let's Encrypt certificates
 - **Azure → Container**: HTTP (internal network, port 5241) - no SSL certificates needed in container
 - This is the standard pattern for containerized apps - the reverse proxy handles HTTPS
+
+**Note on ASPNETCORE\_\_AllowedHosts**: This environment variable configures Host header validation to protect against Host header attacks. It's a security feature in ASP.NET Core that validates the `Host` header in incoming HTTP requests.
+
+**What it does**:
+
+- Restricts which Host headers the application will accept
+- Prevents attackers from manipulating the Host header to trigger security issues
+- Semicolon-separated list of allowed hostnames (e.g., `api.domain.com;domain.com`)
+
+**Configuration by environment**:
+
+- **Local development**: Empty string `""` or `"*"` in appsettings.json (disables filtering for convenience)
+- **Azure production (Step 11)**: Set to the Azure-provided subdomain initially
+- **Custom domain (future)**: Update when adding custom domains
+
+**Initial deployment (this step)**: Use the Azure-provided API subdomain:
+
+```
+ASPNETCORE__AllowedHosts=pot-api-prod.whiteground-afd18a05.australiaeast.azurecontainerapps.io
+```
+
+**After adding custom domain**: Update to include your custom domain(s):
+
+```
+ASPNETCORE__AllowedHosts=api.yourdomain.com;yourdomain.com
+```
+
+You can include both Azure subdomains and custom domains if needed, separated by semicolons.
+
+**Note on PlatformAdmin\_\_UserIds**: This environment variable grants platform-level administrative privileges to specific users.
+
+**⚠️ IMPORTANT - First Time Setup**:
+
+1. **Skip this variable initially** - you need to sign up first to get your user GUID
+2. Deploy the application and access it
+3. Sign up with your username and email
+4. Your account will have `Pending` status (no one can approve you yet)
+5. Connect to Azure PostgreSQL database and run:
+   ```sql
+   SELECT "RowId" FROM "User" WHERE "Username" = 'your_username';
+   ```
+6. Copy your user GUID (RowId)
+7. Come back to Container Apps → pot-api-prod → Environment variables
+8. Add `PlatformAdmin__UserIds` with your GUID as the value
+9. Manually update your user status in the database:
+   ```sql
+   UPDATE "User" SET "Status" = 1 WHERE "Username" = 'your_username';
+   -- Status: 0 = Pending, 1 = Active, 2 = Inactive
+   ```
+10. Save as a new revision to restart the container
+11. Log in - you'll now have platform admin access with the `platform:manage` permission
+
+**What PlatformAdmin\_\_UserIds Does**:
+
+- Grants the special `platform:manage` permission at runtime (not stored in database)
+- Allows approving new user signups from any site
+- Enables cross-site visibility and platform-level administration
+- Value format: Single GUID or comma-separated list of GUIDs
+- Example single admin: `550e8400-e29b-41d4-a716-446655440000`
+- Example multiple admins: `550e8400-e29b-41d4-a716-446655440000,6ba7b810-9dad-11d1-80b4-00c04fd430c8`
+
+**Security Note**: User GUIDs are used instead of usernames to prevent admin enumeration. This is configuration (non-sensitive identifiers), not a secret, so it's appropriate as a standard environment variable rather than in Key Vault.
 
 **How to add each variable**:
 
@@ -1157,6 +1221,7 @@ Add the following environment variables one by one:
 - `Cors__AllowedOrigins`: Allowed origins for CORS (client URL that can make API requests from browsers)
 - `ASPNETCORE_ENVIRONMENT`: Tells ASP.NET to use production settings
 - `ASPNETCORE_URLS`: Configures which port the API listens on (must match ingress target port)
+- `ASPNETCORE__AllowedHosts`: Host header validation for security (Azure subdomain or custom domain)
 
 **Configuration Mapping** (ASP.NET Core):
 
@@ -1214,7 +1279,7 @@ Add the following environment variables one by one:
    - **Path**: `/_health`
    - **Port**: `5241`
    - **Initial delay seconds**: `30` (allows time for migrations to complete on startup)
-   - **Period seconds**: `10` (check every 10 seconds)
+   - **Period seconds**: `60` (check every 60 seconds)
    - Click **Additional settings** to expand more options:
      - **Time out seconds**: `5` (how long to wait for health check response)
      - **Success threshold**: `1` (consecutive successes needed to mark healthy)
@@ -1317,7 +1382,7 @@ Add the following environment variables one by one:
    - **Path**: `/health`
    - **Port**: `80`
    - **Initial delay seconds**: `5` (Nginx starts quickly, no migrations needed)
-   - **Period seconds**: `10` (check every 10 seconds)
+   - **Period seconds**: `60` (check every 60 seconds)
    - Click **Additional settings** to expand more options:
      - **Time out seconds**: `3` (Nginx responds very fast)
      - **Success threshold**: `1`

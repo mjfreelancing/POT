@@ -32,6 +32,46 @@ The POT project supports two deployment configurations:
 - **Solution File**
   - Located at the project root: `pot.sln`
 
+<!-- TODO: Document container security configuration:
+  - Server Dockerfile runs as non-root user (appuser, UID 1000) for security best practices
+  - This limits the impact of potential vulnerabilities by restricting container privileges
+  - Required for both local development and Azure production deployments
+  - Client Dockerfile (nginx:alpine) already runs as non-root by default (nginx user, UID 101)
+  - See Server/Dockerfile comments for implementation details
+
+  Validation Commands:
+
+  Client Container (pot-react):
+  ```powershell
+  # Validate nginx worker processes run as non-root
+  docker exec pot-react ps aux | Select-String nginx
+  ```
+  Expected output shows nginx master process runs as root (required for port 80),
+  but all worker processes run as 'nginx' user (secure):
+  ```
+      1 root      0:00 nginx: master process nginx -g daemon off;
+     29 nginx     0:00 nginx: worker process
+     30 nginx     0:00 nginx: worker process
+     ...
+  ```
+
+  Server Container (pot-aspnet):
+  ```powershell
+  # Validate server runs as non-root user
+  docker exec pot-aspnet whoami
+  docker exec pot-aspnet id
+  docker exec pot-aspnet ps aux
+  ```
+  Expected output:
+  ```
+  appuser
+  uid=1000(appuser) gid=1000(appgroup) groups=1000(appgroup)
+  PID   USER     TIME  COMMAND
+      1 appuser   0:00 /bin/sh ./entrypoint.sh
+     ...
+  ```
+-->
+
 ## Ports
 
 - **PostgreSQL**: Port **5444** (host) mapped to **5432** (container)
@@ -507,13 +547,13 @@ Predefined VS Code tasks are available for managing containers with automatic ve
   - Stops and removes all containers
   - Preserves all built images
 
-- **`pot-server-build-and-deploy`**:
+- **`azure-pot-server-build-and-deploy`**:
 
   - Builds the POT server Docker image with `ghcr.io/mjfreelancing/pot-server:latest` tag
   - Pushes the image to GitHub Container Registry
   - Used for deploying server updates to production
 
-- **`pot-client-build-and-deploy`**:
+- **`azure-pot-client-build-and-deploy`**:
   - Builds the POT client Docker image with Azure configuration
   - Includes production API URL (`https://api.payontime.com.au/api`)
   - Uses `nginx.azure.conf` for Azure deployment

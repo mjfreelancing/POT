@@ -598,36 +598,47 @@ When creating or updating documentation:
 
 - Total Document Areas: 13
 - Estimated Individual Documents: ~45 (many split into focused sub-documents)
-- Completed: 0
-- In Progress: 2
+- Completed: 4
   - Root README.md (Section 1 complete - awaiting expansion)
-  - GETTING-STARTED.md (Starting)
-- Not Started: ~43
+  - GETTING-STARTED.md (Prerequisites, Clone, Configuration complete - links to other docs)
+  - DOCKER-SETUP.md (Complete - VS Code tasks and Docker Compose CLI commands)
+  - FIRST-TIME-SETUP.md (Complete - awaiting screenshots to be added later)
+- In Progress: 1
+  - LOCAL-SETUP.md (Title and overview placeholder created, focus: API and React locally, PostgreSQL flexible)
+- Not Started: ~40
 - Deferred: 2
   - Testing (awaiting comprehensive testing implementation)
   - Azure docs (user will handle separately)
 
 **Note:** The modular approach creates more documents but each is smaller, focused, and easier to maintain.
 
-### Current Work: GETTING-STARTED.md
+### Current Work: Documentation Reorganization Complete
 
-**Completed Chunks:**
+**Completed:**
 
-- None yet
+- ✅ GETTING-STARTED.md - Prerequisites, Clone, Configuration sections complete
+- ✅ DOCKER-SETUP.md - Full Docker setup (VS Code tasks and Docker Compose CLI)
+- ✅ FIRST-TIME-SETUP.md - User signup, email verification, platform admin setup
+  - **Note:** Placeholder for screenshots - images will be added to `Docs/first-time-setup/images/` folder
+- ✅ LOCAL-SETUP.md - Created with title placeholder (renamed from MANUAL-SETUP.md for clarity)
 
-**Next Chunk:** Prerequisites & Clone
+**Documentation Structure:**
 
-- System requirements
-- Clone repository
-- Initial verification
+1. **GETTING-STARTED.md** → Entry point with Prerequisites & Configuration
+2. **DOCKER-SETUP.md** → Docker setup instructions (recommended path)
+3. **LOCAL-SETUP.md** → Local setup without Docker (API and React run locally, PostgreSQL flexible)
+4. **FIRST-TIME-SETUP.md** → First user configuration and platform admin setup
 
-**Remaining Chunks:**
+**Next Chunks:**
 
-1. Docker setup (server-only & full-stack)
-2. Manual setup (alternative path)
-3. First-time configuration
-4. Common issues & troubleshooting
+1. Complete LOCAL-SETUP.md content:
+   - PostgreSQL setup (local installation OR Docker container - user's choice)
+   - Backend (.NET) local setup and configuration
+   - Frontend (React) local setup and configuration
+   - Environment configuration for local development
+2. Add screenshots to FIRST-TIME-SETUP.md (organize in `Docs/first-time-setup/images/`)
+3. Common issues & troubleshooting (may be separate doc or added to each)
 
 ---
 
-**Last Updated:** November 9, 2025
+**Last Updated:** November 12, 2025
