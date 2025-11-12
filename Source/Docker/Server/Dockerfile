@@ -24,6 +24,16 @@ WORKDIR /app
 # Install postgresql-client for pg_isready and tzdata for timezone support
 RUN apk add --no-cache postgresql-client tzdata
 
+# Security: Create non-root user to run the application
+# Running as non-root limits the impact of potential security vulnerabilities by restricting
+# container privileges. This is a best practice for both local and production (Azure) deployments.
+# UID/GID 1000 is a common convention for application users in containers.
+# 
+# Note: The Client Dockerfile (nginx:alpine) already runs as non-root by default (nginx user, UID 101),
+# so no additional user configuration is needed there. This configuration is specific to the Server container.
+RUN addgroup -g 1000 appgroup && \
+    adduser -u 1000 -G appgroup -s /bin/sh -D appuser
+
 COPY --from=build /app/server ./server
 COPY --from=build /app/migrations ./migrations
 
@@ -34,7 +44,11 @@ COPY Docker/Server/entrypoint.sh .
 # Then convert the entrypoint.sh to Unix line endings and make it executable
 RUN apk add --no-cache dos2unix && \
     dos2unix entrypoint.sh && \
-    chmod +x entrypoint.sh
+    chmod +x entrypoint.sh && \
+    chown -R appuser:appgroup /app
+
+# Switch to non-root user for running the application
+USER appuser
 
 # Expose the server port
 EXPOSE 5241
