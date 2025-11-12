@@ -217,11 +217,3 @@ Once configuration is complete, proceed to:
 3. **[First-Time Configuration](FIRST-TIME-SETUP.md)** - Create your first user and configure platform admin access
 
 ---
-
-## Additional Resources
-
-- [Azure Deployment Guide](Azure/Azure-Deployment-Blueprint.md) - Deploying POT to Azure
-- [Platform Admin Documentation](DRAFT/Root/PLATFORM_ADMIN.md) - Managing platform admin permissions
-- [Main README](../README.md) - Project overview and architecture
-
----

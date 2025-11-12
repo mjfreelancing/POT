@@ -22,9 +22,16 @@ When creating or updating documentation:
    - Guesses about implementation details
 
 3. **When uncertain:**
+
    - Mark sections with `[TODO: Verify with user]`
    - Ask specific questions before documenting
    - Leave gaps rather than filling with assumptions
+
+4. **NEVER link to DRAFT documentation from public docs:**
+   - All files in `/Docs/DRAFT/` are internal reference only
+   - Only link to completed, published documentation we've worked through together
+   - Azure deployment docs are user's personal reference (will be removed from version control)
+   - Wait for user to work through content before adding links to public documentation
 
 ## � Documentation Organization Strategy
 
