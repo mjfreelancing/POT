@@ -17,7 +17,7 @@
     {
       "label": "docker-stop-pot-client-server",
       "type": "shell",
-      "command": "docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-client-server.yml down",
+      "command": "docker-compose -p pot -f docker-compose-client-server.yml down",
       "options": {
         "cwd": "${workspaceFolder}/Source/Docker"
       },
