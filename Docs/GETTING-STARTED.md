@@ -1,6 +1,6 @@
 # Getting Started with POT
 
-This guide will help you get POT up and running on your local machine for development or testing.
+This guide will help you get POT up and running on your local machine for development or testing. It's designed to be thorough and doesn't assume prior knowledge, so experienced developers may be able to skip familiar sections.
 
 ## Prerequisites
 
@@ -213,7 +213,7 @@ mkdir -p Source/Docker/postgres-data
 Once configuration is complete, proceed to:
 
 1. **[Docker Setup](DOCKER-SETUP.md)** (recommended) - Run POT using Docker containers
-2. **[Local Setup](LOCAL-SETUP.md)** (coming soon) - Run API and React locally (with or without Docker PostgreSQL)
+2. **[Local Setup](LOCAL-SETUP.md)** - Run API and React locally (with or without Docker PostgreSQL)
 3. **[First-Time Configuration](FIRST-TIME-SETUP.md)** - Create your first user and configure platform admin access
 
 ---
