@@ -171,4 +171,4 @@ You should see the status changed to `Enabled`:
 
 ---
 
-**Return to:** [Getting Started](GETTING-STARTED.md)
+**Return to:** [README](README.md)
