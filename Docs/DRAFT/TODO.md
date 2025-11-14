@@ -609,9 +609,9 @@ When creating or updating documentation:
   - Root README.md (Section 1 complete - awaiting expansion)
   - GETTING-STARTED.md (Prerequisites, Clone, Configuration complete - links to other docs)
   - DOCKER-SETUP.md (Complete - VS Code tasks and Docker Compose CLI commands)
-  - FIRST-TIME-SETUP.md (Complete - awaiting screenshots to be added later)
-- In Progress: 1
-  - LOCAL-SETUP.md (Title and overview placeholder created, focus: API and React locally, PostgreSQL flexible)
+  - FIRST-TIME-SETUP.md ✅ **COMPLETE** (All steps documented with screenshots)
+  - LOCAL-SETUP.md (Complete - PostgreSQL, migrations, API, and React setup)
+- In Progress: 0
 - Not Started: ~40
 - Deferred: 2
   - Testing (awaiting comprehensive testing implementation)
@@ -625,27 +625,32 @@ When creating or updating documentation:
 
 - ✅ GETTING-STARTED.md - Prerequisites, Clone, Configuration sections complete
 - ✅ DOCKER-SETUP.md - Full Docker setup (VS Code tasks and Docker Compose CLI)
-- ✅ FIRST-TIME-SETUP.md - User signup, email verification, platform admin setup
-  - **Note:** Placeholder for screenshots - images will be added to `Docs/first-time-setup/images/` folder
-- ✅ LOCAL-SETUP.md - Created with title placeholder (renamed from MANUAL-SETUP.md for clarity)
+- ✅ FIRST-TIME-SETUP.md ✅ **COMPLETE** - User signup, email verification, platform admin setup, password change
+  - All 7 screenshots added showing complete first-time setup workflow
+  - Step 1: Sign up form (2 screenshots)
+  - Step 2: Email verification (4 screenshots)
+  - Step 3: Database verification query
+  - Step 4: Platform admin configuration (Docker and Visual Studio paths)
+  - Step 5: Login, password change, and admin verification (7 screenshots)
+- ✅ LOCAL-SETUP.md - Complete local development setup
+  - PostgreSQL setup (local install or Docker container)
+  - Running migrations with Pot.Data.Migrations
+  - Backend API configuration and startup (Visual Studio or dotnet run)
+  - React frontend configuration and startup
 
 **Documentation Structure:**
 
 1. **GETTING-STARTED.md** → Entry point with Prerequisites & Configuration
 2. **DOCKER-SETUP.md** → Docker setup instructions (recommended path)
-3. **LOCAL-SETUP.md** → Local setup without Docker (API and React run locally, PostgreSQL flexible)
-4. **FIRST-TIME-SETUP.md** → First user configuration and platform admin setup
+3. **LOCAL-SETUP.md** → Local development setup (debugging with Visual Studio/VS Code)
+4. **FIRST-TIME-SETUP.md** ✅ **COMPLETE** → First user configuration and platform admin setup
 
 **Next Chunks:**
 
-1. Complete LOCAL-SETUP.md content:
-   - PostgreSQL setup (local installation OR Docker container - user's choice)
-   - Backend (.NET) local setup and configuration
-   - Frontend (React) local setup and configuration
-   - Environment configuration for local development
-2. Add screenshots to FIRST-TIME-SETUP.md (organize in `Docs/first-time-setup/images/`)
-3. Common issues & troubleshooting (may be separate doc or added to each)
+1. ~~Add screenshots to FIRST-TIME-SETUP.md~~ ✅ Complete
+2. Common issues & troubleshooting (may be separate doc or added to each)
+3. Continue with remaining documentation per plan
 
 ---
 
-**Last Updated:** November 12, 2025
+**Last Updated:** November 14, 2025
