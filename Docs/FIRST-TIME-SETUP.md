@@ -169,8 +169,6 @@ You should see the status changed to `Enabled`:
 
 **Congratulations!** 🎉 POT is now fully configured and ready to use.
 
-> **For more details on platform admin permissions:** See `/Docs/DRAFT/Root/PLATFORM_ADMIN.md`
-
 ---
 
 **Return to:** [Getting Started](GETTING-STARTED.md)
