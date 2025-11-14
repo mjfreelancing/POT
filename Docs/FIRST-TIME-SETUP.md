@@ -171,4 +171,4 @@ You should see the status changed to `Enabled`:
 
 ---
 
-**Return to:** [README](README.md)
+**Return to:** [README](../README.md)
