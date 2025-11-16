@@ -407,3 +407,4 @@ Source/Docker/postgres-backups
 *.development*
 *.production*
 Source/Client/pot-react/.vite
+Docs/Azure/Azure-Deployment-Notes.md
