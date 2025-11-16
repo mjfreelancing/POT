@@ -29,9 +29,16 @@ With interactive visualizations and projections, POT provides a clear picture of
 For detailed information, see:
 
 - [Getting Started Guide](Docs/GETTING-STARTED.md) - Setup and installation
-- [Features Documentation](Docs/Features/overview.md) - Detailed feature descriptions
+- [Features Documentation](Docs/FEATURES.md) - Detailed feature descriptions
+- [Authentication & Security](Docs/AUTHENTICATION.md) - User signup, permissions, and security
 - [Architecture Overview](Docs/ARCHITECTURE.md) - Technical architecture
-- [Development Guide](Docs/Development/) - For developers
+- [User Guide](Docs/USER-GUIDE/) - Detailed feature walkthroughs
+
+**Developer Documentation:**
+
+- [Frontend Development](Source/Client/pot-react/DEVELOPER.md) - React, TypeScript, API patterns
+- [Backend Development](Source/Server/DEVELOPER.md) - ASP.NET Core, EF Core, architecture
+- [Docker Setup](Source/Docker/DEVELOPER.md) - Container configuration and deployment
 
 ---
 
