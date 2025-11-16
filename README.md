@@ -1,9 +1,8 @@
 # POT - Paid On Time
 
-<div style="display: flex; align-items: center; gap: 20px;">
 <img src="pot-hero-image.png" alt="POT Hero" width="200"/>
-<p><strong>A financial management application to help you track accounts, expenses, and income — ensuring your bills are paid on time.</strong></p>
-</div>
+
+**A financial management application to help you track accounts, expenses, and income — ensuring your bills are paid on time.**
 
 ## About POT
 
