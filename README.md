@@ -1,4 +1,4 @@
-# POT - Paid On Time
+# POT - Pay On Time
 
 <img src="pot-hero-image.png" alt="POT Hero" width="200"/>
 
