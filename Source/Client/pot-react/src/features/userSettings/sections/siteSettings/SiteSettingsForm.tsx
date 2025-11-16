@@ -63,6 +63,9 @@ function SiteSettingsForm({ readonly = false }: SiteSettingsFormProps) {
   }, [siteDetails, form]);
 
   async function onSubmit(values: SiteSettingsFields) {
+    // Clear any previous errors
+    setError(null);
+
     const result = await updateSite.mutateAsync({
       id: siteDetails.rowId,
       data: {

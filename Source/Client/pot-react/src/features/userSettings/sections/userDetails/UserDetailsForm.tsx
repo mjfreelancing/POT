@@ -59,6 +59,9 @@ function UserDetailsForm() {
   }, [userDetails, form]);
 
   async function onSubmit(values: UserDetailsFields) {
+    // Clear any previous errors
+    setError(null);
+
     const result = await updateUser.mutateAsync({
       id: userDetails.rowId,
       data: {
