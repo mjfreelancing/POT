@@ -1,8 +1,15 @@
 # POT - Paid On Time
 
-<img src="AppLogo.png" alt="POT Logo" style="width:200px;"/>
-
-**A financial management application to help you track accounts, expenses, and income — ensuring your bills are paid on time.**
+<table>
+<tr>
+<td width="220px">
+<img src="pot-hero-image.png" alt="POT Hero" style="width:200px;"/>
+</td>
+<td>
+<strong>A financial management application to help you track accounts, expenses, and income — ensuring your bills are paid on time.</strong>
+</td>
+</tr>
+</table>
 
 ## About POT
 
