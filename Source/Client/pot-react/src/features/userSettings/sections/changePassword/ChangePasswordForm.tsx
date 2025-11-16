@@ -46,6 +46,9 @@ function ChangePasswordForm() {
   }, []);
 
   async function onSubmit(values: ChangePasswordFields) {
+    // Clear any previous errors
+    setError(null);
+
     const result = await changePassword({
       currentPassword: values.currentPassword,
       newPassword: values.newPassword,
@@ -151,6 +154,16 @@ function ChangePasswordForm() {
             </FormItem>
           )}
         />
+
+        <div className="text-xs text-muted-foreground space-y-1 pt-2">
+          <p>Password must contain:</p>
+          <ul className="list-disc list-inside space-y-0.5 ml-2">
+            <li>At least one uppercase letter</li>
+            <li>At least one lowercase letter</li>
+            <li>At least one digit</li>
+            <li>At least one special character</li>
+          </ul>
+        </div>
 
         <Button type="submit" className="w-full mt-2" disabled={isPending}>
           Change Password
