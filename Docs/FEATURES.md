@@ -123,6 +123,8 @@ POT takes security seriously:
 - **Secure Password Requirements** - Enforce strong passwords
 - **Session Management** - Automatic logout on inactivity
 
+[View detailed Authentication & Security guide →](AUTHENTICATION.md)
+
 ## Platform Administration
 
 For platform administrators only:
