@@ -1,24 +1,26 @@
-# User Approvals (Platform Admin)
+# Platform Admin
+
+## User Approvals
 
 > **Status**: Documentation in progress
 
-## Overview
+### Overview
 
 [Content to be added - User approval process overview and usage instructions]
 
-## Available to
+### Available to
 
 - Platform Admins only (requires `platform:manage` permission)
 
-## Key Features
+### Key Features
 
 [Content to be added]
 
-## Step-by-Step Guide
+### Step-by-Step Guide
 
 [Content to be added]
 
-## Tips & Best Practices
+### Tips & Best Practices
 
 [Content to be added]
 

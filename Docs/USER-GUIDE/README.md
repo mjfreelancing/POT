@@ -1,6 +1,6 @@
 # POT User Guide
 
-This guide provides detailed instructions for using each feature in POT (Paid On Time).
+This guide provides detailed instructions for using each feature in POT (Pay On Time).
 
 Each page includes step-by-step instructions and explains how features vary based on your permissions (Site Owner, Admin, or Viewer).
 
