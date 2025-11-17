@@ -10,6 +10,7 @@ Comprehensive guide for developers working on the POT ASP.NET Core backend.
 - [Relationships](#relationships)
 - [Migrations](#migrations)
 - [Database Sequences](#database-sequences)
+- [CORS Configuration](#cors-configuration)
 - [Best Practices](#best-practices)
 
 ---
@@ -433,6 +434,50 @@ END $$;
    ```csharp
    migrationBuilder.CreateSequence<int>("expense_number_seq", startValue: 1);
    ```
+
+---
+
+## CORS Configuration
+
+**Location:** `Pot.AspNetCore/Program.cs` or startup configuration
+
+### Export Feature Support
+
+For the frontend export feature to extract filenames from the `Content-Disposition` header, the backend must expose this header in CORS policy:
+
+```csharp
+app.UseCors(policy => policy
+    .WithOrigins("http://localhost:5175") // Frontend dev server
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .WithExposedHeaders("content-disposition")); // Required for export filename extraction
+```
+
+**Why This Is Needed:**
+
+- By default, browsers only expose safe CORS headers (e.g., `Content-Type`)
+- `Content-Disposition` is not a safe header and must be explicitly exposed
+- Frontend JavaScript cannot read it without this configuration
+- Used by export functionality to determine downloaded filename
+
+**Development vs Production:**
+
+```csharp
+// Development
+app.UseCors(policy => policy
+    .WithOrigins("http://localhost:5175")
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .WithExposedHeaders("content-disposition"));
+
+// Production (configure allowed origins from environment)
+var allowedOrigins = configuration["Cors:AllowedOrigins"]?.Split(',') ?? Array.Empty<string>();
+app.UseCors(policy => policy
+    .WithOrigins(allowedOrigins)
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .WithExposedHeaders("content-disposition"));
+```
 
 ---
 
