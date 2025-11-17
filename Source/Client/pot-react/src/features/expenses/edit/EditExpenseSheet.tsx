@@ -112,11 +112,8 @@ function EditExpenseSheet() {
   if (!expenseResult?.success) {
     return (
       <ErrorSheet
-        title={expenseResult?.error?.code ?? 'Error Loading Expense'}
-        description={
-          expenseResult?.error?.description ??
-          'Failed to load the expense details. Please try again.'
-        }
+        title={expenseResult.error.code}
+        description={expenseResult.error.description}
         onDismiss={() => navigate('/expenses')}
       />
     );
@@ -125,11 +122,8 @@ function EditExpenseSheet() {
   if (!accountsResult?.success) {
     return (
       <ErrorSheet
-        title={accountsResult?.error?.code ?? 'Error Loading Accounts'}
-        description={
-          accountsResult?.error?.description ??
-          'Failed to load accounts. Please try again.'
-        }
+        title={accountsResult.error.code}
+        description={accountsResult.error.description}
         onDismiss={() => navigate('/expenses')}
       />
     );

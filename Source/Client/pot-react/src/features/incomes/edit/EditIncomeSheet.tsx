@@ -111,11 +111,8 @@ function EditIncomeSheet() {
   if (!incomeResult?.success) {
     return (
       <ErrorSheet
-        title={incomeResult?.error?.code ?? 'Error Loading Income'}
-        description={
-          incomeResult?.error?.description ??
-          'Failed to load the income details. Please try again.'
-        }
+        title={incomeResult.error.code}
+        description={incomeResult.error.description}
         onDismiss={() => navigate('/incomes')}
       />
     );
@@ -124,11 +121,8 @@ function EditIncomeSheet() {
   if (!accountsResult?.success) {
     return (
       <ErrorSheet
-        title={accountsResult?.error?.code ?? 'Error Loading Accounts'}
-        description={
-          accountsResult?.error?.description ??
-          'Failed to load accounts. Please try again.'
-        }
+        title={accountsResult.error.code}
+        description={accountsResult.error.description}
         onDismiss={() => navigate('/incomes')}
       />
     );

@@ -70,11 +70,8 @@ function InviteUserSheet() {
   if (!rolesQuery.data?.success) {
     return (
       <ErrorSheet
-        title={rolesQuery.data?.error?.code ?? 'Error Loading Roles'}
-        description={
-          rolesQuery.data?.error?.description ??
-          'Failed to load the available roles. Please try again.'
-        }
+        title={rolesQuery.data.error.code}
+        description={rolesQuery.data.error.description}
         onDismiss={() => navigate('/users')}
       />
     );

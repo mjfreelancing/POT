@@ -99,11 +99,8 @@ function EditAccountSheet() {
   if (!accountResult?.success) {
     return (
       <ErrorSheet
-        title={accountResult?.error?.code ?? 'Error Loading Account'}
-        description={
-          accountResult?.error?.description ??
-          'Failed to load the account details. Please try again.'
-        }
+        title={accountResult.error.code}
+        description={accountResult.error.description}
         onDismiss={() => navigate('/accounts')}
       />
     );
