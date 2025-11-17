@@ -32,9 +32,6 @@ function useApiExport() {
           {
             responseType: 'blob',
             signal,
-            headers: {
-              'export-public-key': import.meta.env.VITE_EXPORT_PUBLIC_KEY,
-            },
           },
         );
 
