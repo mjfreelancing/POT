@@ -5,13 +5,18 @@ Comprehensive guide for developers working on the POT ASP.NET Core backend.
 ## Table of Contents
 
 - [Architecture Overview](#architecture-overview)
-- [Database & Entity Framework Core](#database--entity-framework-core)
-- [Entity Design Patterns](#entity-design-patterns)
-- [Relationships](#relationships)
+- [Entity Framework Core](#entity-framework-core)
+  - [EntityBase](#entitybase)
+  - [Entity Naming Convention](#entity-naming-convention)
+  - [Table Naming Convention](#table-naming-convention)
+- [Enriched Enums](#enriched-enums)
+- [Entity Relationships](#entity-relationships)
+- [Indexes](#indexes)
+- [Multi-Tenancy & Query Filters](#multi-tenancy--query-filters)
+- [Optimistic Concurrency (ETags)](#optimistic-concurrency-etags)
 - [Migrations](#migrations)
-- [Database Sequences](#database-sequences)
 - [CORS Configuration](#cors-configuration)
-- [Best Practices](#best-practices)
+- [Available Commands](#available-commands)
 
 ---
 
@@ -19,9 +24,9 @@ Comprehensive guide for developers working on the POT ASP.NET Core backend.
 
 **Tech Stack:**
 
-- ASP.NET Core (C#)
-- Entity Framework Core (EF Core)
-- PostgreSQL database
+- ASP.NET Core 9 (C#)
+- Entity Framework Core 9
+- PostgreSQL 17 database
 - JWT authentication
 - Role-based permissions
 
@@ -29,76 +34,68 @@ Comprehensive guide for developers working on the POT ASP.NET Core backend.
 
 ```
 Source/Server/
-├── Pot.AspNetCore/        # API controllers, middleware
+├── Pot.AspNetCore/        # API controllers, middleware, endpoints
 ├── Pot.App/               # Business logic, services
-├── Pot.Data/              # EF Core, DbContext, entities
-├── Pot.Data.Migrations/   # Database migrations
-├── Pot.Shared/            # DTOs, shared models
+├── Pot.Data/              # EF Core, DbContext, entities, repositories
+├── Pot.Data.Migrations/   # Database migrations console app
+├── Pot.Shared/            # DTOs, enumerations, shared models
 └── Pot.EmailSender/       # Email services
 ```
 
-**Key Principles:**
+**Key Architectural Principles:**
 
-- Clean separation: API → App (business logic) → Data
-- Entity Framework Core for data access
-- All database entities inherit from `EntityBase`
-- Entity names must end with `Entity` suffix
-- Code-first migrations
+- **Security First**: JWT-based authentication with role-based authorization; endpoint-level permission checks (`resource:action`); rate limiting protecting against abuse (differentiated limits for authenticated vs anonymous users); CORS configured for trusted origins only; multi-tenancy isolation via query filters
+- **Layered Clean Architecture**: Strict separation (API → App → Data) with dependency flow inward; outer layers depend on inner, never reversed
+- **Pre-Validation with Problem Details**: FluentValidation executes before business logic; all errors returned as RFC 7807 Problem Details for consistent error handling across the API surface
+- **Result Pattern for Business Logic**: Services return `EnrichedResult<T>` wrapping success/failure outcomes; business rule violations convert to Problem Details maintaining consistent error format between input validation and domain logic failures
+- **Unified 422 Validation Responses**: All validation errors (FluentValidation request validation AND service-level business rule violations) return 422 Unprocessable Entity, never 400; simplifies client-side error handling with single status code for all validation scenarios
+- **Minimal API Pattern**: Feature-based endpoint registration using route groups; authorization via `RequireAuthorization()` at endpoint level with `resource:action` permissions
+- **Multi-Tenancy by Default**: Site-based query filters automatically isolate tenant data; requires explicit `IgnoreQueryFilters()` for cross-site operations
+- **Health Checks**: API and database health monitoring at `/_health` endpoint for infrastructure monitoring and container orchestration
+- **Explicit Transactions**: Manual transaction management via `IPotTransactionFactory` when needed; SaveChanges for single operations, transactions for multi-step business logic
 
----
+**Design Conventions:**
 
-## Database & Entity Framework Core
-
-### DbContext
-
-**Location:** `Pot.Data/PotDbContext.cs`
-
-The main database context containing all `DbSet<>` properties for entities.
-
-### Connection String
-
-**Development:**
-
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Database=pot;Username=postgres;Password=yourpassword"
-  }
-}
-```
-
-**Production (Docker):**
-
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Host=postgres;Database=pot;Username=postgres;Password=password123"
-  }
-}
-```
+- All entities inherit from `EntityBase` (provides `Id`, `RowId`, `Etag`)
+- Entity names must end with `Entity` suffix (enforced in DEBUG builds)
+- Table names automatically strip the `Entity` suffix (e.g., `AccountEntity` → `Account` table)
+- Enriched enums stored as strings for database readability
+- Code-first migrations for all schema changes
+- Public APIs use `RowId` (Guid), never `Id` (int) to prevent leaking internal database identifiers
 
 ---
 
-## Entity Design Patterns
+## Entity Framework Core
 
-### Base Entity
+### EntityBase
 
-**All entities must inherit from `EntityBase`:**
+**Location:** `Pot.Data/Entities/EntityBase.cs`
+
+All entities **must** inherit from `EntityBase`:
 
 ```csharp
+[Index(nameof(RowId), IsUnique = true)]
+[Index(nameof(Etag), IsUnique = false)]
 public abstract class EntityBase
 {
-    public Guid Id { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
+    public int Id { get; set; }          // Primary key (auto-increment)
+    public Guid RowId { get; set; }      // Public identifier (auto-generated)
+    public long Etag { get; set; }       // Optimistic concurrency token (auto-updated)
 }
 ```
 
-**Benefits:**
+**Why Three Identifiers?**
 
-- Consistent ID pattern (GUID)
-- Automatic audit timestamps
-- Shared behavior across all entities
+- **`Id` (int)**: Database primary key - efficient joins and foreign keys
+- **`RowId` (Guid)**: Public API identifier - prevents leaking internal database IDs to consumers
+- **`Etag` (long)**: Optimistic concurrency token - detects concurrent updates
+
+**All API requests/responses use `RowId`, never `Id`.**
+
+**Auto-Generation:**
+
+- `RowId`: Auto-generated on insert via `GuidValueGenerator`
+- `Etag`: Auto-updated on insert/update via `DbContextBase.OnBeforeSave()`
 
 ### Entity Naming Convention
 
@@ -108,676 +105,961 @@ public abstract class EntityBase
 // ✅ GOOD
 public class AccountEntity : EntityBase { }
 public class ExpenseEntity : EntityBase { }
-public class IncomeEntity : EntityBase { }
+public class UserEntity : EntityBase { }
 
-// ❌ BAD
+// ❌ BAD - will throw InvalidOperationException in DEBUG builds
 public class Account : EntityBase { }
 public class Expense : EntityBase { }
 ```
 
 **Why?**
 
-- Clear distinction between entities and DTOs
+- Clear distinction between entities (database models) and DTOs (API models)
 - Prevents naming conflicts
-- Consistency across codebase
+- Enforced consistency across codebase
 
-### Example Entity
+**Enforcement:**
 
 ```csharp
-public class AccountEntity : EntityBase
+// DbContextBase.cs - ValidateEntity() runs in DEBUG builds only
+if (!entityName.EndsWith(EntitySuffix))
 {
-    public string Name { get; set; } = string.Empty;
-    public decimal Balance { get; set; }
-    public Guid UserId { get; set; }
-
-    // Navigation properties
-    public UserEntity User { get; set; } = null!;
-    public ICollection<ExpenseEntity> Expenses { get; set; } = new List<ExpenseEntity>();
-    public ICollection<IncomeEntity> Incomes { get; set; } = new List<IncomeEntity>();
+    throw new InvalidOperationException(
+        $"The entity '{entityType.ClrType}' does not have a suffix of '{EntitySuffix}'."
+    );
 }
 ```
+
+### Table Naming Convention
+
+**Table names automatically strip the `Entity` suffix:**
+
+```csharp
+// Entity class
+public class AccountEntity : EntityBase { }
+
+// Database table name
+→ "Account"
+```
+
+**Implementation:**
+
+```csharp
+// DbContextBase.cs - SetTableName()
+private static void SetTableName(IMutableEntityType entityType, string entityName)
+{
+    var tableName = entityName[..^EntitySuffix.Length];
+    entityType.SetTableName(tableName);
+}
+```
+
+**Example Entity:**
+
+```csharp
+// Pot.Data/Entities/AccountEntity.cs
+[Index(nameof(Description), IsUnique = true)]
+[Index(nameof(Bsb), nameof(Number), IsUnique = true)]
+public sealed class AccountEntity : EntityBase
+{
+    [Required]
+    [AccountBsb]
+    [MaxLength(7)]
+    public required string Bsb { get; set; }
+
+    [Required]
+    [MaxLength(20)]
+    public required string Number { get; set; }
+
+    [Required]
+    [MediumString]
+    [Citext]
+    public required string Description { get; set; }
+
+    public double Balance { get; set; }
+    public double Reserved { get; set; }
+
+    // Navigation properties
+    public required SiteEntity Site { get; set; }
+    public ICollection<IncomeEntity> Incomes { get; set; } = [];
+    public ICollection<ExpenseEntity> Expenses { get; set; } = [];
+}
+```
+
+### Entity Conventions
+
+1. **Always inherit from EntityBase**
+
+   ```csharp
+   public sealed class MyEntity : EntityBase { }
+   ```
+
+2. **Use `Entity` suffix** (enforced in DEBUG builds)
+
+   ```csharp
+   public sealed class AccountEntity : EntityBase { }
+   ```
+
+3. **Initialize collections with `[]`**
+
+   ```csharp
+   public ICollection<ExpenseEntity> Expenses { get; set; } = [];
+   ```
+
+4. **Use `required` for non-nullable reference properties**
+
+   ```csharp
+   public required string Description { get; set; }
+   public required AccountEntity Account { get; set; }
+   ```
+
+5. **Seal entity classes** (prevents inheritance unless explicitly designed for it)
+
+   ```csharp
+   public sealed class AccountEntity : EntityBase { }
+   ```
+
+6. **Use Data Annotations** for simple validation
+
+   ```csharp
+   [Required]
+   [MaxLength(100)]
+   public required string Description { get; set; }
+   ```
+
+7. **Create custom validation attributes** for domain-specific rules
+
+   ```csharp
+   [AccountBsb]  // See Pot.Data/Annotations/
+   public required string Bsb { get; set; }
+   ```
+
+### Entity Configuration
+
+1. **Use Fluent API for complex relationships**
+
+   ```csharp
+   // PotDbContext.cs - OnModelCreating()
+   modelBuilder.Entity<UserEntity>()
+       .HasMany(u => u.Roles)
+       .WithMany(r => r.Users)
+       .UsingEntity("UserRole");
+   ```
+
+2. **Set default values explicitly when needed**
+
+   ```csharp
+   modelBuilder.Entity<ExpenseEntity>()
+       .Property(e => e.AccruedIsDirty)
+       .HasDefaultValue(true);
+   ```
+
+3. **Use global query filters** for multi-tenancy
+
+   ```csharp
+   modelBuilder.Entity<AccountEntity>()
+       .HasQueryFilter(a => a.Site.Id == GetCurrentUserSiteId());
+   ```
+
+### Performance Considerations
+
+1. **Use `WithTracking()` only when persisting changes**
+
+   ```csharp
+   // ✅ GOOD - No tracking needed for read-only queries (default behavior)
+   var accounts = await _accountRepository.GetAllAccountsAsync(cancellationToken);
+
+   // ✅ GOOD - Enable tracking when updating entities
+   using (_accountRepository.WithTracking())
+   {
+       var account = await _accountRepository.GetAccountAsync(id, cancellationToken);
+       account.Balance = newBalance;
+       await _accountRepository.SaveAsync(cancellationToken);
+   }
+
+   // ❌ BAD - Don't use AsNoTracking() (already default behavior)
+   var accounts = await context.Accounts.AsNoTracking().ToListAsync();
+   ```
+
+   **Why:** DbContext is configured with `QueryTrackingBehavior.NoTrackingWithIdentityResolution` by default for performance. Repositories expose `WithTracking()` which calls `WithAutoTracking()` on the `DbContext` internally - this uses reference counting via `ConditionalWeakTable` to enable tracking only within the using scope, then automatically restores no-tracking behavior. This supports nested scopes safely (see `Pot.Data/Extensions/DbContextExtensions.cs`).
+
+2. **Use `Include()` to avoid N+1 queries**
+
+   ```csharp
+   var users = await context.Users
+       .Include(u => u.Roles)
+       .ToListAsync();
+   ```
+
+3. **Project to DTOs** to reduce data transfer
+
+   ```csharp
+   var accountDtos = await context.Accounts
+       .Select(a => new AccountDto
+       {
+           RowId = a.RowId,
+           Description = a.Description,
+           Balance = a.Balance
+       })
+       .ToListAsync();
+   ```
+
+4. **Use specifications pattern** for reusable query logic
+
+   ```csharp
+   // See Pot.Data/Repositories/*/Specifications/ for examples
+   return Accounts.Where(AccountSpecifications.IsSameBsbNumber(bsb, number).Expression);
+   ```
+
+### API Design Guidelines
+
+1. **Always use `RowId` in requests/responses**, never `Id`
+
+   ```csharp
+   // ✅ GOOD
+   public record AccountDto(Guid RowId, string Description);
+
+   // ❌ BAD - exposes internal database ID
+   public record AccountDto(int Id, string Description);
+   ```
+
+2. **Include `Etag` in responses** for optimistic concurrency
+
+   ```csharp
+   public record AccountDto(Guid RowId, string Description, long Etag);
+   ```
+
+3. **Use enriched enums** for type-safe, human-readable values
+
+   ```csharp
+   public required Frequency Frequency { get; set; }  // Not int or string
+   ```
 
 ---
 
-## Relationships
+## Enriched Enums
 
-### One-to-Many Relationships
+**Location:** `Pot.Shared/Enumerations/`
 
-**Pattern:**
+POT uses **enriched enums** (type-safe enum pattern) instead of standard C# enums.
 
-1. Foreign key property in dependent entity
-2. Navigation property in dependent entity (reference)
-3. Navigation property in principal entity (collection)
+### What Are Enriched Enums?
 
-**Example:** User has many Accounts
+Enriched enums are classes that provide type-safe, named constants with additional functionality:
 
 ```csharp
-// Principal: UserEntity
-public class UserEntity : EntityBase
+// Pot.Shared/Enumerations/Frequency.cs
+public sealed class Frequency : EnrichedEnum<Frequency>
 {
-    public string Email { get; set; } = string.Empty;
+    // Note: The enums stored in the database have a max length of 50 characters
+    public static readonly Frequency Days = new(1);
+    public static readonly Frequency Weeks = new(2);
+    public static readonly Frequency Months = new(3);
+    public static readonly Frequency Years = new(4);
+    public static readonly Frequency OneTime = new(5);
 
-    // Collection navigation property
-    public ICollection<AccountEntity> Accounts { get; set; } = new List<AccountEntity>();
-}
-
-// Dependent: AccountEntity
-public class AccountEntity : EntityBase
-{
-    public string Name { get; set; } = string.Empty;
-
-    // Foreign key
-    public Guid UserId { get; set; }
-
-    // Reference navigation property
-    public UserEntity User { get; set; } = null!;
+    private Frequency(int value, [CallerMemberName] string? name = default)
+        : base(value, name!)
+    {
+    }
 }
 ```
 
-**Configuration (Fluent API):**
+### Database Storage
+
+**Enriched enums are stored as strings** in the database:
 
 ```csharp
-modelBuilder.Entity<AccountEntity>()
-    .HasOne(a => a.User)
-    .WithMany(u => u.Accounts)
-    .HasForeignKey(a => a.UserId)
-    .OnDelete(DeleteBehavior.Cascade);
+// DbContextBase.cs - ConfigureEnrichedEnum()
+private static void ConfigureEnrichedEnum(ModelBuilder modelBuilder)
+{
+    // All enriched enum's across all entities will be stored as strings
+    modelBuilder.UseEnrichedEnum(options => options.AsName(maxLength: 50));
+}
+```
+
+**Why Strings Instead of Integers?**
+
+- **Clarity**: Database queries and exports are human-readable (`"Months"` vs `3`)
+- **Debugging**: Easier to understand data without lookup tables
+- **Refactoring**: Adding/removing enum values doesn't break existing data
+- **Trade-off**: Acknowledged that integers are more space/time efficient, but readability wins
+
+**Example in Database:**
+
+```sql
+-- ExpenseEntity with Frequency
+SELECT description, frequency FROM "Expense";
+
+-- Results show human-readable strings:
+-- "Rent"       | "Months"
+-- "Electricity"| "Months"
+-- "Insurance"  | "Years"
+```
+
+### Serialization Configuration
+
+**Required for API requests/responses:**
+
+```csharp
+// Pot.AspNetCore/Program.cs - AddHttpJsonOptions()
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(EnrichedEnumJsonConverter<Frequency>.Create());
+    options.SerializerOptions.Converters.Add(EnrichedEnumJsonConverter<UserStatus>.Create());
+    options.SerializerOptions.Converters.Add(EnrichedEnumJsonConverter<ApprovalStatus>.Create());
+    // ... add converter for each enriched enum
+});
+```
+
+**Why Converters Are Required:**
+
+Without these converters, JSON serialization/deserialization fails with non-obvious errors. The converters translate between:
+
+- **Requests**: JSON string → Enriched enum instance
+- **Responses**: Enriched enum instance → JSON string
+
+**Example API Usage:**
+
+```json
+// Request body
+{
+  "description": "Rent",
+  "frequency": "Months",
+  "frequencyCount": 1
+}
+
+// Response body
+{
+  "rowId": "550e8400-e29b-41d4-a716-446655440000",
+  "description": "Rent",
+  "frequency": "Months",
+  "frequencyCount": 1
+}
+```
+
+### Available Enriched Enums
+
+- `Frequency` - Days, Weeks, Months, Years, OneTime
+- `UserStatus` - Active, Inactive, Approval, Suspended
+- `ApprovalStatus` - Pending, Approved, Rejected
+- `Role` - Admin, User, etc.
+- `Permission` - account:view, expense:manage, etc.
+- `OtpStatus` - Pending, Used, Expired
+- `OtpReason` - Login, Registration, PasswordReset
+- `SettingCategory` - Application settings categories
+
+---
+
+## Entity Relationships
+
+### One-to-Many Relationships
+
+**Pattern:** Foreign key in dependent entity + navigation properties
+
+**Example:** Account has many Expenses
+
+```csharp
+// AccountEntity.cs
+public sealed class AccountEntity : EntityBase
+{
+    public required string Description { get; set; }
+
+    // Collection navigation property
+    public ICollection<ExpenseEntity> Expenses { get; set; } = [];
+}
+
+// ExpenseEntity.cs
+public sealed class ExpenseEntity : EntityBase
+{
+    public required string Description { get; set; }
+
+    // Reference navigation property
+    public required AccountEntity Account { get; set; }
+}
+```
+
+**EF Core Configuration:**
+
+Relationships are configured using **Data Annotations** (Index attributes) and conventions. Explicit Fluent API configuration is used only when needed.
+
+**Collection Initialization:**
+
+Use `[]` (collection expression) for new collections:
+
+```csharp
+// ✅ GOOD - Modern C# collection expression
+public ICollection<ExpenseEntity> Expenses { get; set; } = [];
+
+// ❌ OUTDATED - Don't use
+public ICollection<ExpenseEntity> Expenses { get; set; } = new List<ExpenseEntity>();
 ```
 
 ### Many-to-Many Relationships
 
-**Two approaches:**
+**POT uses skip navigation properties** (EF Core automatically creates join tables):
 
-#### 1. With Explicit Join Entity (Recommended for complex joins)
-
-**Example:** User and Role relationship with additional metadata
+**Example:** User and Role relationship
 
 ```csharp
-// Join Entity
-public class UserRoleEntity : EntityBase
+// UserEntity.cs
+public sealed class UserEntity : EntityBase
 {
-    public Guid UserId { get; set; }
-    public Guid RoleId { get; set; }
-    public DateTime AssignedAt { get; set; }
+    public required string Username { get; set; }
 
-    // Navigation properties
-    public UserEntity User { get; set; } = null!;
-    public RoleEntity Role { get; set; } = null!;
+    // Skip navigation property (skips join table)
+    public ICollection<RoleEntity> Roles { get; set; } = [];
 }
 
-// UserEntity
-public class UserEntity : EntityBase
+// RoleEntity.cs
+public sealed class RoleEntity : EntityBase
 {
-    public ICollection<UserRoleEntity> UserRoles { get; set; } = new List<UserRoleEntity>();
-}
+    public required Role Name { get; set; }
 
-// RoleEntity
-public class RoleEntity : EntityBase
-{
-    public ICollection<UserRoleEntity> UserRoles { get; set; } = new List<UserRoleEntity>();
+    // Skip navigation property (skips join table)
+    public ICollection<UserEntity> Users { get; set; } = [];
 }
 ```
 
 **Configuration:**
 
 ```csharp
-modelBuilder.Entity<UserRoleEntity>()
-    .HasKey(ur => new { ur.UserId, ur.RoleId });
-
-modelBuilder.Entity<UserRoleEntity>()
-    .HasOne(ur => ur.User)
-    .WithMany(u => u.UserRoles)
-    .HasForeignKey(ur => ur.UserId);
-
-modelBuilder.Entity<UserRoleEntity>()
-    .HasOne(ur => ur.Role)
-    .WithMany(r => r.UserRoles)
-    .HasForeignKey(ur => ur.RoleId);
+// PotDbContext.cs - OnModelCreating()
+modelBuilder
+    .Entity<UserEntity>()
+    .HasMany(user => user.Roles)
+    .WithMany(role => role.Users)
+    .UsingEntity("UserRole");  // Join table name
 ```
 
-#### 2. Without Join Entity (Simple relationships)
+**Why Skip Navigation?**
 
-**Example:** Simple tags relationship
+- Simpler entity models (no explicit join entity)
+- EF Core manages join table automatically
+- Cleaner queries: `user.Roles` instead of `user.UserRoles.Select(ur => ur.Role)`
+
+**Additional Example:** Role and Permission
 
 ```csharp
-// UserEntity
-public class UserEntity : EntityBase
-{
-    public ICollection<TagEntity> Tags { get; set; } = new List<TagEntity>();
-}
+// RoleEntity.cs
+public ICollection<PermissionEntity> Permissions { get; set; } = [];
 
-// TagEntity
-public class TagEntity : EntityBase
-{
-    public ICollection<UserEntity> Users { get; set; } = new List<UserEntity>();
-}
+// PermissionEntity.cs
+public ICollection<RoleEntity> Roles { get; set; } = [];
+
+// Configuration creates "RolePermission" join table
+modelBuilder
+    .Entity<RoleEntity>()
+    .HasMany(role => role.Permissions)
+    .WithMany(permission => permission.Roles)
+    .UsingEntity("RolePermission");
 ```
 
-**Configuration:**
+### Cascade Delete Behavior
+
+**Default:** Cascade delete is **disabled globally** for all foreign keys.
 
 ```csharp
-modelBuilder.Entity<UserEntity>()
-    .HasMany(u => u.Tags)
-    .WithMany(t => t.Users)
-    .UsingEntity(j => j.ToTable("UserTags"));
+// DbContextBase.cs - DisableCascadeDelete()
+private static void DisableCascadeDelete(IMutableEntityType entityType)
+{
+    var foreignKeys = entityType.GetForeignKeys();
+
+    foreach (var foreignKey in foreignKeys)
+    {
+        foreignKey.DeleteBehavior = DeleteBehavior.Restrict;
+    }
+}
 ```
+
+**Why Restrict by Default?**
+
+**Opinionated approach:** It's better to know you've coded something incorrectly (foreign key constraint violation) rather than allow the database to silently delete data you're not immediately aware of.
+
+---
+
+## Indexes
+
+### Index Definition
+
+Indexes are defined using **Data Annotations** directly on entity classes:
+
+```csharp
+// AccountEntity.cs
+[Index(nameof(Description), IsUnique = true)]
+[Index(nameof(Bsb), nameof(Number), IsUnique = true)]
+public sealed class AccountEntity : EntityBase
+{
+    public required string Description { get; set; }
+    public required string Bsb { get; set; }
+    public required string Number { get; set; }
+}
+```
+
+### Single Column Index
+
+```csharp
+[Index(nameof(Username), IsUnique = true)]
+public sealed class UserEntity : EntityBase
+{
+    public required string Username { get; set; }
+}
+```
+
+### Composite Index
+
+```csharp
+[Index("AccountId", nameof(Description), IsUnique = true)]
+public sealed class ExpenseEntity : EntityBase
+{
+    public required string Description { get; set; }
+    public required AccountEntity Account { get; set; }
+}
+```
+
+**Note:** Use `"AccountId"` (string) for foreign key properties that aren't explicitly declared, or `nameof()` for declared properties.
+
+### Multiple Indexes
+
+```csharp
+[Index(nameof(Status), nameof(ExpiryUtc))]
+[Index(nameof(Username), nameof(Status), nameof(CreatedUtc))]
+[Index(nameof(Reason), nameof(Username), nameof(RefCode))]
+public sealed class OneTimePasswordEntity : EntityBase
+{
+    // Properties...
+}
+```
+
+### EntityBase Indexes
+
+All entities automatically inherit these indexes from `EntityBase`:
+
+```csharp
+[Index(nameof(RowId), IsUnique = true)]  // Unique index on public identifier
+[Index(nameof(Etag), IsUnique = false)]  // Index for optimistic concurrency queries
+public abstract class EntityBase
+```
+
+### Index Guidelines
+
+1. **Use Data Annotations** for index definitions
+
+   ```csharp
+   [Index(nameof(Username), IsUnique = true)]
+   public sealed class UserEntity : EntityBase { }
+   ```
+
+2. **Create composite indexes** to enforce uniqueness constraints
+
+   ```csharp
+   [Index("AccountId", nameof(Description), IsUnique = true)]
+   ```
+
+3. **Index foreign keys and frequently queried columns**
+
+---
+
+## Multi-Tenancy & Query Filters
+
+### Site-Based Filtering
+
+POT implements **multi-tenancy** using global query filters that automatically filter entities by the current user's Site.
+
+**Location:** `Pot.Data/PotDbContext.cs`
+
+```csharp
+private void SetupQueryFilters(ModelBuilder modelBuilder)
+{
+    // Site-specific filter for Accounts
+    modelBuilder
+        .Entity<AccountEntity>()
+        .HasQueryFilter(account => account.Site.Id == GetCurrentUserSiteId());
+
+    // Site-specific filter for Expenses (via Account relationship)
+    modelBuilder
+        .Entity<ExpenseEntity>()
+        .HasQueryFilter(expense => expense.Account.Site.Id == GetCurrentUserSiteId());
+
+    // Site-specific filter for Incomes (via Account relationship)
+    modelBuilder
+        .Entity<IncomeEntity>()
+        .HasQueryFilter(income => income.Account.Site.Id == GetCurrentUserSiteId());
+}
+
+private int GetCurrentUserSiteId()
+{
+    _currentUserSiteId ??= Set<UserEntity>()
+        .Include(user => user.Site)
+        .Single(user => user.RowId == _currentUserContext.UserRowId)
+        .Site.Id;
+
+    return _currentUserSiteId.Value;
+}
+```
+
+**How It Works:**
+
+- Every query automatically filters results to the current user's Site
+- Users can only see data belonging to their Site
+- Prevents accidental cross-site data access
+- Applied automatically by EF Core
+
+**Example:**
+
+```csharp
+// This query automatically filters by current user's Site
+var accounts = await _dbContext.Accounts.ToListAsync();
+
+// Equivalent to:
+var accounts = await _dbContext.Accounts
+    .Where(a => a.Site.Id == currentUserSiteId)
+    .ToListAsync();
+```
+
+### Bypassing Query Filters
+
+**Use Case:** When global uniqueness checks or cross-site operations are needed.
+
+```csharp
+// Check if account number exists globally (across all sites)
+var exists = await Accounts
+    .IgnoreQueryFilters()
+    .AnyAsync(a => a.Bsb == bsb && a.Number == number);
+```
+
+**Example Use Cases:**
+
+1. **Global Uniqueness:** Account BSB/Number must be unique across all sites
+
+```csharp
+// Pot.Data/Repositories/Accounts/AccountRepository.cs
+public Task<bool> AccountExistsAsync(string bsb, string number, CancellationToken cancellationToken)
+{
+    // Account numbers are globally unique
+    return Accounts
+        .IgnoreQueryFilters()
+        .AnyAsync(AccountSpecifications.IsSameBsbNumber(bsb, number).Expression, cancellationToken);
+}
+```
+
+2. **Cross-Site Admin Operations:** Platform admins viewing pending user approvals
+
+```csharp
+// Pot.App/Features/Approvals/Pending/GetPendingApprovalsService.cs
+var users = await _userRepository.Users
+    .IgnoreQueryFilters()
+    .Where(user => user.Status == UserStatus.Approval)
+    .ToListAsync(cancellationToken);
+```
+
+### Using Query Filters
+
+1. **Use `IgnoreQueryFilters()`** only when needed
+
+   ```csharp
+   // For global uniqueness checks
+   var exists = await Accounts
+       .IgnoreQueryFilters()
+       .AnyAsync(a => a.Bsb == bsb && a.Number == number);
+   ```
+
+2. **Document why filters are bypassed**
+
+   ```csharp
+   // Account numbers are globally unique across all sites
+   return Accounts.IgnoreQueryFilters().AnyAsync(/*...*/);
+   ```
+
+---
+
+## Optimistic Concurrency (ETags)
+
+### What is an ETag?
+
+**ETag** (Entity Tag) is a timestamp-based token used for optimistic concurrency control. It prevents lost updates when multiple users edit the same entity simultaneously.
+
+**Location:** `EntityBase.Etag` property
+
+```csharp
+public abstract class EntityBase
+{
+    public int Id { get; set; }
+    public Guid RowId { get; set; }
+    public long Etag { get; set; }  // Auto-updated on every save
+}
+```
+
+### How It Works
+
+**Automatic ETag Generation:**
+
+```csharp
+// DbContextBase.cs - OnBeforeSave()
+private void OnBeforeSave()
+{
+    var entries = ChangeTracker
+        .Entries()
+        .Where(entry => entry.State is EntityState.Added or EntityState.Modified);
+
+    foreach (var entry in entries)
+    {
+        var entity = entry.Entity as EntityBase;
+
+        if (entity is not null)
+        {
+            entity.Etag = DateTime.UtcNow.GetEtag();  // Unix timestamp
+        }
+    }
+}
+```
+
+**ETag Values:**
+
+- Generated from `DateTime.UtcNow` converted to Unix timestamp (long)
+- Updated automatically on insert and update operations
+- Unique per save operation (timestamp precision)
+
+### Usage Pattern
+
+1. **Client retrieves entity** with current ETag
+2. **User modifies data**
+3. **Client sends update** with original ETag
+4. **Server compares** ETag in request vs database
+5. **If ETags match** → Update succeeds, new ETag generated
+6. **If ETags differ** → Concurrent modification detected, update rejected
+
+**Example API Flow:**
+
+```csharp
+// GET response includes ETag
+{
+  "rowId": "550e8400-e29b-41d4-a716-446655440000",
+  "description": "Rent",
+  "etag": 1700000000
+}
+
+// PUT request includes ETag
+{
+  "rowId": "550e8400-e29b-41d4-a716-446655440000",
+  "description": "Monthly Rent",
+  "etag": 1700000000  // Must match database value
+}
+```
+
+### Why Optimistic Concurrency?
+
+- Prevents "last write wins" conflicts
+- No locking required (better performance)
+- Client is notified of conflicts and can handle appropriately
+- Standard pattern for distributed systems and REST APIs
 
 ---
 
 ## Migrations
 
+**Location:** `Pot.Data.Migrations/` - Console application for database migrations
+
 ### Creating Migrations
 
-#### Visual Studio Package Manager Console
+**Using .NET CLI** (Recommended):
+
+```bash
+# From Source/Server directory
+dotnet ef migrations add MigrationName --project Pot.Data.Migrations
+```
+
+**Using Visual Studio Package Manager Console:**
 
 ```powershell
 # Set Pot.Data.Migrations as startup project
-Add-Migration AddNewFeature -Project Pot.Data.Migrations -StartupProject Pot.Data.Migrations
-
-# Or from Pot.AspNetCore
-Add-Migration AddNewFeature -Project Pot.Data.Migrations -StartupProject Pot.AspNetCore
+Add-Migration MigrationName -Project Pot.Data.Migrations
 ```
 
-#### .NET CLI
-
-```bash
-# From solution root
-cd Source/Server
-dotnet ef migrations add AddNewFeature --project Pot.Data.Migrations
-```
-
-**Migration Naming:**
+**Migration Naming Conventions:**
 
 - Use PascalCase
-- Be descriptive: `AddExpenseCategory`, `UpdateUserPermissions`
-- Prefix with action: `Add`, `Update`, `Remove`, `Create`
+- Be descriptive: `AddUserApprovalStatus`, `UpdateAccountIndexes`
+- Prefix with action verb: `Add`, `Update`, `Remove`, `Create`
 
 ### Applying Migrations
 
-#### Visual Studio Package Manager Console
-
-```powershell
-Update-Database -Project Pot.Data.Migrations
-```
-
-#### .NET CLI
+**Using .NET CLI:**
 
 ```bash
 cd Source/Server
 dotnet ef database update --project Pot.Data.Migrations
 ```
 
-#### Using Pot.Data.Migrations Console App
+**Using Visual Studio:**
 
-The `Pot.Data.Migrations` project includes a console application that can apply migrations at startup.
+```powershell
+Update-Database -Project Pot.Data.Migrations
+```
 
-**When to use:**
+**Using Migrations Console App:**
 
-- Docker containers (automatic migration on startup)
+The `Pot.Data.Migrations` project is a console application that automatically applies pending migrations on startup.
+
+```bash
+cd Source/Server/Pot.Data.Migrations
+dotnet run
+```
+
+**When Used:**
+
+- Docker container startup (automatic migrations)
 - CI/CD pipelines
 - First-time database setup
+- Production deployments
 
-**Configuration:**
+**How It Works:**
 
 ```csharp
-// Program.cs in Pot.Data.Migrations
-var connectionString = configuration.GetConnectionString("DefaultConnection");
-using var scope = services.BuildServiceProvider().CreateScope();
-var dbContext = scope.ServiceProvider.GetRequiredService<PotDbContext>();
-await dbContext.Database.MigrateAsync(); // Applies all pending migrations
+// Pot.Data.Migrations/Program.cs
+await GenericHost
+    .CreateConsoleHostBuilder<App>(args)
+    .ConfigureServices((hostContext, services) =>
+    {
+        services
+            .AddDbContextFactory<PotDbContext>(/*...*/)
+            .AddSingleton<IDatabaseMigrator, PotDbMigrator>();
+    })
+    .RunConsoleAsync();
+
+// App.cs applies migrations
+await dbContext.Database.MigrateAsync();  // Applies all pending migrations
 ```
 
 ### Rollback Migrations
 
 ```bash
-# Visual Studio
-Update-Database -Migration PreviousMigrationName -Project Pot.Data.Migrations
-
 # .NET CLI
 dotnet ef database update PreviousMigrationName --project Pot.Data.Migrations
+
+# Visual Studio
+Update-Database -Migration PreviousMigrationName -Project Pot.Data.Migrations
 ```
 
 ### Remove Last Migration (not yet applied)
 
 ```bash
-# Visual Studio
-Remove-Migration -Project Pot.Data.Migrations
-
 # .NET CLI
 dotnet ef migrations remove --project Pot.Data.Migrations
+
+# Visual Studio
+Remove-Migration -Project Pot.Data.Migrations
 ```
 
----
+### Migration Guidelines
 
-## Database Sequences
-
-### What are Sequences?
-
-PostgreSQL sequences generate unique numeric identifiers. In POT, they're used for human-readable IDs (e.g., expense numbers, invoice numbers).
-
-**Difference from GUIDs:**
-
-- Sequences: Sequential integers (1, 2, 3, ...)
-- GUIDs: Random unique identifiers (EntityBase.Id)
-
-### When to Use Sequences
-
-- User-facing identifiers: Invoice numbers, expense IDs
-- Sequential numbering: Order numbers, ticket IDs
-- NOT for primary keys (use GUID from EntityBase)
-
-### Defining Sequences
-
-```csharp
-// In entity configuration
-modelBuilder.HasSequence<int>("expense_number_seq")
-    .StartsAt(1)
-    .IncrementsBy(1);
-
-modelBuilder.Entity<ExpenseEntity>()
-    .Property(e => e.ExpenseNumber)
-    .HasDefaultValueSql("nextval('expense_number_seq')");
-```
-
-### Common Issue: Out-of-Sync Sequences
-
-**Symptoms:**
-
-- Duplicate key violations on insert
-- Sequence generates numbers already in use
-
-**Cause:**
-
-- Manual data imports with explicit sequence values
-- Database restore from backup
-- Manually inserted rows
-
-**Fix:**
-
-```sql
--- Find the maximum value currently in use
-SELECT MAX(expense_number) FROM expenses;
-
--- Reset sequence to max + 1
-SELECT setval('expense_number_seq', (SELECT MAX(expense_number) FROM expenses));
-```
-
-**Automated Fix Script:**
-
-```sql
--- For all sequences in database
-DO $$
-DECLARE
-    seq_name text;
-    max_val bigint;
-BEGIN
-    FOR seq_name IN
-        SELECT sequence_name
-        FROM information_schema.sequences
-        WHERE sequence_schema = 'public'
-    LOOP
-        EXECUTE format('SELECT setval(''%I'', COALESCE((SELECT MAX(id) FROM %I), 1))',
-                      seq_name,
-                      REPLACE(seq_name, '_seq', ''));
-    END LOOP;
-END $$;
-```
-
-### Preventing Sequence Issues
-
-1. **Never manually set sequence values** unless resetting
-2. **After bulk imports**, reset sequences:
-   ```sql
-   SELECT setval('expense_number_seq', (SELECT MAX(expense_number) FROM expenses));
-   ```
-3. **In migrations**, use sequence configuration:
-   ```csharp
-   migrationBuilder.CreateSequence<int>("expense_number_seq", startValue: 1);
-   ```
+1. **Review generated migrations** before applying
+2. **Keep migrations small and focused** - one feature per migration
+3. **Test on development database** before production
+4. **Never modify applied migrations** - create new migration to fix issues
+5. **Use descriptive names** for easy history tracking
 
 ---
 
 ## CORS Configuration
 
-**Location:** `Pot.AspNetCore/Program.cs` or startup configuration
+**Location:** `Pot.AspNetCore/Concerns/Cors/`
 
-### Export Feature Support
+POT uses a configuration-based CORS system that loads allowed origins from `appsettings.json`.
 
-For the frontend export feature to extract filenames from the `Content-Disposition` header, the backend must expose this header in CORS policy:
-
-```csharp
-app.UseCors(policy => policy
-    .WithOrigins("http://localhost:5175") // Frontend dev server
-    .AllowAnyMethod()
-    .AllowAnyHeader()
-    .WithExposedHeaders("content-disposition")); // Required for export filename extraction
-```
-
-**Why This Is Needed:**
-
-- By default, browsers only expose safe CORS headers (e.g., `Content-Type`)
-- `Content-Disposition` is not a safe header and must be explicitly exposed
-- Frontend JavaScript cannot read it without this configuration
-- Used by export functionality to determine downloaded filename
-
-**Development vs Production:**
+### Configuration Setup
 
 ```csharp
-// Development
-app.UseCors(policy => policy
-    .WithOrigins("http://localhost:5175")
-    .AllowAnyMethod()
-    .AllowAnyHeader()
-    .WithExposedHeaders("content-disposition"));
+// Pot.AspNetCore/Program.cs
+builder
+    .AddPotCors()  // Configures CORS from configuration
+    // ...
 
-// Production (configure allowed origins from environment)
-var allowedOrigins = configuration["Cors:AllowedOrigins"]?.Split(',') ?? Array.Empty<string>();
-app.UseCors(policy => policy
-    .WithOrigins(allowedOrigins)
-    .AllowAnyMethod()
-    .AllowAnyHeader()
-    .WithExposedHeaders("content-disposition"));
+app.UseCors();  // Must be before UseAuthentication/UseAuthorization
 ```
+
+### CORS Policy
+
+```csharp
+// Pot.AspNetCore/Concerns/Cors/Configuration/CorsOptionsSetup.cs
+public void Configure(CorsOptions options)
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy
+            // Allow frontend URLs from configuration
+            .WithOrigins(_corsConfiguration.AllowedOrigins)
+
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+
+            // Required for authentication (cookies/tokens)
+            .AllowCredentials()
+
+            // Expose content-disposition for file downloads
+            .WithExposedHeaders("content-disposition");
+    });
+}
+```
+
+### Why Expose `content-disposition`?
+
+The frontend export feature needs to extract filenames from the `Content-Disposition` header. By default, browsers only expose "safe" CORS headers (`Content-Type`, `Cache-Control`, etc.).
+
+**Without this configuration:**
+
+- Browser blocks access to `Content-Disposition` header
+- Frontend cannot determine downloaded filename
+- Export feature fails silently
+
+**With this configuration:**
+
+- Frontend can read `Content-Disposition: attachment; filename="export-2025-11-18.pot"`
+- Export downloads work correctly
+
+### Configuration File
+
+```json
+// appsettings.Development.json
+{
+  "Cors": {
+    "AllowedOrigins": [
+      "http://localhost:5175" // Vite dev server
+    ]
+  }
+}
+```
+
+**Important:** The ASP.NET Core CORS policy cannot use `AllowAnyOrigin()` with `AllowCredentials()` - must specify explicit origins.
 
 ---
 
-## Best Practices
+## Available Commands
 
-### Entity Design
+### Development
 
-1. **Always inherit from EntityBase**
-
-   ```csharp
-   public class MyEntity : EntityBase { }
-   ```
-
-2. **Use Entity suffix**
-
-   ```csharp
-   public class AccountEntity : EntityBase { }
-   ```
-
-3. **Initialize collections**
-
-   ```csharp
-   public ICollection<ExpenseEntity> Expenses { get; set; } = new List<ExpenseEntity>();
-   ```
-
-4. **Use non-nullable reference types**
-   ```csharp
-   public string Name { get; set; } = string.Empty;
-   public UserEntity User { get; set; } = null!; // Will be set by EF Core
-   ```
-
-### Entity Configuration
-
-1. **Use Fluent API over Data Annotations**
-
-   ```csharp
-   // ✅ GOOD - Fluent API
-   modelBuilder.Entity<AccountEntity>()
-       .Property(a => a.Name)
-       .HasMaxLength(100)
-       .IsRequired();
-
-   // ❌ AVOID - Data Annotations
-   [MaxLength(100), Required]
-   public string Name { get; set; }
-   ```
-
-2. **Configure relationships explicitly**
-
-   ```csharp
-   modelBuilder.Entity<ExpenseEntity>()
-       .HasOne(e => e.Account)
-       .WithMany(a => a.Expenses)
-       .HasForeignKey(e => e.AccountId)
-       .OnDelete(DeleteBehavior.Cascade);
-   ```
-
-3. **Use separate configuration classes for complex entities**
-
-   ```csharp
-   public class AccountEntityConfiguration : IEntityTypeConfiguration<AccountEntity>
-   {
-       public void Configure(EntityTypeBuilder<AccountEntity> builder)
-       {
-           builder.HasKey(a => a.Id);
-           builder.Property(a => a.Name).HasMaxLength(100).IsRequired();
-           // ...
-       }
-   }
-
-   // In DbContext.OnModelCreating
-   modelBuilder.ApplyConfiguration(new AccountEntityConfiguration());
-   ```
+| Command                                 | Description                                         |
+| --------------------------------------- | --------------------------------------------------- |
+| `dotnet run --project Pot.AspNetCore`   | Start API server (typically https://localhost:7241) |
+| `dotnet build`                          | Build solution                                      |
+| `dotnet watch --project Pot.AspNetCore` | Run API with hot reload                             |
 
 ### Migrations
 
-1. **Review generated migrations** before applying
+| Command                                                                   | Description                     |
+| ------------------------------------------------------------------------- | ------------------------------- |
+| `dotnet ef migrations add <Name> --project Pot.Data.Migrations`           | Create new migration            |
+| `dotnet ef database update --project Pot.Data.Migrations`                 | Apply pending migrations        |
+| `dotnet ef migrations remove --project Pot.Data.Migrations`               | Remove last unapplied migration |
+| `dotnet ef database update <MigrationName> --project Pot.Data.Migrations` | Rollback to specific migration  |
+| `dotnet run --project Pot.Data.Migrations`                                | Run migrations console app      |
 
-   ```bash
-   # Check what the migration will do
-   dotnet ef migrations script --project Pot.Data.Migrations
-   ```
+### Testing & Quality
 
-2. **Keep migrations small and focused**
-
-   - One feature per migration
-   - Easier to rollback
-   - Clearer history
-
-3. **Test migrations** on development database first
-
-4. **Never modify applied migrations**
-   - Create new migration to fix issues
-   - Or rollback and remove, then recreate
-
-### Performance
-
-1. **Use indexes for frequently queried columns**
-
-   ```csharp
-   modelBuilder.Entity<ExpenseEntity>()
-       .HasIndex(e => e.Date);
-   ```
-
-2. **Use composite indexes for multi-column queries**
-
-   ```csharp
-   modelBuilder.Entity<ExpenseEntity>()
-       .HasIndex(e => new { e.UserId, e.Date });
-   ```
-
-3. **Avoid N+1 queries with Include/ThenInclude**
-
-   ```csharp
-   // ❌ BAD - N+1 queries
-   var users = await context.Users.ToListAsync();
-   foreach (var user in users)
-   {
-       var accounts = user.Accounts; // Separate query per user
-   }
-
-   // ✅ GOOD - Single query with join
-   var users = await context.Users
-       .Include(u => u.Accounts)
-       .ToListAsync();
-   ```
-
-4. **Use AsNoTracking for read-only queries**
-
-   ```csharp
-   var accounts = await context.Accounts
-       .AsNoTracking()
-       .ToListAsync();
-   ```
-
-5. **Project to DTOs to reduce data transfer**
-   ```csharp
-   var accountDtos = await context.Accounts
-       .Select(a => new AccountDto
-       {
-           Id = a.Id,
-           Name = a.Name,
-           Balance = a.Balance
-       })
-       .ToListAsync();
-   ```
-
-### Data Validation
-
-1. **Validate at multiple layers**
-
-   - Client-side (React forms)
-   - API layer (model validation)
-   - Business logic layer
-   - Database constraints
-
-2. **Use database constraints for critical rules**
-
-   ```csharp
-   modelBuilder.Entity<AccountEntity>()
-       .HasCheckConstraint("CK_Account_Balance", "balance >= 0");
-   ```
-
-3. **Don't rely solely on application validation**
-   - Database constraints prevent bad data
-   - Protects against direct DB access
-
----
-
-## Common Patterns
-
-### Soft Delete
-
-```csharp
-public abstract class EntityBase
-{
-    public Guid Id { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-    public bool IsDeleted { get; set; }
-    public DateTime? DeletedAt { get; set; }
-}
-
-// Global query filter
-modelBuilder.Entity<AccountEntity>()
-    .HasQueryFilter(a => !a.IsDeleted);
-```
-
-### Audit Fields
-
-```csharp
-public abstract class EntityBase
-{
-    public Guid Id { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public Guid CreatedBy { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-    public Guid? UpdatedBy { get; set; }
-}
-
-// Automatic timestamp update
-public override int SaveChanges()
-{
-    UpdateTimestamps();
-    return base.SaveChanges();
-}
-
-private void UpdateTimestamps()
-{
-    var entries = ChangeTracker.Entries()
-        .Where(e => e.Entity is EntityBase &&
-                   (e.State == EntityState.Added || e.State == EntityState.Modified));
-
-    foreach (var entry in entries)
-    {
-        var entity = (EntityBase)entry.Entity;
-
-        if (entry.State == EntityState.Added)
-        {
-            entity.CreatedAt = DateTime.UtcNow;
-        }
-        else
-        {
-            entity.UpdatedAt = DateTime.UtcNow;
-        }
-    }
-}
-```
-
-### Owned Types
-
-For value objects that don't have their own identity:
-
-```csharp
-public class Address
-{
-    public string Street { get; set; } = string.Empty;
-    public string City { get; set; } = string.Empty;
-    public string PostCode { get; set; } = string.Empty;
-}
-
-public class UserEntity : EntityBase
-{
-    public Address Address { get; set; } = new();
-}
-
-// Configuration
-modelBuilder.Entity<UserEntity>()
-    .OwnsOne(u => u.Address);
-```
-
----
-
-## Troubleshooting
-
-### Migration Not Detected
-
-**Problem:** EF Core doesn't detect entity changes
-
-**Solutions:**
-
-1. Rebuild solution
-2. Check entity is included in DbContext as DbSet
-3. Verify entity inherits from EntityBase
-4. Check entity naming (ends with Entity)
-
-### Connection String Issues
-
-**Problem:** Can't connect to PostgreSQL
-
-**Solutions:**
-
-1. Check PostgreSQL is running: `docker ps`
-2. Verify connection string format: `Host=localhost;Database=pot;Username=postgres;Password=password`
-3. Check port not in use: `netstat -an | findstr 5432`
-4. Review PostgreSQL logs: `docker logs pot-postgres`
-
-### Sequence Out of Sync
-
-**Problem:** Duplicate key violation on insert
-
-**Solution:**
-
-```sql
-SELECT setval('sequence_name', (SELECT MAX(column_name) FROM table_name));
-```
-
-### N+1 Query Performance
-
-**Problem:** Slow queries with many round trips
-
-**Solution:**
-
-```csharp
-// Use Include to eager load relationships
-var users = await context.Users
-    .Include(u => u.Accounts)
-    .ThenInclude(a => a.Expenses)
-    .ToListAsync();
-```
+| Command                                       | Description                     |
+| --------------------------------------------- | ------------------------------- |
+| `dotnet test`                                 | Run all unit tests              |
+| `dotnet test --collect:"XPlat Code Coverage"` | Run tests with code coverage    |
+| `dotnet format`                               | Format code using .editorconfig |
 
 ---
 
