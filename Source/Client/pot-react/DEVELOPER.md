@@ -1988,59 +1988,20 @@ const apiTimeout = import.meta.env.VITE_API_TIMEOUT_MS;
 
 ### Development
 
-**Start development server:**
-
-```bash
-npm run dev
-```
-
-Frontend runs on `http://localhost:5175` with hot module replacement.
-
-**Build for production:**
-
-```bash
-npm run build
-```
-
-**Preview production build:**
-
-```bash
-npm run preview
-```
+| Command           | Description                                                                     |
+| ----------------- | ------------------------------------------------------------------------------- |
+| `npm run dev`     | Start development server at `http://localhost:5175` with hot module replacement |
+| `npm run build`   | Build optimized production bundle                                               |
+| `npm run preview` | Preview production build locally                                                |
 
 ### Testing & Quality
 
-**Run unit tests:**
-
-```bash
-npm run test
-```
-
-Framework: Vitest. Tests located in `tests/` folder or `*.test.tsx` files.
-
-**Type checking:**
-
-```bash
-npm run type:check
-```
-
-Runs TypeScript compiler in check mode (no output files).
-
-**Linting:**
-
-```bash
-npm run lint
-```
-
-Runs ESLint with strict TypeScript rules.
-
-**Format code:**
-
-```bash
-npm run prettier
-```
-
-Formats all files using Prettier configuration.
+| Command              | Description                                                       |
+| -------------------- | ----------------------------------------------------------------- |
+| `npm run test`       | Run unit tests (Vitest) - tests in `tests/` or `*.test.tsx` files |
+| `npm run type:check` | Run TypeScript compiler type checking (no output)                 |
+| `npm run lint`       | Run ESLint with strict TypeScript rules                           |
+| `npm run prettier`   | Format all files using Prettier configuration                     |
 
 ---
 
