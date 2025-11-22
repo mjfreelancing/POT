@@ -1,6 +1,7 @@
 ﻿using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.AspNetCore.Concerns.Auth;
+using Pot.AspNetCore.Concerns.Auth.Configuration;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Extensions;
 
@@ -8,8 +9,8 @@ namespace Pot.AspNetCore.Features.Auth.Login;
 
 internal sealed class Handler
 {
-    public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke(Request request,
-        IAuthService authService, IProblemDetailsInspector problemDetailsInspector,
+    public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke(Request request, HttpContext httpContext,
+        IAuthService authService, AuthenticationOptions authOptions, IProblemDetailsInspector problemDetailsInspector,
         ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null, new { request.Username });
@@ -37,7 +38,10 @@ internal sealed class Handler
             return Response.Approval("Your account is pending approval. You'll receive an email when your account is activated.");
         }
 
-        // Successful login with tokens
-        return Response.Success(authResult.Value);
+        // Successful login - set refresh token as HTTP-only cookie
+        RefreshTokenHelper.SetCookie(httpContext, authResult.Value.RefreshToken, authOptions);
+
+        // RefreshToken is set as HTTP-only cookie, not in response body
+        return Response.Success(authResult.Value.AccessToken);
     }
 }

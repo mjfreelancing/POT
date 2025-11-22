@@ -1,4 +1,5 @@
 ﻿using AllOverIt.Assertion;
+using AllOverIt.Extensions;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using AllOverIt.Patterns.Specification;
@@ -21,11 +22,13 @@ internal sealed class AuthService : IAuthService
 {
     private sealed class UserIsNotDisabledSpecification : Specification<UserEntity?>
     {
+        internal static UserIsNotDisabledSpecification Instance = new();
+
         public override bool IsSatisfiedBy(UserEntity? candidate)
         {
             var status = candidate?.Status;
 
-            return status is not null && status != Shared.Enumerations.UserStatus.Disabled;
+            return status is not null && status != UserStatus.Disabled;
         }
     }
 
@@ -50,8 +53,6 @@ internal sealed class AuthService : IAuthService
             return _passwordHasher.IsValidPasswordHash(candidate, _password, candidate.PasswordHash);
         }
     }
-
-    private static readonly UserIsNotDisabledSpecification _userIsNotDisabledSpecification = new();
 
     private const int RefreshTokenExpiryDays = 30;
 
@@ -148,17 +149,37 @@ internal sealed class AuthService : IAuthService
         }
     }
 
-    public async Task<EnrichedResult<AuthTokens?>> RefreshAsync(string accessToken, string refreshToken, CancellationToken cancellationToken)
+    public async Task<EnrichedResult<AuthTokens?>> RefreshAsync(string? accessToken, string refreshToken, CancellationToken cancellationToken)
     {
         _logger.LogCall(this, new { refreshToken });
 
-        var principal = _jwtService.GetPrincipalFromExpiredToken(accessToken);
+        Guid userRowId;
 
-        var subject = principal.Claims.SingleOrDefault(claim => claim.Type == JwtRegisteredClaimNames.Sub);
-
-        if (subject is null || !Guid.TryParse(subject.Value, out var userRowId))
+        if (accessToken.IsNullOrEmpty())
         {
-            return CreateAuthError();
+            // No access token (JWT) available on page refresh - get user from refresh token
+            var userFromRefresh = await _userRepository.Users
+                .SingleOrDefaultAsync(user => user.RefreshToken == refreshToken, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (userFromRefresh is null)
+            {
+                return CreateAuthError();
+            }
+
+            userRowId = userFromRefresh.RowId;
+        }
+        else
+        {
+            // Access token provided - extract user from it
+            var principal = _jwtService.GetPrincipalFromExpiredToken(accessToken);
+
+            var subject = principal.Claims.SingleOrDefault(claim => claim.Type == JwtRegisteredClaimNames.Sub);
+
+            if (subject is null || !Guid.TryParse(subject.Value, out userRowId))
+            {
+                return CreateAuthError();
+            }
         }
 
         using (_userRepository.WithTracking())
@@ -267,6 +288,6 @@ internal sealed class AuthService : IAuthService
 
     private static ISpecification<UserEntity?> CreateValidUserSpecification(IUserPasswordHasher passwordHasher, string password)
     {
-        return _userIsNotDisabledSpecification.And(new UserProvidedCorrectPasswordSpecification(passwordHasher, password));
+        return UserIsNotDisabledSpecification.Instance.And(new UserProvidedCorrectPasswordSpecification(passwordHasher, password));
     }
 }

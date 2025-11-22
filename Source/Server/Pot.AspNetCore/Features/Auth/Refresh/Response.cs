@@ -1,24 +1,18 @@
-﻿using AllOverIt.Assertion;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Pot.AspNetCore.Concerns.Auth.Models;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Pot.AspNetCore.Features.Auth.Refresh;
 
 public sealed class Response
 {
     public string AccessToken { get; init; }
-    public string RefreshToken { get; init; }
 
-    public static Ok<Response> Ok(AuthTokens authTokens)
+    public static Ok<Response> Ok(string accessToken)
     {
-        return TypedResults.Ok(new Response(authTokens));
+        return TypedResults.Ok(new Response(accessToken));
     }
 
-    private Response(AuthTokens authTokens)
+    private Response(string accessToken)
     {
-        _ = authTokens.WhenNotNull();
-
-        AccessToken = authTokens.AccessToken;
-        RefreshToken = authTokens.RefreshToken;
+        AccessToken = accessToken;
     }
 }

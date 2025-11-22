@@ -47,18 +47,18 @@ internal static class WebApplicationBuilderExtensions
 
             // Sets up Jwt Bearer validation options - alternative approach to setting with AddJwtBearer().
             .ConfigureOptions<JwtBearerOptionsSetup>()
-
-            // Allow for injection of JwtOptions instead of IOptions<JwtOptions>
-            .AddSingletonFromOptions<JwtOptions>()
+            .AddSingletonFromOptions<JwtOptions>()                  // Allow for injection of JwtOptions instead of IOptions<JwtOptions>
 
             // Configures JWT Bearer authentication event handlers to validate tokens against database state
             .ConfigureOptions<JwtBearerEventsSetup>()
 
+            // Bind AuthenticationOptions for features such as refresh token cookies.
+            .ConfigureOptions<AuthenticationOptionsSetup>()
+            .AddSingletonFromOptions<AuthenticationOptions>()       // Allow for injection of AuthenticationOptions instead of IOptions<AuthenticationOptions>
+
             // Binds configuration from the "PlatformAdmin" section onto a PlatformAdminOptions instance.
             .ConfigureOptions<PlatformAdminOptionsSetup>()
-
-            // Allow for injection of PlatformAdminOptions instead of IOptions<PlatformAdminOptions>
-            .AddSingletonFromOptions<PlatformAdminOptions>()
+            .AddSingletonFromOptions<PlatformAdminOptions>()        // Allow for injection of PlatformAdminOptions instead of IOptions<PlatformAdminOptions>
 
             .AddAuthorization(options =>
             {

@@ -1,6 +1,5 @@
 ﻿using AllOverIt.Patterns.Enumeration;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Pot.AspNetCore.Concerns.Auth.Models;
 
 namespace Pot.AspNetCore.Features.Auth.Login;
 
@@ -14,16 +13,14 @@ public sealed class Response
 
     public required string Status { get; init; }
     public string? AccessToken { get; init; }
-    public string? RefreshToken { get; init; }
     public string? Message { get; init; }
 
-    public static Ok<Response> Success(AuthTokens authTokens)
+    public static Ok<Response> Success(string accessToken)
     {
         return TypedResults.Ok(new Response
         {
             Status = LoginStatus.Success,
-            AccessToken = authTokens.AccessToken,
-            RefreshToken = authTokens.RefreshToken
+            AccessToken = accessToken
         });
     }
 
