@@ -136,7 +136,9 @@ internal sealed class AuthService : IAuthService
 
             user.RefreshToken = null;
             user.RefreshTokenExpiryUtc = null;
-            user.TokenVersion++;                // Invalidate all existing access tokens
+
+            // Invalidate all existing access tokens
+            user.TokenVersion++;
 
             await _userRepository
                 .SaveAsync(cancellationToken)
@@ -204,12 +206,12 @@ internal sealed class AuthService : IAuthService
 
             user.PasswordHash = _passwordHasher.GetHash(user, newPassword);
 
-            // Invalidate all existing access tokens
-            user.TokenVersion++;
-
             // Clear out the refresh token so the caller is forced to login again
             user.RefreshToken = null;
             user.RefreshTokenExpiryUtc = null;
+
+            // Invalidate all existing access tokens
+            user.TokenVersion++;
 
             await _userRepository
                 .SaveAsync(cancellationToken)
