@@ -11,7 +11,7 @@ public static class PasswordGenerator
     private const string LowercaseLetters = "abcdefghjkmnpqrstuvwxyz";
     private const string UppercaseLetters = "ABCDEFGHJKMNPQRSTUVWXYZ";
     private const string Numbers = "23456789";
-    private const string SpecialCharacters = "!@#$%^&*()_[]{}<>?";
+    private const string SpecialCharacters = "!@#$%?";
 
     private static readonly string AllCharacters = LowercaseLetters + UppercaseLetters + Numbers + SpecialCharacters;
 
