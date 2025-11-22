@@ -9,6 +9,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import usePermissions from '@/hooks/usePermissions';
 import type { Permission } from '@/lib/permissions';
@@ -56,6 +57,7 @@ const isHrefLink = (item: MenuGroupItem): item is HrefLink => {
 const MenuGroup: React.FC<MenuGroupProps> = ({ group }) => {
   const location = useLocation();
   const { hasAnyPermission } = usePermissions();
+  const { isMobile, setOpenMobile } = useSidebar();
 
   // Pre-calculate all permission checks once for the group - not using <PermissionGuard> as there was too much flicker on a page refresh
   const permissionCache = React.useMemo(() => {
@@ -97,7 +99,12 @@ const MenuGroup: React.FC<MenuGroupProps> = ({ group }) => {
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       tooltip={item.label}
-                      onClick={item.onClick}
+                      onClick={() => {
+                        item.onClick();
+                        if (isMobile) {
+                          setOpenMobile(false);
+                        }
+                      }}
                       className="pl-6"
                     >
                       <Icon />
@@ -118,7 +125,15 @@ const MenuGroup: React.FC<MenuGroupProps> = ({ group }) => {
                       asChild
                       className="pl-6"
                     >
-                      <Link to={item.href} aria-label={item.label}>
+                      <Link
+                        to={item.href}
+                        aria-label={item.label}
+                        onClick={() => {
+                          if (isMobile) {
+                            setOpenMobile(false);
+                          }
+                        }}
+                      >
                         <Icon />
                         <span>{item.label}</span>
                       </Link>
