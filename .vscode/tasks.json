@@ -4,7 +4,7 @@
     {
       "label": "docker-start-pot-client-server",
       "type": "shell",
-      "command": "$env:IMAGE_TAG = Get-Date -Format 'yyyyMMdd-HHmmss'; docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-client-server.yml build; docker tag pot-server:$env:IMAGE_TAG pot-server:latest; docker tag pot-client:$env:IMAGE_TAG pot-client:latest; $env:IMAGE_TAG = 'latest'; docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-client-server.yml up -d",
+      "command": "$env:IMAGE_TAG = Get-Date -Format 'yyyyMMdd-HHmmss'; docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-client-server.yml build --no-cache; docker tag pot-server:$env:IMAGE_TAG pot-server:latest; docker tag pot-client:$env:IMAGE_TAG pot-client:latest; $env:IMAGE_TAG = 'latest'; docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-client-server.yml up -d",
       "options": {
         "cwd": "${workspaceFolder}/Source/Docker"
       },
@@ -30,7 +30,7 @@
     {
       "label": "azure-pot-server-build-and-deploy",
       "type": "shell",
-      "command": "docker build -t ghcr.io/mjfreelancing/pot-server:latest -f Docker/Server/Dockerfile .; docker push ghcr.io/mjfreelancing/pot-server:latest",
+      "command": "docker build --no-cache -t ghcr.io/mjfreelancing/pot-server:latest -f Docker/Server/Dockerfile .; docker push ghcr.io/mjfreelancing/pot-server:latest",
       "options": {
         "cwd": "${workspaceFolder}/Source"
       },
@@ -43,7 +43,7 @@
     {
       "label": "azure-pot-client-build-and-deploy",
       "type": "shell",
-      "command": "docker build --build-arg NGINX_CONFIG=nginx.azure.conf --build-arg VITE_API_BASE_URL=https://api.payontime.com.au/api --build-arg VITE_API_TIMEOUT_MS=30000 -t ghcr.io/mjfreelancing/pot-client:latest -f Docker/Client/Dockerfile .; docker push ghcr.io/mjfreelancing/pot-client:latest",
+      "command": "docker build --no-cache --build-arg NGINX_CONFIG=nginx.azure.conf --build-arg VITE_API_BASE_URL=https://api.payontime.com.au/api --build-arg VITE_API_TIMEOUT_MS=30000 -t ghcr.io/mjfreelancing/pot-client:latest -f Docker/Client/Dockerfile .; docker push ghcr.io/mjfreelancing/pot-client:latest",
       "options": {
         "cwd": "${workspaceFolder}/Source"
       },
