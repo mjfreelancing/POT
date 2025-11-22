@@ -248,7 +248,7 @@ function DataTable<TData, TValue>({
                         .join(' ')}
                     >
                       {row.getVisibleCells().map(cell => (
-                        <td key={cell.id} className="px-4 py-2 align-middle">
+                        <td key={cell.id} className="px-4 py-2.5 align-middle">
                           {flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext(),
