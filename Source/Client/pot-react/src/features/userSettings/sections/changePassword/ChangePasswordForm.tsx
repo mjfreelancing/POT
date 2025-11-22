@@ -1,12 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Key } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
 
 import useChangePassword from '@/api/hooks/useChangePassword';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
-import { SuccessToast } from '@/components/feedback/toast';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -18,12 +15,16 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useErrorContext } from '@/contexts';
+import logoutManager from '@/features/auth/logoutManager';
 import { logger } from '@/lib/logging';
 
 import type { ChangePasswordFields } from './changePasswordSchema';
 import { changePasswordSchema } from './changePasswordSchema';
+import PasswordChangedDialog from './PasswordChangedDialog';
 
 function ChangePasswordForm() {
+  const [showPasswordChangedDialog, setShowPasswordChangedDialog] =
+    useState(false);
   const form = useForm<ChangePasswordFields>({
     resolver: zodResolver(changePasswordSchema),
     defaultValues: {
@@ -64,19 +65,13 @@ function ChangePasswordForm() {
     }
 
     if (result && result.success) {
-      toast(
-        () => (
-          <SuccessToast
-            icon={Key}
-            title="Password Changed"
-            description="Your password was updated successfully."
-          />
-        ),
-        { duration: 5000 },
-      );
-
-      form.reset();
+      // Show modal dialog instead of toast
+      setShowPasswordChangedDialog(true);
     }
+  }
+
+  function handleLogoutAfterPasswordChange() {
+    logoutManager.logout();
   }
 
   return (
@@ -169,6 +164,11 @@ function ChangePasswordForm() {
           Change Password
         </Button>
       </form>
+
+      <PasswordChangedDialog
+        open={showPasswordChangedDialog}
+        onLogout={handleLogoutAfterPasswordChange}
+      />
     </Form>
   );
 }

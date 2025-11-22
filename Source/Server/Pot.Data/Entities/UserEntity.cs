@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Pot.Data.Entities;
 
+[Index(nameof(RowId), nameof(TokenVersion), IsUnique = true)]
 [Index(nameof(Username), IsUnique = true)]
 [Index(nameof(Email), IsUnique = false)]        // Can theoretically be a user of multiple sites since the username is the globally unique logon
 public sealed class UserEntity : EntityBase
@@ -28,6 +29,10 @@ public sealed class UserEntity : EntityBase
     [Required]
     [MediumString]  // Hash is not a fixed length, but typically a little over 80 - see comment in UserPasswordHasher
     public required string PasswordHash { get; set; }
+
+    // Incremented each time user logs out or password is changed.
+    // Used to invalidate all previously issued access tokens.
+    public int TokenVersion { get; set; }
 
     [MediumString]
     public string? RefreshToken { get; set; }
