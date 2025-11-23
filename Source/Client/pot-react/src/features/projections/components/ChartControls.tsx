@@ -56,7 +56,7 @@ function ChartControls({
     <div className="px-6 py-4 border-b bg-muted/30">
       <div className="space-y-3">
         {/* Row 1: Metric Dropdown | Period Controls + Date Range (right-aligned) */}
-        <div className="flex flex-wrap gap-4 items-center justify-between">
+        <div className="flex flex-wrap gap-3 items-center justify-between">
           {/* Metric Selection */}
           <div
             className="flex items-center gap-2"
@@ -92,10 +92,10 @@ function ChartControls({
           </div>
 
           {/* Right-aligned controls group */}
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center gap-3">
             {/* Start Date Picker Only */}
             <div
-              className="flex items-center gap-3 px-3 py-2 bg-muted/30 rounded-md"
+              className="flex items-center gap-2 px-3 py-2 bg-muted/30 rounded-md"
               role="group"
               aria-labelledby="date-range-label"
             >
@@ -131,7 +131,7 @@ function ChartControls({
                 Period:
               </span>
               <div
-                className="flex gap-1"
+                className="flex flex-wrap gap-1"
                 role="radiogroup"
                 aria-labelledby="period-label"
               >

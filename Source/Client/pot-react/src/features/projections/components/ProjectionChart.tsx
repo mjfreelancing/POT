@@ -1,4 +1,5 @@
 import { addDays, addMonths, format, parseISO } from 'date-fns';
+import { useEffect, useState } from 'react';
 import {
   Bar,
   BarChart,
@@ -66,6 +67,21 @@ function ProjectionChart({
   selectedDate,
   onToggleDetails,
 }: ProjectionChartProps) {
+  // Responsive bottom margin: larger on mobile for scrollable charts
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    function checkMobile() {
+      setIsMobile(window.innerWidth < 768); // Tailwind's md breakpoint
+    }
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const chartBottomMargin = isMobile ? 80 : 20;
+
   // Transform data for chart consumption using custom hook
   const {
     chartData: allChartData,
@@ -273,7 +289,7 @@ function ProjectionChart({
       <CardContent className="flex-1 flex flex-col p-0">
         {hasData ? (
           <div
-            className="flex-1 w-full min-h-0 px-6"
+            className="flex-1 min-h-0 px-6 overflow-x-auto"
             style={{
               background:
                 'linear-gradient(to bottom, rgba(148, 163, 184, 0.02), rgba(148, 163, 184, 0.08))',
@@ -282,13 +298,18 @@ function ProjectionChart({
           >
             <ChartContainer
               config={chartConfig}
-              className="w-full h-full aspect-auto"
-              style={{ minHeight: '400px' }}
+              className="h-full aspect-auto"
+              style={{ minHeight: '400px', minWidth: '600px' }}
             >
               {getChartType() === 'line' ? (
                 <LineChart
                   data={chartData}
-                  margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
+                  margin={{
+                    top: 20,
+                    right: 20,
+                    left: 20,
+                    bottom: chartBottomMargin,
+                  }}
                 >
                   <CartesianGrid
                     strokeDasharray="3 3"
@@ -336,7 +357,12 @@ function ProjectionChart({
               ) : (
                 <BarChart
                   data={chartData}
-                  margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
+                  margin={{
+                    top: 20,
+                    right: 20,
+                    left: 20,
+                    bottom: chartBottomMargin,
+                  }}
                   onClick={event => {
                     if (event?.activePayload?.[0]) {
                       const date = parseISO(
