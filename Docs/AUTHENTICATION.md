@@ -1001,10 +1001,10 @@ export function calculateRefreshTime(
 
 ### Implementation
 
-**`tokenRefreshTimer.ts`:**
+**`accessTokenRefreshTimer.ts`:**
 
 ```typescript
-type TokenRefreshConfig = {
+type AccessTokenRefreshConfig = {
   currentTokens: AuthTokens;
   onRefreshSuccess: (accessToken: string) => void;
   onRefreshError: (error: unknown) => void;
@@ -1094,12 +1094,12 @@ const logout = useCallback(async () => {
 }, [setTokens, userStore, logoutMutation, queryClient]);
 
 // Setup proactive refresh timer
-const refreshTimerRef = useRef<TokenRefreshHandle | undefined>(undefined);
+const refreshTimerRef = useRef<AccessTokenRefreshHandle | undefined>(undefined);
 
 useEffect(() => {
-  if (tokens) {
-    refreshTimerRef.current = createTokenRefreshTimer({
-      currentTokens: tokens,
+  if (accessToken) {
+    refreshTimerRef.current = createAccessTokenRefreshTimer({
+      currentAccessToken: accessToken,
       onRefreshSuccess: login, // Reuses login to store new token
       onRefreshError: () => logout(), // Logout on refresh failure
     });
@@ -1301,7 +1301,7 @@ On every page load, the frontend automatically attempts to get a new access toke
 
 **Step-by-Step Process:**
 
-1. **Page loads** → React app initializes → `TokenContext` component mounts
+1. **Page loads** → React app initializes → `AccessTokenContext` component mounts
 2. **Check memory:** Is there an access token in React state?
    - **Yes** → User is authenticated, proceed normally
    - **No** → Memory was cleared (page refresh or first visit)
@@ -1325,7 +1325,7 @@ On every page load, the frontend automatically attempts to get a new access toke
 
 **Code Implementation:**
 
-**Frontend (`TokenContext.tsx`):**
+**Frontend (`AccessTokenContext.tsx`):**
 
 ```typescript
 // Runs on every page load
@@ -1335,13 +1335,13 @@ useEffect(() => {
 
     if (existingToken) {
       // Already have token in memory, use it
-      setTokens({ accessToken: existingToken });
+      setAccessToken(existingToken);
       return;
     }
 
     // No token in memory - try to refresh from cookie
     logger.info(
-      "TokenContext",
+      "AccessTokenContext",
       "No access token in memory, attempting refresh from cookie"
     );
 
@@ -1349,10 +1349,10 @@ useEffect(() => {
 
     if (result.success) {
       // Got new token, store in memory
-      setTokens({ accessToken: result.value.accessToken });
+      setAccessToken(result.value.accessToken);
     } else {
       // No valid refresh cookie - user must log in
-      logger.info("TokenContext", "No valid refresh cookie found");
+      logger.info("AccessTokenContext", "No valid refresh cookie found");
     }
   }
 
@@ -1444,7 +1444,7 @@ public async Task<EnrichedResult<AuthTokens?>> RefreshAsync(string? accessToken,
 - **XSS Protection:** Even if attacker injects malicious JavaScript, they cannot:
   - Read the refresh token (HTTP-only cookie is invisible to JavaScript)
   - Steal long-term access (access token expires in 15 minutes)
-- **CSRF Protection:** `SameSite=Lax` cookie policy prevents cross-site cookie transmission
+- **CSRF Protection:** `SameSite=Lax` prevents cross-site cookie transmission on POST requests
 - **Token Rotation:** Every refresh generates a new refresh token (limits reuse)
 - **Time-Limited Exposure:** Access token in memory only exists while browser tab is open
 
@@ -1478,6 +1478,7 @@ POT uses **environment-aware cookie security** to work seamlessly in both local 
   "Authentication": {
     "Cookie": {
       "SecureOnly": false // Allows cookies over HTTP
+      // Domain not set - cookies restricted to exact origin (localhost:5241)
     }
   }
 }
@@ -1486,14 +1487,21 @@ POT uses **environment-aware cookie security** to work seamlessly in both local 
 **Production (HTTPS on Azure/domain):**
 
 ```json
-// appsettings.json
+// appsettings.json (or Azure environment variable)
 {
   "Authentication": {
     "Cookie": {
-      "SecureOnly": true // Requires HTTPS
+      "SecureOnly": true, // Requires HTTPS
+      "Domain": ".payontime.com.au" // Enable cross-subdomain cookie sharing
     }
   }
 }
+```
+
+**Azure Environment Variable:**
+
+```
+Authentication__Cookie__Domain = .payontime.com.au
 ```
 
 **Cookie Properties:**
@@ -1513,25 +1521,33 @@ POT uses **environment-aware cookie security** to work seamlessly in both local 
 
 - **`Strict`** - Cookie **never** sent on cross-origin requests
 
-  - Problem: Page refresh is treated as "top-level navigation"
-  - Result: Cookie not sent, user logged out on every refresh
-  - ❌ Breaks automatic re-authentication
+  - ❌ Blocks all cross-subdomain requests
+  - Not suitable for our architecture
 
 - **`Lax`** - Cookie sent on "safe" top-level navigation (GET requests)
 
-  - ✅ Page refresh works (GET request, same origin)
-  - ✅ Opening link in new tab works
-  - ✅ CSRF protection (cookies not sent with POST from other sites)
-  - ✅ Subdomain support (works with `api.payontime.com.au` → `payontime.com.au`)
+  - ✅ Works with `Domain=.payontime.com.au` for cross-subdomain requests
+  - ✅ Cookies sent with XHR/fetch when `withCredentials: true` is set
+  - ✅ CSRF protection (blocks POST from other sites)
+  - ✅ Standard security practice for same-site cookies
 
 - **`None`** - Cookie sent on all cross-origin requests
   - Requires `Secure=true` (HTTPS only)
-  - Less secure (allows true cross-site requests)
+  - Less CSRF protection
   - Not needed for our architecture
+
+**Security Notes:**
+
+- `SameSite=Lax` combined with:
+  - `Secure=true` (HTTPS only)
+  - Strict CORS `AllowedOrigins` (only allows `https://payontime.com.au`)
+  - HTTP-only cookie (no JavaScript access)
+  - `withCredentials: true` in axios configuration
+  - Short-lived access tokens (15 minutes)
 
 **Local Development Proxy Setup:**
 
-To enable cookies in local development, the frontend uses a **Vite proxy** to make requests appear same-origin:
+The frontend uses a **Vite proxy** in development for simplicity and to avoid CORS preflight requests:
 
 **`vite.config.ts`:**
 
@@ -1555,9 +1571,9 @@ export default defineConfig({
 2. Backend runs on `http://localhost:5242`
 3. Frontend makes request to `/api/auth/login`
 4. Vite proxy forwards to `http://localhost:5242/api/auth/login`
-5. Backend sends cookie with `Domain=localhost`
-6. Browser sees request as same-origin → accepts cookie
-7. Future requests to `/api/*` automatically include cookie
+5. Backend sends cookie with `Domain=localhost, SameSite=Lax`
+6. Browser accepts cookie (proxy makes request appear from same origin)
+7. Future requests to `/api/*` automatically include cookie (withCredentials: true)
 
 **Without Proxy:**
 
@@ -1570,8 +1586,8 @@ export default defineConfig({
 - Frontend request: `http://localhost:5175/api/auth/login`
 - Browser thinks: Same origin (localhost:5175)
 - Vite forwards: `http://localhost:5242/api/auth/login`
-- Backend sets cookie: `Domain=localhost, SameSite=Lax`
-- Browser accepts: Same origin cookie
+- Backend sets cookie: `Domain=localhost, SameSite=Lax, Secure=false`
+- Browser accepts: Cookie available for same-origin requests
 - ✅ Cookies work seamlessly
 
 **Production (Azure with Custom Domain):**
@@ -1593,9 +1609,10 @@ In production, both containers share a parent domain:
 1. Request to `api.payontime.com.au`
 2. Check cookie domain: `.payontime.com.au`
 3. Does `api.payontime.com.au` match `.payontime.com.au`? Yes (subdomain)
-4. Check `SameSite=Lax`: Same-site request? Yes (same parent domain)
+4. Check `SameSite=Lax`: Is this a top-level GET or credentialed request? Yes
 5. Check `Secure=true`: Is HTTPS? Yes
-6. ✅ Send cookie with request
+6. Check `withCredentials: true`: Set in axios? Yes
+7. ✅ Send cookie with request
 
 **Production Configuration in `nginx.azure.conf`:**
 
@@ -1649,15 +1666,22 @@ server {
 
    - Cookie should be `SameSite=Lax` (not `Strict`)
    - `Strict` blocks cookie on page refresh
-   - Update backend code if incorrect
+   - Verify in DevTools → Application → Cookies
 
-4. **Check domains match:**
+4. **Check `withCredentials` is configured:**
+
+   - Axios must have `withCredentials: true` to send cookies
+   - Regular axios client: Set in `axios.defaults.withCredentials`
+   - Auth client: Set in `authClient.defaults.withCredentials`
+   - Without this, cookies won't be sent even if they exist
+
+5. **Check domains match:**
 
    - Development: Both `localhost`
    - Production: Cookie domain `.payontime.com.au` matches `api.payontime.com.au`
    - If mismatched, update frontend API URL or backend CORS
 
-5. **Check HTTPS in production:**
+6. **Check HTTPS in production:**
    - Cookie must have `Secure=true` in production
    - All requests must use HTTPS
    - Mixed content (HTTP + HTTPS) will fail

@@ -64,6 +64,10 @@ src/
 │   ├── theme/           # Theme components
 │   ├── user/            # User-related components
 │   └── ui/              # shadcn components (don't edit)
+├── concerns/            # Cross-cutting infrastructure (auth, logging, cache)
+│   ├── auth/            # tokenProvider, logoutManager, permissions
+│   ├── cache/           # cacheInvalidation
+│   └── logging/         # logger
 ├── contexts/            # React contexts
 ├── data/                # Static data and constants
 ├── features/            # Feature modules
@@ -78,7 +82,7 @@ src/
 │   ├── users/           # User management
 │   └── userSettings/    # User settings
 ├── hooks/               # Custom hooks (useLocalStorage, useToast, etc.)
-├── lib/                 # Utilities (result.ts, cacheInvalidation.ts, logging.ts)
+├── lib/                 # Pure utilities (dateUtils, moneyUtils, result.ts)
 ├── routes/              # React Router routes
 └── stores/              # Zustand stores (authStore, etc.)
 ```
@@ -116,6 +120,82 @@ src/features/accounts/
 - Clear boundaries between features
 - Simplifies deletion or extraction of features
 
+#### Concerns: Cross-Cutting Infrastructure
+
+The `/concerns` folder houses **infrastructure-level utilities and singletons** that provide cross-cutting functionality used throughout the application. This pattern mirrors the backend's `Concerns/` folder structure.
+
+**What Belongs in Concerns:**
+
+✅ **Should be in concerns:**
+
+- Global singleton instances (tokenProvider, logoutManager, logger)
+- Cross-cutting functionality used by multiple features
+- Infrastructure concerns (auth, logging, caching, permissions)
+- Services that work independently of any specific feature
+
+❌ **Should NOT be in concerns:**
+
+- Pure utility functions (those belong in `lib/`)
+- Feature-specific logic (belongs in `features/`)
+- React components (belongs in `components/` or `features/`)
+- Feature-specific hooks (belongs in feature's `hooks/`)
+
+**Concerns Structure:**
+
+```
+src/concerns/
+├── auth/
+│   ├── tokenProvider.ts      # Global token provider singleton
+│   ├── authTokenProvider.ts  # Token provider factory
+│   ├── logoutManager.ts      # Centralized logout manager
+│   ├── permissions.ts        # Permission constants and types
+│   └── index.ts              # Auth barrel export
+├── cache/
+│   ├── cacheInvalidation.ts  # Centralized cache invalidation with dependencies
+│   └── index.ts              # Cache barrel export
+├── logging/
+│   ├── logger.ts             # Global logger utility
+│   └── index.ts              # Logging barrel export
+└── index.ts                  # Root barrel export
+```
+
+**Usage Examples:**
+
+```typescript
+// Import from root barrel (recommended for mixed concerns)
+import { tokenProvider, logger, useCacheInvalidation } from '@/concerns';
+import type { Permission } from '@/concerns';
+
+// Or import from specific concern (clearer when using many items from one concern)
+import { tokenProvider, logoutManager, PERMISSIONS } from '@/concerns/auth';
+import type { Permission } from '@/concerns/auth';
+
+import { useCacheInvalidation, invalidateCache } from '@/concerns/cache';
+import type { CacheKey } from '@/concerns/cache';
+
+import { logger } from '@/concerns/logging';
+
+// Both patterns work - choose based on readability
+```
+
+**Key Differences: `lib/` vs `concerns/`**
+
+| Aspect           | `lib/`                           | `concerns/`                          |
+| ---------------- | -------------------------------- | ------------------------------------ |
+| **Purpose**      | Pure utility functions           | Singleton instances & infrastructure |
+| **State**        | Stateless                        | May hold state (singletons)          |
+| **Examples**     | dateUtils, moneyUtils, result.ts | tokenProvider, logger, logoutManager |
+| **Dependencies** | Minimal (mostly pure functions)  | May depend on other infrastructure   |
+| **Lifecycle**    | Function calls                   | Often initialized once (singletons)  |
+
+**Why This Pattern?**
+
+1. **Consistency with Backend** - Same organizational principle as server's `Concerns/` folder
+2. **Clear Separation** - Distinguishes infrastructure from utilities and features
+3. **Better Discoverability** - Singletons grouped by domain (auth, logging, cache)
+4. **Prevents Circular Dependencies** - Centralized infrastructure doesn't depend on features
+5. **Scalability** - Easy to add more concerns (analytics, monitoring, telemetry)
+
 #### Single Responsibility Per Module
 
 Each module (file/folder) should have one clear purpose:
@@ -134,14 +214,16 @@ Each module (file/folder) should have one clear purpose:
 
 #### Dependency Rules
 
-**Features depend on API, never the reverse:**
+**Features depend on API and concerns, never the reverse:**
 
 ```
 ✅ CORRECT:
 features/expenses → api/hooks/useExpenses
+features/auth → concerns/auth/tokenProvider
 
 ❌ INCORRECT:
 api/hooks/useExpenses → features/expenses/utils
+concerns/logging → features/dashboard
 ```
 
 **Why?** API layer should be agnostic of UI features. It provides data services that any feature can consume.
@@ -1211,7 +1293,7 @@ import { useApiGetAllExpenses } from '@/api/hooks';
 import { ErrorSheet, LoadingOverlay } from '@/components/feedback';
 import { PageHeader, Toolbar } from '@/components/layout';
 import { useErrorContext } from '@/contexts';
-import { logger } from '@/lib/logging';
+import { logger } from '@/concerns/logging';
 
 function ExpensesPage() {
   const { error, setError } = useErrorContext();
@@ -1558,11 +1640,11 @@ function MyComponent() {
 
 **AuthContext API:**
 
-- `tokens: AuthTokens | undefined` - Current JWT tokens (access + refresh)
+- `accessToken: string | undefined` - Current access token in memory
 - `userInfo: User | null` - Current user details (username, email, permissions)
 - `isAuthenticated: boolean` - Whether user is logged in
-- `login: (tokens: AuthTokens) => void` - Store tokens and fetch user info
-- `logout: () => void` - Clear tokens, user info, and redirect to login
+- `login: (accessToken: string) => void` - Store access token and fetch user info
+- `logout: () => void` - Clear authentication state and redirect to login
 - `error?: DisplayError` - Authentication error if any
 
 ### Logout Manager Pattern

@@ -1,13 +1,10 @@
-import type { AxiosResponse } from 'axios';
 import axios from 'axios';
 
 import { addCorrelationId } from './apiHelpers';
-import { AuthenticationError } from './errors/apiErrors';
 import {
   responseErrorHandler,
   responseSuccessHandler,
 } from './interceptors/axiosInterceptors';
-import type { AuthTokens } from './types/auth';
 
 /**
  * We use a separate axios instance for auth operations instead of usePost/useRefreshToken hooks because:
@@ -29,32 +26,4 @@ authClient.interceptors.response.use(
   responseErrorHandler,
 );
 
-/**
- * Refresh the access token using a refresh token
- */
-async function refreshTokens(expiredToken: string): Promise<AuthTokens> {
-  try {
-    const response: AxiosResponse<AuthTokens> = await authClient.post(
-      '/auth/refresh',
-      undefined,
-      {
-        headers: {
-          Authorization: `Bearer ${expiredToken}`,
-        },
-      },
-    );
-
-    return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error) && error.response) {
-      const message = error.response.data?.message ?? error.message;
-      throw new AuthenticationError(`Failed to refresh token: ${message}`);
-    }
-
-    throw new AuthenticationError(
-      `Failed to refresh token: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    );
-  }
-}
-
-export { authClient, refreshTokens };
+export { authClient };
