@@ -1,9 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiCreateIncome } from '@/api/hooks';
+import { useCacheInvalidation } from '@/concerns';
 import type { CreateIncome, Identity } from '@/data';
 import type { FailResultBase, Result } from '@/lib';
-import { useCacheInvalidation } from '@/lib';
 
 function useCreateIncome() {
   const queryClient = useQueryClient();

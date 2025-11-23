@@ -29,10 +29,9 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { logger, useCacheInvalidation } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import type { Role } from '@/data/role';
-import { useCacheInvalidation } from '@/lib';
-import { logger } from '@/lib/logging';
 
 import {
   type UserInvitationFormData,
@@ -66,8 +65,8 @@ function InviteUserSheet() {
     return <LoadingMessage />;
   }
 
-  // Handle roles API errors
-  if (!rolesQuery.data?.success) {
+  // Handle roles API errors - check for explicit failure
+  if (rolesQuery.data && !rolesQuery.data.success) {
     return (
       <ErrorSheet
         title={rolesQuery.data.error.code}

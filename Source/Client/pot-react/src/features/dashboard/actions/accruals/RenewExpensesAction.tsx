@@ -7,10 +7,10 @@ import { toast } from 'sonner';
 import { useApiRenewExpenses } from '@/api/hooks';
 import { ActionCard } from '@/components/cards';
 import { SuccessToast } from '@/components/feedback/toast';
+import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import { useAccrualsContext } from '@/features/dashboard/contexts/AccrualsContext';
 import { renewExpenses } from '@/features/expenses/bulkActions/renew';
-import { logger } from '@/lib/logging';
 
 function RenewExpensesAction() {
   const {

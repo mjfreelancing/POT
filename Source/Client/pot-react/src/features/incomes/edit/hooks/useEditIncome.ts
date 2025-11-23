@@ -1,9 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiUpdateIncome } from '@/api/hooks';
+import { useCacheInvalidation } from '@/concerns';
 import type { EditIncome, Identity } from '@/data';
 import type { FailResultBase, Result } from '@/lib';
-import { useCacheInvalidation } from '@/lib';
 
 // Hook to handle editing an existing income entry
 function useEditIncome() {

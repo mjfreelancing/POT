@@ -8,8 +8,8 @@ import React, {
 } from 'react';
 
 import { useApiAccrualsStatus, useApiGetAllAccounts } from '@/api/hooks';
+import { logger } from '@/concerns';
 import { useWindowFocus } from '@/hooks/useWindowFocus';
-import { logger } from '@/lib/logging';
 import type { DisplayError } from '@/lib/types';
 import { EMPTY_STRING_ARRAY } from '@/lib/types';
 

@@ -1,7 +1,8 @@
 import type { QueryClient } from '@tanstack/react-query';
 
 import type { useApiRenewExpenses } from '@/api/hooks/useExpenses';
-import { type BulkActionResult, invalidateCache, todayIsoFormat } from '@/lib';
+import { invalidateCache } from '@/concerns';
+import { type BulkActionResult, todayIsoFormat } from '@/lib';
 
 async function renewExpenses(
   expenseRowIds: string[],

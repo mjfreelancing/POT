@@ -20,12 +20,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { logger, useCacheInvalidation } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import type { SiteUser } from '@/data/siteUser';
-import useAuthContext from '@/features/auth/AuthContext';
+import { useAuthContext } from '@/features/auth/contexts';
 import { usePermissions } from '@/hooks';
-import { useCacheInvalidation } from '@/lib';
-import { logger } from '@/lib/logging';
 
 type UserActionsProps = {
   user: SiteUser;

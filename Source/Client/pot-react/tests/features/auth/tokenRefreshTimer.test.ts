@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { authClient } from '@/api/authClient';
-import type { AuthTokens } from '@/features/auth/types';
 import { createTokenRefreshTimer } from '@/features/auth/tokenRefreshTimer';
 
 // Mock dependencies
@@ -23,15 +22,8 @@ vi.mock('@/lib/logging', () => ({
 }));
 
 describe('tokenRefreshTimer', () => {
-  const mockTokens: AuthTokens = {
-    accessToken: 'mock-access-token',
-    refreshToken: 'mock-refresh-token',
-  };
-
-  const mockNewTokens: AuthTokens = {
-    accessToken: 'mock-new-access-token',
-    refreshToken: 'mock-new-refresh-token',
-  };
+  const mockAccessToken = 'mock-access-token';
+  const mockNewAccessToken = 'mock-new-access-token';
 
   beforeEach(() => {
     // Reset timers and mocks
@@ -39,7 +31,9 @@ describe('tokenRefreshTimer', () => {
     vi.clearAllMocks();
 
     // Mock successful token refresh
-    vi.mocked(authClient.post).mockResolvedValue({ data: mockNewTokens });
+    vi.mocked(authClient.post).mockResolvedValue({
+      data: { accessToken: mockNewAccessToken },
+    });
   });
 
   afterEach(() => {
@@ -53,7 +47,7 @@ describe('tokenRefreshTimer', () => {
     const onRefreshError = vi.fn();
 
     const timer = createTokenRefreshTimer({
-      currentTokens: mockTokens,
+      currentAccessToken: mockAccessToken,
       onRefreshSuccess,
       onRefreshError,
     });
@@ -70,7 +64,7 @@ describe('tokenRefreshTimer', () => {
     const onRefreshError = vi.fn();
 
     const timer = createTokenRefreshTimer({
-      currentTokens: mockTokens,
+      currentAccessToken: mockAccessToken,
       onRefreshSuccess,
       onRefreshError,
     });
@@ -86,12 +80,14 @@ describe('tokenRefreshTimer', () => {
     // Should have called refresh
     expect(authClient.post).toHaveBeenCalledWith(
       '/auth/refresh',
-      { refreshToken: mockTokens.refreshToken },
-      { headers: { Authorization: `Bearer ${mockTokens.accessToken}` } },
+      {},
+      {
+        headers: { Authorization: `Bearer ${mockAccessToken}` },
+      },
     );
 
-    // Should have called success callback with new tokens
-    expect(onRefreshSuccess).toHaveBeenCalledWith(mockNewTokens);
+    // Should have called success callback with new accessToken string
+    expect(onRefreshSuccess).toHaveBeenCalledWith(mockNewAccessToken);
     expect(onRefreshError).not.toHaveBeenCalled();
   });
 
@@ -103,7 +99,7 @@ describe('tokenRefreshTimer', () => {
     const onRefreshError = vi.fn();
 
     const timer = createTokenRefreshTimer({
-      currentTokens: mockTokens,
+      currentAccessToken: mockAccessToken,
       onRefreshSuccess,
       onRefreshError,
     });
@@ -119,8 +115,11 @@ describe('tokenRefreshTimer', () => {
     // Should have attempted refresh
     expect(authClient.post).toHaveBeenCalled();
 
-    // Should have called error callback
-    expect(onRefreshError).toHaveBeenCalledWith(error);
+    // Should have called error callback with FailResult wrapper
+    expect(onRefreshError).toHaveBeenCalled();
+    const errorArg = vi.mocked(onRefreshError).mock.calls[0][0];
+    expect(errorArg).toHaveProperty('success', false);
+    expect(errorArg).toHaveProperty('error');
     expect(onRefreshSuccess).not.toHaveBeenCalled();
   });
 
@@ -129,7 +128,7 @@ describe('tokenRefreshTimer', () => {
     const onRefreshError = vi.fn();
 
     const timer = createTokenRefreshTimer({
-      currentTokens: mockTokens,
+      currentAccessToken: mockAccessToken,
       onRefreshSuccess,
       onRefreshError,
     });
@@ -154,7 +153,7 @@ describe('tokenRefreshTimer', () => {
     const onRefreshError = vi.fn();
 
     const timer = createTokenRefreshTimer({
-      currentTokens: mockTokens,
+      currentAccessToken: mockAccessToken,
       onRefreshSuccess,
       onRefreshError,
     });
@@ -172,7 +171,7 @@ describe('tokenRefreshTimer', () => {
 
     // Should have attempted refresh
     expect(authClient.post).toHaveBeenCalled();
-    expect(onRefreshSuccess).toHaveBeenCalledWith(mockNewTokens);
+    expect(onRefreshSuccess).toHaveBeenCalledWith(mockNewAccessToken);
     expect(onRefreshError).not.toHaveBeenCalled();
   });
 
@@ -181,7 +180,7 @@ describe('tokenRefreshTimer', () => {
     const onRefreshError = vi.fn();
 
     const timer = createTokenRefreshTimer({
-      currentTokens: mockTokens,
+      currentAccessToken: mockAccessToken,
       onRefreshSuccess,
       onRefreshError,
     });

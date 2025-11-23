@@ -9,10 +9,10 @@ import { ErrorSheet, LoadingOverlay } from '@/components/feedback';
 import { AccountFilter, SearchInput } from '@/components/filters';
 import { Toolbar } from '@/components/layout';
 import { Button } from '@/components/ui/button';
+import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import type { Income } from '@/data/income';
 import { useAccountFilter } from '@/hooks';
-import { logger } from '@/lib/logging';
 
 import { WithPermission } from '../auth/components';
 import { IncomesHeader, IncomesTable } from './components';

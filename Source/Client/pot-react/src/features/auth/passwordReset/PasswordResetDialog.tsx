@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
-import { logger } from '@/lib';
+import { logger } from '@/concerns';
 
 import type { OtpVerificationStatus } from '../shared';
 import { OtpVerificationForm } from '../shared';

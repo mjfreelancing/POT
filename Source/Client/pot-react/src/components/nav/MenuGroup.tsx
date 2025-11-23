@@ -11,8 +11,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
+import type { Permission } from '@/concerns';
 import usePermissions from '@/hooks/usePermissions';
-import type { Permission } from '@/lib/permissions';
 
 type MenuGroupItemBase = {
   readonly label: string;

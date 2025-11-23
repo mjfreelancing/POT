@@ -1,16 +1,14 @@
 import { authClient } from '@/api/authClient';
 import { AuthenticationError } from '@/api/errors/apiErrors';
+import { logger } from '@/concerns';
 import { FailResult } from '@/lib';
 import { calculateRefreshTime } from '@/lib/jwt';
-import { logger } from '@/lib/logging';
-
-import type { AuthTokens } from './types';
 
 type TokenRefreshConfig = {
-  /** Current tokens */
-  currentTokens: AuthTokens;
-  /** Called when refresh succeeds */
-  onRefreshSuccess: (tokens: AuthTokens) => void;
+  /** Current access token */
+  currentAccessToken: string;
+  /** Called when refresh succeeds with new access token */
+  onRefreshSuccess: (accessToken: string) => void;
   /** Called when refresh fails */
   onRefreshError: (error: unknown) => void;
 };
@@ -26,7 +24,7 @@ type TokenRefreshHandle = {
  * Creates a token refresh timer that will proactively refresh the token before it expires
  */
 function createTokenRefreshTimer({
-  currentTokens,
+  currentAccessToken,
   onRefreshSuccess,
   onRefreshError,
 }: TokenRefreshConfig): TokenRefreshHandle {
@@ -43,7 +41,7 @@ function createTokenRefreshTimer({
     // Clear any existing timer first
     stopTimer();
 
-    const refreshTimeMs = calculateRefreshTime(currentTokens.accessToken);
+    const refreshTimeMs = calculateRefreshTime(currentAccessToken);
 
     if (!refreshTimeMs) {
       return;
@@ -55,20 +53,18 @@ function createTokenRefreshTimer({
       logger.info('Auth', 'Refresh timer triggered');
 
       try {
-        const response = await authClient.post<AuthTokens>(
+        const response = await authClient.post<{ accessToken: string }>(
           '/auth/refresh',
-          {
-            refreshToken: currentTokens.refreshToken,
-          },
+          {}, // No body - refresh token comes from HTTP-only cookie
           {
             headers: {
-              Authorization: `Bearer ${currentTokens.accessToken}`,
+              Authorization: `Bearer ${currentAccessToken}`,
             },
           },
         );
 
         logger.info('Auth', 'Token refreshed successfully');
-        onRefreshSuccess(response.data);
+        onRefreshSuccess(response.data.accessToken);
       } catch (error) {
         logger.error('Auth', 'Failed to refresh token', error);
 

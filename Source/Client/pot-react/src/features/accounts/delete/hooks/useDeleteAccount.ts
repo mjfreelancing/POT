@@ -1,8 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiDeleteAccount } from '@/api/hooks';
+import { logger, useCacheInvalidation } from '@/concerns';
 import type { FailResultBase, Result } from '@/lib';
-import { logger, useCacheInvalidation } from '@/lib';
 
 function useDeleteAccount(rowId: string) {
   const queryClient = useQueryClient();

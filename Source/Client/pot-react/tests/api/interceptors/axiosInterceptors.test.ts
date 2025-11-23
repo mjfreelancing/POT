@@ -20,6 +20,17 @@ import {
 // Explicitly mock axios
 vi.mock('axios');
 
+// Mock the authClient module to prevent initialization errors during testing
+vi.mock('@/api/authClient', () => ({
+  default: {
+    defaults: {},
+    interceptors: {
+      request: { use: vi.fn() },
+      response: { use: vi.fn() },
+    },
+  },
+}));
+
 // Import the error handler function from the interceptors module for direct testing
 import { responseErrorHandler } from '../../../src/api/interceptors/axiosInterceptors';
 

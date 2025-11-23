@@ -11,12 +11,12 @@ import {
 } from '@/api/hooks';
 import { ActionCard } from '@/components/cards';
 import { SuccessToast } from '@/components/feedback/toast';
+import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import { accrueAllAccountExpenses } from '@/features/accounts/utils/bulkActions';
 import { useAccrualsContext } from '@/features/dashboard/contexts/AccrualsContext';
 import { renewExpenses } from '@/features/expenses/bulkActions/renew';
 import { renewIncomes } from '@/features/incomes/bulkActions/renew';
-import { logger } from '@/lib/logging';
 
 function RenewAccrueAllAction() {
   const {

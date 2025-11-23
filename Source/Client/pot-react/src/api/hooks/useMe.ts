@@ -1,14 +1,14 @@
 import type { User } from '@/data/user';
-import { useTokens } from '@/features/auth/TokenContext';
+import { useAccessToken } from '@/features/auth/contexts';
 import type { FailResultBase, Result } from '@/lib';
 
 import { useGet } from './useApi';
 
 export function useMe() {
-  // Uses TokenContext directly to avoid circular dependency with AuthContext
-  // AuthContext depends on useMe for user info, so useMe must only depend on tokens
-  const { tokens } = useTokens();
-  const hasValidToken = tokens ? !!tokens.accessToken : false;
+  // Uses AccessTokenContext directly to avoid circular dependency with AuthContext
+  // AuthContext depends on useMe for user info, so useMe must only depend on access token
+  const { accessToken } = useAccessToken();
+  const hasValidToken = !!accessToken;
 
   const query = useGet<User>('/me', ['me'], {
     // Critical for auth flow: This endpoint initializes user permissions

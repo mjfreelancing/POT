@@ -1,8 +1,8 @@
 import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import axios from 'axios';
 
+import { logger } from '@/concerns';
 import { FailResult } from '@/lib';
-import { logger } from '@/lib/logging';
 
 import { AuthenticationError } from '../errors/apiErrors';
 import type { TokenProvider } from '../types/auth';

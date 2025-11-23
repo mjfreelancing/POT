@@ -34,11 +34,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { logger, useCacheInvalidation } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import type { Role } from '@/data/role';
 import type { SiteUser } from '@/data/siteUser';
-import { useCacheInvalidation } from '@/lib';
-import { logger } from '@/lib/logging';
 
 import {
   type UserRoleUpdateFormData,

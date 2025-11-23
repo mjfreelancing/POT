@@ -7,7 +7,7 @@ import {
   responseErrorHandler,
   responseSuccessHandler,
 } from './interceptors/axiosInterceptors';
-import type { AuthTokens, RefreshTokenRequest } from './types/auth';
+import type { AuthTokens } from './types/auth';
 
 /**
  * We use a separate axios instance for auth operations instead of usePost/useRefreshToken hooks because:
@@ -20,6 +20,7 @@ const authClient = axios.create();
 
 // Configure the auth client
 authClient.defaults.baseURL = import.meta.env.VITE_API_BASE_URL;
+authClient.defaults.withCredentials = true; // Required to send HTTP-only cookies with requests
 
 // Add request/response interceptors for consistent correlation ID and error handling
 authClient.interceptors.request.use(addCorrelationId);
@@ -31,14 +32,11 @@ authClient.interceptors.response.use(
 /**
  * Refresh the access token using a refresh token
  */
-async function refreshTokens(
-  request: RefreshTokenRequest,
-  expiredToken: string,
-): Promise<AuthTokens> {
+async function refreshTokens(expiredToken: string): Promise<AuthTokens> {
   try {
     const response: AxiosResponse<AuthTokens> = await authClient.post(
       '/auth/refresh',
-      request,
+      undefined,
       {
         headers: {
           Authorization: `Bearer ${expiredToken}`,

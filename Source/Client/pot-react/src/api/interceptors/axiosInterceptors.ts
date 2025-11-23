@@ -40,8 +40,8 @@
 import type { AxiosResponse } from 'axios';
 import axios, { AxiosError } from 'axios';
 
+import { logger } from '@/concerns';
 import { FailResult } from '@/lib';
-import { logger } from '@/lib/logging';
 
 import { addCorrelationId, getNetworkError } from '../apiHelpers';
 import type { ApiError, ApiErrorResponse } from '../errors';

@@ -1,9 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiImport } from '@/api/hooks/useImports';
+import { logger, useCacheInvalidation } from '@/concerns';
 import type { FailResultBase, Result } from '@/lib';
-import { SuccessResult, useCacheInvalidation } from '@/lib';
-import { logger } from '@/lib/logging';
+import { SuccessResult } from '@/lib';
 
 type ImportResult = {
   imported: number;

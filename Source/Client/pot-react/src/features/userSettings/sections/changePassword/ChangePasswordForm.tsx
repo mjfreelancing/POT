@@ -14,9 +14,9 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { logger } from '@/concerns';
+import { logoutManager } from '@/concerns';
 import { useErrorContext } from '@/contexts';
-import logoutManager from '@/features/auth/logoutManager';
-import { logger } from '@/lib/logging';
 
 import type { ChangePasswordFields } from './changePasswordSchema';
 import { changePasswordSchema } from './changePasswordSchema';

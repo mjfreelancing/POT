@@ -15,9 +15,9 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import type { WindowOpenFile } from '@/lib';
-import { logger } from '@/lib';
 
 import { useImport } from '../hooks/useImport';
 

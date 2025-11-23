@@ -1,9 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiUpdateAccount } from '@/api/hooks';
+import { logger, useCacheInvalidation } from '@/concerns';
 import type { EditAccount, Identity } from '@/data';
 import type { FailResultBase, Result } from '@/lib';
-import { logger, useCacheInvalidation } from '@/lib';
 
 function useEditAccount() {
   const queryClient = useQueryClient();

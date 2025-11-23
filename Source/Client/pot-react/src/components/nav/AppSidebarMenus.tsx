@@ -12,7 +12,7 @@ import {
 import { useState } from 'react';
 
 import { SidebarContent } from '@/components/ui/sidebar';
-import useAuthContext from '@/features/auth/AuthContext';
+import { useAuthContext } from '@/features/auth/contexts';
 import { ExportModal } from '@/features/maintenance/export/components/ExportModal';
 import { ImportModal } from '@/features/maintenance/import/components/ImportModal';
 

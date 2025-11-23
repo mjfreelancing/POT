@@ -3,9 +3,9 @@ import { useEffect, useMemo } from 'react';
 import { useGetPendingApprovals } from '@/api/hooks/useApprovals';
 import { ErrorSheet, LoadingOverlay } from '@/components/feedback';
 import { PageHeader } from '@/components/layout';
+import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import { usePermissions } from '@/hooks';
-import { logger } from '@/lib/logging';
 
 import { PendingApprovalsTable } from '../components/PendingApprovalsTable';
 

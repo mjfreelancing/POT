@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { logger } from '@/lib';
+import { logger } from '@/concerns';
 
 import { useExport } from '../hooks/useExport';
 import { FileOperationCancelledError } from '../utils/fileUtils';

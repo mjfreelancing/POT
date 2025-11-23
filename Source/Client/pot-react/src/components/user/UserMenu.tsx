@@ -9,8 +9,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import useAuthContext from '@/features/auth/AuthContext';
-import logoutManager from '@/features/auth/logoutManager';
+import { logoutManager } from '@/concerns';
+import { useAuthContext } from '@/features/auth/contexts';
 import { AccountSettingsSheet } from '@/features/userSettings/UserSettingsSheet';
 
 function UserMenu() {

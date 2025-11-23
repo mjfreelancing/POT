@@ -1,9 +1,9 @@
 import { lazy, Suspense } from 'react';
 import { Navigate, Outlet, Route, Routes } from 'react-router';
 
-import useAuthContext from '@/features/auth/AuthContext';
+import { logoutManager } from '@/concerns';
+import { useAuthContext } from '@/features/auth/contexts';
 import LoginPage from '@/features/auth/LoginPage';
-import logoutManager from '@/features/auth/logoutManager';
 
 // Lazy load page components to enable code splitting and reduce the initial bundle size
 const AccountsPage = lazy(() => import('../features/accounts/AccountsPage'));
@@ -51,10 +51,17 @@ const InviteUserSheet = lazy(
 
 // ProtectedRoute component for protecting routes
 function ProtectedRoute() {
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, isInitialized } = useAuthContext();
+
+  // Show nothing while checking for HTTP-only cookie refresh
+  if (!isInitialized) {
+    return null;
+  }
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
+
   return <Outlet />;
 }
 

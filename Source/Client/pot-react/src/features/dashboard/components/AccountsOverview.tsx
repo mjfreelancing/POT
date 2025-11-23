@@ -7,11 +7,11 @@ import StatusBadge from '@/components/feedback/badge/StatusBadge';
 import { createMoneyValueColumn, DataTable } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import type { Account } from '@/data';
 import { EMPTY_ACCOUNT_ARRAY } from '@/data';
 import { formatMoneyValue } from '@/lib';
-import { logger } from '@/lib/logging';
 
 import type { AccountsSummary } from '../stores';
 import { accountsSummaryStore } from '../stores';

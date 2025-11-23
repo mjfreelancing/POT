@@ -17,7 +17,7 @@ type PasswordChangedDialogProps = {
 
 function PasswordChangedDialog({ open, onLogout }: PasswordChangedDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
+    <Dialog open={open} onOpenChange={undefined}>
       <DialogContent
         className="sm:max-w-md"
         onPointerDownOutside={e => e.preventDefault()}

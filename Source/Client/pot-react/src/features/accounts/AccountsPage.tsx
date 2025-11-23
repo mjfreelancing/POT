@@ -9,9 +9,9 @@ import { ErrorSheet, LoadingOverlay } from '@/components/feedback';
 import { SearchInput } from '@/components/filters';
 import { Toolbar } from '@/components/layout';
 import { Button } from '@/components/ui/button';
+import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import { WithPermission } from '@/features/auth/components';
-import { logger } from '@/lib/logging';
 
 import { AccountsHeader, AccountsTable } from './components';
 import useAccountStorage from './hooks/useAccountStorage';

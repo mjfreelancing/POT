@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react';
 
+import type { Permission } from '@/concerns';
 import { usePermissions } from '@/hooks';
-import type { Permission } from '@/lib/permissions';
 
 /**
  * A component that conditionally renders its children based on whether

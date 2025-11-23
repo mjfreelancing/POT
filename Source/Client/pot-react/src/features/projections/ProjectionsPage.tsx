@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useApiGetProjection } from '@/api/hooks/useProjections';
 import { ErrorSheet, LoadingOverlay } from '@/components/feedback';
+import { logger } from '@/concerns';
 import type { ProjectionMetric } from '@/data/projection';
 import type { DisplayError } from '@/lib';
 import {
@@ -12,7 +13,6 @@ import {
   isSameDate,
   normalizeToLocalMidnight,
 } from '@/lib/dateUtils';
-import { logger } from '@/lib/logging';
 
 import { ProjectionChart, ProjectionsHeader } from './components';
 import useProjectionStorage, {

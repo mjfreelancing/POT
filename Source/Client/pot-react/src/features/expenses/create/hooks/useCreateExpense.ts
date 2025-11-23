@@ -1,9 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiCreateExpense } from '@/api/hooks';
+import { useCacheInvalidation } from '@/concerns';
 import type { CreateExpense, Identity } from '@/data';
 import type { FailResultBase, Result } from '@/lib';
-import { useCacheInvalidation } from '@/lib';
 
 function useCreateExpense() {
   const queryClient = useQueryClient();

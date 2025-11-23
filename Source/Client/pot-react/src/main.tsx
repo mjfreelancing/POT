@@ -6,13 +6,12 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 
 import { setupAxiosDefaults, setupAxiosInterceptors } from '@/api/axios';
-import { createAuthTokenProvider } from '@/features/auth/authTokenProvider';
+import { tokenProvider } from '@/concerns';
 
 import App from './App.tsx';
 
 // Initialize axios before anything else
 setupAxiosDefaults();
-const tokenProvider = createAuthTokenProvider();
 setupAxiosInterceptors(tokenProvider);
 
 const queryClient = new QueryClient({

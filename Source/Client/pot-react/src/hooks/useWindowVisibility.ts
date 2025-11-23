@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { logger } from '@/lib/logging';
+import { logger } from '@/concerns';
 
 /**
  * Hook to monitor window visibility state and notify when the window becomes visible

@@ -1,8 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useApiDeleteExpense } from '@/api/hooks';
+import { useCacheInvalidation } from '@/concerns';
 import type { FailResultBase, Result } from '@/lib';
-import { useCacheInvalidation } from '@/lib';
 
 function useDeleteExpense(rowId: string) {
   const queryClient = useQueryClient();

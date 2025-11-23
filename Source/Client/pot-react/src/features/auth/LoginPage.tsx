@@ -6,11 +6,10 @@ import { AuthenticationError } from '@/api/errors/apiErrors';
 import { useLogin } from '@/api/hooks/useAuth';
 import type { LoginCredentials } from '@/api/types/auth';
 import { ErrorSheet } from '@/components/feedback';
-import useAuthContext from '@/features/auth/AuthContext';
+import { logger, useCacheInvalidation } from '@/concerns';
+import { useAuthContext } from '@/features/auth/contexts';
 import LoginForm from '@/features/auth/LoginForm';
 import type { DisplayError } from '@/lib';
-import { useCacheInvalidation } from '@/lib';
-import { logger } from '@/lib';
 
 function LoginPage() {
   const [authError, setAuthError] = useState<DisplayError | null>(null);
@@ -38,45 +37,28 @@ function LoginPage() {
 
         if (response.status === 'Approval') {
           logger.info('Auth', 'Account pending approval');
-
-          setApprovalMessage(
-            response.message ||
-              "Your account is pending approval. You'll receive an email when your account is activated.",
-          );
+          // Server always provides message for Approval status
+          setApprovalMessage(response.message);
           return;
         }
 
         if (response.status === 'Success') {
-          if (response.accessToken && response.refreshToken) {
-            logger.info('Auth', 'Login successful');
+          logger.info('Auth', 'Login successful');
 
-            // First set the tokens to enable authenticated API calls
-            login({
-              accessToken: response.accessToken,
-              refreshToken: response.refreshToken,
-            });
+          // First set the tokens to enable authenticated API calls
+          // Note: refreshToken is now in HTTP-only cookie
+          login(response.accessToken);
 
-            // Force an immediate me query to get user info and permissions
-            invalidateCache(['me']);
+          // Force an immediate me query to get user info and permissions
+          invalidateCache(['me']);
 
-            navigate('/');
-            return;
-          }
-
-          // Success status but missing tokens - fall through to error handling
-          logger.error('Auth', 'Success status but missing tokens');
-        } else {
-          // Exhaustive check - should never reach here
-          const _exhaustive: never = response.status;
-          logger.error('Auth', 'Unexpected login status', _exhaustive);
+          navigate('/');
+          return;
         }
 
-        // Common error handling for unexpected success/status scenarios
-        setOtherError({
-          title: 'Unexpected Error',
-          description:
-            'An unexpected error occurred during login. Please try again.',
-        });
+        // Exhaustive check - TypeScript ensures we've handled all cases
+        const _exhaustive: never = response;
+        logger.error('Auth', 'Unexpected login response', _exhaustive);
       } else {
         logger.warn('Auth', 'Login request failed', result.error);
 

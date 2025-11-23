@@ -1,9 +1,9 @@
 /**
  * JWT authentication token response from the server
+ * Note: refreshToken is now stored in HTTP-only cookie, not returned in response
  */
 type AuthTokens = {
   accessToken: string;
-  refreshToken: string;
 };
 
 /**
@@ -13,20 +13,21 @@ type LoginStatus = 'Success' | 'Approval';
 
 /**
  * Login response from the server
+ * Note: refreshToken is set as HTTP-only cookie, not in response body
+ * - Success status: accessToken is always present, message is undefined
+ * - Approval status: message is always present, accessToken is undefined
  */
-type LoginResponse = {
-  status: LoginStatus;
-  accessToken?: string;
-  refreshToken?: string;
-  message?: string;
-};
-
-/**
- * Request body for refreshing tokens
- */
-type RefreshTokenRequest = {
-  refreshToken: string;
-};
+type LoginResponse =
+  | {
+      status: 'Success';
+      accessToken: string;
+      message?: undefined;
+    }
+  | {
+      status: 'Approval';
+      accessToken?: undefined;
+      message: string;
+    };
 
 /**
  * Token provider interface for authentication operations
@@ -35,6 +36,7 @@ type TokenProvider = {
   getAccessToken: () => string | undefined;
   refreshTokens: () => Promise<string>;
   clearTokens: () => void;
+  setAccessToken: (token: string | undefined) => void;
 };
 
 /**
@@ -50,6 +52,5 @@ export type {
   LoginCredentials,
   LoginResponse,
   LoginStatus,
-  RefreshTokenRequest,
   TokenProvider,
 };

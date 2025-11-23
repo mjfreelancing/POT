@@ -74,7 +74,7 @@ function getAllKeysToInvalidate(keys: CacheKey[]): CacheKey[] {
  *
  * @example
  * // In utility functions (bulk actions, etc.)
- * import { invalidateCache } from '@/lib';
+ * import { invalidateCache } from '@/concerns/cache';
  * invalidateCache(queryClient, ['expenses']); // Invalidates expenses + accounts + projections
  *
  * // Invalidates accounts + projections

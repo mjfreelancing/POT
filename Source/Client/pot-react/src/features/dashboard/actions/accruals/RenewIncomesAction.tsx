@@ -7,10 +7,10 @@ import { toast } from 'sonner';
 import { useApiRenewIncomes } from '@/api/hooks';
 import { ActionCard } from '@/components/cards';
 import { SuccessToast } from '@/components/feedback/toast';
+import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import { useAccrualsContext } from '@/features/dashboard/contexts/AccrualsContext';
 import { renewIncomes } from '@/features/incomes/bulkActions/renew';
-import { logger } from '@/lib/logging';
 
 function RenewIncomesAction() {
   const {

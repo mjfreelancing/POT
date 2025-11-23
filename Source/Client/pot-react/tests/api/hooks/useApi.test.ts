@@ -15,8 +15,19 @@ import { FailResultBase, FailResult, SuccessResult } from '@/lib';
 
 import { useDelete, useGet, usePost, usePut } from '@/api/hooks';
 
-// Mock axios instead of using vitest-mock-axios
+// Mock axios and authClient to prevent initialization errors
 vi.mock('axios');
+
+vi.mock('@/api/authClient', () => ({
+  authClient: {
+    post: vi.fn(),
+    defaults: { baseURL: '' },
+    interceptors: {
+      request: { use: vi.fn() },
+      response: { use: vi.fn() },
+    },
+  },
+}));
 
 // Create a wrapper for the QueryClientProvider
 const createWrapper = () => {

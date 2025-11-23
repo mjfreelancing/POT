@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import type { Permission } from '@/lib/permissions';
+import type { Permission } from '@/concerns';
 import { EMPTY_PERMISSION_ARRAY } from '@/lib/types';
 import { useUserStore } from '@/stores';
 

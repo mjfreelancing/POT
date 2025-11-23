@@ -1,4 +1,4 @@
-import type { LogoutManager } from './types';
+import type { LogoutManager } from '@/features/auth/types';
 
 /**
  * Simple logout manager that holds a callback to be invoked when logout is requested.

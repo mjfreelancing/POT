@@ -10,6 +10,9 @@ import type { TokenProvider } from './types/auth';
 const setupAxiosDefaults = () => {
   axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL;
   axios.defaults.timeout = import.meta.env.VITE_API_TIMEOUT_MS;
+
+  // Enable sending cookies with requests (required for HTTP-only refresh token cookie)
+  axios.defaults.withCredentials = true;
 };
 
 /**

@@ -11,6 +11,7 @@ import {
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import type { Expense } from '@/data';
 import { EMPTY_EXPENSE_ARRAY } from '@/data';
@@ -21,7 +22,6 @@ import {
   localToday,
   normalizeToEpoch,
 } from '@/lib';
-import { logger } from '@/lib/logging';
 
 import type { ExpensesSummary } from '../stores';
 import { expensesSummaryStore } from '../stores';

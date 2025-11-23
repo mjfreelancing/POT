@@ -18,8 +18,8 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
-import { logger } from '@/lib/logging';
 import { useUserStore } from '@/stores';
 
 import type { SiteSettingsFields } from './siteSettingsSchema';

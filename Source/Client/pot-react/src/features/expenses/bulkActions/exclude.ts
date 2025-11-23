@@ -1,8 +1,9 @@
 import type { QueryClient } from '@tanstack/react-query';
 
 import type { useApiToggleExcludeExpenses } from '@/api/hooks/useExpenses';
+import { invalidateCache } from '@/concerns';
 import type { Expense } from '@/data';
-import { type BulkActionResult, invalidateCache } from '@/lib';
+import type { BulkActionResult } from '@/lib';
 
 async function toggleExcludeExpenses(
   expenses: Expense[],

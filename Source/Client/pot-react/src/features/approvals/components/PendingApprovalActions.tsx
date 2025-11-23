@@ -18,10 +18,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useCacheInvalidation } from '@/concerns';
+import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import type { PendingApprovalUser } from '@/data/approvals';
-import { useCacheInvalidation } from '@/lib';
-import { logger } from '@/lib/logging';
 
 type PendingApprovalActionsProps = {
   user: PendingApprovalUser;

@@ -6,11 +6,11 @@ import { useUsers } from '@/api/hooks/useUsers';
 import { ErrorSheet, LoadingOverlay } from '@/components/feedback';
 import { PageHeader, Toolbar } from '@/components/layout';
 import { Button } from '@/components/ui/button';
+import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import type { SiteUser } from '@/data/siteUser';
 import { WithPermission } from '@/features/auth/components';
 import { usePermissions } from '@/hooks';
-import { logger } from '@/lib/logging';
 
 import { UserRoleDialog, UsersTable } from './components';
 

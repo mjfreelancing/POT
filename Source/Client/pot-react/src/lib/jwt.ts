@@ -1,5 +1,6 @@
+import { logger } from '@/concerns';
+
 import { formatDateTime } from './dateUtils';
-import { logger } from './logging';
 
 const JWT_LOGGER = 'JWT';
 
