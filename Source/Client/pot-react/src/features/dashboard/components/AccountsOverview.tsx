@@ -26,7 +26,7 @@ const columns: ColumnDef<Account>[] = [
     cell: ({ row }) => {
       const { bsb, number, description } = row.original;
       return (
-        <div>
+        <div className="min-w-[140px]">
           <div className="font-medium">{description}</div>
           <div className="text-sm text-muted-foreground">
             <div>({bsb})</div>
