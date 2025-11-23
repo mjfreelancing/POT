@@ -117,8 +117,12 @@ function ActionCard({
   }
 
   const mainContent = (
-    <div className="flex flex-col justify-center text-left flex-1">
-      <div role="heading" aria-level={1} className="text-xl font-medium">
+    <div className="flex flex-col justify-center text-center sm:text-left flex-1">
+      <div
+        role="heading"
+        aria-level={1}
+        className="text-lg sm:text-xl font-medium"
+      >
         {title}
       </div>
       <DescriptionContent text={description} isLoading={isLoading} />
@@ -149,8 +153,8 @@ function ActionCard({
         />
       )}
       <CardContent className="p-4 h-full flex items-center justify-center">
-        <div className="flex items-center justify-center w-full gap-4">
-          <div className="p-4 rounded-lg bg-primary/5 flex-shrink-0 flex items-center justify-center">
+        <div className="flex flex-col sm:flex-row items-center justify-center w-full gap-3 sm:gap-4">
+          <div className="p-3 sm:p-4 rounded-lg bg-primary/5 flex-shrink-0 flex items-center justify-center">
             {icon}
           </div>
           {hint && enabled ? (
