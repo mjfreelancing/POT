@@ -24,5 +24,5 @@ public sealed class AuthenticationOptions
     }
 
     // The refresh token cookie-specific authentication settings.
-    public required CookieOptions Cookie { get; init; }
+    public CookieOptions Cookie { get; set; } = null!;      // Cannot use required - doesn't work with options binding
 }

@@ -38,6 +38,6 @@ internal sealed class PlatformAdminOptionsSetup : IConfigureOptions<PlatformAdmi
 
     private static ValidateOptionsResult InvalidOption(string optionName)
     {
-        return ValidateOptionsResult.Fail($"Platform Admin option '{optionName}' must be provided.");
+        return ValidateOptionsResult.Fail($"{SectionName} option '{optionName}' must be provided.");
     }
 }
