@@ -64,7 +64,7 @@ function AccessTokenProvider({ children }: { children: ReactNode }) {
 
       // If we have access token in memory, we're good
       if (accessToken) {
-        logger.info('AccessTokenContext', 'Access token found in memory');
+        logger.info('AccessTokenContext', 'Access token success');
 
         setIsInitialized(true);
         return;
@@ -73,28 +73,21 @@ function AccessTokenProvider({ children }: { children: ReactNode }) {
       // No access token - try to refresh from HTTP-only cookie
       logger.info(
         'AccessTokenContext',
-        'No access token in memory, attempting refresh from cookie',
+        'No access token available, attempting to refresh',
       );
 
       try {
         const result = await refreshAccessToken();
 
         if (result.success) {
-          logger.info(
-            'AccessTokenContext',
-            'Successfully refreshed token from cookie',
-          );
+          logger.info('AccessTokenContext', 'Token successfully refreshed');
 
           setAccessToken(result.value.accessToken);
         } else {
-          logger.info('AccessTokenContext', 'No valid refresh cookie found');
+          logger.info('AccessTokenContext', 'No valid refresh token found');
         }
       } catch (error) {
-        logger.error(
-          'AccessTokenContext',
-          'Failed to refresh token from cookie',
-          error,
-        );
+        logger.warn('AccessTokenContext', 'Failed to refresh token', error);
       }
 
       setIsInitialized(true);

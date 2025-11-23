@@ -14,21 +14,18 @@ async function refreshAccessToken(): Promise<
   Result<{ accessToken: string }, AuthenticationError>
 > {
   try {
-    logger.info(
-      'AuthService',
-      'Attempting to refresh access token from cookie',
-    );
+    logger.info('AuthService', 'Attempting to refresh access token');
 
     const response = await authClient.post<AuthTokens>(
       '/auth/refresh',
       {}, // No body needed - refresh token comes from cookie
     );
 
-    logger.info('AuthService', 'Token refreshed successfully from cookie');
+    logger.info('AuthService', 'Token refreshed successfully');
 
     return new SuccessResult({ accessToken: response.data.accessToken });
   } catch (error) {
-    logger.error('AuthService', 'Failed to refresh token from cookie', error);
+    logger.warn('AuthService', 'Failed to refresh token ', error);
 
     return new FailResult(new AuthenticationError('Token refresh failed'));
   }
