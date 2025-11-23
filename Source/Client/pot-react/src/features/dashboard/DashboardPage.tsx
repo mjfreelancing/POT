@@ -24,10 +24,10 @@ function DashboardPage() {
   const { error, setError } = useErrorContext();
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20 overflow-x-hidden">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-background to-muted/20 overflow-x-hidden">
       <DashboardHeader />
 
-      <div className="flex-1 p-6 space-y-6">
+      <div className="flex-1 p-4 sm:p-6 space-y-6">
         <PermissionGuard
           permissions={['account:manage', 'expense:manage', 'income:manage']}
           mode="any"
