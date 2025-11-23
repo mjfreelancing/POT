@@ -479,9 +479,9 @@ const logout = useCallback(async () => {
   // Call server logout endpoint first (need access token)
   try {
     await logoutMutation.mutateAsync({});
-    logger.info("Auth", "Logged out from the server");
+    logger.info('Auth', 'Logged out from the server');
   } catch (error) {
-    logger.error("Auth", "Error while logging out from the server", error);
+    logger.error('Auth', 'Error while logging out from the server', error);
   }
 
   // Clear client-side state
@@ -1038,26 +1038,23 @@ function createTokenRefreshTimer({
       return;
     }
 
-    logger.info("Auth", "Setting up refresh timer");
+    logger.info('Auth', 'Setting up refresh timer');
 
     timerId = window.setTimeout(async () => {
-      logger.info("Auth", "Refresh timer triggered");
+      logger.info('Auth', 'Refresh timer triggered');
 
       try {
-        const response = await authClient.post<AuthTokens>(
-          "/auth/refresh",
-          {}, // No body - refresh token from HTTP-only cookie
-          {
-            headers: {
-              Authorization: `Bearer ${currentTokens.accessToken}`,
-            },
-          }
-        );
+        const result = await refreshAccessToken();
 
-        logger.info("Auth", "Token refreshed successfully");
-        onRefreshSuccess(response.data.accessToken);
+        if (result.success) {
+          logger.info('Auth', 'Token refreshed successfully');
+          onRefreshSuccess(result.value.accessToken);
+        } else {
+          logger.error('Auth', 'Failed to refresh token', result.error);
+          onRefreshError(result.error);
+        }
       } catch (error) {
-        logger.error("Auth", "Failed to refresh token", error);
+        logger.error('Auth', 'Failed to refresh token', error);
         onRefreshError(error);
       }
     }, refreshTimeMs);
@@ -1074,7 +1071,7 @@ function createTokenRefreshTimer({
 ```typescript
 const login = useCallback(
   (accessToken: string) => {
-    logger.info("Auth", "User logged in");
+    logger.info('Auth', 'User logged in');
     setTokens({ accessToken });
   },
   [setTokens]
@@ -1083,9 +1080,9 @@ const login = useCallback(
 const logout = useCallback(async () => {
   try {
     await logoutMutation.mutateAsync({});
-    logger.info("Auth", "Logged out from the server");
+    logger.info('Auth', 'Logged out from the server');
   } catch (error) {
-    logger.error("Auth", "Error while logging out from the server", error);
+    logger.error('Auth', 'Error while logging out from the server', error);
   }
 
   setTokens(undefined);
@@ -1341,8 +1338,8 @@ useEffect(() => {
 
     // No token in memory - try to refresh from cookie
     logger.info(
-      "AccessTokenContext",
-      "No access token in memory, attempting refresh from cookie"
+      'AccessTokenContext',
+      'No access token in memory, attempting refresh from cookie'
     );
 
     const result = await refreshAccessToken(); // Calls /auth/refresh
@@ -1352,7 +1349,7 @@ useEffect(() => {
       setAccessToken(result.value.accessToken);
     } else {
       // No valid refresh cookie - user must log in
-      logger.info("AccessTokenContext", "No valid refresh cookie found");
+      logger.info('AccessTokenContext', 'No valid refresh cookie found');
     }
   }
 
