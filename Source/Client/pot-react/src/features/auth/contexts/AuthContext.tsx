@@ -9,18 +9,16 @@ import {
   useRef,
 } from 'react';
 
+import { useMe } from '@/api/hooks';
 import { useLogout } from '@/api/hooks/useAuth';
-import { useMe } from '@/api/hooks/useMe';
 import { logger, logoutManager } from '@/concerns';
 import type { User } from '@/data/user';
 import type { DisplayError } from '@/lib';
 import { useUserStore } from '@/stores';
 
+import type { TokenRefreshHandle } from '../tokenRefreshTimer';
+import { createTokenRefreshTimer } from '../tokenRefreshTimer';
 import { AccessTokenProvider, useAccessToken } from './AccessTokenContext';
-import {
-  TokenRefreshHandle,
-  createTokenRefreshTimer,
-} from '../tokenRefreshTimer';
 
 // Feature layer of auth system - builds on AccessTokenContext to provide:
 // 1. Full authentication state with user info

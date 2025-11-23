@@ -2,7 +2,7 @@ import { UserPlus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router';
 
-import { useUsers } from '@/api/hooks/useUsers';
+import { useUsers } from '@/api/hooks';
 import { ErrorSheet, LoadingOverlay } from '@/components/feedback';
 import { PageHeader, Toolbar } from '@/components/layout';
 import { Button } from '@/components/ui/button';

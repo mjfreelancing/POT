@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { useResendInvitation, useUpdateUserStatus } from '@/api/hooks/useUsers';
+import { useResendInvitation, useUpdateUserStatus } from '@/api/hooks';
 import { ErrorSheet } from '@/components/feedback';
 import { SuccessToast } from '@/components/feedback/toast';
 import { Button } from '@/components/ui/button';

@@ -1,6 +1,7 @@
 export * from './useAccounts';
 export * from './useAccrualsStatus';
 export * from './useApi';
+export * from './useApprovals';
 export * from './useAuth';
 export * from './useChangePassword';
 export * from './useExpenses';
@@ -10,5 +11,7 @@ export * from './useIncomes';
 export * from './useMe';
 export * from './usePasswordReset';
 export * from './useProjections';
+export * from './useRoles';
 export * from './useSignup';
 export * from './useUser';
+export * from './useUsers';

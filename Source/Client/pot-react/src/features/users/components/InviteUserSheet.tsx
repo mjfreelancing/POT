@@ -5,8 +5,7 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 
-import { useRoles } from '@/api/hooks/useRoles';
-import { useInviteUser } from '@/api/hooks/useUsers';
+import { useInviteUser, useRoles } from '@/api/hooks';
 import { ErrorSheet, LoadingMessage } from '@/components/feedback';
 import { SuccessToast } from '@/components/feedback/toast';
 import { Button } from '@/components/ui/button';

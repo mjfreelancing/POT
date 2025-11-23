@@ -13,8 +13,8 @@ import { useState } from 'react';
 
 import { SidebarContent } from '@/components/ui/sidebar';
 import { useAuthContext } from '@/features/auth/contexts';
-import { ExportModal } from '@/features/maintenance/export/components/ExportModal';
-import { ImportModal } from '@/features/maintenance/import/components/ImportModal';
+import { ExportModal } from '@/features/maintenance/export';
+import { ImportModal } from '@/features/maintenance/import';
 
 import type { MenuGroupDefinition } from './MenuGroup';
 import MenuGroup from './MenuGroup';

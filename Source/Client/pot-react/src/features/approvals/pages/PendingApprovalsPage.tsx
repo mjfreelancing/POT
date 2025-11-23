@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 
-import { useGetPendingApprovals } from '@/api/hooks/useApprovals';
+import { useGetPendingApprovals } from '@/api/hooks';
 import { ErrorSheet, LoadingOverlay } from '@/components/feedback';
 import { PageHeader } from '@/components/layout';
 import { logger } from '@/concerns';

@@ -5,8 +5,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-import { useRoles } from '@/api/hooks/useRoles';
-import { useUpdateUserRole } from '@/api/hooks/useUsers';
+import { useRoles, useUpdateUserRole } from '@/api/hooks';
 import { ErrorSheet } from '@/components/feedback';
 import { SuccessToast } from '@/components/feedback/toast';
 import { Button } from '@/components/ui/button';
