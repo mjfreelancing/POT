@@ -198,9 +198,9 @@ function ExpensesOverview() {
           title="Expenses Overview"
           description="Your expenses at a glance"
         />
-        <CardContent className="px-4 -mt-2">
-          <div className="flex flex-col xl:flex-row gap-6">
-            <div className="flex-1 w-full max-w-2xl">
+        <CardContent className="px-4 -mt-2 min-w-0">
+          <div className="flex flex-col xl:flex-row gap-6 min-w-0">
+            <div className="flex-1 w-full max-w-2xl min-w-0">
               {expensesIsLoading ? (
                 <div className="grid grid-cols-2 gap-4">
                   {Array(4)

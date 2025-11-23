@@ -16,10 +16,10 @@ import { AppRoutes } from './routes/AppRoutes';
 const AppContent = () => (
   <SidebarProvider>
     {/* Use the full viewport height. Will get 2 columns with the sidebar on the left and other content on the right */}
-    <div className="flex flex-1 bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="flex flex-1 bg-gradient-to-br from-background via-background to-muted/20 min-w-0">
       <AppSidebar />
       {/* The routed pages will expand and fill the remaining space */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative min-w-0">
         {/* Subtle background pattern */}
         <div className="absolute inset-0 opacity-[0.02] bg-[radial-gradient(circle_at_1px_1px,_oklch(var(--foreground))_1px,_transparent_0)] [background-size:20px_20px]" />
         <div className="relative z-10 h-full">
@@ -55,7 +55,7 @@ const App = () => {
     <ErrorProvider>
       <AuthProvider>
         <ThemeProvider defaultTheme="system" storageKey="pot-ui-theme">
-          <div className="flex h-screen w-screen">
+          <div className="flex h-screen w-screen overflow-x-hidden">
             <ErrorBoundary
               fallbackRender={({ error }) => (
                 <div
