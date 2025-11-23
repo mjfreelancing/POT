@@ -10,7 +10,7 @@ import { AppSidebar } from './components/nav';
 import { ThemeProvider } from './components/theme';
 import { SidebarProvider } from './components/ui/sidebar';
 import { ErrorProvider } from './contexts';
-import { AuthProvider } from './features/auth/AuthContext';
+import { AuthProvider } from './features/auth/contexts';
 import { AppRoutes } from './routes/AppRoutes';
 
 const AppContent = () => (
