@@ -99,7 +99,7 @@ function AccountsPage() {
       <AccountsHeader />
       <div className="flex-1 min-h-0 flex flex-col p-6 gap-4">
         <Toolbar>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-3">
             <SearchInput
               value={searchTerm}
               onChange={handleSearchTermChange}

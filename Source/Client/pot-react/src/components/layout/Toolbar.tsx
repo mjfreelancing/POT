@@ -13,7 +13,7 @@ type ToolbarProps = {
 function Toolbar({ children, className = '' }: ToolbarProps) {
   return (
     <div
-      className={`flex items-center justify-between mb-2 bg-muted/60 rounded-md px-4 py-3 border ${className}`}
+      className={`flex flex-wrap items-center justify-between gap-3 mb-2 bg-muted/60 rounded-md px-4 py-3 border ${className}`}
       role="toolbar"
     >
       {children}
