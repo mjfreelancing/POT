@@ -1,2 +1,2 @@
 export { useAccessToken } from './AccessTokenContext';
-export { default as useAuthContext, AuthProvider } from './AuthContext';
+export { AuthProvider, default as useAuthContext } from './AuthContext';

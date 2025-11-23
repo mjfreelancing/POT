@@ -1,7 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+﻿import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { authClient } from '@/api/authClient';
-import { createTokenRefreshTimer } from '@/features/auth/tokenRefreshTimer';
+import { createAccessTokenRefreshTimer } from '@/features/auth/accessTokenRefreshTimer';
 
 // Mock dependencies
 vi.mock('@/api/authClient', () => ({
@@ -21,7 +21,7 @@ vi.mock('@/lib/logging', () => ({
   },
 }));
 
-describe('tokenRefreshTimer', () => {
+describe('accessTokenRefreshTimer', () => {
   const mockAccessToken = 'mock-access-token';
   const mockNewAccessToken = 'mock-new-access-token';
 
@@ -46,7 +46,7 @@ describe('tokenRefreshTimer', () => {
     const onRefreshSuccess = vi.fn();
     const onRefreshError = vi.fn();
 
-    const timer = createTokenRefreshTimer({
+    const timer = createAccessTokenRefreshTimer({
       currentAccessToken: mockAccessToken,
       onRefreshSuccess,
       onRefreshError,
@@ -63,7 +63,7 @@ describe('tokenRefreshTimer', () => {
     const onRefreshSuccess = vi.fn();
     const onRefreshError = vi.fn();
 
-    const timer = createTokenRefreshTimer({
+    const timer = createAccessTokenRefreshTimer({
       currentAccessToken: mockAccessToken,
       onRefreshSuccess,
       onRefreshError,
@@ -98,7 +98,7 @@ describe('tokenRefreshTimer', () => {
     const onRefreshSuccess = vi.fn();
     const onRefreshError = vi.fn();
 
-    const timer = createTokenRefreshTimer({
+    const timer = createAccessTokenRefreshTimer({
       currentAccessToken: mockAccessToken,
       onRefreshSuccess,
       onRefreshError,
@@ -127,7 +127,7 @@ describe('tokenRefreshTimer', () => {
     const onRefreshSuccess = vi.fn();
     const onRefreshError = vi.fn();
 
-    const timer = createTokenRefreshTimer({
+    const timer = createAccessTokenRefreshTimer({
       currentAccessToken: mockAccessToken,
       onRefreshSuccess,
       onRefreshError,
@@ -152,7 +152,7 @@ describe('tokenRefreshTimer', () => {
     const onRefreshSuccess = vi.fn();
     const onRefreshError = vi.fn();
 
-    const timer = createTokenRefreshTimer({
+    const timer = createAccessTokenRefreshTimer({
       currentAccessToken: mockAccessToken,
       onRefreshSuccess,
       onRefreshError,
@@ -179,7 +179,7 @@ describe('tokenRefreshTimer', () => {
     const onRefreshSuccess = vi.fn();
     const onRefreshError = vi.fn();
 
-    const timer = createTokenRefreshTimer({
+    const timer = createAccessTokenRefreshTimer({
       currentAccessToken: mockAccessToken,
       onRefreshSuccess,
       onRefreshError,

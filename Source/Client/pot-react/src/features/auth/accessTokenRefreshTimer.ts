@@ -4,7 +4,7 @@ import { logger } from '@/concerns';
 import { FailResult } from '@/lib';
 import { calculateRefreshTime } from '@/lib/jwt';
 
-type TokenRefreshConfig = {
+type AccessTokenRefreshConfig = {
   /** Current access token */
   currentAccessToken: string;
   /** Called when refresh succeeds with new access token */
@@ -13,7 +13,7 @@ type TokenRefreshConfig = {
   onRefreshError: (error: unknown) => void;
 };
 
-type TokenRefreshHandle = {
+type AccessTokenRefreshHandle = {
   /** Start the refresh timer */
   start: () => void;
   /** Stop and cleanup the refresh timer */
@@ -23,11 +23,11 @@ type TokenRefreshHandle = {
 /**
  * Creates a token refresh timer that will proactively refresh the token before it expires
  */
-function createTokenRefreshTimer({
+function createAccessTokenRefreshTimer({
   currentAccessToken,
   onRefreshSuccess,
   onRefreshError,
-}: TokenRefreshConfig): TokenRefreshHandle {
+}: AccessTokenRefreshConfig): AccessTokenRefreshHandle {
   let timerId: number | undefined;
 
   const stopTimer = () => {
@@ -85,5 +85,5 @@ function createTokenRefreshTimer({
   };
 }
 
-export type { TokenRefreshConfig, TokenRefreshHandle };
-export { createTokenRefreshTimer };
+export type { AccessTokenRefreshConfig, AccessTokenRefreshHandle };
+export { createAccessTokenRefreshTimer };

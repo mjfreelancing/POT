@@ -16,8 +16,8 @@ import type { User } from '@/data/user';
 import type { DisplayError } from '@/lib';
 import { useUserStore } from '@/stores';
 
-import type { TokenRefreshHandle } from '../tokenRefreshTimer';
-import { createTokenRefreshTimer } from '../tokenRefreshTimer';
+import type { AccessTokenRefreshHandle } from '../accessTokenRefreshTimer';
+import { createAccessTokenRefreshTimer } from '../accessTokenRefreshTimer';
 import { AccessTokenProvider, useAccessToken } from './AccessTokenContext';
 
 // Feature layer of auth system - builds on AccessTokenContext to provide:
@@ -107,13 +107,15 @@ function AuthProviderContent({ children }: { children: ReactNode }) {
   // 1. Calculates optimal refresh time before token expires
   // 2. Ensures only one refresh timer runs at a time
   // 3. Cleans up on unmount or token changes
-  const refreshTimerRef = useRef<TokenRefreshHandle | undefined>(undefined);
+  const refreshTimerRef = useRef<AccessTokenRefreshHandle | undefined>(
+    undefined,
+  );
 
   // Setup refresh timer when access token changes
   // Critical: This must run after AccessTokenContext is mounted and token is loaded
   useEffect(() => {
     if (accessToken) {
-      refreshTimerRef.current = createTokenRefreshTimer({
+      refreshTimerRef.current = createAccessTokenRefreshTimer({
         currentAccessToken: accessToken,
         onRefreshSuccess: login,
         onRefreshError: () => logout(),

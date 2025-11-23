@@ -44,7 +44,7 @@ const addAuthHeader =
  * Handle 401 errors with token refresh.
  *
  * This interceptor handles reactive token refresh when API calls receive 401 responses.
- * It works in conjunction with the proactive refresh timer in tokenRefreshTimer.ts.
+ * It works in conjunction with the proactive refresh timer in accessTokenRefreshTimer.ts.
  *
  * ERROR HANDLING:
  * - 401 on /auth/* endpoints: Do not attempt refresh (prevents infinite loops)
