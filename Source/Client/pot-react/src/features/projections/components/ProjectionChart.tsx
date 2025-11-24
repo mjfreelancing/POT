@@ -67,21 +67,6 @@ function ProjectionChart({
   selectedDate,
   onToggleDetails,
 }: ProjectionChartProps) {
-  // Responsive bottom margin: larger on mobile for scrollable charts
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    function checkMobile() {
-      setIsMobile(window.innerWidth < 768); // Tailwind's md breakpoint
-    }
-
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  const chartBottomMargin = isMobile ? 80 : 20;
-
   // Transform data for chart consumption using custom hook
   const {
     chartData: allChartData,
@@ -265,8 +250,14 @@ function ProjectionChart({
   }
 
   return (
-    <Card className="flex flex-col h-full pb-0">
-      <CardHeader className="flex-shrink-0">
+    <Card
+      className="flex flex-col md:h-full"
+      style={{
+        background:
+          'linear-gradient(to bottom, rgba(148, 163, 184, 0.01), rgba(148, 163, 184, 0.04))',
+      }}
+    >
+      <CardHeader>
         <div className="flex items-start justify-between gap-6">
           <div className="flex-1 space-y-1">
             <CardTitle>{getChartTitle()}</CardTitle>
@@ -288,27 +279,20 @@ function ProjectionChart({
       />
       <CardContent className="flex-1 flex flex-col p-0">
         {hasData ? (
-          <div
-            className="flex-1 min-h-0 px-6 overflow-x-auto"
-            style={{
-              background:
-                'linear-gradient(to bottom, rgba(148, 163, 184, 0.02), rgba(148, 163, 184, 0.08))',
-              minHeight: '400px',
-            }}
-          >
+          <div className="flex-1 px-2 md:px-6 overflow-x-auto min-h-[400px] md:min-h-0">
             <ChartContainer
               config={chartConfig}
-              className="h-full aspect-auto"
-              style={{ minHeight: '400px', minWidth: '600px' }}
+              className="aspect-auto h-[400px] md:h-full"
+              style={{ minWidth: '600px' }}
             >
               {getChartType() === 'line' ? (
                 <LineChart
                   data={chartData}
                   margin={{
-                    top: 20,
+                    top: 10,
                     right: 20,
                     left: 20,
-                    bottom: chartBottomMargin,
+                    bottom: 5,
                   }}
                 >
                   <CartesianGrid
@@ -358,10 +342,10 @@ function ProjectionChart({
                 <BarChart
                   data={chartData}
                   margin={{
-                    top: 20,
+                    top: 10,
                     right: 20,
                     left: 20,
-                    bottom: chartBottomMargin,
+                    bottom: 5,
                   }}
                   onClick={event => {
                     if (event?.activePayload?.[0]) {
@@ -381,7 +365,7 @@ function ProjectionChart({
                     tickFormatter={value => format(parseISO(value), 'MMM dd')}
                     angle={-45}
                     textAnchor="end"
-                    height={60}
+                    height={35}
                     className="text-xs"
                   />
                   <YAxis
