@@ -1,5 +1,4 @@
 import { addDays, addMonths, format, parseISO } from 'date-fns';
-import { useEffect, useState } from 'react';
 import {
   Bar,
   BarChart,
