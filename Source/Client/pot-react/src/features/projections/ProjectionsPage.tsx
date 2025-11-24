@@ -218,7 +218,7 @@ function ProjectionsPage() {
   }, [projectionData]);
 
   return (
-    <div className="flex flex-col md:h-screen bg-gradient-to-br from-background to-muted/20">
+    <div className="flex flex-col md:h-screen bg-card">
       <ProjectionsHeader />
       <div className="p-6 md:pb-6 md:flex-1 md:min-h-0 relative">
         {isLoading && <LoadingOverlay />}
