@@ -61,7 +61,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
-import { Sheet, SheetClose, SheetContent } from '@/components/ui/sheet';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { usePermissions } from '@/hooks';
 
 import ChangePasswordForm from './sections/changePassword/ChangePasswordForm';
@@ -80,35 +80,27 @@ function AccountSettingsSheet(props: AccountSettingsSheetProps): JSX.Element {
   const canManageSite = hasPermission('site:manage');
 
   return (
-    <Sheet
-      open={open}
-      onOpenChange={() => {
-        /* Prevent closing on outside click */
-      }}
-    >
-      {/* Hide the default close (X) button using [&>button:first-of-type]:hidden */}
+    <Sheet open={open} modal={false}>
       <SheetContent
         side="right"
-        className="p-6 sm:max-w-lg [&>button:first-of-type]:hidden"
+        className="w-full md:max-w-md p-6 overflow-y-auto [&>button:first-of-type]:hidden"
       >
-        <div className="space-y-6 pr-6 pl-6">
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-lg font-semibold">
-              Account Settings
+              User Settings
             </DialogTitle>
             <DialogDescription className="sr-only">
-              Manage your account settings
+              Manage your user settings
             </DialogDescription>
-            <SheetClose asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Close account settings"
-                onClick={onClose}
-              >
-                <XIcon className="size-5" />
-              </Button>
-            </SheetClose>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Close account settings"
+              onClick={onClose}
+            >
+              <XIcon className="size-5" />
+            </Button>
           </div>
 
           <Separator />

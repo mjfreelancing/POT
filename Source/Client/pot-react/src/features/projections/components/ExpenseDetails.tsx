@@ -1,5 +1,7 @@
 import { format } from 'date-fns';
+import { XIcon } from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
 import type { ChartConfig } from '@/components/ui/chart';
 import {
   Sheet,
@@ -43,33 +45,39 @@ function ExpenseDetails({
   );
 
   return (
-    <Sheet open={isOpen} onOpenChange={onOpenChange}>
+    <Sheet open={isOpen} modal={false}>
       <SheetContent
         side="right"
-        className="w-full md:max-w-md overflow-y-auto p-0"
+        className="w-full md:max-w-md overflow-y-auto p-0 [&>button:first-of-type]:hidden"
       >
         <SheetHeader className="px-6 pt-6 pb-4">
-          <div>
-            <div className="mb-6">
-              <SheetTitle>{format(date, 'MMMM d, yyyy')}</SheetTitle>
-            </div>
+          <div className="flex items-center justify-between mb-6">
+            <SheetTitle>{format(date, 'MMMM d, yyyy')}</SheetTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Close expense details"
+              onClick={() => onOpenChange(false)}
+            >
+              <XIcon className="size-5" />
+            </Button>
+          </div>
 
-            <div className="space-y-2">
-              <div>
-                <div className="bg-primary/10 rounded-md space-y-1">
+          <div className="space-y-2">
+            <div>
+              <div className="bg-primary/10 rounded-md space-y-1">
+                <SheetDescription className="flex justify-between items-center text-sm p-3 pr-2">
+                  <span className="font-semibold">Total Expenses</span>
+                  <span className="font-semibold">
+                    {formatMoneyValue(totalExpenses)}
+                  </span>
+                </SheetDescription>
+                {filteredTotal !== totalExpenses && (
                   <SheetDescription className="flex justify-between items-center text-sm p-3 pr-2">
-                    <span className="font-semibold">Total Expenses</span>
-                    <span className="font-semibold">
-                      {formatMoneyValue(totalExpenses)}
-                    </span>
+                    <span>Filtered Total</span>
+                    <span>{formatMoneyValue(filteredTotal)}</span>
                   </SheetDescription>
-                  {filteredTotal !== totalExpenses && (
-                    <SheetDescription className="flex justify-between items-center text-sm p-3 pr-2">
-                      <span>Filtered Total</span>
-                      <span>{formatMoneyValue(filteredTotal)}</span>
-                    </SheetDescription>
-                  )}
-                </div>
+                )}
               </div>
             </div>
           </div>
