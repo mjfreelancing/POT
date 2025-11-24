@@ -365,7 +365,7 @@ function ProjectionChart({
                     tickFormatter={value => format(parseISO(value), 'MMM dd')}
                     angle={-45}
                     textAnchor="end"
-                    height={35}
+                    height={60}
                     className="text-xs"
                   />
                   <YAxis
