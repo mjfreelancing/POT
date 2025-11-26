@@ -22,6 +22,14 @@ Comprehensive guide for developers working on the POT React frontend application
   - [Picker Components](#picker-components)
   - [Theme Components](#theme-components)
   - [User Components](#user-components)
+  - [Sheet Components](#sheet-components)
+- [Page Layout & Styling Patterns](#page-layout--styling-patterns)
+  - [Projections Page](#projections-page)
+  - [Dashboard Page](#dashboard-page)
+  - [Accounts Page](#accounts-page)
+  - [Expenses Page](#expenses-page)
+  - [Incomes Page](#incomes-page)
+  - [Reusable Layout Components](#reusable-layout-components)
 - [Error Handling](#error-handling)
 - [State Management](#state-management)
 - [Authentication & Authorization](#authentication--authorization)
@@ -1096,6 +1104,522 @@ import { UserMenu } from '@/components/user';
 ```
 
 **Examples:** Used in `PageHeader` component across all pages
+
+---
+
+### Sheet Components
+
+**Location:** shadcn/ui Sheet (`src/components/ui/sheet.tsx`), with patterns implemented across feature modules
+
+Sheet components provide slide-out panels for forms, details, and settings. POT implements two distinct sheet patterns based on use case.
+
+#### Sheet Pattern Overview
+
+| Aspect             | Form Sheets                                     | Info/Settings Sheets                                                    |
+| ------------------ | ----------------------------------------------- | ----------------------------------------------------------------------- |
+| **Use Case**       | Create/Edit forms (Accounts, Expenses, Incomes) | Details display, Settings (ExpenseDetails, IncomeDetails, UserSettings) |
+| **Width**          | `sm:max-w-lg` (512px)                           | `md:max-w-md` (448px)                                                   |
+| **Closing**        | Route-based navigation                          | Custom close button                                                     |
+| **Modal Behavior** | `modal={false}`                                 | `modal={false}`                                                         |
+| **Close Button**   | Hidden (no custom button)                       | Hidden default + custom button                                          |
+
+#### Pattern 1: Form Sheets
+
+**Use Case:** Create and edit forms that navigate between routes
+
+**Key Characteristics:**
+
+- Users arrive via routing (e.g., `/expenses/new`, `/accounts/edit/123`)
+- Form cancel/save actions navigate away from the sheet route
+- No explicit close button needed (routing handles dismissal)
+- Wider width (`sm:max-w-lg` = 512px) for form fields
+
+**Implementation:**
+
+```tsx
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+
+<Sheet open={true} modal={false}>
+  <SheetContent className="p-6 sm:max-w-lg [&>button:first-of-type]:hidden overflow-y-auto">
+    <SheetHeader>
+      <SheetTitle>Create Expense</SheetTitle>
+    </SheetHeader>
+
+    {/* Form content */}
+    <ExpenseForm
+      onCancel={() => navigate('/expenses')}
+      onSave={() => navigate('/expenses')}
+    />
+  </SheetContent>
+</Sheet>;
+```
+
+**Key Props:**
+
+- `open={true}` - Always open (controlled by routing, not state)
+- `modal={false}` - Prevents closing on outside click (user must use form actions)
+- `[&>button:first-of-type]:hidden` - Hides default X button (navigation handles closing)
+- `sm:max-w-lg` - 512px width on small screens and up (adequate space for form fields)
+- `overflow-y-auto` - Enables scrolling for long forms
+
+**Examples:**
+
+- `src/features/accounts/components/AccountSheet.tsx`
+- `src/features/expenses/components/ExpenseSheet.tsx`
+- `src/features/incomes/components/IncomeSheet.tsx`
+
+#### Pattern 2: Info/Settings Sheets
+
+**Use Case:** Display information details or user settings with explicit close action
+
+**Key Characteristics:**
+
+- Opened via state toggle (button click, row selection)
+- Requires explicit close button for dismissal
+- Narrower width (`md:max-w-md` = 448px) for focused information display
+- Close button with icon in header
+
+**Implementation:**
+
+```tsx
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
+import { XIcon } from 'lucide-react';
+
+<Sheet open={isOpen} modal={false}>
+  <SheetContent className="p-6 md:max-w-md [&>button:first-of-type]:hidden overflow-y-auto">
+    <SheetHeader className="flex flex-row items-center justify-between">
+      <SheetTitle>Expense Details</SheetTitle>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setIsOpen(false)}
+        aria-label="Close"
+      >
+        <XIcon className="h-4 w-4" />
+      </Button>
+    </SheetHeader>
+
+    {/* Display content */}
+    <div className="space-y-4 pt-4">{/* Details */}</div>
+  </SheetContent>
+</Sheet>;
+```
+
+**Key Props:**
+
+- `open={isOpen}` - Controlled by component state
+- `modal={false}` - Prevents closing on outside click (only close button dismisses)
+- `[&>button:first-of-type]:hidden` - Hides default X button (using custom button instead)
+- `md:max-w-md` - 448px width on medium screens and up (focused for info display)
+- `overflow-y-auto` - Enables scrolling for long content
+- Custom Button with `onClick` handler - Explicit close action
+
+**Why Custom Close Button:**
+
+- Default shadcn Sheet close button conflicts with `modal={false}`
+- Default X button requires `onOpenChange` prop, which interferes with modal behavior
+- Custom button provides explicit `onClick={() => setIsOpen(false)}` control
+- Positioned in SheetHeader for consistency with form sheets (which hide their default X)
+
+**Examples:**
+
+- `src/features/projections/components/ExpenseDetails.tsx`
+- `src/features/projections/components/IncomeDetails.tsx`
+- `src/features/userSettings/UserSettingsSheet.tsx`
+
+#### Sheet Width Guidelines
+
+**`sm:max-w-lg` (512px):**
+
+- Use for forms with multiple input fields
+- Adequate space for labels, inputs, dropdowns
+- Prevents cramped form layouts
+- Applied at `sm:` breakpoint (640px and up)
+
+**`md:max-w-md` (448px):**
+
+- Use for information display and settings
+- More focused, less overwhelming
+- Better for read-heavy content
+- Applied at `md:` breakpoint (768px and up)
+
+**Mobile Behavior:**
+
+- All sheets default to `w-full` on mobile (full screen width)
+- Width constraints only apply at their respective breakpoints
+
+#### Modal Behavior: `modal={false}`
+
+**Why Disable Modal Behavior:**
+
+Default shadcn Sheet component allows:
+
+- Clicking outside the sheet to close
+- Pressing Escape to close
+
+For POT sheets, we **always** use `modal={false}` to prevent accidental closing:
+
+- **Form sheets:** Prevents data loss from accidental outside clicks while filling forms
+- **Info sheets:** Requires explicit close button interaction (deliberate action)
+
+**Implementation:**
+
+```tsx
+<Sheet open={open} modal={false}>
+  {/* Sheet content */}
+</Sheet>
+```
+
+#### Close Button Patterns
+
+**Hiding Default Close Button:**
+
+All POT sheets hide the default X button using:
+
+```tsx
+className = '[&>button:first-of-type]:hidden';
+```
+
+**Why:**
+
+- Default button positioning conflicts with custom layouts
+- Default button requires `onOpenChange` callback, which conflicts with `modal={false}`
+- Custom button provides explicit control over close behavior
+
+**Form Sheets:** No custom close button (routing handles navigation)
+
+**Info Sheets:** Custom close button in SheetHeader:
+
+```tsx
+<SheetHeader className="flex flex-row items-center justify-between">
+  <SheetTitle>Sheet Title</SheetTitle>
+  <Button
+    variant="ghost"
+    size="icon"
+    onClick={() => handleClose()}
+    aria-label="Close"
+  >
+    <XIcon className="h-4 w-4" />
+  </Button>
+</SheetHeader>
+```
+
+#### Scrolling Behavior
+
+**Always include `overflow-y-auto` on SheetContent:**
+
+```tsx
+<SheetContent className="... overflow-y-auto">
+```
+
+**Why:**
+
+- Prevents content overflow on small viewports
+- Ensures long forms/content are fully accessible
+- Mobile devices require scrolling for sheets taller than viewport
+
+#### Decision Guide: Which Pattern to Use?
+
+**Use Form Sheet Pattern When:**
+
+- Creating or editing entities (accounts, expenses, incomes, users)
+- Route-based navigation (URL changes to show sheet)
+- Form submission navigates away
+- Need wider layout for input fields
+- No explicit close button required
+
+**Use Info/Settings Sheet Pattern When:**
+
+- Displaying read-only details (expense breakdown, income details)
+- User settings or preferences
+- State-based opening (button click toggles visibility)
+- Need explicit close action
+- Narrower focused layout preferred
+
+---
+
+## Page Layout & Styling Patterns
+
+This section documents the layout architecture and responsive styling patterns for major pages in the application. These patterns are essential for maintaining consistent behavior across desktop and mobile devices.
+
+### Projections Page
+
+**Location:** `src/features/projections/ProjectionsPage.tsx`, `src/features/projections/components/ProjectionChart.tsx`
+
+The Projections page displays financial projection data with interactive charts. The layout implementation uses a carefully structured flex-based architecture to ensure proper viewport filling on desktop and natural scrolling on mobile.
+
+#### Page Container Structure
+
+**ProjectionsPage.tsx:**
+
+```tsx
+<div className="flex flex-col md:h-screen bg-card">
+  <ProjectionsHeader />
+  <div className="p-6 md:pb-6 md:flex-1 md:min-h-0 relative">
+    <ProjectionChart {...props} />
+  </div>
+</div>
+```
+
+**Outer Container (`flex flex-col md:h-screen bg-card`):**
+
+- **Mobile:** Natural height based on content - allows vertical scrolling when content exceeds viewport
+- **Desktop (`md:h-screen`):** Full viewport height (100vh) - creates fixed viewport layout
+- `bg-card`: Solid background matching Card component (prevents visual gaps from showing through)
+
+**Content Container (`p-6 md:pb-6 md:flex-1 md:min-h-0 relative`):**
+
+- `p-6`: 24px padding on all sides
+- `md:pb-6`: 24px bottom padding on desktop
+- `md:flex-1`: Grows to fill available space after header on desktop
+- `md:min-h-0`: Critical for flex child shrinking - allows content to shrink below minimum content size
+- `relative`: Positioning context for loading overlay
+
+**Key Pattern:** The `md:` prefix on layout-critical classes ensures mobile gets natural flow while desktop gets viewport-constrained flex layout.
+
+#### Chart Component Structure
+
+**ProjectionChart.tsx Card Layout:**
+
+```tsx
+<Card
+  className="flex flex-col md:h-full"
+  style={{
+    background:
+      'linear-gradient(to bottom, rgba(148, 163, 184, 0.01), rgba(148, 163, 184, 0.04))',
+  }}
+>
+  <CardHeader>
+    <CardTitle>{getChartTitle()}</CardTitle>
+    <CardDescription>{getDateRangeDescription()}</CardDescription>
+  </CardHeader>
+  <ChartControls {...controlProps} />
+  <CardContent className="flex-1 flex flex-col p-0">
+    <div className="flex-1 px-2 md:px-6 overflow-x-auto min-h-[400px] md:min-h-0">
+      <ChartContainer
+        config={chartConfig}
+        className="aspect-auto h-[400px] md:h-full"
+        style={{ minWidth: '600px' }}
+      >
+        <LineChart data={chartData} margin={chartMargins}>
+          {/* Chart elements */}
+        </LineChart>
+      </ChartContainer>
+    </div>
+  </CardContent>
+</Card>
+```
+
+**Card (`flex flex-col md:h-full`):**
+
+- **Mobile:** Natural height based on content
+- **Desktop (`md:h-full`):** Fills parent container height (100%)
+- Subtle gradient background (`0.01` to `0.04` opacity) applied at Card level for visual depth without banding artifacts
+
+**CardContent (`flex-1 flex flex-col p-0`):**
+
+- `flex-1`: Grows to fill remaining Card height after header and controls
+- `flex flex-col`: Vertical flex container for chart
+- `p-0`: Removes default shadcn CardContent padding (default is `p-6`)
+
+**Chart Container Div (`flex-1 px-2 md:px-6 overflow-x-auto min-h-[400px] md:min-h-0`):**
+
+- `flex-1`: Fills CardContent height
+- `px-2`: 8px horizontal padding on mobile (tight spacing for small screens)
+- `md:px-6`: 24px horizontal padding on desktop (more breathing room)
+- `overflow-x-auto`: Enables horizontal scrolling when chart exceeds container width
+- `min-h-[400px]`: Minimum 400px height on mobile (ensures adequate chart visibility)
+- `md:min-h-0`: Removes minimum height on desktop (allows flex to control height)
+
+**ChartContainer (`aspect-auto h-[400px] md:h-full`):**
+
+- `aspect-auto`: Overrides shadcn default `aspect-video` (16:9) constraint - critical for proper height calculation
+- `h-[400px]`: Fixed 400px height on mobile - necessary for Recharts ResponsiveContainer to render on initial load
+- `md:h-full`: Fill parent height on desktop (dynamic based on viewport)
+- `style={{ minWidth: '600px' }}`: Minimum chart width ensures x-axis labels don't compress - triggers horizontal scroll on small screens
+
+#### Chart Margins & XAxis Configuration
+
+**Chart Margins:**
+
+Both LineChart and BarChart use consistent margins:
+
+```tsx
+<LineChart
+  data={chartData}
+  margin={{
+    top: 10,
+    right: 20,
+    left: 20,
+    bottom: 5,
+  }}
+>
+
+<BarChart
+  data={chartData}
+  margin={{
+    top: 10,
+    right: 20,
+    left: 20,
+    bottom: 5,
+  }}
+>
+```
+
+**XAxis Configuration:**
+
+Both chart types use identical XAxis settings:
+
+```tsx
+<XAxis
+  dataKey="date"
+  tickFormatter={value => format(parseISO(value), 'MMM dd')}
+  angle={-45}
+  textAnchor="end"
+  height={60}
+  className="text-xs"
+/>
+```
+
+**Key Points:**
+
+- `angle={-45}`: Diagonal labels prevent overlap with many data points
+- `textAnchor="end"`: Aligns rotated text properly at the end of the tick mark
+- `height={60}`: Reserves 60px vertical space for the axis, accommodating rotated labels
+- **Consistency:** Both LineChart and BarChart use `height={60}` to prevent scrollbar overlap issues
+- Tight `bottom: 5` margin works because `height={60}` provides adequate space for labels
+
+#### Key Learnings & Best Practices
+
+**1. Pure CSS Responsive Approach:**
+
+- Use Tailwind responsive classes (`md:`) for all layout and styling behavior
+- Avoids hydration issues and flash of wrong layout on page refresh
+- CSS-only approach is more maintainable and performant
+
+**2. Explicit Heights on Mobile for Recharts:**
+
+- Recharts ResponsiveContainer requires explicit height on mobile initial render
+- Without `h-[400px]`, chart disappears after page refresh (ResponsiveContainer can't calculate dimensions from flex layout)
+- Desktop can use `h-full` because flex calculations happen before ResponsiveContainer renders
+
+**3. Aspect Ratio Constraints:**
+
+- shadcn ChartContainer defaults to `aspect-video` (16:9 ratio)
+- Must override with `aspect-auto` to allow flex layout to control height
+- Without override, chart height becomes constrained by aspect ratio regardless of flex settings
+
+**4. Min-Height Behavior:**
+
+- `min-h-0` on flex children is critical for allowing shrinking below content size
+- Without it, flex children won't shrink properly causing layout overflow
+- Mobile needs explicit `min-h-[400px]` for chart visibility, desktop uses `md:min-h-0` for flex behavior
+
+**5. Clean Component Structure:**
+
+- CardHeader has no unnecessary flex constraints
+- CardContent uses `p-0` to remove default padding for precise chart spacing
+- Solid background (`bg-card`) on page container matches Card background, eliminating visual gaps
+- Minimal, purposeful styling without redundant properties
+
+**6. Page Background Strategy:**
+
+- Use solid `bg-card` instead of gradient on page container
+- Matches Card background perfectly, eliminating visual artifacts when scrolling
+- Any gaps between Card edges and viewport are invisible due to matching colors
+
+### Dashboard Page
+
+**Location:** `src/features/dashboard/DashboardPage.tsx`
+
+The Dashboard uses a widget-based layout pattern, distinct from the table-based pages.
+
+**Container Structure:**
+
+```tsx
+<div className="flex flex-col min-h-screen bg-gradient-to-br from-background to-muted/20">
+  <DashboardHeader />
+  <div className="flex-1 p-4 sm:p-6 space-y-6 min-w-0">
+    {/* Widget components */}
+  </div>
+</div>
+```
+
+**Key Differences from Other Pages:**
+
+- Uses `min-h-screen` instead of `h-screen` or `md:h-screen` - allows natural scrolling for multiple widgets
+- Responsive padding: `p-4 sm:p-6` (16px mobile, 24px desktop)
+- `space-y-6` for vertical spacing between widgets (24px gap)
+- `min-w-0` prevents content overflow in flex layout
+- No Toolbar component - widgets are stacked vertically
+- Permission-based widget visibility using `PermissionGuard`
+
+### Table-Based Pages (Accounts, Expenses, Incomes)
+
+**Locations:**
+
+- `src/features/accounts/AccountsPage.tsx`
+- `src/features/expenses/ExpensesPage.tsx`
+- `src/features/incomes/IncomesPage.tsx`
+
+These pages share a consistent layout pattern for data tables with filtering and CRUD operations.
+
+**Standard Layout Structure:**
+
+```tsx
+<div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20">
+  <PageHeader />
+  <div className="flex-1 min-h-0 flex flex-col p-6 gap-4">
+    <Toolbar>{/* Filters and action buttons */}</Toolbar>
+    <div className="flex-1 min-h-0 flex flex-col relative">
+      {isLoading && <LoadingOverlay />}
+      <DataTable />
+    </div>
+  </div>
+  {error && <ErrorSheet />}
+  <Outlet />
+</div>
+```
+
+**Container Breakdown:**
+
+- **Outer container:** `flex flex-col h-screen` - Full viewport height layout
+- **Content container:** `flex-1 min-h-0 flex flex-col p-6 gap-4`
+  - `flex-1`: Grows to fill available space after header
+  - `min-h-0`: Allows flex child shrinking for proper scrolling
+  - `p-6`: 24px padding on all sides
+  - `gap-4`: 16px spacing between Toolbar and table
+- **Table container:** `flex-1 min-h-0 flex flex-col relative`
+  - `flex-1`: Fills remaining space after toolbar
+  - `min-h-0`: Critical for table scrolling behavior
+  - `relative`: Positioning context for LoadingOverlay
+
+**Common Features:**
+
+- Search by description (persistent via localStorage)
+- Account filtering (Expenses and Incomes only, synced with URL params)
+- Permission-gated action buttons (`WithPermission` wrapper)
+- Nested routing via `<Outlet />` for create/edit sheets
+- URL state management for filters (Expenses/Incomes preserve filter state during edit operations)
+
+**Filter Persistence:**
+
+All table pages use custom storage hooks (`useAccountStorage`, `useExpenseStorage`, `useIncomeStorage`) to persist filter state:
+
+- Search term saved to localStorage on change
+- Account filter (Expenses/Incomes) synced with both localStorage and URL search params
+- Filters restored on page mount
 
 ---
 
