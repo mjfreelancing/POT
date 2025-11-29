@@ -119,9 +119,9 @@ function IncomeDetails({
               </div>
               {visibleItems.length === 0 ? (
                 <div className="px-3 py-3 space-y-2 text-sm text-muted-foreground">
-                  <p>All income is currently filtered out</p>
+                  <p>No income to display for this date</p>
                   <p className="text-xs">
-                    Unhide accounts in the chart to view income
+                    Check if any accounts are hidden in the chart
                   </p>
                 </div>
               ) : (
