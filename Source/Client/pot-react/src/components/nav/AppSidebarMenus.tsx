@@ -54,6 +54,13 @@ function AppSidebarMenus() {
       items: [
         {
           type: 'href',
+          label: 'Accounts',
+          icon: Landmark,
+          href: '/accounts',
+          permissions: ['account:view'],
+        },
+        {
+          type: 'href',
           label: 'Expenses',
           icon: Receipt,
           href: '/expenses',
@@ -65,13 +72,6 @@ function AppSidebarMenus() {
           icon: TrendingUp,
           href: '/incomes',
           permissions: ['income:view'],
-        },
-        {
-          type: 'href',
-          label: 'Accounts',
-          icon: Landmark,
-          href: '/accounts',
-          permissions: ['account:view'],
         },
         {
           type: 'href',
