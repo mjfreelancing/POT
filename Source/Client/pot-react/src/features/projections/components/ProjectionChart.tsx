@@ -322,7 +322,7 @@ function ProjectionChart({
                     return (
                       <Line
                         key={key}
-                        type="basis"
+                        type="monotone"
                         dataKey={key}
                         stroke={strokeColor}
                         strokeWidth={getStrokeWidth(key)}
