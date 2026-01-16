@@ -24,7 +24,11 @@
  *    - Check instanceof FailResult for our domain errors
  *
  * 4. Common Issues:
- *    - "Unexpected Error" usually means the error wasn't matched in the switch
+ *    - "Unexpected Error" means an unhandled HTTP status code (not 401-429, 500-504)
+ *    - "Server Error" means 500/502/503/504:
+ *      - Empty apiError (proxy/nginx responding but server not running): "Unable to connect to the server."
+ *      - Populated apiError (server returned actual error): Shows server's error detail/title
+ *    - "Network Error" means no HTTP response at all (true connection failure, timeout, CORS)
  *    - Double-processing is normal and handled by the FailResult check
  *    - Missing error messages may mean apiError is empty - check the data structure
  *
@@ -56,10 +60,12 @@ import {
   getMethodNotAllowedMessage,
   getNotFoundMessage,
   getRateLimitedMessage,
+  getServerErrorMessage,
   getValidationMessage,
   MethodNotAllowedError,
   NotFoundError,
   RateLimitedError,
+  ServerError,
   UnexpectedError,
   ValidationError,
 } from '../errors';
@@ -163,7 +169,14 @@ const responseErrorHandler = async (error: AxiosError) => {
         break;
 
       case 500:
+      case 502:
+      case 503:
+      case 504:
+        errorResult = new ServerError(getServerErrorMessage(apiError));
+        break;
+
       default:
+        // True unexpected errors - status codes we don't explicitly handle
         errorResult = new UnexpectedError(getErrorTitle(apiError));
         break;
     }

@@ -17,6 +17,7 @@ const ErrorCode = {
   Unexpected: 'Unexpected Error',
   Forbidden: 'Forbidden Error',
   RateLimited: 'Rate Limited',
+  ServerError: 'Server Error',
 } as const;
 
 // These type declarations only exist at compile time
@@ -79,6 +80,12 @@ class RateLimitedError extends ApiError {
   }
 }
 
+class ServerError extends ApiError {
+  constructor(description: string) {
+    super(ErrorCode.ServerError, description);
+  }
+}
+
 class NetworkError extends FailResultBase {
   constructor(description: string) {
     super(ErrorType.Network, ErrorCode.Network, description);
@@ -96,6 +103,7 @@ export {
   NetworkError,
   NotFoundError,
   RateLimitedError,
+  ServerError,
   UnexpectedError,
   ValidationError,
 };

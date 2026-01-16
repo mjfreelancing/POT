@@ -65,6 +65,30 @@ const getValidationMessage = (error: ApiErrorResponse): string => {
   return error.detail ?? 'A validation error occurred';
 };
 
+const getServerErrorMessage = (error: ApiErrorResponse): string => {
+  // Check if we actually have error data from the server
+  // If the server isn't running, error object will be empty
+  const hasErrorData =
+    error.detail || error.title || error.type || error.traceId;
+
+  if (!hasErrorData) {
+    // Empty error object = server not responding
+    return 'Unable to connect to the server.';
+  }
+
+  // Server is running and returned actual error data
+  if (error.detail) {
+    return error.detail;
+  }
+
+  if (error.title) {
+    return error.title;
+  }
+
+  // Fallback for malformed server errors
+  return 'The server encountered an error. Please try again.';
+};
+
 const getErrorTitle = (error: ApiErrorResponse): string => {
   return error.detail ?? error.title ?? 'An unknown error occurred';
 };
@@ -78,5 +102,6 @@ export {
   getMethodNotAllowedMessage,
   getNotFoundMessage,
   getRateLimitedMessage,
+  getServerErrorMessage,
   getValidationMessage,
 };

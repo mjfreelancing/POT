@@ -9,6 +9,7 @@ export {
   getMethodNotAllowedMessage,
   getNotFoundMessage,
   getRateLimitedMessage,
+  getServerErrorMessage,
   getValidationMessage,
 } from './apiErrorResponse';
 
@@ -22,6 +23,7 @@ export {
   NetworkError,
   NotFoundError,
   RateLimitedError,
+  ServerError,
   UnexpectedError,
   ValidationError,
 } from './apiErrors';
