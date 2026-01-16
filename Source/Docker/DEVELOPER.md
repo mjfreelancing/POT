@@ -36,9 +36,9 @@ POT uses Docker for local development and production deployment. The application
 ### Container Dependencies
 
 ```
-pot-client (port 3000)
+pot-client (port 5175)
     ↓ depends on
-pot-server (port 5242)
+pot-server (port 5241)
     ↓ depends on
 pot-postgres (port 5432)
 ```
@@ -53,8 +53,8 @@ pot-postgres (port 5432)
 
 **Development:**
 
-- Client: `http://localhost:3000` → container port 80
-- Server: `http://localhost:5242` → container port 8080
+- Client: `http://localhost:5175` → container port 80
+- Server: `http://localhost:5241` → container port 8080
 - PostgreSQL: `localhost:5432` → container port 5432
 
 **Production (Azure):**
@@ -134,7 +134,7 @@ server:
     postgres:
       condition: service_healthy
   ports:
-    - "5242:8080"
+    - "5241:8080"
   environment:
     - ASPNETCORE_ENVIRONMENT=Development
     - ConnectionStrings__DefaultConnection=Host=postgres;Database=pot;Username=postgres;Password=password123
@@ -151,7 +151,7 @@ client:
     dockerfile: Docker/Client/Dockerfile
     args:
       NGINX_CONFIG: nginx.conf
-      VITE_API_BASE_URL: http://localhost:5242/api
+      VITE_API_BASE_URL: http://localhost:5241/api
       VITE_API_TIMEOUT_MS: 30000
   container_name: pot-client
   restart: unless-stopped
@@ -159,7 +159,7 @@ client:
     server:
       condition: service_started
   ports:
-    - "3000:80"
+    - "5175:80"
   networks:
     - pot-network
 ```
@@ -183,10 +183,10 @@ POSTGRES_DB=pot
 
 ```properties
 POSTGRES_PORT=5432
-SERVER_PORT=5242
-CLIENT_PORT=3000
+SERVER_PORT=5241
+CLIENT_PORT=5175
 ASPNETCORE_ENVIRONMENT=Development
-VITE_API_BASE_URL=http://localhost:5242/api
+VITE_API_BASE_URL=http://localhost:5241/api
 ```
 
 **Loading order:**

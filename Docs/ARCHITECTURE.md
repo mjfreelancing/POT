@@ -159,7 +159,9 @@ POT runs in Docker containers for consistent development and deployment:
 
 The frontend communicates with the backend via RESTful APIs:
 
-- Base URL: `http://localhost:5241/api` (development)
+- Base URL: `/api` (proxied to backend in development)
+  - Docker: `http://localhost:5241` (via docker-compose)
+  - Local: `http://localhost:5242` (via Visual Studio/dotnet run)
 - Authentication: JWT Bearer tokens
 - Content-Type: `application/json`
 - Error handling: RFC 7807 Problem Details

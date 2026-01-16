@@ -177,8 +177,9 @@ Create `.env.development` in the `Source/Client/pot-react/` directory:
 ```bash
 # Development environment variables (npm run dev)
 
-# API running locally (Visual Studio or dotnet run)
-VITE_API_BASE_URL=http://localhost:5242/api
+# Use Vite proxy for same-origin requests (enables cookie sharing)
+# The proxy is configured in vite.config.ts to forward /api to http://localhost:5242
+VITE_API_BASE_URL=/api
 ```
 
 > **Note:** This file is excluded from version control. Each developer must create their own copy.
