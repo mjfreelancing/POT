@@ -35,12 +35,12 @@ function DashboardPage() {
           <QuickActions />
         </PermissionGuard>
 
-        <PermissionGuard permissions={['expense:view']} mode="all">
-          <ExpensesOverview />
-        </PermissionGuard>
-
         <PermissionGuard permissions={['account:view']} mode="all">
           <AccountsOverview />
+        </PermissionGuard>
+
+        <PermissionGuard permissions={['expense:view']} mode="all">
+          <ExpensesOverview />
         </PermissionGuard>
 
         {error && (
