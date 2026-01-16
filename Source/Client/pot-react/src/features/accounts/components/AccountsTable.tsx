@@ -161,6 +161,7 @@ function AccountsTable({ accounts }: AccountsTableProps) {
           setError(result.error);
         }
       },
+      clearSelectionOnComplete: true,
     },
   ];
 

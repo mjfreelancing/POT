@@ -20,6 +20,8 @@ type BulkAction<TData> = {
   onClick: (selectedItems: TData[]) => void;
   /** Whether this action is currently disabled */
   isDisabled?: boolean;
+  /** Whether to clear all row selection after the action completes */
+  clearSelectionOnComplete?: boolean;
 };
 
 /**
@@ -36,6 +38,8 @@ type BulkActionsBarProps<TData> = {
   bulkActions: BulkAction<TData>[];
   /** Whether the bulk actions bar should be visible (typically when row selection is enabled) */
   isVisible: boolean;
+  /** Callback invoked after an action completes (e.g., to clear selection) */
+  onActionCompleted?: () => void;
 };
 
 /**
@@ -80,6 +84,7 @@ function BulkActionsBar<TData>({
   selectedItems,
   bulkActions,
   isVisible,
+  onActionCompleted,
 }: BulkActionsBarProps<TData>): React.ReactElement | null {
   // Hide the component if it's not visible or no bulk actions are configured
   if (!isVisible || bulkActions.length === 0) {
@@ -115,7 +120,12 @@ function BulkActionsBar<TData>({
               return (
                 <DropdownMenuItem
                   key={index}
-                  onClick={() => action.onClick(selectedItems)}
+                  onClick={() => {
+                    action.onClick(selectedItems);
+                    if (action.clearSelectionOnComplete) {
+                      onActionCompleted?.();
+                    }
+                  }}
                 >
                   {action.label}
                 </DropdownMenuItem>

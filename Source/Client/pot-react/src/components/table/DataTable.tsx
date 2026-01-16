@@ -217,6 +217,7 @@ function DataTable<TData, TValue>({
         selectedItems={selectedItems}
         bulkActions={bulkActions}
         isVisible={enableRowSelection}
+        onActionCompleted={() => setRowSelection({})}
       />
       <div className="flex-1 min-h-0 border rounded-md">
         <div className="h-full overflow-auto">

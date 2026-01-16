@@ -128,6 +128,7 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
           setError(result.error);
         }
       },
+      clearSelectionOnComplete: true,
     },
     {
       label: 'Toggle Exclusion',

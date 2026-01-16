@@ -136,6 +136,7 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
           setError(result.error);
         }
       },
+      clearSelectionOnComplete: true,
     },
     {
       label: 'Toggle Exclusion',
