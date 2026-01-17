@@ -14,4 +14,8 @@
 		<ProjectReference Include="..\Pot.EmailSender\Pot.EmailSender.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<InternalsVisibleTo Include="Pot.App.Tests" />
+	</ItemGroup>
+
 </Project>

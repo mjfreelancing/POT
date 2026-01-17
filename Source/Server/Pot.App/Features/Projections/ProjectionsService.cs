@@ -69,7 +69,7 @@ internal sealed class ProjectionsService : IProjectionsService
                 var expenses = accountExpenses[account];
 
                 var expensesDue = expenses
-                    .Where(expense => expense.Amount > 0 && IsDueOnDate(expense, date))
+                    .Where(expense => expense.Amount > 0.0d && IsDueOnDate(expense, date))
                     .ToArray();
 
                 var expensesPaid = expensesDue.Sum(expense => expense.Amount);
@@ -138,8 +138,8 @@ internal sealed class ProjectionsService : IProjectionsService
                     DailyAccrual = globalDailyAccrual,
                     Accrued = globalAccrued,
                     Reserved = globalReserved,
-                    ExpenseItems = globalExpenseItems.ToArray(),
-                    IncomeItems = globalIncomeItems.ToArray()
+                    ExpenseItems = [.. globalExpenseItems],
+                    IncomeItems = [.. globalIncomeItems]
                 });
             }
         }
@@ -191,7 +191,12 @@ internal sealed class ProjectionsService : IProjectionsService
             {
                 Date = item.Date,
                 Balance = balance,
-                Available = balance - item.Reserved - item.Accrued,
+
+                // Expenses due TODAY are fully accrued. They are not actually considered paid until they are renewed.
+                // For the purposes of projections, we consider them paid today so we need to add ExpensesPaid back
+                // to get the true available balance because the accrued amount already considers the expense total.
+                Available = balance - item.Reserved - item.Accrued + item.ExpensesPaid,
+
                 DailyAccrual = item.DailyAccrual,
                 IncomeReceived = item.IncomeReceived,
                 ExpensesPaid = item.ExpensesPaid,

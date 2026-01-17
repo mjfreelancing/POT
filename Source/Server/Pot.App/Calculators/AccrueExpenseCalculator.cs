@@ -17,8 +17,14 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
         _timeProvider = timeProvider.WhenNotNull();
     }
 
+    // When an expense is due on the current date, we assume it has not yet been paid and therefore it should be considered
+    // as full accrued but NOT paid. This simplifies the handling of OneTime expenses since once they are paid they should
+    // be deleted. All other expenses are implicitly considered paid when they are renewed.
     public void AccrueExpenses(AccountEntity account, IEnumerable<ExpenseEntity> expenses, DateOnly? currentDate = null)
     {
+        _ = account.WhenNotNull();
+        _ = expenses.WhenNotNull();
+
         currentDate ??= _timeProvider.GetLocalDateNow();
 
         ResetAccountAccruals(account);
@@ -36,10 +42,6 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
             var processExpense =
                 // The current implementation does not include 'ExcludeFromCalcs' items, but keep here for now so we're not making assumptions.
                 !expense.ExcludeFromCalcs &&
-
-                // We process while currentDate < expense.NextDue since it's going to be paid off on the due date. The expense's Accrued
-                // amount has been reset to 0.0d above - we don't want projections double-dipping the accrued and paid amounts.
-                (expense.Frequency != Frequency.OneTime || currentDate < expense.NextDue) &&
 
                 expense.AccrualStart <= currentDate;
 
@@ -60,11 +62,9 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
     {
         var account = expense.Account;
 
-        var allocated = Math.Round(expense.DailyAccrual() * expense.DaysFromAccrualStart(currentDate), 2, MidpointRounding.AwayFromZero);
-
-        // TODO: Can this ever occur? May be precision related issues?
-        // Don't over-allocate
-        allocated = Math.Min(allocated, expense.Amount);
+        var allocated = currentDate < expense.NextDue
+            ? Math.Round(expense.DailyAccrual() * expense.DaysFromAccrualStart(currentDate), 2, MidpointRounding.AwayFromZero)
+            : expense.Amount;
 
         account.TotalExpenseAccrued += allocated;
         expense.Accrued = allocated;
@@ -81,13 +81,13 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
             // When expenses are renewed, the NextDue date is not set until after they were due. This is to ensure projections are calculated correctly.
             // In this case, when the expense is due on the 'current date' we calculate the daily balance based on the next due date.
             var endDate = expense.EndDate.GetValueOrDefault(DateOnly.MaxValue);
-            var days = expense.Frequency.GetDaysToNext(expense.NextDue, expense.FrequencyCount);
-            var advancedDate = currentDate.AddDays(days);
+            var daysToNextDue = expense.Frequency.GetDaysToNext(expense.NextDue, expense.FrequencyCount);
+            var advancedDate = currentDate.AddDays(daysToNextDue);
 
             // But only if the expense will be due again.
             if (advancedDate < endDate)
             {
-                var dailyAccrual = expense.Amount / Math.Max(days, 1);
+                var dailyAccrual = expense.Amount / daysToNextDue;
                 account.DailyExpenseAccrual += dailyAccrual;
             }
         }
