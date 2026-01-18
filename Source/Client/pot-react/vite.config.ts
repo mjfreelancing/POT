@@ -17,6 +17,8 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
+        // Use 5241 for the server in Docker
+        // Use 5242 for the server running locally
         target: 'http://localhost:5242',
         changeOrigin: true,
         secure: false,
