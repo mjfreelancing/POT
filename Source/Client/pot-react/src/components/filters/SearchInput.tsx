@@ -35,6 +35,8 @@ function SearchInput({
     onChange('');
   }
 
+  const isActive = value.trim().length > 0;
+
   return (
     <div className="relative w-80">
       <Input
@@ -44,7 +46,7 @@ function SearchInput({
         placeholder={placeholder}
         aria-label={ariaLabel}
         name={name}
-        className={className}
+        className={`${className || ''} ${isActive ? 'ring-[2px] ring-primary/60 bg-primary/10' : ''}`}
         disabled={disabled}
         autoComplete="off"
       />

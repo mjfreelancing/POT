@@ -6,7 +6,11 @@ import { useNavigate } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetAllIncomes } from '@/api/hooks';
 import { ErrorSheet, LoadingOverlay } from '@/components/feedback';
-import { AccountFilter, SearchInput } from '@/components/filters';
+import {
+  AccountFilter,
+  FilterResultsCount,
+  SearchInput,
+} from '@/components/filters';
 import { Toolbar } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { logger } from '@/concerns';
@@ -196,6 +200,10 @@ function IncomesPage() {
                 onAccountChange={handleAccountChange}
               />
             )}
+            <FilterResultsCount
+              filteredCount={descriptionFilteredIncomes.length}
+              totalCount={incomes.length}
+            />
           </div>
           <WithPermission permissions={['income:manage']} mode="all">
             <Button

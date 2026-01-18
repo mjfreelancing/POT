@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router';
 
 import { useApiGetAllAccounts } from '@/api/hooks';
 import { ErrorSheet, LoadingOverlay } from '@/components/feedback';
-import { SearchInput } from '@/components/filters';
+import { FilterResultsCount, SearchInput } from '@/components/filters';
 import { Toolbar } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { logger } from '@/concerns';
@@ -106,6 +106,10 @@ function AccountsPage() {
               placeholder="Search by description..."
               ariaLabel="Search accounts by description"
               name="account-search"
+            />
+            <FilterResultsCount
+              filteredCount={descriptionFilteredAccounts.length}
+              totalCount={accounts.length}
             />
           </div>
           <WithPermission permissions={['account:manage']} mode="all">

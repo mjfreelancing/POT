@@ -6,7 +6,11 @@ import { useNavigate } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetAllExpenses } from '@/api/hooks';
 import { ErrorSheet, LoadingOverlay } from '@/components/feedback';
-import { AccountFilter, SearchInput } from '@/components/filters';
+import {
+  AccountFilter,
+  FilterResultsCount,
+  SearchInput,
+} from '@/components/filters';
 import { Toolbar } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { logger } from '@/concerns';
@@ -202,6 +206,10 @@ function ExpensesPage() {
                 onAccountChange={handleAccountChange}
               />
             )}
+            <FilterResultsCount
+              filteredCount={descriptionFilteredExpenses.length}
+              totalCount={expenses.length}
+            />
           </div>
           <WithPermission permissions={['expense:manage']} mode="all">
             <Button

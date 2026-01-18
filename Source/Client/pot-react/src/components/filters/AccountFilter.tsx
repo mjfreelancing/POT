@@ -18,6 +18,8 @@ function AccountFilter({
   selectedAccountId,
   onAccountChange,
 }: AccountFilterProps) {
+  const isActive = selectedAccountId !== null;
+
   return (
     <div className="flex flex-col gap-1">
       <label htmlFor="account-filter-trigger" className="sr-only">
@@ -31,7 +33,7 @@ function AccountFilter({
         name="account-filter"
       >
         <SelectTrigger
-          className="w-[280px]"
+          className={`w-[280px] ${isActive ? 'ring-[2px] ring-primary/60 bg-primary/10' : ''}`}
           id="account-filter-trigger"
           aria-label="Filter by account"
         >
