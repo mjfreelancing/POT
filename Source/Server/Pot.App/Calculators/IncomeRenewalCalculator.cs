@@ -1,4 +1,5 @@
-﻿using Pot.Data.Entities;
+﻿using AllOverIt.Assertion;
+using Pot.Data.Entities;
 using Pot.Shared.Enumerations;
 using Pot.Shared.Extensions;
 
@@ -9,6 +10,8 @@ internal sealed class IncomeRenewalCalculator : IIncomeRenewalCalculator
     // advanceUntilDate is typically 'today' (except when calculating projections)
     public void Renew(IEnumerable<IncomeEntity> incomes, DateOnly advanceUntilDate)
     {
+        _ = incomes.WhenNotNull();
+
         foreach (var income in incomes)
         {
             // Frequency.OneTime incomes do not renew
@@ -19,8 +22,8 @@ internal sealed class IncomeRenewalCalculator : IIncomeRenewalCalculator
 
             var endDate = income.EndDate.GetValueOrDefault(DateOnly.MaxValue);
 
-            // if 'today' (or projection date) is the end date when don't need to renew
-            if (advanceUntilDate >= endDate)
+            // If the income has already reached or passed its end date, don't renew
+            if (income.NextDue >= endDate)
             {
                 continue;
             }
