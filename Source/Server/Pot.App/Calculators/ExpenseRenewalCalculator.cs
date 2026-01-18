@@ -1,4 +1,5 @@
-﻿using Pot.Data.Entities;
+﻿using AllOverIt.Assertion;
+using Pot.Data.Entities;
 using Pot.Shared.Enumerations;
 using Pot.Shared.Extensions;
 
@@ -9,6 +10,8 @@ internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
     // advanceUntilDate is typically 'today' (except when calculating projections)
     public void Renew(IEnumerable<ExpenseEntity> expenses, DateOnly advanceUntilDate)
     {
+        _ = expenses.WhenNotNull();
+
         foreach (var expense in expenses)
         {
             // Leave expense.AccruedIsDirty in its current state - if it was dirty then the accruals should still be updated
@@ -21,8 +24,8 @@ internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
 
             var endDate = expense.EndDate.GetValueOrDefault(DateOnly.MaxValue);
 
-            // if 'today' (or projection date) is the end date when don't need to renew
-            if (advanceUntilDate >= endDate)
+            // If the expense has already reached or passed its end date, don't renew
+            if (expense.NextDue >= endDate)
             {
                 continue;
             }

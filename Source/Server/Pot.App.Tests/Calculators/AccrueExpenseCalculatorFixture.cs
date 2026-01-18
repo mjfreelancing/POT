@@ -6,11 +6,10 @@ using Pot.App.Calculators;
 using Pot.App.Concerns.Time;
 using Pot.Data.Entities;
 using Pot.Shared.Enumerations;
-using Pot.TestUtils;
 
 namespace Pot.App.Tests.Calculators;
 
-public class AccrueExpenseCalculatorFixture : PotFixtureBase
+public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
 {
     public AccrueExpenseCalculatorFixture()
     {
@@ -429,25 +428,6 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             // One-time expense that is due tomorrow - leap year
             // A non-leap year would be 100 * 362 / 363 = 99.724
             yield return (CreateExpense(account, false, "Expense 18", 100, "2024-01-18", "2025-01-16", null, Frequency.OneTime, Create<int>()), 99.73);        // 100 * 363 / 364 = 99.725
-        }
-
-        private ExpenseEntity CreateExpense(AccountEntity account, bool excludeFromCalc, string description, double amount, string accrualStart,
-            string nextDue, string? endDate, Frequency frequency, int frequencyCount)
-        {
-
-            var expense = Create<ExpenseEntity>();
-
-            expense.ExcludeFromCalcs = excludeFromCalc;
-            expense.Account = account;
-            expense.Description = description;
-            expense.Amount = amount;
-            expense.AccrualStart = DateOnly.ParseExact(accrualStart, "yyyy-MM-dd");
-            expense.NextDue = DateOnly.ParseExact(nextDue, "yyyy-MM-dd");
-            expense.EndDate = endDate is null ? null : DateOnly.ParseExact(endDate, "yyyy-MM-dd");
-            expense.Frequency = frequency;
-            expense.FrequencyCount = frequencyCount;
-
-            return expense;
         }
     }
 }
