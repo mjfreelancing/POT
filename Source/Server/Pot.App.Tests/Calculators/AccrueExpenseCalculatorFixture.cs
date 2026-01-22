@@ -374,6 +374,104 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
             expense.LastAccruedUpdate.Should().Be(customDate);
         }
 
+        [Fact]
+        public void Should_Not_Accrue_When_AccrualStart_Equals_NextDue_And_Both_Equal_CurrentDate()
+        {
+            // When AccrualStart == NextDue == CurrentDate, no days have passed, so accrued should be 0
+            // But there SHOULD be daily accrual for the next period (if recurring and not at end date)
+            var expense = CreateExpense(_account, false, "Same Start And Due", 1000, "2025-01-15", "2025-01-15", null, Frequency.Months, 1);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            // No days have passed since accrual start, so accrued = 0
+            expense.Accrued.Should().Be(1000.0d); // Due today, full amount
+            
+            // Next due is 31 days away (from 2025-01-15 to 2025-02-15)
+            // Daily accrual = 1000 / 31 = 32.258
+            _account.DailyExpenseAccrual.Should().BeApproximately(32.26d, 0.01d);
+        }
+
+        [Fact]
+        public void Should_Not_Accrue_Or_Daily_Accrue_When_AccrualStart_Equals_NextDue_And_Both_Equal_CurrentDate_With_EndDate()
+        {
+            // When AccrualStart == NextDue == CurrentDate and EndDate == CurrentDate, it's the last payment
+            // Should have full amount accrued but no daily accrual (won't occur again)
+            var expense = CreateExpense(_account, false, "Same Start And Due With EndDate", 1000, "2025-01-15", "2025-01-15", "2025-01-15", Frequency.Months, 1);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            expense.Accrued.Should().Be(1000.0d); // Due today, full amount
+            _account.DailyExpenseAccrual.Should().Be(0.0d); // Won't occur again
+        }
+
+        [Fact]
+        public void Should_Not_Accrue_Or_Daily_Accrue_When_AccrualStart_Equals_NextDue_And_Both_Equal_CurrentDate_OneTime()
+        {
+            // When AccrualStart == NextDue == CurrentDate for OneTime expense
+            // Should have full amount accrued but no daily accrual (one-time)
+            var expense = CreateExpense(_account, false, "OneTime Same Start And Due", 1000, "2025-01-15", "2025-01-15", null, Frequency.OneTime, 1);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            expense.Accrued.Should().Be(1000.0d); // Due today, full amount
+            _account.DailyExpenseAccrual.Should().Be(0.0d); // OneTime expenses don't have future accrual
+        }
+
+        [Fact]
+        public void Should_Accrue_Full_Amount_When_AccrualStart_Equals_NextDue_And_Both_Before_CurrentDate()
+        {
+            // When AccrualStart == NextDue and both are in the past (overdue)
+            // Should be fully accrued but not paid (until renewed)
+            var expense = CreateExpense(_account, false, "Overdue Same Start And Due", 1000, "2025-01-10", "2025-01-10", null, Frequency.Months, 1);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            expense.Accrued.Should().Be(1000.0d); // Overdue, full amount
+            _account.DailyExpenseAccrual.Should().Be(0.0d); // Already past due, no daily balance to accrue
+        }
+
+        [Fact]
+        public void Should_Not_Accrue_When_AccrualStart_Equals_NextDue_And_Both_After_CurrentDate()
+        {
+            // When AccrualStart == NextDue and both are in the future
+            // Should not be processed at all
+            var expense = CreateExpense(_account, false, "Future Same Start And Due", 1000, "2025-01-20", "2025-01-20", null, Frequency.Months, 1);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            expense.Accrued.Should().Be(0.0d); // Not yet started, no accrual
+            expense.AccruedIsDirty.Should().BeFalse(); // Processed but not accrued
+            _account.TotalExpenseAccrued.Should().Be(0.0d);
+            _account.DailyExpenseAccrual.Should().Be(0.0d);
+        }
+
+        [Fact]
+        public void Should_Accrue_Correctly_When_AccrualStart_Equals_NextDue_With_Multiple_Expenses()
+        {
+            // Mix of expenses with AccrualStart == NextDue in different scenarios
+            var expenseDueToday = CreateExpense(_account, false, "Due Today", 1000, "2025-01-15", "2025-01-15", null, Frequency.Months, 1);
+            var expenseOverdue = CreateExpense(_account, false, "Overdue", 500, "2025-01-10", "2025-01-10", null, Frequency.Weeks, 1);
+            var expenseFuture = CreateExpense(_account, false, "Future", 750, "2025-01-20", "2025-01-20", null, Frequency.Months, 1);
+            var normalExpense = CreateExpense(_account, false, "Normal", 600, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
+
+            _calculator.AccrueExpenses(_account, [expenseDueToday, expenseOverdue, expenseFuture, normalExpense]);
+
+            // expenseDueToday: Due today, full amount
+            expenseDueToday.Accrued.Should().Be(1000.0d);
+            
+            // expenseOverdue: Overdue, full amount
+            expenseOverdue.Accrued.Should().Be(500.0d);
+            
+            // expenseFuture: Not yet started
+            expenseFuture.Accrued.Should().Be(0.0d);
+            
+            // normalExpense: 600 * 14 / 30 = 280
+            normalExpense.Accrued.Should().Be(280.0d);
+
+            // Total: 1000 + 500 + 0 + 280 = 1780
+            _account.TotalExpenseAccrued.Should().Be(1780.0d);
+        }
+
         private IEnumerable<(ExpenseEntity Expense, double ExpectedTotalAccrual)> GetAccrualExpenses(AccountEntity account)
         {
             // On the basis we don't accrue the first day since this is also the day the expense is paid. An example:
