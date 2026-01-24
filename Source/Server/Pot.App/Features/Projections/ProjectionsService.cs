@@ -21,9 +21,9 @@ internal sealed class ProjectionsService : IProjectionsService
     private readonly ITimeProvider _timeProvider;
     private readonly ILogger _logger;
 
-    public ProjectionsService(IProjectionsRepository accountRepository,
-        IExpenseRenewalCalculator expenseRenewalCalculator, IIncomeRenewalCalculator incomeRenewalCalculator,
-        IAccrueExpenseCalculator accrueExpenseCalculator, ITimeProvider timeProvider, ILogger<ProjectionsService> logger)
+    public ProjectionsService(IProjectionsRepository accountRepository, IExpenseRenewalCalculator expenseRenewalCalculator,
+        IIncomeRenewalCalculator incomeRenewalCalculator, IAccrueExpenseCalculator accrueExpenseCalculator,
+        ITimeProvider timeProvider, ILogger<ProjectionsService> logger)
     {
         _projectionsRepository = accountRepository.WhenNotNull();
         _expenseRenewalCalculator = expenseRenewalCalculator.WhenNotNull();
