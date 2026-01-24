@@ -362,7 +362,6 @@ public class IncomeRenewalCalculatorFixture : CalculatorFixtureBase
         public void Should_Renew_When_NextDue_Equals_EndDate_Exactly()
         {
             var advanceUntilDate = new DateOnly(2025, 2, 15);
-
             // Income where next renewal lands exactly on EndDate
             var income = CreateIncome(_account, false, "Exact EndDate", 100, "2025-01-08", "2025-02-12", Frequency.Weeks, 1);
 
@@ -370,6 +369,38 @@ public class IncomeRenewalCalculatorFixture : CalculatorFixtureBase
 
             // Should renew to 2025-02-12 (which equals EndDate)
             income.NextDue.Should().Be(new DateOnly(2025, 2, 12));
+        }
+
+        [Fact]
+        public void Should_Not_Renew_When_NextDue_Equals_EndDate_At_Start()
+        {
+            var advanceUntilDate = new DateOnly(2025, 1, 20);
+
+            // Income where NextDue already equals EndDate (has reached its end)
+            var income = CreateIncome(_account, false, "Already At EndDate", 100, "2025-01-15", "2025-01-15", Frequency.Weeks, 1);
+
+            var originalNextDue = income.NextDue;
+
+            _calculator.Renew([income], advanceUntilDate);
+
+            // Should not renew because NextDue == EndDate at the start
+            income.NextDue.Should().Be(originalNextDue);
+        }
+
+        [Fact]
+        public void Should_Not_Renew_When_NextDue_After_EndDate_At_Start()
+        {
+            var advanceUntilDate = new DateOnly(2025, 1, 20);
+
+            // Income where NextDue is already past EndDate (shouldn't happen in normal flow, but validates the guard)
+            var income = CreateIncome(_account, false, "Past EndDate", 100, "2025-01-18", "2025-01-15", Frequency.Weeks, 1);
+
+            var originalNextDue = income.NextDue;
+
+            _calculator.Renew([income], advanceUntilDate);
+
+            // Should not renew because NextDue > EndDate at the start
+            income.NextDue.Should().Be(originalNextDue);
         }
     }
 }

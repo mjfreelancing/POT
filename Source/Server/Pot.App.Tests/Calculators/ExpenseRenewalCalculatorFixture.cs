@@ -604,5 +604,45 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
             renewable.NextDue.Should().Be(new DateOnly(2025, 1, 24));
             renewable.AccruedIsDirty.Should().BeTrue();
         }
+
+        [Fact]
+        public void Should_Not_Renew_When_NextDue_Equals_EndDate_At_Start()
+        {
+            var advanceUntilDate = new DateOnly(2025, 1, 20);
+
+            // Expense where NextDue already equals EndDate (has reached its end)
+            var expense = CreateExpense(_account, false, "Already At EndDate", 100, "2025-01-01", "2025-01-15", "2025-01-15", Frequency.Weeks, 1);
+            expense.AccruedIsDirty = false;
+
+            var originalNextDue = expense.NextDue;
+            var originalAccrualStart = expense.AccrualStart;
+
+            _calculator.Renew([expense], advanceUntilDate);
+
+            // Should not renew because NextDue == EndDate at the start
+            expense.NextDue.Should().Be(originalNextDue);
+            expense.AccrualStart.Should().Be(originalAccrualStart);
+            expense.AccruedIsDirty.Should().BeFalse();
+        }
+
+        [Fact]
+        public void Should_Not_Renew_When_NextDue_After_EndDate_At_Start()
+        {
+            var advanceUntilDate = new DateOnly(2025, 1, 20);
+
+            // Expense where NextDue is already past EndDate (shouldn't happen in normal flow, but validates the guard)
+            var expense = CreateExpense(_account, false, "Past EndDate", 100, "2025-01-01", "2025-01-18", "2025-01-15", Frequency.Weeks, 1);
+            expense.AccruedIsDirty = false;
+
+            var originalNextDue = expense.NextDue;
+            var originalAccrualStart = expense.AccrualStart;
+
+            _calculator.Renew([expense], advanceUntilDate);
+
+            // Should not renew because NextDue > EndDate at the start
+            expense.NextDue.Should().Be(originalNextDue);
+            expense.AccrualStart.Should().Be(originalAccrualStart);
+            expense.AccruedIsDirty.Should().BeFalse();
+        }
     }
 }

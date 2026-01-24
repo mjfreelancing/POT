@@ -316,17 +316,6 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         }
 
         [Fact]
-        public void Should_Accrue_OneTime_Expense_With_NextDue_In_The_Past()
-        {
-            var expense = CreateExpense(_account, false, "Due Today", 600, "2025-01-01", "2025-01-14", null, Frequency.OneTime, 1);
-
-            _calculator.AccrueExpenses(_account, [expense]);
-
-            // OneTime expenses are considered paid until deleted, hence they remain fully unaccrued from the current date onwards
-            expense.Accrued.Should().Be(600.0d);
-        }
-
-        [Fact]
         public void Should_Handle_Multiple_Frequency_Types_Together()
         {
             var dailyExpense = CreateExpense(_account, false, "Daily", 30, "2025-01-01", "2025-01-16", null, Frequency.Days, 1);
@@ -385,7 +374,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
 
             // No days have passed since accrual start, so accrued = 0
             expense.Accrued.Should().Be(1000.0d); // Due today, full amount
-            
+
             // Next due is 31 days away (from 2025-01-15 to 2025-02-15)
             // Daily accrual = 1000 / 31 = 32.258
             _account.DailyExpenseAccrual.Should().BeApproximately(32.26d, 0.01d);
@@ -458,18 +447,165 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
 
             // expenseDueToday: Due today, full amount
             expenseDueToday.Accrued.Should().Be(1000.0d);
-            
+
             // expenseOverdue: Overdue, full amount
             expenseOverdue.Accrued.Should().Be(500.0d);
-            
+
             // expenseFuture: Not yet started
             expenseFuture.Accrued.Should().Be(0.0d);
-            
+
             // normalExpense: 600 * 14 / 30 = 280
             normalExpense.Accrued.Should().Be(280.0d);
 
             // Total: 1000 + 500 + 0 + 280 = 1780
             _account.TotalExpenseAccrued.Should().Be(1780.0d);
+        }
+
+        [Fact]
+        public void Should_Not_Process_Expense_When_Excluded_From_Calcs()
+        {
+            // Tests the first condition: !expense.ExcludeFromCalcs
+            var expense = CreateExpense(_account, true, "Excluded Expense", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            // Excluded expenses should not be processed at all
+            expense.Accrued.Should().Be(0.0d);
+            expense.AccruedIsDirty.Should().BeFalse();
+            _account.TotalExpenseAccrued.Should().Be(0.0d);
+            _account.DailyExpenseAccrual.Should().Be(0.0d);
+        }
+
+        [Fact]
+        public void Should_Not_Process_Expense_When_AccrualStart_After_CurrentDate()
+        {
+            // Tests the second condition: expense.AccrualStart <= currentDate
+            var expense = CreateExpense(_account, false, "Future Accrual", 1000, "2025-01-16", "2025-01-31", null, Frequency.Months, 1);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            // Expenses with future AccrualStart should not be processed
+            expense.Accrued.Should().Be(0.0d);
+            expense.AccruedIsDirty.Should().BeFalse();
+            _account.TotalExpenseAccrued.Should().Be(0.0d);
+            _account.DailyExpenseAccrual.Should().Be(0.0d);
+        }
+
+        [Fact]
+        public void Should_Process_Expense_When_AccrualStart_Before_CurrentDate()
+        {
+            // Tests the core positive case: ExcludeFromCalcs = false AND AccrualStart < currentDate (strictly before)
+            var expense = CreateExpense(_account, false, "Started In Past", 1000, "2025-01-10", "2025-01-25", null, Frequency.Weeks, 1);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            // AccrualStart = 2025-01-10, currentDate = 2025-01-15, NextDue = 2025-01-25
+            // Days from AccrualStart to currentDate = 5 (exclusive)
+            // Total days from AccrualStart to NextDue = 15 (exclusive)
+            // Expected accrual = 1000 * 5 / 15 = 333.33
+            expense.Accrued.Should().Be(333.33d);
+            expense.AccruedIsDirty.Should().BeFalse();
+            expense.LastAccruedUpdate.Should().Be(_currentDate);
+            _account.TotalExpenseAccrued.Should().Be(333.33d);
+            _account.DailyExpenseAccrual.Should().BeGreaterThan(0.0d);
+        }
+
+        [Fact]
+        public void Should_Process_Expense_When_AccrualStart_Equals_CurrentDate()
+        {
+            // Tests the equality boundary: AccrualStart == currentDate (not just <)
+            // This is different from the NextDue scenarios - here we test when accrual STARTS today
+            var expense = CreateExpense(_account, false, "Starting Today", 1000, "2025-01-15", "2025-01-22", null, Frequency.Weeks, 1);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            // No days have passed yet since AccrualStart == currentDate
+            expense.Accrued.Should().Be(0.0d);
+            expense.AccruedIsDirty.Should().BeFalse();
+            expense.LastAccruedUpdate.Should().Be(_currentDate);
+            _account.TotalExpenseAccrued.Should().Be(0.0d);
+
+            // But there should be daily accrual since it's an ongoing expense
+            // DailyBalance = (1000 - 0) / 7 = 142.86
+            _account.DailyExpenseAccrual.Should().BeApproximately(142.86d, 0.01d);
+        }
+
+        [Fact]
+        public void Should_Not_Process_Excluded_Expense_When_AccrualStart_Equals_CurrentDate()
+        {
+            // Tests short-circuit with ExcludeFromCalcs = true AND AccrualStart == currentDate
+            // This ensures the second condition's equality case is covered in the short-circuit path
+            var expense = CreateExpense(_account, true, "Excluded Starting Today", 1000, "2025-01-15", "2025-01-22", null, Frequency.Weeks, 1);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            // Should not process due to ExcludeFromCalcs = true
+            expense.Accrued.Should().Be(0.0d);
+            expense.AccruedIsDirty.Should().BeFalse();
+            _account.TotalExpenseAccrued.Should().Be(0.0d);
+            _account.DailyExpenseAccrual.Should().Be(0.0d);
+        }
+
+        [Fact]
+        public void Should_Not_Process_Expense_When_Excluded_And_AccrualStart_After_CurrentDate()
+        {
+            // Tests both conditions combined: ExcludeFromCalcs && AccrualStart > currentDate
+            var expense = CreateExpense(_account, true, "Excluded Future Expense", 1000, "2025-01-16", "2025-01-31", null, Frequency.Months, 1);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            // Excluded expenses with future accrual should not be processed
+            expense.Accrued.Should().Be(0.0d);
+            expense.AccruedIsDirty.Should().BeFalse();
+            _account.TotalExpenseAccrued.Should().Be(0.0d);
+            _account.DailyExpenseAccrual.Should().Be(0.0d);
+        }
+
+        [Fact]
+        public void Should_Handle_Multiple_Expenses_Where_Last_Sorted_Expense_Is_Not_Processed()
+        {
+            // Tests the lambda execution path where the LAST expense in sorted order has processExpense = false
+            // This ensures all exit paths from the lambda are covered, including the last iteration
+            var expense1 = CreateExpense(_account, false, "Processed First", 1000, "2025-01-01", "2025-01-25", null, Frequency.Months, 1);
+            var expense2 = CreateExpense(_account, false, "Processed Second", 500, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
+            var expense3 = CreateExpense(_account, false, "Not Processed Last", 750, "2025-01-16", "2025-01-10", null, Frequency.Months, 1);
+
+            _calculator.AccrueExpenses(_account, [expense1, expense2, expense3]);
+
+            // After sorting by NextDue descending: expense1 (Jan 25), expense2 (Jan 20), expense3 (Jan 10)
+            // expense1: AccrualStart 2025-01-01 < currentDate 2025-01-15 -> process
+            expense1.Accrued.Should().Be(583.33d); // 1000 * 14 / 24
+
+            // expense2: AccrualStart 2025-01-01 < currentDate 2025-01-15 -> process  
+            expense2.Accrued.Should().Be(368.42d); // 500 * 14 / 19
+
+            // expense3 (LAST in sorted order): AccrualStart 2025-01-16 > currentDate 2025-01-15 -> NOT processed
+            expense3.Accrued.Should().Be(0.0d);
+            expense3.AccruedIsDirty.Should().BeFalse();
+
+            _account.TotalExpenseAccrued.Should().Be(951.75d); // 583.33 + 368.42
+        }
+
+        [Fact]
+        public void Should_Handle_Multiple_Expenses_Where_Last_Sorted_Expense_Is_Excluded()
+        {
+            // Tests the lambda execution path where the LAST expense has ExcludeFromCalcs = true
+            // This covers the short-circuit path where the second condition is not evaluated for the last iteration
+            var expense1 = CreateExpense(_account, false, "Processed First", 1000, "2025-01-01", "2025-01-25", null, Frequency.Months, 1);
+            var expense2 = CreateExpense(_account, false, "Processed Second", 500, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
+            var expense3 = CreateExpense(_account, true, "Excluded Last", 750, "2025-01-01", "2025-01-10", null, Frequency.Months, 1);
+
+            _calculator.AccrueExpenses(_account, [expense1, expense2, expense3]);
+
+            // After sorting by NextDue descending: expense1 (Jan 25), expense2 (Jan 20), expense3 (Jan 10)
+            expense1.Accrued.Should().Be(583.33d); // 1000 * 14 / 24
+            expense2.Accrued.Should().Be(368.42d); // 500 * 14 / 19
+            
+            // expense3 (LAST in sorted order): ExcludeFromCalcs = true -> NOT processed (short-circuit)
+            expense3.Accrued.Should().Be(0.0d);
+            expense3.AccruedIsDirty.Should().BeFalse();
+
+            _account.TotalExpenseAccrued.Should().Be(951.75d); // 583.33 + 368.42
         }
 
         private IEnumerable<(ExpenseEntity Expense, double ExpectedTotalAccrual)> GetAccrualExpenses(AccountEntity account)

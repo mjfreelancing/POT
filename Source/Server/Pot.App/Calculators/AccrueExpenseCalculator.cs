@@ -1,5 +1,4 @@
 ﻿using AllOverIt.Assertion;
-using AllOverIt.Extensions;
 using Pot.App.Concerns.Time;
 using Pot.Data.Entities;
 using Pot.Data.Extensions;
@@ -25,7 +24,11 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
         _ = account.WhenNotNull();
         _ = expenses.WhenNotNull();
 
-        currentDate ??= _timeProvider.GetLocalDateNow();
+        // Using a non-nullable DateOnly variable instead of currentDate ??= pattern to avoid nullable comparison issues.
+        // When comparing expense.AccrualStart (DateOnly) with currentDate (DateOnly?), the compiler generates a lifted
+        // operator with a null-check branch that cannot be covered since currentDate is guaranteed non-null after this line.
+        // By storing in a DateOnly (non-nullable) variable, we eliminate this unreachable null-handling code path.
+        var currentDateValue = currentDate ?? _timeProvider.GetLocalDateNow();
 
         ResetAccountAccruals(account);
 
@@ -33,23 +36,23 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
         // Can't pre-filter since we need to set AccruedIsDirty = false even if the expense is not processed.
         var sortedExpenses = expenses.OrderByDescending(expense => expense.NextDue);
 
-        sortedExpenses.ForEach((expense, index) =>
+        foreach (var expense in sortedExpenses)
         {
             expense.Accrued = 0.0d;
             expense.AccruedIsDirty = false;
-            expense.LastAccruedUpdate = currentDate.Value;
+            expense.LastAccruedUpdate = currentDateValue;
 
             var processExpense =
                 // The current implementation does not include 'ExcludeFromCalcs' items, but keep here for now so we're not making assumptions.
                 !expense.ExcludeFromCalcs &&
 
-                expense.AccrualStart <= currentDate;
+                expense.AccrualStart <= currentDateValue;
 
             if (processExpense)
             {
-                AccrueExpense(currentDate.Value, expense);
+                AccrueExpense(currentDateValue, expense);
             }
-        });
+        }
     }
 
     private static void ResetAccountAccruals(AccountEntity account)
