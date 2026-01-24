@@ -6,10 +6,11 @@ using Pot.App.Calculators;
 using Pot.App.Concerns.Time;
 using Pot.Data.Entities;
 using Pot.Shared.Enumerations;
+using Pot.TestUtils;
 
 namespace Pot.App.Tests.Calculators;
 
-public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
+public class AccrueExpenseCalculatorFixture : PotFixtureBase
 {
     public AccrueExpenseCalculatorFixture()
     {
@@ -100,7 +101,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Set_AccruedIsDirty_To_True()
         {
-            var expense = CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
 
             expense.AccruedIsDirty.Should().BeTrue();
         }
@@ -109,7 +110,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Set_AccruedIsDirty_To_False()
         {
-            var expense = CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
             expense.AccruedIsDirty = true;
 
             _calculator.AccrueExpenses(_account, [expense]);
@@ -120,7 +121,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Set_LastAccruedUpdate_To_CurrentDate()
         {
-            var expense = CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
             expense.LastAccruedUpdate = null;
 
             _calculator.AccrueExpenses(_account, [expense]);
@@ -132,7 +133,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         public void Should_Use_Custom_CurrentDate_When_Provided()
         {
             var customDate = new DateOnly(2025, 1, 20);
-            var expense = CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
 
             _calculator.AccrueExpenses(_account, [expense], customDate);
 
@@ -166,8 +167,8 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Accumulate_TotalExpenseAccrued_Across_Multiple_Expenses()
         {
-            var expense1 = CreateExpense(_account, false, "Expense 1", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
-            var expense2 = CreateExpense(_account, false, "Expense 2", 500, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
+            var expense1 = EntityFactory.CreateExpense(_account, false, "Expense 1", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
+            var expense2 = EntityFactory.CreateExpense(_account, false, "Expense 2", 500, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
 
             _calculator.AccrueExpenses(_account, [expense1, expense2]);
 
@@ -178,7 +179,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Calculate_DailyExpenseAccrual_For_Ongoing_Expense()
         {
-            var expense = CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
@@ -189,7 +190,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Not_Calculate_DailyExpenseAccrual_For_OneTime_Expense_Not_Due()
         {
-            var expense = CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-31", null, Frequency.OneTime, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-31", null, Frequency.OneTime, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
@@ -201,7 +202,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Calculate_DailyExpenseAccrual_Based_On_Next_Due_When_Expense_Due_Today()
         {
-            var expense = CreateExpense(_account, false, "Test Expense", 1000, "2024-12-15", "2025-01-15", null, Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Test Expense", 1000, "2024-12-15", "2025-01-15", null, Frequency.Months, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
@@ -213,7 +214,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Not_Calculate_DailyExpenseAccrual_When_Expense_Due_Today_And_EndDate_Today()
         {
-            var expense = CreateExpense(_account, false, "Test Expense", 1000, "2024-12-15", "2025-01-15", "2025-01-15", Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Test Expense", 1000, "2024-12-15", "2025-01-15", "2025-01-15", Frequency.Months, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
@@ -223,7 +224,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Not_Calculate_DailyExpenseAccrual_When_Expense_Due_Today_And_EndDate_Before_Next_Due()
         {
-            var expense = CreateExpense(_account, false, "Test Expense", 1000, "2024-12-15", "2025-01-15", "2025-01-20", Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Test Expense", 1000, "2024-12-15", "2025-01-15", "2025-01-20", Frequency.Months, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
@@ -234,7 +235,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Calculate_DailyExpenseAccrual_For_OneTime_Expense_Due_Tomorrow()
         {
-            var expense = CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-16", null, Frequency.OneTime, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-16", null, Frequency.OneTime, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
@@ -246,7 +247,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Not_Calculate_DailyExpenseAccrual_For_OneTime_Expense_Due_Today()
         {
-            var expense = CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-15", null, Frequency.OneTime, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-15", null, Frequency.OneTime, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
@@ -257,7 +258,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Not_Calculate_DailyExpenseAccrual_For_OneTime_Expense_Due_Yesterday()
         {
-            var expense = CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-14", null, Frequency.OneTime, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-14", null, Frequency.OneTime, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
@@ -268,9 +269,9 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Process_Expenses_In_Descending_NextDue_Order()
         {
-            var expense1 = CreateExpense(_account, false, "Expense 1", 1000, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
-            var expense2 = CreateExpense(_account, false, "Expense 2", 500, "2025-01-01", "2025-01-25", null, Frequency.Months, 1);
-            var expense3 = CreateExpense(_account, false, "Expense 3", 750, "2025-01-01", "2025-01-15", null, Frequency.Months, 1);
+            var expense1 = EntityFactory.CreateExpense(_account, false, "Expense 1", 1000, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
+            var expense2 = EntityFactory.CreateExpense(_account, false, "Expense 2", 500, "2025-01-01", "2025-01-25", null, Frequency.Months, 1);
+            var expense3 = EntityFactory.CreateExpense(_account, false, "Expense 3", 750, "2025-01-01", "2025-01-15", null, Frequency.Months, 1);
 
             // Pass in random order
             _calculator.AccrueExpenses(_account, [expense2, expense3, expense1]);
@@ -285,7 +286,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         public void Should_Accrue_Expense_With_NextDue_Before_CurrentDate()
         {
             // Expense is overdue (NextDue in the past) - considered fully accrued but not paid (until renewed)
-            var expense = CreateExpense(_account, false, "Overdue Expense", 1000, "2024-12-01", "2025-01-10", null, Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Overdue Expense", 1000, "2024-12-01", "2025-01-10", null, Frequency.Months, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
@@ -296,7 +297,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Accrue_Expense_With_NextDue_Equal_To_CurrentDate()
         {
-            var expense = CreateExpense(_account, false, "Due Today", 1000, "2024-12-15", "2025-01-15", null, Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Due Today", 1000, "2024-12-15", "2025-01-15", null, Frequency.Months, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
@@ -307,7 +308,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Accrue_OneTime_Expense_With_NextDue_Equal_To_CurrentDate()
         {
-            var expense = CreateExpense(_account, false, "Due Today", 600, "2025-01-01", "2025-01-15", null, Frequency.OneTime, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Due Today", 600, "2025-01-01", "2025-01-15", null, Frequency.OneTime, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
@@ -318,11 +319,11 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Handle_Multiple_Frequency_Types_Together()
         {
-            var dailyExpense = CreateExpense(_account, false, "Daily", 30, "2025-01-01", "2025-01-16", null, Frequency.Days, 1);
-            var weeklyExpense = CreateExpense(_account, false, "Weekly", 70, "2025-01-08", "2025-01-22", null, Frequency.Weeks, 1);
-            var monthlyExpense = CreateExpense(_account, false, "Monthly", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
-            var yearlyExpense = CreateExpense(_account, false, "Yearly", 1200, "2024-01-15", "2025-01-15", null, Frequency.Years, 1);
-            var oneTimeExpense = CreateExpense(_account, false, "OneTime", 500, "2025-01-01", "2025-01-31", null, Frequency.OneTime, 1);
+            var dailyExpense = EntityFactory.CreateExpense(_account, false, "Daily", 30, "2025-01-01", "2025-01-16", null, Frequency.Days, 1);
+            var weeklyExpense = EntityFactory.CreateExpense(_account, false, "Weekly", 70, "2025-01-08", "2025-01-22", null, Frequency.Weeks, 1);
+            var monthlyExpense = EntityFactory.CreateExpense(_account, false, "Monthly", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
+            var yearlyExpense = EntityFactory.CreateExpense(_account, false, "Yearly", 1200, "2024-01-15", "2025-01-15", null, Frequency.Years, 1);
+            var oneTimeExpense = EntityFactory.CreateExpense(_account, false, "OneTime", 500, "2025-01-01", "2025-01-31", null, Frequency.OneTime, 1);
 
             _calculator.AccrueExpenses(_account, [dailyExpense, weeklyExpense, monthlyExpense, yearlyExpense, oneTimeExpense]);
 
@@ -343,7 +344,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Use_TimeProvider_GetLocalDateNow_When_CurrentDate_Not_Provided()
         {
-            var expense = CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
@@ -355,7 +356,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         public void Should_Not_Use_TimeProvider_When_CurrentDate_Provided()
         {
             var customDate = new DateOnly(2025, 1, 20);
-            var expense = CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
 
             _calculator.AccrueExpenses(_account, [expense], customDate);
 
@@ -368,7 +369,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         {
             // When AccrualStart == NextDue == CurrentDate, no days have passed, so accrued should be 0
             // But there SHOULD be daily accrual for the next period (if recurring and not at end date)
-            var expense = CreateExpense(_account, false, "Same Start And Due", 1000, "2025-01-15", "2025-01-15", null, Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Same Start And Due", 1000, "2025-01-15", "2025-01-15", null, Frequency.Months, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
@@ -385,7 +386,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         {
             // When AccrualStart == NextDue == CurrentDate and EndDate == CurrentDate, it's the last payment
             // Should have full amount accrued but no daily accrual (won't occur again)
-            var expense = CreateExpense(_account, false, "Same Start And Due With EndDate", 1000, "2025-01-15", "2025-01-15", "2025-01-15", Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Same Start And Due With EndDate", 1000, "2025-01-15", "2025-01-15", "2025-01-15", Frequency.Months, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
@@ -398,7 +399,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         {
             // When AccrualStart == NextDue == CurrentDate for OneTime expense
             // Should have full amount accrued but no daily accrual (one-time)
-            var expense = CreateExpense(_account, false, "OneTime Same Start And Due", 1000, "2025-01-15", "2025-01-15", null, Frequency.OneTime, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "OneTime Same Start And Due", 1000, "2025-01-15", "2025-01-15", null, Frequency.OneTime, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
@@ -411,7 +412,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         {
             // When AccrualStart == NextDue and both are in the past (overdue)
             // Should be fully accrued but not paid (until renewed)
-            var expense = CreateExpense(_account, false, "Overdue Same Start And Due", 1000, "2025-01-10", "2025-01-10", null, Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Overdue Same Start And Due", 1000, "2025-01-10", "2025-01-10", null, Frequency.Months, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
@@ -424,7 +425,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         {
             // When AccrualStart == NextDue and both are in the future
             // Should not be processed at all
-            var expense = CreateExpense(_account, false, "Future Same Start And Due", 1000, "2025-01-20", "2025-01-20", null, Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Future Same Start And Due", 1000, "2025-01-20", "2025-01-20", null, Frequency.Months, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
@@ -438,10 +439,10 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         public void Should_Accrue_Correctly_When_AccrualStart_Equals_NextDue_With_Multiple_Expenses()
         {
             // Mix of expenses with AccrualStart == NextDue in different scenarios
-            var expenseDueToday = CreateExpense(_account, false, "Due Today", 1000, "2025-01-15", "2025-01-15", null, Frequency.Months, 1);
-            var expenseOverdue = CreateExpense(_account, false, "Overdue", 500, "2025-01-10", "2025-01-10", null, Frequency.Weeks, 1);
-            var expenseFuture = CreateExpense(_account, false, "Future", 750, "2025-01-20", "2025-01-20", null, Frequency.Months, 1);
-            var normalExpense = CreateExpense(_account, false, "Normal", 600, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
+            var expenseDueToday = EntityFactory.CreateExpense(_account, false, "Due Today", 1000, "2025-01-15", "2025-01-15", null, Frequency.Months, 1);
+            var expenseOverdue = EntityFactory.CreateExpense(_account, false, "Overdue", 500, "2025-01-10", "2025-01-10", null, Frequency.Weeks, 1);
+            var expenseFuture = EntityFactory.CreateExpense(_account, false, "Future", 750, "2025-01-20", "2025-01-20", null, Frequency.Months, 1);
+            var normalExpense = EntityFactory.CreateExpense(_account, false, "Normal", 600, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
 
             _calculator.AccrueExpenses(_account, [expenseDueToday, expenseOverdue, expenseFuture, normalExpense]);
 
@@ -465,7 +466,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         public void Should_Not_Process_Expense_When_Excluded_From_Calcs()
         {
             // Tests the first condition: !expense.ExcludeFromCalcs
-            var expense = CreateExpense(_account, true, "Excluded Expense", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, true, "Excluded Expense", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
@@ -480,7 +481,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         public void Should_Not_Process_Expense_When_AccrualStart_After_CurrentDate()
         {
             // Tests the second condition: expense.AccrualStart <= currentDate
-            var expense = CreateExpense(_account, false, "Future Accrual", 1000, "2025-01-16", "2025-01-31", null, Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Future Accrual", 1000, "2025-01-16", "2025-01-31", null, Frequency.Months, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
@@ -495,7 +496,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         public void Should_Process_Expense_When_AccrualStart_Before_CurrentDate()
         {
             // Tests the core positive case: ExcludeFromCalcs = false AND AccrualStart < currentDate (strictly before)
-            var expense = CreateExpense(_account, false, "Started In Past", 1000, "2025-01-10", "2025-01-25", null, Frequency.Weeks, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Started In Past", 1000, "2025-01-10", "2025-01-25", null, Frequency.Weeks, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
@@ -515,7 +516,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         {
             // Tests the equality boundary: AccrualStart == currentDate (not just <)
             // This is different from the NextDue scenarios - here we test when accrual STARTS today
-            var expense = CreateExpense(_account, false, "Starting Today", 1000, "2025-01-15", "2025-01-22", null, Frequency.Weeks, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Starting Today", 1000, "2025-01-15", "2025-01-22", null, Frequency.Weeks, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
@@ -535,7 +536,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         {
             // Tests short-circuit with ExcludeFromCalcs = true AND AccrualStart == currentDate
             // This ensures the second condition's equality case is covered in the short-circuit path
-            var expense = CreateExpense(_account, true, "Excluded Starting Today", 1000, "2025-01-15", "2025-01-22", null, Frequency.Weeks, 1);
+            var expense = EntityFactory.CreateExpense(_account, true, "Excluded Starting Today", 1000, "2025-01-15", "2025-01-22", null, Frequency.Weeks, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
@@ -550,7 +551,7 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         public void Should_Not_Process_Expense_When_Excluded_And_AccrualStart_After_CurrentDate()
         {
             // Tests both conditions combined: ExcludeFromCalcs && AccrualStart > currentDate
-            var expense = CreateExpense(_account, true, "Excluded Future Expense", 1000, "2025-01-16", "2025-01-31", null, Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, true, "Excluded Future Expense", 1000, "2025-01-16", "2025-01-31", null, Frequency.Months, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
@@ -566,9 +567,9 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         {
             // Tests the lambda execution path where the LAST expense in sorted order has processExpense = false
             // This ensures all exit paths from the lambda are covered, including the last iteration
-            var expense1 = CreateExpense(_account, false, "Processed First", 1000, "2025-01-01", "2025-01-25", null, Frequency.Months, 1);
-            var expense2 = CreateExpense(_account, false, "Processed Second", 500, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
-            var expense3 = CreateExpense(_account, false, "Not Processed Last", 750, "2025-01-16", "2025-01-10", null, Frequency.Months, 1);
+            var expense1 = EntityFactory.CreateExpense(_account, false, "Processed First", 1000, "2025-01-01", "2025-01-25", null, Frequency.Months, 1);
+            var expense2 = EntityFactory.CreateExpense(_account, false, "Processed Second", 500, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
+            var expense3 = EntityFactory.CreateExpense(_account, false, "Not Processed Last", 750, "2025-01-16", "2025-01-10", null, Frequency.Months, 1);
 
             _calculator.AccrueExpenses(_account, [expense1, expense2, expense3]);
 
@@ -591,16 +592,16 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
         {
             // Tests the lambda execution path where the LAST expense has ExcludeFromCalcs = true
             // This covers the short-circuit path where the second condition is not evaluated for the last iteration
-            var expense1 = CreateExpense(_account, false, "Processed First", 1000, "2025-01-01", "2025-01-25", null, Frequency.Months, 1);
-            var expense2 = CreateExpense(_account, false, "Processed Second", 500, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
-            var expense3 = CreateExpense(_account, true, "Excluded Last", 750, "2025-01-01", "2025-01-10", null, Frequency.Months, 1);
+            var expense1 = EntityFactory.CreateExpense(_account, false, "Processed First", 1000, "2025-01-01", "2025-01-25", null, Frequency.Months, 1);
+            var expense2 = EntityFactory.CreateExpense(_account, false, "Processed Second", 500, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
+            var expense3 = EntityFactory.CreateExpense(_account, true, "Excluded Last", 750, "2025-01-01", "2025-01-10", null, Frequency.Months, 1);
 
             _calculator.AccrueExpenses(_account, [expense1, expense2, expense3]);
 
             // After sorting by NextDue descending: expense1 (Jan 25), expense2 (Jan 20), expense3 (Jan 10)
             expense1.Accrued.Should().Be(583.33d); // 1000 * 14 / 24
             expense2.Accrued.Should().Be(368.42d); // 500 * 14 / 19
-            
+
             // expense3 (LAST in sorted order): ExcludeFromCalcs = true -> NOT processed (short-circuit)
             expense3.Accrued.Should().Be(0.0d);
             expense3.AccruedIsDirty.Should().BeFalse();
@@ -628,40 +629,40 @@ public class AccrueExpenseCalculatorFixture : CalculatorFixtureBase
                 var frequencyCount = GetWithinRange(1, 10);
 
                 // Mid-cycle
-                yield return (CreateExpense(account, false, "Expense 01", 100, "2025-01-12", "2025-01-19", null, frequency, frequencyCount), 42.86);            // 100 * 3 / 7 = 42.857
-                yield return (CreateExpense(account, false, "Expense 02", 100, "2025-01-12", "2025-01-19", "2025-01-19", frequency, frequencyCount), 42.86);    // End date equals next due
-                yield return (CreateExpense(account, false, "Expense 03", 100, "2025-01-12", "2025-01-19", "2026-01-19", frequency, frequencyCount), 42.86);    // End date after next due
+                yield return (EntityFactory.CreateExpense(account, false, "Expense 01", 100, "2025-01-12", "2025-01-19", null, frequency, frequencyCount), 42.86);            // 100 * 3 / 7 = 42.857
+                yield return (EntityFactory.CreateExpense(account, false, "Expense 02", 100, "2025-01-12", "2025-01-19", "2025-01-19", frequency, frequencyCount), 42.86);    // End date equals next due
+                yield return (EntityFactory.CreateExpense(account, false, "Expense 03", 100, "2025-01-12", "2025-01-19", "2026-01-19", frequency, frequencyCount), 42.86);    // End date after next due
 
                 // CurrentDate equals AccrualStart
-                yield return (CreateExpense(account, false, "Expense 04", 50, "2025-01-15", "2025-01-22", null, frequency, frequencyCount), 0.0);              // No days accrued yet
-                yield return (CreateExpense(account, false, "Expense 05", 50, "2025-01-15", "2025-01-22", "2025-01-22", frequency, frequencyCount), 0.0);      // End date equals next due
-                yield return (CreateExpense(account, false, "Expense 06", 50, "2025-01-15", "2025-01-22", "2026-01-19", frequency, frequencyCount), 0.0);      // End date after next due
+                yield return (EntityFactory.CreateExpense(account, false, "Expense 04", 50, "2025-01-15", "2025-01-22", null, frequency, frequencyCount), 0.0);              // No days accrued yet
+                yield return (EntityFactory.CreateExpense(account, false, "Expense 05", 50, "2025-01-15", "2025-01-22", "2025-01-22", frequency, frequencyCount), 0.0);      // End date equals next due
+                yield return (EntityFactory.CreateExpense(account, false, "Expense 06", 50, "2025-01-15", "2025-01-22", "2026-01-19", frequency, frequencyCount), 0.0);      // End date after next due
 
                 // CurrentDate equals NextDue
-                yield return (CreateExpense(account, false, "Expense 07", 100, "2025-01-01", "2025-01-15", null, frequency, frequencyCount), 100.0);           // Due today, full amount
-                yield return (CreateExpense(account, false, "Expense 08", 100, "2025-01-01", "2025-01-15", "2025-01-15", frequency, frequencyCount), 100.0);   // End date equals next due
-                yield return (CreateExpense(account, false, "Expense 09", 100, "2025-01-01", "2025-01-15", "2026-01-19", frequency, frequencyCount), 100.0);   // End date after next due
+                yield return (EntityFactory.CreateExpense(account, false, "Expense 07", 100, "2025-01-01", "2025-01-15", null, frequency, frequencyCount), 100.0);           // Due today, full amount
+                yield return (EntityFactory.CreateExpense(account, false, "Expense 08", 100, "2025-01-01", "2025-01-15", "2025-01-15", frequency, frequencyCount), 100.0);   // End date equals next due
+                yield return (EntityFactory.CreateExpense(account, false, "Expense 09", 100, "2025-01-01", "2025-01-15", "2026-01-19", frequency, frequencyCount), 100.0);   // End date after next due
 
                 // Excluded from calculations
-                yield return (CreateExpense(account, true, "Expense 10", 500, "2024-12-31", "2025-01-31", null, frequency, frequencyCount), 0.0);
-                yield return (CreateExpense(account, true, "Expense 11", 500, "2024-12-31", "2025-01-31", "2025-01-31", frequency, frequencyCount), 0.0);      // End date equals next due
-                yield return (CreateExpense(account, true, "Expense 12", 500, "2024-12-31", "2025-01-31", "2026-01-19", frequency, frequencyCount), 0.0);      // End date after next due
+                yield return (EntityFactory.CreateExpense(account, true, "Expense 10", 500, "2024-12-31", "2025-01-31", null, frequency, frequencyCount), 0.0);
+                yield return (EntityFactory.CreateExpense(account, true, "Expense 11", 500, "2024-12-31", "2025-01-31", "2025-01-31", frequency, frequencyCount), 0.0);      // End date equals next due
+                yield return (EntityFactory.CreateExpense(account, true, "Expense 12", 500, "2024-12-31", "2025-01-31", "2026-01-19", frequency, frequencyCount), 0.0);      // End date after next due
 
                 // AccrualStart in the future (should not accrue)
-                yield return (CreateExpense(account, false, "Expense 13", 400, "2025-01-16", "2025-01-31", null, frequency, frequencyCount), 0.0);
-                yield return (CreateExpense(account, false, "Expense 14", 400, "2025-01-16", "2025-01-31", "2025-01-31", frequency, frequencyCount), 0.0);     // End date equals next due
-                yield return (CreateExpense(account, false, "Expense 15", 400, "2025-01-16", "2025-01-31", "2026-01-19", frequency, frequencyCount), 0.0);     // End date after next due
+                yield return (EntityFactory.CreateExpense(account, false, "Expense 13", 400, "2025-01-16", "2025-01-31", null, frequency, frequencyCount), 0.0);
+                yield return (EntityFactory.CreateExpense(account, false, "Expense 14", 400, "2025-01-16", "2025-01-31", "2025-01-31", frequency, frequencyCount), 0.0);     // End date equals next due
+                yield return (EntityFactory.CreateExpense(account, false, "Expense 15", 400, "2025-01-16", "2025-01-31", "2026-01-19", frequency, frequencyCount), 0.0);     // End date after next due
             }
 
             // One-time expense that was due yesterday
-            yield return (CreateExpense(account, false, "Expense 16", 100, "2024-12-20", "2025-01-14", null, Frequency.OneTime, Create<int>()), 100.0);        // Fully accrued - until deleted
+            yield return (EntityFactory.CreateExpense(account, false, "Expense 16", 100, "2024-12-20", "2025-01-14", null, Frequency.OneTime, Create<int>()), 100.0);        // Fully accrued - until deleted
 
             // One-time expense that is due today
-            yield return (CreateExpense(account, false, "Expense 17", 100, "2024-12-20", "2025-01-15", null, Frequency.OneTime, Create<int>()), 100.0);        // Fully accrued - until deleted
+            yield return (EntityFactory.CreateExpense(account, false, "Expense 17", 100, "2024-12-20", "2025-01-15", null, Frequency.OneTime, Create<int>()), 100.0);        // Fully accrued - until deleted
 
             // One-time expense that is due tomorrow - leap year
             // A non-leap year would be 100 * 362 / 363 = 99.724
-            yield return (CreateExpense(account, false, "Expense 18", 100, "2024-01-18", "2025-01-16", null, Frequency.OneTime, Create<int>()), 99.73);        // 100 * 363 / 364 = 99.725
+            yield return (EntityFactory.CreateExpense(account, false, "Expense 18", 100, "2024-01-18", "2025-01-16", null, Frequency.OneTime, Create<int>()), 99.73);        // 100 * 363 / 364 = 99.725
         }
     }
 }

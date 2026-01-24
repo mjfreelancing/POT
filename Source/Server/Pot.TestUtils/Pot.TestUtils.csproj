@@ -16,6 +16,7 @@
 		<PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
 	</ItemGroup>
 	<ItemGroup>
+	  <ProjectReference Include="..\Pot.Data\Pot.Data.csproj" />
 	  <ProjectReference Include="..\Pot.Shared\Pot.Shared.csproj" />
 	</ItemGroup>
 

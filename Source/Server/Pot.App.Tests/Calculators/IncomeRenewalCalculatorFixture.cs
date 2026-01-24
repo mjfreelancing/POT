@@ -3,10 +3,11 @@ using FluentAssertions;
 using Pot.App.Calculators;
 using Pot.Data.Entities;
 using Pot.Shared.Enumerations;
+using Pot.TestUtils;
 
 namespace Pot.App.Tests.Calculators;
 
-public class IncomeRenewalCalculatorFixture : CalculatorFixtureBase
+public class IncomeRenewalCalculatorFixture : PotFixtureBase
 {
     public IncomeRenewalCalculatorFixture()
     {
@@ -53,7 +54,7 @@ public class IncomeRenewalCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Not_Renew_Income_Excluded_From_Calcs()
         {
-            var income = CreateIncome(_account, true, "Excluded Income", 100, "2025-01-15", null, Frequency.Months, 1);
+            var income = EntityFactory.CreateIncome(_account, true, "Excluded Income", 100, "2025-01-15", null, Frequency.Months, 1);
             var advanceUntilDate = new DateOnly(2025, 1, 20);
 
             var originalNextDue = income.NextDue;
@@ -66,7 +67,7 @@ public class IncomeRenewalCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Not_Renew_One_Time_Income()
         {
-            var income = CreateIncome(_account, false, "OneTime Income", 100, "2025-01-15", null, Frequency.OneTime, 1);
+            var income = EntityFactory.CreateIncome(_account, false, "OneTime Income", 100, "2025-01-15", null, Frequency.OneTime, 1);
             var advanceUntilDate = new DateOnly(2025, 1, 20);
 
             var originalNextDue = income.NextDue;
@@ -79,7 +80,7 @@ public class IncomeRenewalCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Not_Renew_Income_With_EndDate_Before_AdvanceUntilDate()
         {
-            var income = CreateIncome(_account, false, "Ending Income", 100, "2025-01-10", "2025-01-15", Frequency.Months, 1);
+            var income = EntityFactory.CreateIncome(_account, false, "Ending Income", 100, "2025-01-10", "2025-01-15", Frequency.Months, 1);
             var advanceUntilDate = new DateOnly(2025, 1, 20);
 
             var originalNextDue = income.NextDue;
@@ -92,7 +93,7 @@ public class IncomeRenewalCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Not_Renew_Income_With_NextDue_Date_After_EndDate()
         {
-            var income = CreateIncome(_account, false, "Limited Income", 100, "2025-01-10", "2025-01-20", Frequency.Months, 1);
+            var income = EntityFactory.CreateIncome(_account, false, "Limited Income", 100, "2025-01-10", "2025-01-20", Frequency.Months, 1);
             var advanceUntilDate = new DateOnly(2025, 1, 15);
 
             _calculator.Renew([income], advanceUntilDate);
@@ -107,16 +108,16 @@ public class IncomeRenewalCalculatorFixture : CalculatorFixtureBase
             var advanceUntilDate = new DateOnly(2025, 1, 20);
 
             // 3 days past due - should advance 3 times
-            var income1 = CreateIncome(_account, false, "3 Days Past", 100, "2025-01-17", null, Frequency.Days, 1);
+            var income1 = EntityFactory.CreateIncome(_account, false, "3 Days Past", 100, "2025-01-17", null, Frequency.Days, 1);
 
             // 1 day past due - should advance 1 time
-            var income2 = CreateIncome(_account, false, "1 Day Past", 100, "2025-01-19", null, Frequency.Days, 1);
+            var income2 = EntityFactory.CreateIncome(_account, false, "1 Day Past", 100, "2025-01-19", null, Frequency.Days, 1);
 
             // Due today - should renew once
-            var income3 = CreateIncome(_account, false, "Due Today", 100, "2025-01-20", null, Frequency.Days, 1);
+            var income3 = EntityFactory.CreateIncome(_account, false, "Due Today", 100, "2025-01-20", null, Frequency.Days, 1);
 
             // Not yet due - should not advance
-            var income4 = CreateIncome(_account, false, "Future Due", 100, "2025-01-21", null, Frequency.Days, 1);
+            var income4 = EntityFactory.CreateIncome(_account, false, "Future Due", 100, "2025-01-21", null, Frequency.Days, 1);
 
             _calculator.Renew([income1, income2, income3, income4], advanceUntilDate);
 
@@ -132,16 +133,16 @@ public class IncomeRenewalCalculatorFixture : CalculatorFixtureBase
             var advanceUntilDate = new DateOnly(2025, 2, 10);
 
             // 3 weeks past due - should advance 3 times
-            var income1 = CreateIncome(_account, false, "3 Weeks Past", 100, "2025-01-20", null, Frequency.Weeks, 1);
+            var income1 = EntityFactory.CreateIncome(_account, false, "3 Weeks Past", 100, "2025-01-20", null, Frequency.Weeks, 1);
 
             // 1 week past due - should advance 1 time
-            var income2 = CreateIncome(_account, false, "1 Week Past", 100, "2025-02-03", null, Frequency.Weeks, 1);
+            var income2 = EntityFactory.CreateIncome(_account, false, "1 Week Past", 100, "2025-02-03", null, Frequency.Weeks, 1);
 
             // Due today - should renew once
-            var income3 = CreateIncome(_account, false, "Due Today", 100, "2025-02-10", null, Frequency.Weeks, 1);
+            var income3 = EntityFactory.CreateIncome(_account, false, "Due Today", 100, "2025-02-10", null, Frequency.Weeks, 1);
 
             // Not yet due - should not advance
-            var income4 = CreateIncome(_account, false, "Future Due", 100, "2025-02-17", null, Frequency.Weeks, 1);
+            var income4 = EntityFactory.CreateIncome(_account, false, "Future Due", 100, "2025-02-17", null, Frequency.Weeks, 1);
 
             _calculator.Renew([income1, income2, income3, income4], advanceUntilDate);
 
@@ -157,16 +158,16 @@ public class IncomeRenewalCalculatorFixture : CalculatorFixtureBase
             var advanceUntilDate = new DateOnly(2025, 5, 15);
 
             // 3 months past due - should advance 3 times
-            var income1 = CreateIncome(_account, false, "3 Months Past", 100, "2025-02-15", null, Frequency.Months, 1);
+            var income1 = EntityFactory.CreateIncome(_account, false, "3 Months Past", 100, "2025-02-15", null, Frequency.Months, 1);
 
             // 1 month past due - should advance 1 time
-            var income2 = CreateIncome(_account, false, "1 Month Past", 100, "2025-04-15", null, Frequency.Months, 1);
+            var income2 = EntityFactory.CreateIncome(_account, false, "1 Month Past", 100, "2025-04-15", null, Frequency.Months, 1);
 
             // Due today - should renew once
-            var income3 = CreateIncome(_account, false, "Due Today", 100, "2025-05-15", null, Frequency.Months, 1);
+            var income3 = EntityFactory.CreateIncome(_account, false, "Due Today", 100, "2025-05-15", null, Frequency.Months, 1);
 
             // Not yet due - should not advance
-            var income4 = CreateIncome(_account, false, "Future Due", 100, "2025-06-15", null, Frequency.Months, 1);
+            var income4 = EntityFactory.CreateIncome(_account, false, "Future Due", 100, "2025-06-15", null, Frequency.Months, 1);
 
             _calculator.Renew([income1, income2, income3, income4], advanceUntilDate);
 
@@ -182,16 +183,16 @@ public class IncomeRenewalCalculatorFixture : CalculatorFixtureBase
             var advanceUntilDate = new DateOnly(2028, 3, 15);
 
             // 3 years past due - should advance 3 times
-            var income1 = CreateIncome(_account, false, "3 Years Past", 100, "2025-03-15", null, Frequency.Years, 1);
+            var income1 = EntityFactory.CreateIncome(_account, false, "3 Years Past", 100, "2025-03-15", null, Frequency.Years, 1);
 
             // 1 year past due - should advance 1 time
-            var income2 = CreateIncome(_account, false, "1 Year Past", 100, "2027-03-15", null, Frequency.Years, 1);
+            var income2 = EntityFactory.CreateIncome(_account, false, "1 Year Past", 100, "2027-03-15", null, Frequency.Years, 1);
 
             // Due today - should renew once
-            var income3 = CreateIncome(_account, false, "Due Today", 100, "2028-03-15", null, Frequency.Years, 1);
+            var income3 = EntityFactory.CreateIncome(_account, false, "Due Today", 100, "2028-03-15", null, Frequency.Years, 1);
 
             // Not yet due - should not advance
-            var income4 = CreateIncome(_account, false, "Future Due", 100, "2029-03-15", null, Frequency.Years, 1);
+            var income4 = EntityFactory.CreateIncome(_account, false, "Future Due", 100, "2029-03-15", null, Frequency.Years, 1);
 
             _calculator.Renew([income1, income2, income3, income4], advanceUntilDate);
 
@@ -207,10 +208,10 @@ public class IncomeRenewalCalculatorFixture : CalculatorFixtureBase
             var advanceUntilDate = new DateOnly(2025, 2, 15);
 
             // Weekly with FrequencyCount = 2 (every 2 weeks = 14 days)
-            var income1 = CreateIncome(_account, false, "BiWeekly", 100, "2025-01-01", null, Frequency.Weeks, 2);
+            var income1 = EntityFactory.CreateIncome(_account, false, "BiWeekly", 100, "2025-01-01", null, Frequency.Weeks, 2);
 
             // Monthly with FrequencyCount = 3 (every 3 months)
-            var income2 = CreateIncome(_account, false, "Quarterly", 200, "2025-02-15", null, Frequency.Months, 3);
+            var income2 = EntityFactory.CreateIncome(_account, false, "Quarterly", 200, "2025-02-15", null, Frequency.Months, 3);
 
             _calculator.Renew([income1, income2], advanceUntilDate);
 
@@ -226,7 +227,7 @@ public class IncomeRenewalCalculatorFixture : CalculatorFixtureBase
         {
             var advanceUntilDate = new DateOnly(2025, 1, 20);
 
-            var income = CreateIncome(_account, false, "Ending Income", 100, "2025-01-10", "2025-01-20", Frequency.Months, 1);
+            var income = EntityFactory.CreateIncome(_account, false, "Ending Income", 100, "2025-01-10", "2025-01-20", Frequency.Months, 1);
 
             var originalNextDue = income.NextDue;
 
@@ -240,9 +241,9 @@ public class IncomeRenewalCalculatorFixture : CalculatorFixtureBase
         {
             var advanceUntilDate = new DateOnly(2025, 2, 10);
 
-            var dailyIncome = CreateIncome(_account, false, "Daily", 10, "2025-02-05", null, Frequency.Days, 1);
-            var weeklyIncome = CreateIncome(_account, false, "Weekly", 50, "2025-02-05", null, Frequency.Weeks, 1);
-            var monthlyIncome = CreateIncome(_account, false, "Monthly", 100, "2025-01-10", null, Frequency.Months, 1);
+            var dailyIncome = EntityFactory.CreateIncome(_account, false, "Daily", 10, "2025-02-05", null, Frequency.Days, 1);
+            var weeklyIncome = EntityFactory.CreateIncome(_account, false, "Weekly", 50, "2025-02-05", null, Frequency.Weeks, 1);
+            var monthlyIncome = EntityFactory.CreateIncome(_account, false, "Monthly", 100, "2025-01-10", null, Frequency.Months, 1);
 
             _calculator.Renew([dailyIncome, weeklyIncome, monthlyIncome], advanceUntilDate);
 
@@ -262,7 +263,7 @@ public class IncomeRenewalCalculatorFixture : CalculatorFixtureBase
             var advanceUntilDate = new DateOnly(2025, 2, 15);
 
             // Income should renew multiple times but stop before exceeding EndDate
-            var income = CreateIncome(_account, false, "Limited Renewal", 100, "2025-01-01", "2025-02-20", Frequency.Weeks, 1);
+            var income = EntityFactory.CreateIncome(_account, false, "Limited Renewal", 100, "2025-01-01", "2025-02-20", Frequency.Weeks, 1);
 
             _calculator.Renew([income], advanceUntilDate);
 
@@ -276,7 +277,7 @@ public class IncomeRenewalCalculatorFixture : CalculatorFixtureBase
             var advanceUntilDate = new DateOnly(2025, 3, 1);
 
             // Income starting on Feb 29 (leap year)
-            var income = CreateIncome(_account, false, "Leap Year", 100, "2024-02-29", null, Frequency.Years, 1);
+            var income = EntityFactory.CreateIncome(_account, false, "Leap Year", 100, "2024-02-29", null, Frequency.Years, 1);
 
             _calculator.Renew([income], advanceUntilDate);
 
@@ -287,7 +288,7 @@ public class IncomeRenewalCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Not_Modify_Amount_And_Note_During_Renewal()
         {
-            var income = CreateIncome(_account, false, "Test Income", 100, "2025-01-10", null, Frequency.Weeks, 1);
+            var income = EntityFactory.CreateIncome(_account, false, "Test Income", 100, "2025-01-10", null, Frequency.Weeks, 1);
             income.Note = "Important note";
 
             var originalAmount = income.Amount;
@@ -306,7 +307,7 @@ public class IncomeRenewalCalculatorFixture : CalculatorFixtureBase
             var advanceUntilDate = new DateOnly(2025, 4, 15);
 
             // Income starting on Jan 31 - see how it handles Feb
-            var income = CreateIncome(_account, false, "Month End", 100, "2025-01-31", null, Frequency.Months, 1);
+            var income = EntityFactory.CreateIncome(_account, false, "Month End", 100, "2025-01-31", null, Frequency.Months, 1);
 
             _calculator.Renew([income], advanceUntilDate);
 
@@ -320,7 +321,7 @@ public class IncomeRenewalCalculatorFixture : CalculatorFixtureBase
             var advanceUntilDate = new DateOnly(2027, 1, 15);
 
             // Semi-annual (every 6 months)
-            var income = CreateIncome(_account, false, "Semi-Annual", 100, "2025-01-15", null, Frequency.Months, 6);
+            var income = EntityFactory.CreateIncome(_account, false, "Semi-Annual", 100, "2025-01-15", null, Frequency.Months, 6);
 
             _calculator.Renew([income], advanceUntilDate);
 
@@ -333,9 +334,9 @@ public class IncomeRenewalCalculatorFixture : CalculatorFixtureBase
         {
             var advanceUntilDate = new DateOnly(2025, 1, 20);
 
-            var excluded = CreateIncome(_account, true, "Excluded", 100, "2025-01-10", null, Frequency.Weeks, 1);
-            var oneTime = CreateIncome(_account, false, "OneTime", 100, "2025-01-10", null, Frequency.OneTime, 1);
-            var renewable = CreateIncome(_account, false, "Renewable", 100, "2025-01-10", null, Frequency.Weeks, 1);
+            var excluded = EntityFactory.CreateIncome(_account, true, "Excluded", 100, "2025-01-10", null, Frequency.Weeks, 1);
+            var oneTime = EntityFactory.CreateIncome(_account, false, "OneTime", 100, "2025-01-10", null, Frequency.OneTime, 1);
+            var renewable = EntityFactory.CreateIncome(_account, false, "Renewable", 100, "2025-01-10", null, Frequency.Weeks, 1);
 
             _calculator.Renew([excluded, oneTime, renewable], advanceUntilDate);
 
@@ -350,7 +351,7 @@ public class IncomeRenewalCalculatorFixture : CalculatorFixtureBase
         {
             var advanceUntilDate = new DateOnly(2025, 1, 20);
 
-            var income = CreateIncome(_account, false, "Due Yesterday", 100, "2025-01-19", null, Frequency.Weeks, 1);
+            var income = EntityFactory.CreateIncome(_account, false, "Due Yesterday", 100, "2025-01-19", null, Frequency.Weeks, 1);
 
             _calculator.Renew([income], advanceUntilDate);
 
@@ -363,7 +364,7 @@ public class IncomeRenewalCalculatorFixture : CalculatorFixtureBase
         {
             var advanceUntilDate = new DateOnly(2025, 2, 15);
             // Income where next renewal lands exactly on EndDate
-            var income = CreateIncome(_account, false, "Exact EndDate", 100, "2025-01-08", "2025-02-12", Frequency.Weeks, 1);
+            var income = EntityFactory.CreateIncome(_account, false, "Exact EndDate", 100, "2025-01-08", "2025-02-12", Frequency.Weeks, 1);
 
             _calculator.Renew([income], advanceUntilDate);
 
@@ -377,7 +378,7 @@ public class IncomeRenewalCalculatorFixture : CalculatorFixtureBase
             var advanceUntilDate = new DateOnly(2025, 1, 20);
 
             // Income where NextDue already equals EndDate (has reached its end)
-            var income = CreateIncome(_account, false, "Already At EndDate", 100, "2025-01-15", "2025-01-15", Frequency.Weeks, 1);
+            var income = EntityFactory.CreateIncome(_account, false, "Already At EndDate", 100, "2025-01-15", "2025-01-15", Frequency.Weeks, 1);
 
             var originalNextDue = income.NextDue;
 
@@ -393,7 +394,7 @@ public class IncomeRenewalCalculatorFixture : CalculatorFixtureBase
             var advanceUntilDate = new DateOnly(2025, 1, 20);
 
             // Income where NextDue is already past EndDate (shouldn't happen in normal flow, but validates the guard)
-            var income = CreateIncome(_account, false, "Past EndDate", 100, "2025-01-18", "2025-01-15", Frequency.Weeks, 1);
+            var income = EntityFactory.CreateIncome(_account, false, "Past EndDate", 100, "2025-01-18", "2025-01-15", Frequency.Weeks, 1);
 
             var originalNextDue = income.NextDue;
 

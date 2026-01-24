@@ -3,10 +3,11 @@ using FluentAssertions;
 using Pot.App.Calculators;
 using Pot.Data.Entities;
 using Pot.Shared.Enumerations;
+using Pot.TestUtils;
 
 namespace Pot.App.Tests.Calculators;
 
-public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
+public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 {
     public ExpenseRenewalCalculatorFixture()
     {
@@ -53,7 +54,7 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Not_Renew_Expense_Excluded_From_Calcs()
         {
-            var expense = CreateExpense(_account, true, "Excluded Expense", 100, "2025-01-01", "2025-01-15", null, Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, true, "Excluded Expense", 100, "2025-01-01", "2025-01-15", null, Frequency.Months, 1);
             expense.AccruedIsDirty = false;
 
             var advanceUntilDate = new DateOnly(2025, 1, 20);
@@ -71,7 +72,7 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Not_Renew_One_Time_Expense()
         {
-            var expense = CreateExpense(_account, false, "OneTime Expense", 100, "2025-01-01", "2025-01-15", null, Frequency.OneTime, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "OneTime Expense", 100, "2025-01-01", "2025-01-15", null, Frequency.OneTime, 1);
             expense.AccruedIsDirty = false;
 
             var advanceUntilDate = new DateOnly(2025, 1, 20);
@@ -89,7 +90,7 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Not_Reset_IsDirty_When_Expense_Not_Renewed()
         {
-            var expense = CreateExpense(_account, false, "Future Expense", 100, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Future Expense", 100, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
             expense.AccruedIsDirty = true;
 
             var advanceUntilDate = new DateOnly(2025, 1, 15);
@@ -103,7 +104,7 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Set_IsDirty_When_Expense_Is_Renewed()
         {
-            var expense = CreateExpense(_account, false, "Past Due Expense", 100, "2025-01-01", "2025-01-10", null, Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Past Due Expense", 100, "2025-01-01", "2025-01-10", null, Frequency.Months, 1);
             expense.AccruedIsDirty = false;
 
             var advanceUntilDate = new DateOnly(2025, 1, 20);
@@ -117,7 +118,7 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Not_Set_IsDirty_When_Expense_Is_Not_Renewed()
         {
-            var expense = CreateExpense(_account, false, "Future Expense", 100, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Future Expense", 100, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
             expense.AccruedIsDirty = false;
 
             var advanceUntilDate = new DateOnly(2025, 1, 15);
@@ -131,7 +132,7 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Not_Renew_Expense_With_EndDate_Before_AdvanceUntilDate()
         {
-            var expense = CreateExpense(_account, false, "Ending Expense", 100, "2025-01-01", "2025-01-10", "2025-01-15", Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Ending Expense", 100, "2025-01-01", "2025-01-10", "2025-01-15", Frequency.Months, 1);
             var advanceUntilDate = new DateOnly(2025, 1, 20);
 
             var originalNextDue = expense.NextDue;
@@ -147,7 +148,7 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Not_Renew_Expense_With_NextDue_Date_After_EndDate()
         {
-            var expense = CreateExpense(_account, false, "Limited Expense", 100, "2025-01-01", "2025-01-10", "2025-01-20", Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Limited Expense", 100, "2025-01-01", "2025-01-10", "2025-01-20", Frequency.Months, 1);
             var advanceUntilDate = new DateOnly(2025, 1, 15);
 
             _calculator.Renew([expense], advanceUntilDate);
@@ -169,19 +170,19 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
             var advanceUntilDate = new DateOnly(2025, 1, 20);
 
             // 3 days past due - should advance 3 times
-            var expense1 = CreateExpense(_account, false, "3 Days Past", 100, "2025-01-10", "2025-01-17", null, Frequency.Days, 1);
+            var expense1 = EntityFactory.CreateExpense(_account, false, "3 Days Past", 100, "2025-01-10", "2025-01-17", null, Frequency.Days, 1);
             expense1.AccruedIsDirty = false;
 
             // 1 day past due - should advance 1 time
-            var expense2 = CreateExpense(_account, false, "1 Day Past", 100, "2025-01-12", "2025-01-19", null, Frequency.Days, 1);
+            var expense2 = EntityFactory.CreateExpense(_account, false, "1 Day Past", 100, "2025-01-12", "2025-01-19", null, Frequency.Days, 1);
             expense2.AccruedIsDirty = false;
 
             // Due today - should not advance (only advance if < advanceUntilDate)
-            var expense3 = CreateExpense(_account, false, "Due Today", 100, "2025-01-13", "2025-01-20", null, Frequency.Days, 1);
+            var expense3 = EntityFactory.CreateExpense(_account, false, "Due Today", 100, "2025-01-13", "2025-01-20", null, Frequency.Days, 1);
             expense3.AccruedIsDirty = false;
 
             // Not yet due - should not advance
-            var expense4 = CreateExpense(_account, false, "Future Due", 100, "2025-01-14", "2025-01-21", null, Frequency.Days, 1);
+            var expense4 = EntityFactory.CreateExpense(_account, false, "Future Due", 100, "2025-01-14", "2025-01-21", null, Frequency.Days, 1);
             expense4.AccruedIsDirty = false;
 
             _calculator.Renew([expense1, expense2, expense3, expense4], advanceUntilDate);
@@ -219,19 +220,19 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
             var advanceUntilDate = new DateOnly(2025, 2, 10);
 
             // 3 weeks past due - should advance 3 times (7 days each)
-            var expense1 = CreateExpense(_account, false, "3 Weeks Past", 100, "2025-01-06", "2025-01-20", null, Frequency.Weeks, 1);
+            var expense1 = EntityFactory.CreateExpense(_account, false, "3 Weeks Past", 100, "2025-01-06", "2025-01-20", null, Frequency.Weeks, 1);
             expense1.AccruedIsDirty = false;
 
             // 1 week past due - should advance 1 time
-            var expense2 = CreateExpense(_account, false, "1 Week Past", 100, "2025-01-20", "2025-02-03", null, Frequency.Weeks, 1);
+            var expense2 = EntityFactory.CreateExpense(_account, false, "1 Week Past", 100, "2025-01-20", "2025-02-03", null, Frequency.Weeks, 1);
             expense2.AccruedIsDirty = false;
 
             // Due today - should not advance
-            var expense3 = CreateExpense(_account, false, "Due Today", 100, "2025-01-27", "2025-02-10", null, Frequency.Weeks, 1);
+            var expense3 = EntityFactory.CreateExpense(_account, false, "Due Today", 100, "2025-01-27", "2025-02-10", null, Frequency.Weeks, 1);
             expense3.AccruedIsDirty = false;
 
             // Not yet due - should not advance
-            var expense4 = CreateExpense(_account, false, "Future Due", 100, "2025-02-03", "2025-02-17", null, Frequency.Weeks, 1);
+            var expense4 = EntityFactory.CreateExpense(_account, false, "Future Due", 100, "2025-02-03", "2025-02-17", null, Frequency.Weeks, 1);
             expense4.AccruedIsDirty = false;
 
             _calculator.Renew([expense1, expense2, expense3, expense4], advanceUntilDate);
@@ -269,19 +270,19 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
             var advanceUntilDate = new DateOnly(2025, 5, 15);
 
             // 3 months past due - should advance 3 times
-            var expense1 = CreateExpense(_account, false, "3 Months Past", 100, "2025-01-15", "2025-02-15", null, Frequency.Months, 1);
+            var expense1 = EntityFactory.CreateExpense(_account, false, "3 Months Past", 100, "2025-01-15", "2025-02-15", null, Frequency.Months, 1);
             expense1.AccruedIsDirty = false;
 
             // 1 month past due - should advance 1 time
-            var expense2 = CreateExpense(_account, false, "1 Month Past", 100, "2025-03-15", "2025-04-15", null, Frequency.Months, 1);
+            var expense2 = EntityFactory.CreateExpense(_account, false, "1 Month Past", 100, "2025-03-15", "2025-04-15", null, Frequency.Months, 1);
             expense2.AccruedIsDirty = false;
 
             // Due today - should not advance
-            var expense3 = CreateExpense(_account, false, "Due Today", 100, "2025-04-15", "2025-05-15", null, Frequency.Months, 1);
+            var expense3 = EntityFactory.CreateExpense(_account, false, "Due Today", 100, "2025-04-15", "2025-05-15", null, Frequency.Months, 1);
             expense3.AccruedIsDirty = false;
 
             // Not yet due - should not advance
-            var expense4 = CreateExpense(_account, false, "Future Due", 100, "2025-05-15", "2025-06-15", null, Frequency.Months, 1);
+            var expense4 = EntityFactory.CreateExpense(_account, false, "Future Due", 100, "2025-05-15", "2025-06-15", null, Frequency.Months, 1);
             expense4.AccruedIsDirty = false;
 
             _calculator.Renew([expense1, expense2, expense3, expense4], advanceUntilDate);
@@ -319,19 +320,19 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
             var advanceUntilDate = new DateOnly(2028, 3, 15);
 
             // 3 years past due - should advance 3 times
-            var expense1 = CreateExpense(_account, false, "3 Years Past", 100, "2024-03-15", "2025-03-15", null, Frequency.Years, 1);
+            var expense1 = EntityFactory.CreateExpense(_account, false, "3 Years Past", 100, "2024-03-15", "2025-03-15", null, Frequency.Years, 1);
             expense1.AccruedIsDirty = false;
 
             // 1 year past due - should advance 1 time
-            var expense2 = CreateExpense(_account, false, "1 Year Past", 100, "2026-03-15", "2027-03-15", null, Frequency.Years, 1);
+            var expense2 = EntityFactory.CreateExpense(_account, false, "1 Year Past", 100, "2026-03-15", "2027-03-15", null, Frequency.Years, 1);
             expense2.AccruedIsDirty = false;
 
             // Due today - should not advance
-            var expense3 = CreateExpense(_account, false, "Due Today", 100, "2027-03-15", "2028-03-15", null, Frequency.Years, 1);
+            var expense3 = EntityFactory.CreateExpense(_account, false, "Due Today", 100, "2027-03-15", "2028-03-15", null, Frequency.Years, 1);
             expense3.AccruedIsDirty = false;
 
             // Not yet due - should not advance
-            var expense4 = CreateExpense(_account, false, "Future Due", 100, "2028-03-15", "2029-03-15", null, Frequency.Years, 1);
+            var expense4 = EntityFactory.CreateExpense(_account, false, "Future Due", 100, "2028-03-15", "2029-03-15", null, Frequency.Years, 1);
             expense4.AccruedIsDirty = false;
 
             _calculator.Renew([expense1, expense2, expense3, expense4], advanceUntilDate);
@@ -363,11 +364,11 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
             var advanceUntilDate = new DateOnly(2025, 2, 15);
 
             // Weekly with FrequencyCount = 2 (every 2 weeks = 14 days)
-            var expense1 = CreateExpense(_account, false, "BiWeekly", 100, "2025-01-01", "2025-01-01", null, Frequency.Weeks, 2);
+            var expense1 = EntityFactory.CreateExpense(_account, false, "BiWeekly", 100, "2025-01-01", "2025-01-01", null, Frequency.Weeks, 2);
             expense1.AccruedIsDirty = false;
 
             // Monthly with FrequencyCount = 3 (every 3 months)
-            var expense2 = CreateExpense(_account, false, "Quarterly", 200, "2024-11-15", "2025-02-15", null, Frequency.Months, 3);
+            var expense2 = EntityFactory.CreateExpense(_account, false, "Quarterly", 200, "2024-11-15", "2025-02-15", null, Frequency.Months, 3);
             expense2.AccruedIsDirty = false;
 
             _calculator.Renew([expense1, expense2], advanceUntilDate);
@@ -388,7 +389,7 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
         {
 
             var advanceUntilDate = new DateOnly(2025, 1, 20);
-            var expense = CreateExpense(_account, false, "Ending Expense", 100, "2025-01-01", "2025-01-10", "2025-01-20", Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Ending Expense", 100, "2025-01-01", "2025-01-10", "2025-01-20", Frequency.Months, 1);
             expense.AccruedIsDirty = false;
 
             var originalNextDue = expense.NextDue;
@@ -404,13 +405,13 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
         {
             var advanceUntilDate = new DateOnly(2025, 2, 10);
 
-            var dailyExpense = CreateExpense(_account, false, "Daily", 10, "2025-01-01", "2025-02-05", null, Frequency.Days, 1);
+            var dailyExpense = EntityFactory.CreateExpense(_account, false, "Daily", 10, "2025-01-01", "2025-02-05", null, Frequency.Days, 1);
             dailyExpense.AccruedIsDirty = false;
 
-            var weeklyExpense = CreateExpense(_account, false, "Weekly", 50, "2025-01-15", "2025-02-05", null, Frequency.Weeks, 1);
+            var weeklyExpense = EntityFactory.CreateExpense(_account, false, "Weekly", 50, "2025-01-15", "2025-02-05", null, Frequency.Weeks, 1);
             weeklyExpense.AccruedIsDirty = false;
 
-            var monthlyExpense = CreateExpense(_account, false, "Monthly", 100, "2024-12-10", "2025-01-10", null, Frequency.Months, 1);
+            var monthlyExpense = EntityFactory.CreateExpense(_account, false, "Monthly", 100, "2024-12-10", "2025-01-10", null, Frequency.Months, 1);
             monthlyExpense.AccruedIsDirty = false;
 
             _calculator.Renew([dailyExpense, weeklyExpense, monthlyExpense], advanceUntilDate);
@@ -437,7 +438,7 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
             var advanceUntilDate = new DateOnly(2025, 2, 15);
 
             // Expense should renew multiple times but stop before exceeding EndDate
-            var expense = CreateExpense(_account, false, "Limited Renewal", 100, "2025-01-01", "2025-01-01", "2025-02-20", Frequency.Weeks, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Limited Renewal", 100, "2025-01-01", "2025-01-01", "2025-02-20", Frequency.Weeks, 1);
             expense.AccruedIsDirty = false;
 
             _calculator.Renew([expense], advanceUntilDate);
@@ -456,7 +457,7 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
             var advanceUntilDate = new DateOnly(2025, 3, 1);
 
             // Expense starting on Feb 29 (leap year)
-            var expense = CreateExpense(_account, false, "Leap Year", 100, "2024-02-29", "2024-02-29", null, Frequency.Years, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Leap Year", 100, "2024-02-29", "2024-02-29", null, Frequency.Years, 1);
             expense.AccruedIsDirty = false;
 
             _calculator.Renew([expense], advanceUntilDate);
@@ -470,7 +471,7 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Not_Modify_Accrued_Amount_During_Renewal()
         {
-            var expense = CreateExpense(_account, false, "Test Expense", 100, "2025-01-01", "2025-01-10", null, Frequency.Weeks, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Test Expense", 100, "2025-01-01", "2025-01-10", null, Frequency.Weeks, 1);
             expense.Accrued = 50.0;
 
             var advanceUntilDate = new DateOnly(2025, 1, 20);
@@ -485,7 +486,7 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
         public void Should_Renew_Expense_Due_On_AdvanceUntilDate_Minus_One()
         {
             var advanceUntilDate = new DateOnly(2025, 1, 20);
-            var expense = CreateExpense(_account, false, "Due Yesterday", 100, "2025-01-01", "2025-01-19", null, Frequency.Weeks, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Due Yesterday", 100, "2025-01-01", "2025-01-19", null, Frequency.Weeks, 1);
 
             _calculator.Renew([expense], advanceUntilDate);
 
@@ -501,7 +502,7 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
             var advanceUntilDate = new DateOnly(2025, 2, 15);
 
             // Expense where next renewal lands exactly on EndDate
-            var expense = CreateExpense(_account, false, "Exact EndDate", 100, "2025-01-01", "2025-01-08", "2025-02-12", Frequency.Weeks, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Exact EndDate", 100, "2025-01-01", "2025-01-08", "2025-02-12", Frequency.Weeks, 1);
             expense.AccruedIsDirty = false;
 
             _calculator.Renew([expense], advanceUntilDate);
@@ -517,7 +518,7 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
         {
             var lastAccruedUpdate = new DateOnly(2025, 1, 5);
 
-            var expense = CreateExpense(_account, false, "Test Expense", 100, "2025-01-01", "2025-01-10", null, Frequency.Weeks, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Test Expense", 100, "2025-01-01", "2025-01-10", null, Frequency.Weeks, 1);
             expense.LastAccruedUpdate = lastAccruedUpdate;
 
             var advanceUntilDate = new DateOnly(2025, 1, 20);
@@ -531,7 +532,7 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
         [Fact]
         public void Should_Not_Modify_Amount_And_Note_During_Renewal()
         {
-            var expense = CreateExpense(_account, false, "Test Expense", 100, "2025-01-01", "2025-01-10", null, Frequency.Weeks, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Test Expense", 100, "2025-01-01", "2025-01-10", null, Frequency.Weeks, 1);
             expense.Note = "Important note";
 
             var originalAmount = expense.Amount;
@@ -550,7 +551,7 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
             var advanceUntilDate = new DateOnly(2025, 4, 15);
 
             // Expense starting on Jan 31 - see how it handles Feb
-            var expense = CreateExpense(_account, false, "Month End", 100, "2025-01-31", "2025-01-31", null, Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Month End", 100, "2025-01-31", "2025-01-31", null, Frequency.Months, 1);
             expense.AccruedIsDirty = false;
 
             _calculator.Renew([expense], advanceUntilDate);
@@ -567,7 +568,7 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
             var advanceUntilDate = new DateOnly(2027, 1, 15);
 
             // Semi-annual (every 6 months)
-            var expense = CreateExpense(_account, false, "Semi-Annual", 100, "2025-01-15", "2025-01-15", null, Frequency.Months, 6);
+            var expense = EntityFactory.CreateExpense(_account, false, "Semi-Annual", 100, "2025-01-15", "2025-01-15", null, Frequency.Months, 6);
             expense.AccruedIsDirty = false;
 
             _calculator.Renew([expense], advanceUntilDate);
@@ -583,13 +584,13 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
         {
             var advanceUntilDate = new DateOnly(2025, 1, 20);
 
-            var excluded = CreateExpense(_account, true, "Excluded", 100, "2025-01-01", "2025-01-10", null, Frequency.Weeks, 1);
+            var excluded = EntityFactory.CreateExpense(_account, true, "Excluded", 100, "2025-01-01", "2025-01-10", null, Frequency.Weeks, 1);
             excluded.AccruedIsDirty = false;
 
-            var oneTime = CreateExpense(_account, false, "OneTime", 100, "2025-01-01", "2025-01-10", null, Frequency.OneTime, 1);
+            var oneTime = EntityFactory.CreateExpense(_account, false, "OneTime", 100, "2025-01-01", "2025-01-10", null, Frequency.OneTime, 1);
             oneTime.AccruedIsDirty = false;
 
-            var renewable = CreateExpense(_account, false, "Renewable", 100, "2025-01-01", "2025-01-10", null, Frequency.Weeks, 1);
+            var renewable = EntityFactory.CreateExpense(_account, false, "Renewable", 100, "2025-01-01", "2025-01-10", null, Frequency.Weeks, 1);
             renewable.AccruedIsDirty = false;
 
             _calculator.Renew([excluded, oneTime, renewable], advanceUntilDate);
@@ -611,7 +612,7 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
             var advanceUntilDate = new DateOnly(2025, 1, 20);
 
             // Expense where NextDue already equals EndDate (has reached its end)
-            var expense = CreateExpense(_account, false, "Already At EndDate", 100, "2025-01-01", "2025-01-15", "2025-01-15", Frequency.Weeks, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Already At EndDate", 100, "2025-01-01", "2025-01-15", "2025-01-15", Frequency.Weeks, 1);
             expense.AccruedIsDirty = false;
 
             var originalNextDue = expense.NextDue;
@@ -631,7 +632,7 @@ public class ExpenseRenewalCalculatorFixture : CalculatorFixtureBase
             var advanceUntilDate = new DateOnly(2025, 1, 20);
 
             // Expense where NextDue is already past EndDate (shouldn't happen in normal flow, but validates the guard)
-            var expense = CreateExpense(_account, false, "Past EndDate", 100, "2025-01-01", "2025-01-18", "2025-01-15", Frequency.Weeks, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Past EndDate", 100, "2025-01-01", "2025-01-18", "2025-01-15", Frequency.Weeks, 1);
             expense.AccruedIsDirty = false;
 
             var originalNextDue = expense.NextDue;
