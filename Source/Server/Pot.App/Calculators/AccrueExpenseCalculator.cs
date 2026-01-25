@@ -34,7 +34,7 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
 
         // Sorted will be important if there's ever an option to not allow negative balances.
         // Can't pre-filter since we need to set AccruedIsDirty = false even if the expense is not processed.
-        var sortedExpenses = expenses.OrderByDescending(expense => expense.NextDue);
+        var sortedExpenses = expenses.OrderBy(expense => expense.NextDue);
 
         foreach (var expense in sortedExpenses)
         {

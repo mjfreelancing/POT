@@ -302,17 +302,42 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
         }
 
         [Fact]
-        public void Should_Handle_Month_End_Dates_Correctly()
+        public void Should_Handle_Month_End_Dates_Starting_Jan_31_With_Multiple_Renewals()
         {
+            // Validates month-end date drift when income starting on the 31st renews through February
             var advanceUntilDate = new DateOnly(2025, 4, 15);
 
-            // Income starting on Jan 31 - see how it handles Feb
-            var income = EntityFactory.CreateIncome(_account, false, "Month End", 100, "2025-01-31", null, Frequency.Months, 1);
+            var income = EntityFactory.CreateIncome(_account, false, "Month End 31st", 100, "2025-01-31", null, Frequency.Months, 1);
 
             _calculator.Renew([income], advanceUntilDate);
 
-            // Jan 31 -> Feb 28 -> Mar 31 -> Apr 30 (next would be beyond advanceDate)
-            income.NextDue.Should().BeAfter(advanceUntilDate);
+            // Date drift due to .NET's AddMonths behavior:
+            // Jan 31 -> Feb 28 (Feb has only 28 days in 2025)
+            // Feb 28 -> Mar 28 (AddMonths from 28th stays on 28th)
+            // Mar 28 -> Apr 28 (final renewal beyond advanceUntilDate)
+            //
+            // The income permanently drifts from the 31st to the 28th
+            
+            income.NextDue.Should().Be(new DateOnly(2025, 4, 28));
+        }
+
+        [Fact]
+        public void Should_Handle_Month_End_31st_Renewing_Twice_Through_February()
+        {
+            // Validates that multiple renewals through February cause permanent date drift
+            var advanceUntilDate = new DateOnly(2025, 3, 31);
+
+            var income = EntityFactory.CreateIncome(_account, false, "Jan 31 -> Feb -> Mar", 100, "2025-01-31", null, Frequency.Months, 1);
+            
+            _calculator.Renew([income], advanceUntilDate);
+
+            // Renewal sequence:
+            // Jan 31 + 1 month = Feb 28 (Feb has only 28 days in 2025)
+            // Feb 28 + 1 month = Mar 28 (subsequent renewals stay on 28th)
+            // Mar 28 + 1 month = Apr 28 (final renewal beyond advanceUntilDate)
+            
+            // The income permanently drifts from 31st to 28th
+            income.NextDue.Should().Be(new DateOnly(2025, 4, 28));
         }
 
         [Fact]

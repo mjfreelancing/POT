@@ -546,19 +546,46 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
         }
 
         [Fact]
-        public void Should_Handle_Month_End_Dates_Correctly()
+        public void Should_Handle_Month_End_Dates_Starting_Jan_31_With_Multiple_Renewals()
         {
+            // Validates month-end date drift when an expense starting on the 31st renews through February
             var advanceUntilDate = new DateOnly(2025, 4, 15);
 
-            // Expense starting on Jan 31 - see how it handles Feb
-            var expense = EntityFactory.CreateExpense(_account, false, "Month End", 100, "2025-01-31", "2025-01-31", null, Frequency.Months, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Month End 31st", 100, "2025-01-31", "2025-01-31", null, Frequency.Months, 1);
             expense.AccruedIsDirty = false;
 
             _calculator.Renew([expense], advanceUntilDate);
 
-            // Jan 31 -> Feb 28 (2025 is not leap year) -> Mar 31 -> Apr 30 (next would be beyond advanceDate)
-            // The actual behavior depends on Frequency.GetDaysToNext implementation
-            expense.NextDue.Should().BeAfter(advanceUntilDate);
+            // Date drift due to .NET's AddMonths behavior:
+            // Jan 31 -> Feb 28 (Feb has only 28 days in 2025)
+            // Feb 28 -> Mar 28 (AddMonths from 28th stays on 28th)
+            // Mar 28 -> Apr 28 (final renewal beyond advanceUntilDate)
+            //
+            // The expense permanently drifts from the 31st to the 28th
+            
+            expense.NextDue.Should().Be(new DateOnly(2025, 4, 28));
+            expense.AccrualStart.Should().Be(new DateOnly(2025, 3, 28));
+            expense.AccruedIsDirty.Should().BeTrue();
+        }
+
+        [Fact]
+        public void Should_Handle_Month_End_31st_Renewing_Twice_Through_February()
+        {
+            // Validates that multiple renewals through February cause permanent date drift
+            var advanceUntilDate = new DateOnly(2025, 3, 31);
+
+            var expense = EntityFactory.CreateExpense(_account, false, "Jan 31 -> Feb -> Mar", 100, "2025-01-31", "2025-01-31", null, Frequency.Months, 1);
+            
+            _calculator.Renew([expense], advanceUntilDate);
+
+            // Renewal sequence:
+            // Jan 31 + 1 month = Feb 28 (Feb has only 28 days in 2025)
+            // Feb 28 + 1 month = Mar 28 (subsequent renewals stay on 28th)
+            // Mar 28 + 1 month = Apr 28 (final renewal beyond advanceUntilDate)
+            
+            // The expense permanently drifts from 31st to 28th
+            expense.NextDue.Should().Be(new DateOnly(2025, 4, 28));
+            expense.AccrualStart.Should().Be(new DateOnly(2025, 3, 28));
             expense.AccruedIsDirty.Should().BeTrue();
         }
 

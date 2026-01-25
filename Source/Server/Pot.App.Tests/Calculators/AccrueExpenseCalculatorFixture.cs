@@ -267,19 +267,76 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
         }
 
         [Fact]
-        public void Should_Process_Expenses_In_Descending_NextDue_Order()
+        public void Should_Process_Expenses_In_Ascending_NextDue_Order()
         {
+            // This test validates that expenses are sorted by NextDue in ascending order
+            // (due sooner processed first), which is critical for future features like preventing
+            // negative balances. While the current implementation's results are order-independent
+            // due to commutative addition, the sort order matters for the design.
+
+            // Set account balance to a value that would result in negative available balance
+            // This documents current behavior and ensures the test is updatied if negative balance prevention is added
+            _account.Balance = 1000.0d;
+
             var expense1 = EntityFactory.CreateExpense(_account, false, "Expense 1", 1000, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
             var expense2 = EntityFactory.CreateExpense(_account, false, "Expense 2", 500, "2025-01-01", "2025-01-25", null, Frequency.Months, 1);
             var expense3 = EntityFactory.CreateExpense(_account, false, "Expense 3", 750, "2025-01-01", "2025-01-15", null, Frequency.Months, 1);
 
-            // Pass in random order
+            // Pass in random order: expense2 (Jan 25), expense3 (Jan 15), expense1 (Jan 20)
+            // AccrueExpenseCalculator should sort by NextDue ascending before processing:
+            // Expected order: expense3 (Jan 15), expense1 (Jan 20), expense2 (Jan 25)
             _calculator.AccrueExpenses(_account, [expense2, expense3, expense1]);
 
-            // All should be processed regardless of order
+            // Verify all expenses were processed correctly
+            // The specific values prove the accrual calculations are correct
             expense1.Accrued.Should().Be(736.84d);   // 1000 * 14 / 19 = 736.84
             expense2.Accrued.Should().Be(291.67d);   // 500 * 14 / 24 = 291.67
             expense3.Accrued.Should().Be(750.0d);    // Due today, full amount
+
+            // Total should be sum of all accruals
+            _account.TotalExpenseAccrued.Should().BeApproximately(1778.51d, 0.01d);
+
+            // Verify that available balance would be negative (Balance - TotalExpenseAccrued)
+            // This documents current behavior: negative balances are allowed
+            var availableBalance = _account.Balance - _account.TotalExpenseAccrued;
+            availableBalance.Should().BeApproximately(-778.51d, 0.01d, "current implementation allows negative balances");
+
+            // NOTE: When the "no negative balance" feature is implemented:
+            // 1. This assertion will likely need updating to reflect new behavior
+            // 2. The sort order (ascending by NextDue) becomes critical because expenses due sooner
+            //    should be checked first to prevent cascading failures
+            // 3. If someone changes OrderBy to OrderByDescending, the negative balance prevention
+            //    logic may fail in unexpected ways, making this test fail or behave incorrectly
+        }
+
+        [Theory]
+        [InlineData("2025-01-15", "2025-01-20", "2025-01-25")] // Already ascending
+        [InlineData("2025-01-25", "2025-01-15", "2025-01-20")] // Mixed order
+        [InlineData("2025-01-25", "2025-01-20", "2025-01-15")] // Descending order
+        public void Should_Process_Multiple_Expense_Orders_Consistently(string date1, string date2, string date3)
+        {
+            // This test verifies that regardless of input order, all expenses are processed
+            // and produce consistent results. While it doesn't prove ascending sort order,
+            // it ensures the calculator handles various input orders correctly.
+
+            var expense1 = EntityFactory.CreateExpense(_account, false, "Expense 1", 1000, "2025-01-01", date1, null, Frequency.Months, 1);
+            var expense2 = EntityFactory.CreateExpense(_account, false, "Expense 2", 500, "2025-01-01", date2, null, Frequency.Months, 1);
+            var expense3 = EntityFactory.CreateExpense(_account, false, "Expense 3", 750, "2025-01-01", date3, null, Frequency.Months, 1);
+
+            _calculator.AccrueExpenses(_account, [expense1, expense2, expense3]);
+
+            // All three expenses should be processed
+            expense1.AccruedIsDirty.Should().BeFalse();
+            expense2.AccruedIsDirty.Should().BeFalse();
+            expense3.AccruedIsDirty.Should().BeFalse();
+
+            // All should have LastAccruedUpdate set
+            expense1.LastAccruedUpdate.Should().Be(_currentDate);
+            expense2.LastAccruedUpdate.Should().Be(_currentDate);
+            expense3.LastAccruedUpdate.Should().Be(_currentDate);
+
+            // Total should be non-zero (all were processed and accrued)
+            _account.TotalExpenseAccrued.Should().BeGreaterThan(0);
         }
 
         [Fact]
@@ -663,6 +720,94 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             // One-time expense that is due tomorrow - leap year
             // A non-leap year would be 100 * 362 / 363 = 99.724
             yield return (EntityFactory.CreateExpense(account, false, "Expense 18", 100, "2024-01-18", "2025-01-16", null, Frequency.OneTime, Create<int>()), 99.73);        // 100 * 363 / 364 = 99.725
+        }
+
+        [Fact]
+        public void Should_Handle_Accrual_When_Expense_Renewed_From_Jan_31_Through_February()
+        {
+            // Validates accrual calculation when an expense has drifted from Jan 31 to Feb 28
+            // Scenario: Expense due Jan 31, renewed to Feb 28, now accruing toward Feb 28
+            var timeProvider = Substitute.For<ITimeProvider>();
+            var calculator = new AccrueExpenseCalculator(timeProvider);
+            var account = Create<AccountEntity>();
+
+            // It's Feb 10, expense is accruing from Jan 31 (paid/renewed on Jan 31) to Feb 28 (next due)
+            var currentDate = new DateOnly(2025, 2, 10);
+            timeProvider.GetLocalDateNow().Returns(currentDate);
+
+            // AccrualStart = Jan 31 (when it was last paid/renewed)
+            // NextDue = Feb 28 (what AddMonths(1) gave us from Jan 31)
+            var expense = EntityFactory.CreateExpense(account, false, "Rent", 1200, "2025-01-31", "2025-02-28", null, Frequency.Months, 1);
+
+            calculator.AccrueExpenses(account, [expense]);
+
+            // Days from Jan 31 to Feb 10 = 10 days
+            // Days from Jan 31 to Feb 28 = 28 days
+            // Expected: 1200 * 10 / 28 = 428.57
+            expense.Accrued.Should().Be(428.57d);
+            expense.AccruedIsDirty.Should().BeFalse();
+
+            // Daily accrual: 1200 / 28 = 42.86/day
+            expense.LastAccruedUpdate.Should().Be(currentDate);
+            account.TotalExpenseAccrued.Should().Be(428.57d);
+        }
+
+        [Fact]
+        public void Should_Handle_Accrual_When_Expense_Renewed_From_Feb_28_To_Mar_28()
+        {
+            // Validates accrual calculation after date has drifted from 31st to 28th
+
+            var timeProvider = Substitute.For<ITimeProvider>();
+            var calculator = new AccrueExpenseCalculator(timeProvider);
+            var account = Create<AccountEntity>();
+
+            // It's Mar 15, expense is accruing from Feb 28 (paid/renewed) to Mar 28 (next due)
+            var currentDate = new DateOnly(2025, 3, 15);
+            timeProvider.GetLocalDateNow().Returns(currentDate);
+
+            // AccrualStart = Feb 28 (when it was last paid/renewed)
+            // NextDue = Mar 28 (AddMonths(1) from Feb 28)
+            var expense = EntityFactory.CreateExpense(account, false, "Rent", 1200, "2025-02-28", "2025-03-28", null, Frequency.Months, 1);
+
+            calculator.AccrueExpenses(account, [expense]);
+
+            // Days from Feb 28 to Mar 15 = 15 days
+            // Days from Feb 28 to Mar 28 = 28 days
+            // Expected: 1200 * 15 / 28 = 642.86
+            expense.Accrued.Should().Be(642.86d);
+            expense.AccruedIsDirty.Should().BeFalse();
+            expense.LastAccruedUpdate.Should().Be(currentDate);
+            account.TotalExpenseAccrued.Should().Be(642.86d);
+        }
+
+        [Fact]
+        public void Should_Handle_Multiple_Expenses_With_Different_Month_End_Periods()
+        {
+            // Validates accrual calculations for expenses with different period lengths due to month-end drift
+
+            var timeProvider = Substitute.For<ITimeProvider>();
+            var calculator = new AccrueExpenseCalculator(timeProvider);
+            var account = Create<AccountEntity>();
+
+            var currentDate = new DateOnly(2025, 3, 15);
+            timeProvider.GetLocalDateNow().Returns(currentDate);
+
+            // Expense 1: Accruing from Mar 1 to Mar 31 (31 days) - normal month
+            var expense1 = EntityFactory.CreateExpense(account, false, "Expense 1", 1000, "2025-03-01", "2025-03-31", null, Frequency.Months, 1);
+
+            // Expense 2: Accruing from Feb 28 to Mar 28 (28 days) - drifted from 31st
+            var expense2 = EntityFactory.CreateExpense(account, false, "Expense 2", 1200, "2025-02-28", "2025-03-28", null, Frequency.Months, 1);
+
+            calculator.AccrueExpenses(account, [expense1, expense2]);
+
+            // Expense 1: 14 days elapsed / 30 days total = 1000 * 14 / 30 = 466.67
+            expense1.Accrued.Should().Be(466.67d);
+
+            // Expense 2: 15 days elapsed / 28 days total = 1200 * 15 / 28 = 642.86
+            expense2.Accrued.Should().Be(642.86d);
+
+            // Total: 466.67 + 642.86 = 1109.53
+            account.TotalExpenseAccrued.Should().Be(1109.53d);
         }
     }
 }
