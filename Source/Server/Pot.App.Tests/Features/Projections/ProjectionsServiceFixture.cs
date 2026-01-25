@@ -1,7 +1,7 @@
-using AllOverIt.Extensions;
+﻿using AllOverIt.Extensions;
 using AllOverIt.Fixture.Extensions;
 using FluentAssertions;
-using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Pot.App.Calculators;
 using Pot.App.Concerns.Time;
@@ -15,16 +15,14 @@ namespace Pot.App.Tests.Features.Projections;
 
 public class ProjectionsServiceFixture : PotFixtureBase
 {
+    private readonly ILogger<ProjectionsService> _logger;
+
     public ProjectionsServiceFixture()
     {
         CustomizeEnumerations();
         OmitRecursionBehavior();
-    }
 
-    // Helper method to create logger for tests
-    private static FakeLogger<ProjectionsService> CreateLogger()
-    {
-        return new FakeLogger<ProjectionsService>();
+        _logger = Substitute.For<ILogger<ProjectionsService>>();
     }
 
     // Helper method to validate that dates are consecutive starting from a specific date
@@ -34,7 +32,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
         for (int i = 0; i < projections.Count; i++)
         {
-            projections[i].Date.Should().Be(startDate.AddDays(i), 
+            projections[i].Date.Should().Be(startDate.AddDays(i),
                 $"date at index {i} should be {startDate.AddDays(i)}");
         }
     }
@@ -71,12 +69,12 @@ public class ProjectionsServiceFixture : PotFixtureBase
         {
             var projection = projections[i];
             var dayNumber = i + 1;
-            
-            projection.Balance.Should().Be(expectedBalance, 
+
+            projection.Balance.Should().Be(expectedBalance,
                 $"balance on day {dayNumber} ({projection.Date:yyyy-MM-dd}) should remain {expectedBalance}");
-            projection.IncomeReceived.Should().Be(0.0d, 
+            projection.IncomeReceived.Should().Be(0.0d,
                 $"no income on day {dayNumber} ({projection.Date:yyyy-MM-dd})");
-            projection.ExpensesPaid.Should().Be(0.0d, 
+            projection.ExpensesPaid.Should().Be(0.0d,
                 $"no expenses on day {dayNumber} ({projection.Date:yyyy-MM-dd})");
         }
     }
@@ -93,23 +91,23 @@ public class ProjectionsServiceFixture : PotFixtureBase
     {
         projection.Date.Should().Be(expectedDate);
         projection.Balance.Should().Be(expectedBalance);
-        
+
         if (expectedIncomeReceived.HasValue)
         {
             projection.IncomeReceived.Should().Be(expectedIncomeReceived.Value);
         }
-        
+
         if (expectedExpensesPaid.HasValue)
         {
             projection.ExpensesPaid.Should().Be(expectedExpensesPaid.Value);
         }
-        
+
         if (expectedExpenseDescriptions != null)
         {
             projection.ExpenseItems.Select(e => e.Description)
                 .Should().BeEquivalentTo(expectedExpenseDescriptions);
         }
-        
+
         if (expectedIncomeDescriptions != null)
         {
             projection.IncomeItems.Select(i => i.Description)
@@ -132,7 +130,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     new IncomeRenewalCalculator(),
                     new AccrueExpenseCalculator(timeProvider),
                     timeProvider,
-                    CreateLogger());
+                    _logger);
             })
             .Should()
             .Throw<ArgumentNullException>()
@@ -152,7 +150,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     new IncomeRenewalCalculator(),
                     new AccrueExpenseCalculator(timeProvider),
                     timeProvider,
-                    CreateLogger());
+                    _logger);
             })
             .Should()
             .Throw<ArgumentNullException>()
@@ -172,7 +170,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     null!,
                     new AccrueExpenseCalculator(timeProvider),
                     timeProvider,
-                    CreateLogger());
+                    _logger);
             })
             .Should()
             .Throw<ArgumentNullException>()
@@ -192,7 +190,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     new IncomeRenewalCalculator(),
                     null!,
                     timeProvider,
-                    CreateLogger());
+                    _logger);
             })
             .Should()
             .Throw<ArgumentNullException>()
@@ -210,7 +208,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     new IncomeRenewalCalculator(),
                     new AccrueExpenseCalculator(Substitute.For<ITimeProvider>()),
                     null!,
-                    CreateLogger());
+                    _logger);
             })
             .Should()
             .Throw<ArgumentNullException>()
@@ -265,7 +263,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 _incomeRenewalCalculator,
                 _accrueExpenseCalculator,
                 _timeProvider,
-                CreateLogger());
+                _logger);
 
             _timeProvider.GetLocalDateNow().Returns(_currentDate);
         }
@@ -309,7 +307,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
             result.IsSuccess.Should().BeTrue();
             result.Value!.Accounts.Should().BeEmpty();
-            
+
             // Validate that all 30 global projection dates are properly initialized with zero values
             ValidateEmptyGlobalProjection(result.Value.Global, _currentDate, 30);
         }
@@ -332,12 +330,12 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
             result.IsSuccess.Should().BeTrue();
             result.Value.Accounts.Should().HaveCount(1);
-            
+
             var accountProjection = result.Value.Accounts[0];
-            
+
             // Validate all dates are consecutive
             ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
-            
+
             // Validate all dates have the same balance with no transactions
             accountProjection.Dates.Should().AllSatisfy(date =>
             {
@@ -375,7 +373,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Feb 13)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
 
@@ -417,7 +415,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Feb 13)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
 
@@ -472,7 +470,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Feb 13)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
 
@@ -567,7 +565,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Feb 13)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
 
@@ -607,7 +605,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Feb 13)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
 
@@ -660,7 +658,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Feb 13)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
 
@@ -704,7 +702,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Feb 13)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
 
@@ -759,7 +757,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Apr 14)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 90);
 
@@ -810,7 +808,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Apr 14)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 90);
 
@@ -850,7 +848,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Apr 14)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 90);
 
@@ -866,7 +864,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 // Validate all expense occurrences
                 var occurrences = accountProjection.Dates.Where(d => d.ExpensesPaid > 0).ToList();
                 occurrences.Should().HaveCount(expectedWeeklyDates.Length);
-                
+
                 for (int i = 0; i < expectedWeeklyDates.Length; i++)
                 {
                     occurrences[i].Date.Should().Be(expectedWeeklyDates[i]);
@@ -900,7 +898,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Apr 14)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 90);
 
@@ -959,13 +957,13 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var checkingProjection = result.Value.Accounts.First(a => a.Description == "Checking");
                 var savingsProjection = result.Value.Accounts.First(a => a.Description == "Savings");
-                
+
                 // Validate checking account projections (Jan 15 - Apr 14)
                 ValidateConsecutiveDates(checkingProjection.Dates, _currentDate, 90);
-                
+
                 // Checking: Days 0-15 (Jan 15 - Jan 30): Before rent
                 ValidateNoActivityRange(checkingProjection.Dates, 0, 15, expectedBalance: 2000.0d);
-                
+
                 // Checking: Day 16 (Jan 31): First rent payment
                 ValidateEventDay(
                     checkingProjection.Dates[16],
@@ -973,10 +971,10 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     expectedBalance: 1000.0d,
                     expectedExpensesPaid: 1000.0d,
                     expectedExpenseDescriptions: ["Rent"]);
-                
+
                 // Checking: Days 17-43 (Feb 1 - Feb 27): After first rent, before second
                 ValidateNoActivityRange(checkingProjection.Dates, 17, 43, expectedBalance: 1000.0d);
-                
+
                 // Checking: Day 44 (Feb 28): Second rent payment
                 ValidateEventDay(
                     checkingProjection.Dates[44],
@@ -984,10 +982,10 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     expectedBalance: 0.0d,
                     expectedExpensesPaid: 1000.0d,
                     expectedExpenseDescriptions: ["Rent"]);
-                
+
                 // Checking: Days 45-71 (Mar 1 - Mar 27): After second rent, before third
                 ValidateNoActivityRange(checkingProjection.Dates, 45, 71, expectedBalance: 0.0d);
-                
+
                 // Checking: Day 72 (Mar 28): Third rent payment (goes negative)
                 ValidateEventDay(
                     checkingProjection.Dates[72],
@@ -995,13 +993,13 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     expectedBalance: -1000.0d,
                     expectedExpensesPaid: 1000.0d,
                     expectedExpenseDescriptions: ["Rent"]);
-                
+
                 // Checking: Days 73-89 (Mar 29 - Apr 14): After third rent
                 ValidateNoActivityRange(checkingProjection.Dates, 73, 89, expectedBalance: -1000.0d);
 
                 // Validate savings account projections (Jan 15 - Apr 14)
                 ValidateConsecutiveDates(savingsProjection.Dates, _currentDate, 90);
-                
+
                 // Savings: Day 0 (Jan 15): Investment paid on start date
                 ValidateEventDay(
                     savingsProjection.Dates[0],
@@ -1009,10 +1007,10 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     expectedBalance: 9500.0d,
                     expectedExpensesPaid: 500.0d,
                     expectedExpenseDescriptions: ["Investment"]);
-                
+
                 // Savings: Days 1-30 (Jan 16 - Feb 14): After first investment, before second
                 ValidateNoActivityRange(savingsProjection.Dates, 1, 30, expectedBalance: 9500.0d);
-                
+
                 // Savings: Day 31 (Feb 15): Second monthly investment
                 ValidateEventDay(
                     savingsProjection.Dates[31],
@@ -1020,10 +1018,10 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     expectedBalance: 9000.0d,
                     expectedExpensesPaid: 500.0d,
                     expectedExpenseDescriptions: ["Investment"]);
-                
+
                 // Savings: Days 32-58 (Feb 16 - Mar 14): After second investment, before third
                 ValidateNoActivityRange(savingsProjection.Dates, 32, 58, expectedBalance: 9000.0d);
-                
+
                 // Savings: Day 59 (Mar 15): Third monthly investment
                 ValidateEventDay(
                     savingsProjection.Dates[59],
@@ -1031,7 +1029,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     expectedBalance: 8500.0d,
                     expectedExpensesPaid: 500.0d,
                     expectedExpenseDescriptions: ["Investment"]);
-                
+
                 // Savings: Days 60-89 (Mar 16 - Apr 14): After third investment
                 ValidateNoActivityRange(savingsProjection.Dates, 60, 89, expectedBalance: 8500.0d);
 
@@ -1041,22 +1039,22 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 // Global: Day 0 (Jan 15): Investment paid on start date
                 globalProjections[0].Balance.Should().Be(11500.0d); // 2000 + 10000 - 500
-                
+
                 // Global: Day 16 (Jan 31): First rent paid
                 globalProjections[16].Balance.Should().Be(10500.0d); // 11500 - 1000
-                
+
                 // Global: Day 31 (Feb 15): Second investment paid
                 globalProjections[31].Balance.Should().Be(10000.0d); // 10500 - 500
-                
+
                 // Global: Day 44 (Feb 28): Second rent paid
                 globalProjections[44].Balance.Should().Be(9000.0d); // 10000 - 1000
-                
+
                 // Global: Day 59 (Mar 15): Third investment paid
                 globalProjections[59].Balance.Should().Be(8500.0d); // 9000 - 500
-                
+
                 // Global: Day 72 (Mar 28): Third rent paid
                 globalProjections[72].Balance.Should().Be(7500.0d); // 8500 - 1000
-                
+
                 // Global: Day 89 (Apr 14): Final balance
                 globalProjections[89].Balance.Should().Be(7500.0d); // No changes after Mar 28
             }
@@ -1086,7 +1084,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Jul 13)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 180);
 
@@ -1126,7 +1124,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Jul 13)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 180);
 
@@ -1183,7 +1181,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Jul 13)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 180);
 
@@ -1191,7 +1189,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 var salaryDays = accountProjection.Dates.Where(d => d.IncomeReceived > 0).ToList();
                 salaryDays.Should().HaveCountGreaterThanOrEqualTo(12);
                 salaryDays.Should().HaveCountLessThanOrEqualTo(14);
-                salaryDays.Should().AllSatisfy(d => 
+                salaryDays.Should().AllSatisfy(d =>
                 {
                     d.IncomeReceived.Should().Be(1500.0d);
                     d.IncomeItems.Should().ContainSingle(i => i.Description == "Bi-Weekly Salary");
@@ -1237,7 +1235,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Oct 11)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 270);
 
@@ -1299,7 +1297,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Oct 11)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 270);
 
@@ -1400,7 +1398,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 var checkingProjection = result.Value.Accounts.First(a => a.Description == "Checking");
                 var savingsProjection = result.Value.Accounts.First(a => a.Description == "Savings");
                 var creditProjection = result.Value.Accounts.First(a => a.Description == "Credit Card");
-                
+
                 // Validate all accounts have 270 consecutive dates (Jan 15 - Oct 11)
                 ValidateConsecutiveDates(checkingProjection.Dates, _currentDate, 270);
                 ValidateConsecutiveDates(savingsProjection.Dates, _currentDate, 270);
@@ -1442,7 +1440,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     expectedIncomeDescriptions: ["Salary"],
                     expectedExpenseDescriptions: ["Rent", "Savings Transfer"]);
 
-                // Validate 9 monthly cycles of: CC payment (20th) ? utilities (25th) ? salary/rent/transfer (28-31st)
+                // Validate 9 monthly cycles of: CC payment (20th) → utilities (25th) → salary/rent/transfer (28-31st)
                 // Month 2 (Feb): Days 17-44
                 var feb20 = checkingProjection.Dates[36]; // Jan 15 + 36 = Feb 20
                 feb20.Date.Should().Be(new DateOnly(2025, 2, 20));
@@ -1459,14 +1457,14 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 feb28.ExpenseItems.Should().Contain(e => e.Description == "Savings Transfer");
 
                 // Savings and credit accounts should remain constant (no transactions)
-                savingsProjection.Dates.Should().AllSatisfy(d => 
+                savingsProjection.Dates.Should().AllSatisfy(d =>
                 {
                     d.Balance.Should().Be(20000.0d);
                     d.IncomeReceived.Should().Be(0.0d);
                     d.ExpensesPaid.Should().Be(0.0d);
                 });
 
-                creditProjection.Dates.Should().AllSatisfy(d => 
+                creditProjection.Dates.Should().AllSatisfy(d =>
                 {
                     d.Balance.Should().Be(-500.0d);
                     d.IncomeReceived.Should().Be(0.0d);
@@ -1499,7 +1497,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Jan 14 next year)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 365);
 
@@ -1540,7 +1538,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Jan 14 next year)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 365);
 
@@ -1549,7 +1547,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 occurrences.Should().HaveCount(12);
 
                 // Verify all occurrences have correct amount and description
-                occurrences.Should().AllSatisfy(o => 
+                occurrences.Should().AllSatisfy(o =>
                 {
                     o.ExpensesPaid.Should().Be(500.0d);
                     o.ExpenseItems.Should().ContainSingle(e => e.Description == "Monthly Payment");
@@ -1609,14 +1607,14 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Jan 14 next year)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 365);
 
                 // Verify monthly salary (12 times)
                 var salaryOccurrences = accountProjection.Dates.Where(d => d.IncomeReceived > 0).ToList();
                 salaryOccurrences.Should().HaveCount(12);
-                salaryOccurrences.Should().AllSatisfy(o => 
+                salaryOccurrences.Should().AllSatisfy(o =>
                 {
                     o.IncomeReceived.Should().Be(5000.0d);
                     o.IncomeItems.Should().ContainSingle(i => i.Description == "Monthly Salary");
@@ -1625,7 +1623,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 // Verify monthly rent (12 times)
                 var rentOccurrences = accountProjection.Dates.Where(d => d.ExpenseItems.Any(e => e.Description == "Rent")).ToList();
                 rentOccurrences.Should().HaveCount(12);
-                rentOccurrences.Should().AllSatisfy(o => 
+                rentOccurrences.Should().AllSatisfy(o =>
                 {
                     o.ExpenseItems.Should().Contain(e => e.Description == "Rent" && e.Amount == 1500.0d);
                 });
@@ -1637,7 +1635,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 taxOccurrences[1].Date.Should().Be(new DateOnly(2025, 4, 30));
                 taxOccurrences[2].Date.Should().Be(new DateOnly(2025, 7, 30));
                 taxOccurrences[3].Date.Should().Be(new DateOnly(2025, 10, 30));
-                taxOccurrences.Should().AllSatisfy(o => 
+                taxOccurrences.Should().AllSatisfy(o =>
                 {
                     o.ExpenseItems.Should().Contain(e => e.Description == "Quarterly Tax" && e.Amount == 1000.0d);
                 });
@@ -1647,7 +1645,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 insuranceOccurrences.Should().HaveCount(2);
                 insuranceOccurrences[0].Date.Should().Be(new DateOnly(2025, 1, 31));
                 insuranceOccurrences[1].Date.Should().Be(new DateOnly(2025, 7, 31));
-                insuranceOccurrences.Should().AllSatisfy(o => 
+                insuranceOccurrences.Should().AllSatisfy(o =>
                 {
                     o.ExpenseItems.Should().Contain(e => e.Description == "Insurance" && e.Amount == 600.0d);
                 });
@@ -1687,7 +1685,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Jan 14 next year)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 365);
 
@@ -1699,7 +1697,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 occurrences.Should().HaveCount(364);
 
                 // Verify all occurrences have correct amount and description
-                occurrences.Should().AllSatisfy(o => 
+                occurrences.Should().AllSatisfy(o =>
                 {
                     o.ExpensesPaid.Should().Be(5.0d);
                     o.ExpenseItems.Should().ContainSingle(e => e.Description == "Daily Coffee");
@@ -1709,7 +1707,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 for (int i = 0; i < occurrences.Count - 1; i++)
                 {
                     var dayDiff = occurrences[i + 1].Date.DayNumber - occurrences[i].Date.DayNumber;
-                    dayDiff.Should().Be(1, $"day {i} ({occurrences[i].Date}) to day {i+1} ({occurrences[i+1].Date}) should be consecutive");
+                    dayDiff.Should().Be(1, $"day {i} ({occurrences[i].Date}) to day {i + 1} ({occurrences[i + 1].Date}) should be consecutive");
                 }
 
                 // Verify first and last occurrence dates
@@ -1741,7 +1739,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Jan 14 next year)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 365);
 
@@ -1761,7 +1759,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 occurrences.Should().HaveCountGreaterThanOrEqualTo(7); // Jun, Jul, Aug, Sep, Oct, Nov, Dec, Jan
 
                 occurrences[0].Date.Should().Be(new DateOnly(2025, 6, 15));
-                occurrences.Should().AllSatisfy(o => 
+                occurrences.Should().AllSatisfy(o =>
                 {
                     o.ExpensesPaid.Should().Be(50.0d);
                     o.ExpenseItems.Should().ContainSingle(e => e.Description == "Future Subscription");
@@ -1816,7 +1814,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Jan 14 next year)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 365);
 
@@ -1832,7 +1830,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 var salaryDays = accountProjection.Dates.Where(d => d.IncomeReceived > 0).ToList();
                 salaryDays.Should().HaveCountGreaterThanOrEqualTo(24);
                 salaryDays.Should().HaveCountLessThanOrEqualTo(27);
-                salaryDays.Should().AllSatisfy(d => 
+                salaryDays.Should().AllSatisfy(d =>
                 {
                     d.IncomeReceived.Should().Be(2000.0d);
                     d.IncomeItems.Should().ContainSingle(i => i.Description == "Salary");
@@ -1841,7 +1839,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 // Verify monthly rent (12 times)
                 var rentDays = accountProjection.Dates.Where(d => d.ExpenseItems.Any(e => e.Description == "Rent")).ToList();
                 rentDays.Should().HaveCount(12);
-                rentDays.Should().AllSatisfy(d => 
+                rentDays.Should().AllSatisfy(d =>
                 {
                     d.ExpenseItems.Should().Contain(e => e.Description == "Rent" && e.Amount == 1200.0d);
                 });
@@ -1849,7 +1847,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 // Verify monthly utilities (12 times)
                 var utilityDays = accountProjection.Dates.Where(d => d.ExpenseItems.Any(e => e.Description == "Utilities")).ToList();
                 utilityDays.Should().HaveCount(12);
-                utilityDays.Should().AllSatisfy(d => 
+                utilityDays.Should().AllSatisfy(d =>
                 {
                     d.ExpenseItems.Should().Contain(e => e.Description == "Utilities" && e.Amount == 150.0d);
                 });
@@ -1857,7 +1855,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 // Verify monthly internet (12 times)
                 var internetDays = accountProjection.Dates.Where(d => d.ExpenseItems.Any(e => e.Description == "Internet")).ToList();
                 internetDays.Should().HaveCount(12);
-                internetDays.Should().AllSatisfy(d => 
+                internetDays.Should().AllSatisfy(d =>
                 {
                     d.ExpenseItems.Should().Contain(e => e.Description == "Internet" && e.Amount == 60.0d);
                 });
@@ -1866,7 +1864,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 var groceryDays = accountProjection.Dates.Where(d => d.ExpenseItems.Any(e => e.Description == "Groceries")).ToList();
                 groceryDays.Should().HaveCountGreaterThanOrEqualTo(50);
                 groceryDays.Should().HaveCountLessThanOrEqualTo(54);
-                groceryDays.Should().AllSatisfy(d => 
+                groceryDays.Should().AllSatisfy(d =>
                 {
                     d.ExpenseItems.Should().Contain(e => e.Description == "Groceries" && e.Amount == 100.0d);
                 });
@@ -1875,7 +1873,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 var gasDays = accountProjection.Dates.Where(d => d.ExpenseItems.Any(e => e.Description == "Gas")).ToList();
                 gasDays.Should().HaveCountGreaterThanOrEqualTo(24);
                 gasDays.Should().HaveCountLessThanOrEqualTo(27);
-                gasDays.Should().AllSatisfy(d => 
+                gasDays.Should().AllSatisfy(d =>
                 {
                     d.ExpenseItems.Should().Contain(e => e.Description == "Gas" && e.Amount == 60.0d);
                 });
@@ -1883,7 +1881,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 // Verify quarterly insurance (4 times)
                 var insuranceDays = accountProjection.Dates.Where(d => d.ExpenseItems.Any(e => e.Description == "Insurance")).ToList();
                 insuranceDays.Should().HaveCount(4);
-                insuranceDays.Should().AllSatisfy(d => 
+                insuranceDays.Should().AllSatisfy(d =>
                 {
                     d.ExpenseItems.Should().Contain(e => e.Description == "Insurance" && e.Amount == 300.0d);
                 });
@@ -1899,19 +1897,19 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 // Expenses: rent(12) + utilities(12) + internet(12) + groceries(~52) + gas(~26) + insurance(4) + prime(1)
                 var finalDay = accountProjection.Dates.Last();
                 finalDay.Date.Should().Be(new DateOnly(2026, 1, 14));
-                
+
                 // Calculate exact final balance based on actual occurrences
                 var totalIncome = salaryDays.Count * 2000.0d;
                 var totalExpenses = 139.0d + // Prime (day 0)
-                                   (rentDays.Count * 1200.0d) + 
-                                   (utilityDays.Count * 150.0d) + 
-                                   (internetDays.Count * 60.0d) + 
-                                   (groceryDays.Count * 100.0d) + 
-                                   (gasDays.Count * 60.0d) + 
+                                   (rentDays.Count * 1200.0d) +
+                                   (utilityDays.Count * 150.0d) +
+                                   (internetDays.Count * 60.0d) +
+                                   (groceryDays.Count * 100.0d) +
+                                   (gasDays.Count * 60.0d) +
                                    (insuranceDays.Count * 300.0d);
                 var expectedFinalBalance = 2000.0d + totalIncome - totalExpenses;
-                
-                finalDay.Balance.Should().Be(expectedFinalBalance, 
+
+                finalDay.Balance.Should().Be(expectedFinalBalance,
                     $"Final balance = starting(2000) + income({totalIncome}) - expenses({totalExpenses}) = {expectedFinalBalance}");
             }
         }
@@ -1940,7 +1938,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Feb 13)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
 
@@ -1948,16 +1946,16 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 // Expense accrues from Jan 1 to Jan 20 (19 days), daily rate = 200/19 = 10.526315789...
                 // Available = Balance - Reserved - Accrued + ExpensesPaid (ExpensesPaid = 0 on non-payment days)
                 var billDailyAccrual = 200.0d / 19.0d;
-                
+
                 for (int i = 0; i <= 4; i++)
                 {
                     var dayNumber = i + 1;
                     var daysAccrued = 14 + i; // Jan 1 to Jan 15 = 14 days, then 15, 16, 17, 18
                     var accruedAmount = Math.Round(billDailyAccrual * daysAccrued, 2, MidpointRounding.AwayFromZero);
                     var expectedAvailable = 5000.0d - 1000.0d - accruedAmount + 0.0d; // +0 for expensesPaid
-                    
+
                     accountProjection.Dates[i].Balance.Should().Be(5000.0d);
-                    accountProjection.Dates[i].Available.Should().Be(expectedAvailable, 
+                    accountProjection.Dates[i].Available.Should().Be(expectedAvailable,
                         $"day {dayNumber}: available = balance(5000) - reserved(1000) - accrued({accruedAmount:F2}) + expensesPaid(0) = {expectedAvailable:F2}");
                 }
 
@@ -1968,13 +1966,13 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     expectedBalance: 4800.0d,
                     expectedExpensesPaid: 200.0d,
                     expectedExpenseDescriptions: ["Bill"]);
-                
+
                 // After payment, expense renews for next period (Feb 20, 31 days away)
                 // New daily accrual = 200 / 31 = 6.451612903...
                 // Available on payment day = Balance - Reserved - Accrued + ExpensesPaid
                 // Available = 4800 - 1000 - 0 + 200 = 4000
                 var nextBillDailyAccrual = 200.0d / 31.0d;
-                accountProjection.Dates[5].Available.Should().Be(4000.0d, 
+                accountProjection.Dates[5].Available.Should().Be(4000.0d,
                     "day 6: available = balance(4800) - reserved(1000) - accrued(0, just reset) + expensesPaid(200) = 4000");
 
                 // Days 6-29 (Jan 21 - Feb 13): After expense, balance constant at 4800
@@ -1986,7 +1984,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     var daysIntoNextPeriod = i - 5; // Days since Jan 20 payment
                     var accruedForNextPeriod = Math.Round(nextBillDailyAccrual * daysIntoNextPeriod, 2, MidpointRounding.AwayFromZero);
                     var expectedAvailable = 4800.0d - 1000.0d - accruedForNextPeriod + 0.0d; // +0 for expensesPaid
-                    
+
                     accountProjection.Dates[i].Balance.Should().Be(4800.0d);
                     accountProjection.Dates[i].Available.Should().Be(expectedAvailable,
                         $"day {dayNumber}: available = balance(4800) - reserved(1000) - accrued({accruedForNextPeriod:F2}) + expensesPaid(0) = {expectedAvailable:F2}");
@@ -2014,7 +2012,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Feb 13)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
 
@@ -2054,7 +2052,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Feb 13)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
 
@@ -2084,7 +2082,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive starting from future date (Jan 25 - Feb 23)
                 ValidateConsecutiveDates(accountProjection.Dates, futureDate, 30);
 
@@ -2136,7 +2134,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 var global = result.Value.Global;
                 var account1Projection = result.Value.Accounts[0];
                 var account2Projection = result.Value.Accounts[1];
-                
+
                 // Validate all accounts and global have 30 consecutive dates (Jan 15 - Feb 13)
                 ValidateConsecutiveDates(account1Projection.Dates, _currentDate, 30);
                 ValidateConsecutiveDates(account2Projection.Dates, _currentDate, 30);
@@ -2196,7 +2194,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Feb 13)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
 
@@ -2210,7 +2208,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     expectedBalance: 1675.0d,
                     expectedExpensesPaid: 325.0d,
                     expectedExpenseDescriptions: ["Bill 1", "Bill 2", "Bill 3"]);
-                
+
                 // Verify all three expense items are present with correct amounts
                 accountProjection.Dates[5].ExpenseItems.Should().HaveCount(3);
                 accountProjection.Dates[5].ExpenseItems.Should().Contain(e => e.Description == "Bill 1" && e.Amount == 100.0d);
@@ -2229,7 +2227,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 // Expense 1: Accrual starts before projection start (Jan 10), due Jan 30
                 // This should accrue from day 1 of projection (Jan 15)
                 var expense1 = EntityFactory.CreateExpense(account, false, "Rent", 900.0d, "2025-01-10", "2025-01-30", null, Frequency.Months, 1);
-                
+
                 // Expense 2: Accrual starts on last day of projection (Feb 13), due Feb 20
                 // This should never accrue during the 30-day forecast period
                 var expense2 = EntityFactory.CreateExpense(account, false, "Insurance", 600.0d, "2025-02-13", "2025-02-20", null, Frequency.Months, 1);
@@ -2251,7 +2249,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.Should().BeTrue();
 
                 var accountProjection = result.Value.Accounts[0];
-                
+
                 // Validate all dates are consecutive (Jan 15 - Feb 13)
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
 
@@ -2292,35 +2290,35 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 var nextPeriodDays = 29;
                 var paymentDayDailyAccrual = 900.0d / nextPeriodDays;
                 accountProjection.Dates[15].DailyAccrual.Should().BeApproximately(paymentDayDailyAccrual, 0.01, "daily accrual on payment day");
-                
+
                 // On payment day: Available = Balance - Reserved - Accrued + ExpensesPaid
                 // Available = 4100 - 0 - 0 + 900 = 5000 (accrued reset to 0, expensesPaid added back)
-                accountProjection.Dates[15].Available.Should().Be(5000.0d, 
+                accountProjection.Dates[15].Available.Should().Be(5000.0d,
                     "available on payment day = balance(4100) - reserved(0) - accrued(0, just reset) + expensesPaid(900) = 5000");
 
                 // Days 16-28 (Jan 31 - Feb 12): Rent now accruing for next period (due Feb 28)
                 // DailyAccrual varies each day because it recalculates as: (remaining balance) / (days until due)
                 // Available = Balance - accumulated accrual
                 var baseAccrualRate = 900.0d / nextPeriodDays; // 31.03448275862069
-                
+
                 for (int i = 16; i <= 28; i++)
                 {
                     var projection = accountProjection.Dates[i];
                     var dayNumber = i + 1;
                     var daysAccruedForNextPeriod = i - 15; // Days since Jan 30 (day 16 = 1, day 17 = 2, etc.)
-                    
+
                     // Calculate accrued amount based on base rate
                     var accumulatedAccrual = Math.Round(baseAccrualRate * daysAccruedForNextPeriod, 2, MidpointRounding.AwayFromZero);
-                    
+
                     // Remaining balance for the expense
                     var remainingBalance = 900.0d - accumulatedAccrual;
-                    
+
                     // Days remaining until Feb 28 from current date
                     var daysRemaining = nextPeriodDays - daysAccruedForNextPeriod;
-                    
+
                     // DailyBalance = remaining balance / days remaining
                     var expectedDailyAccrual = remainingBalance / daysRemaining;
-                    
+
                     // Available = account balance - accumulated accrual
                     var expectedAvailable = 4100.0d - accumulatedAccrual;
 
@@ -2336,7 +2334,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 var lastDay = accountProjection.Dates[29];
                 var lastDayAccrued = Math.Round(baseAccrualRate * 14, 2, MidpointRounding.AwayFromZero);
                 var lastDayExpectedAvailable = 4100.0d - lastDayAccrued;
-                
+
                 lastDay.Date.Should().Be(new DateOnly(2025, 2, 13));
                 lastDay.Balance.Should().Be(4100.0d);
                 lastDay.Available.Should().Be(lastDayExpectedAvailable, $"available should be 4100 - {lastDayAccrued:F2} accrued");
