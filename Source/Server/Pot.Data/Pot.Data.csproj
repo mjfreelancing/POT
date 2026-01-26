@@ -17,5 +17,6 @@
 
 	<ItemGroup>
 		<InternalsVisibleTo Include="Pot.App.Tests" />
+		<InternalsVisibleTo Include="Pot.Data.Tests" />
 	</ItemGroup>
 </Project>

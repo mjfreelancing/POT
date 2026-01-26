@@ -203,81 +203,87 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
     public class GetFinancialProjectionsAsync : ProjectionsServiceFixture
     {
-        [Fact]
-        public async Task Should_Throw_When_StartDate_Before_Current_Date()
+        public class Validation : GetFinancialProjectionsAsync
         {
-            using var context = CreateTestContext();
-
-            var options = new ProjectionOptions
+            [Fact]
+            public async Task Should_Throw_When_StartDate_Before_Current_Date()
             {
-                StartDate = _currentDate.AddDays(-1),
-                DaysForecast = 30
-            };
+                using var context = CreateTestContext();
 
-            await Invoking(async () =>
-            {
-                await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
-            })
-            .Should()
-            .ThrowAsync<InvalidOperationException>()
-            .WithMessage("Projections cannot start earlier than today");
+                var options = new ProjectionOptions
+                {
+                    StartDate = _currentDate.AddDays(-1),
+                    DaysForecast = 30
+                };
+
+                await Invoking(async () =>
+                {
+                    await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
+                })
+                .Should()
+                .ThrowAsync<InvalidOperationException>()
+                .WithMessage("Projections cannot start earlier than today");
+            }
         }
 
-        [Fact]
-        public async Task Should_Return_Empty_Projections_When_No_Accounts()
+        public class BasicScenarios : GetFinancialProjectionsAsync
         {
-            using var context = CreateTestContext();
-
-            var options = new ProjectionOptions
+            [Fact]
+            public async Task Should_Return_Empty_Projections_When_No_Accounts()
             {
-                StartDate = _currentDate,
-                DaysForecast = 30
-            };
+                using var context = CreateTestContext();
 
-            var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
+                var options = new ProjectionOptions
+                {
+                    StartDate = _currentDate,
+                    DaysForecast = 30
+                };
 
-            result.IsSuccess.Should().BeTrue();
-            result.Value!.Accounts.Should().BeEmpty();
+                var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-            // Validate that all 30 global projection dates are properly initialized with zero values
-            ValidateEmptyGlobalProjection(result.Value.Global, _currentDate, 30);
-        }
+                result.IsSuccess.Should().BeTrue();
+                result.Value!.Accounts.Should().BeEmpty();
 
-        [Fact]
-        public async Task Should_Project_Single_Account_With_No_Expenses_Or_Incomes()
-        {
-            using var context = CreateTestContext();
+                // Validate that all 30 global projection dates are properly initialized with zero values
+                ValidateEmptyGlobalProjection(result.Value.Global, _currentDate, 30);
+            }
 
-            var account = EntityFactory.CreateAccount(context.Site, "Visa", 1000.0d);
-            await context.AddAccountAsync(account);
-
-            var options = new ProjectionOptions
+            [Fact]
+            public async Task Should_Project_Single_Account_With_No_Expenses_Or_Incomes()
             {
-                StartDate = _currentDate,
-                DaysForecast = 30
-            };
+                using var context = CreateTestContext();
 
-            var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
+                var account = EntityFactory.CreateAccount(context.Site, "Visa", 1000.0d);
+                await context.AddAccountAsync(account);
 
-            result.IsSuccess.Should().BeTrue();
-            result.Value!.Accounts.Should().HaveCount(1);
+                var options = new ProjectionOptions
+                {
+                    StartDate = _currentDate,
+                    DaysForecast = 30
+                };
 
-            var accountProjection = result.Value!.Accounts[0];
+                var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-            // Validate all dates are consecutive
-            ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
+                result.IsSuccess.Should().BeTrue();
+                result.Value!.Accounts.Should().HaveCount(1);
 
-            // Validate all dates have the same balance with no transactions
-            accountProjection.Dates.Should().AllSatisfy(date =>
-            {
-                date.Balance.Should().Be(1000.0d);
-                date.Available.Should().Be(1000.0d);
-                date.DailyAccrual.Should().Be(0.0d);
-                date.IncomeReceived.Should().Be(0.0d);
-                date.ExpensesPaid.Should().Be(0.0d);
-                date.ExpenseItems.Should().BeEmpty();
-                date.IncomeItems.Should().BeEmpty();
-            });
+                var accountProjection = result.Value!.Accounts[0];
+
+                // Validate all dates are consecutive
+                ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
+
+                // Validate all dates have the same balance with no transactions
+                accountProjection.Dates.Should().AllSatisfy(date =>
+                {
+                    date.Balance.Should().Be(1000.0d);
+                    date.Available.Should().Be(1000.0d);
+                    date.DailyAccrual.Should().Be(0.0d);
+                    date.IncomeReceived.Should().Be(0.0d);
+                    date.ExpensesPaid.Should().Be(0.0d);
+                    date.ExpenseItems.Should().BeEmpty();
+                    date.IncomeItems.Should().BeEmpty();
+                });
+            }
         }
 
         // ===== 1 MONTH PROJECTIONS =====
@@ -2054,9 +2060,10 @@ public class ProjectionsServiceFixture : PotFixtureBase
             }
         }
 
-        // ===== EDGE CASES AND SPECIAL SCENARIOS =====
-        [Fact]
-        public async Task Should_Handle_Account_With_Reserved_Funds()
+        public class EdgeCases : GetFinancialProjectionsAsync
+        {
+            [Fact]
+            public async Task Should_Handle_Account_With_Reserved_Funds()
         {
             using var context = CreateTestContext();
 
@@ -2248,76 +2255,6 @@ public class ProjectionsServiceFixture : PotFixtureBase
         }
 
         [Fact]
-        public async Task Should_Aggregate_Global_Projections_Correctly()
-        {
-            using var context = CreateTestContext();
-
-            var account1 = EntityFactory.CreateAccount(context.Site, "Account 1", 1000.0d);
-            var account2 = EntityFactory.CreateAccount(context.Site, "Account 2", 2000.0d);
-
-            var income1 = EntityFactory.CreateIncome(account1, false, "Income 1", 500.0d, "2025-01-20", null, Frequency.Months, 1);
-            var expense1 = EntityFactory.CreateExpense(account1, false, "Expense 1", 100.0d, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
-
-            var income2 = EntityFactory.CreateIncome(account2, false, "Income 2", 300.0d, "2025-01-25", null, Frequency.Months, 1);
-            var expense2 = EntityFactory.CreateExpense(account2, false, "Expense 2", 200.0d, "2025-01-01", "2025-01-25", null, Frequency.Months, 1);
-
-            account1.Incomes.Add(income1);
-            account1.Expenses.Add(expense1);
-
-            account2.Incomes.Add(income2);
-            account2.Expenses.Add(expense2);
-
-            await context.AddAccountsAsync(account1, account2);
-
-            var options = new ProjectionOptions
-            {
-                StartDate = _currentDate,
-                DaysForecast = 30
-            };
-
-            var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
-
-            result.IsSuccess.Should().BeTrue();
-
-            var global = result.Value!.Global;
-            var account1Projection = result.Value!.Accounts[0];
-            var account2Projection = result.Value!.Accounts[1];
-
-            // Validate all accounts and global have 30 consecutive dates (Jan 15 - Feb 13)
-            ValidateConsecutiveDates(account1Projection.Dates, _currentDate, 30);
-            ValidateConsecutiveDates(account2Projection.Dates, _currentDate, 30);
-            ValidateConsecutiveDates(global, _currentDate, 30);
-
-            // Day 0 (Jan 15): Combined starting balances
-            global[0].Balance.Should().Be(3000.0d); // 1000 + 2000
-
-            // Days 1-4 (Jan 16 - Jan 19): Before first transaction
-            ValidateNoActivityRange(global, 1, 4, expectedBalance: 3000.0d);
-
-            // Day 5 (Jan 20): Income1 and expense1
-            ValidateEventDay(
-                global[5],
-                expectedDate: new DateOnly(2025, 1, 20),
-                expectedBalance: 3400.0d, // 3000 + 500 - 100
-                expectedIncomeReceived: 500.0d,
-                expectedExpensesPaid: 100.0d);
-
-            // Days 6-9 (Jan 21 - Jan 24): After first transaction, before second
-            ValidateNoActivityRange(global, 6, 9, expectedBalance: 3400.0d);
-
-            // Day 10 (Jan 25): Income2 and expense2
-            ValidateEventDay(
-                global[10],
-                expectedDate: new DateOnly(2025, 1, 25),
-                expectedBalance: 3500.0d, // 3400 + 300 - 200
-                expectedIncomeReceived: 300.0d,
-                expectedExpensesPaid: 200.0d);
-
-            // Days 11-29 (Jan 26 - Feb 13): After all transactions
-            ValidateNoActivityRange(global, 11, 29, expectedBalance: 3500.0d);
-        }
-
-        [Fact]
         public async Task Should_Handle_Multiple_Expenses_On_Same_Day()
         {
             using var context = CreateTestContext();
@@ -2493,6 +2430,80 @@ public class ProjectionsServiceFixture : PotFixtureBase
             lastDay.IncomeReceived.Should().Be(0.0d);
             lastDay.ExpensesPaid.Should().Be(0.0d);
         }
+        }
+
+        public class GlobalAggregation : GetFinancialProjectionsAsync
+        {
+            [Fact]
+            public async Task Should_Aggregate_Global_Projections_Correctly()
+            {
+                using var context = CreateTestContext();
+
+                var account1 = EntityFactory.CreateAccount(context.Site, "Account 1", 1000.0d);
+                var account2 = EntityFactory.CreateAccount(context.Site, "Account 2", 2000.0d);
+
+                var income1 = EntityFactory.CreateIncome(account1, false, "Income 1", 500.0d, "2025-01-20", null, Frequency.Months, 1);
+                var expense1 = EntityFactory.CreateExpense(account1, false, "Expense 1", 100.0d, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
+
+                var income2 = EntityFactory.CreateIncome(account2, false, "Income 2", 300.0d, "2025-01-25", null, Frequency.Months, 1);
+                var expense2 = EntityFactory.CreateExpense(account2, false, "Expense 2", 200.0d, "2025-01-01", "2025-01-25", null, Frequency.Months, 1);
+
+                account1.Incomes.Add(income1);
+                account1.Expenses.Add(expense1);
+
+                account2.Incomes.Add(income2);
+                account2.Expenses.Add(expense2);
+
+                await context.AddAccountsAsync(account1, account2);
+
+                var options = new ProjectionOptions
+                {
+                    StartDate = _currentDate,
+                    DaysForecast = 30
+                };
+
+                var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
+
+                result.IsSuccess.Should().BeTrue();
+
+                var global = result.Value!.Global;
+                var account1Projection = result.Value!.Accounts[0];
+                var account2Projection = result.Value!.Accounts[1];
+
+                // Validate all accounts and global have 30 consecutive dates (Jan 15 - Feb 13)
+                ValidateConsecutiveDates(account1Projection.Dates, _currentDate, 30);
+                ValidateConsecutiveDates(account2Projection.Dates, _currentDate, 30);
+                ValidateConsecutiveDates(global, _currentDate, 30);
+
+                // Day 0 (Jan 15): Combined starting balances
+                global[0].Balance.Should().Be(3000.0d); // 1000 + 2000
+
+                // Days 1-4 (Jan 16 - Jan 19): Before first transaction
+                ValidateNoActivityRange(global, 1, 4, expectedBalance: 3000.0d);
+
+                // Day 5 (Jan 20): Income1 and expense1
+                ValidateEventDay(
+                    global[5],
+                    expectedDate: new DateOnly(2025, 1, 20),
+                    expectedBalance: 3400.0d, // 3000 + 500 - 100
+                    expectedIncomeReceived: 500.0d,
+                    expectedExpensesPaid: 100.0d);
+
+                // Days 6-9 (Jan 21 - Jan 24): After first transaction, before second
+                ValidateNoActivityRange(global, 6, 9, expectedBalance: 3400.0d);
+
+                // Day 10 (Jan 25): Income2 and expense2
+                ValidateEventDay(
+                    global[10],
+                    expectedDate: new DateOnly(2025, 1, 25),
+                    expectedBalance: 3500.0d, // 3400 + 300 - 200
+                    expectedIncomeReceived: 300.0d,
+                    expectedExpensesPaid: 200.0d);
+
+                // Days 11-29 (Jan 26 - Feb 13): After all transactions
+                ValidateNoActivityRange(global, 11, 29, expectedBalance: 3500.0d);
+            }
+        }
     }
 
     // Helper method to create isolated test context with in-memory database
@@ -2503,23 +2514,8 @@ public class ProjectionsServiceFixture : PotFixtureBase
             .Options;
 
         // Create and seed site and user for query filters
-        var site = new SiteEntity
-        {
-            RowId = Guid.NewGuid(),
-            Name = "Test Site",
-            Description = "Test Description"
-        };
-
-        var user = new UserEntity
-        {
-            RowId = Guid.NewGuid(),
-            Username = "testuser",
-            Email = "test@example.com",
-            DisplayName = "Test User",
-            Status = UserStatus.Enabled,
-            PasswordHash = "hash",
-            Site = site
-        };
+        var site = EntityFactory.CreateSite();
+        var user = EntityFactory.CreateUser(site);
 
         var currentUserContext = Substitute.For<ICurrentUserContext>();
         currentUserContext.UserRowId.Returns(user.RowId);

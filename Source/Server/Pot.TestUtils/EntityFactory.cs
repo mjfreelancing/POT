@@ -5,6 +5,30 @@ namespace Pot.TestUtils;
 
 public static class EntityFactory
 {
+    public static SiteEntity CreateSite(string? name = null, string? description = null)
+    {
+        return new SiteEntity
+        {
+            RowId = Guid.NewGuid(),
+            Name = name ?? "Test Site",
+            Description = description ?? "Test Description"
+        };
+    }
+
+    public static UserEntity CreateUser(SiteEntity site, string? username = null, string? email = null, string? displayName = null)
+    {
+        return new UserEntity
+        {
+            RowId = Guid.NewGuid(),
+            Username = username ?? "testuser",
+            Email = email ?? "test@example.com",
+            DisplayName = displayName ?? "Test User",
+            Status = UserStatus.Enabled,
+            PasswordHash = "hash",
+            Site = site
+        };
+    }
+
     public static AccountEntity CreateAccount(SiteEntity site, string description, double balance, double reserved = 0.0d)
     {
         return new AccountEntity
