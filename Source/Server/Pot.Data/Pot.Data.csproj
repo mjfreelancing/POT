@@ -15,4 +15,7 @@
 	  <ProjectReference Include="..\Pot.Shared\Pot.Shared.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<InternalsVisibleTo Include="Pot.App.Tests" />
+	</ItemGroup>
 </Project>

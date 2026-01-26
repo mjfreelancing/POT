@@ -5,15 +5,8 @@ namespace Pot.TestUtils;
 
 public static class EntityFactory
 {
-    public static AccountEntity CreateAccount(string description, double balance, double reserved = 0.0d)
+    public static AccountEntity CreateAccount(SiteEntity site, string description, double balance, double reserved = 0.0d)
     {
-        var site = new SiteEntity
-        {
-            RowId = Guid.NewGuid(),
-            Name = "Test Site",
-            Description = "Test Description"
-        };
-
         return new AccountEntity
         {
             RowId = Guid.NewGuid(),
