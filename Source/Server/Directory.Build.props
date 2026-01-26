@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
 	<PropertyGroup>
 		<TargetFramework>net10.0</TargetFramework>
 		<Nullable>enable</Nullable>
@@ -13,4 +13,9 @@
 		<!--<NoWarn>$(NoWarn);IDE0063;IDE0079;IDE0290;CS0618</NoWarn>-->
 		<NoWarn>$(NoWarn);IDE0290</NoWarn>
 	</PropertyGroup>
+
+	<!-- Coverlet Code Coverage Exclusions -->
+	<ItemGroup Condition="$(MSBuildProjectName.EndsWith('.Tests')) or $(MSBuildProjectName.EndsWith('.TestUtils'))">
+		<AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
+	</ItemGroup>
 </Project>

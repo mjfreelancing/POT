@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Pot.Data.Entities;
 using Pot.Data.Specifications;
 using Pot.TestUtils;
