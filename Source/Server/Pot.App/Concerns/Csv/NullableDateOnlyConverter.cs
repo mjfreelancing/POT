@@ -1,4 +1,4 @@
-using AllOverIt.Extensions;
+﻿using AllOverIt.Extensions;
 using CsvHelper;
 using CsvHelper.Configuration;
 using CsvHelper.TypeConversion;
@@ -17,12 +17,10 @@ public class NullableDateOnlyConverter : DefaultTypeConverter
             return null;
         }
 
-        var formatProvider = (IFormatProvider?)memberMapData.TypeConverterOptions.CultureInfo?.GetFormat(typeof(DateTimeFormatInfo)) ?? memberMapData.TypeConverterOptions.CultureInfo;
-        var dateTimeStyle = memberMapData.TypeConverterOptions.DateTimeStyle ?? DateTimeStyles.None;
+        var formatProvider = GetFormatProvider(memberMapData);
+        var dateTimeStyle = GetDateTimeStyle(memberMapData);
 
-        return memberMapData.TypeConverterOptions.Formats == null || memberMapData.TypeConverterOptions.Formats.Length == 0
-            ? DateOnly.Parse(text, formatProvider, dateTimeStyle)
-            : DateOnly.ParseExact(text, memberMapData.TypeConverterOptions.Formats, formatProvider, dateTimeStyle);
+        return ParseDateOnly(text, memberMapData.TypeConverterOptions.Formats, formatProvider, dateTimeStyle);
     }
 
     public override string? ConvertToString(object? value, IWriterRow row, MemberMapData memberMapData)
@@ -32,13 +30,41 @@ public class NullableDateOnlyConverter : DefaultTypeConverter
             return string.Empty;
         }
 
-        var formatProvider = (IFormatProvider?)memberMapData.TypeConverterOptions.CultureInfo?.GetFormat(typeof(DateTimeFormatInfo)) ?? memberMapData.TypeConverterOptions.CultureInfo;
+        var dateOnly = (DateOnly)value;
+        var formatProvider = GetFormatProvider(memberMapData);
+        var format = GetFirstFormat(memberMapData);
 
-        if (memberMapData.TypeConverterOptions.Formats?.Length > 0)
+        return format is not null
+            ? dateOnly.ToString(format, formatProvider)
+            : dateOnly.ToString(formatProvider);
+    }
+
+    private static IFormatProvider? GetFormatProvider(MemberMapData memberMapData)
+    {
+        var cultureInfo = memberMapData.TypeConverterOptions.CultureInfo;
+
+        return (IFormatProvider?)cultureInfo?.GetFormat(typeof(DateTimeFormatInfo)) ?? cultureInfo;
+    }
+
+    private static DateTimeStyles GetDateTimeStyle(MemberMapData memberMapData)
+    {
+        return memberMapData.TypeConverterOptions.DateTimeStyle ?? DateTimeStyles.None;
+    }
+
+    private static DateOnly ParseDateOnly(string text, string[]? formats, IFormatProvider? formatProvider, DateTimeStyles dateTimeStyle)
+    {
+        if (formats is null || formats.Length == 0)
         {
-            return ((DateOnly)value).ToString(memberMapData.TypeConverterOptions.Formats[0], formatProvider);
+            return DateOnly.Parse(text, formatProvider, dateTimeStyle);
         }
 
-        return ((DateOnly)value).ToString(formatProvider);
+        return DateOnly.ParseExact(text, formats, formatProvider, dateTimeStyle);
+    }
+
+    private static string? GetFirstFormat(MemberMapData memberMapData)
+    {
+        var formats = memberMapData.TypeConverterOptions.Formats;
+
+        return formats is { Length: > 0 } ? formats[0] : null;
     }
 }
