@@ -1,4 +1,5 @@
-﻿using CsvHelper;
+﻿using AllOverIt.Fixture.Extensions;
+using CsvHelper;
 using CsvHelper.Configuration;
 using FluentAssertions;
 using NSubstitute;
@@ -21,6 +22,18 @@ public class FrequencyConverterFixture : PotFixtureBase
             _converter = new FrequencyConverter();
             _readerRow = Substitute.For<IReaderRow>();
             _memberMapData = CreateMemberMapData();
+        }
+
+        [Fact]
+        public void Should_Throw_When_Text_Null()
+        {
+            Invoking(() =>
+            {
+                _converter.ConvertFromString(null, _readerRow, _memberMapData);
+            })
+            .Should()
+            .Throw<ArgumentNullException>()
+            .WithNamedMessageWhenNull("text");
         }
 
         [Fact]

@@ -9,6 +9,8 @@ public class FrequencyConverter : DefaultTypeConverter
 {
     public override object ConvertFromString(string? text, IReaderRow row, MemberMapData memberMapData)
     {
-        return Frequency.From(text!);
+        _ = text ?? throw new ArgumentNullException(nameof(text));
+
+        return Frequency.From(text);
     }
 }
