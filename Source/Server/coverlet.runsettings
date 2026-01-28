@@ -6,7 +6,7 @@
         <Configuration>
           <Format>opencover,cobertura</Format>
           <!-- Include only POT production assemblies - everything else is automatically excluded -->
-          <Include>[Pot.Data]*,[Pot.App]*,[Pot.AspNetCore]*,[Pot.Shared]*</Include>
+          <Include>[Pot.App]*,[Pot.AspNetCore]*,[Pot.Data]*,[Pot.EmailSender]*,[Pot.Shared]*</Include>
           <Exclude>[*]*Migrations*</Exclude>
           <ExcludeByAttribute>Obsolete,GeneratedCode,CompilerGenerated,ExcludeFromCodeCoverage</ExcludeByAttribute>
           <SkipAutoProps>true</SkipAutoProps>
