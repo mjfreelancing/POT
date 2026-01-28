@@ -29,4 +29,9 @@ internal sealed class PotTimeProvider : ITimeProvider
 
         return DateTime.SpecifyKind(dateTime, utc ? DateTimeKind.Utc : DateTimeKind.Local);
     }
+
+    public Task DelayAsync(TimeSpan delay, CancellationToken cancellationToken)
+    {
+        return Task.Delay(delay, TimeProvider, cancellationToken);
+    }
 }

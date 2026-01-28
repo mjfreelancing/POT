@@ -18,7 +18,7 @@ public static class TimeProviderExtensions
                 return;
             }
 
-            await Task.Delay(delayTimespan, cancellationToken);
+            await timeProvider.DelayAsync(delayTimespan, cancellationToken);
         }
     }
 }

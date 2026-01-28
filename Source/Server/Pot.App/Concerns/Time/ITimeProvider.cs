@@ -12,4 +12,6 @@ public interface ITimeProvider : IPotSingletonDependency
     DateTime GetLocalDateTimeNow();
 
     TimeSpan GetLocalTimeZoneOffset();
+
+    Task DelayAsync(TimeSpan delay, CancellationToken cancellationToken);
 }
