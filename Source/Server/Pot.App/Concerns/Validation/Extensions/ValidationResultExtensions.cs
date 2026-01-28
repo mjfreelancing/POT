@@ -1,7 +1,7 @@
 ﻿using FluentValidation.Results;
 using Pot.App.Errors;
 
-namespace Pot.App.Concerns.Validation;
+namespace Pot.App.Concerns.Validation.Extensions;
 
 public static class ValidationResultExtensions
 {

@@ -1,6 +1,6 @@
 ﻿using AllOverIt.Extensions;
 using FluentValidation.Results;
-using Pot.App.Concerns.Validation;
+using Pot.App.Concerns.Validation.Extensions;
 using Pot.App.Extensions;
 
 namespace Pot.AspNetCore.Concerns.Validation.Extensions;

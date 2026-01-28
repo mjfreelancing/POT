@@ -1,6 +1,6 @@
 ﻿using FluentValidation.Results;
 
-namespace Pot.App.Concerns.Validation;
+namespace Pot.App.Concerns.Validation.Extensions;
 
 public static class ValidationFailureExtensions
 {
