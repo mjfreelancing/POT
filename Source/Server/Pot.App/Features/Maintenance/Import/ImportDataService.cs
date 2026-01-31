@@ -46,7 +46,7 @@ internal sealed class ImportDataService : IImportDataService
         {
             if (!_expectedEntryNames.All(_importStreamReader.EntryNames.Contains))
             {
-                var problemDetailsError = ProblemDetailsErrorFactory.CreateUnprocessableEntityError("The import file is not supported.");
+                var problemDetailsError = ProblemDetailsErrorFactory.CreateUnprocessableEntityError("The import file is not supported");
 
                 return EnrichedResult.Fail<int>(problemDetailsError);
             }
