@@ -33,7 +33,7 @@ internal sealed class CheckHasNoExpenses : PreDeleteCheckBase
             return ProblemDetailsErrorFactory.CreateEntityConstraintError(
                 nameof(AccountEntity.RowId),
                 accountId.ToString(),
-                "Cannot delete an Account that has linked Expenses.");
+                "Cannot delete an Account that has linked Expenses");
         }
 
         return await base.HandleAsync(state, cancellationToken);
