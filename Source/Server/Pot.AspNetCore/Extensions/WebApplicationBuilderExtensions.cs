@@ -293,7 +293,7 @@ internal static class WebApplicationBuilderExtensions
     public static WebApplicationBuilder AddPotData(this WebApplicationBuilder builder)
     {
         builder.Services
-            .AddDatabaseConfiguration(builder.Configuration)
+            .AddDatabaseConfiguration()
             .AddDbContext<PotDbContext>((provider, options) =>
             {
                 var databaseConfiguration = provider.GetRequiredService<DatabaseConfiguration>();
