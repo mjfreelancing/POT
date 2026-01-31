@@ -37,9 +37,9 @@ internal sealed class CheckDescriptionDoesNotExist : PreCreateCheckBase
             if (descriptionExists)
             {
                 return ProblemDetailsErrorFactory.CreateEntityExistsError(
-                    "Income",
                     nameof(IncomeEntity.Description),
-                    incomeToCreate.Description);
+                    incomeToCreate.Description,
+                    "The income description already exists");
             }
 
             return await base.HandleAsync(state, cancellationToken);

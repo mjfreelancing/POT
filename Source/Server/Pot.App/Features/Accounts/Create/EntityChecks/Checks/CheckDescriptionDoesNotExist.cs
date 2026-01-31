@@ -37,9 +37,9 @@ internal sealed class CheckDescriptionDoesNotExist : PreCreateCheckBase
         if (descriptionExists)
         {
             return ProblemDetailsErrorFactory.CreateEntityExistsError(
-                "Account",
                 nameof(AccountEntity.Description),
-                account.Description);
+                account.Description,
+                "The account description already exists");
         }
 
         return await base.HandleAsync(state, cancellationToken);

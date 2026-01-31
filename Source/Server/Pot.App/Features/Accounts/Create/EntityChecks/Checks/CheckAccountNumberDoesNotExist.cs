@@ -31,9 +31,9 @@ internal sealed class CheckAccountNumberDoesNotExist : PreCreateCheckBase
         if (accountExists)
         {
             return ProblemDetailsErrorFactory.CreateEntityExistsError(
-                "Account",
                 $"{nameof(AccountEntity.Bsb)}, {nameof(AccountEntity.Number)}",
-                $"{account.Bsb}, {account.Number}");
+                $"{account.Bsb}, {account.Number}",
+                "The account number already exists");
         }
 
         return await base.HandleAsync(state, cancellationToken);

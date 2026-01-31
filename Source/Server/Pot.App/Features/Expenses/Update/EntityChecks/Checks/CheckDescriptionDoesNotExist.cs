@@ -39,9 +39,9 @@ internal sealed class CheckDescriptionDoesNotExist : PreUpdateCheckBase
         if (descriptionExists)
         {
             return ProblemDetailsErrorFactory.CreateEntityExistsError(
-                "Expense",
-                 nameof(ExpenseEntity.Description),
-                input.Description);
+                nameof(ExpenseEntity.Description),
+                input.Description,
+                "The expense description already exists");
         }
 
         return await base.HandleAsync(state, cancellationToken);

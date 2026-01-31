@@ -43,9 +43,9 @@ internal sealed class CheckDescriptionDoesNotExist : PreUpdateCheckBase
             if (descriptionExists)
             {
                 return ProblemDetailsErrorFactory.CreateEntityExistsError(
-                    "Account",
-                     nameof(AccountEntity.Description),
-                    input.Description);
+                    nameof(AccountEntity.Description),
+                    input.Description,
+                    "The account description already exists");
             }
         }
 

@@ -36,9 +36,9 @@ internal sealed class CheckAccountNumberDoesNotExist : PreUpdateCheckBase
             if (accountExists)
             {
                 return ProblemDetailsErrorFactory.CreateEntityExistsError(
-                    "Account",
                     $"{nameof(AccountEntity.Bsb)}, {nameof(AccountEntity.Number)}",
-                    $"{input.Bsb}, {input.Number}");
+                    $"{account.Bsb}, {account.Number}",
+                    "The account number already exists");
             }
         }
 
