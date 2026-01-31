@@ -39,7 +39,7 @@ internal sealed class AccrueExpensesService : IAccrueExpensesService
 
                 if (account is null)
                 {
-                    var accountNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(accountRowId, "The account does not exist.");
+                    var accountNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(accountRowId, "The account does not exist");
 
                     _logger.LogError(accountNotFoundDetails);
 

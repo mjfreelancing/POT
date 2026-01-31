@@ -43,7 +43,7 @@ internal sealed class UpdateExpenseService : IUpdateExpenseService
 
             if (expenseToUpdate is null)
             {
-                var expenseNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(expenseId, "The expense does not exist.");
+                var expenseNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(expenseId, "The expense does not exist");
 
                 _logger.LogError(expenseNotFoundDetails);
 
@@ -56,7 +56,7 @@ internal sealed class UpdateExpenseService : IUpdateExpenseService
 
             if (expenseAccount is null)
             {
-                var ExpenseAccountNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(input.AccountRowId, "The account does not exist.");
+                var ExpenseAccountNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(input.AccountRowId, "The account does not exist");
 
                 _logger.LogError(ExpenseAccountNotFoundDetails);
 

@@ -40,7 +40,7 @@ internal sealed class UpdateAccountService : IUpdateAccountService
 
             if (accountToUpdate is null)
             {
-                var accountNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(accountId, "The account does not exist.");
+                var accountNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(accountId, "The account does not exist");
 
                 _logger.LogError(accountNotFoundDetails);
 

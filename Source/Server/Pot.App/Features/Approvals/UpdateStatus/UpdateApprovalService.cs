@@ -47,7 +47,7 @@ internal sealed class UpdateApprovalService : IUpdateApprovalService
 
             if (userToUpdate is null)
             {
-                var userNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(userId, "The user does not exist.");
+                var userNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(userId, "The user does not exist");
 
                 _logger.LogError(userNotFoundDetails);
 

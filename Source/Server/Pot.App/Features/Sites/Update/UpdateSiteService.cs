@@ -42,7 +42,7 @@ internal sealed class UpdateSiteService : IUpdateSiteService
 
             if (siteToUpdate is null)
             {
-                var siteNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(siteId, "The site does not exist.");
+                var siteNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(siteId, "The site does not exist");
 
                 _logger.LogError(siteNotFoundDetails);
 
