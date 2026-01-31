@@ -8,7 +8,7 @@ internal static class AuthUtils
 {
     public static ProblemHttpResult CreateAuthErrorResult()
     {
-        var authError = ProblemDetailsErrorFactory.CreateAuthError("The username or password is invalid.");
+        var authError = ProblemDetailsErrorFactory.CreateAuthError("The username or password is invalid");
 
         return TypedResults.Problem(authError.ToProblemDetails());
     }

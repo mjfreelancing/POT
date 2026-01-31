@@ -221,7 +221,7 @@ internal sealed class AuthService : IAuthService
 
             if (!isValidHash)
             {
-                var authError = ProblemDetailsErrorFactory.CreateAuthError("The current password is invalid.");
+                var authError = ProblemDetailsErrorFactory.CreateAuthError("The current password is invalid");
                 return EnrichedResult.Fail<bool>(authError);
             }
 
