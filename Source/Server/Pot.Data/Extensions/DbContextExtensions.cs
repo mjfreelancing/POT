@@ -84,11 +84,11 @@ public static class DbContextExtensions
     }
 
     // Reference count tracking scopes per DbContext instance
-    private static readonly ConditionalWeakTable<DbContext, TrackingCounter> _trackingCounters = new();
+    private static readonly ConditionalWeakTable<DbContext, TrackingCounter> TrackingCounters = [];
 
     public static IDisposable WithAutoTracking(this DbContext dbContext)
     {
-        var counter = _trackingCounters.GetOrCreateValue(dbContext);
+        var counter = TrackingCounters.GetOrCreateValue(dbContext);
 
         return new Raii(
             () => { counter.Increment(dbContext); },

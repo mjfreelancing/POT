@@ -151,10 +151,7 @@ public abstract class DbContextBase : DbContext
         {
             var entity = entry.Entity as EntityBase;
 
-            if (entity is not null)
-            {
-                entity.Etag = DateTime.UtcNow.GetEtag();
-            }
+            entity?.Etag = DateTime.UtcNow.GetEtag();
         }
     }
 }

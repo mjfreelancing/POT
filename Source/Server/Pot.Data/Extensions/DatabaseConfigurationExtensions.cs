@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Pot.Data.Configuration;
 using Pot.Shared.Extensions;
 
@@ -7,7 +6,7 @@ namespace Pot.Data.Extensions;
 
 public static class DatabaseConfigurationExtensions
 {
-    public static IServiceCollection AddDatabaseConfiguration(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddDatabaseConfiguration(this IServiceCollection services)
     {
         services
             .ConfigureOptions<DatabaseConfigurationSetup>()

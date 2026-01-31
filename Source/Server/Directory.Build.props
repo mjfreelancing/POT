@@ -10,8 +10,9 @@
 		<!--IDE0079 - remove unnecessary suppression-->
 		<!--IDE0290 - use primary constructor-->
 		<!--CS0618 - 'member' is obsolete-->
+		<!--CA1873 - Evaluation of this argument may be expensive and unnecessary if logging is disabled-->
 		<!--<NoWarn>$(NoWarn);IDE0063;IDE0079;IDE0290;CS0618</NoWarn>-->
-		<NoWarn>$(NoWarn);IDE0290</NoWarn>
+		<NoWarn>$(NoWarn);IDE0290;CA1873</NoWarn>
 	</PropertyGroup>
 
 	<!-- Coverlet Code Coverage Exclusions -->

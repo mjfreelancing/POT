@@ -18,7 +18,7 @@ internal class Program
             {
                 services
                     .AddSingleton<ICurrentUserContext, NullCurrentUserContext>()
-                    .AddDatabaseConfiguration(hostContext.Configuration)
+                    .AddDatabaseConfiguration()
                     .AddDbContextFactory<PotDbContext>((provider, options) =>
                     {
                         var databaseConfiguration = provider.GetRequiredService<DatabaseConfiguration>();
