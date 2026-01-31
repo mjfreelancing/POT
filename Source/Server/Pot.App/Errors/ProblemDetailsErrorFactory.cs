@@ -75,7 +75,7 @@ public static class ProblemDetailsErrorFactory
             ErrorCode = ErrorCodes.Conflict,
             PropertyName = nameof(EntityBase.Etag),
             AttemptedValue = attemptedValue,
-            ErrorMessage = $"The entity tag for the {entityType} does not match the current record."
+            ErrorMessage = $"The entity tag for the {entityType} does not match the current record"
         };
     }
 
