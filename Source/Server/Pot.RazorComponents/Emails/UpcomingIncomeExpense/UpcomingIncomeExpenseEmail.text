@@ -1,0 +1,25 @@
+﻿Upcoming Incomes & Expenses
+===========================
+
+Hello {DisplayName},
+
+Here are your upcoming incomes and expenses for the next {ReminderDays} days.
+Generated: {GeneratedDateTime}
+Last logged in: {LastLoggedInUtc}
+
+
+{IncomesSection}
+
+{ExpensesSection}
+
+---
+This reminder includes items due within the next {ReminderDays} days.
+
+
+Questions or need help?
+-----------------------
+Visit https://payontime.com.au for support
+
+
+POT - Pay On Time
+https://payontime.com.au

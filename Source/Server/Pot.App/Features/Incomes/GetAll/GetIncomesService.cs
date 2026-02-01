@@ -8,12 +8,12 @@ using Pot.Data.Repositories.Incomes;
 
 namespace Pot.App.Features.Incomes.GetAll;
 
-internal sealed class GetAllIncomesService : IGetAllIncomesService
+internal sealed class GetIncomesService : IGetIncomesService
 {
     private readonly IIncomeRepository _incomeRepository;
     private readonly ILogger _logger;
 
-    public GetAllIncomesService(IIncomeRepository incomeRepository, ILogger<GetAllIncomesService> logger)
+    public GetIncomesService(IIncomeRepository incomeRepository, ILogger<GetIncomesService> logger)
     {
         _incomeRepository = incomeRepository.WhenNotNull();
         _logger = logger.WhenNotNull();
@@ -23,7 +23,9 @@ internal sealed class GetAllIncomesService : IGetAllIncomesService
     {
         _logger.LogCall(this);
 
-        var incomes = await _incomeRepository.GetAllIncomesAsync(cancellationToken);
+        var incomes = await _incomeRepository
+            .GetAllIncomesAsync(cancellationToken)
+            .ConfigureAwait(false);
 
         return incomes.SelectToList(income => income.MapToOutput());
     }

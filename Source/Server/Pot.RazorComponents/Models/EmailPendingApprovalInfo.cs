@@ -4,6 +4,9 @@
 public sealed class EmailPendingApprovalInfo : EmailConfigBase
 {
     // The base class properties will be the platform admin details - they are receiving the email
+    [EmailFormat(EmailFormatType.Both)]
     public required string UserUsername { get; init; }
+
+    [EmailFormat(EmailFormatType.Both)]
     public required string UserEmail { get; init; }
 }

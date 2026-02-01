@@ -10,12 +10,12 @@ using Pot.Shared;
 
 namespace Pot.App.Features.Expenses.GetAll;
 
-internal sealed class GetAllExpensesService : IGetAllExpensesService
+internal sealed class GetExpensesService : IGetExpensesService
 {
     private readonly IExpenseRepository _expenseRepository;
     private readonly ILogger _logger;
 
-    public GetAllExpensesService(IExpenseRepository expenseRepository, ILogger<GetAllExpensesService> logger)
+    public GetExpensesService(IExpenseRepository expenseRepository, ILogger<GetExpensesService> logger)
     {
         _expenseRepository = expenseRepository.WhenNotNull();
         _logger = logger.WhenNotNull();
@@ -25,7 +25,9 @@ internal sealed class GetAllExpensesService : IGetAllExpensesService
     {
         _logger.LogCall(this);
 
-        var expenses = await _expenseRepository.GetAllExpensesAsync(cancellationToken);
+        var expenses = await _expenseRepository
+            .GetAllExpensesAsync(cancellationToken)
+            .ConfigureAwait(false);
 
         return expenses.SelectToList(expense => expense.MapToOutput());
     }
@@ -34,7 +36,9 @@ internal sealed class GetAllExpensesService : IGetAllExpensesService
     {
         _logger.LogCall(this);
 
-        var expenses = await _expenseRepository.GetAllExpensesPagedAsync(paging, cancellationToken);
+        var expenses = await _expenseRepository
+            .GetAllExpensesPagedAsync(paging, cancellationToken)
+            .ConfigureAwait(false);
 
         var outputs = expenses.Results.Select(result => result.MapToOutput());
 

@@ -4,6 +4,7 @@ using Pot.Data.Entities;
 using Pot.Data.Extensions;
 using Pot.Data.Repositories.Users.Dtos;
 using Pot.Shared;
+using Pot.Shared.Enumerations;
 
 namespace Pot.Data.Repositories.Users;
 
@@ -31,12 +32,29 @@ internal sealed class UserRepository : PersistableRepository, IPersistableUserRe
         return query.Single(user => user.RowId == _currentUserContext.UserRowId);
     }
 
-    public async Task<List<GetAllUserInfo>> GetAllForCurrentSiteAsync(CancellationToken cancellationToken)
+    public Task<List<GetAllUserInfo>> GetEnabledUsersAsync(CancellationToken cancellationToken)
+    {
+        var userQuery = Users.Where(user => user.Status == UserStatus.Enabled);
+        return GetUsersAsync(userQuery, cancellationToken);
+    }
+
+    public Task<List<GetAllUserInfo>> GetAllForCurrentSiteAsync(CancellationToken cancellationToken)
     {
         var currentUser = GetCurrentUser(true);
 
-        var users = await Users
-            .Where(user => user.Site.Id == currentUser.Site.Id)
+        var userQuery = Users.Where(user => user.Site.Id == currentUser.Site.Id);
+
+        return GetUsersAsync(userQuery, cancellationToken);
+    }
+
+    public Task<UserEntity?> GetByUsernameOrDefaultAsync(string username, CancellationToken cancellationToken)
+    {
+        return Users.SingleOrDefaultAsync(user => user.Username == username, cancellationToken);
+    }
+
+    private static async Task<List<GetAllUserInfo>> GetUsersAsync(IQueryable<UserEntity> userQuery, CancellationToken cancellationToken)
+    {
+        var users = await userQuery
             .Select(user => new
             {
                 user.RowId,
@@ -61,10 +79,5 @@ internal sealed class UserRepository : PersistableRepository, IPersistableUserRe
                 Roles = [.. user.Roles.Select(role => role.Name)],
                 LastLoggedInUtc = user.LastLoggedInUtc
             })];
-    }
-
-    public Task<UserEntity?> GetByUsernameOrDefaultAsync(string username, CancellationToken cancellationToken)
-    {
-        return Users.SingleOrDefaultAsync(user => user.Username == username, cancellationToken);
     }
 }

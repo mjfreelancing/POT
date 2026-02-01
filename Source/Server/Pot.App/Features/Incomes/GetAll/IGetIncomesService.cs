@@ -3,7 +3,7 @@ using Pot.Shared.DependencyInjection;
 
 namespace Pot.App.Features.Incomes.GetAll;
 
-public interface IGetAllIncomesService : IPotScopedDependency
+public interface IGetIncomesService : IPotScopedDependency
 {
     Task<List<Output>> GetAllIncomesAsync(CancellationToken cancellationToken);
 }

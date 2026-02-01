@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Pot.App.Features.Users.GetAll.Mappings;
 using Pot.App.Features.Users.GetAll.Models;
 using Pot.Data.Repositories.Users;
+using Pot.Shared.Enumerations;
 
 namespace Pot.App.Features.Users.GetAll;
 
@@ -19,11 +20,26 @@ internal sealed class GetAllUsersService : IGetAllUsersService
         _logger = logger.WhenNotNull();
     }
 
-    public async Task<List<Output>> GetAllUsersAsync(CancellationToken cancellationToken)
+    public async Task<List<Output>> GetAllEnabledAdminsAsync(CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
-        var userInfos = await _userRepository.GetAllForCurrentSiteAsync(cancellationToken);
+        var users = await _userRepository
+            .GetEnabledUsersAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        return users
+            .Where(user => user.Roles.Contains(Role.Admin.Name))
+            .SelectToList(user => user.MapToOutput());
+    }
+
+    public async Task<List<Output>> GetAllForCurrentSiteAsync(CancellationToken cancellationToken)
+    {
+        _logger.LogCall(this);
+
+        var userInfos = await _userRepository
+            .GetAllForCurrentSiteAsync(cancellationToken)
+            .ConfigureAwait(false);
 
         return userInfos.SelectToList(userInfo => userInfo.MapToOutput());
     }

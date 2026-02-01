@@ -14,8 +14,8 @@ internal sealed class SendEmailWorker : BackgroundWorker
         _sendEmailChannelReader = sendEmailChannelReader.WhenNotNull();
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await _sendEmailChannelReader.ProcessEmailsAsync(stoppingToken);
+        return _sendEmailChannelReader.ProcessEmailsAsync(stoppingToken);
     }
 }

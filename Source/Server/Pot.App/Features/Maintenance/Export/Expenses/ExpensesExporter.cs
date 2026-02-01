@@ -1,4 +1,4 @@
-using AllOverIt.Assertion;
+﻿using AllOverIt.Assertion;
 using AllOverIt.Csv;
 using AllOverIt.Csv.Exporter;
 using Pot.App.Features.Expenses.GetAll;
@@ -8,9 +8,9 @@ namespace Pot.App.Features.Maintenance.Export.Expenses;
 
 internal sealed class ExpensesExporter : MemoryCsvExporterBase<ExpenseData>, IExpensesExporter
 {
-    private readonly IGetAllExpensesService _expensesService;
+    private readonly IGetExpensesService _expensesService;
 
-    public ExpensesExporter(IGetAllExpensesService expensesService)
+    public ExpensesExporter(IGetExpensesService expensesService)
     {
         _expensesService = expensesService.WhenNotNull();
     }

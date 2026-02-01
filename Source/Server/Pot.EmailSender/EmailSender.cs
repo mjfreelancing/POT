@@ -13,7 +13,9 @@ using Pot.RazorComponents.Emails.ChangePassword;
 using Pot.RazorComponents.Emails.Invitation;
 using Pot.RazorComponents.Emails.PendingApproval;
 using Pot.RazorComponents.Emails.Signup;
+using Pot.RazorComponents.Emails.UpcomingIncomeExpense;
 using Pot.RazorComponents.Models;
+using System.Reflection;
 
 namespace Pot.EmailSender;
 
@@ -25,6 +27,7 @@ internal sealed class EmailSender : IEmailSender
     private const string PendingApprovalSubject = "POT - Pending Approval";
     private const string ApprovalAcceptedSubject = "POT - Approval Accepted";
     private const string ApprovalRejectedSubject = "POT - Approval Denied";
+    private const string UpcomingIncomeExpenseSubject = "POT - Upcoming Incomes & Expenses";
 
     private readonly IRazorComponentRenderer _razorRenderer;
     private readonly SmtpConfiguration _smtpConfiguration;
@@ -79,6 +82,13 @@ internal sealed class EmailSender : IEmailSender
         return SendEmailAsync<ApprovalRejectedEmail>(config, ApprovalRejectedSubject, PlainTextEmailTemplateLoader.ApprovalRejected, cancellationToken);
     }
 
+    public Task SendUpcomingIncomeExpenseEmailAsync(EmailUpcomingIncomeExpenseInfo config, CancellationToken cancellationToken)
+    {
+        _logger.LogCall(this, new { config.Username, IncomeCount = config.UserIncomes.Count, ExpenseCount = config.UserExpenses.Count });
+
+        return SendEmailAsync<UpcomingIncomeExpenseEmail>(config, UpcomingIncomeExpenseSubject, PlainTextEmailTemplateLoader.UpcomingIncomeExpense, cancellationToken);
+    }
+
     private async Task SendEmailAsync<TEmailComponent>(EmailConfigBase config, string subject, string plainTextTemplateName,
         CancellationToken cancellationToken) where TEmailComponent : IComponent
     {
@@ -93,8 +103,11 @@ internal sealed class EmailSender : IEmailSender
         message.From.Add(new MailboxAddress(_smtpConfiguration.From.Name, _smtpConfiguration.From.Address));
         message.To.Add(new MailboxAddress(config.Username, config.Email));
 
-        var html = await _razorRenderer.RenderToHtmlAsync<TEmailComponent>(dictionary);
-        var plainText = PlainTextEmailTemplateLoader.Populate(plainTextTemplateName, dictionary);
+        var htmlDictionary = FilterPropertiesByFormat(dictionary, config.GetType(), EmailFormatType.Html);
+        var html = await _razorRenderer.RenderToHtmlAsync<TEmailComponent>(htmlDictionary);
+
+        var plainTextDictionary = FilterPropertiesByFormat(dictionary, config.GetType(), EmailFormatType.PlainText);
+        var plainText = PlainTextEmailTemplateLoader.Populate(plainTextTemplateName, plainTextDictionary);
 
         var bodyBuilder = new BodyBuilder
         {
@@ -113,5 +126,29 @@ internal sealed class EmailSender : IEmailSender
         await smtp.AuthenticateAsync(_smtpConfiguration.Authentication.Username, _smtpConfiguration.Authentication.Password, cancellationToken);
         await smtp.SendAsync(message, cancellationToken);
         await smtp.DisconnectAsync(true, cancellationToken);
+    }
+
+    private static Dictionary<string, object?> FilterPropertiesByFormat(IDictionary<string, object?> dictionary, Type configType, EmailFormatType targetFormat)
+    {
+        var filteredDictionary = new Dictionary<string, object?>();
+        var properties = configType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+        foreach (var kvp in dictionary)
+        {
+            var property = properties
+                .SingleOrDefault(p => p.Name == kvp.Key)
+                .WhenNotNull(errorMessage: $"Property '{kvp.Key}' not found on type '{configType.Name}'");
+
+            var attribute = property
+                .GetCustomAttribute<EmailFormatAttribute>()
+                .WhenNotNull(errorMessage: $"Property '{kvp.Key}' on type '{configType.Name}' is missing the [EmailFormat] attribute");
+
+            if (attribute.Format.HasFlag(targetFormat))
+            {
+                filteredDictionary[kvp.Key] = kvp.Value;
+            }
+        }
+
+        return filteredDictionary;
     }
 }

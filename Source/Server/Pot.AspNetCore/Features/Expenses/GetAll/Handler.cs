@@ -10,7 +10,7 @@ using OkGetAllResult = Ok<PagedResponse<Response>>;
 internal sealed class Handler
 {
     public static async Task<Results<OkGetAllResult, ProblemHttpResult>> Invoke(Request request,
-        IGetAllExpensesService expenseService, ILogger<Handler> logger, CancellationToken cancellationToken)
+        IGetExpensesService expenseService, ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);
 

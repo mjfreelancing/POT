@@ -12,7 +12,7 @@ internal sealed class Handler
     {
         logger.LogCall(null);
 
-        var roles = await roleService.GetAllUsersAsync(cancellationToken);
+        var roles = await roleService.GetAllForCurrentSiteAsync(cancellationToken);
 
         return Response.Ok(roles);
     }

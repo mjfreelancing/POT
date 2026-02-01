@@ -1,4 +1,4 @@
-using AllOverIt.Assertion;
+﻿using AllOverIt.Assertion;
 using AllOverIt.Csv;
 using AllOverIt.Csv.Exporter;
 using Pot.App.Features.Incomes.GetAll;
@@ -8,9 +8,9 @@ namespace Pot.App.Features.Maintenance.Export.Incomes;
 
 internal sealed class IncomesExporter : MemoryCsvExporterBase<IncomeData>, IIncomesExporter
 {
-    private readonly IGetAllIncomesService _incomesService;
+    private readonly IGetIncomesService _incomesService;
 
-    public IncomesExporter(IGetAllIncomesService incomesService)
+    public IncomesExporter(IGetIncomesService incomesService)
     {
         _incomesService = incomesService.WhenNotNull();
     }

@@ -11,4 +11,5 @@ public interface IEmailSender : IPotScopedDependency
     Task SendPendingApprovalEmailAsync(EmailPendingApprovalInfo config, CancellationToken cancellationToken);
     Task SendApprovalAcceptedEmailAsync(EmailApprovalStatusInfo config, CancellationToken cancellationToken);
     Task SendApprovalRejectedEmailAsync(EmailApprovalStatusInfo config, CancellationToken cancellationToken);
+    Task SendUpcomingIncomeExpenseEmailAsync(EmailUpcomingIncomeExpenseInfo config, CancellationToken cancellationToken);
 }

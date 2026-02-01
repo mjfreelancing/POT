@@ -7,5 +7,6 @@ public enum EmailType
     Invitation,
     PendingApproval,
     ApprovalAccepted,
-    ApprovalRejected
+    ApprovalRejected,
+    UpcomingIncomeExpense
 }

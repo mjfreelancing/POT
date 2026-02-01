@@ -8,7 +8,8 @@ internal static class ServiceCollectionExtensions
     {
         services
             .AddHostedService<ExpiredOtpCleanupWorker>()
-            .AddHostedService<SendEmailWorker>();
+            .AddHostedService<SendEmailWorker>()
+            .AddHostedService<ReminderEmailWorker>();
 
         return services;
     }

@@ -6,7 +6,7 @@ namespace Pot.AspNetCore.Features.Incomes.GetAll;
 
 internal sealed class Handler
 {
-    public static async Task<Ok<Response[]>> Invoke(IGetAllIncomesService incomeService, ILogger<Handler> logger,
+    public static async Task<Ok<Response[]>> Invoke(IGetIncomesService incomeService, ILogger<Handler> logger,
         CancellationToken cancellationToken)
     {
         logger.LogCall(null);

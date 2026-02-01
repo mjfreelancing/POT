@@ -5,5 +5,6 @@ namespace Pot.App.Features.Users.GetAll;
 
 public interface IGetAllUsersService : IPotScopedDependency
 {
-    Task<List<Output>> GetAllUsersAsync(CancellationToken cancellationToken);
+    Task<List<Output>> GetAllEnabledAdminsAsync(CancellationToken cancellationToken);
+    Task<List<Output>> GetAllForCurrentSiteAsync(CancellationToken cancellationToken);
 }

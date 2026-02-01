@@ -6,7 +6,7 @@ namespace Pot.Shared.Enumerations;
 public sealed class SettingCategory : EnrichedEnum<SettingCategory>
 {
     // Note: The enums stored in the database have a max length of 50 characters
-    public static readonly SettingCategory Dashboard = new(1);  // Not currently used - at least one value is required for tests to pass
+    public static readonly SettingCategory EmailUpcomingReminders = new(1);         // Upcoming income/expense reminders via email
 
     private SettingCategory(int value, [CallerMemberName] string? name = default)
         : base(value, name!)
