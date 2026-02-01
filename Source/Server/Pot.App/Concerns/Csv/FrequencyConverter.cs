@@ -1,4 +1,5 @@
-﻿using CsvHelper;
+﻿using AllOverIt.Assertion;
+using CsvHelper;
 using CsvHelper.Configuration;
 using CsvHelper.TypeConversion;
 using Pot.Shared.Enumerations;
@@ -9,7 +10,7 @@ public class FrequencyConverter : DefaultTypeConverter
 {
     public override object ConvertFromString(string? text, IReaderRow row, MemberMapData memberMapData)
     {
-        _ = text ?? throw new ArgumentNullException(nameof(text));
+        _ = text.WhenNotNull();
 
         return Frequency.From(text);
     }

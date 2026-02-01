@@ -141,6 +141,18 @@ public class FrequencyConverterFixture : PotFixtureBase
         }
 
         [Fact]
+        public void Should_Throw_When_Text_Is_Null()
+        {
+            Invoking(() =>
+            {
+                _converter.ConvertFromString(null, _readerRow, _memberMapData);
+            })
+            .Should()
+            .Throw<ArgumentNullException>()
+            .WithParameterName("text");
+        }
+
+        [Fact]
         public void Should_Throw_When_Invalid_Name()
         {
             Invoking(() =>
