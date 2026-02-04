@@ -48,6 +48,11 @@ const columns: ColumnDef<Expense>[] = [
       sortingFn: 'basic',
     },
   }),
+  createFrequencyColumn<Expense>({
+    countKey: 'frequencyCount',
+    frequencyKey: 'frequency',
+    header: 'Frequency',
+  }),
   createDateColumn<Expense>({
     accessorKey: 'nextDue',
     header: 'Next Due',
@@ -56,10 +61,11 @@ const columns: ColumnDef<Expense>[] = [
       sortingFn: 'datetime',
     },
   }),
-  createFrequencyColumn<Expense>({
-    countKey: 'frequencyCount',
-    frequencyKey: 'frequency',
-    header: 'Frequency',
+  createDateColumn<Expense>({
+    accessorKey: 'endDate',
+    header: 'End Date',
+    getNullValue: row =>
+      row.original.frequency === Frequency.OneTime ? undefined : 'Ongoing',
   }),
   createDateColumn<Expense>({
     accessorKey: 'accrualStart',
@@ -86,12 +92,6 @@ const columns: ColumnDef<Expense>[] = [
       </div>
     ),
   },
-  createDateColumn<Expense>({
-    accessorKey: 'endDate',
-    header: 'End Date',
-    getNullValue: row =>
-      row.original.frequency === Frequency.OneTime ? undefined : 'Ongoing',
-  }),
   {
     id: 'actions',
     cell: ({ row }) => {
