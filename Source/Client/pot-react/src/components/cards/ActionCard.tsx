@@ -44,7 +44,7 @@ type ActionCardProps = {
   icon: ReactNode;
   /** The main title text displayed prominently in the card */
   title: string;
-  /** Optional description text displayed below the title in muted colors */
+  /** Optional description text displayed below the title in muted colors. Hidden on mobile, visible on desktop screens. */
   description?: string;
   /** Optional boolean to indicate data is loading. The description will be replaced with a loading indicator when true. */
   isLoading?: boolean;
@@ -121,11 +121,13 @@ function ActionCard({
       <div
         role="heading"
         aria-level={1}
-        className="text-lg sm:text-xl font-medium"
+        className="text-sm sm:text-lg font-medium leading-tight"
       >
         {title}
       </div>
-      <DescriptionContent text={description} isLoading={isLoading} />
+      <div className="hidden sm:block">
+        <DescriptionContent text={description} isLoading={isLoading} />
+      </div>
       {children}
     </div>
   );
@@ -152,9 +154,9 @@ function ActionCard({
           aria-hidden="true"
         />
       )}
-      <CardContent className="p-4 h-full flex items-center justify-center">
-        <div className="flex flex-col sm:flex-row items-center justify-center w-full gap-3 sm:gap-4">
-          <div className="p-3 sm:p-4 rounded-lg bg-primary/5 flex-shrink-0 flex items-center justify-center">
+      <CardContent className="p-3 sm:p-4 h-full flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center w-full gap-2 sm:gap-4">
+          <div className="p-2 sm:p-4 rounded-lg bg-primary/5 flex-shrink-0 flex items-center justify-center">
             {icon}
           </div>
           {hint && enabled ? (
