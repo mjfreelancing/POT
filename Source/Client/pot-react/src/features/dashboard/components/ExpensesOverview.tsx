@@ -199,82 +199,83 @@ function ExpensesOverview() {
           description="Your expenses at a glance"
         />
         <CardContent className="px-4 -mt-2 min-w-0">
-          <div className="flex flex-col xl:flex-row gap-6 min-w-0">
-            <div className="flex-1 w-full max-w-2xl min-w-0">
+          <div className="flex flex-col xl:flex-row gap-3 min-w-0">
+            {expensesIsLoading ? (
+              <div className="grid grid-cols-2 gap-2 max-w-xl w-full">
+                {Array(4)
+                  .fill(0)
+                  .map((_, i) => (
+                    <Skeleton
+                      key={i}
+                      className="h-[145px] sm:h-[168px] rounded-lg"
+                    />
+                  ))}
+              </div>
+            ) : (
+              <SummaryCardsGrid
+                cards={[
+                  {
+                    title: 'Due Next 7 Days',
+                    icon: (
+                      <ClockFading
+                        className="h-6 w-6 text-information"
+                        aria-hidden="true"
+                      />
+                    ),
+                    value: (
+                      <div className="text-xl font-bold text-information text-center">
+                        {dueIn7Days}
+                      </div>
+                    ),
+                  },
+                  {
+                    title: 'Total Next 7 Days',
+                    icon: (
+                      <DollarSign
+                        className="h-6 w-6 text-information"
+                        aria-hidden="true"
+                      />
+                    ),
+                    value: (
+                      <div className="text-xl font-bold text-information text-center">
+                        {formatMoneyValue(totalNext7Days)}
+                      </div>
+                    ),
+                  },
+                  {
+                    title: 'Due Next 30 Days',
+                    icon: (
+                      <ClockFading
+                        className="h-6 w-6 text-information"
+                        aria-hidden="true"
+                      />
+                    ),
+                    value: (
+                      <div className="text-xl font-bold text-information text-center">
+                        {dueIn30Days}
+                      </div>
+                    ),
+                  },
+                  {
+                    title: 'Total Next 30 Days',
+                    icon: (
+                      <DollarSign
+                        className="h-6 w-6 text-information"
+                        aria-hidden="true"
+                      />
+                    ),
+                    value: (
+                      <div className="text-xl font-bold text-information text-center">
+                        {formatMoneyValue(totalNext30Days)}
+                      </div>
+                    ),
+                  },
+                ]}
+              />
+            )}
+            <div className="w-full xl:flex-1 min-w-0 h-[456px] sm:h-[348px] overflow-auto rounded-lg border">
               {expensesIsLoading ? (
-                <div className="grid grid-cols-2 gap-4">
-                  {Array(4)
-                    .fill(0)
-                    .map((_, i) => (
-                      <Skeleton key={i} className="h-[120px] rounded-lg" />
-                    ))}
-                </div>
-              ) : (
-                <SummaryCardsGrid
-                  cards={[
-                    {
-                      title: 'Due Next 7 Days',
-                      icon: (
-                        <ClockFading
-                          className="h-6 w-6 text-information"
-                          aria-hidden="true"
-                        />
-                      ),
-                      value: (
-                        <div className="text-xl font-bold text-information">
-                          {dueIn7Days}
-                        </div>
-                      ),
-                    },
-                    {
-                      title: 'Total Next 7 Days',
-                      icon: (
-                        <DollarSign
-                          className="h-6 w-6 text-information"
-                          aria-hidden="true"
-                        />
-                      ),
-                      value: (
-                        <div className="text-xl font-bold text-information">
-                          {formatMoneyValue(totalNext7Days)}
-                        </div>
-                      ),
-                    },
-                    {
-                      title: 'Due Next 30 Days',
-                      icon: (
-                        <ClockFading
-                          className="h-6 w-6 text-information"
-                          aria-hidden="true"
-                        />
-                      ),
-                      value: (
-                        <div className="text-xl font-bold text-information">
-                          {dueIn30Days}
-                        </div>
-                      ),
-                    },
-                    {
-                      title: 'Total Next 30 Days',
-                      icon: (
-                        <DollarSign
-                          className="h-6 w-6 text-information"
-                          aria-hidden="true"
-                        />
-                      ),
-                      value: (
-                        <div className="text-xl font-bold text-information">
-                          {formatMoneyValue(totalNext30Days)}
-                        </div>
-                      ),
-                    },
-                  ]}
-                />
-              )}
-            </div>
-            <div className="flex-1 w-full min-w-0 flex flex-col min-h-0 h-[292px]">
-              {expensesIsLoading ? (
-                <Skeleton className="h-[256px] w-full rounded-lg" />
+                <Skeleton className="h-full w-full" />
               ) : (
                 <DataTable
                   columns={columns}

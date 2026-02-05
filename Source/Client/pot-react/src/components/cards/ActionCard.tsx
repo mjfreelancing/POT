@@ -121,7 +121,7 @@ function ActionCard({
       <div
         role="heading"
         aria-level={1}
-        className="text-sm sm:text-lg font-medium leading-tight"
+        className="text-xs sm:text-base font-medium leading-tight"
       >
         {title}
       </div>
@@ -154,9 +154,9 @@ function ActionCard({
           aria-hidden="true"
         />
       )}
-      <CardContent className="p-3 sm:p-4 h-full flex items-center justify-center">
-        <div className="flex flex-col items-center justify-center w-full gap-2 sm:gap-4">
-          <div className="p-2 sm:p-4 rounded-lg bg-primary/5 flex-shrink-0 flex items-center justify-center">
+      <CardContent className="p-2 sm:p-2.5 h-full flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center w-full gap-1 sm:gap-2">
+          <div className="p-1.5 sm:p-2.5 rounded-lg bg-primary/5 flex-shrink-0 flex items-center justify-center">
             {icon}
           </div>
           {hint && enabled ? (

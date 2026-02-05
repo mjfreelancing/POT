@@ -23,7 +23,7 @@ type SummaryCardsGridProps = {
 function SummaryCardsGrid({ cards, gridClassName }: SummaryCardsGridProps) {
   return (
     <div
-      className={`grid grid-cols-2 gap-3 sm:gap-4 max-w-2xl w-full ${gridClassName || ''}`}
+      className={`grid grid-cols-2 gap-2 max-w-xl w-full ${gridClassName || ''}`}
     >
       {cards.map((card, idx) => (
         <ActionCard key={card.title + idx} title={card.title} icon={card.icon}>

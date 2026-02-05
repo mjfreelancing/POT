@@ -178,90 +178,91 @@ function AccountsOverview() {
           description="Your bank accounts at a glance"
         />
         <CardContent className="px-4 -mt-2 min-w-0">
-          <div className="flex flex-col xl:flex-row gap-6 min-w-0">
-            <div className="flex-1 w-full max-w-2xl min-w-0">
+          <div className="flex flex-col xl:flex-row gap-3 min-w-0">
+            {accountsIsLoading ? (
+              <div className="grid grid-cols-2 gap-2 max-w-xl w-full">
+                {Array(4)
+                  .fill(0)
+                  .map((_, i) => (
+                    <Skeleton
+                      key={i}
+                      className="h-[145px] sm:h-[168px] rounded-lg"
+                    />
+                  ))}
+              </div>
+            ) : (
+              <SummaryCardsGrid
+                cards={[
+                  {
+                    title: 'Total Balance',
+                    icon: (
+                      <DollarSign
+                        className={`h-6 w-6 ${getAmountClass(totalBalance)}`}
+                        aria-hidden="true"
+                      />
+                    ),
+                    value: (
+                      <div
+                        className={`text-xl font-bold text-center ${getAmountClass(totalBalance)}`}
+                      >
+                        {formatMoneyValue(totalBalance)}
+                      </div>
+                    ),
+                  },
+                  {
+                    title: 'Reserved Funds',
+                    icon: (
+                      <Banknote
+                        className={`h-6 w-6 ${getAmountClass(totalReserved)}`}
+                        aria-hidden="true"
+                      />
+                    ),
+                    value: (
+                      <div
+                        className={`text-xl font-bold text-center ${getAmountClass(totalReserved)}`}
+                      >
+                        {formatMoneyValue(totalReserved)}
+                      </div>
+                    ),
+                  },
+                  {
+                    title: 'Total Available',
+                    icon: (
+                      <Banknote
+                        className={`h-6 w-6 ${getAmountClass(totalAvailable)}`}
+                        aria-hidden="true"
+                      />
+                    ),
+                    value: (
+                      <div
+                        className={`text-xl font-bold text-center ${getAmountClass(totalAvailable)}`}
+                      >
+                        {formatMoneyValue(totalAvailable)}
+                      </div>
+                    ),
+                  },
+                  {
+                    title: 'Daily Accrual',
+                    icon: (
+                      <Calendar
+                        className={`h-6 w-6 ${getAmountClass(totalDailyAccrual)}`}
+                        aria-hidden="true"
+                      />
+                    ),
+                    value: (
+                      <div
+                        className={`text-xl font-bold text-center ${getAmountClass(totalDailyAccrual)}`}
+                      >
+                        {formatMoneyValue(totalDailyAccrual)}
+                      </div>
+                    ),
+                  },
+                ]}
+              />
+            )}
+            <div className="w-full xl:flex-1 min-w-0 h-[456px] sm:h-[348px] overflow-auto rounded-lg border">
               {accountsIsLoading ? (
-                <div className="grid grid-cols-2 gap-4">
-                  {Array(4)
-                    .fill(0)
-                    .map((_, i) => (
-                      <Skeleton key={i} className="h-[120px] rounded-lg" />
-                    ))}
-                </div>
-              ) : (
-                <SummaryCardsGrid
-                  cards={[
-                    {
-                      title: 'Total Balance',
-                      icon: (
-                        <DollarSign
-                          className={`h-6 w-6 ${getAmountClass(totalBalance)}`}
-                          aria-hidden="true"
-                        />
-                      ),
-                      value: (
-                        <div
-                          className={`text-xl font-bold ${getAmountClass(totalBalance)}`}
-                        >
-                          {formatMoneyValue(totalBalance)}
-                        </div>
-                      ),
-                    },
-                    {
-                      title: 'Reserved Funds',
-                      icon: (
-                        <Banknote
-                          className={`h-6 w-6 ${getAmountClass(totalReserved)}`}
-                          aria-hidden="true"
-                        />
-                      ),
-                      value: (
-                        <div
-                          className={`text-xl font-bold ${getAmountClass(totalReserved)}`}
-                        >
-                          {formatMoneyValue(totalReserved)}
-                        </div>
-                      ),
-                    },
-                    {
-                      title: 'Total Available',
-                      icon: (
-                        <Banknote
-                          className={`h-6 w-6 ${getAmountClass(totalAvailable)}`}
-                          aria-hidden="true"
-                        />
-                      ),
-                      value: (
-                        <div
-                          className={`text-xl font-bold ${getAmountClass(totalAvailable)}`}
-                        >
-                          {formatMoneyValue(totalAvailable)}
-                        </div>
-                      ),
-                    },
-                    {
-                      title: 'Daily Accrual',
-                      icon: (
-                        <Calendar
-                          className={`h-6 w-6 ${getAmountClass(totalDailyAccrual)}`}
-                          aria-hidden="true"
-                        />
-                      ),
-                      value: (
-                        <div
-                          className={`text-xl font-bold ${getAmountClass(totalDailyAccrual)}`}
-                        >
-                          {formatMoneyValue(totalDailyAccrual)}
-                        </div>
-                      ),
-                    },
-                  ]}
-                />
-              )}
-            </div>
-            <div className="flex-1 w-full min-w-0 flex flex-col min-h-0 h-[292px]">
-              {accountsIsLoading ? (
-                <Skeleton className="h-[256px] w-full rounded-lg" />
+                <Skeleton className="h-full w-full" />
               ) : (
                 <DataTable columns={columns} data={accounts} />
               )}
