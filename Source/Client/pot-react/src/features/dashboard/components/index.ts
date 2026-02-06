@@ -1,6 +1,8 @@
+export { default as AccountCard } from './AccountCard';
 export { default as AccountsOverview } from './AccountsOverview';
-export { default as DashboardCardHeader } from './DashboardCardHeader';
+export { default as CollapsibleSection } from './CollapsibleSection';
+export { default as CompactMetricsRow } from './CompactMetricsRow';
 export { default as DashboardHeader } from './DashboardHeader';
+export { default as ExpenseCard } from './ExpenseCard';
 export { default as ExpensesOverview } from './ExpensesOverview';
 export { default as QuickActions } from './QuickActions';
-export { default as SummaryCardsGrid } from './SummaryCardsGrid';

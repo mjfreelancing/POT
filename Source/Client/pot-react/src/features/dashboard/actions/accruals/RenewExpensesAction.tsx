@@ -83,11 +83,9 @@ function RenewExpensesAction() {
   return (
     <ActionCard
       title="Renew Expenses"
-      description="Renew all overdue expenses"
-      isLoading={isLoading}
       icon={<CreditCard className="text-information" />}
       onClick={hasData ? handleBulkAction : undefined}
-      enabled={hasData}
+      enabled={hasData && !isLoading}
       hint={[
         'Renews all expenses that were due before today, updates their due dates based on the original recurrence pattern, and marking the associated account accruals as dirty.',
         '',

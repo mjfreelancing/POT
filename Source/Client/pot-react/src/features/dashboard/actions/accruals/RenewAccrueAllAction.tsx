@@ -149,12 +149,10 @@ function RenewAccrueAllAction() {
 
   return (
     <ActionCard
-      title="Renew & Accrue All"
-      description="Renew all overdue incomes and expenses, and accrue accounts"
-      isLoading={isLoading}
+      title="Renew and Accrue"
       icon={<BarChart3 className="text-information" />}
       onClick={hasData ? handleBulkAction : undefined}
-      enabled={hasData}
+      enabled={hasData && !isLoading}
       hint={[
         "Renews all expenses and incomes that were due before today, updates their due dates based on the original recurrence pattern, and re-aggregates the expense's account accruals.",
         '',

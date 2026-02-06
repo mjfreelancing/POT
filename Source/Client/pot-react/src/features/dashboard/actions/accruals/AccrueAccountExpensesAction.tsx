@@ -82,11 +82,9 @@ function AccrueAccountExpensesAction() {
   return (
     <ActionCard
       title="Accrue Account Expenses"
-      description="Accrue all account expenses"
-      isLoading={isLoading}
       icon={<Wallet className="text-information" />}
       onClick={hasData ? handleBulkAction : undefined}
-      enabled={hasData}
+      enabled={hasData && !isLoading}
       hint="Recalculates the expense accruals (aggregated to their associated account) based on their current due dates, even if they are in the past."
     />
   );

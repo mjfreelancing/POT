@@ -82,11 +82,9 @@ function RenewIncomesAction() {
   return (
     <ActionCard
       title="Renew Incomes"
-      description="Renew all overdue incomes"
-      isLoading={isLoading}
       icon={<Coins className="text-information" />}
       onClick={hasData ? handleBulkAction : undefined}
-      enabled={hasData}
+      enabled={hasData && !isLoading}
       hint={[
         'Renews all incomes that were due before today and updates their due dates based on the original recurrence pattern.',
         '',

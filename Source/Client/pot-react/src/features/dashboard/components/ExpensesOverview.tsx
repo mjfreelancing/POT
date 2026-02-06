@@ -1,100 +1,24 @@
-import type { ColumnDef, Row } from '@tanstack/react-table';
 import { ClockFading, DollarSign, ShoppingCart } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 
 import { useApiGetAllExpenses } from '@/api/hooks';
-import StatusBadge from '@/components/feedback/badge/StatusBadge';
-import {
-  createDateColumn,
-  createMoneyValueColumn,
-  DataTable,
-} from '@/components/table';
-import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import type { Expense } from '@/data';
 import { EMPTY_EXPENSE_ARRAY } from '@/data';
-import {
-  formatMoneyValue,
-  getAdornedExpenseDescription,
-  getTableRowClassName,
-  localToday,
-  normalizeToEpoch,
-} from '@/lib';
+import { formatMoneyValue, localToday, normalizeToEpoch } from '@/lib';
 
 import type { ExpensesSummary } from '../stores';
 import { expensesSummaryStore } from '../stores';
-import DashboardCardHeader from './DashboardCardHeader';
-import SummaryCardsGrid from './SummaryCardsGrid';
+import CollapsibleSection from './CollapsibleSection';
+import CompactMetricsRow from './CompactMetricsRow';
+import ExpenseCard from './ExpenseCard';
 
 type FilteredExpenses = {
   count: number;
   total: number;
 };
-
-// Table columns for due in next 30 days
-const columns: ColumnDef<Expense>[] = [
-  {
-    id: 'description',
-    accessorKey: 'description',
-    header: 'Description',
-    cell: ({ row }) => getAdornedExpenseDescription(row),
-  },
-  createDateColumn<Expense>({
-    accessorKey: 'nextDue',
-    header: 'Next Due',
-  }),
-  createMoneyValueColumn<Expense>({
-    accessorKey: 'amount',
-    header: 'Amount',
-  }),
-  {
-    id: 'daysDue',
-    header: 'Days Due',
-    cell: ({ row }) => {
-      const days = getDaysDue(row.original.nextDue);
-      let badge = null;
-
-      if (days <= 0) {
-        badge = (
-          <StatusBadge
-            color="red"
-            className="w-20"
-            aria-role="status"
-            aria-live="polite"
-          >
-            {days === 0 ? 'Due Today' : 'Past Due'}
-          </StatusBadge>
-        );
-      }
-
-      if (days > 0 && days <= 7) {
-        badge = (
-          <StatusBadge color="orange" className="w-20" aria-role="status">
-            Due Soon
-          </StatusBadge>
-        );
-      }
-
-      return (
-        <div className="flex items-center gap-4">
-          {days >= 0 && <span>{days}</span>}
-          {badge}
-        </div>
-      );
-    },
-  },
-];
-
-function getDaysDue(nextDue: string): number {
-  const todayEpoch = normalizeToEpoch(localToday());
-  const dueDateEpoch = normalizeToEpoch(nextDue);
-
-  // Calculate difference in milliseconds and convert to days
-  const diffMs = dueDateEpoch - todayEpoch;
-  return Math.floor(diffMs / (1000 * 60 * 60 * 24));
-}
 
 function filterExpenses(days: number, expenses: Expense[]): Expense[] {
   const todayEpoch = normalizeToEpoch(localToday());
@@ -190,105 +114,67 @@ function ExpensesOverview() {
     [expenses],
   );
 
+  const metricsData = useMemo(
+    () => [
+      {
+        icon: <ClockFading className="h-6 w-6" aria-hidden="true" />,
+        label: 'Due Next 7 Days',
+        value: dueIn7Days.toString(),
+        className: 'text-information',
+      },
+      {
+        icon: <DollarSign className="h-6 w-6" aria-hidden="true" />,
+        label: 'Total Next 7 Days',
+        value: formatMoneyValue(totalNext7Days),
+        className: 'text-information',
+      },
+      {
+        icon: <ClockFading className="h-6 w-6" aria-hidden="true" />,
+        label: 'Due Next 30 Days',
+        value: dueIn30Days.toString(),
+        className: 'text-information',
+      },
+      {
+        icon: <DollarSign className="h-6 w-6" aria-hidden="true" />,
+        label: 'Total Next 30 Days',
+        value: formatMoneyValue(totalNext30Days),
+        className: 'text-information',
+      },
+    ],
+    [dueIn7Days, totalNext7Days, dueIn30Days, totalNext30Days],
+  );
+
   return (
     <>
-      <Card>
-        <DashboardCardHeader
-          icon={<ShoppingCart className="h-5 w-5" aria-hidden="true" />}
-          title="Expenses Overview"
-          description="Your expenses at a glance"
-        />
-        <CardContent className="px-4 -mt-2 min-w-0">
-          <div className="flex flex-col xl:flex-row gap-3 min-w-0">
-            {expensesIsLoading ? (
-              <div className="grid grid-cols-2 gap-2 max-w-xl w-full">
-                {Array(4)
-                  .fill(0)
-                  .map((_, i) => (
-                    <Skeleton
-                      key={i}
-                      className="h-[145px] sm:h-[168px] rounded-lg"
-                    />
-                  ))}
-              </div>
-            ) : (
-              <SummaryCardsGrid
-                cards={[
-                  {
-                    title: 'Due Next 7 Days',
-                    icon: (
-                      <ClockFading
-                        className="h-6 w-6 text-information"
-                        aria-hidden="true"
-                      />
-                    ),
-                    value: (
-                      <div className="text-xl font-bold text-information text-center">
-                        {dueIn7Days}
-                      </div>
-                    ),
-                  },
-                  {
-                    title: 'Total Next 7 Days',
-                    icon: (
-                      <DollarSign
-                        className="h-6 w-6 text-information"
-                        aria-hidden="true"
-                      />
-                    ),
-                    value: (
-                      <div className="text-xl font-bold text-information text-center">
-                        {formatMoneyValue(totalNext7Days)}
-                      </div>
-                    ),
-                  },
-                  {
-                    title: 'Due Next 30 Days',
-                    icon: (
-                      <ClockFading
-                        className="h-6 w-6 text-information"
-                        aria-hidden="true"
-                      />
-                    ),
-                    value: (
-                      <div className="text-xl font-bold text-information text-center">
-                        {dueIn30Days}
-                      </div>
-                    ),
-                  },
-                  {
-                    title: 'Total Next 30 Days',
-                    icon: (
-                      <DollarSign
-                        className="h-6 w-6 text-information"
-                        aria-hidden="true"
-                      />
-                    ),
-                    value: (
-                      <div className="text-xl font-bold text-information text-center">
-                        {formatMoneyValue(totalNext30Days)}
-                      </div>
-                    ),
-                  },
-                ]}
-              />
-            )}
-            <div className="w-full xl:flex-1 min-w-0 h-[456px] sm:h-[348px] overflow-auto rounded-lg border">
-              {expensesIsLoading ? (
-                <Skeleton className="h-full w-full" />
-              ) : (
-                <DataTable
-                  columns={columns}
-                  data={dueIn30DaysExpenses}
-                  getRowClassName={(row: Row<Expense>) =>
-                    getTableRowClassName(row.original, { exclude: ['OVERDUE'] })
-                  }
-                />
-              )}
+      <CollapsibleSection
+        icon={<ShoppingCart className="h-5 w-5" aria-hidden="true" />}
+        title="Expenses Overview"
+        defaultOpen
+      >
+        <div className="space-y-3">
+          {expensesIsLoading ? (
+            <Skeleton className="h-[72px] w-full rounded-lg" />
+          ) : (
+            <CompactMetricsRow metrics={metricsData} />
+          )}
+
+          {expensesIsLoading ? (
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              {Array(4)
+                .fill(0)
+                .map((_, i) => (
+                  <Skeleton key={i} className="h-[140px] rounded-lg" />
+                ))}
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          ) : (
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              {dueIn30DaysExpenses.map(expense => (
+                <ExpenseCard key={expense.rowId} expense={expense} />
+              ))}
+            </div>
+          )}
+        </div>
+      </CollapsibleSection>
     </>
   );
 }
