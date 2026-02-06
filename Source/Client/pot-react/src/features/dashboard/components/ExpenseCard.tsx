@@ -83,7 +83,7 @@ function ExpenseCard({ expense }: ExpenseCardProps) {
         <div className="space-y-2 lg:space-y-3">
           {/* Expense Name */}
           <div>
-            <div className="font-semibold text-sm lg:text-base leading-tight flex items-center gap-2">
+            <div className="font-bold text-base lg:text-lg leading-tight flex items-center gap-2 text-blue-700 dark:text-blue-300">
               <span>{expense.description}</span>
               {expense.note && <NotePopover note={expense.note} />}
               {expense.excludeFromCalcs && (

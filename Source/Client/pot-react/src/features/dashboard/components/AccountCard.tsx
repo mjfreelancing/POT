@@ -61,7 +61,7 @@ function AccountCard({ account }: AccountCardProps) {
         <div className="space-y-2 lg:space-y-3">
           {/* Account Name */}
           <div>
-            <h3 className="font-semibold text-sm lg:text-base leading-tight">
+            <h3 className="font-bold text-base lg:text-lg leading-tight text-green-700 dark:text-green-300">
               {description}
             </h3>
             <div className="text-[10px] lg:text-xs text-muted-foreground mt-1 space-y-0.5">
