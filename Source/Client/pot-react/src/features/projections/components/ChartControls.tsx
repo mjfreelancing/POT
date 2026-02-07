@@ -62,7 +62,13 @@ function ChartControls({
     <div className="px-6 py-4 border-b bg-muted/30">
       <div className="space-y-3">
         {/* Row 1: Metric Selection (View) + Date/Period controls (desktop) OR collapse button (mobile) */}
-        <div className={isMobile ? "flex flex-col gap-2" : "flex flex-wrap gap-3 items-center"}>
+        <div
+          className={
+            isMobile
+              ? 'flex flex-col gap-2'
+              : 'flex flex-wrap gap-3 items-center'
+          }
+        >
           <div
             className="flex items-center gap-2"
             role="group"
