@@ -62,7 +62,7 @@ function ChartControls({
     <div className="px-6 py-4 border-b bg-muted/30">
       <div className="space-y-3">
         {/* Row 1: Metric Selection (View) + Date/Period controls (desktop) OR collapse button (mobile) */}
-        <div className="flex flex-wrap gap-3 items-center">
+        <div className={isMobile ? "flex flex-col gap-2" : "flex flex-wrap gap-3 items-center"}>
           <div
             className="flex items-center gap-2"
             role="group"
@@ -81,7 +81,7 @@ function ChartControls({
             >
               <SelectTrigger
                 id="metric-select"
-                className="w-[170px] h-8"
+                className="w-full md:w-[170px] h-8"
                 aria-label="Select chart metric to display"
               >
                 <SelectValue />
@@ -168,29 +168,27 @@ function ChartControls({
             </>
           )}
 
-          {/* Mobile: Collapse/Expand button - positioned to the right */}
+          {/* Mobile: Collapse/Expand button */}
           {isMobile && (
-            <div className="ml-auto">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="gap-2 h-8"
-                aria-label={isExpanded ? 'Hide filters' : 'Show filters'}
-              >
-                {isExpanded ? (
-                  <>
-                    Hide
-                    <ChevronUp className="h-4 w-4" />
-                  </>
-                ) : (
-                  <>
-                    Filters
-                    <ChevronDown className="h-4 w-4" />
-                  </>
-                )}
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="gap-2 h-8 w-full"
+              aria-label={isExpanded ? 'Hide filters' : 'Show filters'}
+            >
+              {isExpanded ? (
+                <>
+                  Hide
+                  <ChevronUp className="h-4 w-4" />
+                </>
+              ) : (
+                <>
+                  Filters
+                  <ChevronDown className="h-4 w-4" />
+                </>
+              )}
+            </Button>
           )}
         </div>
 
