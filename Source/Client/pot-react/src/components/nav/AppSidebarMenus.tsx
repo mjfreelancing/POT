@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 
-import { SidebarContent } from '@/components/ui/sidebar';
+import { SidebarContent, useSidebar } from '@/components/ui/sidebar';
 import { useAuthContext } from '@/features/auth/contexts';
 import { ExportModal } from '@/features/maintenance/export';
 import { ImportModal } from '@/features/maintenance/import';
@@ -21,6 +21,7 @@ import MenuGroup from './MenuGroup';
 
 function AppSidebarMenus() {
   const { isAuthenticated } = useAuthContext();
+  const { isMobile } = useSidebar();
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
@@ -98,22 +99,24 @@ function AppSidebarMenus() {
 
     maintenance: {
       label: 'Maintenance',
-      items: [
-        {
-          type: 'onClick',
-          label: 'Export...',
-          icon: Archive,
-          onClick: () => setIsExportModalOpen(true),
-          permissions: ['maintenance:export'],
-        },
-        {
-          type: 'onClick',
-          label: 'Import...',
-          icon: ArchiveRestore,
-          onClick: () => setIsImportModalOpen(true),
-          permissions: ['maintenance:import'],
-        },
-      ],
+      items: isMobile
+        ? [] // Hide export/import on mobile as they don't work with mobile file systems
+        : [
+            {
+              type: 'onClick',
+              label: 'Export...',
+              icon: Archive,
+              onClick: () => setIsExportModalOpen(true),
+              permissions: ['maintenance:export'],
+            },
+            {
+              type: 'onClick',
+              label: 'Import...',
+              icon: ArchiveRestore,
+              onClick: () => setIsImportModalOpen(true),
+              permissions: ['maintenance:import'],
+            },
+          ],
     },
 
     // User menu group removed; user actions now in header

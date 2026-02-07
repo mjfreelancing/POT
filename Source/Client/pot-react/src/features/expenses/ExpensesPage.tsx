@@ -17,9 +17,10 @@ import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import type { Expense } from '@/data/expense';
 import { useAccountFilter } from '@/hooks';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 import { WithPermission } from '../auth/components';
-import { ExpensesHeader, ExpensesTable } from './components';
+import { ExpenseCardGrid, ExpensesHeader, ExpensesTable } from './components';
 import useExpenseStorage from './hooks/useExpenseStorage';
 
 function ExpensesPage() {
@@ -34,6 +35,7 @@ function ExpensesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { error, setError } = useErrorContext();
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const isMobile = useIsMobile();
 
   // Setup local storage for persistent filters
   const { getExpenseData, setExpenseData } = useExpenseStorage(error => {
@@ -181,52 +183,62 @@ function ExpensesPage() {
   const navigate = useNavigate();
 
   const handleSearchTermChange = (term: string) => {
-    setSearchTerm(term);
-    setExpenseData({ filterDescription: term });
+    const trimmedTerm = term.trim();
+    setSearchTerm(trimmedTerm);
+    setExpenseData({ filterDescription: trimmedTerm });
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20">
+    <div className="flex flex-col h-screen overflow-hidden bg-gradient-to-br from-background to-muted/20">
       <ExpensesHeader />
       {/* Main content area: flex-1 min-h-0 for proper flexbox scrolling */}
       <div className="flex-1 min-h-0 flex flex-col p-6 gap-4">
         <Toolbar>
-          <div className="flex flex-wrap items-center gap-3">
-            <SearchInput
-              value={searchTerm}
-              onChange={handleSearchTermChange}
-              placeholder="Search by description..."
-              ariaLabel="Search expenses by description"
-              name="expense-search"
-            />
-            {accountsInItems.length > 1 && (
-              <AccountFilter
-                accounts={accountsInItems}
-                selectedAccountId={validatedSelectedAccountId}
-                onAccountChange={handleAccountChange}
+          <div className="w-full space-y-3">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <SearchInput
+                value={searchTerm}
+                onChange={handleSearchTermChange}
+                placeholder="Search by description..."
+                ariaLabel="Search expenses by description"
+                name="expense-search"
               />
-            )}
-            <FilterResultsCount
-              filteredCount={descriptionFilteredExpenses.length}
-              totalCount={expenses.length}
-            />
+              {accountsInItems.length > 1 && (
+                <AccountFilter
+                  accounts={accountsInItems}
+                  selectedAccountId={validatedSelectedAccountId}
+                  onAccountChange={handleAccountChange}
+                />
+              )}
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <FilterResultsCount
+                filteredCount={descriptionFilteredExpenses.length}
+                totalCount={expenses.length}
+                isFilterActive={searchTerm.length > 0}
+              />
+              <WithPermission permissions={['expense:manage']} mode="all">
+                <Button
+                  onClick={() => navigate('create')}
+                  aria-label="Add a new expense"
+                  className="gap-2 min-w-[132px]"
+                  disabled={accounts.length === 0}
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Expense
+                </Button>
+              </WithPermission>
+            </div>
           </div>
-          <WithPermission permissions={['expense:manage']} mode="all">
-            <Button
-              onClick={() => navigate('create')}
-              aria-label="Add a new expense"
-              className="gap-2 min-w-[132px]"
-              disabled={accounts.length === 0}
-            >
-              <Plus className="h-4 w-4" />
-              Add Expense
-            </Button>
-          </WithPermission>
         </Toolbar>
         {/* Table container: flex-1 min-h-0 for proper flexbox, no overflow here */}
         <div className="flex-1 min-h-0 flex flex-col relative">
           {isLoading && <LoadingOverlay />}
-          <ExpensesTable filteredExpenses={descriptionFilteredExpenses} />
+          {isMobile ? (
+            <ExpenseCardGrid expenses={descriptionFilteredExpenses} />
+          ) : (
+            <ExpensesTable filteredExpenses={descriptionFilteredExpenses} />
+          )}
         </div>
       </div>
 

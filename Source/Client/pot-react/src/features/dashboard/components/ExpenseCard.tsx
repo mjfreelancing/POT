@@ -74,13 +74,13 @@ function ExpenseCard({ expense }: ExpenseCardProps) {
   return (
     <Card
       className={cn(
-        'transition-all duration-200 hover:shadow-md',
+        'transition-all duration-200 hover:shadow-md py-2 lg:py-2.5 gap-0 flex flex-col',
         borderClass,
         bgClass,
       )}
     >
-      <CardContent className="p-3 lg:p-4">
-        <div className="space-y-2 lg:space-y-3">
+      <CardContent className="px-2 lg:px-2.5 flex flex-col flex-1">
+        <div className="flex flex-col h-full">
           {/* Expense Name */}
           <div>
             <div className="font-bold text-base lg:text-lg leading-tight flex items-center gap-2 text-blue-700 dark:text-blue-300">
@@ -94,40 +94,46 @@ function ExpenseCard({ expense }: ExpenseCardProps) {
             </div>
           </div>
 
-          {/* Divider */}
-          <div className="border-t border-border" />
+          {/* Spacer to push content to bottom */}
+          <div className="flex-1" />
 
-          {/* Expense Details */}
-          <div className="space-y-2">
-            <div>
+          {/* Bottom section with divider, details, and badge */}
+          <div className="space-y-1.5 lg:space-y-2">
+            {/* Divider */}
+            <div className="border-t border-border" />
+
+            {/* Expense Details */}
+            <div className="space-y-2">
+              <div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[11px] lg:text-sm font-medium text-foreground">
+                    Due Date:
+                  </span>
+                  <span className="text-xs lg:text-base font-semibold text-foreground">
+                    {formatDate(expense.nextDue)}
+                  </span>
+                </div>
+                {days >= 0 && (
+                  <div className="text-right text-[10px] lg:text-xs text-muted-foreground mt-0.5">
+                    ({days} {days === 1 ? 'day' : 'days'})
+                  </div>
+                )}
+              </div>
               <div className="flex justify-between items-center">
                 <span className="text-[11px] lg:text-sm font-medium text-foreground">
-                  Due Date:
+                  Amount:
                 </span>
-                <span className="text-xs lg:text-base font-semibold text-foreground">
-                  {formatDate(expense.nextDue)}
+                <span className="text-sm lg:text-lg font-bold text-blue-600 dark:text-blue-400">
+                  {formatMoneyValue(expense.amount)}
                 </span>
               </div>
-              {days >= 0 && (
-                <div className="text-right text-[10px] lg:text-xs text-muted-foreground mt-0.5">
-                  ({days} {days === 1 ? 'day' : 'days'})
+              {badge && <div className="flex justify-end">{badge}</div>}
+              {expense.account && (
+                <div className="text-[10px] lg:text-xs text-foreground/70 mt-3 pt-3 border-t border-border/50">
+                  {expense.account.description}
                 </div>
               )}
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-[11px] lg:text-sm font-medium text-foreground">
-                Amount:
-              </span>
-              <span className="text-sm lg:text-lg font-bold text-blue-600 dark:text-blue-400">
-                {formatMoneyValue(expense.amount)}
-              </span>
-            </div>
-            {badge && <div className="flex justify-end">{badge}</div>}
-            {expense.account && (
-              <div className="text-[10px] lg:text-xs text-foreground/70 mt-3 pt-3 border-t border-border/50">
-                {expense.account.description}
-              </div>
-            )}
           </div>
         </div>
       </CardContent>

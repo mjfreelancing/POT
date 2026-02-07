@@ -33,7 +33,7 @@ function AccountFilter({
         name="account-filter"
       >
         <SelectTrigger
-          className={`w-[280px] ${isActive ? 'ring-[2px] ring-primary/60 bg-primary/10' : ''}`}
+          className={`w-full md:w-[280px] ${isActive ? 'ring-[2px] ring-primary/60 bg-primary/10' : ''}`}
           id="account-filter-trigger"
           aria-label="Filter by account"
         >

@@ -1,10 +1,4 @@
-import {
-  MoreHorizontal,
-  Pencil,
-  Receipt,
-  Trash2,
-  TrendingUp,
-} from 'lucide-react';
+import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -16,7 +10,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useErrorContext } from '@/contexts';
@@ -87,32 +80,6 @@ function AccountActions({ account }: AccountActionsProps) {
             >
               <Trash2 className="mr-2 h-4 w-4 text-destructive-high-contrast" />
               Delete
-            </DropdownMenuItem>
-          </WithPermission>
-          <DropdownMenuSeparator />
-          <DropdownMenuLabel className="text-sm font-semibold">
-            Linked Data
-          </DropdownMenuLabel>
-          <WithPermission permissions={['expense:view']} mode="all">
-            <DropdownMenuItem
-              disabled={account.linkedExpenses === 0}
-              // Navigate to expenses with the account ID as a query parameter
-              onClick={() => navigate(`/expenses?accountId=${account.rowId}`)}
-            >
-              <Receipt className="mr-2 h-4 w-4" />
-              Expenses
-              {account.linkedExpenses > 0 && `(${account.linkedExpenses})`}
-            </DropdownMenuItem>
-          </WithPermission>
-
-          <WithPermission permissions={['income:view']} mode="all">
-            <DropdownMenuItem
-              disabled={account.linkedIncomes === 0}
-              // Navigate to income with the account ID as a query parameter
-              onClick={() => navigate(`/incomes?accountId=${account.rowId}`)}
-            >
-              <TrendingUp className="mr-2 h-4 w-4" />
-              Income {account.linkedIncomes > 0 && `(${account.linkedIncomes})`}
             </DropdownMenuItem>
           </WithPermission>
         </DropdownMenuContent>

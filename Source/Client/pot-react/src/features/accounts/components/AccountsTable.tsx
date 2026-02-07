@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { BanknoteArrowDown, BanknoteArrowUp } from 'lucide-react';
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 
 import { useApiAccrueAccountExpenses } from '@/api/hooks';
 import { ErrorSheet, StatusBadge } from '@/components/feedback';
@@ -24,7 +24,17 @@ type AccountsTableProps = {
   accounts: Account[];
 };
 
-const columns: ColumnDef<Account>[] = [
+function AccountsTable({ accounts }: AccountsTableProps) {
+  const { id: editingId } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const accrueExpensesMutation = useApiAccrueAccountExpenses();
+  const { error, setError } = useErrorContext();
+
+  const { hasPermission } = usePermissions();
+  const canManageExpenses = hasPermission('expense:manage');
+
+  const columns: ColumnDef<Account>[] = [
   {
     id: 'bsb_number',
     accessorKey: 'bsb_number',
@@ -61,7 +71,11 @@ const columns: ColumnDef<Account>[] = [
               {account.linkedExpenses > 0 && (
                 <StatusBadge
                   color="yellow"
-                  tooltip={`Has ${account.linkedExpenses} linked ${account.linkedExpenses === 1 ? 'expense' : 'expenses'}`}
+                  tooltip={`View ${account.linkedExpenses} linked ${account.linkedExpenses === 1 ? 'expense' : 'expenses'}`}
+                  onClick={() =>
+                    navigate(`/expenses?accountId=${account.rowId}`)
+                  }
+                  className="cursor-pointer hover:opacity-80 transition-opacity"
                 >
                   <BanknoteArrowDown />
                   {account.linkedExpenses}
@@ -70,7 +84,11 @@ const columns: ColumnDef<Account>[] = [
               {account.linkedIncomes > 0 && (
                 <StatusBadge
                   color="green"
-                  tooltip={`Has ${account.linkedIncomes} linked ${account.linkedIncomes === 1 ? 'income' : 'incomes'}`}
+                  tooltip={`View ${account.linkedIncomes} linked ${account.linkedIncomes === 1 ? 'income' : 'incomes'}`}
+                  onClick={() =>
+                    navigate(`/incomes?accountId=${account.rowId}`)
+                  }
+                  className="cursor-pointer hover:opacity-80 transition-opacity"
                 >
                   <BanknoteArrowUp />
                   {account.linkedIncomes}
@@ -134,15 +152,6 @@ const columns: ColumnDef<Account>[] = [
     },
   },
 ];
-
-function AccountsTable({ accounts }: AccountsTableProps) {
-  const { id: editingId } = useParams<{ id: string }>();
-  const queryClient = useQueryClient();
-  const accrueExpensesMutation = useApiAccrueAccountExpenses();
-  const { error, setError } = useErrorContext();
-
-  const { hasPermission } = usePermissions();
-  const canManageExpenses = hasPermission('expense:manage');
 
   const bulkActions: BulkAction<Account>[] = [
     {

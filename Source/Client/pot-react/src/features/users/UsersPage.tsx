@@ -1,22 +1,33 @@
-import { UserPlus } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { CheckCircle, Mail, UserPlus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router';
+import { toast } from 'sonner';
 
-import { useUsers } from '@/api/hooks';
+import {
+  useResendInvitation,
+  useUpdateUserStatus,
+  useUsers,
+} from '@/api/hooks';
 import { ErrorSheet, LoadingOverlay } from '@/components/feedback';
+import { SuccessToast } from '@/components/feedback/toast';
 import { PageHeader, Toolbar } from '@/components/layout';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { logger } from '@/concerns';
+import { logger, useCacheInvalidation } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import type { SiteUser } from '@/data/siteUser';
 import { WithPermission } from '@/features/auth/components';
-import { usePermissions } from '@/hooks';
+import { useAuthContext } from '@/features/auth/contexts';
+import { useIsMobile, usePermissions } from '@/hooks';
 
-import { UserRoleDialog, UsersTable } from './components';
+import { UserCardGrid, UserRoleDialog, UsersTable } from './components';
 
 function UsersPage() {
   const { hasAnyPermission } = usePermissions();
+  const { userInfo } = useAuthContext();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [userRoleDialogOpen, setUserRoleDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<SiteUser | null>(null);
   const { error, setError } = useErrorContext();
@@ -26,6 +37,11 @@ function UsersPage() {
     isLoading: usersLoading,
     isFetching: usersFetching,
   } = useUsers();
+
+  const queryClient = useQueryClient();
+  const invalidateCache = useCacheInvalidation(queryClient);
+  const resendInvitationMutation = useResendInvitation();
+  const updateStatusMutation = useUpdateUserStatus();
 
   const isLoading = useMemo(
     () => usersLoading || usersFetching,
@@ -51,6 +67,60 @@ function UsersPage() {
     setUserRoleDialogOpen(true);
   };
 
+  const handleToggleStatus = async (user: SiteUser) => {
+    const newStatus = user.status === 'Enabled' ? 'Disabled' : 'Enabled';
+
+    const result = await updateStatusMutation.mutateAsync({
+      id: user.rowId,
+      data: {
+        etag: user.etag,
+        status: newStatus,
+      },
+    });
+
+    if (result.success) {
+      invalidateCache(['users']);
+
+      toast(
+        <SuccessToast
+          icon={CheckCircle}
+          title="Status Updated"
+          description={`${user.username} has been ${newStatus.toLowerCase()}.`}
+        />,
+      );
+    } else {
+      setError({
+        title: result.error.code,
+        description: result.error.description,
+      });
+
+      logger.error('UsersPage', 'Failed to update user status', result.error);
+    }
+  };
+
+  const handleResendInvitation = async (user: SiteUser) => {
+    const result = await resendInvitationMutation.mutateAsync({
+      id: user.rowId,
+    });
+
+    if (result.success) {
+      toast(
+        <SuccessToast
+          icon={Mail}
+          title="Invitation Resent"
+          description={`Invitation has been sent to ${user.username}.`}
+        />,
+      );
+    } else {
+      setError({
+        title: result.error.code,
+        description: result.error.description,
+      });
+
+      logger.error('UsersPage', 'Failed to resend invitation', result.error);
+    }
+  };
+
   // Handle errors
   useEffect(() => {
     if (usersData) {
@@ -71,31 +141,44 @@ function UsersPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20">
+    <div className="flex flex-col h-screen overflow-hidden bg-gradient-to-br from-background to-muted/20">
       <PageHeader
         title="Users"
         subtitle="Manage user accounts and permissions"
       />
       <div className="flex-1 min-h-0 flex flex-col p-6 gap-4">
         <Toolbar>
-          <div className="flex items-center gap-4">
-            {/* Search functionality can be added here later */}
+          <Badge variant="secondary" className="px-3 py-1.5 text-sm">
+            <span className="font-semibold">{users.length}</span>{' '}
+            {users.length === 1 ? 'User' : 'Users'}
+          </Badge>
+          <div className="shrink-0">
+            <WithPermission permissions={['user:manage']} mode="all">
+              <Button
+                onClick={() => navigate('invite')}
+                aria-label="Invite a new user"
+                className="gap-2 min-w-[132px] w-full sm:w-auto"
+              >
+                <UserPlus className="h-4 w-4" />
+                Invite User
+              </Button>
+            </WithPermission>
           </div>
-          <WithPermission permissions={['user:manage']} mode="all">
-            <Button
-              onClick={() => navigate('invite')}
-              aria-label="Invite a new user"
-              className="gap-2 min-w-[132px]"
-            >
-              <UserPlus className="h-4 w-4" />
-              Invite User
-            </Button>
-          </WithPermission>
         </Toolbar>
 
         <div className="flex-1 min-h-0 flex flex-col relative">
           {isLoading && <LoadingOverlay />}
-          <UsersTable users={users} onChangeRole={handleChangeRole} />
+          {isMobile ? (
+            <UserCardGrid
+              users={users}
+              onChangeRole={handleChangeRole}
+              onToggleStatus={handleToggleStatus}
+              onResendInvitation={handleResendInvitation}
+              currentUsername={userInfo?.username}
+            />
+          ) : (
+            <UsersTable users={users} onChangeRole={handleChangeRole} />
+          )}
         </div>
       </div>
 

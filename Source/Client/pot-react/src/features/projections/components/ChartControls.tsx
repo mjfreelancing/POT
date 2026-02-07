@@ -1,4 +1,6 @@
 import { format } from 'date-fns';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useState } from 'react';
 
 import { EnrichedDatePicker } from '@/components/picker/EnrichedDatePicker';
 import { Button } from '@/components/ui/button';
@@ -12,6 +14,7 @@ import {
 } from '@/components/ui/select';
 import type { ProjectionMetric } from '@/data/projection';
 import { PROJECTION_METRICS, PROJECTION_PERIODS } from '@/data/projection';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { localToday } from '@/lib';
 
 type ChartControlsProps = {
@@ -39,6 +42,9 @@ function ChartControls({
   onToggleSeries,
   chartConfig,
 }: ChartControlsProps) {
+  const isMobile = useIsMobile();
+  const [isExpanded, setIsExpanded] = useState(false);
+
   // Period button style variables
   const selectedPeriodButtonClass =
     'group h-8 px-3 font-medium border border-black dark:border-white bg-black text-white dark:bg-white dark:text-slate-900';
@@ -55,9 +61,8 @@ function ChartControls({
   return (
     <div className="px-6 py-4 border-b bg-muted/30">
       <div className="space-y-3">
-        {/* Row 1: Metric Dropdown | Period Controls + Date Range (right-aligned) */}
-        <div className="flex flex-wrap gap-3 items-center justify-between">
-          {/* Metric Selection */}
+        {/* Row 1: Metric Selection (View) + Date/Period controls (desktop) OR collapse button (mobile) */}
+        <div className="flex flex-wrap gap-3 items-center">
           <div
             className="flex items-center gap-2"
             role="group"
@@ -91,15 +96,114 @@ function ChartControls({
             </Select>
           </div>
 
-          {/* Right-aligned controls group */}
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Start Date Picker Only */}
+          {/* Desktop: Date and Period controls on same row, flowing left */}
+          {!isMobile && (
+            <>
+              {/* Start Date Picker */}
+              <div
+                className="flex items-center gap-2 px-3 py-2 bg-muted/30 rounded-md"
+                role="group"
+                aria-labelledby="date-range-label"
+              >
+                <span id="date-range-label" className="sr-only">
+                  Custom date selection
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-muted-foreground">
+                    From:
+                  </span>
+                  <EnrichedDatePicker
+                    selectedDate={startDate}
+                    minDate={localToday()}
+                    onDateAccepted={onStartDateChange}
+                    triggerClassName="w-[140px] h-8"
+                    triggerLabel={date =>
+                      date ? format(date, 'MMM dd, yyyy') : 'Today'
+                    }
+                    triggerId="start-date-picker"
+                  />
+                </div>
+              </div>
+              {/* Period Controls */}
+              <div
+                className="flex items-center gap-2 px-3 py-2 bg-muted/30 rounded-md"
+                role="group"
+                aria-labelledby="period-label"
+              >
+                <span
+                  id="period-label"
+                  className="text-sm font-medium text-muted-foreground"
+                >
+                  Period:
+                </span>
+                <div
+                  className="flex flex-wrap gap-1"
+                  role="radiogroup"
+                  aria-labelledby="period-label"
+                >
+                  {PROJECTION_PERIODS.map(opt => {
+                    const isSelected = period === opt.value;
+                    return (
+                      <Button
+                        key={opt.value}
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onPeriodChange(opt.value)}
+                        className={
+                          isSelected
+                            ? `${selectedPeriodButtonClass} ${selectedPeriodButtonHoverClass}`
+                            : `${unselectedPeriodButtonClass} ${unselectedPeriodButtonHoverClass}`
+                        }
+                        aria-label={`Set chart period to ${opt.label}`}
+                        role="radio"
+                        aria-checked={isSelected}
+                        tabIndex={isSelected ? 0 : -1}
+                      >
+                        {opt.label}
+                      </Button>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Mobile: Collapse/Expand button - positioned to the right */}
+          {isMobile && (
+            <div className="ml-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="gap-2 h-8"
+                aria-label={isExpanded ? 'Hide filters' : 'Show filters'}
+              >
+                {isExpanded ? (
+                  <>
+                    Hide
+                    <ChevronUp className="h-4 w-4" />
+                  </>
+                ) : (
+                  <>
+                    Filters
+                    <ChevronDown className="h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Mobile collapsible section: Date and Period controls */}
+        {isMobile && isExpanded && (
+          <div className="space-y-3">
+            {/* Start Date Picker */}
             <div
               className="flex items-center gap-2 px-3 py-2 bg-muted/30 rounded-md"
               role="group"
-              aria-labelledby="date-range-label"
+              aria-labelledby="date-range-label-mobile"
             >
-              <span id="date-range-label" className="sr-only">
+              <span id="date-range-label-mobile" className="sr-only">
                 Custom date selection
               </span>
               <div className="flex items-center gap-2">
@@ -114,18 +218,18 @@ function ChartControls({
                   triggerLabel={date =>
                     date ? format(date, 'MMM dd, yyyy') : 'Today'
                   }
-                  triggerId="start-date-picker"
+                  triggerId="start-date-picker-mobile"
                 />
               </div>
             </div>
-            {/* Period Controls Group */}
+            {/* Period Controls */}
             <div
               className="flex items-center gap-2 px-3 py-2 bg-muted/30 rounded-md"
               role="group"
-              aria-labelledby="period-label"
+              aria-labelledby="period-label-mobile"
             >
               <span
-                id="period-label"
+                id="period-label-mobile"
                 className="text-sm font-medium text-muted-foreground"
               >
                 Period:
@@ -133,7 +237,7 @@ function ChartControls({
               <div
                 className="flex flex-wrap gap-1"
                 role="radiogroup"
-                aria-labelledby="period-label"
+                aria-labelledby="period-label-mobile"
               >
                 {PROJECTION_PERIODS.map(opt => {
                   const isSelected = period === opt.value;
@@ -160,52 +264,54 @@ function ChartControls({
               </div>
             </div>
           </div>
-        </div>
-        {/* Row 2: Legend */}
-        <div
-          className="flex items-center gap-3"
-          role="group"
-          aria-labelledby="legend-label"
-        >
-          <span
-            id="legend-label"
-            className="text-sm font-medium text-muted-foreground"
-          >
-            Show:
-          </span>
+        )}
+
+        {/* Legend row - always below on desktop, below collapsible on mobile when expanded */}
+        {(!isMobile || isExpanded) && (
           <div
-            className="flex flex-wrap gap-2"
+            className="flex items-center gap-3"
             role="group"
             aria-labelledby="legend-label"
           >
-            {seriesKeys.map(key => {
-              const config = chartConfig[key];
-              const isVisible = seriesVisibility[key];
+            <span
+              id="legend-label"
+              className="text-sm font-medium text-muted-foreground"
+            >
+              Show:
+            </span>
+            <div
+              className="flex flex-wrap gap-2"
+              role="group"
+              aria-labelledby="legend-label"
+            >
+              {seriesKeys.map(key => {
+                const config = chartConfig[key];
+                const isVisible = seriesVisibility[key];
 
-              return (
-                <button
-                  key={key}
-                  onClick={() => onToggleSeries(key)}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium border transition-all ${
-                    isVisible
-                      ? 'bg-background border-border hover:bg-muted shadow-sm'
-                      : 'bg-muted/50 border-muted-foreground/20 opacity-60 hover:opacity-80'
-                  }`}
-                  aria-label={`${isVisible ? 'Hide' : 'Show'} ${config.label} series on chart`}
-                  aria-pressed={isVisible}
-                  type="button"
-                >
-                  <div
-                    className="w-2 h-2 rounded-full"
-                    style={{ backgroundColor: config.color }}
-                    aria-hidden="true"
-                  />
-                  <span>{config.label}</span>
-                </button>
-              );
-            })}
+                return (
+                  <button
+                    key={key}
+                    onClick={() => onToggleSeries(key)}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium border transition-all ${
+                      isVisible
+                        ? 'bg-background border-border hover:bg-muted shadow-sm'
+                        : 'bg-muted/50 border-muted-foreground/20 opacity-60 hover:opacity-80'
+                    }`}
+                    aria-label={`${isVisible ? 'Hide' : 'Show'} ${config.label} series on chart`}
+                    aria-pressed={isVisible}
+                    type="button"
+                  >
+                    <div
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: config.color }}
+                    />
+                    {config.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -33,6 +33,8 @@ type StatusBadgeProps = {
   className?: string;
   /** Optional tooltip text to show when hovering over the badge */
   tooltip?: string;
+  /** Optional click handler to make the badge interactive */
+  onClick?: () => void;
 };
 
 const colorConfig = {
@@ -60,11 +62,16 @@ function StatusBadge({
   children,
   className,
   tooltip,
+  onClick,
 }: StatusBadgeProps) {
   const badgeClassName = color ? colorConfig[color] : colorConfig['gray'];
 
   const badge = (
-    <Badge variant="outline" className={`${badgeClassName} ${className || ''}`}>
+    <Badge
+      variant="outline"
+      className={`${badgeClassName} ${className || ''}`}
+      onClick={onClick}
+    >
       {children}
     </Badge>
   );

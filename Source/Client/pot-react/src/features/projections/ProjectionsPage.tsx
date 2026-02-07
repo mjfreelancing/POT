@@ -218,9 +218,9 @@ function ProjectionsPage() {
   }, [projectionData]);
 
   return (
-    <div className="flex flex-col md:h-screen bg-card">
+    <div className="flex flex-col h-screen overflow-hidden bg-card">
       <ProjectionsHeader />
-      <div className="p-6 md:pb-6 md:flex-1 md:min-h-0 relative">
+      <div className="flex-1 min-h-0 p-6 relative overflow-auto">
         {isLoading && <LoadingOverlay />}
         {projectionData?.success && (
           <ProjectionChart

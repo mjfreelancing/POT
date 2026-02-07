@@ -38,7 +38,7 @@ function SearchInput({
   const isActive = value.trim().length > 0;
 
   return (
-    <div className="relative w-80">
+    <div className="relative w-full md:w-80">
       <Input
         type="text"
         value={value}

@@ -16,10 +16,10 @@ import { Button } from '@/components/ui/button';
 import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import type { Income } from '@/data/income';
-import { useAccountFilter } from '@/hooks';
+import { useAccountFilter, useIsMobile } from '@/hooks';
 
 import { WithPermission } from '../auth/components';
-import { IncomesHeader, IncomesTable } from './components';
+import { IncomeCardGrid, IncomesHeader, IncomesTable } from './components';
 import useIncomeStorage from './hooks/useIncomeStorage';
 
 function IncomesPage() {
@@ -34,6 +34,7 @@ function IncomesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { error, setError } = useErrorContext();
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const isMobile = useIsMobile();
 
   // Setup local storage for persistent filters
   const { getIncomeData, setIncomeData } = useIncomeStorage(error => {
@@ -53,8 +54,9 @@ function IncomesPage() {
   }, [getIncomeData]);
 
   const handleSearchTermChange = (term: string) => {
-    setSearchTerm(term);
-    setIncomeData({ filterDescription: term });
+    const trimmedTerm = term.trim();
+    setSearchTerm(trimmedTerm);
+    setIncomeData({ filterDescription: trimmedTerm });
   };
 
   const {
@@ -181,45 +183,54 @@ function IncomesPage() {
   }, [incomesResult, setError]);
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20">
+    <div className="flex flex-col h-screen overflow-hidden bg-gradient-to-br from-background to-muted/20">
       <IncomesHeader />
       <div className="flex-1 min-h-0 flex flex-col p-6 gap-4">
         <Toolbar>
-          <div className="flex flex-wrap items-center gap-3">
-            <SearchInput
-              value={searchTerm}
-              onChange={handleSearchTermChange}
-              placeholder="Search by description..."
-              ariaLabel="Search incomes by description"
-              name="income-search"
-            />
-            {accountsInItems.length > 1 && (
-              <AccountFilter
-                accounts={accountsInItems}
-                selectedAccountId={validatedSelectedAccountId}
-                onAccountChange={handleAccountChange}
+          <div className="w-full space-y-3">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <SearchInput
+                value={searchTerm}
+                onChange={handleSearchTermChange}
+                placeholder="Search by description..."
+                ariaLabel="Search incomes by description"
+                name="income-search"
               />
-            )}
-            <FilterResultsCount
-              filteredCount={descriptionFilteredIncomes.length}
-              totalCount={incomes.length}
-            />
+              {accountsInItems.length > 1 && (
+                <AccountFilter
+                  accounts={accountsInItems}
+                  selectedAccountId={validatedSelectedAccountId}
+                  onAccountChange={handleAccountChange}
+                />
+              )}
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <FilterResultsCount
+                filteredCount={descriptionFilteredIncomes.length}
+                totalCount={incomes.length}
+                isFilterActive={searchTerm.length > 0}
+              />
+              <WithPermission permissions={['income:manage']} mode="all">
+                <Button
+                  onClick={() => navigate('create')}
+                  aria-label="Add a new income"
+                  className="gap-2 min-w-[132px]"
+                  disabled={accounts.length === 0}
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Income
+                </Button>
+              </WithPermission>
+            </div>
           </div>
-          <WithPermission permissions={['income:manage']} mode="all">
-            <Button
-              onClick={() => navigate('create')}
-              aria-label="Add a new income"
-              className="gap-2 min-w-[132px]"
-              disabled={accounts.length === 0}
-            >
-              <Plus className="h-4 w-4" />
-              Add Income
-            </Button>
-          </WithPermission>
         </Toolbar>
         <div className="flex-1 min-h-0 flex flex-col relative">
           {isLoading && <LoadingOverlay />}
-          <IncomesTable filteredIncomes={descriptionFilteredIncomes} />
+          {isMobile ? (
+            <IncomeCardGrid incomes={descriptionFilteredIncomes} />
+          ) : (
+            <IncomesTable filteredIncomes={descriptionFilteredIncomes} />
+          )}
         </div>
       </div>
 

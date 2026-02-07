@@ -5,17 +5,22 @@ import { Badge } from '@/components/ui/badge';
 type FilterResultsCountProps = {
   filteredCount: number;
   totalCount: number;
+  /** Whether filtering is active (e.g., search text entered), regardless of whether it changed the count */
+  isFilterActive?: boolean;
 };
 
 /**
  * Displays a count of filtered vs total items.
- * Shows "X of Y items" when filtered, or just "Y items" when not filtered.
+ * Always shows "Showing X of Y items" format to maintain consistent layout.
+ * Highlights in blue when actively filtered.
  */
 function FilterResultsCount({
   filteredCount,
   totalCount,
+  isFilterActive,
 }: FilterResultsCountProps) {
-  const isFiltered = filteredCount !== totalCount;
+  // Use isFilterActive if provided, otherwise fall back to count comparison
+  const isFiltered = isFilterActive ?? filteredCount !== totalCount;
 
   return (
     <Badge
@@ -27,11 +32,7 @@ function FilterResultsCount({
       }
     >
       {isFiltered && <Filter className="h-3.5 w-3.5" />}
-      {isFiltered && (
-        <>
-          Showing <span className="font-semibold">{filteredCount}</span> of{' '}
-        </>
-      )}
+      Showing <span className="font-semibold">{filteredCount}</span> of{' '}
       <span className="font-semibold">{totalCount}</span> items
     </Badge>
   );

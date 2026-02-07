@@ -12,8 +12,9 @@ import { Button } from '@/components/ui/button';
 import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import { WithPermission } from '@/features/auth/components';
+import { useIsMobile } from '@/hooks/use-mobile';
 
-import { AccountsHeader, AccountsTable } from './components';
+import { AccountCardGrid, AccountsHeader, AccountsTable } from './components';
 import useAccountStorage from './hooks/useAccountStorage';
 
 function AccountsPage() {
@@ -28,6 +29,7 @@ function AccountsPage() {
   const { error, setError } = useErrorContext();
   const [searchTerm, setSearchTerm] = useState<string>('');
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const {
     data: accountsData,
@@ -48,14 +50,12 @@ function AccountsPage() {
 
   // Filter accounts by description (case-insensitive)
   const descriptionFilteredAccounts = useMemo(() => {
-    if (!searchTerm.trim()) {
+    if (!searchTerm) {
       return accounts;
     }
 
     return accounts.filter(account =>
-      account.description
-        ?.toLowerCase()
-        .includes(searchTerm.trim().toLowerCase()),
+      account.description?.toLowerCase().includes(searchTerm.toLowerCase()),
     );
   }, [accounts, searchTerm]);
 
@@ -90,16 +90,17 @@ function AccountsPage() {
   }, [getAccountData]);
 
   const handleSearchTermChange = (term: string) => {
-    setSearchTerm(term);
-    setAccountData({ filterDescription: term });
+    const trimmedTerm = term.trim();
+    setSearchTerm(trimmedTerm);
+    setAccountData({ filterDescription: trimmedTerm });
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20">
+    <div className="flex flex-col h-screen overflow-hidden bg-gradient-to-br from-background to-muted/20">
       <AccountsHeader />
       <div className="flex-1 min-h-0 flex flex-col p-6 gap-4">
         <Toolbar>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="w-full space-y-3">
             <SearchInput
               value={searchTerm}
               onChange={handleSearchTermChange}
@@ -107,25 +108,32 @@ function AccountsPage() {
               ariaLabel="Search accounts by description"
               name="account-search"
             />
-            <FilterResultsCount
-              filteredCount={descriptionFilteredAccounts.length}
-              totalCount={accounts.length}
-            />
+            <div className="flex items-center justify-between gap-3">
+              <FilterResultsCount
+                filteredCount={descriptionFilteredAccounts.length}
+                totalCount={accounts.length}
+                isFilterActive={searchTerm.length > 0}
+              />
+              <WithPermission permissions={['account:manage']} mode="all">
+                <Button
+                  onClick={() => navigate('create')}
+                  aria-label="Add a new account"
+                  className="gap-2 min-w-[132px]"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Account
+                </Button>
+              </WithPermission>
+            </div>
           </div>
-          <WithPermission permissions={['account:manage']} mode="all">
-            <Button
-              onClick={() => navigate('create')}
-              aria-label="Add a new account"
-              className="gap-2 min-w-[132px]"
-            >
-              <Plus className="h-4 w-4" />
-              Add Account
-            </Button>
-          </WithPermission>
         </Toolbar>
         <div className="flex-1 min-h-0 flex flex-col relative">
           {isLoading && <LoadingOverlay />}
-          <AccountsTable accounts={descriptionFilteredAccounts} />
+          {isMobile ? (
+            <AccountCardGrid accounts={descriptionFilteredAccounts} />
+          ) : (
+            <AccountsTable accounts={descriptionFilteredAccounts} />
+          )}
         </div>
       </div>
 
