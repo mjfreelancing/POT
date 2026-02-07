@@ -35,123 +35,123 @@ function AccountsTable({ accounts }: AccountsTableProps) {
   const canManageExpenses = hasPermission('expense:manage');
 
   const columns: ColumnDef<Account>[] = [
-  {
-    id: 'bsb_number',
-    accessorKey: 'bsb_number',
-    header: 'BSB / Number',
-    cell: ({ row }) => {
-      const { bsb, number } = row.original;
+    {
+      id: 'bsb_number',
+      accessorKey: 'bsb_number',
+      header: 'BSB / Number',
+      cell: ({ row }) => {
+        const { bsb, number } = row.original;
 
-      return (
-        <div>
-          <div className="text-sm text-muted-foreground">({bsb})</div>
-          <span>{number}</span>
-        </div>
-      );
+        return (
+          <div>
+            <div className="text-sm text-muted-foreground">({bsb})</div>
+            <span>{number}</span>
+          </div>
+        );
+      },
     },
-  },
-  {
-    id: 'description',
-    accessorKey: 'description',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Description" />
-    ),
-    enableSorting: true,
-    sortingFn: 'text',
-    cell: ({ row }) => {
-      const account = row.original;
-      const hasLinkedData =
-        account.linkedExpenses > 0 || account.linkedIncomes > 0;
+    {
+      id: 'description',
+      accessorKey: 'description',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Description" />
+      ),
+      enableSorting: true,
+      sortingFn: 'text',
+      cell: ({ row }) => {
+        const account = row.original;
+        const hasLinkedData =
+          account.linkedExpenses > 0 || account.linkedIncomes > 0;
 
-      return (
-        <div className="flex items-center gap-2">
-          {account.description}
-          {hasLinkedData && (
-            <div className="flex gap-2 ml-2">
-              {account.linkedExpenses > 0 && (
-                <StatusBadge
-                  color="yellow"
-                  tooltip={`View ${account.linkedExpenses} linked ${account.linkedExpenses === 1 ? 'expense' : 'expenses'}`}
-                  onClick={() =>
-                    navigate(`/expenses?accountId=${account.rowId}`)
-                  }
-                  className="cursor-pointer hover:opacity-80 transition-opacity"
-                >
-                  <BanknoteArrowDown />
-                  {account.linkedExpenses}
-                </StatusBadge>
-              )}
-              {account.linkedIncomes > 0 && (
-                <StatusBadge
-                  color="green"
-                  tooltip={`View ${account.linkedIncomes} linked ${account.linkedIncomes === 1 ? 'income' : 'incomes'}`}
-                  onClick={() =>
-                    navigate(`/incomes?accountId=${account.rowId}`)
-                  }
-                  className="cursor-pointer hover:opacity-80 transition-opacity"
-                >
-                  <BanknoteArrowUp />
-                  {account.linkedIncomes}
-                </StatusBadge>
-              )}
-            </div>
-          )}
-        </div>
-      );
+        return (
+          <div className="flex items-center gap-2">
+            {account.description}
+            {hasLinkedData && (
+              <div className="flex gap-2 ml-2">
+                {account.linkedExpenses > 0 && (
+                  <StatusBadge
+                    color="yellow"
+                    tooltip={`View ${account.linkedExpenses} linked ${account.linkedExpenses === 1 ? 'expense' : 'expenses'}`}
+                    onClick={() =>
+                      navigate(`/expenses?accountId=${account.rowId}`)
+                    }
+                    className="cursor-pointer hover:opacity-80 transition-opacity"
+                  >
+                    <BanknoteArrowDown />
+                    {account.linkedExpenses}
+                  </StatusBadge>
+                )}
+                {account.linkedIncomes > 0 && (
+                  <StatusBadge
+                    color="green"
+                    tooltip={`View ${account.linkedIncomes} linked ${account.linkedIncomes === 1 ? 'income' : 'incomes'}`}
+                    onClick={() =>
+                      navigate(`/incomes?accountId=${account.rowId}`)
+                    }
+                    className="cursor-pointer hover:opacity-80 transition-opacity"
+                  >
+                    <BanknoteArrowUp />
+                    {account.linkedIncomes}
+                  </StatusBadge>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      },
     },
-  },
-  createMoneyValueColumn<Account>({
-    accessorKey: 'balance',
-    header: 'Balance',
-    options: {
-      enableSorting: true,
-      sortingFn: 'basic',
+    createMoneyValueColumn<Account>({
+      accessorKey: 'balance',
+      header: 'Balance',
+      options: {
+        enableSorting: true,
+        sortingFn: 'basic',
+      },
+    }),
+    createMoneyValueColumn<Account>({
+      accessorKey: 'reserved',
+      header: 'Reserved',
+      options: {
+        enableSorting: true,
+        sortingFn: 'basic',
+      },
+    }),
+    createMoneyValueColumn<Account>({
+      accessorKey: 'totalExpenseAccrued',
+      header: 'Total Accrued',
+      options: {
+        enableSorting: true,
+        sortingFn: 'basic',
+      },
+    }),
+    createMoneyValueColumn<Account>({
+      accessorKey: 'dailyExpenseAccrual',
+      header: 'Daily Accrual',
+      options: {
+        enableSorting: true,
+        sortingFn: 'basic',
+      },
+    }),
+    createMoneyValueColumn<Account>({
+      accessorKey: 'available',
+      header: 'Available',
+      options: {
+        enableSorting: true,
+        sortingFn: 'basic',
+      },
+    }),
+    {
+      id: 'actions',
+      cell: ({ row }) => {
+        const account = row.original;
+        return (
+          <div className="flex justify-end">
+            <AccountActions account={account} />
+          </div>
+        );
+      },
     },
-  }),
-  createMoneyValueColumn<Account>({
-    accessorKey: 'reserved',
-    header: 'Reserved',
-    options: {
-      enableSorting: true,
-      sortingFn: 'basic',
-    },
-  }),
-  createMoneyValueColumn<Account>({
-    accessorKey: 'totalExpenseAccrued',
-    header: 'Total Accrued',
-    options: {
-      enableSorting: true,
-      sortingFn: 'basic',
-    },
-  }),
-  createMoneyValueColumn<Account>({
-    accessorKey: 'dailyExpenseAccrual',
-    header: 'Daily Accrual',
-    options: {
-      enableSorting: true,
-      sortingFn: 'basic',
-    },
-  }),
-  createMoneyValueColumn<Account>({
-    accessorKey: 'available',
-    header: 'Available',
-    options: {
-      enableSorting: true,
-      sortingFn: 'basic',
-    },
-  }),
-  {
-    id: 'actions',
-    cell: ({ row }) => {
-      const account = row.original;
-      return (
-        <div className="flex justify-end">
-          <AccountActions account={account} />
-        </div>
-      );
-    },
-  },
-];
+  ];
 
   const bulkActions: BulkAction<Account>[] = [
     {
