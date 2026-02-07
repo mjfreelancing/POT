@@ -29,7 +29,7 @@ function filterExpenses(days: number, expenses: Expense[]): Expense[] {
     if (expense.excludeFromCalcs) {
       return false;
     }
-    
+
     const dueDateEpoch = normalizeToEpoch(expense.nextDue);
     return dueDateEpoch <= targetDateEpoch;
   });
