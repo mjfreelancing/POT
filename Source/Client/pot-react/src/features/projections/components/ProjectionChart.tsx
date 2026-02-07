@@ -278,10 +278,10 @@ function ProjectionChart({
       />
       <CardContent className="flex-1 flex flex-col p-0">
         {hasData ? (
-          <div className="flex-1 px-2 md:px-6 overflow-x-auto min-h-[540px] md:min-h-0">
+          <div className="flex-1 px-2 md:px-6 overflow-x-auto min-h-[500px] md:min-h-0">
             <ChartContainer
               config={chartConfig}
-              className="aspect-auto h-[540px] md:h-full"
+              className="aspect-auto h-[500px] md:h-full"
               style={{ minWidth: '600px' }}
             >
               {getChartType() === 'line' ? (
