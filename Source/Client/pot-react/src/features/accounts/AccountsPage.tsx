@@ -118,10 +118,12 @@ function AccountsPage() {
                 <Button
                   onClick={() => navigate('create')}
                   aria-label="Add a new account"
-                  className="gap-2 min-w-[132px]"
+                  size="sm"
+                  variant="default"
+                  className="gap-1.5 font-medium shadow-sm bg-primary active:scale-95 transition-transform"
                 >
                   <Plus className="h-4 w-4" />
-                  Add Account
+                  <span className="hidden sm:inline">Add Account</span>
                 </Button>
               </WithPermission>
             </div>

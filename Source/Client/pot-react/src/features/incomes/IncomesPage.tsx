@@ -214,11 +214,13 @@ function IncomesPage() {
                 <Button
                   onClick={() => navigate('create')}
                   aria-label="Add a new income"
-                  className="gap-2 min-w-[132px]"
+                  size="sm"
+                  variant="default"
+                  className="gap-1.5 font-medium shadow-sm bg-primary active:scale-95 transition-transform"
                   disabled={accounts.length === 0}
                 >
                   <Plus className="h-4 w-4" />
-                  Add Income
+                  <span className="hidden sm:inline">Add Income</span>
                 </Button>
               </WithPermission>
             </div>
