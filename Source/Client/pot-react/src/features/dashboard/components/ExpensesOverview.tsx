@@ -25,6 +25,11 @@ function filterExpenses(days: number, expenses: Expense[]): Expense[] {
   const targetDateEpoch = todayEpoch + days * 24 * 60 * 60 * 1000;
 
   return expenses.filter(expense => {
+    // Exclude expenses marked as excluded from calculations
+    if (expense.excludeFromCalcs) {
+      return false;
+    }
+    
     const dueDateEpoch = normalizeToEpoch(expense.nextDue);
     return dueDateEpoch <= targetDateEpoch;
   });
