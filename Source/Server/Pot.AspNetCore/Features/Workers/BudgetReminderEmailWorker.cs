@@ -4,18 +4,18 @@ using Pot.App;
 using Pot.App.Concerns.Time;
 using Pot.App.Concerns.Time.Extensions;
 using Pot.App.Extensions;
-using Pot.App.Features.Notifications.EmailUpcomingIncomesExpenses;
+using Pot.App.Features.Notifications.BudgetReminder;
 using Pot.App.Features.Users.GetAll;
 using Pot.Shared;
 
 namespace Pot.AspNetCore.Features.Workers;
 
-internal sealed class ReminderEmailWorker : BackgroundWorker
+internal sealed class BudgetReminderEmailWorker : BackgroundWorker
 {
     private readonly ITimeProvider _timeProvider;
     private readonly IServiceScopeFactory _scopeFactory;
 
-    public ReminderEmailWorker(IHostApplicationLifetime applicationLifetime, ITimeProvider timeProvider,
+    public BudgetReminderEmailWorker(IHostApplicationLifetime applicationLifetime, ITimeProvider timeProvider,
         IServiceScopeFactory scopeFactory)
         : base(applicationLifetime)
     {
@@ -34,14 +34,14 @@ internal sealed class ReminderEmailWorker : BackgroundWorker
             {
                 var serviceProvider = scope.ServiceProvider;
 
-                logger = serviceProvider.GetRequiredService<ILogger<ReminderEmailWorker>>();
+                logger = serviceProvider.GetRequiredService<ILogger<BudgetReminderEmailWorker>>();
 
                 try
                 {
                     // We need to set the current user context so we can load the user and their site preferences
                     var appContext = serviceProvider.GetRequiredService<IAppContext>();
 
-                    var reminderService = serviceProvider.GetRequiredService<IUpcomingIncomeExpenseReminderService>();
+                    var reminderService = serviceProvider.GetRequiredService<IBudgetReminderService>();
 
                     var allUsersService = serviceProvider.GetRequiredService<IGetAllUsersService>();
                     var allUsers = await allUsersService.GetAllEnabledAdminsAsync(stoppingToken).ConfigureAwait(false);
@@ -62,7 +62,7 @@ internal sealed class ReminderEmailWorker : BackgroundWorker
                 }
                 catch (Exception exception)
                 {
-                    logger.LogError(exception, "An error occurred during the reminer email process: {ExceptionMessage}", exception.Message);
+                    logger.LogError(exception, "An error occurred during the reminder email process: {ExceptionMessage}", exception.Message);
                 }
 
                 var nextHour = _timeProvider.GetUtcDateTimeNow().AddHours(1);

@@ -2,13 +2,14 @@
 
 namespace Pot.RazorComponents.Models;
 
-public sealed class EmailUpcomingIncomeExpenseInfo : EmailConfigBase
+public sealed class EmailBudgetReminderInfo : EmailConfigBase
 {
     public sealed class IncomeInfo
     {
         public required string Description { get; init; }
         public required double Amount { get; init; }
         public required DateOnly NextDue { get; init; }
+        public required int DaysDue { get; init; }
         public required string? Note { get; init; }
     }
 
@@ -17,6 +18,7 @@ public sealed class EmailUpcomingIncomeExpenseInfo : EmailConfigBase
         public required string Description { get; init; }
         public required double Amount { get; init; }
         public required DateOnly NextDue { get; init; }
+        public required int DaysDue { get; init; }
         public required string? Note { get; init; }
     }
 
@@ -64,9 +66,11 @@ public sealed class EmailUpcomingIncomeExpenseInfo : EmailConfigBase
             for (var i = 0; i < incomes.Count; i++)
             {
                 var income = incomes[i];
+                var statusText = FormatDueStatus(income.DaysDue);
+
                 section.AppendLine($"{i + 1}. {income.Description}");
                 section.AppendLine($"   Amount: {currencySymbol}{income.Amount:N2}");
-                section.AppendLine($"   Due: {income.NextDue:ddd, dd MMM yyyy}");
+                section.AppendLine($"   Due: {income.NextDue:ddd, dd MMM yyyy} ({statusText})");
 
                 if (!string.IsNullOrWhiteSpace(income.Note))
                 {
@@ -97,9 +101,11 @@ public sealed class EmailUpcomingIncomeExpenseInfo : EmailConfigBase
             for (var i = 0; i < expenses.Count; i++)
             {
                 var expense = expenses[i];
+                var statusText = FormatDueStatus(expense.DaysDue);
+
                 section.AppendLine($"{i + 1}. {expense.Description}");
                 section.AppendLine($"   Amount: {currencySymbol}{expense.Amount:N2}");
-                section.AppendLine($"   Due: {expense.NextDue:ddd, dd MMM yyyy}");
+                section.AppendLine($"   Due: {expense.NextDue:ddd, dd MMM yyyy} ({statusText})");
 
                 if (!string.IsNullOrWhiteSpace(expense.Note))
                 {
@@ -111,5 +117,15 @@ public sealed class EmailUpcomingIncomeExpenseInfo : EmailConfigBase
         }
 
         return section.ToString();
+    }
+
+    private static string FormatDueStatus(int daysDue)
+    {
+        return daysDue switch
+        {
+            < 0 => $"{Math.Abs(daysDue)} {(Math.Abs(daysDue) == 1 ? "day" : "days")} overdue",
+            0 => "due today",
+            _ => $"in {daysDue} {(daysDue == 1 ? "day" : "days")}"
+        };
     }
 }

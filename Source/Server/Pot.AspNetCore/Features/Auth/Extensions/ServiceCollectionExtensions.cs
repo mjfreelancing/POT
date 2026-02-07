@@ -9,7 +9,7 @@ internal static class ServiceCollectionExtensions
         services
             .AddHostedService<ExpiredOtpCleanupWorker>()
             .AddHostedService<SendEmailWorker>()
-            .AddHostedService<ReminderEmailWorker>();
+            .AddHostedService<BudgetReminderEmailWorker>();
 
         return services;
     }

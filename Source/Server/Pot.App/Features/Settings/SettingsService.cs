@@ -18,13 +18,13 @@ internal sealed class SettingsService : ISettingsService
         _logger = logger.WhenNotNull();
     }
 
-    public async Task<EmailUpcomingReminderSettings> GetEmailUpcomingReminderSettingsAsync(CancellationToken cancellationToken)
+    public async Task<EmailUpcomingReminderSettings> GetEmailBudgetReminderSettingsAsync(CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
         // This is auto-filtered to the user's site
         var settings = await _settingsRepository
-            .GetEmailUpcomingRemindersAsync(cancellationToken)
+            .GetEmailBudgetRemindersAsync(cancellationToken)
             .ConfigureAwait(false);
 
         var keyedSettings = settings.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);

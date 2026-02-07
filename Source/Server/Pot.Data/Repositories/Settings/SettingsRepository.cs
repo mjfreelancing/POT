@@ -13,11 +13,11 @@ internal sealed class SettingsRepository : RepositoryBase, ISettingsRepository
     {
     }
 
-    public Task<List<SettingEntity>> GetEmailUpcomingRemindersAsync(CancellationToken cancellationToken)
+    public Task<List<SettingEntity>> GetEmailBudgetRemindersAsync(CancellationToken cancellationToken)
     {
         // This is auto-filtered to the current site (based on the current user)
         return Settings
-            .Where(setting => setting.Category == SettingCategory.EmailUpcomingReminders)
+            .Where(setting => setting.Category == SettingCategory.EmailBudgetReminders)
             .ToListAsync(cancellationToken);
     }
 }

@@ -9,11 +9,11 @@
   <ItemGroup>
     <EmbeddedResource Include="Emails\ApprovalRejected\ApprovalRejectedEmail.text" />
     <EmbeddedResource Include="Emails\ApprovalAccepted\ApprovalAcceptedEmail.text" />
+    <EmbeddedResource Include="Emails\BudgetReminder\BudgetReminderEmail.text" />
     <EmbeddedResource Include="Emails\PendingApproval\PendingApprovalEmail.text" />
     <EmbeddedResource Include="Emails\ChangePassword\ChangePasswordEmail.text" />
     <EmbeddedResource Include="Emails\Invitation\InvitationEmail.text" />
     <EmbeddedResource Include="Emails\Signup\SignupEmail.text" />
-    <EmbeddedResource Include="Emails\UpcomingIncomeExpense\UpcomingIncomeExpenseEmail.text" />
   </ItemGroup>
 
 

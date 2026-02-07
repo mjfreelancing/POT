@@ -4,5 +4,5 @@ namespace Pot.Data.Repositories.Settings;
 
 public interface ISettingsRepository : IRepositoryBase
 {
-    Task<List<SettingEntity>> GetEmailUpcomingRemindersAsync(CancellationToken cancellationToken);
+    Task<List<SettingEntity>> GetEmailBudgetRemindersAsync(CancellationToken cancellationToken);
 }

@@ -10,9 +10,9 @@ using Pot.Data.Repositories.Users;
 using Pot.EmailSender;
 using Pot.RazorComponents.Models;
 
-namespace Pot.App.Features.Notifications.EmailUpcomingIncomesExpenses;
+namespace Pot.App.Features.Notifications.BudgetReminder;
 
-internal sealed class UpcomingIncomeExpenseReminderService : IUpcomingIncomeExpenseReminderService
+internal sealed class BudgetReminderService : IBudgetReminderService
 {
     private readonly IAppContext _appContext;
     private readonly ISettingsService _settingsService;
@@ -21,11 +21,11 @@ internal sealed class UpcomingIncomeExpenseReminderService : IUpcomingIncomeExpe
     private readonly IGetExpensesService _expensesService;
     private readonly ISendEmailChannelWriter _sendEmailChannelWriter;
     private readonly ITimeProvider _timeProvider;
-    private readonly ILogger<UpcomingIncomeExpenseReminderService> _logger;
+    private readonly ILogger<BudgetReminderService> _logger;
 
-    public UpcomingIncomeExpenseReminderService(IAppContext appContext, ISettingsService settingsService,
+    public BudgetReminderService(IAppContext appContext, ISettingsService settingsService,
         IUserRepository userRepository, IGetIncomesService getIncomesService, IGetExpensesService getExpensesService,
-        ISendEmailChannelWriter sendEmailChannelWriter, ITimeProvider timeProvider, ILogger<UpcomingIncomeExpenseReminderService> logger)
+        ISendEmailChannelWriter sendEmailChannelWriter, ITimeProvider timeProvider, ILogger<BudgetReminderService> logger)
     {
         _appContext = appContext.WhenNotNull();
         _settingsService = settingsService.WhenNotNull();
@@ -47,12 +47,12 @@ internal sealed class UpcomingIncomeExpenseReminderService : IUpcomingIncomeExpe
         var user = _userRepository.GetCurrentUser(true);
 
         var reminderSettings = await _settingsService
-            .GetEmailUpcomingReminderSettingsAsync(cancellationToken)
+            .GetEmailBudgetReminderSettingsAsync(cancellationToken)
             .ConfigureAwait(false);
 
         if (!reminderSettings.Enabled)
         {
-            _logger.LogInformation("Skipping upcoming income/expense reminder email for user {UserRowId} as these reminders are disabled",
+            _logger.LogInformation("Skipping budget reminder email for user {UserRowId} as these reminders are disabled",
                 user.RowId);
 
             return;
@@ -60,7 +60,7 @@ internal sealed class UpcomingIncomeExpenseReminderService : IUpcomingIncomeExpe
 
         if (reminderSettings.LocalHourTrigger != currentLocalHour)
         {
-            _logger.LogInformation("Skipping upcoming income/expense reminder email for user {UserRowId} as the current local hour {CurrentHour} does not match the configured reminder local hour {ReminderHour}",
+            _logger.LogInformation("Skipping budget reminder email for user {UserRowId} as the current local hour {CurrentHour} does not match the configured reminder local hour {ReminderHour}",
                 user.RowId, currentLocalHour, reminderSettings.LocalHourTrigger);
 
             return;
@@ -70,7 +70,7 @@ internal sealed class UpcomingIncomeExpenseReminderService : IUpcomingIncomeExpe
 
         var includedExpenses = await GetExpensesReminder(currentLocalDate, reminderSettings.ReminderDays, cancellationToken).ConfigureAwait(false);
 
-        var reminderInfo = new EmailUpcomingIncomeExpenseInfo
+        var reminderInfo = new EmailBudgetReminderInfo
         {
             GeneratedDateTime = _timeProvider.GetLocalDateTimeNow(),
 
@@ -81,25 +81,27 @@ internal sealed class UpcomingIncomeExpenseReminderService : IUpcomingIncomeExpe
             DisplayName = user.DisplayName,
             LastLoggedInUtc = user.LastLoggedInUtc.ConvertToLocalDateTime(_appContext)!.Value,
 
-            UserIncomes = includedIncomes.SelectToList(income => new EmailUpcomingIncomeExpenseInfo.IncomeInfo
+            UserIncomes = includedIncomes.SelectToList(income => new EmailBudgetReminderInfo.IncomeInfo
             {
                 Description = income.Description,
                 Amount = income.Amount,
                 NextDue = income.NextDue,
+                DaysDue = income.NextDue.DayNumber - currentLocalDate.DayNumber,
                 Note = income.Note
             }),
 
-            UserExpenses = includedExpenses.SelectToList(expense => new EmailUpcomingIncomeExpenseInfo.ExpenseInfo
+            UserExpenses = includedExpenses.SelectToList(expense => new EmailBudgetReminderInfo.ExpenseInfo
             {
                 Description = expense.Description,
                 Amount = expense.Amount,
                 NextDue = expense.NextDue,
+                DaysDue = expense.NextDue.DayNumber - currentLocalDate.DayNumber,
                 Note = expense.Note
             })
         };
 
         await _sendEmailChannelWriter
-            .SubmitAsync(EmailType.UpcomingIncomeExpense, reminderInfo, cancellationToken)
+            .SubmitAsync(EmailType.BudgetReminder, reminderInfo, cancellationToken)
             .ConfigureAwait(false);
     }
 

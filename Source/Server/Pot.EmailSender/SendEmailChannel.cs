@@ -105,7 +105,7 @@ internal sealed class SendEmailChannel : ISendEmailChannelReader, ISendEmailChan
             EmailType.PendingApproval => (config, token) => emailSender.SendPendingApprovalEmailAsync((EmailPendingApprovalInfo)config, token),
             EmailType.ApprovalAccepted => (config, token) => emailSender.SendApprovalAcceptedEmailAsync((EmailApprovalStatusInfo)config, token),
             EmailType.ApprovalRejected => (config, token) => emailSender.SendApprovalRejectedEmailAsync((EmailApprovalStatusInfo)config, token),
-            EmailType.UpcomingIncomeExpense => (config, token) => emailSender.SendUpcomingIncomeExpenseEmailAsync((EmailUpcomingIncomeExpenseInfo)config, token),
+            EmailType.BudgetReminder => (config, token) => emailSender.SendBudgetReminderEmailAsync((EmailBudgetReminderInfo)config, token),
 
             _ => throw new NotSupportedException($"The email type '{channelConfig.EmailType}' is not supported.")
         };

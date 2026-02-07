@@ -9,11 +9,11 @@ using Pot.EmailSender.Configuration;
 using Pot.RazorComponents;
 using Pot.RazorComponents.Emails.ApprovalAccepted;
 using Pot.RazorComponents.Emails.ApprovalRejected;
+using Pot.RazorComponents.Emails.BudgetReminder;
 using Pot.RazorComponents.Emails.ChangePassword;
 using Pot.RazorComponents.Emails.Invitation;
 using Pot.RazorComponents.Emails.PendingApproval;
 using Pot.RazorComponents.Emails.Signup;
-using Pot.RazorComponents.Emails.UpcomingIncomeExpense;
 using Pot.RazorComponents.Models;
 using System.Reflection;
 
@@ -27,7 +27,7 @@ internal sealed class EmailSender : IEmailSender
     private const string PendingApprovalSubject = "POT - Pending Approval";
     private const string ApprovalAcceptedSubject = "POT - Approval Accepted";
     private const string ApprovalRejectedSubject = "POT - Approval Denied";
-    private const string UpcomingIncomeExpenseSubject = "POT - Upcoming Incomes & Expenses";
+    private const string BudgetReminderSubject = "POT - Budget Reminder";
 
     private readonly IRazorComponentRenderer _razorRenderer;
     private readonly SmtpConfiguration _smtpConfiguration;
@@ -82,11 +82,11 @@ internal sealed class EmailSender : IEmailSender
         return SendEmailAsync<ApprovalRejectedEmail>(config, ApprovalRejectedSubject, PlainTextEmailTemplateLoader.ApprovalRejected, cancellationToken);
     }
 
-    public Task SendUpcomingIncomeExpenseEmailAsync(EmailUpcomingIncomeExpenseInfo config, CancellationToken cancellationToken)
+    public Task SendBudgetReminderEmailAsync(EmailBudgetReminderInfo config, CancellationToken cancellationToken)
     {
         _logger.LogCall(this, new { config.Username, IncomeCount = config.UserIncomes.Count, ExpenseCount = config.UserExpenses.Count });
 
-        return SendEmailAsync<UpcomingIncomeExpenseEmail>(config, UpcomingIncomeExpenseSubject, PlainTextEmailTemplateLoader.UpcomingIncomeExpense, cancellationToken);
+        return SendEmailAsync<BudgetReminderEmail>(config, BudgetReminderSubject, PlainTextEmailTemplateLoader.BudgetReminder, cancellationToken);
     }
 
     private async Task SendEmailAsync<TEmailComponent>(EmailConfigBase config, string subject, string plainTextTemplateName,
