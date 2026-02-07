@@ -5,13 +5,15 @@ import { ErrorSheet, LoadingOverlay } from '@/components/feedback';
 import { PageHeader } from '@/components/layout';
 import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
-import { usePermissions } from '@/hooks';
+import { useIsMobile, usePermissions } from '@/hooks';
 
+import { PendingApprovalCardGrid } from '../components/PendingApprovalCardGrid';
 import { PendingApprovalsTable } from '../components/PendingApprovalsTable';
 
 function PendingApprovalsPage() {
   const { hasAnyPermission } = usePermissions();
   const { error, setError } = useErrorContext();
+  const isMobile = useIsMobile();
 
   const {
     data: approvalsData,
@@ -58,7 +60,7 @@ function PendingApprovalsPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20">
+    <div className="flex flex-col h-screen overflow-hidden bg-gradient-to-br from-background to-muted/20">
       <PageHeader
         title="Pending Approvals"
         subtitle="Review and approve user signups"
@@ -66,7 +68,11 @@ function PendingApprovalsPage() {
       <div className="flex-1 min-h-0 flex flex-col p-6 gap-4">
         <div className="flex-1 min-h-0 flex flex-col relative">
           {isLoading && <LoadingOverlay />}
-          <PendingApprovalsTable users={pendingApprovals} />
+          {isMobile ? (
+            <PendingApprovalCardGrid users={pendingApprovals} />
+          ) : (
+            <PendingApprovalsTable users={pendingApprovals} />
+          )}
         </div>
       </div>
 
