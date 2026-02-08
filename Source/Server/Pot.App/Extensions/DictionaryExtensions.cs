@@ -2,7 +2,7 @@
 
 internal static class DictionaryExtensions
 {
-    extension(Dictionary<string, string?> keyedSettings)
+    extension(Dictionary<string, string> keyedSettings)
     {
         public bool GetBool(string keyName, bool defaultValue)
         {
