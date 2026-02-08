@@ -7,6 +7,6 @@ public abstract class ResponseBase
     [Description("The resource identifier")]
     public Guid RowId { get; init; }
 
-    [Description("A tag indicating when the resource was created or updated")]
+    [Description("The entity tag for optimistic concurrency")]
     public long Etag { get; init; }
 }
