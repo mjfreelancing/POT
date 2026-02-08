@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Pot.Data.Annotations;
 using Pot.Shared.Enumerations;
-using System.ComponentModel.DataAnnotations;
 
 namespace Pot.Data.Entities;
 
@@ -12,11 +10,6 @@ public sealed class SettingEntity : EntityBase
 
     public required string Key { get; set; }
     public string? Value { get; set; }
-
-    [Required]
-    [MediumString]
-    [Citext]
-    public required string Description { get; set; }
 
     public SiteEntity? Site { get; set; }
 }
