@@ -9,7 +9,7 @@ public sealed class SettingEntity : EntityBase
     public required SettingCategory Category { get; set; }
 
     public required string Key { get; set; }
-    public string? Value { get; set; }
+    public required string Value { get; set; }
 
     public SiteEntity? Site { get; set; }
 }
