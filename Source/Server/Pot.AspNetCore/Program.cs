@@ -9,6 +9,7 @@ using Pot.AspNetCore.Features.Maintenance.Extensions;
 using Pot.AspNetCore.Features.Me.Extensions;
 using Pot.AspNetCore.Features.Projections.Extensions;
 using Pot.AspNetCore.Features.Roles.Extensions;
+using Pot.AspNetCore.Features.Settings.Extensions;
 using Pot.AspNetCore.Features.Sites.Extensions;
 using Pot.AspNetCore.Features.Users.Extensions;
 using Pot.Data;
@@ -76,7 +77,8 @@ public class Program
            .AddExpenseEndpoints()
            .AddAccrualsEndpoints()
            .AddProjectionsEndpoints()
-           .AddMaintenanceEndpoints();
+           .AddMaintenanceEndpoints()
+           .AddSettingsEndpoints();
 
         await app.RunAsync();
     }

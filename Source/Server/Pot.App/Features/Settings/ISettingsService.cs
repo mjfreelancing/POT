@@ -5,5 +5,5 @@ namespace Pot.App.Features.Settings;
 
 public interface ISettingsService : IPotScopedDependency
 {
-    Task<EmailUpcomingReminderSettings> GetEmailBudgetReminderSettingsAsync(CancellationToken cancellationToken);
+    Task<EmailBudgetReminderSettings> GetEmailBudgetReminderSettingsAsync(CancellationToken cancellationToken);
 }

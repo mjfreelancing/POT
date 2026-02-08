@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Pot.App.Extensions;
 using Pot.App.Features.Settings.Models;
 using Pot.Data.Repositories.Settings;
+using Pot.Shared.Enumerations;
 
 namespace Pot.App.Features.Settings;
 
@@ -18,22 +19,22 @@ internal sealed class SettingsService : ISettingsService
         _logger = logger.WhenNotNull();
     }
 
-    public async Task<EmailUpcomingReminderSettings> GetEmailBudgetReminderSettingsAsync(CancellationToken cancellationToken)
+    public async Task<EmailBudgetReminderSettings> GetEmailBudgetReminderSettingsAsync(CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
         // This is auto-filtered to the user's site
         var settings = await _settingsRepository
-            .GetEmailBudgetRemindersAsync(cancellationToken)
+            .GetSettingsForCategoryAsync(SettingCategory.EmailBudgetReminder, cancellationToken)
             .ConfigureAwait(false);
 
         var keyedSettings = settings.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-        return new EmailUpcomingReminderSettings
+        return new EmailBudgetReminderSettings
         {
-            Enabled = keyedSettings.GetBool(nameof(EmailUpcomingReminderSettings.Enabled), false),
-            ReminderDays = keyedSettings.GetInt(nameof(EmailUpcomingReminderSettings.ReminderDays), 7),
-            LocalHourTrigger = keyedSettings.GetInt(nameof(EmailUpcomingReminderSettings.LocalHourTrigger), 6)
+            Enabled = keyedSettings.GetBool(nameof(EmailBudgetReminderSettings.Enabled), false),
+            ReminderDays = keyedSettings.GetInt(nameof(EmailBudgetReminderSettings.ReminderDays), 7),
+            LocalHourTrigger = keyedSettings.GetInt(nameof(EmailBudgetReminderSettings.LocalHourTrigger), 6)
         };
     }
 }
