@@ -1,6 +1,4 @@
-﻿using AllOverIt.Extensions;
-
-namespace Pot.App.Extensions;
+﻿namespace Pot.App.Extensions;
 
 internal static class DictionaryExtensions
 {
@@ -8,22 +6,22 @@ internal static class DictionaryExtensions
     {
         public bool GetBool(string keyName, bool defaultValue)
         {
-            return keyedSettings.TryGetValue(keyName, out var stringValue) && bool.TryParse(stringValue, out var value)
-                ? value
+            return keyedSettings.TryGetValue(keyName, out var stringValue)
+                ? stringValue.AsBoolean(defaultValue)
                 : defaultValue;
         }
 
         public string GetString(string keyName, string defaultValue)
         {
-            return keyedSettings.TryGetValue(keyName, out var value) && value.IsNotNullOrEmpty()
-                ? value
+            return keyedSettings.TryGetValue(keyName, out var stringValue)
+                ? stringValue.AsString(defaultValue)        // Considers null values and empty strings as not set - default value will be used
                 : defaultValue;
         }
 
         public int GetInt(string keyName, int defaultValue)
         {
-            return keyedSettings.TryGetValue(keyName, out var stringValue) && int.TryParse(stringValue, out var value)
-                ? value
+            return keyedSettings.TryGetValue(keyName, out var stringValue)
+                ? stringValue.AsInt(defaultValue)
                 : defaultValue;
         }
     }
