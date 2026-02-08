@@ -1,6 +1,5 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.GenericHost;
-using Pot.App;
 using Pot.App.Concerns.Time;
 using Pot.App.Concerns.Time.Extensions;
 using Pot.App.Extensions;
@@ -38,18 +37,22 @@ internal sealed class BudgetReminderEmailWorker : BackgroundWorker
 
                 try
                 {
-                    // We need to set the current user context so we can load the user and their site preferences
-                    var appContext = serviceProvider.GetRequiredService<IAppContext>();
-
-                    var reminderService = serviceProvider.GetRequiredService<IBudgetReminderService>();
-
                     var allUsersService = serviceProvider.GetRequiredService<IGetAllUsersService>();
-                    var allUsers = await allUsersService.GetAllEnabledAdminsAsync(stoppingToken).ConfigureAwait(false);
+
+                    var allUsers = await allUsersService
+                        .GetAllEnabledAdminsAsync(stoppingToken)
+                        .ConfigureAwait(false);
 
                     foreach (var user in allUsers)
                     {
-                        var userContext = serviceProvider.GetRequiredService<ICurrentUserContext>();
+                        // We need a new scope for each user to ensure the site filtering is applied correctly
+                        using var userScope = _scopeFactory.CreateScope();
+                        var userServiceProvider = userScope.ServiceProvider;
+
+                        var userContext = userServiceProvider.GetRequiredService<ICurrentUserContext>();
                         userContext.SetUserRowId(user.RowId);
+
+                        var reminderService = userServiceProvider.GetRequiredService<IBudgetReminderService>();
 
                         await reminderService
                             .SendRemindersAsync(stoppingToken)
