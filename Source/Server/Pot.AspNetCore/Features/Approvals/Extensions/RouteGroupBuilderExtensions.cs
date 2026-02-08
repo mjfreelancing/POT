@@ -11,6 +11,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Get all pending approvals")
             .WithDescription("Get all pending approvals")
             .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
@@ -25,6 +26,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Update a user pending approval")
             .WithDescription("Update a user pending approval")
             .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);

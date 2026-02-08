@@ -13,6 +13,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Get all incomes")
             .WithDescription("Get all income details")
             .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
@@ -27,6 +28,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Get income")
             .WithDescription("Get details for an existing income source")
             .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
@@ -43,6 +45,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Create income")
             .WithDescription("Create a new income source")
             .ProducesProblem(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
@@ -58,6 +61,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Update income")
             .WithDescription("Updates existing income details")
             .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
@@ -74,6 +78,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Delete income")
             .WithDescription("Deletes existing income details")
             .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
@@ -89,6 +94,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Renew incomes")
             .WithDescription("Renews selected incomes")
             .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
@@ -104,6 +110,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Toggle exclude incomes")
             .WithDescription("Toggles the 'exclude from calculations' status of selected incomes")
             .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 

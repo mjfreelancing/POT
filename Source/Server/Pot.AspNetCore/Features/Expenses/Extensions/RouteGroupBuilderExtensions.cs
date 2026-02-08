@@ -15,6 +15,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Get all expenses")
             .WithDescription("Get all expense details")
             .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
@@ -29,6 +30,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Get expense")
             .WithDescription("Get details for an existing expense")
             .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
@@ -45,6 +47,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Create expense")
             .WithDescription("Create new expense details")
             .ProducesProblem(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
@@ -60,6 +63,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Update expense")
             .WithDescription("Updates existing expense details")
             .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
@@ -76,6 +80,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Delete expense")
             .WithDescription("Deletes an existing expense")
             .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
@@ -91,6 +96,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Renew expenses")
             .WithDescription("Renews selected expenses")
             .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
@@ -106,6 +112,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Toggle exclude expenses")
             .WithDescription("Toggles the 'exclude from calculations' status of selected expenses")
             .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 

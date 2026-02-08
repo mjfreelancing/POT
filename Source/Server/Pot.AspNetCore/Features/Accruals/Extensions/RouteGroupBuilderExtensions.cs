@@ -11,6 +11,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Accruals status")
             .WithDescription("Get accruals status for all accounts")
             .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
@@ -26,6 +27,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Accrue expenses")
             .WithDescription("Accrue expenses associated with one or more accounts")
             .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 

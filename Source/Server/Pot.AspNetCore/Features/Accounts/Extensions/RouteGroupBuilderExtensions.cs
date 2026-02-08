@@ -13,6 +13,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Get all accounts")
             .WithDescription("Get all account details")
             .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem((int)HttpStatusCode.InternalServerError);
 
         return routeGroupBuilder;
@@ -27,6 +28,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Get account")
             .WithDescription("Get details for an existing account")
             .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
@@ -43,6 +45,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Create account")
             .WithDescription("Create new account details")
             .ProducesProblem(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
@@ -58,6 +61,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Update account")
             .WithDescription("Updates existing account details")
             .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
@@ -74,6 +78,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Delete account")
             .WithDescription("Deletes existing account details")
             .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 

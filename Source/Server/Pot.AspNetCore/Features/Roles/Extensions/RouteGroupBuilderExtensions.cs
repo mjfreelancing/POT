@@ -11,6 +11,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Get all roles")
             .WithDescription("Get all roles")
             .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
