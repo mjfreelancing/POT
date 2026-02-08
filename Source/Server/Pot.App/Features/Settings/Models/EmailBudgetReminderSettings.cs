@@ -2,7 +2,7 @@
 
 namespace Pot.App.Features.Settings.Models;
 
-// Default setting values for the category: SettingCategory.EmailBudgetReminders
+// Default setting values for the category: SettingCategory.EmailBudgetReminder
 public sealed class EmailBudgetReminderSettings
 {
     internal static Dictionary<string, SettingValueMetadata> Defaults = new()
