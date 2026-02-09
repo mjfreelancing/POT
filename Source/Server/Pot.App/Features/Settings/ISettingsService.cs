@@ -1,4 +1,4 @@
-﻿using Pot.App.Features.Settings.Models;
+﻿using Pot.App.Features.Settings.Models.EmailBudgetReminder;
 using Pot.Shared.DependencyInjection;
 
 namespace Pot.App.Features.Settings;

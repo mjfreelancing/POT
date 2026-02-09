@@ -2,7 +2,7 @@
 using AllOverIt.Logging.Extensions;
 using Microsoft.Extensions.Logging;
 using Pot.App.Extensions;
-using Pot.App.Features.Settings.Models;
+using Pot.App.Features.Settings.Models.EmailBudgetReminder;
 using Pot.Data.Repositories.Settings;
 using Pot.Shared.Enumerations;
 

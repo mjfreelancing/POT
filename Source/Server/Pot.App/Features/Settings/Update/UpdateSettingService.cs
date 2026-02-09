@@ -3,17 +3,30 @@ using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
 using Pot.App.Extensions;
+using Pot.App.Features.Settings.Models;
+using Pot.App.Features.Settings.Models.EmailBudgetReminder;
 using Pot.App.Features.Settings.Update.EntityChecks;
 using Pot.App.Features.Settings.Update.Mappings;
 using Pot.App.Features.Settings.Update.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Settings;
 using Pot.Data.Repositories.Sites;
+using Pot.Shared.Enumerations;
+using System.Diagnostics;
 
 namespace Pot.App.Features.Settings.Update;
 
 internal sealed class UpdateSettingService : IUpdateSettingService
 {
+    // Registry of setting validators mapped by category.
+    // Each category maps to a generic validator function that delegates to the category-specific
+    // validation implementation (via ISettingValueValidatable interface).
+    // New setting categories must be registered here to enable validation.
+    private static readonly Dictionary<SettingCategory, Func<string, string, bool>> SettingValueValidators = new()
+    {
+        [SettingCategory.EmailBudgetReminder] = ValidateSettingValue<EmailBudgetReminderSettings>
+    };
+
     private readonly IPersistableSettingsRepository _settingsRepository;
     private readonly ISiteRepository _siteRepository;
     private readonly IPreUpdateChecker _preUpdateChecker;
@@ -52,6 +65,28 @@ internal sealed class UpdateSettingService : IUpdateSettingService
                 return EnrichedResult.Fail<Output>(problemDetails);
             }
 
+
+            // Validates the setting value before persisting to the database.
+            //
+            // This validation ensures:
+            //   1. The setting category has a registered validator (throws UnreachableException if not found)
+            //   2. The setting key is recognized for the category (throws UnreachableException if not found)
+            //   3. The value can be parsed to the correct type (e.g., "true" -> bool, "7" -> int)
+            //   4. The value meets any range or business rule constraints (e.g., hour 0-23, days 0-31)
+            // 
+            // The validation is performed via a two-level lookup:
+            //   - First level: SettingValueValidators dictionary maps category to a validator function
+            //   - Second level: Category-specific validator (e.g., EmailBudgetReminderSettings) maps key to validation logic
+            // 
+            // Returns true if validation passes, false otherwise
+            var isValid = ValidateSettingValue(input.Category, input.Key, input.Value);
+
+
+            // TODO: Expand validation result to include details on why validation failed (e.g., unrecognized key, parse error, out of range)
+            //       so it can be returned to the API as a problem details response instead of a generic "Invalid setting value" message.
+
+
+
             if (settingToUpdate is null)
             {
                 // Create new setting
@@ -81,5 +116,36 @@ internal sealed class UpdateSettingService : IUpdateSettingService
 
             return EnrichedResult.Success(output);
         }
+    }
+
+    /// <summary>
+    /// Validates a setting value for a specific category and key.
+    /// This is the first-level lookup that routes validation to the appropriate category-specific validator.
+    /// </summary>
+    /// <param name="category">The setting category (e.g., EmailBudgetReminder)</param>
+    /// <param name="keyName">The setting key name (e.g., "Enabled", "ReminderDays")</param>
+    /// <param name="value">The string value to validate</param>
+    /// <returns><see langword="True"/> if the value is valid for the category/key combination, <see langword="False"/> otherwise</returns>
+    /// <exception cref="UnreachableException">Thrown when no validator is registered for the category</exception>
+    private static bool ValidateSettingValue(SettingCategory category, string keyName, string value)
+    {
+        var validator = SettingValueValidators.TryGetValue(category, out var validatorFunc)
+            ? validatorFunc
+            : throw new UnreachableException($"No setting value validator found for category '{category.Name}'");
+
+        return validator.Invoke(keyName, value);
+    }
+
+    /// <summary>
+    /// Generic validator that delegates to the category-specific validation implementation.
+    /// This method acts as a bridge between the validator registry and the static interface method.
+    /// </summary>
+    /// <typeparam name="TSetting">The setting type that implements <see cref="ISettingValueValidatable"/> (e.g., EmailBudgetReminderSettings)</typeparam>
+    /// <param name="keyName">The setting key name within the category</param>
+    /// <param name="value">The string value to validate</param>
+    /// <returns><see langword="True"/> if the value passes the category-specific validation rules, <see langword="False"/> otherwise</returns>
+    private static bool ValidateSettingValue<TSetting>(string keyName, string value) where TSetting : ISettingValueValidatable
+    {
+        return TSetting.ValidateValue(keyName, value);
     }
 }

@@ -14,7 +14,7 @@ internal static class DictionaryExtensions
         public string GetString(string keyName, string defaultValue)
         {
             return keyedSettings.TryGetValue(keyName, out var stringValue)
-                ? stringValue.AsString(defaultValue)        // Considers null values and empty strings as not set - default value will be used
+                ? stringValue.AsNonEmptyString(defaultValue)        // Considers null values and empty strings as not set - default value will be used
                 : defaultValue;
         }
 
