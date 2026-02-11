@@ -85,6 +85,12 @@ public sealed partial class EmailBudgetReminderSettings
     /// </remarks>
     public static ProblemDetailsError? ValidateValue(string keyName, string value)
     {
+        // There's no benefit trying to move this method to ISettingValueValidatable because:
+        // 1. C# static interface members cannot access implementing type's static members (ValueValidators)
+        // 2. Each implementation must provide its own ValueValidators dictionary anyway
+        // 3. Error messages need the specific category name (nameof(EmailBudgetReminderSettings))
+        // 4. This keeps the implementation explicit, clear, and maintainable (KISS principle)
+        // 5. The "duplication" is only 3 lines per setting category - negligible cost for clarity
         return ValueValidators.TryGetValue(keyName, out var validator)
             ? validator.Invoke(value)
             : throw new UnreachableException($"Unknown setting key name '{keyName}' for category '{nameof(EmailBudgetReminderSettings)}'");
