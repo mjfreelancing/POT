@@ -1,4 +1,5 @@
-﻿using Pot.App.Extensions;
+﻿using Pot.App.Errors;
+using Pot.App.Extensions;
 using System.Diagnostics;
 
 namespace Pot.App.Features.Settings.Models.EmailBudgetReminder;
@@ -21,12 +22,49 @@ public sealed partial class EmailBudgetReminderSettings
     /// - Enabled: Must be parseable to boolean (case-insensitive "true"/"false")
     /// - LocalHourTrigger: Must be an integer between 0-23 (valid hours in a day)
     /// - ReminderDays: Must be an integer between 0-31 (reasonable reminder period)
+    /// 
+    /// Returns null if validation passes, otherwise returns a ProblemDetailsError with details about the failure.
     /// </remarks>
-    private static readonly Dictionary<string, Func<string, bool>> ValueValidators = new()
+    private static readonly Dictionary<string, Func<string, ProblemDetailsError?>> ValueValidators = new()
     {
-        [nameof(Enabled)] = stringValue => stringValue.TryAsBoolean(out _),
-        [nameof(LocalHourTrigger)] = stringValue => stringValue.TryAsInt(out int value) && value >= 0 && value < 24,
-        [nameof(ReminderDays)] = stringValue => stringValue.TryAsInt(out var value) && value >= 0 && value <= 31
+        [nameof(Enabled)] = stringValue =>
+        {
+            if (!stringValue.TryAsBoolean(out _))
+            {
+                return ProblemDetailsErrorFactory.CreateUnprocessableEntityError(
+                    nameof(Enabled),
+                    stringValue,
+                    "Value must be 'true' or 'false'");
+            }
+
+            return null;
+        },
+
+        [nameof(LocalHourTrigger)] = stringValue =>
+        {
+            if (!stringValue.TryAsInt(out int value) || value < 0 || value >= 24)
+            {
+                return ProblemDetailsErrorFactory.CreateUnprocessableEntityError(
+                    nameof(LocalHourTrigger),
+                    stringValue,
+                    "Value must be between 0 and 23 (inclusive)");
+            }
+
+            return null;
+        },
+
+        [nameof(ReminderDays)] = stringValue =>
+        {
+            if (!stringValue.TryAsInt(out var value) || value < 0 || value > 31)
+            {
+                return ProblemDetailsErrorFactory.CreateUnprocessableEntityError(
+                    nameof(ReminderDays),
+                    stringValue,
+                    "Value must be between 0 and 31 (inclusive)");
+            }
+
+            return null;
+        }
     };
 
     /// <summary>
@@ -35,7 +73,7 @@ public sealed partial class EmailBudgetReminderSettings
     /// </summary>
     /// <param name="keyName">The setting key name (e.g., "Enabled", "ReminderDays", "LocalHourTrigger")</param>
     /// <param name="value">The string value to validate</param>
-    /// <returns>True if the value passes validation for the specified key, false otherwise</returns>
+    /// <returns><see cref="ProblemDetailsError"/> if the value is invalid for the specified key, <see langword="null"/> otherwise</returns>    /// 
     /// <exception cref="UnreachableException">Thrown when keyName is not a recognized setting key for this category</exception>
     /// <remarks>
     /// This method is called during:
@@ -45,7 +83,7 @@ public sealed partial class EmailBudgetReminderSettings
     /// The validation is invoked through the following call chain:
     /// UpdateSettingService → SettingValueValidators[category] → ValidateSettingValue&lt;T&gt; → this method
     /// </remarks>
-    public static bool ValidateValue(string keyName, string value)
+    public static ProblemDetailsError? ValidateValue(string keyName, string value)
     {
         return ValueValidators.TryGetValue(keyName, out var validator)
             ? validator.Invoke(value)

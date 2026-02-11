@@ -1,4 +1,6 @@
-﻿namespace Pot.App.Features.Settings.Models;
+﻿using Pot.App.Errors;
+
+namespace Pot.App.Features.Settings.Models;
 
 /// <summary>
 /// Interface for setting types that provide value validation.
@@ -17,10 +19,10 @@ public interface ISettingValueValidatable
     /// </summary>
     /// <param name="keyName">The setting key name (e.g., "Enabled", "ReminderDays")</param>
     /// <param name="stringValue">The raw string value to validate</param>
-    /// <returns><see langword="True"/> if the value is valid for the specified key, <see langword="False"/> otherwise</returns>
+    /// <returns><see cref="ProblemDetailsError"/> if the value is invalid for the specified key, <see langword="null"/> otherwise</returns>    /// 
     /// <exception cref="UnreachableException">Thrown when the keyName is not recognized for the setting category</exception>
     /// <remarks>
     /// This method is called during API requests to validate user-provided setting values before database persistence.
     /// </remarks>
-    static abstract bool ValidateValue(string keyName, string stringValue);
+    static abstract ProblemDetailsError? ValidateValue(string keyName, string stringValue);
 }
