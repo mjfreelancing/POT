@@ -23,15 +23,15 @@ public sealed partial class EmailBudgetReminderSettings
     /// - LocalHourTrigger: Must be an integer between 0-23 (valid hours in a day)
     /// - ReminderDays: Must be an integer between 0-31 (reasonable reminder period)
     /// 
-    /// Returns null if validation passes, otherwise returns a ProblemDetailsError with details about the failure.
+    /// Returns null if validation passes, otherwise returns an ApiDetailsError with details about the failure.
     /// </remarks>
-    private static readonly Dictionary<string, Func<string, ProblemDetailsError?>> ValueValidators = new()
+    private static readonly Dictionary<string, Func<string, ApiDetailError?>> ValueValidators = new()
     {
         [nameof(Enabled)] = stringValue =>
         {
             if (!stringValue.TryAsBoolean(out _))
             {
-                return ProblemDetailsErrorFactory.CreateUnprocessableEntityError(
+                return ApiDetailErrorFactory.CreateUnprocessableEntityError(
                     nameof(Enabled),
                     stringValue,
                     "Value must be 'true' or 'false'");
@@ -44,7 +44,7 @@ public sealed partial class EmailBudgetReminderSettings
         {
             if (!stringValue.TryAsInt(out int value) || value < 0 || value >= 24)
             {
-                return ProblemDetailsErrorFactory.CreateUnprocessableEntityError(
+                return ApiDetailErrorFactory.CreateUnprocessableEntityError(
                     nameof(LocalHourTrigger),
                     stringValue,
                     "Value must be between 0 and 23 (inclusive)");
@@ -57,7 +57,7 @@ public sealed partial class EmailBudgetReminderSettings
         {
             if (!stringValue.TryAsInt(out var value) || value < 0 || value > 31)
             {
-                return ProblemDetailsErrorFactory.CreateUnprocessableEntityError(
+                return ApiDetailErrorFactory.CreateUnprocessableEntityError(
                     nameof(ReminderDays),
                     stringValue,
                     "Value must be between 0 and 31 (inclusive)");
@@ -73,7 +73,7 @@ public sealed partial class EmailBudgetReminderSettings
     /// </summary>
     /// <param name="keyName">The setting key name (e.g., "Enabled", "ReminderDays", "LocalHourTrigger")</param>
     /// <param name="value">The string value to validate</param>
-    /// <returns><see cref="ProblemDetailsError"/> if the value is invalid for the specified key, <see langword="null"/> otherwise</returns>    /// 
+    /// <returns><see cref="ApiDetailError"/> if the value is invalid for the specified key, <see langword="null"/> otherwise</returns>    /// 
     /// <exception cref="UnreachableException">Thrown when keyName is not a recognized setting key for this category</exception>
     /// <remarks>
     /// This method is called during:
@@ -83,7 +83,7 @@ public sealed partial class EmailBudgetReminderSettings
     /// The validation is invoked through the following call chain:
     /// UpdateSettingService → SettingValueValidators[category] → ValidateSettingValue&lt;T&gt; → this method
     /// </remarks>
-    public static ProblemDetailsError? ValidateValue(string keyName, string value)
+    public static ApiDetailError? ValidateValue(string keyName, string value)
     {
         // There's no benefit trying to move this method to ISettingValueValidatable because:
         // 1. C# static interface members cannot access implementing type's static members (ValueValidators)

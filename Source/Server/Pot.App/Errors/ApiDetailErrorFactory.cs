@@ -2,11 +2,11 @@
 
 namespace Pot.App.Errors;
 
-public static class ProblemDetailsErrorFactory
+public static class ApiDetailErrorFactory
 {
-    public static ProblemDetailsError CreateEntityExistsError(string propertyName, object? attemptedValue, string errorMessage)
+    public static ApiDetailError CreateEntityExistsError(string propertyName, object? attemptedValue, string errorMessage)
     {
-        return new ProblemDetailsError(ProblemType.Conflict)
+        return new ApiDetailError(ErrorType.Conflict)
         {
             ErrorCode = ErrorCodes.Conflict,
             PropertyName = propertyName,
@@ -15,9 +15,9 @@ public static class ProblemDetailsErrorFactory
         };
     }
 
-    public static ProblemDetailsError CreateEntityNotFoundError(object? attemptedValue, string errorMessage)
+    public static ApiDetailError CreateEntityNotFoundError(object? attemptedValue, string errorMessage)
     {
-        return new ProblemDetailsError(ProblemType.NotFound)
+        return new ApiDetailError(ErrorType.NotFound)
         {
             ErrorCode = ErrorCodes.NotFound,
             PropertyName = string.Empty,
@@ -26,9 +26,9 @@ public static class ProblemDetailsErrorFactory
         };
     }
 
-    public static ProblemDetailsError CreateEntityConstraintError(string propertyName, object? attemptedValue, string errorMessage)
+    public static ApiDetailError CreateEntityConstraintError(string propertyName, object? attemptedValue, string errorMessage)
     {
-        return new ProblemDetailsError(ProblemType.Constraint)
+        return new ApiDetailError(ErrorType.Constraint)
         {
             ErrorCode = ErrorCodes.Constraint,
             PropertyName = propertyName,
@@ -37,9 +37,9 @@ public static class ProblemDetailsErrorFactory
         };
     }
 
-    public static ProblemDetailsError CreateAuthError(string errorMessage)
+    public static ApiDetailError CreateAuthError(string errorMessage)
     {
-        return new ProblemDetailsError(ProblemType.Auth)
+        return new ApiDetailError(ErrorType.Auth)
         {
             ErrorCode = ErrorCodes.Auth,
             PropertyName = string.Empty,
@@ -48,18 +48,18 @@ public static class ProblemDetailsErrorFactory
         };
     }
 
-    public static ProblemDetailsBasicError CreateUnprocessableEntityError(string errorMessage)
+    public static ApiBasicError CreateUnprocessableEntityError(string errorMessage)
     {
-        return new ProblemDetailsBasicError(ProblemType.UnprocessableEntity)
+        return new ApiBasicError(ErrorType.UnprocessableEntity)
         {
             ErrorCode = ErrorCodes.Invalid,
             ErrorMessage = errorMessage
         };
     }
 
-    public static ProblemDetailsError CreateUnprocessableEntityError(string propertyName, object? attemptedValue, string errorMessage)
+    public static ApiDetailError CreateUnprocessableEntityError(string propertyName, object? attemptedValue, string errorMessage)
     {
-        return new ProblemDetailsError(ProblemType.UnprocessableEntity)
+        return new ApiDetailError(ErrorType.UnprocessableEntity)
         {
             ErrorCode = ErrorCodes.Invalid,
             PropertyName = propertyName,
@@ -68,9 +68,9 @@ public static class ProblemDetailsErrorFactory
         };
     }
 
-    public static ProblemDetailsError CreateEtagConflict(string entityType, object? attemptedValue)
+    public static ApiDetailError CreateEtagConflict(string entityType, object? attemptedValue)
     {
-        return new ProblemDetailsError(ProblemType.Conflict)
+        return new ApiDetailError(ErrorType.Conflict)
         {
             ErrorCode = ErrorCodes.Conflict,
             PropertyName = nameof(EntityBase.Etag),
@@ -79,9 +79,9 @@ public static class ProblemDetailsErrorFactory
         };
     }
 
-    public static ProblemDetailsError CreateTooManyRequests(double totalSeconds)
+    public static ApiDetailError CreateTooManyRequests(double totalSeconds)
     {
-        return new ProblemDetailsError(ProblemType.TooManyRequests)
+        return new ApiDetailError(ErrorType.TooManyRequests)
         {
             ErrorCode = ErrorCodes.TooManyRequests,
             ErrorMessage = $"Too many requests. Please wait and try again after {totalSeconds} seconds."

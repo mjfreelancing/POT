@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.App.Errors;
 using Pot.AspNetCore.Extensions;
 
@@ -8,7 +8,7 @@ internal static class AuthUtils
 {
     public static ProblemHttpResult CreateAuthErrorResult()
     {
-        var authError = ProblemDetailsErrorFactory.CreateAuthError("The username or password is invalid");
+        var authError = ApiDetailErrorFactory.CreateAuthError("The username or password is invalid");
 
         return TypedResults.Problem(authError.ToProblemDetails());
     }

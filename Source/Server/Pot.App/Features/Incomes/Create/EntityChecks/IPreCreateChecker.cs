@@ -6,5 +6,5 @@ namespace Pot.App.Features.Incomes.Create.EntityChecks;
 
 public interface IPreCreateChecker : IPotScopedDependency
 {
-    Task<ProblemDetailsError?> CanSaveAsync(IncomeEntity incomeToCreate, CancellationToken cancellationToken);
+    Task<ApiDetailError?> CanSaveAsync(IncomeEntity incomeToCreate, CancellationToken cancellationToken);
 }

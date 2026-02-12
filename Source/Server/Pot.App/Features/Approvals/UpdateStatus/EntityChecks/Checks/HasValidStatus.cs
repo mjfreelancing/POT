@@ -16,7 +16,7 @@ internal sealed class HasValidStatus : PreUpdateCheckBase
         _logger = logger.WhenNotNull();
     }
 
-    public override async Task<ProblemDetailsError?> HandleAsync(InputState state, CancellationToken cancellationToken)
+    public override async Task<ApiDetailError?> HandleAsync(InputState state, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
@@ -25,7 +25,7 @@ internal sealed class HasValidStatus : PreUpdateCheckBase
 
         if (userToUpdate.Status != UserStatus.Approval)
         {
-            return ProblemDetailsErrorFactory.CreateUnprocessableEntityError(nameof(Input.Status), input.Status, "The user is not in a Pending Approval status");
+            return ApiDetailErrorFactory.CreateUnprocessableEntityError(nameof(Input.Status), input.Status, "The user is not in a Pending Approval status");
         }
 
         return await base.HandleAsync(state, cancellationToken);

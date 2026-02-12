@@ -5,9 +5,9 @@ namespace Pot.App.Concerns.Validation.Extensions;
 
 public static class ValidationResultExtensions
 {
-    public static IEnumerable<ProblemDetailsError> ToProblemDetailsErrors(this ValidationResult validationResult)
+    public static IEnumerable<ApiDetailError> ToApiDetailErrors(this ValidationResult validationResult)
     {
-        return validationResult.Errors.Select(error => new ProblemDetailsError(ProblemType.UnprocessableEntity)
+        return validationResult.Errors.Select(error => new ApiDetailError(ErrorType.UnprocessableEntity)
         {
             ErrorCode = error.ErrorCode,
             PropertyName = error.PropertyName,

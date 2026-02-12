@@ -39,11 +39,11 @@ internal sealed class AccrueExpensesService : IAccrueExpensesService
 
                 if (account is null)
                 {
-                    var accountNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(accountRowId, "The account does not exist");
+                    var accountNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(accountRowId, "The account does not exist");
 
-                    _logger.LogError(accountNotFoundDetails);
+                    _logger.LogApiError(accountNotFoundError);
 
-                    return EnrichedResult.Fail<bool>(accountNotFoundDetails);
+                    return EnrichedResult.Fail<bool>(accountNotFoundError);
                 }
 
                 var expenses = await _expenseRepository.GetExpensesForAccountAsync(accountRowId, cancellationToken).ConfigureAwait(false);

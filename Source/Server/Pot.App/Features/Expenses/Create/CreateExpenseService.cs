@@ -35,9 +35,9 @@ internal sealed class CreateExpenseService : ICreateExpenseService
 
         if (expenseAccount is null)
         {
-            var expenseAccountProblem = ProblemDetailsErrorFactory.CreateEntityNotFoundError(input.AccountRowId, "The account does not exist");
+            var expenseAccountError = ApiDetailErrorFactory.CreateEntityNotFoundError(input.AccountRowId, "The account does not exist");
 
-            return EnrichedResult.Fail<Output>(expenseAccountProblem);
+            return EnrichedResult.Fail<Output>(expenseAccountError);
         }
 
         var expenseToCreate = new ExpenseEntity
@@ -61,11 +61,11 @@ internal sealed class CreateExpenseService : ICreateExpenseService
             expenseToCreate.RowId = input.RowId.Value;
         }
 
-        var problemDetails = await _preCreateChecker.CanSaveAsync(expenseToCreate, cancellationToken);
+        var apiError = await _preCreateChecker.CanSaveAsync(expenseToCreate, cancellationToken);
 
-        if (problemDetails is not null)
+        if (apiError is not null)
         {
-            return EnrichedResult.Fail<Output>(problemDetails);
+            return EnrichedResult.Fail<Output>(apiError);
         }
 
         expenseAccount.Expenses.Add(expenseToCreate);

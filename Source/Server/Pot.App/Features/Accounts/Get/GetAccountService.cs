@@ -29,11 +29,11 @@ internal sealed class GetAccountService : IGetAccountService
 
         if (account is null)
         {
-            var accountNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(accountId, "The account does not exist");
+            var accountNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(accountId, "The account does not exist");
 
-            _logger.LogError(accountNotFoundDetails);
+            _logger.LogApiError(accountNotFoundError);
 
-            return EnrichedResult.Fail<Output>(accountNotFoundDetails);
+            return EnrichedResult.Fail<Output>(accountNotFoundError);
         }
 
         var output = account.MapToOutput();

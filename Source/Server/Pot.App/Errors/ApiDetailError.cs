@@ -1,12 +1,12 @@
 ﻿namespace Pot.App.Errors;
 
-public class ProblemDetailsError : ProblemDetailsBasicError
+public class ApiDetailError : ApiBasicError
 {
     public string PropertyName { get; init; } = string.Empty;
     public object? AttemptedValue { get; init; }
 
-    public ProblemDetailsError(ProblemType problemType)
-        : base(problemType)
+    public ApiDetailError(ErrorType errorType)
+        : base(errorType)
     {
     }
 }

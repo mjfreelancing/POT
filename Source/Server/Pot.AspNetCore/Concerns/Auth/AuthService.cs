@@ -221,7 +221,7 @@ internal sealed class AuthService : IAuthService
 
             if (!isValidHash)
             {
-                var authError = ProblemDetailsErrorFactory.CreateAuthError("The current password is invalid");
+                var authError = ApiDetailErrorFactory.CreateAuthError("The current password is invalid");
                 return EnrichedResult.Fail<bool>(authError);
             }
 
@@ -281,7 +281,7 @@ internal sealed class AuthService : IAuthService
     {
         // This also applies to attempting to refresh an access token with a refresh token that has expired,
         // and users that are disabled.
-        var loginProblem = ProblemDetailsErrorFactory.CreateAuthError("Invalid username or password");
+        var loginProblem = ApiDetailErrorFactory.CreateAuthError("Invalid username or password");
 
         return EnrichedResult.Fail<AuthTokens?>(loginProblem);
     }

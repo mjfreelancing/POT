@@ -27,11 +27,11 @@ internal sealed class DeleteExpenseService : IDeleteExpenseService
 
         if (expense is null)
         {
-            var expenseIdNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(expenseId, "The expense does not exist");
+            var expenseNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(expenseId, "The expense does not exist");
 
-            _logger.LogError(expenseIdNotFoundDetails);
+            _logger.LogApiError(expenseNotFoundError);
 
-            return EnrichedResult.Fail<bool>(expenseIdNotFoundDetails);
+            return EnrichedResult.Fail<bool>(expenseNotFoundError);
         }
 
         _expenseRepository.Delete(expense);

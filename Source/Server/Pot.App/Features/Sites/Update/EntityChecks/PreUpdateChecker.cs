@@ -9,7 +9,7 @@ using Pot.Data.Entities;
 
 namespace Pot.App.Features.Sites.Update.EntityChecks;
 
-internal sealed class PreUpdateChecker : ChainOfResponsibilityAsyncComposer<InputState, ProblemDetailsError>, IPreUpdateChecker
+internal sealed class PreUpdateChecker : ChainOfResponsibilityAsyncComposer<InputState, ApiDetailError>, IPreUpdateChecker
 {
     private readonly ILogger _logger;
 
@@ -19,7 +19,7 @@ internal sealed class PreUpdateChecker : ChainOfResponsibilityAsyncComposer<Inpu
         _logger = logger.WhenNotNull();
     }
 
-    public Task<ProblemDetailsError?> CanSaveAsync(Input input, SiteEntity siteToUpdate, CancellationToken cancellationToken)
+    public Task<ApiDetailError?> CanSaveAsync(Input input, SiteEntity siteToUpdate, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 

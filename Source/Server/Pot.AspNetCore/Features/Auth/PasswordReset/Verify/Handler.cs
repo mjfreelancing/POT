@@ -23,7 +23,7 @@ internal sealed class Handler
             logger.LogErrors(problemDetails);
 
             // Don't give any clues to bad actors
-            var authProblem = ProblemDetailsErrorFactory.CreateAuthError("Invalid Request");
+            var authProblem = ApiDetailErrorFactory.CreateAuthError("Invalid Request");
             return TypedResults.Problem(authProblem.ToProblemDetails());
         }
 

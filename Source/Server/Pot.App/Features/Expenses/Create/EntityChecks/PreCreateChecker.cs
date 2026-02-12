@@ -8,7 +8,7 @@ using Pot.Data.Entities;
 
 namespace Pot.App.Features.Expenses.Create.EntityChecks;
 
-internal sealed class PreCreateChecker : ChainOfResponsibilityAsyncComposer<InputState, ProblemDetailsError?>, IPreCreateChecker
+internal sealed class PreCreateChecker : ChainOfResponsibilityAsyncComposer<InputState, ApiDetailError?>, IPreCreateChecker
 {
     private readonly ILogger _logger;
 
@@ -18,7 +18,7 @@ internal sealed class PreCreateChecker : ChainOfResponsibilityAsyncComposer<Inpu
         _logger = logger.WhenNotNull();
     }
 
-    public Task<ProblemDetailsError?> CanSaveAsync(ExpenseEntity expenseToCreate, CancellationToken cancellationToken)
+    public Task<ApiDetailError?> CanSaveAsync(ExpenseEntity expenseToCreate, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 

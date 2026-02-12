@@ -51,11 +51,11 @@ internal sealed class CreateAccountService : ICreateAccountService
                 accountToCreate.RowId = input.RowId.Value;
             }
 
-            var problemDetails = await _preCreateChecker.CanSaveAsync(accountToCreate, cancellationToken);
+            var apiError = await _preCreateChecker.CanSaveAsync(accountToCreate, cancellationToken);
 
-            if (problemDetails is not null)
+            if (apiError is not null)
             {
-                return EnrichedResult.Fail<Output>(problemDetails);
+                return EnrichedResult.Fail<Output>(apiError);
             }
 
             await _accountRepository

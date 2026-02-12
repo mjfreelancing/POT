@@ -47,22 +47,22 @@ internal sealed class UpdateApprovalService : IUpdateApprovalService
 
             if (userToUpdate is null)
             {
-                var userNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(userId, "The user does not exist");
+                var userNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(userId, "The user does not exist");
 
-                _logger.LogError(userNotFoundDetails);
+                _logger.LogApiError(userNotFoundError);
 
-                return EnrichedResult.Fail<Output>(userNotFoundDetails);
+                return EnrichedResult.Fail<Output>(userNotFoundError);
             }
 
-            var problemDetails = await _preUpdateChecker
+            var apiError = await _preUpdateChecker
                 .CanSaveAsync(input, userToUpdate, cancellationToken)
                 .ConfigureAwait(false);
 
-            if (problemDetails is not null)
+            if (apiError is not null)
             {
-                _logger.LogError(problemDetails);
+                _logger.LogApiError(apiError);
 
-                return EnrichedResult.Fail<Output>(problemDetails);
+                return EnrichedResult.Fail<Output>(apiError);
             }
 
             userToUpdate.Status = input.Status == ApprovalStatus.Approved

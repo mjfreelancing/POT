@@ -47,15 +47,15 @@ internal sealed class InviteUserService : IInviteUserService
     {
         _logger.LogCall(this, new { input.Username, input.RoleIds });
 
-        var problemDetails = await _preUpdateChecker
+        var apiError = await _preUpdateChecker
             .CanSaveAsync(input, cancellationToken)
             .ConfigureAwait(false);
 
-        if (problemDetails is not null)
+        if (apiError is not null)
         {
-            _logger.LogError(problemDetails);
+            _logger.LogApiError(apiError);
 
-            return EnrichedResult.Fail<bool>(problemDetails);
+            return EnrichedResult.Fail<bool>(apiError);
         }
 
         using (_userRepository.WithTracking())
@@ -67,14 +67,14 @@ internal sealed class InviteUserService : IInviteUserService
 
             if (user is not null)
             {
-                var userProblemDetails = ProblemDetailsErrorFactory.CreateUnprocessableEntityError(
+                var userError = ApiDetailErrorFactory.CreateUnprocessableEntityError(
                     nameof(input.Username),
                     input.Username,
                     $"The username '{input.Username}' is already in use.");
 
-                _logger.LogError(userProblemDetails);
+                _logger.LogApiError(userError);
 
-                return EnrichedResult.Fail<bool>(userProblemDetails);
+                return EnrichedResult.Fail<bool>(userError);
             }
 
             var currentSite = _siteRepository.GetCurrentSite();

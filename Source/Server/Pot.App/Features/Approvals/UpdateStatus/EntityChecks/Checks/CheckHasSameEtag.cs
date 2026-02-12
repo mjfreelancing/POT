@@ -14,7 +14,7 @@ internal sealed class CheckHasSameEtag : PreUpdateCheckBase
         _logger = logger.WhenNotNull();
     }
 
-    public override async Task<ProblemDetailsError?> HandleAsync(InputState state, CancellationToken cancellationToken)
+    public override async Task<ApiDetailError?> HandleAsync(InputState state, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
@@ -23,7 +23,7 @@ internal sealed class CheckHasSameEtag : PreUpdateCheckBase
 
         if (userToUpdate.Etag != input.Etag)
         {
-            return ProblemDetailsErrorFactory.CreateEtagConflict("User", input.Etag);
+            return ApiDetailErrorFactory.CreateEtagConflict("User", input.Etag);
         }
 
         return await base.HandleAsync(state, cancellationToken);

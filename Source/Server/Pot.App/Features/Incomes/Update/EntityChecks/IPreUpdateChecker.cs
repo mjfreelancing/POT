@@ -7,5 +7,5 @@ namespace Pot.App.Features.Incomes.Update.EntityChecks;
 
 public interface IPreUpdateChecker : IPotScopedDependency
 {
-    Task<ProblemDetailsError?> CanSaveAsync(Input request, AccountEntity incomeAccount, IncomeEntity incomeToUpdate, CancellationToken cancellationToken);
+    Task<ApiDetailError?> CanSaveAsync(Input request, AccountEntity incomeAccount, IncomeEntity incomeToUpdate, CancellationToken cancellationToken);
 }

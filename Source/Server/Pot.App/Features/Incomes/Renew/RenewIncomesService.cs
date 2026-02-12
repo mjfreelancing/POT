@@ -37,12 +37,12 @@ internal sealed class RenewExpensesService : IRenewIncomesService
 
             if (missingRowIds.Length > 0)
             {
-                var incomeRenewProblem = ProblemDetailsErrorFactory.CreateUnprocessableEntityError(
+                var incomeRenewError = ApiDetailErrorFactory.CreateUnprocessableEntityError(
                     nameof(Input.RowIds),
                     missingRowIds,
                     "One or more Incomes do not exist.");
 
-                return EnrichedResult.Fail<bool>(incomeRenewProblem);
+                return EnrichedResult.Fail<bool>(incomeRenewError);
             }
 
             _renewalCalculator.Renew(incomes, input.UntilDate);

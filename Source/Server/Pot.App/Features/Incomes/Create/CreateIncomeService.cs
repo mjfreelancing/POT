@@ -35,9 +35,9 @@ internal sealed class CreateIncomeService : ICreateIncomeService
 
         if (incomeAccount is null)
         {
-            var incomeAccountProblem = ProblemDetailsErrorFactory.CreateEntityNotFoundError(input.AccountRowId, "The account does not exist");
+            var incomeAccounterror = ApiDetailErrorFactory.CreateEntityNotFoundError(input.AccountRowId, "The account does not exist");
 
-            return EnrichedResult.Fail<Output>(incomeAccountProblem);
+            return EnrichedResult.Fail<Output>(incomeAccounterror);
         }
 
         var incomeToCreate = new IncomeEntity
@@ -59,11 +59,11 @@ internal sealed class CreateIncomeService : ICreateIncomeService
             incomeToCreate.RowId = input.RowId.Value;
         }
 
-        var problemDetails = await _preCreateChecker.CanSaveAsync(incomeToCreate, cancellationToken);
+        var apiError = await _preCreateChecker.CanSaveAsync(incomeToCreate, cancellationToken);
 
-        if (problemDetails is not null)
+        if (apiError is not null)
         {
-            return EnrichedResult.Fail<Output>(problemDetails);
+            return EnrichedResult.Fail<Output>(apiError);
         }
 
         incomeAccount.Incomes.Add(incomeToCreate);

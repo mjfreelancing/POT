@@ -111,7 +111,7 @@ internal static class WebApplicationBuilderExtensions
                     context.HttpContext.Response.Headers.RetryAfter = $"{retryAfter.TotalSeconds}";
                 }
 
-                var errorDetail = ProblemDetailsErrorFactory.CreateTooManyRequests(retryAfter.TotalSeconds);
+                var errorDetail = ApiDetailErrorFactory.CreateTooManyRequests(retryAfter.TotalSeconds);
 
                 await context.HttpContext.Response.WriteAsJsonAsync(errorDetail.ToProblemDetails(), cancellationToken);
             };

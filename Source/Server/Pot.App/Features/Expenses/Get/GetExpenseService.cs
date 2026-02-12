@@ -29,11 +29,11 @@ internal sealed class GetExpenseService : IGetExpenseService
 
         if (expense is null)
         {
-            var expenseNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(expenseId, "The expense does not exist");
+            var expenseNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(expenseId, "The expense does not exist");
 
-            _logger.LogError(expenseNotFoundDetails);
+            _logger.LogApiError(expenseNotFoundError);
 
-            return EnrichedResult.Fail<Output>(expenseNotFoundDetails);
+            return EnrichedResult.Fail<Output>(expenseNotFoundError);
         }
 
         var output = expense.MapToOutput();

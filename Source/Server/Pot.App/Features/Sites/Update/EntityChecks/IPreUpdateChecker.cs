@@ -7,5 +7,5 @@ namespace Pot.App.Features.Sites.Update.EntityChecks;
 
 public interface IPreUpdateChecker : IPotScopedDependency
 {
-    Task<ProblemDetailsError?> CanSaveAsync(Input input, SiteEntity siteToUpdate, CancellationToken cancellationToken);
+    Task<ApiDetailError?> CanSaveAsync(Input input, SiteEntity siteToUpdate, CancellationToken cancellationToken);
 }

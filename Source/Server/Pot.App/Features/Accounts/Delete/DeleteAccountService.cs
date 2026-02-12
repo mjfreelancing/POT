@@ -26,22 +26,22 @@ internal sealed class DeleteAccountService : IDeleteAccountService
     {
         _logger.LogCall(this);
 
-        var problemDetails = await _preDeleteChecker.CanDeleteAsync(accountId, cancellationToken);
+        var apiError = await _preDeleteChecker.CanDeleteAsync(accountId, cancellationToken);
 
-        if (problemDetails is not null)
+        if (apiError is not null)
         {
-            return EnrichedResult.Fail<bool>(problemDetails);
+            return EnrichedResult.Fail<bool>(apiError);
         }
 
         var account = await _accountRepository.GetAccountOrDefaultAsync(accountId, cancellationToken);
 
         if (account is null)
         {
-            var accountNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(accountId, "The account does not exist");
+            var accountNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(accountId, "The account does not exist");
 
-            _logger.LogError(accountNotFoundDetails);
+            _logger.LogApiError(accountNotFoundError);
 
-            return EnrichedResult.Fail<bool>(accountNotFoundDetails);
+            return EnrichedResult.Fail<bool>(accountNotFoundError);
         }
 
         _accountRepository.Delete(account);

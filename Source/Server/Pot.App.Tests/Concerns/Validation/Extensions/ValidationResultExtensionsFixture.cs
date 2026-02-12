@@ -15,7 +15,7 @@ public class ValidationResultExtensionsFixture : PotFixtureBase
         {
             var validationResult = new ValidationResult();
 
-            var result = validationResult.ToProblemDetailsErrors();
+            var result = validationResult.ToApiDetailErrors();
 
             result.Should().BeEmpty();
         }
@@ -31,7 +31,7 @@ public class ValidationResultExtensionsFixture : PotFixtureBase
 
             var validationResult = new ValidationResult([validationFailure]);
 
-            var result = validationResult.ToProblemDetailsErrors().ToList();
+            var result = validationResult.ToApiDetailErrors().ToList();
 
             result.Should().HaveCount(1);
             AssertProblemDetailsError(result[0], validationFailure);
@@ -63,7 +63,7 @@ public class ValidationResultExtensionsFixture : PotFixtureBase
 
             var validationResult = new ValidationResult(validationFailures);
 
-            var result = validationResult.ToProblemDetailsErrors().ToList();
+            var result = validationResult.ToApiDetailErrors().ToList();
 
             result.Should().HaveCount(3);
             AssertProblemDetailsError(result[0], validationFailures[0]);
@@ -89,7 +89,7 @@ public class ValidationResultExtensionsFixture : PotFixtureBase
 
             var validationResult = new ValidationResult([validationFailure]);
 
-            var result = validationResult.ToProblemDetailsErrors().ToList();
+            var result = validationResult.ToApiDetailErrors().ToList();
 
             result.Should().HaveCount(1);
             AssertProblemDetailsError(result[0], validationFailure);
@@ -105,7 +105,7 @@ public class ValidationResultExtensionsFixture : PotFixtureBase
             };
             var validationResult = new ValidationResult([validationFailure]);
 
-            var result = validationResult.ToProblemDetailsErrors().ToList();
+            var result = validationResult.ToApiDetailErrors().ToList();
 
             result.Should().HaveCount(1);
             AssertProblemDetailsError(result[0], validationFailure);
@@ -142,7 +142,7 @@ public class ValidationResultExtensionsFixture : PotFixtureBase
             };
             var validationResult = new ValidationResult(validationFailures);
 
-            var result = validationResult.ToProblemDetailsErrors().ToList();
+            var result = validationResult.ToApiDetailErrors().ToList();
 
             result.Should().HaveCount(4);
             AssertProblemDetailsError(result[0], validationFailures[0]);
@@ -163,13 +163,13 @@ public class ValidationResultExtensionsFixture : PotFixtureBase
 
             var validationResult = new ValidationResult(validationFailures);
 
-            var result = validationResult.ToProblemDetailsErrors().ToList();
+            var result = validationResult.ToApiDetailErrors().ToList();
 
             result.Should().HaveCount(3);
 
-            result[0].ErrorType.Should().Be(ProblemType.UnprocessableEntity);
-            result[1].ErrorType.Should().Be(ProblemType.UnprocessableEntity);
-            result[2].ErrorType.Should().Be(ProblemType.UnprocessableEntity);
+            result[0].ErrorType.Should().Be(ErrorType.UnprocessableEntity);
+            result[1].ErrorType.Should().Be(ErrorType.UnprocessableEntity);
+            result[2].ErrorType.Should().Be(ErrorType.UnprocessableEntity);
         }
 
         [Fact]
@@ -186,7 +186,7 @@ public class ValidationResultExtensionsFixture : PotFixtureBase
 
             var validationResult = new ValidationResult([validationFailure]);
 
-            var result = validationResult.ToProblemDetailsErrors().Single();
+            var result = validationResult.ToApiDetailErrors().Single();
 
             AssertProblemDetailsError(result, validationFailure);
         }
@@ -201,7 +201,7 @@ public class ValidationResultExtensionsFixture : PotFixtureBase
 
             var validationResult = new ValidationResult([validationFailure]);
 
-            var result = validationResult.ToProblemDetailsErrors();
+            var result = validationResult.ToApiDetailErrors();
 
             var firstEnumeration = result.ToList();
             var secondEnumeration = result.ToList();
@@ -210,9 +210,9 @@ public class ValidationResultExtensionsFixture : PotFixtureBase
             secondEnumeration.Should().HaveCount(1);
         }
 
-        private static void AssertProblemDetailsError(ProblemDetailsError error, ValidationFailure validationFailure)
+        private static void AssertProblemDetailsError(ApiDetailError error, ValidationFailure validationFailure)
         {
-            error.ErrorType.Should().Be(ProblemType.UnprocessableEntity);
+            error.ErrorType.Should().Be(ErrorType.UnprocessableEntity);
             error.ErrorCode.Should().Be(validationFailure.ErrorCode);
             error.PropertyName.Should().Be(validationFailure.PropertyName);
             error.AttemptedValue.Should().Be(validationFailure.AttemptedValue);

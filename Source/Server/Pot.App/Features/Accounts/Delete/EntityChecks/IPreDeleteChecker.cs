@@ -5,5 +5,5 @@ namespace Pot.App.Features.Accounts.Delete.EntityChecks;
 
 internal interface IPreDeleteChecker : IPotScopedDependency
 {
-    Task<ProblemDetailsError?> CanDeleteAsync(Guid accountId, CancellationToken cancellationToken);
+    Task<ApiDetailError?> CanDeleteAsync(Guid accountId, CancellationToken cancellationToken);
 }

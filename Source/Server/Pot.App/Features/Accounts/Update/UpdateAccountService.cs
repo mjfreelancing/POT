@@ -40,22 +40,22 @@ internal sealed class UpdateAccountService : IUpdateAccountService
 
             if (accountToUpdate is null)
             {
-                var accountNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(accountId, "The account does not exist");
+                var accountNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(accountId, "The account does not exist");
 
-                _logger.LogError(accountNotFoundDetails);
+                _logger.LogApiError(accountNotFoundError);
 
-                return EnrichedResult.Fail<Output>(accountNotFoundDetails);
+                return EnrichedResult.Fail<Output>(accountNotFoundError);
             }
 
-            var problemDetails = await _preUpdateChecker
+            var apiError = await _preUpdateChecker
                 .CanSaveAsync(input, accountToUpdate, cancellationToken)
                 .ConfigureAwait(false);
 
-            if (problemDetails is not null)
+            if (apiError is not null)
             {
-                _logger.LogError(problemDetails);
+                _logger.LogApiError(apiError);
 
-                return EnrichedResult.Fail<Output>(problemDetails);
+                return EnrichedResult.Fail<Output>(apiError);
             }
 
             UpdateAccountEntity(accountToUpdate, input);

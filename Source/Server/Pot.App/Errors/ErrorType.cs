@@ -1,6 +1,6 @@
 ﻿namespace Pot.App.Errors;
 
-public enum ProblemType
+public enum ErrorType
 {
     Auth,
     NotFound,

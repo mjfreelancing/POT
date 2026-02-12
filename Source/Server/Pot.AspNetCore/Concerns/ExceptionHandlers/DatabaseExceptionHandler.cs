@@ -31,7 +31,7 @@ internal sealed class DatabaseExceptionHandler : IExceptionHandler
 
             if (exception.InnerException is PostgresException postgresException)
             {
-                var errorDetail = new ProblemDetailsError(ProblemType.Server)
+                var errorDetail = new ApiDetailError(ErrorType.Server)
                 {
                     ErrorCode = ErrorCodes.Database,
                     ErrorMessage = postgresException.MessageText
@@ -45,7 +45,7 @@ internal sealed class DatabaseExceptionHandler : IExceptionHandler
             }
             else
             {
-                var errorDetail = new ProblemDetailsError(ProblemType.Server)
+                var errorDetail = new ApiDetailError(ErrorType.Server)
                 {
                     ErrorCode = ErrorCodes.Database,
                     ErrorMessage = exception.Message

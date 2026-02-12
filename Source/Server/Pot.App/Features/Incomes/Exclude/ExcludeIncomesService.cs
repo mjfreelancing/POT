@@ -33,12 +33,12 @@ internal sealed class ExcludeIncomesService : IExcludeIncomesService
 
             if (missingRowIds.Length > 0)
             {
-                var expenseRenewProblem = ProblemDetailsErrorFactory.CreateUnprocessableEntityError(
+                var expenseRenewError = ApiDetailErrorFactory.CreateUnprocessableEntityError(
                     nameof(Input.RowIds),
                     missingRowIds,
                     "One or more Incomes do not exist.");
 
-                return EnrichedResult.Fail<bool>(expenseRenewProblem);
+                return EnrichedResult.Fail<bool>(expenseRenewError);
             }
 
             foreach (var income in incomes)

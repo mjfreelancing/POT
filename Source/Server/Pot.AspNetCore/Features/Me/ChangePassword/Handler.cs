@@ -41,7 +41,7 @@ internal sealed class Handler
 
     private static ProblemHttpResult CreateInvalidUserOrPasswordError()
     {
-        var problemDetailsError = ProblemDetailsErrorFactory.CreateUnprocessableEntityError("Invalid user or password");
+        var problemDetailsError = ApiDetailErrorFactory.CreateUnprocessableEntityError("Invalid user or password");
         return TypedResults.Problem(problemDetailsError.ToProblemDetails());
     }
 }

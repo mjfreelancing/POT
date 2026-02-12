@@ -5,9 +5,9 @@ using Pot.TestUtils;
 
 namespace Pot.App.Tests.Errors;
 
-public class ProblemDetailsErrorFactoryFixture : PotFixtureBase
+public class ApiDetailErrorFactoryFixture : PotFixtureBase
 {
-    public class CreateEntityExistsError : ProblemDetailsErrorFactoryFixture
+    public class CreateEntityExistsError : ApiDetailErrorFactoryFixture
     {
         [Fact]
         public void Should_Create_Error_With_Conflict_Type()
@@ -16,9 +16,9 @@ public class ProblemDetailsErrorFactoryFixture : PotFixtureBase
             var attemptedValue = Create<int>();
             var errorMessage = Create<string>();
 
-            var result = ProblemDetailsErrorFactory.CreateEntityExistsError(propertyName, attemptedValue, errorMessage);
+            var result = ApiDetailErrorFactory.CreateEntityExistsError(propertyName, attemptedValue, errorMessage);
 
-            result.ErrorType.Should().Be(ProblemType.Conflict);
+            result.ErrorType.Should().Be(ErrorType.Conflict);
         }
 
         [Fact]
@@ -28,7 +28,7 @@ public class ProblemDetailsErrorFactoryFixture : PotFixtureBase
             var attemptedValue = Create<int>();
             var errorMessage = Create<string>();
 
-            var result = ProblemDetailsErrorFactory.CreateEntityExistsError(propertyName, attemptedValue, errorMessage);
+            var result = ApiDetailErrorFactory.CreateEntityExistsError(propertyName, attemptedValue, errorMessage);
 
             result.ErrorCode.Should().Be(ErrorCodes.Conflict);
             result.PropertyName.Should().Be(propertyName);
@@ -42,13 +42,13 @@ public class ProblemDetailsErrorFactoryFixture : PotFixtureBase
             var propertyName = Create<string>();
             var errorMessage = Create<string>();
 
-            var result = ProblemDetailsErrorFactory.CreateEntityExistsError(propertyName, null, errorMessage);
+            var result = ApiDetailErrorFactory.CreateEntityExistsError(propertyName, null, errorMessage);
 
             result.AttemptedValue.Should().BeNull();
         }
     }
 
-    public class CreateEntityNotFoundError : ProblemDetailsErrorFactoryFixture
+    public class CreateEntityNotFoundError : ApiDetailErrorFactoryFixture
     {
         [Fact]
         public void Should_Create_Error_With_NotFound_Type()
@@ -56,9 +56,9 @@ public class ProblemDetailsErrorFactoryFixture : PotFixtureBase
             var attemptedValue = Create<int>();
             var errorMessage = Create<string>();
 
-            var result = ProblemDetailsErrorFactory.CreateEntityNotFoundError(attemptedValue, errorMessage);
+            var result = ApiDetailErrorFactory.CreateEntityNotFoundError(attemptedValue, errorMessage);
 
-            result.ErrorType.Should().Be(ProblemType.NotFound);
+            result.ErrorType.Should().Be(ErrorType.NotFound);
         }
 
         [Fact]
@@ -67,7 +67,7 @@ public class ProblemDetailsErrorFactoryFixture : PotFixtureBase
             var attemptedValue = Create<int>();
             var errorMessage = Create<string>();
 
-            var result = ProblemDetailsErrorFactory.CreateEntityNotFoundError(attemptedValue, errorMessage);
+            var result = ApiDetailErrorFactory.CreateEntityNotFoundError(attemptedValue, errorMessage);
 
             result.ErrorCode.Should().Be(ErrorCodes.NotFound);
             result.PropertyName.Should().BeEmpty();
@@ -80,13 +80,13 @@ public class ProblemDetailsErrorFactoryFixture : PotFixtureBase
         {
             var errorMessage = Create<string>();
 
-            var result = ProblemDetailsErrorFactory.CreateEntityNotFoundError(null, errorMessage);
+            var result = ApiDetailErrorFactory.CreateEntityNotFoundError(null, errorMessage);
 
             result.AttemptedValue.Should().BeNull();
         }
     }
 
-    public class CreateEntityConstraintError : ProblemDetailsErrorFactoryFixture
+    public class CreateEntityConstraintError : ApiDetailErrorFactoryFixture
     {
         [Fact]
         public void Should_Create_Error_With_Constraint_Type()
@@ -95,9 +95,9 @@ public class ProblemDetailsErrorFactoryFixture : PotFixtureBase
             var attemptedValue = Create<int>();
             var errorMessage = Create<string>();
 
-            var result = ProblemDetailsErrorFactory.CreateEntityConstraintError(propertyName, attemptedValue, errorMessage);
+            var result = ApiDetailErrorFactory.CreateEntityConstraintError(propertyName, attemptedValue, errorMessage);
 
-            result.ErrorType.Should().Be(ProblemType.Constraint);
+            result.ErrorType.Should().Be(ErrorType.Constraint);
         }
 
         [Fact]
@@ -107,7 +107,7 @@ public class ProblemDetailsErrorFactoryFixture : PotFixtureBase
             var attemptedValue = Create<int>();
             var errorMessage = Create<string>();
 
-            var result = ProblemDetailsErrorFactory.CreateEntityConstraintError(propertyName, attemptedValue, errorMessage);
+            var result = ApiDetailErrorFactory.CreateEntityConstraintError(propertyName, attemptedValue, errorMessage);
 
             result.ErrorCode.Should().Be(ErrorCodes.Constraint);
             result.PropertyName.Should().Be(propertyName);
@@ -121,22 +121,22 @@ public class ProblemDetailsErrorFactoryFixture : PotFixtureBase
             var propertyName = Create<string>();
             var errorMessage = Create<string>();
 
-            var result = ProblemDetailsErrorFactory.CreateEntityConstraintError(propertyName, null, errorMessage);
+            var result = ApiDetailErrorFactory.CreateEntityConstraintError(propertyName, null, errorMessage);
 
             result.AttemptedValue.Should().BeNull();
         }
     }
 
-    public class CreateAuthError : ProblemDetailsErrorFactoryFixture
+    public class CreateAuthError : ApiDetailErrorFactoryFixture
     {
         [Fact]
         public void Should_Create_Error_With_Auth_Type()
         {
             var errorMessage = Create<string>();
 
-            var result = ProblemDetailsErrorFactory.CreateAuthError(errorMessage);
+            var result = ApiDetailErrorFactory.CreateAuthError(errorMessage);
 
-            result.ErrorType.Should().Be(ProblemType.Auth);
+            result.ErrorType.Should().Be(ErrorType.Auth);
         }
 
         [Fact]
@@ -144,7 +144,7 @@ public class ProblemDetailsErrorFactoryFixture : PotFixtureBase
         {
             var errorMessage = Create<string>();
 
-            var result = ProblemDetailsErrorFactory.CreateAuthError(errorMessage);
+            var result = ApiDetailErrorFactory.CreateAuthError(errorMessage);
 
             result.ErrorCode.Should().Be(ErrorCodes.Auth);
             result.PropertyName.Should().BeEmpty();
@@ -153,16 +153,16 @@ public class ProblemDetailsErrorFactoryFixture : PotFixtureBase
         }
     }
 
-    public class CreateUnprocessableEntityError_BasicError : ProblemDetailsErrorFactoryFixture
+    public class CreateUnprocessableEntityError_BasicError : ApiDetailErrorFactoryFixture
     {
         [Fact]
         public void Should_Create_Error_With_UnprocessableEntity_Type()
         {
             var errorMessage = Create<string>();
 
-            var result = ProblemDetailsErrorFactory.CreateUnprocessableEntityError(errorMessage);
+            var result = ApiDetailErrorFactory.CreateUnprocessableEntityError(errorMessage);
 
-            result.ErrorType.Should().Be(ProblemType.UnprocessableEntity);
+            result.ErrorType.Should().Be(ErrorType.UnprocessableEntity);
         }
 
         [Fact]
@@ -170,14 +170,14 @@ public class ProblemDetailsErrorFactoryFixture : PotFixtureBase
         {
             var errorMessage = Create<string>();
 
-            var result = ProblemDetailsErrorFactory.CreateUnprocessableEntityError(errorMessage);
+            var result = ApiDetailErrorFactory.CreateUnprocessableEntityError(errorMessage);
 
             result.ErrorCode.Should().Be(ErrorCodes.Invalid);
             result.ErrorMessage.Should().Be(errorMessage);
         }
     }
 
-    public class CreateUnprocessableEntityError_DetailedError : ProblemDetailsErrorFactoryFixture
+    public class CreateUnprocessableEntityError_DetailedError : ApiDetailErrorFactoryFixture
     {
         [Fact]
         public void Should_Create_Error_With_UnprocessableEntity_Type()
@@ -186,9 +186,9 @@ public class ProblemDetailsErrorFactoryFixture : PotFixtureBase
             var attemptedValue = Create<int>();
             var errorMessage = Create<string>();
 
-            var result = ProblemDetailsErrorFactory.CreateUnprocessableEntityError(propertyName, attemptedValue, errorMessage);
+            var result = ApiDetailErrorFactory.CreateUnprocessableEntityError(propertyName, attemptedValue, errorMessage);
 
-            result.ErrorType.Should().Be(ProblemType.UnprocessableEntity);
+            result.ErrorType.Should().Be(ErrorType.UnprocessableEntity);
         }
 
         [Fact]
@@ -198,7 +198,7 @@ public class ProblemDetailsErrorFactoryFixture : PotFixtureBase
             var attemptedValue = Create<int>();
             var errorMessage = Create<string>();
 
-            var result = ProblemDetailsErrorFactory.CreateUnprocessableEntityError(propertyName, attemptedValue, errorMessage);
+            var result = ApiDetailErrorFactory.CreateUnprocessableEntityError(propertyName, attemptedValue, errorMessage);
 
             result.ErrorCode.Should().Be(ErrorCodes.Invalid);
             result.PropertyName.Should().Be(propertyName);
@@ -212,13 +212,13 @@ public class ProblemDetailsErrorFactoryFixture : PotFixtureBase
             var propertyName = Create<string>();
             var errorMessage = Create<string>();
 
-            var result = ProblemDetailsErrorFactory.CreateUnprocessableEntityError(propertyName, null, errorMessage);
+            var result = ApiDetailErrorFactory.CreateUnprocessableEntityError(propertyName, null, errorMessage);
 
             result.AttemptedValue.Should().BeNull();
         }
     }
 
-    public class CreateEtagConflict : ProblemDetailsErrorFactoryFixture
+    public class CreateEtagConflict : ApiDetailErrorFactoryFixture
     {
         [Fact]
         public void Should_Create_Error_With_Conflict_Type()
@@ -226,9 +226,9 @@ public class ProblemDetailsErrorFactoryFixture : PotFixtureBase
             var entityType = Create<string>();
             var attemptedValue = Create<int>();
 
-            var result = ProblemDetailsErrorFactory.CreateEtagConflict(entityType, attemptedValue);
+            var result = ApiDetailErrorFactory.CreateEtagConflict(entityType, attemptedValue);
 
-            result.ErrorType.Should().Be(ProblemType.Conflict);
+            result.ErrorType.Should().Be(ErrorType.Conflict);
         }
 
         [Fact]
@@ -237,7 +237,7 @@ public class ProblemDetailsErrorFactoryFixture : PotFixtureBase
             var entityType = Create<string>();
             var attemptedValue = Create<int>();
 
-            var result = ProblemDetailsErrorFactory.CreateEtagConflict(entityType, attemptedValue);
+            var result = ApiDetailErrorFactory.CreateEtagConflict(entityType, attemptedValue);
 
             result.ErrorCode.Should().Be(ErrorCodes.Conflict);
             result.PropertyName.Should().Be(nameof(EntityBase.Etag));
@@ -250,22 +250,22 @@ public class ProblemDetailsErrorFactoryFixture : PotFixtureBase
         {
             var entityType = Create<string>();
 
-            var result = ProblemDetailsErrorFactory.CreateEtagConflict(entityType, null);
+            var result = ApiDetailErrorFactory.CreateEtagConflict(entityType, null);
 
             result.AttemptedValue.Should().BeNull();
         }
     }
 
-    public class CreateTooManyRequests : ProblemDetailsErrorFactoryFixture
+    public class CreateTooManyRequests : ApiDetailErrorFactoryFixture
     {
         [Fact]
         public void Should_Create_Error_With_TooManyRequests_Type()
         {
             var totalSeconds = Create<double>();
 
-            var result = ProblemDetailsErrorFactory.CreateTooManyRequests(totalSeconds);
+            var result = ApiDetailErrorFactory.CreateTooManyRequests(totalSeconds);
 
-            result.ErrorType.Should().Be(ProblemType.TooManyRequests);
+            result.ErrorType.Should().Be(ErrorType.TooManyRequests);
         }
 
         [Fact]
@@ -273,7 +273,7 @@ public class ProblemDetailsErrorFactoryFixture : PotFixtureBase
         {
             var totalSeconds = Create<double>();
 
-            var result = ProblemDetailsErrorFactory.CreateTooManyRequests(totalSeconds);
+            var result = ApiDetailErrorFactory.CreateTooManyRequests(totalSeconds);
 
             result.ErrorCode.Should().Be(ErrorCodes.TooManyRequests);
             result.ErrorMessage.Should().Be($"Too many requests. Please wait and try again after {totalSeconds} seconds.");

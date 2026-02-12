@@ -46,9 +46,9 @@ internal sealed class ImportDataService : IImportDataService
         {
             if (!_expectedEntryNames.All(_importStreamReader.EntryNames.Contains))
             {
-                var problemDetailsError = ProblemDetailsErrorFactory.CreateUnprocessableEntityError("The import file is not supported");
+                var apiError = ApiDetailErrorFactory.CreateUnprocessableEntityError("The import file is not supported");
 
-                return EnrichedResult.Fail<int>(problemDetailsError);
+                return EnrichedResult.Fail<int>(apiError);
             }
 
             MetadataBase metadataBase = _importStreamReader.GetMetadata();

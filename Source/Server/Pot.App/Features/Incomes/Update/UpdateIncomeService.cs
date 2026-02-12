@@ -43,11 +43,11 @@ internal sealed class UpdateIncomeService : IUpdateIncomeService
 
             if (incomeToUpdate is null)
             {
-                var incomeNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(incomeId, "The income does not exist");
+                var incomeNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(incomeId, "The income does not exist");
 
-                _logger.LogError(incomeNotFoundDetails);
+                _logger.LogApiError(incomeNotFoundError);
 
-                return EnrichedResult.Fail<Output>(incomeNotFoundDetails);
+                return EnrichedResult.Fail<Output>(incomeNotFoundError);
             }
 
             var incomeAccount = await _accountRepository
@@ -56,22 +56,22 @@ internal sealed class UpdateIncomeService : IUpdateIncomeService
 
             if (incomeAccount is null)
             {
-                var incomeAccountNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(input.AccountRowId, "The account does not exist");
+                var incomeAccountNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(input.AccountRowId, "The account does not exist");
 
-                _logger.LogError(incomeAccountNotFoundDetails);
+                _logger.LogApiError(incomeAccountNotFoundError);
 
-                return EnrichedResult.Fail<Output>(incomeAccountNotFoundDetails);
+                return EnrichedResult.Fail<Output>(incomeAccountNotFoundError);
             }
 
-            var problemDetails = await _preUpdateChecker
+            var apiError = await _preUpdateChecker
                 .CanSaveAsync(input, incomeAccount, incomeToUpdate, cancellationToken)
                 .ConfigureAwait(false);
 
-            if (problemDetails is not null)
+            if (apiError is not null)
             {
-                _logger.LogError(problemDetails);
+                _logger.LogApiError(apiError);
 
-                return EnrichedResult.Fail<Output>(problemDetails);
+                return EnrichedResult.Fail<Output>(apiError);
             }
 
             UpdateIncomeEntity(incomeToUpdate, input, incomeAccount);

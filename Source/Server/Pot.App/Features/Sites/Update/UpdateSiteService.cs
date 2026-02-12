@@ -42,22 +42,22 @@ internal sealed class UpdateSiteService : IUpdateSiteService
 
             if (siteToUpdate is null)
             {
-                var siteNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(siteId, "The site does not exist");
+                var siteNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(siteId, "The site does not exist");
 
-                _logger.LogError(siteNotFoundDetails);
+                _logger.LogApiError(siteNotFoundError);
 
-                return EnrichedResult.Fail<Output>(siteNotFoundDetails);
+                return EnrichedResult.Fail<Output>(siteNotFoundError);
             }
 
-            var problemDetails = await _preUpdateChecker
+            var apiError = await _preUpdateChecker
                 .CanSaveAsync(input, siteToUpdate, cancellationToken)
                 .ConfigureAwait(false);
 
-            if (problemDetails is not null)
+            if (apiError is not null)
             {
-                _logger.LogError(problemDetails);
+                _logger.LogApiError(apiError);
 
-                return EnrichedResult.Fail<Output>(problemDetails);
+                return EnrichedResult.Fail<Output>(apiError);
             }
 
             UpdateSiteEntity(siteToUpdate, input);

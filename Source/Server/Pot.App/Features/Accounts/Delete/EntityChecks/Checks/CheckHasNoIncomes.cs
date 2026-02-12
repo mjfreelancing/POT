@@ -18,7 +18,7 @@ internal sealed class CheckHasNoIncomes : PreDeleteCheckBase
         _logger = logger.WhenNotNull();
     }
 
-    public override async Task<ProblemDetailsError?> HandleAsync(InputState state, CancellationToken cancellationToken)
+    public override async Task<ApiDetailError?> HandleAsync(InputState state, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
@@ -30,7 +30,7 @@ internal sealed class CheckHasNoIncomes : PreDeleteCheckBase
 
         if (hasIncomes)
         {
-            return ProblemDetailsErrorFactory.CreateEntityConstraintError(
+            return ApiDetailErrorFactory.CreateEntityConstraintError(
                 nameof(AccountEntity.RowId),
                 accountId.ToString(),
                 "Cannot delete an Account that has linked Incomes");

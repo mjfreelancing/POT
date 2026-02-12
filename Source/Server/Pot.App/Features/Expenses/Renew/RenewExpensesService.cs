@@ -37,12 +37,12 @@ internal sealed class RenewExpensesService : IRenewExpensesService
 
             if (missingRowIds.Length > 0)
             {
-                var expenseRenewProblem = ProblemDetailsErrorFactory.CreateUnprocessableEntityError(
+                var expenseRenewError = ApiDetailErrorFactory.CreateUnprocessableEntityError(
                     nameof(Input.RowIds),
                     missingRowIds,
                     "One or more Expenses do not exist.");
 
-                return EnrichedResult.Fail<bool>(expenseRenewProblem);
+                return EnrichedResult.Fail<bool>(expenseRenewError);
             }
 
             _renewalCalculator.Renew(expenses, input.UntilDate);

@@ -18,7 +18,7 @@ internal sealed class CheckValidRoles : PreUpdateCheckBase
         _logger = logger.WhenNotNull();
     }
 
-    public override async Task<ProblemDetailsError?> HandleAsync(InputState state, CancellationToken cancellationToken)
+    public override async Task<ApiDetailError?> HandleAsync(InputState state, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
@@ -34,7 +34,7 @@ internal sealed class CheckValidRoles : PreUpdateCheckBase
             if (missingRoles.Count > 0)
             {
                 var roleIdsText = string.Join(", ", missingRoles);
-                return ProblemDetailsErrorFactory.CreateUnprocessableEntityError(nameof(InputState.RoleIds), roleIdsText, "One or more roles were not found");
+                return ApiDetailErrorFactory.CreateUnprocessableEntityError(nameof(InputState.RoleIds), roleIdsText, "One or more roles were not found");
             }
         }
 

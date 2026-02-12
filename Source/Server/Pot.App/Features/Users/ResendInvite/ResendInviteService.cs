@@ -45,11 +45,11 @@ internal sealed class ResendInviteService : IResendInviteService
 
             if (user is null)
             {
-                var userProblemDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(userRowId, "User not found");
+                var userError = ApiDetailErrorFactory.CreateEntityNotFoundError(userRowId, "User not found");
 
-                _logger.LogError(userProblemDetails);
+                _logger.LogApiError(userError);
 
-                return EnrichedResult.Fail<bool>(userProblemDetails);
+                return EnrichedResult.Fail<bool>(userError);
             }
 
             // Need to reset the password because we don't know the previous one (as it was sent via email)

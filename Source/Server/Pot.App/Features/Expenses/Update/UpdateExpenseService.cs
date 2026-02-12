@@ -43,11 +43,11 @@ internal sealed class UpdateExpenseService : IUpdateExpenseService
 
             if (expenseToUpdate is null)
             {
-                var expenseNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(expenseId, "The expense does not exist");
+                var expenseNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(expenseId, "The expense does not exist");
 
-                _logger.LogError(expenseNotFoundDetails);
+                _logger.LogApiError(expenseNotFoundError);
 
-                return EnrichedResult.Fail<Output>(expenseNotFoundDetails);
+                return EnrichedResult.Fail<Output>(expenseNotFoundError);
             }
 
             var expenseAccount = await _accountRepository
@@ -56,22 +56,22 @@ internal sealed class UpdateExpenseService : IUpdateExpenseService
 
             if (expenseAccount is null)
             {
-                var ExpenseAccountNotFoundDetails = ProblemDetailsErrorFactory.CreateEntityNotFoundError(input.AccountRowId, "The account does not exist");
+                var expenseAccountNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(input.AccountRowId, "The account does not exist");
 
-                _logger.LogError(ExpenseAccountNotFoundDetails);
+                _logger.LogApiError(expenseAccountNotFoundError);
 
-                return EnrichedResult.Fail<Output>(ExpenseAccountNotFoundDetails);
+                return EnrichedResult.Fail<Output>(expenseAccountNotFoundError);
             }
 
-            var problemDetails = await _preUpdateChecker
+            var apiError = await _preUpdateChecker
                 .CanSaveAsync(input, expenseAccount, expenseToUpdate, cancellationToken)
                 .ConfigureAwait(false);
 
-            if (problemDetails is not null)
+            if (apiError is not null)
             {
-                _logger.LogError(problemDetails);
+                _logger.LogApiError(apiError);
 
-                return EnrichedResult.Fail<Output>(problemDetails);
+                return EnrichedResult.Fail<Output>(apiError);
             }
 
             UpdateExpenseEntity(expenseToUpdate, input, expenseAccount);

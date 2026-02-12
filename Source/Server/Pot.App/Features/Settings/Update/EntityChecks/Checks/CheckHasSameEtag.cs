@@ -1,4 +1,4 @@
-using AllOverIt.Assertion;
+﻿using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using Microsoft.Extensions.Logging;
 using Pot.App.Errors;
@@ -14,7 +14,7 @@ internal sealed class CheckHasSameEtag : PreUpdateCheckBase
         _logger = logger.WhenNotNull();
     }
 
-    public override async Task<ProblemDetailsError?> HandleAsync(InputState state, CancellationToken cancellationToken)
+    public override async Task<ApiDetailError?> HandleAsync(InputState state, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
@@ -26,7 +26,7 @@ internal sealed class CheckHasSameEtag : PreUpdateCheckBase
         {
             if (input.Etag is not null)
             {
-                return ProblemDetailsErrorFactory.CreateEtagConflict("Setting", input.Etag.Value);
+                return ApiDetailErrorFactory.CreateEtagConflict("Setting", input.Etag.Value);
             }
         }
         else
@@ -34,7 +34,7 @@ internal sealed class CheckHasSameEtag : PreUpdateCheckBase
             // If setting exists, Etag must be provided and match
             if (input.Etag is null || setting.Etag != input.Etag.Value)
             {
-                return ProblemDetailsErrorFactory.CreateEtagConflict("Setting", input.Etag ?? 0);
+                return ApiDetailErrorFactory.CreateEtagConflict("Setting", input.Etag ?? 0);
             }
         }
 

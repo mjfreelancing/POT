@@ -9,7 +9,7 @@ internal static class ValidationResultExtensions
 {
     public static Microsoft.AspNetCore.Mvc.ProblemDetails ToProblemDetails(this ValidationResult validationResult)
     {
-        var errorDetails = validationResult.ToProblemDetailsErrors();
+        var errorDetails = validationResult.ToApiDetailErrors();
 
         return new Microsoft.AspNetCore.Mvc.ProblemDetails
         {

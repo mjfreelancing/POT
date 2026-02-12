@@ -5,7 +5,7 @@ namespace Pot.AspNetCore.Concerns.ProblemDetails;
 
 internal static class ProblemDetailsContextFactory
 {
-    public static ProblemDetailsContext Create(HttpContext httpContext, int statusCode, string detail, Exception? exception, ProblemDetailsError[] errorDetails)
+    public static ProblemDetailsContext Create(HttpContext httpContext, int statusCode, string detail, Exception? exception, ApiDetailError[] errorDetails)
     {
         httpContext.Response.StatusCode = statusCode;
 

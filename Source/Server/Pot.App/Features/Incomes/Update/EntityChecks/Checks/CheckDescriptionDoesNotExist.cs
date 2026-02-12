@@ -22,7 +22,7 @@ internal sealed class CheckDescriptionDoesNotExist : PreUpdateCheckBase
         _logger = logger.WhenNotNull();
     }
 
-    public override async Task<ProblemDetailsError?> HandleAsync(InputState state, CancellationToken cancellationToken)
+    public override async Task<ApiDetailError?> HandleAsync(InputState state, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
@@ -38,7 +38,7 @@ internal sealed class CheckDescriptionDoesNotExist : PreUpdateCheckBase
 
         if (descriptionExists)
         {
-            return ProblemDetailsErrorFactory.CreateEntityExistsError(
+            return ApiDetailErrorFactory.CreateEntityExistsError(
                 nameof(IncomeEntity.Description),
                 input.Description,
                 "The income description already exists");

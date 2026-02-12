@@ -7,11 +7,11 @@ internal static class LoggingExtensions
 {
     public static void LogErrors(this ILogger logger, Microsoft.AspNetCore.Mvc.ProblemDetails problemDetails)
     {
-        if (problemDetails.Extensions.TryGetValue("errors", out var errors) && errors is ProblemDetailsError[] problemDetailsErrors)
+        if (problemDetails.Extensions.TryGetValue("errors", out var errors) && errors is ApiDetailError[] problemDetailsErrors)
         {
             foreach (var error in problemDetailsErrors)
             {
-                logger.LogError(error);
+                logger.LogApiError(error);
             }
         }
     }

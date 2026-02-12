@@ -2,10 +2,10 @@
 
 namespace Pot.App.Extensions;
 
-public static class ProblemDetailsErrorExtensions
+public static class ApiDetailsErrorExtensions
 {
     // Only report the properties of interest (not the base class properties)
-    public static object GetErrorDetails(this ProblemDetailsBasicError error)
+    public static object GetErrorDetails(this ApiBasicError error)
     {
         // See ValidationFailureExtensions.AddCustomState() for how custom state is added
         if (error.CustomState is not IDictionary<string, object?> values)
@@ -24,7 +24,7 @@ public static class ProblemDetailsErrorExtensions
         };
     }
 
-    public static object GetErrorDetails(this ProblemDetailsError error)
+    public static object GetErrorDetails(this ApiDetailError error)
     {
         // See ValidationFailureExtensions.AddCustomState() for how custom state is added
         if (error.CustomState is not IDictionary<string, object?> values)

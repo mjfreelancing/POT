@@ -5,11 +5,11 @@ namespace Pot.App.Extensions;
 
 public static class LoggerExtensions
 {
-    public static void LogError(this ILogger logger, ProblemDetailsError problemDetailsError)
+    public static void LogApiError(this ILogger logger, ApiDetailError apiDetailError)
     {
         logger.LogInformation("Validation Error: {ValidationErrorMessage} (Property: {Property}, Value: {Value})",
-            problemDetailsError.ErrorMessage,
-            problemDetailsError.PropertyName ?? string.Empty,
-            problemDetailsError.AttemptedValue ?? string.Empty);
+            apiDetailError.ErrorMessage,
+            apiDetailError.PropertyName ?? string.Empty,
+            apiDetailError.AttemptedValue ?? string.Empty);
     }
 }
