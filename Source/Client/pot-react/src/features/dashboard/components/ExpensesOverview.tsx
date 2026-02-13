@@ -15,6 +15,11 @@ import CollapsibleSection from './CollapsibleSection';
 import CompactMetricsRow from './CompactMetricsRow';
 import ExpenseCard from './ExpenseCard';
 
+type ExpensesOverviewProps = {
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
+};
+
 type FilteredExpenses = {
   count: number;
   total: number;
@@ -47,7 +52,7 @@ function filteredExpenseInfo(
   };
 }
 
-function ExpensesOverview() {
+function ExpensesOverview({ isOpen, onOpenChange }: ExpensesOverviewProps) {
   useEffect(() => {
     logger.info('ExpensesOverview', 'Component mounted');
 
@@ -154,7 +159,8 @@ function ExpensesOverview() {
       <CollapsibleSection
         icon={<ShoppingCart className="h-5 w-5" aria-hidden="true" />}
         title="Expenses Overview"
-        defaultOpen
+        isOpen={isOpen}
+        onOpenChange={onOpenChange}
       >
         <div className="space-y-3">
           {expensesIsLoading ? (

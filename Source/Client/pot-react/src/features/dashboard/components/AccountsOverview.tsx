@@ -14,7 +14,12 @@ import AccountCard from './AccountCard';
 import CollapsibleSection from './CollapsibleSection';
 import CompactMetricsRow from './CompactMetricsRow';
 
-function AccountsOverview() {
+type AccountsOverviewProps = {
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
+};
+
+function AccountsOverview({ isOpen, onOpenChange }: AccountsOverviewProps) {
   useEffect(() => {
     logger.info('AccountsOverview', 'Component mounted');
 
@@ -131,7 +136,8 @@ function AccountsOverview() {
       <CollapsibleSection
         icon={<PieChart className="h-5 w-5" aria-hidden="true" />}
         title="Accounts Overview"
-        defaultOpen
+        isOpen={isOpen}
+        onOpenChange={onOpenChange}
       >
         <div className="space-y-3">
           {accountsIsLoading ? (

@@ -1,6 +1,5 @@
 import { ChevronDown } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useState } from 'react';
 
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -15,23 +14,28 @@ type CollapsibleSectionProps = {
   title: string;
   /** Icon displayed next to the title */
   icon: ReactNode;
-  /** Whether the section is open by default */
-  defaultOpen?: boolean;
   /** Content to display inside the collapsible section */
   children: ReactNode;
   /** Optional CSS classes for the card */
   className?: string;
+  /** Controlled open state */
+  isOpen: boolean;
+  /** Callback when open state changes */
+  onOpenChange: (isOpen: boolean) => void;
 };
 
 /**
  * A collapsible section component for the dashboard.
  * Wraps content in a card with an expandable/collapsible header.
  *
+ * This is a controlled component - state is managed by the parent.
+ *
  * @example
  * <CollapsibleSection
  *   title="Accounts Overview"
  *   icon={<PieChart className="h-5 w-5" />}
- *   defaultOpen={true}
+ *   isOpen={accountsOpen}
+ *   onOpenChange={setAccountsOpen}
  * >
  *   <div>Account content here</div>
  * </CollapsibleSection>
@@ -39,15 +43,14 @@ type CollapsibleSectionProps = {
 function CollapsibleSection({
   title,
   icon,
-  defaultOpen = true,
   children,
   className,
+  isOpen,
+  onOpenChange,
 }: CollapsibleSectionProps) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-
   return (
     <Card className={cn('overflow-hidden border-2', className)}>
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <Collapsible open={isOpen} onOpenChange={onOpenChange}>
         <CollapsibleTrigger className="w-full">
           <div className="flex items-center justify-between px-4 py-4 bg-slate-100 dark:bg-slate-800/40 hover:bg-slate-200 dark:hover:bg-slate-700/40 transition-colors border-b">
             <div className="flex items-center gap-3">

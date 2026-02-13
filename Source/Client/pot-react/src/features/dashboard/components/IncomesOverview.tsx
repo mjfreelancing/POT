@@ -15,6 +15,11 @@ import CollapsibleSection from './CollapsibleSection';
 import CompactMetricsRow from './CompactMetricsRow';
 import IncomeCard from './IncomeCard';
 
+type IncomesOverviewProps = {
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
+};
+
 type FilteredIncomes = {
   count: number;
   total: number;
@@ -44,7 +49,7 @@ function filteredIncomeInfo(days: number, incomes: Income[]): FilteredIncomes {
   };
 }
 
-function IncomesOverview() {
+function IncomesOverview({ isOpen, onOpenChange }: IncomesOverviewProps) {
   useEffect(() => {
     logger.info('IncomesOverview', 'Component mounted');
 
@@ -151,7 +156,8 @@ function IncomesOverview() {
         <CollapsibleSection
           icon={<Landmark className="h-5 w-5" aria-hidden="true" />}
           title="Income Overview"
-          defaultOpen
+          isOpen={isOpen}
+          onOpenChange={onOpenChange}
         >
           <div className="space-y-3">
             {incomesIsLoading ? (

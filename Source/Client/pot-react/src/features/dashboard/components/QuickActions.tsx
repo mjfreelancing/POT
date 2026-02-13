@@ -11,12 +11,18 @@ import {
 import { AccrualsProvider } from '../contexts/AccrualsContext';
 import CollapsibleSection from './CollapsibleSection';
 
-function QuickActions() {
+type QuickActionsProps = {
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
+};
+
+function QuickActions({ isOpen, onOpenChange }: QuickActionsProps) {
   return (
     <CollapsibleSection
       icon={<Zap className="h-5 w-5" aria-hidden="true" />}
       title="Quick Actions"
-      defaultOpen
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
     >
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <AccrualsProvider>

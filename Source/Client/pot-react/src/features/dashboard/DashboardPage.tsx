@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { logger } from '@/concerns';
@@ -12,6 +12,7 @@ import {
   IncomesOverview,
   QuickActions,
 } from './components';
+import useDashboardStorage from './hooks/useDashboardStorage';
 
 function DashboardPage() {
   useEffect(() => {
@@ -23,6 +24,32 @@ function DashboardPage() {
   }, []);
 
   const { error, setError } = useErrorContext();
+  const { getDashboardData, setDashboardData } = useDashboardStorage(setError);
+
+  // Initialize state from localStorage (using lazy initializer to avoid calling on every render)
+  const [dashboardState, setDashboardState] = useState(() =>
+    getDashboardData(),
+  );
+
+  const handleQuickActionsOpenChange = (isOpen: boolean) => {
+    setDashboardState(prev => ({ ...prev, quickActionsOpen: isOpen }));
+    setDashboardData({ quickActionsOpen: isOpen });
+  };
+
+  const handleAccountsOpenChange = (isOpen: boolean) => {
+    setDashboardState(prev => ({ ...prev, accountsOpen: isOpen }));
+    setDashboardData({ accountsOpen: isOpen });
+  };
+
+  const handleIncomesOpenChange = (isOpen: boolean) => {
+    setDashboardState(prev => ({ ...prev, incomesOpen: isOpen }));
+    setDashboardData({ incomesOpen: isOpen });
+  };
+
+  const handleExpensesOpenChange = (isOpen: boolean) => {
+    setDashboardState(prev => ({ ...prev, expensesOpen: isOpen }));
+    setDashboardData({ expensesOpen: isOpen });
+  };
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20">
@@ -34,19 +61,31 @@ function DashboardPage() {
             permissions={['account:manage', 'expense:manage', 'income:manage']}
             mode="any"
           >
-            <QuickActions />
+            <QuickActions
+              isOpen={dashboardState.quickActionsOpen}
+              onOpenChange={handleQuickActionsOpenChange}
+            />
           </PermissionGuard>
 
           <PermissionGuard permissions={['account:view']} mode="all">
-            <AccountsOverview />
+            <AccountsOverview
+              isOpen={dashboardState.accountsOpen}
+              onOpenChange={handleAccountsOpenChange}
+            />
           </PermissionGuard>
 
           <PermissionGuard permissions={['expense:view']} mode="all">
-            <ExpensesOverview />
+            <ExpensesOverview
+              isOpen={dashboardState.expensesOpen}
+              onOpenChange={handleExpensesOpenChange}
+            />
           </PermissionGuard>
 
           <PermissionGuard permissions={['income:view']} mode="all">
-            <IncomesOverview />
+            <IncomesOverview
+              isOpen={dashboardState.incomesOpen}
+              onOpenChange={handleIncomesOpenChange}
+            />
           </PermissionGuard>
 
           {error && (
