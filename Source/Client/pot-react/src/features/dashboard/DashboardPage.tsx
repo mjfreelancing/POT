@@ -9,6 +9,7 @@ import {
   AccountsOverview,
   DashboardHeader,
   ExpensesOverview,
+  IncomesOverview,
   QuickActions,
 } from './components';
 
@@ -42,6 +43,10 @@ function DashboardPage() {
 
           <PermissionGuard permissions={['expense:view']} mode="all">
             <ExpensesOverview />
+          </PermissionGuard>
+
+          <PermissionGuard permissions={['income:view']} mode="all">
+            <IncomesOverview />
           </PermissionGuard>
 
           {error && (

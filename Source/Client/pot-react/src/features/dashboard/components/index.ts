@@ -5,4 +5,6 @@ export { default as CompactMetricsRow } from './CompactMetricsRow';
 export { default as DashboardHeader } from './DashboardHeader';
 export { default as ExpenseCard } from './ExpenseCard';
 export { default as ExpensesOverview } from './ExpensesOverview';
+export { default as IncomeCard } from './IncomeCard';
+export { default as IncomesOverview } from './IncomesOverview';
 export { default as QuickActions } from './QuickActions';
