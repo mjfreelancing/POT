@@ -1,14 +1,33 @@
-import { Ban } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { Ban, CheckCircle, FastForward, MoreHorizontal } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
+import { useApiRenewExpenses } from '@/api/hooks';
 import { NotePopover } from '@/components/feedback';
 import StatusBadge from '@/components/feedback/badge/StatusBadge';
+import { SuccessToast } from '@/components/feedback/toast';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useCacheInvalidation } from '@/concerns/cache/cacheInvalidation';
+import { useErrorContext } from '@/contexts';
 import type { Expense } from '@/data';
+import { WithPermission } from '@/features/auth/components';
 import {
   formatDate,
   formatMoneyValue,
   localToday,
   normalizeToEpoch,
+  RenewalMode,
+  todayIsoFormat,
 } from '@/lib';
 import { cn } from '@/lib/utils';
 
@@ -68,8 +87,76 @@ function getUrgencyStyle(days: number): {
 }
 
 function ExpenseCard({ expense }: ExpenseCardProps) {
+  const [isRenewing, setIsRenewing] = useState(false);
   const days = getDaysDue(expense.nextDue);
   const { borderClass, bgClass, badge } = getUrgencyStyle(days);
+
+  const { setError } = useErrorContext();
+  const queryClient = useQueryClient();
+  const invalidateCache = useCacheInvalidation(queryClient);
+  const renewExpensesMutation = useApiRenewExpenses();
+
+  const isOverdue = days <= 0;
+
+  const handleMarkAsPaid = async () => {
+    setIsRenewing(true);
+
+    const result = await renewExpensesMutation.mutateAsync({
+      data: {
+        rowIds: [expense.rowId],
+        mode: RenewalMode.Future,
+        asOfDate: todayIsoFormat(),
+      },
+    });
+
+    setIsRenewing(false);
+
+    if (result.success) {
+      invalidateCache(['expenses']);
+      toast(
+        <SuccessToast
+          icon={CheckCircle}
+          title="Marked as Paid"
+          description={`${expense.description} marked as paid.`}
+        />,
+      );
+    } else {
+      setError({
+        title: result.error.code,
+        description: result.error.description,
+      });
+    }
+  };
+
+  const handleAdvanceToNextPeriod = async () => {
+    setIsRenewing(true);
+
+    const result = await renewExpensesMutation.mutateAsync({
+      data: {
+        rowIds: [expense.rowId],
+        mode: RenewalMode.Overdue,
+        asOfDate: todayIsoFormat(),
+      },
+    });
+
+    setIsRenewing(false);
+
+    if (result.success) {
+      invalidateCache(['expenses']);
+      toast(
+        <SuccessToast
+          icon={FastForward}
+          title="Renewal Advanced"
+          description={`${expense.description} renewal advanced.`}
+        />,
+      );
+    } else {
+      setError({
+        title: result.error.code,
+        description: result.error.description,
+      });
+    }
+  };
 
   return (
     <Card
@@ -129,8 +216,48 @@ function ExpenseCard({ expense }: ExpenseCardProps) {
               </div>
               {badge && <div className="flex justify-end">{badge}</div>}
               {expense.account && (
-                <div className="text-[10px] lg:text-xs text-foreground/70 mt-3 pt-3 border-t border-border/50">
-                  {expense.account.description}
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
+                  <div className="text-[10px] lg:text-xs text-foreground/70">
+                    {expense.account.description}
+                  </div>
+                  <WithPermission permissions={['expense:manage']} mode="all">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 p-0"
+                          disabled={isRenewing}
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Expense actions</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel className="text-sm font-semibold">
+                          Actions
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {isOverdue ? (
+                          <DropdownMenuItem
+                            onClick={handleAdvanceToNextPeriod}
+                            disabled={isRenewing}
+                          >
+                            <FastForward className="mr-2 h-4 w-4" />
+                            Advance Renewal
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem
+                            onClick={handleMarkAsPaid}
+                            disabled={isRenewing}
+                          >
+                            <CheckCircle className="mr-2 h-4 w-4" />
+                            Mark as Paid
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </WithPermission>
                 </div>
               )}
             </div>

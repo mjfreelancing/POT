@@ -31,6 +31,15 @@ const FrequencyOptions = Object.values(Frequency).map(value => ({
   label: FrequencyDisplay[value],
 }));
 
+// Define the renewal mode enum values for API communication
+const RenewalMode = {
+  Overdue: 'Overdue',
+  Future: 'Future',
+} as const;
+
+// The union type of allowable renewal mode strings (using the API values)
+type RenewalMode = (typeof RenewalMode)[keyof typeof RenewalMode];
+
 type DisplayError = {
   title: string;
   description: string;
@@ -57,6 +66,7 @@ export {
   Frequency,
   FrequencyDisplay,
   FrequencyOptions,
+  RenewalMode,
 };
 
 export type {
@@ -66,4 +76,5 @@ export type {
   DisplayError,
   Frequency as FrequencyType,
   MoneyValue,
+  RenewalMode as RenewalModeType,
 };

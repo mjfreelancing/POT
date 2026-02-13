@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { compareDates, Frequency } from '@/lib';
+import { compareDates, Frequency, RenewalMode } from '@/lib';
 
 import { EtagSchema, IdentitySchema } from './identity';
 
@@ -41,7 +41,8 @@ const ToggleExcludeIncomesSchema = z.object({
 
 const RenewIncomesSchema = z.object({
   rowIds: z.string().array(),
-  untilDate: z.string(),
+  mode: z.nativeEnum(RenewalMode),
+  asOfDate: z.string(),
 });
 
 type Income = z.infer<typeof IncomeSchema>;

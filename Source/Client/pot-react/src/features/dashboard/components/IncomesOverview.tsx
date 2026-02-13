@@ -147,35 +147,37 @@ function IncomesOverview() {
 
   return (
     <>
-      <CollapsibleSection
-        icon={<Landmark className="h-5 w-5" aria-hidden="true" />}
-        title="Income Overview"
-        defaultOpen
-      >
-        <div className="space-y-3">
-          {incomesIsLoading ? (
-            <Skeleton className="h-[72px] w-full rounded-lg" />
-          ) : (
-            <CompactMetricsRow metrics={metricsData} />
-          )}
+      <div className="relative">
+        <CollapsibleSection
+          icon={<Landmark className="h-5 w-5" aria-hidden="true" />}
+          title="Income Overview"
+          defaultOpen
+        >
+          <div className="space-y-3">
+            {incomesIsLoading ? (
+              <Skeleton className="h-[72px] w-full rounded-lg" />
+            ) : (
+              <CompactMetricsRow metrics={metricsData} />
+            )}
 
-          {incomesIsLoading ? (
-            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-              {Array(4)
-                .fill(0)
-                .map((_, i) => (
-                  <Skeleton key={i} className="h-[140px] rounded-lg" />
+            {incomesIsLoading ? (
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                {Array(4)
+                  .fill(0)
+                  .map((_, i) => (
+                    <Skeleton key={i} className="h-[140px] rounded-lg" />
+                  ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                {dueIn30DaysIncomes.map(income => (
+                  <IncomeCard key={income.rowId} income={income} />
                 ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-              {dueIn30DaysIncomes.map(income => (
-                <IncomeCard key={income.rowId} income={income} />
-              ))}
-            </div>
-          )}
-        </div>
-      </CollapsibleSection>
+              </div>
+            )}
+          </div>
+        </CollapsibleSection>
+      </div>
     </>
   );
 }

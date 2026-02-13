@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { Frequency } from '@/lib';
+import { Frequency, RenewalMode } from '@/lib';
 
 import { EtagSchema, IdentitySchema } from './identity';
 import type { Paged } from './types';
@@ -44,7 +44,8 @@ const ToggleExcludeExpensesSchema = z.object({
 
 const RenewExpensesSchema = z.object({
   rowIds: z.string().array(),
-  untilDate: z.string(),
+  mode: z.nativeEnum(RenewalMode),
+  asOfDate: z.string(),
 });
 
 type Expense = z.infer<typeof ExpenseSchema>;

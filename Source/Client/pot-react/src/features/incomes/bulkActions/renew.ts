@@ -10,7 +10,11 @@ async function renewIncomes(
   queryClient: QueryClient,
 ): Promise<BulkActionResult> {
   const result = await renewIncomesMutation.mutateAsync({
-    data: { rowIds: incomesRowIds, untilDate: todayIsoFormat() },
+    data: {
+      rowIds: incomesRowIds,
+      mode: 'Overdue',
+      asOfDate: todayIsoFormat(),
+    },
   });
 
   if (result.success) {
