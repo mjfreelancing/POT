@@ -22,7 +22,9 @@ function PageHeader({
       )}
       <div className="flex-1">
         <h1 className="page-title">{title}</h1>
-        {subtitle && <p className="page-subtitle hidden md:block">{subtitle}</p>}
+        {subtitle && (
+          <p className="page-subtitle hidden md:block">{subtitle}</p>
+        )}
       </div>
       <div className="ml-4">
         <UserMenu />
