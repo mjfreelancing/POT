@@ -45,7 +45,7 @@ internal sealed class RenewExpensesService : IRenewIncomesService
                 return EnrichedResult.Fail<bool>(incomeRenewError);
             }
 
-            _renewalCalculator.Renew(incomes, input.UntilDate);
+            _renewalCalculator.Renew(incomes, input.Mode, input.AsOfDate);
 
             await _incomeRepository.SaveAsync(cancellationToken);
         }

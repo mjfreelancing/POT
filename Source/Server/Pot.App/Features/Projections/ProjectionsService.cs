@@ -1,4 +1,4 @@
-﻿using AllOverIt.Assertion;
+using AllOverIt.Assertion;
 using AllOverIt.Extensions;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
@@ -8,6 +8,7 @@ using Pot.App.Concerns.Time;
 using Pot.App.Features.Projections.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Projections;
+using Pot.Shared.Enumerations;
 using Pot.Shared.Extensions;
 
 namespace Pot.App.Features.Projections;
@@ -82,8 +83,8 @@ internal sealed class ProjectionsService : IProjectionsService
 
                 var incomeReceived = incomesDue.Sum(income => income.Amount);
 
-                _expenseRenewalCalculator.Renew(expenses, date);
-                _incomeRenewalCalculator.Renew(incomes, date);
+                _expenseRenewalCalculator.Renew(expenses, RenewalMode.Overdue, date);
+                _incomeRenewalCalculator.Renew(incomes, RenewalMode.Overdue, date);
                 _accrueExpenseCalculator.AccrueExpenses(account, expenses, date);
 
                 var dateValues = new DateProjectionValues

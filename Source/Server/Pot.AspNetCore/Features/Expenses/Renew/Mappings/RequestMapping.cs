@@ -9,7 +9,8 @@ internal static class RequestMapping
         return new Input
         {
             RowIds = request.RowIds,
-            UntilDate = request.UntilDate
+            AsOfDate = request.AsOfDate,
+            Mode = request.Mode
         };
     }
 }

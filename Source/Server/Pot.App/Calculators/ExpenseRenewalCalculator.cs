@@ -1,4 +1,4 @@
-﻿using AllOverIt.Assertion;
+using AllOverIt.Assertion;
 using Pot.Data.Entities;
 using Pot.Shared.Enumerations;
 using Pot.Shared.Extensions;
@@ -7,8 +7,8 @@ namespace Pot.App.Calculators;
 
 internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
 {
-    // advanceUntilDate is typically 'today' (except when calculating projections)
-    public void Renew(IEnumerable<ExpenseEntity> expenses, DateOnly advanceUntilDate)
+    // asOfDate is typically 'today' (except when calculating projections)
+    public void Renew(IEnumerable<ExpenseEntity> expenses, RenewalMode mode, DateOnly asOfDate)
     {
         _ = expenses.WhenNotNull();
 
@@ -30,14 +30,11 @@ internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
                 continue;
             }
 
-            var nextDue = expense.NextDue;
-
-            // Do not process items due on the advanceUntilDate - theoretically 'still due' and it would affect how projections
-            // are calculated because the expenses would continue to advance before the debit could be considered.
-            while (nextDue <= advanceUntilDate)
+            if (mode == RenewalMode.Future)
             {
+                // For future items, advance exactly ONCE to the next period
                 var days = expense.Frequency.GetDaysToNext(expense.NextDue, expense.FrequencyCount);
-                nextDue = expense.NextDue.AddDays(days);
+                var nextDue = expense.NextDue.AddDays(days);
 
                 // Don't advance beyond the end date
                 if (nextDue <= endDate)
@@ -47,6 +44,29 @@ internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
                     expense.AccrualStart = expense.NextDue;
                     expense.NextDue = nextDue;
                     expense.AccruedIsDirty = true;
+                }
+            }
+            else
+            {
+                // For overdue mode, advance until caught up (existing logic)
+                var nextDue = expense.NextDue;
+
+                // Do not process items due on the asOfDate - theoretically 'still due' and it would affect how projections
+                // are calculated because the expenses would continue to advance before the debit could be considered.
+                while (nextDue <= asOfDate)
+                {
+                    var days = expense.Frequency.GetDaysToNext(expense.NextDue, expense.FrequencyCount);
+                    nextDue = expense.NextDue.AddDays(days);
+
+                    // Don't advance beyond the end date
+                    if (nextDue <= endDate)
+                    {
+                        // Not resetting / updating expense.Accrued since this impacts the account's accrued amount.
+                        // The expense.Accrued will be updated next time the account's 'accrue expenses' is performed.
+                        expense.AccrualStart = expense.NextDue;
+                        expense.NextDue = nextDue;
+                        expense.AccruedIsDirty = true;
+                    }
                 }
             }
         }

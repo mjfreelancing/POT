@@ -1,4 +1,4 @@
-﻿using AllOverIt.Assertion;
+using AllOverIt.Assertion;
 using Pot.Data.Entities;
 using Pot.Shared.Enumerations;
 using Pot.Shared.Extensions;
@@ -7,8 +7,8 @@ namespace Pot.App.Calculators;
 
 internal sealed class IncomeRenewalCalculator : IIncomeRenewalCalculator
 {
-    // advanceUntilDate is typically 'today' (except when calculating projections)
-    public void Renew(IEnumerable<IncomeEntity> incomes, DateOnly advanceUntilDate)
+    // asOfDate is typically 'today' (except when calculating projections)
+    public void Renew(IEnumerable<IncomeEntity> incomes, RenewalMode mode, DateOnly asOfDate)
     {
         _ = incomes.WhenNotNull();
 
@@ -28,18 +28,34 @@ internal sealed class IncomeRenewalCalculator : IIncomeRenewalCalculator
                 continue;
             }
 
-            var nextDue = income.NextDue;
-
-            // Do not process items due on the advanceUtilDate - theoretically 'still due' and it would affect how projections
-            // are calculated because the expenses would continue to advance before the credit could be considered.
-            while (nextDue <= advanceUntilDate)
+            if (mode == RenewalMode.Future)
             {
+                // For future items, advance exactly ONCE to the next period
                 var days = income.Frequency.GetDaysToNext(income.NextDue, income.FrequencyCount);
-                nextDue = income.NextDue.AddDays(days);
+                var nextDue = income.NextDue.AddDays(days);
 
+                // Don't advance beyond the end date
                 if (nextDue <= endDate)
                 {
                     income.NextDue = nextDue;
+                }
+            }
+            else
+            {
+                // For overdue mode, advance until caught up (existing logic)
+                var nextDue = income.NextDue;
+
+                // Do not process items due on the asOfDate - theoretically 'still due' and it would affect how projections
+                // are calculated because the income would continue to advance before the credit could be considered.
+                while (nextDue <= asOfDate)
+                {
+                    var days = income.Frequency.GetDaysToNext(income.NextDue, income.FrequencyCount);
+                    nextDue = income.NextDue.AddDays(days);
+
+                    if (nextDue <= endDate)
+                    {
+                        income.NextDue = nextDue;
+                    }
                 }
             }
         }
