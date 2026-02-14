@@ -23,8 +23,8 @@ import { useErrorContext } from '@/contexts';
 import type { Income } from '@/data';
 import { usePermissions } from '@/hooks';
 import {
-  Frequency,
   formatDate,
+  Frequency,
   getAdornedIncomeDescription,
   getDaysDue,
   getTableRowClassName,
@@ -80,7 +80,16 @@ const columns: ColumnDef<Income>[] = [
 
       // Determine badge (don't show for excluded items)
       let badge: React.ReactNode = null;
-      if (!isExcluded) {
+      if (isExcluded) {
+        badge = (
+          <Badge
+            variant="secondary"
+            className="ml-2 text-[10px] px-1.5 py-0 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-300 dark:border-red-800 min-w-[80px] justify-center"
+          >
+            Excluded
+          </Badge>
+        );
+      } else {
         if (daysDue === 0) {
           // Due today - use amber for visibility
           badge = (

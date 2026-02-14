@@ -1,6 +1,7 @@
 import type { ColumnDef, Row } from '@tanstack/react-table';
 
 import { Badge } from '@/components/ui/badge';
+
 import type { Frequency, MoneyValue } from '../../lib';
 import { formatDate, formatMoneyValue, FrequencyDisplay } from '../../lib';
 import DataTableColumnHeader from './DataTableColumnHeader';
@@ -142,7 +143,11 @@ const createFrequencyColumn = <TData,>(
       const count = row.original[countKey] as number;
       const freq = row.original[frequencyKey] as Frequency;
       // Check if item is excluded (only applicable to expenses/incomes)
-      const isExcluded = (row.original as any).excludeFromCalcs ?? false;
+      // Since this is a generic column factory, TData could be any type. We cast to a shape that includes
+      // the excludeFromCalcs property (which Expense and Income have) to safely access it without type errors.
+      // The !! coerces the value to boolean (undefined/null becomes false, true/false stays as is).
+      const isExcluded = !!(row.original as { excludeFromCalcs?: boolean })
+        .excludeFromCalcs;
 
       // Special case: for 'OneTime', display the FrequencyDisplay label only, no count
       let displayValue;
@@ -157,7 +162,9 @@ const createFrequencyColumn = <TData,>(
       // For excluded items, show as plain red text instead of badge
       if (isExcluded) {
         return (
-          <span className="text-red-600/70 dark:text-red-400/70">{displayValue}</span>
+          <span className="text-red-600/70 dark:text-red-400/70">
+            {displayValue}
+          </span>
         );
       }
 
