@@ -603,5 +603,18 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             // Due today should be treated as overdue and advance
             income.NextDue.Should().Be(new DateOnly(2025, 2, 17));
         }
+
+        [Fact]
+        public void Should_Not_Renew_When_Overdue_Income_Next_Period_Exceeds_EndDate()
+        {
+            // Income is overdue but the next period would exceed its end date
+            var asOfDate = new DateOnly(2025, 2, 15);
+            var income = EntityFactory.CreateIncome(_account, false, "Overdue with near EndDate", 500, "2025-01-01", "2025-01-25", Frequency.Months, 1);
+
+            _calculator.Renew([income], RenewalMode.Overdue, asOfDate);
+
+            // Should remain unchanged since next period (2025-02-01) exceeds EndDate (2025-01-25)
+            income.NextDue.Should().Be(new DateOnly(2025, 1, 1), "income should not advance beyond its end date");
+        }
     }
 }

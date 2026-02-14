@@ -55,17 +55,23 @@ internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
                 // are calculated because the expenses would continue to advance before the debit could be considered.
                 while (nextDue <= asOfDate)
                 {
-                    var days = expense.Frequency.GetDaysToNext(expense.NextDue, expense.FrequencyCount);
-                    nextDue = expense.NextDue.AddDays(days);
+                    var days = expense.Frequency.GetDaysToNext(nextDue, expense.FrequencyCount);
+                    var calculatedNextDue = nextDue.AddDays(days);
 
                     // Don't advance beyond the end date
-                    if (nextDue <= endDate)
+                    if (calculatedNextDue <= endDate)
                     {
                         // Not resetting / updating expense.Accrued since this impacts the account's accrued amount.
                         // The expense.Accrued will be updated next time the account's 'accrue expenses' is performed.
-                        expense.AccrualStart = expense.NextDue;
-                        expense.NextDue = nextDue;
+                        expense.AccrualStart = nextDue;
+                        expense.NextDue = calculatedNextDue;
                         expense.AccruedIsDirty = true;
+                        nextDue = calculatedNextDue;
+                    }
+                    else
+                    {
+                        // Cannot advance further without exceeding end date, exit loop
+                        break;
                     }
                 }
             }

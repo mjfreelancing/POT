@@ -1,4 +1,4 @@
-using AllOverIt.Assertion;
+﻿using AllOverIt.Assertion;
 using AllOverIt.Extensions;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;

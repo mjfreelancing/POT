@@ -49,12 +49,18 @@ internal sealed class IncomeRenewalCalculator : IIncomeRenewalCalculator
                 // are calculated because the income would continue to advance before the credit could be considered.
                 while (nextDue <= asOfDate)
                 {
-                    var days = income.Frequency.GetDaysToNext(income.NextDue, income.FrequencyCount);
-                    nextDue = income.NextDue.AddDays(days);
+                    var days = income.Frequency.GetDaysToNext(nextDue, income.FrequencyCount);
+                    var calculatedNextDue = nextDue.AddDays(days);
 
-                    if (nextDue <= endDate)
+                    if (calculatedNextDue <= endDate)
                     {
-                        income.NextDue = nextDue;
+                        income.NextDue = calculatedNextDue;
+                        nextDue = calculatedNextDue;
+                    }
+                    else
+                    {
+                        // Cannot advance further without exceeding end date, exit loop
+                        break;
                     }
                 }
             }

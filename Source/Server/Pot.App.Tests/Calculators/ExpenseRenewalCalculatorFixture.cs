@@ -881,5 +881,21 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             expense.NextDue.Should().Be(new DateOnly(2025, 2, 17));
             expense.AccruedIsDirty.Should().BeTrue();
         }
+
+        [Fact]
+        public void Should_Not_Renew_When_Overdue_Expense_Next_Period_Exceeds_EndDate()
+        {
+            // Expense is overdue but the next period would exceed its end date
+            var asOfDate = new DateOnly(2025, 2, 15);
+            var expense = EntityFactory.CreateExpense(_account, false, "Overdue with near EndDate", 100, "2025-01-01", "2025-01-01", "2025-01-25", Frequency.Months, 1);
+            expense.AccruedIsDirty = false;
+
+            _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
+
+            // Should remain unchanged since next period (2025-02-01) exceeds EndDate (2025-01-25)
+            expense.NextDue.Should().Be(new DateOnly(2025, 1, 1), "expense should not advance beyond its end date");
+            expense.AccrualStart.Should().Be(new DateOnly(2025, 1, 1));
+            expense.AccruedIsDirty.Should().BeFalse();
+        }
     }
 }
