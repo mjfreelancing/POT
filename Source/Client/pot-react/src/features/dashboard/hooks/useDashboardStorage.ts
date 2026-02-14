@@ -3,11 +3,15 @@ import type { DisplayError } from '@/lib';
 
 const DASHBOARD_STORAGE_KEY = 'pot-dashboard';
 
+export type PeriodDays = 7 | 14 | 30;
+
 type DashboardStorageData = {
   quickActionsOpen: boolean | null;
   accountsOpen: boolean | null;
   incomesOpen: boolean | null;
   expensesOpen: boolean | null;
+  expensesPeriod: PeriodDays | null;
+  incomesPeriod: PeriodDays | null;
 };
 
 const dashboardStorageDefaults: DashboardStorageData = {
@@ -15,6 +19,8 @@ const dashboardStorageDefaults: DashboardStorageData = {
   accountsOpen: true,
   incomesOpen: true,
   expensesOpen: true,
+  expensesPeriod: 30,
+  incomesPeriod: 30,
 };
 
 type StorageErrorHandler = (error: DisplayError) => void;
@@ -38,6 +44,8 @@ function useDashboardStorage(onError?: StorageErrorHandler) {
       accountsOpen: getProperty('accountsOpen') ?? true,
       incomesOpen: getProperty('incomesOpen') ?? true,
       expensesOpen: getProperty('expensesOpen') ?? true,
+      expensesPeriod: getProperty('expensesPeriod') ?? 30,
+      incomesPeriod: getProperty('incomesPeriod') ?? 30,
     }),
 
     setDashboardData: (data: Partial<DashboardStorageData>) => {
@@ -55,6 +63,14 @@ function useDashboardStorage(onError?: StorageErrorHandler) {
 
       if (data.expensesOpen !== undefined) {
         setProperty('expensesOpen', data.expensesOpen);
+      }
+
+      if (data.expensesPeriod !== undefined) {
+        setProperty('expensesPeriod', data.expensesPeriod);
+      }
+
+      if (data.incomesPeriod !== undefined) {
+        setProperty('incomesPeriod', data.incomesPeriod);
       }
     },
   };

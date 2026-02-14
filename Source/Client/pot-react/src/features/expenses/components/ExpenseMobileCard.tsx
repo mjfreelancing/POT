@@ -17,12 +17,7 @@ import {
 import { useErrorContext } from '@/contexts';
 import type { Expense } from '@/data';
 import { WithPermission } from '@/features/auth/components';
-import {
-  formatDate,
-  formatMoneyValue,
-  localToday,
-  normalizeToEpoch,
-} from '@/lib';
+import { formatDate, formatMoneyValue, getDaysDue } from '@/lib';
 import { cn } from '@/lib/utils';
 
 import useDeleteExpense from '../delete/hooks/useDeleteExpense';
@@ -30,13 +25,6 @@ import useDeleteExpense from '../delete/hooks/useDeleteExpense';
 type ExpenseMobileCardProps = {
   expense: Expense;
 };
-
-function getDaysDue(nextDue: string): number {
-  const todayEpoch = normalizeToEpoch(localToday());
-  const dueDateEpoch = normalizeToEpoch(nextDue);
-  const diffMs = dueDateEpoch - todayEpoch;
-  return Math.floor(diffMs / (1000 * 60 * 60 * 24));
-}
 
 /**
  * Mobile card component for displaying expense information.

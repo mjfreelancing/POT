@@ -1,12 +1,16 @@
 import { useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef, Row } from '@tanstack/react-table';
+import { CheckCircle, FastForward } from 'lucide-react';
+import { useState } from 'react';
 import { useParams } from 'react-router';
+import { toast } from 'sonner';
 
 import {
   useApiRenewExpenses,
   useApiToggleExcludeExpenses,
 } from '@/api/hooks/useExpenses';
-import { ErrorSheet } from '@/components/feedback';
+import { ConfirmationDialog } from '@/components/dialog';
+import { ErrorSheet, SuccessToast } from '@/components/feedback';
 import type { BulkAction } from '@/components/table';
 import {
   createDateColumn,
@@ -23,7 +27,9 @@ import { usePermissions } from '@/hooks';
 import {
   Frequency,
   getAdornedExpenseDescription,
+  getDaysDue,
   getTableRowClassName,
+  RenewalMode,
 } from '@/lib';
 
 import { renewExpenses, toggleExcludeExpenses } from '../bulkActions';
@@ -115,26 +121,123 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
   const renewExpensesMutation = useApiRenewExpenses();
   const excludeExpensesMutation = useApiToggleExcludeExpenses();
   const { error, setError } = useErrorContext();
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [pendingExpenses, setPendingExpenses] = useState<Expense[]>([]);
 
   const { hasPermission } = usePermissions();
   const canManageExpenses = hasPermission('expense:manage');
 
+  async function processMarkAsPaid() {
+    const futureExpenses = pendingExpenses.filter(
+      expense => getDaysDue(expense.nextDue) > 0,
+    );
+    const overdueExpenses = pendingExpenses.filter(
+      expense => getDaysDue(expense.nextDue) <= 0,
+    );
+
+    let hasErrors = false;
+
+    // Process future expenses (mark as paid)
+    if (futureExpenses.length > 0) {
+      const futureRowIds = futureExpenses.map(item => item.rowId);
+      const result = await renewExpenses(
+        futureRowIds,
+        RenewalMode.Future,
+        renewExpensesMutation,
+        queryClient,
+      );
+      if (!result.success) {
+        setError(result.error);
+        hasErrors = true;
+      }
+    }
+
+    // Process overdue expenses (advance renewal)
+    if (overdueExpenses.length > 0) {
+      const overdueRowIds = overdueExpenses.map(item => item.rowId);
+      const result = await renewExpenses(
+        overdueRowIds,
+        RenewalMode.Overdue,
+        renewExpensesMutation,
+        queryClient,
+      );
+      if (!result.success) {
+        setError(result.error);
+        hasErrors = true;
+      }
+    }
+
+    if (!hasErrors) {
+      const messages = [];
+      if (futureExpenses.length > 0) {
+        messages.push(
+          `${futureExpenses.length} expense${futureExpenses.length > 1 ? 's' : ''} marked as paid`,
+        );
+      }
+      if (overdueExpenses.length > 0) {
+        messages.push(
+          `${overdueExpenses.length} overdue expense${overdueExpenses.length > 1 ? 's' : ''} advanced`,
+        );
+      }
+      toast(
+        <SuccessToast
+          title="Expenses Processed"
+          description={messages.join(', ')}
+        />,
+      );
+    }
+
+    setShowConfirmation(false);
+    setPendingExpenses([]);
+  }
+
+  function getConfirmationMessage(expenses: Expense[]): React.ReactNode {
+    const futureCount = expenses.filter(
+      expense => getDaysDue(expense.nextDue) > 0,
+    ).length;
+    const overdueCount = expenses.filter(
+      expense => getDaysDue(expense.nextDue) <= 0,
+    ).length;
+
+    return (
+      <div className="space-y-3">
+        {futureCount > 0 && (
+          <div className="flex items-start gap-3">
+            <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold text-green-700 dark:text-green-300">
+                {futureCount} expense{futureCount > 1 ? 's' : ''}
+              </span>{' '}
+              not yet due will be marked as paid early and moved forward to the
+              next period.
+            </div>
+          </div>
+        )}
+        {overdueCount > 0 && (
+          <div className="flex items-start gap-3">
+            <FastForward className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold text-red-700 dark:text-red-300">
+                {overdueCount} overdue expense{overdueCount > 1 ? 's' : ''}
+              </span>{' '}
+              will be caught up to their next scheduled due date.
+            </div>
+          </div>
+        )}
+        <div className="text-sm text-muted-foreground pt-2 border-t">
+          This action cannot be undone.
+        </div>
+      </div>
+    );
+  }
+
   const bulkActions: BulkAction<Expense>[] = [
     {
-      label: 'Auto Renew',
+      label: 'Mark as Paid',
       isDisabled: !canManageExpenses,
       onClick: async (selectedItems: Expense[]) => {
-        const expenseRowIds = selectedItems.map(item => item.rowId);
-
-        const result = await renewExpenses(
-          expenseRowIds,
-          renewExpensesMutation,
-          queryClient,
-        );
-
-        if (!result.success) {
-          setError(result.error);
-        }
+        setPendingExpenses(selectedItems);
+        setShowConfirmation(true);
       },
       clearSelectionOnComplete: true,
     },
@@ -168,6 +271,19 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
           onDismiss={() => setError(null)}
         />
       )}
+
+      <ConfirmationDialog
+        open={showConfirmation}
+        title="Mark Expenses as Paid"
+        description={getConfirmationMessage(pendingExpenses)}
+        confirmLabel="Proceed"
+        cancelLabel="Cancel"
+        onConfirm={processMarkAsPaid}
+        onCancel={() => {
+          setShowConfirmation(false);
+          setPendingExpenses([]);
+        }}
+      />
 
       <Card className="card-elevated flex flex-col flex-1 min-h-0">
         <CardContent className="px-4 flex-1 min-h-0 flex flex-col">

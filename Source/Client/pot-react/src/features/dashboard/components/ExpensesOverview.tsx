@@ -1,7 +1,14 @@
 import { ClockFading, DollarSign, ShoppingCart } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { useApiGetAllExpenses } from '@/api/hooks';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
@@ -9,6 +16,8 @@ import type { Expense } from '@/data';
 import { EMPTY_EXPENSE_ARRAY } from '@/data';
 import { formatMoneyValue, localToday, normalizeToEpoch } from '@/lib';
 
+import type { PeriodDays } from '../hooks/useDashboardStorage';
+import useDashboardStorage from '../hooks/useDashboardStorage';
 import type { ExpensesSummary } from '../stores';
 import { expensesSummaryStore } from '../stores';
 import CollapsibleSection from './CollapsibleSection';
@@ -60,6 +69,19 @@ function ExpensesOverview({ isOpen, onOpenChange }: ExpensesOverviewProps) {
       logger.info('ExpensesOverview', 'Component unmounted');
     };
   }, []);
+
+  const { getDashboardData, setDashboardData } = useDashboardStorage();
+  const [selectedPeriod, setSelectedPeriod] = useState<PeriodDays>(
+    getDashboardData().expensesPeriod,
+  );
+
+  // Update localStorage when period changes
+  const handlePeriodChange = (value: string) => {
+    const period = Number(value) as PeriodDays;
+    setSelectedPeriod(period);
+    setDashboardData({ expensesPeriod: period });
+    logger.info('ExpensesOverview', `Period changed to ${period} days`);
+  };
 
   const { data: expensesData, isLoading: expensesIsLoading } =
     useApiGetAllExpenses();
@@ -119,40 +141,99 @@ function ExpensesOverview({ isOpen, onOpenChange }: ExpensesOverviewProps) {
     (state: ExpensesSummary) => state.totalNext30Days,
   );
 
-  const dueIn30DaysExpenses = useMemo(
-    () => filterExpenses(30, expenses),
+  // Calculate 14-day metrics for dynamic display
+  const { count: dueIn14Days, total: totalNext14Days } = useMemo(
+    () => filteredExpenseInfo(14, expenses),
     [expenses],
   );
 
-  const metricsData = useMemo(
-    () => [
-      {
-        icon: <ClockFading className="h-6 w-6" aria-hidden="true" />,
-        label: 'Due Next 7 Days',
-        value: dueIn7Days.toString(),
-        className: 'text-information',
-      },
-      {
-        icon: <DollarSign className="h-6 w-6" aria-hidden="true" />,
-        label: 'Total Next 7 Days',
-        value: formatMoneyValue(totalNext7Days),
-        className: 'text-information',
-      },
-      {
-        icon: <ClockFading className="h-6 w-6" aria-hidden="true" />,
-        label: 'Due Next 30 Days',
-        value: dueIn30Days.toString(),
-        className: 'text-information',
-      },
-      {
-        icon: <DollarSign className="h-6 w-6" aria-hidden="true" />,
-        label: 'Total Next 30 Days',
-        value: formatMoneyValue(totalNext30Days),
-        className: 'text-information',
-      },
-    ],
-    [dueIn7Days, totalNext7Days, dueIn30Days, totalNext30Days],
+  const filteredExpenses = useMemo(
+    () => filterExpenses(selectedPeriod, expenses),
+    [selectedPeriod, expenses],
   );
+
+  const metricsData = useMemo(() => {
+    // Dynamic metrics based on selected period
+    if (selectedPeriod === 7) {
+      return [
+        {
+          icon: <ClockFading className="h-6 w-6" aria-hidden="true" />,
+          label: 'Due Next 7 Days',
+          value: dueIn7Days.toString(),
+          className: 'text-information',
+        },
+        {
+          icon: <DollarSign className="h-6 w-6" aria-hidden="true" />,
+          label: 'Total Next 7 Days',
+          value: formatMoneyValue(totalNext7Days),
+          className: 'text-information',
+        },
+      ];
+    } else if (selectedPeriod === 14) {
+      return [
+        {
+          icon: <ClockFading className="h-6 w-6" aria-hidden="true" />,
+          label: 'Due Next 7 Days',
+          value: dueIn7Days.toString(),
+          className: 'text-information',
+        },
+        {
+          icon: <DollarSign className="h-6 w-6" aria-hidden="true" />,
+          label: 'Total Next 7 Days',
+          value: formatMoneyValue(totalNext7Days),
+          className: 'text-information',
+        },
+        {
+          icon: <ClockFading className="h-6 w-6" aria-hidden="true" />,
+          label: 'Due Next 14 Days',
+          value: dueIn14Days.toString(),
+          className: 'text-information',
+        },
+        {
+          icon: <DollarSign className="h-6 w-6" aria-hidden="true" />,
+          label: 'Total Next 14 Days',
+          value: formatMoneyValue(totalNext14Days),
+          className: 'text-information',
+        },
+      ];
+    } else {
+      // selectedPeriod === 30
+      return [
+        {
+          icon: <ClockFading className="h-6 w-6" aria-hidden="true" />,
+          label: 'Due Next 7 Days',
+          value: dueIn7Days.toString(),
+          className: 'text-information',
+        },
+        {
+          icon: <DollarSign className="h-6 w-6" aria-hidden="true" />,
+          label: 'Total Next 7 Days',
+          value: formatMoneyValue(totalNext7Days),
+          className: 'text-information',
+        },
+        {
+          icon: <ClockFading className="h-6 w-6" aria-hidden="true" />,
+          label: 'Due Next 30 Days',
+          value: dueIn30Days.toString(),
+          className: 'text-information',
+        },
+        {
+          icon: <DollarSign className="h-6 w-6" aria-hidden="true" />,
+          label: 'Total Next 30 Days',
+          value: formatMoneyValue(totalNext30Days),
+          className: 'text-information',
+        },
+      ];
+    }
+  }, [
+    selectedPeriod,
+    dueIn7Days,
+    totalNext7Days,
+    dueIn14Days,
+    totalNext14Days,
+    dueIn30Days,
+    totalNext30Days,
+  ]);
 
   return (
     <>
@@ -162,12 +243,33 @@ function ExpensesOverview({ isOpen, onOpenChange }: ExpensesOverviewProps) {
         isOpen={isOpen}
         onOpenChange={onOpenChange}
       >
-        <div className="space-y-3">
-          {expensesIsLoading ? (
-            <Skeleton className="h-[72px] w-full rounded-lg" />
-          ) : (
-            <CompactMetricsRow metrics={metricsData} />
-          )}
+        <div className="space-y-5">
+          {/* Period Filter */}
+          <div className="flex items-center gap-3 justify-center sm:justify-end">
+            <span className="text-sm text-muted-foreground">Show:</span>
+            <Select
+              value={selectedPeriod.toString()}
+              onValueChange={handlePeriodChange}
+            >
+              <SelectTrigger className="w-[180px] sm:w-[200px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7">Next 7 Days</SelectItem>
+                <SelectItem value="14">Next 14 Days</SelectItem>
+                <SelectItem value="30">Next 30 Days</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Metrics with background container */}
+          <div className="bg-blue-100/60 dark:bg-blue-950/40 p-4 rounded-lg border border-blue-200/50 dark:border-blue-900/50">
+            {expensesIsLoading ? (
+              <Skeleton className="h-[72px] w-full rounded-lg" />
+            ) : (
+              <CompactMetricsRow metrics={metricsData} />
+            )}
+          </div>
 
           {expensesIsLoading ? (
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
@@ -179,7 +281,7 @@ function ExpensesOverview({ isOpen, onOpenChange }: ExpensesOverviewProps) {
             </div>
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-              {dueIn30DaysExpenses.map(expense => (
+              {filteredExpenses.map(expense => (
                 <ExpenseCard key={expense.rowId} expense={expense} />
               ))}
             </div>

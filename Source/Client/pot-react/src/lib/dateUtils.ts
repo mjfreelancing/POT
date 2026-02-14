@@ -180,11 +180,29 @@ function formatDateTime(
   return new Intl.DateTimeFormat(locale, options).format(dateObj);
 }
 
+/**
+ * Returns the number of days until a given due date
+ * @param nextDue - A date string for the due date
+ * @returns Number of days until the due date (negative if overdue, 0 if due today, positive if in the future)
+ *
+ * @example
+ * getDaysDue('2025-01-10')  // Returns positive number if date is in the future
+ * getDaysDue('2025-01-01')  // Returns negative number if date is in the past
+ * getDaysDue(todayIsoFormat())  // Returns 0
+ */
+function getDaysDue(nextDue: string): number {
+  const todayEpoch = normalizeToEpoch(localToday());
+  const dueDateEpoch = normalizeToEpoch(nextDue);
+  const diffMs = dueDateEpoch - todayEpoch;
+  return Math.floor(diffMs / (1000 * 60 * 60 * 24));
+}
+
 export {
   compareDates,
   dateIsoFormat,
   formatDate,
   formatDateTime,
+  getDaysDue,
   isAfterDate,
   isBeforeDate,
   isSameDate,

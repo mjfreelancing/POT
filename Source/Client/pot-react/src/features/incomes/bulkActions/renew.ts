@@ -2,17 +2,22 @@ import type { QueryClient } from '@tanstack/react-query';
 
 import type { useApiRenewIncomes } from '@/api/hooks';
 import { invalidateCache } from '@/concerns';
-import { type BulkActionResult, todayIsoFormat } from '@/lib';
+import {
+  type BulkActionResult,
+  type RenewalModeType,
+  todayIsoFormat,
+} from '@/lib';
 
 async function renewIncomes(
   incomesRowIds: string[],
+  mode: RenewalModeType,
   renewIncomesMutation: ReturnType<typeof useApiRenewIncomes>,
   queryClient: QueryClient,
 ): Promise<BulkActionResult> {
   const result = await renewIncomesMutation.mutateAsync({
     data: {
       rowIds: incomesRowIds,
-      mode: 'Overdue',
+      mode,
       asOfDate: todayIsoFormat(),
     },
   });

@@ -54,7 +54,7 @@ function CompactMetricsRow({ metrics, className }: CompactMetricsRowProps) {
             >
               {metric.value}
             </div>
-            <div className="text-[10px] lg:text-xs text-muted-foreground font-medium">
+            <div className="text-[10px] lg:text-xs text-slate-700 dark:text-slate-300 font-medium">
               {metric.label}
             </div>
           </div>

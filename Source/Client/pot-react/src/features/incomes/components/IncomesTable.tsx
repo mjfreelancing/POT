@@ -1,10 +1,18 @@
 import { useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef, Row } from '@tanstack/react-table';
-import { Ban } from 'lucide-react';
+import { Ban, CheckCircle, FastForward } from 'lucide-react';
+import { useState } from 'react';
 import { useParams } from 'react-router';
+import { toast } from 'sonner';
 
 import { useApiRenewIncomes, useApiToggleExcludeIncomes } from '@/api/hooks';
-import { ErrorSheet, NotePopover, StatusBadge } from '@/components/feedback';
+import { ConfirmationDialog } from '@/components/dialog';
+import {
+  ErrorSheet,
+  NotePopover,
+  StatusBadge,
+  SuccessToast,
+} from '@/components/feedback';
 import type { BulkAction } from '@/components/table';
 import {
   createDateColumn,
@@ -18,7 +26,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useErrorContext } from '@/contexts';
 import type { Income } from '@/data';
 import { usePermissions } from '@/hooks';
-import { Frequency, getTableRowClassName } from '@/lib';
+import {
+  Frequency,
+  getDaysDue,
+  getTableRowClassName,
+  RenewalMode,
+} from '@/lib';
 
 import { renewIncomes, toggleExcludeIncomes } from '../bulkActions';
 import IncomeActions from './IncomeActions';
@@ -107,26 +120,123 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
   const renewIncomesMutation = useApiRenewIncomes();
   const excludeIncomesMutation = useApiToggleExcludeIncomes();
   const { error, setError } = useErrorContext();
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [pendingIncomes, setPendingIncomes] = useState<Income[]>([]);
 
   const { hasPermission } = usePermissions();
   const canManageIncomes = hasPermission('income:manage');
 
+  async function processMarkAsReceived() {
+    const futureIncomes = pendingIncomes.filter(
+      income => getDaysDue(income.nextDue) > 0,
+    );
+    const overdueIncomes = pendingIncomes.filter(
+      income => getDaysDue(income.nextDue) <= 0,
+    );
+
+    let hasErrors = false;
+
+    // Process future incomes (mark as received)
+    if (futureIncomes.length > 0) {
+      const futureRowIds = futureIncomes.map(item => item.rowId);
+      const result = await renewIncomes(
+        futureRowIds,
+        RenewalMode.Future,
+        renewIncomesMutation,
+        queryClient,
+      );
+      if (!result.success) {
+        setError(result.error);
+        hasErrors = true;
+      }
+    }
+
+    // Process overdue incomes (advance renewal)
+    if (overdueIncomes.length > 0) {
+      const overdueRowIds = overdueIncomes.map(item => item.rowId);
+      const result = await renewIncomes(
+        overdueRowIds,
+        RenewalMode.Overdue,
+        renewIncomesMutation,
+        queryClient,
+      );
+      if (!result.success) {
+        setError(result.error);
+        hasErrors = true;
+      }
+    }
+
+    if (!hasErrors) {
+      const messages = [];
+      if (futureIncomes.length > 0) {
+        messages.push(
+          `${futureIncomes.length} income${futureIncomes.length > 1 ? 's' : ''} marked as received`,
+        );
+      }
+      if (overdueIncomes.length > 0) {
+        messages.push(
+          `${overdueIncomes.length} overdue income${overdueIncomes.length > 1 ? 's' : ''} advanced`,
+        );
+      }
+      toast(
+        <SuccessToast
+          title="Incomes Processed"
+          description={messages.join(', ')}
+        />,
+      );
+    }
+
+    setShowConfirmation(false);
+    setPendingIncomes([]);
+  }
+
+  function getConfirmationMessage(incomes: Income[]): React.ReactNode {
+    const futureCount = incomes.filter(
+      income => getDaysDue(income.nextDue) > 0,
+    ).length;
+    const overdueCount = incomes.filter(
+      income => getDaysDue(income.nextDue) <= 0,
+    ).length;
+
+    return (
+      <div className="space-y-3">
+        {futureCount > 0 && (
+          <div className="flex items-start gap-3">
+            <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold text-green-700 dark:text-green-300">
+                {futureCount} income{futureCount > 1 ? 's' : ''}
+              </span>{' '}
+              not yet due will be marked as received early and moved forward to
+              the next period.
+            </div>
+          </div>
+        )}
+        {overdueCount > 0 && (
+          <div className="flex items-start gap-3">
+            <FastForward className="h-5 w-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold text-orange-700 dark:text-orange-300">
+                {overdueCount} overdue income{overdueCount > 1 ? 's' : ''}
+              </span>{' '}
+              will be caught up to their next scheduled due date.
+            </div>
+          </div>
+        )}
+        <div className="text-sm text-muted-foreground pt-2 border-t">
+          This action cannot be undone.
+        </div>
+      </div>
+    );
+  }
+
   const bulkActions: BulkAction<Income>[] = [
     {
-      label: 'Auto Renew',
+      label: 'Mark as Received',
       isDisabled: !canManageIncomes,
       onClick: async (selectedItems: Income[]) => {
-        const incomeRowIds = selectedItems.map(item => item.rowId);
-
-        const result = await renewIncomes(
-          incomeRowIds,
-          renewIncomesMutation,
-          queryClient,
-        );
-
-        if (!result.success) {
-          setError(result.error);
-        }
+        setPendingIncomes(selectedItems);
+        setShowConfirmation(true);
       },
       clearSelectionOnComplete: true,
     },
@@ -160,6 +270,20 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
           onDismiss={() => setError(null)}
         />
       )}
+
+      <ConfirmationDialog
+        open={showConfirmation}
+        title="Mark Incomes as Received"
+        description={getConfirmationMessage(pendingIncomes)}
+        confirmLabel="Proceed"
+        cancelLabel="Cancel"
+        onConfirm={processMarkAsReceived}
+        onCancel={() => {
+          setShowConfirmation(false);
+          setPendingIncomes([]);
+        }}
+      />
+
       <Card className="card-elevated flex flex-col flex-1 min-h-0">
         <CardContent className="px-4 flex-1 min-h-0 flex flex-col">
           <DataTable
