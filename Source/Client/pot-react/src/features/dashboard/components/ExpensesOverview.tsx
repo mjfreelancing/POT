@@ -18,8 +18,6 @@ import { formatMoneyValue, localToday, normalizeToEpoch } from '@/lib';
 
 import type { PeriodDays } from '../hooks/useDashboardStorage';
 import useDashboardStorage from '../hooks/useDashboardStorage';
-import type { ExpensesSummary } from '../stores';
-import { expensesSummaryStore } from '../stores';
 import CollapsibleSection from './CollapsibleSection';
 import CompactMetricsRow from './CompactMetricsRow';
 import ExpenseCard from './ExpenseCard';
@@ -78,8 +76,10 @@ function ExpensesOverview({ isOpen, onOpenChange }: ExpensesOverviewProps) {
   // Update localStorage when period changes
   const handlePeriodChange = (value: string) => {
     const period = Number(value) as PeriodDays;
+
     setSelectedPeriod(period);
     setDashboardData({ expensesPeriod: period });
+
     logger.info('ExpensesOverview', `Period changed to ${period} days`);
   };
 
@@ -92,10 +92,6 @@ function ExpensesOverview({ isOpen, onOpenChange }: ExpensesOverviewProps) {
     () =>
       expensesData?.success ? expensesData.value.results : EMPTY_EXPENSE_ARRAY,
     [expensesData],
-  );
-
-  const setSummary = expensesSummaryStore(
-    (state: ExpensesSummary) => state.setSummary,
   );
 
   // Handle API errors - only set errors, never clear them (DashboardPage handles clearing)
@@ -111,40 +107,17 @@ function ExpensesOverview({ isOpen, onOpenChange }: ExpensesOverviewProps) {
     }
   }, [expensesData, error, setError]);
 
-  // Recalculate and update summary when expenses change
-  useEffect(() => {
-    const { count: dueIn7Days, total: totalNext7Days } = filteredExpenseInfo(
-      7,
-      expenses,
-    );
-    const { count: dueIn30Days, total: totalNext30Days } = filteredExpenseInfo(
-      30,
-      expenses,
-    );
-
-    setSummary(dueIn7Days, totalNext7Days, dueIn30Days, totalNext30Days);
-  }, [expenses, setSummary]);
-
-  const dueIn7Days = expensesSummaryStore(
-    (state: ExpensesSummary) => state.dueIn7Days,
-  );
-
-  const totalNext7Days = expensesSummaryStore(
-    (state: ExpensesSummary) => state.totalNext7Days,
-  );
-
-  const dueIn30Days = expensesSummaryStore(
-    (state: ExpensesSummary) => state.dueIn30Days,
-  );
-
-  const totalNext30Days = expensesSummaryStore(
-    (state: ExpensesSummary) => state.totalNext30Days,
-  );
-
-  // Calculate 14-day metrics for dynamic display
-  const { count: dueIn14Days, total: totalNext14Days } = useMemo(
-    () => filteredExpenseInfo(14, expenses),
+  // Calculate 7-day metrics
+  const { count: dueIn7Days, total: totalNext7Days } = useMemo(
+    () => filteredExpenseInfo(7, expenses),
     [expenses],
+  );
+
+  // Calculate selected period metrics dynamically (only if not 7 days)
+  const selectedPeriodMetrics = useMemo(
+    () =>
+      selectedPeriod > 7 ? filteredExpenseInfo(selectedPeriod, expenses) : null,
+    [selectedPeriod, expenses],
   );
 
   const filteredExpenses = useMemo(
@@ -153,87 +126,42 @@ function ExpensesOverview({ isOpen, onOpenChange }: ExpensesOverviewProps) {
   );
 
   const metricsData = useMemo(() => {
-    // Dynamic metrics based on selected period
-    if (selectedPeriod === 7) {
-      return [
+    // Always show 7 days metrics
+    const metrics = [
+      {
+        icon: <ClockFading className="h-6 w-6" aria-hidden="true" />,
+        label: 'Due Next 7 Days',
+        value: dueIn7Days.toString(),
+        className: 'text-information',
+      },
+      {
+        icon: <DollarSign className="h-6 w-6" aria-hidden="true" />,
+        label: 'Total Next 7 Days',
+        value: formatMoneyValue(totalNext7Days),
+        className: 'text-information',
+      },
+    ];
+
+    // Add selected period metrics if > 7 days
+    if (selectedPeriodMetrics) {
+      metrics.push(
         {
           icon: <ClockFading className="h-6 w-6" aria-hidden="true" />,
-          label: 'Due Next 7 Days',
-          value: dueIn7Days.toString(),
+          label: `Due Next ${selectedPeriod} Days`,
+          value: selectedPeriodMetrics.count.toString(),
           className: 'text-information',
         },
         {
           icon: <DollarSign className="h-6 w-6" aria-hidden="true" />,
-          label: 'Total Next 7 Days',
-          value: formatMoneyValue(totalNext7Days),
+          label: `Total Next ${selectedPeriod} Days`,
+          value: formatMoneyValue(selectedPeriodMetrics.total),
           className: 'text-information',
         },
-      ];
-    } else if (selectedPeriod === 14) {
-      return [
-        {
-          icon: <ClockFading className="h-6 w-6" aria-hidden="true" />,
-          label: 'Due Next 7 Days',
-          value: dueIn7Days.toString(),
-          className: 'text-information',
-        },
-        {
-          icon: <DollarSign className="h-6 w-6" aria-hidden="true" />,
-          label: 'Total Next 7 Days',
-          value: formatMoneyValue(totalNext7Days),
-          className: 'text-information',
-        },
-        {
-          icon: <ClockFading className="h-6 w-6" aria-hidden="true" />,
-          label: 'Due Next 14 Days',
-          value: dueIn14Days.toString(),
-          className: 'text-information',
-        },
-        {
-          icon: <DollarSign className="h-6 w-6" aria-hidden="true" />,
-          label: 'Total Next 14 Days',
-          value: formatMoneyValue(totalNext14Days),
-          className: 'text-information',
-        },
-      ];
-    } else {
-      // selectedPeriod === 30
-      return [
-        {
-          icon: <ClockFading className="h-6 w-6" aria-hidden="true" />,
-          label: 'Due Next 7 Days',
-          value: dueIn7Days.toString(),
-          className: 'text-information',
-        },
-        {
-          icon: <DollarSign className="h-6 w-6" aria-hidden="true" />,
-          label: 'Total Next 7 Days',
-          value: formatMoneyValue(totalNext7Days),
-          className: 'text-information',
-        },
-        {
-          icon: <ClockFading className="h-6 w-6" aria-hidden="true" />,
-          label: 'Due Next 30 Days',
-          value: dueIn30Days.toString(),
-          className: 'text-information',
-        },
-        {
-          icon: <DollarSign className="h-6 w-6" aria-hidden="true" />,
-          label: 'Total Next 30 Days',
-          value: formatMoneyValue(totalNext30Days),
-          className: 'text-information',
-        },
-      ];
+      );
     }
-  }, [
-    selectedPeriod,
-    dueIn7Days,
-    totalNext7Days,
-    dueIn14Days,
-    totalNext14Days,
-    dueIn30Days,
-    totalNext30Days,
-  ]);
+
+    return metrics;
+  }, [selectedPeriod, dueIn7Days, totalNext7Days, selectedPeriodMetrics]);
 
   return (
     <>
