@@ -57,6 +57,11 @@ const columns: ColumnDef<Income>[] = [
       sortingFn: 'basic',
     },
   }),
+  createFrequencyColumn<Income>({
+    countKey: 'frequencyCount',
+    frequencyKey: 'frequency',
+    header: 'Frequency',
+  }),
   {
     id: 'nextDue',
     accessorKey: 'nextDue',
@@ -107,11 +112,6 @@ const columns: ColumnDef<Income>[] = [
       );
     },
   },
-  createFrequencyColumn<Income>({
-    countKey: 'frequencyCount',
-    frequencyKey: 'frequency',
-    header: 'Frequency',
-  }),
   createDateColumn<Income>({
     accessorKey: 'endDate',
     header: 'End Date',
