@@ -30,6 +30,7 @@ import {
   Frequency,
   getAdornedExpenseDescription,
   getDaysDue,
+  getStatusBadgeClass,
   getTableRowClassName,
   RenewalMode,
 } from '@/lib';
@@ -83,7 +84,7 @@ const columns: ColumnDef<Expense>[] = [
         badge = (
           <Badge
             variant="secondary"
-            className="ml-2 text-[11px] px-2 py-0.5 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-300 dark:border-red-800 min-w-[80px] justify-center"
+            className={getStatusBadgeClass('excluded')}
           >
             Excluded
           </Badge>
@@ -94,7 +95,7 @@ const columns: ColumnDef<Expense>[] = [
           badge = (
             <Badge
               variant="default"
-              className="ml-2 text-[11px] px-2 py-0.5 bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700 min-w-[80px] justify-center"
+              className={getStatusBadgeClass('due-today')}
             >
               Due Today
             </Badge>
@@ -104,7 +105,7 @@ const columns: ColumnDef<Expense>[] = [
           badge = (
             <Badge
               variant="destructive"
-              className="ml-2 text-[11px] px-2 py-0.5 bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 min-w-[80px] justify-center"
+              className={getStatusBadgeClass('overdue')}
             >
               Overdue
             </Badge>
@@ -114,7 +115,7 @@ const columns: ColumnDef<Expense>[] = [
           badge = (
             <Badge
               variant="default"
-              className="ml-2 text-[11px] px-2 py-0.5 bg-orange-500 hover:bg-orange-600 min-w-[80px] justify-center"
+              className={getStatusBadgeClass('due-soon')}
             >
               Due Soon
             </Badge>

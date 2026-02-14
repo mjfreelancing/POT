@@ -3,7 +3,12 @@ import type { ColumnDef, Row } from '@tanstack/react-table';
 import { Badge } from '@/components/ui/badge';
 
 import type { Frequency, MoneyValue } from '../../lib';
-import { formatDate, formatMoneyValue, FrequencyDisplay } from '../../lib';
+import {
+  formatDate,
+  formatMoneyValue,
+  FrequencyDisplay,
+  getBadgeClass,
+} from '../../lib';
 import DataTableColumnHeader from './DataTableColumnHeader';
 
 // Parameter types for our column factory functions
@@ -170,20 +175,19 @@ const createFrequencyColumn = <TData,>(
 
       // Color scheme for frequency badges
       const getBadgeClasses = (frequency: Frequency): string => {
-        // Normal color scheme
         switch (frequency) {
           case 'Days':
-            return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border-blue-300 dark:border-blue-800';
+            return getBadgeClass('blue', 'outline');
           case 'Weeks':
-            return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-300 dark:border-green-800';
+            return getBadgeClass('green', 'outline');
           case 'Months':
-            return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 border-purple-300 dark:border-purple-800';
+            return getBadgeClass('purple', 'outline');
           case 'Years':
-            return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 border-amber-300 dark:border-amber-800';
+            return getBadgeClass('amber', 'outline');
           case 'OneTime':
-            return 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300 border-pink-300 dark:border-pink-800';
+            return getBadgeClass('pink', 'outline');
           default:
-            return 'bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-300 border-slate-300 dark:border-slate-800';
+            return getBadgeClass('slate', 'outline');
         }
       };
 
