@@ -83,7 +83,7 @@ const columns: ColumnDef<Expense>[] = [
         badge = (
           <Badge
             variant="secondary"
-            className="ml-2 text-[10px] px-1.5 py-0 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-300 dark:border-red-800 min-w-[80px] justify-center"
+            className="ml-2 text-[11px] px-2 py-0.5 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-300 dark:border-red-800 min-w-[80px] justify-center"
           >
             Excluded
           </Badge>
@@ -94,7 +94,7 @@ const columns: ColumnDef<Expense>[] = [
           badge = (
             <Badge
               variant="default"
-              className="ml-2 text-[11px] px-2 py-0.5 bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700 font-semibold min-w-[80px] justify-center"
+              className="ml-2 text-[11px] px-2 py-0.5 bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700 min-w-[80px] justify-center"
             >
               Due Today
             </Badge>
@@ -104,7 +104,7 @@ const columns: ColumnDef<Expense>[] = [
           badge = (
             <Badge
               variant="destructive"
-              className="ml-2 text-[11px] px-2 py-0.5 bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 font-semibold min-w-[80px] justify-center"
+              className="ml-2 text-[11px] px-2 py-0.5 bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 min-w-[80px] justify-center"
             >
               Overdue
             </Badge>
@@ -114,7 +114,7 @@ const columns: ColumnDef<Expense>[] = [
           badge = (
             <Badge
               variant="default"
-              className="ml-2 text-[10px] px-1.5 py-0 bg-orange-500 hover:bg-orange-600 min-w-[80px] justify-center"
+              className="ml-2 text-[11px] px-2 py-0.5 bg-orange-500 hover:bg-orange-600 min-w-[80px] justify-center"
             >
               Due Soon
             </Badge>
