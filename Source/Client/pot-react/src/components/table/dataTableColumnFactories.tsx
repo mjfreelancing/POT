@@ -154,16 +154,15 @@ const createFrequencyColumn = <TData,>(
         displayValue = `${count} ${frequencyLabel}`;
       }
 
-      // Color scheme for frequency badges
-      const getBadgeClasses = (
-        frequency: Frequency,
-        excluded: boolean,
-      ): string => {
-        // Red styling for excluded items to match row styling
-        if (excluded) {
-          return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-300 dark:border-red-800';
-        }
+      // For excluded items, show as plain red text instead of badge
+      if (isExcluded) {
+        return (
+          <span className="text-red-600/70 dark:text-red-400/70">{displayValue}</span>
+        );
+      }
 
+      // Color scheme for frequency badges
+      const getBadgeClasses = (frequency: Frequency): string => {
         // Normal color scheme
         switch (frequency) {
           case 'Days':
@@ -184,7 +183,7 @@ const createFrequencyColumn = <TData,>(
       return (
         <Badge
           variant="secondary"
-          className={`text-xs px-2 py-0.5 min-w-[80px] justify-center ${getBadgeClasses(freq, isExcluded)}`}
+          className={`text-xs px-2 py-0.5 min-w-[80px] justify-center ${getBadgeClasses(freq)}`}
         >
           {displayValue}
         </Badge>
