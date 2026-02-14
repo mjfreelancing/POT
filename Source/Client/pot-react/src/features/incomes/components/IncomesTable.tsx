@@ -210,6 +210,7 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
       }
       toast(
         <SuccessToast
+          icon={CheckCircle}
           title="Incomes Processed"
           description={messages.join(', ')}
         />,

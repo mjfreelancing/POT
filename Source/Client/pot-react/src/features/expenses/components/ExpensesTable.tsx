@@ -225,6 +225,7 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
       }
       toast(
         <SuccessToast
+          icon={CheckCircle}
           title="Expenses Processed"
           description={messages.join(', ')}
         />,
