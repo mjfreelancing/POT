@@ -41,7 +41,7 @@ internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
                 {
                     // Not resetting / updating expense.Accrued since this impacts the account's accrued amount.
                     // The expense.Accrued will be updated next time the account's 'accrue expenses' is performed.
-                    expense.AccrualStart = expense.NextDue;
+                    expense.AccrualStart = asOfDate; // Accruals start from the date the request was made
                     expense.NextDue = nextDue;
                     expense.AccruedIsDirty = true;
                 }
@@ -63,7 +63,7 @@ internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
                     {
                         // Not resetting / updating expense.Accrued since this impacts the account's accrued amount.
                         // The expense.Accrued will be updated next time the account's 'accrue expenses' is performed.
-                        expense.AccrualStart = nextDue;
+                        expense.AccrualStart = nextDue; // Accruals start from the previous due date before advancing
                         expense.NextDue = calculatedNextDue;
                         expense.AccruedIsDirty = true;
                         nextDue = calculatedNextDue;

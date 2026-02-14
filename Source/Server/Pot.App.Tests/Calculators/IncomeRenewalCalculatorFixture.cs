@@ -1,4 +1,4 @@
-using AllOverIt.Fixture.Extensions;
+﻿using AllOverIt.Fixture.Extensions;
 using FluentAssertions;
 using Pot.App.Calculators;
 using Pot.Data.Entities;
@@ -317,7 +317,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             // Mar 28 -> Apr 28 (final renewal beyond asOfDate)
             //
             // The income permanently drifts from the 31st to the 28th
-            
+
             income.NextDue.Should().Be(new DateOnly(2025, 4, 28));
         }
 
@@ -328,14 +328,14 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             var asOfDate = new DateOnly(2025, 3, 31);
 
             var income = EntityFactory.CreateIncome(_account, false, "Jan 31 -> Feb -> Mar", 100, "2025-01-31", null, Frequency.Months, 1);
-            
+
             _calculator.Renew([income], RenewalMode.Overdue, asOfDate);
 
             // Renewal sequence:
             // Jan 31 + 1 month = Feb 28 (Feb has only 28 days in 2025)
             // Feb 28 + 1 month = Mar 28 (subsequent renewals stay on 28th)
             // Mar 28 + 1 month = Apr 28 (final renewal beyond asOfDate)
-            
+
             // The income permanently drifts from 31st to 28th
             income.NextDue.Should().Be(new DateOnly(2025, 4, 28));
         }
@@ -573,7 +573,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
 
             _calculator.Renew([income], RenewalMode.Overdue, asOfDate);
 
-            // Should advance to first date after Feb 10: Feb 10 (still <= 10) -> Feb 17
+            // Should advance to first date after Feb 10: Feb 3 -> Feb 10 -> Feb 17
             income.NextDue.Should().Be(new DateOnly(2025, 2, 17));
         }
 

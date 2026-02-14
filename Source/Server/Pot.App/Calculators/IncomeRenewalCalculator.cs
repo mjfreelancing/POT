@@ -1,4 +1,4 @@
-using AllOverIt.Assertion;
+﻿using AllOverIt.Assertion;
 using Pot.Data.Entities;
 using Pot.Shared.Enumerations;
 using Pot.Shared.Extensions;
