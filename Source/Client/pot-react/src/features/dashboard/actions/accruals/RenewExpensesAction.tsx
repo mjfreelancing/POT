@@ -11,6 +11,7 @@ import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import { useAccrualsContext } from '@/features/dashboard/contexts/AccrualsContext';
 import { renewExpenses } from '@/features/expenses/bulkActions/renew';
+import { RenewalMode } from '@/lib';
 
 function RenewExpensesAction() {
   const {
@@ -42,6 +43,7 @@ function RenewExpensesAction() {
 
       const expenseResult = await renewExpenses(
         expenseRenewals,
+        RenewalMode.Overdue,
         renewExpensesMutation,
         queryClient,
       );

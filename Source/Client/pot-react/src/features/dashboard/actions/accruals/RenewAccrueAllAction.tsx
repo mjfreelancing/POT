@@ -17,6 +17,7 @@ import { accrueAllAccountExpenses } from '@/features/accounts/utils/bulkActions'
 import { useAccrualsContext } from '@/features/dashboard/contexts/AccrualsContext';
 import { renewExpenses } from '@/features/expenses/bulkActions/renew';
 import { renewIncomes } from '@/features/incomes/bulkActions/renew';
+import { RenewalMode } from '@/lib';
 
 function RenewAccrueAllAction() {
   const {
@@ -52,6 +53,7 @@ function RenewAccrueAllAction() {
 
       const expenseResult = await renewExpenses(
         expenseRenewals,
+        RenewalMode.Overdue,
         renewExpensesMutation,
         queryClient,
       );
@@ -74,6 +76,7 @@ function RenewAccrueAllAction() {
 
       const incomeResult = await renewIncomes(
         incomeRenewals,
+        RenewalMode.Overdue,
         renewIncomesMutation,
         queryClient,
       );

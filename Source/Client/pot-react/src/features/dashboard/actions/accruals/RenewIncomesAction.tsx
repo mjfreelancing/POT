@@ -11,6 +11,7 @@ import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import { useAccrualsContext } from '@/features/dashboard/contexts/AccrualsContext';
 import { renewIncomes } from '@/features/incomes/bulkActions/renew';
+import { RenewalMode } from '@/lib';
 
 function RenewIncomesAction() {
   const {
@@ -42,6 +43,7 @@ function RenewIncomesAction() {
 
       const incomeResult = await renewIncomes(
         incomeRenewals,
+        RenewalMode.Overdue,
         renewIncomesMutation,
         queryClient,
       );
