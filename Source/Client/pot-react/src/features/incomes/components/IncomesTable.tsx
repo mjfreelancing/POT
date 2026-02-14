@@ -81,7 +81,17 @@ const columns: ColumnDef<Income>[] = [
       // Determine badge (don't show for excluded items)
       let badge: React.ReactNode = null;
       if (!isExcluded) {
-        if (daysDue <= 0) {
+        if (daysDue === 0) {
+          // Due today - use amber for visibility
+          badge = (
+            <Badge
+              variant="default"
+              className="ml-2 text-[11px] px-2 py-0.5 bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700 font-semibold"
+            >
+              Due Today
+            </Badge>
+          );
+        } else if (daysDue < 0) {
           // Overdue - use bright red for visibility
           badge = (
             <Badge
