@@ -28,6 +28,16 @@
       "problemMatcher": []
     },
     {
+      "label": "docker-prune-all-unused-images",
+      "type": "shell",
+      "command": "docker image prune -a -f",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "azure-pot-server-build-and-deploy",
       "type": "shell",
       "command": "docker build --no-cache -t ghcr.io/mjfreelancing/pot-server:latest -f Docker/Server/Dockerfile .; docker push ghcr.io/mjfreelancing/pot-server:latest",
