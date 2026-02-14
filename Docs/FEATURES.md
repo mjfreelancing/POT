@@ -6,10 +6,15 @@ This guide describes the main features available in POT (Pay On Time).
 
 Your financial command center providing an at-a-glance view of your financial health:
 
-- **Account Overview** - Current balances across all your accounts
-- **Upcoming Expenses** - Bills and payments due in the near future
 - **Quick Actions** - One-click automation for common tasks (renew overdue expenses/incomes, accrue account expenses, and more)
+- **Account Overview** - Current balances across all your accounts
+- **Upcoming Expenses & Income** - Bills and payments due in the near future
+- **Period Filtering** - View expenses and income for 7, 14, or 30 day windows with dynamic metrics
+- **Quick Item Actions** - Context menu on individual items to mark as paid/received or advance to next period
+- **Visual Indicators** - Overdue and due-soon badges, frequency indicators, and status colors
 - **Financial Status** - Real-time indicators of your financial position
+
+The dashboard adapts to your selected time period, showing only relevant metrics and adjusting calculations dynamically.
 
 [View detailed Dashboard guide →](USER-GUIDE/Dashboard.md)
 
@@ -51,8 +56,17 @@ Never miss a payment deadline:
 - **Payment Schedules** - Define when expenses are due
 - **Accrual Start Date** - Specify when to start accruing the expense
 - **Account Assignment** - Link expenses to specific accounts
-- **Expense Renewals** - Renew expenses when they are paid to update their next due date
-- **Bulk Operations** - Manage multiple expenses at once
+- **Visual Status Indicators** - Color-coded badges for overdue, due soon, excluded, and frequency
+- **Bulk Mark as Paid** - Select multiple expenses and mark them as paid in one action:
+  - Automatically handles mixed selections (overdue and future items together)
+  - Overdue items advance through multiple periods until caught up
+  - Future items advance exactly once to next period (for early payment)
+  - Smart confirmation dialog shows breakdown of what will happen to each type
+- **Enhanced Table Features**:
+  - Due date badges (Overdue in red, Due Soon in orange)
+  - Frequency badges color-coded by type (Days=blue, Weeks=green, Months=purple, Years=amber)
+  - Excluded items styled distinctly with red accents
+  - Subtle row borders for improved readability
 
 [View detailed Expenses guide →](USER-GUIDE/Expenses.md)
 
@@ -64,6 +78,17 @@ Track all your income sources:
 - **One-Time Income** - Expected bonuses, tax refunds
 - **Payment Schedules** - Define when income is received
 - **Account Assignment** - Track which account receives each income
+- **Visual Status Indicators** - Color-coded badges for overdue, due soon, excluded, and frequency
+- **Bulk Mark as Received** - Select multiple incomes and mark them as received in one action:
+  - Automatically handles mixed selections (overdue and future items together)
+  - Overdue items advance through multiple periods until caught up
+  - Future items advance exactly once to next period (for early receipt)
+  - Smart confirmation dialog shows breakdown of what will happen to each type
+- **Enhanced Table Features**:
+  - Due date badges (Overdue in red, Due Soon in orange)
+  - Frequency badges color-coded by type (Days=blue, Weeks=green, Months=purple, Years=amber)
+  - Excluded items styled distinctly with red accents
+  - Subtle row borders for improved readability
 
 [View detailed Income guide →](USER-GUIDE/Income.md)
 
