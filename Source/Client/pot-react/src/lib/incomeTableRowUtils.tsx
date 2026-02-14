@@ -2,9 +2,9 @@ import type { Row } from '@tanstack/react-table';
 
 import { NotePopover } from '@/components/feedback';
 import { Badge } from '@/components/ui/badge';
-import type { Expense } from '@/data';
+import type { Income } from '@/data';
 
-function getAdornedExpenseDescription(row: Row<Expense>) {
+function getAdornedIncomeDescription(row: Row<Income>) {
   return (
     <div className="flex items-center gap-2">
       {row.original.description}
@@ -21,4 +21,4 @@ function getAdornedExpenseDescription(row: Row<Expense>) {
   );
 }
 
-export { getAdornedExpenseDescription };
+export { getAdornedIncomeDescription };

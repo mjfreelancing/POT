@@ -39,13 +39,20 @@ function useDashboardStorage(onError?: StorageErrorHandler) {
     );
 
   return {
-    getDashboardData: () => ({
-      quickActionsOpen: getProperty('quickActionsOpen') ?? true,
-      accountsOpen: getProperty('accountsOpen') ?? true,
-      incomesOpen: getProperty('incomesOpen') ?? true,
-      expensesOpen: getProperty('expensesOpen') ?? true,
-      expensesPeriod: getProperty('expensesPeriod') ?? 30,
-      incomesPeriod: getProperty('incomesPeriod') ?? 30,
+    getDashboardData: (): {
+      quickActionsOpen: boolean;
+      accountsOpen: boolean;
+      incomesOpen: boolean;
+      expensesOpen: boolean;
+      expensesPeriod: PeriodDays;
+      incomesPeriod: PeriodDays;
+    } => ({
+      quickActionsOpen: (getProperty('quickActionsOpen') ?? true) as boolean,
+      accountsOpen: (getProperty('accountsOpen') ?? true) as boolean,
+      incomesOpen: (getProperty('incomesOpen') ?? true) as boolean,
+      expensesOpen: (getProperty('expensesOpen') ?? true) as boolean,
+      expensesPeriod: (getProperty('expensesPeriod') ?? 30) as PeriodDays,
+      incomesPeriod: (getProperty('incomesPeriod') ?? 30) as PeriodDays,
     }),
 
     setDashboardData: (data: Partial<DashboardStorageData>) => {

@@ -1,18 +1,13 @@
 import { useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef, Row } from '@tanstack/react-table';
-import { Ban, CheckCircle, FastForward } from 'lucide-react';
+import { CheckCircle, FastForward } from 'lucide-react';
 import { useState } from 'react';
 import { useParams } from 'react-router';
 import { toast } from 'sonner';
 
 import { useApiRenewIncomes, useApiToggleExcludeIncomes } from '@/api/hooks';
 import { ConfirmationDialog } from '@/components/dialog';
-import {
-  ErrorSheet,
-  NotePopover,
-  StatusBadge,
-  SuccessToast,
-} from '@/components/feedback';
+import { ErrorSheet, SuccessToast } from '@/components/feedback';
 import type { BulkAction } from '@/components/table';
 import {
   createDateColumn,
@@ -22,12 +17,15 @@ import {
   DataTable,
   DataTableColumnHeader,
 } from '@/components/table';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useErrorContext } from '@/contexts';
 import type { Income } from '@/data';
 import { usePermissions } from '@/hooks';
 import {
   Frequency,
+  formatDate,
+  getAdornedIncomeDescription,
   getDaysDue,
   getTableRowClassName,
   RenewalMode,
@@ -49,17 +47,7 @@ const columns: ColumnDef<Income>[] = [
     ),
     enableSorting: true,
     sortingFn: 'text',
-    cell: ({ row }) => (
-      <div className="flex items-center gap-2">
-        {row.original.description}
-        {row.original.note ? <NotePopover note={row.original.note} /> : null}
-        {row.original.excludeFromCalcs && (
-          <StatusBadge color="red" tooltip="Excluded from calculations">
-            <Ban />
-          </StatusBadge>
-        )}
-      </div>
-    ),
+    cell: ({ row }) => getAdornedIncomeDescription(row),
   },
   createMoneyValueColumn<Income>({
     accessorKey: 'amount',
@@ -69,14 +57,56 @@ const columns: ColumnDef<Income>[] = [
       sortingFn: 'basic',
     },
   }),
-  createDateColumn<Income>({
+  {
+    id: 'nextDue',
     accessorKey: 'nextDue',
-    header: 'Next Due',
-    options: {
-      enableSorting: true,
-      sortingFn: 'datetime',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Next Due" />
+    ),
+    enableSorting: true,
+    sortingFn: 'datetime',
+    cell: ({ row }) => {
+      const rawValue = row.getValue('nextDue') as string | Date;
+      if (!rawValue) return null;
+
+      const formattedDate = formatDate(rawValue);
+      const daysDue = getDaysDue(rawValue as string);
+      const isExcluded = row.original.excludeFromCalcs;
+
+      // Determine badge (don't show for excluded items)
+      let badge: React.ReactNode = null;
+      if (!isExcluded) {
+        if (daysDue <= 0) {
+          // Overdue - use bright red for visibility
+          badge = (
+            <Badge
+              variant="destructive"
+              className="ml-2 text-[11px] px-2 py-0.5 bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 font-semibold"
+            >
+              Overdue
+            </Badge>
+          );
+        } else if (daysDue <= 7) {
+          // Due soon (within 7 days)
+          badge = (
+            <Badge
+              variant="default"
+              className="ml-2 text-[10px] px-1.5 py-0 bg-orange-500 hover:bg-orange-600"
+            >
+              Due Soon
+            </Badge>
+          );
+        }
+      }
+
+      return (
+        <div className="flex items-center">
+          <span className="min-w-[80px] inline-block">{formattedDate}</span>
+          {badge}
+        </div>
+      );
     },
-  }),
+  },
   createFrequencyColumn<Income>({
     countKey: 'frequencyCount',
     frequencyKey: 'frequency',
@@ -296,7 +326,7 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
               row.original.rowId.toString() === editingId
             }
             getRowClassName={(row: Row<Income>) =>
-              getTableRowClassName(row.original)
+              getTableRowClassName(row.original, { exclude: ['OVERDUE'] })
             }
           />
         </CardContent>
