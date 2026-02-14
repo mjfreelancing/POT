@@ -239,11 +239,15 @@ function DataTable<TData, TValue>({
                       key={row.id}
                       data-state={row.getIsSelected() ? 'selected' : undefined}
                       className={[
+                        'even:bg-gray-100 dark:even:bg-gray-800',
+                        // IMPORTANT: Use border-bottom-color specifically instead of border-slate-200/50
+                        // to avoid overriding border-l-x colors from getRowClassName (e.g., excluded items with red left border).
+                        // Using border-slate-200/50 would set color for ALL borders, breaking left border styling.
+                        'border-b [border-bottom-color:rgb(226_232_240/0.5)] dark:[border-bottom-color:rgb(51_65_85/0.5)]',
                         highlightRowFilter?.(row)
                           ? highlightClassName
                           : undefined,
                         getRowClassName ? getRowClassName(row) : undefined,
-                        'even:bg-gray-100 dark:even:bg-gray-800',
                       ]
                         .filter(Boolean)
                         .join(' ')}
