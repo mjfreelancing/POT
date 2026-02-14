@@ -1,5 +1,6 @@
 import type { ColumnDef, Row } from '@tanstack/react-table';
 
+import { Badge } from '@/components/ui/badge';
 import type { Frequency, MoneyValue } from '../../lib';
 import { formatDate, formatMoneyValue, FrequencyDisplay } from '../../lib';
 import DataTableColumnHeader from './DataTableColumnHeader';
@@ -140,6 +141,8 @@ const createFrequencyColumn = <TData,>(
     cell: ({ row }) => {
       const count = row.original[countKey] as number;
       const freq = row.original[frequencyKey] as Frequency;
+      // Check if item is excluded (only applicable to expenses/incomes)
+      const isExcluded = (row.original as any).excludeFromCalcs ?? false;
 
       // Special case: for 'OneTime', display the FrequencyDisplay label only, no count
       let displayValue;
@@ -151,7 +154,41 @@ const createFrequencyColumn = <TData,>(
         displayValue = `${count} ${frequencyLabel}`;
       }
 
-      return <span className="inline-block">{displayValue}</span>;
+      // Color scheme for frequency badges
+      const getBadgeClasses = (
+        frequency: Frequency,
+        excluded: boolean,
+      ): string => {
+        // Red styling for excluded items to match row styling
+        if (excluded) {
+          return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-300 dark:border-red-800';
+        }
+
+        // Normal color scheme
+        switch (frequency) {
+          case 'Days':
+            return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border-blue-300 dark:border-blue-800';
+          case 'Weeks':
+            return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-300 dark:border-green-800';
+          case 'Months':
+            return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 border-purple-300 dark:border-purple-800';
+          case 'Years':
+            return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 border-amber-300 dark:border-amber-800';
+          case 'OneTime':
+            return 'bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-300 border-slate-300 dark:border-slate-800';
+          default:
+            return 'bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-300 border-slate-300 dark:border-slate-800';
+        }
+      };
+
+      return (
+        <Badge
+          variant="secondary"
+          className={`text-xs px-2 py-0.5 min-w-[80px] justify-center ${getBadgeClasses(freq, isExcluded)}`}
+        >
+          {displayValue}
+        </Badge>
+      );
     },
     enableSorting,
     ...restOptions,
