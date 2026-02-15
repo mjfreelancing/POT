@@ -789,6 +789,238 @@ toast(<ErrorToast title="Error" description="Failed to save changes" />);
 
 ---
 
+### Badge Styling System
+
+**Location:** `src/lib/badgeStyles.ts`
+
+Centralized badge styling utilities for consistent badge appearances across the application. The system provides three main patterns optimized for different contexts.
+
+#### Overview
+
+Badge styling is **decoupled from semantics** - helpers generate className strings while the caller provides text content. This separation enables:
+
+- Consistent visual appearance across features
+- Type-safe color and variant choices
+- Reusable patterns for common badge types
+- Single source of truth for badge sizing and spacing
+
+#### Three Badge Patterns
+
+**1. Table Badges** (`getTableBadgeClass`)
+
+- **Use For:** Frequency columns, non-date table badges, end date labels
+- **Sizing:** Small and uniform - `text-[12px]`, `min-w-[80px]`, `px-2`, `py-1`
+- **Variants:** Both filled and outline supported
+- **Options:** Optional left margin (`withMargin: true`) for badges appearing after date text
+
+**2. Status Badges** (`getStatusBadgeClass`)
+
+- **Use For:** Next Due column status indicators (Overdue, Due Soon, etc.)
+- **Predefined Types:** `excluded`, `due-today`, `overdue`, `due-soon`, `ended`
+- **Always:** Filled variant with left margin
+- **Color Meanings:** Red=overdue, amber=due today, orange=due soon, slate=excluded/ended
+- **Why:** Enforces consistent status color semantics across the app
+
+**3. General Badges** (`getBadgeClass`)
+
+- **Use For:** Dashboard, custom locations, non-table contexts
+- **Sizing:** Larger than table badges - `text-xs`, `min-w-[80px]`
+- **Variants:** Both filled and outline supported
+- **Spacing:** Filled variant includes `ml-2` margin
+
+#### Decision Tree
+
+```
+Need a badge?
+├─ In a table column?
+│  ├─ Status indicator (Overdue, Due Soon)? → getStatusBadgeClass('overdue')
+│  └─ Other (frequency, end date)? → getTableBadgeClass('green', 'filled')
+└─ Outside table (dashboard, custom)? → getBadgeClass('blue', 'outline')
+```
+
+#### Color Palette
+
+| Color  | Semantic Use               | Examples                          |
+| ------ | -------------------------- | --------------------------------- |
+| red    | Errors, overdue, urgent    | Overdue status, validation errors |
+| orange | Warnings, due soon         | Due within 7 days                 |
+| amber  | Due today, attention       | Due today status                  |
+| green  | Success, active, recurring | Frequency badges                  |
+| yellow | Caution                    | Custom warnings                   |
+| blue   | Informational              | One-time labels, general info     |
+| purple | Special, unique            | One-time items                    |
+| pink   | Highlight                  | Custom highlights                 |
+| slate  | Disabled, excluded, ended  | Excluded items, ended items       |
+
+#### Variants
+
+**Filled Variant:**
+
+- Bold backgrounds with high contrast
+- Use for emphasis and status indicators
+- Example: Status badges (Overdue, Due Soon)
+
+**Outline Variant:**
+
+- Light backgrounds with subtle borders
+- Use for informational, non-critical badges
+- Example: End date badges, frequency badges with less emphasis
+
+#### Usage Examples
+
+**Table Frequency Badge (filled):**
+
+```tsx
+import { getTableBadgeClass } from '@/lib';
+import { Badge } from '@/components/ui/badge';
+
+<Badge variant="secondary" className={getTableBadgeClass('green', 'filled')}>
+  2 Weeks
+</Badge>;
+```
+
+**End Date Text (no badge):**
+
+```tsx
+<span>{formatDate(endDate)}</span>
+```
+
+**Status Badge with Margin:**
+
+```tsx
+import { getStatusBadgeClass } from '@/lib';
+
+// In Next Due column - badge appears after date text
+<div className="flex items-center">
+  <span className="min-w-[80px]">{formattedDate}</span>
+  <Badge variant="destructive" className={getStatusBadgeClass('overdue')}>
+    Overdue
+  </Badge>
+</div>;
+```
+
+**Handling End Date Labels and One-Time:**
+
+```tsx
+// Excluded items use slate styling; one-time uses blue when active
+const isExcluded = row.original.excludeFromCalcs;
+const isOneTime = row.original.frequency === Frequency.OneTime;
+
+if (isOneTime) {
+  return (
+    <Badge
+      variant="secondary"
+      className={getTableBadgeClass(
+        isExcluded ? 'slate' : 'blue',
+        isExcluded ? 'filled' : 'outline',
+      )}
+    >
+      One-time
+    </Badge>
+  );
+}
+
+if (!endDate) {
+  return null;
+}
+```
+
+**Disabled Frequency Badge (outline, transparent background):**
+
+```tsx
+<Badge
+  variant="secondary"
+  className={`${getTableBadgeClass('slate', 'outline')} bg-transparent dark:bg-transparent text-slate-400 dark:text-slate-400`}
+>
+  {displayValue}
+</Badge>
+```
+
+**Dashboard Badge:**
+
+```tsx
+import { getBadgeClass } from '@/lib';
+
+<Badge variant="default" className={getBadgeClass('blue', 'filled')}>
+  Active
+</Badge>;
+```
+
+#### Best Practices
+
+1. **Consistency Over Customization**
+
+   - Always use badge helpers instead of inline Tailwind classes
+   - Maintains visual consistency across features
+   - Easier to update styling globally
+
+2. **Color Semantics**
+
+   - Follow established color meanings (red=error/overdue, green=success)
+   - Use `getStatusBadgeClass` for status indicators to enforce semantic colors
+   - Don't use red for non-critical states
+
+3. **Table Alignment**
+
+   - Use `getTableBadgeClass` for all table badges to ensure uniform sizing
+   - Use `withMargin: true` only when badge appears after text (e.g., status after date)
+   - Frequency and end date columns typically don't need margin
+
+4. **Filled vs Outline**
+
+   - Filled: Use for emphasis, status, active states
+   - Outline: Use for informational, passive, descriptive badges
+   - Mix variants in same table for visual hierarchy
+
+5. **Avoid Anti-Patterns**
+   - ❌ Don't create custom badge styles inline
+   - ❌ Don't use different sizes for badges in same table column
+   - ❌ Don't override color meanings (e.g., green for errors)
+   - ✅ Use helper functions consistently
+   - ✅ Keep badge text concise (2-3 words max)
+
+#### Implementation Notes
+
+**Type Safety:**
+
+```typescript
+type BadgeColor =
+  | 'red'
+  | 'orange'
+  | 'amber'
+  | 'green'
+  | 'yellow'
+  | 'blue'
+  | 'purple'
+  | 'pink'
+  | 'slate';
+
+type BadgeVariant = 'filled' | 'outline';
+
+type StatusBadgeType =
+  | 'excluded'
+  | 'due-today'
+  | 'overdue'
+  | 'due-soon'
+  | 'ended';
+```
+
+**Dark Mode Support:**
+
+All color schemes include dark mode variants:
+
+- Filled badges: Adjust opacity and use darker backgrounds
+- Outline badges: Switch to darker borders and lighter text
+- Automatic via Tailwind `dark:` prefix
+
+**Examples in Codebase:**
+
+- Status badges: `src/features/expenses/components/ExpensesTable.tsx`
+- Frequency badges: `src/components/table/dataTableColumnFactories.tsx`
+- End date badges: `src/features/incomes/components/IncomesTable.tsx`
+
+---
+
 ### Filter Components
 
 **Location:** `src/components/filters/`

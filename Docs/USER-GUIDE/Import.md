@@ -6,6 +6,8 @@
 
 [Content to be added - Data import overview and usage instructions]
 
+- updates existing items or adds new ones; does not delete existing data
+
 ## Available to
 
 - Site Owners (full access)
