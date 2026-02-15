@@ -616,5 +616,20 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             // Should remain unchanged since next period (2025-02-01) exceeds EndDate (2025-01-25)
             income.NextDue.Should().Be(new DateOnly(2025, 1, 1), "income should not advance beyond its end date");
         }
+
+        [Fact]
+        public void Should_Stop_At_Intermediate_Renewal_When_Next_Period_Would_Exceed_EndDate_With_Weeks()
+        {
+            // Income is overdue by multiple weeks, but would exceed EndDate on an intermediate iteration
+            // This tests the scenario where the first iteration succeeds, but a later one would exceed EndDate
+            var asOfDate = new DateOnly(2025, 2, 15);
+            var income = EntityFactory.CreateIncome(_account, false, "Multi-Week Overdue Near End", 500, "2025-01-15", "2025-02-20", Frequency.Weeks, 1);
+
+            _calculator.Renew([income], RenewalMode.Overdue, asOfDate);
+
+            // Sequence: Jan 15 -> Jan 22 -> Jan 29 -> Feb 5 -> Feb 12 -> Feb 19 (would exceed Feb 20)
+            // Should stop at Feb 19
+            income.NextDue.Should().Be(new DateOnly(2025, 2, 19), "should advance through multiple periods but stop before exceeding end date");
+        }
     }
 }

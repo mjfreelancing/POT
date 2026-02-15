@@ -903,5 +903,23 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             expense.AccrualStart.Should().Be(new DateOnly(2025, 1, 1));
             expense.AccruedIsDirty.Should().BeFalse();
         }
+
+        [Fact]
+        public void Should_Stop_At_Intermediate_Renewal_When_Next_Period_Would_Exceed_EndDate_With_Weeks()
+        {
+            // Expense is overdue by multiple weeks, but would exceed EndDate on an intermediate iteration
+            // This tests the scenario where the first iteration succeeds, but a later one would exceed EndDate
+            var asOfDate = new DateOnly(2025, 2, 15);
+            var expense = EntityFactory.CreateExpense(_account, false, "Multi-Week Overdue Near End", 100, "2025-01-01", "2025-01-15", "2025-02-20", Frequency.Weeks, 1);
+            expense.AccruedIsDirty = false;
+
+            _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
+
+            // Sequence: Jan 15 -> Jan 22 -> Jan 29 -> Feb 5 -> Feb 12 -> Feb 19 -> Feb 26 (would exceed Feb 20)
+            // Should stop at Feb 19
+            expense.NextDue.Should().Be(new DateOnly(2025, 2, 19), "should advance through multiple periods but stop before exceeding end date");
+            expense.AccrualStart.Should().Be(new DateOnly(2025, 2, 12)); // Previous NextDue before advancing to Feb 19
+            expense.AccruedIsDirty.Should().BeTrue();
+        }
     }
 }
