@@ -2,9 +2,8 @@ import { localToday, normalizeToLocalMidnight } from './dateUtils';
 
 // Table row styling constants
 const TABLE_ROW_STYLES = {
-  EXCLUDED:
-    'text-red-600/70 dark:text-red-400/70 italic border-l-4 border-red-400 dark:border-red-500',
-  OVERDUE: 'text-red-600 dark:text-red-400 italic',
+  EXCLUDED: 'text-slate-500/80 dark:text-slate-400/80',
+  OVERDUE: '',
 } as const;
 
 // Only applicable to incomes and expenses

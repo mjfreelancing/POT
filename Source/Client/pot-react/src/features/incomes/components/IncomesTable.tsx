@@ -10,7 +10,6 @@ import { ConfirmationDialog } from '@/components/dialog';
 import { ErrorSheet, SuccessToast } from '@/components/feedback';
 import type { BulkAction } from '@/components/table';
 import {
-  createDateColumn,
   createFrequencyColumn,
   createMoneyValueColumn,
   createRowIdGetter,
@@ -28,6 +27,7 @@ import {
   getAdornedIncomeDescription,
   getDaysDue,
   getStatusBadgeClass,
+  getTableBadgeClass,
   getTableRowClassName,
   RenewalMode,
 } from '@/lib';
@@ -77,6 +77,8 @@ const columns: ColumnDef<Income>[] = [
 
       const formattedDate = formatDate(rawValue);
       const daysDue = getDaysDue(rawValue as string);
+      const endDate = row.original.endDate;
+      const isEnded = endDate ? getDaysDue(endDate) < 0 : false;
       const isExcluded = row.original.excludeFromCalcs;
 
       // Determine badge (don't show for excluded items)
@@ -88,6 +90,12 @@ const columns: ColumnDef<Income>[] = [
             className={getStatusBadgeClass('excluded')}
           >
             Excluded
+          </Badge>
+        );
+      } else if (isEnded) {
+        badge = (
+          <Badge variant="secondary" className={getStatusBadgeClass('ended')}>
+            Ended
           </Badge>
         );
       } else {
@@ -132,12 +140,36 @@ const columns: ColumnDef<Income>[] = [
       );
     },
   },
-  createDateColumn<Income>({
+  {
+    id: 'endDate',
     accessorKey: 'endDate',
     header: 'End Date',
-    getNullValue: row =>
-      row.original.frequency === Frequency.OneTime ? undefined : 'Ongoing',
-  }),
+    cell: ({ row }) => {
+      const endDate = row.original.endDate;
+      const isOneTime = row.original.frequency === Frequency.OneTime;
+      const isExcluded = row.original.excludeFromCalcs;
+
+      if (isOneTime) {
+        return (
+          <Badge
+            variant="secondary"
+            className={getTableBadgeClass(
+              isExcluded ? 'slate' : 'blue',
+              isExcluded ? 'filled' : 'outline',
+            )}
+          >
+            One-time
+          </Badge>
+        );
+      }
+
+      if (!endDate) {
+        return null;
+      }
+
+      return <span>{formatDate(endDate)}</span>;
+    },
+  },
   {
     id: 'accountDescription',
     header: 'Account',

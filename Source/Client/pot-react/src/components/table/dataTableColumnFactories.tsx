@@ -7,7 +7,7 @@ import {
   formatDate,
   formatMoneyValue,
   FrequencyDisplay,
-  getBadgeClass,
+  getTableBadgeClass,
 } from '../../lib';
 import DataTableColumnHeader from './DataTableColumnHeader';
 
@@ -164,12 +164,18 @@ const createFrequencyColumn = <TData,>(
         displayValue = `${count} ${frequencyLabel}`;
       }
 
-      // For excluded items, show as plain red text instead of badge
+      // For excluded items, show a slate outline badge with no background
       if (isExcluded) {
         return (
-          <span className="text-red-600/70 dark:text-red-400/70">
+          <Badge
+            variant="secondary"
+            className={`${getTableBadgeClass(
+              'slate',
+              'outline',
+            )} bg-transparent dark:bg-transparent text-slate-400 dark:text-slate-400`}
+          >
             {displayValue}
-          </span>
+          </Badge>
         );
       }
 
@@ -177,25 +183,22 @@ const createFrequencyColumn = <TData,>(
       const getBadgeClasses = (frequency: Frequency): string => {
         switch (frequency) {
           case 'Days':
-            return getBadgeClass('blue', 'outline');
+            return getTableBadgeClass('blue', 'outline');
           case 'Weeks':
-            return getBadgeClass('green', 'outline');
+            return getTableBadgeClass('green', 'outline');
           case 'Months':
-            return getBadgeClass('purple', 'outline');
+            return getTableBadgeClass('purple', 'outline');
           case 'Years':
-            return getBadgeClass('amber', 'outline');
+            return getTableBadgeClass('amber', 'outline');
           case 'OneTime':
-            return getBadgeClass('pink', 'outline');
+            return getTableBadgeClass('pink', 'outline');
           default:
-            return getBadgeClass('slate', 'outline');
+            return getTableBadgeClass('slate', 'outline');
         }
       };
 
       return (
-        <Badge
-          variant="secondary"
-          className={`text-xs px-2 py-0.5 min-w-[80px] justify-center ${getBadgeClasses(freq)}`}
-        >
+        <Badge variant="secondary" className={getBadgeClasses(freq)}>
           {displayValue}
         </Badge>
       );
