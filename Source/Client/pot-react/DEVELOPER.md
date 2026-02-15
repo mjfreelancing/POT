@@ -847,9 +847,9 @@ Need a badge?
 | amber  | Due today, attention       | Due today status                  |
 | green  | Success, active, recurring | Frequency badges                  |
 | yellow | Caution                    | Custom warnings                   |
-| blue   | Informational              | One-time labels, general info     |
-| purple | Special, unique            | One-time items                    |
-| pink   | Highlight                  | Custom highlights                 |
+| blue   | Informational              | General info                      |
+| purple | Special, unique            | Custom labels                     |
+| pink   | Highlight                  | One-time labels, highlights       |
 | slate  | Disabled, excluded, ended  | Excluded items, ended items       |
 
 #### Variants
@@ -885,6 +885,8 @@ import { Badge } from '@/components/ui/badge';
 <span>{formatDate(endDate)}</span>
 ```
 
+**Note:** End dates are rendered as plain text to keep dates readable and avoid shrinking the date font.
+
 **Status Badge with Margin:**
 
 ```tsx
@@ -911,7 +913,7 @@ if (isOneTime) {
     <Badge
       variant="secondary"
       className={getTableBadgeClass(
-        isExcluded ? 'slate' : 'blue',
+        isExcluded ? 'slate' : 'pink',
         isExcluded ? 'filled' : 'outline',
       )}
     >

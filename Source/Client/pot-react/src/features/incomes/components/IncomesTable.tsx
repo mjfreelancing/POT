@@ -154,7 +154,7 @@ const columns: ColumnDef<Income>[] = [
           <Badge
             variant="secondary"
             className={getTableBadgeClass(
-              isExcluded ? 'slate' : 'blue',
+              isExcluded ? 'slate' : 'pink',
               isExcluded ? 'filled' : 'outline',
             )}
           >
