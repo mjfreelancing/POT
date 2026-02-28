@@ -26,6 +26,12 @@ Use path-scoped instructions for implementation details:
 - Port map: client `5175`, API `5241`, Postgres host `5444`.
 - Vite alias `@` maps to `src`; dev proxy forwards `/api` to local backend `http://localhost:5242` (`Source/Client/pot-react/vite.config.ts`).
 
+## Server Test Execution Reliability
+
+- For targeted server integration tests, prefer project-level .NET execution from `Source/Server`:
+  - `dotnet test Pot.AspNetCore.Integration.Tests/Pot.AspNetCore.Integration.Tests.csproj --filter "FullyQualifiedName~<FixtureOrTestName>"`
+- Prefer this over file/path-based .NET test discovery for deterministic targeted runs.
+
 ## Key References
 
 - Architecture: `Docs/ARCHITECTURE.md`

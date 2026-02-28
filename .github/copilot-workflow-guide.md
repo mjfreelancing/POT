@@ -54,7 +54,7 @@ Why this matters: without this setting, Copilot may not reliably load `.github/i
 ## Automation
 
 - Automation guide: `.github/automation-playbook.md`
-- Copilot agent hooks: `.github/hooks/hooks.json` (`sessionEnd` maintenance scripts in `.github/hooks/scripts/`)
+- Workspace save actions: `.vscode/settings.json` (format on save + organize imports)
 
 ## Repo notes
 

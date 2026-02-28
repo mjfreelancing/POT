@@ -33,9 +33,17 @@ Integration tests live in `Source/Server/Pot.AspNetCore.Integration.Tests/**`.
 - Use `Host/*WebApplicationFactory.cs` for shared test host configuration.
 - Use `WebApplicationFactory<Program>`-style host fixtures and real `HttpClient` calls.
 - Prefer typed JSON contract models over manual JSON traversal.
+- For repeated integration assertion patterns, create reusable helper extensions in `Host/Extensions` within the integration test project.
 - Include validation-failure and method-contract (`405`) checks where applicable.
 - For timing metadata (for example `Retry-After`), assert conditionally unless guaranteed.
 - Ensure responses do not leak sensitive request/header data.
+
+### Execution Reliability
+
+- For targeted integration fixture/test execution, run from `Source/Server` with:
+  - `dotnet test Pot.AspNetCore.Integration.Tests/Pot.AspNetCore.Integration.Tests.csproj --filter "FullyQualifiedName~<FixtureOrTestName>"`
+- Prefer this project-level command over file/path-based discovery tooling for .NET integration tests.
+- Use `FullyQualifiedName` filtering for deterministic targeted reruns.
 
 ## Expansion Notes
 

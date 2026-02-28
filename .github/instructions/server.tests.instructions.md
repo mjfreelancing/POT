@@ -18,8 +18,11 @@ applyTo: "Source/Server/*Tests/**"
 - Server tests use xUnit across `Pot.App.Tests`, `Pot.Data.Tests`, `Pot.AspNetCore.Tests`, and `Pot.AspNetCore.Integration.Tests`.
 - Assertion style currently follows Shouldly (with NSubstitute test doubles).
 - Follow existing naming style in the repo (`*Fixture.cs` and descriptive method names).
+- Follow C# member-ordering conventions from `.github/instructions/csharp.instructions.md` (nested types, constants/fields, properties, constructors, then methods).
 - Consider `Pot.TestUtils` for reusable test helpers/extensions shared across test projects.
 - When setup/assertion patterns repeat, prefer adding or extending helpers in `Pot.TestUtils` rather than duplicating logic in individual fixtures.
+- During test implementation/refactoring, actively scan for repeated Shouldly assertion patterns (for example `Any/Contains/ShouldBeTrue`) and extract reusable helpers early instead of repeating assertions across fixtures.
+- Keep `Pot.TestUtils` strictly general-purpose; project-specific helpers should remain in the owning test project.
 - When internal visibility is needed for testing, use this approach in the csdproj `<InternalsVisibleTo Include="Pot.App.Tests" />` to expose to the relevant test project.
 
 ### Unit vs Integration Placement
@@ -41,6 +44,9 @@ Run in `Source/Server`:
 
 - `dotnet test`
 - `dotnet test --collect:"XPlat Code Coverage"`
+- For targeted .NET test runs, execute the owning test project directly with `--filter "FullyQualifiedName~<FixtureOrTestName>"`.
+- For integration fixtures, use:
+  - `dotnet test Pot.AspNetCore.Integration.Tests/Pot.AspNetCore.Integration.Tests.csproj --filter "FullyQualifiedName~<FixtureOrTestName>"`
 
 Coverage helper:
 

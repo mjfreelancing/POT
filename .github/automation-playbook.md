@@ -2,23 +2,7 @@
 
 This file documents automation options that reduce manual checklist work.
 
-## 1) Copilot Agent Hooks
-
-- Hook config: `.github/hooks/hooks.json`
-- Scripts:
-  - `.github/hooks/scripts/agent-post-edit.ps1`
-  - `.github/hooks/scripts/agent-post-edit.sh`
-- Trigger: `sessionEnd` (runs after agent editing sessions).
-- Purpose:
-  - C#: run `dotnet format Source/Server/pot.sln --include <changed-cs-files>` to sort/remove unused usings where applicable.
-  - TypeScript: run `npm run lint:sort` and targeted Prettier write for changed `src/**/*.ts(x)` files.
-
-### Notes
-
-- Hook scripts are fail-soft (they log warnings and exit successfully).
-- Integration-test hook behavior remains placeholder-driven until first real integration-test use.
-
-## 2) Agent Preflight
+## 1) Agent Preflight
 
 Run a quick environment check before longer agent sessions.
 
@@ -42,7 +26,7 @@ Run a quick environment check before longer agent sessions.
 - Re-run diagnostics after installing/updating CLI tools.
 - Treat diagnostics output as advisory unless required tools are missing.
 
-## 3) Agents
+## 2) Agents
 
 Use sub-agents when tasks are broad and parallelizable, for example:
 
@@ -52,7 +36,7 @@ Use sub-agents when tasks are broad and parallelizable, for example:
 
 Agent outputs should feed back into scoped instructions/prompts rather than staying as one-off chat answers.
 
-## 4) Skills
+## 3) Skills
 
 Current reusable skill packs:
 
@@ -67,7 +51,7 @@ Potential next skill packs:
 
 Keep skills workflow-focused and let instruction files own coding standards.
 
-## 5) Prompt vs Instruction Boundary
+## 4) Prompt vs Instruction Boundary
 
 - Instructions: stable coding standards, architecture, style, test conventions.
 - Prompts: task workflows and execution choreography.

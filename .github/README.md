@@ -55,5 +55,5 @@ Use one of these in your prompt:
 - Integration tests live under `Source/Server/Pot.AspNetCore.Integration.Tests` and should use the integration-test instruction/prompt guidance.
 - Reusable prompts currently available under `.github/prompts`: `repo_tests.prompt.md`, `server_unit_test.prompt.md`, `server_coverage.prompt.md`, `client_tests.prompt.md`, `document_csharp.prompt.md`, `document_typescript.prompt.md`, `server_integration_test.prompt.md`, `docker_workflow.prompt.md`, `feature_implementation.prompt.md`.
 - Reusable skills available under `.github/skills`: see `.github/skills/README.md` (includes `environment-preflight`).
+- Per-change cleanup automation is save-action based via `.vscode/settings.json` (`editor.formatOnSave` + `source.organizeImports`).
 - Automation guidance: `.github/automation-playbook.md`
-- Copilot agent hooks: `.github/hooks/hooks.json` with scripts under `.github/hooks/scripts/`.

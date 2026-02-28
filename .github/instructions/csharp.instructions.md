@@ -13,8 +13,16 @@ applyTo: "Source/Server/**/*.cs"
 - Avoid one-letter variable names unless loop/index intent is obvious.
 - Keep methods focused and avoid unnecessary abstraction.
 - Prefer compact method/constructor signatures: keep parameter lists on one line when reasonably readable; avoid one-parameter-per-line formatting unless length/clarity requires wrapping.
+- Follow these member-ordering conventions for classes:
+  - Place nested types (including private nested classes) at the top of the containing type, above constants, fields, and properties.
+  - Place constants before other fields; place static readonly fields before instance fields.
+  - Place private readonly dependency fields above other instance fields.
+  - Place properties above constructors.
+  - Keep constructors above methods.
+  - Order methods by visibility: public, protected, internal, private.
 - Avoid sync-over-async (`.Result`, `.Wait()`, `.GetAwaiter().GetResult()`).
 - Keep `CancellationToken` propagation intact in async chains.
+- Place extension methods in an `Extensions` folder and name extension files/classes after the extended type (`<ExtendedType>Extensions`).
 - Preserve public API shape unless change is explicitly requested / approved.
 - Always implement code with testability in mind; prefer constructor injection and avoid static dependencies.
 - Default to using sealed classes unless extensibility is required.
