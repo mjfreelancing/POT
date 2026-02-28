@@ -409,3 +409,4 @@ Source/Docker/postgres-backups
 Source/Client/pot-react/.vite
 Docs/Azure/Azure-Deployment-Notes.md
 Source/Server/CoverageReport
+Source/Server/CoverageArtifacts

@@ -45,6 +45,7 @@ Run in `Source/Server`:
 Coverage helper:
 
 - `./code_coverage.ps1`
+- Coverage prompt: `.github/prompts/server_coverage.prompt.md`
 
 ## Expansion Notes
 

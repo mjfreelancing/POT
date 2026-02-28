@@ -39,6 +39,7 @@ Why this matters: without this setting, Copilot may not reliably load `.github/i
 
 - `.github/prompts/repo_tests.prompt.md`
 - `.github/prompts/server_unit_test.prompt.md`
+- `.github/prompts/server_coverage.prompt.md`
 - `.github/prompts/client_tests.prompt.md`
 - `.github/prompts/document_csharp.prompt.md`
 - `.github/prompts/document_typescript.prompt.md`

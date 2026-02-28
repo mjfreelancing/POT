@@ -10,6 +10,7 @@ Prompts describe task flow (how to execute work), not coding standards.
 
 - `repo_tests.prompt.md` - run repository test suites (server/client) and summarize outcomes.
 - `server_unit_test.prompt.md` - create or update server unit tests in the nearest test project.
+- `server_coverage.prompt.md` - run server coverage workflow and summarize report output.
 - `client_tests.prompt.md` - create or update client tests (Vitest + Testing Library).
 - `server_integration_test.prompt.md` - create/update server API integration tests.
 - `feature_implementation.prompt.md` - implement cross-layer features with scoped validation.
