@@ -1061,8 +1061,8 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 result.Value!.Accounts.Count.ShouldBe(2);
 
-                var checkingProjection = result.Value!.Accounts.First(a => a.Description == "Visa");
-                var savingsProjection = result.Value!.Accounts.First(a => a.Description == "Savings");
+                var checkingProjection = result.Value!.Accounts.First(account => account.Description == "Visa");
+                var savingsProjection = result.Value!.Accounts.First(account => account.Description == "Savings");
 
                 // Validate checking account projections (Jan 15 - Apr 14)
                 ValidateConsecutiveDates(checkingProjection.Dates, _currentDate, 90);
@@ -1576,18 +1576,18 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 feb28.ExpenseItems.ShouldContain(expense => expense.Description == "Savings Transfer");
 
                 // Savings and credit accounts should remain constant (no transactions)
-                savingsProjection.Dates.ShouldAllSatisfy(d =>
+                savingsProjection.Dates.ShouldAllSatisfy(dateProjection =>
                 {
-                    d.Balance.ShouldBe(20000.0d);
-                    d.IncomeReceived.ShouldBe(0.0d);
-                    d.ExpensesPaid.ShouldBe(0.0d);
+                    dateProjection.Balance.ShouldBe(20000.0d);
+                    dateProjection.IncomeReceived.ShouldBe(0.0d);
+                    dateProjection.ExpensesPaid.ShouldBe(0.0d);
                 });
 
-                creditProjection.Dates.ShouldAllSatisfy(d =>
+                creditProjection.Dates.ShouldAllSatisfy(dateProjection =>
                 {
-                    d.Balance.ShouldBe(-500.0d);
-                    d.IncomeReceived.ShouldBe(0.0d);
-                    d.ExpensesPaid.ShouldBe(0.0d);
+                    dateProjection.Balance.ShouldBe(-500.0d);
+                    dateProjection.IncomeReceived.ShouldBe(0.0d);
+                    dateProjection.ExpensesPaid.ShouldBe(0.0d);
                 });
             }
         }
@@ -1749,9 +1749,9 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 // Verify monthly rent (12 times)
                 var rentOccurrences = accountProjection.Dates.Where(projection => projection.ExpenseItems.Any(expense => expense.Description == "Rent")).ToList();
                 rentOccurrences.Count.ShouldBe(12);
-                rentOccurrences.ShouldAllSatisfy(o =>
+                rentOccurrences.ShouldAllSatisfy(occurrence =>
                 {
-                    o.ExpenseItems.ShouldContain(expense => expense.Description == "Rent" && expense.Amount == 1500.0d);
+                    occurrence.ExpenseItems.ShouldContain(expense => expense.Description == "Rent" && expense.Amount == 1500.0d);
                 });
 
                 // Verify quarterly tax (4 times: Jan 31, Apr 30, Jul 30, Oct 30)
@@ -1761,9 +1761,9 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 taxOccurrences[1].Date.ShouldBe(new DateOnly(2025, 4, 30));
                 taxOccurrences[2].Date.ShouldBe(new DateOnly(2025, 7, 30));
                 taxOccurrences[3].Date.ShouldBe(new DateOnly(2025, 10, 30));
-                taxOccurrences.ShouldAllSatisfy(o =>
+                taxOccurrences.ShouldAllSatisfy(occurrence =>
                 {
-                    o.ExpenseItems.ShouldContain(expense => expense.Description == "Quarterly Tax" && expense.Amount == 1000.0d);
+                    occurrence.ExpenseItems.ShouldContain(expense => expense.Description == "Quarterly Tax" && expense.Amount == 1000.0d);
                 });
 
                 // Verify semi-annual insurance (2 times: Jan 31, Jul 31)
@@ -1771,9 +1771,9 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 insuranceOccurrences.Count.ShouldBe(2);
                 insuranceOccurrences[0].Date.ShouldBe(new DateOnly(2025, 1, 31));
                 insuranceOccurrences[1].Date.ShouldBe(new DateOnly(2025, 7, 31));
-                insuranceOccurrences.ShouldAllSatisfy(o =>
+                insuranceOccurrences.ShouldAllSatisfy(occurrence =>
                 {
-                    o.ExpenseItems.ShouldContain(expense => expense.Description == "Insurance" && expense.Amount == 600.0d);
+                    occurrence.ExpenseItems.ShouldContain(expense => expense.Description == "Insurance" && expense.Amount == 600.0d);
                 });
 
                 // Verify annual membership (1 time: Jan 31)
@@ -1889,10 +1889,10 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 occurrences.Count.ShouldBeGreaterThanOrEqualTo(7); // Jun, Jul, Aug, Sep, Oct, Nov, Dec, Jan
 
                 occurrences[0].Date.ShouldBe(new DateOnly(2025, 6, 15));
-                occurrences.ShouldAllSatisfy(o =>
+                occurrences.ShouldAllSatisfy(occurrence =>
                 {
-                    o.ExpensesPaid.ShouldBe(50.0d);
-                    o.ExpenseItems.ShouldContainSingle(expense => expense.Description == "Future Subscription");
+                    occurrence.ExpensesPaid.ShouldBe(50.0d);
+                    occurrence.ExpenseItems.ShouldContainSingle(expense => expense.Description == "Future Subscription");
                 });
 
                 // Verify final balance after all occurrences
@@ -1979,43 +1979,43 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 // Verify monthly utilities (12 times)
                 var utilityDays = accountProjection.Dates.Where(projection => projection.ExpenseItems.Any(expense => expense.Description == "Utilities")).ToList();
                 utilityDays.Count.ShouldBe(12);
-                utilityDays.ShouldAllSatisfy(d =>
+                utilityDays.ShouldAllSatisfy(dayProjection =>
                 {
-                    d.ExpenseItems.ShouldContain(expense => expense.Description == "Utilities" && expense.Amount == 150.0d);
+                    dayProjection.ExpenseItems.ShouldContain(expense => expense.Description == "Utilities" && expense.Amount == 150.0d);
                 });
 
                 // Verify monthly internet (12 times)
                 var internetDays = accountProjection.Dates.Where(projection => projection.ExpenseItems.Any(expense => expense.Description == "Internet")).ToList();
                 internetDays.Count.ShouldBe(12);
-                internetDays.ShouldAllSatisfy(d =>
+                internetDays.ShouldAllSatisfy(dayProjection =>
                 {
-                    d.ExpenseItems.ShouldContain(expense => expense.Description == "Internet" && expense.Amount == 60.0d);
+                    dayProjection.ExpenseItems.ShouldContain(expense => expense.Description == "Internet" && expense.Amount == 60.0d);
                 });
 
                 // Verify weekly groceries (approximately 52 times)
                 var groceryDays = accountProjection.Dates.Where(projection => projection.ExpenseItems.Any(expense => expense.Description == "Groceries")).ToList();
                 groceryDays.Count.ShouldBeGreaterThanOrEqualTo(50);
                 groceryDays.Count.ShouldBeLessThanOrEqualTo(54);
-                groceryDays.ShouldAllSatisfy(d =>
+                groceryDays.ShouldAllSatisfy(dayProjection =>
                 {
-                    d.ExpenseItems.ShouldContain(expense => expense.Description == "Groceries" && expense.Amount == 100.0d);
+                    dayProjection.ExpenseItems.ShouldContain(expense => expense.Description == "Groceries" && expense.Amount == 100.0d);
                 });
 
                 // Verify bi-weekly gas (approximately 26 times)
                 var gasDays = accountProjection.Dates.Where(projection => projection.ExpenseItems.Any(expense => expense.Description == "Gas")).ToList();
                 gasDays.Count.ShouldBeGreaterThanOrEqualTo(24);
                 gasDays.Count.ShouldBeLessThanOrEqualTo(27);
-                gasDays.ShouldAllSatisfy(d =>
+                gasDays.ShouldAllSatisfy(dayProjection =>
                 {
-                    d.ExpenseItems.ShouldContain(expense => expense.Description == "Gas" && expense.Amount == 60.0d);
+                    dayProjection.ExpenseItems.ShouldContain(expense => expense.Description == "Gas" && expense.Amount == 60.0d);
                 });
 
                 // Verify quarterly insurance (4 times)
                 var insuranceDays = accountProjection.Dates.Where(projection => projection.ExpenseItems.Any(expense => expense.Description == "Insurance")).ToList();
                 insuranceDays.Count.ShouldBe(4);
-                insuranceDays.ShouldAllSatisfy(d =>
+                insuranceDays.ShouldAllSatisfy(dayProjection =>
                 {
-                    d.ExpenseItems.ShouldContain(expense => expense.Description == "Insurance" && expense.Amount == 300.0d);
+                    dayProjection.ExpenseItems.ShouldContain(expense => expense.Description == "Insurance" && expense.Amount == 300.0d);
                 });
 
                 // Verify one-time Prime expense (1 time, already validated as first day)
@@ -2568,10 +2568,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
     }
 
     // Helper method to validate a range of dates with no activity (balance stays constant, no transactions)
-    private static void ValidateNoActivityRange(
-        IReadOnlyList<DateProjection> projections,
-        int startIndex,
-        int endIndex,
+    private static void ValidateNoActivityRange(IReadOnlyList<DateProjection> projections, int startIndex, int endIndex,
         double expectedBalance)
     {
         for (int i = startIndex; i <= endIndex; i++)
@@ -2589,14 +2586,9 @@ public class ProjectionsServiceFixture : PotFixtureBase
     }
 
     // Helper method to validate a specific event day (when income/expense occurs)
-    private static void ValidateEventDay(
-        DateProjection projection,
-        DateOnly expectedDate,
-        double expectedBalance,
-        double? expectedIncomeReceived = null,
-        double? expectedExpensesPaid = null,
-        string[]? expectedExpenseDescriptions = null,
-        string[]? expectedIncomeDescriptions = null)
+    private static void ValidateEventDay(DateProjection projection, DateOnly expectedDate, double expectedBalance,
+        double? expectedIncomeReceived = null, double? expectedExpensesPaid = null,
+        string[]? expectedExpenseDescriptions = null, string[]? expectedIncomeDescriptions = null)
     {
         projection.Date.ShouldBe(expectedDate);
         projection.Balance.ShouldBe(expectedBalance);

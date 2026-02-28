@@ -136,7 +136,7 @@ internal sealed class EmailSender : IEmailSender
         foreach (var kvp in dictionary)
         {
             var property = properties
-                .SingleOrDefault(p => p.Name == kvp.Key)
+                .SingleOrDefault(propertyInfo => propertyInfo.Name == kvp.Key)
                 .WhenNotNull(errorMessage: $"Property '{kvp.Key}' not found on type '{configType.Name}'");
 
             var attribute = property

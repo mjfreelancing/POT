@@ -102,7 +102,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
                 var result = await context.GetAllAccountsAsync();
 
                 result.Count.ShouldBe(3);
-                result.ShouldHaveValues(a => a.Description, new[] { "Account 1", "Account 2", "Account 3" });
+                result.ShouldHaveValues(account => account.Description, new[] { "Account 1", "Account 2", "Account 3" });
             }
 
             [Fact]
@@ -367,19 +367,19 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
                 var result = await context.GetAllAccountsAsync();
 
                 result.Count.ShouldBe(3);
-                result.ShouldHaveValues(a => a.Description, new[] { "Account 1", "Account 2", "Account 3" });
+                result.ShouldHaveValues(account => account.Description, new[] { "Account 1", "Account 2", "Account 3" });
 
-                var resultAccount1 = result.First(a => a.Description == "Account 1");
+                var resultAccount1 = result.First(account => account.Description == "Account 1");
                 resultAccount1.Expenses.Count.ShouldBe(1);
                 resultAccount1.Expenses.First().Description.ShouldBe("Account 1 Expense");
                 resultAccount1.Incomes.ShouldBeEmpty();
 
-                var resultAccount2 = result.First(a => a.Description == "Account 2");
+                var resultAccount2 = result.First(account => account.Description == "Account 2");
                 resultAccount2.Incomes.Count.ShouldBe(1);
                 resultAccount2.Incomes.First().Description.ShouldBe("Account 2 Income");
                 resultAccount2.Expenses.ShouldBeEmpty();
 
-                var resultAccount3 = result.First(a => a.Description == "Account 3");
+                var resultAccount3 = result.First(account => account.Description == "Account 3");
                 resultAccount3.Expenses.ShouldBeEmpty();
                 resultAccount3.Incomes.ShouldBeEmpty();
             }

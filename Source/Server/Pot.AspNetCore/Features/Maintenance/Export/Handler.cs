@@ -7,9 +7,8 @@ namespace Pot.AspNetCore.Features.Maintenance.Export;
 
 internal sealed class Handler
 {
-    public static async Task<Results<FileStreamHttpResult, ProblemHttpResult>> Invoke(
-        IExportDataService exportAccountsService, ITimeProvider timeProvider,
-        ILogger<Handler> logger, CancellationToken cancellationToken)
+    public static async Task<Results<FileStreamHttpResult, ProblemHttpResult>> Invoke(IExportDataService exportAccountsService,
+        ITimeProvider timeProvider, ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);
 

@@ -28,7 +28,7 @@ internal sealed class ExcludeExpensesService : IExcludeExpensesService
             var expenses = await _expenseRepository.GetExpensesAsync(input.RowIds, cancellationToken);
 
             var missingRowIds = input.RowIds
-                .Except(expenses.Select(e => e.RowId))
+                .Except(expenses.Select(expense => expense.RowId))
                 .ToArray();
 
             if (missingRowIds.Length > 0)

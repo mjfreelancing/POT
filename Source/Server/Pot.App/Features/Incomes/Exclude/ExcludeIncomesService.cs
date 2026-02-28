@@ -28,7 +28,7 @@ internal sealed class ExcludeIncomesService : IExcludeIncomesService
             var incomes = await _incomeRepository.GetIncomesAsync(input.RowIds, cancellationToken);
 
             var missingRowIds = input.RowIds
-                .Except(incomes.Select(e => e.RowId))
+                .Except(incomes.Select(income => income.RowId))
                 .ToArray();
 
             if (missingRowIds.Length > 0)
