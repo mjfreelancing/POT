@@ -1,5 +1,5 @@
-﻿using AllOverIt.Fixture.Extensions;
-using FluentAssertions;
+using AllOverIt.Fixture.Extensions;
+using Shouldly;
 using Pot.App.Calculators;
 using Pot.Data.Entities;
 using Pot.Shared.Enumerations;
@@ -29,13 +29,11 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
         [Fact]
         public void Should_Throw_When_Incomess_Null()
         {
-            Invoking(() =>
-            {
+            var exception = Should.Throw<ArgumentNullException>(() => {
                 _calculator.Renew(null!, RenewalMode.Overdue, DateOnly.MinValue);
-            })
-            .Should()
-            .Throw<ArgumentNullException>()
-            .WithNamedMessageWhenNull("incomes");
+            });
+
+            exception.ParamName.ShouldBe("incomes");
         }
 
         [Fact]
@@ -43,12 +41,9 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
         {
             var asOfDate = new DateOnly(2025, 1, 20);
 
-            Invoking(() =>
-            {
+            Should.NotThrow(() => {
                 _calculator.Renew([], RenewalMode.Overdue, asOfDate);
-            })
-            .Should()
-            .NotThrow();
+            });
         }
 
         [Fact]
@@ -61,7 +56,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
 
             _calculator.Renew([income], RenewalMode.Overdue, asOfDate);
 
-            income.NextDue.Should().Be(originalNextDue);
+            income.NextDue.ShouldBe(originalNextDue);
         }
 
         [Fact]
@@ -74,7 +69,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
 
             _calculator.Renew([income], RenewalMode.Overdue, asOfDate);
 
-            income.NextDue.Should().Be(originalNextDue);
+            income.NextDue.ShouldBe(originalNextDue);
         }
 
         [Fact]
@@ -87,7 +82,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
 
             _calculator.Renew([income], RenewalMode.Overdue, asOfDate);
 
-            income.NextDue.Should().Be(originalNextDue);
+            income.NextDue.ShouldBe(originalNextDue);
         }
 
         [Fact]
@@ -99,7 +94,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([income], RenewalMode.Overdue, asOfDate);
 
             // Income should be renewed to 2025-02-10, but since that's after EndDate (2025-01-20), it should stop at 2025-01-10
-            income.NextDue.Should().Be(new DateOnly(2025, 1, 10));
+            income.NextDue.ShouldBe(new DateOnly(2025, 1, 10));
         }
 
         [Fact]
@@ -121,10 +116,10 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
 
             _calculator.Renew([income1, income2, income3, income4], RenewalMode.Overdue, asOfDate);
 
-            income1.NextDue.Should().Be(new DateOnly(2025, 1, 21));
-            income2.NextDue.Should().Be(new DateOnly(2025, 1, 21));
-            income3.NextDue.Should().Be(new DateOnly(2025, 1, 21));
-            income4.NextDue.Should().Be(new DateOnly(2025, 1, 21));
+            income1.NextDue.ShouldBe(new DateOnly(2025, 1, 21));
+            income2.NextDue.ShouldBe(new DateOnly(2025, 1, 21));
+            income3.NextDue.ShouldBe(new DateOnly(2025, 1, 21));
+            income4.NextDue.ShouldBe(new DateOnly(2025, 1, 21));
         }
 
         [Fact]
@@ -146,10 +141,10 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
 
             _calculator.Renew([income1, income2, income3, income4], RenewalMode.Overdue, asOfDate);
 
-            income1.NextDue.Should().Be(new DateOnly(2025, 2, 17));
-            income2.NextDue.Should().Be(new DateOnly(2025, 2, 17));
-            income3.NextDue.Should().Be(new DateOnly(2025, 2, 17));
-            income4.NextDue.Should().Be(new DateOnly(2025, 2, 17));
+            income1.NextDue.ShouldBe(new DateOnly(2025, 2, 17));
+            income2.NextDue.ShouldBe(new DateOnly(2025, 2, 17));
+            income3.NextDue.ShouldBe(new DateOnly(2025, 2, 17));
+            income4.NextDue.ShouldBe(new DateOnly(2025, 2, 17));
         }
 
         [Fact]
@@ -171,10 +166,10 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
 
             _calculator.Renew([income1, income2, income3, income4], RenewalMode.Overdue, asOfDate);
 
-            income1.NextDue.Should().Be(new DateOnly(2025, 6, 15));
-            income2.NextDue.Should().Be(new DateOnly(2025, 6, 15));
-            income3.NextDue.Should().Be(new DateOnly(2025, 6, 15));
-            income4.NextDue.Should().Be(new DateOnly(2025, 6, 15));
+            income1.NextDue.ShouldBe(new DateOnly(2025, 6, 15));
+            income2.NextDue.ShouldBe(new DateOnly(2025, 6, 15));
+            income3.NextDue.ShouldBe(new DateOnly(2025, 6, 15));
+            income4.NextDue.ShouldBe(new DateOnly(2025, 6, 15));
         }
 
         [Fact]
@@ -196,10 +191,10 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
 
             _calculator.Renew([income1, income2, income3, income4], RenewalMode.Overdue, asOfDate);
 
-            income1.NextDue.Should().Be(new DateOnly(2029, 3, 15));
-            income2.NextDue.Should().Be(new DateOnly(2029, 3, 15));
-            income3.NextDue.Should().Be(new DateOnly(2029, 3, 15));
-            income4.NextDue.Should().Be(new DateOnly(2029, 3, 15));
+            income1.NextDue.ShouldBe(new DateOnly(2029, 3, 15));
+            income2.NextDue.ShouldBe(new DateOnly(2029, 3, 15));
+            income3.NextDue.ShouldBe(new DateOnly(2029, 3, 15));
+            income4.NextDue.ShouldBe(new DateOnly(2029, 3, 15));
         }
 
         [Fact]
@@ -216,10 +211,10 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([income1, income2], RenewalMode.Overdue, asOfDate);
 
             // income1: 2025-01-01 -> 2025-01-15 -> 2025-01-29 -> 2025-02-12 -> 2025-02-26
-            income1.NextDue.Should().Be(new DateOnly(2025, 2, 26));
+            income1.NextDue.ShouldBe(new DateOnly(2025, 2, 26));
 
             // income2: 2025-02-15 -> 2025-05-15 (due on asOfDate, renews once)
-            income2.NextDue.Should().Be(new DateOnly(2025, 5, 15));
+            income2.NextDue.ShouldBe(new DateOnly(2025, 5, 15));
         }
 
         [Fact]
@@ -233,7 +228,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
 
             _calculator.Renew([income], RenewalMode.Overdue, asOfDate);
 
-            income.NextDue.Should().Be(originalNextDue);
+            income.NextDue.ShouldBe(originalNextDue);
         }
 
         [Fact]
@@ -248,13 +243,13 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([dailyIncome, weeklyIncome, monthlyIncome], RenewalMode.Overdue, asOfDate);
 
             // Daily: 2025-02-05 -> 2025-02-06 -> ... -> 2025-02-10 -> 2025-02-11
-            dailyIncome.NextDue.Should().Be(new DateOnly(2025, 2, 11));
+            dailyIncome.NextDue.ShouldBe(new DateOnly(2025, 2, 11));
 
             // Weekly: 2025-02-05 -> 2025-02-12
-            weeklyIncome.NextDue.Should().Be(new DateOnly(2025, 2, 12));
+            weeklyIncome.NextDue.ShouldBe(new DateOnly(2025, 2, 12));
 
             // Monthly: 2025-01-10 -> 2025-02-10 -> 2025-03-10
-            monthlyIncome.NextDue.Should().Be(new DateOnly(2025, 3, 10));
+            monthlyIncome.NextDue.ShouldBe(new DateOnly(2025, 3, 10));
         }
 
         [Fact]
@@ -268,7 +263,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([income], RenewalMode.Overdue, asOfDate);
 
             // 2025-01-01 -> ... -> 2025-02-05 -> 2025-02-12 -> 2025-02-19 (should update to 2025-02-19)
-            income.NextDue.Should().Be(new DateOnly(2025, 2, 19));
+            income.NextDue.ShouldBe(new DateOnly(2025, 2, 19));
         }
 
         [Fact]
@@ -282,7 +277,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([income], RenewalMode.Overdue, asOfDate);
 
             // 2024-02-29 -> 2025-02-28 -> 2026-02-28
-            income.NextDue.Should().Be(new DateOnly(2026, 2, 28));
+            income.NextDue.ShouldBe(new DateOnly(2026, 2, 28));
         }
 
         [Fact]
@@ -297,8 +292,8 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([income], RenewalMode.Overdue, asOfDate);
 
             // These fields should not be modified
-            income.Amount.Should().Be(originalAmount);
-            income.Note.Should().Be("Important note");
+            income.Amount.ShouldBe(originalAmount);
+            income.Note.ShouldBe("Important note");
         }
 
         [Fact]
@@ -318,7 +313,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             //
             // The income permanently drifts from the 31st to the 28th
 
-            income.NextDue.Should().Be(new DateOnly(2025, 4, 28));
+            income.NextDue.ShouldBe(new DateOnly(2025, 4, 28));
         }
 
         [Fact]
@@ -337,7 +332,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             // Mar 28 + 1 month = Apr 28 (final renewal beyond asOfDate)
 
             // The income permanently drifts from 31st to 28th
-            income.NextDue.Should().Be(new DateOnly(2025, 4, 28));
+            income.NextDue.ShouldBe(new DateOnly(2025, 4, 28));
         }
 
         [Fact]
@@ -351,7 +346,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([income], RenewalMode.Overdue, asOfDate);
 
             // 2025-01-15 -> 2025-07-15 -> 2026-01-15 -> 2026-07-15 -> 2027-01-15 -> 2027-07-15
-            income.NextDue.Should().Be(new DateOnly(2027, 7, 15));
+            income.NextDue.ShouldBe(new DateOnly(2027, 7, 15));
         }
 
         [Fact]
@@ -366,9 +361,9 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([excluded, oneTime, renewable], RenewalMode.Overdue, asOfDate);
 
             // Only renewable should be renewed
-            excluded.NextDue.Should().Be(new DateOnly(2025, 1, 10));
-            oneTime.NextDue.Should().Be(new DateOnly(2025, 1, 10));
-            renewable.NextDue.Should().Be(new DateOnly(2025, 1, 24));
+            excluded.NextDue.ShouldBe(new DateOnly(2025, 1, 10));
+            oneTime.NextDue.ShouldBe(new DateOnly(2025, 1, 10));
+            renewable.NextDue.ShouldBe(new DateOnly(2025, 1, 24));
         }
 
         [Fact]
@@ -381,7 +376,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([income], RenewalMode.Overdue, asOfDate);
 
             // Should renew to next week: 2025-01-19 -> 2025-01-26
-            income.NextDue.Should().Be(new DateOnly(2025, 1, 26));
+            income.NextDue.ShouldBe(new DateOnly(2025, 1, 26));
         }
 
         [Fact]
@@ -394,7 +389,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([income], RenewalMode.Overdue, asOfDate);
 
             // Should renew to 2025-02-12 (which equals EndDate)
-            income.NextDue.Should().Be(new DateOnly(2025, 2, 12));
+            income.NextDue.ShouldBe(new DateOnly(2025, 2, 12));
         }
 
         [Fact]
@@ -410,7 +405,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([income], RenewalMode.Overdue, asOfDate);
 
             // Should not renew because NextDue == EndDate at the start
-            income.NextDue.Should().Be(originalNextDue);
+            income.NextDue.ShouldBe(originalNextDue);
         }
 
         [Fact]
@@ -426,7 +421,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([income], RenewalMode.Overdue, asOfDate);
 
             // Should not renew because NextDue > EndDate at the start
-            income.NextDue.Should().Be(originalNextDue);
+            income.NextDue.ShouldBe(originalNextDue);
         }
     }
 
@@ -452,7 +447,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([income], RenewalMode.Future, asOfDate);
 
             // Should advance exactly once: Feb 20 + 7 days = Feb 27
-            income.NextDue.Should().Be(new DateOnly(2025, 2, 27));
+            income.NextDue.ShouldBe(new DateOnly(2025, 2, 27));
         }
 
         [Fact]
@@ -466,7 +461,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([income], RenewalMode.Future, asOfDate);
 
             // Should advance exactly once: Mar 15 + 1 month = Apr 15
-            income.NextDue.Should().Be(new DateOnly(2025, 4, 15));
+            income.NextDue.ShouldBe(new DateOnly(2025, 4, 15));
         }
 
         [Fact]
@@ -480,7 +475,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([income], RenewalMode.Future, asOfDate);
 
             // Should advance exactly once: Dec 25, 2025 + 1 year = Dec 25, 2026
-            income.NextDue.Should().Be(new DateOnly(2026, 12, 25));
+            income.NextDue.ShouldBe(new DateOnly(2026, 12, 25));
         }
 
         [Fact]
@@ -497,7 +492,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
 
             // Next due would be Feb 27, but that exceeds EndDate of Feb 25
             // So income should NOT be renewed
-            income.NextDue.Should().Be(originalNextDue);
+            income.NextDue.ShouldBe(originalNextDue);
         }
 
         [Fact]
@@ -512,7 +507,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([income], RenewalMode.Future, asOfDate);
 
             // OneTime incomes should never renew
-            income.NextDue.Should().Be(originalNextDue);
+            income.NextDue.ShouldBe(originalNextDue);
         }
 
         [Fact]
@@ -527,7 +522,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([income], RenewalMode.Future, asOfDate);
 
             // Excluded incomes should not renew
-            income.NextDue.Should().Be(originalNextDue);
+            income.NextDue.ShouldBe(originalNextDue);
         }
 
         [Fact]
@@ -542,13 +537,13 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([weeklyIncome, monthlyIncome, yearlyIncome], RenewalMode.Future, asOfDate);
 
             // Weekly: Feb 15 + 7 days = Feb 22
-            weeklyIncome.NextDue.Should().Be(new DateOnly(2025, 2, 22));
+            weeklyIncome.NextDue.ShouldBe(new DateOnly(2025, 2, 22));
 
             // Monthly: Mar 1 + 1 month = Apr 1
-            monthlyIncome.NextDue.Should().Be(new DateOnly(2025, 4, 1));
+            monthlyIncome.NextDue.ShouldBe(new DateOnly(2025, 4, 1));
 
             // Yearly: Dec 25, 2025 + 1 year = Dec 25, 2026
-            yearlyIncome.NextDue.Should().Be(new DateOnly(2026, 12, 25));
+            yearlyIncome.NextDue.ShouldBe(new DateOnly(2026, 12, 25));
         }
     }
 
@@ -574,7 +569,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([income], RenewalMode.Overdue, asOfDate);
 
             // Should advance to first date after Feb 10: Feb 3 -> Feb 10 -> Feb 17
-            income.NextDue.Should().Be(new DateOnly(2025, 2, 17));
+            income.NextDue.ShouldBe(new DateOnly(2025, 2, 17));
         }
 
         [Fact]
@@ -588,7 +583,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([income], RenewalMode.Overdue, asOfDate);
 
             // Should catch up through multiple iterations: Jan 1 -> Jan 8 -> Jan 15 -> ... -> Feb 12
-            income.NextDue.Should().Be(new DateOnly(2025, 2, 12));
+            income.NextDue.ShouldBe(new DateOnly(2025, 2, 12));
         }
 
         [Fact]
@@ -601,7 +596,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([income], RenewalMode.Overdue, asOfDate);
 
             // Due today should be treated as overdue and advance
-            income.NextDue.Should().Be(new DateOnly(2025, 2, 17));
+            income.NextDue.ShouldBe(new DateOnly(2025, 2, 17));
         }
 
         [Fact]
@@ -614,7 +609,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([income], RenewalMode.Overdue, asOfDate);
 
             // Should remain unchanged since next period (2025-02-01) exceeds EndDate (2025-01-25)
-            income.NextDue.Should().Be(new DateOnly(2025, 1, 1), "income should not advance beyond its end date");
+            income.NextDue.ShouldBe(new DateOnly(2025, 1, 1), "income should not advance beyond its end date");
         }
 
         [Fact]
@@ -629,7 +624,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
 
             // Sequence: Jan 15 -> Jan 22 -> Jan 29 -> Feb 5 -> Feb 12 -> Feb 19 (would exceed Feb 20)
             // Should stop at Feb 19
-            income.NextDue.Should().Be(new DateOnly(2025, 2, 19), "should advance through multiple periods but stop before exceeding end date");
+            income.NextDue.ShouldBe(new DateOnly(2025, 2, 19), "should advance through multiple periods but stop before exceeding end date");
         }
     }
 }

@@ -1,5 +1,5 @@
-﻿using AllOverIt.Fixture.Extensions;
-using FluentAssertions;
+using AllOverIt.Fixture.Extensions;
+using Shouldly;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using Pot.App.Concerns.Time;
@@ -29,13 +29,11 @@ public class PotTimeProviderFixture : PotFixtureBase
         [Fact]
         public void Should_Throw_When_AppContext_Is_Null()
         {
-            Invoking(() =>
-            {
+            var exception = Should.Throw<ArgumentNullException>(() => {
                 _ = new PotTimeProvider(null!);
-            })
-            .Should()
-            .Throw<ArgumentNullException>()
-            .WithNamedMessageWhenNull("appContext");
+            });
+
+            exception.ParamName.ShouldBe("appContext");
         }
     }
 
@@ -49,7 +47,7 @@ public class PotTimeProviderFixture : PotFixtureBase
 
             var result = _potTimeProvider.GetUtcDateNow();
 
-            result.Should().Be(new DateOnly(2026, 1, 28));
+            result.ShouldBe(new DateOnly(2026, 1, 28));
         }
     }
 
@@ -63,8 +61,8 @@ public class PotTimeProviderFixture : PotFixtureBase
 
             var result = _potTimeProvider.GetUtcDateTimeNow();
 
-            result.Should().Be(testDate);
-            result.Kind.Should().Be(DateTimeKind.Utc);
+            result.ShouldBe(testDate);
+            result.Kind.ShouldBe(DateTimeKind.Utc);
         }
     }
 
@@ -81,7 +79,7 @@ public class PotTimeProviderFixture : PotFixtureBase
             var result = _potTimeProvider.GetLocalDateNow();
 
             // 22:30 UTC + 10 hours = 08:30 next day
-            result.Should().Be(new DateOnly(2026, 1, 29));
+            result.ShouldBe(new DateOnly(2026, 1, 29));
         }
 
         [Fact]
@@ -95,7 +93,7 @@ public class PotTimeProviderFixture : PotFixtureBase
             var result = _potTimeProvider.GetLocalDateNow();
 
             // 02:30 UTC - 5 hours = 21:30 previous day
-            result.Should().Be(new DateOnly(2026, 1, 28));
+            result.ShouldBe(new DateOnly(2026, 1, 28));
         }
     }
 
@@ -111,8 +109,8 @@ public class PotTimeProviderFixture : PotFixtureBase
 
             var result = _potTimeProvider.GetLocalDateTimeNow();
 
-            result.Should().Be(new DateTime(2026, 1, 29, 0, 30, 45));
-            result.Kind.Should().Be(DateTimeKind.Local);
+            result.ShouldBe(new DateTime(2026, 1, 29, 0, 30, 45));
+            result.Kind.ShouldBe(DateTimeKind.Local);
         }
 
         [Fact]
@@ -130,8 +128,8 @@ public class PotTimeProviderFixture : PotFixtureBase
 
             var result = potTimeProvider.GetLocalDateTimeNow();
 
-            result.Should().Be(new DateTime(2026, 1, 28, 14, 30, 45));
-            result.Kind.Should().Be(DateTimeKind.Local);
+            result.ShouldBe(new DateTime(2026, 1, 28, 14, 30, 45));
+            result.Kind.ShouldBe(DateTimeKind.Local);
         }
 
         [Fact]
@@ -144,8 +142,8 @@ public class PotTimeProviderFixture : PotFixtureBase
 
             var result = _potTimeProvider.GetLocalDateTimeNow();
 
-            result.Should().Be(new DateTime(2026, 1, 29, 0, 0, 0));
-            result.Kind.Should().Be(DateTimeKind.Local);
+            result.ShouldBe(new DateTime(2026, 1, 29, 0, 0, 0));
+            result.Kind.ShouldBe(DateTimeKind.Local);
         }
     }
 
@@ -159,7 +157,7 @@ public class PotTimeProviderFixture : PotFixtureBase
 
             var result = _potTimeProvider.GetLocalTimeZoneOffset();
 
-            result.Should().Be(expectedOffset);
+            result.ShouldBe(expectedOffset);
         }
     }
 
@@ -170,13 +168,13 @@ public class PotTimeProviderFixture : PotFixtureBase
         {
             var delayTask = _potTimeProvider.DelayAsync(TimeSpan.FromSeconds(5), CancellationToken.None);
 
-            delayTask.IsCompleted.Should().BeFalse();
+            delayTask.IsCompleted.ShouldBeFalse();
 
             _fakeTimeProvider.Advance(TimeSpan.FromSeconds(5));
 
             await delayTask;
 
-            delayTask.IsCompleted.Should().BeTrue();
+            delayTask.IsCompleted.ShouldBeTrue();
         }
 
         [Fact]
@@ -185,12 +183,9 @@ public class PotTimeProviderFixture : PotFixtureBase
             using var cts = new CancellationTokenSource();
             cts.Cancel();
 
-            await Invoking(async () =>
-            {
+            await Should.ThrowAsync<OperationCanceledException>(async () => {
                 await _potTimeProvider.DelayAsync(TimeSpan.FromSeconds(5), cts.Token);
-            })
-            .Should()
-            .ThrowAsync<OperationCanceledException>();
+            });
         }
 
         [Fact]
@@ -201,7 +196,7 @@ public class PotTimeProviderFixture : PotFixtureBase
             // Should complete immediately without advancing time
             await delayTask;
 
-            delayTask.IsCompleted.Should().BeTrue();
+            delayTask.IsCompleted.ShouldBeTrue();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using Shouldly;
 using Pot.App.Errors;
 using Pot.TestUtils;
 
@@ -16,7 +16,7 @@ public class ApiDetailErrorCollectionFixture : PotFixtureBase
 
             var collection = new ApiDetailErrorCollection(errorType, errors);
 
-            collection.ErrorType.Should().Be(errorType);
+            collection.ErrorType.ShouldBe(errorType);
         }
 
         [Fact]
@@ -27,7 +27,7 @@ public class ApiDetailErrorCollectionFixture : PotFixtureBase
 
             var collection = new ApiDetailErrorCollection(errorType, errors);
 
-            collection.Errors.Should().BeEquivalentTo(errors);
+            collection.Errors.ShouldBe(errors);
         }
 
         [Fact]
@@ -38,7 +38,7 @@ public class ApiDetailErrorCollectionFixture : PotFixtureBase
 
             var collection = new ApiDetailErrorCollection(errorType, errors);
 
-            collection.Errors.Should().BeEmpty();
+            collection.Errors.ShouldBeEmpty();
         }
 
         [Fact]
@@ -49,7 +49,7 @@ public class ApiDetailErrorCollectionFixture : PotFixtureBase
 
             var collection = new ApiDetailErrorCollection(errorType, errorsList);
 
-            collection.Errors.Should().NotBeSameAs(errorsList);
+            collection.Errors.ShouldNotBeSameAs(errorsList);
         }
     }
 }

@@ -1,7 +1,7 @@
-﻿using FluentAssertions;
-using Pot.Data.Entities;
+﻿using Pot.Data.Entities;
 using Pot.Data.Specifications;
 using Pot.TestUtils;
+using Shouldly;
 
 namespace Pot.Data.Tests.Specifications;
 
@@ -26,7 +26,7 @@ public class EntitySpecificationsFixture : PotFixtureBase
             var specification = EntitySpecifications.IsSameId<AccountEntity>(rowId);
             var result = specification.IsSatisfiedBy(account);
 
-            result.Should().BeTrue();
+            result.ShouldBeTrue();
         }
 
         [Fact]
@@ -40,7 +40,7 @@ public class EntitySpecificationsFixture : PotFixtureBase
             var specification = EntitySpecifications.IsSameId<AccountEntity>(rowId);
             var result = specification.IsSatisfiedBy(account);
 
-            result.Should().BeFalse();
+            result.ShouldBeFalse();
         }
 
         [Fact]
@@ -54,7 +54,7 @@ public class EntitySpecificationsFixture : PotFixtureBase
             var specification = EntitySpecifications.IsSameId<SiteEntity>(rowId);
             var result = specification.IsSatisfiedBy(site);
 
-            result.Should().BeTrue();
+            result.ShouldBeTrue();
         }
     }
 }

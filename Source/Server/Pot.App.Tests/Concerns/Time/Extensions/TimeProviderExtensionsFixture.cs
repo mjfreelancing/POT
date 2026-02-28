@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using Shouldly;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using Pot.App.Concerns.Time;
@@ -70,7 +70,7 @@ public class TimeProviderExtensionsFixture : PotFixtureBase
             var waitTask = _timeProvider.WaitUntilUtcAsync(targetUtc, CancellationToken.None);
 
             // Time hasn't advanced yet, so the task should not be complete
-            waitTask.IsCompleted.Should().BeFalse();
+            waitTask.IsCompleted.ShouldBeFalse();
 
             // Advance time to the target
             _fakeTimeProvider.Advance(TimeSpan.FromSeconds(5));
@@ -93,12 +93,9 @@ public class TimeProviderExtensionsFixture : PotFixtureBase
             using var cts = new CancellationTokenSource();
             cts.Cancel();
 
-            await Invoking(async () =>
-            {
+            await Should.ThrowAsync<OperationCanceledException>(async () => {
                 await _timeProvider.WaitUntilUtcAsync(targetUtc, cts.Token);
-            })
-            .Should()
-            .ThrowAsync<OperationCanceledException>();
+            });
         }
 
         [Fact]
@@ -113,12 +110,9 @@ public class TimeProviderExtensionsFixture : PotFixtureBase
             using var cts = new CancellationTokenSource();
             cts.Cancel();
 
-            await Invoking(async () =>
-            {
+            await Should.ThrowAsync<OperationCanceledException>(async () => {
                 await _timeProvider.WaitUntilUtcAsync(targetUtc, cts.Token);
-            })
-            .Should()
-            .ThrowAsync<OperationCanceledException>();
+            });
         }
 
         [Fact]
@@ -161,7 +155,7 @@ public class TimeProviderExtensionsFixture : PotFixtureBase
 
             await _timeProvider.WaitUntilUtcAsync(targetUtc, CancellationToken.None);
 
-            callCount.Should().BeGreaterThan(1);
+            callCount.ShouldBeGreaterThan(1);
         }
 
         [Fact]
@@ -175,7 +169,7 @@ public class TimeProviderExtensionsFixture : PotFixtureBase
 
             var waitTask = _timeProvider.WaitUntilUtcAsync(targetUtc, CancellationToken.None);
 
-            waitTask.IsCompleted.Should().BeFalse();
+            waitTask.IsCompleted.ShouldBeFalse();
 
             _fakeTimeProvider.Advance(TimeSpan.FromMilliseconds(100));
 

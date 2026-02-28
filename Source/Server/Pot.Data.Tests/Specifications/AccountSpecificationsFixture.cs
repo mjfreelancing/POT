@@ -1,7 +1,7 @@
-﻿using FluentAssertions;
-using Pot.Data.Entities;
+﻿using Pot.Data.Entities;
 using Pot.Data.Specifications;
 using Pot.TestUtils;
+using Shouldly;
 
 namespace Pot.Data.Tests.Specifications;
 
@@ -34,7 +34,7 @@ public class AccountSpecificationsFixture : PotFixtureBase
             var specification = AccountSpecifications.IsSameBsbNumber(bsb, number);
             var result = specification.IsSatisfiedBy(account);
 
-            result.Should().BeTrue();
+            result.ShouldBeTrue();
         }
 
         [Fact]
@@ -50,7 +50,7 @@ public class AccountSpecificationsFixture : PotFixtureBase
             var specification = AccountSpecifications.IsSameBsbNumber(bsb, number);
             var result = specification.IsSatisfiedBy(account);
 
-            result.Should().BeFalse();
+            result.ShouldBeFalse();
         }
 
         [Fact]
@@ -66,7 +66,7 @@ public class AccountSpecificationsFixture : PotFixtureBase
             var specification = AccountSpecifications.IsSameBsbNumber(bsb, number);
             var result = specification.IsSatisfiedBy(account);
 
-            result.Should().BeFalse();
+            result.ShouldBeFalse();
         }
 
         [Fact]
@@ -82,7 +82,7 @@ public class AccountSpecificationsFixture : PotFixtureBase
             var specification = AccountSpecifications.IsSameBsbNumber(bsb, number);
             var result = specification.IsSatisfiedBy(account);
 
-            result.Should().BeFalse();
+            result.ShouldBeFalse();
         }
     }
 
@@ -99,7 +99,7 @@ public class AccountSpecificationsFixture : PotFixtureBase
             var specification = AccountSpecifications.IsSameDescription(description);
             var result = specification.IsSatisfiedBy(account);
 
-            result.Should().BeTrue();
+            result.ShouldBeTrue();
         }
 
         [Fact]
@@ -113,7 +113,7 @@ public class AccountSpecificationsFixture : PotFixtureBase
             var specification = AccountSpecifications.IsSameDescription(description);
             var result = specification.IsSatisfiedBy(account);
 
-            result.Should().BeFalse();
+            result.ShouldBeFalse();
         }
 
         [Fact]
@@ -127,7 +127,7 @@ public class AccountSpecificationsFixture : PotFixtureBase
             var specification = AccountSpecifications.IsSameDescription(description);
             var result = specification.IsSatisfiedBy(account);
 
-            result.Should().BeFalse();
+            result.ShouldBeFalse();
         }
     }
 }

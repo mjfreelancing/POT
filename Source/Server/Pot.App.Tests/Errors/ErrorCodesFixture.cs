@@ -1,4 +1,4 @@
-using FluentAssertions;
+using Shouldly;
 using Pot.App.Errors;
 using Pot.TestUtils;
 using System.Reflection;
@@ -14,7 +14,7 @@ public class ErrorCodesFixture : PotFixtureBase
         {
             var fields = typeof(ErrorCodes).GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly);
 
-            fields.Should().HaveCount(8, "If this fails, new fields were added. Update the individual field tests below.");
+            fields.Length.ShouldBe(8, "If this fails, new fields were added. Update the individual field tests below.");
         }
     }
 
@@ -23,49 +23,49 @@ public class ErrorCodesFixture : PotFixtureBase
         [Fact]
         public void Auth_Should_Match_Field_Name()
         {
-            ErrorCodes.Auth.Should().Be(nameof(ErrorCodes.Auth));
+            ErrorCodes.Auth.ShouldBe(nameof(ErrorCodes.Auth));
         }
 
         [Fact]
         public void Invalid_Should_Match_Field_Name()
         {
-            ErrorCodes.Invalid.Should().Be(nameof(ErrorCodes.Invalid));
+            ErrorCodes.Invalid.ShouldBe(nameof(ErrorCodes.Invalid));
         }
 
         [Fact]
         public void NotFound_Should_Match_Field_Name()
         {
-            ErrorCodes.NotFound.Should().Be(nameof(ErrorCodes.NotFound));
+            ErrorCodes.NotFound.ShouldBe(nameof(ErrorCodes.NotFound));
         }
 
         [Fact]
         public void Conflict_Should_Match_Field_Name()
         {
-            ErrorCodes.Conflict.Should().Be(nameof(ErrorCodes.Conflict));
+            ErrorCodes.Conflict.ShouldBe(nameof(ErrorCodes.Conflict));
         }
 
         [Fact]
         public void Constraint_Should_Match_Field_Name()
         {
-            ErrorCodes.Constraint.Should().Be(nameof(ErrorCodes.Constraint));
+            ErrorCodes.Constraint.ShouldBe(nameof(ErrorCodes.Constraint));
         }
 
         [Fact]
         public void Duplicate_Should_Match_Field_Name()
         {
-            ErrorCodes.Duplicate.Should().Be(nameof(ErrorCodes.Duplicate));
+            ErrorCodes.Duplicate.ShouldBe(nameof(ErrorCodes.Duplicate));
         }
 
         [Fact]
         public void Database_Should_Match_Field_Name()
         {
-            ErrorCodes.Database.Should().Be(nameof(ErrorCodes.Database));
+            ErrorCodes.Database.ShouldBe(nameof(ErrorCodes.Database));
         }
 
         [Fact]
         public void TooManyRequests_Should_Match_Field_Name()
         {
-            ErrorCodes.TooManyRequests.Should().Be(nameof(ErrorCodes.TooManyRequests));
+            ErrorCodes.TooManyRequests.ShouldBe(nameof(ErrorCodes.TooManyRequests));
         }
     }
 }

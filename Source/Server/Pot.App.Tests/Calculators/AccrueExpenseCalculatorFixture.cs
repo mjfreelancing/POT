@@ -1,6 +1,6 @@
-﻿using AllOverIt.Extensions;
+using AllOverIt.Extensions;
 using AllOverIt.Fixture.Extensions;
-using FluentAssertions;
+using Shouldly;
 using NSubstitute;
 using Pot.App.Calculators;
 using Pot.App.Concerns.Time;
@@ -23,13 +23,11 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
         [Fact]
         public void Should_Throw_When_TimeProvider_Null()
         {
-            Invoking(() =>
-            {
+            var exception = Should.Throw<ArgumentNullException>(() => {
                 _ = new AccrueExpenseCalculator(null!);
-            })
-            .Should()
-            .Throw<ArgumentNullException>()
-            .WithNamedMessageWhenNull("timeProvider");
+            });
+
+            exception.ParamName.ShouldBe("timeProvider");
         }
     }
 
@@ -52,36 +50,29 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
         [Fact]
         public void Should_Throw_When_Account_Null()
         {
-            Invoking(() =>
-            {
+            var exception = Should.Throw<ArgumentNullException>(() => {
                 _calculator.AccrueExpenses(null!, []);
-            })
-            .Should()
-            .Throw<ArgumentNullException>()
-            .WithNamedMessageWhenNull("account");
+            });
+
+            exception.ParamName.ShouldBe("account");
         }
 
         [Fact]
         public void Should_Throw_When_Expenses_Null()
         {
-            Invoking(() =>
-            {
+            var exception = Should.Throw<ArgumentNullException>(() => {
                 _calculator.AccrueExpenses(Create<AccountEntity>(), null!);
-            })
-            .Should()
-            .Throw<ArgumentNullException>()
-            .WithNamedMessageWhenNull("expenses");
+            });
+
+            exception.ParamName.ShouldBe("expenses");
         }
 
         [Fact]
         public void Should_Not_Throw_When_CurrentDate_Null()
         {
-            Invoking(() =>
-            {
+            Should.NotThrow(() => {
                 _calculator.AccrueExpenses(Create<AccountEntity>(), [], null);
-            })
-            .Should()
-            .NotThrow();
+            });
         }
 
         [Fact]
@@ -94,8 +85,8 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
 
             _calculator.AccrueExpenses(account, []);
 
-            account.TotalExpenseAccrued.Should().Be(0.0d);
-            account.DailyExpenseAccrual.Should().Be(0.0d);
+            account.TotalExpenseAccrued.ShouldBe(0.0d);
+            account.DailyExpenseAccrual.ShouldBe(0.0d);
         }
 
         [Fact]
@@ -103,7 +94,7 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
         {
             var expense = EntityFactory.CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
 
-            expense.AccruedIsDirty.Should().BeTrue();
+            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
 
@@ -115,7 +106,7 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
 
             _calculator.AccrueExpenses(_account, [expense]);
 
-            expense.AccruedIsDirty.Should().BeFalse();
+            expense.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
@@ -126,7 +117,7 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
 
             _calculator.AccrueExpenses(_account, [expense]);
 
-            expense.LastAccruedUpdate.Should().Be(_currentDate);
+            expense.LastAccruedUpdate.ShouldBe(_currentDate);
         }
 
         [Fact]
@@ -137,9 +128,9 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
 
             _calculator.AccrueExpenses(_account, [expense], customDate);
 
-            expense.LastAccruedUpdate.Should().Be(customDate);
+            expense.LastAccruedUpdate.ShouldBe(customDate);
             // 1000 * 19 / 30 = 633.33
-            expense.Accrued.Should().Be(633.33d);
+            expense.Accrued.ShouldBe(633.33d);
         }
 
         [Fact]
@@ -147,8 +138,8 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
         {
             _calculator.AccrueExpenses(_account, []);
 
-            _account.TotalExpenseAccrued.Should().Be(0.0d);
-            _account.DailyExpenseAccrual.Should().Be(0.0d);
+            _account.TotalExpenseAccrued.ShouldBe(0.0d);
+            _account.DailyExpenseAccrual.ShouldBe(0.0d);
         }
 
         [Fact]
@@ -160,7 +151,7 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
 
             expenseItems.ForEach((expenseItem, index) =>
             {
-                expenseItem.Expense.Accrued.Should().Be(expenseItem.ExpectedTotalAccrual);
+                expenseItem.Expense.Accrued.ShouldBe(expenseItem.ExpectedTotalAccrual);
             });
         }
 
@@ -173,7 +164,7 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             _calculator.AccrueExpenses(_account, [expense1, expense2]);
 
             // (1000 * 14 / 30) + (500 * 14 / 30) = 466.67 + 233.33 = 700.0
-            _account.TotalExpenseAccrued.Should().Be(700.0d);
+            _account.TotalExpenseAccrued.ShouldBe(700.0d);
         }
 
         [Fact]
@@ -184,7 +175,7 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             _calculator.AccrueExpenses(_account, [expense]);
 
             // DailyBalance calculation: (1000 - 466.67) / (31 - 15) = 533.33 / 16 = 33.33
-            _account.DailyExpenseAccrual.Should().BeApproximately(33.33d, 0.01d);
+            _account.DailyExpenseAccrual.ShouldBe(33.33d, 0.01d);
         }
 
         [Fact]
@@ -196,7 +187,7 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
 
             // OneTime expenses do calculate daily accrual when not yet due
             // DailyBalance = (1000 - 466.67) / (31 - 15) = 533.33 / 16 = 33.33
-            _account.DailyExpenseAccrual.Should().BeApproximately(33.33d, 0.01d);
+            _account.DailyExpenseAccrual.ShouldBe(33.33d, 0.01d);
         }
 
         [Fact]
@@ -208,7 +199,7 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
 
             // Next due is 31 days away (from 2025-01-15 to 2025-02-15)
             // Daily accrual = 1000 / 31 = 32.258
-            _account.DailyExpenseAccrual.Should().BeApproximately(32.26d, 0.01d);
+            _account.DailyExpenseAccrual.ShouldBe(32.26d, 0.01d);
         }
 
         [Fact]
@@ -218,7 +209,7 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
 
             _calculator.AccrueExpenses(_account, [expense]);
 
-            _account.DailyExpenseAccrual.Should().Be(0.0d);
+            _account.DailyExpenseAccrual.ShouldBe(0.0d);
         }
 
         [Fact]
@@ -229,7 +220,7 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             _calculator.AccrueExpenses(_account, [expense]);
 
             // End date is 2025-01-20, next due would be 2025-02-15, which is after end date - so it's never going to be paid again
-            _account.DailyExpenseAccrual.Should().Be(0.0d);
+            _account.DailyExpenseAccrual.ShouldBe(0.0d);
         }
 
         [Fact]
@@ -241,7 +232,7 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
 
             // Accrued = 1000 * 14 / 15 = 933.33
             // DailyBalance = (1000 - 933.33) / 1 = 66.67
-            _account.DailyExpenseAccrual.Should().BeApproximately(66.67d, 0.01d);
+            _account.DailyExpenseAccrual.ShouldBe(66.67d, 0.01d);
         }
 
         [Fact]
@@ -252,7 +243,7 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             _calculator.AccrueExpenses(_account, [expense]);
 
             // OneTime expenses don't have future accrual
-            _account.DailyExpenseAccrual.Should().Be(0.0d);
+            _account.DailyExpenseAccrual.ShouldBe(0.0d);
         }
 
         [Fact]
@@ -263,7 +254,7 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             _calculator.AccrueExpenses(_account, [expense]);
 
             // OneTime expenses don't have future accrual
-            _account.DailyExpenseAccrual.Should().Be(0.0d);
+            _account.DailyExpenseAccrual.ShouldBe(0.0d);
         }
 
         [Fact]
@@ -289,17 +280,17 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
 
             // Verify all expenses were processed correctly
             // The specific values prove the accrual calculations are correct
-            expense1.Accrued.Should().Be(736.84d);   // 1000 * 14 / 19 = 736.84
-            expense2.Accrued.Should().Be(291.67d);   // 500 * 14 / 24 = 291.67
-            expense3.Accrued.Should().Be(750.0d);    // Due today, full amount
+            expense1.Accrued.ShouldBe(736.84d);   // 1000 * 14 / 19 = 736.84
+            expense2.Accrued.ShouldBe(291.67d);   // 500 * 14 / 24 = 291.67
+            expense3.Accrued.ShouldBe(750.0d);    // Due today, full amount
 
             // Total should be sum of all accruals
-            _account.TotalExpenseAccrued.Should().BeApproximately(1778.51d, 0.01d);
+            _account.TotalExpenseAccrued.ShouldBe(1778.51d, 0.01d);
 
             // Verify that available balance would be negative (Balance - TotalExpenseAccrued)
             // This documents current behavior: negative balances are allowed
             var availableBalance = _account.Balance - _account.TotalExpenseAccrued;
-            availableBalance.Should().BeApproximately(-778.51d, 0.01d, "current implementation allows negative balances");
+            availableBalance.ShouldBe(-778.51d, 0.01d, "current implementation allows negative balances");
 
             // NOTE: When the "no negative balance" feature is implemented:
             // 1. This assertion will likely need updating to reflect new behavior
@@ -326,17 +317,17 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             _calculator.AccrueExpenses(_account, [expense1, expense2, expense3]);
 
             // All three expenses should be processed
-            expense1.AccruedIsDirty.Should().BeFalse();
-            expense2.AccruedIsDirty.Should().BeFalse();
-            expense3.AccruedIsDirty.Should().BeFalse();
+            expense1.AccruedIsDirty.ShouldBeFalse();
+            expense2.AccruedIsDirty.ShouldBeFalse();
+            expense3.AccruedIsDirty.ShouldBeFalse();
 
             // All should have LastAccruedUpdate set
-            expense1.LastAccruedUpdate.Should().Be(_currentDate);
-            expense2.LastAccruedUpdate.Should().Be(_currentDate);
-            expense3.LastAccruedUpdate.Should().Be(_currentDate);
+            expense1.LastAccruedUpdate.ShouldBe(_currentDate);
+            expense2.LastAccruedUpdate.ShouldBe(_currentDate);
+            expense3.LastAccruedUpdate.ShouldBe(_currentDate);
 
             // Total should be non-zero (all were processed and accrued)
-            _account.TotalExpenseAccrued.Should().BeGreaterThan(0);
+            _account.TotalExpenseAccrued.ShouldBeGreaterThan(0);
         }
 
         [Fact]
@@ -348,7 +339,7 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             _calculator.AccrueExpenses(_account, [expense]);
 
             // When overdue, it will be the full amount for accrued
-            expense.Accrued.Should().Be(1000.0d);
+            expense.Accrued.ShouldBe(1000.0d);
         }
 
         [Fact]
@@ -359,7 +350,7 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             _calculator.AccrueExpenses(_account, [expense]);
 
             // When due, it will be the full amount for accrued
-            expense.Accrued.Should().Be(1000.0d);
+            expense.Accrued.ShouldBe(1000.0d);
         }
 
         [Fact]
@@ -370,7 +361,7 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             _calculator.AccrueExpenses(_account, [expense]);
 
             // OneTime expenses are considered paid until deleted, hence they remain fully unaccrued from the current date onwards
-            expense.Accrued.Should().Be(600.0d);
+            expense.Accrued.ShouldBe(600.0d);
         }
 
         [Fact]
@@ -385,17 +376,17 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             _calculator.AccrueExpenses(_account, [dailyExpense, weeklyExpense, monthlyExpense, yearlyExpense, oneTimeExpense]);
 
             // All expenses should have accrued amounts
-            dailyExpense.Accrued.Should().Be(28);           // 30 * 14 / 15
-            weeklyExpense.Accrued.Should().Be(35);          // 70 * 7 / 14
-            monthlyExpense.Accrued.Should().Be(466.67);     // 1000 * 14 / 30
-            yearlyExpense.Accrued.Should().Be(1200);        // Due today, full amount
-            oneTimeExpense.Accrued.Should().Be(233.33);     // 500 * 14 / 30
+            dailyExpense.Accrued.ShouldBe(28);           // 30 * 14 / 15
+            weeklyExpense.Accrued.ShouldBe(35);          // 70 * 7 / 14
+            monthlyExpense.Accrued.ShouldBe(466.67);     // 1000 * 14 / 30
+            yearlyExpense.Accrued.ShouldBe(1200);        // Due today, full amount
+            oneTimeExpense.Accrued.ShouldBe(233.33);     // 500 * 14 / 30
 
             // Total should be sum of all
             var expectedTotal = dailyExpense.Accrued + weeklyExpense.Accrued + monthlyExpense.Accrued +
                                 yearlyExpense.Accrued + oneTimeExpense.Accrued;
 
-            _account.TotalExpenseAccrued.Should().BeApproximately(expectedTotal, 0.01d);
+            _account.TotalExpenseAccrued.ShouldBe(expectedTotal, 0.01d);
         }
 
         [Fact]
@@ -406,7 +397,7 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             _calculator.AccrueExpenses(_account, [expense]);
 
             _timeProvider.Received(1).GetLocalDateNow();
-            expense.LastAccruedUpdate.Should().Be(_currentDate);
+            expense.LastAccruedUpdate.ShouldBe(_currentDate);
         }
 
         [Fact]
@@ -418,7 +409,7 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             _calculator.AccrueExpenses(_account, [expense], customDate);
 
             _timeProvider.DidNotReceive().GetLocalDateNow();
-            expense.LastAccruedUpdate.Should().Be(customDate);
+            expense.LastAccruedUpdate.ShouldBe(customDate);
         }
 
         [Fact]
@@ -431,11 +422,11 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             _calculator.AccrueExpenses(_account, [expense]);
 
             // No days have passed since accrual start, so accrued = 0
-            expense.Accrued.Should().Be(1000.0d); // Due today, full amount
+            expense.Accrued.ShouldBe(1000.0d); // Due today, full amount
 
             // Next due is 31 days away (from 2025-01-15 to 2025-02-15)
             // Daily accrual = 1000 / 31 = 32.258
-            _account.DailyExpenseAccrual.Should().BeApproximately(32.26d, 0.01d);
+            _account.DailyExpenseAccrual.ShouldBe(32.26d, 0.01d);
         }
 
         [Fact]
@@ -447,8 +438,8 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
 
             _calculator.AccrueExpenses(_account, [expense]);
 
-            expense.Accrued.Should().Be(1000.0d); // Due today, full amount
-            _account.DailyExpenseAccrual.Should().Be(0.0d); // Won't occur again
+            expense.Accrued.ShouldBe(1000.0d); // Due today, full amount
+            _account.DailyExpenseAccrual.ShouldBe(0.0d); // Won't occur again
         }
 
         [Fact]
@@ -460,8 +451,8 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
 
             _calculator.AccrueExpenses(_account, [expense]);
 
-            expense.Accrued.Should().Be(1000.0d); // Due today, full amount
-            _account.DailyExpenseAccrual.Should().Be(0.0d); // OneTime expenses don't have future accrual
+            expense.Accrued.ShouldBe(1000.0d); // Due today, full amount
+            _account.DailyExpenseAccrual.ShouldBe(0.0d); // OneTime expenses don't have future accrual
         }
 
         [Fact]
@@ -473,8 +464,8 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
 
             _calculator.AccrueExpenses(_account, [expense]);
 
-            expense.Accrued.Should().Be(1000.0d); // Overdue, full amount
-            _account.DailyExpenseAccrual.Should().Be(0.0d); // Already past due, no daily balance to accrue
+            expense.Accrued.ShouldBe(1000.0d); // Overdue, full amount
+            _account.DailyExpenseAccrual.ShouldBe(0.0d); // Already past due, no daily balance to accrue
         }
 
         [Fact]
@@ -486,10 +477,10 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
 
             _calculator.AccrueExpenses(_account, [expense]);
 
-            expense.Accrued.Should().Be(0.0d); // Not yet started, no accrual
-            expense.AccruedIsDirty.Should().BeFalse(); // Processed but not accrued
-            _account.TotalExpenseAccrued.Should().Be(0.0d);
-            _account.DailyExpenseAccrual.Should().Be(0.0d);
+            expense.Accrued.ShouldBe(0.0d); // Not yet started, no accrual
+            expense.AccruedIsDirty.ShouldBeFalse(); // Processed but not accrued
+            _account.TotalExpenseAccrued.ShouldBe(0.0d);
+            _account.DailyExpenseAccrual.ShouldBe(0.0d);
         }
 
         [Fact]
@@ -504,19 +495,19 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             _calculator.AccrueExpenses(_account, [expenseDueToday, expenseOverdue, expenseFuture, normalExpense]);
 
             // expenseDueToday: Due today, full amount
-            expenseDueToday.Accrued.Should().Be(1000.0d);
+            expenseDueToday.Accrued.ShouldBe(1000.0d);
 
             // expenseOverdue: Overdue, full amount
-            expenseOverdue.Accrued.Should().Be(500.0d);
+            expenseOverdue.Accrued.ShouldBe(500.0d);
 
             // expenseFuture: Not yet started
-            expenseFuture.Accrued.Should().Be(0.0d);
+            expenseFuture.Accrued.ShouldBe(0.0d);
 
             // normalExpense: 600 * 14 / 30 = 280
-            normalExpense.Accrued.Should().Be(280.0d);
+            normalExpense.Accrued.ShouldBe(280.0d);
 
             // Total: 1000 + 500 + 0 + 280 = 1780
-            _account.TotalExpenseAccrued.Should().Be(1780.0d);
+            _account.TotalExpenseAccrued.ShouldBe(1780.0d);
         }
 
         [Fact]
@@ -528,10 +519,10 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             _calculator.AccrueExpenses(_account, [expense]);
 
             // Excluded expenses should not be processed at all
-            expense.Accrued.Should().Be(0.0d);
-            expense.AccruedIsDirty.Should().BeFalse();
-            _account.TotalExpenseAccrued.Should().Be(0.0d);
-            _account.DailyExpenseAccrual.Should().Be(0.0d);
+            expense.Accrued.ShouldBe(0.0d);
+            expense.AccruedIsDirty.ShouldBeFalse();
+            _account.TotalExpenseAccrued.ShouldBe(0.0d);
+            _account.DailyExpenseAccrual.ShouldBe(0.0d);
         }
 
         [Fact]
@@ -543,10 +534,10 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             _calculator.AccrueExpenses(_account, [expense]);
 
             // Expenses with future AccrualStart should not be processed
-            expense.Accrued.Should().Be(0.0d);
-            expense.AccruedIsDirty.Should().BeFalse();
-            _account.TotalExpenseAccrued.Should().Be(0.0d);
-            _account.DailyExpenseAccrual.Should().Be(0.0d);
+            expense.Accrued.ShouldBe(0.0d);
+            expense.AccruedIsDirty.ShouldBeFalse();
+            _account.TotalExpenseAccrued.ShouldBe(0.0d);
+            _account.DailyExpenseAccrual.ShouldBe(0.0d);
         }
 
         [Fact]
@@ -561,11 +552,11 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             // Days from AccrualStart to currentDate = 5 (exclusive)
             // Total days from AccrualStart to NextDue = 15 (exclusive)
             // Expected accrual = 1000 * 5 / 15 = 333.33
-            expense.Accrued.Should().Be(333.33d);
-            expense.AccruedIsDirty.Should().BeFalse();
-            expense.LastAccruedUpdate.Should().Be(_currentDate);
-            _account.TotalExpenseAccrued.Should().Be(333.33d);
-            _account.DailyExpenseAccrual.Should().BeGreaterThan(0.0d);
+            expense.Accrued.ShouldBe(333.33d);
+            expense.AccruedIsDirty.ShouldBeFalse();
+            expense.LastAccruedUpdate.ShouldBe(_currentDate);
+            _account.TotalExpenseAccrued.ShouldBe(333.33d);
+            _account.DailyExpenseAccrual.ShouldBeGreaterThan(0.0d);
         }
 
         [Fact]
@@ -578,14 +569,14 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             _calculator.AccrueExpenses(_account, [expense]);
 
             // No days have passed yet since AccrualStart == currentDate
-            expense.Accrued.Should().Be(0.0d);
-            expense.AccruedIsDirty.Should().BeFalse();
-            expense.LastAccruedUpdate.Should().Be(_currentDate);
-            _account.TotalExpenseAccrued.Should().Be(0.0d);
+            expense.Accrued.ShouldBe(0.0d);
+            expense.AccruedIsDirty.ShouldBeFalse();
+            expense.LastAccruedUpdate.ShouldBe(_currentDate);
+            _account.TotalExpenseAccrued.ShouldBe(0.0d);
 
             // But there should be daily accrual since it's an ongoing expense
             // DailyBalance = (1000 - 0) / 7 = 142.86
-            _account.DailyExpenseAccrual.Should().BeApproximately(142.86d, 0.01d);
+            _account.DailyExpenseAccrual.ShouldBe(142.86d, 0.01d);
         }
 
         [Fact]
@@ -598,10 +589,10 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             _calculator.AccrueExpenses(_account, [expense]);
 
             // Should not process due to ExcludeFromCalcs = true
-            expense.Accrued.Should().Be(0.0d);
-            expense.AccruedIsDirty.Should().BeFalse();
-            _account.TotalExpenseAccrued.Should().Be(0.0d);
-            _account.DailyExpenseAccrual.Should().Be(0.0d);
+            expense.Accrued.ShouldBe(0.0d);
+            expense.AccruedIsDirty.ShouldBeFalse();
+            _account.TotalExpenseAccrued.ShouldBe(0.0d);
+            _account.DailyExpenseAccrual.ShouldBe(0.0d);
         }
 
         [Fact]
@@ -613,10 +604,10 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             _calculator.AccrueExpenses(_account, [expense]);
 
             // Excluded expenses with future accrual should not be processed
-            expense.Accrued.Should().Be(0.0d);
-            expense.AccruedIsDirty.Should().BeFalse();
-            _account.TotalExpenseAccrued.Should().Be(0.0d);
-            _account.DailyExpenseAccrual.Should().Be(0.0d);
+            expense.Accrued.ShouldBe(0.0d);
+            expense.AccruedIsDirty.ShouldBeFalse();
+            _account.TotalExpenseAccrued.ShouldBe(0.0d);
+            _account.DailyExpenseAccrual.ShouldBe(0.0d);
         }
 
         [Fact]
@@ -632,16 +623,16 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
 
             // After sorting by NextDue descending: expense1 (Jan 25), expense2 (Jan 20), expense3 (Jan 10)
             // expense1: AccrualStart 2025-01-01 < currentDate 2025-01-15 -> process
-            expense1.Accrued.Should().Be(583.33d); // 1000 * 14 / 24
+            expense1.Accrued.ShouldBe(583.33d); // 1000 * 14 / 24
 
             // expense2: AccrualStart 2025-01-01 < currentDate 2025-01-15 -> process  
-            expense2.Accrued.Should().Be(368.42d); // 500 * 14 / 19
+            expense2.Accrued.ShouldBe(368.42d); // 500 * 14 / 19
 
             // expense3 (LAST in sorted order): AccrualStart 2025-01-16 > currentDate 2025-01-15 -> NOT processed
-            expense3.Accrued.Should().Be(0.0d);
-            expense3.AccruedIsDirty.Should().BeFalse();
+            expense3.Accrued.ShouldBe(0.0d);
+            expense3.AccruedIsDirty.ShouldBeFalse();
 
-            _account.TotalExpenseAccrued.Should().Be(951.75d); // 583.33 + 368.42
+            _account.TotalExpenseAccrued.ShouldBe(951.75d); // 583.33 + 368.42
         }
 
         [Fact]
@@ -656,14 +647,14 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             _calculator.AccrueExpenses(_account, [expense1, expense2, expense3]);
 
             // After sorting by NextDue descending: expense1 (Jan 25), expense2 (Jan 20), expense3 (Jan 10)
-            expense1.Accrued.Should().Be(583.33d); // 1000 * 14 / 24
-            expense2.Accrued.Should().Be(368.42d); // 500 * 14 / 19
+            expense1.Accrued.ShouldBe(583.33d); // 1000 * 14 / 24
+            expense2.Accrued.ShouldBe(368.42d); // 500 * 14 / 19
 
             // expense3 (LAST in sorted order): ExcludeFromCalcs = true -> NOT processed (short-circuit)
-            expense3.Accrued.Should().Be(0.0d);
-            expense3.AccruedIsDirty.Should().BeFalse();
+            expense3.Accrued.ShouldBe(0.0d);
+            expense3.AccruedIsDirty.ShouldBeFalse();
 
-            _account.TotalExpenseAccrued.Should().Be(951.75d); // 583.33 + 368.42
+            _account.TotalExpenseAccrued.ShouldBe(951.75d); // 583.33 + 368.42
         }
 
         private IEnumerable<(ExpenseEntity Expense, double ExpectedTotalAccrual)> GetAccrualExpenses(AccountEntity account)
@@ -744,12 +735,12 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             // Days from Jan 31 to Feb 10 = 10 days
             // Days from Jan 31 to Feb 28 = 28 days
             // Expected: 1200 * 10 / 28 = 428.57
-            expense.Accrued.Should().Be(428.57d);
-            expense.AccruedIsDirty.Should().BeFalse();
+            expense.Accrued.ShouldBe(428.57d);
+            expense.AccruedIsDirty.ShouldBeFalse();
 
             // Daily accrual: 1200 / 28 = 42.86/day
-            expense.LastAccruedUpdate.Should().Be(currentDate);
-            account.TotalExpenseAccrued.Should().Be(428.57d);
+            expense.LastAccruedUpdate.ShouldBe(currentDate);
+            account.TotalExpenseAccrued.ShouldBe(428.57d);
         }
 
         [Fact]
@@ -774,10 +765,10 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             // Days from Feb 28 to Mar 15 = 15 days
             // Days from Feb 28 to Mar 28 = 28 days
             // Expected: 1200 * 15 / 28 = 642.86
-            expense.Accrued.Should().Be(642.86d);
-            expense.AccruedIsDirty.Should().BeFalse();
-            expense.LastAccruedUpdate.Should().Be(currentDate);
-            account.TotalExpenseAccrued.Should().Be(642.86d);
+            expense.Accrued.ShouldBe(642.86d);
+            expense.AccruedIsDirty.ShouldBeFalse();
+            expense.LastAccruedUpdate.ShouldBe(currentDate);
+            account.TotalExpenseAccrued.ShouldBe(642.86d);
         }
 
         [Fact]
@@ -801,13 +792,13 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             calculator.AccrueExpenses(account, [expense1, expense2]);
 
             // Expense 1: 14 days elapsed / 30 days total = 1000 * 14 / 30 = 466.67
-            expense1.Accrued.Should().Be(466.67d);
+            expense1.Accrued.ShouldBe(466.67d);
 
             // Expense 2: 15 days elapsed / 28 days total = 1200 * 15 / 28 = 642.86
-            expense2.Accrued.Should().Be(642.86d);
+            expense2.Accrued.ShouldBe(642.86d);
 
             // Total: 466.67 + 642.86 = 1109.53
-            account.TotalExpenseAccrued.Should().Be(1109.53d);
+            account.TotalExpenseAccrued.ShouldBe(1109.53d);
         }
     }
 }

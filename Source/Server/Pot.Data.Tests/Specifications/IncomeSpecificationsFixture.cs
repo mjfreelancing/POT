@@ -1,8 +1,8 @@
-using FluentAssertions;
 using Pot.Data.Entities;
 using Pot.Data.Specifications;
 using Pot.Shared.Enumerations;
 using Pot.TestUtils;
+using Shouldly;
 
 namespace Pot.Data.Tests.Specifications;
 
@@ -42,7 +42,7 @@ public class IncomeSpecificationsFixture : PotFixtureBase
             var specification = IncomeSpecifications.IsSameDescription(_account.Id, description);
             var result = specification.IsSatisfiedBy(income);
 
-            result.Should().BeTrue();
+            result.ShouldBeTrue();
         }
 
         [Fact]
@@ -55,7 +55,7 @@ public class IncomeSpecificationsFixture : PotFixtureBase
             var specification = IncomeSpecifications.IsSameDescription(differentAccountId, description);
             var result = specification.IsSatisfiedBy(income);
 
-            result.Should().BeFalse();
+            result.ShouldBeFalse();
         }
 
         [Fact]
@@ -67,7 +67,7 @@ public class IncomeSpecificationsFixture : PotFixtureBase
             var specification = IncomeSpecifications.IsSameDescription(_account.Id, description);
             var result = specification.IsSatisfiedBy(income);
 
-            result.Should().BeFalse();
+            result.ShouldBeFalse();
         }
 
         [Fact]
@@ -80,7 +80,7 @@ public class IncomeSpecificationsFixture : PotFixtureBase
             var specification = IncomeSpecifications.IsSameDescription(differentAccountId, description);
             var result = specification.IsSatisfiedBy(income);
 
-            result.Should().BeFalse();
+            result.ShouldBeFalse();
         }
 
         [Fact]
@@ -92,7 +92,7 @@ public class IncomeSpecificationsFixture : PotFixtureBase
             var specification = IncomeSpecifications.IsSameDescription(_account.Id, description);
             var result = specification.IsSatisfiedBy(income);
 
-            result.Should().BeFalse();
+            result.ShouldBeFalse();
         }
     }
 }

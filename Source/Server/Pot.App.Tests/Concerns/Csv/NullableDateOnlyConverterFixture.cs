@@ -1,6 +1,6 @@
-﻿using CsvHelper;
+using CsvHelper;
 using CsvHelper.Configuration;
-using FluentAssertions;
+using Shouldly;
 using NSubstitute;
 using Pot.App.Concerns.Csv;
 using Pot.TestUtils;
@@ -28,7 +28,7 @@ public class NullableDateOnlyConverterFixture : PotFixtureBase
 
             var result = _converter.ConvertFromString(null, _readerRow, memberMapData);
 
-            result.Should().BeNull();
+            result.ShouldBeNull();
         }
 
         [Fact]
@@ -38,7 +38,7 @@ public class NullableDateOnlyConverterFixture : PotFixtureBase
 
             var result = _converter.ConvertFromString(string.Empty, _readerRow, memberMapData);
 
-            result.Should().BeNull();
+            result.ShouldBeNull();
         }
 
         [Fact]
@@ -48,7 +48,7 @@ public class NullableDateOnlyConverterFixture : PotFixtureBase
 
             var result = _converter.ConvertFromString("   ", _readerRow, memberMapData);
 
-            result.Should().BeNull();
+            result.ShouldBeNull();
         }
 
         [Fact]
@@ -59,7 +59,7 @@ public class NullableDateOnlyConverterFixture : PotFixtureBase
 
             var result = _converter.ConvertFromString("12/25/2024", _readerRow, memberMapData);
 
-            result.Should().Be(expectedDate);
+            result.ShouldBe(expectedDate);
         }
 
         [Fact]
@@ -70,7 +70,7 @@ public class NullableDateOnlyConverterFixture : PotFixtureBase
 
             var result = _converter.ConvertFromString("2024-12-25", _readerRow, memberMapData);
 
-            result.Should().Be(expectedDate);
+            result.ShouldBe(expectedDate);
         }
 
         [Fact]
@@ -81,7 +81,7 @@ public class NullableDateOnlyConverterFixture : PotFixtureBase
 
             var result = _converter.ConvertFromString("25/12/2024", _readerRow, memberMapData);
 
-            result.Should().Be(expectedDate);
+            result.ShouldBe(expectedDate);
         }
 
         [Fact]
@@ -92,7 +92,7 @@ public class NullableDateOnlyConverterFixture : PotFixtureBase
 
             var result = _converter.ConvertFromString("25/12/2024", _readerRow, memberMapData);
 
-            result.Should().Be(expectedDate);
+            result.ShouldBe(expectedDate);
         }
 
         [Fact]
@@ -106,7 +106,7 @@ public class NullableDateOnlyConverterFixture : PotFixtureBase
 
             var result = _converter.ConvertFromString("  2024-12-25  ", _readerRow, memberMapData);
 
-            result.Should().Be(expectedDate);
+            result.ShouldBe(expectedDate);
         }
 
         [Fact]
@@ -114,12 +114,9 @@ public class NullableDateOnlyConverterFixture : PotFixtureBase
         {
             var memberMapData = CreateMemberMapData();
 
-            Invoking(() =>
-            {
+            Should.Throw<FormatException>(() => {
                 _converter.ConvertFromString("invalid-date", _readerRow, memberMapData);
-            })
-            .Should()
-            .Throw<FormatException>();
+            });
         }
     }
 
@@ -141,7 +138,7 @@ public class NullableDateOnlyConverterFixture : PotFixtureBase
 
             var result = _converter.ConvertToString(null, _writerRow, memberMapData);
 
-            result.Should().Be(string.Empty);
+            result.ShouldBe(string.Empty);
         }
 
         [Fact]
@@ -152,7 +149,7 @@ public class NullableDateOnlyConverterFixture : PotFixtureBase
 
             var result = _converter.ConvertToString(date, _writerRow, memberMapData);
 
-            result.Should().Be("12/25/2024");
+            result.ShouldBe("12/25/2024");
         }
 
         [Fact]
@@ -163,7 +160,7 @@ public class NullableDateOnlyConverterFixture : PotFixtureBase
 
             var result = _converter.ConvertToString(date, _writerRow, memberMapData);
 
-            result.Should().Be("2024-12-25");
+            result.ShouldBe("2024-12-25");
         }
 
         [Fact]
@@ -174,7 +171,7 @@ public class NullableDateOnlyConverterFixture : PotFixtureBase
 
             var result = _converter.ConvertToString(date, _writerRow, memberMapData);
 
-            result.Should().Be("2024-12-25");
+            result.ShouldBe("2024-12-25");
         }
 
         [Fact]
@@ -185,7 +182,7 @@ public class NullableDateOnlyConverterFixture : PotFixtureBase
 
             var result = _converter.ConvertToString(date, _writerRow, memberMapData);
 
-            result.Should().Be("25/12/2024");
+            result.ShouldBe("25/12/2024");
         }
 
         [Fact]
@@ -200,7 +197,7 @@ public class NullableDateOnlyConverterFixture : PotFixtureBase
 
             var result = _converter.ConvertToString(date, _writerRow, memberMapData);
 
-            result.Should().Be("25 Dec 2024");
+            result.ShouldBe("25 Dec 2024");
         }
 
         [Fact]
@@ -211,7 +208,7 @@ public class NullableDateOnlyConverterFixture : PotFixtureBase
 
             var result = _converter.ConvertToString(date, _writerRow, memberMapData);
 
-            result.Should().Be("12/25/2024");
+            result.ShouldBe("12/25/2024");
         }
     }
 

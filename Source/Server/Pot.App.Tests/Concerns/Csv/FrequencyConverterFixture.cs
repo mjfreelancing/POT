@@ -1,7 +1,7 @@
-﻿using AllOverIt.Fixture.Extensions;
+using AllOverIt.Fixture.Extensions;
 using CsvHelper;
 using CsvHelper.Configuration;
-using FluentAssertions;
+using Shouldly;
 using NSubstitute;
 using Pot.App.Concerns.Csv;
 using Pot.Shared.Enumerations;
@@ -27,13 +27,11 @@ public class FrequencyConverterFixture : PotFixtureBase
         [Fact]
         public void Should_Throw_When_Text_Null()
         {
-            Invoking(() =>
-            {
+            var exception = Should.Throw<ArgumentNullException>(() => {
                 _converter.ConvertFromString(null, _readerRow, _memberMapData);
-            })
-            .Should()
-            .Throw<ArgumentNullException>()
-            .WithNamedMessageWhenNull("text");
+            });
+
+            exception.ParamName.ShouldBe("text");
         }
 
         [Fact]
@@ -41,7 +39,7 @@ public class FrequencyConverterFixture : PotFixtureBase
         {
             var result = _converter.ConvertFromString("Days", _readerRow, _memberMapData);
 
-            result.Should().Be(Frequency.Days);
+            result.ShouldBe(Frequency.Days);
         }
 
         [Fact]
@@ -49,7 +47,7 @@ public class FrequencyConverterFixture : PotFixtureBase
         {
             var result = _converter.ConvertFromString("Weeks", _readerRow, _memberMapData);
 
-            result.Should().Be(Frequency.Weeks);
+            result.ShouldBe(Frequency.Weeks);
         }
 
         [Fact]
@@ -57,7 +55,7 @@ public class FrequencyConverterFixture : PotFixtureBase
         {
             var result = _converter.ConvertFromString("Months", _readerRow, _memberMapData);
 
-            result.Should().Be(Frequency.Months);
+            result.ShouldBe(Frequency.Months);
         }
 
         [Fact]
@@ -65,7 +63,7 @@ public class FrequencyConverterFixture : PotFixtureBase
         {
             var result = _converter.ConvertFromString("Years", _readerRow, _memberMapData);
 
-            result.Should().Be(Frequency.Years);
+            result.ShouldBe(Frequency.Years);
         }
 
         [Fact]
@@ -73,7 +71,7 @@ public class FrequencyConverterFixture : PotFixtureBase
         {
             var result = _converter.ConvertFromString("OneTime", _readerRow, _memberMapData);
 
-            result.Should().Be(Frequency.OneTime);
+            result.ShouldBe(Frequency.OneTime);
         }
 
         [Fact]
@@ -81,7 +79,7 @@ public class FrequencyConverterFixture : PotFixtureBase
         {
             var result = _converter.ConvertFromString("1", _readerRow, _memberMapData);
 
-            result.Should().Be(Frequency.Days);
+            result.ShouldBe(Frequency.Days);
         }
 
         [Fact]
@@ -89,7 +87,7 @@ public class FrequencyConverterFixture : PotFixtureBase
         {
             var result = _converter.ConvertFromString("2", _readerRow, _memberMapData);
 
-            result.Should().Be(Frequency.Weeks);
+            result.ShouldBe(Frequency.Weeks);
         }
 
         [Fact]
@@ -97,7 +95,7 @@ public class FrequencyConverterFixture : PotFixtureBase
         {
             var result = _converter.ConvertFromString("3", _readerRow, _memberMapData);
 
-            result.Should().Be(Frequency.Months);
+            result.ShouldBe(Frequency.Months);
         }
 
         [Fact]
@@ -105,7 +103,7 @@ public class FrequencyConverterFixture : PotFixtureBase
         {
             var result = _converter.ConvertFromString("4", _readerRow, _memberMapData);
 
-            result.Should().Be(Frequency.Years);
+            result.ShouldBe(Frequency.Years);
         }
 
         [Fact]
@@ -113,7 +111,7 @@ public class FrequencyConverterFixture : PotFixtureBase
         {
             var result = _converter.ConvertFromString("5", _readerRow, _memberMapData);
 
-            result.Should().Be(Frequency.OneTime);
+            result.ShouldBe(Frequency.OneTime);
         }
 
         [Fact]
@@ -121,7 +119,7 @@ public class FrequencyConverterFixture : PotFixtureBase
         {
             var result = _converter.ConvertFromString("days", _readerRow, _memberMapData);
 
-            result.Should().Be(Frequency.Days);
+            result.ShouldBe(Frequency.Days);
         }
 
         [Fact]
@@ -129,7 +127,7 @@ public class FrequencyConverterFixture : PotFixtureBase
         {
             var result = _converter.ConvertFromString("WEEKS", _readerRow, _memberMapData);
 
-            result.Should().Be(Frequency.Weeks);
+            result.ShouldBe(Frequency.Weeks);
         }
 
         [Fact]
@@ -137,52 +135,41 @@ public class FrequencyConverterFixture : PotFixtureBase
         {
             var result = _converter.ConvertFromString("MoNtHs", _readerRow, _memberMapData);
 
-            result.Should().Be(Frequency.Months);
+            result.ShouldBe(Frequency.Months);
         }
 
         [Fact]
         public void Should_Throw_When_Text_Is_Null()
         {
-            Invoking(() =>
-            {
+            var exception = Should.Throw<ArgumentNullException>(() => {
                 _converter.ConvertFromString(null, _readerRow, _memberMapData);
-            })
-            .Should()
-            .Throw<ArgumentNullException>()
-            .WithParameterName("text");
+            });
+
+            exception.ParamName.ShouldBe("text");
         }
 
         [Fact]
         public void Should_Throw_When_Invalid_Name()
         {
-            Invoking(() =>
-            {
+            Should.Throw<Exception>(() => {
                 _converter.ConvertFromString("InvalidFrequency", _readerRow, _memberMapData);
-            })
-            .Should()
-            .Throw<Exception>();
+            });
         }
 
         [Fact]
         public void Should_Throw_When_Invalid_Value()
         {
-            Invoking(() =>
-            {
+            Should.Throw<Exception>(() => {
                 _converter.ConvertFromString("999", _readerRow, _memberMapData);
-            })
-            .Should()
-            .Throw<Exception>();
+            });
         }
 
         [Fact]
         public void Should_Throw_When_Empty_String()
         {
-            Invoking(() =>
-            {
+            Should.Throw<Exception>(() => {
                 _converter.ConvertFromString(string.Empty, _readerRow, _memberMapData);
-            })
-            .Should()
-            .Throw<Exception>();
+            });
         }
     }
 
@@ -204,7 +191,7 @@ public class FrequencyConverterFixture : PotFixtureBase
         {
             var result = _converter.ConvertToString(Frequency.Days, _writerRow, _memberMapData);
 
-            result.Should().Be("Days");
+            result.ShouldBe("Days");
         }
 
         [Fact]
@@ -212,7 +199,7 @@ public class FrequencyConverterFixture : PotFixtureBase
         {
             var result = _converter.ConvertToString(Frequency.Weeks, _writerRow, _memberMapData);
 
-            result.Should().Be("Weeks");
+            result.ShouldBe("Weeks");
         }
 
         [Fact]
@@ -220,7 +207,7 @@ public class FrequencyConverterFixture : PotFixtureBase
         {
             var result = _converter.ConvertToString(Frequency.Months, _writerRow, _memberMapData);
 
-            result.Should().Be("Months");
+            result.ShouldBe("Months");
         }
 
         [Fact]
@@ -228,7 +215,7 @@ public class FrequencyConverterFixture : PotFixtureBase
         {
             var result = _converter.ConvertToString(Frequency.Years, _writerRow, _memberMapData);
 
-            result.Should().Be("Years");
+            result.ShouldBe("Years");
         }
 
         [Fact]
@@ -236,7 +223,7 @@ public class FrequencyConverterFixture : PotFixtureBase
         {
             var result = _converter.ConvertToString(Frequency.OneTime, _writerRow, _memberMapData);
 
-            result.Should().Be("OneTime");
+            result.ShouldBe("OneTime");
         }
 
         [Fact]
@@ -244,7 +231,7 @@ public class FrequencyConverterFixture : PotFixtureBase
         {
             var result = _converter.ConvertToString(null, _writerRow, _memberMapData);
 
-            result.Should().Be(string.Empty);
+            result.ShouldBe(string.Empty);
         }
     }
 

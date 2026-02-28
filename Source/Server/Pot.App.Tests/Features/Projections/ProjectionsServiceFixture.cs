@@ -1,7 +1,7 @@
-﻿using AllOverIt.Extensions;
+using AllOverIt.Extensions;
 using AllOverIt.Fixture.Extensions;
 using AllOverIt.Patterns.Result;
-using FluentAssertions;
+using Shouldly;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -95,7 +95,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
         [Fact]
         public void Should_Throw_When_ProjectionsRepository_Null()
         {
-            Invoking(() =>
+            var exception = Should.Throw<ArgumentNullException>(() =>
             {
                 _ = new ProjectionsService(
                     null!,
@@ -104,16 +104,14 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     _accrueExpenseCalculator,
                     _timeProvider,
                     _logger);
-            })
-            .Should()
-            .Throw<ArgumentNullException>()
-            .WithNamedMessageWhenNull("accountRepository");
+            });
+            exception.ParamName.ShouldBe("accountRepository");
         }
 
         [Fact]
         public void Should_Throw_When_ExpenseRenewalCalculator_Null()
         {
-            Invoking(() =>
+            var exception = Should.Throw<ArgumentNullException>(() =>
             {
                 _ = new ProjectionsService(
                     _projectionRepository,
@@ -122,16 +120,14 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     _accrueExpenseCalculator,
                     _timeProvider,
                     _logger);
-            })
-            .Should()
-            .Throw<ArgumentNullException>()
-            .WithNamedMessageWhenNull("expenseRenewalCalculator");
+            });
+            exception.ParamName.ShouldBe("expenseRenewalCalculator");
         }
 
         [Fact]
         public void Should_Throw_When_IncomeRenewalCalculator_Null()
         {
-            Invoking(() =>
+            var exception = Should.Throw<ArgumentNullException>(() =>
             {
                 _ = new ProjectionsService(
                     _projectionRepository,
@@ -140,16 +136,14 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     _accrueExpenseCalculator,
                     _timeProvider,
                     _logger);
-            })
-            .Should()
-            .Throw<ArgumentNullException>()
-            .WithNamedMessageWhenNull("incomeRenewalCalculator");
+            });
+            exception.ParamName.ShouldBe("incomeRenewalCalculator");
         }
 
         [Fact]
         public void Should_Throw_When_AccrueExpenseCalculator_Null()
         {
-            Invoking(() =>
+            var exception = Should.Throw<ArgumentNullException>(() =>
             {
                 _ = new ProjectionsService(
                     _projectionRepository,
@@ -158,16 +152,14 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     null!,
                     _timeProvider,
                     _logger);
-            })
-            .Should()
-            .Throw<ArgumentNullException>()
-            .WithNamedMessageWhenNull("accrueExpenseCalculator");
+            });
+            exception.ParamName.ShouldBe("accrueExpenseCalculator");
         }
 
         [Fact]
         public void Should_Throw_When_TimeProvider_Null()
         {
-            Invoking(() =>
+            var exception = Should.Throw<ArgumentNullException>(() =>
             {
                 _ = new ProjectionsService(
                     _projectionRepository,
@@ -176,16 +168,14 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     _accrueExpenseCalculator,
                     null!,
                     _logger);
-            })
-            .Should()
-            .Throw<ArgumentNullException>()
-            .WithNamedMessageWhenNull("timeProvider");
+            });
+            exception.ParamName.ShouldBe("timeProvider");
         }
 
         [Fact]
         public void Should_Throw_When_Logger_Null()
         {
-            Invoking(() =>
+            var exception = Should.Throw<ArgumentNullException>(() =>
             {
                 _ = new ProjectionsService(
                     _projectionRepository,
@@ -194,10 +184,8 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     _accrueExpenseCalculator,
                     _timeProvider,
                     null!);
-            })
-            .Should()
-            .Throw<ArgumentNullException>()
-            .WithNamedMessageWhenNull("logger");
+            });
+            exception.ParamName.ShouldBe("logger");
         }
     }
 
@@ -216,13 +204,11 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     DaysForecast = 30
                 };
 
-                await Invoking(async () =>
+                var exception = await Should.ThrowAsync<InvalidOperationException>(async () =>
                 {
                     await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
-                })
-                .Should()
-                .ThrowAsync<InvalidOperationException>()
-                .WithMessage("Projections cannot start earlier than today");
+                });
+                exception.Message.ShouldBe("Projections cannot start earlier than today");
             }
         }
 
@@ -241,8 +227,8 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
-                result.Value!.Accounts.Should().BeEmpty();
+                result.IsSuccess.ShouldBeTrue();
+                result.Value!.Accounts.ShouldBeEmpty();
 
                 // Validate that all 30 global projection dates are properly initialized with zero values
                 ValidateEmptyGlobalProjection(result.Value.Global, _currentDate, 30);
@@ -264,8 +250,8 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
-                result.Value!.Accounts.Should().HaveCount(1);
+                result.IsSuccess.ShouldBeTrue();
+                result.Value!.Accounts.Count.ShouldBe(1);
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -273,15 +259,15 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
 
                 // Validate all dates have the same balance with no transactions
-                accountProjection.Dates.Should().AllSatisfy(date =>
+                accountProjection.Dates.ShouldAllSatisfy(date =>
                 {
-                    date.Balance.Should().Be(1000.0d);
-                    date.Available.Should().Be(1000.0d);
-                    date.DailyAccrual.Should().Be(0.0d);
-                    date.IncomeReceived.Should().Be(0.0d);
-                    date.ExpensesPaid.Should().Be(0.0d);
-                    date.ExpenseItems.Should().BeEmpty();
-                    date.IncomeItems.Should().BeEmpty();
+                    date.Balance.ShouldBe(1000.0d);
+                    date.Available.ShouldBe(1000.0d);
+                    date.DailyAccrual.ShouldBe(0.0d);
+                    date.IncomeReceived.ShouldBe(0.0d);
+                    date.ExpensesPaid.ShouldBe(0.0d);
+                    date.ExpenseItems.ShouldBeEmpty();
+                    date.IncomeItems.ShouldBeEmpty();
                 });
             }
         }
@@ -309,7 +295,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -354,7 +340,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -412,7 +398,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -509,7 +495,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -551,7 +537,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -606,7 +592,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -653,7 +639,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -675,7 +661,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 ValidateNoActivityRange(accountProjection.Dates, 6, 29, expectedBalance: 900.0d);
 
                 // Verify excluded expense never appears in any projection
-                accountProjection.Dates.Should().NotContain(projection => projection.ExpenseItems.Any(expense => expense.Description == "Excluded"),
+                accountProjection.Dates.ShouldNotContain(projection => projection.ExpenseItems.Any(expense => expense.Description == "Excluded"),
                     "excluded expenses should not appear in projections");
             }
 
@@ -702,7 +688,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -724,7 +710,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 ValidateNoActivityRange(accountProjection.Dates, 17, 29, expectedBalance: 3500.0d);
 
                 // Verify excluded income never appears in any projection
-                accountProjection.Dates.Should().NotContain(projection => projection.IncomeItems.Any(i => i.Description == "Bonus"),
+                accountProjection.Dates.ShouldNotContain(projection => projection.IncomeItems.Any(income => income.Description == "Bonus"),
                     "excluded incomes should not appear in projections");
             }
 
@@ -757,7 +743,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -790,10 +776,10 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 ValidateNoActivityRange(accountProjection.Dates, 17, 29, expectedBalance: 2800.0d);
 
                 // Verify excluded transactions never appear in any projection
-                accountProjection.Dates.Should().NotContain(projection => projection.IncomeItems.Any(i => i.Description == "Bonus"),
+                accountProjection.Dates.ShouldNotContain(projection => projection.IncomeItems.Any(income => income.Description == "Bonus"),
                     "excluded incomes should not appear in projections");
 
-                accountProjection.Dates.Should().NotContain(projection => projection.ExpenseItems.Any(expense => expense.Description == "Optional Purchase"),
+                accountProjection.Dates.ShouldNotContain(projection => projection.ExpenseItems.Any(expense => expense.Description == "Optional Purchase"),
                     "excluded expenses should not appear in projections");
             }
 
@@ -820,7 +806,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -829,18 +815,18 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 // Verify included weekly expense appears (Jan 20, 27, Feb 3, 10)
                 var includedOccurrences = accountProjection.Dates.Where(projection => projection.ExpenseItems.Any(expense => expense.Description == "Groceries")).ToList();
-                includedOccurrences.Should().HaveCount(4);
-                includedOccurrences[0].Date.Should().Be(new DateOnly(2025, 1, 20));
-                includedOccurrences[1].Date.Should().Be(new DateOnly(2025, 1, 27));
-                includedOccurrences[2].Date.Should().Be(new DateOnly(2025, 2, 3));
-                includedOccurrences[3].Date.Should().Be(new DateOnly(2025, 2, 10));
+                includedOccurrences.Count.ShouldBe(4);
+                includedOccurrences[0].Date.ShouldBe(new DateOnly(2025, 1, 20));
+                includedOccurrences[1].Date.ShouldBe(new DateOnly(2025, 1, 27));
+                includedOccurrences[2].Date.ShouldBe(new DateOnly(2025, 2, 3));
+                includedOccurrences[3].Date.ShouldBe(new DateOnly(2025, 2, 10));
 
                 // Verify excluded weekly expense never appears
-                accountProjection.Dates.Should().NotContain(projection => projection.ExpenseItems.Any(expense => expense.Description == "Entertainment"),
+                accountProjection.Dates.ShouldNotContain(projection => projection.ExpenseItems.Any(expense => expense.Description == "Entertainment"),
                     "excluded weekly expenses should not appear in projections");
 
                 // Final balance should only reflect included expenses: 2000 - (4 * 100) = 1600
-                accountProjection.Dates[29].Balance.Should().Be(1600.0d);
+                accountProjection.Dates[29].Balance.ShouldBe(1600.0d);
             }
         }
 
@@ -867,7 +853,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -920,7 +906,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -962,7 +948,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -980,18 +966,18 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 // Validate all expense occurrences
                 var occurrences = accountProjection.Dates.Where(projection => projection.ExpensesPaid > 0).ToList();
-                occurrences.Should().HaveCount(expectedWeeklyDates.Length);
+                occurrences.Count.ShouldBe(expectedWeeklyDates.Length);
 
                 for (int i = 0; i < expectedWeeklyDates.Length; i++)
                 {
-                    occurrences[i].Date.Should().Be(expectedWeeklyDates[i]);
-                    occurrences[i].ExpensesPaid.Should().Be(75.0d);
-                    occurrences[i].ExpenseItems.Should().ContainSingle(expense => expense.Description == "Weekly Groceries");
+                    occurrences[i].Date.ShouldBe(expectedWeeklyDates[i]);
+                    occurrences[i].ExpensesPaid.ShouldBe(75.0d);
+                    occurrences[i].ExpenseItems.ShouldContainSingle(expense => expense.Description == "Weekly Groceries");
                 }
 
                 // Validate final balance after all weekly expenses
                 var finalBalance = 2000.0d - (expectedWeeklyDates.Length * 75.0d);
-                accountProjection.Dates[89].Balance.Should().Be(finalBalance);
+                accountProjection.Dates[89].Balance.ShouldBe(finalBalance);
             }
 
             [Fact]
@@ -1014,7 +1000,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -1071,9 +1057,9 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
-                result.Value!.Accounts.Should().HaveCount(2);
+                result.Value!.Accounts.Count.ShouldBe(2);
 
                 var checkingProjection = result.Value!.Accounts.First(a => a.Description == "Visa");
                 var savingsProjection = result.Value!.Accounts.First(a => a.Description == "Savings");
@@ -1158,25 +1144,25 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 ValidateConsecutiveDates(globalProjections, _currentDate, 90);
 
                 // Global: Day 0 (Jan 15): Investment paid on start date
-                globalProjections[0].Balance.Should().Be(11500.0d); // 2000 + 10000 - 500
+                globalProjections[0].Balance.ShouldBe(11500.0d); // 2000 + 10000 - 500
 
                 // Global: Day 16 (Jan 31): First rent paid
-                globalProjections[16].Balance.Should().Be(10500.0d); // 11500 - 1000
+                globalProjections[16].Balance.ShouldBe(10500.0d); // 11500 - 1000
 
                 // Global: Day 31 (Feb 15): Second investment paid
-                globalProjections[31].Balance.Should().Be(10000.0d); // 10500 - 500
+                globalProjections[31].Balance.ShouldBe(10000.0d); // 10500 - 500
 
                 // Global: Day 44 (Feb 28): Second rent paid
-                globalProjections[44].Balance.Should().Be(9000.0d); // 10000 - 1000
+                globalProjections[44].Balance.ShouldBe(9000.0d); // 10000 - 1000
 
                 // Global: Day 59 (Mar 15): Third investment paid
-                globalProjections[59].Balance.Should().Be(8500.0d); // 9000 - 500
+                globalProjections[59].Balance.ShouldBe(8500.0d); // 9000 - 500
 
                 // Global: Day 72 (Mar 28): Third rent paid
-                globalProjections[72].Balance.Should().Be(7500.0d); // 8500 - 1000
+                globalProjections[72].Balance.ShouldBe(7500.0d); // 8500 - 1000
 
                 // Global: Day 89 (Apr 14): Final balance
-                globalProjections[89].Balance.Should().Be(7500.0d); // No changes after Mar 28
+                globalProjections[89].Balance.ShouldBe(7500.0d); // No changes after Mar 28
             }
         }
 
@@ -1203,7 +1189,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -1245,7 +1231,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -1264,18 +1250,18 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 };
 
                 var occurrences = accountProjection.Dates.Where(projection => projection.ExpensesPaid > 0).ToList();
-                occurrences.Should().HaveCount(6);
+                occurrences.Count.ShouldBe(6);
 
                 for (int i = 0; i < expectedDates.Length; i++)
                 {
-                    occurrences[i].Date.Should().Be(expectedDates[i]);
-                    occurrences[i].ExpensesPaid.Should().Be(1500.0d);
-                    occurrences[i].ExpenseItems.Should().ContainSingle(expense => expense.Description == "Rent");
+                    occurrences[i].Date.ShouldBe(expectedDates[i]);
+                    occurrences[i].ExpensesPaid.ShouldBe(1500.0d);
+                    occurrences[i].ExpenseItems.ShouldContainSingle(expense => expense.Description == "Rent");
                 }
 
                 // Validate final balance
                 var expectedFinalBalance = 20000.0d - (6 * 1500.0d); // 20000 - 9000 = 11000
-                accountProjection.Dates[179].Balance.Should().Be(expectedFinalBalance);
+                accountProjection.Dates[179].Balance.ShouldBe(expectedFinalBalance);
             }
 
             [Fact]
@@ -1305,7 +1291,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -1314,27 +1300,27 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 // Verify bi-weekly salary occurrences (13 times in 180 days)
                 var salaryDays = accountProjection.Dates.Where(projection => projection.IncomeReceived > 0).ToList();
-                salaryDays.Should().HaveCountGreaterThanOrEqualTo(12);
-                salaryDays.Should().HaveCountLessThanOrEqualTo(14);
-                salaryDays.Should().AllSatisfy(projection =>
+                salaryDays.Count.ShouldBeGreaterThanOrEqualTo(12);
+                salaryDays.Count.ShouldBeLessThanOrEqualTo(14);
+                salaryDays.ShouldAllSatisfy(projection =>
                 {
-                    projection.IncomeReceived.Should().Be(1500.0d);
-                    projection.IncomeItems.Should().ContainSingle(i => i.Description == "Bi-Weekly Salary");
+                    projection.IncomeReceived.ShouldBe(1500.0d);
+                    projection.IncomeItems.ShouldContainSingle(income => income.Description == "Bi-Weekly Salary");
                 });
 
                 // Verify monthly rent (6 times)
                 var rentDays = accountProjection.Dates.Where(projection => projection.ExpenseItems.Any(expense => expense.Description == "Rent")).ToList();
-                rentDays.Should().HaveCount(6);
-                rentDays.Should().AllSatisfy(projection => projection.ExpenseItems.Should().Contain(expense => expense.Description == "Rent" && expense.Amount == 1200.0d));
+                rentDays.Count.ShouldBe(6);
+                rentDays.ShouldAllSatisfy(projection => projection.ExpenseItems.ShouldContain(expense => expense.Description == "Rent" && expense.Amount == 1200.0d));
 
                 // Verify weekly groceries (approximately 25-26 times)
                 var groceryDays = accountProjection.Dates.Where(projection => projection.ExpenseItems.Any(expense => expense.Description == "Groceries")).ToList();
-                groceryDays.Should().HaveCountGreaterThanOrEqualTo(23);
-                groceryDays.Should().HaveCountLessThanOrEqualTo(27);
-                groceryDays.Should().AllSatisfy(projection => projection.ExpenseItems.Should().Contain(expense => expense.Description == "Groceries" && expense.Amount == 100.0d));
+                groceryDays.Count.ShouldBeGreaterThanOrEqualTo(23);
+                groceryDays.Count.ShouldBeLessThanOrEqualTo(27);
+                groceryDays.ShouldAllSatisfy(projection => projection.ExpenseItems.ShouldContain(expense => expense.Description == "Groceries" && expense.Amount == 100.0d));
 
                 // Verify final day exists and has valid balance
-                accountProjection.Dates[179].Date.Should().Be(new DateOnly(2025, 7, 13));
+                accountProjection.Dates[179].Date.ShouldBe(new DateOnly(2025, 7, 13));
             }
         }
 
@@ -1361,7 +1347,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -1425,7 +1411,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -1524,9 +1510,9 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
-                result.Value!.Accounts.Should().HaveCount(3);
+                result.Value!.Accounts.Count.ShouldBe(3);
 
                 var visaProjection = result.Value!.Accounts.Single(account => account.Description == "Visa");
                 var savingsProjection = result.Value!.Accounts.Single(account => account.Description == "Savings");
@@ -1573,35 +1559,35 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     expectedIncomeDescriptions: ["Salary"],
                     expectedExpenseDescriptions: ["Rent", "Savings Transfer"]);
 
-                // Validate 9 monthly cycles of: CC payment (20th) → utilities (25th) → salary/rent/transfer (28-31st)
+                // Validate 9 monthly cycles of: CC payment (20th) ? utilities (25th) ? salary/rent/transfer (28-31st)
                 // Month 2 (Feb): Days 17-44
                 var feb20 = visaProjection.Dates[36]; // Jan 15 + 36 = Feb 20
-                feb20.Date.Should().Be(new DateOnly(2025, 2, 20));
-                feb20.ExpensesPaid.Should().Be(500.0d);
+                feb20.Date.ShouldBe(new DateOnly(2025, 2, 20));
+                feb20.ExpensesPaid.ShouldBe(500.0d);
 
                 var feb25 = visaProjection.Dates[41]; // Jan 15 + 41 = Feb 25
-                feb25.Date.Should().Be(new DateOnly(2025, 2, 25));
-                feb25.ExpensesPaid.Should().Be(200.0d);
+                feb25.Date.ShouldBe(new DateOnly(2025, 2, 25));
+                feb25.ExpensesPaid.ShouldBe(200.0d);
 
                 var feb28 = visaProjection.Dates[44]; // Jan 15 + 44 = Feb 28
-                feb28.Date.Should().Be(new DateOnly(2025, 2, 28));
-                feb28.IncomeReceived.Should().Be(5000.0d);
-                feb28.ExpenseItems.Should().Contain(expense => expense.Description == "Rent");
-                feb28.ExpenseItems.Should().Contain(expense => expense.Description == "Savings Transfer");
+                feb28.Date.ShouldBe(new DateOnly(2025, 2, 28));
+                feb28.IncomeReceived.ShouldBe(5000.0d);
+                feb28.ExpenseItems.ShouldContain(expense => expense.Description == "Rent");
+                feb28.ExpenseItems.ShouldContain(expense => expense.Description == "Savings Transfer");
 
                 // Savings and credit accounts should remain constant (no transactions)
-                savingsProjection.Dates.Should().AllSatisfy(d =>
+                savingsProjection.Dates.ShouldAllSatisfy(d =>
                 {
-                    d.Balance.Should().Be(20000.0d);
-                    d.IncomeReceived.Should().Be(0.0d);
-                    d.ExpensesPaid.Should().Be(0.0d);
+                    d.Balance.ShouldBe(20000.0d);
+                    d.IncomeReceived.ShouldBe(0.0d);
+                    d.ExpensesPaid.ShouldBe(0.0d);
                 });
 
-                creditProjection.Dates.Should().AllSatisfy(d =>
+                creditProjection.Dates.ShouldAllSatisfy(d =>
                 {
-                    d.Balance.Should().Be(-500.0d);
-                    d.IncomeReceived.Should().Be(0.0d);
-                    d.ExpensesPaid.Should().Be(0.0d);
+                    d.Balance.ShouldBe(-500.0d);
+                    d.IncomeReceived.ShouldBe(0.0d);
+                    d.ExpensesPaid.ShouldBe(0.0d);
                 });
             }
         }
@@ -1629,7 +1615,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -1672,7 +1658,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -1681,36 +1667,36 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 // Verify monthly occurrences (12 times) with correct dates and amounts
                 var occurrences = accountProjection.Dates.Where(projection => projection.ExpensesPaid > 0).ToList();
-                occurrences.Should().HaveCount(12);
+                occurrences.Count.ShouldBe(12);
 
                 // Verify all occurrences have correct amount and description
-                occurrences.Should().AllSatisfy(projection =>
+                occurrences.ShouldAllSatisfy(projection =>
                 {
-                    projection.ExpensesPaid.Should().Be(500.0d);
-                    projection.ExpenseItems.Should().ContainSingle(expense => expense.Description == "Monthly Payment");
+                    projection.ExpensesPaid.ShouldBe(500.0d);
+                    projection.ExpenseItems.ShouldContainSingle(expense => expense.Description == "Monthly Payment");
                 });
 
                 // Verify February has the correct last day (28 in 2025, not a leap year)
                 var februaryOccurrence = occurrences.FirstOrDefault(projection => projection.Date.Month == 2);
-                februaryOccurrence.Should().NotBeNull();
-                februaryOccurrence!.Date.Should().Be(new DateOnly(2025, 2, 28));
+                februaryOccurrence.ShouldNotBeNull();
+                februaryOccurrence!.Date.ShouldBe(new DateOnly(2025, 2, 28));
 
                 // Verify all monthly dates
-                occurrences[0].Date.Should().Be(new DateOnly(2025, 1, 31));
-                occurrences[1].Date.Should().Be(new DateOnly(2025, 2, 28)); // Non-leap year
-                occurrences[2].Date.Should().Be(new DateOnly(2025, 3, 28));
-                occurrences[3].Date.Should().Be(new DateOnly(2025, 4, 28));
-                occurrences[4].Date.Should().Be(new DateOnly(2025, 5, 28));
-                occurrences[5].Date.Should().Be(new DateOnly(2025, 6, 28));
-                occurrences[6].Date.Should().Be(new DateOnly(2025, 7, 28));
-                occurrences[7].Date.Should().Be(new DateOnly(2025, 8, 28));
-                occurrences[8].Date.Should().Be(new DateOnly(2025, 9, 28));
-                occurrences[9].Date.Should().Be(new DateOnly(2025, 10, 28));
-                occurrences[10].Date.Should().Be(new DateOnly(2025, 11, 28));
-                occurrences[11].Date.Should().Be(new DateOnly(2025, 12, 28));
+                occurrences[0].Date.ShouldBe(new DateOnly(2025, 1, 31));
+                occurrences[1].Date.ShouldBe(new DateOnly(2025, 2, 28)); // Non-leap year
+                occurrences[2].Date.ShouldBe(new DateOnly(2025, 3, 28));
+                occurrences[3].Date.ShouldBe(new DateOnly(2025, 4, 28));
+                occurrences[4].Date.ShouldBe(new DateOnly(2025, 5, 28));
+                occurrences[5].Date.ShouldBe(new DateOnly(2025, 6, 28));
+                occurrences[6].Date.ShouldBe(new DateOnly(2025, 7, 28));
+                occurrences[7].Date.ShouldBe(new DateOnly(2025, 8, 28));
+                occurrences[8].Date.ShouldBe(new DateOnly(2025, 9, 28));
+                occurrences[9].Date.ShouldBe(new DateOnly(2025, 10, 28));
+                occurrences[10].Date.ShouldBe(new DateOnly(2025, 11, 28));
+                occurrences[11].Date.ShouldBe(new DateOnly(2025, 12, 28));
 
                 // Verify final balance after 12 monthly expenses
-                accountProjection.Dates[364].Balance.Should().Be(44000.0d); // 50000 - (12 * 500)
+                accountProjection.Dates[364].Balance.ShouldBe(44000.0d); // 50000 - (12 * 500)
             }
 
             [Fact]
@@ -1744,7 +1730,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -1753,55 +1739,55 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 // Verify monthly salary (12 times)
                 var salaryOccurrences = accountProjection.Dates.Where(projection => projection.IncomeReceived > 0).ToList();
-                salaryOccurrences.Should().HaveCount(12);
-                salaryOccurrences.Should().AllSatisfy(projection =>
+                salaryOccurrences.Count.ShouldBe(12);
+                salaryOccurrences.ShouldAllSatisfy(projection =>
                 {
-                    projection.IncomeReceived.Should().Be(5000.0d);
-                    projection.IncomeItems.Should().ContainSingle(income => income.Description == "Monthly Salary");
+                    projection.IncomeReceived.ShouldBe(5000.0d);
+                    projection.IncomeItems.ShouldContainSingle(income => income.Description == "Monthly Salary");
                 });
 
                 // Verify monthly rent (12 times)
                 var rentOccurrences = accountProjection.Dates.Where(projection => projection.ExpenseItems.Any(expense => expense.Description == "Rent")).ToList();
-                rentOccurrences.Should().HaveCount(12);
-                rentOccurrences.Should().AllSatisfy(o =>
+                rentOccurrences.Count.ShouldBe(12);
+                rentOccurrences.ShouldAllSatisfy(o =>
                 {
-                    o.ExpenseItems.Should().Contain(expense => expense.Description == "Rent" && expense.Amount == 1500.0d);
+                    o.ExpenseItems.ShouldContain(expense => expense.Description == "Rent" && expense.Amount == 1500.0d);
                 });
 
                 // Verify quarterly tax (4 times: Jan 31, Apr 30, Jul 30, Oct 30)
                 var taxOccurrences = accountProjection.Dates.Where(projection => projection.ExpenseItems.Any(expense => expense.Description == "Quarterly Tax")).ToList();
-                taxOccurrences.Should().HaveCount(4);
-                taxOccurrences[0].Date.Should().Be(new DateOnly(2025, 1, 31));
-                taxOccurrences[1].Date.Should().Be(new DateOnly(2025, 4, 30));
-                taxOccurrences[2].Date.Should().Be(new DateOnly(2025, 7, 30));
-                taxOccurrences[3].Date.Should().Be(new DateOnly(2025, 10, 30));
-                taxOccurrences.Should().AllSatisfy(o =>
+                taxOccurrences.Count.ShouldBe(4);
+                taxOccurrences[0].Date.ShouldBe(new DateOnly(2025, 1, 31));
+                taxOccurrences[1].Date.ShouldBe(new DateOnly(2025, 4, 30));
+                taxOccurrences[2].Date.ShouldBe(new DateOnly(2025, 7, 30));
+                taxOccurrences[3].Date.ShouldBe(new DateOnly(2025, 10, 30));
+                taxOccurrences.ShouldAllSatisfy(o =>
                 {
-                    o.ExpenseItems.Should().Contain(expense => expense.Description == "Quarterly Tax" && expense.Amount == 1000.0d);
+                    o.ExpenseItems.ShouldContain(expense => expense.Description == "Quarterly Tax" && expense.Amount == 1000.0d);
                 });
 
                 // Verify semi-annual insurance (2 times: Jan 31, Jul 31)
                 var insuranceOccurrences = accountProjection.Dates.Where(projection => projection.ExpenseItems.Any(expense => expense.Description == "Insurance")).ToList();
-                insuranceOccurrences.Should().HaveCount(2);
-                insuranceOccurrences[0].Date.Should().Be(new DateOnly(2025, 1, 31));
-                insuranceOccurrences[1].Date.Should().Be(new DateOnly(2025, 7, 31));
-                insuranceOccurrences.Should().AllSatisfy(o =>
+                insuranceOccurrences.Count.ShouldBe(2);
+                insuranceOccurrences[0].Date.ShouldBe(new DateOnly(2025, 1, 31));
+                insuranceOccurrences[1].Date.ShouldBe(new DateOnly(2025, 7, 31));
+                insuranceOccurrences.ShouldAllSatisfy(o =>
                 {
-                    o.ExpenseItems.Should().Contain(expense => expense.Description == "Insurance" && expense.Amount == 600.0d);
+                    o.ExpenseItems.ShouldContain(expense => expense.Description == "Insurance" && expense.Amount == 600.0d);
                 });
 
                 // Verify annual membership (1 time: Jan 31)
                 var membershipOccurrences = accountProjection.Dates.Where(projection => projection.ExpenseItems.Any(expense => expense.Description == "Membership")).ToList();
-                membershipOccurrences.Should().HaveCount(1);
-                membershipOccurrences[0].Date.Should().Be(new DateOnly(2025, 1, 31));
-                membershipOccurrences[0].ExpenseItems.Should().Contain(expense => expense.Description == "Membership" && expense.Amount == 300.0d);
+                membershipOccurrences.Count.ShouldBe(1);
+                membershipOccurrences[0].Date.ShouldBe(new DateOnly(2025, 1, 31));
+                membershipOccurrences[0].ExpenseItems.ShouldContain(expense => expense.Description == "Membership" && expense.Amount == 300.0d);
 
                 // Verify final balance calculation
                 // Starting: 30000
                 // Income: 12 * 5000 = 60000
                 // Expenses: (12 * 1500) + (4 * 1000) + (2 * 600) + (1 * 300) = 18000 + 4000 + 1200 + 300 = 23500
                 // Final: 30000 + 60000 - 23500 = 66500
-                accountProjection.Dates[364].Balance.Should().Be(66500.0d);
+                accountProjection.Dates[364].Balance.ShouldBe(66500.0d);
             }
 
             [Fact]
@@ -1824,7 +1810,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -1836,28 +1822,28 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 // Days 1-364 (Jan 16 - Jan 14 next year): Daily coffee every day (364 occurrences)
                 var occurrences = accountProjection.Dates.Where(projection => projection.ExpensesPaid > 0).ToList();
-                occurrences.Should().HaveCount(364);
+                occurrences.Count.ShouldBe(364);
 
                 // Verify all occurrences have correct amount and description
-                occurrences.Should().AllSatisfy(projection =>
+                occurrences.ShouldAllSatisfy(projection =>
                 {
-                    projection.ExpensesPaid.Should().Be(5.0d);
-                    projection.ExpenseItems.Should().ContainSingle(expense => expense.Description == "Daily Coffee");
+                    projection.ExpensesPaid.ShouldBe(5.0d);
+                    projection.ExpenseItems.ShouldContainSingle(expense => expense.Description == "Daily Coffee");
                 });
 
                 // Verify continuous daily occurrence (consecutive dates)
                 for (int i = 0; i < occurrences.Count - 1; i++)
                 {
                     var dayDiff = occurrences[i + 1].Date.DayNumber - occurrences[i].Date.DayNumber;
-                    dayDiff.Should().Be(1, $"day {i} ({occurrences[i].Date}) to day {i + 1} ({occurrences[i + 1].Date}) should be consecutive");
+                    dayDiff.ShouldBe(1, $"day {i} ({occurrences[i].Date}) to day {i + 1} ({occurrences[i + 1].Date}) should be consecutive");
                 }
 
                 // Verify first and last occurrence dates
-                occurrences[0].Date.Should().Be(new DateOnly(2025, 1, 16));
-                occurrences[363].Date.Should().Be(new DateOnly(2026, 1, 14));
+                occurrences[0].Date.ShouldBe(new DateOnly(2025, 1, 16));
+                occurrences[363].Date.ShouldBe(new DateOnly(2026, 1, 14));
 
                 // Verify final balance after 364 daily expenses
-                accountProjection.Dates[364].Balance.Should().Be(48180.0d); // 50000 - (364 * 5)
+                accountProjection.Dates[364].Balance.ShouldBe(48180.0d); // 50000 - (364 * 5)
             }
 
             [Fact]
@@ -1880,7 +1866,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -1900,18 +1886,18 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 // Verify all monthly occurrences starting from June 15
                 var occurrences = accountProjection.Dates.Where(projection => projection.ExpensesPaid > 0).ToList();
-                occurrences.Should().HaveCountGreaterThanOrEqualTo(7); // Jun, Jul, Aug, Sep, Oct, Nov, Dec, Jan
+                occurrences.Count.ShouldBeGreaterThanOrEqualTo(7); // Jun, Jul, Aug, Sep, Oct, Nov, Dec, Jan
 
-                occurrences[0].Date.Should().Be(new DateOnly(2025, 6, 15));
-                occurrences.Should().AllSatisfy(o =>
+                occurrences[0].Date.ShouldBe(new DateOnly(2025, 6, 15));
+                occurrences.ShouldAllSatisfy(o =>
                 {
-                    o.ExpensesPaid.Should().Be(50.0d);
-                    o.ExpenseItems.Should().ContainSingle(expense => expense.Description == "Future Subscription");
+                    o.ExpensesPaid.ShouldBe(50.0d);
+                    o.ExpenseItems.ShouldContainSingle(expense => expense.Description == "Future Subscription");
                 });
 
                 // Verify final balance after all occurrences
                 var expectedFinalBalance = 20000.0d - (occurrences.Count * 50.0d);
-                accountProjection.Dates[364].Balance.Should().Be(expectedFinalBalance);
+                accountProjection.Dates[364].Balance.ShouldBe(expectedFinalBalance);
             }
 
             [Fact]
@@ -1957,7 +1943,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -1974,75 +1960,75 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 // Verify bi-weekly salary (approximately 26 times in a year)
                 var salaryDays = accountProjection.Dates.Where(projection => projection.IncomeReceived > 0).ToList();
-                salaryDays.Should().HaveCountGreaterThanOrEqualTo(24);
-                salaryDays.Should().HaveCountLessThanOrEqualTo(27);
-                salaryDays.Should().AllSatisfy(projection =>
+                salaryDays.Count.ShouldBeGreaterThanOrEqualTo(24);
+                salaryDays.Count.ShouldBeLessThanOrEqualTo(27);
+                salaryDays.ShouldAllSatisfy(projection =>
                 {
-                    projection.IncomeReceived.Should().Be(2000.0d);
-                    projection.IncomeItems.Should().ContainSingle(i => i.Description == "Salary");
+                    projection.IncomeReceived.ShouldBe(2000.0d);
+                    projection.IncomeItems.ShouldContainSingle(income => income.Description == "Salary");
                 });
 
                 // Verify monthly rent (12 times)
                 var rentDays = accountProjection.Dates.Where(projection => projection.ExpenseItems.Any(expense => expense.Description == "Rent")).ToList();
-                rentDays.Should().HaveCount(12);
-                rentDays.Should().AllSatisfy(projection =>
+                rentDays.Count.ShouldBe(12);
+                rentDays.ShouldAllSatisfy(projection =>
                 {
-                    projection.ExpenseItems.Should().Contain(expense => expense.Description == "Rent" && expense.Amount == 1200.0d);
+                    projection.ExpenseItems.ShouldContain(expense => expense.Description == "Rent" && expense.Amount == 1200.0d);
                 });
 
                 // Verify monthly utilities (12 times)
                 var utilityDays = accountProjection.Dates.Where(projection => projection.ExpenseItems.Any(expense => expense.Description == "Utilities")).ToList();
-                utilityDays.Should().HaveCount(12);
-                utilityDays.Should().AllSatisfy(d =>
+                utilityDays.Count.ShouldBe(12);
+                utilityDays.ShouldAllSatisfy(d =>
                 {
-                    d.ExpenseItems.Should().Contain(expense => expense.Description == "Utilities" && expense.Amount == 150.0d);
+                    d.ExpenseItems.ShouldContain(expense => expense.Description == "Utilities" && expense.Amount == 150.0d);
                 });
 
                 // Verify monthly internet (12 times)
                 var internetDays = accountProjection.Dates.Where(projection => projection.ExpenseItems.Any(expense => expense.Description == "Internet")).ToList();
-                internetDays.Should().HaveCount(12);
-                internetDays.Should().AllSatisfy(d =>
+                internetDays.Count.ShouldBe(12);
+                internetDays.ShouldAllSatisfy(d =>
                 {
-                    d.ExpenseItems.Should().Contain(expense => expense.Description == "Internet" && expense.Amount == 60.0d);
+                    d.ExpenseItems.ShouldContain(expense => expense.Description == "Internet" && expense.Amount == 60.0d);
                 });
 
                 // Verify weekly groceries (approximately 52 times)
                 var groceryDays = accountProjection.Dates.Where(projection => projection.ExpenseItems.Any(expense => expense.Description == "Groceries")).ToList();
-                groceryDays.Should().HaveCountGreaterThanOrEqualTo(50);
-                groceryDays.Should().HaveCountLessThanOrEqualTo(54);
-                groceryDays.Should().AllSatisfy(d =>
+                groceryDays.Count.ShouldBeGreaterThanOrEqualTo(50);
+                groceryDays.Count.ShouldBeLessThanOrEqualTo(54);
+                groceryDays.ShouldAllSatisfy(d =>
                 {
-                    d.ExpenseItems.Should().Contain(expense => expense.Description == "Groceries" && expense.Amount == 100.0d);
+                    d.ExpenseItems.ShouldContain(expense => expense.Description == "Groceries" && expense.Amount == 100.0d);
                 });
 
                 // Verify bi-weekly gas (approximately 26 times)
                 var gasDays = accountProjection.Dates.Where(projection => projection.ExpenseItems.Any(expense => expense.Description == "Gas")).ToList();
-                gasDays.Should().HaveCountGreaterThanOrEqualTo(24);
-                gasDays.Should().HaveCountLessThanOrEqualTo(27);
-                gasDays.Should().AllSatisfy(d =>
+                gasDays.Count.ShouldBeGreaterThanOrEqualTo(24);
+                gasDays.Count.ShouldBeLessThanOrEqualTo(27);
+                gasDays.ShouldAllSatisfy(d =>
                 {
-                    d.ExpenseItems.Should().Contain(expense => expense.Description == "Gas" && expense.Amount == 60.0d);
+                    d.ExpenseItems.ShouldContain(expense => expense.Description == "Gas" && expense.Amount == 60.0d);
                 });
 
                 // Verify quarterly insurance (4 times)
                 var insuranceDays = accountProjection.Dates.Where(projection => projection.ExpenseItems.Any(expense => expense.Description == "Insurance")).ToList();
-                insuranceDays.Should().HaveCount(4);
-                insuranceDays.Should().AllSatisfy(d =>
+                insuranceDays.Count.ShouldBe(4);
+                insuranceDays.ShouldAllSatisfy(d =>
                 {
-                    d.ExpenseItems.Should().Contain(expense => expense.Description == "Insurance" && expense.Amount == 300.0d);
+                    d.ExpenseItems.ShouldContain(expense => expense.Description == "Insurance" && expense.Amount == 300.0d);
                 });
 
                 // Verify one-time Prime expense (1 time, already validated as first day)
                 var primeDays = accountProjection.Dates.Where(projection => projection.ExpenseItems.Any(expense => expense.Description == "Prime")).ToList();
-                primeDays.Should().HaveCount(1);
-                primeDays[0].Date.Should().Be(new DateOnly(2025, 1, 15));
+                primeDays.Count.ShouldBe(1);
+                primeDays[0].Date.ShouldBe(new DateOnly(2025, 1, 15));
 
                 // Verify ending balance calculation
                 // Starting: 2000, Prime paid on day 0: 2000 - 139 = 1861
                 // Income: bi-weekly salary (actual count from test)
                 // Expenses: rent(12) + utilities(12) + internet(12) + groceries(~52) + gas(~26) + insurance(4) + prime(1)
                 var finalDay = accountProjection.Dates.Last();
-                finalDay.Date.Should().Be(new DateOnly(2026, 1, 14));
+                finalDay.Date.ShouldBe(new DateOnly(2026, 1, 14));
 
                 // Calculate exact final balance based on actual occurrences
                 var totalIncome = salaryDays.Count * 2000.0d;
@@ -2055,7 +2041,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                                    (insuranceDays.Count * 300.0d);
                 var expectedFinalBalance = 2000.0d + totalIncome - totalExpenses;
 
-                finalDay.Balance.Should().Be(expectedFinalBalance,
+                finalDay.Balance.ShouldBe(expectedFinalBalance,
                     $"Final balance = starting(2000) + income({totalIncome}) - expenses({totalExpenses}) = {expectedFinalBalance}");
             }
         }
@@ -2082,7 +2068,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
             var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-            result.IsSuccess.Should().BeTrue();
+            result.IsSuccess.ShouldBeTrue();
 
             var accountProjection = result.Value!.Accounts[0];
 
@@ -2101,8 +2087,8 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 var accruedAmount = Math.Round(billDailyAccrual * daysAccrued, 2, MidpointRounding.AwayFromZero);
                 var expectedAvailable = 5000.0d - 1000.0d - accruedAmount + 0.0d; // +0 for expensesPaid
 
-                accountProjection.Dates[i].Balance.Should().Be(5000.0d);
-                accountProjection.Dates[i].Available.Should().Be(expectedAvailable,
+                accountProjection.Dates[i].Balance.ShouldBe(5000.0d);
+                accountProjection.Dates[i].Available.ShouldBe(expectedAvailable,
                     $"day {dayNumber}: available = balance(5000) - reserved(1000) - accrued({accruedAmount:F2}) + expensesPaid(0) = {expectedAvailable:F2}");
             }
 
@@ -2119,7 +2105,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
             // Available on payment day = Balance - Reserved - Accrued + ExpensesPaid
             // Available = 4800 - 1000 - 0 + 200 = 4000
             var nextBillDailyAccrual = 200.0d / 31.0d;
-            accountProjection.Dates[5].Available.Should().Be(4000.0d,
+            accountProjection.Dates[5].Available.ShouldBe(4000.0d,
                 "day 6: available = balance(4800) - reserved(1000) - accrued(0, just reset) + expensesPaid(200) = 4000");
 
             // Days 6-29 (Jan 21 - Feb 13): After expense, balance constant at 4800
@@ -2132,8 +2118,8 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 var accruedForNextPeriod = Math.Round(nextBillDailyAccrual * daysIntoNextPeriod, 2, MidpointRounding.AwayFromZero);
                 var expectedAvailable = 4800.0d - 1000.0d - accruedForNextPeriod + 0.0d; // +0 for expensesPaid
 
-                accountProjection.Dates[i].Balance.Should().Be(4800.0d);
-                accountProjection.Dates[i].Available.Should().Be(expectedAvailable,
+                accountProjection.Dates[i].Balance.ShouldBe(4800.0d);
+                accountProjection.Dates[i].Available.ShouldBe(expectedAvailable,
                     $"day {dayNumber}: available = balance(4800) - reserved(1000) - accrued({accruedForNextPeriod:F2}) + expensesPaid(0) = {expectedAvailable:F2}");
             }
         }
@@ -2158,7 +2144,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
             var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-            result.IsSuccess.Should().BeTrue();
+            result.IsSuccess.ShouldBeTrue();
 
             var accountProjection = result.Value!.Accounts[0];
 
@@ -2200,7 +2186,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
             var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-            result.IsSuccess.Should().BeTrue();
+            result.IsSuccess.ShouldBeTrue();
 
             var accountProjection = result.Value!.Accounts[0];
 
@@ -2232,7 +2218,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
             var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-            result.IsSuccess.Should().BeTrue();
+            result.IsSuccess.ShouldBeTrue();
 
             var accountProjection = result.Value!.Accounts[0];
 
@@ -2279,7 +2265,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
             var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-            result.IsSuccess.Should().BeTrue();
+            result.IsSuccess.ShouldBeTrue();
 
             var accountProjection = result.Value!.Accounts[0];
 
@@ -2298,10 +2284,10 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 expectedExpenseDescriptions: ["Bill 1", "Bill 2", "Bill 3"]);
 
             // Verify all three expense items are present with correct amounts
-            accountProjection.Dates[5].ExpenseItems.Should().HaveCount(3);
-            accountProjection.Dates[5].ExpenseItems.Should().Contain(expense => expense.Description == "Bill 1" && expense.Amount == 100.0d);
-            accountProjection.Dates[5].ExpenseItems.Should().Contain(expense => expense.Description == "Bill 2" && expense.Amount == 150.0d);
-            accountProjection.Dates[5].ExpenseItems.Should().Contain(expense => expense.Description == "Bill 3" && expense.Amount == 75.0d);
+            accountProjection.Dates[5].ExpenseItems.Count().ShouldBe(3);
+            accountProjection.Dates[5].ExpenseItems.ShouldContain(expense => expense.Description == "Bill 1" && expense.Amount == 100.0d);
+            accountProjection.Dates[5].ExpenseItems.ShouldContain(expense => expense.Description == "Bill 2" && expense.Amount == 150.0d);
+            accountProjection.Dates[5].ExpenseItems.ShouldContain(expense => expense.Description == "Bill 3" && expense.Amount == 75.0d);
 
             // Days 6-29 (Jan 21 - Feb 13): After all expenses
             ValidateNoActivityRange(accountProjection.Dates, 6, 29, expectedBalance: 1675.0d);
@@ -2335,7 +2321,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
             var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-            result.IsSuccess.Should().BeTrue();
+            result.IsSuccess.ShouldBeTrue();
 
             var accountProjection = result.Value!.Accounts[0];
 
@@ -2357,12 +2343,12 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 var totalAccrued = daysAccrued * rentDailyAccrual;
                 var expectedAvailable = 5000.0d - totalAccrued;
 
-                projection.Date.Should().Be(_currentDate.AddDays(i));
-                projection.Balance.Should().Be(5000.0d, $"day {dayNumber} balance should remain 5000");
-                projection.DailyAccrual.Should().Be(rentDailyAccrual, $"day {dayNumber} should have daily accrual of {rentDailyAccrual}");
-                projection.Available.Should().BeApproximately(expectedAvailable, 0.01, $"day {dayNumber} available should be {expectedAvailable} (5000 - {totalAccrued} accrued for {daysAccrued} days)");
-                projection.IncomeReceived.Should().Be(0.0d);
-                projection.ExpensesPaid.Should().Be(0.0d);
+                projection.Date.ShouldBe(_currentDate.AddDays(i));
+                projection.Balance.ShouldBe(5000.0d, $"day {dayNumber} balance should remain 5000");
+                projection.DailyAccrual.ShouldBe(rentDailyAccrual, $"day {dayNumber} should have daily accrual of {rentDailyAccrual}");
+                projection.Available.ShouldBe(expectedAvailable, 0.01, $"day {dayNumber} available should be {expectedAvailable} (5000 - {totalAccrued} accrued for {daysAccrued} days)");
+                projection.IncomeReceived.ShouldBe(0.0d);
+                projection.ExpensesPaid.ShouldBe(0.0d);
             }
 
             // Day 15 (Jan 30): Rent paid (900), expense renews for next period
@@ -2378,11 +2364,11 @@ public class ProjectionsServiceFixture : PotFixtureBase
             // On payment day, DailyExpenseAccrual = 900 / 29 = 31.03448275862069
             var nextPeriodDays = 29;
             var paymentDayDailyAccrual = 900.0d / nextPeriodDays;
-            accountProjection.Dates[15].DailyAccrual.Should().BeApproximately(paymentDayDailyAccrual, 0.01, "daily accrual on payment day");
+            accountProjection.Dates[15].DailyAccrual.ShouldBe(paymentDayDailyAccrual, 0.01, "daily accrual on payment day");
 
             // On payment day: Available = Balance - Reserved - Accrued + ExpensesPaid
             // Available = 4100 - 0 - 0 + 900 = 5000 (accrued reset to 0, expensesPaid added back)
-            accountProjection.Dates[15].Available.Should().Be(5000.0d,
+            accountProjection.Dates[15].Available.ShouldBe(5000.0d,
                 "available on payment day = balance(4100) - reserved(0) - accrued(0, just reset) + expensesPaid(900) = 5000");
 
             // Days 16-28 (Jan 31 - Feb 12): Rent now accruing for next period (due Feb 28)
@@ -2411,12 +2397,12 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 // Available = account balance - accumulated accrual
                 var expectedAvailable = 4100.0d - accumulatedAccrual;
 
-                projection.Date.Should().Be(_currentDate.AddDays(i));
-                projection.Balance.Should().Be(4100.0d, $"day {dayNumber} balance should remain 4100");
-                projection.DailyAccrual.Should().BeApproximately(expectedDailyAccrual, 0.01, $"day {dayNumber} daily accrual should be {expectedDailyAccrual:F4}");
-                projection.Available.Should().Be(expectedAvailable, $"day {dayNumber} available should be {expectedAvailable:F2} (4100 - {accumulatedAccrual:F2} accrued)");
-                projection.IncomeReceived.Should().Be(0.0d);
-                projection.ExpensesPaid.Should().Be(0.0d);
+                projection.Date.ShouldBe(_currentDate.AddDays(i));
+                projection.Balance.ShouldBe(4100.0d, $"day {dayNumber} balance should remain 4100");
+                projection.DailyAccrual.ShouldBe(expectedDailyAccrual, 0.01, $"day {dayNumber} daily accrual should be {expectedDailyAccrual:F4}");
+                projection.Available.ShouldBe(expectedAvailable, $"day {dayNumber} available should be {expectedAvailable:F2} (4100 - {accumulatedAccrual:F2} accrued)");
+                projection.IncomeReceived.ShouldBe(0.0d);
+                projection.ExpensesPaid.ShouldBe(0.0d);
             }
 
             // Day 29 (Feb 13): Last day - 14 days accrued for next rent period
@@ -2424,11 +2410,11 @@ public class ProjectionsServiceFixture : PotFixtureBase
             var lastDayAccrued = Math.Round(baseAccrualRate * 14, 2, MidpointRounding.AwayFromZero);
             var lastDayExpectedAvailable = 4100.0d - lastDayAccrued;
 
-            lastDay.Date.Should().Be(new DateOnly(2025, 2, 13));
-            lastDay.Balance.Should().Be(4100.0d);
-            lastDay.Available.Should().Be(lastDayExpectedAvailable, $"available should be 4100 - {lastDayAccrued:F2} accrued");
-            lastDay.IncomeReceived.Should().Be(0.0d);
-            lastDay.ExpensesPaid.Should().Be(0.0d);
+            lastDay.Date.ShouldBe(new DateOnly(2025, 2, 13));
+            lastDay.Balance.ShouldBe(4100.0d);
+            lastDay.Available.ShouldBe(lastDayExpectedAvailable, $"available should be 4100 - {lastDayAccrued:F2} accrued");
+            lastDay.IncomeReceived.ShouldBe(0.0d);
+            lastDay.ExpensesPaid.ShouldBe(0.0d);
         }
         }
 
@@ -2464,7 +2450,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                result.IsSuccess.Should().BeTrue();
+                result.IsSuccess.ShouldBeTrue();
 
                 var global = result.Value!.Global;
                 var account1Projection = result.Value!.Accounts[0];
@@ -2476,7 +2462,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 ValidateConsecutiveDates(global, _currentDate, 30);
 
                 // Day 0 (Jan 15): Combined starting balances
-                global[0].Balance.Should().Be(3000.0d); // 1000 + 2000
+                global[0].Balance.ShouldBe(3000.0d); // 1000 + 2000
 
                 // Days 1-4 (Jan 16 - Jan 19): Before first transaction
                 ValidateNoActivityRange(global, 1, 4, expectedBalance: 3000.0d);
@@ -2551,11 +2537,11 @@ public class ProjectionsServiceFixture : PotFixtureBase
     // Helper method to validate that dates are consecutive starting from a specific date
     private static void ValidateConsecutiveDates(IReadOnlyList<DateProjection> projections, DateOnly startDate, int expectedCount)
     {
-        projections.Should().HaveCount(expectedCount);
+        projections.Count.ShouldBe(expectedCount);
 
         for (int i = 0; i < projections.Count; i++)
         {
-            projections[i].Date.Should().Be(startDate.AddDays(i),
+            projections[i].Date.ShouldBe(startDate.AddDays(i),
                 $"date at index {i} should be {startDate.AddDays(i)}");
         }
     }
@@ -2563,21 +2549,21 @@ public class ProjectionsServiceFixture : PotFixtureBase
     // Helper method to validate empty global projection (no accounts)
     private static void ValidateEmptyGlobalProjection(IReadOnlyList<DateProjection> globalProjections, DateOnly startDate, int expectedCount)
     {
-        globalProjections.Should().HaveCount(expectedCount);
+        globalProjections.Count.ShouldBe(expectedCount);
 
         for (int i = 0; i < globalProjections.Count; i++)
         {
             var projection = globalProjections[i];
             var expectedDate = startDate.AddDays(i);
 
-            projection.Date.Should().Be(expectedDate, $"projection at index {i} should have date {expectedDate}");
-            projection.Balance.Should().Be(0.0d, $"balance should be 0 for empty projection at {expectedDate}");
-            projection.Available.Should().Be(0.0d, $"available should be 0 for empty projection at {expectedDate}");
-            projection.DailyAccrual.Should().Be(0.0d, $"daily accrual should be 0 for empty projection at {expectedDate}");
-            projection.IncomeReceived.Should().Be(0.0d, $"income received should be 0 for empty projection at {expectedDate}");
-            projection.ExpensesPaid.Should().Be(0.0d, $"expenses paid should be 0 for empty projection at {expectedDate}");
-            projection.ExpenseItems.Should().BeEmpty($"expense items should be empty for empty projection at {expectedDate}");
-            projection.IncomeItems.Should().BeEmpty($"income items should be empty for empty projection at {expectedDate}");
+            projection.Date.ShouldBe(expectedDate, $"projection at index {i} should have date {expectedDate}");
+            projection.Balance.ShouldBe(0.0d, $"balance should be 0 for empty projection at {expectedDate}");
+            projection.Available.ShouldBe(0.0d, $"available should be 0 for empty projection at {expectedDate}");
+            projection.DailyAccrual.ShouldBe(0.0d, $"daily accrual should be 0 for empty projection at {expectedDate}");
+            projection.IncomeReceived.ShouldBe(0.0d, $"income received should be 0 for empty projection at {expectedDate}");
+            projection.ExpensesPaid.ShouldBe(0.0d, $"expenses paid should be 0 for empty projection at {expectedDate}");
+            projection.ExpenseItems.ShouldBeEmpty($"expense items should be empty for empty projection at {expectedDate}");
+            projection.IncomeItems.ShouldBeEmpty($"income items should be empty for empty projection at {expectedDate}");
         }
     }
 
@@ -2593,11 +2579,11 @@ public class ProjectionsServiceFixture : PotFixtureBase
             var projection = projections[i];
             var dayNumber = i + 1;
 
-            projection.Balance.Should().Be(expectedBalance,
+            projection.Balance.ShouldBe(expectedBalance,
                 $"balance on day {dayNumber} ({projection.Date:yyyy-MM-dd}) should remain {expectedBalance}");
-            projection.IncomeReceived.Should().Be(0.0d,
+            projection.IncomeReceived.ShouldBe(0.0d,
                 $"no income on day {dayNumber} ({projection.Date:yyyy-MM-dd})");
-            projection.ExpensesPaid.Should().Be(0.0d,
+            projection.ExpensesPaid.ShouldBe(0.0d,
                 $"no expenses on day {dayNumber} ({projection.Date:yyyy-MM-dd})");
         }
     }
@@ -2612,29 +2598,28 @@ public class ProjectionsServiceFixture : PotFixtureBase
         string[]? expectedExpenseDescriptions = null,
         string[]? expectedIncomeDescriptions = null)
     {
-        projection.Date.Should().Be(expectedDate);
-        projection.Balance.Should().Be(expectedBalance);
+        projection.Date.ShouldBe(expectedDate);
+        projection.Balance.ShouldBe(expectedBalance);
 
         if (expectedIncomeReceived.HasValue)
         {
-            projection.IncomeReceived.Should().Be(expectedIncomeReceived.Value);
+            projection.IncomeReceived.ShouldBe(expectedIncomeReceived.Value);
         }
 
         if (expectedExpensesPaid.HasValue)
         {
-            projection.ExpensesPaid.Should().Be(expectedExpensesPaid.Value);
+            projection.ExpensesPaid.ShouldBe(expectedExpensesPaid.Value);
         }
 
         if (expectedExpenseDescriptions != null)
         {
-            projection.ExpenseItems.Select(expense => expense.Description)
-                .Should().BeEquivalentTo(expectedExpenseDescriptions);
+            projection.ExpenseItems.ShouldHaveValues(expense => expense.Description, expectedExpenseDescriptions);
         }
 
         if (expectedIncomeDescriptions != null)
         {
-            projection.IncomeItems.Select(i => i.Description)
-                .Should().BeEquivalentTo(expectedIncomeDescriptions);
+            projection.IncomeItems.ShouldHaveValues(income => income.Description, expectedIncomeDescriptions);
         }
     }
 }
+

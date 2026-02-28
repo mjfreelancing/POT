@@ -1,11 +1,11 @@
-﻿using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Projections;
 using Pot.Shared;
 using Pot.Shared.Enumerations;
 using Pot.TestUtils;
+using Shouldly;
 
 namespace Pot.Data.Tests.Repositories;
 
@@ -67,9 +67,9 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 var result = await context.GetAllAccountsAsync();
 
-                result.Should().HaveCount(1);
-                result[0].Description.Should().Be("Test Account");
-                result[0].Balance.Should().Be(1000.0);
+                result.Count.ShouldBe(1);
+                result[0].Description.ShouldBe("Test Account");
+                result[0].Balance.ShouldBe(1000.0);
             }
 
             [Fact]
@@ -84,8 +84,8 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 var result = await context.GetAllAccountsAsync();
 
-                result.Should().HaveCount(1);
-                result[0].Description.Should().Be("Own Account");
+                result.Count.ShouldBe(1);
+                result[0].Description.ShouldBe("Own Account");
             }
 
             [Fact]
@@ -101,8 +101,8 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 var result = await context.GetAllAccountsAsync();
 
-                result.Should().HaveCount(3);
-                result.Select(a => a.Description).Should().BeEquivalentTo("Account 1", "Account 2", "Account 3");
+                result.Count.ShouldBe(3);
+                result.ShouldHaveValues(a => a.Description, new[] { "Account 1", "Account 2", "Account 3" });
             }
 
             [Fact]
@@ -112,7 +112,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 var result = await context.GetAllAccountsAsync();
 
-                result.Should().BeEmpty();
+                result.ShouldBeEmpty();
             }
 
             [Fact]
@@ -127,7 +127,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 var result = await context.GetAllAccountsAsync();
 
-                result.Should().BeEmpty();
+                result.ShouldBeEmpty();
             }
         }
 
@@ -149,9 +149,9 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 var result = await context.GetAllAccountsAsync();
 
-                result.Should().HaveCount(1);
-                result[0].Expenses.Should().HaveCount(2);
-                result[0].Expenses.Select(e => e.Description).Should().BeEquivalentTo("Included Expense 1", "Included Expense 2");
+                result.Count.ShouldBe(1);
+                result[0].Expenses.Count.ShouldBe(2);
+                result[0].Expenses.ShouldHaveValues(expense => expense.Description, new[] { "Included Expense 1", "Included Expense 2" });
             }
 
             [Fact]
@@ -168,8 +168,8 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 var result = await context.GetAllAccountsAsync();
 
-                result.Should().HaveCount(1);
-                result[0].Expenses.Should().BeEmpty();
+                result.Count.ShouldBe(1);
+                result[0].Expenses.ShouldBeEmpty();
             }
 
             [Fact]
@@ -192,9 +192,9 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 var result = await context.GetAllAccountsAsync();
 
-                result.Should().HaveCount(1);
-                result[0].Expenses.Should().HaveCount(2);
-                result[0].Expenses.Select(e => e.Description).Should().BeEquivalentTo("Included 1", "Included 2");
+                result.Count.ShouldBe(1);
+                result[0].Expenses.Count.ShouldBe(2);
+                result[0].Expenses.ShouldHaveValues(expense => expense.Description, new[] { "Included 1", "Included 2" });
             }
         }
 
@@ -216,9 +216,9 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 var result = await context.GetAllAccountsAsync();
 
-                result.Should().HaveCount(1);
-                result[0].Incomes.Should().HaveCount(2);
-                result[0].Incomes.Select(i => i.Description).Should().BeEquivalentTo("Included Income 1", "Included Income 2");
+                result.Count.ShouldBe(1);
+                result[0].Incomes.Count.ShouldBe(2);
+                result[0].Incomes.ShouldHaveValues(income => income.Description, new[] { "Included Income 1", "Included Income 2" });
             }
 
             [Fact]
@@ -235,8 +235,8 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 var result = await context.GetAllAccountsAsync();
 
-                result.Should().HaveCount(1);
-                result[0].Incomes.Should().BeEmpty();
+                result.Count.ShouldBe(1);
+                result[0].Incomes.ShouldBeEmpty();
             }
 
             [Fact]
@@ -259,9 +259,9 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 var result = await context.GetAllAccountsAsync();
 
-                result.Should().HaveCount(1);
-                result[0].Incomes.Should().HaveCount(2);
-                result[0].Incomes.Select(i => i.Description).Should().BeEquivalentTo("Included 1", "Included 2");
+                result.Count.ShouldBe(1);
+                result[0].Incomes.Count.ShouldBe(2);
+                result[0].Incomes.ShouldHaveValues(income => income.Description, new[] { "Included 1", "Included 2" });
             }
         }
 
@@ -294,12 +294,12 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 var result = await context.GetAllAccountsAsync();
 
-                result.Should().HaveCount(1);
-                result[0].Description.Should().Be("Own Account");
-                result[0].Expenses.Should().HaveCount(1);
-                result[0].Expenses.First().Description.Should().Be("Own Included Expense");
-                result[0].Incomes.Should().HaveCount(1);
-                result[0].Incomes.First().Description.Should().Be("Own Included Income");
+                result.Count.ShouldBe(1);
+                result[0].Description.ShouldBe("Own Account");
+                result[0].Expenses.Count.ShouldBe(1);
+                result[0].Expenses.First().Description.ShouldBe("Own Included Expense");
+                result[0].Incomes.Count.ShouldBe(1);
+                result[0].Incomes.First().Description.ShouldBe("Own Included Income");
             }
 
             [Fact]
@@ -313,10 +313,10 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 var result = await context.GetAllAccountsAsync();
 
-                result.Should().HaveCount(1);
-                result[0].Description.Should().Be("Empty Account");
-                result[0].Expenses.Should().BeEmpty();
-                result[0].Incomes.Should().BeEmpty();
+                result.Count.ShouldBe(1);
+                result[0].Description.ShouldBe("Empty Account");
+                result[0].Expenses.ShouldBeEmpty();
+                result[0].Incomes.ShouldBeEmpty();
             }
 
             [Fact]
@@ -335,10 +335,10 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 var result = await context.GetAllAccountsAsync();
 
-                result.Should().HaveCount(1);
-                result[0].Description.Should().Be("Account With Excluded Items");
-                result[0].Expenses.Should().BeEmpty();
-                result[0].Incomes.Should().BeEmpty();
+                result.Count.ShouldBe(1);
+                result[0].Description.ShouldBe("Account With Excluded Items");
+                result[0].Expenses.ShouldBeEmpty();
+                result[0].Incomes.ShouldBeEmpty();
             }
 
             [Fact]
@@ -366,22 +366,22 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 var result = await context.GetAllAccountsAsync();
 
-                result.Should().HaveCount(3);
-                result.Select(a => a.Description).Should().BeEquivalentTo("Account 1", "Account 2", "Account 3");
+                result.Count.ShouldBe(3);
+                result.ShouldHaveValues(a => a.Description, new[] { "Account 1", "Account 2", "Account 3" });
 
                 var resultAccount1 = result.First(a => a.Description == "Account 1");
-                resultAccount1.Expenses.Should().HaveCount(1);
-                resultAccount1.Expenses.First().Description.Should().Be("Account 1 Expense");
-                resultAccount1.Incomes.Should().BeEmpty();
+                resultAccount1.Expenses.Count.ShouldBe(1);
+                resultAccount1.Expenses.First().Description.ShouldBe("Account 1 Expense");
+                resultAccount1.Incomes.ShouldBeEmpty();
 
                 var resultAccount2 = result.First(a => a.Description == "Account 2");
-                resultAccount2.Incomes.Should().HaveCount(1);
-                resultAccount2.Incomes.First().Description.Should().Be("Account 2 Income");
-                resultAccount2.Expenses.Should().BeEmpty();
+                resultAccount2.Incomes.Count.ShouldBe(1);
+                resultAccount2.Incomes.First().Description.ShouldBe("Account 2 Income");
+                resultAccount2.Expenses.ShouldBeEmpty();
 
                 var resultAccount3 = result.First(a => a.Description == "Account 3");
-                resultAccount3.Expenses.Should().BeEmpty();
-                resultAccount3.Incomes.Should().BeEmpty();
+                resultAccount3.Expenses.ShouldBeEmpty();
+                resultAccount3.Incomes.ShouldBeEmpty();
             }
         }
 
@@ -394,7 +394,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 var result = await context.GetAllAccountsAsync();
 
-                result.Should().BeEmpty();
+                result.ShouldBeEmpty();
             }
 
             [Fact]
@@ -409,9 +409,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
                 using var cts = new CancellationTokenSource();
                 cts.Cancel();
 
-                await Invoking(async () => await context.GetAllAccountsAsync(cts.Token))
-                    .Should()
-                    .ThrowAsync<OperationCanceledException>();
+                await Should.ThrowAsync<OperationCanceledException>(async () => await context.GetAllAccountsAsync(cts.Token));
             }
 
             [Fact]
@@ -441,11 +439,11 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 var result = await context.GetAllAccountsAsync();
 
-                result.Should().HaveCount(1);
-                result[0].Expenses.Should().HaveCount(10);
-                result[0].Incomes.Should().HaveCount(10);
-                result[0].Expenses.Should().AllSatisfy(e => e.Description.Should().StartWith("Included Expense"));
-                result[0].Incomes.Should().AllSatisfy(i => i.Description.Should().StartWith("Included Income"));
+                result.Count.ShouldBe(1);
+                result[0].Expenses.Count.ShouldBe(10);
+                result[0].Incomes.Count.ShouldBe(10);
+                result[0].Expenses.ShouldAllMatch(expense => expense.Description.StartsWith("Included Expense"));
+                result[0].Incomes.ShouldAllMatch(income => income.Description.StartsWith("Included Income"));
             }
         }
     }

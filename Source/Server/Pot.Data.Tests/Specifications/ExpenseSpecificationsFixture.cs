@@ -1,8 +1,8 @@
-﻿using FluentAssertions;
-using Pot.Data.Entities;
+﻿using Pot.Data.Entities;
 using Pot.Data.Specifications;
 using Pot.Shared.Enumerations;
 using Pot.TestUtils;
+using Shouldly;
 
 namespace Pot.Data.Tests.Specifications;
 
@@ -43,7 +43,7 @@ public class ExpenseSpecificationsFixture : PotFixtureBase
             var specification = ExpenseSpecifications.IsSameDescription(_account.Id, description);
             var result = specification.IsSatisfiedBy(expense);
 
-            result.Should().BeTrue();
+            result.ShouldBeTrue();
         }
 
         [Fact]
@@ -56,7 +56,7 @@ public class ExpenseSpecificationsFixture : PotFixtureBase
             var specification = ExpenseSpecifications.IsSameDescription(differentAccountId, description);
             var result = specification.IsSatisfiedBy(expense);
 
-            result.Should().BeFalse();
+            result.ShouldBeFalse();
         }
 
         [Fact]
@@ -68,7 +68,7 @@ public class ExpenseSpecificationsFixture : PotFixtureBase
             var specification = ExpenseSpecifications.IsSameDescription(_account.Id, description);
             var result = specification.IsSatisfiedBy(expense);
 
-            result.Should().BeFalse();
+            result.ShouldBeFalse();
         }
 
         [Fact]
@@ -81,7 +81,7 @@ public class ExpenseSpecificationsFixture : PotFixtureBase
             var specification = ExpenseSpecifications.IsSameDescription(differentAccountId, description);
             var result = specification.IsSatisfiedBy(expense);
 
-            result.Should().BeFalse();
+            result.ShouldBeFalse();
         }
 
         [Fact]
@@ -93,7 +93,7 @@ public class ExpenseSpecificationsFixture : PotFixtureBase
             var specification = ExpenseSpecifications.IsSameDescription(_account.Id, description);
             var result = specification.IsSatisfiedBy(expense);
 
-            result.Should().BeFalse();
+            result.ShouldBeFalse();
         }
     }
 
@@ -111,7 +111,7 @@ public class ExpenseSpecificationsFixture : PotFixtureBase
             var specification = ExpenseSpecifications.RequiresAccrualUpdate(asOfDate);
             var result = specification.IsSatisfiedBy(expense);
 
-            result.Should().BeTrue();
+            result.ShouldBeTrue();
         }
 
         [Fact]
@@ -125,7 +125,7 @@ public class ExpenseSpecificationsFixture : PotFixtureBase
             var specification = ExpenseSpecifications.RequiresAccrualUpdate(asOfDate);
             var result = specification.IsSatisfiedBy(expense);
 
-            result.Should().BeTrue();
+            result.ShouldBeTrue();
         }
 
         [Fact]
@@ -139,7 +139,7 @@ public class ExpenseSpecificationsFixture : PotFixtureBase
             var specification = ExpenseSpecifications.RequiresAccrualUpdate(asOfDate);
             var result = specification.IsSatisfiedBy(expense);
 
-            result.Should().BeTrue();
+            result.ShouldBeTrue();
         }
 
         [Fact]
@@ -153,7 +153,7 @@ public class ExpenseSpecificationsFixture : PotFixtureBase
             var specification = ExpenseSpecifications.RequiresAccrualUpdate(asOfDate);
             var result = specification.IsSatisfiedBy(expense);
 
-            result.Should().BeFalse();
+            result.ShouldBeFalse();
         }
 
         [Fact]
@@ -167,7 +167,7 @@ public class ExpenseSpecificationsFixture : PotFixtureBase
             var specification = ExpenseSpecifications.RequiresAccrualUpdate(asOfDate);
             var result = specification.IsSatisfiedBy(expense);
 
-            result.Should().BeFalse();
+            result.ShouldBeFalse();
         }
 
         [Fact]
@@ -181,7 +181,7 @@ public class ExpenseSpecificationsFixture : PotFixtureBase
             var specification = ExpenseSpecifications.RequiresAccrualUpdate(asOfDate);
             var result = specification.IsSatisfiedBy(expense);
 
-            result.Should().BeTrue();
+            result.ShouldBeTrue();
         }
     }
 }

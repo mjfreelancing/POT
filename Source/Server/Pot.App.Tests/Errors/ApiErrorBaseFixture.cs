@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using Shouldly;
 using Pot.App.Errors;
 using Pot.TestUtils;
 
@@ -11,7 +11,7 @@ public class ApiErrorBaseFixture : PotFixtureBase
         [Fact]
         public void Should_Be_Abstract()
         {
-            typeof(ApiErrorBase).IsAbstract.Should().BeTrue();
+            typeof(ApiErrorBase).IsAbstract.ShouldBeTrue();
         }
     }
 
@@ -32,7 +32,7 @@ public class ApiErrorBaseFixture : PotFixtureBase
 
             var error = new ConcreteApiError(errorType);
 
-            error.ErrorType.Should().Be(errorType);
+            error.ErrorType.ShouldBe(errorType);
         }
     }
 }

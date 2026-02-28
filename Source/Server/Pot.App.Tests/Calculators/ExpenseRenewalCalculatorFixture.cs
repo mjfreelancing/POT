@@ -1,5 +1,5 @@
 using AllOverIt.Fixture.Extensions;
-using FluentAssertions;
+using Shouldly;
 using Pot.App.Calculators;
 using Pot.Data.Entities;
 using Pot.Shared.Enumerations;
@@ -29,13 +29,11 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
         [Fact]
         public void Should_Throw_When_Expenses_Null()
         {
-            Invoking(() =>
-            {
+            var exception = Should.Throw<ArgumentNullException>(() => {
                 _calculator.Renew(null!, RenewalMode.Overdue, DateOnly.MinValue);
-            })
-            .Should()
-            .Throw<ArgumentNullException>()
-            .WithNamedMessageWhenNull("expenses");
+            });
+
+            exception.ParamName.ShouldBe("expenses");
         }
 
         [Fact]
@@ -43,12 +41,9 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
         {
             var asOfDate = new DateOnly(2025, 1, 20);
 
-            Invoking(() =>
-            {
+            Should.NotThrow(() => {
                 _calculator.Renew([], RenewalMode.Overdue, asOfDate);
-            })
-            .Should()
-            .NotThrow();
+            });
         }
 
         [Fact]
@@ -64,9 +59,9 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
-            expense.NextDue.Should().Be(originalNextDue);
-            expense.AccrualStart.Should().Be(originalAccrualStart);
-            expense.AccruedIsDirty.Should().BeFalse();
+            expense.NextDue.ShouldBe(originalNextDue);
+            expense.AccrualStart.ShouldBe(originalAccrualStart);
+            expense.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
@@ -82,9 +77,9 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
-            expense.NextDue.Should().Be(originalNextDue);
-            expense.AccrualStart.Should().Be(originalAccrualStart);
-            expense.AccruedIsDirty.Should().BeFalse();
+            expense.NextDue.ShouldBe(originalNextDue);
+            expense.AccrualStart.ShouldBe(originalAccrualStart);
+            expense.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
@@ -98,7 +93,7 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // Expense should not be renewed because NextDue > asOfDate
-            expense.AccruedIsDirty.Should().BeTrue();
+            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -112,7 +107,7 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // Expense should be renewed, and IsDirty should become true
-            expense.AccruedIsDirty.Should().BeTrue();
+            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -126,7 +121,7 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // Expense should not be renewed because NextDue > asOfDate
-            expense.AccruedIsDirty.Should().BeFalse();
+            expense.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
@@ -141,8 +136,8 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // Expense should not renew because AsOfDate >= endDate
-            expense.NextDue.Should().Be(originalNextDue);
-            expense.AccrualStart.Should().Be(originalAccrualStart);
+            expense.NextDue.ShouldBe(originalNextDue);
+            expense.AccrualStart.ShouldBe(originalAccrualStart);
         }
 
         [Fact]
@@ -154,8 +149,8 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // Expense should be renewed to 2025-02-10, but since that's after EndDate (2025-01-20), it should stop at 2025-01-10
-            expense.NextDue.Should().Be(new DateOnly(2025, 1, 10));
-            expense.AccrualStart.Should().Be(new DateOnly(2025, 1, 1));
+            expense.NextDue.ShouldBe(new DateOnly(2025, 1, 10));
+            expense.AccrualStart.ShouldBe(new DateOnly(2025, 1, 1));
         }
 
         [Fact]
@@ -188,24 +183,24 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense1, expense2, expense3, expense4], RenewalMode.Overdue, asOfDate);
 
             // expense1: 2025-01-17 -> 2025-01-18 -> 2025-01-19 -> 2025-01-20 -> 2025-01-21
-            expense1.NextDue.Should().Be(new DateOnly(2025, 1, 21));
-            expense1.AccrualStart.Should().Be(new DateOnly(2025, 1, 20));
-            expense1.AccruedIsDirty.Should().BeTrue();
+            expense1.NextDue.ShouldBe(new DateOnly(2025, 1, 21));
+            expense1.AccrualStart.ShouldBe(new DateOnly(2025, 1, 20));
+            expense1.AccruedIsDirty.ShouldBeTrue();
 
             // expense2: 2025-01-19 -> 2025-01-20 -> 2025-01-21
-            expense2.NextDue.Should().Be(new DateOnly(2025, 1, 21));
-            expense2.AccrualStart.Should().Be(new DateOnly(2025, 1, 20));
-            expense2.AccruedIsDirty.Should().BeTrue();
+            expense2.NextDue.ShouldBe(new DateOnly(2025, 1, 21));
+            expense2.AccrualStart.ShouldBe(new DateOnly(2025, 1, 20));
+            expense2.AccruedIsDirty.ShouldBeTrue();
 
             // expense3: 2025-01-20 -> 2025-01-21 (does renew once since nextDue <= asOfDate)
-            expense3.NextDue.Should().Be(new DateOnly(2025, 1, 21));
-            expense3.AccrualStart.Should().Be(new DateOnly(2025, 1, 20));
-            expense3.AccruedIsDirty.Should().BeTrue();
+            expense3.NextDue.ShouldBe(new DateOnly(2025, 1, 21));
+            expense3.AccrualStart.ShouldBe(new DateOnly(2025, 1, 20));
+            expense3.AccruedIsDirty.ShouldBeTrue();
 
             // expense4: No change (NextDue > asOfDate)
-            expense4.NextDue.Should().Be(new DateOnly(2025, 1, 21));
-            expense4.AccrualStart.Should().Be(new DateOnly(2025, 1, 14));
-            expense4.AccruedIsDirty.Should().BeFalse();
+            expense4.NextDue.ShouldBe(new DateOnly(2025, 1, 21));
+            expense4.AccrualStart.ShouldBe(new DateOnly(2025, 1, 14));
+            expense4.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
@@ -238,24 +233,24 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense1, expense2, expense3, expense4], RenewalMode.Overdue, asOfDate);
 
             // expense1: 2025-01-20 -> 2025-01-27 -> 2025-02-03 -> 2025-02-10 -> 2025-02-17
-            expense1.NextDue.Should().Be(new DateOnly(2025, 2, 17));
-            expense1.AccrualStart.Should().Be(new DateOnly(2025, 2, 10));
-            expense1.AccruedIsDirty.Should().BeTrue();
+            expense1.NextDue.ShouldBe(new DateOnly(2025, 2, 17));
+            expense1.AccrualStart.ShouldBe(new DateOnly(2025, 2, 10));
+            expense1.AccruedIsDirty.ShouldBeTrue();
 
             // expense2: 2025-02-03 -> 2025-02-10 -> 2025-02-17
-            expense2.NextDue.Should().Be(new DateOnly(2025, 2, 17));
-            expense2.AccrualStart.Should().Be(new DateOnly(2025, 2, 10));
-            expense2.AccruedIsDirty.Should().BeTrue();
+            expense2.NextDue.ShouldBe(new DateOnly(2025, 2, 17));
+            expense2.AccrualStart.ShouldBe(new DateOnly(2025, 2, 10));
+            expense2.AccruedIsDirty.ShouldBeTrue();
 
             // expense3: 2025-02-10 -> 2025-02-17 (does renew once)
-            expense3.NextDue.Should().Be(new DateOnly(2025, 2, 17));
-            expense3.AccrualStart.Should().Be(new DateOnly(2025, 2, 10));
-            expense3.AccruedIsDirty.Should().BeTrue();
+            expense3.NextDue.ShouldBe(new DateOnly(2025, 2, 17));
+            expense3.AccrualStart.ShouldBe(new DateOnly(2025, 2, 10));
+            expense3.AccruedIsDirty.ShouldBeTrue();
 
             // expense4: No change
-            expense4.NextDue.Should().Be(new DateOnly(2025, 2, 17));
-            expense4.AccrualStart.Should().Be(new DateOnly(2025, 2, 3));
-            expense4.AccruedIsDirty.Should().BeFalse();
+            expense4.NextDue.ShouldBe(new DateOnly(2025, 2, 17));
+            expense4.AccrualStart.ShouldBe(new DateOnly(2025, 2, 3));
+            expense4.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
@@ -288,24 +283,24 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense1, expense2, expense3, expense4], RenewalMode.Overdue, asOfDate);
 
             // expense1: 2025-02-15 -> 2025-03-15 -> 2025-04-15 -> 2025-05-15 -> 2025-06-15
-            expense1.NextDue.Should().Be(new DateOnly(2025, 6, 15));
-            expense1.AccrualStart.Should().Be(new DateOnly(2025, 5, 15));
-            expense1.AccruedIsDirty.Should().BeTrue();
+            expense1.NextDue.ShouldBe(new DateOnly(2025, 6, 15));
+            expense1.AccrualStart.ShouldBe(new DateOnly(2025, 5, 15));
+            expense1.AccruedIsDirty.ShouldBeTrue();
 
             // expense2: 2025-04-15 -> 2025-05-15 -> 2025-06-15
-            expense2.NextDue.Should().Be(new DateOnly(2025, 6, 15));
-            expense2.AccrualStart.Should().Be(new DateOnly(2025, 5, 15));
-            expense2.AccruedIsDirty.Should().BeTrue();
+            expense2.NextDue.ShouldBe(new DateOnly(2025, 6, 15));
+            expense2.AccrualStart.ShouldBe(new DateOnly(2025, 5, 15));
+            expense2.AccruedIsDirty.ShouldBeTrue();
 
             // expense3: 2025-05-15 -> 2025-06-15 (does renew once)
-            expense3.NextDue.Should().Be(new DateOnly(2025, 6, 15));
-            expense3.AccrualStart.Should().Be(new DateOnly(2025, 5, 15));
-            expense3.AccruedIsDirty.Should().BeTrue();
+            expense3.NextDue.ShouldBe(new DateOnly(2025, 6, 15));
+            expense3.AccrualStart.ShouldBe(new DateOnly(2025, 5, 15));
+            expense3.AccruedIsDirty.ShouldBeTrue();
 
             // expense4: No change
-            expense4.NextDue.Should().Be(new DateOnly(2025, 6, 15));
-            expense4.AccrualStart.Should().Be(new DateOnly(2025, 5, 15));
-            expense4.AccruedIsDirty.Should().BeFalse();
+            expense4.NextDue.ShouldBe(new DateOnly(2025, 6, 15));
+            expense4.AccrualStart.ShouldBe(new DateOnly(2025, 5, 15));
+            expense4.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
@@ -338,24 +333,24 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense1, expense2, expense3, expense4], RenewalMode.Overdue, asOfDate);
 
             // expense1: 2025-03-15 -> 2026-03-15 -> 2027-03-15 -> 2028-03-15 -> 2029-03-15
-            expense1.NextDue.Should().Be(new DateOnly(2029, 3, 15));
-            expense1.AccrualStart.Should().Be(new DateOnly(2028, 3, 15));
-            expense1.AccruedIsDirty.Should().BeTrue();
+            expense1.NextDue.ShouldBe(new DateOnly(2029, 3, 15));
+            expense1.AccrualStart.ShouldBe(new DateOnly(2028, 3, 15));
+            expense1.AccruedIsDirty.ShouldBeTrue();
 
             // expense2: 2027-03-15 -> 2028-03-15 -> 2029-03-15
-            expense2.NextDue.Should().Be(new DateOnly(2029, 3, 15));
-            expense2.AccrualStart.Should().Be(new DateOnly(2028, 3, 15));
-            expense2.AccruedIsDirty.Should().BeTrue();
+            expense2.NextDue.ShouldBe(new DateOnly(2029, 3, 15));
+            expense2.AccrualStart.ShouldBe(new DateOnly(2028, 3, 15));
+            expense2.AccruedIsDirty.ShouldBeTrue();
 
             // expense3: 2028-03-15 -> 2029-03-15 (does renew once)
-            expense3.NextDue.Should().Be(new DateOnly(2029, 3, 15));
-            expense3.AccrualStart.Should().Be(new DateOnly(2028, 3, 15));
-            expense3.AccruedIsDirty.Should().BeTrue();
+            expense3.NextDue.ShouldBe(new DateOnly(2029, 3, 15));
+            expense3.AccrualStart.ShouldBe(new DateOnly(2028, 3, 15));
+            expense3.AccruedIsDirty.ShouldBeTrue();
 
             // expense4: No change
-            expense4.NextDue.Should().Be(new DateOnly(2029, 3, 15));
-            expense4.AccrualStart.Should().Be(new DateOnly(2028, 3, 15));
-            expense4.AccruedIsDirty.Should().BeFalse();
+            expense4.NextDue.ShouldBe(new DateOnly(2029, 3, 15));
+            expense4.AccrualStart.ShouldBe(new DateOnly(2028, 3, 15));
+            expense4.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
@@ -374,14 +369,14 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense1, expense2], RenewalMode.Overdue, asOfDate);
 
             // expense1: 2025-01-01 -> 2025-01-15 -> 2025-01-29 -> 2025-02-12 -> 2025-02-26 (14 days later each time)
-            expense1.NextDue.Should().Be(new DateOnly(2025, 2, 26));
-            expense1.AccrualStart.Should().Be(new DateOnly(2025, 2, 12));
-            expense1.AccruedIsDirty.Should().BeTrue();
+            expense1.NextDue.ShouldBe(new DateOnly(2025, 2, 26));
+            expense1.AccrualStart.ShouldBe(new DateOnly(2025, 2, 12));
+            expense1.AccruedIsDirty.ShouldBeTrue();
 
             // expense2: 2025-02-15 -> 2025-05-15 (due on asOfDate, renews once)
-            expense2.NextDue.Should().Be(new DateOnly(2025, 5, 15));
-            expense2.AccrualStart.Should().Be(new DateOnly(2025, 2, 15));
-            expense2.AccruedIsDirty.Should().BeTrue();
+            expense2.NextDue.ShouldBe(new DateOnly(2025, 5, 15));
+            expense2.AccrualStart.ShouldBe(new DateOnly(2025, 2, 15));
+            expense2.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -396,8 +391,8 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
-            expense.NextDue.Should().Be(originalNextDue);
-            expense.AccruedIsDirty.Should().BeFalse();
+            expense.NextDue.ShouldBe(originalNextDue);
+            expense.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
@@ -417,19 +412,19 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([dailyExpense, weeklyExpense, monthlyExpense], RenewalMode.Overdue, asOfDate);
 
             // Daily: 2025-02-05 -> 2025-02-06 -> ... -> 2025-02-10 -> 2025-02-11
-            dailyExpense.NextDue.Should().Be(new DateOnly(2025, 2, 11));
-            dailyExpense.AccrualStart.Should().Be(new DateOnly(2025, 2, 10));
-            dailyExpense.AccruedIsDirty.Should().BeTrue();
+            dailyExpense.NextDue.ShouldBe(new DateOnly(2025, 2, 11));
+            dailyExpense.AccrualStart.ShouldBe(new DateOnly(2025, 2, 10));
+            dailyExpense.AccruedIsDirty.ShouldBeTrue();
 
             // Weekly: 2025-02-05 -> 2025-02-12 (7 days), renews past AsOfDate
-            weeklyExpense.NextDue.Should().Be(new DateOnly(2025, 2, 12));
-            weeklyExpense.AccrualStart.Should().Be(new DateOnly(2025, 2, 5));
-            weeklyExpense.AccruedIsDirty.Should().BeTrue();
+            weeklyExpense.NextDue.ShouldBe(new DateOnly(2025, 2, 12));
+            weeklyExpense.AccrualStart.ShouldBe(new DateOnly(2025, 2, 5));
+            weeklyExpense.AccruedIsDirty.ShouldBeTrue();
 
             // Monthly: 2025-01-10 -> 2025-02-10 -> 2025-03-10
-            monthlyExpense.NextDue.Should().Be(new DateOnly(2025, 3, 10));
-            monthlyExpense.AccrualStart.Should().Be(new DateOnly(2025, 2, 10));
-            monthlyExpense.AccruedIsDirty.Should().BeTrue();
+            monthlyExpense.NextDue.ShouldBe(new DateOnly(2025, 3, 10));
+            monthlyExpense.AccrualStart.ShouldBe(new DateOnly(2025, 2, 10));
+            monthlyExpense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -446,9 +441,9 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             // 2025-01-01 -> ... -> 2025-02-05 -> 2025-02-12 (nextDue <= asOfDate)
             // Then calculates 2025-02-19, which is <= endDate (2025-02-20), so updates to 2025-02-19
             // Loop exits because 2025-02-19 > 2025-02-15
-            expense.NextDue.Should().Be(new DateOnly(2025, 2, 19));
-            expense.AccrualStart.Should().Be(new DateOnly(2025, 2, 12));
-            expense.AccruedIsDirty.Should().BeTrue();
+            expense.NextDue.ShouldBe(new DateOnly(2025, 2, 19));
+            expense.AccrualStart.ShouldBe(new DateOnly(2025, 2, 12));
+            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -463,9 +458,9 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // 2024-02-29 -> 2025-02-28 -> 2026-02-28 (365 days later in non-leap year, then 365 days again)
-            expense.NextDue.Should().Be(new DateOnly(2026, 2, 28));
-            expense.AccrualStart.Should().Be(new DateOnly(2025, 2, 28));
-            expense.AccruedIsDirty.Should().BeTrue();
+            expense.NextDue.ShouldBe(new DateOnly(2026, 2, 28));
+            expense.AccrualStart.ShouldBe(new DateOnly(2025, 2, 28));
+            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -479,7 +474,7 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // Accrued amount should not be modified by the renewal process
-            expense.Accrued.Should().Be(50.0);
+            expense.Accrued.ShouldBe(50.0);
         }
 
         [Fact]
@@ -491,9 +486,9 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // Should renew to next week: 2025-01-19 -> 2025-01-26
-            expense.NextDue.Should().Be(new DateOnly(2025, 1, 26));
-            expense.AccrualStart.Should().Be(new DateOnly(2025, 1, 19));
-            expense.AccruedIsDirty.Should().BeTrue();
+            expense.NextDue.ShouldBe(new DateOnly(2025, 1, 26));
+            expense.AccrualStart.ShouldBe(new DateOnly(2025, 1, 19));
+            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -508,9 +503,9 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // Should renew to 2025-02-12 (which equals EndDate)
-            expense.NextDue.Should().Be(new DateOnly(2025, 2, 12));
-            expense.AccrualStart.Should().Be(new DateOnly(2025, 2, 5));
-            expense.AccruedIsDirty.Should().BeTrue();
+            expense.NextDue.ShouldBe(new DateOnly(2025, 2, 12));
+            expense.AccrualStart.ShouldBe(new DateOnly(2025, 2, 5));
+            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -526,7 +521,7 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // LastAccruedUpdate should not be modified by the renewal process
-            expense.LastAccruedUpdate.Should().Be(lastAccruedUpdate);
+            expense.LastAccruedUpdate.ShouldBe(lastAccruedUpdate);
         }
 
         [Fact]
@@ -541,8 +536,8 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // These fields should not be modified
-            expense.Amount.Should().Be(originalAmount);
-            expense.Note.Should().Be("Important note");
+            expense.Amount.ShouldBe(originalAmount);
+            expense.Note.ShouldBe("Important note");
         }
 
         [Fact]
@@ -563,9 +558,9 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             //
             // The expense permanently drifts from the 31st to the 28th
 
-            expense.NextDue.Should().Be(new DateOnly(2025, 4, 28));
-            expense.AccrualStart.Should().Be(new DateOnly(2025, 3, 28));
-            expense.AccruedIsDirty.Should().BeTrue();
+            expense.NextDue.ShouldBe(new DateOnly(2025, 4, 28));
+            expense.AccrualStart.ShouldBe(new DateOnly(2025, 3, 28));
+            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -584,9 +579,9 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             // Mar 28 + 1 month = Apr 28 (final renewal beyond asOfDate)
 
             // The expense permanently drifts from 31st to 28th
-            expense.NextDue.Should().Be(new DateOnly(2025, 4, 28));
-            expense.AccrualStart.Should().Be(new DateOnly(2025, 3, 28));
-            expense.AccruedIsDirty.Should().BeTrue();
+            expense.NextDue.ShouldBe(new DateOnly(2025, 4, 28));
+            expense.AccrualStart.ShouldBe(new DateOnly(2025, 3, 28));
+            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -601,9 +596,9 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // 2025-01-15 -> 2025-07-15 -> 2026-01-15 -> 2026-07-15 -> 2027-01-15 -> 2027-07-15
-            expense.NextDue.Should().Be(new DateOnly(2027, 7, 15));
-            expense.AccrualStart.Should().Be(new DateOnly(2027, 1, 15));
-            expense.AccruedIsDirty.Should().BeTrue();
+            expense.NextDue.ShouldBe(new DateOnly(2027, 7, 15));
+            expense.AccrualStart.ShouldBe(new DateOnly(2027, 1, 15));
+            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -623,14 +618,14 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([excluded, oneTime, renewable], RenewalMode.Overdue, asOfDate);
 
             // Only renewable should be renewed
-            excluded.NextDue.Should().Be(new DateOnly(2025, 1, 10));
-            excluded.AccruedIsDirty.Should().BeFalse();
+            excluded.NextDue.ShouldBe(new DateOnly(2025, 1, 10));
+            excluded.AccruedIsDirty.ShouldBeFalse();
 
-            oneTime.NextDue.Should().Be(new DateOnly(2025, 1, 10));
-            oneTime.AccruedIsDirty.Should().BeFalse();
+            oneTime.NextDue.ShouldBe(new DateOnly(2025, 1, 10));
+            oneTime.AccruedIsDirty.ShouldBeFalse();
 
-            renewable.NextDue.Should().Be(new DateOnly(2025, 1, 24));
-            renewable.AccruedIsDirty.Should().BeTrue();
+            renewable.NextDue.ShouldBe(new DateOnly(2025, 1, 24));
+            renewable.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -648,9 +643,9 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // Should not renew because NextDue == EndDate at the start
-            expense.NextDue.Should().Be(originalNextDue);
-            expense.AccrualStart.Should().Be(originalAccrualStart);
-            expense.AccruedIsDirty.Should().BeFalse();
+            expense.NextDue.ShouldBe(originalNextDue);
+            expense.AccrualStart.ShouldBe(originalAccrualStart);
+            expense.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
@@ -668,9 +663,9 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // Should not renew because NextDue > EndDate at the start
-            expense.NextDue.Should().Be(originalNextDue);
-            expense.AccrualStart.Should().Be(originalAccrualStart);
-            expense.AccruedIsDirty.Should().BeFalse();
+            expense.NextDue.ShouldBe(originalNextDue);
+            expense.AccrualStart.ShouldBe(originalAccrualStart);
+            expense.AccruedIsDirty.ShouldBeFalse();
         }
     }
 
@@ -697,9 +692,9 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense], RenewalMode.Future, asOfDate);
 
             // Should advance exactly once: Feb 20 + 7 days = Feb 27
-            expense.NextDue.Should().Be(new DateOnly(2025, 2, 27));
-            expense.AccrualStart.Should().Be(asOfDate); // Accruals start from the date the request was made
-            expense.AccruedIsDirty.Should().BeTrue();
+            expense.NextDue.ShouldBe(new DateOnly(2025, 2, 27));
+            expense.AccrualStart.ShouldBe(asOfDate); // Accruals start from the date the request was made
+            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -714,9 +709,9 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense], RenewalMode.Future, asOfDate);
 
             // Should advance exactly once: Mar 15 + 1 month = Apr 15
-            expense.NextDue.Should().Be(new DateOnly(2025, 4, 15));
-            expense.AccrualStart.Should().Be(asOfDate); // Accruals start from the date the request was made
-            expense.AccruedIsDirty.Should().BeTrue();
+            expense.NextDue.ShouldBe(new DateOnly(2025, 4, 15));
+            expense.AccrualStart.ShouldBe(asOfDate); // Accruals start from the date the request was made
+            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -731,9 +726,9 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense], RenewalMode.Future, asOfDate);
 
             // Should advance exactly once: Dec 25, 2025 + 1 year = Dec 25, 2026
-            expense.NextDue.Should().Be(new DateOnly(2026, 12, 25));
-            expense.AccrualStart.Should().Be(asOfDate); // Accruals start from the date the request was made
-            expense.AccruedIsDirty.Should().BeTrue();
+            expense.NextDue.ShouldBe(new DateOnly(2026, 12, 25));
+            expense.AccrualStart.ShouldBe(asOfDate); // Accruals start from the date the request was made
+            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -752,9 +747,9 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 
             // Next due would be Feb 27, but that exceeds EndDate of Feb 25
             // So expense should NOT be renewed
-            expense.NextDue.Should().Be(originalNextDue);
-            expense.AccrualStart.Should().Be(originalAccrualStart);
-            expense.AccruedIsDirty.Should().BeFalse();
+            expense.NextDue.ShouldBe(originalNextDue);
+            expense.AccrualStart.ShouldBe(originalAccrualStart);
+            expense.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
@@ -771,9 +766,9 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense], RenewalMode.Future, asOfDate);
 
             // OneTime expenses should never renew
-            expense.NextDue.Should().Be(originalNextDue);
-            expense.AccrualStart.Should().Be(originalAccrualStart);
-            expense.AccruedIsDirty.Should().BeFalse();
+            expense.NextDue.ShouldBe(originalNextDue);
+            expense.AccrualStart.ShouldBe(originalAccrualStart);
+            expense.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
@@ -790,9 +785,9 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense], RenewalMode.Future, asOfDate);
 
             // Excluded expenses should not renew
-            expense.NextDue.Should().Be(originalNextDue);
-            expense.AccrualStart.Should().Be(originalAccrualStart);
-            expense.AccruedIsDirty.Should().BeFalse();
+            expense.NextDue.ShouldBe(originalNextDue);
+            expense.AccrualStart.ShouldBe(originalAccrualStart);
+            expense.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
@@ -811,19 +806,19 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([weeklyExpense, monthlyExpense, yearlyExpense], RenewalMode.Future, asOfDate);
 
             // Weekly: Feb 15 + 7 days = Feb 22
-            weeklyExpense.NextDue.Should().Be(new DateOnly(2025, 2, 22));
-            weeklyExpense.AccrualStart.Should().Be(asOfDate);
-            weeklyExpense.AccruedIsDirty.Should().BeTrue();
+            weeklyExpense.NextDue.ShouldBe(new DateOnly(2025, 2, 22));
+            weeklyExpense.AccrualStart.ShouldBe(asOfDate);
+            weeklyExpense.AccruedIsDirty.ShouldBeTrue();
 
             // Monthly: Mar 1 + 1 month = Apr 1
-            monthlyExpense.NextDue.Should().Be(new DateOnly(2025, 4, 1));
-            monthlyExpense.AccrualStart.Should().Be(asOfDate);
-            monthlyExpense.AccruedIsDirty.Should().BeTrue();
+            monthlyExpense.NextDue.ShouldBe(new DateOnly(2025, 4, 1));
+            monthlyExpense.AccrualStart.ShouldBe(asOfDate);
+            monthlyExpense.AccruedIsDirty.ShouldBeTrue();
 
             // Yearly: Dec 25, 2025 + 1 year = Dec 25, 2026
-            yearlyExpense.NextDue.Should().Be(new DateOnly(2026, 12, 25));
-            yearlyExpense.AccrualStart.Should().Be(asOfDate);
-            yearlyExpense.AccruedIsDirty.Should().BeTrue();
+            yearlyExpense.NextDue.ShouldBe(new DateOnly(2026, 12, 25));
+            yearlyExpense.AccrualStart.ShouldBe(asOfDate);
+            yearlyExpense.AccruedIsDirty.ShouldBeTrue();
         }
     }
 
@@ -850,9 +845,9 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // Should advance to first date after Feb 10: Feb 3 -> Feb 10 -> Feb 17
-            expense.NextDue.Should().Be(new DateOnly(2025, 2, 17));
-            expense.AccrualStart.Should().Be(new DateOnly(2025, 2, 10)); // Previous NextDue before advancing to Feb 17
-            expense.AccruedIsDirty.Should().BeTrue();
+            expense.NextDue.ShouldBe(new DateOnly(2025, 2, 17));
+            expense.AccrualStart.ShouldBe(new DateOnly(2025, 2, 10)); // Previous NextDue before advancing to Feb 17
+            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -867,9 +862,9 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // Should catch up through multiple iterations: Jan 1 -> Jan 8 -> Jan 15 -> ... -> Feb 12
-            expense.NextDue.Should().Be(new DateOnly(2025, 2, 12));
-            expense.AccrualStart.Should().Be(new DateOnly(2025, 2, 5)); // Previous NextDue before advancing to Feb 12
-            expense.AccruedIsDirty.Should().BeTrue();
+            expense.NextDue.ShouldBe(new DateOnly(2025, 2, 12));
+            expense.AccrualStart.ShouldBe(new DateOnly(2025, 2, 5)); // Previous NextDue before advancing to Feb 12
+            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -883,9 +878,9 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // Due today should be treated as overdue and advance
-            expense.NextDue.Should().Be(new DateOnly(2025, 2, 17));
-            expense.AccrualStart.Should().Be(new DateOnly(2025, 2, 10)); // Previous NextDue before advancing to Feb 17
-            expense.AccruedIsDirty.Should().BeTrue();
+            expense.NextDue.ShouldBe(new DateOnly(2025, 2, 17));
+            expense.AccrualStart.ShouldBe(new DateOnly(2025, 2, 10)); // Previous NextDue before advancing to Feb 17
+            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -899,9 +894,9 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // Should remain unchanged since next period (2025-02-01) exceeds EndDate (2025-01-25)
-            expense.NextDue.Should().Be(new DateOnly(2025, 1, 1), "expense should not advance beyond its end date");
-            expense.AccrualStart.Should().Be(new DateOnly(2025, 1, 1));
-            expense.AccruedIsDirty.Should().BeFalse();
+            expense.NextDue.ShouldBe(new DateOnly(2025, 1, 1), "expense should not advance beyond its end date");
+            expense.AccrualStart.ShouldBe(new DateOnly(2025, 1, 1));
+            expense.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
@@ -917,9 +912,9 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 
             // Sequence: Jan 15 -> Jan 22 -> Jan 29 -> Feb 5 -> Feb 12 -> Feb 19 -> Feb 26 (would exceed Feb 20)
             // Should stop at Feb 19
-            expense.NextDue.Should().Be(new DateOnly(2025, 2, 19), "should advance through multiple periods but stop before exceeding end date");
-            expense.AccrualStart.Should().Be(new DateOnly(2025, 2, 12)); // Previous NextDue before advancing to Feb 19
-            expense.AccruedIsDirty.Should().BeTrue();
+            expense.NextDue.ShouldBe(new DateOnly(2025, 2, 19), "should advance through multiple periods but stop before exceeding end date");
+            expense.AccrualStart.ShouldBe(new DateOnly(2025, 2, 12)); // Previous NextDue before advancing to Feb 19
+            expense.AccruedIsDirty.ShouldBeTrue();
         }
     }
 }

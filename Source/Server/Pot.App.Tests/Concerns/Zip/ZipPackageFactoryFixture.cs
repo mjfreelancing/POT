@@ -1,5 +1,5 @@
 using AllOverIt.Zip;
-using FluentAssertions;
+using Shouldly;
 using Pot.App.Concerns.Zip;
 using Pot.TestUtils;
 
@@ -21,8 +21,8 @@ public class ZipPackageFactoryFixture : PotFixtureBase
         {
             var result = _factory.CreateZipPackage();
 
-            result.Should().NotBeNull();
-            result.Should().BeAssignableTo<IZipPackage>();
+            result.ShouldNotBeNull();
+            result.ShouldBeAssignableTo<IZipPackage>();
         }
 
         [Fact]
@@ -31,7 +31,7 @@ public class ZipPackageFactoryFixture : PotFixtureBase
             var result1 = _factory.CreateZipPackage();
             var result2 = _factory.CreateZipPackage();
 
-            result1.Should().NotBeSameAs(result2);
+            result1.ShouldNotBeSameAs(result2);
         }
 
         [Fact]
@@ -39,7 +39,7 @@ public class ZipPackageFactoryFixture : PotFixtureBase
         {
             var result = _factory.CreateZipPackage();
 
-            result.Should().BeOfType<ZipPackage>();
+            result.ShouldBeOfType<ZipPackage>();
         }
     }
 }

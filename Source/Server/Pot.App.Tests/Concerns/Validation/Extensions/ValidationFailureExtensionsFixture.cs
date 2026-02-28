@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using Shouldly;
 using FluentValidation.Results;
 using Pot.App.Concerns.Validation.Extensions;
 using Pot.TestUtils;
@@ -19,12 +19,12 @@ public class ValidationFailureExtensionsFixture : PotFixtureBase
         [Fact]
         public void Should_Initialize_CustomState_When_Null()
         {
-            _validationFailure.CustomState.Should().BeNull();
+            _validationFailure.CustomState.ShouldBeNull();
 
             _validationFailure.AddCustomState("key1", "value1");
 
-            _validationFailure.CustomState.Should().NotBeNull();
-            _validationFailure.CustomState.Should().BeOfType<Dictionary<string, object?>>();
+            _validationFailure.CustomState.ShouldNotBeNull();
+            _validationFailure.CustomState.ShouldBeOfType<Dictionary<string, object?>>();
         }
 
         [Fact]
@@ -36,8 +36,8 @@ public class ValidationFailureExtensionsFixture : PotFixtureBase
             _validationFailure.AddCustomState(propertyName, value);
 
             var customState = _validationFailure.CustomState as Dictionary<string, object?>;
-            customState.Should().ContainKey(propertyName);
-            customState![propertyName].Should().Be(value);
+            customState.ShouldContainKey(propertyName);
+            customState![propertyName].ShouldBe(value);
         }
 
         [Fact]
@@ -48,10 +48,10 @@ public class ValidationFailureExtensionsFixture : PotFixtureBase
             _validationFailure.AddCustomState("Property3", true);
 
             var customState = _validationFailure.CustomState as Dictionary<string, object?>;
-            customState.Should().HaveCount(3);
-            customState!["Property1"].Should().Be("Value1");
-            customState["Property2"].Should().Be(42);
-            customState["Property3"].Should().Be(true);
+            customState.Count.ShouldBe(3);
+            customState!["Property1"].ShouldBe("Value1");
+            customState["Property2"].ShouldBe(42);
+            customState["Property3"].ShouldBe(true);
         }
 
         [Fact]
@@ -62,8 +62,8 @@ public class ValidationFailureExtensionsFixture : PotFixtureBase
             _validationFailure.AddCustomState(propertyName, null);
 
             var customState = _validationFailure.CustomState as Dictionary<string, object?>;
-            customState.Should().ContainKey(propertyName);
-            customState![propertyName].Should().BeNull();
+            customState.ShouldContainKey(propertyName);
+            customState![propertyName].ShouldBeNull();
         }
 
         [Fact]
@@ -76,7 +76,7 @@ public class ValidationFailureExtensionsFixture : PotFixtureBase
             _validationFailure.AddCustomState("GuidValue", Guid.NewGuid());
 
             var customState = _validationFailure.CustomState as Dictionary<string, object?>;
-            customState.Should().HaveCount(5);
+            customState.Count.ShouldBe(5);
         }
 
         [Fact]
@@ -90,9 +90,9 @@ public class ValidationFailureExtensionsFixture : PotFixtureBase
             _validationFailure.AddCustomState("NewKey", "NewValue");
 
             var customState = _validationFailure.CustomState as Dictionary<string, object?>;
-            customState.Should().HaveCount(2);
-            customState!["ExistingKey"].Should().Be("ExistingValue");
-            customState["NewKey"].Should().Be("NewValue");
+            customState.Count.ShouldBe(2);
+            customState!["ExistingKey"].ShouldBe("ExistingValue");
+            customState["NewKey"].ShouldBe("NewValue");
         }
 
         [Fact]
@@ -100,13 +100,12 @@ public class ValidationFailureExtensionsFixture : PotFixtureBase
         {
             _validationFailure.AddCustomState("DuplicateKey", "Value1");
 
-            Invoking(() =>
-            {
+            var exception = Should.Throw<ArgumentException>(() => {
                 _validationFailure.AddCustomState("DuplicateKey", "Value2");
-            })
-            .Should()
-            .Throw<ArgumentException>()
-            .WithMessage("*key*already*");
+            });
+
+            exception.Message.ShouldContain("key");
+            exception.Message.ShouldContain("already");
         }
     }
 }

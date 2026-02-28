@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using Shouldly;
 using Pot.App.Errors;
 using Pot.TestUtils;
 
@@ -19,7 +19,7 @@ public class ApiBasicErrorFixture : PotFixtureBase
                 ErrorMessage = "Test message"
             };
 
-            error.ErrorType.Should().Be(errorType);
+            error.ErrorType.ShouldBe(errorType);
         }
     }
 }

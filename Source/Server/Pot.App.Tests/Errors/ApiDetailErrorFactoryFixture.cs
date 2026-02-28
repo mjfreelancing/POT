@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using Shouldly;
 using Pot.App.Errors;
 using Pot.Data.Entities;
 using Pot.TestUtils;
@@ -18,7 +18,7 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
 
             var result = ApiDetailErrorFactory.CreateEntityExistsError(propertyName, attemptedValue, errorMessage);
 
-            result.ErrorType.Should().Be(ErrorType.Conflict);
+            result.ErrorType.ShouldBe(ErrorType.Conflict);
         }
 
         [Fact]
@@ -30,10 +30,10 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
 
             var result = ApiDetailErrorFactory.CreateEntityExistsError(propertyName, attemptedValue, errorMessage);
 
-            result.ErrorCode.Should().Be(ErrorCodes.Conflict);
-            result.PropertyName.Should().Be(propertyName);
-            result.AttemptedValue.Should().Be(attemptedValue);
-            result.ErrorMessage.Should().Be(errorMessage);
+            result.ErrorCode.ShouldBe(ErrorCodes.Conflict);
+            result.PropertyName.ShouldBe(propertyName);
+            result.AttemptedValue.ShouldBe(attemptedValue);
+            result.ErrorMessage.ShouldBe(errorMessage);
         }
 
         [Fact]
@@ -44,7 +44,7 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
 
             var result = ApiDetailErrorFactory.CreateEntityExistsError(propertyName, null, errorMessage);
 
-            result.AttemptedValue.Should().BeNull();
+            result.AttemptedValue.ShouldBeNull();
         }
     }
 
@@ -58,7 +58,7 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
 
             var result = ApiDetailErrorFactory.CreateEntityNotFoundError(attemptedValue, errorMessage);
 
-            result.ErrorType.Should().Be(ErrorType.NotFound);
+            result.ErrorType.ShouldBe(ErrorType.NotFound);
         }
 
         [Fact]
@@ -69,10 +69,10 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
 
             var result = ApiDetailErrorFactory.CreateEntityNotFoundError(attemptedValue, errorMessage);
 
-            result.ErrorCode.Should().Be(ErrorCodes.NotFound);
-            result.PropertyName.Should().BeEmpty();
-            result.AttemptedValue.Should().Be(attemptedValue);
-            result.ErrorMessage.Should().Be(errorMessage);
+            result.ErrorCode.ShouldBe(ErrorCodes.NotFound);
+            result.PropertyName.ShouldBeEmpty();
+            result.AttemptedValue.ShouldBe(attemptedValue);
+            result.ErrorMessage.ShouldBe(errorMessage);
         }
 
         [Fact]
@@ -82,7 +82,7 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
 
             var result = ApiDetailErrorFactory.CreateEntityNotFoundError(null, errorMessage);
 
-            result.AttemptedValue.Should().BeNull();
+            result.AttemptedValue.ShouldBeNull();
         }
     }
 
@@ -97,7 +97,7 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
 
             var result = ApiDetailErrorFactory.CreateEntityConstraintError(propertyName, attemptedValue, errorMessage);
 
-            result.ErrorType.Should().Be(ErrorType.Constraint);
+            result.ErrorType.ShouldBe(ErrorType.Constraint);
         }
 
         [Fact]
@@ -109,10 +109,10 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
 
             var result = ApiDetailErrorFactory.CreateEntityConstraintError(propertyName, attemptedValue, errorMessage);
 
-            result.ErrorCode.Should().Be(ErrorCodes.Constraint);
-            result.PropertyName.Should().Be(propertyName);
-            result.AttemptedValue.Should().Be(attemptedValue);
-            result.ErrorMessage.Should().Be(errorMessage);
+            result.ErrorCode.ShouldBe(ErrorCodes.Constraint);
+            result.PropertyName.ShouldBe(propertyName);
+            result.AttemptedValue.ShouldBe(attemptedValue);
+            result.ErrorMessage.ShouldBe(errorMessage);
         }
 
         [Fact]
@@ -123,7 +123,7 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
 
             var result = ApiDetailErrorFactory.CreateEntityConstraintError(propertyName, null, errorMessage);
 
-            result.AttemptedValue.Should().BeNull();
+            result.AttemptedValue.ShouldBeNull();
         }
     }
 
@@ -136,7 +136,7 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
 
             var result = ApiDetailErrorFactory.CreateAuthError(errorMessage);
 
-            result.ErrorType.Should().Be(ErrorType.Auth);
+            result.ErrorType.ShouldBe(ErrorType.Auth);
         }
 
         [Fact]
@@ -146,10 +146,10 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
 
             var result = ApiDetailErrorFactory.CreateAuthError(errorMessage);
 
-            result.ErrorCode.Should().Be(ErrorCodes.Auth);
-            result.PropertyName.Should().BeEmpty();
-            result.AttemptedValue.Should().Be(string.Empty);
-            result.ErrorMessage.Should().Be(errorMessage);
+            result.ErrorCode.ShouldBe(ErrorCodes.Auth);
+            result.PropertyName.ShouldBeEmpty();
+            result.AttemptedValue.ShouldBe(string.Empty);
+            result.ErrorMessage.ShouldBe(errorMessage);
         }
     }
 
@@ -162,7 +162,7 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
 
             var result = ApiDetailErrorFactory.CreateUnprocessableEntityError(errorMessage);
 
-            result.ErrorType.Should().Be(ErrorType.UnprocessableEntity);
+            result.ErrorType.ShouldBe(ErrorType.UnprocessableEntity);
         }
 
         [Fact]
@@ -172,8 +172,8 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
 
             var result = ApiDetailErrorFactory.CreateUnprocessableEntityError(errorMessage);
 
-            result.ErrorCode.Should().Be(ErrorCodes.Invalid);
-            result.ErrorMessage.Should().Be(errorMessage);
+            result.ErrorCode.ShouldBe(ErrorCodes.Invalid);
+            result.ErrorMessage.ShouldBe(errorMessage);
         }
     }
 
@@ -188,7 +188,7 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
 
             var result = ApiDetailErrorFactory.CreateUnprocessableEntityError(propertyName, attemptedValue, errorMessage);
 
-            result.ErrorType.Should().Be(ErrorType.UnprocessableEntity);
+            result.ErrorType.ShouldBe(ErrorType.UnprocessableEntity);
         }
 
         [Fact]
@@ -200,10 +200,10 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
 
             var result = ApiDetailErrorFactory.CreateUnprocessableEntityError(propertyName, attemptedValue, errorMessage);
 
-            result.ErrorCode.Should().Be(ErrorCodes.Invalid);
-            result.PropertyName.Should().Be(propertyName);
-            result.AttemptedValue.Should().Be(attemptedValue);
-            result.ErrorMessage.Should().Be(errorMessage);
+            result.ErrorCode.ShouldBe(ErrorCodes.Invalid);
+            result.PropertyName.ShouldBe(propertyName);
+            result.AttemptedValue.ShouldBe(attemptedValue);
+            result.ErrorMessage.ShouldBe(errorMessage);
         }
 
         [Fact]
@@ -214,7 +214,7 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
 
             var result = ApiDetailErrorFactory.CreateUnprocessableEntityError(propertyName, null, errorMessage);
 
-            result.AttemptedValue.Should().BeNull();
+            result.AttemptedValue.ShouldBeNull();
         }
     }
 
@@ -228,7 +228,7 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
 
             var result = ApiDetailErrorFactory.CreateEtagConflict(entityType, attemptedValue);
 
-            result.ErrorType.Should().Be(ErrorType.Conflict);
+            result.ErrorType.ShouldBe(ErrorType.Conflict);
         }
 
         [Fact]
@@ -239,10 +239,10 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
 
             var result = ApiDetailErrorFactory.CreateEtagConflict(entityType, attemptedValue);
 
-            result.ErrorCode.Should().Be(ErrorCodes.Conflict);
-            result.PropertyName.Should().Be(nameof(EntityBase.Etag));
-            result.AttemptedValue.Should().Be(attemptedValue);
-            result.ErrorMessage.Should().Be($"The entity tag for the {entityType} does not match the current record");
+            result.ErrorCode.ShouldBe(ErrorCodes.Conflict);
+            result.PropertyName.ShouldBe(nameof(EntityBase.Etag));
+            result.AttemptedValue.ShouldBe(attemptedValue);
+            result.ErrorMessage.ShouldBe($"The entity tag for the {entityType} does not match the current record");
         }
 
         [Fact]
@@ -252,7 +252,7 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
 
             var result = ApiDetailErrorFactory.CreateEtagConflict(entityType, null);
 
-            result.AttemptedValue.Should().BeNull();
+            result.AttemptedValue.ShouldBeNull();
         }
     }
 
@@ -265,7 +265,7 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
 
             var result = ApiDetailErrorFactory.CreateTooManyRequests(totalSeconds);
 
-            result.ErrorType.Should().Be(ErrorType.TooManyRequests);
+            result.ErrorType.ShouldBe(ErrorType.TooManyRequests);
         }
 
         [Fact]
@@ -275,8 +275,8 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
 
             var result = ApiDetailErrorFactory.CreateTooManyRequests(totalSeconds);
 
-            result.ErrorCode.Should().Be(ErrorCodes.TooManyRequests);
-            result.ErrorMessage.Should().Be($"Too many requests. Please wait and try again after {totalSeconds} seconds.");
+            result.ErrorCode.ShouldBe(ErrorCodes.TooManyRequests);
+            result.ErrorMessage.ShouldBe($"Too many requests. Please wait and try again after {totalSeconds} seconds.");
         }
     }
 }

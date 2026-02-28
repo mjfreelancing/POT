@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using Shouldly;
 using FluentValidation.Results;
 using Pot.App.Concerns.Validation.Extensions;
 using Pot.App.Errors;
@@ -17,7 +17,7 @@ public class ValidationResultExtensionsFixture : PotFixtureBase
 
             var result = validationResult.ToApiDetailErrors();
 
-            result.Should().BeEmpty();
+            result.ShouldBeEmpty();
         }
 
         [Fact]
@@ -33,7 +33,7 @@ public class ValidationResultExtensionsFixture : PotFixtureBase
 
             var result = validationResult.ToApiDetailErrors().ToList();
 
-            result.Should().HaveCount(1);
+            result.Count.ShouldBe(1);
             AssertProblemDetailsError(result[0], validationFailure);
         }
 
@@ -65,7 +65,7 @@ public class ValidationResultExtensionsFixture : PotFixtureBase
 
             var result = validationResult.ToApiDetailErrors().ToList();
 
-            result.Should().HaveCount(3);
+            result.Count.ShouldBe(3);
             AssertProblemDetailsError(result[0], validationFailures[0]);
             AssertProblemDetailsError(result[1], validationFailures[1]);
             AssertProblemDetailsError(result[2], validationFailures[2]);
@@ -91,7 +91,7 @@ public class ValidationResultExtensionsFixture : PotFixtureBase
 
             var result = validationResult.ToApiDetailErrors().ToList();
 
-            result.Should().HaveCount(1);
+            result.Count.ShouldBe(1);
             AssertProblemDetailsError(result[0], validationFailure);
         }
 
@@ -107,7 +107,7 @@ public class ValidationResultExtensionsFixture : PotFixtureBase
 
             var result = validationResult.ToApiDetailErrors().ToList();
 
-            result.Should().HaveCount(1);
+            result.Count.ShouldBe(1);
             AssertProblemDetailsError(result[0], validationFailure);
         }
 
@@ -144,7 +144,7 @@ public class ValidationResultExtensionsFixture : PotFixtureBase
 
             var result = validationResult.ToApiDetailErrors().ToList();
 
-            result.Should().HaveCount(4);
+            result.Count.ShouldBe(4);
             AssertProblemDetailsError(result[0], validationFailures[0]);
             AssertProblemDetailsError(result[1], validationFailures[1]);
             AssertProblemDetailsError(result[2], validationFailures[2]);
@@ -165,11 +165,11 @@ public class ValidationResultExtensionsFixture : PotFixtureBase
 
             var result = validationResult.ToApiDetailErrors().ToList();
 
-            result.Should().HaveCount(3);
+            result.Count.ShouldBe(3);
 
-            result[0].ErrorType.Should().Be(ErrorType.UnprocessableEntity);
-            result[1].ErrorType.Should().Be(ErrorType.UnprocessableEntity);
-            result[2].ErrorType.Should().Be(ErrorType.UnprocessableEntity);
+            result[0].ErrorType.ShouldBe(ErrorType.UnprocessableEntity);
+            result[1].ErrorType.ShouldBe(ErrorType.UnprocessableEntity);
+            result[2].ErrorType.ShouldBe(ErrorType.UnprocessableEntity);
         }
 
         [Fact]
@@ -206,18 +206,18 @@ public class ValidationResultExtensionsFixture : PotFixtureBase
             var firstEnumeration = result.ToList();
             var secondEnumeration = result.ToList();
 
-            firstEnumeration.Should().HaveCount(1);
-            secondEnumeration.Should().HaveCount(1);
+            firstEnumeration.Count.ShouldBe(1);
+            secondEnumeration.Count.ShouldBe(1);
         }
 
         private static void AssertProblemDetailsError(ApiDetailError error, ValidationFailure validationFailure)
         {
-            error.ErrorType.Should().Be(ErrorType.UnprocessableEntity);
-            error.ErrorCode.Should().Be(validationFailure.ErrorCode);
-            error.PropertyName.Should().Be(validationFailure.PropertyName);
-            error.AttemptedValue.Should().Be(validationFailure.AttemptedValue);
-            error.ErrorMessage.Should().Be(validationFailure.ErrorMessage);
-            error.CustomState.Should().BeSameAs(validationFailure.CustomState);
+            error.ErrorType.ShouldBe(ErrorType.UnprocessableEntity);
+            error.ErrorCode.ShouldBe(validationFailure.ErrorCode);
+            error.PropertyName.ShouldBe(validationFailure.PropertyName);
+            error.AttemptedValue.ShouldBe(validationFailure.AttemptedValue);
+            error.ErrorMessage.ShouldBe(validationFailure.ErrorMessage);
+            error.CustomState.ShouldBeSameAs(validationFailure.CustomState);
         }
     }
 }
