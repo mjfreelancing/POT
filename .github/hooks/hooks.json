@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionEnd": [
+      {
+        "type": "command",
+        "bash": "./.github/hooks/scripts/agent-post-edit.sh",
+        "powershell": "./.github/hooks/scripts/agent-post-edit.ps1",
+        "cwd": ".",
+        "timeoutSec": 300
+      }
+    ]
+  }
+}

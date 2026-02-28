@@ -62,6 +62,45 @@
         "isDefault": false
       },
       "problemMatcher": []
+    },
+    {
+      "label": "agent-env-diagnostics",
+      "type": "shell",
+      "command": "./.github/scripts/agent-env-diagnostics.ps1",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "agent-env-diagnostics-offer-install",
+      "type": "shell",
+      "command": "./.github/scripts/agent-env-diagnostics.ps1 -OfferInstall",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "agent-env-diagnostics-auto-install-dryrun",
+      "type": "shell",
+      "command": "./.github/scripts/agent-env-diagnostics.ps1 -AutoInstall -DryRun",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": []
     }
   ]
 }
