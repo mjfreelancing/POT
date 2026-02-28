@@ -15,9 +15,10 @@ Integration tests live in `Source/Server/Pot.AspNetCore.Integration.Tests/**`.
 
 ### Unit vs Integration Classification
 
-- Use a **unit test** when the test executes a class/method directly (handler/service/repository/utility) without booting the API host.
+- Use a **unit test** when the test executes a class/method directly (service/repository/utility) without booting the API host.
 - Use a **unit test** when dependencies are mocked/faked in-process and assertions focus on local behavior.
 - Use an **integration test** when the test boots `Program` via `WebApplicationFactory<Program>` (or derived factory) and sends real HTTP requests through middleware/routing/auth/filters/rate limiting.
+- Use an **integration test** when validating endpoint handler behavior and request/response mapping through the hosted API boundary.
 - Use an **integration test** when asserting HTTP contracts (status codes, headers, ProblemDetails payload shape, endpoint method contracts such as `405`, CORS behavior, middleware concerns).
 - If a test requires `HttpClient` from a test host to verify behavior, it belongs in `Pot.AspNetCore.Integration.Tests`.
 

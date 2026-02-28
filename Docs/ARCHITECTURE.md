@@ -40,36 +40,41 @@ This document provides a high-level overview of POT's technical architecture.
 ```
 POT/
 ├── Source/
-│   ├── Client/pot-react/           # React frontend application
+│   ├── Client/pot-react/                     # React frontend application
 │   │   ├── src/
-│   │   │   ├── features/           # Feature modules (auth, accounts, expenses, etc.)
-│   │   │   ├── components/         # Reusable UI components
-│   │   │   ├── api/                # API integration layer
-│   │   │   ├── lib/                # Utilities and helpers
-│   │   │   └── store/              # Global state management
-│   │   └── DEVELOPER.md            # Frontend development guide
+│   │   │   ├── features/                     # Feature modules (auth, accounts, expenses, etc.)
+│   │   │   ├── components/                   # Reusable UI components
+│   │   │   ├── api/                          # API integration layer
+│   │   │   ├── lib/                          # Utilities and helpers
+│   │   │   └── store/                        # Global state management
+│   │   └── DEVELOPER.md                      # Frontend development guide
 │   │
-│   ├── Server/                     # ASP.NET Core backend
-│   │   ├── Pot.AspNetCore/         # API endpoints and configuration
-│   │   ├── Pot.App/                # Business logic and services
-│   │   ├── Pot.Data/               # EF Core data access
-│   │   ├── Pot.Data.Migrations/    # Database migrations
-│   │   ├── Pot.Shared/             # DTOs and shared types
-│   │   ├── Pot.EmailSender/        # Email infrastructure
-│   │   └── DEVELOPER.md            # Backend development guide
+│   ├── Server/                               # ASP.NET Core backend
+│   │   ├── Pot.AspNetCore/                   # API endpoints and configuration
+│   │   ├── Pot.AspNetCore.Tests/             # Unit tests for API-layer components/services (non-hosted)
+│   │   ├── Pot.AspNetCore.Integration.Tests/ # Hosted API integration tests
+│   │   ├── Pot.App/                          # Business logic and services
+│   │   ├── Pot.App.Tests/                    # Unit tests for app/business layer
+│   │   ├── Pot.Data/                         # EF Core data access
+│   │   ├── Pot.Data.Tests/                   # Unit tests for data layer
+│   │   ├── Pot.Data.Migrations/              # Database migrations
+│   │   ├── Pot.Shared/                       # DTOs and shared types
+│   │   ├── Pot.EmailSender/                  # Email infrastructure
+│   │   ├── Pot.TestUtils/                    # Shared test helpers and utilities
+│   │   └── DEVELOPER.md                      # Backend development guide
 │   │
-│   └── Docker/                     # Docker configuration
+│   └── Docker/                               # Docker configuration
 │       ├── docker-compose-client-server.yml
-│       ├── .env                    # Base environment variables
-│       ├── .env.development        # Development settings
-│       └── DEVELOPER.md            # Docker development guide
+│       ├── .env                              # Base environment variables
+│       ├── .env.development                  # Development settings
+│       └── DEVELOPER.md                      # Docker development guide
 │
-├── Docs/                           # Documentation
-│   ├── GETTING-STARTED.md          # Setup and installation
-│   ├── FEATURES.md                 # Feature descriptions
-│   └── ARCHITECTURE.md             # This file
+├── Docs/                                     # Documentation
+│   ├── GETTING-STARTED.md                    # Setup and installation
+│   ├── FEATURES.md                           # Feature descriptions
+│   └── ARCHITECTURE.md                       # This file
 │
-└── README.md                       # Project overview
+└── README.md                                 # Project overview
 ```
 
 ## Frontend Architecture
@@ -110,6 +115,28 @@ The backend uses a **hybrid architecture** combining layered and feature-based a
 - JWT-based authentication and authorization
 
 **For detailed backend patterns:** See `Source/Server/DEVELOPER.md`
+
+## Testing Architecture
+
+Server tests are split by intent to keep boundaries clear and test execution predictable.
+
+### Unit Test Projects
+
+- `Pot.App.Tests` - business logic and app-layer behavior in isolation
+- `Pot.Data.Tests` - data-layer behavior/specifications in isolation
+- `Pot.AspNetCore.Tests` - API-layer units (services/components) without booting the full HTTP pipeline
+
+### Integration Test Project
+
+- `Pot.AspNetCore.Integration.Tests` - hosted API tests using `WebApplicationFactory<Program>` + real `HttpClient`, including endpoint handler behavior
+- Focus areas include middleware, CORS, rate limiting, security headers, endpoint method contracts (`405`), and ProblemDetails contracts
+
+### Unit vs Integration Decision Rule
+
+- **Unit test:** execute class/method directly with in-process test doubles; no hosted API required
+- **Integration test:** boot `Program` and verify behavior through HTTP boundary (status, headers, response body contract)
+
+Shared test helpers live in `Pot.TestUtils` and are referenced by test projects.
 
 ## Database
 

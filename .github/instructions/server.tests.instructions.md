@@ -24,9 +24,9 @@ applyTo: "Source/Server/*Tests/**"
 
 ### Unit vs Integration Placement
 
-- Place tests in `Pot.App.Tests`, `Pot.Data.Tests`, or `Pot.AspNetCore.Tests` when validating a single class/handler/service with in-process test doubles and no hosted API.
+- Place tests in `Pot.App.Tests`, `Pot.Data.Tests`, or `Pot.AspNetCore.Tests` when validating a single class/service/component with in-process test doubles and no hosted API.
 - Place tests in `Pot.AspNetCore.Integration.Tests` when validating request pipeline behavior via `WebApplicationFactory<Program>` + real `HttpClient` requests.
-- Integration concerns include middleware, rate limiting, CORS, security headers, ProblemDetails contracts, and endpoint method contracts (`405`).
+- Integration concerns include middleware, endpoint handlers, rate limiting, CORS, security headers, ProblemDetails contracts, and endpoint method contracts (`405`).
 - If a test needs to assert behavior at HTTP boundary level (status code/headers/body contract), it is an integration test.
 
 ### Layer-Specific Expectations
