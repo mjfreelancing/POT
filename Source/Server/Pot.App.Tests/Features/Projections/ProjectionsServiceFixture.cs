@@ -1,7 +1,5 @@
-using AllOverIt.Extensions;
-using AllOverIt.Fixture.Extensions;
+﻿using AllOverIt.Extensions;
 using AllOverIt.Patterns.Result;
-using Shouldly;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -15,6 +13,7 @@ using Pot.Data.Repositories.Projections;
 using Pot.Shared;
 using Pot.Shared.Enumerations;
 using Pot.TestUtils;
+using Shouldly;
 
 namespace Pot.App.Tests.Features.Projections;
 
@@ -2050,372 +2049,372 @@ public class ProjectionsServiceFixture : PotFixtureBase
         {
             [Fact]
             public async Task Should_Handle_Account_With_Reserved_Funds()
-        {
-            using var context = CreateTestContext();
-
-            var account = EntityFactory.CreateAccount(context.Site, "Visa", 5000.0d, reserved: 1000.0d);
-            var expense = EntityFactory.CreateExpense(account, false, "Bill", 200.0d, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
-
-            account.Expenses.Add(expense);
-
-            await context.AddAccountAsync(account);
-
-            var options = new ProjectionOptions
             {
-                StartDate = _currentDate,
-                DaysForecast = 30
-            };
+                using var context = CreateTestContext();
 
-            var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
+                var account = EntityFactory.CreateAccount(context.Site, "Visa", 5000.0d, reserved: 1000.0d);
+                var expense = EntityFactory.CreateExpense(account, false, "Bill", 200.0d, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
 
-            result.IsSuccess.ShouldBeTrue();
+                account.Expenses.Add(expense);
 
-            var accountProjection = result.Value!.Accounts[0];
+                await context.AddAccountAsync(account);
 
-            // Validate all dates are consecutive (Jan 15 - Feb 13)
-            ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
+                var options = new ProjectionOptions
+                {
+                    StartDate = _currentDate,
+                    DaysForecast = 30
+                };
 
-            // Days 0-4 (Jan 15 - Jan 19): Before expense payment
-            // Expense accrues from Jan 1 to Jan 20 (19 days), daily rate = 200/19 = 10.526315789...
-            // Available = Balance - Reserved - Accrued + ExpensesPaid (ExpensesPaid = 0 on non-payment days)
-            var billDailyAccrual = 200.0d / 19.0d;
+                var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-            for (int i = 0; i <= 4; i++)
-            {
-                var dayNumber = i + 1;
-                var daysAccrued = 14 + i; // Jan 1 to Jan 15 = 14 days, then 15, 16, 17, 18
-                var accruedAmount = Math.Round(billDailyAccrual * daysAccrued, 2, MidpointRounding.AwayFromZero);
-                var expectedAvailable = 5000.0d - 1000.0d - accruedAmount + 0.0d; // +0 for expensesPaid
+                result.IsSuccess.ShouldBeTrue();
 
-                accountProjection.Dates[i].Balance.ShouldBe(5000.0d);
-                accountProjection.Dates[i].Available.ShouldBe(expectedAvailable,
-                    $"day {dayNumber}: available = balance(5000) - reserved(1000) - accrued({accruedAmount:F2}) + expensesPaid(0) = {expectedAvailable:F2}");
+                var accountProjection = result.Value!.Accounts[0];
+
+                // Validate all dates are consecutive (Jan 15 - Feb 13)
+                ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
+
+                // Days 0-4 (Jan 15 - Jan 19): Before expense payment
+                // Expense accrues from Jan 1 to Jan 20 (19 days), daily rate = 200/19 = 10.526315789...
+                // Available = Balance - Reserved - Accrued + ExpensesPaid (ExpensesPaid = 0 on non-payment days)
+                var billDailyAccrual = 200.0d / 19.0d;
+
+                for (int i = 0; i <= 4; i++)
+                {
+                    var dayNumber = i + 1;
+                    var daysAccrued = 14 + i; // Jan 1 to Jan 15 = 14 days, then 15, 16, 17, 18
+                    var accruedAmount = Math.Round(billDailyAccrual * daysAccrued, 2, MidpointRounding.AwayFromZero);
+                    var expectedAvailable = 5000.0d - 1000.0d - accruedAmount + 0.0d; // +0 for expensesPaid
+
+                    accountProjection.Dates[i].Balance.ShouldBe(5000.0d);
+                    accountProjection.Dates[i].Available.ShouldBe(expectedAvailable,
+                        $"day {dayNumber}: available = balance(5000) - reserved(1000) - accrued({accruedAmount:F2}) + expensesPaid(0) = {expectedAvailable:F2}");
+                }
+
+                // Day 5 (Jan 20): Expense paid
+                ValidateEventDay(
+                    accountProjection.Dates[5],
+                    expectedDate: new DateOnly(2025, 1, 20),
+                    expectedBalance: 4800.0d,
+                    expectedExpensesPaid: 200.0d,
+                    expectedExpenseDescriptions: ["Bill"]);
+
+                // After payment, expense renews for next period (Feb 20, 31 days away)
+                // New daily accrual = 200 / 31 = 6.451612903...
+                // Available on payment day = Balance - Reserved - Accrued + ExpensesPaid
+                // Available = 4800 - 1000 - 0 + 200 = 4000
+                var nextBillDailyAccrual = 200.0d / 31.0d;
+                accountProjection.Dates[5].Available.ShouldBe(4000.0d,
+                    "day 6: available = balance(4800) - reserved(1000) - accrued(0, just reset) + expensesPaid(200) = 4000");
+
+                // Days 6-29 (Jan 21 - Feb 13): After expense, balance constant at 4800
+                // Accrual accumulates for next period (due Feb 20)
+                // Available = Balance - Reserved - Accrued + ExpensesPaid (ExpensesPaid = 0 on non-payment days)
+                for (int i = 6; i <= 29; i++)
+                {
+                    var dayNumber = i + 1;
+                    var daysIntoNextPeriod = i - 5; // Days since Jan 20 payment
+                    var accruedForNextPeriod = Math.Round(nextBillDailyAccrual * daysIntoNextPeriod, 2, MidpointRounding.AwayFromZero);
+                    var expectedAvailable = 4800.0d - 1000.0d - accruedForNextPeriod + 0.0d; // +0 for expensesPaid
+
+                    accountProjection.Dates[i].Balance.ShouldBe(4800.0d);
+                    accountProjection.Dates[i].Available.ShouldBe(expectedAvailable,
+                        $"day {dayNumber}: available = balance(4800) - reserved(1000) - accrued({accruedForNextPeriod:F2}) + expensesPaid(0) = {expectedAvailable:F2}");
+                }
             }
 
-            // Day 5 (Jan 20): Expense paid
-            ValidateEventDay(
-                accountProjection.Dates[5],
-                expectedDate: new DateOnly(2025, 1, 20),
-                expectedBalance: 4800.0d,
-                expectedExpensesPaid: 200.0d,
-                expectedExpenseDescriptions: ["Bill"]);
-
-            // After payment, expense renews for next period (Feb 20, 31 days away)
-            // New daily accrual = 200 / 31 = 6.451612903...
-            // Available on payment day = Balance - Reserved - Accrued + ExpensesPaid
-            // Available = 4800 - 1000 - 0 + 200 = 4000
-            var nextBillDailyAccrual = 200.0d / 31.0d;
-            accountProjection.Dates[5].Available.ShouldBe(4000.0d,
-                "day 6: available = balance(4800) - reserved(1000) - accrued(0, just reset) + expensesPaid(200) = 4000");
-
-            // Days 6-29 (Jan 21 - Feb 13): After expense, balance constant at 4800
-            // Accrual accumulates for next period (due Feb 20)
-            // Available = Balance - Reserved - Accrued + ExpensesPaid (ExpensesPaid = 0 on non-payment days)
-            for (int i = 6; i <= 29; i++)
+            [Fact]
+            public async Task Should_Handle_Negative_Account_Balance()
             {
-                var dayNumber = i + 1;
-                var daysIntoNextPeriod = i - 5; // Days since Jan 20 payment
-                var accruedForNextPeriod = Math.Round(nextBillDailyAccrual * daysIntoNextPeriod, 2, MidpointRounding.AwayFromZero);
-                var expectedAvailable = 4800.0d - 1000.0d - accruedForNextPeriod + 0.0d; // +0 for expensesPaid
+                using var context = CreateTestContext();
 
-                accountProjection.Dates[i].Balance.ShouldBe(4800.0d);
-                accountProjection.Dates[i].Available.ShouldBe(expectedAvailable,
-                    $"day {dayNumber}: available = balance(4800) - reserved(1000) - accrued({accruedForNextPeriod:F2}) + expensesPaid(0) = {expectedAvailable:F2}");
-            }
-        }
+                var account = EntityFactory.CreateAccount(context.Site, "Credit Card", -500.0d);
+                var payment = EntityFactory.CreateIncome(account, false, "Payment", 600.0d, "2025-01-20", null, Frequency.Months, 1);
 
-        [Fact]
-        public async Task Should_Handle_Negative_Account_Balance()
-        {
-            using var context = CreateTestContext();
+                account.Incomes.Add(payment);
 
-            var account = EntityFactory.CreateAccount(context.Site, "Credit Card", -500.0d);
-            var payment = EntityFactory.CreateIncome(account, false, "Payment", 600.0d, "2025-01-20", null, Frequency.Months, 1);
+                await context.AddAccountAsync(account);
 
-            account.Incomes.Add(payment);
+                var options = new ProjectionOptions
+                {
+                    StartDate = _currentDate,
+                    DaysForecast = 30
+                };
 
-            await context.AddAccountAsync(account);
+                var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-            var options = new ProjectionOptions
-            {
-                StartDate = _currentDate,
-                DaysForecast = 30
-            };
+                result.IsSuccess.ShouldBeTrue();
 
-            var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
+                var accountProjection = result.Value!.Accounts[0];
 
-            result.IsSuccess.ShouldBeTrue();
+                // Validate all dates are consecutive (Jan 15 - Feb 13)
+                ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
 
-            var accountProjection = result.Value!.Accounts[0];
+                // Days 0-4 (Jan 15 - Jan 19): Before payment, negative balance
+                ValidateNoActivityRange(accountProjection.Dates, 0, 4, expectedBalance: -500.0d);
 
-            // Validate all dates are consecutive (Jan 15 - Feb 13)
-            ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
+                // Day 5 (Jan 20): Payment received, balance becomes positive
+                ValidateEventDay(
+                    accountProjection.Dates[5],
+                    expectedDate: new DateOnly(2025, 1, 20),
+                    expectedBalance: 100.0d,
+                    expectedIncomeReceived: 600.0d,
+                    expectedIncomeDescriptions: ["Payment"]);
 
-            // Days 0-4 (Jan 15 - Jan 19): Before payment, negative balance
-            ValidateNoActivityRange(accountProjection.Dates, 0, 4, expectedBalance: -500.0d);
-
-            // Day 5 (Jan 20): Payment received, balance becomes positive
-            ValidateEventDay(
-                accountProjection.Dates[5],
-                expectedDate: new DateOnly(2025, 1, 20),
-                expectedBalance: 100.0d,
-                expectedIncomeReceived: 600.0d,
-                expectedIncomeDescriptions: ["Payment"]);
-
-            // Days 6-29 (Jan 21 - Feb 13): After payment, positive balance
-            ValidateNoActivityRange(accountProjection.Dates, 6, 29, expectedBalance: 100.0d);
-        }
-
-        [Fact]
-        public async Task Should_Handle_Zero_Amount_Expense()
-        {
-            using var context = CreateTestContext();
-
-            var account = EntityFactory.CreateAccount(context.Site, "Visa", 1000.0d);
-            var zeroExpense = EntityFactory.CreateExpense(account, false, "Zero Expense", 0.0d, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
-
-            account.Expenses.Add(zeroExpense);
-
-            await context.AddAccountAsync(account);
-
-            var options = new ProjectionOptions
-            {
-                StartDate = _currentDate,
-                DaysForecast = 30
-            };
-
-            var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
-
-            result.IsSuccess.ShouldBeTrue();
-
-            var accountProjection = result.Value!.Accounts[0];
-
-            // Validate all dates are consecutive (Jan 15 - Feb 13)
-            ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
-
-            // All days: Balance should remain unchanged at 1000 (zero-amount expense has no effect)
-            ValidateNoActivityRange(accountProjection.Dates, 0, 29, expectedBalance: 1000.0d);
-        }
-
-        [Fact]
-        public async Task Should_Handle_StartDate_In_Future()
-        {
-            using var context = CreateTestContext();
-
-            var futureDate = _currentDate.AddDays(10);
-            var account = EntityFactory.CreateAccount(context.Site, "Visa", 1000.0d);
-            var expense = EntityFactory.CreateExpense(account, false, "Bill", 100.0d, "2025-01-01", "2025-01-30", null, Frequency.Months, 1);
-
-            account.Expenses.Add(expense);
-
-            await context.AddAccountAsync(account);
-
-            var options = new ProjectionOptions
-            {
-                StartDate = futureDate,
-                DaysForecast = 30
-            };
-
-            var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
-
-            result.IsSuccess.ShouldBeTrue();
-
-            var accountProjection = result.Value!.Accounts[0];
-
-            // Validate all dates are consecutive starting from future date (Jan 25 - Feb 23)
-            ValidateConsecutiveDates(accountProjection.Dates, futureDate, 30);
-
-            // Days 0-4 (Jan 25 - Jan 29): Before expense
-            ValidateNoActivityRange(accountProjection.Dates, 0, 4, expectedBalance: 1000.0d);
-
-            // Day 5 (Jan 30): Expense paid
-            ValidateEventDay(
-                accountProjection.Dates[5],
-                expectedDate: new DateOnly(2025, 1, 30),
-                expectedBalance: 900.0d,
-                expectedExpensesPaid: 100.0d,
-                expectedExpenseDescriptions: ["Bill"]);
-
-            // Days 6-29 (Jan 31 - Feb 23): After expense
-            ValidateNoActivityRange(accountProjection.Dates, 6, 29, expectedBalance: 900.0d);
-        }
-
-        [Fact]
-        public async Task Should_Handle_Multiple_Expenses_On_Same_Day()
-        {
-            using var context = CreateTestContext();
-
-            var account = EntityFactory.CreateAccount(context.Site, "Visa", 2000.0d);
-
-            var expense1 = EntityFactory.CreateExpense(account, false, "Bill 1", 100.0d, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
-            var expense2 = EntityFactory.CreateExpense(account, false, "Bill 2", 150.0d, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
-            var expense3 = EntityFactory.CreateExpense(account, false, "Bill 3", 75.0d, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
-
-            account.Expenses.Add(expense1);
-            account.Expenses.Add(expense2);
-            account.Expenses.Add(expense3);
-
-            await context.AddAccountAsync(account);
-
-            var options = new ProjectionOptions
-            {
-                StartDate = _currentDate,
-                DaysForecast = 30
-            };
-
-            var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
-
-            result.IsSuccess.ShouldBeTrue();
-
-            var accountProjection = result.Value!.Accounts[0];
-
-            // Validate all dates are consecutive (Jan 15 - Feb 13)
-            ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
-
-            // Days 0-4 (Jan 15 - Jan 19): Before all expenses
-            ValidateNoActivityRange(accountProjection.Dates, 0, 4, expectedBalance: 2000.0d);
-
-            // Day 5 (Jan 20): All three expenses on same day
-            ValidateEventDay(
-                accountProjection.Dates[5],
-                expectedDate: new DateOnly(2025, 1, 20),
-                expectedBalance: 1675.0d,
-                expectedExpensesPaid: 325.0d,
-                expectedExpenseDescriptions: ["Bill 1", "Bill 2", "Bill 3"]);
-
-            // Verify all three expense items are present with correct amounts
-            accountProjection.Dates[5].ExpenseItems.Count().ShouldBe(3);
-            accountProjection.Dates[5].ExpenseItems.ShouldContain(expense => expense.Description == "Bill 1" && expense.Amount == 100.0d);
-            accountProjection.Dates[5].ExpenseItems.ShouldContain(expense => expense.Description == "Bill 2" && expense.Amount == 150.0d);
-            accountProjection.Dates[5].ExpenseItems.ShouldContain(expense => expense.Description == "Bill 3" && expense.Amount == 75.0d);
-
-            // Days 6-29 (Jan 21 - Feb 13): After all expenses
-            ValidateNoActivityRange(accountProjection.Dates, 6, 29, expectedBalance: 1675.0d);
-        }
-
-        [Fact]
-        public async Task Should_Handle_Expense_Accruals_With_Different_Start_Dates()
-        {
-            using var context = CreateTestContext();
-
-            var account = EntityFactory.CreateAccount(context.Site, "Visa", 5000.0d);
-
-            // Expense 1: Accrual starts before projection start (Jan 10), due Jan 30
-            // This should accrue from day 1 of projection (Jan 15)
-            var expense1 = EntityFactory.CreateExpense(account, false, "Rent", 900.0d, "2025-01-10", "2025-01-30", null, Frequency.Months, 1);
-
-            // Expense 2: Accrual starts on last day of projection (Feb 13), due Feb 20
-            // This should never accrue during the 30-day forecast period
-            var expense2 = EntityFactory.CreateExpense(account, false, "Insurance", 600.0d, "2025-02-13", "2025-02-20", null, Frequency.Months, 1);
-
-            account.Expenses.Add(expense1);
-            account.Expenses.Add(expense2);
-
-            await context.AddAccountAsync(account);
-
-            var options = new ProjectionOptions
-            {
-                StartDate = _currentDate,
-                DaysForecast = 30
-            };
-
-            var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
-
-            result.IsSuccess.ShouldBeTrue();
-
-            var accountProjection = result.Value!.Accounts[0];
-
-            // Validate all dates are consecutive (Jan 15 - Feb 13)
-            ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
-
-            // Calculate daily accrual for Rent: 900 / 20 days (Jan 10 to Jan 30) = 45 per day
-            // Projection starts Jan 15, so 5 days already accrued (Jan 10-15 exclusive of Jan 10, inclusive of Jan 15)
-            // DaysFromAccrualStart counts from AccrualStart to current date
-            var rentDailyAccrual = 900.0d / 20.0d; // 45.0
-            var rentDaysAccruedOnStart = 5; // Jan 10 to Jan 15 = 5 days
-
-            // Days 0-14 (Jan 15 - Jan 29): Rent accruing daily, no payments yet
-            for (int i = 0; i <= 14; i++)
-            {
-                var projection = accountProjection.Dates[i];
-                var dayNumber = i + 1;
-                var daysAccrued = rentDaysAccruedOnStart + i; // Start with 5, then 6, 7, 8...
-                var totalAccrued = daysAccrued * rentDailyAccrual;
-                var expectedAvailable = 5000.0d - totalAccrued;
-
-                projection.Date.ShouldBe(_currentDate.AddDays(i));
-                projection.Balance.ShouldBe(5000.0d, $"day {dayNumber} balance should remain 5000");
-                projection.DailyAccrual.ShouldBe(rentDailyAccrual, $"day {dayNumber} should have daily accrual of {rentDailyAccrual}");
-                projection.Available.ShouldBe(expectedAvailable, 0.01, $"day {dayNumber} available should be {expectedAvailable} (5000 - {totalAccrued} accrued for {daysAccrued} days)");
-                projection.IncomeReceived.ShouldBe(0.0d);
-                projection.ExpensesPaid.ShouldBe(0.0d);
+                // Days 6-29 (Jan 21 - Feb 13): After payment, positive balance
+                ValidateNoActivityRange(accountProjection.Dates, 6, 29, expectedBalance: 100.0d);
             }
 
-            // Day 15 (Jan 30): Rent paid (900), expense renews for next period
-            ValidateEventDay(
-                accountProjection.Dates[15],
-                expectedDate: new DateOnly(2025, 1, 30),
-                expectedBalance: 4100.0d,
-                expectedExpensesPaid: 900.0d,
-                expectedExpenseDescriptions: ["Rent"]);
-
-            // After payment, expense renews and daily accrual starts for next period (Feb 28)
-            // Next period: Jan 30 to Feb 28 = 29 days
-            // On payment day, DailyExpenseAccrual = 900 / 29 = 31.03448275862069
-            var nextPeriodDays = 29;
-            var paymentDayDailyAccrual = 900.0d / nextPeriodDays;
-            accountProjection.Dates[15].DailyAccrual.ShouldBe(paymentDayDailyAccrual, 0.01, "daily accrual on payment day");
-
-            // On payment day: Available = Balance - Reserved - Accrued + ExpensesPaid
-            // Available = 4100 - 0 - 0 + 900 = 5000 (accrued reset to 0, expensesPaid added back)
-            accountProjection.Dates[15].Available.ShouldBe(5000.0d,
-                "available on payment day = balance(4100) - reserved(0) - accrued(0, just reset) + expensesPaid(900) = 5000");
-
-            // Days 16-28 (Jan 31 - Feb 12): Rent now accruing for next period (due Feb 28)
-            // DailyAccrual varies each day because it recalculates as: (remaining balance) / (days until due)
-            // Available = Balance - accumulated accrual
-            var baseAccrualRate = 900.0d / nextPeriodDays; // 31.03448275862069
-
-            for (int i = 16; i <= 28; i++)
+            [Fact]
+            public async Task Should_Handle_Zero_Amount_Expense()
             {
-                var projection = accountProjection.Dates[i];
-                var dayNumber = i + 1;
-                var daysAccruedForNextPeriod = i - 15; // Days since Jan 30 (day 16 = 1, day 17 = 2, etc.)
+                using var context = CreateTestContext();
 
-                // Calculate accrued amount based on base rate
-                var accumulatedAccrual = Math.Round(baseAccrualRate * daysAccruedForNextPeriod, 2, MidpointRounding.AwayFromZero);
+                var account = EntityFactory.CreateAccount(context.Site, "Visa", 1000.0d);
+                var zeroExpense = EntityFactory.CreateExpense(account, false, "Zero Expense", 0.0d, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
 
-                // Remaining balance for the expense
-                var remainingBalance = 900.0d - accumulatedAccrual;
+                account.Expenses.Add(zeroExpense);
 
-                // Days remaining until Feb 28 from current date
-                var daysRemaining = nextPeriodDays - daysAccruedForNextPeriod;
+                await context.AddAccountAsync(account);
 
-                // DailyBalance = remaining balance / days remaining
-                var expectedDailyAccrual = remainingBalance / daysRemaining;
+                var options = new ProjectionOptions
+                {
+                    StartDate = _currentDate,
+                    DaysForecast = 30
+                };
 
-                // Available = account balance - accumulated accrual
-                var expectedAvailable = 4100.0d - accumulatedAccrual;
+                var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
-                projection.Date.ShouldBe(_currentDate.AddDays(i));
-                projection.Balance.ShouldBe(4100.0d, $"day {dayNumber} balance should remain 4100");
-                projection.DailyAccrual.ShouldBe(expectedDailyAccrual, 0.01, $"day {dayNumber} daily accrual should be {expectedDailyAccrual:F4}");
-                projection.Available.ShouldBe(expectedAvailable, $"day {dayNumber} available should be {expectedAvailable:F2} (4100 - {accumulatedAccrual:F2} accrued)");
-                projection.IncomeReceived.ShouldBe(0.0d);
-                projection.ExpensesPaid.ShouldBe(0.0d);
+                result.IsSuccess.ShouldBeTrue();
+
+                var accountProjection = result.Value!.Accounts[0];
+
+                // Validate all dates are consecutive (Jan 15 - Feb 13)
+                ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
+
+                // All days: Balance should remain unchanged at 1000 (zero-amount expense has no effect)
+                ValidateNoActivityRange(accountProjection.Dates, 0, 29, expectedBalance: 1000.0d);
             }
 
-            // Day 29 (Feb 13): Last day - 14 days accrued for next rent period
-            var lastDay = accountProjection.Dates[29];
-            var lastDayAccrued = Math.Round(baseAccrualRate * 14, 2, MidpointRounding.AwayFromZero);
-            var lastDayExpectedAvailable = 4100.0d - lastDayAccrued;
+            [Fact]
+            public async Task Should_Handle_StartDate_In_Future()
+            {
+                using var context = CreateTestContext();
 
-            lastDay.Date.ShouldBe(new DateOnly(2025, 2, 13));
-            lastDay.Balance.ShouldBe(4100.0d);
-            lastDay.Available.ShouldBe(lastDayExpectedAvailable, $"available should be 4100 - {lastDayAccrued:F2} accrued");
-            lastDay.IncomeReceived.ShouldBe(0.0d);
-            lastDay.ExpensesPaid.ShouldBe(0.0d);
-        }
+                var futureDate = _currentDate.AddDays(10);
+                var account = EntityFactory.CreateAccount(context.Site, "Visa", 1000.0d);
+                var expense = EntityFactory.CreateExpense(account, false, "Bill", 100.0d, "2025-01-01", "2025-01-30", null, Frequency.Months, 1);
+
+                account.Expenses.Add(expense);
+
+                await context.AddAccountAsync(account);
+
+                var options = new ProjectionOptions
+                {
+                    StartDate = futureDate,
+                    DaysForecast = 30
+                };
+
+                var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
+
+                result.IsSuccess.ShouldBeTrue();
+
+                var accountProjection = result.Value!.Accounts[0];
+
+                // Validate all dates are consecutive starting from future date (Jan 25 - Feb 23)
+                ValidateConsecutiveDates(accountProjection.Dates, futureDate, 30);
+
+                // Days 0-4 (Jan 25 - Jan 29): Before expense
+                ValidateNoActivityRange(accountProjection.Dates, 0, 4, expectedBalance: 1000.0d);
+
+                // Day 5 (Jan 30): Expense paid
+                ValidateEventDay(
+                    accountProjection.Dates[5],
+                    expectedDate: new DateOnly(2025, 1, 30),
+                    expectedBalance: 900.0d,
+                    expectedExpensesPaid: 100.0d,
+                    expectedExpenseDescriptions: ["Bill"]);
+
+                // Days 6-29 (Jan 31 - Feb 23): After expense
+                ValidateNoActivityRange(accountProjection.Dates, 6, 29, expectedBalance: 900.0d);
+            }
+
+            [Fact]
+            public async Task Should_Handle_Multiple_Expenses_On_Same_Day()
+            {
+                using var context = CreateTestContext();
+
+                var account = EntityFactory.CreateAccount(context.Site, "Visa", 2000.0d);
+
+                var expense1 = EntityFactory.CreateExpense(account, false, "Bill 1", 100.0d, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
+                var expense2 = EntityFactory.CreateExpense(account, false, "Bill 2", 150.0d, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
+                var expense3 = EntityFactory.CreateExpense(account, false, "Bill 3", 75.0d, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
+
+                account.Expenses.Add(expense1);
+                account.Expenses.Add(expense2);
+                account.Expenses.Add(expense3);
+
+                await context.AddAccountAsync(account);
+
+                var options = new ProjectionOptions
+                {
+                    StartDate = _currentDate,
+                    DaysForecast = 30
+                };
+
+                var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
+
+                result.IsSuccess.ShouldBeTrue();
+
+                var accountProjection = result.Value!.Accounts[0];
+
+                // Validate all dates are consecutive (Jan 15 - Feb 13)
+                ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
+
+                // Days 0-4 (Jan 15 - Jan 19): Before all expenses
+                ValidateNoActivityRange(accountProjection.Dates, 0, 4, expectedBalance: 2000.0d);
+
+                // Day 5 (Jan 20): All three expenses on same day
+                ValidateEventDay(
+                    accountProjection.Dates[5],
+                    expectedDate: new DateOnly(2025, 1, 20),
+                    expectedBalance: 1675.0d,
+                    expectedExpensesPaid: 325.0d,
+                    expectedExpenseDescriptions: ["Bill 1", "Bill 2", "Bill 3"]);
+
+                // Verify all three expense items are present with correct amounts
+                accountProjection.Dates[5].ExpenseItems.Count().ShouldBe(3);
+                accountProjection.Dates[5].ExpenseItems.ShouldContain(expense => expense.Description == "Bill 1" && expense.Amount == 100.0d);
+                accountProjection.Dates[5].ExpenseItems.ShouldContain(expense => expense.Description == "Bill 2" && expense.Amount == 150.0d);
+                accountProjection.Dates[5].ExpenseItems.ShouldContain(expense => expense.Description == "Bill 3" && expense.Amount == 75.0d);
+
+                // Days 6-29 (Jan 21 - Feb 13): After all expenses
+                ValidateNoActivityRange(accountProjection.Dates, 6, 29, expectedBalance: 1675.0d);
+            }
+
+            [Fact]
+            public async Task Should_Handle_Expense_Accruals_With_Different_Start_Dates()
+            {
+                using var context = CreateTestContext();
+
+                var account = EntityFactory.CreateAccount(context.Site, "Visa", 5000.0d);
+
+                // Expense 1: Accrual starts before projection start (Jan 10), due Jan 30
+                // This should accrue from day 1 of projection (Jan 15)
+                var expense1 = EntityFactory.CreateExpense(account, false, "Rent", 900.0d, "2025-01-10", "2025-01-30", null, Frequency.Months, 1);
+
+                // Expense 2: Accrual starts on last day of projection (Feb 13), due Feb 20
+                // This should never accrue during the 30-day forecast period
+                var expense2 = EntityFactory.CreateExpense(account, false, "Insurance", 600.0d, "2025-02-13", "2025-02-20", null, Frequency.Months, 1);
+
+                account.Expenses.Add(expense1);
+                account.Expenses.Add(expense2);
+
+                await context.AddAccountAsync(account);
+
+                var options = new ProjectionOptions
+                {
+                    StartDate = _currentDate,
+                    DaysForecast = 30
+                };
+
+                var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
+
+                result.IsSuccess.ShouldBeTrue();
+
+                var accountProjection = result.Value!.Accounts[0];
+
+                // Validate all dates are consecutive (Jan 15 - Feb 13)
+                ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
+
+                // Calculate daily accrual for Rent: 900 / 20 days (Jan 10 to Jan 30) = 45 per day
+                // Projection starts Jan 15, so 5 days already accrued (Jan 10-15 exclusive of Jan 10, inclusive of Jan 15)
+                // DaysFromAccrualStart counts from AccrualStart to current date
+                var rentDailyAccrual = 900.0d / 20.0d; // 45.0
+                var rentDaysAccruedOnStart = 5; // Jan 10 to Jan 15 = 5 days
+
+                // Days 0-14 (Jan 15 - Jan 29): Rent accruing daily, no payments yet
+                for (int i = 0; i <= 14; i++)
+                {
+                    var projection = accountProjection.Dates[i];
+                    var dayNumber = i + 1;
+                    var daysAccrued = rentDaysAccruedOnStart + i; // Start with 5, then 6, 7, 8...
+                    var totalAccrued = daysAccrued * rentDailyAccrual;
+                    var expectedAvailable = 5000.0d - totalAccrued;
+
+                    projection.Date.ShouldBe(_currentDate.AddDays(i));
+                    projection.Balance.ShouldBe(5000.0d, $"day {dayNumber} balance should remain 5000");
+                    projection.DailyAccrual.ShouldBe(rentDailyAccrual, $"day {dayNumber} should have daily accrual of {rentDailyAccrual}");
+                    projection.Available.ShouldBe(expectedAvailable, 0.01, $"day {dayNumber} available should be {expectedAvailable} (5000 - {totalAccrued} accrued for {daysAccrued} days)");
+                    projection.IncomeReceived.ShouldBe(0.0d);
+                    projection.ExpensesPaid.ShouldBe(0.0d);
+                }
+
+                // Day 15 (Jan 30): Rent paid (900), expense renews for next period
+                ValidateEventDay(
+                    accountProjection.Dates[15],
+                    expectedDate: new DateOnly(2025, 1, 30),
+                    expectedBalance: 4100.0d,
+                    expectedExpensesPaid: 900.0d,
+                    expectedExpenseDescriptions: ["Rent"]);
+
+                // After payment, expense renews and daily accrual starts for next period (Feb 28)
+                // Next period: Jan 30 to Feb 28 = 29 days
+                // On payment day, DailyExpenseAccrual = 900 / 29 = 31.03448275862069
+                var nextPeriodDays = 29;
+                var paymentDayDailyAccrual = 900.0d / nextPeriodDays;
+                accountProjection.Dates[15].DailyAccrual.ShouldBe(paymentDayDailyAccrual, 0.01, "daily accrual on payment day");
+
+                // On payment day: Available = Balance - Reserved - Accrued + ExpensesPaid
+                // Available = 4100 - 0 - 0 + 900 = 5000 (accrued reset to 0, expensesPaid added back)
+                accountProjection.Dates[15].Available.ShouldBe(5000.0d,
+                    "available on payment day = balance(4100) - reserved(0) - accrued(0, just reset) + expensesPaid(900) = 5000");
+
+                // Days 16-28 (Jan 31 - Feb 12): Rent now accruing for next period (due Feb 28)
+                // DailyAccrual varies each day because it recalculates as: (remaining balance) / (days until due)
+                // Available = Balance - accumulated accrual
+                var baseAccrualRate = 900.0d / nextPeriodDays; // 31.03448275862069
+
+                for (int i = 16; i <= 28; i++)
+                {
+                    var projection = accountProjection.Dates[i];
+                    var dayNumber = i + 1;
+                    var daysAccruedForNextPeriod = i - 15; // Days since Jan 30 (day 16 = 1, day 17 = 2, etc.)
+
+                    // Calculate accrued amount based on base rate
+                    var accumulatedAccrual = Math.Round(baseAccrualRate * daysAccruedForNextPeriod, 2, MidpointRounding.AwayFromZero);
+
+                    // Remaining balance for the expense
+                    var remainingBalance = 900.0d - accumulatedAccrual;
+
+                    // Days remaining until Feb 28 from current date
+                    var daysRemaining = nextPeriodDays - daysAccruedForNextPeriod;
+
+                    // DailyBalance = remaining balance / days remaining
+                    var expectedDailyAccrual = remainingBalance / daysRemaining;
+
+                    // Available = account balance - accumulated accrual
+                    var expectedAvailable = 4100.0d - accumulatedAccrual;
+
+                    projection.Date.ShouldBe(_currentDate.AddDays(i));
+                    projection.Balance.ShouldBe(4100.0d, $"day {dayNumber} balance should remain 4100");
+                    projection.DailyAccrual.ShouldBe(expectedDailyAccrual, 0.01, $"day {dayNumber} daily accrual should be {expectedDailyAccrual:F4}");
+                    projection.Available.ShouldBe(expectedAvailable, $"day {dayNumber} available should be {expectedAvailable:F2} (4100 - {accumulatedAccrual:F2} accrued)");
+                    projection.IncomeReceived.ShouldBe(0.0d);
+                    projection.ExpensesPaid.ShouldBe(0.0d);
+                }
+
+                // Day 29 (Feb 13): Last day - 14 days accrued for next rent period
+                var lastDay = accountProjection.Dates[29];
+                var lastDayAccrued = Math.Round(baseAccrualRate * 14, 2, MidpointRounding.AwayFromZero);
+                var lastDayExpectedAvailable = 4100.0d - lastDayAccrued;
+
+                lastDay.Date.ShouldBe(new DateOnly(2025, 2, 13));
+                lastDay.Balance.ShouldBe(4100.0d);
+                lastDay.Available.ShouldBe(lastDayExpectedAvailable, $"available should be 4100 - {lastDayAccrued:F2} accrued");
+                lastDay.IncomeReceived.ShouldBe(0.0d);
+                lastDay.ExpensesPaid.ShouldBe(0.0d);
+            }
         }
 
         public class GlobalAggregation : GetFinancialProjectionsAsync

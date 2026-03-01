@@ -1,11 +1,10 @@
-using AllOverIt.Fixture.Extensions;
-using CsvHelper;
+﻿using CsvHelper;
 using CsvHelper.Configuration;
-using Shouldly;
 using NSubstitute;
 using Pot.App.Concerns.Csv;
 using Pot.Shared.Enumerations;
 using Pot.TestUtils;
+using Shouldly;
 
 namespace Pot.App.Tests.Concerns.Csv;
 
@@ -27,7 +26,8 @@ public class FrequencyConverterFixture : PotFixtureBase
         [Fact]
         public void Should_Throw_When_Text_Null()
         {
-            var exception = Should.Throw<ArgumentNullException>(() => {
+            var exception = Should.Throw<ArgumentNullException>(() =>
+            {
                 _converter.ConvertFromString(null, _readerRow, _memberMapData);
             });
 
@@ -141,7 +141,8 @@ public class FrequencyConverterFixture : PotFixtureBase
         [Fact]
         public void Should_Throw_When_Text_Is_Null()
         {
-            var exception = Should.Throw<ArgumentNullException>(() => {
+            var exception = Should.Throw<ArgumentNullException>(() =>
+            {
                 _converter.ConvertFromString(null, _readerRow, _memberMapData);
             });
 
@@ -151,7 +152,8 @@ public class FrequencyConverterFixture : PotFixtureBase
         [Fact]
         public void Should_Throw_When_Invalid_Name()
         {
-            Should.Throw<Exception>(() => {
+            Should.Throw<Exception>(() =>
+            {
                 _converter.ConvertFromString("InvalidFrequency", _readerRow, _memberMapData);
             });
         }
@@ -159,7 +161,8 @@ public class FrequencyConverterFixture : PotFixtureBase
         [Fact]
         public void Should_Throw_When_Invalid_Value()
         {
-            Should.Throw<Exception>(() => {
+            Should.Throw<Exception>(() =>
+            {
                 _converter.ConvertFromString("999", _readerRow, _memberMapData);
             });
         }
@@ -167,7 +170,8 @@ public class FrequencyConverterFixture : PotFixtureBase
         [Fact]
         public void Should_Throw_When_Empty_String()
         {
-            Should.Throw<Exception>(() => {
+            Should.Throw<Exception>(() =>
+            {
                 _converter.ConvertFromString(string.Empty, _readerRow, _memberMapData);
             });
         }

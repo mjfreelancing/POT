@@ -1,9 +1,9 @@
-using Shouldly;
-using Microsoft.Extensions.Time.Testing;
+﻿using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using Pot.App.Concerns.Time;
 using Pot.App.Concerns.Time.Extensions;
 using Pot.TestUtils;
+using Shouldly;
 
 namespace Pot.App.Tests.Concerns.Time.Extensions;
 
@@ -93,7 +93,8 @@ public class TimeProviderExtensionsFixture : PotFixtureBase
             using var cts = new CancellationTokenSource();
             cts.Cancel();
 
-            await Should.ThrowAsync<OperationCanceledException>(async () => {
+            await Should.ThrowAsync<OperationCanceledException>(async () =>
+            {
                 await _timeProvider.WaitUntilUtcAsync(targetUtc, cts.Token);
             });
         }
@@ -110,7 +111,8 @@ public class TimeProviderExtensionsFixture : PotFixtureBase
             using var cts = new CancellationTokenSource();
             cts.Cancel();
 
-            await Should.ThrowAsync<OperationCanceledException>(async () => {
+            await Should.ThrowAsync<OperationCanceledException>(async () =>
+            {
                 await _timeProvider.WaitUntilUtcAsync(targetUtc, cts.Token);
             });
         }
@@ -137,7 +139,7 @@ public class TimeProviderExtensionsFixture : PotFixtureBase
                 {
                     var delay = callInfo.ArgAt<TimeSpan>(0);
                     var token = callInfo.ArgAt<CancellationToken>(1);
-                    
+
                     if (firstCall)
                     {
                         // First delay only advances halfway (simulating drift)
@@ -149,7 +151,7 @@ public class TimeProviderExtensionsFixture : PotFixtureBase
                         // Subsequent delays advance fully
                         _fakeTimeProvider.Advance(delay);
                     }
-                    
+
                     return token.IsCancellationRequested ? Task.FromCanceled(token) : Task.CompletedTask;
                 });
 

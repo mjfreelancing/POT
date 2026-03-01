@@ -2,7 +2,6 @@
 using AllOverIt.GenericHost;
 using Pot.App.Concerns.Time;
 using Pot.App.Concerns.Time.Extensions;
-using Pot.App.Extensions;
 using Pot.App.Features.Notifications.BudgetReminder;
 using Pot.App.Features.Users.GetAll;
 using Pot.Shared;

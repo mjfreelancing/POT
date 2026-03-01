@@ -1,7 +1,7 @@
-using Shouldly;
-using FluentValidation.Results;
+﻿using FluentValidation.Results;
 using Pot.App.Concerns.Validation.Extensions;
 using Pot.TestUtils;
+using Shouldly;
 
 namespace Pot.App.Tests.Concerns.Validation.Extensions;
 
@@ -36,7 +36,7 @@ public class ValidationFailureExtensionsFixture : PotFixtureBase
             _validationFailure.AddCustomState(propertyName, value);
 
             var customState = _validationFailure.CustomState as Dictionary<string, object?>;
-            customState.ShouldContainKey(propertyName);
+            customState!.ShouldContainKey(propertyName);
             customState![propertyName].ShouldBe(value);
         }
 
@@ -48,7 +48,7 @@ public class ValidationFailureExtensionsFixture : PotFixtureBase
             _validationFailure.AddCustomState("Property3", true);
 
             var customState = _validationFailure.CustomState as Dictionary<string, object?>;
-            customState.Count.ShouldBe(3);
+            customState!.Count.ShouldBe(3);
             customState!["Property1"].ShouldBe("Value1");
             customState["Property2"].ShouldBe(42);
             customState["Property3"].ShouldBe(true);
@@ -62,7 +62,7 @@ public class ValidationFailureExtensionsFixture : PotFixtureBase
             _validationFailure.AddCustomState(propertyName, null);
 
             var customState = _validationFailure.CustomState as Dictionary<string, object?>;
-            customState.ShouldContainKey(propertyName);
+            customState!.ShouldContainKey(propertyName);
             customState![propertyName].ShouldBeNull();
         }
 
@@ -76,7 +76,7 @@ public class ValidationFailureExtensionsFixture : PotFixtureBase
             _validationFailure.AddCustomState("GuidValue", Guid.NewGuid());
 
             var customState = _validationFailure.CustomState as Dictionary<string, object?>;
-            customState.Count.ShouldBe(5);
+            customState!.Count.ShouldBe(5);
         }
 
         [Fact]
@@ -90,7 +90,7 @@ public class ValidationFailureExtensionsFixture : PotFixtureBase
             _validationFailure.AddCustomState("NewKey", "NewValue");
 
             var customState = _validationFailure.CustomState as Dictionary<string, object?>;
-            customState.Count.ShouldBe(2);
+            customState!.Count.ShouldBe(2);
             customState!["ExistingKey"].ShouldBe("ExistingValue");
             customState["NewKey"].ShouldBe("NewValue");
         }
@@ -100,7 +100,8 @@ public class ValidationFailureExtensionsFixture : PotFixtureBase
         {
             _validationFailure.AddCustomState("DuplicateKey", "Value1");
 
-            var exception = Should.Throw<ArgumentException>(() => {
+            var exception = Should.Throw<ArgumentException>(() =>
+            {
                 _validationFailure.AddCustomState("DuplicateKey", "Value2");
             });
 

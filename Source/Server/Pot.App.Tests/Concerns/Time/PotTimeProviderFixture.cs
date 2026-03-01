@@ -1,9 +1,8 @@
-using AllOverIt.Fixture.Extensions;
-using Shouldly;
-using Microsoft.Extensions.Time.Testing;
+﻿using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using Pot.App.Concerns.Time;
 using Pot.TestUtils;
+using Shouldly;
 
 namespace Pot.App.Tests.Concerns.Time;
 
@@ -29,7 +28,8 @@ public class PotTimeProviderFixture : PotFixtureBase
         [Fact]
         public void Should_Throw_When_AppContext_Is_Null()
         {
-            var exception = Should.Throw<ArgumentNullException>(() => {
+            var exception = Should.Throw<ArgumentNullException>(() =>
+            {
                 _ = new PotTimeProvider(null!);
             });
 
@@ -183,7 +183,8 @@ public class PotTimeProviderFixture : PotFixtureBase
             using var cts = new CancellationTokenSource();
             cts.Cancel();
 
-            await Should.ThrowAsync<OperationCanceledException>(async () => {
+            await Should.ThrowAsync<OperationCanceledException>(async () =>
+            {
                 await _potTimeProvider.DelayAsync(TimeSpan.FromSeconds(5), cts.Token);
             });
         }

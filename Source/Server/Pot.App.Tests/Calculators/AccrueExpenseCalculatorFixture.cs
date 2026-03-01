@@ -1,12 +1,11 @@
-using AllOverIt.Extensions;
-using AllOverIt.Fixture.Extensions;
-using Shouldly;
+﻿using AllOverIt.Extensions;
 using NSubstitute;
 using Pot.App.Calculators;
 using Pot.App.Concerns.Time;
 using Pot.Data.Entities;
 using Pot.Shared.Enumerations;
 using Pot.TestUtils;
+using Shouldly;
 
 namespace Pot.App.Tests.Calculators;
 
@@ -23,7 +22,8 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
         [Fact]
         public void Should_Throw_When_TimeProvider_Null()
         {
-            var exception = Should.Throw<ArgumentNullException>(() => {
+            var exception = Should.Throw<ArgumentNullException>(() =>
+            {
                 _ = new AccrueExpenseCalculator(null!);
             });
 
@@ -50,7 +50,8 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
         [Fact]
         public void Should_Throw_When_Account_Null()
         {
-            var exception = Should.Throw<ArgumentNullException>(() => {
+            var exception = Should.Throw<ArgumentNullException>(() =>
+            {
                 _calculator.AccrueExpenses(null!, []);
             });
 
@@ -60,7 +61,8 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
         [Fact]
         public void Should_Throw_When_Expenses_Null()
         {
-            var exception = Should.Throw<ArgumentNullException>(() => {
+            var exception = Should.Throw<ArgumentNullException>(() =>
+            {
                 _calculator.AccrueExpenses(Create<AccountEntity>(), null!);
             });
 
@@ -70,7 +72,8 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
         [Fact]
         public void Should_Not_Throw_When_CurrentDate_Null()
         {
-            Should.NotThrow(() => {
+            Should.NotThrow(() =>
+            {
                 _calculator.AccrueExpenses(Create<AccountEntity>(), [], null);
             });
         }

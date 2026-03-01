@@ -1,6 +1,6 @@
-using Shouldly;
-using Pot.App.Errors;
+﻿using Pot.App.Errors;
 using Pot.TestUtils;
+using Shouldly;
 using System.Reflection;
 
 namespace Pot.App.Tests.Errors;

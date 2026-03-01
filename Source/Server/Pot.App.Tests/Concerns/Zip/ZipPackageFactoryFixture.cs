@@ -1,7 +1,7 @@
-using AllOverIt.Zip;
-using Shouldly;
+﻿using AllOverIt.Zip;
 using Pot.App.Concerns.Zip;
 using Pot.TestUtils;
+using Shouldly;
 
 namespace Pot.App.Tests.Concerns.Zip;
 

@@ -1,8 +1,8 @@
-using Shouldly;
-using FluentValidation.Results;
+﻿using FluentValidation.Results;
 using Pot.App.Concerns.Validation.Extensions;
 using Pot.App.Errors;
 using Pot.TestUtils;
+using Shouldly;
 
 namespace Pot.App.Tests.Concerns.Validation.Extensions;
 

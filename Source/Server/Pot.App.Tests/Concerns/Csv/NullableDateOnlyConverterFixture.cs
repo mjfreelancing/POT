@@ -1,9 +1,9 @@
-using CsvHelper;
+﻿using CsvHelper;
 using CsvHelper.Configuration;
-using Shouldly;
 using NSubstitute;
 using Pot.App.Concerns.Csv;
 using Pot.TestUtils;
+using Shouldly;
 using System.Globalization;
 
 namespace Pot.App.Tests.Concerns.Csv;
@@ -114,7 +114,8 @@ public class NullableDateOnlyConverterFixture : PotFixtureBase
         {
             var memberMapData = CreateMemberMapData();
 
-            Should.Throw<FormatException>(() => {
+            Should.Throw<FormatException>(() =>
+            {
                 _converter.ConvertFromString("invalid-date", _readerRow, memberMapData);
             });
         }

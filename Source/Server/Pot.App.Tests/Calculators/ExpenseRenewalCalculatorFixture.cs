@@ -1,9 +1,8 @@
-using AllOverIt.Fixture.Extensions;
-using Shouldly;
-using Pot.App.Calculators;
+﻿using Pot.App.Calculators;
 using Pot.Data.Entities;
 using Pot.Shared.Enumerations;
 using Pot.TestUtils;
+using Shouldly;
 
 namespace Pot.App.Tests.Calculators;
 
@@ -29,7 +28,8 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
         [Fact]
         public void Should_Throw_When_Expenses_Null()
         {
-            var exception = Should.Throw<ArgumentNullException>(() => {
+            var exception = Should.Throw<ArgumentNullException>(() =>
+            {
                 _calculator.Renew(null!, RenewalMode.Overdue, DateOnly.MinValue);
             });
 
@@ -41,7 +41,8 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
         {
             var asOfDate = new DateOnly(2025, 1, 20);
 
-            Should.NotThrow(() => {
+            Should.NotThrow(() =>
+            {
                 _calculator.Renew([], RenewalMode.Overdue, asOfDate);
             });
         }
