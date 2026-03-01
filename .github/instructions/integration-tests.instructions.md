@@ -34,6 +34,7 @@ Integration tests live in `Source/Server/Pot.AspNetCore.Integration.Tests/**`.
 - Use `WebApplicationFactory<Program>`-style host fixtures and real `HttpClient` calls.
 - Prefer typed JSON contract models over manual JSON traversal.
 - For repeated integration assertion patterns, create reusable helper extensions in `Host/Extensions` within the integration test project.
+- For implementation logging operations under test, configure fake logging in the test host and assert each expected log record using fake logger helpers (`FakeLogCollector`/`FakeLogger`) from `Pot.TestUtils`; assertions should verify the exact rendered message and expected structured logging key/value pairs (including template key like `{OriginalFormat}` when applicable).
 - Include validation-failure and method-contract (`405`) checks where applicable.
 - For timing metadata (for example `Retry-After`), assert conditionally unless guaranteed.
 - Ensure responses do not leak sensitive request/header data.
