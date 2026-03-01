@@ -27,6 +27,7 @@ applyTo: "Source/Server/**/*.cs"
 - Always implement code with testability in mind; prefer constructor injection and avoid static dependencies.
 - Default to using sealed classes unless extensibility is required.
 - Do not use primary constructors; prefer explicit constructor definitions for clarity and testability.
+- For guard clauses, prefer AllOverIt assertion extensions (for example `_ = arg.WhenNotNull();`) over framework guards like `ArgumentNullException.ThrowIfNull(arg)`.
 
 ### Architecture and Contracts
 
