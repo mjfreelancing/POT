@@ -8,11 +8,11 @@ applyTo: "Source/Server/**/*.cs"
 
 ### Language and Code Quality
 
+- Treat `Source/Server/.editorconfig` as the source of truth for C# formatting and analyzer style rules; when wording here conflicts, `.editorconfig` wins.
 - Use clear naming and cohesive feature-level organization (handlers/services/repositories grouped by capability).
-- Prefer `var` when the assigned type is obvious from the right-hand side.
 - Avoid one-letter variable names unless loop/index intent is obvious.
 - Keep methods focused and avoid unnecessary abstraction.
-- Prefer compact method/constructor signatures: keep parameter lists on one line when reasonably readable; avoid one-parameter-per-line formatting unless length/clarity requires wrapping.
+- Keep method and constructor signatures reasonably compact for readability; wrap parameters when needed for clarity.
 - Follow these member-ordering conventions for classes:
   - Place nested types (including private nested classes) at the top of the containing type, above constants, fields, and properties.
   - Place constants before other fields; place static readonly fields before instance fields.
@@ -26,7 +26,6 @@ applyTo: "Source/Server/**/*.cs"
 - Preserve public API shape unless change is explicitly requested / approved.
 - Always implement code with testability in mind; prefer constructor injection and avoid static dependencies.
 - Default to using sealed classes unless extensibility is required.
-- Use collection initializers and expression-bodied members where they enhance readability.
 - Do not use primary constructors; prefer explicit constructor definitions for clarity and testability.
 
 ### Architecture and Contracts
