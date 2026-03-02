@@ -35,7 +35,7 @@ public class Program
             .AddPotAuth()
             .AddPotCors()
             .AddPotRateLimiting()
-            .AddCorrelationId()
+            .AddPotMiddleware()
             .AddOpenApi()
             .AddHttpJsonOptions()
             .AddLogging()
