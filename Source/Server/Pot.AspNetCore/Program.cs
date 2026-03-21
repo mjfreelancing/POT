@@ -1,4 +1,4 @@
-using Pot.AspNetCore.Extensions;
+﻿using Pot.AspNetCore.Extensions;
 using Pot.AspNetCore.Features.Accounts.Extensions;
 using Pot.AspNetCore.Features.Accruals.Extensions;
 using Pot.AspNetCore.Features.Approvals.Extensions;
@@ -56,16 +56,21 @@ public class Program
 
         app.MapHealthChecks("/_health");
 
-        // UseCors must be called before UseAuthentication() and UseAuthorization() to ensure CORS headers are on all responses (including errors).
+        // REQUIRED ORDER:
+        // 1. UseCors() must run before authentication/authorization so CORS headers are included on all responses (including failures).
+        // 2. UseAuthentication() must run before UsePotMiddleware() because UserContextMiddleware reads HttpContext.User
+        //    and populates ICurrentUserContext, which downstream data/repository code depends on.
+        // 3. Do not move UsePotMiddleware() ahead of UseAuthentication() unless UserContextMiddleware is redesigned.
         // See AddPotCors() and CorsOptionsSetup for configuration setup - not using the overload with Action<CorsPolicyBuilder> since we need to load from configuration.
         app.UseCors();
 
-        app.UseAuthentication()
-           .UseAuthorization()
-           .UseRateLimiter();
+        app.UseAuthentication();
+        app.UseAuthorization();
+        app.UseRateLimiter();
 
-        app.UsePotMiddleware()
-           .UseScalarOpenApi()
+        app.UsePotMiddleware();
+
+        app.UseScalarOpenApi()
            .AddAuthEndpoints()
            .AddApprovalEndpoints()
            .AddMeEndpoints()
