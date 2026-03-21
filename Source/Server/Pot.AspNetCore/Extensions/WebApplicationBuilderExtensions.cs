@@ -122,8 +122,9 @@ internal static class WebApplicationBuilderExtensions
         return builder;
     }
 
-    public static WebApplicationBuilder AddCorrelationId(this WebApplicationBuilder builder)
+    public static WebApplicationBuilder AddPotMiddleware(this WebApplicationBuilder builder)
     {
+        builder.Services.AddScoped<RawRequestLoggingMiddleware>();  // Only used in a Production environment
         builder.Services.AddScoped<CorrelationIdMiddleware>();
 
         return builder;

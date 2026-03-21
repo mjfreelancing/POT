@@ -7,6 +7,11 @@ internal static class WebApplicationExtensions
 {
     public static WebApplication UsePotMiddleware(this WebApplication app)
     {
+        if (!app.Environment.IsProduction())
+        {
+            app.UseMiddleware<RawRequestLoggingMiddleware>();
+        }
+
         app.UseMiddleware<CorrelationIdMiddleware>();
         app.UseMiddleware<UserContextMiddleware>();
 

@@ -1,93 +1,581 @@
-# version: "3.8"
+# ============================================================================
+# DOCKER COMPOSE - POT APPLICATION STACK
+# ============================================================================
+# Docker Compose orchestration file for the complete POT application
+# Purpose: Defines and configures multi-container application stack
+# What it manages:
+#   - 3 services: PostgreSQL database, ASP.NET Core API, React client
+#   - Service dependencies and startup order
+#   - Network communication between containers
+#   - Port mappings for external access
+#   - Volume mounts for data persistence
+#   - Environment variable configuration
+#   - Health checks for service monitoring
+#
+# How to use:
+#   - Start all services: docker-compose -p pot -f docker-compose-client-server.yml up -d
+#   - Stop all services: docker-compose -p pot -f docker-compose-client-server.yml down
+#   - View logs: docker-compose -p pot -f docker-compose-client-server.yml logs -f
+#   - Recommended: Use VS Code tasks (docker-start-pot-client-server, docker-stop-pot-client-server)
+
+# ============================================================================
+# SERVICE DEFINITIONS
+# ============================================================================
 services:
+  # ==========================================================================
+  # POSTGRES DATABASE SERVICE
+  # ==========================================================================
   postgres:
+    # Container name: Fixed name for DNS resolution and easy reference
+    # Why specify container_name:
+    #   - Predictable name for docker commands (e.g., docker logs pot-postgres)
+    #   - DNS hostname for inter-container communication (server uses pot-postgres:5432)
+    #   - Without it, Docker generates name like pot_postgres_1 (less predictable)
+    # Result: Other containers reference this as "pot-postgres" in connection strings
     container_name: pot-postgres
+
+    # Build configuration: How to create the Docker image
+    # Purpose: Defines where to find Dockerfile and build context
     build:
+      # Build context: Directory containing files accessible during build
+      # Path: Relative to this docker-compose.yml file
+      # What's accessible: All files in Postgres/ directory
+      # Usage in Dockerfile: COPY commands are relative to this context
       context: Postgres
+
+      # Dockerfile location: Path to Dockerfile within the context
+      # Could use different names (e.g., Dockerfile.dev, Dockerfile.prod)
+      # Here: Standard "Dockerfile" name in context root
       dockerfile: Dockerfile
+
+    # Restart policy: Controls container behavior on stop/failure
+    # always: Always restart container if it stops for ANY reason
+    # Options:
+    #   - no: Never restart (default if not specified)
+    #   - on-failure: Only restart if container exits with error code
+    #   - unless-stopped: Always restart unless manually stopped
+    # Why "always" for database:
+    #   - Database should always be available for API
+    #   - Survives host reboots (Docker auto-starts on host startup)
+    #   - Recovers from crashes automatically
+    # Result: Container restarts after crashes, Docker daemon restarts, or host reboots
     restart: always
+
+    # Environment variables: Runtime configuration passed to container
+    # Purpose: Configure PostgreSQL behavior without modifying Dockerfile
+    # How variable substitution works:
+    # Syntax: ${VARIABLE_NAME}
+    #   - Docker Compose reads from .env files (loaded via --env-file flags)
+    #   - Falls back to host environment variables
+    #   - No default value: If variable not found, substitutes empty string (may cause errors)
+    # How .env files are loaded:
+    #   - Specified in docker-compose command: --env-file .env --env-file .env.development
+    #   - Multiple files: Later files override earlier ones
+    #   - VS Code task pre-sets: IMAGE_TAG, then loads .env + .env.development
+    # Why use environment variables:
+    #   - Keeps secrets out of source control
+    #   - Allows different configs per environment (dev, staging, prod)
+    #   - Can change values without rebuilding images
     environment:
+      # PostgreSQL superuser name
+      # Used by: postgres:13 base image on first initialization
+      # Example value: postgres (from .env file)
       - POSTGRES_USER=${POSTGRES_USER}
+
+      # PostgreSQL superuser password
+      # Security: Should be strong password in production
+      # Example value: password (insecure default for local dev)
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+
+      # Database name to create on first initialization
+      # Used by: postgres:13 base image
+      # Result: Creates database with this name in addition to default
+      # Example value: pot
       - POSTGRES_DB=${POSTGRES_DB}
+
+    # Port mapping: Maps host port to container port
+    # Purpose: Allows host machine and external tools to access container service
+    # Syntax: "HOST_PORT:CONTAINER_PORT"
+    #   - Left side (5444): Port on host machine (your computer)
+    #   - Right side (5432): Port inside container (where PostgreSQL listens)
+    # How it works:
+    #   - Docker forwards traffic from host:5444 to container:5432
+    #   - Multiple containers can use same container port (5432) but different host ports
+    # Why host port 5444 (not standard 5432):
+    #   - Avoids conflicts with PostgreSQL already running on host
+    #   - Allows multiple PostgreSQL containers simultaneously
+    # Access examples:
+    #   - From host: psql -h localhost -p 5444 -U postgres -d pot
+    #   - From pgAdmin: Host=localhost, Port=5444
+    #   - From other containers: Host=pot-postgres, Port=5432 (use internal port!)
+    # Result: Access database on localhost:5444 from host machine
     ports:
       - "5444:5432"
-    # Persist the database data on the host machine. The folder must exist.
+
+    # Volume mounts: Persist data between container recreations
+    # Purpose: Store PostgreSQL data on host filesystem for durability
+    # Syntax: "HOST_PATH:CONTAINER_PATH"
+    #   - Left side (./postgres-data): Path on host (relative to compose file)
+    #   - Right side (/var/lib/postgresql/data): Path inside container (PostgreSQL data dir)
+    # How it works:
+    #   - Docker mounts host directory into container
+    #   - Container writes to this path -> writes persist to host
+    #   - Container deleted/recreated -> data survives
+    # Why persist data:
+    #   - Database data must survive container restarts
+    #   - Development data (users, accounts, transactions) preserved
+    #   - Avoids re-running migrations and re-seeding data
+    # Important: ./postgres-data directory must exist before first run
+    # Security: Add postgres-data/ to .gitignore (don't commit database files)
+    # Result: Database data persists in Source/Docker/postgres-data/ directory
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
+
+    # Health check: Monitors service availability
+    # Purpose: Determine if container is healthy and ready to accept connections
+    # Why needed:
+    #   - PostgreSQL takes time to initialize (5-10 seconds)
+    #   - Other services (server) should wait until database is ready
+    #   - Prevents connection errors during startup
+    # How Docker uses health check:
+    #   - Runs test command at specified intervals
+    #   - Marks container as healthy/unhealthy based on exit code
+    #   - Other services can wait with depends_on: condition: service_healthy
     healthcheck:
+      # Test command: Checks if PostgreSQL is ready to accept connections
+      # Syntax: ["CMD", "executable", "arg1", "arg2"]
+      #   - CMD: Run command (alternative: CMD-SHELL for shell scripts)
+      #   - pg_isready: PostgreSQL utility that checks server status
+      #   - -U ${POSTGRES_USER}: Check as this user
+      #   - -d ${POSTGRES_DB}: Check this specific database
+      # Exit codes:
+      #   - 0: Database ready (healthy)
+      #   - 1: Database not ready or error (unhealthy)
+      #   - 2: Connection timeout (unhealthy)
+      # Note: Runs inside container, so uses container's localhost (not host machine)
+      # Result: Exits 0 when PostgreSQL accepts connections
       test: "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"
+
+      # Interval: Time between consecutive health checks
+      # Value: 5s (checks every 5 seconds)
+      # Why frequent: Database startup is fast, want to detect ready state quickly
       interval: 5s
+
+      # Timeout: Maximum time to wait for health check to complete
+      # Value: 5s (if pg_isready doesn't respond in 5 seconds, consider it failed)
+      # Why 5s: pg_isready is fast, long timeout not needed
       timeout: 5s
+
+      # Retries: Number of consecutive failures before marking unhealthy
+      # Value: 10 (must fail 10 times in a row before marked unhealthy)
+      # Math: 10 retries × 5s interval = 50 seconds max wait for database
+      # Why 10: Database initialization can take time, allows for slower systems
       retries: 10
+
+    # start_period not specified: Health checks count immediately
+    # Alternative: start_period: 30s would give 30s grace period before failures count
+
+    # Network membership: Connects container to custom network
+    # Purpose: Enables DNS-based communication between services
+    # Network name: pot-network (defined at bottom of file)
+    # How it works:
+    #   - All services in same network can communicate
+    #   - Docker provides DNS: pot-postgres hostname resolves to container IP
+    #   - Services reference each other by container name (pot-postgres, pot-aspnet)
+    # Result: Server connects using Host=pot-postgres;Port=5432
     networks:
       - pot-network
 
+  # ==========================================================================
+  # ASP.NET CORE API SERVER SERVICE
+  # ==========================================================================
   server:
+    # Container name: Fixed name for predictable DNS and command reference
+    # Used by client to connect: Client nginx proxies /api to http://pot-aspnet:5241
     container_name: pot-aspnet
+
+    # Image name: Tag built image for easy reference
+    # Syntax: IMAGE_NAME:TAG
+    #   - pot-server: Image name
+    #   - ${IMAGE_TAG:-latest}: Tag from environment variable or default "latest"
+    # How ${VAR:-default} works:
+    #   - If IMAGE_TAG is set and non-empty: Use that value
+    #   - If IMAGE_TAG is unset or empty: Use "latest"
+    # Why IMAGE_TAG:
+    #   - VS Code task sets: IMAGE_TAG=$(Get-Date -Format 'yyyyMMdd-HHmmss')
+    #   - Creates timestamp tag (e.g., pot-server:20260310-143022)
+    #   - Also tags as latest: docker tag pot-server:20260310-143022 pot-server:latest
+    # Result: Image tagged as both pot-server:latest and pot-server:<timestamp>
     image: pot-server:${IMAGE_TAG:-latest}
+
+    # Build configuration: How to create the server Docker image
     build:
-      # The context needs to be up one level so the server source code can be found
+      # Build context: Parent directory (Source/)
+      # Why parent: Server Dockerfile needs access to entire Server/ folder
+      # Path: Relative to this compose file (.. means parent directory)
+      # What's accessible: Everything in Source/ (Server/, Client/, Docker/)
       context: ..
+
+      # Dockerfile location: Path relative to context (Source/)
+      # Full path: Source/Docker/Server/Dockerfile
       dockerfile: Docker/Server/Dockerfile
+
+    # Service dependencies: Controls startup order
+    # Purpose: Ensure database is healthy before starting server
+    # Syntax options:
+    #   - depends_on: [postgres] (default): Starts after postgres container starts
+    #   - depends_on: postgres: condition: service_healthy: Waits for health check to pass
+    # How condition: service_healthy works:
+    #   1. Docker starts postgres container
+    #   2. postgres health check runs (pg_isready every 5s)
+    #   3. After health check succeeds, Docker starts server container
+    #   4. If postgres never becomes healthy, server never starts
+    # Why this matters:
+    #   - Server tries to connect to database during startup (runs migrations)
+    #   - Without this, server fails if database not ready
+    #   - Prevents migration errors and connection timeouts
+    # Result: Server only starts after database is accepting connections
     depends_on:
       postgres:
         condition: service_healthy
+
+    # Environment variables: Runtime configuration for ASP.NET Core application
+    # Purpose: Configure application behavior without modifying code or rebuilding image
+    # Categories: ASP.NET runtime, database connection, JWT auth, SMTP email, CORS, admin users
     environment:
+      # ------------------------------------------------------------------
+      # ASP.NET CORE RUNTIME CONFIGURATION
+      # ------------------------------------------------------------------
+
+      # ASP.NET environment mode
+      # Value: Production (other options: Development, Staging)
+      # Effects:
+      #   - Loads appsettings.Production.json (merges with appsettings.json)
+      #   - Disables developer exception page (shows generic errors)
+      #   - Enables response caching and compression
+      #   - Disables detailed error messages in API responses
+      # Note: Even for local Docker, use Production (more realistic testing)
       - ASPNETCORE_ENVIRONMENT=Production
-      - DATABASE__HOST=pot-postgres
-      - DATABASE__USERNAME=${POSTGRES_USER}
-      - DATABASE__PASSWORD=${POSTGRES_PASSWORD}
-      - DATABASE__NAME=${POSTGRES_DB}
-      - DATABASE__PORT=5432
-      - DATABASE__SSLMODE=Disable
+
+      # ASP.NET Core listening URLs
+      # Syntax: protocol://host:port
+      #   - http://+:5241: Listen on HTTP, all interfaces (+), port 5241
+      #   - + means 0.0.0.0 (all network interfaces, both internal and external)
+      # Why port 5241: Arbitrary choice, must match EXPOSE in Dockerfile and ports mapping below
+      # Why http not https: TLS termination handled by reverse proxy (nginx) or Azure App Service
+      # Result: Kestrel web server listens on port 5241 inside container
       - ASPNETCORE_URLS=http://+:5241
+
+      # ------------------------------------------------------------------
+      # DATABASE CONNECTION CONFIGURATION
+      # ------------------------------------------------------------------
+      # ASP.NET Core hierarchical configuration syntax: SECTION__SUBSECTION__KEY
+      # Maps to appsettings.json: { "Database": { "Host": "...", "Username": "..." } }
+      # Underscore convention: Double underscore (__) represents JSON object nesting
+
+      # Database hostname (container name on Docker network)
+      # Value: pot-postgres (PostgreSQL container name)
+      # Why not localhost: Containers have separate network namespaces
+      #   - localhost in server container refers to server itself, not host machine
+      #   - Docker DNS resolves pot-postgres to postgres container IP
+      # Result: Connection string uses Host=pot-postgres
+      - DATABASE__HOST=pot-postgres
+
+      # Database username for authentication
+      # Value: From ${POSTGRES_USER} in .env file (typically "postgres")
+      # Must match: POSTGRES_USER in postgres service above
+      - DATABASE__USERNAME=${POSTGRES_USER}
+
+      # Database password for authentication
+      # Value: From ${POSTGRES_PASSWORD} in .env file
+      # Must match: POSTGRES_PASSWORD in postgres service above
+      - DATABASE__PASSWORD=${POSTGRES_PASSWORD}
+
+      # Database name to connect to
+      # Value: From ${POSTGRES_DB} in .env file (e.g., "pot")
+      # Must match: POSTGRES_DB in postgres service above
+      - DATABASE__NAME=${POSTGRES_DB}
+
+      # Database port (container internal port, not host port)
+      # Value: 5432 (standard PostgreSQL port)
+      # Important: Use container port (5432), NOT host port (5444)
+      #   - Server is inside Docker network, connects directly to container
+      #   - Host port (5444) is only for external access from host machine
+      - DATABASE__PORT=5432
+
+      # SSL mode for database connection
+      # Value: Disable (no SSL/TLS encryption)
+      # Options: Disable, Allow, Prefer, Require, VerifyCA, VerifyFull
+      # Why Disable for local Docker: Unnecessary overhead for local development
+      # Production: Use Require or VerifyFull for encrypted connections
+      - DATABASE__SSLMODE=Disable
+
+      # ------------------------------------------------------------------
+      # JWT AUTHENTICATION CONFIGURATION
+      # ------------------------------------------------------------------
+      # JSON Web Token settings for authentication and authorization
+      # Purpose: Secure stateless authentication for API requests
+
+      # JWT Issuer: Identifies who created the token
+      # Value: From ${JWT_ISSUER} in .env file (e.g., "pot-api")
+      # Validation: Token's "iss" claim must match this value
       - JWT__ISSUER=${JWT_ISSUER}
+
+      # JWT Audience: Identifies intended recipient of token
+      # Value: From ${JWT_AUDIENCE} in .env file (e.g., "pot-client")
+      # Validation: Token's "aud" claim must match this value
       - JWT__AUDIENCE=${JWT_AUDIENCE}
+
+      # JWT Secret Key: Cryptographic key for signing tokens
+      # Value: From ${JWT_SECRET_KEY} in .env file
+      # Algorithm used: HMAC-SHA512
+      # Encoding: String is UTF-8 encoded before cryptographic operations
+      # Purpose:
+      #   - Server signs tokens with this key using HMAC-SHA512
+      #   - Server validates tokens using same key
+      #   - Compromised key = attacker can forge valid tokens
+      # Generate strong key examples:
+      #   - OpenSSL: openssl rand -base64 64
+      #   - C#: Convert.ToBase64String(RandomNumberGenerator.GetBytes(64))
+      # Security note: Use cryptographically random values for production
       - JWT__SECRETKEY=${JWT_SECRET_KEY}
+
+      # ------------------------------------------------------------------
+      # SMTP EMAIL CONFIGURATION
+      # ------------------------------------------------------------------
+      # Simple Mail Transfer Protocol settings for sending emails
+      # Purpose: Password resets, account verification, notifications
+
+      # SMTP server hostname
+      # Value: From ${SMTP_HOST} (e.g., smtp.gmail.com, smtp.sendgrid.net)
       - SMTP__HOST=${SMTP_HOST}
+
+      # SMTP server port
+      # Common ports:
+      #   - 587: STARTTLS (recommended, explicit TLS)
+      #   - 465: SSL/TLS (implicit TLS)
+      #   - 25: Unencrypted (not recommended)
       - SMTP__PORT=${SMTP_PORT}
+
+      # Require TLS encryption
+      # Value: true or false
+      # true: Force encrypted connection (recommended)
+      # false: Allow unencrypted (only for local testing)
       - SMTP__REQUIRETLS=${SMTP_REQUIRE_TLS}
+
+      # SMTP authentication username
+      # Value: Email address or API key (depends on provider)
       - SMTP__AUTHENTICATION__USERNAME=${SMTP_AUTH_USERNAME}
+
+      # SMTP authentication password
+      # Value: Password or API secret (depends on provider)
+      # Security: Use app-specific passwords for Gmail, API keys for SendGrid
       - SMTP__AUTHENTICATION__PASSWORD=${SMTP_AUTH_PASSWORD}
+
+      # Email sender name (display name)
+      # Value: From ${SMTP_FROM_NAME} (e.g., "POT Support")
+      # Appears as: "POT Support <noreply@payontime.com.au>"
       - SMTP__FROM__NAME=${SMTP_FROM_NAME}
+
+      # Email sender address
+      # Value: From ${SMTP_FROM_ADDRESS} (e.g., noreply@payontime.com.au)
+      # Must be: Authorized by SMTP provider
       - SMTP__FROM__ADDRESS=${SMTP_FROM_ADDRESS}
+
+      # ------------------------------------------------------------------
+      # CORS (Cross-Origin Resource Sharing) CONFIGURATION
+      # ------------------------------------------------------------------
+      # Allows browser-based clients from different origins to access API
+      # Purpose: Enable React client (http://localhost:5175) to call API (http://localhost:5241)
+
+      # Allowed origins: Comma-separated list of permitted client URLs
+      # Value: From ${CORS_ALLOWED_ORIGINS}
+      # Example: http://localhost:5175,https://www.payontime.com.au
+      # How CORS works:
+      #   - Browser sends preflight OPTIONS request with Origin header
+      #   - Server checks if Origin is in allowed list
+      #   - If allowed, server responds with Access-Control-Allow-Origin header
+      #   - Browser permits actual request (GET, POST, etc.)
+      # Security: Restricts which websites can call your API
+      # Wildcard: Never use "*" in production (allows any website)
       - CORS__ALLOWEDORIGINS=${CORS_ALLOWED_ORIGINS}
+
+      # ------------------------------------------------------------------
+      # PLATFORM ADMIN CONFIGURATION
+      # ------------------------------------------------------------------
+      # Specifies which user IDs have platform administrator privileges
+      # Purpose: Grant elevated permissions for system management
+
+      # Platform admin user IDs: Comma-separated list of user GUIDs
+      # Value: From ${PLATFORM_ADMIN_USERIDS}
+      # Example: "123e4567-e89b-12d3-a456-426614174000,223e4567-e89b-12d3-a456-426614174000"
+      # Permissions: Access to user management, system settings, analytics
+      # Security: Keep this list minimal and carefully controlled
       - PLATFORMADMIN__USERIDS=${PLATFORM_ADMIN_USERIDS}
+
+    # Port mapping: Exposes API to host machine
+    # Syntax: "HOST_PORT:CONTAINER_PORT"
+    #   - Left side (5241): Port on host machine
+    #   - Right side (5241): Port inside container (must match ASPNETCORE_URLS)
+    # Why same ports: Simplifies configuration, no mental translation needed
+    # Access examples:
+    #   - From host: curl http://localhost:5241/_health
+    #   - From browser: http://localhost:5241/swagger
+    #   - From client container: http://pot-aspnet:5241 (uses container name + internal port)
+    # Result: API accessible on http://localhost:5241 from host machine
     ports:
       - "5241:5241"
-    # Map the backups directory inside the container to a local directory
-    # The folder must exist on the host machine
+
+    # Volume mounts: Persist backup files between container recreations
+    # Purpose: Store database backup files on host for safekeeping
     volumes:
+      # Backup directory mapping
+      # Syntax: "HOST_PATH:CONTAINER_PATH"
+      #   - Left side (./postgres-backups): Directory on host (relative to compose file)
+      #   - Right side (/backups): Directory inside container where app writes backups
+      # Why needed:
+      #   - Application can create database backups (pg_dump)
+      #   - Backups stored in container are lost if container is deleted
+      #   - Mounting to host preserves backups permanently
+      # Important: ./postgres-backups directory must exist on host before first run
+      # Security: Add postgres-backups/ to .gitignore (don't commit backup files)
+      # Result: Backup files accessible at Source/Docker/postgres-backups/
       - ./postgres-backups:/backups
+
+    # Restart policy: Automatically restart on failure
+    # Value: always (same as postgres, ensures high availability)
+    # Result: API restarts after crashes, Docker restarts, or host reboots
     restart: always
+
+    # Network membership: Connect to pot-network for inter-container communication
+    # Result: Server can resolve pot-postgres hostname, client can resolve pot-aspnet hostname
     networks:
       - pot-network
 
+  # ==========================================================================
+  # REACT CLIENT (FRONTEND) SERVICE
+  # ==========================================================================
   client:
+    # Container name: Fixed name for predictable reference
     container_name: pot-react
+
+    # Image name: Tag built image
+    # Same pattern as server: pot-client:${IMAGE_TAG:-latest}
+    # VS Code task creates timestamp + latest tags
     image: pot-client:${IMAGE_TAG:-latest}
+
+    # Build configuration: How to create the client Docker image
     build:
+      # Build context: Parent directory (Source/)
+      # Why parent: Dockerfile paths reference Client/ and Docker/Client/
       context: ..
+
+      # Dockerfile location: Path relative to context
+      # Full path: Source/Docker/Client/Dockerfile
       dockerfile: Docker/Client/Dockerfile
+
+      # Build arguments: Pass values to Dockerfile ARG instructions
+      # Purpose: Configure build-time settings (different from runtime ENV)
+      # Important: Build args are baked into image, changing requires rebuild
       args:
+        # Node environment for build process
+        # Value: production (enables Vite production mode)
+        # Effect: Minification, tree-shaking, optimizations during npm run build
         - NODE_ENV=production
+      # Note: NGINX_CONFIG and VITE_API_BASE_URL not specified here
+      #   - Defaults used: nginx.conf (proxies /api to backend)
+      #   - For Azure, these are overridden in azure-pot-client-build-and-deploy task
+
+      # Service dependencies: Ensure API is running before starting client
+      # Why: Client may call API immediately on first load
+      # Note: Not using condition: service_healthy (nginx starts quickly, no health check needed)
+      # Result: Client starts after server container is running
     depends_on:
       - server
+
+    # Environment variables: Runtime configuration
+    # Note: Limited environment variables since most config is build-time (Vite)
     environment:
+      # Node environment (runtime, not build)
+      # Value: production
+      # Effect: Nginx behavior (though nginx doesn't use NODE_ENV much)
       - NODE_ENV=production
+
+    # Port mapping: Exposes client to host machine
+    # Syntax: "HOST_PORT:CONTAINER_PORT"
+    #   - Left side (5175): Port on host machine (accessed in browser)
+    #   - Right side (80): Port inside container (nginx default HTTP port)
+    # Why different ports: nginx conventionally uses 80, host uses custom for flexibility
+    # Access examples:
+    #   - From browser: http://localhost:5175
+    #   - From host: curl http://localhost:5175/health
+    # Result: Client accessible on http://localhost:5175 from host machine
     ports:
       - "5175:80"
+
+    # Health check: Monitor nginx and backend API availability
+    # Purpose: Verify client container is serving traffic and can reach backend
     healthcheck:
+      # Test command: Check if API health endpoint is accessible through client container
+      # Why check API (not just nginx):
+      #   - Verifies nginx is running (wget works)
+      #   - Verifies nginx can proxy to backend (API responds)
+      #   - Comprehensive health check for full stack
+      # Syntax: wget [options] URL
+      #   - -q: Quiet mode (no output)
+      #   - --spider: Don't download, just check if URL exists
+      #   - http://localhost:5241/_health: API health endpoint (internal container port)
+      # Exit codes:
+      #   - 0: Success (healthy)
+      #   - 1: Failure (unhealthy) - triggers "|| exit 1"
+      # Important: Uses localhost:5241 referring to server container's IP on shared network
+      # Note: Could also check nginx only: wget --spider http://localhost:80/health
       test: "wget -q --spider http://localhost:5241/_health || exit 1"
+
+      # Interval: Check every 10 seconds
+      # Why less frequent than postgres: Client availability less critical for other services
       interval: 10s
+
+      # Timeout: Maximum 5 seconds for health check to complete
       timeout: 5s
+
+      # Retries: 3 consecutive failures before marking unhealthy
+      # Math: 3 retries × 10s interval = 30 seconds max wait
       retries: 3
+
+      # Start period: Grace period during container initialization
+      # Value: 5s (shorter than server, nginx starts quickly)
+      # Purpose: Health check failures during this period don't count toward retries
+      # Why needed: Allows nginx time to start without falsely marking unhealthy
       start_period: 5s
+
+    # Restart policy: Automatically restart on failure
+    # Value: always (consistent with other services)
     restart: always
+
+    # Network membership: Connect to pot-network
+    # Why needed: Client nginx proxies /api requests to pot-aspnet:5241
+    # Result: DNS resolves pot-aspnet to server container IP
     networks:
       - pot-network
 
+# ============================================================================
+# NETWORK DEFINITIONS
+# ============================================================================
+# Custom bridge network for inter-container communication
+# Purpose: Isolated network for POT services with DNS resolution
 networks:
   pot-network:
+    # Network driver: bridge (default for single-host networking)
+    # How bridge networks work:
+    #   - Docker creates virtual network interface on host
+    #   - Containers attached to network get virtual NICs in that network
+    #   - Docker provides DNS server (resolves container names to IPs)
+    #   - Containers communicate directly via IP, no NAT between them
+    # Why custom network (not default bridge):
+    #   - Default bridge: No automatic DNS resolution, must use legacy links
+    #   - Custom bridge: DNS resolution by container name (pot-postgres, pot-aspnet)
+    # Security: Network isolation (containers only communicate within same network)
+    # Alternative: overlay (for multi-host Docker Swarm/Kubernetes)
+    # Result: pot-postgres, pot-aspnet, pot-react can reference each other by name
     driver: bridge
