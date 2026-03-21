@@ -8,11 +8,14 @@ Instructions are the canonical source for coding standards and conventions.
 
 ## Contents
 
+- `language-agnostic-core.instructions.md`
+- `aspnetcore-api.instructions.md`
 - `csharp.instructions.md`
+- `dotnet.tests.instructions.md`
+- `aspnetcore.integration-tests.instructions.md`
+- `react-client.instructions.md`
+- `postgres-efcore.instructions.md`
 - `server.instructions.md`
-- `server.tests.instructions.md`
-- `integration-tests.instructions.md`
-- `client.instructions.md`
 - `typescript.instructions.md`
 - `client.tests.instructions.md`
 - `docker.instructions.md`

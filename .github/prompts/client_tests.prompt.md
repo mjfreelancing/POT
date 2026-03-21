@@ -1,7 +1,6 @@
 ---
 name: client_tests
 description: Create or update POT client tests (Vitest + Testing Library).
-model: GPT-5.3-Codex (copilot)
 ---
 
 Create tests for `Source/Client/pot-react`.

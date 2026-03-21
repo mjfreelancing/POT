@@ -1,7 +1,6 @@
 ---
 name: server_integration_test
 description: Create or update API integration tests under Source/Server/Pot.AspNetCore.Integration.Tests/** with contract-focused assertions.
-model: GPT-5.3-Codex (copilot)
 ---
 
 Create integration tests for API behavior.
@@ -31,4 +30,4 @@ Create integration tests for API behavior.
 
 ## Expansion Notes
 
-- Keep integration architecture rules in `.github/instructions/integration-tests.instructions.md`.
+- Keep integration architecture rules in `.github/instructions/aspnetcore.integration-tests.instructions.md`.

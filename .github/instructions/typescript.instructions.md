@@ -8,8 +8,8 @@ applyTo: "Source/Client/pot-react/src/**/*.{ts,tsx}"
 
 ### Language and Style
 
-- Prefer explicit types and `type` aliases.
-- Do not use `any` unless explicitly requested for an unavoidable boundary.
+- Prefer explicit types and `type` aliases where practical.
+- Do not use `any` unless unavoidable at a boundary.
 - Prefer function declarations over arrow functions for exported utilities where practical.
 - Always use braces for `if` statements, including single-line branches.
 - Keep a blank line before and after multi-line `if` blocks for readability consistency.
@@ -31,6 +31,10 @@ applyTo: "Source/Client/pot-react/src/**/*.{ts,tsx}"
 - Prefer cache invalidation via `useCacheInvalidation` / `invalidateCache` in `src/concerns/cache/cacheInvalidation.ts`.
 - For feature mutations, use feature-level wrapper hooks that own cancellation (`AbortController`) and success-only invalidation.
 
+### Runtime Behavior
+
+- Keep state-changing operations in handlers/effects, not in render paths.
+
 ### UI and Side Effects
 
 - Use `PermissionGuard` (hide) vs `WithPermission` (disable) intentionally based on UX discoverability needs.
@@ -39,6 +43,7 @@ applyTo: "Source/Client/pot-react/src/**/*.{ts,tsx}"
 
 ## Expansion Notes
 
+- Baseline cross-language rules live in `language-agnostic-core.instructions.md`.
 - Place new language-level rules under `Language and Style`; place framework usage rules under the nearest domain subsection.
 - For new rules tied to concrete source locations, include the path (for example `src/features/...`) directly in the bullet.
-- If a rule applies beyond `.ts/.tsx` files, add it to `client.instructions.md` instead of duplicating it here.
+- If a rule applies beyond `.ts/.tsx` files, add it to `react-client.instructions.md` instead of duplicating it here.

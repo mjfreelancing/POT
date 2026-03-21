@@ -18,11 +18,14 @@ Why this matters: without this setting, Copilot may not reliably load `.github/i
 
 ## Active scoped instruction files
 
+- `.github/instructions/language-agnostic-core.instructions.md` (`**/*`)
+- `.github/instructions/aspnetcore-api.instructions.md` (`**/*.cs`)
 - `.github/instructions/csharp.instructions.md` (`Source/Server/**/*.cs`)
+- `.github/instructions/dotnet.tests.instructions.md` (`Source/Server/*Tests/**/*.cs`)
+- `.github/instructions/aspnetcore.integration-tests.instructions.md` (`Source/Server/Pot.AspNetCore.Integration.Tests/**/*.cs`)
+- `.github/instructions/react-client.instructions.md` (`Source/Client/pot-react/**`)
+- `.github/instructions/postgres-efcore.instructions.md` (`**/*.cs`)
 - `.github/instructions/server.instructions.md` (`Source/Server/**`)
-- `.github/instructions/server.tests.instructions.md` (`Source/Server/*Tests/**`)
-- `.github/instructions/integration-tests.instructions.md` (`Source/Server/Pot.AspNetCore.Integration.Tests/**/*.cs`)
-- `.github/instructions/client.instructions.md` (`Source/Client/pot-react/**`)
 - `.github/instructions/typescript.instructions.md` (`Source/Client/pot-react/src/**/*.{ts,tsx}`)
 - `.github/instructions/client.tests.instructions.md` (`Source/Client/pot-react/tests/**`)
 - `.github/instructions/docker.instructions.md` (`Source/Docker/**`)
@@ -38,6 +41,9 @@ Why this matters: without this setting, Copilot may not reliably load `.github/i
 ## Available prompts
 
 - `.github/prompts/repo_tests.prompt.md`
+- `.github/prompts/dotnet_unit_test.prompt.md`
+- `.github/prompts/dotnet_integration_test.prompt.md`
+- `.github/prompts/typescript_tests.prompt.md`
 - `.github/prompts/server_unit_test.prompt.md`
 - `.github/prompts/server_coverage.prompt.md`
 - `.github/prompts/client_tests.prompt.md`
@@ -49,11 +55,10 @@ Why this matters: without this setting, Copilot may not reliably load `.github/i
 
 ## Available skills
 
-- `.github/skills/environment-preflight/SKILL.md`
+- `.github/skills/agent-env-tools/SKILL.md`
 
 ## Automation
 
-- Automation guide: `.github/automation-playbook.md`
 - Workspace save actions: `.vscode/settings.json` (format on save + organize imports)
 
 ## Repo notes

@@ -1,7 +1,6 @@
 ---
 name: server_coverage
 description: Run POT server code coverage workflow and summarize results.
-model: GPT-5.3-Codex (copilot)
 ---
 
 Run server coverage using repository defaults.

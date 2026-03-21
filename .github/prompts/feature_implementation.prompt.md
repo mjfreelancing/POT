@@ -1,7 +1,6 @@
 ---
 name: feature_implementation
 description: Implement a POT feature with a concise cross-layer checklist and focused validation.
-model: GPT-5.3-Codex (copilot)
 ---
 
 Implement a feature with minimal, targeted edits and root-cause focus.

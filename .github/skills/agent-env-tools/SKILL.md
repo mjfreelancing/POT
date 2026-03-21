@@ -1,10 +1,10 @@
-# Skill: Environment Preflight
+# Skill: Agent Env Tools
 
 ## Purpose
 
 Standardize agent startup checks so sessions are reliable before code changes and tests.
 
-Implementation script: `.github/scripts/agent-env-diagnostics.ps1`.
+Implementation script: `.github/skills/agent-env-tools/scripts/agent-env-tools.ps1`.
 
 ## When to use
 
@@ -23,13 +23,13 @@ Implementation script: `.github/scripts/agent-env-diagnostics.ps1`.
 ## Commands
 
 - Report-only:
-  - `./.github/scripts/agent-env-diagnostics.ps1`
+  - `.\.github\skills\agent-env-tools\scripts\agent-env-tools.ps1`
 - Offer installs (interactive):
-  - `./.github/scripts/agent-env-diagnostics.ps1 -OfferInstall`
+  - `.\.github\skills\agent-env-tools\scripts\agent-env-tools.ps1 -OfferInstall`
 - Auto-install optional tools (opt-in):
-  - `./.github/scripts/agent-env-diagnostics.ps1 -AutoInstall`
+  - `.\.github\skills\agent-env-tools\scripts\agent-env-tools.ps1 -AutoInstall`
 - Dry run install preview:
-  - `./.github/scripts/agent-env-diagnostics.ps1 -OfferInstall -DryRun`
+  - `.\.github\skills\agent-env-tools\scripts\agent-env-tools.ps1 -OfferInstall -DryRun`
 
 ## Required result
 

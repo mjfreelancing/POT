@@ -2,9 +2,11 @@
 applyTo: "Source/Docker/**"
 ---
 
-# Docker Instructions
+# Docker Workflow Instructions
 
-## Core Workflow
+## Core Rules
+
+### Core Workflow
 
 - Prefer VS Code tasks for full-stack lifecycle:
   - Start: `docker-start-pot-client-server`
@@ -26,7 +28,7 @@ applyTo: "Source/Docker/**"
 - Client runtime config is build-time in Docker (`Docker/Client/Dockerfile` args); changing API base URL requires rebuild.
 - Keep environment variable naming consistent with existing compose/appsettings mapping (for example `DATABASE__*`, `JWT__*`, `SMTP__*`, `CORS__*`).
 
-## Safe Edit Boundaries
+### Safety
 
 - Treat `Source/Docker/postgres-data/**` as runtime data; do not modify/delete in normal code changes.
 - Keep compose and Dockerfile changes minimal and focused on the requested behavior.
@@ -42,4 +44,4 @@ applyTo: "Source/Docker/**"
 
 - Add workflow updates under `Core Workflow` and keep task names exact.
 - Add service-specific runtime behavior under `Ports and Services` with concrete port/container values.
-- Keep safety boundaries explicit in `Safe Edit Boundaries` when new data volumes or stateful services are added.
+- Keep safety boundaries explicit in `Safety` when new data volumes or stateful services are added.

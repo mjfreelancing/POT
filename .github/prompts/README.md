@@ -9,6 +9,9 @@ Prompts describe task flow (how to execute work), not coding standards.
 ## Contents
 
 - `repo_tests.prompt.md` - run repository test suites (server/client) and summarize outcomes.
+- `dotnet_unit_test.prompt.md` - create or update generic .NET unit tests.
+- `dotnet_integration_test.prompt.md` - create or update generic hosted API integration tests.
+- `typescript_tests.prompt.md` - create or update generic TypeScript or JavaScript tests.
 - `server_unit_test.prompt.md` - create or update server unit tests in the nearest test project.
 - `server_coverage.prompt.md` - run server coverage workflow and summarize report output.
 - `client_tests.prompt.md` - create or update client tests (Vitest + Testing Library).
@@ -27,3 +30,4 @@ Prompts describe task flow (how to execute work), not coding standards.
 ## Notes
 
 - Keep workflow detail in prompt files, not this index.
+- Baseline prompts from AI pack can be used directly; POT-named prompts are project aliases with repo-specific defaults.

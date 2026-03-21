@@ -24,10 +24,14 @@ applyTo: "Source/Server/**/*.cs"
 - Keep `CancellationToken` propagation intact in async chains.
 - Place extension methods in an `Extensions` folder and name extension files/classes after the extended type (`<ExtendedType>Extensions`).
 - Preserve public API shape unless change is explicitly requested / approved.
-- Always implement code with testability in mind; prefer constructor injection and avoid static dependencies.
-- Default to using sealed classes unless extensibility is required.
+- Implement with testability in mind; prefer constructor injection and avoid static dependencies.
+- Default to sealed classes unless extensibility is required.
 - Do not use primary constructors; prefer explicit constructor definitions for clarity and testability.
 - For guard clauses, prefer AllOverIt assertion extensions (for example `_ = arg.WhenNotNull();`) over framework guards like `ArgumentNullException.ThrowIfNull(arg)`.
+
+### C# Architecture
+
+- Keep handlers thin: validate, map input, call service, map result.
 
 ### Architecture and Contracts
 
@@ -44,6 +48,7 @@ applyTo: "Source/Server/**/*.cs"
 
 ## Expansion Notes
 
+- Baseline cross-language rules live in `language-agnostic-core.instructions.md`.
 - Keep general C# language conventions here; move server-specific workflow rules to `server.instructions.md`.
 - Add project or namespace examples when introducing new architecture constraints.
-- For test-style changes, update `server.tests.instructions.md` in the same change.
+- For test-style changes, update `dotnet.tests.instructions.md` in the same change.

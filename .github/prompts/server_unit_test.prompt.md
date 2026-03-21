@@ -1,7 +1,6 @@
 ---
 name: server_unit_test
 description: Create or update POT server unit tests.
-model: GPT-5.3-Codex (copilot)
 ---
 
 Create unit tests for server code.
@@ -23,6 +22,9 @@ Create unit tests for server code.
 ## Execution
 
 - Run relevant test scope first, then broaden as needed:
+  - `dotnet test Pot.App.Tests/Pot.App.Tests.csproj --filter "FullyQualifiedName~<FixtureOrTestName>" --nologo --verbosity minimal` (from `Source/Server`)
+  - `dotnet test Pot.Data.Tests/Pot.Data.Tests.csproj --filter "FullyQualifiedName~<FixtureOrTestName>" --nologo --verbosity minimal` (from `Source/Server`)
+  - `dotnet test Pot.AspNetCore.Tests/Pot.AspNetCore.Tests.csproj --filter "FullyQualifiedName~<FixtureOrTestName>" --nologo --verbosity minimal` (from `Source/Server`)
   - `dotnet test pot.sln -c Debug --nologo --verbosity minimal` (from `Source/Server`)
 
 ## Expansion Notes

@@ -12,8 +12,8 @@ Run tests using repo commands.
 
 ## Workflow
 
-- Start with the smallest relevant scope, then broaden.
-- Summarize root failures before applying fixes.
+1. Start with the smallest relevant scope, then broaden.
+2. Summarize root failures before applying fixes.
 
 ## Commands
 

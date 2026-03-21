@@ -8,13 +8,9 @@
 #
 # Where this script is used from:
 # - Direct terminal usage from repository root.
-# - VS Code tasks in `.vscode/tasks.json`:
-#   - `agent-env-diagnostics`
-#   - `agent-env-diagnostics-offer-install`
-#   - `agent-env-diagnostics-auto-install-dryrun`
 # - Documentation/workflow references:
-#   - `.github/automation-playbook.md`
-#   - `.github/skills/environment-preflight/SKILL.md`
+#   - `.github/skills/agent-env-tools/SKILL.md`
+#   - `.github/skills/agent-env-tools/scripts/agent-env-tools.ps1`
 #
 # Notes:
 # - Required tools cause exit code 1 when missing.

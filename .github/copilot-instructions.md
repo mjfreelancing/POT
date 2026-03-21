@@ -10,13 +10,16 @@ Instruction authoring model:
 
 Use path-scoped instructions for implementation details:
 
+- Language-agnostic baseline: `.github/instructions/language-agnostic-core.instructions.md` (`applyTo: **/*`)
+- ASP.NET Core API baseline: `.github/instructions/aspnetcore-api.instructions.md` (`applyTo: **/*.cs`)
 - C# scope: `.github/instructions/csharp.instructions.md` (`applyTo: Source/Server/**/*.cs`)
-- Client scope: `.github/instructions/client.instructions.md` (`applyTo: Source/Client/pot-react/**`)
+- .NET test baseline: `.github/instructions/dotnet.tests.instructions.md` (`applyTo: Source/Server/*Tests/**/*.cs`)
+- React client scope: `.github/instructions/react-client.instructions.md` (`applyTo: Source/Client/pot-react/**`)
 - TypeScript scope: `.github/instructions/typescript.instructions.md` (`applyTo: Source/Client/pot-react/src/**/*.{ts,tsx}`)
 - Client tests scope: `.github/instructions/client.tests.instructions.md` (`applyTo: Source/Client/pot-react/tests/**`)
+- Postgres/EF Core baseline: `.github/instructions/postgres-efcore.instructions.md` (`applyTo: **/*.cs`)
 - Server scope: `.github/instructions/server.instructions.md` (`applyTo: Source/Server/**`)
-- Server tests scope: `.github/instructions/server.tests.instructions.md` (`applyTo: Source/Server/*Tests/**`)
-- Integration tests scope: `.github/instructions/integration-tests.instructions.md` (`applyTo: Source/Server/Pot.AspNetCore.Integration.Tests/**/*.cs`)
+- Integration tests scope: `.github/instructions/aspnetcore.integration-tests.instructions.md` (`applyTo: Source/Server/Pot.AspNetCore.Integration.Tests/**/*.cs`)
 - Docker scope: `.github/instructions/docker.instructions.md` (`applyTo: Source/Docker/**`)
 
 ## Shared Integration Workflows
