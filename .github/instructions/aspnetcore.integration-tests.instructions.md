@@ -4,8 +4,6 @@ applyTo: "Source/Server/Pot.AspNetCore.Integration.Tests/**/*.cs"
 
 # ASP.NET Core Integration Test Instructions
 
-Integration tests live in `Source/Server/Pot.AspNetCore.Integration.Tests/**`.
-
 ## Core Rules
 
 ### Classification
@@ -28,7 +26,7 @@ Integration tests live in `Source/Server/Pot.AspNetCore.Integration.Tests/**`.
 - Use `Host/*WebApplicationFactory.cs` for shared test host configuration.
 - Use `WebApplicationFactory<Program>`-style host fixtures and real `HttpClient` calls.
 - For repeated integration assertion patterns, create reusable helper extensions in `Host/Extensions` within the integration test project.
-- For implementation logging operations under test, configure fake logging in the test host and assert expected log records using `FakeLogCollector` or `FakeLogger` helpers from `Pot.TestUtils`.
+- Capture and assert logging behavior by configuring fake loggers in the test host; extract repeated log assertion patterns into shared helpers.
 - Include validation-failure and method-contract (`405`) checks where applicable.
 - Ensure responses do not leak sensitive request or header data.
 
@@ -36,11 +34,12 @@ Integration tests live in `Source/Server/Pot.AspNetCore.Integration.Tests/**`.
 
 - Start with targeted fixture or test execution, then broaden scope.
 - Keep shared host setup in reusable factory fixtures.
-- For targeted integration fixture or test execution, run from `Source/Server` with:
-  - `dotnet test Pot.AspNetCore.Integration.Tests/Pot.AspNetCore.Integration.Tests.csproj --filter "FullyQualifiedName~<FixtureOrTestName>"`
-- Prefer this project-level command over file-path-based discovery tooling for deterministic reruns.
+- Prefer project-level execution with `FullyQualifiedName` filtering over file-path-based discovery tooling for deterministic reruns.
 
 ## Expansion Notes
 
 - Keep endpoint-family patterns in this file.
 - Keep generic unit-test rules in `dotnet.tests.instructions.md`.
+  - POT: Integration tests live under `Source/Server/Pot.AspNetCore.Integration.Tests/**`.
+  - POT: For logging assertions, prefer `FakeLogCollector` or `FakeLogger` helpers from `Pot.TestUtils`.
+  - POT: For targeted integration reruns from `Source/Server`, use `dotnet test Pot.AspNetCore.Integration.Tests/Pot.AspNetCore.Integration.Tests.csproj --filter "FullyQualifiedName~<FixtureOrTestName>"`.

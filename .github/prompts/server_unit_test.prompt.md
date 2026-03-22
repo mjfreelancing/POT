@@ -1,6 +1,6 @@
 ---
 name: server_unit_test
-description: Create or update POT server unit tests.
+description: Create or update server unit tests in the nearest test project.
 ---
 
 Create unit tests for server code.
@@ -8,26 +8,27 @@ Create unit tests for server code.
 ## Scope
 
 - Target server unit tests only.
-- Place tests in the nearest server unit-test project for the changed code (`Pot.App.Tests`, `Pot.Data.Tests`, `Pot.AspNetCore.Tests`).
-- Do not place `WebApplicationFactory<Program>` + `HttpClient` tests here; those belong in `Pot.AspNetCore.Integration.Tests`.
+- Place tests in the nearest server unit-test project for the changed code.
+- Do not place hosted API or end-to-end boundary tests here.
 
 ## Workflow
 
-1. Identify target layer and place tests in the nearest server test project.
-2. Follow scoped instruction files for coding/test conventions.
-3. Add/adjust tests with deterministic setup and behavior-focused assertions.
-4. Run smallest relevant test scope first, then broaden when useful.
-5. Keep C# method/constructor parameter lists compact (avoid one-parameter-per-line formatting unless wrapping is truly needed).
+1. Identify the owning layer or project and place tests in the nearest server unit-test project.
+2. Follow scoped instruction files for coding and assertion conventions.
+3. Add deterministic setup and behavior-focused assertions.
+4. Run the smallest relevant test scope first, then broaden when useful.
 
 ## Execution
 
-- Run relevant test scope first, then broaden as needed:
-  - `dotnet test Pot.App.Tests/Pot.App.Tests.csproj --filter "FullyQualifiedName~<FixtureOrTestName>" --nologo --verbosity minimal` (from `Source/Server`)
-  - `dotnet test Pot.Data.Tests/Pot.Data.Tests.csproj --filter "FullyQualifiedName~<FixtureOrTestName>" --nologo --verbosity minimal` (from `Source/Server`)
-  - `dotnet test Pot.AspNetCore.Tests/Pot.AspNetCore.Tests.csproj --filter "FullyQualifiedName~<FixtureOrTestName>" --nologo --verbosity minimal` (from `Source/Server`)
-  - `dotnet test pot.sln -c Debug --nologo --verbosity minimal` (from `Source/Server`)
+Adjust the example paths below to match your repository structure.
+
+- `dotnet test .\Source\Server\My.Project.Tests\My.Project.Tests.csproj --filter "FullyQualifiedName~<FixtureOrTestName>" --nologo --verbosity minimal` (from `.\Source\Server`)
+- `dotnet test .\Source\Server\MySolution.sln -c Debug --nologo --verbosity minimal` (from `.\Source\Server`)
 
 ## Expansion Notes
 
-- Add additional unit-test commands under `Execution` with explicit working directory context.
-- Keep cross-project test-placement rules in `Scope`.
+- Add repository-specific project paths and command variants in consuming copies.
+  - POT: Nearest server unit-test projects are `Pot.App.Tests`, `Pot.Data.Tests`, and `Pot.AspNetCore.Tests`.
+  - POT: Hosted API tests using `WebApplicationFactory<Program>` and `HttpClient` belong in `Pot.AspNetCore.Integration.Tests`.
+  - POT: Common commands from `Source/Server` are `dotnet test Pot.App.Tests/Pot.App.Tests.csproj --filter "FullyQualifiedName~<FixtureOrTestName>" --nologo --verbosity minimal`, `dotnet test Pot.Data.Tests/Pot.Data.Tests.csproj --filter "FullyQualifiedName~<FixtureOrTestName>" --nologo --verbosity minimal`, `dotnet test Pot.AspNetCore.Tests/Pot.AspNetCore.Tests.csproj --filter "FullyQualifiedName~<FixtureOrTestName>" --nologo --verbosity minimal`, and `dotnet test pot.sln -c Debug --nologo --verbosity minimal`.
+- Keep cross-project placement rules in `Scope`.

@@ -8,13 +8,13 @@ applyTo: "Source/Server/**/*.cs"
 
 ### Language and Code Quality
 
-- Treat `Source/Server/.editorconfig` as the source of truth for C# formatting and analyzer style rules; when wording here conflicts, `.editorconfig` wins.
-- Use clear naming and cohesive feature-level organization (handlers/services/repositories grouped by capability).
+- Treat `.editorconfig` as the source of truth for formatting and analyzer style rules.
+- Use clear naming and cohesive feature-level organization.
 - Avoid one-letter variable names unless loop/index intent is obvious.
 - Keep methods focused and avoid unnecessary abstraction.
 - Keep method and constructor signatures reasonably compact for readability; wrap parameters when needed for clarity.
-- Follow these member-ordering conventions for classes:
-  - Place nested types (including private nested classes) at the top of the containing type, above constants, fields, and properties.
+- Follow member-ordering conventions consistently within each project:
+  - Place nested types above constants, fields, and properties.
   - Place constants before other fields; place static readonly fields before instance fields.
   - Place private readonly dependency fields above other instance fields.
   - Place properties above constructors.
@@ -23,32 +23,22 @@ applyTo: "Source/Server/**/*.cs"
 - Avoid sync-over-async (`.Result`, `.Wait()`, `.GetAwaiter().GetResult()`).
 - Keep `CancellationToken` propagation intact in async chains.
 - Place extension methods in an `Extensions` folder and name extension files/classes after the extended type (`<ExtendedType>Extensions`).
-- Preserve public API shape unless change is explicitly requested / approved.
+- Preserve public API shape unless change is explicitly requested or approved.
 - Implement with testability in mind; prefer constructor injection and avoid static dependencies.
 - Default to sealed classes unless extensibility is required.
 - Do not use primary constructors; prefer explicit constructor definitions for clarity and testability.
-- For guard clauses, prefer AllOverIt assertion extensions (for example `_ = arg.WhenNotNull();`) over framework guards like `ArgumentNullException.ThrowIfNull(arg)`.
 
 ### C# Architecture
 
 - Keep handlers thin: validate, map input, call service, map result.
 
-### Architecture and Contracts
-
-- Layering direction: `Pot.AspNetCore` -> `Pot.App` -> `Pot.Data`.
-- API handlers are minimal and map to typed HTTP results; business failures flow via `EnrichedResult` + Problem Details mapping.
-- Authorization convention uses `resource:action` permission strings.
-- Keep entity contracts on external `RowId` + concurrency `Etag` conventions.
-
-## Test Alignment
-
-- Current repository uses xUnit with Shouldly and NSubstitute.
-- Keep assertion style consistent per test project; avoid mixing assertion frameworks within new tests.
-- Refer to Pot.TestUtils for Shouldly test helpers.
-
 ## Expansion Notes
 
 - Baseline cross-language rules live in `language-agnostic-core.instructions.md`.
-- Keep general C# language conventions here; move server-specific workflow rules to `server.instructions.md`.
-- Add project or namespace examples when introducing new architecture constraints.
-- For test-style changes, update `dotnet.tests.instructions.md` in the same change.
+- Keep C#-specific conventions in this file.
+- Move project- or layer-specific rules to additional scoped instruction files.
+  - POT: Layering direction is `Pot.AspNetCore` -> `Pot.App` -> `Pot.Data`.
+  - POT: API handlers are minimal and map to typed HTTP results; business failures flow via `EnrichedResult` plus Problem Details mapping.
+  - POT: Authorization convention uses `resource:action` permission strings.
+  - POT: Keep entity contracts on external `RowId` plus concurrency `Etag` conventions.
+  - POT: For guard clauses, prefer AllOverIt assertion extensions such as `_ = arg.WhenNotNull();` over framework guards like `ArgumentNullException.ThrowIfNull(arg)`.

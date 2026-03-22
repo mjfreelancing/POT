@@ -6,42 +6,29 @@ applyTo: "Source/Docker/**"
 
 ## Core Rules
 
-### Core Workflow
+### Lifecycle
 
-- Prefer VS Code tasks for full-stack lifecycle:
-  - Start: `docker-start-pot-client-server`
-  - Stop: `docker-stop-pot-client-server`
-- Primary compose file is `Source/Docker/docker-compose-client-server.yml`.
-- Compose commands should load both env files when used directly:
-  - `--env-file .env --env-file .env.development`
-
-## Ports and Services
-
-- Expected host ports: client `5175`, API `5241`, Postgres `5444`.
-- Expected containers: `pot-react` (client), `pot-aspnet` (server), `pot-postgres` (database).
-- API health endpoint: `http://localhost:5241/_health`.
-- Frontend health endpoint: `http://localhost:5175/health`.
-
-## Build and Config Conventions
-
-- Keep server and client images aligned with existing naming/tagging patterns (`pot-server`, `pot-client`, timestamp + `latest`).
-- Client runtime config is build-time in Docker (`Docker/Client/Dockerfile` args); changing API base URL requires rebuild.
-- Keep environment variable naming consistent with existing compose/appsettings mapping (for example `DATABASE__*`, `JWT__*`, `SMTP__*`, `CORS__*`).
+- Prefer explicit, repeatable command sequences.
+- Keep compose command usage explicit and repeatable.
+- Validate service health after lifecycle changes.
 
 ### Safety
 
-- Treat `Source/Docker/postgres-data/**` as runtime data; do not modify/delete in normal code changes.
-- Keep compose and Dockerfile changes minimal and focused on the requested behavior.
-- Preserve existing network/depends_on/healthcheck intent unless the task explicitly requires lifecycle changes.
+- Treat runtime volume/data directories as protected unless explicitly requested.
+- Keep Dockerfile/compose edits minimal and focused on requested behavior.
 
-## Verification Checklist
+### Validation
 
-- `docker ps` shows all three containers running.
-- `curl http://localhost:5241/_health` responds healthy.
-- `curl http://localhost:5175/health` responds healthy.
+- Verify containers are running.
+- Verify configured API and client health endpoints respond.
 
 ## Expansion Notes
 
-- Add workflow updates under `Core Workflow` and keep task names exact.
-- Add service-specific runtime behavior under `Ports and Services` with concrete port/container values.
-- Keep safety boundaries explicit in `Safety` when new data volumes or stateful services are added.
+- Keep task names and compose file paths in project-specific overlays or token files.
+  - POT: Prefer VS Code tasks `docker-start-pot-client-server` and `docker-stop-pot-client-server` for full-stack lifecycle.
+  - POT: Primary compose file is `Source/Docker/docker-compose-client-server.yml`.
+  - POT: Direct compose commands should load `--env-file .env --env-file .env.development`.
+  - POT: Expected host ports are client `5175`, API `5241`, and Postgres `5444`.
+  - POT: Expected containers are `pot-react`, `pot-aspnet`, and `pot-postgres`.
+  - POT: API health endpoint is `http://localhost:5241/_health`; frontend health endpoint is `http://localhost:5175/health`.
+  - POT: Treat `Source/Docker/postgres-data/**` as protected runtime data and preserve existing `network`, `depends_on`, and `healthcheck` intent unless explicitly asked.

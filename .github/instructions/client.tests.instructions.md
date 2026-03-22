@@ -10,29 +10,29 @@ applyTo: "Source/Client/pot-react/tests/**"
 
 - Use deterministic tests with mocked external boundaries.
 - Prefer behavior-focused assertions over implementation details.
-- Mirror source structure in test folders for discoverability.
+- Mirror source structure in test folders when that improves discoverability.
 
 ### Tooling and Naming
 
-- Test framework is Vitest + jsdom (`vitest.config.ts`) with shared setup in `tests/setup.ts`.
-- Use Testing Library queries and user interactions for component/UI tests.
-- Keep test naming consistent with existing pattern (`*.test.ts` / `*.test.tsx`).
+- Use the repository's existing client test framework, environment, and shared setup conventions.
+- Prefer user-observable assertions and interactions for component and UI tests.
+- Keep test naming consistent with the surrounding test project or folder.
 
 ### API and Utility Coverage
 
-- For API hooks and interceptors, assert on the repo `Result` pattern (`success` branch + fail branch), not exception-first flow.
-- For utilities, keep tests lightweight and table-driven where useful (match existing `tests/lib/*`).
-- If test setup behavior changes, update only `tests/setup.ts` and keep global side effects minimal.
-
-## Commands
-
-Run in `Source/Client/pot-react`:
-
-- `npm run test`
-- `npm run test:ui`
+- Assert on the repository's success and failure contract shape instead of relying on exception-first flows when explicit result objects are used.
+- Keep utility tests lightweight and table-driven when that improves readability.
+- Keep global test setup changes isolated to the repository's shared test setup entry point.
 
 ## Expansion Notes
 
-- Add testing-library or Vitest conventions under `Tooling and Naming`.
-- Add feature-specific test patterns under `API and Utility Coverage` with concrete path examples.
-- Keep project-wide test behavior in this file and avoid duplicating it in prompts.
+- Add repository-specific framework names, setup file paths, and command examples in consuming copies of this file.
+- Keep project-wide client test behavior here and avoid duplicating it in prompt files.
+  - POT: Client tests live under `Source/Client/pot-react/tests/**`.
+  - POT: Test framework is Vitest plus jsdom (`vitest.config.ts`) with shared setup in `tests/setup.ts`.
+  - POT: Use Testing Library queries and user interactions for component and UI tests.
+  - POT: Keep test naming consistent with `*.test.ts` and `*.test.tsx`.
+  - POT: For API hooks and interceptors, assert on the repo `Result` pattern instead of exception-first flow.
+  - POT: Mirror existing utility test patterns under `tests/lib/*` where useful.
+  - POT: Keep `tests/setup.ts` as the shared setup entry point and keep global side effects minimal.
+  - POT: Run `npm run test` and `npm run test:ui` from `Source/Client/pot-react`.

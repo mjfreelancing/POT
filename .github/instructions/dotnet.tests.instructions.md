@@ -15,37 +15,33 @@ applyTo: "Source/Server/*Tests/**/*.cs"
 
 ### Conventions
 
-- Server tests use xUnit across `Pot.App.Tests`, `Pot.Data.Tests`, `Pot.AspNetCore.Tests`, and `Pot.AspNetCore.Integration.Tests`.
-- Assertion style currently follows Shouldly with NSubstitute test doubles.
-- Follow existing naming style in the repo (`*Fixture.cs` and descriptive method names).
+- Use xUnit naming and structure consistent with the repository.
 - Keep assertion style consistent within each test project.
-- Keep reusable helpers in `Pot.TestUtils` when they are genuinely cross-project.
-- When setup or assertion patterns repeat, prefer adding or extending helpers in `Pot.TestUtils` rather than duplicating logic in individual fixtures.
-- Keep `Pot.TestUtils` strictly general-purpose; project-specific helpers should remain in the owning test project.
-- When internal visibility is needed for testing, use csproj `InternalsVisibleTo` declarations such as `<InternalsVisibleTo Include="Pot.App.Tests" />`.
+- Keep reusable helpers in a shared test utility project when they are cross-project.
+- When setup or assertion patterns repeat, prefer adding or extending shared helpers rather than duplicating logic in individual fixtures.
+- Keep shared test utility projects strictly general-purpose; project-specific helpers should remain in the owning test project.
+- When internal visibility is needed for testing, use csproj `InternalsVisibleTo` declarations.
+- For targeted reruns, prefer project-level execution with `--filter` on fully-qualified test names.
 
 ### Placement
 
-- Place tests in `Pot.App.Tests`, `Pot.Data.Tests`, or `Pot.AspNetCore.Tests` when validating a single class, service, or component with in-process test doubles and no hosted API.
-- Place integration tests in `Pot.AspNetCore.Integration.Tests` when validating request pipeline behavior via `WebApplicationFactory<Program>` and real `HttpClient` requests.
+- Unit tests: project-level test projects that validate in-process behavior.
+- Integration tests: hosted API or end-to-end boundary tests with real HTTP/database boundaries and real `HttpClient` requests.
 
 ### Layer-Specific Expectations
 
-- For App-layer tests, validate `EnrichedResult` success and failure semantics rather than exception-only assertions.
-- For Data-layer tests, validate specification and query behavior without leaking API-layer concerns.
 - Keep test-only dependencies in test projects; do not add them to production projects.
-
-## Commands
-
-Run in `Source/Server`:
-
-- `dotnet test`
-- `dotnet test --collect:"XPlat Code Coverage"`
-- For targeted .NET test runs, execute the owning test project directly with `--filter "FullyQualifiedName~<FixtureOrTestName>"`.
-- For integration fixtures, use:
-  - `dotnet test Pot.AspNetCore.Integration.Tests/Pot.AspNetCore.Integration.Tests.csproj --filter "FullyQualifiedName~<FixtureOrTestName>"`
 
 ## Expansion Notes
 
-- Keep framework or tooling choices in project-level docs if needed.
-- Add layer-specific conventions in dedicated scoped files only when they are not already covered here.
+- Keep framework/tooling choices in project-level docs if needed.
+  - POT: Repository test projects are `Pot.App.Tests`, `Pot.Data.Tests`, `Pot.AspNetCore.Tests`, and `Pot.AspNetCore.Integration.Tests`.
+  - POT: Current assertion stack uses Shouldly with NSubstitute.
+  - POT: Follow `*Fixture.cs` naming with descriptive method names.
+  - POT: Shared helpers live in `Pot.TestUtils` when they are genuinely cross-project.
+- Add layer-specific conventions in dedicated scoped files.
+  - POT: Use `Pot.App.Tests`, `Pot.Data.Tests`, or `Pot.AspNetCore.Tests` for in-process unit tests.
+  - POT: Use `Pot.AspNetCore.Integration.Tests` with `WebApplicationFactory<Program>` and real `HttpClient` requests for hosted API tests.
+  - POT: For targeted integration reruns from `Source/Server`, use `dotnet test Pot.AspNetCore.Integration.Tests/Pot.AspNetCore.Integration.Tests.csproj --filter "FullyQualifiedName~<FixtureOrTestName>"`.
+  - POT: App-layer tests validate `EnrichedResult` success and failure semantics.
+  - POT: Data-layer tests validate specification and query behavior without leaking API-layer concerns.

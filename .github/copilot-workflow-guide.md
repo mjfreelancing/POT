@@ -44,18 +44,19 @@ Why this matters: without this setting, Copilot may not reliably load `.github/i
 - `.github/prompts/dotnet_unit_test.prompt.md`
 - `.github/prompts/dotnet_integration_test.prompt.md`
 - `.github/prompts/typescript_tests.prompt.md`
-- `.github/prompts/server_unit_test.prompt.md`
-- `.github/prompts/server_coverage.prompt.md`
 - `.github/prompts/client_tests.prompt.md`
+- `.github/prompts/server_unit_test.prompt.md`
+- `.github/prompts/server_integration_test.prompt.md`
+- `.github/prompts/code_coverage.prompt.md`
 - `.github/prompts/document_csharp.prompt.md`
 - `.github/prompts/document_typescript.prompt.md`
-- `.github/prompts/server_integration_test.prompt.md`
 - `.github/prompts/docker_workflow.prompt.md`
 - `.github/prompts/feature_implementation.prompt.md`
 
-## Available skills
+## Available scripts
 
-- `.github/skills/agent-env-tools/SKILL.md`
+- `.github/scripts/agent-env-tools/agent-env-tools.ps1`
+- `.github/scripts/agent-env-tools/README.md`
 
 ## Automation
 

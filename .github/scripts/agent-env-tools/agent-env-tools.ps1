@@ -1,5 +1,12 @@
 # Agent environment diagnostics script.
 #
+# Primary purpose:
+# - Confirm that the AI agent session environment has the CLI tools it needs
+#   before attempting builds, tests, or other tool-dependent operations.
+#
+# Secondary purpose:
+# - Developers can run the same script manually to verify their machine setup.
+#
 # What this script does:
 # - Checks whether required and optional CLI tools are available.
 # - Shows where each tool resolves from and its detected version.
@@ -9,8 +16,8 @@
 # Where this script is used from:
 # - Direct terminal usage from repository root.
 # - Documentation/workflow references:
-#   - `.github/skills/agent-env-tools/SKILL.md`
-#   - `.github/skills/agent-env-tools/scripts/agent-env-tools.ps1`
+#   - `.github/scripts/agent-env-tools/README.md`
+#   - `.github/scripts/agent-env-tools/agent-env-tools.ps1`
 #
 # Notes:
 # - Required tools cause exit code 1 when missing.

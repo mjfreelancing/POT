@@ -1,39 +1,40 @@
 ---
 name: docker_workflow
-description: Run POT docker lifecycle workflows (build/start/stop/health) with task-first defaults.
+description: Run Docker lifecycle workflows with task-first defaults.
 ---
 
-Handle Docker workflows for POT using the safest, repeatable path.
+Handle Docker workflows using the safest, most repeatable repository path.
 
 ## Scope
 
-- Handle build/start/stop/health Docker workflows for the existing POT stack.
+- Handle build, start, stop, status, and health-check workflows for the existing stack.
 
 ## Workflow
 
-- Prefer task/command wrappers over ad-hoc shell sequences.
-- Validate health/status after lifecycle changes.
+- Prefer repository task or command wrappers over ad-hoc shell sequences.
+- Validate health and status after lifecycle changes.
 
 ## Commands and Rules
 
-- Prefer VS Code tasks first:
-  - Start stack: `docker-start-pot-client-server`
-  - Stop stack: `docker-stop-pot-client-server`
-- Use compose file `Source/Docker/docker-compose-client-server.yml` when direct compose commands are required.
-- Include env files when using compose directly:
-  - `--env-file .env --env-file .env.development`
-- Keep data safety boundaries:
-  - never modify or delete `Source/Docker/postgres-data/**` in normal operations.
+- Prefer VS Code tasks or documented wrapper commands first.
+- Use the repository's compose file or orchestration manifests when direct commands are required.
+- Include required environment files or flags when repository docs specify them.
+- Never modify persisted data folders or volumes unless the user explicitly asks.
 
 ## Validation
 
-- Confirm containers are running (`pot-react`, `pot-aspnet`, `pot-postgres`).
-- Confirm API health endpoint responds at `http://localhost:5241/_health`.
-- Confirm frontend health endpoint responds at `http://localhost:5175/health`.
+- Confirm expected services or containers are running.
+- Confirm documented health or status endpoints respond when available.
 
-If a step fails, summarize root error and provide the smallest next corrective step.
+If a step fails, summarize the root error and provide the smallest next corrective step.
 
 ## Expansion Notes
 
-- Add new lifecycle commands under `Commands and Rules` with exact task names or compose paths.
-- Keep service-specific safety boundaries in this prompt aligned with `docker.instructions.md`.
+- Add repository-specific task names, compose paths, endpoints, and safety boundaries in consuming copies.
+- Keep service-specific safety rules aligned with any Docker instruction file used by the repository.
+  - POT: Start task is `docker-start-pot-client-server`; stop task is `docker-stop-pot-client-server`.
+  - POT: Compose file is `Source/Docker/docker-compose-client-server.yml`.
+  - POT: Direct compose commands should include `--env-file .env --env-file .env.development`.
+  - POT: Protected data path is `Source/Docker/postgres-data/**`.
+  - POT: Expected services are `pot-react`, `pot-aspnet`, and `pot-postgres`.
+  - POT: Health endpoints are `http://localhost:5241/_health` and `http://localhost:5175/health`.

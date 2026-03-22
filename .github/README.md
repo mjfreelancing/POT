@@ -4,8 +4,9 @@ This folder contains Copilot instruction routing for this repo.
 
 ## Structure Model
 
-- `copilot-ai-pack` stores reusable assets under `packs/instructions`, `packs/prompts`, and `packs/skills/<pack>/...`.
-- In a destination repo like POT, those assets land under this `.github/` folder by type (`instructions`, `prompts`, `skills`).
+- `copilot-ai-pack` stores reusable assets under `instructions`, `prompts`, and `scripts/<pack>/...`.
+  - Source repository: `https://github.com/mjfreelancing/copilot-ai-pack`
+- In a destination repo like POT, those assets land under this `.github/` folder by type (`instructions`, `prompts`, `scripts`).
 - Future baseline updates should compare AI-pack source files by type and sync them into this repo's `.github/**` layout.
 
 ## Current Setup
@@ -56,11 +57,7 @@ Use one of these in your prompt:
 - Keep `.github/copilot-instructions.md` short and shared (project-wide context + workflow links).
 - Keep implementation details in path-scoped instruction files to reduce noise.
 - Keep instructions concrete and aligned to current architecture and workflows.
-- Folder indexes (standardized as Purpose -> Contents -> Source of truth boundary -> Notes):
-  - Instructions: `.github/instructions/README.md`
-  - Prompts: `.github/prompts/README.md`
-  - Skills: `.github/skills/README.md`
 - Integration tests live under `Source/Server/Pot.AspNetCore.Integration.Tests` and should use the integration-test instruction/prompt guidance.
-- Reusable prompts currently available under `.github/prompts`: `repo_tests.prompt.md`, `dotnet_unit_test.prompt.md`, `dotnet_integration_test.prompt.md`, `typescript_tests.prompt.md`, `server_unit_test.prompt.md`, `server_coverage.prompt.md`, `client_tests.prompt.md`, `document_csharp.prompt.md`, `document_typescript.prompt.md`, `server_integration_test.prompt.md`, `docker_workflow.prompt.md`, `feature_implementation.prompt.md`.
-- Reusable skills available under `.github/skills`: see `.github/skills/README.md`.
+- Reusable prompts currently available under `.github/prompts`: `repo_tests.prompt.md`, `dotnet_unit_test.prompt.md`, `dotnet_integration_test.prompt.md`, `typescript_tests.prompt.md`, `client_tests.prompt.md`, `server_unit_test.prompt.md`, `server_integration_test.prompt.md`, `code_coverage.prompt.md`, `document_csharp.prompt.md`, `document_typescript.prompt.md`, `docker_workflow.prompt.md`, `feature_implementation.prompt.md`.
+- Reusable scripts available under `.github/scripts`: see `.github/scripts/agent-env-tools/README.md` for agent-env-tools usage.
 - Per-change cleanup automation is save-action based via `.vscode/settings.json` (`editor.formatOnSave` + `source.organizeImports`).
