@@ -85,11 +85,13 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
 
             account.TotalExpenseAccrued = GetWithinRange(1.0d, 1000.0d);
             account.DailyExpenseAccrual = GetWithinRange(1.0d, 10.0d);
+            account.StableExpenseAccrual = GetWithinRange(1.0d, 10.0d);
 
             _calculator.AccrueExpenses(account, []);
 
             account.TotalExpenseAccrued.ShouldBe(0.0d);
             account.DailyExpenseAccrual.ShouldBe(0.0d);
+            account.StableExpenseAccrual.ShouldBe(0.0d);
         }
 
         [Fact]
@@ -143,6 +145,122 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
 
             _account.TotalExpenseAccrued.ShouldBe(0.0d);
             _account.DailyExpenseAccrual.ShouldBe(0.0d);
+            _account.StableExpenseAccrual.ShouldBe(0.0d);
+        }
+
+        [Fact]
+        public void Should_Calculate_StableExpenseAccrual_For_OneTime_Expense_Before_Due_Using_Fixed_Period()
+        {
+            var expense = EntityFactory.CreateExpense(_account, false, "OneTime", 1000, "2025-01-01", "2025-01-31", null, Frequency.OneTime, 1);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            // Fixed denominator: NextDue - AccrualStart = 30 days
+            // Stable contribution: 1000 / 30 = 33.33
+            _account.StableExpenseAccrual.ShouldBe(33.33d, 0.01d);
+        }
+
+        [Fact]
+        public void Should_Not_Calculate_StableExpenseAccrual_For_OneTime_Expense_Due_Today()
+        {
+            var expense = EntityFactory.CreateExpense(_account, false, "OneTime", 1000, "2025-01-01", "2025-01-15", null, Frequency.OneTime, 1);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            _account.StableExpenseAccrual.ShouldBe(0.0d);
+        }
+
+        [Fact]
+        public void Should_Not_Calculate_StableExpenseAccrual_For_OneTime_Expense_After_Due()
+        {
+            var expense = EntityFactory.CreateExpense(_account, false, "OneTime", 1000, "2025-01-01", "2025-01-14", null, Frequency.OneTime, 1);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            _account.StableExpenseAccrual.ShouldBe(0.0d);
+        }
+
+        [Fact]
+        public void Should_Not_Calculate_StableExpenseAccrual_For_OneTime_Expense_When_AccrualStart_Equals_Due()
+        {
+            var expense = EntityFactory.CreateExpense(_account, false, "OneTime", 1000, "2025-01-15", "2025-01-15", null, Frequency.OneTime, 1);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            _account.StableExpenseAccrual.ShouldBe(0.0d);
+        }
+
+        [Fact]
+        public void Should_Calculate_StableExpenseAccrual_For_Recurring_Days()
+        {
+            var expense = EntityFactory.CreateExpense(_account, false, "Days", 100, "2025-01-01", "2025-01-31", null, Frequency.Days, 5);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            _account.StableExpenseAccrual.ShouldBe(20.0d, 0.000001d);
+        }
+
+        [Fact]
+        public void Should_Calculate_StableExpenseAccrual_For_Recurring_Weeks()
+        {
+            var expense = EntityFactory.CreateExpense(_account, false, "Weeks", 140, "2025-01-01", "2025-01-31", null, Frequency.Weeks, 2);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            _account.StableExpenseAccrual.ShouldBe(10.0d, 0.000001d);
+        }
+
+        [Fact]
+        public void Should_Calculate_StableExpenseAccrual_For_Recurring_Months()
+        {
+            var expense = EntityFactory.CreateExpense(_account, false, "Months", 304.36875d, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            _account.StableExpenseAccrual.ShouldBe(10.0d, 0.000001d);
+        }
+
+        [Fact]
+        public void Should_Calculate_StableExpenseAccrual_For_Recurring_Years()
+        {
+            var expense = EntityFactory.CreateExpense(_account, false, "Years", 2191.455d, "2025-01-01", "2025-12-31", null, Frequency.Years, 2);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            _account.StableExpenseAccrual.ShouldBe(3.0d, 0.000001d);
+        }
+
+        [Fact]
+        public void Should_Accumulate_StableExpenseAccrual_Across_Multiple_Expenses()
+        {
+            var recurring = EntityFactory.CreateExpense(_account, false, "Recurring", 700, "2025-01-01", "2025-01-22", null, Frequency.Weeks, 1);
+            var oneTime = EntityFactory.CreateExpense(_account, false, "OneTime", 600, "2025-01-01", "2025-01-31", null, Frequency.OneTime, 1);
+
+            _calculator.AccrueExpenses(_account, [recurring, oneTime]);
+
+            // Recurring: 700 / 7 = 100
+            // OneTime fixed period: 600 / 30 = 20
+            _account.StableExpenseAccrual.ShouldBe(120.0d, 0.000001d);
+        }
+
+        [Fact]
+        public void Should_Not_Calculate_StableExpenseAccrual_When_Expense_Excluded_From_Calcs()
+        {
+            var expense = EntityFactory.CreateExpense(_account, true, "Excluded", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            _account.StableExpenseAccrual.ShouldBe(0.0d);
+        }
+
+        [Fact]
+        public void Should_Not_Calculate_StableExpenseAccrual_When_AccrualStart_After_CurrentDate()
+        {
+            var expense = EntityFactory.CreateExpense(_account, false, "Future", 1000, "2025-01-16", "2025-01-31", null, Frequency.Months, 1);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            _account.StableExpenseAccrual.ShouldBe(0.0d);
         }
 
         [Fact]

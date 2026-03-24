@@ -51,6 +51,7 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
             if (processExpense)
             {
                 AccrueExpense(currentDateValue, expense);
+                AccrueStableExpense(currentDateValue, expense);
             }
         }
     }
@@ -59,6 +60,7 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
     {
         account.TotalExpenseAccrued = 0.0d;
         account.DailyExpenseAccrual = 0.0d;
+        account.StableExpenseAccrual = 0.0d;
     }
 
     private static void AccrueExpense(DateOnly currentDate, ExpenseEntity expense)
@@ -98,5 +100,39 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
         {
             account.DailyExpenseAccrual += expense.DailyBalance(currentDate);
         }
+    }
+
+    private static void AccrueStableExpense(DateOnly currentDate, ExpenseEntity expense)
+    {
+        if (expense.Frequency == Frequency.OneTime)
+        {
+            // One-time items are treated as a bounded obligation between AccrualStart and NextDue.
+            // For the stable metric we intentionally avoid "remaining days" math because that would
+            // increase contribution as the due date approaches (unstable ramp-up).
+            //
+            // Instead we use a fixed denominator for the full configured period:
+            //     fixedDays = NextDue - AccrualStart
+            //     stable contribution (before due date) = Amount / fixedDays
+            //
+            // This keeps the one-time contribution constant while active, then zeroes out on/after due date.
+            if (currentDate < expense.NextDue)
+            {
+                var totalDaysUntilDue = expense.NextDue.DayNumber - expense.AccrualStart.DayNumber;
+
+                // Guard malformed or same-day ranges to avoid divide-by-zero or negative periods.
+                // A zero/negative period means this one-time item contributes nothing to the stable metric.
+                if (totalDaysUntilDue > 0)
+                {
+                    expense.Account.StableExpenseAccrual += expense.Amount / totalDaysUntilDue;
+                }
+            }
+
+            // On or after due date: no stable contribution.
+            // One-time expenses are expected to be paid and then deleted.
+            return;
+        }
+
+        var averageDays = expense.Frequency.GetAverageDaysToNext(expense.FrequencyCount);
+        expense.Account.StableExpenseAccrual += expense.Amount / averageDays;
     }
 }
