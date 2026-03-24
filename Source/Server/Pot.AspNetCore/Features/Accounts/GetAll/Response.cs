@@ -30,6 +30,9 @@ internal sealed class Response : ResponseBase
     [Description("The daily accrual required to meet all future expenses")]
     public double DailyExpenseAccrual { get; init; }
 
+    [Description("The stable daily accrual required for planning based on recurring obligations and active one-time expenses")]
+    public double StableExpenseAccrual { get; init; }
+
     [Description("The number of expenses recorded against this account")]
     public int LinkedExpenses { get; init; }
 
@@ -59,6 +62,7 @@ internal sealed class Response : ResponseBase
         Reserved = account.Reserved;
         TotalExpenseAccrued = account.TotalExpenseAccrued;
         DailyExpenseAccrual = account.DailyExpenseAccrual;
+        StableExpenseAccrual = account.StableExpenseAccrual;
         LinkedExpenses = account.LinkedExpenses;
         LinkedIncomes = account.LinkedIncomes;
     }

@@ -20,6 +20,7 @@ internal static class EntityMapping
             Reserved = account.Reserved,
             TotalExpenseAccrued = account.TotalExpenseAccrued,
             DailyExpenseAccrual = account.DailyExpenseAccrual,
+            StableExpenseAccrual = account.StableExpenseAccrual,
             LinkedExpenses = dto.LinkedExpenses,
             LinkedIncomes = dto.LinkedIncomes
         };
