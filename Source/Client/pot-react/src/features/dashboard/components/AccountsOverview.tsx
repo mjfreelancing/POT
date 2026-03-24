@@ -74,7 +74,18 @@ function AccountsOverview({ isOpen, onOpenChange }: AccountsOverviewProps) {
       0,
     );
 
-    setSummary(totalBalance, totalReserved, totalAvailable, totalDailyAccrual);
+    const totalStableExpenseAccrual = accounts.reduce(
+      (sum, acct) => sum + acct.stableExpenseAccrual,
+      0,
+    );
+
+    setSummary(
+      totalBalance,
+      totalReserved,
+      totalAvailable,
+      totalDailyAccrual,
+      totalStableExpenseAccrual,
+    );
   }, [accounts, setSummary]);
 
   const totalBalance = accountsSummaryStore(
@@ -89,8 +100,8 @@ function AccountsOverview({ isOpen, onOpenChange }: AccountsOverviewProps) {
     (state: AccountsSummary) => state.totalAvailable,
   );
 
-  const totalDailyAccrual = accountsSummaryStore(
-    (state: AccountsSummary) => state.totalDailyAccrual,
+  const totalDailyNeed = accountsSummaryStore(
+    (state: AccountsSummary) => state.totalStableExpenseAccrual,
   );
 
   function getAmountClass(amount: number): string {
@@ -123,12 +134,12 @@ function AccountsOverview({ isOpen, onOpenChange }: AccountsOverviewProps) {
       },
       {
         icon: <Calendar className="h-6 w-6" aria-hidden="true" />,
-        label: 'Daily Accrual',
-        value: formatMoneyValue(totalDailyAccrual),
-        className: getAmountClass(totalDailyAccrual),
+        label: 'Daily Need',
+        value: formatMoneyValue(totalDailyNeed),
+        className: getAmountClass(totalDailyNeed),
       },
     ],
-    [totalBalance, totalReserved, totalAvailable, totalDailyAccrual],
+    [totalBalance, totalReserved, totalAvailable, totalDailyNeed],
   );
 
   return (

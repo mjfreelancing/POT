@@ -14,6 +14,7 @@ const AccountSchema = BaseAccountSchema.extend({
   ...IdentitySchema.shape,
   totalExpenseAccrued: z.number(),
   dailyExpenseAccrual: z.number(),
+  stableExpenseAccrual: z.number(),
   available: z.number(),
   linkedExpenses: z.number(),
   linkedIncomes: z.number(),
