@@ -127,6 +127,7 @@ function useAccountFilter<T extends ItemWithAccount>({
         reserved: 0,
         totalExpenseAccrued: 0,
         dailyExpenseAccrual: 0,
+        stableExpenseAccrual: 0,
         available: 0,
         linkedExpenses: 0,
         linkedIncomes: 0,
