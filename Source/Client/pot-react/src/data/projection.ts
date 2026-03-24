@@ -32,8 +32,8 @@ const PROJECTION_METRICS: Record<ProjectionMetric, MetricConfig> = {
   },
 
   dailyAccrual: {
-    title: 'Daily Accruals',
-    filterLabel: 'Daily Accruals',
+    title: 'Projection Accruals',
+    filterLabel: 'Projection Accruals',
     chartType: 'line',
   },
 
