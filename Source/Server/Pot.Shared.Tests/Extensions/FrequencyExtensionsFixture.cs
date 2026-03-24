@@ -51,6 +51,17 @@ public class FrequencyExtensionsFixture : PotFixtureBase
 
             exception.Message.ShouldBe("The 'OneTime' frequency does not have a next occurrence.");
         }
+
+        [Fact]
+        public void Should_Throw_For_Null_Frequency()
+        {
+            var exception = Should.Throw<ArgumentOutOfRangeException>(() =>
+            {
+                _ = FrequencyExtensions.GetDaysToNext(null!, new DateOnly(2026, 3, 24), 1);
+            });
+
+            exception.ParamName.ShouldBe("frequency");
+        }
     }
 
     public class GetAverageDaysToNext : FrequencyExtensionsFixture
@@ -96,6 +107,17 @@ public class FrequencyExtensionsFixture : PotFixtureBase
             });
 
             exception.Message.ShouldBe($"The '{Frequency.OneTime.Name}' frequency does not have a recurring average period.");
+        }
+
+        [Fact]
+        public void Should_Throw_For_Null_Frequency()
+        {
+            var exception = Should.Throw<ArgumentOutOfRangeException>(() =>
+            {
+                _ = FrequencyExtensions.GetAverageDaysToNext(null!, 1);
+            });
+
+            exception.ParamName.ShouldBe("frequency");
         }
     }
 }
