@@ -11,6 +11,7 @@ public sealed class Output
     public required double Reserved { get; init; }
     public required double TotalExpenseAccrued { get; init; }
     public required double DailyExpenseAccrual { get; init; }
+    public required double StableExpenseAccrual { get; init; }
     public required int LinkedExpenses { get; init; }
     public required int LinkedIncomes { get; init; }
     public double Available => Balance - Reserved - TotalExpenseAccrued;
