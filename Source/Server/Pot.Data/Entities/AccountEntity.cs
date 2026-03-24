@@ -26,6 +26,7 @@ public sealed class AccountEntity : EntityBase
     public double Reserved { get; set; }
     public double TotalExpenseAccrued { get; set; }
     public double DailyExpenseAccrual { get; set; }
+    public double StableExpenseAccrual { get; set; }
 
     public required SiteEntity Site { get; set; }
     public ICollection<IncomeEntity> Incomes { get; set; } = [];
