@@ -4,6 +4,9 @@ namespace Pot.Shared.Extensions;
 
 public static class FrequencyExtensions
 {
+    private const double AverageDaysPerYear = 365.2425d;
+    private const double AverageDaysPerMonth = AverageDaysPerYear / 12d;
+
     public static int GetDaysToNext(this Frequency frequency, DateOnly fromDate, int frequencyCount)
     {
         if (frequency == Frequency.Days)
@@ -31,6 +34,36 @@ public static class FrequencyExtensions
         if (frequency == Frequency.OneTime)
         {
             throw new InvalidOperationException("The 'OneTime' frequency does not have a next occurrence.");
+        }
+
+        throw new ArgumentOutOfRangeException(nameof(frequency), frequency, null);
+    }
+
+    public static double GetAverageDaysToNext(this Frequency frequency, int frequencyCount)
+    {
+        if (frequency == Frequency.Days)
+        {
+            return frequencyCount;
+        }
+
+        if (frequency == Frequency.Weeks)
+        {
+            return 7d * frequencyCount;
+        }
+
+        if (frequency == Frequency.Months)
+        {
+            return AverageDaysPerMonth * frequencyCount;
+        }
+
+        if (frequency == Frequency.Years)
+        {
+            return AverageDaysPerYear * frequencyCount;
+        }
+
+        if (frequency == Frequency.OneTime)
+        {
+            throw new InvalidOperationException($"The '{Frequency.OneTime.Name}' frequency does not have a recurring average period.");
         }
 
         throw new ArgumentOutOfRangeException(nameof(frequency), frequency, null);
