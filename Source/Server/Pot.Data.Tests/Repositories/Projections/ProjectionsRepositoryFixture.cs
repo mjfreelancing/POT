@@ -7,7 +7,7 @@ using Pot.Shared.Enumerations;
 using Pot.TestUtils;
 using Shouldly;
 
-namespace Pot.Data.Tests.Repositories;
+namespace Pot.Data.Tests.Repositories.Projections;
 
 public class ProjectionsRepositoryFixture : PotFixtureBase
 {
