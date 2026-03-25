@@ -7,7 +7,6 @@ using Pot.Data.Entities;
 using Pot.Data.Extensions;
 using Pot.Data.Specifications;
 using Pot.Shared;
-using Pot.Shared.Enumerations;
 
 namespace Pot.Data.Repositories.Expenses;
 
@@ -80,26 +79,26 @@ internal sealed class ExpenseRepository : PersistableRepository, IPersistableExp
 
     public Task<Guid[]> GetRequiredRenewalsAsync(Guid[] accountRowIds, DateOnly asOfDate, CancellationToken cancellationToken)
     {
+        var isInAccountSet = ExpenseSpecifications.IsInAccountSet(accountRowIds).Expression;
+        var requiresRenewal = ExpenseSpecifications.RequiresRenewal(asOfDate).Expression;
+
         return Expenses
-            .Where(expense => accountRowIds.Contains(expense.Account.RowId))
-            .Where(expense =>
-                !expense.ExcludeFromCalcs &&
-                expense.Frequency != Frequency.OneTime &&
-                expense.NextDue <= asOfDate &&
-                (!expense.EndDate.HasValue || expense.EndDate > asOfDate))
+            .Where(isInAccountSet)
+            .Where(requiresRenewal)
             .Select(expense => expense.RowId)
             .ToArrayAsync(cancellationToken);
     }
 
     public Task<Guid[]> GetRequiredAccountAccrualsAsync(Guid[] accountRowIds, DateOnly asOfDate, CancellationToken cancellationToken)
     {
+        var isInAccountSet = ExpenseSpecifications.IsInAccountSet(accountRowIds).Expression;
         var requiresAccrualUpdate = ExpenseSpecifications.RequiresAccrualUpdate(asOfDate).Expression;
 
         // Not excluding expenses marked as ExcludeFromCalcs as they may still require an accrual update,
         // such as when toggling the flag.
         return Expenses
+            .Where(isInAccountSet)
             .Where(requiresAccrualUpdate)
-            .Where(expense => accountRowIds.Contains(expense.Account.RowId))
             .Select(expense => expense.Account.RowId)
             .Distinct()
             .ToArrayAsync(cancellationToken);

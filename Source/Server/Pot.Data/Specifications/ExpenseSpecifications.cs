@@ -1,5 +1,6 @@
 ﻿using AllOverIt.Patterns.Specification;
 using Pot.Data.Entities;
+using Pot.Shared.Enumerations;
 
 namespace Pot.Data.Specifications;
 
@@ -18,5 +19,24 @@ public static class ExpenseSpecifications
         // 2. LastAccruedUpdate is null = expense has never been accrued
         // 3. LastAccruedUpdate < asOfDate = accruals are stale (calculated before current date)
         return LinqSpecification<ExpenseEntity>.Create(expense => expense.AccruedIsDirty || expense.LastAccruedUpdate == null || expense.LastAccruedUpdate < asOfDate);
+    }
+
+    public static ILinqSpecification<ExpenseEntity> IsInAccountSet(Guid[] accountRowIds)
+    {
+        return LinqSpecification<ExpenseEntity>.Create(expense => accountRowIds.Contains(expense.Account.RowId));
+    }
+
+    public static ILinqSpecification<ExpenseEntity> RequiresRenewal(DateOnly asOfDate)
+    {
+        return LinqSpecification<ExpenseEntity>.Create(expense =>
+            // Must be incluided
+            !expense.ExcludeFromCalcs &&
+
+            // We never renew one-time expenses
+            expense.Frequency != Frequency.OneTime &&
+
+            // Must be due on or before the asOfDate and not ended before the asOfDate
+            // If there's no end date, then the expense is always renewable as long as it's due on or before the asOfDate
+            expense.NextDue <= asOfDate && (!expense.EndDate.HasValue || expense.EndDate > asOfDate));
     }
 }
