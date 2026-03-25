@@ -7,6 +7,7 @@ using Pot.Data.Entities;
 using Pot.Data.Extensions;
 using Pot.Data.Specifications;
 using Pot.Shared;
+using Pot.Shared.Enumerations;
 
 namespace Pot.Data.Repositories.Expenses;
 
@@ -80,10 +81,12 @@ internal sealed class ExpenseRepository : PersistableRepository, IPersistableExp
     public Task<Guid[]> GetRequiredRenewalsAsync(Guid[] accountRowIds, DateOnly asOfDate, CancellationToken cancellationToken)
     {
         return Expenses
+            .Where(expense => accountRowIds.Contains(expense.Account.RowId))
             .Where(expense =>
                 !expense.ExcludeFromCalcs &&
+                expense.Frequency != Frequency.OneTime &&
                 expense.NextDue <= asOfDate &&
-                accountRowIds.Contains(expense.Account.RowId))
+                (!expense.EndDate.HasValue || expense.EndDate > asOfDate))
             .Select(expense => expense.RowId)
             .ToArrayAsync(cancellationToken);
     }

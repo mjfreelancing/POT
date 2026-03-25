@@ -13,6 +13,6 @@ public interface IExpenseRepository : IRepositoryBase
     Task<ExpenseEntity?> GetExpenseOrDefaultAsync(Guid rowId, CancellationToken cancellationToken);
     Task<List<ExpenseEntity>> GetExpensesAsync(Guid[] rowIds, CancellationToken cancellationToken);
     Task<List<ExpenseEntity>> GetExpensesForAccountAsync(Guid accountRowId, CancellationToken cancellationToken);
-    Task<Guid[]> GetRequiredRenewalsAsync(Guid[] accountRowId, DateOnly beforeDate, CancellationToken cancellationToken);
-    Task<Guid[]> GetRequiredAccountAccrualsAsync(Guid[] accountRowId, DateOnly beforeDate, CancellationToken cancellationToken);
+    Task<Guid[]> GetRequiredRenewalsAsync(Guid[] accountRowIds, DateOnly asOfDate, CancellationToken cancellationToken);
+    Task<Guid[]> GetRequiredAccountAccrualsAsync(Guid[] accountRowIds, DateOnly asOfDate, CancellationToken cancellationToken);
 }

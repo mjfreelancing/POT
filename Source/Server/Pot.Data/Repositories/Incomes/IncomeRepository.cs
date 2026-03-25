@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Pot.Data.Entities;
 using Pot.Data.Extensions;
+using Pot.Shared.Enumerations;
 
 namespace Pot.Data.Repositories.Incomes;
 
@@ -38,10 +39,12 @@ internal sealed class IncomeRepository : PersistableRepository, IPersistableInco
     public Task<Guid[]> GetRequiredRenewalsAsync(Guid[] accountRowIds, DateOnly asOfDate, CancellationToken cancellationToken)
     {
         return Incomes
+            .Where(income => accountRowIds.Contains(income.Account.RowId))
             .Where(income =>
                 !income.ExcludeFromCalcs &&
+                income.Frequency != Frequency.OneTime &&
                 income.NextDue <= asOfDate &&
-                accountRowIds.Contains(income.Account.RowId))
+                (!income.EndDate.HasValue || income.EndDate > asOfDate))
             .Select(income => income.RowId)
             .ToArrayAsync(cancellationToken);
     }
