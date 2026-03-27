@@ -132,6 +132,17 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
             return;
         }
 
+        // Recurring stable contributions are only active through their end date (if any).
+        // Without this gate, expired recurring expenses would continue contributing to
+        // StableExpenseAccrual indefinitely unless they are manually excluded or deleted.
+        // Keep boundary inclusive so contributions still apply on the end date itself.
+        var recurringEndDate = expense.EndDate.GetValueOrDefault(DateOnly.MaxValue);
+
+        if (currentDate > recurringEndDate)
+        {
+            return;
+        }
+
         var averageDays = expense.Frequency.GetAverageDaysToNext(expense.FrequencyCount);
         expense.Account.StableExpenseAccrual += expense.Amount / averageDays;
     }

@@ -264,6 +264,42 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
         }
 
         [Fact]
+        public void Should_Not_Calculate_StableExpenseAccrual_For_Recurring_Expense_After_EndDate()
+        {
+            var expense = EntityFactory.CreateExpense(_account, false, "Ended Recurring", 304.36875d,
+                "2025-01-01", "2025-01-31", "2025-01-14", Frequency.Months, 1);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            _account.StableExpenseAccrual.ShouldBe(0.0d);
+        }
+
+        [Fact]
+        public void Should_Calculate_StableExpenseAccrual_For_Recurring_Expense_On_EndDate_Boundary()
+        {
+            var expense = EntityFactory.CreateExpense(_account, false, "Boundary Recurring", 304.36875d,
+                "2025-01-01", "2025-01-31", "2025-01-15", Frequency.Months, 1);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            _account.StableExpenseAccrual.ShouldBe(10.0d, 0.000001d);
+        }
+
+        [Fact]
+        public void Should_Exclude_Ended_Recurring_Expense_From_StableExpenseAccrual_When_Mixed_With_Active_Expense()
+        {
+            var ended = EntityFactory.CreateExpense(_account, false, "Ended Recurring", 152.184375d,
+                "2025-01-01", "2025-01-31", "2025-01-14", Frequency.Months, 1);
+
+            var active = EntityFactory.CreateExpense(_account, false, "Active Recurring", 304.36875d,
+                "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
+
+            _calculator.AccrueExpenses(_account, [ended, active]);
+
+            _account.StableExpenseAccrual.ShouldBe(10.0d, 0.000001d);
+        }
+
+        [Fact]
         public void Should_Calculated_Expense_Accrual()
         {
             var expenseItems = GetAccrualExpenses(_account).ToArray();
