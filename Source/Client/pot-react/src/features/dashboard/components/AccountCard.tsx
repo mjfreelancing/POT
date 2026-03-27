@@ -17,7 +17,8 @@ type AccountCardProps = {
  * <AccountCard account={accountData} />
  */
 function AccountCard({ account }: AccountCardProps) {
-  const { description, bsb, number, balance, available } = account;
+  const { description, bsb, number, balance, available, stableExpenseAccrual } =
+    account;
 
   // Determine account status based on available funds
   const getAccountStatus = () => {
@@ -108,6 +109,14 @@ function AccountCard({ account }: AccountCardProps) {
                   )}
                 >
                   {formatMoneyValue(available)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-[11px] lg:text-sm font-medium text-foreground">
+                  Daily Need:
+                </span>
+                <span className="text-sm lg:text-lg font-semibold text-information">
+                  {formatMoneyValue(stableExpenseAccrual)}
                 </span>
               </div>
             </div>
