@@ -5,6 +5,7 @@ import {
   CartesianGrid,
   Line,
   LineChart,
+  ReferenceLine,
   XAxis,
   YAxis,
 } from 'recharts';
@@ -152,8 +153,12 @@ function ProjectionChart({
     onHiddenSeriesChange(newHiddenSeries);
   }
 
-  // Calculate min and max for visible series only
-  function getVisibleYDomain(): [number, number] {
+  type VisibleValueRange = {
+    min: number | undefined;
+    max: number | undefined;
+  };
+
+  function getVisibleValueRange(): VisibleValueRange {
     const visibleKeys = seriesKeys.filter(key => seriesVisibility[key]);
     let min: number | undefined;
     let max: number | undefined;
@@ -161,6 +166,7 @@ function ProjectionChart({
     for (const point of chartData) {
       for (const key of visibleKeys) {
         const value = point[key];
+
         if (typeof value === 'number' && !isNaN(value)) {
           if (min === undefined || value < min) {
             min = value;
@@ -173,9 +179,22 @@ function ProjectionChart({
       }
     }
 
+    return { min, max };
+  }
+
+  // Line charts keep symmetric min/max behavior and optional zero reference line.
+  function getVisibleLineYStats(visibleRange: VisibleValueRange): {
+    domain: [number, number];
+    showZeroReferenceLine: boolean;
+  } {
+    const { min, max } = visibleRange;
+
     // If no visible data, fallback to 0-1
     if (min === undefined || max === undefined) {
-      return [0, 1];
+      return {
+        domain: [0, 1],
+        showZeroReferenceLine: false,
+      };
     }
 
     // Add a small margin for better visuals
@@ -183,8 +202,44 @@ function ProjectionChart({
 
     const margin = range === 0 ? Math.abs(max) * 0.1 || 1 : range * 0.1;
 
-    return [Math.floor(min - margin), Math.ceil(max + margin)];
+    return {
+      domain: [Math.floor(min - margin), Math.ceil(max + margin)],
+      showZeroReferenceLine: min <= 0 && max >= 0,
+    };
   }
+
+  // Bar charts should always start at zero and only scale upward.
+  function getVisibleBarYDomain(
+    visibleRange: VisibleValueRange,
+  ): [number, number] {
+    const { max } = visibleRange;
+
+    if (max === undefined || max <= 0) {
+      return [0, 1];
+    }
+
+    const margin = max * 0.1;
+
+    return [0, Math.ceil(max + margin)];
+  }
+
+  const visibleValueRange = getVisibleValueRange();
+  const { domain: visibleLineYDomain, showZeroReferenceLine } =
+    getVisibleLineYStats(visibleValueRange);
+  const visibleBarYDomain = getVisibleBarYDomain(visibleValueRange);
+
+  // ZERO BASELINE THEME HOOK (applies to the line-chart ReferenceLine below)
+  //
+  // Keep `stroke="#ccc"` on the zero ReferenceLine components in this file.
+  // In this repo, `ChartContainer` (`src/components/ui/chart.tsx`) includes a Tailwind selector:
+  // `[&_.recharts-reference-line_[stroke='#ccc']]:stroke-border`
+  // Recharts emits the reference line with the `stroke="#ccc"` SVG attribute, and that selector
+  // matches by attribute and replaces the visible stroke with the theme token `stroke-border`.
+  //
+  // If the stroke is changed away from `#ccc`, the selector no longer matches and the theme override
+  // is lost. This attribute-hook pattern is the stable approach here because direct
+  // `hsl(var(--muted-foreground))` on SVG stroke has been unreliable in this chart path.
+  const zeroReferenceLineStrokeWidth = 2;
 
   function renderTooltipContent(
     active?: boolean,
@@ -309,7 +364,7 @@ function ProjectionChart({
                   <YAxis
                     tickFormatter={value => formatMoneyValue(value)}
                     className="text-xs"
-                    domain={getVisibleYDomain()}
+                    domain={visibleLineYDomain}
                   />
                   <ChartTooltip
                     content={({ active, payload, label }) =>
@@ -336,6 +391,17 @@ function ProjectionChart({
                       />
                     );
                   })}
+                  {showZeroReferenceLine && (
+                    <ReferenceLine
+                      y={0}
+                      stroke="#ccc"
+                      strokeDasharray="6 4"
+                      strokeOpacity={1}
+                      strokeWidth={zeroReferenceLineStrokeWidth}
+                      ifOverflow="extendDomain"
+                      isFront={true}
+                    />
+                  )}
                 </LineChart>
               ) : (
                 <BarChart
@@ -370,7 +436,7 @@ function ProjectionChart({
                   <YAxis
                     tickFormatter={value => formatMoneyValue(value)}
                     className="text-xs"
-                    domain={getVisibleYDomain()}
+                    domain={visibleBarYDomain}
                   />
                   <ChartTooltip
                     content={({ active, payload, label }) =>
