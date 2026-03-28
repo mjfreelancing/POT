@@ -112,48 +112,6 @@ function OtpVerificationForm({
     <div className="space-y-6 w-full">
       <form onSubmit={handleSubmit} className="space-y-6 w-full">
         <div className="space-y-6 w-full">
-          {/* Reference Code - Read Only */}
-          <div className="space-y-3">
-            <Label
-              htmlFor="reference-code"
-              className="text-sm font-medium text-muted-foreground"
-            >
-              REFERENCE CODE
-            </Label>
-            <div className="flex justify-center">
-              <div className="p-2 bg-muted/50 rounded-lg border border-muted">
-                <InputOTP maxLength={6} value={referenceCode} disabled={true}>
-                  <InputOTPGroup>
-                    <InputOTPSlot
-                      index={0}
-                      className="w-12 h-12 text-lg font-semibold"
-                    />
-                    <InputOTPSlot
-                      index={1}
-                      className="w-12 h-12 text-lg font-semibold"
-                    />
-                    <InputOTPSlot
-                      index={2}
-                      className="w-12 h-12 text-lg font-semibold"
-                    />
-                    <InputOTPSlot
-                      index={3}
-                      className="w-12 h-12 text-lg font-semibold"
-                    />
-                    <InputOTPSlot
-                      index={4}
-                      className="w-12 h-12 text-lg font-semibold"
-                    />
-                    <InputOTPSlot
-                      index={5}
-                      className="w-12 h-12 text-lg font-semibold"
-                    />
-                  </InputOTPGroup>
-                </InputOTP>
-              </div>
-            </div>
-          </div>
-
           {/* Verification Code - User Input */}
           <div className="space-y-3">
             <Label
@@ -217,6 +175,48 @@ function OtpVerificationForm({
               Code sent to the email for{' '}
               <span className="font-semibold text-foreground">{username}</span>
             </p>
+          </div>
+
+          {/* Reference Code - Read Only */}
+          <div className="space-y-3">
+            <Label
+              htmlFor="reference-code"
+              className="text-sm font-medium text-muted-foreground"
+            >
+              REFERENCE CODE
+            </Label>
+            <div className="flex justify-center">
+              <div className="p-2 bg-muted/50 rounded-lg border border-muted">
+                <InputOTP maxLength={6} value={referenceCode} disabled={true}>
+                  <InputOTPGroup>
+                    <InputOTPSlot
+                      index={0}
+                      className="w-12 h-12 text-lg font-semibold"
+                    />
+                    <InputOTPSlot
+                      index={1}
+                      className="w-12 h-12 text-lg font-semibold"
+                    />
+                    <InputOTPSlot
+                      index={2}
+                      className="w-12 h-12 text-lg font-semibold"
+                    />
+                    <InputOTPSlot
+                      index={3}
+                      className="w-12 h-12 text-lg font-semibold"
+                    />
+                    <InputOTPSlot
+                      index={4}
+                      className="w-12 h-12 text-lg font-semibold"
+                    />
+                    <InputOTPSlot
+                      index={5}
+                      className="w-12 h-12 text-lg font-semibold"
+                    />
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+            </div>
           </div>
         </div>
 
