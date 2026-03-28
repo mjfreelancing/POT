@@ -27,6 +27,7 @@ internal sealed class GetPendingApprovalsService : IGetPendingApprovalsService
         var users = await _userRepository.Users
              .IgnoreQueryFilters()
              .Where(user => user.Status == Shared.Enumerations.UserStatus.Approval)
+             .OrderBy(user => user.Username)
              .ToListAsync(cancellationToken);
 
         return users.SelectToList(user => user.MapToOutput());
