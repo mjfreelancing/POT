@@ -72,11 +72,6 @@ public sealed class EmailBudgetReminderInfo : EmailConfigBase
                 section.AppendLine($"   Amount: {currencySymbol}{income.Amount:N2}");
                 section.AppendLine($"   Due: {income.NextDue:ddd, dd MMM yyyy} ({statusText})");
 
-                if (!string.IsNullOrWhiteSpace(income.Note))
-                {
-                    section.AppendLine($"   Note: {income.Note}");
-                }
-
                 section.AppendLine();
             }
         }
@@ -106,11 +101,6 @@ public sealed class EmailBudgetReminderInfo : EmailConfigBase
                 section.AppendLine($"{i + 1}. {expense.Description}");
                 section.AppendLine($"   Amount: {currencySymbol}{expense.Amount:N2}");
                 section.AppendLine($"   Due: {expense.NextDue:ddd, dd MMM yyyy} ({statusText})");
-
-                if (!string.IsNullOrWhiteSpace(expense.Note))
-                {
-                    section.AppendLine($"   Note: {expense.Note}");
-                }
 
                 section.AppendLine();
             }
