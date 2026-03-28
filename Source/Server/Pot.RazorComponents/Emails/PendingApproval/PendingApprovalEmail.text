@@ -1,5 +1,5 @@
-New User Signup
-===============
+POT - New User Pending Approval
+===============================
 
 Hello {Username},
 
@@ -13,18 +13,16 @@ Email:    {UserEmail}
 
 
 REVIEW PENDING APPROVALS
--------------------------
-Visit: https://payontime.com.au/approvals/pending
+------------------------
+https://payontime.com.au/approvals/pending
 
 
 NOTE
 ----
-ℹ️ The user will receive an email notification once their account has been approved. Until then, they will see a pending approval message when attempting to log in.
+The user will receive an email notification once their account has been approved.
+Until then, they will see a pending approval message when attempting to sign in.
 
 
 ---
-This is an automated notification from POT.
-Please do not reply to this email.
-
-POT - Pay On Time
+POT
 https://payontime.com.au
