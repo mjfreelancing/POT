@@ -1,35 +1,26 @@
-You've been invited to POT
-===========================
+POT - Invitation
+================
 
 Hello {Username},
 
-You've been invited to join POT! Your account has been created and you can log in using the temporary password below. After logging in, you'll be able to change your password.
+Your account has been created. Use the temporary password below to sign in.
 
 
 TEMPORARY PASSWORD
 ------------------
 {TempPassword}
-Use this password to log in
+Use this password to sign in. Change it after your first login.
 
 
-How to get started:
--------------------
-1. Go to POT at https://payontime.com.au/login and log in with your username and the Temporary Password above
-2. Go to Settings to change your password
+NEXT STEPS
+----------
+1. Sign in at https://payontime.com.au/login
+2. Use your username and temporary password
+3. Change your password after sign in
 
-
-SECURITY NOTICE
----------------
-⚠️ Important Security Information:
-• The temporary password is valid only until you set a new permanent password
-• If you didn't create this account, you can safely ignore this email
-• Never share this password with anyone, including support staff
+If you did not expect this invitation, you can ignore this email.
 
 
 ---
-This is an automated message from POT.
-Please do not reply to this email.
-If you continue to have issues, please contact support.
-
-POT - Pay On Time
+POT
 https://payontime.com.au
