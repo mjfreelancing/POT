@@ -37,6 +37,7 @@ Comprehensive guide for developers working on the POT React frontend application
 - [API Integration](#api-integration)
 - [Import/Export Features](#importexport-features)
 - [Environment Configuration](#environment-configuration)
+- [Progressive Web App (PWA)](#progressive-web-app-pwa)
 - [Available Commands](#available-commands)
 
 ---
@@ -2842,6 +2843,220 @@ const apiTimeout = import.meta.env.VITE_API_TIMEOUT_MS;
 | `npm run type:check` | Run TypeScript compiler type checking (no output)                 |
 | `npm run lint`       | Run ESLint with strict TypeScript rules                           |
 | `npm run prettier`   | Format all files using Prettier configuration                     |
+
+---
+
+## Progressive Web App (PWA)
+
+### What is a PWA?
+
+A Progressive Web App (PWA) is a web application that uses modern browser APIs to deliver capabilities traditionally associated with native mobile or desktop apps. A PWA can be:
+
+- **Installed** on a device home screen (Android, iOS, desktop Chrome/Edge) without an app store
+- **Launched** in standalone mode (no browser chrome — looks and behaves like a native app)
+- **Cached** so the application shell loads instantly, even on slow networks
+- **Available offline** for any cached static content
+
+PWA features are progressive enhancements — the app works identically in a standard browser tab if the user never installs it.
+
+### Why PWA Was Added to POT
+
+POT is a personal cashflow tool used regularly to check balances, projections, and upcoming obligations. Adding PWA support provides:
+
+- **Home screen access** — one tap from the device home screen instead of opening a browser and typing the URL
+- **Standalone experience** — no browser address bar, matching a native app feel
+- **Faster load times** — the application shell (HTML, CSS, JS, fonts, icons) is precached by the service worker after the first visit, so subsequent loads are near-instant
+- **Resilience** — if the network is slow or briefly unavailable, the cached shell still loads
+
+API data is intentionally **not cached** — all `/api` responses remain live network requests to ensure balance and projection data is always current.
+
+---
+
+### Setup Overview
+
+PWA support was added using [`vite-plugin-pwa`](https://vite-pwa-org.netlify.app/), the standard Vite-native PWA plugin. It generates a service worker and web manifest at build time using [Workbox](https://developer.chrome.com/docs/workbox).
+
+**Packages installed:**
+
+| Package                      | Role                                                              |
+| ---------------------------- | ----------------------------------------------------------------- |
+| `vite-plugin-pwa@^1.2.0`     | Vite plugin — generates service worker and manifest at build time |
+| `@vite-pwa/assets-generator` | CLI tool — generates PNG icon variants from the source SVG        |
+
+---
+
+### Security Fix: `serialize-javascript` Override
+
+When `vite-plugin-pwa` was first installed, `npm audit` reported three high-severity CVEs in `serialize-javascript <=7.0.4` (reachable via `workbox-build` → `@rollup/plugin-terser`). The patched release is `7.0.5`.
+
+Because `workbox-build` pins `@rollup/plugin-terser@0.4.4` which in turn pins `serialize-javascript@6.x`, the fix is applied via an `overrides` entry in `package.json`:
+
+```json
+"overrides": {
+  "serialize-javascript": "^7.0.5"
+}
+```
+
+**Risk context:** `serialize-javascript` is a **build-time only** dependency — it never executes in a user's browser. The CVE requires attacker-controlled input at build time (a supply-chain scenario), not a user-facing attack. The override eliminates the advisory cleanly.
+
+---
+
+### Icon Generation
+
+Icons were generated from the existing `public/pot-icon.svg` using the assets generator CLI:
+
+```bash
+npx pwa-assets-generator --preset minimal-2023 public/pot-icon.svg
+```
+
+This produced the following files in `public/`:
+
+| File                           | Purpose                                                |
+| ------------------------------ | ------------------------------------------------------ |
+| `pwa-64x64.png`                | Small icon (browser tab fallback)                      |
+| `pwa-192x192.png`              | Standard Android home screen icon                      |
+| `pwa-512x512.png`              | Large icon (splash screen, app stores)                 |
+| `maskable-icon-512x512.png`    | Adaptive icon for Android (safe-zone cropping)         |
+| `apple-touch-icon-180x180.png` | iOS add-to-home-screen icon                            |
+| `favicon.ico`                  | Multi-size `.ico` favicon replacing the SVG-only entry |
+
+The source SVG (`pot-icon.svg`) remains in `public/` and is referenced directly for SVG-capable browsers.
+
+---
+
+### `vite.config.ts` Changes
+
+The `VitePWA` plugin was added to the `plugins` array:
+
+```typescript
+import { VitePWA } from 'vite-plugin-pwa';
+
+VitePWA({
+  registerType: 'autoUpdate',
+  injectRegister: 'auto',
+  manifest: {
+    name: 'POT - Pay On Time',
+    short_name: 'POT',
+    description: 'Pay On Time - Personal cashflow and projection tool',
+    theme_color: '#2563eb',
+    background_color: '#ffffff',
+    display: 'standalone',
+    start_url: '/',
+    scope: '/',
+    icons: [
+      { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
+      { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+      { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
+      {
+        src: 'maskable-icon-512x512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'maskable',
+      },
+    ],
+  },
+  workbox: {
+    globPatterns: ['**/*.{js,css,html,svg,png,ico,woff,woff2}'],
+    navigateFallback: '/index.html',
+    navigateFallbackDenylist: [/^\/api/],
+    runtimeCaching: [],
+  },
+});
+```
+
+**Key configuration decisions:**
+
+| Option                     | Value                                     | Reason                                                                                        |
+| -------------------------- | ----------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `registerType`             | `autoUpdate`                              | Service worker updates automatically in the background when a new build is deployed           |
+| `injectRegister`           | `auto`                                    | Plugin injects the registration script — no manual `registerSW()` call needed in `main.tsx`   |
+| `display`                  | `standalone`                              | App launches without browser chrome (no address bar, tabs, or navigation buttons)             |
+| `navigateFallbackDenylist` | `[/^\/api/]`                              | Prevents the service worker from intercepting API requests and serving stale cached fallbacks |
+| `runtimeCaching`           | `[]`                                      | Explicitly disables runtime (network) caching — API responses are never cached                |
+| `globPatterns`             | js, css, html, svg, png, ico, woff, woff2 | Only static assets are precached; no JSON or API responses                                    |
+
+---
+
+### `index.html` Changes
+
+The document `<head>` was updated with:
+
+```html
+<link rel="icon" href="/favicon.ico" sizes="48x48" />
+<link rel="icon" href="/pot-icon.svg" sizes="any" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />
+<meta name="theme-color" content="#2563eb" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+```
+
+- The SVG favicon entry was updated to follow the recommended `sizes="any"` pattern alongside the `.ico` file
+- `theme-color` sets the browser toolbar and splash screen colour on Android/Chrome
+- `apple-mobile-web-app-capable` enables standalone mode on iOS when added to the home screen
+- The manifest link (`<link rel="manifest">`) is injected automatically by the plugin at build time
+
+---
+
+### `tsconfig.app.json` Changes
+
+The `vite-plugin-pwa/client` type declarations were added so TypeScript recognises the `virtual:pwa-register` module:
+
+```json
+"types": ["vite-plugin-pwa/client"]
+```
+
+This is required even when using `injectRegister: 'auto'` because the type package also provides typings for the `useRegisterSW` composable and related utilities that may be used in future.
+
+---
+
+### Build Output
+
+After running `npm run build`, the following PWA-specific files are emitted to `dist/`:
+
+| File                        | Description                                           |
+| --------------------------- | ----------------------------------------------------- |
+| `dist/sw.js`                | Compiled Workbox service worker                       |
+| `dist/workbox-*.js`         | Workbox runtime library (hashed filename)             |
+| `dist/manifest.webmanifest` | Web app manifest (icons, name, display mode, colours) |
+| `dist/registerSW.js`        | Auto-injected service worker registration script      |
+
+On a typical build, approximately 64 entries (~1.5 MB) are precached — the complete application shell.
+
+---
+
+### Validating PWA Behaviour
+
+After building and previewing (`npm run preview`), open the browser DevTools:
+
+1. **Application → Manifest** — Confirms name, icons, theme colour, and display mode are correctly parsed
+2. **Application → Service Workers** — Confirms `sw.js` is registered and active
+3. **Application → Cache Storage** — Shows precached assets under the `workbox-precache` key
+4. **Lighthouse → PWA audit** — Run a full audit; all PWA criteria should pass
+5. **Install prompt** — Chrome/Edge shows an install icon in the address bar when all criteria are met
+
+**Note:** The service worker only activates in production builds. Running `npm run dev` uses Vite's dev server, which bypasses the service worker entirely.
+
+### Local Browser Sanity Check Before Deploying
+
+When the full stack is running through Docker, the client is served by nginx on `http://localhost:5175`. This is the preferred local pre-deploy validation path because it serves the same production build output that will be deployed, including the generated service worker and manifest.
+
+Use the following sanity-check flow before deploying:
+
+1. Start the Docker stack using the existing `docker-start-pot-client-server` task
+2. Open `http://localhost:5175` in Chrome or Edge
+3. Perform a hard refresh with `Ctrl+Shift+R` so the latest service worker registration is picked up
+4. Open DevTools → **Application → Manifest** and confirm the app name, icons, theme colour, and `standalone` display mode
+5. Open DevTools → **Application → Service Workers** and confirm `sw.js` is active; if it is waiting, click **skipWaiting**
+6. Open DevTools → **Application → Cache Storage** and confirm a `workbox-precache` cache exists with static assets
+7. Check the browser address bar for the install icon and confirm the app is installable
+8. Run **Lighthouse → Progressive Web App** and confirm there are no blocking PWA failures
+9. Open the installed app and verify it launches in a standalone window rather than a normal browser tab
+
+Additional local-testing notes:
+
+- `localhost` is allowed to use service workers without HTTPS, so local PWA testing works correctly on `http://localhost:5175`
+- Docker/nginx uses the production client build, so this test path is more representative than `npm run dev`
+- API requests are intentionally not cached by the service worker, so account balances and projection data should still come from live backend responses
+- If the service worker appears stale, use DevTools → **Application → Service Workers** → **Unregister**, then hard refresh and test again
 
 ---
 
