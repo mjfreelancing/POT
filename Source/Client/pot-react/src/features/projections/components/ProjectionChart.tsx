@@ -228,19 +228,6 @@ function ProjectionChart({
     getVisibleLineYStats(visibleValueRange);
   const visibleBarYDomain = getVisibleBarYDomain(visibleValueRange);
 
-  // ZERO BASELINE THEME HOOK (applies to the line-chart ReferenceLine below)
-  //
-  // Keep `stroke="#ccc"` on the zero ReferenceLine components in this file.
-  // In this repo, `ChartContainer` (`src/components/ui/chart.tsx`) includes a Tailwind selector:
-  // `[&_.recharts-reference-line_[stroke='#ccc']]:stroke-border`
-  // Recharts emits the reference line with the `stroke="#ccc"` SVG attribute, and that selector
-  // matches by attribute and replaces the visible stroke with the theme token `stroke-border`.
-  //
-  // If the stroke is changed away from `#ccc`, the selector no longer matches and the theme override
-  // is lost. This attribute-hook pattern is the stable approach here because direct
-  // `hsl(var(--muted-foreground))` on SVG stroke has been unreliable in this chart path.
-  const zeroReferenceLineStrokeWidth = 2;
-
   function renderTooltipContent(
     active?: boolean,
     payload?: {
@@ -391,13 +378,20 @@ function ProjectionChart({
                       />
                     );
                   })}
+                  {/*
+                    Zero baseline rendering strategy:
+                    - Keep a hardcoded stroke fallback so the line stays visible across browsers/devices.
+                    - Layer light/dark Tailwind stroke classes to keep it theme-aware where class-based SVG styling is honored.
+                    Why: previous attempts using only `currentColor` or CSS variable `hsl(var(...))` for SVG stroke
+                         were inconsistent in this chart path (line was not visible).
+                  */}
                   {showZeroReferenceLine && (
                     <ReferenceLine
                       y={0}
-                      stroke="#ccc"
-                      strokeDasharray="6 4"
-                      strokeOpacity={1}
-                      strokeWidth={zeroReferenceLineStrokeWidth}
+                      stroke="#64748b"
+                      className="!stroke-slate-400 dark:!stroke-slate-300"
+                      strokeDasharray="6 6"
+                      strokeWidth={1.5}
                       ifOverflow="extendDomain"
                       isFront={true}
                     />
