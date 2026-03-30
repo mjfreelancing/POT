@@ -182,7 +182,8 @@ function ProjectionChart({
     return { min, max };
   }
 
-  // Line charts keep symmetric min/max behavior and optional zero reference line.
+  // Line charts keep symmetric min/max behavior and render a zero reference line
+  // only when the visible Y-axis domain spans across zero.
   function getVisibleLineYStats(visibleRange: VisibleValueRange): {
     domain: [number, number];
     showZeroReferenceLine: boolean;
@@ -202,9 +203,12 @@ function ProjectionChart({
 
     const margin = range === 0 ? Math.abs(max) * 0.1 || 1 : range * 0.1;
 
+    const domainMin = Math.floor(min - margin);
+    const domainMax = Math.ceil(max + margin);
+
     return {
-      domain: [Math.floor(min - margin), Math.ceil(max + margin)],
-      showZeroReferenceLine: min <= 0 && max >= 0,
+      domain: [domainMin, domainMax],
+      showZeroReferenceLine: domainMin < 0 && domainMax > 0,
     };
   }
 
