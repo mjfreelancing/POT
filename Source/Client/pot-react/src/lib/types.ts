@@ -7,6 +7,7 @@ const Frequency = {
   Days: 'Days',
   Weeks: 'Weeks',
   Months: 'Months',
+  EndOfMonth: 'EndOfMonth',
   Years: 'Years',
   OneTime: 'OneTime',
 } as const;
@@ -18,6 +19,7 @@ const FrequencyDisplay = {
   [Frequency.Days]: 'Days',
   [Frequency.Weeks]: 'Weeks',
   [Frequency.Months]: 'Months',
+  [Frequency.EndOfMonth]: 'End of Month',
   [Frequency.Years]: 'Years',
   [Frequency.OneTime]: 'One Time',
 } as const;

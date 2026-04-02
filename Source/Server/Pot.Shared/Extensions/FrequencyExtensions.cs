@@ -25,6 +25,15 @@ public static class FrequencyExtensions
             return nextDate.DayNumber - fromDate.DayNumber;
         }
 
+        if (frequency == Frequency.EndOfMonth)
+        {
+            var targetMonthDate = fromDate.AddMonths(frequencyCount);
+            var lastDayInTargetMonth = DateTime.DaysInMonth(targetMonthDate.Year, targetMonthDate.Month);
+            var nextDate = new DateOnly(targetMonthDate.Year, targetMonthDate.Month, lastDayInTargetMonth);
+
+            return nextDate.DayNumber - fromDate.DayNumber;
+        }
+
         if (frequency == Frequency.Years)
         {
             var nextDate = fromDate.AddYears(frequencyCount);
@@ -51,7 +60,7 @@ public static class FrequencyExtensions
             return 7d * frequencyCount;
         }
 
-        if (frequency == Frequency.Months)
+        if (frequency == Frequency.Months || frequency == Frequency.EndOfMonth)
         {
             return AverageDaysPerMonth * frequencyCount;
         }

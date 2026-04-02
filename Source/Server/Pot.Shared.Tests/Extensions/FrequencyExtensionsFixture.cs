@@ -42,6 +42,22 @@ public class FrequencyExtensionsFixture : PotFixtureBase
         }
 
         [Fact]
+        public void Should_Return_Days_To_End_Of_Target_Month_For_EndOfMonth()
+        {
+            var result = Frequency.EndOfMonth.GetDaysToNext(new DateOnly(2025, 1, 31), 1);
+
+            result.ShouldBe(28);
+        }
+
+        [Fact]
+        public void Should_Return_Days_To_End_Of_Target_Month_For_EndOfMonth_With_FrequencyCount_Greater_Than_One()
+        {
+            var result = Frequency.EndOfMonth.GetDaysToNext(new DateOnly(2025, 1, 31), 2);
+
+            result.ShouldBe(59);
+        }
+
+        [Fact]
         public void Should_Throw_For_OneTime()
         {
             var exception = Should.Throw<InvalidOperationException>(() =>
@@ -96,6 +112,14 @@ public class FrequencyExtensionsFixture : PotFixtureBase
             var result = Frequency.Years.GetAverageDaysToNext(4);
 
             result.ShouldBe(365.2425d * 4d, 0.0000000001d);
+        }
+
+        [Fact]
+        public void Should_Return_Average_Month_Length_Times_Frequency_Count_For_EndOfMonth()
+        {
+            var result = Frequency.EndOfMonth.GetAverageDaysToNext(2);
+
+            result.ShouldBe((365.2425d / 12d) * 2d, 0.0000000001d);
         }
 
         [Fact]

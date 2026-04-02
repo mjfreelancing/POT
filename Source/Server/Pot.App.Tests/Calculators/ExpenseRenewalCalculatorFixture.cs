@@ -586,6 +586,21 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
         }
 
         [Fact]
+        public void Should_Keep_End_Of_Month_Cadence_Through_February()
+        {
+            var asOfDate = new DateOnly(2025, 3, 31);
+
+            var expense = EntityFactory.CreateExpense(_account, false, "End Of Month", 100, "2025-01-31", "2025-01-31", null, Frequency.EndOfMonth, 1);
+
+            _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
+
+            // Jan 31 -> Feb 28 -> Mar 31 -> Apr 30 (final renewal beyond asOfDate)
+            expense.NextDue.ShouldBe(new DateOnly(2025, 4, 30));
+            expense.AccrualStart.ShouldBe(new DateOnly(2025, 3, 31));
+            expense.AccruedIsDirty.ShouldBeTrue();
+        }
+
+        [Fact]
         public void Should_Handle_Large_Frequency_Counts()
         {
             var asOfDate = new DateOnly(2027, 1, 15);

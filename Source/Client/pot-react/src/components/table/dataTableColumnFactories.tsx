@@ -51,12 +51,14 @@ const formatCellMoneyValue = <TData,>(row: Row<TData>, key: string) => {
 //   Days: 'Day',
 //   Weeks: 'Week',
 //   Months: 'Month',
+//   EndOfMonth: 'End of Month',
 //   Years: 'Year',
 // };
 const frequencySingularMap: Record<Frequency, string> = {
   Days: 'Day',
   Weeks: 'Week',
   Months: 'Month',
+  EndOfMonth: 'End of Month',
   Years: 'Year',
   OneTime: 'One Time',
 };
@@ -154,10 +156,12 @@ const createFrequencyColumn = <TData,>(
       const isExcluded = !!(row.original as { excludeFromCalcs?: boolean })
         .excludeFromCalcs;
 
-      // Special case: for 'OneTime', display the FrequencyDisplay label only, no count
+      const frequencyBadgeWidthClass = 'w-[90px]';
+
+      // Special case: for non-counted frequencies, display label only, no count.
       let displayValue;
 
-      if (freq === 'OneTime') {
+      if (freq === 'OneTime' || freq === 'EndOfMonth') {
         displayValue = FrequencyDisplay[freq];
       } else {
         const frequencyLabel = count === 1 ? frequencySingularMap[freq] : freq;
@@ -172,7 +176,7 @@ const createFrequencyColumn = <TData,>(
             className={`${getTableBadgeClass(
               'slate',
               'outline',
-            )} bg-transparent dark:bg-transparent text-slate-400 dark:text-slate-400`}
+            )} ${frequencyBadgeWidthClass} bg-transparent dark:bg-transparent text-slate-400 dark:text-slate-400`}
           >
             {displayValue}
           </Badge>
@@ -183,17 +187,19 @@ const createFrequencyColumn = <TData,>(
       const getBadgeClasses = (frequency: Frequency): string => {
         switch (frequency) {
           case 'Days':
-            return getTableBadgeClass('blue', 'outline');
+            return `${getTableBadgeClass('blue', 'outline')} ${frequencyBadgeWidthClass}`;
           case 'Weeks':
-            return getTableBadgeClass('green', 'outline');
+            return `${getTableBadgeClass('green', 'outline')} ${frequencyBadgeWidthClass}`;
           case 'Months':
-            return getTableBadgeClass('purple', 'outline');
+            return `${getTableBadgeClass('purple', 'outline')} ${frequencyBadgeWidthClass}`;
+          case 'EndOfMonth':
+            return `${getTableBadgeClass('purple', 'outline')} ${frequencyBadgeWidthClass} border-dashed`;
           case 'Years':
-            return getTableBadgeClass('amber', 'outline');
+            return `${getTableBadgeClass('amber', 'outline')} ${frequencyBadgeWidthClass}`;
           case 'OneTime':
-            return getTableBadgeClass('pink', 'outline');
+            return `${getTableBadgeClass('pink', 'outline')} ${frequencyBadgeWidthClass}`;
           default:
-            return getTableBadgeClass('slate', 'outline');
+            return `${getTableBadgeClass('slate', 'outline')} ${frequencyBadgeWidthClass}`;
         }
       };
 

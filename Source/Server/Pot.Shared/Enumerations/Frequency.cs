@@ -11,6 +11,7 @@ public sealed class Frequency : EnrichedEnum<Frequency>
     public static readonly Frequency Months = new(3);
     public static readonly Frequency Years = new(4);
     public static readonly Frequency OneTime = new(5);
+    public static readonly Frequency EndOfMonth = new(6);
 
     private Frequency(int value, [CallerMemberName] string? name = default)
         : base(value, name!)
