@@ -2983,7 +2983,7 @@ POT now uses an explicit app-side registration flow so users get a clear update 
 
 - `src/concerns/pwa/index.ts` registers the service worker using `registerSW` from `virtual:pwa-register`
 - `src/main.tsx` calls `registerServiceWorker()` during startup (production only)
-- Update checks are triggered on startup, on window focus, on tab visibility return, and on a shared configured period while the tab is visible (currently 30 seconds for active testing)
+- Update checks are triggered on startup, on window focus, on tab visibility return, and on a shared configured period while the tab is visible (currently 30 minutes)
 - The update prompt can be triggered in two paths:
   - `onNeedRefresh` callback from `registerSW`
   - Explicit post-check detection when `registration.waiting` exists after `registration.update()`
@@ -2993,7 +2993,7 @@ POT now uses an explicit app-side registration flow so users get a clear update 
   - Cancel: `Later`
 - Prompt dedupe behavior:
   - Duplicate prompt events for the same waiting worker are suppressed while a prompt cycle is active
-  - Choosing `Later` snoozes re-prompts for that same waiting worker key for the same configured period (currently 30 seconds for active testing)
+  - Choosing `Later` snoozes re-prompts for that same waiting worker key for the same configured period (currently 30 minutes)
   - After snooze expiry, the app can force a deferred re-prompt even if `registration.waiting` is no longer present at that exact moment
   - If the tab is visible, re-prompt can occur at snooze expiry without requiring a refocus click
 
@@ -3004,7 +3004,7 @@ Why `prompt` matters: with `autoUpdate`, a browser-triggered update can refresh 
 Expected detection timing:
 
 - If a user refocuses the app tab after deployment, detection should occur quickly via focus/visibility checks
-- If a user keeps the tab open and idle, detection occurs within the configured periodic check window (currently 30 seconds for active testing)
+- If a user keeps the tab open and idle, detection occurs within the configured periodic check window (currently 30 minutes)
 
 ---
 
