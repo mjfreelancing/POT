@@ -115,9 +115,9 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
             //     stable contribution (before due date) = Amount / fixedDays
             //
             // This keeps the one-time contribution constant while active, then zeroes out on/after due date.
-            if (currentDate < expense.NextDue)
+            if (currentDate < expense.NextDue && expense.AccrualStart.HasValue)
             {
-                var totalDaysUntilDue = expense.NextDue.DayNumber - expense.AccrualStart.DayNumber;
+                var totalDaysUntilDue = expense.NextDue.DayNumber - expense.AccrualStart.Value.DayNumber;
 
                 // Guard malformed or same-day ranges to avoid divide-by-zero or negative periods.
                 // A zero/negative period means this one-time item contributes nothing to the stable metric.

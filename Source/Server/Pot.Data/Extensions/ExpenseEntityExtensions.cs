@@ -17,7 +17,9 @@ public static class ExpenseEntityExtensions
 
     public static int DaysFromAccrualStart(this ExpenseEntity expense, DateOnly currentDate)
     {
-        return expense.AccrualStart.DaysUntil(currentDate);
+        return expense.AccrualStart.HasValue
+            ? expense.AccrualStart.Value.DaysUntil(currentDate)
+            : 0;
     }
 
     public static double DailyBalance(this ExpenseEntity expense, DateOnly currentDate)
@@ -28,8 +30,13 @@ public static class ExpenseEntityExtensions
 
     public static double DailyAccrual(this ExpenseEntity expense)
     {
+        if (!expense.AccrualStart.HasValue)
+        {
+            return 0.0d;
+        }
+
         // Not using the expense frequency in case the accrual started earlier / later
-        var accrualDays = Math.Max(expense.AccrualStart.DaysUntil(expense.NextDue), 1);
+        var accrualDays = Math.Max(expense.AccrualStart.Value.DaysUntil(expense.NextDue), 1);
         return expense.Amount / accrualDays;
     }
 }

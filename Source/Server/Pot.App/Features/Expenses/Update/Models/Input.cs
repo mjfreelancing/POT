@@ -8,7 +8,7 @@ public sealed class Input
     public long Etag { get; init; }
     public bool ExcludeFromCalcs { get; init; }
     public required string Description { get; init; }
-    public DateOnly AccrualStart { get; init; }
+    public DateOnly? AccrualStart { get; init; }
     public DateOnly NextDue { get; init; }
     public DateOnly? EndDate { get; init; }
     public required Frequency Frequency { get; init; }

@@ -18,8 +18,8 @@ internal sealed class ExpenseCsvRow : IExpenseCsvRow
 
     [Index(3)]
     [Format("yyyy-MM-dd")]
-    [TypeConverter(typeof(DateOnlyConverter))]
-    public DateOnly AccrualStart { get; init; }
+    [TypeConverter(typeof(NullableDateOnlyConverter))]
+    public DateOnly? AccrualStart { get; init; }
 
     [Index(4)]
     [Format("yyyy-MM-dd")]

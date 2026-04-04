@@ -7,7 +7,7 @@ public sealed class ExpenseData
     public required Guid RowId { get; set; }
     public bool ExcludeFromCalcs { get; set; }
     public required string Description { get; set; }
-    public required DateOnly AccrualStart { get; set; }
+    public required DateOnly? AccrualStart { get; set; }
     public required DateOnly NextDue { get; set; }
     public DateOnly? EndDate { get; set; }
     public required Frequency Frequency { get; set; }

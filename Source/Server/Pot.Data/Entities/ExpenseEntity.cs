@@ -16,7 +16,7 @@ public sealed class ExpenseEntity : EntityBase, IHasNextDue
     [Citext]
     public required string Description { get; set; }
 
-    public DateOnly AccrualStart { get; set; }
+    public DateOnly? AccrualStart { get; set; }
     public DateOnly NextDue { get; set; }                       // As per the user entered, so local timezone is assumed
     public DateOnly? EndDate { get; set; }                      // As per the user entered, so local timezone is assumed
     public required Frequency Frequency { get; set; }
