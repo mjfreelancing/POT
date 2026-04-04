@@ -25,3 +25,6 @@ export { invalidateCache, useCacheInvalidation } from './cache';
 
 // Logging concerns
 export { logger } from './logging';
+
+// PWA concerns
+export { registerServiceWorker } from './pwa';

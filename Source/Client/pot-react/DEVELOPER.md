@@ -2932,7 +2932,7 @@ The `VitePWA` plugin was added to the `plugins` array:
 import { VitePWA } from 'vite-plugin-pwa';
 
 VitePWA({
-  registerType: 'autoUpdate',
+  registerType: 'prompt',
   injectRegister: 'auto',
   manifest: {
     name: 'POT - Pay On Time',
@@ -2968,12 +2968,43 @@ VitePWA({
 
 | Option                     | Value                                     | Reason                                                                                        |
 | -------------------------- | ----------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `registerType`             | `autoUpdate`                              | Service worker updates automatically in the background when a new build is deployed           |
-| `injectRegister`           | `auto`                                    | Plugin injects the registration script — no manual `registerSW()` call needed in `main.tsx`   |
+| `registerType`             | `prompt`                                  | Keeps new service workers waiting so the app can show the update toast before reloading       |
+| `injectRegister`           | `auto`                                    | Maintains plugin-managed registration support while allowing app-side update hooks            |
 | `display`                  | `standalone`                              | App launches without browser chrome (no address bar, tabs, or navigation buttons)             |
 | `navigateFallbackDenylist` | `[/^\/api/]`                              | Prevents the service worker from intercepting API requests and serving stale cached fallbacks |
 | `runtimeCaching`           | `[]`                                      | Explicitly disables runtime (network) caching — API responses are never cached                |
 | `globPatterns`             | js, css, html, svg, png, ico, woff, woff2 | Only static assets are precached; no JSON or API responses                                    |
+
+---
+
+### Service Worker Registration and Update UX
+
+POT now uses an explicit app-side registration flow so users get a clear update action when a new deployment is available.
+
+- `src/concerns/pwa/index.ts` registers the service worker using `registerSW` from `virtual:pwa-register`
+- `src/main.tsx` calls `registerServiceWorker()` during startup (production only)
+- Update checks are triggered on startup, on window focus, on tab visibility return, and on a shared configured period while the tab is visible (currently 30 seconds for active testing)
+- The update prompt can be triggered in two paths:
+  - `onNeedRefresh` callback from `registerSW`
+  - Explicit post-check detection when `registration.waiting` exists after `registration.update()`
+- When a new waiting service worker is detected, the app shows a persistent top-center toast:
+  - Message: `Update Available`
+  - Action: `Refresh` (shows `Refreshing...`, attempts waiting-worker activation, then forces a hard reload fallback if no `controllerchange` is observed within 1.5 seconds)
+  - Cancel: `Later`
+- Prompt dedupe behavior:
+  - Duplicate prompt events for the same waiting worker are suppressed while a prompt cycle is active
+  - Choosing `Later` snoozes re-prompts for that same waiting worker key for the same configured period (currently 30 seconds for active testing)
+  - After snooze expiry, the app can force a deferred re-prompt even if `registration.waiting` is no longer present at that exact moment
+  - If the tab is visible, re-prompt can occur at snooze expiry without requiring a refocus click
+
+This closes the stale-bundle gap where users might otherwise keep using an older version until a manual hard refresh.
+
+Why `prompt` matters: with `autoUpdate`, a browser-triggered update can refresh immediately and skip the in-app toast path. `prompt` ensures the waiting state is exposed to `onNeedRefresh`, which drives POT's `Refresh`/`Later` UX.
+
+Expected detection timing:
+
+- If a user refocuses the app tab after deployment, detection should occur quickly via focus/visibility checks
+- If a user keeps the tab open and idle, detection occurs within the configured periodic check window (currently 30 seconds for active testing)
 
 ---
 
@@ -2996,15 +3027,20 @@ The document `<head>` was updated with:
 
 ---
 
-### `tsconfig.app.json` Changes
+### TypeScript Support for PWA Virtual Modules
 
-The `vite-plugin-pwa/client` type declarations were added so TypeScript recognises the `virtual:pwa-register` module:
+The `vite-plugin-pwa/client` type declarations are included so TypeScript recognises the `virtual:pwa-register` module:
 
 ```json
 "types": ["vite-plugin-pwa/client"]
 ```
 
-This is required even when using `injectRegister: 'auto'` because the type package also provides typings for the `useRegisterSW` composable and related utilities that may be used in future.
+POT includes this in:
+
+- `tsconfig.app.json` (`compilerOptions.types`)
+- `src/vite-env.d.ts` (`/// <reference types="vite-plugin-pwa/client" />`)
+
+This keeps TypeScript aware of PWA virtual modules across normal app code and editor tooling.
 
 ---
 
@@ -3017,7 +3053,8 @@ After running `npm run build`, the following PWA-specific files are emitted to `
 | `dist/sw.js`                | Compiled Workbox service worker                       |
 | `dist/workbox-*.js`         | Workbox runtime library (hashed filename)             |
 | `dist/manifest.webmanifest` | Web app manifest (icons, name, display mode, colours) |
-| `dist/registerSW.js`        | Auto-injected service worker registration script      |
+
+Service worker registration/update logic from `src/concerns/pwa/index.ts` is bundled into the hashed client JavaScript assets.
 
 On a typical build, approximately 64 entries (~1.5 MB) are precached — the complete application shell.
 
@@ -3029,9 +3066,10 @@ After building and previewing (`npm run preview`), open the browser DevTools:
 
 1. **Application → Manifest** — Confirms name, icons, theme colour, and display mode are correctly parsed
 2. **Application → Service Workers** — Confirms `sw.js` is registered and active
-3. **Application → Cache Storage** — Shows precached assets under the `workbox-precache` key
-4. **Lighthouse → PWA audit** — Run a full audit; all PWA criteria should pass
-5. **Install prompt** — Chrome/Edge shows an install icon in the address bar when all criteria are met
+3. **Deploy update test** — Keep the app open, deploy a new client build, then verify the in-app toast appears after refocus (or within the configured periodic check window while the tab remains visible)
+4. **Application → Cache Storage** — Shows precached assets under the `workbox-precache` key
+5. **Lighthouse → PWA audit** — Run a full audit; all PWA criteria should pass
+6. **Install prompt** — Chrome/Edge shows an install icon in the address bar when all criteria are met
 
 **Note:** The service worker only activates in production builds. Running `npm run dev` uses Vite's dev server, which bypasses the service worker entirely.
 
