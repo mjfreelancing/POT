@@ -15,7 +15,10 @@ const expenseFormSchema = z
     nextDue: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
     accrualStart: z
       .string()
-      .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
+      .optional()
+      .refine(val => val === undefined || /^\d{4}-\d{2}-\d{2}$/.test(val), {
+        message: 'Date must be YYYY-MM-DD',
+      }),
     endDate: z
       .string()
       .optional()

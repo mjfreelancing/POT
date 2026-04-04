@@ -35,7 +35,7 @@ function CreateExpenseForm({
       return {
         description: `Copy of ${duplicateExpense.description}`,
         nextDue: duplicateExpense.nextDue,
-        accrualStart: duplicateExpense.accrualStart,
+        accrualStart: duplicateExpense.accrualStart ?? undefined,
         endDate: duplicateExpense.endDate || undefined,
         frequency: duplicateExpense.frequency,
         frequencyCount: duplicateExpense.frequencyCount,
@@ -80,6 +80,7 @@ function CreateExpenseForm({
   const onSubmit = async (values: ExpenseFormData) => {
     const expense: CreateExpense = {
       ...values,
+      accrualStart: values.accrualStart ?? null,
       endDate: values.endDate ?? null,
     };
 

@@ -34,7 +34,7 @@ const EditExpenseSheetInternal: React.FC<EditExpenseSheetInternalProps> = ({
       excludeFromCalcs: expenseData.excludeFromCalcs,
       description: expenseData.description,
       nextDue: expenseData.nextDue,
-      accrualStart: expenseData.accrualStart,
+      accrualStart: expenseData.accrualStart ?? undefined,
       endDate: expenseData.endDate ?? undefined,
       frequency: expenseData.frequency,
       frequencyCount: expenseData.frequencyCount,
@@ -58,6 +58,7 @@ const EditExpenseSheetInternal: React.FC<EditExpenseSheetInternalProps> = ({
     const payload: EditExpense = {
       etag: expenseData.etag,
       ...values,
+      accrualStart: values.accrualStart ?? null,
       endDate: values.endDate ?? null,
       accountRowId: values.accountRowId,
     };

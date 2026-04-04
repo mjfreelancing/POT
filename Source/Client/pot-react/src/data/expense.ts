@@ -13,7 +13,7 @@ const ExpenseAccountSchema = z.object({
 const BaseExpenseSchema = z.object({
   description: z.string(),
   nextDue: z.string(),
-  accrualStart: z.string(),
+  accrualStart: z.string().nullable(),
   endDate: z.string().nullable(),
   frequency: z.nativeEnum(Frequency),
   frequencyCount: z.number(),
