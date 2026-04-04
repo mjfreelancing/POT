@@ -10,4 +10,5 @@ public sealed class AccountData
     public double Reserved { get; set; }
     public double TotalExpenseAccrued { get; set; }
     public double DailyExpenseAccrual { get; set; }
+    public double StableExpenseAccrual { get; set; }
 }

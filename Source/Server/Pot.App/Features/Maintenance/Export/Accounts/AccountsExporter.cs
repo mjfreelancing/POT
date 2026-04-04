@@ -32,7 +32,8 @@ internal sealed class AccountsExporter : MemoryCsvExporterBase<AccountData>, IAc
                 Balance = account.Balance,
                 Reserved = account.Reserved,
                 TotalExpenseAccrued = account.TotalExpenseAccrued,
-                DailyExpenseAccrual = account.DailyExpenseAccrual
+                DailyExpenseAccrual = account.DailyExpenseAccrual,
+                StableExpenseAccrual = account.StableExpenseAccrual
             };
 
             await AddDataAsync(accountData, cancellationToken);
@@ -53,6 +54,7 @@ internal sealed class AccountsExporter : MemoryCsvExporterBase<AccountData>, IAc
         serializer.AddField(nameof(AccountData.Reserved), entity => entity.Reserved);
         serializer.AddField(nameof(AccountData.TotalExpenseAccrued), entity => entity.TotalExpenseAccrued);
         serializer.AddField(nameof(AccountData.DailyExpenseAccrual), entity => entity.DailyExpenseAccrual);
+        serializer.AddField(nameof(AccountData.StableExpenseAccrual), entity => entity.StableExpenseAccrual);
 
         return serializer;
     }

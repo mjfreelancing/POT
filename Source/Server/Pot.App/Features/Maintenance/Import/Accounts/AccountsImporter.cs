@@ -82,7 +82,8 @@ internal sealed class AccountsImporter : IAccountsImporter
 
             // Not imported - all calculations would need to be refreshed anyway
             // TotalExpenseAccrued = csvRow.TotalExpenseAccrued,
-            // DailyExpenseAccrual = csvRow.DailyExpenseAccrual
+            // DailyExpenseAccrual = csvRow.DailyExpenseAccrual,
+            // StableExpenseAccrual = csvRow.StableExpenseAccrual
         };
 
         var createResult = await _createAccountService
@@ -108,7 +109,8 @@ internal sealed class AccountsImporter : IAccountsImporter
 
             // Not imported - all calculations would need to be refreshed anyway
             // TotalExpenseAccrued = csvRow.TotalExpenseAccrued,
-            // DailyExpenseAccrual = csvRow.DailyExpenseAccrual
+            // DailyExpenseAccrual = csvRow.DailyExpenseAccrual,
+            // StableExpenseAccrual = csvRow.StableExpenseAccrual
         };
 
         var updateResult = await _updateAccountService
