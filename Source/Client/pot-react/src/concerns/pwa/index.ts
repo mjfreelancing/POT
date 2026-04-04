@@ -44,27 +44,9 @@ let promptedWaitingScriptUrl: string | undefined;
 let dismissedWaitingScriptUrl: string | undefined;
 let dismissedWaitingScriptAt: number | undefined;
 
-const getServiceWorkerStateSummary = (
-  registration: ServiceWorkerRegistration,
-) => {
-  const waitingWorker = registration.waiting;
-  const activeWorker = registration.active;
-  const installingWorker = registration.installing;
-
-  return {
-    hasWaiting: waitingWorker !== null,
-    waitingState: waitingWorker?.state,
-    waitingScriptUrl: waitingWorker?.scriptURL,
-    hasInstalling: installingWorker !== null,
-    installingState: installingWorker?.state,
-    installingScriptUrl: installingWorker?.scriptURL,
-    hasActive: activeWorker !== null,
-    activeState: activeWorker?.state,
-    activeScriptUrl: activeWorker?.scriptURL,
-  };
-};
-
 const isLaterSnoozeActive = (waitingScriptUrl: string) => {
+  // Snooze applies only to the exact service worker key that was deferred.
+  // If the key changed, this is a different update and should not be blocked.
   if (
     dismissedWaitingScriptUrl !== waitingScriptUrl ||
     dismissedWaitingScriptAt === undefined
@@ -73,6 +55,18 @@ const isLaterSnoozeActive = (waitingScriptUrl: string) => {
   }
 
   return Date.now() - dismissedWaitingScriptAt < LATER_SNOOZE_MS;
+};
+
+const hasLaterSnoozeExpired = () => {
+  // Without a prior Later action there is no expiry condition to evaluate.
+  if (
+    dismissedWaitingScriptUrl === undefined ||
+    dismissedWaitingScriptAt === undefined
+  ) {
+    return false;
+  }
+
+  return Date.now() - dismissedWaitingScriptAt >= LATER_SNOOZE_MS;
 };
 
 // Returns the best matching service worker registration.
@@ -84,11 +78,13 @@ const getServiceWorkerRegistration = async (
   serviceWorkerUrl?: string,
   initialRegistration?: ServiceWorkerRegistration,
 ) => {
+  // Reuse the registration from registerSW callback when available to avoid extra lookups.
   if (initialRegistration) {
     return initialRegistration;
   }
 
   if (serviceWorkerUrl) {
+    // Prefer the registration bound to the exact generated SW URL.
     const scopedRegistration =
       await navigator.serviceWorker.getRegistration(serviceWorkerUrl);
 
@@ -123,14 +119,9 @@ const showUpdatePromptIfNeeded = async (
   updateServiceWorker: (reloadPage?: boolean) => Promise<void>,
   forcePromptIfNoWaiting = false,
 ) => {
-  logger.info('PWA', `Evaluating update prompt path (${trigger})`);
-
+  // Once refresh starts, suppress all prompt evaluation to avoid duplicate toasts.
   // Skip if refresh was already triggered and we are waiting for SW control/reload.
   if (refreshInProgress) {
-    logger.info(
-      'PWA',
-      `Skipping update prompt (${trigger}): refresh already in progress`,
-    );
     return;
   }
 
@@ -138,26 +129,10 @@ const showUpdatePromptIfNeeded = async (
   const deferredScriptUrl = dismissedWaitingScriptUrl;
   const promptScriptUrl = waitingScriptUrl ?? deferredScriptUrl;
 
+  // Normal mode: only prompt when browser reports a waiting worker.
+  // Forced mode is used only for deferred re-prompt after Later.
   // No waiting SW means no update prompt should be shown.
   if (!waitingScriptUrl && !forcePromptIfNoWaiting) {
-    const registration = await getServiceWorkerRegistration(
-      registeredServiceWorkerUrl,
-    );
-
-    if (registration) {
-      logger.info(
-        'PWA',
-        `Skipping update prompt (${trigger}): no waiting service worker; registration state=${JSON.stringify(
-          getServiceWorkerStateSummary(registration),
-        )}`,
-      );
-    }
-
-    logger.info(
-      'PWA',
-      `Skipping update prompt (${trigger}): no waiting service worker`,
-    );
-
     // Reset dedupe when no waiting worker exists.
     // Service worker script URL is typically stable (/sw.js), so persisting this
     // across cycles can incorrectly suppress future valid prompts.
@@ -165,44 +140,19 @@ const showUpdatePromptIfNeeded = async (
     return;
   }
 
-  if (!waitingScriptUrl && forcePromptIfNoWaiting && deferredScriptUrl) {
-    logger.info(
-      'PWA',
-      `Forcing deferred re-prompt after snooze expiry (trigger=${trigger}, deferredSW=${deferredScriptUrl})`,
-    );
-  }
-
   if (!promptScriptUrl) {
-    logger.info(
-      'PWA',
-      `Skipping update prompt (${trigger}): no waiting or deferred service worker available`,
-    );
+    // Neither a current waiting worker nor a deferred key exists.
     return;
   }
 
-  logger.info('PWA', `Prompt service worker key: ${promptScriptUrl}`);
-
-  // User explicitly deferred this exact waiting SW and snooze is still active.
+  // User asked to defer this specific update and the snooze window is still active.
   if (isLaterSnoozeActive(promptScriptUrl)) {
-    const elapsedMs =
-      dismissedWaitingScriptAt === undefined
-        ? undefined
-        : Date.now() - dismissedWaitingScriptAt;
-
-    logger.info(
-      'PWA',
-      `Skipping update prompt (${trigger}): waiting service worker dismissed (elapsedMs=${elapsedMs}, snoozeMs=${LATER_SNOOZE_MS})`,
-    );
     return;
   }
 
+  // Snooze elapsed for the same key: clear defer state and allow prompt again.
   // If snooze elapsed, allow prompting again for this waiting SW.
   if (dismissedWaitingScriptUrl === promptScriptUrl) {
-    logger.info(
-      'PWA',
-      `Later snooze expired for waiting SW: ${promptScriptUrl}; re-enabling prompt`,
-    );
-
     dismissedWaitingScriptUrl = undefined;
     dismissedWaitingScriptAt = undefined;
 
@@ -212,19 +162,12 @@ const showUpdatePromptIfNeeded = async (
 
   // Avoid duplicate prompts for same waiting SW.
   if (promptedWaitingScriptUrl === promptScriptUrl) {
-    logger.info(
-      'PWA',
-      `Skipping update prompt (${trigger}): duplicate waiting service worker prompt`,
-    );
     return;
   }
 
   promptedWaitingScriptUrl = promptScriptUrl;
 
-  logger.info(
-    'PWA',
-    `Showing update prompt for service worker key: ${promptScriptUrl}`,
-  );
+  logger.info('PWA', `Showing update prompt (${trigger})`);
 
   toast.info('Update Available', {
     id: UPDATE_TOAST_ID,
@@ -257,22 +200,15 @@ const showUpdatePromptIfNeeded = async (
           dismissedWaitingScriptAt = undefined;
 
           if (laterSnoozeTimeoutId !== undefined) {
-            logger.info(
-              'PWA',
-              'Clearing existing Later snooze timeout before refresh',
-            );
             window.clearTimeout(laterSnoozeTimeoutId);
             laterSnoozeTimeoutId = undefined;
           }
 
-          // Replace update prompt with an explicit in-progress state.
-          toast.info('Refreshing...', {
-            id: UPDATE_TOAST_ID,
-            duration: Infinity,
-            description: 'Applying update and reloading...',
-          });
-
           try {
+            // Race two signals:
+            // 1) updateServiceWorker() completion
+            // 2) controllerchange (new worker controlling this page)
+            // Either signal can be delayed by browser lifecycle timing, so both have timeouts.
             // We treat controllerchange as the success signal that the new worker took control.
             // The initial updateServiceWorker(true) attempt can appear to "do nothing" when:
             // - there is no waiting worker at click time,
@@ -315,8 +251,28 @@ const showUpdatePromptIfNeeded = async (
             });
 
             // Primary path: ask Workbox to activate a waiting worker.
-            // This is the preferred mechanism because it preserves the SW lifecycle contract.
-            await updateServiceWorker(true);
+            // Timebox this call so a hung updateServiceWorker promise cannot block fallback reload.
+            const updateServiceWorkerResult = await Promise.race<
+              'completed' | 'timed-out'
+            >([
+              updateServiceWorker(true).then(() => 'completed'),
+              new Promise<'timed-out'>(resolve => {
+                window.setTimeout(() => {
+                  resolve('timed-out');
+                }, REFRESH_FALLBACK_TIMEOUT_MS);
+              }),
+            ]);
+
+            if (updateServiceWorkerResult === 'timed-out') {
+              logger.info(
+                'PWA',
+                'updateServiceWorker(true) timed out; forcing hard reload fallback',
+              );
+              // Guarantee user-visible outcome for Refresh click.
+              window.location.reload();
+              return;
+            }
+
             logger.info(
               'PWA',
               'Requested waiting service worker activation via updateServiceWorker(true)',
@@ -332,7 +288,15 @@ const showUpdatePromptIfNeeded = async (
                 'No controllerchange observed after refresh action; forcing hard reload fallback',
               );
               window.location.reload();
+              return;
             }
+
+            logger.info(
+              'PWA',
+              'controllerchange observed after refresh action; forcing hard reload to apply latest assets',
+            );
+            // Reload even after success so the tab is guaranteed to render latest client bundle.
+            window.location.reload();
           } catch (error) {
             // Network/deploy windows and lifecycle races can throw here.
             // Preserve reliability by falling back to hard reload so Refresh always results in an update attempt.
@@ -341,11 +305,7 @@ const showUpdatePromptIfNeeded = async (
               'Service worker update failed during refresh action',
               error,
             );
-
-            logger.info(
-              'PWA',
-              'Falling back to hard reload after refresh action failure',
-            );
+            // Errors still resolve to a reload so Refresh remains deterministic.
             window.location.reload();
           } finally {
             // Ensure prompt path can continue in the same page session.
@@ -371,14 +331,9 @@ const showUpdatePromptIfNeeded = async (
         promptedWaitingScriptUrl = undefined;
 
         if (laterSnoozeTimeoutId !== undefined) {
-          logger.info('PWA', 'Replacing existing Later snooze timeout');
+          // Only one active snooze timer should exist at a time.
           window.clearTimeout(laterSnoozeTimeoutId);
         }
-
-        logger.info(
-          'PWA',
-          `Scheduling Later snooze timeout for ${LATER_SNOOZE_MS}ms (service worker key: ${promptScriptUrl})`,
-        );
 
         // Trigger a re-evaluation when snooze expires so visible tabs can be prompted
         // without waiting for focus changes or the periodic 30-minute update check.
@@ -389,6 +344,7 @@ const showUpdatePromptIfNeeded = async (
           );
 
           if (document.visibilityState === 'visible') {
+            // Deferred mode allows the prompt to reappear for the same key after Later.
             void showUpdatePromptIfNeeded(
               'later-snooze-expired',
               updateServiceWorker,
@@ -397,22 +353,12 @@ const showUpdatePromptIfNeeded = async (
 
             return;
           }
-
-          logger.info(
-            'PWA',
-            'Skipping later-snooze-expired prompt evaluation because tab is not visible',
-          );
         }, LATER_SNOOZE_MS);
 
         toast.dismiss(UPDATE_TOAST_ID);
       },
     },
   });
-
-  logger.info(
-    'PWA',
-    `Update toast shown for service worker key: ${promptScriptUrl}`,
-  );
 };
 
 const requestServiceWorkerUpdateCheck = async (
@@ -422,8 +368,7 @@ const requestServiceWorkerUpdateCheck = async (
   onWaitingServiceWorkerDetected?: () => Promise<void>,
 ) => {
   try {
-    logger.info('PWA', `Starting service worker update check (${reason})`);
-
+    // registration.update() asks the browser to check whether SW script changed.
     // Trigger a network check for updated SW script.
     const registration = await getServiceWorkerRegistration(
       serviceWorkerUrl,
@@ -431,23 +376,12 @@ const requestServiceWorkerUpdateCheck = async (
     );
 
     if (!registration) {
-      logger.info(
-        'PWA',
-        `Service worker update check skipped (${reason}): registration not found`,
-      );
       return;
     }
 
     await registration.update();
 
-    logger.info('PWA', `Service worker update check completed (${reason})`);
-    logger.info(
-      'PWA',
-      `Service worker registration state after update (${reason}): ${JSON.stringify(
-        getServiceWorkerStateSummary(registration),
-      )}`,
-    );
-
+    // If waiting exists now, surface update prompt through shared handler path.
     // Some browsers may not fire onNeedRefresh immediately in all timing scenarios.
     // This explicit path ensures we still prompt if a waiting SW exists after update check.
     if (registration.waiting) {
@@ -461,13 +395,9 @@ const requestServiceWorkerUpdateCheck = async (
       return;
     }
 
-    logger.info(
-      'PWA',
-      `No waiting service worker after update check (${reason})`,
-    );
-
     promptedWaitingScriptUrl = undefined;
   } catch (error) {
+    // Keep hard failures visible during troubleshooting.
     logger.error(
       'PWA',
       `Failed service worker update check (${reason})`,
@@ -509,6 +439,12 @@ const setupServiceWorkerUpdateChecks = (
   // Re-check when tab becomes visible again.
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
+      // If user clicked Later and snooze has elapsed while tab was hidden,
+      // force a deferred re-prompt as soon as tab is visible again.
+      if (hasLaterSnoozeExpired()) {
+        void onWaitingServiceWorkerDetected();
+      }
+
       void requestServiceWorkerUpdateCheck(
         'tab-visible',
         serviceWorkerUrl,
@@ -522,6 +458,7 @@ const setupServiceWorkerUpdateChecks = (
   // Periodic checks while visible so long-lived tabs still discover updates.
   updateCheckIntervalId = window.setInterval(() => {
     if (document.visibilityState === 'visible') {
+      // Avoid work while tab is hidden; visibility/focus paths will catch up later.
       void requestServiceWorkerUpdateCheck(
         'interval',
         serviceWorkerUrl,
@@ -558,6 +495,8 @@ const registerServiceWorker = () => {
     onRegisteredSW(serviceWorkerUrl, registration) {
       registeredServiceWorkerUrl = serviceWorkerUrl;
       logger.info('PWA', `Service worker registered: ${serviceWorkerUrl}`);
+
+      // Use one callback for all update-check sources so prompt rules stay consistent.
       setupServiceWorkerUpdateChecks(serviceWorkerUrl, registration, async () =>
         showUpdatePromptIfNeeded(
           'post-update-check-waiting',

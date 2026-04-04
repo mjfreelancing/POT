@@ -2989,13 +2989,14 @@ POT now uses an explicit app-side registration flow so users get a clear update 
   - Explicit post-check detection when `registration.waiting` exists after `registration.update()`
 - When a new waiting service worker is detected, the app shows a persistent top-center toast:
   - Message: `Update Available`
-  - Action: `Refresh` (shows `Refreshing...`, attempts waiting-worker activation, then forces a hard reload fallback if no `controllerchange` is observed within 1.5 seconds)
+  - Action: `Refresh` (attempts waiting-worker activation and always forces a reload path; it falls back to a hard reload if activation times out or if no `controllerchange` is observed within 1.5 seconds)
   - Cancel: `Later`
 - Prompt dedupe behavior:
   - Duplicate prompt events for the same waiting worker are suppressed while a prompt cycle is active
   - Choosing `Later` snoozes re-prompts for that same waiting worker key for the same configured period (currently 30 minutes)
   - After snooze expiry, the app can force a deferred re-prompt even if `registration.waiting` is no longer present at that exact moment
   - If the tab is visible, re-prompt can occur at snooze expiry without requiring a refocus click
+  - If snooze expires while hidden, returning to a visible tab re-evaluates and can re-prompt immediately
 
 This closes the stale-bundle gap where users might otherwise keep using an older version until a manual hard refresh.
 
