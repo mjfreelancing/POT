@@ -15,7 +15,7 @@ public sealed class Request
     public required string Description { get; init; }
 
     [Description("When automatic allocations will begin accruing for this expense")]
-    public DateOnly AccrualStart { get; init; }
+    public DateOnly? AccrualStart { get; init; }
 
     [Description("The date when the next Expense amount will be credited to the associated account")]
     public DateOnly NextDue { get; init; }

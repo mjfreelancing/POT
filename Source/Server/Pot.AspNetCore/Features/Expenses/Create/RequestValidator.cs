@@ -16,14 +16,20 @@ internal sealed class RequestValidator : PotValidatorBase<Request>
         // Check out the implementation of AccrualStartValidator in the commented code at the bottom.
         // RuleFor(request => request.AccrualStart).SetValidator(new AccrualStartValidator());
 
-        // Can be before/after the next due date, but not after the end date
+        // Can be before/after the next due date, but not after the end date.
+        // Validate only when an accrual start date is provided.
         this.CustomRuleFor(request => request.AccrualStart, (value, context) =>
         {
+            if (!value.HasValue)
+            {
+                return;
+            }
+
             var validationContext = context.GetContextData<Request, RequestValidationContext>();
 
             if (validationContext.EndDate.HasValue)
             {
-                if (value > validationContext.EndDate.Value)
+                if (value.Value > validationContext.EndDate.Value)
                 {
                     var failure = new ValidationFailure(nameof(Request.AccrualStart), "Cannot be after the end date", value)
                     {
@@ -37,19 +43,21 @@ internal sealed class RequestValidator : PotValidatorBase<Request>
 
         this.CustomRuleFor(request => request.EndDate, (value, context) =>
         {
-            if (value.HasValue)
+            if (!value.HasValue)
             {
-                var validationContext = context.GetContextData<Request, RequestValidationContext>();
+                return;
+            }
 
-                if (validationContext.NextDue > value.Value)
+            var validationContext = context.GetContextData<Request, RequestValidationContext>();
+
+            if (validationContext.NextDue > value.Value)
+            {
+                var failure = new ValidationFailure(nameof(Request.EndDate), "Cannot be earlier than the next due date", value)
                 {
-                    var failure = new ValidationFailure(nameof(Request.EndDate), "Cannot be earlier than the next due date", value)
-                    {
-                        ErrorCode = ErrorCodes.Invalid
-                    };
+                    ErrorCode = ErrorCodes.Invalid
+                };
 
-                    context.AddFailure(failure);
-                }
+                context.AddFailure(failure);
             }
         });
 
