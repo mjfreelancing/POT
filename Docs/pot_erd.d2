@@ -56,6 +56,7 @@ finance.Expense: {
   AccrualStart: date
   NextDue: date \[NOT NULL\]
   EndDate: date
+  AccrualPolicy: character varying(50)(50) \[NOT NULL\]
   Frequency: character varying(50)(50) \[NOT NULL\]
   FrequencyCount: integer \[NOT NULL\]
   Amount: double precision \[NOT NULL\]

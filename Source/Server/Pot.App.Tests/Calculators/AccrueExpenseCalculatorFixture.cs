@@ -698,6 +698,21 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
         }
 
         [Fact]
+        public void Should_Not_Process_Expense_When_AccrualStart_Is_Null()
+        {
+            var expense = EntityFactory.CreateExpense(_account, false, "Null Accrual Start", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
+            expense.AccrualStart = null;
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            expense.Accrued.ShouldBe(0.0d);
+            expense.AccruedIsDirty.ShouldBeFalse();
+            _account.TotalExpenseAccrued.ShouldBe(0.0d);
+            _account.DailyExpenseAccrual.ShouldBe(0.0d);
+            _account.StableExpenseAccrual.ShouldBe(0.0d);
+        }
+
+        [Fact]
         public void Should_Process_Expense_When_AccrualStart_Before_CurrentDate()
         {
             // Tests the core positive case: ExcludeFromCalcs = false AND AccrualStart < currentDate (strictly before)

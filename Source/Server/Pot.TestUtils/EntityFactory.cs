@@ -60,6 +60,7 @@ public static class EntityFactory
             AccrualStart = DateOnly.ParseExact(accrualStart, "yyyy-MM-dd"),
             NextDue = DateOnly.ParseExact(nextDue, "yyyy-MM-dd"),
             EndDate = endDate is null ? null : DateOnly.ParseExact(endDate, "yyyy-MM-dd"),
+            AccrualPolicy = frequency == Frequency.OneTime ? AccrualPolicy.None : AccrualPolicy.Automatic,
             Frequency = frequency,
             FrequencyCount = frequencyCount,
             Accrued = 0.0d,

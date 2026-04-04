@@ -25,6 +25,7 @@ public abstract class PotFixtureBase : FixtureBase
         Customize<Permission>();
         Customize<SettingCategory>();
         Customize<Frequency>();
+        Customize<AccrualPolicy>();
     }
 
     public void OmitRecursionBehavior()

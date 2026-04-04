@@ -16,6 +16,7 @@ internal static class EntityMapping
             NextDue = expense.NextDue,
             AccrualStart = expense.AccrualStart,
             EndDate = expense.EndDate,
+            AccrualPolicy = expense.AccrualPolicy,
             Frequency = expense.Frequency,
             FrequencyCount = expense.FrequencyCount,
             Amount = expense.Amount,

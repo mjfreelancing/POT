@@ -30,6 +30,9 @@ internal sealed class Response : ResponseBase
     [Description("When the Expense is no longer recurring")]
     public DateOnly? EndDate { get; init; }
 
+    [Description("The expense accrual policy")]
+    public AccrualPolicy AccrualPolicy { get; init; }
+
     [Description("The Expense frequency type")]
     public Frequency Frequency { get; init; }   // Serialized via EnrichedEnumJsonConverter<Frequency>
 
@@ -64,6 +67,7 @@ internal sealed class Response : ResponseBase
         NextDue = expense.NextDue;
         AccrualStart = expense.AccrualStart;
         EndDate = expense.EndDate;
+        AccrualPolicy = expense.AccrualPolicy;
         Frequency = expense.Frequency;
         FrequencyCount = expense.FrequencyCount;
         Amount = expense.Amount;
