@@ -46,6 +46,9 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
                 // The current implementation does not include 'ExcludeFromCalcs' items, but keep here for now so we're not making assumptions.
                 !expense.ExcludeFromCalcs &&
 
+                // None policy explicitly disables accrual contributions, regardless of date alignment.
+                expense.AccrualPolicy != AccrualPolicy.None &&
+
                 expense.AccrualStart <= currentDateValue;
 
             if (processExpense)

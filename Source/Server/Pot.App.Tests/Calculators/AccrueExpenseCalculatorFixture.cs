@@ -33,6 +33,19 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
 
     public class AccrueExpenses : AccrueExpenseCalculatorFixture
     {
+        public enum DueState
+        {
+            BeforeDue,
+            DueToday,
+            AfterDue
+        }
+
+        public enum FrequencyFamily
+        {
+            Recurring,
+            OneTime
+        }
+
         private readonly AccountEntity _account;
         private readonly DateOnly _currentDate = new(2025, 1, 15);
         private readonly ITimeProvider _timeProvider;
@@ -149,9 +162,20 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
         }
 
         [Fact]
-        public void Should_Calculate_StableExpenseAccrual_For_OneTime_Expense_Before_Due_Using_Fixed_Period()
+        public void Should_Not_Calculate_StableExpenseAccrual_For_OneTime_Expense_Before_Due_When_Policy_Is_None()
         {
             var expense = EntityFactory.CreateExpense(_account, false, "OneTime", 1000, "2025-01-01", "2025-01-31", null, Frequency.OneTime, 1);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            _account.StableExpenseAccrual.ShouldBe(0.0d);
+        }
+
+        [Fact]
+        public void Should_Calculate_StableExpenseAccrual_For_OneTime_Expense_Before_Due_When_Policy_Is_Automatic()
+        {
+            var expense = EntityFactory.CreateExpense(_account, false, "OneTime", 1000, "2025-01-01", "2025-01-31", null,
+                Frequency.OneTime, 1, AccrualPolicy.Automatic);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
@@ -239,8 +263,8 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             _calculator.AccrueExpenses(_account, [recurring, oneTime]);
 
             // Recurring: 700 / 7 = 100
-            // OneTime fixed period: 600 / 30 = 20
-            _account.StableExpenseAccrual.ShouldBe(120.0d, 0.000001d);
+            // OneTime with None policy: contributes 0
+            _account.StableExpenseAccrual.ShouldBe(100.0d, 0.000001d);
         }
 
         [Fact]
@@ -336,15 +360,25 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
         }
 
         [Fact]
-        public void Should_Not_Calculate_DailyExpenseAccrual_For_OneTime_Expense_Not_Due()
+        public void Should_Calculate_DailyExpenseAccrual_For_OneTime_Expense_Not_Due_When_Policy_Is_Automatic()
+        {
+            var expense = EntityFactory.CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-31", null,
+                Frequency.OneTime, 1, AccrualPolicy.Automatic);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            // DailyBalance calculation: (1000 - 466.67) / (31 - 15) = 533.33 / 16 = 33.33
+            _account.DailyExpenseAccrual.ShouldBe(33.33d, 0.01d);
+        }
+
+        [Fact]
+        public void Should_Not_Calculate_DailyExpenseAccrual_For_OneTime_Expense_Not_Due_When_Policy_Is_None()
         {
             var expense = EntityFactory.CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-31", null, Frequency.OneTime, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
-            // OneTime expenses do calculate daily accrual when not yet due
-            // DailyBalance = (1000 - 466.67) / (31 - 15) = 533.33 / 16 = 33.33
-            _account.DailyExpenseAccrual.ShouldBe(33.33d, 0.01d);
+            _account.DailyExpenseAccrual.ShouldBe(0.0d);
         }
 
         [Fact]
@@ -381,15 +415,26 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
         }
 
         [Fact]
-        public void Should_Calculate_DailyExpenseAccrual_For_OneTime_Expense_Due_Tomorrow()
+        public void Should_Calculate_DailyExpenseAccrual_For_OneTime_Expense_Due_Tomorrow_When_Policy_Is_Automatic()
         {
-            var expense = EntityFactory.CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-16", null, Frequency.OneTime, 1);
+            var expense = EntityFactory.CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-16", null,
+                Frequency.OneTime, 1, AccrualPolicy.Automatic);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
             // Accrued = 1000 * 14 / 15 = 933.33
             // DailyBalance = (1000 - 933.33) / 1 = 66.67
             _account.DailyExpenseAccrual.ShouldBe(66.67d, 0.01d);
+        }
+
+        [Fact]
+        public void Should_Not_Calculate_DailyExpenseAccrual_For_OneTime_Expense_Due_Tomorrow_When_Policy_Is_None()
+        {
+            var expense = EntityFactory.CreateExpense(_account, false, "Test Expense", 1000, "2025-01-01", "2025-01-16", null, Frequency.OneTime, 1);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            _account.DailyExpenseAccrual.ShouldBe(0.0d);
         }
 
         [Fact]
@@ -511,14 +556,80 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
         }
 
         [Fact]
-        public void Should_Accrue_OneTime_Expense_With_NextDue_Equal_To_CurrentDate()
+        public void Should_Accrue_OneTime_Expense_With_NextDue_Equal_To_CurrentDate_When_Policy_Is_Automatic()
+        {
+            var expense = EntityFactory.CreateExpense(_account, false, "Due Today", 600, "2025-01-01", "2025-01-15", null,
+                Frequency.OneTime, 1, AccrualPolicy.Automatic);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            // Due today, full amount is accrued
+            expense.Accrued.ShouldBe(600.0d);
+
+            // OneTime expenses do not contribute forward daily accrual on due date
+            _account.DailyExpenseAccrual.ShouldBe(0.0d);
+        }
+
+        [Fact]
+        public void Should_Not_Accrue_OneTime_Expense_With_NextDue_Equal_To_CurrentDate_When_Policy_Is_None()
         {
             var expense = EntityFactory.CreateExpense(_account, false, "Due Today", 600, "2025-01-01", "2025-01-15", null, Frequency.OneTime, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
-            // OneTime expenses are considered paid until deleted, hence they remain fully unaccrued from the current date onwards
-            expense.Accrued.ShouldBe(600.0d);
+            expense.Accrued.ShouldBe(0.0d);
+            _account.DailyExpenseAccrual.ShouldBe(0.0d);
+        }
+
+        [Fact]
+        public void Should_Accrue_Only_Automatic_Policy_Across_Recurring_And_OneTime_Expenses()
+        {
+            var recurringAutomatic = EntityFactory.CreateExpense(_account, false, "Recurring Automatic", 1000, "2025-01-01", "2025-01-31", null,
+                Frequency.Months, 1, AccrualPolicy.Automatic);
+
+            var recurringNone = EntityFactory.CreateExpense(_account, false, "Recurring None", 500, "2025-01-01", "2025-01-31", null,
+                Frequency.Months, 1, AccrualPolicy.None);
+
+            var oneTimeAutomatic = EntityFactory.CreateExpense(_account, false, "OneTime Automatic", 600, "2025-01-01", "2025-01-31", null,
+                Frequency.OneTime, 1, AccrualPolicy.Automatic);
+
+            var oneTimeNone = EntityFactory.CreateExpense(_account, false, "OneTime None", 300, "2025-01-01", "2025-01-31", null,
+                Frequency.OneTime, 1, AccrualPolicy.None);
+
+            _calculator.AccrueExpenses(_account, [recurringAutomatic, recurringNone, oneTimeAutomatic, oneTimeNone]);
+
+            recurringAutomatic.Accrued.ShouldBe(466.67d);
+            recurringNone.Accrued.ShouldBe(0.0d);
+            oneTimeAutomatic.Accrued.ShouldBe(280.0d);
+            oneTimeNone.Accrued.ShouldBe(0.0d);
+
+            _account.TotalExpenseAccrued.ShouldBe(746.67d, 0.01d);
+            _account.DailyExpenseAccrual.ShouldBe(53.33d, 0.01d);
+            _account.StableExpenseAccrual.ShouldBe(52.85d, 0.01d);
+        }
+
+        // This matrix test is intentionally broad and complementary to the focused fact tests above.
+        // Focused tests document and pin specific behaviors in detail, while this matrix guards the
+        // cross-product of policy x due-state x frequency-family to catch regressions when rules evolve.
+        //
+        // Using a string rather than AccrualPolicy for 'accrualPolicyName' to avoid code analysis warning:
+        // xUnit1044: The type argument AccrualPolicy is not serializable, which will cause Test Explorer to
+        // not enumerate individual data rows. Consider using a type that is known to be serializable.
+        [Theory]
+        [MemberData(nameof(GetAccrualPolicyDueStateFrequencyFamilyMatrixCases))]
+        public void Should_Calculate_Accruals_For_Policy_DueState_And_FrequencyFamily_Matrix(
+            string accrualPolicyName, DueState dueState, FrequencyFamily frequencyFamily,
+            double expectedAccrued, double expectedDailyExpenseAccrual, double expectedStableExpenseAccrual)
+        {
+            var accrualPolicy = AccrualPolicy.From(accrualPolicyName);
+            var expense = CreateExpenseForPolicyDueStateFrequencyFamilyMatrix(accrualPolicy, dueState, frequencyFamily);
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            expense.Accrued.ShouldBe(expectedAccrued, 0.01d);
+            _account.TotalExpenseAccrued.ShouldBe(expectedAccrued, 0.01d);
+            _account.DailyExpenseAccrual.ShouldBe(expectedDailyExpenseAccrual, 0.01d);
+            _account.StableExpenseAccrual.ShouldBe(expectedStableExpenseAccrual, 0.01d);
         }
 
         [Fact]
@@ -537,7 +648,7 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             weeklyExpense.Accrued.ShouldBe(35);          // 70 * 7 / 14
             monthlyExpense.Accrued.ShouldBe(466.67);     // 1000 * 14 / 30
             yearlyExpense.Accrued.ShouldBe(1200);        // Due today, full amount
-            oneTimeExpense.Accrued.ShouldBe(233.33);     // 500 * 14 / 30
+            oneTimeExpense.Accrued.ShouldBe(0.0d);       // OneTime with None policy contributes 0
 
             // Total should be sum of all
             var expectedTotal = dailyExpense.Accrued + weeklyExpense.Accrued + monthlyExpense.Accrued +
@@ -603,13 +714,13 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
         public void Should_Not_Accrue_Or_Daily_Accrue_When_AccrualStart_Equals_NextDue_And_Both_Equal_CurrentDate_OneTime()
         {
             // When AccrualStart == NextDue == CurrentDate for OneTime expense
-            // Should have full amount accrued but no daily accrual (one-time)
+            // No accrual contributions are applied with None policy.
             var expense = EntityFactory.CreateExpense(_account, false, "OneTime Same Start And Due", 1000, "2025-01-15", "2025-01-15", null, Frequency.OneTime, 1);
 
             _calculator.AccrueExpenses(_account, [expense]);
 
-            expense.Accrued.ShouldBe(1000.0d); // Due today, full amount
-            _account.DailyExpenseAccrual.ShouldBe(0.0d); // OneTime expenses don't have future accrual
+            expense.Accrued.ShouldBe(0.0d);
+            _account.DailyExpenseAccrual.ShouldBe(0.0d);
         }
 
         [Fact]
@@ -710,6 +821,38 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
             _account.TotalExpenseAccrued.ShouldBe(0.0d);
             _account.DailyExpenseAccrual.ShouldBe(0.0d);
             _account.StableExpenseAccrual.ShouldBe(0.0d);
+        }
+
+        [Fact]
+        public void Should_Not_Process_Expense_When_AccrualPolicy_Is_None()
+        {
+            var expense = EntityFactory.CreateExpense(_account, false, "None Policy", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
+            expense.AccrualPolicy = AccrualPolicy.None;
+
+            _calculator.AccrueExpenses(_account, [expense]);
+
+            expense.Accrued.ShouldBe(0.0d);
+            expense.AccruedIsDirty.ShouldBeFalse();
+            _account.TotalExpenseAccrued.ShouldBe(0.0d);
+            _account.DailyExpenseAccrual.ShouldBe(0.0d);
+            _account.StableExpenseAccrual.ShouldBe(0.0d);
+        }
+
+        [Fact]
+        public void Should_Only_Accrue_Automatic_Policy_When_Mixed_With_None_Policy_Expense()
+        {
+            var automaticExpense = EntityFactory.CreateExpense(_account, false, "Automatic Policy", 1000, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
+            var noneExpense = EntityFactory.CreateExpense(_account, false, "None Policy", 700, "2025-01-01", "2025-01-31", null, Frequency.Months, 1);
+            noneExpense.AccrualPolicy = AccrualPolicy.None;
+
+            _calculator.AccrueExpenses(_account, [automaticExpense, noneExpense]);
+
+            automaticExpense.Accrued.ShouldBe(466.67d);
+            noneExpense.Accrued.ShouldBe(0.0d);
+
+            _account.TotalExpenseAccrued.ShouldBe(466.67d);
+            _account.DailyExpenseAccrual.ShouldBe(33.33d, 0.01d);
+            _account.StableExpenseAccrual.ShouldBe(32.85d, 0.01d);
         }
 
         [Fact]
@@ -874,15 +1017,62 @@ public class AccrueExpenseCalculatorFixture : PotFixtureBase
                 yield return (EntityFactory.CreateExpense(account, false, "Expense 15", 400, "2025-01-16", "2025-01-31", "2026-01-19", frequency, frequencyCount), 0.0);     // End date after next due
             }
 
-            // One-time expense that was due yesterday
-            yield return (EntityFactory.CreateExpense(account, false, "Expense 16", 100, "2024-12-20", "2025-01-14", null, Frequency.OneTime, Create<int>()), 100.0);        // Fully accrued - until deleted
+            // One-time expenses default to None policy and therefore do not contribute to accrual outputs.
+            yield return (EntityFactory.CreateExpense(account, false, "Expense 16", 100, "2024-12-20", "2025-01-14", null, Frequency.OneTime, Create<int>()), 0.0);
+            yield return (EntityFactory.CreateExpense(account, false, "Expense 17", 100, "2024-12-20", "2025-01-15", null, Frequency.OneTime, Create<int>()), 0.0);
+            yield return (EntityFactory.CreateExpense(account, false, "Expense 18", 100, "2024-01-18", "2025-01-16", null, Frequency.OneTime, Create<int>()), 0.0);
+        }
 
-            // One-time expense that is due today
-            yield return (EntityFactory.CreateExpense(account, false, "Expense 17", 100, "2024-12-20", "2025-01-15", null, Frequency.OneTime, Create<int>()), 100.0);        // Fully accrued - until deleted
+        // Matrix data for broad rule-interaction coverage.
+        // These rows are not a replacement for the focused tests above; they ensure we exercise
+        // all key dimension combinations with explicit expected outputs.
+        public static TheoryData<string, DueState, FrequencyFamily, double, double, double> GetAccrualPolicyDueStateFrequencyFamilyMatrixCases()
+        {
+            return new TheoryData<string, DueState, FrequencyFamily, double, double, double>
+            {
+                // None policy short-circuits all accrual outputs for both families and all due states.
+                { AccrualPolicy.None.Name, DueState.BeforeDue, FrequencyFamily.Recurring, 0.0d, 0.0d, 0.0d },
+                { AccrualPolicy.None.Name, DueState.DueToday, FrequencyFamily.Recurring, 0.0d, 0.0d, 0.0d },
+                { AccrualPolicy.None.Name, DueState.AfterDue, FrequencyFamily.Recurring, 0.0d, 0.0d, 0.0d },
+                { AccrualPolicy.None.Name, DueState.BeforeDue, FrequencyFamily.OneTime, 0.0d, 0.0d, 0.0d },
+                { AccrualPolicy.None.Name, DueState.DueToday, FrequencyFamily.OneTime, 0.0d, 0.0d, 0.0d },
+                { AccrualPolicy.None.Name, DueState.AfterDue, FrequencyFamily.OneTime, 0.0d, 0.0d, 0.0d },
 
-            // One-time expense that is due tomorrow - leap year
-            // A non-leap year would be 100 * 362 / 363 = 99.724
-            yield return (EntityFactory.CreateExpense(account, false, "Expense 18", 100, "2024-01-18", "2025-01-16", null, Frequency.OneTime, Create<int>()), 99.73);        // 100 * 363 / 364 = 99.725
+                // Automatic recurring (monthly): stable contribution remains active for all due states.
+                { AccrualPolicy.Automatic.Name, DueState.BeforeDue, FrequencyFamily.Recurring, 466.67d, 33.33d, 32.85d },
+                { AccrualPolicy.Automatic.Name, DueState.DueToday, FrequencyFamily.Recurring, 1000.0d, 32.26d, 32.85d },
+                { AccrualPolicy.Automatic.Name, DueState.AfterDue, FrequencyFamily.Recurring, 1000.0d, 0.0d, 32.85d },
+
+                // Automatic one-time: contributes before due, then drops daily/stable contribution on/after due date.
+                { AccrualPolicy.Automatic.Name, DueState.BeforeDue, FrequencyFamily.OneTime, 466.67d, 33.33d, 33.33d },
+                { AccrualPolicy.Automatic.Name, DueState.DueToday, FrequencyFamily.OneTime, 1000.0d, 0.0d, 0.0d },
+                { AccrualPolicy.Automatic.Name, DueState.AfterDue, FrequencyFamily.OneTime, 1000.0d, 0.0d, 0.0d }
+            };
+        }
+
+        // Shared scenario builder for matrix rows so case setup is centralized and deterministic.
+        // Keeping these mappings in one place makes expectation changes explicit when domain rules change.
+        private ExpenseEntity CreateExpenseForPolicyDueStateFrequencyFamilyMatrix(AccrualPolicy accrualPolicy, DueState dueState, FrequencyFamily frequencyFamily)
+        {
+            var frequency = frequencyFamily switch
+            {
+                FrequencyFamily.Recurring => Frequency.Months,
+                FrequencyFamily.OneTime => Frequency.OneTime,
+                _ => throw new ArgumentOutOfRangeException(nameof(frequencyFamily), frequencyFamily, "Unsupported frequency family.")
+            };
+
+            var (accrualStart, nextDue) = (frequencyFamily, dueState) switch
+            {
+                (FrequencyFamily.Recurring, DueState.BeforeDue) => ("2025-01-01", "2025-01-31"),
+                (FrequencyFamily.Recurring, DueState.DueToday) => ("2024-12-15", "2025-01-15"),
+                (FrequencyFamily.Recurring, DueState.AfterDue) => ("2024-12-15", "2025-01-14"),
+                (FrequencyFamily.OneTime, DueState.BeforeDue) => ("2025-01-01", "2025-01-31"),
+                (FrequencyFamily.OneTime, DueState.DueToday) => ("2025-01-01", "2025-01-15"),
+                (FrequencyFamily.OneTime, DueState.AfterDue) => ("2025-01-01", "2025-01-14"),
+                _ => throw new ArgumentOutOfRangeException(nameof(dueState), dueState, "Unsupported due state.")
+            };
+
+            return EntityFactory.CreateExpense(_account, false, "Matrix Case", 1000, accrualStart, nextDue, null, frequency, 1, accrualPolicy);
         }
 
         [Fact]

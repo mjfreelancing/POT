@@ -48,7 +48,7 @@ public static class EntityFactory
     }
 
     public static ExpenseEntity CreateExpense(AccountEntity account, bool excludeFromCalc, string description, double amount,
-        string accrualStart, string nextDue, string? endDate, Frequency frequency, int frequencyCount)
+        string accrualStart, string nextDue, string? endDate, Frequency frequency, int frequencyCount, AccrualPolicy? accrualPolicy = null)
     {
         var expense = new ExpenseEntity
         {
@@ -60,7 +60,7 @@ public static class EntityFactory
             AccrualStart = DateOnly.ParseExact(accrualStart, "yyyy-MM-dd"),
             NextDue = DateOnly.ParseExact(nextDue, "yyyy-MM-dd"),
             EndDate = endDate is null ? null : DateOnly.ParseExact(endDate, "yyyy-MM-dd"),
-            AccrualPolicy = frequency == Frequency.OneTime ? AccrualPolicy.None : AccrualPolicy.Automatic,
+            AccrualPolicy = accrualPolicy ?? (frequency == Frequency.OneTime ? AccrualPolicy.None : AccrualPolicy.Automatic),
             Frequency = frequency,
             FrequencyCount = frequencyCount,
             Accrued = 0.0d,
