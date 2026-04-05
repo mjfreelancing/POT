@@ -9,6 +9,7 @@ import { SuccessResult } from '@/lib';
 type MutationData<TData> = {
   data: TData;
   signal?: AbortSignal;
+  timeoutMs?: number;
 };
 
 type MutationDataWithId<TData> = {
@@ -134,11 +135,15 @@ const usePost = <TResponse, TData = void>(url: string) => {
     mutationFn: async ({
       data,
       signal,
+      timeoutMs,
     }: Partial<MutationData<TData>> = {}): Promise<
       Result<TResponse, FailResultBase>
     > => {
       return performOperation(() =>
-        axios.post<TResponse>(url, data, { signal }),
+        axios.post<TResponse>(url, data, {
+          signal,
+          timeout: timeoutMs,
+        }),
       );
     },
   });
@@ -325,7 +330,6 @@ const usePostWithIdNoData = <TResponse>(urlFn: (id: string) => string) => {
   });
 };
 
-export type { DeleteMutationData, MutationData, MutationDataWithId };
 export {
   useDelete,
   useGet,
@@ -336,3 +340,4 @@ export {
   usePutWithId,
   usePutWithIdNoData,
 };
+export type { DeleteMutationData, MutationData, MutationDataWithId };

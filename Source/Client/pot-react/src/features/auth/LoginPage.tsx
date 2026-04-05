@@ -11,6 +11,8 @@ import { useAuthContext } from '@/features/auth/contexts';
 import LoginForm from '@/features/auth/LoginForm';
 import type { DisplayError } from '@/lib';
 
+const LOGIN_TIMEOUT_MS = 120000;
+
 function LoginPage() {
   const [authError, setAuthError] = useState<DisplayError | null>(null);
   const [otherError, setOtherError] = useState<DisplayError | null>(null);
@@ -30,6 +32,7 @@ function LoginPage() {
       const result = await loginMutation.mutateAsync({
         data: values,
         signal: controller.signal,
+        timeoutMs: LOGIN_TIMEOUT_MS,
       });
 
       if (result.success) {

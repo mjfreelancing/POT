@@ -1,5 +1,5 @@
-import { Clock } from 'lucide-react';
-import { type ComponentPropsWithoutRef, useState } from 'react';
+import { Clock, Loader2 } from 'lucide-react';
+import { type ComponentPropsWithoutRef, useEffect, useState } from 'react';
 
 import type { LoginCredentials } from '@/api/types/auth';
 import { Button } from '@/components/ui/button';
@@ -27,6 +27,18 @@ type LoginFormProps = Omit<ComponentPropsWithoutRef<'div'>, 'onSubmit'> & {
   onSignupError: (error: DisplayError | null) => void;
 };
 
+const LONG_WAIT_START_MS = 5000;
+const LONG_WAIT_UPDATE_MS = 5000;
+
+function formatElapsedTime(seconds: number): string {
+  const minutes = Math.floor(seconds / 60)
+    .toString()
+    .padStart(2, '0');
+  const secondsRemainder = (seconds % 60).toString().padStart(2, '0');
+
+  return `${minutes}:${secondsRemainder}`;
+}
+
 function LoginForm({
   className,
   onSubmit,
@@ -39,8 +51,53 @@ function LoginForm({
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isLongWait, setIsLongWait] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
+
+  useEffect(() => {
+    if (!isLoading) {
+      setIsLongWait(false);
+      setElapsedSeconds(0);
+      return;
+    }
+
+    const startTimerId = window.setTimeout(() => {
+      setIsLongWait(true);
+      setElapsedSeconds(5);
+    }, LONG_WAIT_START_MS);
+
+    const updateTimerId = window.setInterval(() => {
+      setElapsedSeconds(currentSeconds => {
+        if (currentSeconds === 0) {
+          return currentSeconds;
+        }
+
+        return currentSeconds + LONG_WAIT_UPDATE_MS / 1000;
+      });
+    }, LONG_WAIT_UPDATE_MS);
+
+    return () => {
+      window.clearTimeout(startTimerId);
+      window.clearInterval(updateTimerId);
+    };
+  }, [isLoading]);
+
+  const formattedElapsedTime = formatElapsedTime(elapsedSeconds);
+
+  let loadingButtonText = 'Signing in...';
+  let loadingLiveText = '';
+
+  if (isLongWait) {
+    if (elapsedSeconds >= 60) {
+      loadingButtonText = `This is taking longer than usual (${formattedElapsedTime})`;
+      loadingLiveText = `This is taking longer than usual. ${formattedElapsedTime} elapsed.`;
+    } else {
+      loadingButtonText = `Still signing you in (${formattedElapsedTime})`;
+      loadingLiveText = `Still signing you in. ${formattedElapsedTime} elapsed.`;
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -125,6 +182,9 @@ function LoginForm({
                 </div>
                 {error && <div className="text-red-600 text-sm">{error}</div>}
                 <div className="flex flex-col gap-3">
+                  <div aria-live="polite" className="sr-only">
+                    {loadingLiveText}
+                  </div>
                   <Button
                     type="submit"
                     className="w-full"
@@ -135,7 +195,17 @@ function LoginForm({
                     }
                     tabIndex={4}
                   >
-                    {isLoading ? 'Logging in...' : 'Login'}
+                    {isLoading ? (
+                      <span className="inline-flex items-center justify-center gap-2">
+                        <Loader2
+                          className="h-4 w-4 animate-spin"
+                          aria-hidden="true"
+                        />
+                        {loadingButtonText}
+                      </span>
+                    ) : (
+                      'Login'
+                    )}
                   </Button>
                 </div>
               </div>
