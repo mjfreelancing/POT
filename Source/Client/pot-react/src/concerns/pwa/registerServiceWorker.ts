@@ -1,6 +1,7 @@
 import { registerSW } from 'virtual:pwa-register';
 
 import { logger } from '@/concerns/logging';
+
 import { pwaRuntimeState } from './pwaRuntime';
 import { setupServiceWorkerUpdateChecks } from './pwaUpdateChecks';
 import { showUpdatePromptIfNeeded } from './pwaUpdatePrompt';

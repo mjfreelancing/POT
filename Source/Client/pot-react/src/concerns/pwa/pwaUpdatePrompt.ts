@@ -1,6 +1,5 @@
-import { createElement } from 'react';
-
 import { RefreshCw } from 'lucide-react';
+import { createElement } from 'react';
 import { toast } from 'sonner';
 
 import { logger } from '@/concerns/logging';
@@ -78,8 +77,7 @@ const showUpdatePromptIfNeeded = async (
       'div',
       { className: 'flex items-start gap-3' },
       createElement(RefreshCw, {
-        className:
-          'mt-0.5 h-6 w-6 shrink-0 text-amber-700 dark:text-amber-300',
+        className: 'mt-0.5 h-6 w-6 shrink-0 text-amber-700 dark:text-amber-300',
       }),
       createElement(
         'div',
