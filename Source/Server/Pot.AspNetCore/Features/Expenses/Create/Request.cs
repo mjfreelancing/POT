@@ -17,8 +17,11 @@ public sealed class Request
     [Description("The inclusive date when the Expense source will no longer credit the associated account")]
     public DateOnly? EndDate { get; init; }
 
+    [Description("The expense accrual policy")]
+    public required AccrualPolicy AccrualPolicy { get; init; }                          // Deserialized via EnrichedEnumJsonConverter<AccrualPolicy>
+
     [Description("The frequency unit the associated account will be credited")]
-    public required Frequency Frequency { get; init; }
+    public required Frequency Frequency { get; init; }                                  // Deserialized via EnrichedEnumJsonConverter<Frequency>
 
     [Description("The frequency count the associated account will be credited")]
     public int FrequencyCount { get; init; }

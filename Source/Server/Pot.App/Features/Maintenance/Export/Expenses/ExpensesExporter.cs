@@ -31,6 +31,7 @@ internal sealed class ExpensesExporter : MemoryCsvExporterBase<ExpenseData>, IEx
                 AccrualStart = expense.AccrualStart,
                 NextDue = expense.NextDue,
                 EndDate = expense.EndDate,
+                AccrualPolicy = expense.AccrualPolicy,
                 Frequency = expense.Frequency,
                 FrequencyCount = expense.FrequencyCount,
                 Amount = expense.Amount,
@@ -57,6 +58,7 @@ internal sealed class ExpensesExporter : MemoryCsvExporterBase<ExpenseData>, IEx
         serializer.AddField(nameof(ExpenseData.AccrualStart), entity => entity.AccrualStart?.ToString(format: "yyyy-MM-dd"));
         serializer.AddField(nameof(ExpenseData.NextDue), entity => entity.NextDue.ToString(format: "yyyy-MM-dd"));
         serializer.AddField(nameof(ExpenseData.EndDate), entity => entity.EndDate?.ToString(format: "yyyy-MM-dd"));
+        serializer.AddField(nameof(ExpenseData.AccrualPolicy), entity => entity.AccrualPolicy);
         serializer.AddField(nameof(ExpenseData.Frequency), entity => entity.Frequency);
         serializer.AddField(nameof(ExpenseData.FrequencyCount), entity => entity.FrequencyCount);
         serializer.AddField(nameof(ExpenseData.Amount), entity => entity.Amount);

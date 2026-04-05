@@ -9,7 +9,7 @@ public interface IImportStreamReader : IPotScopedDependency
     string[] EntryNames { get; }
 
     IDisposable Open(Stream stream);
-
+    int ReadMetadataVersion();
     MetadataBase GetMetadata();
 
     // Note: ICsvRowEnumerator<T> is IDisposable

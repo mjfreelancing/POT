@@ -10,7 +10,6 @@ using Pot.App.Features.Expenses.Update.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
 using Pot.Data.Repositories.Expenses;
-using Pot.Shared.Enumerations;
 
 namespace Pot.App.Features.Expenses.Update;
 
@@ -94,9 +93,7 @@ internal sealed class UpdateExpenseService : IUpdateExpenseService
         expenseToUpdate.AccrualStart = input.AccrualStart;
         expenseToUpdate.NextDue = input.NextDue;
         expenseToUpdate.EndDate = input.EndDate;
-        expenseToUpdate.AccrualPolicy = input.Frequency == Frequency.OneTime
-            ? AccrualPolicy.None
-            : AccrualPolicy.Automatic;
+        expenseToUpdate.AccrualPolicy = input.AccrualPolicy;
         expenseToUpdate.Frequency = input.Frequency;
         expenseToUpdate.FrequencyCount = input.FrequencyCount;
         expenseToUpdate.Amount = input.Amount;

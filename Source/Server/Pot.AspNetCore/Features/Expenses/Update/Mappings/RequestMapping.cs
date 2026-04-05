@@ -15,6 +15,7 @@ internal static class RequestMapping
             AccrualStart = request.AccrualStart,
             NextDue = request.NextDue,
             EndDate = request.EndDate,
+            AccrualPolicy = request.AccrualPolicy,
             Frequency = request.Frequency,
             FrequencyCount = request.FrequencyCount,
             Amount = request.Amount,

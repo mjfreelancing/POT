@@ -5,5 +5,5 @@ namespace Pot.App.Features.Maintenance.Metadata.Serializer;
 
 public interface IMetadataWriterFactory : IPotSingletonDependency
 {
-    IEnrichedBinaryValueWriter CreateWriter(int version);
+    IEnrichedBinaryValueWriter CreateWriter();
 }

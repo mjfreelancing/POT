@@ -5,6 +5,7 @@ namespace Pot.App.Features.Maintenance.Import.Models;
 public interface IExpenseCsvRow
 {
     Guid AccountRowId { get; }
+    AccrualPolicy AccrualPolicy { get; }
     DateOnly? AccrualStart { get; }
     double Accrued { get; }
     bool AccruedIsDirty { get; }

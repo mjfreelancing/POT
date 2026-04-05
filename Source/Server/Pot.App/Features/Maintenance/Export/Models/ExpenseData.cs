@@ -10,6 +10,7 @@ public sealed class ExpenseData
     public required DateOnly? AccrualStart { get; set; }
     public required DateOnly NextDue { get; set; }
     public DateOnly? EndDate { get; set; }
+    public required AccrualPolicy AccrualPolicy { get; set; }
     public required Frequency Frequency { get; set; }
     public required int FrequencyCount { get; set; }
     public required double Amount { get; set; }

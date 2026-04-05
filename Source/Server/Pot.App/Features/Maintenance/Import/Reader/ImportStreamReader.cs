@@ -47,6 +47,16 @@ internal sealed class ImportStreamReader : IImportStreamReader
         return _metadataSerializer.Deserialize(stream);
     }
 
+    public int ReadMetadataVersion()
+    {
+        _logger.LogCall(this);
+
+        using var stream = GetEntry("metadata");
+        using var reader = new BinaryReader(stream);
+
+        return reader.ReadInt32();
+    }
+
     public ICsvRowEnumerator<IAccountCsvRow> GetAccounts()
     {
         _logger.LogCall(this);

@@ -148,6 +148,7 @@ internal static class WebApplicationBuilderExtensions
             options.SerializerOptions.Converters.Add(EnrichedEnumJsonConverter<UserStatus>.Create());
             options.SerializerOptions.Converters.Add(EnrichedEnumJsonConverter<ApprovalStatus>.Create());
             options.SerializerOptions.Converters.Add(EnrichedEnumJsonConverter<RenewalMode>.Create());
+            options.SerializerOptions.Converters.Add(EnrichedEnumJsonConverter<AccrualPolicy>.Create());
             options.SerializerOptions.Converters.Add(new NullableGuidConverter());
         });
 

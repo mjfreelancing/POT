@@ -23,10 +23,16 @@ internal sealed class MetadataSerializer : IMetadataSerializer
 
         using (var writer = new EnrichedBinaryWriter(stream, Encoding.UTF8, true))
         {
-            // Explicitly write the version number first as the reader needs to know this before it can create an appropriate reader.
+            if (metadata.Version != MetadataBase.CurrentVersion)
+            {
+                throw new InvalidDataException($"Unexpected metadata version: {metadata.Version}");
+            }
+
+            // Explicitly write the version number first as the reader needs to verify this before creating the reader.
             writer.Write(metadata.Version);
 
-            var metadataWriter = _metadataWriterFactory.CreateWriter(metadata.Version);
+            // We always create the most recent writer
+            var metadataWriter = _metadataWriterFactory.CreateWriter();
 
             writer.Writers.Add(metadataWriter);
             writer.WriteObject(metadata);
@@ -39,9 +45,12 @@ internal sealed class MetadataSerializer : IMetadataSerializer
     {
         using var reader = new EnrichedBinaryReader(zipStream, Encoding.UTF8, true);
 
-        var version = reader.ReadInt32();
+        // We need to read past the version number. Assuming it is the latest version.
+        // Not validating the version number here. The import process will handle this.
+        _ = reader.ReadInt32();
 
-        var metadataReader = _metadataReaderFactory.CreateReader(version);
+        // We only support the most recent version for reading.
+        var metadataReader = _metadataReaderFactory.CreateReader();
 
         // Add a version specific reader
         reader.Readers.Add(metadataReader);

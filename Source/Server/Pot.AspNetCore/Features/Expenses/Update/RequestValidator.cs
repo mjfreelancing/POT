@@ -17,12 +17,27 @@ internal sealed class RequestValidator : PotValidatorBase<Request>
         // Validate only when an accrual start date is provided.
         this.CustomRuleFor(request => request.AccrualStart, (value, context) =>
         {
+            var validationContext = context.GetContextData<Request, RequestValidationContext>();
+
+            if (validationContext.AccrualPolicy == AccrualPolicy.None)
+            {
+                if (value.HasValue)
+                {
+                    var failure = new ValidationFailure(nameof(Request.AccrualStart), $"Must be empty when Accrual Policy is {AccrualPolicy.None.Name}", value)
+                    {
+                        ErrorCode = ErrorCodes.Invalid
+                    };
+
+                    context.AddFailure(failure);
+                }
+
+                return;
+            }
+
             if (!value.HasValue)
             {
                 return;
             }
-
-            var validationContext = context.GetContextData<Request, RequestValidationContext>();
 
             if (validationContext.EndDate.HasValue)
             {

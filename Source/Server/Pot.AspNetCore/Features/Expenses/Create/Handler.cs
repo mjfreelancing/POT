@@ -19,6 +19,7 @@ internal sealed class Handler
         {
             NextDue = request.NextDue,
             EndDate = request.EndDate,
+            AccrualPolicy = request.AccrualPolicy,
             Frequency = request.Frequency
         };
 

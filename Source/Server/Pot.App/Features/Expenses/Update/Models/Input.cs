@@ -11,6 +11,7 @@ public sealed class Input
     public DateOnly? AccrualStart { get; init; }
     public DateOnly NextDue { get; init; }
     public DateOnly? EndDate { get; init; }
+    public required AccrualPolicy AccrualPolicy { get; init; }
     public required Frequency Frequency { get; init; }
     public int FrequencyCount { get; init; }
     public double Amount { get; init; }

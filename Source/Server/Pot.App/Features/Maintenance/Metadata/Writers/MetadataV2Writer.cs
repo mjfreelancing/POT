@@ -1,15 +1,14 @@
-﻿using AllOverIt.Serialization.Binary.Writers;
+using AllOverIt.Serialization.Binary.Writers;
 using Pot.App.Features.Maintenance.Metadata.Models;
 using Pot.App.Features.Maintenance.Metadata.Serializer;
 
 namespace Pot.App.Features.Maintenance.Metadata.Writers;
 
-[Obsolete("Legacy metadata v1 writer retained for historical tracking and possible future preview tooling. Do not use in runtime import/export paths.", error: true)]
-internal sealed class MetadataV1Writer : EnrichedBinaryValueWriter<MetadataV1>
+internal sealed class MetadataV2Writer : EnrichedBinaryValueWriter<MetadataV2>
 {
     public override void WriteValue(IEnrichedBinaryWriter writer, object value)
     {
-        var metadata = (MetadataV1)value;
+        var metadata = (MetadataV2)value;
 
         // The version is written by the serializer using this writer.
         MetadataSerializationHelper.WriteCreatedAt(writer, metadata);

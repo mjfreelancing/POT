@@ -8,7 +8,6 @@ using Pot.App.Features.Expenses.Create.Mappings;
 using Pot.App.Features.Expenses.Create.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
-using Pot.Shared.Enumerations;
 
 namespace Pot.App.Features.Expenses.Create;
 
@@ -48,9 +47,7 @@ internal sealed class CreateExpenseService : ICreateExpenseService
             NextDue = input.NextDue,
             AccrualStart = input.AccrualStart,
             EndDate = input.EndDate,
-            AccrualPolicy = input.Frequency == Frequency.OneTime
-                ? AccrualPolicy.None
-                : AccrualPolicy.Automatic,
+            AccrualPolicy = input.AccrualPolicy,
             Frequency = input.Frequency,
             FrequencyCount = input.FrequencyCount,
             Amount = input.Amount,
