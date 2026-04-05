@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { useErrorContext } from '@/contexts';
 import type { Account, CreateExpense, Expense } from '@/data';
-import { Frequency, todayIsoFormat } from '@/lib';
+import { AccrualPolicy, Frequency, todayIsoFormat } from '@/lib';
 
 import ExpenseForm from '../../components/ExpenseForm';
 import ExpenseSheet from '../../components/ExpenseSheet';
@@ -36,6 +36,7 @@ function CreateExpenseForm({
         description: `Copy of ${duplicateExpense.description}`,
         nextDue: duplicateExpense.nextDue,
         accrualStart: duplicateExpense.accrualStart ?? undefined,
+        accrualPolicy: duplicateExpense.accrualPolicy,
         endDate: duplicateExpense.endDate || undefined,
         frequency: duplicateExpense.frequency,
         frequencyCount: duplicateExpense.frequencyCount,
@@ -50,6 +51,7 @@ function CreateExpenseForm({
       description: '',
       nextDue: todayIsoFormat(),
       accrualStart: todayIsoFormat(),
+      accrualPolicy: AccrualPolicy.Automatic,
       endDate: undefined,
       frequency: Frequency.Months,
       frequencyCount: 1,
@@ -87,6 +89,8 @@ function CreateExpenseForm({
     const result = await createExpense(expense);
 
     if (result.success) {
+      // Server responds with canonical AccrualStart, but this flow navigates away immediately,
+      // so the next screen refresh reads canonical values from the API.
       navigate('/expenses');
     } else {
       setError({

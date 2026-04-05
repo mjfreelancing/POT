@@ -50,6 +50,8 @@ const useApiGetExpenseById = (id: string) => {
 };
 
 const useApiCreateExpense = () => {
+  // Server create response also includes canonical accrualStart field.
+  // This mutation remains identity-typed because current callers navigate away and refresh expenses.
   const mutation = usePost<Identity, CreateExpense>('/expenses');
 
   // Returning the mutation data as Result<Identity, FailResultBase> type to enable TypeScript's discriminated union type narrowing.
@@ -61,6 +63,8 @@ const useApiCreateExpense = () => {
 
 // Returning the mutation data as Result<Identity, FailResultBase> type to enable TypeScript's discriminated union type narrowing.
 const useApiUpdateExpense = () => {
+  // Server update response also includes canonical accrualStart field
+  // This mutation remains identity-typed because current callers rely on invalidation/refetch.
   const mutation = usePutWithId<Identity, EditExpense>(
     (id: string) => `/expenses/${id}`,
   );

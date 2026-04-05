@@ -35,6 +35,7 @@ const EditExpenseSheetInternal: React.FC<EditExpenseSheetInternalProps> = ({
       description: expenseData.description,
       nextDue: expenseData.nextDue,
       accrualStart: expenseData.accrualStart ?? undefined,
+      accrualPolicy: expenseData.accrualPolicy,
       endDate: expenseData.endDate ?? undefined,
       frequency: expenseData.frequency,
       frequencyCount: expenseData.frequencyCount,
@@ -66,6 +67,8 @@ const EditExpenseSheetInternal: React.FC<EditExpenseSheetInternalProps> = ({
     const result = await editExpense(expenseData.rowId, payload);
 
     if (result.success) {
+      // Server responds with canonical AccrualStart, but this flow navigates away immediately,
+      // so the next screen refresh reads canonical values from the API.
       navigate('/expenses');
     } else {
       setError({

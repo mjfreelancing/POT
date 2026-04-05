@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 
 import type { MoneyValueChangeEvent } from '@/components/input';
@@ -26,6 +26,8 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import type { Account } from '@/data';
 import {
+  AccrualPolicy,
+  AccrualPolicyOptions,
   dateIsoFormat,
   Frequency,
   FrequencyOptions,
@@ -69,6 +71,35 @@ function useEndDatePicker(form: UseFormReturn<ExpenseFormData>) {
   return { pickerDate, syncPickerDate };
 }
 
+function useAccrualStartPicker(form: UseFormReturn<ExpenseFormData>) {
+  const accrualStartValue = form.watch('accrualStart');
+  const accrualPolicyValue = form.watch('accrualPolicy');
+  const [pickerDate, setPickerDate] = useState<Date | undefined>(
+    accrualStartValue ? new Date(accrualStartValue) : undefined,
+  );
+
+  useEffect(() => {
+    if (accrualPolicyValue === AccrualPolicy.None) {
+      setPickerDate(undefined);
+      return;
+    }
+
+    setPickerDate(accrualStartValue ? new Date(accrualStartValue) : undefined);
+  }, [accrualPolicyValue, accrualStartValue]);
+
+  function syncPickerDate(date: Date | undefined) {
+    setPickerDate(date);
+
+    form.setValue(
+      'accrualStart',
+      date !== undefined ? dateIsoFormat(date) : undefined,
+      { shouldValidate: true },
+    );
+  }
+
+  return { pickerDate, syncPickerDate };
+}
+
 function ExpenseForm({
   form,
   onSubmit,
@@ -78,6 +109,16 @@ function ExpenseForm({
   isEditMode = false,
 }: ExpenseFormProps) {
   const { pickerDate, syncPickerDate } = useEndDatePicker(form);
+  const {
+    pickerDate: accrualStartPickerDate,
+    syncPickerDate: syncAccrualStartPickerDate,
+  } = useAccrualStartPicker(form);
+  const frequency = form.watch('frequency');
+  const accrualPolicy = form.watch('accrualPolicy');
+  const accrualStart = form.watch('accrualStart');
+  const lastAutomaticAccrualStartRef = useRef<string | undefined>(
+    form.getValues('accrualStart'),
+  );
 
   useEffect(() => {
     if (isEditMode) {
@@ -85,16 +126,18 @@ function ExpenseForm({
     }
   }, [isEditMode, form]);
 
-  // Watch for frequency changes to handle One Time frequency
+  // Keep frequency count valid for One Time frequency.
   useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === 'frequency' && value.frequency === Frequency.OneTime) {
-        form.setValue('frequencyCount', 0);
-      }
-    });
+    if (frequency === Frequency.OneTime) {
+      form.setValue('frequencyCount', 0, { shouldValidate: true });
+    }
+  }, [form, frequency]);
 
-    return () => subscription.unsubscribe();
-  }, [form]);
+  useEffect(() => {
+    if (accrualPolicy === AccrualPolicy.Automatic) {
+      lastAutomaticAccrualStartRef.current = accrualStart;
+    }
+  }, [accrualPolicy, accrualStart]);
 
   return (
     <Form {...form}>
@@ -170,46 +213,6 @@ function ExpenseForm({
                     onClick={() => {
                       field.onChange(todayIsoFormat());
                       form.trigger('nextDue');
-                    }}
-                  >
-                    Today
-                  </Button>
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="accrualStart"
-          render={({ field }) => (
-            <FormItem className="space-y-1">
-              <FormLabel htmlFor="accrualStart-picker">Accrual Start</FormLabel>
-              <FormControl>
-                <div className="flex items-center space-x-2">
-                  <EnrichedDatePicker
-                    selectedDate={
-                      field.value ? new Date(field.value) : undefined
-                    }
-                    onDateAccepted={date => {
-                      const value =
-                        date !== undefined ? dateIsoFormat(date) : undefined;
-                      field.onChange(value);
-                      form.trigger('accrualStart');
-                    }}
-                    triggerClassName="flex-1"
-                    triggerId="accrualStart-picker"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="w-16"
-                    onClick={() => {
-                      field.onChange(todayIsoFormat());
-                      form.trigger('accrualStart');
                     }}
                   >
                     Today
@@ -303,6 +306,91 @@ function ExpenseForm({
             )}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name="accrualPolicy"
+          render={({ field }) => (
+            <FormItem className="space-y-1">
+              <FormLabel htmlFor="accrual-policy-select">
+                Accrual Policy
+              </FormLabel>
+              <FormControl>
+                <Select
+                  value={field.value}
+                  onValueChange={value => {
+                    field.onChange(value);
+
+                    if (value === AccrualPolicy.None) {
+                      lastAutomaticAccrualStartRef.current =
+                        form.getValues('accrualStart');
+                      syncAccrualStartPickerDate(undefined);
+                    } else if (
+                      value === AccrualPolicy.Automatic &&
+                      form.getValues('accrualStart') === undefined &&
+                      lastAutomaticAccrualStartRef.current !== undefined
+                    ) {
+                      form.setValue(
+                        'accrualStart',
+                        lastAutomaticAccrualStartRef.current,
+                        {
+                          shouldValidate: true,
+                        },
+                      );
+                    }
+                  }}
+                  name={field.name}
+                >
+                  <SelectTrigger id="accrual-policy-select" className="w-full">
+                    <SelectValue placeholder="Select policy" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {AccrualPolicyOptions.map(({ value, label }) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="accrualStart"
+          render={() => (
+            <FormItem className="space-y-1">
+              <FormLabel htmlFor="accrualStart-picker">Accrual Start</FormLabel>
+              <FormControl>
+                <div className="flex items-center space-x-2">
+                  <EnrichedDatePicker
+                    selectedDate={accrualStartPickerDate}
+                    onDateAccepted={syncAccrualStartPickerDate}
+                    triggerClassName="flex-1"
+                    triggerId="accrualStart-picker"
+                    disabled={accrualPolicy === AccrualPolicy.None}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="w-16"
+                    disabled={accrualPolicy === AccrualPolicy.None}
+                    onClick={() => {
+                      syncAccrualStartPickerDate(new Date());
+                    }}
+                  >
+                    Today
+                  </Button>
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}

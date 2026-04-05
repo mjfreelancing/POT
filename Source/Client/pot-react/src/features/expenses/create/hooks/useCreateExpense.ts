@@ -23,6 +23,7 @@ function useCreateExpense() {
       });
 
       if (result.success) {
+        // The server returns canonical accrualStart field, but this flow currently refreshes from cache instead of consuming that payload inline.
         invalidateCache(['expenses']);
       }
 

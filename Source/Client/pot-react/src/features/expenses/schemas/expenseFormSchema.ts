@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { Frequency, isAfterDate } from '@/lib';
+import { AccrualPolicy, Frequency, isAfterDate } from '@/lib';
 
 const MoneyValueSchema = z
   .number({
@@ -13,6 +13,7 @@ const expenseFormSchema = z
     excludeFromCalcs: z.boolean(),
     description: z.string().min(1, 'A description is required'),
     nextDue: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
+    accrualPolicy: z.nativeEnum(AccrualPolicy),
     accrualStart: z
       .string()
       .optional()
@@ -48,6 +49,14 @@ const expenseFormSchema = z
             ? 'Must be 0'
             : 'Must be at least 1',
         path: ['frequencyCount'],
+      });
+    }
+
+    if (data.accrualPolicy === AccrualPolicy.None && data.accrualStart) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Must be empty when policy is None',
+        path: ['accrualStart'],
       });
     }
 

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { Frequency, RenewalMode } from '@/lib';
+import { AccrualPolicy, Frequency, RenewalMode } from '@/lib';
 
 import { EtagSchema, IdentitySchema } from './identity';
 import type { Paged } from './types';
@@ -14,6 +14,7 @@ const BaseExpenseSchema = z.object({
   description: z.string(),
   nextDue: z.string(),
   accrualStart: z.string().nullable(),
+  accrualPolicy: z.nativeEnum(AccrualPolicy),
   endDate: z.string().nullable(),
   frequency: z.nativeEnum(Frequency),
   frequencyCount: z.number(),

@@ -39,6 +39,24 @@ const RenewalMode = {
   Future: 'Future',
 } as const;
 
+// Define the accrual policy enum values (keys) for API communication
+const AccrualPolicy = {
+  Automatic: 'Automatic',
+  None: 'None',
+} as const;
+
+const AccrualPolicyDisplay = {
+  [AccrualPolicy.Automatic]: 'Automatic',
+  [AccrualPolicy.None]: 'None',
+} as const;
+
+type AccrualPolicy = (typeof AccrualPolicy)[keyof typeof AccrualPolicy];
+
+const AccrualPolicyOptions = Object.values(AccrualPolicy).map(value => ({
+  value,
+  label: AccrualPolicyDisplay[value],
+}));
+
 // The union type of allowable renewal mode strings (using the API values)
 type RenewalMode = (typeof RenewalMode)[keyof typeof RenewalMode];
 
@@ -63,6 +81,8 @@ const EMPTY_STRING_ARRAY: string[] = [];
 const EMPTY_PERMISSION_ARRAY: Permission[] = [];
 
 export {
+  AccrualPolicy,
+  AccrualPolicyOptions,
   EMPTY_PERMISSION_ARRAY,
   EMPTY_STRING_ARRAY,
   Frequency,
@@ -72,6 +92,7 @@ export {
 };
 
 export type {
+  AccrualPolicy as AccrualPolicyType,
   ActionResultFail,
   ActionResultSuccess,
   BulkActionResult,
