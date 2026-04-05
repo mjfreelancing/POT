@@ -10,7 +10,8 @@ internal static class EntityMapping
         return new Output
         {
             RowId = entity.RowId,
-            Etag = entity.Etag
+            Etag = entity.Etag,
+            AccrualStart = entity.AccrualStart
         };
     }
 }

@@ -2,6 +2,7 @@
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
+using Pot.App.Concerns.Time;
 using Pot.App.Errors;
 using Pot.App.Extensions;
 using Pot.App.Features.Expenses.Update.EntityChecks;
@@ -10,6 +11,7 @@ using Pot.App.Features.Expenses.Update.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
 using Pot.Data.Repositories.Expenses;
+using Pot.Shared.Extensions;
 
 namespace Pot.App.Features.Expenses.Update;
 
@@ -18,14 +20,16 @@ internal sealed class UpdateExpenseService : IUpdateExpenseService
     private readonly IPersistableExpenseRepository _expenseRepository;
     private readonly IPersistableAccountRepository _accountRepository;
     private readonly IPreUpdateChecker _preUpdateChecker;
+    private readonly ITimeProvider _timeProvider;
     private readonly ILogger _logger;
 
     public UpdateExpenseService(IPersistableExpenseRepository expenseRepository, IPersistableAccountRepository accountRepository,
-        IPreUpdateChecker preUpdateChecker, ILogger<UpdateExpenseService> logger)
+        IPreUpdateChecker preUpdateChecker, ITimeProvider timeProvider, ILogger<UpdateExpenseService> logger)
     {
         _expenseRepository = expenseRepository.WhenNotNull();
         _accountRepository = accountRepository.WhenNotNull(); ;
         _preUpdateChecker = preUpdateChecker.WhenNotNull();
+        _timeProvider = timeProvider.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
@@ -74,7 +78,7 @@ internal sealed class UpdateExpenseService : IUpdateExpenseService
                 return EnrichedResult.Fail<Output>(apiError);
             }
 
-            UpdateExpenseEntity(expenseToUpdate, input, expenseAccount);
+            UpdateExpenseEntity(expenseToUpdate, input, expenseAccount, _timeProvider.GetLocalDateNow());
 
             // Not calling _accountRepository.Update(account) as this will mark the
             // entity as modified even if nothing was changed.
@@ -86,11 +90,11 @@ internal sealed class UpdateExpenseService : IUpdateExpenseService
         }
     }
 
-    private static void UpdateExpenseEntity(ExpenseEntity expenseToUpdate, Input input, AccountEntity expenseAccount)
+    private static void UpdateExpenseEntity(ExpenseEntity expenseToUpdate, Input input, AccountEntity expenseAccount, DateOnly localCurrentDate)
     {
         expenseToUpdate.ExcludeFromCalcs = input.ExcludeFromCalcs;
         expenseToUpdate.Description = input.Description;
-        expenseToUpdate.AccrualStart = input.AccrualStart;
+        expenseToUpdate.AccrualStart = input.AccrualPolicy.GetCanonicalAccrualStart(input.AccrualStart, localCurrentDate);
         expenseToUpdate.NextDue = input.NextDue;
         expenseToUpdate.EndDate = input.EndDate;
         expenseToUpdate.AccrualPolicy = input.AccrualPolicy;

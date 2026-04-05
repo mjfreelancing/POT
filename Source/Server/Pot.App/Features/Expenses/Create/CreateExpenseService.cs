@@ -2,12 +2,14 @@
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
+using Pot.App.Concerns.Time;
 using Pot.App.Errors;
 using Pot.App.Features.Expenses.Create.EntityChecks;
 using Pot.App.Features.Expenses.Create.Mappings;
 using Pot.App.Features.Expenses.Create.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
+using Pot.Shared.Extensions;
 
 namespace Pot.App.Features.Expenses.Create;
 
@@ -15,13 +17,15 @@ internal sealed class CreateExpenseService : ICreateExpenseService
 {
     private readonly IPersistableAccountRepository _accountRepository;
     private readonly IPreCreateChecker _preCreateChecker;
+    private readonly ITimeProvider _timeProvider;
     private readonly ILogger _logger;
 
     public CreateExpenseService(IPersistableAccountRepository accountRepository, IPreCreateChecker preCreateChecker,
-        ILogger<CreateExpenseService> logger)
+        ITimeProvider timeProvider, ILogger<CreateExpenseService> logger)
     {
         _accountRepository = accountRepository.WhenNotNull();
         _preCreateChecker = preCreateChecker.WhenNotNull();
+        _timeProvider = timeProvider.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
@@ -45,7 +49,7 @@ internal sealed class CreateExpenseService : ICreateExpenseService
             ExcludeFromCalcs = input.ExcludeFromCalcs,  // Will be false for new expenses, may be true for imported data
             Description = input.Description,
             NextDue = input.NextDue,
-            AccrualStart = input.AccrualStart,
+            AccrualStart = input.AccrualPolicy.GetCanonicalAccrualStart(input.AccrualStart, _timeProvider.GetLocalDateNow()),
             EndDate = input.EndDate,
             AccrualPolicy = input.AccrualPolicy,
             Frequency = input.Frequency,
