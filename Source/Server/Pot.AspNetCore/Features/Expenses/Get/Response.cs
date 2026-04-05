@@ -31,10 +31,10 @@ internal sealed class Response : ResponseBase
     public DateOnly? EndDate { get; init; }
 
     [Description("The expense accrual policy")]
-    public AccrualPolicy AccrualPolicy { get; init; }
+    public AccrualPolicy AccrualPolicy { get; init; }       // Serialized via EnrichedEnumJsonConverter<AccrualPolicy>
 
     [Description("The Expense frequency type")]
-    public Frequency Frequency { get; init; }   // Serialized via EnrichedEnumJsonConverter<Frequency>
+    public Frequency Frequency { get; init; }               // Serialized via EnrichedEnumJsonConverter<Frequency>
 
     [Description("The Expense frequency count")]
     public int FrequencyCount { get; init; }
