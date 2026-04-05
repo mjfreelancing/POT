@@ -1,4 +1,4 @@
-using AllOverIt.Assertion;
+﻿using AllOverIt.Assertion;
 using Pot.Data.Entities;
 using Pot.Shared.Enumerations;
 using Pot.Shared.Extensions;
@@ -41,7 +41,7 @@ internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
                 {
                     // Not resetting / updating expense.Accrued since this impacts the account's accrued amount.
                     // The expense.Accrued will be updated next time the account's 'accrue expenses' is performed.
-                    expense.AccrualStart = asOfDate; // Accruals start from the date the request was made
+                    expense.AccrualStart = GetRenewedAccrualStart(expense.AccrualPolicy, asOfDate);
                     expense.NextDue = nextDue;
                     expense.AccruedIsDirty = true;
                 }
@@ -63,7 +63,7 @@ internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
                     {
                         // Not resetting / updating expense.Accrued since this impacts the account's accrued amount.
                         // The expense.Accrued will be updated next time the account's 'accrue expenses' is performed.
-                        expense.AccrualStart = nextDue; // Accruals start from the previous due date before advancing
+                        expense.AccrualStart = GetRenewedAccrualStart(expense.AccrualPolicy, nextDue);
                         expense.NextDue = calculatedNextDue;
                         expense.AccruedIsDirty = true;
                         nextDue = calculatedNextDue;
@@ -76,5 +76,17 @@ internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
                 }
             }
         }
+    }
+
+    private static DateOnly? GetRenewedAccrualStart(AccrualPolicy accrualPolicy, DateOnly automaticAccrualStart)
+    {
+        return accrualPolicy switch
+        {
+            // Using this syntax since AccrualPolicy.Automatic => automaticAccrualStart
+            // will not compile because AccrualPolicy.Automatic is not a constant expression (it is a static readonly field).
+            var currentPolicy when currentPolicy == AccrualPolicy.Automatic => automaticAccrualStart,
+            var currentPolicy when currentPolicy == AccrualPolicy.None => null,
+            _ => throw new ArgumentOutOfRangeException(nameof(accrualPolicy), accrualPolicy.Name, "Unsupported accrual policy.")
+        };
     }
 }
