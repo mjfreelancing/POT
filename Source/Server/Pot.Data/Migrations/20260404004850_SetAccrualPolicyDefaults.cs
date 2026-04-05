@@ -12,14 +12,7 @@ namespace Pot.Data.Migrations
         {
             migrationBuilder.Sql("""
                                 UPDATE "Expense"
-                                SET "AccrualPolicy" = 'None'
-                                WHERE "Frequency" = 'OneTime';
-                                """);
-
-            migrationBuilder.Sql("""
-                                UPDATE "Expense"
                                 SET "AccrualPolicy" = 'Automatic'
-                                WHERE "AccrualPolicy" IS NULL;
                                 """);
         }
 
