@@ -23,6 +23,7 @@ type EnrichedDatePickerProps = EnrichedCalendarPassthroughProps & {
   selectedDate: Date | undefined;
   onDateAccepted: (date: Date | undefined) => void;
   onCancel?: () => void;
+  disabled?: boolean;
   triggerId?: string;
   triggerLabel?: (date: Date | undefined) => React.ReactNode;
   triggerClassName?: string;
@@ -33,6 +34,7 @@ function EnrichedDatePicker({
   selectedDate,
   onDateAccepted,
   onCancel,
+  disabled = false,
   triggerClassName,
   triggerLabel,
   popoverContentAlign = 'start',
@@ -63,6 +65,7 @@ function EnrichedDatePicker({
         <Button
           id={triggerId}
           variant={'outline'}
+          disabled={disabled}
           className={cn(
             'w-[240px] justify-start text-left font-normal',
             !selectedDate && 'text-muted-foreground',
