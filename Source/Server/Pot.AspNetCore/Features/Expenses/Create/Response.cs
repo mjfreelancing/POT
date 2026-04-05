@@ -7,6 +7,7 @@ namespace Pot.AspNetCore.Features.Expenses.Create;
 public sealed class Response : ResponseBase
 {
     // Included because server-side business rules may canonicalize this value from the submitted input.
+    // Not actually used by the client application, but it is appropriate to return since it can be different to the original input.
     public DateOnly? AccrualStart { get; init; }
 
     public static CreatedAtRoute<Response> Created(Output expense)
