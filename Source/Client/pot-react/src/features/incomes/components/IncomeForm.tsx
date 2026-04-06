@@ -146,7 +146,7 @@ function IncomeForm({
             <FormItem className="space-y-1">
               <FormLabel htmlFor="nextDue-picker">Next Due</FormLabel>
               <FormControl>
-                <div className="flex flex-col gap-0 sm:flex-row sm:items-center sm:gap-2">
+                <div className={FORM_SHEET_STYLES.DATE_ROW}>
                   <EnrichedDatePicker
                     selectedDate={
                       field.value ? new Date(field.value) : undefined
@@ -157,15 +157,15 @@ function IncomeForm({
                       field.onChange(value);
                       form.trigger('nextDue');
                     }}
-                    triggerClassName="w-full min-w-0 sm:flex-1"
+                    triggerClassName={FORM_SHEET_STYLES.DATE_TRIGGER}
                     triggerId="nextDue-picker"
                   />
-                  <div className="-mt-0.5 flex w-full justify-end sm:mt-0 sm:w-auto sm:flex-none">
+                  <div className={FORM_SHEET_STYLES.DATE_ACTION_ROW}>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="sm:w-16"
+                      className={FORM_SHEET_STYLES.DATE_ACTION_BUTTON}
                       onClick={() => {
                         field.onChange(todayIsoFormat());
                         form.trigger('nextDue');
@@ -188,19 +188,19 @@ function IncomeForm({
             <FormItem className="space-y-1">
               <FormLabel htmlFor="endDate-picker">End Date</FormLabel>
               <FormControl>
-                <div className="flex flex-col gap-0 sm:flex-row sm:items-center sm:gap-2">
+                <div className={FORM_SHEET_STYLES.DATE_ROW}>
                   <EnrichedDatePicker
                     selectedDate={pickerDate}
                     onDateAccepted={syncPickerDate}
-                    triggerClassName="w-full min-w-0 sm:flex-1"
+                    triggerClassName={FORM_SHEET_STYLES.DATE_TRIGGER}
                     triggerId="endDate-picker"
                   />
-                  <div className="-mt-0.5 flex w-full justify-end sm:mt-0 sm:w-auto sm:flex-none">
+                  <div className={FORM_SHEET_STYLES.DATE_ACTION_ROW}>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="sm:w-16"
+                      className={FORM_SHEET_STYLES.DATE_ACTION_BUTTON}
                       onClick={() => syncPickerDate(undefined)}
                     >
                       Clear
