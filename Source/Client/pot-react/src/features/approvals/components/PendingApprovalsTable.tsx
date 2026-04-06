@@ -1,6 +1,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 
 import {
+  createActionsColumn,
   createRowIdGetter,
   DataTable,
   DataTableColumnHeader,
@@ -37,17 +38,9 @@ function PendingApprovalsTable({ users }: PendingApprovalsTableProps) {
       enableSorting: true,
       sortingFn: 'text',
     },
-    {
-      id: 'actions',
-      cell: ({ row }) => {
-        const user = row.original;
-        return (
-          <div className="flex justify-end">
-            <PendingApprovalActions user={user} />
-          </div>
-        );
-      },
-    },
+    createActionsColumn<PendingApprovalUser>(user => (
+      <PendingApprovalActions user={user} />
+    )),
   ];
 
   // Empty state message

@@ -2,6 +2,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 
 import { ErrorSheet } from '@/components/feedback';
 import {
+  createActionsColumn,
   createRowIdGetter,
   DataTable,
   DataTableColumnHeader,
@@ -131,17 +132,9 @@ function UsersTable({ users, onChangeRole }: UsersTableProps) {
         }
       },
     },
-    {
-      id: 'actions',
-      cell: ({ row }) => {
-        const user = row.original;
-        return (
-          <div className="flex justify-end">
-            <UserActions user={user} onChangeRole={onChangeRole} />
-          </div>
-        );
-      },
-    },
+    createActionsColumn<SiteUser>(user => (
+      <UserActions user={user} onChangeRole={onChangeRole} />
+    )),
   ];
 
   return (

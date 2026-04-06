@@ -7,6 +7,7 @@ import { useApiAccrueAccountExpenses } from '@/api/hooks';
 import { ErrorSheet, StatusBadge } from '@/components/feedback';
 import type { BulkAction } from '@/components/table';
 import {
+  createActionsColumn,
   createMoneyValueColumn,
   createRowIdGetter,
   DataTable,
@@ -140,17 +141,9 @@ function AccountsTable({ accounts }: AccountsTableProps) {
         sortingFn: 'basic',
       },
     }),
-    {
-      id: 'actions',
-      cell: ({ row }) => {
-        const account = row.original;
-        return (
-          <div className="flex justify-end">
-            <AccountActions account={account} />
-          </div>
-        );
-      },
-    },
+    createActionsColumn<Account>(account => (
+      <AccountActions account={account} />
+    )),
   ];
 
   const bulkActions: BulkAction<Account>[] = [

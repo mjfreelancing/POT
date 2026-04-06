@@ -13,27 +13,27 @@ import { ConfirmationDialog } from '@/components/dialog';
 import { ErrorSheet, SuccessToast } from '@/components/feedback';
 import type { BulkAction } from '@/components/table';
 import {
+  createAccountDescriptionColumn,
+  createActionsColumn,
   createDateColumn,
   createFrequencyColumn,
   createMoneyValueColumn,
+  createNextDueStatusColumn,
+  createRecurringEndDateColumn,
   createRowIdGetter,
   DataTable,
   DataTableColumnHeader,
+  renderMinWidthTableCell,
 } from '@/components/table';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useErrorContext } from '@/contexts';
 import type { Expense } from '@/data';
 import { usePermissions } from '@/hooks';
 import {
   AccrualPolicy,
-  formatDate,
   formatMoneyValue,
-  Frequency,
   getAdornedExpenseDescription,
   getDaysDue,
-  getStatusBadgeClass,
-  getTableBadgeClass,
   getTableRowClassName,
   RenewalMode,
 } from '@/lib';
@@ -65,113 +65,8 @@ const columns: ColumnDef<Expense>[] = [
     frequencyKey: 'frequency',
     header: 'Frequency',
   }),
-  {
-    id: 'nextDue',
-    accessorKey: 'nextDue',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Next Due" />
-    ),
-    enableSorting: true,
-    sortingFn: 'datetime',
-    cell: ({ row }) => {
-      const rawValue = row.getValue('nextDue') as string | Date;
-      if (!rawValue) return null;
-
-      const formattedDate = formatDate(rawValue);
-      const daysDue = getDaysDue(rawValue as string);
-      const endDate = row.original.endDate;
-      const isEnded = endDate ? getDaysDue(endDate) < 0 : false;
-      const isExcluded = row.original.excludeFromCalcs;
-
-      // Determine badge (don't show for excluded items)
-      let badge: React.ReactNode = null;
-      if (isExcluded) {
-        badge = (
-          <Badge
-            variant="secondary"
-            className={getStatusBadgeClass('excluded')}
-          >
-            Excluded
-          </Badge>
-        );
-      } else if (isEnded) {
-        badge = (
-          <Badge variant="secondary" className={getStatusBadgeClass('ended')}>
-            Ended
-          </Badge>
-        );
-      } else {
-        if (daysDue === 0) {
-          // Due today - use amber for visibility
-          badge = (
-            <Badge
-              variant="default"
-              className={getStatusBadgeClass('due-today')}
-            >
-              Due Today
-            </Badge>
-          );
-        } else if (daysDue < 0) {
-          // Overdue - use bright red for visibility
-          badge = (
-            <Badge
-              variant="destructive"
-              className={getStatusBadgeClass('overdue')}
-            >
-              Overdue
-            </Badge>
-          );
-        } else if (daysDue <= 7) {
-          // Due soon (within 7 days)
-          badge = (
-            <Badge
-              variant="default"
-              className={getStatusBadgeClass('due-soon')}
-            >
-              Due Soon
-            </Badge>
-          );
-        }
-      }
-
-      return (
-        <div className="flex items-center">
-          <span className="min-w-[80px] inline-block">{formattedDate}</span>
-          {badge}
-        </div>
-      );
-    },
-  },
-  {
-    id: 'endDate',
-    accessorKey: 'endDate',
-    header: 'End Date',
-    cell: ({ row }) => {
-      const endDate = row.original.endDate;
-      const isOneTime = row.original.frequency === Frequency.OneTime;
-      const isExcluded = row.original.excludeFromCalcs;
-
-      if (isOneTime) {
-        return (
-          <Badge
-            variant="secondary"
-            className={getTableBadgeClass(
-              isExcluded ? 'slate' : 'pink',
-              isExcluded ? 'filled' : 'outline',
-            )}
-          >
-            One-time
-          </Badge>
-        );
-      }
-
-      if (!endDate) {
-        return null;
-      }
-
-      return <span>{formatDate(endDate)}</span>;
-    },
-  },
+  createNextDueStatusColumn<Expense>(),
+  createRecurringEndDateColumn<Expense>(),
   createDateColumn<Expense>({
     accessorKey: 'accrualStart',
     header: 'Accrual Start',
@@ -185,40 +80,14 @@ const columns: ColumnDef<Expense>[] = [
           return null;
         }
 
-        return (
-          <span className="min-w-[80px] inline-block">
-            {formatMoneyValue(row.original.accrued)}
-          </span>
-        );
+        return renderMinWidthTableCell(formatMoneyValue(row.original.accrued));
       },
       enableSorting: true,
       sortingFn: 'basic',
     },
   }),
-  {
-    id: 'accountDescription',
-    header: 'Account',
-    cell: ({ row }) => (
-      <div
-        className={
-          !row.original.account?.description ? 'text-muted-foreground' : ''
-        }
-      >
-        {row.original.account?.description ?? 'Not Assigned'}
-      </div>
-    ),
-  },
-  {
-    id: 'actions',
-    cell: ({ row }) => {
-      const expense = row.original;
-      return (
-        <div className="flex justify-end">
-          <ExpenseActions expense={expense} />
-        </div>
-      );
-    },
-  },
+  createAccountDescriptionColumn<Expense>(),
+  createActionsColumn<Expense>(expense => <ExpenseActions expense={expense} />),
 ];
 
 type ExpensesTableProps = {

@@ -1,4 +1,5 @@
 import type { ColumnDef, Row } from '@tanstack/react-table';
+import type { ReactNode } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 
@@ -7,6 +8,8 @@ import {
   formatDate,
   formatMoneyValue,
   FrequencyDisplay,
+  getDaysDue,
+  getStatusBadgeClass,
   getTableBadgeClass,
 } from '../../lib';
 import DataTableColumnHeader from './DataTableColumnHeader';
@@ -34,6 +37,30 @@ type FrequencyColumnParams<TData> = {
   options?: Partial<ColumnDef<TData>>;
 };
 
+type NextDueStatusRow = {
+  nextDue: string;
+  endDate: string | null;
+  excludeFromCalcs: boolean;
+};
+
+type RecurringEndDateRow = {
+  endDate: string | null;
+  frequency: Frequency;
+  excludeFromCalcs: boolean;
+};
+
+type AccountDescriptionRow = {
+  account?: {
+    description?: string | null;
+  } | null;
+};
+
+const MIN_WIDTH_TABLE_CELL_CLASS = 'min-w-[80px] inline-block';
+
+const renderMinWidthTableCell = (content: ReactNode) => {
+  return <span className={MIN_WIDTH_TABLE_CELL_CLASS}>{content}</span>;
+};
+
 // Gets the money value from a row.
 const getMoneyValue = <TData,>(row: Row<TData>, key: string): MoneyValue => {
   return parseFloat(row.getValue(key));
@@ -53,6 +80,7 @@ const formatCellMoneyValue = <TData,>(row: Row<TData>, key: string) => {
 //   Months: 'Month',
 //   EndOfMonth: 'End of Month',
 //   Years: 'Year',
+//   OneTime: 'One Time',
 // };
 const frequencySingularMap: Record<Frequency, string> = {
   Days: 'Day',
@@ -84,9 +112,7 @@ const createMoneyValueColumn = <TData,>(
     cell: ({ row }) => {
       const formattedValue = formatCellMoneyValue(row, accessorKey);
 
-      return (
-        <span className="min-w-[80px] inline-block">{formattedValue}</span>
-      );
+      return renderMinWidthTableCell(formattedValue);
     },
     enableSorting,
     ...restOptions,
@@ -123,12 +149,141 @@ const createDateColumn = <TData,>(
       // Handles Date and strings in yyyy-MM-dd format.
       const formattedValue = formatDate(rawValue);
 
-      return (
-        <span className="min-w-[80px] inline-block">{formattedValue}</span>
-      );
+      return renderMinWidthTableCell(formattedValue);
     },
     enableSorting,
     ...restOptions,
+  };
+};
+
+const createNextDueStatusColumn = <
+  TData extends NextDueStatusRow,
+>(): ColumnDef<TData> => {
+  return {
+    id: 'nextDue',
+    accessorKey: 'nextDue',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Next Due" />
+    ),
+    enableSorting: true,
+    sortingFn: 'datetime',
+    cell: ({ row }) => {
+      const { nextDue, endDate, excludeFromCalcs } = row.original;
+      const formattedDate = formatDate(nextDue);
+      const daysDue = getDaysDue(nextDue);
+      const isEnded = endDate ? getDaysDue(endDate) < 0 : false;
+
+      let badge: ReactNode = null;
+      if (excludeFromCalcs) {
+        badge = (
+          <Badge
+            variant="secondary"
+            className={getStatusBadgeClass('excluded')}
+          >
+            Excluded
+          </Badge>
+        );
+      } else if (isEnded) {
+        badge = (
+          <Badge variant="secondary" className={getStatusBadgeClass('ended')}>
+            Ended
+          </Badge>
+        );
+      } else if (daysDue === 0) {
+        badge = (
+          <Badge variant="default" className={getStatusBadgeClass('due-today')}>
+            Due Today
+          </Badge>
+        );
+      } else if (daysDue < 0) {
+        badge = (
+          <Badge
+            variant="destructive"
+            className={getStatusBadgeClass('overdue')}
+          >
+            Overdue
+          </Badge>
+        );
+      } else if (daysDue <= 7) {
+        badge = (
+          <Badge variant="default" className={getStatusBadgeClass('due-soon')}>
+            Due Soon
+          </Badge>
+        );
+      }
+
+      return (
+        <div className="flex items-center">
+          {renderMinWidthTableCell(formattedDate)}
+          {badge}
+        </div>
+      );
+    },
+  };
+};
+
+const createRecurringEndDateColumn = <
+  TData extends RecurringEndDateRow,
+>(): ColumnDef<TData> => {
+  return {
+    id: 'endDate',
+    accessorKey: 'endDate',
+    header: 'End Date',
+    cell: ({ row }) => {
+      const { endDate, frequency, excludeFromCalcs } = row.original;
+      const isOneTime = frequency === 'OneTime';
+
+      if (isOneTime) {
+        return (
+          <Badge
+            variant="secondary"
+            className={getTableBadgeClass(
+              excludeFromCalcs ? 'slate' : 'pink',
+              excludeFromCalcs ? 'filled' : 'outline',
+            )}
+          >
+            One-time
+          </Badge>
+        );
+      }
+
+      if (!endDate) {
+        return null;
+      }
+
+      return <span>{formatDate(endDate)}</span>;
+    },
+  };
+};
+
+const createAccountDescriptionColumn = <
+  TData extends AccountDescriptionRow,
+>(): ColumnDef<TData> => {
+  return {
+    id: 'accountDescription',
+    header: 'Account',
+    cell: ({ row }) => {
+      const description = row.original.account?.description;
+
+      return (
+        <div className={!description ? 'text-muted-foreground' : ''}>
+          {description ?? 'Not Assigned'}
+        </div>
+      );
+    },
+  };
+};
+
+const createActionsColumn = <TData,>(
+  renderActions: (item: TData) => ReactNode,
+): ColumnDef<TData> => {
+  return {
+    id: 'actions',
+    cell: ({ row }) => {
+      return (
+        <div className="flex justify-end">{renderActions(row.original)}</div>
+      );
+    },
   };
 };
 
@@ -214,10 +369,22 @@ const createFrequencyColumn = <TData,>(
   };
 };
 
-export { createDateColumn, createFrequencyColumn, createMoneyValueColumn };
+export {
+  createAccountDescriptionColumn,
+  createActionsColumn,
+  createDateColumn,
+  createFrequencyColumn,
+  createMoneyValueColumn,
+  createNextDueStatusColumn,
+  createRecurringEndDateColumn,
+  renderMinWidthTableCell,
+};
 export type {
+  AccountDescriptionRow,
   BaseColumnParams,
   DateColumnParams,
   FrequencyColumnParams,
   MoneyColumnParams,
+  NextDueStatusRow,
+  RecurringEndDateRow,
 };
