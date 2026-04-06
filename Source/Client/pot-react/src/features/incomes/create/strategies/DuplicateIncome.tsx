@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetIncomeById } from '@/api/hooks';
-import LoadingMessage from '@/components/feedback/message/LoadingMessage';
-import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
+import {
+  ApiErrorSheetState,
+  CreateSheetLoadingState,
+} from '@/features/shared/sheets/asyncSheetStates';
 
 import IncomeSheet from '../../components/IncomeSheet';
 import CreateIncomeForm from '../components/CreateIncomeForm';
@@ -27,21 +29,20 @@ function DuplicateIncome({ duplicateId }: DuplicateIncomeProps) {
   // Show loading state while either API call is in progress
   if (isAccountsLoading || isDuplicateLoading) {
     return (
-      <IncomeSheet title="Duplicate Income">
-        <LoadingMessage isLoading={true} />
-      </IncomeSheet>
+      <CreateSheetLoadingState
+        SheetShell={IncomeSheet}
+        title="Duplicate Income"
+      />
     );
   }
 
   // Handle failure to load accounts
   if (!accountsResult || !accountsResult.success) {
     return (
-      <ErrorSheet
-        title={accountsResult?.error?.code || 'Error Loading Accounts'}
-        description={
-          accountsResult?.error?.description ||
-          'Failed to load accounts. Please try again.'
-        }
+      <ApiErrorSheetState
+        result={accountsResult}
+        fallbackTitle="Error Loading Accounts"
+        fallbackDescription="Failed to load accounts. Please try again."
         onDismiss={() => navigate('/incomes')}
       />
     );
@@ -50,12 +51,10 @@ function DuplicateIncome({ duplicateId }: DuplicateIncomeProps) {
   // Handle error loading income to duplicate
   if (!duplicateIncomeResult || !duplicateIncomeResult.success) {
     return (
-      <ErrorSheet
-        title={duplicateIncomeResult?.error?.code || 'Error Loading Income'}
-        description={
-          duplicateIncomeResult?.error?.description ||
-          'Failed to load the income to duplicate. Please try again.'
-        }
+      <ApiErrorSheetState
+        result={duplicateIncomeResult}
+        fallbackTitle="Error Loading Income"
+        fallbackDescription="Failed to load the income to duplicate. Please try again."
         onDismiss={() => navigate('/incomes')}
       />
     );

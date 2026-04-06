@@ -8,6 +8,7 @@ import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { useErrorContext } from '@/contexts';
 import type { Account, EditExpense, Expense } from '@/data';
+import { ApiErrorSheetState } from '@/features/shared/sheets/asyncSheetStates';
 
 import ExpenseForm from '../components/ExpenseForm';
 import ExpenseSheet from '../components/ExpenseSheet';
@@ -118,9 +119,10 @@ function EditExpenseSheet() {
   // Handle API errors before mounting the sheet
   if (!expenseResult?.success) {
     return (
-      <ErrorSheet
-        title={expenseResult.error.code}
-        description={expenseResult.error.description}
+      <ApiErrorSheetState
+        result={expenseResult}
+        fallbackTitle="Error Loading Expense"
+        fallbackDescription="Failed to load expense. Please try again."
         onDismiss={() => navigate('/expenses')}
       />
     );
@@ -128,9 +130,10 @@ function EditExpenseSheet() {
 
   if (!accountsResult?.success) {
     return (
-      <ErrorSheet
-        title={accountsResult.error.code}
-        description={accountsResult.error.description}
+      <ApiErrorSheetState
+        result={accountsResult}
+        fallbackTitle="Error Loading Accounts"
+        fallbackDescription="Failed to load accounts. Please try again."
         onDismiss={() => navigate('/expenses')}
       />
     );

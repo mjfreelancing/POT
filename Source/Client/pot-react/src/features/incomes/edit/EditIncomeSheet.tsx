@@ -5,9 +5,9 @@ import { useNavigate, useParams } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetIncomeById } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
-import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { useErrorContext } from '@/contexts';
 import type { Account, EditIncome, Income } from '@/data';
+import { ApiErrorSheetState } from '@/features/shared/sheets/asyncSheetStates';
 
 import IncomeForm from '../components/IncomeForm';
 import IncomeSheet from '../components/IncomeSheet';
@@ -113,9 +113,10 @@ function EditIncomeSheet() {
   // Handle API errors before mounting the sheet
   if (!incomeResult?.success) {
     return (
-      <ErrorSheet
-        title={incomeResult.error.code}
-        description={incomeResult.error.description}
+      <ApiErrorSheetState
+        result={incomeResult}
+        fallbackTitle="Error Loading Income"
+        fallbackDescription="Failed to load income. Please try again."
         onDismiss={() => navigate('/incomes')}
       />
     );
@@ -123,9 +124,10 @@ function EditIncomeSheet() {
 
   if (!accountsResult?.success) {
     return (
-      <ErrorSheet
-        title={accountsResult.error.code}
-        description={accountsResult.error.description}
+      <ApiErrorSheetState
+        result={accountsResult}
+        fallbackTitle="Error Loading Accounts"
+        fallbackDescription="Failed to load accounts. Please try again."
         onDismiss={() => navigate('/incomes')}
       />
     );

@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router';
 
 import { useApiGetAllAccounts } from '@/api/hooks';
-import LoadingMessage from '@/components/feedback/message/LoadingMessage';
-import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
+import {
+  ApiErrorSheetState,
+  CreateSheetLoadingState,
+} from '@/features/shared/sheets/asyncSheetStates';
 
 import IncomeSheet from '../../components/IncomeSheet';
 import CreateIncomeForm from '../components/CreateIncomeForm';
@@ -19,21 +21,17 @@ function CreateNewIncome() {
   // Show loading state while accounts are loading
   if (isAccountsLoading) {
     return (
-      <IncomeSheet title="Create Income">
-        <LoadingMessage isLoading={true} />
-      </IncomeSheet>
+      <CreateSheetLoadingState SheetShell={IncomeSheet} title="Create Income" />
     );
   }
 
   // Handle failure to load accounts
   if (!accountsResult || !accountsResult.success) {
     return (
-      <ErrorSheet
-        title={accountsResult?.error?.code || 'Error Loading Accounts'}
-        description={
-          accountsResult?.error?.description ||
-          'Failed to load accounts. Please try again.'
-        }
+      <ApiErrorSheetState
+        result={accountsResult}
+        fallbackTitle="Error Loading Accounts"
+        fallbackDescription="Failed to load accounts. Please try again."
         onDismiss={() => navigate('/incomes')}
       />
     );

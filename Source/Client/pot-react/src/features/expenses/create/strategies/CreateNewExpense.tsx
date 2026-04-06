@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router';
 
 import { useApiGetAllAccounts } from '@/api/hooks';
-import LoadingMessage from '@/components/feedback/message/LoadingMessage';
-import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
+import {
+  ApiErrorSheetState,
+  CreateSheetLoadingState,
+} from '@/features/shared/sheets/asyncSheetStates';
 
 import ExpenseSheet from '../../components/ExpenseSheet';
 import CreateExpenseForm from '../components/CreateExpenseForm';
@@ -19,21 +21,20 @@ function CreateNewExpense() {
   // Show loading state while accounts are loading
   if (isAccountsLoading) {
     return (
-      <ExpenseSheet title="Create Expense">
-        <LoadingMessage isLoading={true} />
-      </ExpenseSheet>
+      <CreateSheetLoadingState
+        SheetShell={ExpenseSheet}
+        title="Create Expense"
+      />
     );
   }
 
   // Handle failure to load accounts
   if (!accountsResult || !accountsResult.success) {
     return (
-      <ErrorSheet
-        title={accountsResult?.error?.code || 'Error Loading Accounts'}
-        description={
-          accountsResult?.error?.description ||
-          'Failed to load accounts. Please try again.'
-        }
+      <ApiErrorSheetState
+        result={accountsResult}
+        fallbackTitle="Error Loading Accounts"
+        fallbackDescription="Failed to load accounts. Please try again."
         onDismiss={() => navigate('/expenses')}
       />
     );

@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetExpenseById } from '@/api/hooks';
-import LoadingMessage from '@/components/feedback/message/LoadingMessage';
-import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
+import {
+  ApiErrorSheetState,
+  CreateSheetLoadingState,
+} from '@/features/shared/sheets/asyncSheetStates';
 
 import ExpenseSheet from '../../components/ExpenseSheet';
 import CreateExpenseForm from '../components/CreateExpenseForm';
@@ -27,21 +29,20 @@ function DuplicateExpense({ duplicateId }: DuplicateExpenseProps) {
   // Show loading state while either API call is in progress
   if (isAccountsLoading || isDuplicateLoading) {
     return (
-      <ExpenseSheet title="Duplicate Expense">
-        <LoadingMessage isLoading={true} />
-      </ExpenseSheet>
+      <CreateSheetLoadingState
+        SheetShell={ExpenseSheet}
+        title="Duplicate Expense"
+      />
     );
   }
 
   // Handle failure to load accounts
   if (!accountsResult || !accountsResult.success) {
     return (
-      <ErrorSheet
-        title={accountsResult?.error?.code || 'Error Loading Accounts'}
-        description={
-          accountsResult?.error?.description ||
-          'Failed to load accounts. Please try again.'
-        }
+      <ApiErrorSheetState
+        result={accountsResult}
+        fallbackTitle="Error Loading Accounts"
+        fallbackDescription="Failed to load accounts. Please try again."
         onDismiss={() => navigate('/expenses')}
       />
     );
@@ -50,12 +51,10 @@ function DuplicateExpense({ duplicateId }: DuplicateExpenseProps) {
   // Handle error loading expense to duplicate
   if (!duplicateExpenseResult || !duplicateExpenseResult.success) {
     return (
-      <ErrorSheet
-        title={duplicateExpenseResult?.error?.code || 'Error Loading Expense'}
-        description={
-          duplicateExpenseResult?.error?.description ||
-          'Failed to load the expense to duplicate. Please try again.'
-        }
+      <ApiErrorSheetState
+        result={duplicateExpenseResult}
+        fallbackTitle="Error Loading Expense"
+        fallbackDescription="Failed to load the expense to duplicate. Please try again."
         onDismiss={() => navigate('/expenses')}
       />
     );
