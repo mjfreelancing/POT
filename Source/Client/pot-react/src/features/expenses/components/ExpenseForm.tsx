@@ -3,7 +3,7 @@ import type { UseFormReturn } from 'react-hook-form';
 
 import type { MoneyValueChangeEvent } from '@/components/input';
 import { MoneyValueInput } from '@/components/input';
-import { EnrichedDatePicker } from '@/components/picker';
+import FormDateActionRow from '@/components/form/FormDateActionRow';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -192,35 +192,21 @@ function ExpenseForm({
             <FormItem className="space-y-1">
               <FormLabel htmlFor="nextDue-picker">Next Due</FormLabel>
               <FormControl>
-                <div className={FORM_SHEET_STYLES.DATE_ROW}>
-                  <EnrichedDatePicker
-                    selectedDate={
-                      field.value ? new Date(field.value) : undefined
-                    }
-                    onDateAccepted={date => {
-                      const value =
-                        date !== undefined ? dateIsoFormat(date) : undefined;
-                      field.onChange(value);
-                      form.trigger('nextDue');
-                    }}
-                    triggerClassName={FORM_SHEET_STYLES.DATE_TRIGGER}
-                    triggerId="nextDue-picker"
-                  />
-                  <div className={FORM_SHEET_STYLES.DATE_ACTION_ROW}>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className={FORM_SHEET_STYLES.DATE_ACTION_BUTTON}
-                      onClick={() => {
-                        field.onChange(todayIsoFormat());
-                        form.trigger('nextDue');
-                      }}
-                    >
-                      Today
-                    </Button>
-                  </div>
-                </div>
+                <FormDateActionRow
+                  selectedDate={field.value ? new Date(field.value) : undefined}
+                  onDateAccepted={date => {
+                    const value =
+                      date !== undefined ? dateIsoFormat(date) : undefined;
+                    field.onChange(value);
+                    form.trigger('nextDue');
+                  }}
+                  triggerId="nextDue-picker"
+                  actionLabel="Today"
+                  onActionClick={() => {
+                    field.onChange(todayIsoFormat());
+                    form.trigger('nextDue');
+                  }}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -234,25 +220,13 @@ function ExpenseForm({
             <FormItem className="space-y-1">
               <FormLabel htmlFor="endDate-picker">End Date</FormLabel>
               <FormControl>
-                <div className={FORM_SHEET_STYLES.DATE_ROW}>
-                  <EnrichedDatePicker
-                    selectedDate={pickerDate}
-                    onDateAccepted={syncPickerDate}
-                    triggerClassName={FORM_SHEET_STYLES.DATE_TRIGGER}
-                    triggerId="endDate-picker"
-                  />
-                  <div className={FORM_SHEET_STYLES.DATE_ACTION_ROW}>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className={FORM_SHEET_STYLES.DATE_ACTION_BUTTON}
-                      onClick={() => syncPickerDate(undefined)}
-                    >
-                      Clear
-                    </Button>
-                  </div>
-                </div>
+                <FormDateActionRow
+                  selectedDate={pickerDate}
+                  onDateAccepted={syncPickerDate}
+                  triggerId="endDate-picker"
+                  actionLabel="Clear"
+                  onActionClick={() => syncPickerDate(undefined)}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -370,29 +344,16 @@ function ExpenseForm({
             <FormItem className="space-y-1">
               <FormLabel htmlFor="accrualStart-picker">Accrual Start</FormLabel>
               <FormControl>
-                <div className={FORM_SHEET_STYLES.DATE_ROW}>
-                  <EnrichedDatePicker
-                    selectedDate={accrualStartPickerDate}
-                    onDateAccepted={syncAccrualStartPickerDate}
-                    triggerClassName={FORM_SHEET_STYLES.DATE_TRIGGER}
-                    triggerId="accrualStart-picker"
-                    disabled={accrualPolicy === AccrualPolicy.None}
-                  />
-                  <div className={FORM_SHEET_STYLES.DATE_ACTION_ROW}>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className={FORM_SHEET_STYLES.DATE_ACTION_BUTTON}
-                      disabled={accrualPolicy === AccrualPolicy.None}
-                      onClick={() => {
-                        syncAccrualStartPickerDate(new Date());
-                      }}
-                    >
-                      Today
-                    </Button>
-                  </div>
-                </div>
+                <FormDateActionRow
+                  selectedDate={accrualStartPickerDate}
+                  onDateAccepted={syncAccrualStartPickerDate}
+                  triggerId="accrualStart-picker"
+                  actionLabel="Today"
+                  onActionClick={() => {
+                    syncAccrualStartPickerDate(new Date());
+                  }}
+                  disabled={accrualPolicy === AccrualPolicy.None}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
