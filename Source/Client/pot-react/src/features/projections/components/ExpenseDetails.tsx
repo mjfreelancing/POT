@@ -43,6 +43,10 @@ function ExpenseDetails({
     (sum, item) => sum + item.amount,
     0,
   );
+  const itemCountLabel =
+    visibleItems.length < items.length
+      ? `${visibleItems.length} of ${items.length} items`
+      : `${items.length} items`;
 
   return (
     <Sheet open={isOpen} modal={false}>
@@ -114,7 +118,7 @@ function ExpenseDetails({
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold">Expense Details</h3>
                 <span className="text-sm bg-muted px-2 py-0.5 rounded-md">
-                  {items.length} items
+                  {itemCountLabel}
                 </span>
               </div>
               {visibleItems.length === 0 ? (
