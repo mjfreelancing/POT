@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 
-import type { MoneyValueChangeEvent } from '@/components/input';
-import { MoneyValueInput } from '@/components/input';
 import FormDateActionRow from '@/components/form/FormDateActionRow';
 import FormLabeledItem from '@/components/form/FormLabeledItem';
+import type { MoneyValueChangeEvent } from '@/components/input';
+import { MoneyValueInput } from '@/components/input';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -145,21 +145,21 @@ function IncomeForm({
           name="nextDue"
           render={({ field }) => (
             <FormLabeledItem label="Next Due" htmlFor="nextDue-picker">
-                <FormDateActionRow
-                  selectedDate={field.value ? new Date(field.value) : undefined}
-                  onDateAccepted={date => {
-                    const value =
-                      date !== undefined ? dateIsoFormat(date) : undefined;
-                    field.onChange(value);
-                    form.trigger('nextDue');
-                  }}
-                  triggerId="nextDue-picker"
-                  actionLabel="Today"
-                  onActionClick={() => {
-                    field.onChange(todayIsoFormat());
-                    form.trigger('nextDue');
-                  }}
-                />
+              <FormDateActionRow
+                selectedDate={field.value ? new Date(field.value) : undefined}
+                onDateAccepted={date => {
+                  const value =
+                    date !== undefined ? dateIsoFormat(date) : undefined;
+                  field.onChange(value);
+                  form.trigger('nextDue');
+                }}
+                triggerId="nextDue-picker"
+                actionLabel="Today"
+                onActionClick={() => {
+                  field.onChange(todayIsoFormat());
+                  form.trigger('nextDue');
+                }}
+              />
             </FormLabeledItem>
           )}
         />
@@ -169,13 +169,13 @@ function IncomeForm({
           name="endDate"
           render={() => (
             <FormLabeledItem label="End Date" htmlFor="endDate-picker">
-                <FormDateActionRow
-                  selectedDate={pickerDate}
-                  onDateAccepted={syncPickerDate}
-                  triggerId="endDate-picker"
-                  actionLabel="Clear"
-                  onActionClick={() => syncPickerDate(undefined)}
-                />
+              <FormDateActionRow
+                selectedDate={pickerDate}
+                onDateAccepted={syncPickerDate}
+                triggerId="endDate-picker"
+                actionLabel="Clear"
+                onActionClick={() => syncPickerDate(undefined)}
+              />
             </FormLabeledItem>
           )}
         />

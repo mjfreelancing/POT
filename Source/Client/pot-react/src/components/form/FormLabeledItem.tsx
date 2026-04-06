@@ -1,4 +1,9 @@
-import { FormControl, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  FormControl,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 
 type FormLabeledItemProps = {
   label: string;
