@@ -1,4 +1,5 @@
 import { addDays, addMonths, format, parseISO } from 'date-fns';
+import { useState } from 'react';
 import {
   Bar,
   BarChart,
@@ -232,12 +233,75 @@ function ProjectionChart({
     getVisibleLineYStats(visibleValueRange);
   const visibleBarYDomain = getVisibleBarYDomain(visibleValueRange);
 
+  const [selectedBarSeriesKey, setSelectedBarSeriesKey] = useState<
+    string | null
+  >(null);
+
+  // Detail sheets are rendered from a selected date and bar scope.
+  // We derive a single date key once so all item extraction uses identical matching.
+  const selectedDateKey = selectedDate
+    ? format(selectedDate, 'yyyy-MM-dd')
+    : null;
+
+  // Full-day item sets across all accounts. These drive denominator counts
+  // so account-scoped sheets can show "X of N items" instead of losing context.
+  const selectedDateIncomeItems = selectedDateKey
+    ? data.accounts.flatMap(account => {
+        const dateData = account.dates.find(d => d.date === selectedDateKey);
+
+        if (!dateData?.incomeItems) {
+          return [];
+        }
+
+        return dateData.incomeItems.map(item => ({
+          ...item,
+          accountRowId: account.rowId,
+        }));
+      })
+    : [];
+
+  // Scoping rule for detail sheets:
+  // - null/global: include all accounts for the selected date
+  // - account key: include only that account's items
+  const scopedIncomeItems = selectedDateIncomeItems.filter(item => {
+    return (
+      selectedBarSeriesKey === null ||
+      selectedBarSeriesKey === 'global' ||
+      item.accountRowId === selectedBarSeriesKey
+    );
+  });
+
+  const selectedDateExpenseItems = selectedDateKey
+    ? data.accounts.flatMap(account => {
+        const dateData = account.dates.find(d => d.date === selectedDateKey);
+
+        if (!dateData?.expenseItems) {
+          return [];
+        }
+
+        return dateData.expenseItems.map(item => ({
+          ...item,
+          accountRowId: account.rowId,
+        }));
+      })
+    : [];
+
+  // Same scoping semantics as income so both detail sheets behave identically.
+  const scopedExpenseItems = selectedDateExpenseItems.filter(item => {
+    return (
+      selectedBarSeriesKey === null ||
+      selectedBarSeriesKey === 'global' ||
+      item.accountRowId === selectedBarSeriesKey
+    );
+  });
+
   function renderTooltipContent(
     active?: boolean,
     payload?: {
       color?: string;
       dataKey?: string | number;
       value?: string | number | (string | number)[];
+      payload?: Record<string, unknown>;
     }[],
     label?: string | number,
     chartConfig?: Record<string, { label?: React.ReactNode; color?: string }>,
@@ -264,13 +328,51 @@ function ProjectionChart({
       return '';
     }
 
+    const hoveredEntry = payload[0];
+    const hoveredSeriesKey = String(hoveredEntry?.dataKey || '');
+    const hoveredPoint = hoveredEntry?.payload;
+    const isBarChart = getChartType() === 'bar';
+
+    // Recharts can provide an undefined label when shared={false};
+    // fallback to the payload date to avoid tooltip date parsing errors.
+    const tooltipDateValue =
+      typeof hoveredPoint?.date === 'string'
+        ? hoveredPoint.date
+        : typeof label === 'string'
+          ? label
+          : null;
+
+    // Total bar hover should always reveal all account values for that day,
+    // even when some account series are currently hidden in the chart legend.
+    if (!tooltipDateValue) {
+      return null;
+    }
+
+    const tooltipEntries =
+      isBarChart &&
+      payload.length === 1 &&
+      hoveredSeriesKey === 'global' &&
+      hoveredPoint
+        ? seriesKeys
+            .map(key => ({
+              color: chartConfig[key]?.color,
+              dataKey: key,
+              value: hoveredPoint[key] as
+                | string
+                | number
+                | (string | number)[]
+                | undefined,
+            }))
+            .filter(entry => typeof entry.value === 'number')
+        : payload;
+
     return (
       <div className="rounded-lg border bg-background p-3 shadow-md">
         <div className="mb-2 font-medium text-foreground">
-          {formatTooltipDate(label as string)}
+          {formatTooltipDate(tooltipDateValue)}
         </div>
         <div className="space-y-1">
-          {payload.map((entry, index) => (
+          {tooltipEntries.map((entry, index) => (
             <div
               key={index}
               className="flex items-center justify-between gap-3"
@@ -410,14 +512,6 @@ function ProjectionChart({
                     left: 20,
                     bottom: 5,
                   }}
-                  onClick={event => {
-                    if (event?.activePayload?.[0]) {
-                      const date = parseISO(
-                        event.activePayload[0].payload.date,
-                      );
-                      onToggleDetails(date);
-                    }
-                  }}
                 >
                   <CartesianGrid
                     strokeDasharray="3 3"
@@ -453,6 +547,20 @@ function ProjectionChart({
                         hide={!isVisible}
                         opacity={0.8}
                         cursor="pointer"
+                        onClick={clickedBarDatum => {
+                          const clickedDate =
+                            typeof clickedBarDatum?.payload?.date === 'string'
+                              ? clickedBarDatum.payload.date
+                              : null;
+
+                          if (!clickedDate) {
+                            return;
+                          }
+
+                          // Scope detail sheets to the exact bar that was clicked.
+                          setSelectedBarSeriesKey(key);
+                          onToggleDetails(parseISO(clickedDate));
+                        }}
                         isAnimationActive={true}
                         animationDuration={700}
                         animationEasing="ease-in-out"
@@ -472,26 +580,20 @@ function ProjectionChart({
       {selectedMetric === 'incomeReceived' && selectedDate && (
         <IncomeDetails
           isOpen={isDetailsOpen}
-          onOpenChange={open => onToggleDetails(open ? selectedDate : null)}
+          onOpenChange={open => {
+            if (!open) {
+              setSelectedBarSeriesKey(null);
+            }
+
+            onToggleDetails(open ? selectedDate : null);
+          }}
           date={selectedDate}
-          items={data.accounts
-            .map(account => {
-              const dateData = account.dates.find(
-                d => d.date === format(selectedDate, 'yyyy-MM-dd'),
-              );
-
-              if (!dateData?.incomeItems) {
-                return [];
-              }
-
-              return dateData.incomeItems.map(item => ({
-                ...item,
-                accountRowId: account.rowId,
-              }));
-            })
-            .flat()}
+          items={scopedIncomeItems}
+          totalItemCount={selectedDateIncomeItems.length}
           chartConfig={chartConfig}
           hiddenSeries={hiddenSeries}
+          // Only total-bar selection bypasses hidden-series filtering.
+          showAllAccounts={selectedBarSeriesKey === 'global'}
         />
       )}
 
@@ -499,26 +601,20 @@ function ProjectionChart({
       {selectedMetric === 'expensesPaid' && selectedDate && (
         <ExpenseDetails
           isOpen={isDetailsOpen}
-          onOpenChange={open => onToggleDetails(open ? selectedDate : null)}
+          onOpenChange={open => {
+            if (!open) {
+              setSelectedBarSeriesKey(null);
+            }
+
+            onToggleDetails(open ? selectedDate : null);
+          }}
           date={selectedDate}
-          items={data.accounts
-            .map(account => {
-              const dateData = account.dates.find(
-                d => d.date === format(selectedDate, 'yyyy-MM-dd'),
-              );
-
-              if (!dateData?.expenseItems) {
-                return [];
-              }
-
-              return dateData.expenseItems.map(item => ({
-                ...item,
-                accountRowId: account.rowId,
-              }));
-            })
-            .flat()}
+          items={scopedExpenseItems}
+          totalItemCount={selectedDateExpenseItems.length}
           chartConfig={chartConfig}
           hiddenSeries={hiddenSeries}
+          // Only total-bar selection bypasses hidden-series filtering.
+          showAllAccounts={selectedBarSeriesKey === 'global'}
         />
       )}
     </Card>

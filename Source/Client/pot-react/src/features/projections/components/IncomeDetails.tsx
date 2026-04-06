@@ -18,8 +18,10 @@ type IncomeDetailsProps = {
   onOpenChange: (open: boolean) => void;
   date: Date | null;
   items: ProjectionIncomeItemWithAccount[];
+  totalItemCount?: number;
   chartConfig: ChartConfig;
   hiddenSeries: string[];
+  showAllAccounts?: boolean;
 };
 
 function IncomeDetails({
@@ -27,26 +29,37 @@ function IncomeDetails({
   onOpenChange,
   date,
   items,
+  totalItemCount,
   chartConfig,
   hiddenSeries,
+  showAllAccounts = false,
 }: IncomeDetailsProps) {
   if (!date) {
     return null;
   }
 
-  // Calculate totals and filter items
+  // Total always represents all items passed from chart selection scope.
   const totalIncome = items.reduce((sum, item) => sum + item.amount, 0);
-  const visibleItems = items.filter(
-    item => !hiddenSeries.includes(item.accountRowId),
-  );
+
+  // Normal behavior respects hidden series. Total-bar selection can opt into
+  // all-account visibility so the sheet matches total hover/click semantics.
+  const visibleItems = showAllAccounts
+    ? items
+    : items.filter(item => !hiddenSeries.includes(item.accountRowId));
+
+  // Filtered total is intentionally based on visible rows only.
   const filteredTotal = visibleItems.reduce(
     (sum, item) => sum + item.amount,
     0,
   );
+
+  // Denominator comes from full-day totals supplied by the chart component.
+  // This preserves labels like "2 of 5 items" when account scope is active.
+  const effectiveTotalItemCount = totalItemCount ?? items.length;
   const itemCountLabel =
-    visibleItems.length < items.length
-      ? `${visibleItems.length} of ${items.length} items`
-      : `${items.length} items`;
+    visibleItems.length < effectiveTotalItemCount
+      ? `${visibleItems.length} of ${effectiveTotalItemCount} items`
+      : `${effectiveTotalItemCount} items`;
 
   return (
     <Sheet open={isOpen} modal={false}>
