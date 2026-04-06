@@ -26,7 +26,9 @@ import { useErrorContext } from '@/contexts';
 import type { Expense } from '@/data';
 import { usePermissions } from '@/hooks';
 import {
+  AccrualPolicy,
   formatDate,
+  formatMoneyValue,
   Frequency,
   getAdornedExpenseDescription,
   getDaysDue,
@@ -178,6 +180,17 @@ const columns: ColumnDef<Expense>[] = [
     accessorKey: 'accrued',
     header: 'Accrued',
     options: {
+      cell: ({ row }) => {
+        if (row.original.accrualPolicy === AccrualPolicy.None) {
+          return null;
+        }
+
+        return (
+          <span className="min-w-[80px] inline-block">
+            {formatMoneyValue(row.original.accrued)}
+          </span>
+        );
+      },
       enableSorting: true,
       sortingFn: 'basic',
     },
