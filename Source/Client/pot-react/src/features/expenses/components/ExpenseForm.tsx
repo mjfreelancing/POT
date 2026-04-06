@@ -148,18 +148,14 @@ function ExpenseForm({
           control={form.control}
           name="description"
           render={({ field }) => (
-            <FormItem className="space-y-1">
-              <FormLabel htmlFor="description-input">Description</FormLabel>
-              <FormControl>
+            <FormLabeledItem label="Description" htmlFor="description-input">
                 <Input
                   {...field}
                   id="description-input"
                   placeholder="Enter a description"
                   aria-description="A memorable name for this expense"
                 />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+            </FormLabeledItem>
           )}
         />
 
@@ -167,9 +163,7 @@ function ExpenseForm({
           control={form.control}
           name="amount"
           render={({ field }) => (
-            <FormItem className="space-y-1">
-              <FormLabel htmlFor="amount-input">Amount</FormLabel>
-              <FormControl>
+            <FormLabeledItem label="Amount" htmlFor="amount-input">
                 {/* Getting the numerical value from e.target.number since the 'value' is a string */}
                 <MoneyValueInput
                   {...field}
@@ -180,9 +174,7 @@ function ExpenseForm({
                     field.onChange(e.target.number);
                   }}
                 />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+            </FormLabeledItem>
           )}
         />
 
@@ -356,9 +348,10 @@ function ExpenseForm({
           control={form.control}
           name="accountRowId"
           render={({ field }) => (
-            <FormItem className="space-y-1">
-              <FormLabel htmlFor="account-select">Associated Account</FormLabel>
-              <FormControl>
+            <FormLabeledItem
+              label="Associated Account"
+              htmlFor="account-select"
+            >
                 <Select
                   value={field.value}
                   onValueChange={field.onChange}
@@ -375,9 +368,7 @@ function ExpenseForm({
                     ))}
                   </SelectContent>
                 </Select>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+            </FormLabeledItem>
           )}
         />
 
@@ -385,9 +376,7 @@ function ExpenseForm({
           control={form.control}
           name="note"
           render={({ field }) => (
-            <FormItem className="space-y-1">
-              <FormLabel htmlFor="note-textarea">Note (optional)</FormLabel>
-              <FormControl>
+            <FormLabeledItem label="Note (optional)" htmlFor="note-textarea">
                 <Textarea
                   {...field}
                   id="note-textarea"
@@ -395,9 +384,7 @@ function ExpenseForm({
                   className="min-h-[80px] max-h-[200px] text-sm sm:text-[13px]"
                   value={field.value ?? ''}
                 />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+            </FormLabeledItem>
           )}
         />
 
