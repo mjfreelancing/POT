@@ -97,13 +97,16 @@ const EditIncomeSheetInternal: React.FC<EditIncomeSheetInternalProps> = ({
 function EditIncomeSheet() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: incomeResult, isLoading: isIncomeLoading } =
-    useApiGetIncomeById(id!);
+  const {
+    data: incomeResult,
+    isLoading: isIncomeLoading,
+    isFetchedAfterMount: isIncomeFetchedAfterMount,
+  } = useApiGetIncomeById(id!, { forceFresh: true });
   const { data: accountsResult, isLoading: isAccountsLoading } =
     useApiGetAllAccounts();
 
   // Show loading state before any data is available
-  if (isIncomeLoading || isAccountsLoading) {
+  if (isIncomeLoading || isAccountsLoading || !isIncomeFetchedAfterMount) {
     return <LoadingMessage />;
   }
 

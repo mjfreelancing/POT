@@ -87,11 +87,14 @@ const EditAccountSheetInternal: React.FC<EditAccountSheetInternalProps> = ({
 function EditAccountSheet() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { data: accountResult, isLoading: isAccountLoading } =
-    useApiGetAccountById(id!);
+  const {
+    data: accountResult,
+    isLoading: isAccountLoading,
+    isFetchedAfterMount: isAccountFetchedAfterMount,
+  } = useApiGetAccountById(id!, { forceFresh: true });
 
   // Show loading state before any data is available
-  if (isAccountLoading) {
+  if (isAccountLoading || !isAccountFetchedAfterMount) {
     return <LoadingMessage />;
   }
 

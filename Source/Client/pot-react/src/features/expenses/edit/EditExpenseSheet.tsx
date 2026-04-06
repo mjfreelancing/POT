@@ -102,13 +102,16 @@ const EditExpenseSheetInternal: React.FC<EditExpenseSheetInternalProps> = ({
 function EditExpenseSheet() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: expenseResult, isLoading: isExpenseLoading } =
-    useApiGetExpenseById(id!);
+  const {
+    data: expenseResult,
+    isLoading: isExpenseLoading,
+    isFetchedAfterMount: isExpenseFetchedAfterMount,
+  } = useApiGetExpenseById(id!, { forceFresh: true });
   const { data: accountsResult, isLoading: isAccountsLoading } =
     useApiGetAllAccounts();
 
   // Show loading state before any data is available
-  if (isExpenseLoading || isAccountsLoading) {
+  if (isExpenseLoading || isAccountsLoading || !isExpenseFetchedAfterMount) {
     return <LoadingMessage />;
   }
 

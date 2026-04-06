@@ -35,7 +35,9 @@ type GetOptions<TResponse> = Omit<
     string[]
   >,
   'queryKey' | 'queryFn'
->;
+> & {
+  usePreviousAsPlaceholder?: boolean;
+};
 
 const performOperation = async <TResponse>(
   operation: MutationOperation<TResponse>,
@@ -96,13 +98,21 @@ const useGet = <TResponse>(
   queryKey: string[],
   options: GetOptions<TResponse> = {},
 ) => {
+  const { usePreviousAsPlaceholder = true, ...queryOptions } = options;
+  const preservePreviousResult = (
+    previousResult: Result<TResponse, FailResultBase> | undefined,
+  ): Result<TResponse, FailResultBase> | undefined => previousResult;
+  const placeholderData = usePreviousAsPlaceholder
+    ? preservePreviousResult
+    : undefined;
+
   return useQuery({
-    ...options,
+    ...queryOptions,
     queryKey,
     queryFn: async ({ signal }): Promise<Result<TResponse, FailResultBase>> => {
       return performOperation(() => axios.get<TResponse>(url, { signal }));
     },
-    placeholderData: prev => prev,
+    placeholderData,
   });
 };
 

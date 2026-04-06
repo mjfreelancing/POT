@@ -14,6 +14,10 @@ import { SuccessResult } from '@/lib';
 
 import { useDelete, useGet, usePost, usePutWithId } from './useApi';
 
+type ByIdOptions = {
+  forceFresh?: boolean;
+};
+
 const useApiGetAllIncomes = () => {
   const query = useGet<Income[]>('/incomes', ['incomes']);
   const result = query.data as Result<Income[], FailResultBase>;
@@ -34,8 +38,12 @@ const useApiGetAllIncomes = () => {
   return { ...query, data };
 };
 
-const useApiGetIncomeById = (id: string) => {
-  const query = useGet<Income>(`/incomes/${id}`, ['incomes', id]);
+const useApiGetIncomeById = (id: string, options?: ByIdOptions) => {
+  const query = useGet<Income>(`/incomes/${id}`, ['incomes', id], {
+    staleTime: options?.forceFresh ? 0 : undefined,
+    refetchOnMount: options?.forceFresh ? 'always' : undefined,
+    usePreviousAsPlaceholder: options?.forceFresh ? false : undefined,
+  });
 
   // Cast to Result<Income, FailResultBase> type to enable TypeScript's discriminated union type narrowing.
   // This allows TypeScript to infer that when !success, error must exist, and when success, value must exist.
