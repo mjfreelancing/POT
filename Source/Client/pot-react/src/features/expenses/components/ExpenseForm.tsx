@@ -438,7 +438,7 @@ function ExpenseForm({
                   {...field}
                   id="note-textarea"
                   placeholder="Add any notes about this expense"
-                  className="min-h-[80px] max-h-[200px]"
+                  className="min-h-[80px] max-h-[200px] text-sm sm:text-[13px]"
                   value={field.value ?? ''}
                 />
               </FormControl>
