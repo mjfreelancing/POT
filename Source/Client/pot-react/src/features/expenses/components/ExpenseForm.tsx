@@ -4,6 +4,7 @@ import type { UseFormReturn } from 'react-hook-form';
 import type { MoneyValueChangeEvent } from '@/components/input';
 import { MoneyValueInput } from '@/components/input';
 import FormDateActionRow from '@/components/form/FormDateActionRow';
+import FormLabeledItem from '@/components/form/FormLabeledItem';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -189,9 +190,7 @@ function ExpenseForm({
           control={form.control}
           name="nextDue"
           render={({ field }) => (
-            <FormItem className="space-y-1">
-              <FormLabel htmlFor="nextDue-picker">Next Due</FormLabel>
-              <FormControl>
+            <FormLabeledItem label="Next Due" htmlFor="nextDue-picker">
                 <FormDateActionRow
                   selectedDate={field.value ? new Date(field.value) : undefined}
                   onDateAccepted={date => {
@@ -207,9 +206,7 @@ function ExpenseForm({
                     form.trigger('nextDue');
                   }}
                 />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+            </FormLabeledItem>
           )}
         />
 
@@ -217,9 +214,7 @@ function ExpenseForm({
           control={form.control}
           name="endDate"
           render={() => (
-            <FormItem className="space-y-1">
-              <FormLabel htmlFor="endDate-picker">End Date</FormLabel>
-              <FormControl>
+            <FormLabeledItem label="End Date" htmlFor="endDate-picker">
                 <FormDateActionRow
                   selectedDate={pickerDate}
                   onDateAccepted={syncPickerDate}
@@ -227,9 +222,7 @@ function ExpenseForm({
                   actionLabel="Clear"
                   onActionClick={() => syncPickerDate(undefined)}
                 />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+            </FormLabeledItem>
           )}
         />
 
@@ -341,9 +334,10 @@ function ExpenseForm({
           control={form.control}
           name="accrualStart"
           render={() => (
-            <FormItem className="space-y-1">
-              <FormLabel htmlFor="accrualStart-picker">Accrual Start</FormLabel>
-              <FormControl>
+            <FormLabeledItem
+              label="Accrual Start"
+              htmlFor="accrualStart-picker"
+            >
                 <FormDateActionRow
                   selectedDate={accrualStartPickerDate}
                   onDateAccepted={syncAccrualStartPickerDate}
@@ -354,9 +348,7 @@ function ExpenseForm({
                   }}
                   disabled={accrualPolicy === AccrualPolicy.None}
                 />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+            </FormLabeledItem>
           )}
         />
 
