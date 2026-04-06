@@ -27,6 +27,7 @@ import { Textarea } from '@/components/ui/textarea';
 import type { Account } from '@/data';
 import {
   dateIsoFormat,
+  FORM_SHEET_STYLES,
   Frequency,
   FrequencyOptions,
   todayIsoFormat,
@@ -335,9 +336,9 @@ function IncomeForm({
           )}
         />
 
-        <div className="space-y-4 pt-2">
+        <div className={FORM_SHEET_STYLES.ACTION_SECTION}>
           <Separator className="opacity-80" />
-          <div className="flex justify-end space-x-4">
+          <div className={FORM_SHEET_STYLES.ACTION_ROW}>
             {/* type="button" prevents this button from triggering a form submission - there's a scenario
               where the user may press ENTER but the server reports a validation error and the sheet
               closes, thereby not providing the user an opportunity to correct the data. */}
@@ -345,12 +346,15 @@ function IncomeForm({
               type="button"
               variant="outline"
               onClick={onCancel}
-              className="w-24"
+              className={FORM_SHEET_STYLES.ACTION_BUTTON_WIDTH}
             >
               Cancel
             </Button>
 
-            <Button type="submit" className="w-24">
+            <Button
+              type="submit"
+              className={FORM_SHEET_STYLES.ACTION_BUTTON_WIDTH}
+            >
               {submitLabel}
             </Button>
           </div>

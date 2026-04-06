@@ -4,6 +4,7 @@ export * from './dateUtils';
 export * from './errorUtils';
 export * from './expenseTableRowUtils';
 export * from './fileSystem';
+export * from './formSheetStyles';
 export * from './incomeTableRowUtils';
 export * from './moneyUtils';
 export * from './result';

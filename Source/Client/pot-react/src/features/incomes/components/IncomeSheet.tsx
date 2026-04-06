@@ -1,6 +1,7 @@
 import { DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { FORM_SHEET_STYLES } from '@/lib';
 
 type IncomeSheetProps = {
   title: string;
@@ -22,8 +23,8 @@ function IncomeSheet({ title, children }: IncomeSheetProps) {
 
       The close button (the first button) is hidden using [&>button:first-of-type]:hidden
     */}
-      <SheetContent className="p-6 sm:max-w-lg [&>button:first-of-type]:hidden overflow-y-auto">
-        <div className="space-y-6 pr-6 pl-6">
+      <SheetContent className={FORM_SHEET_STYLES.SHEET_CONTENT}>
+        <div className={FORM_SHEET_STYLES.SHEET_INNER}>
           <DialogTitle className="text-lg font-semibold">{title}</DialogTitle>
           <DialogDescription className="sr-only">
             {title} form
