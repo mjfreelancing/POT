@@ -103,12 +103,12 @@ function IncomeForm({
           name="description"
           render={({ field }) => (
             <FormLabeledItem label="Description" htmlFor="description-input">
-                <Input
-                  {...field}
-                  id="description-input"
-                  placeholder="Enter a description"
-                  aria-description="A memorable name for this income"
-                />
+              <Input
+                {...field}
+                id="description-input"
+                placeholder="Enter a description"
+                aria-description="A memorable name for this income"
+              />
             </FormLabeledItem>
           )}
         />
@@ -118,16 +118,16 @@ function IncomeForm({
           name="amount"
           render={({ field }) => (
             <FormLabeledItem label="Amount" htmlFor="amount-input">
-                {/* Getting the numerical value from e.target.number since the 'value' is a string */}
-                <MoneyValueInput
-                  {...field}
-                  id="amount-input"
-                  placeholder="Enter the income amount"
-                  aria-description="Current income amount"
-                  onChange={(e: MoneyValueChangeEvent) => {
-                    field.onChange(e.target.number);
-                  }}
-                />
+              {/* Getting the numerical value from e.target.number since the 'value' is a string */}
+              <MoneyValueInput
+                {...field}
+                id="amount-input"
+                placeholder="Enter the income amount"
+                aria-description="Current income amount"
+                onChange={(e: MoneyValueChangeEvent) => {
+                  field.onChange(e.target.number);
+                }}
+              />
             </FormLabeledItem>
           )}
         />
@@ -233,22 +233,22 @@ function IncomeForm({
               label="Associated Account"
               htmlFor="account-select"
             >
-                <Select
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  name={field.name}
-                >
-                  <SelectTrigger id="account-select" className="w-full">
-                    <SelectValue placeholder="Select an account" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {accounts.map(acc => (
-                      <SelectItem key={acc.rowId} value={acc.rowId}>
-                        {acc.description}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+                name={field.name}
+              >
+                <SelectTrigger id="account-select" className="w-full">
+                  <SelectValue placeholder="Select an account" />
+                </SelectTrigger>
+                <SelectContent>
+                  {accounts.map(acc => (
+                    <SelectItem key={acc.rowId} value={acc.rowId}>
+                      {acc.description}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </FormLabeledItem>
           )}
         />
@@ -258,13 +258,13 @@ function IncomeForm({
           name="note"
           render={({ field }) => (
             <FormLabeledItem label="Note (optional)" htmlFor="note-textarea">
-                <Textarea
-                  {...field}
-                  id="note-textarea"
-                  placeholder="Add any notes about this income"
-                  className="min-h-[80px] max-h-[200px] text-sm sm:text-[13px]"
-                  value={field.value ?? ''}
-                />
+              <Textarea
+                {...field}
+                id="note-textarea"
+                placeholder="Add any notes about this income"
+                className="min-h-[80px] max-h-[200px] text-sm sm:text-[13px]"
+                value={field.value ?? ''}
+              />
             </FormLabeledItem>
           )}
         />
