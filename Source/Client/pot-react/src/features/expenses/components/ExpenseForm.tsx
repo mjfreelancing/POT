@@ -191,7 +191,7 @@ function ExpenseForm({
             <FormItem className="space-y-1">
               <FormLabel htmlFor="nextDue-picker">Next Due</FormLabel>
               <FormControl>
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-col gap-0 sm:flex-row sm:items-center sm:gap-2">
                   <EnrichedDatePicker
                     selectedDate={
                       field.value ? new Date(field.value) : undefined
@@ -202,21 +202,23 @@ function ExpenseForm({
                       field.onChange(value);
                       form.trigger('nextDue');
                     }}
-                    triggerClassName="flex-1"
+                    triggerClassName="w-full min-w-0 sm:flex-1"
                     triggerId="nextDue-picker"
                   />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="w-16"
-                    onClick={() => {
-                      field.onChange(todayIsoFormat());
-                      form.trigger('nextDue');
-                    }}
-                  >
-                    Today
-                  </Button>
+                  <div className="-mt-0.5 flex w-full justify-end sm:mt-0 sm:w-auto sm:flex-none">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="sm:w-16"
+                      onClick={() => {
+                        field.onChange(todayIsoFormat());
+                        form.trigger('nextDue');
+                      }}
+                    >
+                      Today
+                    </Button>
+                  </div>
                 </div>
               </FormControl>
               <FormMessage />
@@ -231,22 +233,24 @@ function ExpenseForm({
             <FormItem className="space-y-1">
               <FormLabel htmlFor="endDate-picker">End Date</FormLabel>
               <FormControl>
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-col gap-0 sm:flex-row sm:items-center sm:gap-2">
                   <EnrichedDatePicker
                     selectedDate={pickerDate}
                     onDateAccepted={syncPickerDate}
-                    triggerClassName="flex-1"
+                    triggerClassName="w-full min-w-0 sm:flex-1"
                     triggerId="endDate-picker"
                   />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="w-16"
-                    onClick={() => syncPickerDate(undefined)}
-                  >
-                    Clear
-                  </Button>
+                  <div className="-mt-0.5 flex w-full justify-end sm:mt-0 sm:w-auto sm:flex-none">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="sm:w-16"
+                      onClick={() => syncPickerDate(undefined)}
+                    >
+                      Clear
+                    </Button>
+                  </div>
                 </div>
               </FormControl>
               <FormMessage />
@@ -365,26 +369,28 @@ function ExpenseForm({
             <FormItem className="space-y-1">
               <FormLabel htmlFor="accrualStart-picker">Accrual Start</FormLabel>
               <FormControl>
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-col gap-0 sm:flex-row sm:items-center sm:gap-2">
                   <EnrichedDatePicker
                     selectedDate={accrualStartPickerDate}
                     onDateAccepted={syncAccrualStartPickerDate}
-                    triggerClassName="flex-1"
+                    triggerClassName="w-full min-w-0 sm:flex-1"
                     triggerId="accrualStart-picker"
                     disabled={accrualPolicy === AccrualPolicy.None}
                   />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="w-16"
-                    disabled={accrualPolicy === AccrualPolicy.None}
-                    onClick={() => {
-                      syncAccrualStartPickerDate(new Date());
-                    }}
-                  >
-                    Today
-                  </Button>
+                  <div className="-mt-0.5 flex w-full justify-end sm:mt-0 sm:w-auto sm:flex-none">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="sm:w-16"
+                      disabled={accrualPolicy === AccrualPolicy.None}
+                      onClick={() => {
+                        syncAccrualStartPickerDate(new Date());
+                      }}
+                    >
+                      Today
+                    </Button>
+                  </div>
                 </div>
               </FormControl>
               <FormMessage />
