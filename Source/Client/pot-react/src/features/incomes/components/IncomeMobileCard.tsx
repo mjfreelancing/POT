@@ -16,7 +16,7 @@ import {
 import { useErrorContext } from '@/contexts';
 import type { Income } from '@/data';
 import { WithPermission } from '@/features/auth/components';
-import { formatDate, formatMoneyValue } from '@/lib';
+import { formatDate, formatMoneyValue, getDaysDue } from '@/lib';
 import { cn } from '@/lib/utils';
 
 import useDeleteIncome from '../delete/hooks/useDeleteIncome';
@@ -24,6 +24,37 @@ import useDeleteIncome from '../delete/hooks/useDeleteIncome';
 type IncomeMobileCardProps = {
   income: Income;
 };
+
+function getUrgencyStyle(days: number): {
+  borderClass: string;
+  bgClass: string;
+} {
+  if (days < 0) {
+    return {
+      borderClass: 'border-red-500/30 border-l-2 border-l-red-500',
+      bgClass: 'bg-red-50/50 dark:bg-red-950/20',
+    };
+  }
+
+  if (days === 0) {
+    return {
+      borderClass: 'border-orange-500/30 border-l-2 border-l-orange-500',
+      bgClass: 'bg-orange-50/50 dark:bg-orange-950/20',
+    };
+  }
+
+  if (days <= 7) {
+    return {
+      borderClass: 'border-yellow-500/30',
+      bgClass: 'bg-yellow-50/50 dark:bg-yellow-950/20',
+    };
+  }
+
+  return {
+    borderClass: 'border-green-500/30',
+    bgClass: 'bg-green-50/50 dark:bg-green-950/20',
+  };
+}
 
 /**
  * Mobile card component for displaying income information.
@@ -36,6 +67,8 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { deleteIncome } = useDeleteIncome(income.rowId);
+  const days = getDaysDue(nextDue);
+  const { borderClass, bgClass } = getUrgencyStyle(days);
 
   // Carry active list filters (for example accountId) into edit route.
   const searchSuffix = location.search;
@@ -65,17 +98,23 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
       <Card
         className={cn(
           'transition-all duration-200 hover:shadow-md py-2 lg:py-2.5 gap-0 flex flex-col',
-          'border-green-500/30',
-          'bg-green-50/50 dark:bg-green-950/20',
+          borderClass,
+          bgClass,
         )}
       >
         <CardContent className="px-2 lg:px-2.5 flex flex-col flex-1">
           <div className="flex flex-col h-full">
             {/* Income Description */}
             <div className="mb-0.5">
-              <div className="font-bold text-base lg:text-lg leading-tight flex items-center gap-2 text-green-700 dark:text-green-300">
-                <span>{description}</span>
-                {note && <NotePopover note={note} />}
+              <div className="flex items-start justify-between gap-2 text-green-700 dark:text-green-300">
+                <span className="font-bold text-base lg:text-lg leading-tight">
+                  {description}
+                </span>
+                {note && (
+                  <div className="shrink-0">
+                    <NotePopover note={note} />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -89,13 +128,28 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
 
               {/* Income Details */}
               <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-[11px] lg:text-sm font-medium text-foreground">
-                    Next Due:
-                  </span>
-                  <span className="text-xs lg:text-base font-semibold text-foreground">
-                    {formatDate(nextDue)}
-                  </span>
+                <div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[11px] lg:text-sm font-medium text-foreground">
+                      Due:
+                    </span>
+                    <span className="text-xs lg:text-base font-semibold text-foreground">
+                      {formatDate(nextDue)}
+                    </span>
+                  </div>
+                  <div className="mt-px min-h-[0.875rem] flex items-center justify-end text-[10px] lg:text-xs leading-none text-muted-foreground">
+                    {days > 0 ? (
+                      `(${days} ${days === 1 ? 'day' : 'days'})`
+                    ) : days < 0 ? (
+                      <span className="text-red-600 dark:text-red-400">
+                        Overdue
+                      </span>
+                    ) : (
+                      <span className="text-orange-600 dark:text-orange-400">
+                        Due Today
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {endDate && (

@@ -1,10 +1,9 @@
-import { Ban, Copy, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { Copy, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
 import { ConfirmationDialog } from '@/components/dialog';
 import { ErrorSheet, NotePopover } from '@/components/feedback';
-import StatusBadge from '@/components/feedback/badge/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -26,13 +25,43 @@ type ExpenseMobileCardProps = {
   expense: Expense;
 };
 
+function getUrgencyStyle(days: number): {
+  borderClass: string;
+  bgClass: string;
+} {
+  if (days < 0) {
+    return {
+      borderClass: 'border-red-500/30 border-l-2 border-l-red-500',
+      bgClass: 'bg-red-50/50 dark:bg-red-950/20',
+    };
+  }
+
+  if (days === 0) {
+    return {
+      borderClass: 'border-orange-500/30 border-l-2 border-l-orange-500',
+      bgClass: 'bg-orange-50/50 dark:bg-orange-950/20',
+    };
+  }
+
+  if (days <= 7) {
+    return {
+      borderClass: 'border-orange-500/30',
+      bgClass: 'bg-orange-50/50 dark:bg-orange-950/20',
+    };
+  }
+
+  return {
+    borderClass: 'border-blue-500/30',
+    bgClass: 'bg-blue-50/50 dark:bg-blue-950/20',
+  };
+}
+
 /**
  * Mobile card component for displaying expense information.
  * Styled consistently with dashboard ExpenseCard with action menu.
  */
 function ExpenseMobileCard({ expense }: ExpenseMobileCardProps) {
-  const { description, nextDue, amount, note, excludeFromCalcs, account } =
-    expense;
+  const { description, nextDue, amount, note, account } = expense;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { error, setError } = useErrorContext();
   const navigate = useNavigate();
@@ -43,30 +72,7 @@ function ExpenseMobileCard({ expense }: ExpenseMobileCardProps) {
   const searchSuffix = location.search;
 
   const days = getDaysDue(nextDue);
-
-  // Determine urgency styling
-  const getUrgencyStyle = () => {
-    if (days <= 0) {
-      return {
-        borderClass: 'border-red-500/30 border-l-2 border-l-red-500',
-        bgClass: 'bg-red-50/50 dark:bg-red-950/20',
-      };
-    }
-
-    if (days <= 7) {
-      return {
-        borderClass: 'border-orange-500/30',
-        bgClass: 'bg-orange-50/50 dark:bg-orange-950/20',
-      };
-    }
-
-    return {
-      borderClass: 'border-blue-500/30',
-      bgClass: 'bg-blue-50/50 dark:bg-blue-950/20',
-    };
-  };
-
-  const { borderClass, bgClass } = getUrgencyStyle();
+  const { borderClass, bgClass } = getUrgencyStyle(days);
 
   const handleDelete = async () => {
     const result = await deleteExpense();
@@ -101,13 +107,14 @@ function ExpenseMobileCard({ expense }: ExpenseMobileCardProps) {
           <div className="flex flex-col h-full">
             {/* Expense Name */}
             <div className="mb-0.5">
-              <div className="font-bold text-base lg:text-lg leading-tight flex items-center gap-2 text-blue-700 dark:text-blue-300">
-                <span>{description}</span>
-                {note && <NotePopover note={note} />}
-                {excludeFromCalcs && (
-                  <StatusBadge color="red" tooltip="Excluded from calculations">
-                    <Ban className="h-3 w-3" />
-                  </StatusBadge>
+              <div className="flex items-start justify-between gap-2 text-blue-700 dark:text-blue-300">
+                <span className="font-bold text-base lg:text-lg leading-tight">
+                  {description}
+                </span>
+                {note && (
+                  <div className="shrink-0">
+                    <NotePopover note={note} />
+                  </div>
                 )}
               </div>
             </div>
@@ -125,17 +132,25 @@ function ExpenseMobileCard({ expense }: ExpenseMobileCardProps) {
                 <div>
                   <div className="flex justify-between items-center">
                     <span className="text-[11px] lg:text-sm font-medium text-foreground">
-                      Due Date:
+                      Due:
                     </span>
                     <span className="text-xs lg:text-base font-semibold text-foreground">
                       {formatDate(nextDue)}
                     </span>
                   </div>
-                  {days >= 0 && (
-                    <div className="text-right text-[10px] lg:text-xs text-muted-foreground mt-0.5">
-                      ({days} {days === 1 ? 'day' : 'days'})
-                    </div>
-                  )}
+                  <div className="mt-px min-h-[0.875rem] flex items-center justify-end text-[10px] lg:text-xs leading-none text-muted-foreground">
+                    {days > 0 ? (
+                      `(${days} ${days === 1 ? 'day' : 'days'})`
+                    ) : days < 0 ? (
+                      <span className="text-red-600 dark:text-red-400">
+                        Overdue
+                      </span>
+                    ) : (
+                      <span className="text-orange-600 dark:text-orange-400">
+                        Due Today
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-[11px] lg:text-sm font-medium text-foreground">
