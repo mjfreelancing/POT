@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Ban, CheckCircle, FastForward, MoreHorizontal } from 'lucide-react';
+import { CheckCircle, FastForward, MoreHorizontal } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -187,13 +187,14 @@ function ExpenseCard({ expense }: ExpenseCardProps) {
           <div className="flex flex-col h-full">
             {/* Expense Name */}
             <div>
-              <div className="font-bold text-base lg:text-lg leading-tight flex items-center gap-2 text-blue-700 dark:text-blue-300">
-                <span>{expense.description}</span>
-                {expense.note && <NotePopover note={expense.note} />}
-                {expense.excludeFromCalcs && (
-                  <StatusBadge color="red" tooltip="Excluded from calculations">
-                    <Ban className="h-3 w-3" />
-                  </StatusBadge>
+              <div className="flex items-start justify-between gap-2 text-blue-700 dark:text-blue-300">
+                <span className="font-bold text-base lg:text-lg leading-tight">
+                  {expense.description}
+                </span>
+                {expense.note && (
+                  <div className="shrink-0">
+                    <NotePopover note={expense.note} />
+                  </div>
                 )}
               </div>
             </div>
@@ -211,17 +212,25 @@ function ExpenseCard({ expense }: ExpenseCardProps) {
                 <div>
                   <div className="flex justify-between items-center">
                     <span className="text-[11px] lg:text-sm font-medium text-foreground">
-                      Due Date:
+                      Due:
                     </span>
                     <span className="text-xs lg:text-base font-semibold text-foreground">
                       {formatDate(expense.nextDue)}
                     </span>
                   </div>
-                  {days >= 0 && (
-                    <div className="text-right text-[10px] lg:text-xs text-muted-foreground mt-0.5">
-                      ({days} {days === 1 ? 'day' : 'days'})
-                    </div>
-                  )}
+                  <div className="text-right text-[10px] lg:text-xs text-muted-foreground mt-0.5 min-h-[0.75rem]">
+                    {days > 0 ? (
+                      <>
+                        ({days} {days === 1 ? 'day' : 'days'})
+                      </>
+                    ) : days < 0 ? (
+                      <span className="font-medium text-red-600 dark:text-red-400">
+                        Overdue
+                      </span>
+                    ) : (
+                      '(0 days)'
+                    )}
+                  </div>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-[11px] lg:text-sm font-medium text-foreground">
