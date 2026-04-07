@@ -40,7 +40,23 @@ function getUrgencyStyle(days: number): {
   bgClass: string;
   badge: React.ReactNode;
 } {
-  if (days <= 0) {
+  if (days < 0) {
+    return {
+      borderClass: 'border-red-500/30 border-l-2 border-l-red-500',
+      bgClass: 'bg-red-50/50 dark:bg-red-950/20',
+      badge: (
+        <StatusBadge
+          color="red"
+          className="w-16 lg:w-24 text-[10px] lg:text-sm"
+          aria-role="status"
+        >
+          Overdue
+        </StatusBadge>
+      ),
+    };
+  }
+
+  if (days === 0) {
     return {
       borderClass: 'border-orange-500/30 border-l-2 border-l-orange-500',
       bgClass: 'bg-orange-50/50 dark:bg-orange-950/20',
@@ -50,7 +66,7 @@ function getUrgencyStyle(days: number): {
           className="w-16 lg:w-24 text-[10px] lg:text-sm"
           aria-role="status"
         >
-          {days === 0 ? 'Due Today' : 'Overdue'}
+          Due Today
         </StatusBadge>
       ),
     };
@@ -229,7 +245,9 @@ function IncomeCard({ income }: IncomeCardProps) {
                         Overdue
                       </span>
                     ) : (
-                      '(0 days)'
+                      <span className="font-medium text-orange-600 dark:text-orange-400">
+                        Due Today
+                      </span>
                     )}
                   </div>
                 </div>
