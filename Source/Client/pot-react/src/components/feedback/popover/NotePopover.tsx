@@ -45,7 +45,9 @@ function NotePopover({
             Note
           </span>
         </div>
-        <div className="px-2 pt-2 text-foreground break-all">{note}</div>
+        <div className="px-2 pt-2 text-foreground whitespace-pre-wrap break-words">
+          {note}
+        </div>
       </PopoverContent>
     </Popover>
   );
