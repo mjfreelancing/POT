@@ -1,6 +1,6 @@
 import { Copy, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 
 import { ConfirmationDialog } from '@/components/dialog';
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
@@ -26,7 +26,11 @@ function IncomeActions({ income }: IncomeActionsProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { error, setError } = useErrorContext();
   const navigate = useNavigate();
+  const location = useLocation();
   const { deleteIncome } = useDeleteIncome(income.rowId);
+
+  // Carry active list filters (for example accountId) into edit route.
+  const searchSuffix = location.search;
 
   const handleDelete = async () => {
     const result = await deleteIncome();
@@ -66,7 +70,9 @@ function IncomeActions({ income }: IncomeActionsProps) {
 
           <WithPermission permissions={['income:manage']} mode="all">
             <DropdownMenuItem
-              onClick={() => navigate(`/incomes/edit/${income.rowId}`)}
+              onClick={() =>
+                navigate(`/incomes/edit/${income.rowId}${searchSuffix}`)
+              }
             >
               <Pencil className="mr-2 h-4 w-4" />
               Edit

@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate, useParams } from 'react-router';
+import { useLocation, useNavigate, useParams } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetExpenseById } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
@@ -28,7 +28,13 @@ const EditExpenseSheetInternal: React.FC<EditExpenseSheetInternalProps> = ({
   accountsList,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { editExpense } = useEditExpense();
+
+  // Preserve account filter query when exiting edit. If we drop it, the parent page
+  // restores it from storage after navigation, which can remount the edit route.
+  // We also navigate with replace:true so browser Back does not reopen the edit sheet.
+  const returnPath = `/expenses${location.search}`;
 
   const defaultValues = useMemo(
     () => ({
@@ -70,7 +76,7 @@ const EditExpenseSheetInternal: React.FC<EditExpenseSheetInternalProps> = ({
     if (result.success) {
       // Server responds with canonical AccrualStart, but this flow navigates away immediately,
       // so the next screen refresh reads canonical values from the API.
-      navigate('/expenses');
+      navigate(returnPath, { replace: true });
     } else {
       setError({
         title: result.error.code,
@@ -91,7 +97,7 @@ const EditExpenseSheetInternal: React.FC<EditExpenseSheetInternalProps> = ({
       <ExpenseForm
         form={form}
         onSubmit={onSubmit}
-        onCancel={() => navigate('/expenses')}
+        onCancel={() => navigate(returnPath, { replace: true })}
         submitLabel="Save"
         accounts={accountsList}
         isEditMode={true}
@@ -103,6 +109,10 @@ const EditExpenseSheetInternal: React.FC<EditExpenseSheetInternalProps> = ({
 function EditExpenseSheet() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Keep the current query string when dismissing this route-level sheet.
+  const returnPath = `/expenses${location.search}`;
   const {
     data: expenseResult,
     isLoading: isExpenseLoading,
@@ -123,7 +133,7 @@ function EditExpenseSheet() {
         result={expenseResult}
         fallbackTitle="Error Loading Expense"
         fallbackDescription="Failed to load expense. Please try again."
-        onDismiss={() => navigate('/expenses')}
+        onDismiss={() => navigate(returnPath, { replace: true })}
       />
     );
   }
@@ -134,7 +144,7 @@ function EditExpenseSheet() {
         result={accountsResult}
         fallbackTitle="Error Loading Accounts"
         fallbackDescription="Failed to load accounts. Please try again."
-        onDismiss={() => navigate('/expenses')}
+        onDismiss={() => navigate(returnPath, { replace: true })}
       />
     );
   }

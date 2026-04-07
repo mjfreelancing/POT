@@ -1,6 +1,6 @@
 import { Ban, Copy, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 
 import { ConfirmationDialog } from '@/components/dialog';
 import { ErrorSheet, NotePopover } from '@/components/feedback';
@@ -36,7 +36,11 @@ function ExpenseMobileCard({ expense }: ExpenseMobileCardProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { error, setError } = useErrorContext();
   const navigate = useNavigate();
+  const location = useLocation();
   const { deleteExpense } = useDeleteExpense(expense.rowId);
+
+  // Carry active list filters (for example accountId) into edit route.
+  const searchSuffix = location.search;
 
   const days = getDaysDue(nextDue);
 
@@ -171,7 +175,9 @@ function ExpenseMobileCard({ expense }: ExpenseMobileCardProps) {
                     <WithPermission permissions={['expense:manage']} mode="all">
                       <DropdownMenuItem
                         onClick={() =>
-                          navigate(`/expenses/edit/${expense.rowId}`)
+                          navigate(
+                            `/expenses/edit/${expense.rowId}${searchSuffix}`,
+                          )
                         }
                       >
                         <Pencil className="mr-2 h-4 w-4" />

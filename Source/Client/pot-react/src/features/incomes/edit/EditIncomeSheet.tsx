@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate, useParams } from 'react-router';
+import { useLocation, useNavigate, useParams } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetIncomeById } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
@@ -28,7 +28,13 @@ const EditIncomeSheetInternal: React.FC<EditIncomeSheetInternalProps> = ({
   accountsList,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { editIncome } = useEditIncome();
+
+  // Preserve account filter query when exiting edit. If we drop it, the parent page
+  // restores it from storage after navigation, which can remount the edit route.
+  // We also navigate with replace:true so browser Back does not reopen the edit sheet.
+  const returnPath = `/incomes${location.search}`;
 
   const defaultValues = useMemo(
     () => ({
@@ -65,7 +71,7 @@ const EditIncomeSheetInternal: React.FC<EditIncomeSheetInternalProps> = ({
     const result = await editIncome(incomeData.rowId, payload);
 
     if (result.success) {
-      navigate('/incomes');
+      navigate(returnPath, { replace: true });
     } else {
       setError({
         title: result.error.code,
@@ -86,7 +92,7 @@ const EditIncomeSheetInternal: React.FC<EditIncomeSheetInternalProps> = ({
       <IncomeForm
         form={form}
         onSubmit={onSubmit}
-        onCancel={() => navigate('/incomes')}
+        onCancel={() => navigate(returnPath, { replace: true })}
         submitLabel="Save"
         accounts={accountsList}
         isEditMode={true}
@@ -98,6 +104,10 @@ const EditIncomeSheetInternal: React.FC<EditIncomeSheetInternalProps> = ({
 function EditIncomeSheet() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Keep the current query string when dismissing this route-level sheet.
+  const returnPath = `/incomes${location.search}`;
   const {
     data: incomeResult,
     isLoading: isIncomeLoading,
@@ -118,7 +128,7 @@ function EditIncomeSheet() {
         result={incomeResult}
         fallbackTitle="Error Loading Income"
         fallbackDescription="Failed to load income. Please try again."
-        onDismiss={() => navigate('/incomes')}
+        onDismiss={() => navigate(returnPath, { replace: true })}
       />
     );
   }
@@ -129,7 +139,7 @@ function EditIncomeSheet() {
         result={accountsResult}
         fallbackTitle="Error Loading Accounts"
         fallbackDescription="Failed to load accounts. Please try again."
-        onDismiss={() => navigate('/incomes')}
+        onDismiss={() => navigate(returnPath, { replace: true })}
       />
     );
   }
