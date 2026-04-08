@@ -2,7 +2,8 @@ import { localToday, normalizeToLocalMidnight } from './dateUtils';
 
 // Table row styling constants
 const TABLE_ROW_STYLES = {
-  EXCLUDED: 'text-slate-500/80 dark:text-slate-400/80',
+  EXCLUDED:
+    'border-l-4 border-l-slate-400 dark:border-l-slate-500 pl-3 bg-slate-50/40 dark:bg-slate-900/40 text-slate-700 dark:text-slate-400',
   OVERDUE: '',
 } as const;
 

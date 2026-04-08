@@ -233,7 +233,7 @@ function getTableBadgeClass(
 function getStatusBadgeClass(badgeType: StatusBadgeType): string {
   switch (badgeType) {
     case 'excluded':
-      return getTableBadgeClass('slate', 'filled', { withMargin: true });
+      return `${tableBadgeWithMarginClass} bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300`;
     case 'due-today':
       return getTableBadgeClass('amber', 'filled', { withMargin: true });
     case 'overdue':

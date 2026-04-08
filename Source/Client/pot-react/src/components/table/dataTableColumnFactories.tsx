@@ -323,7 +323,7 @@ const createFrequencyColumn = <TData,>(
         displayValue = `${count} ${frequencyLabel}`;
       }
 
-      // For excluded items, show a slate outline badge with no background
+      // For excluded items, use a neutral slate outline badge that remains readable.
       if (isExcluded) {
         return (
           <Badge
@@ -331,7 +331,7 @@ const createFrequencyColumn = <TData,>(
             className={`${getTableBadgeClass(
               'slate',
               'outline',
-            )} ${frequencyBadgeWidthClass} bg-transparent dark:bg-transparent text-slate-400 dark:text-slate-400`}
+            )} ${frequencyBadgeWidthClass}`}
           >
             {displayValue}
           </Badge>
