@@ -331,7 +331,7 @@ const createFrequencyColumn = <TData,>(
             className={`${getTableBadgeClass(
               'slate',
               'outline',
-            )} ${frequencyBadgeWidthClass}`}
+            )} ${frequencyBadgeWidthClass} border-dashed dark:bg-slate-900 dark:text-slate-200 dark:border-slate-500`}
           >
             {displayValue}
           </Badge>
