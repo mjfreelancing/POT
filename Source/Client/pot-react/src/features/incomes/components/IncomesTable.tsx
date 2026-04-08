@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef, Row } from '@tanstack/react-table';
-import { CheckCircle, FastForward } from 'lucide-react';
+import { CheckCircle, EyeOff, FastForward } from 'lucide-react';
 import { useState } from 'react';
 import { useParams } from 'react-router';
 import { toast } from 'sonner';
@@ -81,10 +81,19 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
   const canManageIncomes = hasPermission('income:manage');
 
   async function processMarkAsReceived() {
-    const futureIncomes = pendingIncomes.filter(
+    const excludedIncomes = pendingIncomes.filter(
+      income => income.excludeFromCalcs,
+    );
+
+    const actionableIncomes = pendingIncomes.filter(
+      income => !income.excludeFromCalcs,
+    );
+
+    const futureIncomes = actionableIncomes.filter(
       income => getDaysDue(income.nextDue) > 0,
     );
-    const overdueIncomes = pendingIncomes.filter(
+
+    const overdueIncomes = actionableIncomes.filter(
       income => getDaysDue(income.nextDue) <= 0,
     );
 
@@ -122,14 +131,22 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
 
     if (!hasErrors) {
       const messages = [];
+
       if (futureIncomes.length > 0) {
         messages.push(
           `${futureIncomes.length} income${futureIncomes.length > 1 ? 's' : ''} marked as received`,
         );
       }
+
       if (overdueIncomes.length > 0) {
         messages.push(
           `${overdueIncomes.length} overdue income${overdueIncomes.length > 1 ? 's' : ''} advanced`,
+        );
+      }
+
+      if (excludedIncomes.length > 0) {
+        messages.push(
+          `${excludedIncomes.length} excluded income${excludedIncomes.length > 1 ? 's' : ''} skipped`,
         );
       }
       toast(
@@ -146,10 +163,19 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
   }
 
   function getConfirmationMessage(incomes: Income[]): React.ReactNode {
-    const futureCount = incomes.filter(
+    const excludedCount = incomes.filter(
+      income => income.excludeFromCalcs,
+    ).length;
+
+    const actionableIncomes = incomes.filter(
+      income => !income.excludeFromCalcs,
+    );
+
+    const futureCount = actionableIncomes.filter(
       income => getDaysDue(income.nextDue) > 0,
     ).length;
-    const overdueCount = incomes.filter(
+
+    const overdueCount = actionableIncomes.filter(
       income => getDaysDue(income.nextDue) <= 0,
     ).length;
 
@@ -175,6 +201,17 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
                 {overdueCount} overdue income{overdueCount > 1 ? 's' : ''}
               </span>{' '}
               will be caught up to their next scheduled due date.
+            </div>
+          </div>
+        )}
+        {excludedCount > 0 && (
+          <div className="flex items-start gap-3">
+            <EyeOff className="h-5 w-5 text-slate-600 dark:text-slate-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold text-slate-700 dark:text-slate-300">
+                {excludedCount} excluded income{excludedCount > 1 ? 's' : ''}
+              </span>{' '}
+              will be skipped. Excluded items are not updated by this action.
             </div>
           </div>
         )}

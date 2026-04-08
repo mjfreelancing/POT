@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef, Row } from '@tanstack/react-table';
-import { CheckCircle, FastForward } from 'lucide-react';
+import { CheckCircle, EyeOff, FastForward } from 'lucide-react';
 import { useState } from 'react';
 import { useParams } from 'react-router';
 import { toast } from 'sonner';
@@ -107,10 +107,19 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
   const canManageExpenses = hasPermission('expense:manage');
 
   async function processMarkAsPaid() {
-    const futureExpenses = pendingExpenses.filter(
+    const excludedExpenses = pendingExpenses.filter(
+      expense => expense.excludeFromCalcs,
+    );
+
+    const actionableExpenses = pendingExpenses.filter(
+      expense => !expense.excludeFromCalcs,
+    );
+
+    const futureExpenses = actionableExpenses.filter(
       expense => getDaysDue(expense.nextDue) > 0,
     );
-    const overdueExpenses = pendingExpenses.filter(
+
+    const overdueExpenses = actionableExpenses.filter(
       expense => getDaysDue(expense.nextDue) <= 0,
     );
 
@@ -148,16 +157,25 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
 
     if (!hasErrors) {
       const messages = [];
+
       if (futureExpenses.length > 0) {
         messages.push(
           `${futureExpenses.length} expense${futureExpenses.length > 1 ? 's' : ''} marked as paid`,
         );
       }
+
       if (overdueExpenses.length > 0) {
         messages.push(
           `${overdueExpenses.length} overdue expense${overdueExpenses.length > 1 ? 's' : ''} advanced`,
         );
       }
+
+      if (excludedExpenses.length > 0) {
+        messages.push(
+          `${excludedExpenses.length} excluded expense${excludedExpenses.length > 1 ? 's' : ''} skipped`,
+        );
+      }
+
       toast(
         <SuccessToast
           icon={CheckCircle}
@@ -172,10 +190,19 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
   }
 
   function getConfirmationMessage(expenses: Expense[]): React.ReactNode {
-    const futureCount = expenses.filter(
+    const excludedCount = expenses.filter(
+      expense => expense.excludeFromCalcs,
+    ).length;
+
+    const actionableExpenses = expenses.filter(
+      expense => !expense.excludeFromCalcs,
+    );
+
+    const futureCount = actionableExpenses.filter(
       expense => getDaysDue(expense.nextDue) > 0,
     ).length;
-    const overdueCount = expenses.filter(
+
+    const overdueCount = actionableExpenses.filter(
       expense => getDaysDue(expense.nextDue) <= 0,
     ).length;
 
@@ -201,6 +228,17 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
                 {overdueCount} overdue expense{overdueCount > 1 ? 's' : ''}
               </span>{' '}
               will be caught up to their next scheduled due date.
+            </div>
+          </div>
+        )}
+        {excludedCount > 0 && (
+          <div className="flex items-start gap-3">
+            <EyeOff className="h-5 w-5 text-slate-600 dark:text-slate-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold text-slate-700 dark:text-slate-300">
+                {excludedCount} excluded expense{excludedCount > 1 ? 's' : ''}
+              </span>{' '}
+              will be skipped. Excluded items are not updated by this action.
             </div>
           </div>
         )}
