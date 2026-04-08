@@ -1,4 +1,4 @@
-import { Copy, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { Copy, EyeOff, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
@@ -16,7 +16,11 @@ import {
 import { useErrorContext } from '@/contexts';
 import type { Income } from '@/data';
 import { WithPermission } from '@/features/auth/components';
-import { formatDate, formatMoneyValue, getDaysDue } from '@/lib';
+import {
+  formatDate,
+  formatMoneyValue,
+  getDaysDue,
+} from '@/lib';
 import { cn } from '@/lib/utils';
 
 import useDeleteIncome from '../delete/hooks/useDeleteIncome';
@@ -61,7 +65,15 @@ function getUrgencyStyle(days: number): {
  * Uses green color palette to represent positive cash flow.
  */
 function IncomeMobileCard({ income }: IncomeMobileCardProps) {
-  const { description, nextDue, endDate, amount, note, account } = income;
+  const {
+    description,
+    nextDue,
+    endDate,
+    amount,
+    note,
+    account,
+    excludeFromCalcs,
+  } = income;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { error, setError } = useErrorContext();
   const navigate = useNavigate();
@@ -98,23 +110,41 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
       <Card
         className={cn(
           'transition-all duration-200 hover:shadow-md py-2 lg:py-2.5 gap-0 flex flex-col',
-          borderClass,
-          bgClass,
+          excludeFromCalcs &&
+            'opacity-70 border-slate-400/80 dark:border-slate-500/80',
+          !excludeFromCalcs && borderClass,
+          !excludeFromCalcs && bgClass,
         )}
       >
         <CardContent className="px-2 lg:px-2.5 flex flex-col flex-1">
           <div className="flex flex-col h-full">
             {/* Income Description */}
-            <div className="mb-0.5">
-              <div className="flex items-start justify-between gap-2 text-green-700 dark:text-green-300">
+            <div className="mb-0">
+              <div
+                className={cn(
+                  'flex items-start justify-between gap-2',
+                  excludeFromCalcs
+                    ? 'text-slate-600 dark:text-slate-300'
+                    : 'text-green-700 dark:text-green-300',
+                )}
+              >
                 <span className="font-bold text-base lg:text-lg leading-tight">
                   {description}
                 </span>
-                {note && (
+                {excludeFromCalcs ? (
+                  <div
+                    className="shrink-0 text-slate-500 dark:text-slate-400"
+                    aria-label="Excluded from calculations"
+                    title="Excluded from calculations"
+                  >
+                    <EyeOff className="h-4 w-4" aria-hidden="true" />
+                    <span className="sr-only">Excluded from calculations</span>
+                  </div>
+                ) : note ? (
                   <div className="shrink-0">
                     <NotePopover note={note} />
                   </div>
-                )}
+                ) : null}
               </div>
             </div>
 
@@ -138,17 +168,18 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
                     </span>
                   </div>
                   <div className="mt-px min-h-[0.875rem] flex items-center justify-end text-[10px] lg:text-xs leading-none text-muted-foreground">
-                    {days > 0 ? (
-                      `(${days} ${days === 1 ? 'day' : 'days'})`
-                    ) : days < 0 ? (
-                      <span className="text-red-600 dark:text-red-400">
-                        Overdue
-                      </span>
-                    ) : (
-                      <span className="text-orange-600 dark:text-orange-400">
-                        Due Today
-                      </span>
-                    )}
+                    {!excludeFromCalcs &&
+                      (days > 0 ? (
+                        `(${days} ${days === 1 ? 'day' : 'days'})`
+                      ) : days < 0 ? (
+                        <span className="text-red-600 dark:text-red-400">
+                          Overdue
+                        </span>
+                      ) : (
+                        <span className="text-orange-600 dark:text-orange-400">
+                          Due Today
+                        </span>
+                      ))}
                   </div>
                 </div>
 
@@ -167,7 +198,14 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
                   <span className="text-[11px] lg:text-sm font-medium text-foreground">
                     Amount:
                   </span>
-                  <span className="text-sm lg:text-lg font-bold text-green-600 dark:text-green-400">
+                  <span
+                    className={cn(
+                      'text-sm lg:text-lg font-bold',
+                      excludeFromCalcs
+                        ? 'text-slate-500 dark:text-slate-400'
+                        : 'text-green-600 dark:text-green-400',
+                    )}
+                  >
                     {formatMoneyValue(amount)}
                   </span>
                 </div>
