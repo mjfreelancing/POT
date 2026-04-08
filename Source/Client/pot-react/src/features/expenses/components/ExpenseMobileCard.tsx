@@ -16,11 +16,7 @@ import {
 import { useErrorContext } from '@/contexts';
 import type { Expense } from '@/data';
 import { WithPermission } from '@/features/auth/components';
-import {
-  formatDate,
-  formatMoneyValue,
-  getDaysDue,
-} from '@/lib';
+import { formatDate, formatMoneyValue, getDaysDue } from '@/lib';
 import { cn } from '@/lib/utils';
 
 import useDeleteExpense from '../delete/hooks/useDeleteExpense';
