@@ -1,5 +1,7 @@
 ﻿using Pot.AspNetCore.Integration.Tests.Host;
 using Pot.AspNetCore.Integration.Tests.Host.Extensions;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Shouldly;
 using System.Net.Http.Json;
 
@@ -7,10 +9,36 @@ namespace Pot.AspNetCore.Integration.Tests.Pipeline;
 
 public class CorsFixture : IClassFixture<ProductionApiWebApplicationFactory>
 {
+    private sealed class DelimitedCorsApiWebApplicationFactory : ApiWebApplicationFactory
+    {
+        private readonly string _delimiter;
+
+        public DelimitedCorsApiWebApplicationFactory(string delimiter)
+        {
+            _delimiter = delimiter;
+        }
+
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        {
+            base.ConfigureWebHost(builder);
+
+            builder.UseEnvironment("Production");
+
+            builder.ConfigureAppConfiguration((_, configurationBuilder) =>
+            {
+                configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["Cors:AllowedOrigins"] = $"{AllowedOrigin}{_delimiter}{AllowedOrigin2}"
+                });
+            });
+        }
+    }
+
     private const string AccessControlAllowCredentials = "Access-Control-Allow-Credentials";
     private const string AccessControlAllowOrigin = "Access-Control-Allow-Origin";
 
     private const string AllowedOrigin = "http://localhost:3000";
+    private const string AllowedOrigin2 = "https://www.localhost:3000";
     private const string DisallowedOrigin = "https://disallowed.example.com";
 
     private readonly ProductionApiWebApplicationFactory _factory;
@@ -33,6 +61,25 @@ public class CorsFixture : IClassFixture<ProductionApiWebApplicationFactory>
         var allowOriginValues = response.ShouldHaveHeaderValues(AccessControlAllowOrigin);
 
         allowOriginValues.Single().ShouldBe(AllowedOrigin);
+        response.ShouldContainHeader(AccessControlAllowCredentials);
+    }
+
+    [Theory]
+    [InlineData(",")]
+    [InlineData(";")]
+    public async Task Should_Return_Cors_Headers_For_Second_Configured_Origin_Preflight_Request(string delimiter)
+    {
+        using var factory = new DelimitedCorsApiWebApplicationFactory(delimiter);
+        using var client = factory.CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Options, "/api/auth/logout");
+        request.Headers.Add("Origin", AllowedOrigin2);
+        request.Headers.Add("Access-Control-Request-Method", "POST");
+
+        var response = await client.SendAsync(request);
+        var allowOriginValues = response.ShouldHaveHeaderValues(AccessControlAllowOrigin);
+
+        allowOriginValues.Single().ShouldBe(AllowedOrigin2);
         response.ShouldContainHeader(AccessControlAllowCredentials);
     }
 
@@ -87,4 +134,5 @@ public class CorsFixture : IClassFixture<ProductionApiWebApplicationFactory>
         ((int)response.StatusCode).ShouldBe(422);
         response.ShouldNotContainHeader(AccessControlAllowOrigin);
     }
+
 }

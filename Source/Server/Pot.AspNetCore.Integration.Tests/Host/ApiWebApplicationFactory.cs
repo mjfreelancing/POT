@@ -15,7 +15,7 @@ public abstract class ApiWebApplicationFactory : WebApplicationFactory<Program>
         {
             configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["Cors:AllowedOrigins"] = "http://localhost:3000",
+                ["Cors:AllowedOrigins"] = "http://localhost:3000,https://www.localhost:3000",
                 ["Database:Name"] = "pot_test",
                 ["Database:Host"] = "localhost",
                 ["Database:Username"] = "test",

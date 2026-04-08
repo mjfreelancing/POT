@@ -21,7 +21,7 @@ public sealed class CorsConfigurationSetup : IConfigureOptions<CorsConfiguration
 
     public ValidateOptionsResult Validate(string? name, CorsConfiguration options)
     {
-        if (options.AllowedOrigins.IsNullOrEmpty())
+        if (options.AllowedOrigins.IsNullOrEmpty() || options.GetAllowedOrigins().Count == 0)
         {
             return InvalidOption(nameof(CorsConfiguration.AllowedOrigins));
         }

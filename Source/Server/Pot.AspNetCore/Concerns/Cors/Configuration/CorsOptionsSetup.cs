@@ -15,11 +15,13 @@ public sealed class CorsOptionsSetup : IConfigureOptions<CorsOptions>
 
     public void Configure(CorsOptions options)
     {
+        var allowedOrigins = _corsConfiguration.GetAllowedOrigins().ToArray();
+
         options.AddDefaultPolicy(policy =>
         {
             policy
                 // Allow frontend URLs
-                .WithOrigins(_corsConfiguration.AllowedOrigins)
+                .WithOrigins(allowedOrigins)
 
                 .AllowAnyMethod()
                 .AllowAnyHeader()
