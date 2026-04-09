@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { AccrualPolicy, Frequency, RenewalMode } from '@/lib';
+import { AccrualPolicy, compareDates, Frequency, RenewalMode } from '@/lib';
 
 import { EtagSchema, IdentitySchema } from './identity';
 import type { Paged } from './types';
@@ -58,8 +58,29 @@ type PagedExpense = Paged<Expense>;
 
 const EMPTY_EXPENSE_ARRAY: Expense[] = [];
 
+const compareExpenseNextDue = (lhs: Expense, rhs: Expense): number => {
+  const dueDateCompare = compareDates(lhs.nextDue, rhs.nextDue);
+
+  if (dueDateCompare !== 0) {
+    return dueDateCompare;
+  }
+
+  const descriptionCompare = lhs.description.localeCompare(
+    rhs.description,
+    'en',
+    { sensitivity: 'base' },
+  );
+
+  if (descriptionCompare !== 0) {
+    return descriptionCompare;
+  }
+
+  return 0;
+};
+
 export {
   BaseExpenseSchema,
+  compareExpenseNextDue,
   CreateExpenseSchema,
   EditExpenseSchema,
   EMPTY_EXPENSE_ARRAY,

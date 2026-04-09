@@ -54,7 +54,23 @@ type ToggleExcludeIncomes = z.infer<typeof ToggleExcludeIncomesSchema>;
 const EMPTY_INCOME_ARRAY: Income[] = [];
 
 const compareIncomeNextDue = (lhs: Income, rhs: Income): number => {
-  return compareDates(lhs.nextDue, rhs.nextDue);
+  const dueDateCompare = compareDates(lhs.nextDue, rhs.nextDue);
+
+  if (dueDateCompare !== 0) {
+    return dueDateCompare;
+  }
+
+  const descriptionCompare = lhs.description.localeCompare(
+    rhs.description,
+    'en',
+    { sensitivity: 'base' },
+  );
+
+  if (descriptionCompare !== 0) {
+    return descriptionCompare;
+  }
+
+  return 0;
 };
 
 export {
