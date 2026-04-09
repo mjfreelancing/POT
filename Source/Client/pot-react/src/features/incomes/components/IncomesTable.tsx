@@ -26,12 +26,12 @@ import type { Income } from '@/data';
 import { usePermissions } from '@/hooks';
 import {
   getAdornedIncomeDescription,
-  getDaysDue,
   getTableRowClassName,
   RenewalMode,
 } from '@/lib';
 
 import { renewIncomes, toggleExcludeIncomes } from '../bulkActions';
+import { splitIncomesByActionability } from '../utils/splitIncomesByActionability';
 import IncomeActions from './IncomeActions';
 
 type IncomesTableProps = {
@@ -81,21 +81,8 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
   const canManageIncomes = hasPermission('income:manage');
 
   async function processMarkAsReceived() {
-    const excludedIncomes = pendingIncomes.filter(
-      income => income.excludeFromCalcs,
-    );
-
-    const actionableIncomes = pendingIncomes.filter(
-      income => !income.excludeFromCalcs,
-    );
-
-    const futureIncomes = actionableIncomes.filter(
-      income => getDaysDue(income.nextDue) > 0,
-    );
-
-    const overdueIncomes = actionableIncomes.filter(
-      income => getDaysDue(income.nextDue) <= 0,
-    );
+    const { excludedIncomes, futureIncomes, overdueIncomes } =
+      splitIncomesByActionability(pendingIncomes);
 
     let hasErrors = false;
 
@@ -163,21 +150,12 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
   }
 
   function getConfirmationMessage(incomes: Income[]): React.ReactNode {
-    const excludedCount = incomes.filter(
-      income => income.excludeFromCalcs,
-    ).length;
+    const { excludedIncomes, futureIncomes, overdueIncomes } =
+      splitIncomesByActionability(incomes);
 
-    const actionableIncomes = incomes.filter(
-      income => !income.excludeFromCalcs,
-    );
-
-    const futureCount = actionableIncomes.filter(
-      income => getDaysDue(income.nextDue) > 0,
-    ).length;
-
-    const overdueCount = actionableIncomes.filter(
-      income => getDaysDue(income.nextDue) <= 0,
-    ).length;
+    const excludedCount = excludedIncomes.length;
+    const futureCount = futureIncomes.length;
+    const overdueCount = overdueIncomes.length;
 
     return (
       <div className="space-y-3">
@@ -226,6 +204,10 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
     {
       label: 'Mark as Received',
       isDisabled: !canManageIncomes,
+      // Hide this action when exactly one excluded item is selected because
+      // renewal is skipped for excluded items and the due date would not change.
+      isHidden: (selectedItems: Income[]) =>
+        selectedItems.length === 1 && selectedItems[0].excludeFromCalcs,
       onClick: async (selectedItems: Income[]) => {
         setPendingIncomes(selectedItems);
         setShowConfirmation(true);

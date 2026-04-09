@@ -20,6 +20,8 @@ type BulkAction<TData> = {
   onClick: (selectedItems: TData[]) => void;
   /** Whether this action is currently disabled */
   isDisabled?: boolean;
+  /** Whether this action should be hidden for the current selection */
+  isHidden?: (selectedItems: TData[]) => boolean;
   /** Whether to clear all row selection after the action completes */
   clearSelectionOnComplete?: boolean;
 };
@@ -114,6 +116,12 @@ function BulkActionsBar<TData>({
         <DropdownMenuContent align="start">
           {/* Render each bulk action as a dropdown menu item */}
           {bulkActions.map((action, index) => {
+            const isHidden = action.isHidden?.(selectedItems) ?? false;
+
+            if (isHidden) {
+              return null;
+            }
+
             const isDisabled = selectedCount === 0 || action.isDisabled;
 
             if (!isDisabled) {

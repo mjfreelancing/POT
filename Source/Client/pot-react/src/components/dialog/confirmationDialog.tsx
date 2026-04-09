@@ -23,19 +23,19 @@ function ConfirmationDialog({
   open,
   title,
   description,
-  confirmLabel,
-  cancelLabel,
+  confirmLabel = 'Confirm',
+  cancelLabel = 'Cancel',
   onConfirm,
   onCancel,
 }: ConfirmationDialogProps) {
   return (
     <AlertDialog open={open}>
       <AlertDialogContent>
-        <AlertDialogHeader>
+        <AlertDialogHeader className="text-left">
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
+        <AlertDialogFooter className="flex-row justify-end">
           <AlertDialogAction onClick={onConfirm}>
             {confirmLabel}
           </AlertDialogAction>

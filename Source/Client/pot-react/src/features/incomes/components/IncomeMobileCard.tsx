@@ -34,6 +34,7 @@ import { cn } from '@/lib/utils';
 
 import { renewIncomes, toggleExcludeIncomes } from '../bulkActions';
 import useDeleteIncome from '../delete/hooks/useDeleteIncome';
+import { splitIncomesByActionability } from '../utils/splitIncomesByActionability';
 
 type IncomeMobileCardProps = {
   income: Income;
@@ -98,11 +99,19 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
   const excludeIncomesMutation = useApiToggleExcludeIncomes();
   const days = getDaysDue(nextDue);
   const { borderClass, bgClass } = getUrgencyStyle(days);
+
+  // Wrap the current item in a single-item array so mobile and table flows
+  // share the same actionability rules (excluded/future/overdue) in one place.
+  const { excludedIncomes, overdueIncomes } = splitIncomesByActionability([
+    income,
+  ]);
+
+  const isExcludedForAction = excludedIncomes.length > 0;
+  const isOverdueForAction = overdueIncomes.length > 0;
   const isActionInProgress = isRenewing || isTogglingExclusion;
-  const isOverdue = days <= 0;
 
   function getMarkAsReceivedConfirmationMessage(): React.ReactNode {
-    if (excludeFromCalcs) {
+    if (isExcludedForAction) {
       return (
         <div className="space-y-3">
           <div className="flex items-start gap-3">
@@ -114,11 +123,14 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
               is excluded from calculations and will be skipped.
             </div>
           </div>
+          <div className="text-sm text-muted-foreground pt-2 border-t">
+            This action cannot be undone.
+          </div>
         </div>
       );
     }
 
-    if (isOverdue) {
+    if (isOverdueForAction) {
       return (
         <div className="space-y-3">
           <div className="flex items-start gap-3">
@@ -172,7 +184,7 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
   };
 
   const processMarkAsReceived = async () => {
-    if (excludeFromCalcs) {
+    if (isExcludedForAction) {
       setShowMarkAsReceivedDialog(false);
       toast(
         <SuccessToast
@@ -185,7 +197,7 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
     }
 
     setIsRenewing(true);
-    const mode = isOverdue ? RenewalMode.Overdue : RenewalMode.Future;
+    const mode = isOverdueForAction ? RenewalMode.Overdue : RenewalMode.Future;
 
     const result = await renewIncomes(
       [income.rowId],
@@ -198,9 +210,11 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
     setShowMarkAsReceivedDialog(false);
 
     if (result.success) {
-      const icon = isOverdue ? FastForward : CheckCircle;
-      const title = isOverdue ? 'Renewal Advanced' : 'Marked as Received';
-      const successDescription = isOverdue
+      const icon = isOverdueForAction ? FastForward : CheckCircle;
+      const title = isOverdueForAction
+        ? 'Renewal Advanced'
+        : 'Marked as Received';
+      const successDescription = isOverdueForAction
         ? `${description} renewal advanced.`
         : `${description} marked as received.`;
 
@@ -395,15 +409,21 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
                     <DropdownMenuLabel className="text-sm font-semibold">
                       Actions
                     </DropdownMenuLabel>
-                    <WithPermission permissions={['income:manage']} mode="all">
-                      <DropdownMenuItem
-                        onClick={() => setShowMarkAsReceivedDialog(true)}
-                        disabled={isActionInProgress}
+                    {/* Excluded items cannot be marked as received because renewal is skipped and due date does not change. */}
+                    {!isExcludedForAction && (
+                      <WithPermission
+                        permissions={['income:manage']}
+                        mode="all"
                       >
-                        <CheckCircle className="mr-2 h-4 w-4" />
-                        Mark as Received
-                      </DropdownMenuItem>
-                    </WithPermission>
+                        <DropdownMenuItem
+                          onClick={() => setShowMarkAsReceivedDialog(true)}
+                          disabled={isActionInProgress}
+                        >
+                          <CheckCircle className="mr-2 h-4 w-4" />
+                          Mark as Received
+                        </DropdownMenuItem>
+                      </WithPermission>
+                    )}
 
                     <WithPermission permissions={['income:manage']} mode="all">
                       <DropdownMenuItem
@@ -468,6 +488,7 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
         title="Mark Income as Received"
         description={getMarkAsReceivedConfirmationMessage()}
         confirmLabel="Proceed"
+        cancelLabel="Cancel"
       />
 
       <ConfirmationDialog

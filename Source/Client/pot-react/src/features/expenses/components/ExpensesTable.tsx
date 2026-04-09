@@ -33,12 +33,12 @@ import {
   AccrualPolicy,
   formatMoneyValue,
   getAdornedExpenseDescription,
-  getDaysDue,
   getTableRowClassName,
   RenewalMode,
 } from '@/lib';
 
 import { renewExpenses, toggleExcludeExpenses } from '../bulkActions';
+import { splitExpensesByActionability } from '../utils/splitExpensesByActionability';
 import ExpenseActions from './ExpenseActions';
 
 const columns: ColumnDef<Expense>[] = [
@@ -107,21 +107,8 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
   const canManageExpenses = hasPermission('expense:manage');
 
   async function processMarkAsPaid() {
-    const excludedExpenses = pendingExpenses.filter(
-      expense => expense.excludeFromCalcs,
-    );
-
-    const actionableExpenses = pendingExpenses.filter(
-      expense => !expense.excludeFromCalcs,
-    );
-
-    const futureExpenses = actionableExpenses.filter(
-      expense => getDaysDue(expense.nextDue) > 0,
-    );
-
-    const overdueExpenses = actionableExpenses.filter(
-      expense => getDaysDue(expense.nextDue) <= 0,
-    );
+    const { excludedExpenses, futureExpenses, overdueExpenses } =
+      splitExpensesByActionability(pendingExpenses);
 
     let hasErrors = false;
 
@@ -190,21 +177,12 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
   }
 
   function getConfirmationMessage(expenses: Expense[]): React.ReactNode {
-    const excludedCount = expenses.filter(
-      expense => expense.excludeFromCalcs,
-    ).length;
+    const { excludedExpenses, futureExpenses, overdueExpenses } =
+      splitExpensesByActionability(expenses);
 
-    const actionableExpenses = expenses.filter(
-      expense => !expense.excludeFromCalcs,
-    );
-
-    const futureCount = actionableExpenses.filter(
-      expense => getDaysDue(expense.nextDue) > 0,
-    ).length;
-
-    const overdueCount = actionableExpenses.filter(
-      expense => getDaysDue(expense.nextDue) <= 0,
-    ).length;
+    const excludedCount = excludedExpenses.length;
+    const futureCount = futureExpenses.length;
+    const overdueCount = overdueExpenses.length;
 
     return (
       <div className="space-y-3">
@@ -253,6 +231,10 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
     {
       label: 'Mark as Paid',
       isDisabled: !canManageExpenses,
+      // Hide this action when exactly one excluded item is selected because
+      // renewal is skipped for excluded items and the due date would not change.
+      isHidden: (selectedItems: Expense[]) =>
+        selectedItems.length === 1 && selectedItems[0].excludeFromCalcs,
       onClick: async (selectedItems: Expense[]) => {
         setPendingExpenses(selectedItems);
         setShowConfirmation(true);

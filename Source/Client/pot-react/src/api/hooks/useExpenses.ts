@@ -9,6 +9,7 @@ import type {
   RenewExpenses,
   ToggleExcludeExpenses,
 } from '@/data';
+import { compareExpenseNextDue } from '@/data';
 import type { FailResultBase, Result } from '@/lib';
 import { SuccessResult } from '@/lib';
 
@@ -24,10 +25,9 @@ const useApiGetAllExpenses = () => {
 
   const data = useMemo(() => {
     if (result?.success) {
-      // Not sorting client-side since the server performs this to ensure pagination is consistent.
-      // ...although we are requesting all data at this stage.
       const paged: PagedExpense = {
         ...result.value,
+        results: [...result.value.results].sort(compareExpenseNextDue),
       };
 
       return new SuccessResult(paged);
