@@ -1,25 +1,19 @@
 ﻿using AllOverIt.Assertion;
-using AllOverIt.EntityFrameworkCore.Pagination.Extensions;
-using AllOverIt.Pagination;
-using AllOverIt.Pagination.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Pot.Data.Entities;
 using Pot.Data.Extensions;
 using Pot.Data.Specifications;
-using Pot.Shared;
 
 namespace Pot.Data.Repositories.Expenses;
 
 internal sealed class ExpenseRepository : PersistableRepository, IPersistableExpenseRepository
 {
-    private readonly IQueryPaginatorFactory _queryPaginatorFactory;
-
     public IQueryable<ExpenseEntity> Expenses => _dbContext.Expenses;
 
-    public ExpenseRepository(PotDbContext dbContext, IQueryPaginatorFactory queryPaginatorFactory)
+    public ExpenseRepository(PotDbContext dbContext)
         : base(dbContext)
     {
-        _queryPaginatorFactory = queryPaginatorFactory.WhenNotNull();
+        _ = dbContext.WhenNotNull();
     }
 
     public Task<List<ExpenseEntity>> GetAllExpensesAsync(CancellationToken cancellationToken)
@@ -27,29 +21,6 @@ internal sealed class ExpenseRepository : PersistableRepository, IPersistableExp
         return Expenses
             .Include(expense => expense.Account)
             .ToListAsync(cancellationToken);
-    }
-
-    public Task<PageResult<ExpenseEntity>> GetAllExpensesPagedAsync(Paging paging, CancellationToken cancellationToken)
-    {
-        var incomeQuery = Expenses.Include(expense => expense.Account);
-
-        var paginatorConfig = new QueryPaginatorConfiguration
-        {
-            PageSize = paging.Limit,
-            PaginationDirection = PaginationDirection.Forward,
-            UseParameterizedQueries = true,
-            ContinuationTokenOptions =
-            {
-                IncludeHash = true,
-                UseCompression = false
-            }
-        };
-
-        // The OrderBy needs Description + Id to ensure pagination works correctly
-        return _queryPaginatorFactory
-            .CreatePaginator(incomeQuery, paginatorConfig)
-            .ColumnAscending(entity => entity.NextDue, entity => entity.Description, entity => entity.Id)
-            .GetPageResultsAsync(paging.Continuation, cancellationToken);
     }
 
     public Task<ExpenseEntity?> GetExpenseOrDefaultAsync(Guid rowId, CancellationToken cancellationToken)

@@ -1,5 +1,4 @@
-﻿using AllOverIt.Pagination;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Expenses;
@@ -43,11 +42,6 @@ public class ExpenseRepositoryFixture : PotFixtureBase
         public Task<List<ExpenseEntity>> GetAllExpensesAsync(CancellationToken cancellationToken = default)
         {
             return Repository.GetAllExpensesAsync(cancellationToken);
-        }
-
-        public Task<PageResult<ExpenseEntity>> GetAllExpensesPagedAsync(Paging paging, CancellationToken cancellationToken = default)
-        {
-            return Repository.GetAllExpensesPagedAsync(paging, cancellationToken);
         }
 
         public Task<ExpenseEntity?> GetExpenseOrDefaultAsync(Guid rowId, CancellationToken cancellationToken = default)
@@ -100,74 +94,6 @@ public class ExpenseRepositoryFixture : PotFixtureBase
         }
     }
 
-    public class GetAllExpensesPagedAsync : ExpenseRepositoryFixture
-    {
-        [Fact]
-        public async Task Should_Return_First_Page_Using_Repository_Paging()
-        {
-            using var context = CreateTestContext();
-
-            var account = EntityFactory.CreateAccount(context.Site, "Expense Account", 1000.0);
-            var expense1 = EntityFactory.CreateExpense(account, false, "A Expense", 100, "2025-01-01", "2025-01-10", null, Frequency.Months, 1);
-            var expense2 = EntityFactory.CreateExpense(account, false, "B Expense", 100, "2025-01-01", "2025-01-11", null, Frequency.Months, 1);
-            var expense3 = EntityFactory.CreateExpense(account, false, "C Expense", 100, "2025-01-01", "2025-01-12", null, Frequency.Months, 1);
-
-            account.Expenses.Add(expense1);
-            account.Expenses.Add(expense2);
-            account.Expenses.Add(expense3);
-
-            await context.AddAccountsAsync(account);
-
-            var paging = new Paging
-            {
-                Limit = 2,
-                Continuation = null
-            };
-
-            var result = await context.GetAllExpensesPagedAsync(paging);
-
-            result.ShouldNotBeNull();
-
-            result.Results[0].RowId.ShouldBe(expense1.RowId);
-            result.Results[1].RowId.ShouldBe(expense2.RowId);
-
-            result.CurrentToken.ShouldBeNull();
-            result.PreviousToken.ShouldBeNull();
-            result.NextToken.ShouldNotBeNull();
-            result.TotalCount.ShouldBe(3);
-        }
-
-        [Fact]
-        public async Task Should_Order_By_NextDue_Then_Description_Then_Id()
-        {
-            using var context = CreateTestContext();
-
-            var account = EntityFactory.CreateAccount(context.Site, "Expense Account", 1000.0);
-
-            var sameDueEarlierDescription = EntityFactory.CreateExpense(account, false, "A Expense", 100, "2025-01-01", "2025-01-10", null, Frequency.Months, 1);
-            var sameDueSameDescriptionFirst = EntityFactory.CreateExpense(account, false, "B Expense", 100, "2025-01-01", "2025-01-10", null, Frequency.Months, 1);
-            var sameDueSameDescriptionSecond = EntityFactory.CreateExpense(account, false, "B Expense", 100, "2025-01-01", "2025-01-10", null, Frequency.Months, 1);
-
-            account.Expenses.Add(sameDueSameDescriptionSecond);
-            account.Expenses.Add(sameDueEarlierDescription);
-            account.Expenses.Add(sameDueSameDescriptionFirst);
-
-            await context.AddAccountsAsync(account);
-
-            var paging = new Paging
-            {
-                Limit = 3,
-                Continuation = null
-            };
-
-            var result = await context.GetAllExpensesPagedAsync(paging);
-
-            result.Results.Length.ShouldBe(3);
-            result.Results[0].RowId.ShouldBe(sameDueEarlierDescription.RowId);
-            result.Results[1].RowId.ShouldBe(sameDueSameDescriptionSecond.RowId);
-            result.Results[2].RowId.ShouldBe(sameDueSameDescriptionFirst.RowId);
-        }
-    }
 
     public class GetExpenseOrDefaultAsync : ExpenseRepositoryFixture
     {
@@ -403,15 +329,7 @@ public class ExpenseRepositoryFixture : PotFixtureBase
         dbContext.Add(user);
         dbContext.SaveChanges();
 
-        var queryPaginatorFactory = Substitute.For<IQueryPaginatorFactory>();
-
-        queryPaginatorFactory
-            .CreatePaginator(Arg.Any<IQueryable<ExpenseEntity>>(), Arg.Any<QueryPaginatorConfiguration>())
-            .Returns(callInfo => QueryPaginator<ExpenseEntity>.Create(
-                callInfo.ArgAt<IQueryable<ExpenseEntity>>(0),
-                callInfo.ArgAt<QueryPaginatorConfiguration>(1)));
-
-        var repository = new ExpenseRepository(dbContext, queryPaginatorFactory);
+        var repository = new ExpenseRepository(dbContext);
 
         return new TestContext(dbContext, repository, site);
     }

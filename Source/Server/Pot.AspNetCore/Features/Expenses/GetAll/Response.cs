@@ -1,6 +1,5 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Extensions;
-using AllOverIt.Pagination;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.App.Features.Expenses.GetAll.Models;
 using Pot.AspNetCore.Models;
@@ -53,13 +52,11 @@ internal sealed class Response : ResponseBase
     [Description("A note about the expense")]
     public string? Note { get; init; }
 
-    public static Ok<PagedResponse<Response>> Ok(PageResult<Output> expenses)
+    public static Ok<Response[]> Ok(List<Output> expenses)
     {
-        var results = expenses.Results.SelectToArray(expense => new Response(expense));
+        var responses = expenses.SelectToArray(expense => new Response(expense));
 
-        var response = PagedResponse<Response>.CreateFromPageResult(expenses, results);
-
-        return TypedResults.Ok(response);
+        return TypedResults.Ok(responses);
     }
 
     private Response(Output expense)

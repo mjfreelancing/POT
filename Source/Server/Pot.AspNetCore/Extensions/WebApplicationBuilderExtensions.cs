@@ -1,5 +1,4 @@
 ﻿using AllOverIt.DependencyInjection.Extensions;
-using AllOverIt.Pagination.Extensions;
 using AllOverIt.Serialization.Json.SystemText.Converters;
 using AllOverIt.Validation;
 using AllOverIt.Validation.Extensions;
@@ -304,7 +303,6 @@ internal static class WebApplicationBuilderExtensions
 
                 options.ConfigurePostgres(connectionString);
             })
-            .AddQueryPagination()
             .AddUnitOfWork();
 
         return builder;
