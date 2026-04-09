@@ -89,8 +89,7 @@ function ExpensesOverview({ isOpen, onOpenChange }: ExpensesOverviewProps) {
   const { error, setError } = useErrorContext();
 
   const expenses = useMemo(
-    () =>
-      expensesData?.success ? expensesData.value.results : EMPTY_EXPENSE_ARRAY,
+    () => (expensesData?.success ? expensesData.value : EMPTY_EXPENSE_ARRAY),
     [expensesData],
   );
 

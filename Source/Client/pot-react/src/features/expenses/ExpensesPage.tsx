@@ -1,8 +1,6 @@
 import { Plus } from 'lucide-react';
-import { useMemo, useState } from 'react';
-import { useEffect } from 'react';
-import { Outlet, useSearchParams } from 'react-router';
-import { useNavigate } from 'react-router';
+import { useEffect, useMemo, useState } from 'react';
+import { Outlet, useNavigate, useSearchParams } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetAllExpenses } from '@/api/hooks';
 import { ErrorSheet, LoadingOverlay } from '@/components/feedback';
@@ -68,7 +66,7 @@ function ExpensesPage() {
 
   // Memoize data arrays to prevent unnecessary re-renders
   const expenses = useMemo(
-    () => (expensesResult?.success ? expensesResult.value.results : []),
+    () => (expensesResult?.success ? expensesResult.value : []),
     [expensesResult],
   );
   const accounts = useMemo(

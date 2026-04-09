@@ -5,7 +5,6 @@ import type {
   EditExpense,
   Expense,
   Identity,
-  PagedExpense,
   RenewExpenses,
   ToggleExcludeExpenses,
 } from '@/data';
@@ -20,17 +19,15 @@ type ByIdOptions = {
 };
 
 const useApiGetAllExpenses = () => {
-  const query = useGet<PagedExpense>('/expenses', ['expenses']);
-  const result = query.data as Result<PagedExpense, FailResultBase>;
+  const query = useGet<Expense[]>('/expenses', ['expenses']);
+  const result = query.data as Result<Expense[], FailResultBase>;
 
   const data = useMemo(() => {
     if (result?.success) {
-      const paged: PagedExpense = {
-        ...result.value,
-        results: [...result.value.results].sort(compareExpenseNextDue),
-      };
-
-      return new SuccessResult(paged);
+      // spreading [...result.value] to create a shallow copy of the array since
+      // sort() mutates the source array in the react-query cache.
+      const sortedResults = [...result.value].sort(compareExpenseNextDue);
+      return new SuccessResult(sortedResults);
     }
 
     // type narrowed to FailResult<FailResultBase> since result cannot be undefined at this point

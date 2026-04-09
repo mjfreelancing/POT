@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { AccrualPolicy, compareDates, Frequency, RenewalMode } from '@/lib';
 
 import { EtagSchema, IdentitySchema } from './identity';
-import type { Paged } from './types';
 
 const ExpenseAccountSchema = z.object({
   rowId: z.string(),
@@ -54,7 +53,6 @@ type CreateExpense = z.infer<typeof CreateExpenseSchema>;
 type EditExpense = z.infer<typeof EditExpenseSchema>;
 type ToggleExcludeExpenses = z.infer<typeof ToggleExcludeExpensesSchema>;
 type RenewExpenses = z.infer<typeof RenewExpensesSchema>;
-type PagedExpense = Paged<Expense>;
 
 const EMPTY_EXPENSE_ARRAY: Expense[] = [];
 
@@ -94,7 +92,6 @@ export type {
   CreateExpense,
   EditExpense,
   Expense,
-  PagedExpense,
   RenewExpenses,
   ToggleExcludeExpenses,
 };
