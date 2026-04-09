@@ -1,9 +1,24 @@
-import { Copy, EyeOff, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import {
+  CheckCircle,
+  Copy,
+  EyeOff,
+  FastForward,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+} from 'lucide-react';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
+import { toast } from 'sonner';
 
+import {
+  useApiRenewExpenses,
+  useApiToggleExcludeExpenses,
+} from '@/api/hooks/useExpenses';
 import { ConfirmationDialog } from '@/components/dialog';
 import { ErrorSheet, NotePopover } from '@/components/feedback';
+import { SuccessToast } from '@/components/feedback/toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -11,14 +26,16 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useErrorContext } from '@/contexts';
 import type { Expense } from '@/data';
 import { WithPermission } from '@/features/auth/components';
-import { formatDate, formatMoneyValue, getDaysDue } from '@/lib';
+import { formatDate, formatMoneyValue, getDaysDue, RenewalMode } from '@/lib';
 import { cn } from '@/lib/utils';
 
+import { renewExpenses, toggleExcludeExpenses } from '../bulkActions';
 import useDeleteExpense from '../delete/hooks/useDeleteExpense';
 
 type ExpenseMobileCardProps = {
@@ -64,16 +81,78 @@ function ExpenseMobileCard({ expense }: ExpenseMobileCardProps) {
   const { description, nextDue, amount, note, account, excludeFromCalcs } =
     expense;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showMarkAsPaidDialog, setShowMarkAsPaidDialog] = useState(false);
+  const [isRenewing, setIsRenewing] = useState(false);
+  const [isTogglingExclusion, setIsTogglingExclusion] = useState(false);
   const { error, setError } = useErrorContext();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const location = useLocation();
   const { deleteExpense } = useDeleteExpense(expense.rowId);
+  const renewExpensesMutation = useApiRenewExpenses();
+  const excludeExpensesMutation = useApiToggleExcludeExpenses();
 
   // Carry active list filters (for example accountId) into edit route.
   const searchSuffix = location.search;
 
   const days = getDaysDue(nextDue);
   const { borderClass, bgClass } = getUrgencyStyle(days);
+  const isActionInProgress = isRenewing || isTogglingExclusion;
+  const isOverdue = days <= 0;
+
+  function getMarkAsPaidConfirmationMessage(): React.ReactNode {
+    if (excludeFromCalcs) {
+      return (
+        <div className="space-y-3">
+          <div className="flex items-start gap-3">
+            <EyeOff className="h-5 w-5 text-slate-600 dark:text-slate-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold text-slate-700 dark:text-slate-300">
+                {description}
+              </span>{' '}
+              is excluded from calculations and will be skipped.
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (isOverdue) {
+      return (
+        <div className="space-y-3">
+          <div className="flex items-start gap-3">
+            <FastForward className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold text-red-700 dark:text-red-300">
+                {description}
+              </span>{' '}
+              is overdue and will be caught up to its next scheduled due date.
+            </div>
+          </div>
+          <div className="text-sm text-muted-foreground pt-2 border-t">
+            This action cannot be undone.
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-3">
+        <div className="flex items-start gap-3">
+          <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <span className="font-bold text-green-700 dark:text-green-300">
+              {description}
+            </span>{' '}
+            will be marked as paid early and moved forward to the next period.
+          </div>
+        </div>
+        <div className="text-sm text-muted-foreground pt-2 border-t">
+          This action cannot be undone.
+        </div>
+      </div>
+    );
+  }
 
   const handleDelete = async () => {
     const result = await deleteExpense();
@@ -85,6 +164,91 @@ function ExpenseMobileCard({ expense }: ExpenseMobileCardProps) {
         description: result.error.description,
       });
     }
+  };
+
+  const processMarkAsPaid = async () => {
+    if (excludeFromCalcs) {
+      setShowMarkAsPaidDialog(false);
+      toast(
+        <SuccessToast
+          icon={EyeOff}
+          title="Expense Skipped"
+          description={`${description} is excluded and was not updated.`}
+        />,
+      );
+      return;
+    }
+
+    setIsRenewing(true);
+    const mode = isOverdue ? RenewalMode.Overdue : RenewalMode.Future;
+
+    const result = await renewExpenses(
+      [expense.rowId],
+      mode,
+      renewExpensesMutation,
+      queryClient,
+    );
+
+    setIsRenewing(false);
+    setShowMarkAsPaidDialog(false);
+
+    if (result.success) {
+      const icon = isOverdue ? FastForward : CheckCircle;
+      const title = isOverdue ? 'Renewal Advanced' : 'Marked as Paid';
+      const successDescription = isOverdue
+        ? `${description} renewal advanced.`
+        : `${description} marked as paid.`;
+
+      toast(
+        <SuccessToast
+          icon={icon}
+          title={title}
+          description={successDescription}
+        />,
+      );
+      return;
+    }
+
+    setError({
+      title: result.error.title,
+      description: result.error.description,
+    });
+  };
+
+  const processToggleExclusion = async () => {
+    setIsTogglingExclusion(true);
+
+    const result = await toggleExcludeExpenses(
+      [expense],
+      excludeExpensesMutation,
+      queryClient,
+    );
+
+    setIsTogglingExclusion(false);
+
+    if (result.success) {
+      const isNowExcluded = !excludeFromCalcs;
+      const title = isNowExcluded
+        ? 'Excluded from Calculations'
+        : 'Included in Calculations';
+      const successDescription = isNowExcluded
+        ? `${description} excluded from calculations.`
+        : `${description} included in calculations.`;
+
+      toast(
+        <SuccessToast
+          icon={EyeOff}
+          title={title}
+          description={successDescription}
+        />,
+      );
+      return;
+    }
+
+    setError({
+      title: result.error.title,
+      description: result.error.description,
+    });
   };
 
   return (
@@ -216,11 +380,34 @@ function ExpenseMobileCard({ expense }: ExpenseMobileCardProps) {
                     </DropdownMenuLabel>
                     <WithPermission permissions={['expense:manage']} mode="all">
                       <DropdownMenuItem
+                        onClick={() => setShowMarkAsPaidDialog(true)}
+                        disabled={isActionInProgress}
+                      >
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Mark as Paid
+                      </DropdownMenuItem>
+                    </WithPermission>
+
+                    <WithPermission permissions={['expense:manage']} mode="all">
+                      <DropdownMenuItem
+                        onClick={processToggleExclusion}
+                        disabled={isActionInProgress}
+                      >
+                        <EyeOff className="mr-2 h-4 w-4" />
+                        Toggle Exclusion
+                      </DropdownMenuItem>
+                    </WithPermission>
+
+                    <DropdownMenuSeparator />
+
+                    <WithPermission permissions={['expense:manage']} mode="all">
+                      <DropdownMenuItem
                         onClick={() =>
                           navigate(
                             `/expenses/edit/${expense.rowId}${searchSuffix}`,
                           )
                         }
+                        disabled={isActionInProgress}
                       >
                         <Pencil className="mr-2 h-4 w-4" />
                         Edit
@@ -234,6 +421,7 @@ function ExpenseMobileCard({ expense }: ExpenseMobileCardProps) {
                             `/expenses/create?duplicate=${expense.rowId}`,
                           )
                         }
+                        disabled={isActionInProgress}
                       >
                         <Copy className="mr-2 h-4 w-4" />
                         Duplicate
@@ -244,6 +432,7 @@ function ExpenseMobileCard({ expense }: ExpenseMobileCardProps) {
                       <DropdownMenuItem
                         className="text-destructive-high-contrast"
                         onClick={() => setShowDeleteDialog(true)}
+                        disabled={isActionInProgress}
                       >
                         <Trash2 className="mr-2 h-4 w-4 text-destructive-high-contrast" />
                         Delete
@@ -256,6 +445,15 @@ function ExpenseMobileCard({ expense }: ExpenseMobileCardProps) {
           </div>
         </CardContent>
       </Card>
+
+      <ConfirmationDialog
+        open={showMarkAsPaidDialog}
+        onConfirm={processMarkAsPaid}
+        onCancel={() => setShowMarkAsPaidDialog(false)}
+        title="Mark Expense as Paid"
+        description={getMarkAsPaidConfirmationMessage()}
+        confirmLabel="Proceed"
+      />
 
       <ConfirmationDialog
         open={showDeleteDialog}

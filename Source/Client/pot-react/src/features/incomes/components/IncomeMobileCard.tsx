@@ -1,9 +1,21 @@
-import { Copy, EyeOff, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import {
+  CheckCircle,
+  Copy,
+  EyeOff,
+  FastForward,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+} from 'lucide-react';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
+import { toast } from 'sonner';
 
+import { useApiRenewIncomes, useApiToggleExcludeIncomes } from '@/api/hooks';
 import { ConfirmationDialog } from '@/components/dialog';
 import { ErrorSheet, NotePopover } from '@/components/feedback';
+import { SuccessToast } from '@/components/feedback/toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -11,14 +23,16 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useErrorContext } from '@/contexts';
 import type { Income } from '@/data';
 import { WithPermission } from '@/features/auth/components';
-import { formatDate, formatMoneyValue, getDaysDue } from '@/lib';
+import { formatDate, formatMoneyValue, getDaysDue, RenewalMode } from '@/lib';
 import { cn } from '@/lib/utils';
 
+import { renewIncomes, toggleExcludeIncomes } from '../bulkActions';
 import useDeleteIncome from '../delete/hooks/useDeleteIncome';
 
 type IncomeMobileCardProps = {
@@ -71,12 +85,76 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
     excludeFromCalcs,
   } = income;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showMarkAsReceivedDialog, setShowMarkAsReceivedDialog] =
+    useState(false);
+  const [isRenewing, setIsRenewing] = useState(false);
+  const [isTogglingExclusion, setIsTogglingExclusion] = useState(false);
   const { error, setError } = useErrorContext();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const location = useLocation();
   const { deleteIncome } = useDeleteIncome(income.rowId);
+  const renewIncomesMutation = useApiRenewIncomes();
+  const excludeIncomesMutation = useApiToggleExcludeIncomes();
   const days = getDaysDue(nextDue);
   const { borderClass, bgClass } = getUrgencyStyle(days);
+  const isActionInProgress = isRenewing || isTogglingExclusion;
+  const isOverdue = days <= 0;
+
+  function getMarkAsReceivedConfirmationMessage(): React.ReactNode {
+    if (excludeFromCalcs) {
+      return (
+        <div className="space-y-3">
+          <div className="flex items-start gap-3">
+            <EyeOff className="h-5 w-5 text-slate-600 dark:text-slate-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold text-slate-700 dark:text-slate-300">
+                {description}
+              </span>{' '}
+              is excluded from calculations and will be skipped.
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (isOverdue) {
+      return (
+        <div className="space-y-3">
+          <div className="flex items-start gap-3">
+            <FastForward className="h-5 w-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold text-orange-700 dark:text-orange-300">
+                {description}
+              </span>{' '}
+              is overdue and will be caught up to its next scheduled due date.
+            </div>
+          </div>
+          <div className="text-sm text-muted-foreground pt-2 border-t">
+            This action cannot be undone.
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-3">
+        <div className="flex items-start gap-3">
+          <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <span className="font-bold text-green-700 dark:text-green-300">
+              {description}
+            </span>{' '}
+            will be marked as received early and moved forward to the next
+            period.
+          </div>
+        </div>
+        <div className="text-sm text-muted-foreground pt-2 border-t">
+          This action cannot be undone.
+        </div>
+      </div>
+    );
+  }
 
   // Carry active list filters (for example accountId) into edit route.
   const searchSuffix = location.search;
@@ -91,6 +169,91 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
         description: result.error.description,
       });
     }
+  };
+
+  const processMarkAsReceived = async () => {
+    if (excludeFromCalcs) {
+      setShowMarkAsReceivedDialog(false);
+      toast(
+        <SuccessToast
+          icon={EyeOff}
+          title="Income Skipped"
+          description={`${description} is excluded and was not updated.`}
+        />,
+      );
+      return;
+    }
+
+    setIsRenewing(true);
+    const mode = isOverdue ? RenewalMode.Overdue : RenewalMode.Future;
+
+    const result = await renewIncomes(
+      [income.rowId],
+      mode,
+      renewIncomesMutation,
+      queryClient,
+    );
+
+    setIsRenewing(false);
+    setShowMarkAsReceivedDialog(false);
+
+    if (result.success) {
+      const icon = isOverdue ? FastForward : CheckCircle;
+      const title = isOverdue ? 'Renewal Advanced' : 'Marked as Received';
+      const successDescription = isOverdue
+        ? `${description} renewal advanced.`
+        : `${description} marked as received.`;
+
+      toast(
+        <SuccessToast
+          icon={icon}
+          title={title}
+          description={successDescription}
+        />,
+      );
+      return;
+    }
+
+    setError({
+      title: result.error.title,
+      description: result.error.description,
+    });
+  };
+
+  const processToggleExclusion = async () => {
+    setIsTogglingExclusion(true);
+
+    const result = await toggleExcludeIncomes(
+      [income],
+      excludeIncomesMutation,
+      queryClient,
+    );
+
+    setIsTogglingExclusion(false);
+
+    if (result.success) {
+      const isNowExcluded = !excludeFromCalcs;
+      const title = isNowExcluded
+        ? 'Excluded from Calculations'
+        : 'Included in Calculations';
+      const successDescription = isNowExcluded
+        ? `${description} excluded from calculations.`
+        : `${description} included in calculations.`;
+
+      toast(
+        <SuccessToast
+          icon={EyeOff}
+          title={title}
+          description={successDescription}
+        />,
+      );
+      return;
+    }
+
+    setError({
+      title: result.error.title,
+      description: result.error.description,
+    });
   };
 
   return (
@@ -234,11 +397,34 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
                     </DropdownMenuLabel>
                     <WithPermission permissions={['income:manage']} mode="all">
                       <DropdownMenuItem
+                        onClick={() => setShowMarkAsReceivedDialog(true)}
+                        disabled={isActionInProgress}
+                      >
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Mark as Received
+                      </DropdownMenuItem>
+                    </WithPermission>
+
+                    <WithPermission permissions={['income:manage']} mode="all">
+                      <DropdownMenuItem
+                        onClick={processToggleExclusion}
+                        disabled={isActionInProgress}
+                      >
+                        <EyeOff className="mr-2 h-4 w-4" />
+                        Toggle Exclusion
+                      </DropdownMenuItem>
+                    </WithPermission>
+
+                    <DropdownMenuSeparator />
+
+                    <WithPermission permissions={['income:manage']} mode="all">
+                      <DropdownMenuItem
                         onClick={() =>
                           navigate(
                             `/incomes/edit/${income.rowId}${searchSuffix}`,
                           )
                         }
+                        disabled={isActionInProgress}
                       >
                         <Pencil className="mr-2 h-4 w-4" />
                         Edit
@@ -250,6 +436,7 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
                         onClick={() =>
                           navigate(`/incomes/create?duplicate=${income.rowId}`)
                         }
+                        disabled={isActionInProgress}
                       >
                         <Copy className="mr-2 h-4 w-4" />
                         Duplicate
@@ -260,6 +447,7 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
                       <DropdownMenuItem
                         className="text-destructive-high-contrast"
                         onClick={() => setShowDeleteDialog(true)}
+                        disabled={isActionInProgress}
                       >
                         <Trash2 className="mr-2 h-4 w-4 text-destructive-high-contrast" />
                         Delete
@@ -272,6 +460,15 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
           </div>
         </CardContent>
       </Card>
+
+      <ConfirmationDialog
+        open={showMarkAsReceivedDialog}
+        onConfirm={processMarkAsReceived}
+        onCancel={() => setShowMarkAsReceivedDialog(false)}
+        title="Mark Income as Received"
+        description={getMarkAsReceivedConfirmationMessage()}
+        confirmLabel="Proceed"
+      />
 
       <ConfirmationDialog
         open={showDeleteDialog}
