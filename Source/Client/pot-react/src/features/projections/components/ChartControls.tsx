@@ -1,10 +1,11 @@
 import { format } from 'date-fns';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { EnrichedDatePicker } from '@/components/picker/EnrichedDatePicker';
 import { Button } from '@/components/ui/button';
 import type { ChartConfig } from '@/components/ui/chart';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -44,6 +45,87 @@ function ChartControls({
 }: ChartControlsProps) {
   const isMobile = useIsMobile();
   const [isExpanded, setIsExpanded] = useState(false);
+
+  // Keep the input text separate from the persisted chart period so users can type/edit
+  // without losing in-progress input state.
+  const [customPeriodInput, setCustomPeriodInput] = useState(() =>
+    period.toString(),
+  );
+
+  // Custom mode is intentionally sticky: once selected, it stays active until a preset
+  // chip is explicitly chosen. This prevents auto-switching when custom values pass
+  // through preset numbers (for example 12 -> 11 -> 10 -> 9 -> 8).
+  const [isCustomPeriodSelected, setIsCustomPeriodSelected] = useState(() => {
+    return !PROJECTION_PERIODS.some(
+      periodOption => periodOption.value === period,
+    );
+  });
+
+  const customPeriodOptionValue = 'custom';
+  const minPeriodMonths = 1;
+  const maxPeriodMonths = 12;
+
+  useEffect(() => {
+    // Keep the input display in sync with external period updates (preset clicks,
+    // restored storage values, or parent-driven updates).
+    setCustomPeriodInput(period.toString());
+  }, [period]);
+
+  function clampPeriodMonths(value: number): number {
+    return Math.min(
+      maxPeriodMonths,
+      Math.max(minPeriodMonths, Math.round(value)),
+    );
+  }
+
+  function handleCustomPeriodClick() {
+    setIsCustomPeriodSelected(true);
+  }
+
+  function handleCustomPeriodInputChange(value: string) {
+    if (!/^\d*$/.test(value)) {
+      return;
+    }
+
+    setCustomPeriodInput(value);
+
+    // Apply immediately as valid numbers are typed so the chart updates in real time.
+    if (value.trim() === '') {
+      return;
+    }
+
+    const parsedValue = Number(value);
+
+    if (!Number.isFinite(parsedValue)) {
+      return;
+    }
+
+    const clampedValue = clampPeriodMonths(parsedValue);
+
+    if (clampedValue !== period) {
+      onPeriodChange(clampedValue);
+    }
+  }
+
+  function commitCustomPeriod() {
+    // Finalize/normalize custom input on blur or Enter. This ensures the value is
+    // clamped to bounds and writes a clean, displayable number back to the input.
+    if (customPeriodInput.trim() === '') {
+      setCustomPeriodInput(period.toString());
+      return;
+    }
+
+    const parsedValue = Number(customPeriodInput);
+
+    if (!Number.isFinite(parsedValue)) {
+      setCustomPeriodInput(period.toString());
+      return;
+    }
+
+    const clampedValue = clampPeriodMonths(parsedValue);
+    setCustomPeriodInput(clampedValue.toString());
+    onPeriodChange(clampedValue);
+  }
 
   // Period button style variables
   const selectedPeriodButtonClass =
@@ -148,13 +230,18 @@ function ChartControls({
                   aria-labelledby="period-label"
                 >
                   {PROJECTION_PERIODS.map(opt => {
-                    const isSelected = period === opt.value;
+                    const isSelected =
+                      !isCustomPeriodSelected && period === opt.value;
                     return (
                       <Button
                         key={opt.value}
                         variant="outline"
                         size="sm"
-                        onClick={() => onPeriodChange(opt.value)}
+                        onClick={() => {
+                          // Preset selection explicitly exits custom mode.
+                          setIsCustomPeriodSelected(false);
+                          onPeriodChange(opt.value);
+                        }}
                         className={
                           isSelected
                             ? `${selectedPeriodButtonClass} ${selectedPeriodButtonHoverClass}`
@@ -169,6 +256,48 @@ function ChartControls({
                       </Button>
                     );
                   })}
+
+                  <Button
+                    key={customPeriodOptionValue}
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCustomPeriodClick}
+                    className={
+                      isCustomPeriodSelected
+                        ? `${selectedPeriodButtonClass} ${selectedPeriodButtonHoverClass}`
+                        : `${unselectedPeriodButtonClass} ${unselectedPeriodButtonHoverClass}`
+                    }
+                    aria-label="Set chart period to custom months"
+                    role="radio"
+                    aria-checked={isCustomPeriodSelected}
+                    tabIndex={isCustomPeriodSelected ? 0 : -1}
+                  >
+                    Custom
+                  </Button>
+
+                  {isCustomPeriodSelected && (
+                    <div className="flex items-center gap-2 ml-1">
+                      <Input
+                        type="number"
+                        min={minPeriodMonths}
+                        max={maxPeriodMonths}
+                        value={customPeriodInput}
+                        onChange={event =>
+                          handleCustomPeriodInputChange(event.target.value)
+                        }
+                        onBlur={commitCustomPeriod}
+                        onKeyDown={event => {
+                          if (event.key === 'Enter') {
+                            event.preventDefault();
+                            commitCustomPeriod();
+                          }
+                        }}
+                        className="h-8 w-16"
+                        aria-label="Custom period in months"
+                      />
+                      <span className="text-sm text-muted-foreground">mo</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </>
@@ -244,13 +373,18 @@ function ChartControls({
                 aria-labelledby="period-label-mobile"
               >
                 {PROJECTION_PERIODS.map(opt => {
-                  const isSelected = period === opt.value;
+                  const isSelected =
+                    !isCustomPeriodSelected && period === opt.value;
                   return (
                     <Button
                       key={opt.value}
                       variant="outline"
                       size="sm"
-                      onClick={() => onPeriodChange(opt.value)}
+                      onClick={() => {
+                        // Preset selection explicitly exits custom mode.
+                        setIsCustomPeriodSelected(false);
+                        onPeriodChange(opt.value);
+                      }}
                       className={
                         isSelected
                           ? `${selectedPeriodButtonClass} ${selectedPeriodButtonHoverClass}`
@@ -265,6 +399,48 @@ function ChartControls({
                     </Button>
                   );
                 })}
+
+                <Button
+                  key={`${customPeriodOptionValue}-mobile`}
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCustomPeriodClick}
+                  className={
+                    isCustomPeriodSelected
+                      ? `${selectedPeriodButtonClass} ${selectedPeriodButtonHoverClass}`
+                      : `${unselectedPeriodButtonClass} ${unselectedPeriodButtonHoverClass}`
+                  }
+                  aria-label="Set chart period to custom months"
+                  role="radio"
+                  aria-checked={isCustomPeriodSelected}
+                  tabIndex={isCustomPeriodSelected ? 0 : -1}
+                >
+                  Custom
+                </Button>
+
+                {isCustomPeriodSelected && (
+                  <div className="flex items-center gap-2 ml-1">
+                    <Input
+                      type="number"
+                      min={minPeriodMonths}
+                      max={maxPeriodMonths}
+                      value={customPeriodInput}
+                      onChange={event =>
+                        handleCustomPeriodInputChange(event.target.value)
+                      }
+                      onBlur={commitCustomPeriod}
+                      onKeyDown={event => {
+                        if (event.key === 'Enter') {
+                          event.preventDefault();
+                          commitCustomPeriod();
+                        }
+                      }}
+                      className="h-8 w-16"
+                      aria-label="Custom period in months"
+                    />
+                    <span className="text-sm text-muted-foreground">mo</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
