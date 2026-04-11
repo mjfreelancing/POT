@@ -7,12 +7,14 @@ This guide describes the main features available in POT (Pay On Time).
 Your financial command center providing an at-a-glance view of your financial health:
 
 - **Quick Actions** - One-click automation for common tasks (renew overdue expenses/incomes, accrue account expenses, and more)
-- **Account Overview** - Current balances across all your accounts
+- **Account Overview** - Current balances across all your accounts plus stable **Daily Need** rollup
 - **Upcoming Expenses & Income** - Bills and payments due in the near future
 - **Period Filtering** - View expenses and income for 7, 14, or 30 day windows with dynamic metrics
 - **Quick Item Actions** - Context menu on individual items to mark as paid/received or advance to next period
 - **Visual Indicators** - Overdue and due-soon badges, frequency indicators, and status colors
 - **Financial Status** - Real-time indicators of your financial position
+
+Daily Need is the long-run daily funding requirement across active obligations. It is designed to stay stable across payment dates and calendar month-length changes.
 
 The dashboard adapts to your selected time period, showing only relevant metrics and adjusting calculations dynamically.
 
@@ -44,6 +46,7 @@ Manage all your financial accounts in one place:
 - **Current Balances** - Maintain account balances for accurate projections
 - **Quick Filtering** - Easily find and manage specific accounts
 - **Expense Accruals** - Selectively update expense accrual calculations for any account
+- **Accrual-Aware Availability** - Available funds account for reserved and accrued obligations
 
 [View detailed Accounts guide →](USER-GUIDE/Accounts.md)
 

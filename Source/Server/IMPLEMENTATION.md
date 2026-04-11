@@ -99,10 +99,11 @@ One-time expenses (`Frequency.OneTime`) do not renew:
 
 ### Account Totals
 
-The calculator maintains two account-level totals:
+The calculator maintains three account-level totals:
 
 1. **TotalExpenseAccrued:** Sum of all `expense.Accrued` values (what's accumulated so far)
 2. **DailyExpenseAccrual:** Sum of all `expense.DailyAccrual` values (total rate of accrual across all expenses)
+3. **StableExpenseAccrual:** Sum of stable per-expense daily contributions (long-run daily funding requirement)
 
 These totals are used in the Available calculation:
 
@@ -111,6 +112,48 @@ Available = Balance - Reserved - TotalExpenseAccrued + ExpensesPaid
 ```
 
 **Note:** `ExpensesPaid` is added back on payment days to prevent double-counting, since the expense is both subtracted from Balance (when "paid") AND counted in `TotalExpenseAccrued` (full amount due).
+
+### StableExpenseAccrual
+
+`StableExpenseAccrual` is intentionally different from `DailyExpenseAccrual`:
+
+- `DailyExpenseAccrual` is operational and date-sensitive.
+- `StableExpenseAccrual` is long-run and intended for stable funding guidance.
+
+Current implementation behavior:
+
+1. Policy gate: expenses with `AccrualPolicy.None` contribute 0 to accrued, daily, and stable totals.
+2. One-time expenses: contribute before due date only, using fixed period days (`NextDue - AccrualStart`).
+3. Recurring expenses: contribute using average period days via `Frequency.GetAverageDaysToNext(FrequencyCount)`.
+4. Recurring end-date rule: contribution stops after `EndDate` (inclusive on end date itself).
+
+### Payment-Day Convention
+
+For projection and accrual semantics, expense due date is treated as payment date.
+
+1. Due-day expense amount is reflected in balance movement for that date.
+2. Due-day accrued handling uses full due amount semantics in the current cycle.
+3. Recurring obligations then continue into the next cycle via renewal rules.
+
+This keeps due-date cashflow behavior explicit and aligned with available-balance calculations.
+
+### Near-Term Coverage Interpretation
+
+Operationally, short-term obligations can create immediate funding pressure that is separate from the long-run stable daily target.
+
+When documenting or presenting behavior, distinguish:
+
+1. One-off near-term catch-up requirement.
+2. Ongoing stable daily funding requirement.
+
+### Domain Glossary Mapping
+
+Use the following terms consistently across code comments and docs:
+
+- `TotalExpenseAccrued`: accrued obligations.
+- `DailyExpenseAccrual`: marginal accrual rate (dynamic operational metric).
+- `StableExpenseAccrual`: daily funding rate (stable planning metric).
+- `Available`: available balance (spendable amount after restrictions).
 
 ### Rounding
 
@@ -129,6 +172,8 @@ Expenses are sorted by `NextDue` (ascending) before processing. While not critic
 ### Excluded Expenses
 
 Expenses with `ExcludeFromCalcs = true` are not processed for accrual. Their `Accrued` is set to 0 and `AccruedIsDirty` is set to false, but they don't contribute to account totals.
+
+Expenses with `AccrualPolicy.None` also do not contribute to account accrual totals.
 
 ---
 
@@ -583,6 +628,8 @@ For each day in the projection period:
 5. **Update balance:** Apply income and expenses to account balance
 6. **Record projection:** Store date, balance, available, and transaction details
 
+`DailyAccrual` in projection output is the dynamic operational metric. It is expected to vary during a cycle.
+
 ### CRITICAL Formula - Available Funds
 
 The "Available" amount shows how much money is truly available for spending after accounting for upcoming obligations. The formula is:
@@ -693,6 +740,16 @@ In addition to per-account projections, the service calculates a global (all-acc
 - **Global.Accrued:** Sum of all accrued expenses
 - **Global.DailyAccrual:** Sum of all daily accrual rates
 - **Global.Reserved:** Sum of all reserved funds
+
+### Why Projection DailyAccrual Varies
+
+Variation is expected in the current implementation:
+
+1. Due-day transitions switch an expense from current-cycle remaining-balance behavior to next-cycle period behavior.
+2. Calendar-driven period lengths vary for monthly and yearly schedules.
+3. Mixed frequencies and staggered due dates produce a moving aggregate.
+
+Use this metric for operational simulation interpretation, not as a stable daily set-aside target.
 
 This provides a household-level or business-level financial view.
 

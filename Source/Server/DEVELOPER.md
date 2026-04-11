@@ -4918,6 +4918,35 @@ builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionAuthorizat
 
 ---
 
+## Accrual Metrics Semantics
+
+The server tracks two different daily accrual concepts for expenses.
+
+### Dynamic DailyExpenseAccrual
+
+- Purpose: operational projection behavior and event-date simulation.
+- Behavior: changes through each cycle as due dates approach and renew.
+- Primary use: projections and date-by-date cashflow mechanics.
+
+### Stable StableExpenseAccrual
+
+- Purpose: long-run daily funding guidance.
+- Behavior: designed to be more stable than dynamic accrual.
+- Recurring rule: `Amount / Frequency.GetAverageDaysToNext(FrequencyCount)`.
+- One-time rule: fixed bounded period contribution before due date only.
+
+### Accrual Policy Gate
+
+`AccrualPolicy.None` explicitly disables accrual contribution.
+
+- No contribution to `TotalExpenseAccrued`
+- No contribution to `DailyExpenseAccrual`
+- No contribution to `StableExpenseAccrual`
+
+This preserves due-date debit behavior while disabling pre-funding accrual behavior.
+
+---
+
 ## Available Commands
 
 ### Development

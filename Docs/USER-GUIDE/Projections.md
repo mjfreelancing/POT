@@ -44,6 +44,17 @@ The View selector supports five metrics.
 Line metrics show trends over time.
 Bar metrics show per-date event amounts and support opening details.
 
+### Projection Accruals Interpretation
+
+Projection Accruals is the operational, date-sensitive accrual metric used by projection simulation. It is expected to vary as due dates approach and as periods renew.
+
+This is different from Dashboard Daily Need:
+
+- Projection Accruals: dynamic event-date metric for simulation behavior.
+- Daily Need: stable long-run funding guidance for daily planning.
+
+Do not interpret short-term movement in Projection Accruals as a change in your long-run Daily Need unless underlying obligations changed.
+
 ## Date Window And Period Logic
 
 The page always requests a 12-month data window from the selected start date.

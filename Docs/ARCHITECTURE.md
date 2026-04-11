@@ -116,6 +116,65 @@ The backend uses a **hybrid architecture** combining layered and feature-based a
 
 **For detailed backend patterns:** See `Source/Server/DEVELOPER.md`
 
+## Cashflow Metrics Model
+
+POT uses a dual-metric model for expense accrual behavior:
+
+- Dynamic accrual (`DailyExpenseAccrual`) for operational projection simulation.
+- Stable accrual (`StableExpenseAccrual`) for long-run daily funding guidance.
+
+Both metrics are computed server-side by accrual calculators to keep behavior deterministic across API and UI.
+
+Accrual policy is explicit per expense:
+
+- `Automatic` enables accrual contribution.
+- `None` disables accrual contribution while retaining due-date scheduling and balance debits.
+
+## Cashflow Policy Foundations
+
+POT uses an obligation-first cashflow model.
+
+### Core Objective
+
+Prioritize upcoming required payments and derive daily guidance from those obligations.
+
+### Foundational Approach
+
+1. Use cash-basis forecasting as the primary decision lens.
+2. Model income and expenses as dated obligations.
+3. Use running balance projection as the primary truth source.
+4. Protect mandatory obligations before discretionary spending.
+5. Present a stable daily funding target for user planning and a dynamic operational accrual metric for simulation behavior.
+
+### Decision-Ready Outputs
+
+At product level, the model is expected to support these outputs:
+
+1. Stable daily funding requirement.
+2. Available (safe-to-spend) balance.
+3. Upcoming risk dates from projected balance dips.
+4. Forecast runway under current assumptions.
+
+### Why This Model
+
+1. Handles mixed frequencies, including one-time obligations.
+2. Prioritizes due-date reliability over category-only budgeting.
+3. Produces actionable daily guidance while preserving operational simulation detail.
+
+### Core Guardrails
+
+1. Do not mix planned obligations with already-paid obligations in the same state model.
+2. Keep mandatory and optional spending concerns separate.
+3. Recompute daily metrics whenever balance, amount, due date, schedule, or policy changes.
+4. Use rolling forecast windows instead of static month snapshots.
+5. Make calculation assumptions explicit in user and developer documentation.
+
+### Sinking Fund Semantics (High Level)
+
+1. Each obligation accrues toward a due-date target over an accrual cycle.
+2. Reserved and accrued amounts restrict spendable funds; they are not double-counting.
+3. Payment events reduce both ledger balance and obligation reserve, then start the next cycle when applicable.
+
 ## Testing Architecture
 
 Server tests are split by intent to keep boundaries clear and test execution predictable.
