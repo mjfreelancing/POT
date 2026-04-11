@@ -172,7 +172,7 @@ function ExpensesOverview({ isOpen, onOpenChange }: ExpensesOverviewProps) {
       >
         <div className="space-y-5">
           {/* Period Filter */}
-          <div className="flex items-center gap-3 justify-center sm:justify-end">
+          <div className="flex items-center gap-3 justify-start">
             <span className="text-sm text-muted-foreground">Show:</span>
             <Select
               value={selectedPeriod.toString()}
@@ -189,14 +189,12 @@ function ExpensesOverview({ isOpen, onOpenChange }: ExpensesOverviewProps) {
             </Select>
           </div>
 
-          {/* Metrics with background container */}
-          <div className="bg-blue-100/60 dark:bg-blue-950/40 p-4 rounded-lg border border-blue-200/50 dark:border-blue-900/50">
-            {expensesIsLoading ? (
-              <Skeleton className="h-[72px] w-full rounded-lg" />
-            ) : (
-              <CompactMetricsRow metrics={metricsData} />
-            )}
-          </div>
+          {/* Metrics */}
+          {expensesIsLoading ? (
+            <Skeleton className="h-[72px] w-full rounded-lg" />
+          ) : (
+            <CompactMetricsRow metrics={metricsData} />
+          )}
 
           {expensesIsLoading ? (
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">

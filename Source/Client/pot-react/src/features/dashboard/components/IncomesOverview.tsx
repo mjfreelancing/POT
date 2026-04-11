@@ -170,7 +170,7 @@ function IncomesOverview({ isOpen, onOpenChange }: IncomesOverviewProps) {
         >
           <div className="space-y-5">
             {/* Period Filter */}
-            <div className="flex items-center gap-3 justify-center sm:justify-end">
+            <div className="flex items-center gap-3 justify-start">
               <span className="text-sm text-muted-foreground">Show:</span>
               <Select
                 value={selectedPeriod.toString()}
@@ -187,14 +187,12 @@ function IncomesOverview({ isOpen, onOpenChange }: IncomesOverviewProps) {
               </Select>
             </div>
 
-            {/* Metrics with background container */}
-            <div className="bg-green-100/60 dark:bg-green-950/40 p-4 rounded-lg border border-green-200/50 dark:border-green-900/50">
-              {incomesIsLoading ? (
-                <Skeleton className="h-[72px] w-full rounded-lg" />
-              ) : (
-                <CompactMetricsRow metrics={metricsData} />
-              )}
-            </div>
+            {/* Metrics */}
+            {incomesIsLoading ? (
+              <Skeleton className="h-[72px] w-full rounded-lg" />
+            ) : (
+              <CompactMetricsRow metrics={metricsData} />
+            )}
 
             {incomesIsLoading ? (
               <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
