@@ -27,5 +27,9 @@
   },
   "[html]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "chat.tools.terminal.autoApprove": {
+    "dotnet build": true,
+    "npm run type:check": true
   }
 }
