@@ -13,6 +13,8 @@ applyTo: "Source/Client/pot-react/src/**/*.{ts,tsx}"
 - Prefer function declarations over arrow functions for exported utilities where practical.
 - Always use braces for `if` statements, including single-line branches.
 - Keep a blank line before and after multi-line `if` blocks for readability consistency.
+- Keep a blank line after early-return guard clauses before continuing with the main execution path.
+- Keep a blank line before standalone explanatory comments that introduce a new logical block.
 - Keep modules small and cohesive.
 
 ### Modules and Boundaries
