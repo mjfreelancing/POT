@@ -1,4 +1,3 @@
-import { RotateCw } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { Card, CardContent } from '@/components/ui/card';
@@ -56,27 +55,27 @@ function ActionCard({
   enabled = true,
   hint,
 }: ActionCardProps) {
-  const canCallAction = enabled && onClick;
+  const canCallAction = enabled && onClick !== undefined;
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
     if (canCallAction) {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
-        onClick();
+        onClick?.();
       }
     }
   }
 
   const mainContent = (
-    <div className="flex items-center gap-3 flex-1 w-full">
-      <div className="p-2 lg:p-3 rounded-lg bg-primary/5 flex-shrink-0 flex items-center justify-center [&>svg]:h-5 [&>svg]:w-5 lg:[&>svg]:h-6 lg:[&>svg]:w-6">
+    <div className="flex items-center justify-start gap-3 w-full">
+      <div className="p-1.5 lg:p-2 rounded-lg bg-primary/5 border border-primary/30 flex-shrink-0 flex items-center justify-center [&>svg]:h-4 [&>svg]:w-4 lg:[&>svg]:h-5 lg:[&>svg]:w-5">
         {icon}
       </div>
-      <div className="flex items-center justify-center text-center flex-1 min-w-0 pr-8">
+      <div className="flex items-center justify-center text-center flex-1 min-w-0 px-1.5 lg:px-0">
         <div
           role="heading"
           aria-level={1}
-          className="text-base lg:text-lg font-medium leading-snug"
+          className="text-base lg:text-lg font-medium leading-tight lg:leading-snug max-w-[6.25rem] lg:max-w-none"
         >
           {title}
         </div>
@@ -91,24 +90,26 @@ function ActionCard({
       onKeyDown={canCallAction ? handleKeyDown : undefined}
       className={cn(
         'transition-all duration-200',
+        'py-1 gap-0',
         'border-2 border-yellow-500/40 bg-yellow-50/30 dark:bg-yellow-900/10',
-        'min-h-[60px]',
+        'min-h-[54px] lg:min-h-[60px]',
         canCallAction && [
+          'border-yellow-500/60 shadow-sm lg:shadow-none',
           'cursor-pointer hover:shadow-lg hover:scale-[1.02] hover:border-primary/80 hover:shadow-primary/10',
+          'active:scale-[0.99] active:shadow-md lg:active:scale-[1.02] lg:active:shadow-lg',
         ],
-        !enabled && 'opacity-50 cursor-not-allowed', // Add disabled style
+        !enabled && [
+          'border-slate-300/80 dark:border-slate-700/80',
+          'bg-slate-100/70 dark:bg-slate-900/45',
+          'text-slate-500 dark:text-slate-400',
+          '[&_svg]:opacity-70 [&_svg]:saturate-0',
+          'shadow-none cursor-not-allowed',
+        ], // Add disabled style
         className,
-        'relative', // Make Card relative for absolute positioning of the icon when clickable
       )}
       onClick={canCallAction ? onClick : undefined}
     >
-      {canCallAction && (
-        <RotateCw
-          className="h-4 w-4 text-muted-foreground absolute right-4 top-4 z-10 cursor-pointer"
-          aria-hidden="true"
-        />
-      )}
-      <CardContent className="h-full flex items-center px-3 py-3 justify-start">
+      <CardContent className="h-full flex items-center justify-start px-4 py-2.5 lg:py-3.5">
         {hint && enabled ? (
           <Tooltip>
             <TooltipTrigger asChild>{mainContent}</TooltipTrigger>
