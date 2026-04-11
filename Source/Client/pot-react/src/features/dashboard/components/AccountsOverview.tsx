@@ -155,7 +155,7 @@ function AccountsOverview({ isOpen, onOpenChange }: AccountsOverviewProps) {
             <Skeleton className="h-[72px] w-full rounded-lg" />
           ) : (
             <div className="bg-slate-100/60 dark:bg-slate-950/40 p-4 rounded-lg border border-slate-200/50 dark:border-slate-900/50">
-              <CompactMetricsRow className="-mx-4" metrics={metricsData} />
+              <CompactMetricsRow metrics={metricsData} />
             </div>
           )}
 
