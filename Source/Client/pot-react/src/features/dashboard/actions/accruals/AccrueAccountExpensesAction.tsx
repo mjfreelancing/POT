@@ -1,6 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { CheckCircle } from 'lucide-react';
-import { Wallet } from 'lucide-react';
+import { CheckCircle, Wallet } from 'lucide-react';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 
@@ -81,7 +80,7 @@ function AccrueAccountExpensesAction() {
 
   return (
     <ActionCard
-      title="Accrue Account Expenses"
+      title="Accrue Expenses"
       icon={<Wallet className="text-information" />}
       onClick={hasData ? handleBulkAction : undefined}
       enabled={hasData && !isLoading}

@@ -1,6 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { BarChart3 } from 'lucide-react';
-import { CheckCircle } from 'lucide-react';
+import { BarChart3, CheckCircle } from 'lucide-react';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 
@@ -152,7 +151,7 @@ function RenewAccrueAllAction() {
 
   return (
     <ActionCard
-      title="Renew and Accrue"
+      title="Renew&nbsp;& Accrue"
       icon={<BarChart3 className="text-information" />}
       onClick={hasData ? handleBulkAction : undefined}
       enabled={hasData && !isLoading}
