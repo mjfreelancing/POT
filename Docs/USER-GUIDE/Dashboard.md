@@ -36,9 +36,9 @@ It also surfaces a stable Daily Need value, which answers: how much should I set
 
 1. Open Dashboard.
 2. Review account totals:
-	- Balance: current account ledger total.
-	- Available: spendable amount after reserved and accrued obligations.
-	- Daily Need: stable daily funding target.
+   - Balance: current account ledger total.
+   - Available: spendable amount after reserved and accrued obligations.
+   - Daily Need: stable daily funding target.
 3. Select the period filter (7, 14, or 30 days).
 4. Review upcoming expenses and income for that period.
 5. Use quick actions to catch up overdue items or recompute accruals after account/expense updates.
