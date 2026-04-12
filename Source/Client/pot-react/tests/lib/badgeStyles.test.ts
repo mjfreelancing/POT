@@ -10,6 +10,7 @@ describe('badgeStyles', () => {
       expect(className).toContain(
         'text-[12px] px-2 py-1 min-w-[80px] justify-center',
       );
+
       expect(className).toContain(
         'bg-green-500 text-white dark:bg-green-600 dark:text-green-100',
       );
@@ -73,6 +74,7 @@ describe('badgeStyles', () => {
       expect(className).toContain(
         'ml-2 text-[12px] px-2 py-0.5 min-w-[80px] justify-center',
       );
+
       expect(className).toContain(
         'bg-purple-500 text-white dark:bg-purple-600 dark:text-purple-100',
       );
@@ -82,6 +84,7 @@ describe('badgeStyles', () => {
       const className = getBadgeClass('pink', 'outline');
 
       expect(className).toContain('text-xs justify-center border');
+
       expect(className).toContain(
         'bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-950 dark:text-pink-300 dark:border-pink-800',
       );

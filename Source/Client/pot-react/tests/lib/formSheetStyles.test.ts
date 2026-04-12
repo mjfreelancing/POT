@@ -23,6 +23,7 @@ describe('FORM_SHEET_STYLES', () => {
     );
 
     expect(FORM_SHEET_STYLES.SHEET_INNER).toBe('space-y-6 pr-6 pl-6');
+
     expect(FORM_SHEET_STYLES.ACTION_SECTION).toBe('space-y-4 pt-2');
     expect(FORM_SHEET_STYLES.ACTION_ROW).toBe('flex justify-end space-x-4');
     expect(FORM_SHEET_STYLES.ACTION_BUTTON_WIDTH).toBe('w-24');
@@ -34,6 +35,7 @@ describe('FORM_SHEET_STYLES', () => {
     );
 
     expect(FORM_SHEET_STYLES.DATE_TRIGGER).toBe('w-full min-w-0 sm:flex-1');
+
     expect(FORM_SHEET_STYLES.DATE_ACTION_ROW).toBe(
       '-mt-0.5 flex w-full justify-end sm:mt-0 sm:w-auto sm:flex-none',
     );

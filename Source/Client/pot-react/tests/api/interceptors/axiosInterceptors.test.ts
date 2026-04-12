@@ -120,6 +120,7 @@ describe('Axios Interceptors', () => {
       };
 
       const result = successHandler(response);
+
       expect(result).toBe(response);
     });
 
@@ -131,6 +132,7 @@ describe('Axios Interceptors', () => {
       };
 
       const axiosError = new AxiosError('Not Found');
+
       axiosError.response = {
         status: 404,
         data: apiErrorResponse,
@@ -154,6 +156,7 @@ describe('Axios Interceptors', () => {
       };
 
       const axiosError = new AxiosError('Unauthorized');
+
       axiosError.response = {
         status: 401,
         data: apiErrorResponse,
@@ -180,6 +183,7 @@ describe('Axios Interceptors', () => {
       };
 
       const axiosError = new AxiosError('Forbidden');
+
       axiosError.response = {
         status: 403,
         data: apiErrorResponse,
@@ -203,6 +207,7 @@ describe('Axios Interceptors', () => {
       };
 
       const axiosError = new AxiosError('Method Not Allowed');
+
       axiosError.response = {
         status: 405,
         data: apiErrorResponse,
@@ -237,6 +242,7 @@ describe('Axios Interceptors', () => {
       };
 
       const axiosError = new AxiosError('Conflict');
+
       axiosError.response = {
         status: 409,
         data: apiErrorResponse,
@@ -268,6 +274,7 @@ describe('Axios Interceptors', () => {
       };
 
       const axiosError = new AxiosError('Validation Error');
+
       axiosError.response = {
         status: 422,
         data: apiErrorResponse,
@@ -294,6 +301,7 @@ describe('Axios Interceptors', () => {
       };
 
       const axiosError = new AxiosError('Server Error');
+
       axiosError.response = {
         status: 500,
         data: apiErrorResponse,
@@ -317,6 +325,7 @@ describe('Axios Interceptors', () => {
       };
 
       const axiosError = new AxiosError('Too Many Requests');
+
       axiosError.response = {
         status: 429,
         data: apiErrorResponse,
@@ -345,6 +354,7 @@ describe('Axios Interceptors', () => {
         };
 
         const axiosError = new AxiosError('Server Error');
+
         axiosError.response = {
           status: statusCode,
           data: apiErrorResponse,

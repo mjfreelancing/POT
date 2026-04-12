@@ -45,9 +45,11 @@ describe('user schemas and comparator', () => {
 
   test('rejects invalid user payloads', () => {
     expect(() => CreateUserSchema.parse({ displayName: 'Jane' })).toThrow();
+
     expect(() =>
       EditUserSchema.parse({ displayName: 'Jane', email: 'x' }),
     ).toThrow();
+
     expect(() => UserSchema.parse({ rowId: 'user-1', etag: 1n })).toThrow();
   });
 

@@ -32,20 +32,25 @@ describe('site user schemas', () => {
     ).toBeTruthy();
 
     expect(userRoleUpdateSchema.parse({ etag: 2n, roleIds: [] })).toBeTruthy();
+
     expect(
       userStatusUpdateSchema.parse({ etag: 2n, status: 'Disabled' }),
     ).toBeTruthy();
+
     expect(userStatusSchema.parse('Approval')).toBe('Approval');
   });
 
   test('rejects invalid site user payloads', () => {
     expect(() => siteUserSchema.parse({ username: 'jane' })).toThrow();
+
     expect(() =>
       userInvitationSchema.parse({ username: 'x', email: 'bad', roleIds: [] }),
     ).toThrow();
+
     expect(() =>
       userRoleUpdateSchema.parse({ etag: 1n, roleIds: ['not-uuid'] }),
     ).toThrow();
+
     expect(() =>
       userStatusUpdateSchema.parse({ etag: 1n, status: 'Pending' }),
     ).toThrow();

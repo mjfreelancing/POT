@@ -47,6 +47,7 @@ describe('account schemas and comparator', () => {
       bsb: '111-111',
       number: '999',
     } as Parameters<typeof compareAccountBsbNumber>[0];
+
     const accountB = {
       bsb: '222-222',
       number: '000',
@@ -58,6 +59,7 @@ describe('account schemas and comparator', () => {
       bsb: '123-456',
       number: 'A10',
     } as Parameters<typeof compareAccountBsbNumber>[0];
+
     const accountD = {
       bsb: '123-456',
       number: 'a20',

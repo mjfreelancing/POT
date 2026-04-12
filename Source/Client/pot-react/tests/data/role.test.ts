@@ -23,6 +23,7 @@ describe('role schemas', () => {
     expect(() =>
       roleSchema.parse({ name: 'Admin', rowId: 'not-a-uuid', etag: 1 }),
     ).toThrow();
+
     expect(() => roleSelectionSchema.parse({ roleId: 'abc' })).toThrow();
   });
 });

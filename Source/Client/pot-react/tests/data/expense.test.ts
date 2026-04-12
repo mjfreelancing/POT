@@ -65,10 +65,13 @@ describe('expense schemas and comparator', () => {
     expect(() =>
       CreateExpenseSchema.parse({ ...base, amount: '500' }),
     ).toThrow();
+
     expect(() =>
       EditExpenseSchema.parse({ ...base, accountRowId: 'acc-1' }),
     ).toThrow();
+
     expect(() => ExpenseSchema.parse({ ...base, rowId: 'exp-1' })).toThrow();
+
     expect(() =>
       RenewExpensesSchema.parse({ rowIds: [], mode: 'Invalid' }),
     ).toThrow();
@@ -79,6 +82,7 @@ describe('expense schemas and comparator', () => {
       nextDue: '2026-04-01',
       description: 'B',
     } as Parameters<typeof compareExpenseNextDue>[0];
+
     const dueLater = {
       nextDue: '2026-04-02',
       description: 'A',
@@ -90,6 +94,7 @@ describe('expense schemas and comparator', () => {
       nextDue: '2026-04-01',
       description: 'Alpha',
     } as Parameters<typeof compareExpenseNextDue>[0];
+
     const sameDayB = {
       nextDue: '2026-04-01',
       description: 'beta',

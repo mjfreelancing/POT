@@ -52,6 +52,7 @@ describe('Result Type', () => {
     );
 
     expect(result.success).toBe(true);
+
     expect(result.value).toBe(successValue);
   });
 

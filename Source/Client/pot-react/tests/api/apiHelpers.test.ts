@@ -209,6 +209,7 @@ describe('API helper utilities', () => {
       const config: InternalAxiosRequestConfig = {
         headers: new AxiosHeaders(),
       };
+
       const result = addCorrelationId(config);
 
       expect(result.headers).toBeDefined();
@@ -222,6 +223,7 @@ describe('API helper utilities', () => {
       const config: InternalAxiosRequestConfig = {
         headers,
       };
+
       const result = addCorrelationId(config);
 
       expect(result.headers['Content-Type']).toEqual('application/json');
@@ -232,6 +234,7 @@ describe('API helper utilities', () => {
       const config: InternalAxiosRequestConfig = {
         headers: new AxiosHeaders(),
       };
+
       const result = addCorrelationId(config);
 
       expect(crypto.randomUUID).toHaveBeenCalledTimes(1);
@@ -242,6 +245,7 @@ describe('API helper utilities', () => {
       const config: InternalAxiosRequestConfig = {
         headers: new AxiosHeaders(),
       };
+
       const result = addCorrelationId(config);
 
       expect(result).toBe(config);
@@ -265,7 +269,7 @@ describe('API helper utilities', () => {
     it('should initialize headers when config headers are undefined', () => {
       const config = {
         headers: undefined,
-      } as unknown as InternalAxiosRequestConfig;
+      };
 
       const result = addCorrelationId(config);
 

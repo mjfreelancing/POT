@@ -29,9 +29,11 @@ describe('approval schemas', () => {
 
   test('rejects invalid approval payloads', () => {
     expect(() => approvalStatusSchema.parse('Pending')).toThrow();
+
     expect(() =>
       pendingApprovalUserSchema.parse({ username: 'jane' }),
     ).toThrow();
+
     expect(() =>
       pendingUserStatusUpdateSchema.parse({ etag: 1n, status: 'Enabled' }),
     ).toThrow();

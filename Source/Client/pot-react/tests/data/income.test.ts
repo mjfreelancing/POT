@@ -62,10 +62,13 @@ describe('income schemas and comparator', () => {
     expect(() =>
       CreateIncomeSchema.parse({ ...base, frequencyCount: '2' }),
     ).toThrow();
+
     expect(() =>
       EditIncomeSchema.parse({ ...base, accountRowId: 'acc-1' }),
     ).toThrow();
+
     expect(() => IncomeSchema.parse({ ...base, rowId: 'inc-1' })).toThrow();
+
     expect(() =>
       RenewIncomesSchema.parse({ rowIds: [], mode: 'Invalid' }),
     ).toThrow();
@@ -76,6 +79,7 @@ describe('income schemas and comparator', () => {
       nextDue: '2026-04-01',
       description: 'B',
     } as Parameters<typeof compareIncomeNextDue>[0];
+
     const dueLater = {
       nextDue: '2026-04-02',
       description: 'A',
@@ -87,6 +91,7 @@ describe('income schemas and comparator', () => {
       nextDue: '2026-04-01',
       description: 'Alpha',
     } as Parameters<typeof compareIncomeNextDue>[0];
+
     const sameDayB = {
       nextDue: '2026-04-01',
       description: 'beta',
