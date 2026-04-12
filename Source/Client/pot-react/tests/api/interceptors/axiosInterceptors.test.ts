@@ -375,6 +375,19 @@ describe('Axios Interceptors', () => {
       await expectRejectedFailResultErrorType(rejectionPromise, NetworkError);
     });
 
+    it('should pass through existing FailResult unchanged', async () => {
+      const existingFailResult = new FailResult(
+        new NetworkError('Already normalized'),
+      );
+
+      const rejectionPromise = responseErrorHandler(
+        existingFailResult as unknown as AxiosError,
+      );
+
+      await expect(rejectionPromise).rejects.toBe(existingFailResult);
+      await expect(rejectionPromise).rejects.toBeInstanceOf(FailResult);
+    });
+
     it('should ignore cancelled requests', async () => {
       const cancelledError = new AxiosError(
         'Request cancelled',
