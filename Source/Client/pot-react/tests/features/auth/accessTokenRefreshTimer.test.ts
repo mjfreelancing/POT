@@ -3,8 +3,8 @@
 import { authClient } from '@/api/authClient';
 import { AuthenticationError } from '@/api/errors/apiErrors';
 import { createAccessTokenRefreshTimer } from '@/features/auth/accessTokenRefreshTimer';
-import { calculateRefreshTime } from '@/lib/jwt';
 import { FailResult } from '@/lib';
+import { calculateRefreshTime } from '@/lib/jwt';
 
 // Mock dependencies
 vi.mock('@/api/authClient', () => ({
