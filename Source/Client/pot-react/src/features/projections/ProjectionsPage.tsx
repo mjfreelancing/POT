@@ -12,7 +12,7 @@ import {
   isAfterDate,
   isSameDate,
   normalizeToLocalMidnight,
-} from '@/lib/dateUtils';
+} from '@/lib';
 
 import { ProjectionChart, ProjectionsHeader } from './components';
 import useProjectionStorage, {

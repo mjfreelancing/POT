@@ -1,6 +1,5 @@
 import type { Projection } from '@/data/projection';
-import type { FailResultBase, Result } from '@/lib';
-import { SuccessResult } from '@/lib';
+import { type FailResultBase, type Result, SuccessResult } from '@/lib';
 
 import { useGet } from './useApi';
 

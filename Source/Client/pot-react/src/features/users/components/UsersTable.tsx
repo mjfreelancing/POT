@@ -10,7 +10,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { useErrorContext } from '@/contexts';
 import type { SiteUser } from '@/data/siteUser';
-import { formatDateTime } from '@/lib/dateUtils';
+import { formatDateTime } from '@/lib';
 
 import UserActions from './UserActions';
 import { UserStatusBadge } from './UserStatusBadge';

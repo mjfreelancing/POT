@@ -1,6 +1,5 @@
 import { logger } from '@/concerns';
-import type { DisplayError } from '@/lib';
-import { getErrorMessage } from '@/lib';
+import { type DisplayError,getErrorMessage } from '@/lib';
 
 type LocalStorageProps<T> = {
   key: string;
@@ -110,3 +109,4 @@ const useLocalStorage = <T = Record<string, unknown>>({
 
 export default useLocalStorage;
 export type { LocalStorageProps };
+

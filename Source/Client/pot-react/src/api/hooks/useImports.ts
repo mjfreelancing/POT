@@ -1,8 +1,12 @@
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 
-import type { FailResult, FailResultBase, Result } from '@/lib';
-import { SuccessResult } from '@/lib';
+import {
+  type FailResult,
+  type FailResultBase,
+  type Result,
+  SuccessResult,
+} from '@/lib';
 
 type ImportApiResult = {
   imported: number;

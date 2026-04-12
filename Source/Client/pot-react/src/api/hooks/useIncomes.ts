@@ -9,8 +9,7 @@ import type {
   ToggleExcludeIncomes,
 } from '@/data';
 import { compareIncomeNextDue } from '@/data';
-import type { FailResultBase, Result } from '@/lib';
-import { SuccessResult } from '@/lib';
+import { type FailResultBase, type Result, SuccessResult } from '@/lib';
 
 import { useDelete, useGet, usePost, usePutWithId } from './useApi';
 

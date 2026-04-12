@@ -11,7 +11,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import type { ProjectionExpenseItemWithAccount } from '@/data/projection';
-import { formatMoneyValue } from '@/lib/moneyUtils';
+import { formatMoneyValue } from '@/lib';
 
 type ExpenseDetailsProps = {
   isOpen: boolean;

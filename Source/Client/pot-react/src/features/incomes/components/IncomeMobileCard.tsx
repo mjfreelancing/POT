@@ -29,8 +29,13 @@ import {
 import { useErrorContext } from '@/contexts';
 import type { Income } from '@/data';
 import { WithPermission } from '@/features/auth/components';
-import { formatDate, formatMoneyValue, getDaysDue, RenewalMode } from '@/lib';
-import { cn } from '@/lib/utils';
+import {
+  cn,
+  formatDate,
+  formatMoneyValue,
+  getDaysDue,
+  RenewalMode,
+} from '@/lib';
 
 import { renewIncomes, toggleExcludeIncomes } from '../bulkActions';
 import useDeleteIncome from '../delete/hooks/useDeleteIncome';

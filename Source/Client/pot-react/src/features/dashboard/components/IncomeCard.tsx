@@ -29,7 +29,7 @@ import {
   RenewalMode,
   todayIsoFormat,
 } from '@/lib';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib';
 
 type IncomeCardProps = {
   income: Income;

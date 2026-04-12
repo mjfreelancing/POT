@@ -3,8 +3,12 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import type { AxiosResponse } from 'axios';
 import axios from 'axios';
 
-import type { FailResult, FailResultBase, Result } from '@/lib';
-import { SuccessResult } from '@/lib';
+import {
+  type FailResult,
+  type FailResultBase,
+  type Result,
+  SuccessResult,
+} from '@/lib';
 
 type MutationData<TData> = {
   data: TData;

@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 
 import type { Permission } from '@/concerns';
-import { EMPTY_PERMISSION_ARRAY } from '@/lib/types';
+import { EMPTY_PERMISSION_ARRAY } from '@/lib';
 import { useUserStore } from '@/stores';
 
 function usePermissions() {
@@ -39,3 +39,4 @@ function usePermissions() {
 }
 
 export default usePermissions;
+

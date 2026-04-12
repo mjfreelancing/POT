@@ -11,7 +11,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import type { ProjectionIncomeItemWithAccount } from '@/data/projection';
-import { formatMoneyValue } from '@/lib/moneyUtils';
+import { formatMoneyValue } from '@/lib';
 
 type IncomeDetailsProps = {
   isOpen: boolean;

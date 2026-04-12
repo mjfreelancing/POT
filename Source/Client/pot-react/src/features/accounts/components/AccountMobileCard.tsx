@@ -22,8 +22,7 @@ import {
 import { useErrorContext } from '@/contexts';
 import type { Account } from '@/data';
 import { WithPermission } from '@/features/auth/components';
-import { formatMoneyValue } from '@/lib';
-import { cn } from '@/lib/utils';
+import { cn, formatMoneyValue } from '@/lib';
 
 import useDeleteAccount from '../delete/hooks/useDeleteAccount';
 

@@ -17,8 +17,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type { SiteUser } from '@/data/siteUser';
 import { WithPermission } from '@/features/auth/components';
-import { formatDateTime } from '@/lib/dateUtils';
-import { cn } from '@/lib/utils';
+import { cn, formatDateTime } from '@/lib';
 
 import { UserStatusBadge } from './UserStatusBadge';
 

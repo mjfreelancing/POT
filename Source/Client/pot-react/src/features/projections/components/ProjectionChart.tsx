@@ -26,8 +26,7 @@ import type {
   ProjectionMetric,
 } from '@/data/projection';
 import { PROJECTION_METRICS } from '@/data/projection';
-import { normalizeToLocalMidnight } from '@/lib/dateUtils';
-import { formatMoneyValue } from '@/lib/moneyUtils';
+import { formatMoneyValue, normalizeToLocalMidnight } from '@/lib';
 
 import { useProjectionChartData } from '../hooks/useProjectionChartData';
 import { formatTooltipDate, getStrokeWidth } from '../utils/chartHelpers';

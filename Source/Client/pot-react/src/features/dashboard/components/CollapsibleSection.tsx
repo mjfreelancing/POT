@@ -7,7 +7,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib';
 
 type CollapsibleSectionProps = {
   /** The title displayed in the section header */

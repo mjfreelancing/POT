@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { logger, useCacheInvalidation } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import type { PendingApprovalUser } from '@/data/approvals';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib';
 
 type PendingApprovalMobileCardProps = {
   user: PendingApprovalUser;

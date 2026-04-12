@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib';
 
 type MetricItem = {
   /** Icon to display for this metric */

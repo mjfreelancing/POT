@@ -1,8 +1,7 @@
 import StatusBadge from '@/components/feedback/badge/StatusBadge';
 import { Card, CardContent } from '@/components/ui/card';
 import type { Account } from '@/data';
-import { formatMoneyValue } from '@/lib';
-import { cn } from '@/lib/utils';
+import { cn, formatMoneyValue } from '@/lib';
 
 type AccountCardProps = {
   /** The account data to display */
