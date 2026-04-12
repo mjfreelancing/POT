@@ -18,6 +18,7 @@ applyTo: "Source/Client/pot-react/tests/**"
 - Use the repository's existing client test framework, environment, and shared setup conventions.
 - Prefer user-observable assertions and interactions for component and UI tests.
 - Keep test naming consistent with the surrounding test project or folder.
+- In test files, add one blank line between adjacent multi-line code blocks (for example back-to-back object literals or multiline assignments) and between adjacent `expect(...)` assertions when either assertion spans multiple lines.
 
 ### API and Utility Coverage
 
