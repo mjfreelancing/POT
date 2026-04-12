@@ -17,7 +17,7 @@ vi.mock('@/lib/jwt', () => ({
   calculateRefreshTime: vi.fn(() => 5 * 60 * 1000),
 }));
 
-vi.mock('@/lib/logging', () => ({
+vi.mock('@/concerns', () => ({
   logger: {
     info: vi.fn(),
     error: vi.fn(),
