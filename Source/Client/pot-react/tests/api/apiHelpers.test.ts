@@ -79,6 +79,20 @@ describe('API helper utilities', () => {
 
       expect(result).toEqual(`Network error: ${error.message}`);
     });
+
+    it('should handle unknown error with empty message', () => {
+      const error = new AxiosError('', 'UNKNOWN');
+      const result = getNetworkErrorMessage(error);
+
+      expect(result).toEqual('Network error: ');
+    });
+
+    it('should handle unknown error with undefined message', () => {
+      const error = new AxiosError(undefined, 'UNKNOWN');
+      const result = getNetworkErrorMessage(error);
+
+      expect(result).toEqual('Network error: undefined');
+    });
   });
 
   describe('getNetworkError', () => {
@@ -246,6 +260,17 @@ describe('API helper utilities', () => {
 
       expect(result.headers['X-Correlation-ID']).toEqual(existingId);
       expect(crypto.randomUUID).not.toHaveBeenCalled();
+    });
+
+    it('should initialize headers when config headers are undefined', () => {
+      const config = {
+        headers: undefined,
+      } as unknown as InternalAxiosRequestConfig;
+
+      const result = addCorrelationId(config);
+
+      expect(result.headers).toBeDefined();
+      expect(result.headers['X-Correlation-ID']).toEqual(mockUuid);
     });
   });
 });

@@ -21,6 +21,14 @@ describe('FailResultBase', () => {
     expect(result.code).toBe(code);
     expect(result.description).toBe(description);
   });
+
+  test('should preserve empty-string properties', () => {
+    const result = new DummyError('', '', '');
+
+    expect(result.type).toBe('');
+    expect(result.code).toBe('');
+    expect(result.description).toBe('');
+  });
 });
 
 describe('Result Type', () => {
@@ -59,5 +67,13 @@ describe('Result Type', () => {
     expect(result.error.type).toBe(errorType);
     expect(result.error.code).toBe(errorCode);
     expect(result.error.description).toBe(errorDescription);
+  });
+
+  test('should create a success result with undefined value', () => {
+    const result: Result<string | undefined, FailResultBase> =
+      new SuccessResult(undefined);
+
+    expect(result.success).toBe(true);
+    expect(result.value).toBeUndefined();
   });
 });

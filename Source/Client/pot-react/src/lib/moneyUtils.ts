@@ -24,6 +24,10 @@ const formatMoneyValue = (
   currency = 'AUD',
   locale = 'en-AU',
 ): string => {
+  if (!Number.isFinite(value)) {
+    throw new TypeError('Money value must be a finite number');
+  }
+
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: currency,

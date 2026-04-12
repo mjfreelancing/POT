@@ -65,5 +65,15 @@ describe('Money Utils', () => {
         '1.234.567,89\u00A0€',
       );
     });
+
+    test('should throw for NaN input', () => {
+      expect(() => formatMoneyValue(Number.NaN)).toThrow(TypeError);
+    });
+
+    test('should throw for invalid currency code', () => {
+      expect(() =>
+        formatMoneyValue(100, 'INVALID-CURRENCY-CODE', 'en-AU'),
+      ).toThrow(RangeError);
+    });
   });
 });
