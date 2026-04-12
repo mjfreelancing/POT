@@ -350,6 +350,53 @@ describe('MoneyValueInput', () => {
     expect(input).toHaveValue('1.00');
   });
 
+  it('emits normalized onChange on blur for incomplete value', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+
+    const Component = createControlledMoneyValueInput('', onChange);
+    render(<Component />);
+
+    const input = screen.getByRole('textbox') as HTMLInputElement;
+
+    await act(async () => {
+      await user.type(input, '.');
+    });
+
+    onChange.mockClear();
+
+    await act(async () => {
+      await user.tab();
+    });
+
+    expect(input).toHaveValue('0.00');
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith(createMoneyValueEvent('0.00', 0));
+  });
+
+  it('does not emit extra onChange on blur for complete decimal value', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+
+    const Component = createControlledMoneyValueInput('', onChange);
+    render(<Component />);
+
+    const input = screen.getByRole('textbox') as HTMLInputElement;
+
+    await act(async () => {
+      await user.type(input, '123.45');
+    });
+
+    const callCountBeforeBlur = onChange.mock.calls.length;
+
+    await act(async () => {
+      await user.tab();
+    });
+
+    expect(input).toHaveValue('123.45');
+    expect(onChange).toHaveBeenCalledTimes(callCountBeforeBlur);
+  });
+
   it('calls onBlur handler', async () => {
     const user = userEvent.setup();
     const onBlur = vi.fn();
