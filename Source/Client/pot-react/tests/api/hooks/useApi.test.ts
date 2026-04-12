@@ -11,7 +11,7 @@ import {
   UnexpectedError,
   ValidationError,
 } from '@/api/errors/apiErrors';
-import { FailResultBase, FailResult, SuccessResult } from '@/lib';
+import { FailResult, FailResultBase, SuccessResult } from '@/lib';
 
 import {
   useDelete,
@@ -84,8 +84,12 @@ const expectFailResult = <E extends FailResultBase>(
   }
 };
 
-const renderUseGetHook = <TResponse>(url: string, queryKey: string[]) => {
-  return renderHook(() => useGet<TResponse>(url, queryKey), {
+const renderUseGetHook = <TResponse>(
+  url: string,
+  queryKey: string[],
+  options?: { usePreviousAsPlaceholder?: boolean },
+) => {
+  return renderHook(() => useGet<TResponse>(url, queryKey, options), {
     wrapper: createWrapper(),
   });
 };
@@ -245,6 +249,113 @@ describe('useApi hooks', () => {
 
       expect(axios.get).toHaveBeenCalledWith('/test', expect.anything());
       expectFailResult(result.current.data!, UnexpectedError);
+    });
+
+    it('should keep previous data as placeholder when usePreviousAsPlaceholder is true', async () => {
+      const firstResponse = { id: 1, name: 'First Item' };
+      const secondResponse = { id: 2, name: 'Second Item' };
+
+      let resolveSecondRequest: ((value: { data: typeof secondResponse }) => void) | undefined;
+
+      const secondRequest = new Promise<{ data: typeof secondResponse }>(
+        resolve => {
+          resolveSecondRequest = resolve;
+        },
+      );
+
+      vi.mocked(axios.get)
+        .mockResolvedValueOnce({ data: firstResponse })
+        .mockImplementationOnce(() => secondRequest);
+
+      const { result, rerender } = renderHook(
+        ({ url, queryKey, options }) =>
+          useGet<typeof firstResponse | typeof secondResponse>(
+            url,
+            queryKey,
+            options,
+          ),
+        {
+          initialProps: {
+            url: '/test/first',
+            queryKey: ['test', 'first'],
+            options: { usePreviousAsPlaceholder: true },
+          },
+          wrapper: createWrapper(),
+        },
+      );
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expectSuccessResult(result.current.data!, firstResponse);
+
+      rerender({
+        url: '/test/second',
+        queryKey: ['test', 'second'],
+        options: { usePreviousAsPlaceholder: true },
+      });
+
+      expect(result.current.data).toBeDefined();
+      expectSuccessResult(result.current.data!, firstResponse);
+
+      resolveSecondRequest?.({ data: secondResponse });
+
+      await waitFor(() => {
+        if (result.current.data?.success) {
+          expect(result.current.data.value).toEqual(secondResponse);
+        }
+      });
+    });
+
+    it('should clear data during refetch when usePreviousAsPlaceholder is false', async () => {
+      const firstResponse = { id: 1, name: 'First Item' };
+      const secondResponse = { id: 2, name: 'Second Item' };
+
+      let resolveSecondRequest: ((value: { data: typeof secondResponse }) => void) | undefined;
+
+      const secondRequest = new Promise<{ data: typeof secondResponse }>(
+        resolve => {
+          resolveSecondRequest = resolve;
+        },
+      );
+
+      vi.mocked(axios.get)
+        .mockResolvedValueOnce({ data: firstResponse })
+        .mockImplementationOnce(() => secondRequest);
+
+      const { result, rerender } = renderHook(
+        ({ url, queryKey, options }) =>
+          useGet<typeof firstResponse | typeof secondResponse>(
+            url,
+            queryKey,
+            options,
+          ),
+        {
+          initialProps: {
+            url: '/test/first',
+            queryKey: ['test', 'first'],
+            options: { usePreviousAsPlaceholder: false },
+          },
+          wrapper: createWrapper(),
+        },
+      );
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expectSuccessResult(result.current.data!, firstResponse);
+
+      rerender({
+        url: '/test/second',
+        queryKey: ['test', 'second'],
+        options: { usePreviousAsPlaceholder: false },
+      });
+
+      expect(result.current.data).toBeUndefined();
+
+      resolveSecondRequest?.({ data: secondResponse });
+
+      await waitFor(() => {
+        if (result.current.data?.success) {
+          expect(result.current.data.value).toEqual(secondResponse);
+        }
+      });
     });
   });
 
@@ -619,10 +730,9 @@ describe('useApi hooks', () => {
         new FailResult(new NotFoundError('Resource not found')),
       );
 
-      const { result } = renderUsePutWithIdHook<
-        unknown,
-        { name: string }
-      >(id => `/test/${id}`);
+      const { result } = renderUsePutWithIdHook<unknown, { name: string }>(
+        id => `/test/${id}`,
+      );
 
       result.current.mutate({ id: 'missing-id', data: { name: 'Test' } });
 
@@ -710,10 +820,9 @@ describe('useApi hooks', () => {
         new FailResult(new ValidationError('Invalid request')),
       );
 
-      const { result } = renderUsePostWithIdHook<
-        unknown,
-        { enabled: boolean }
-      >(id => `/test/${id}/toggle`);
+      const { result } = renderUsePostWithIdHook<unknown, { enabled: boolean }>(
+        id => `/test/${id}/toggle`,
+      );
 
       result.current.mutate({ id: 'invalid-id', data: { enabled: true } });
 
