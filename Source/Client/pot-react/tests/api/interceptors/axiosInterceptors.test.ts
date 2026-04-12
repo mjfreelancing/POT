@@ -5,7 +5,7 @@ import axios, {
 } from 'axios';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { FailResult } from '@/lib';
+import { FailResult, FailResultBase } from '@/lib';
 
 import { addCorrelationId } from '@/api/apiHelpers';
 import { ApiErrorResponse } from '@/api/errors/apiErrorResponse';
@@ -38,15 +38,17 @@ vi.mock('@/api/authClient', () => ({
 // Import the error handler function from the interceptors module for direct testing
 import { responseErrorHandler } from '../../../src/api/interceptors/axiosInterceptors';
 
-const expectRejectedFailResultErrorType = async <TError>(
+const expectRejectedFailResultErrorType = async <TError extends FailResultBase>(
   rejectionPromise: Promise<unknown>,
   expectedErrorType: new (...args: never[]) => TError,
 ) => {
   await expect(rejectionPromise).rejects.toBeInstanceOf(FailResult);
 
-  const failResult = await rejectionPromise.catch(
-    rejectedError => rejectedError as FailResult<TError>,
+  const rejectedValue = await rejectionPromise.catch(
+    rejectedError => rejectedError,
   );
+
+  const failResult = rejectedValue as FailResult<TError>;
 
   expect(failResult.error).toBeInstanceOf(expectedErrorType);
 };
