@@ -255,7 +255,9 @@ describe('useApi hooks', () => {
       const firstResponse = { id: 1, name: 'First Item' };
       const secondResponse = { id: 2, name: 'Second Item' };
 
-      let resolveSecondRequest: ((value: { data: typeof secondResponse }) => void) | undefined;
+      let resolveSecondRequest:
+        | ((value: { data: typeof secondResponse }) => void)
+        | undefined;
 
       const secondRequest = new Promise<{ data: typeof secondResponse }>(
         resolve => {
@@ -309,7 +311,9 @@ describe('useApi hooks', () => {
       const firstResponse = { id: 1, name: 'First Item' };
       const secondResponse = { id: 2, name: 'Second Item' };
 
-      let resolveSecondRequest: ((value: { data: typeof secondResponse }) => void) | undefined;
+      let resolveSecondRequest:
+        | ((value: { data: typeof secondResponse }) => void)
+        | undefined;
 
       const secondRequest = new Promise<{ data: typeof secondResponse }>(
         resolve => {
@@ -381,6 +385,32 @@ describe('useApi hooks', () => {
         requestData,
         expect.anything(),
       );
+
+      expectSuccessResult(result.current.data!, responseData);
+    });
+
+    it('should forward timeoutMs to axios timeout option', async () => {
+      const requestData = { name: 'Timed Request' };
+      const responseData = { id: 2, name: 'Timed Request' };
+
+      vi.mocked(axios.post).mockResolvedValueOnce({ data: responseData });
+
+      const { result } = renderUsePostHook<
+        typeof responseData,
+        typeof requestData
+      >('/test');
+
+      result.current.mutate({
+        data: requestData,
+        timeoutMs: 4321,
+      });
+
+      await waitFor(() => expect(result.current.data).toBeDefined());
+
+      expect(axios.post).toHaveBeenCalledWith('/test', requestData, {
+        signal: undefined,
+        timeout: 4321,
+      });
 
       expectSuccessResult(result.current.data!, responseData);
     });
