@@ -391,12 +391,12 @@ describe('Axios Interceptors', () => {
     it('should ignore cancelled requests', async () => {
       const cancelledError = new AxiosError(
         'Request cancelled',
-        'ERR_CANCELED',
+        AxiosError.ERR_CANCELED,
       );
 
       // Make sure the error is set up correctly
       Object.defineProperty(cancelledError, 'code', {
-        value: 'ERR_CANCELED',
+        value: AxiosError.ERR_CANCELED,
         writable: true,
         enumerable: true,
       });
