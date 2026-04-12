@@ -13,7 +13,16 @@ import {
 } from '@/api/errors/apiErrors';
 import { FailResultBase, FailResult, SuccessResult } from '@/lib';
 
-import { useDelete, useGet, usePost, usePut } from '@/api/hooks';
+import {
+  useDelete,
+  useGet,
+  usePost,
+  usePostWithId,
+  usePostWithIdNoData,
+  usePut,
+  usePutWithId,
+  usePutWithIdNoData,
+} from '@/api/hooks';
 
 // Mock axios and authClient to prevent initialization errors
 vi.mock('axios');
@@ -95,6 +104,38 @@ const renderUsePutHook = <TResponse, TData>(url: string) => {
 
 const renderUseDeleteHook = <TResponse>(url: string) => {
   return renderHook(() => useDelete<TResponse>(url), {
+    wrapper: createWrapper(),
+  });
+};
+
+const renderUsePutWithIdHook = <TResponse, TData>(
+  urlFn: (id: string) => string,
+) => {
+  return renderHook(() => usePutWithId<TResponse, TData>(urlFn), {
+    wrapper: createWrapper(),
+  });
+};
+
+const renderUsePutWithIdNoDataHook = <TResponse>(
+  urlFn: (id: string) => string,
+) => {
+  return renderHook(() => usePutWithIdNoData<TResponse>(urlFn), {
+    wrapper: createWrapper(),
+  });
+};
+
+const renderUsePostWithIdHook = <TResponse, TData>(
+  urlFn: (id: string) => string,
+) => {
+  return renderHook(() => usePostWithId<TResponse, TData>(urlFn), {
+    wrapper: createWrapper(),
+  });
+};
+
+const renderUsePostWithIdNoDataHook = <TResponse>(
+  urlFn: (id: string) => string,
+) => {
+  return renderHook(() => usePostWithIdNoData<TResponse>(urlFn), {
     wrapper: createWrapper(),
   });
 };
@@ -546,6 +587,188 @@ describe('useApi hooks', () => {
       await waitFor(() => expect(result.current.data).toBeDefined());
       expect(axios.delete).toHaveBeenCalledWith('/test/1', expect.anything());
       expectFailResult(result.current.data!, UnexpectedError);
+    });
+  });
+
+  describe('usePutWithId', () => {
+    it('should send put request using id-based URL and data', async () => {
+      const requestData = { name: 'Updated Item' };
+      const responseData = { id: 'abc-123', name: 'Updated Item' };
+
+      vi.mocked(axios.put).mockResolvedValueOnce({ data: responseData });
+
+      const { result } = renderUsePutWithIdHook<
+        typeof responseData,
+        typeof requestData
+      >(id => `/test/${id}`);
+
+      result.current.mutate({ id: 'abc-123', data: requestData });
+
+      await waitFor(() => expect(result.current.data).toBeDefined());
+
+      expect(axios.put).toHaveBeenCalledWith(
+        '/test/abc-123',
+        requestData,
+        expect.anything(),
+      );
+      expectSuccessResult(result.current.data!, responseData);
+    });
+
+    it('should handle errors from put-with-id requests', async () => {
+      vi.mocked(axios.put).mockRejectedValueOnce(
+        new FailResult(new NotFoundError('Resource not found')),
+      );
+
+      const { result } = renderUsePutWithIdHook<
+        unknown,
+        { name: string }
+      >(id => `/test/${id}`);
+
+      result.current.mutate({ id: 'missing-id', data: { name: 'Test' } });
+
+      await waitFor(() => expect(result.current.data).toBeDefined());
+
+      expect(axios.put).toHaveBeenCalledWith(
+        '/test/missing-id',
+        { name: 'Test' },
+        expect.anything(),
+      );
+      expectFailResult(result.current.data!, NotFoundError);
+    });
+  });
+
+  describe('usePutWithIdNoData', () => {
+    it('should send put request with undefined body', async () => {
+      const responseData = { success: true };
+
+      vi.mocked(axios.put).mockResolvedValueOnce({ data: responseData });
+
+      const { result } = renderUsePutWithIdNoDataHook<typeof responseData>(
+        id => `/test/${id}/action`,
+      );
+
+      result.current.mutate({ id: 'abc-123' });
+
+      await waitFor(() => expect(result.current.data).toBeDefined());
+
+      expect(axios.put).toHaveBeenCalledWith(
+        '/test/abc-123/action',
+        undefined,
+        expect.anything(),
+      );
+      expectSuccessResult(result.current.data!, responseData);
+    });
+
+    it('should handle errors from put-with-id-no-data requests', async () => {
+      vi.mocked(axios.put).mockRejectedValueOnce(
+        new FailResult(new ConflictError('Conflict during operation')),
+      );
+
+      const { result } = renderUsePutWithIdNoDataHook<unknown>(
+        id => `/test/${id}/action`,
+      );
+
+      result.current.mutate({ id: 'conflict-id' });
+
+      await waitFor(() => expect(result.current.data).toBeDefined());
+
+      expect(axios.put).toHaveBeenCalledWith(
+        '/test/conflict-id/action',
+        undefined,
+        expect.anything(),
+      );
+      expectFailResult(result.current.data!, ConflictError);
+    });
+  });
+
+  describe('usePostWithId', () => {
+    it('should send post request using id-based URL and data', async () => {
+      const requestData = { enabled: true };
+      const responseData = { id: 'abc-123', enabled: true };
+
+      vi.mocked(axios.post).mockResolvedValueOnce({ data: responseData });
+
+      const { result } = renderUsePostWithIdHook<
+        typeof responseData,
+        typeof requestData
+      >(id => `/test/${id}/toggle`);
+
+      result.current.mutate({ id: 'abc-123', data: requestData });
+
+      await waitFor(() => expect(result.current.data).toBeDefined());
+
+      expect(axios.post).toHaveBeenCalledWith(
+        '/test/abc-123/toggle',
+        requestData,
+        expect.anything(),
+      );
+      expectSuccessResult(result.current.data!, responseData);
+    });
+
+    it('should handle errors from post-with-id requests', async () => {
+      vi.mocked(axios.post).mockRejectedValueOnce(
+        new FailResult(new ValidationError('Invalid request')),
+      );
+
+      const { result } = renderUsePostWithIdHook<
+        unknown,
+        { enabled: boolean }
+      >(id => `/test/${id}/toggle`);
+
+      result.current.mutate({ id: 'invalid-id', data: { enabled: true } });
+
+      await waitFor(() => expect(result.current.data).toBeDefined());
+
+      expect(axios.post).toHaveBeenCalledWith(
+        '/test/invalid-id/toggle',
+        { enabled: true },
+        expect.anything(),
+      );
+      expectFailResult(result.current.data!, ValidationError);
+    });
+  });
+
+  describe('usePostWithIdNoData', () => {
+    it('should send post request with undefined body', async () => {
+      const responseData = { accepted: true };
+
+      vi.mocked(axios.post).mockResolvedValueOnce({ data: responseData });
+
+      const { result } = renderUsePostWithIdNoDataHook<typeof responseData>(
+        id => `/test/${id}/approve`,
+      );
+
+      result.current.mutate({ id: 'abc-123' });
+
+      await waitFor(() => expect(result.current.data).toBeDefined());
+
+      expect(axios.post).toHaveBeenCalledWith(
+        '/test/abc-123/approve',
+        undefined,
+        expect.anything(),
+      );
+      expectSuccessResult(result.current.data!, responseData);
+    });
+
+    it('should handle errors from post-with-id-no-data requests', async () => {
+      vi.mocked(axios.post).mockRejectedValueOnce(
+        new FailResult(new NetworkError('Network unavailable')),
+      );
+
+      const { result } = renderUsePostWithIdNoDataHook<unknown>(
+        id => `/test/${id}/approve`,
+      );
+
+      result.current.mutate({ id: 'offline-id' });
+
+      await waitFor(() => expect(result.current.data).toBeDefined());
+
+      expect(axios.post).toHaveBeenCalledWith(
+        '/test/offline-id/approve',
+        undefined,
+        expect.anything(),
+      );
+      expectFailResult(result.current.data!, NetworkError);
     });
   });
 });
