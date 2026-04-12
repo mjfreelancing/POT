@@ -11,6 +11,7 @@ applyTo: "Source/Client/pot-react/tests/**"
 - Use deterministic tests with mocked external boundaries.
 - Prefer behavior-focused assertions over implementation details.
 - Mirror source structure in test folders when that improves discoverability.
+- Do not use guard assertions like `expect(true).toBe(false)` to force failures in async tests; prefer explicit `await expect(promise).rejects...` or `await expect(fn).rejects/toThrow...` patterns.
 
 ### Tooling and Naming
 
