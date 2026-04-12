@@ -1,5 +1,6 @@
 export * from './apiUtils';
 export * from './badgeStyles';
+export * from './chartUtils';
 export * from './dateUtils';
 export * from './errorUtils';
 export * from './expenseTableRowUtils';
