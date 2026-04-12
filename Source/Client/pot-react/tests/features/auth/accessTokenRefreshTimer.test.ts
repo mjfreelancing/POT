@@ -1,7 +1,9 @@
 ﻿import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { authClient } from '@/api/authClient';
+import { AuthenticationError } from '@/api/errors/apiErrors';
 import { createAccessTokenRefreshTimer } from '@/features/auth/accessTokenRefreshTimer';
+import { FailResult } from '@/lib';
 
 // Mock dependencies
 vi.mock('@/api/authClient', () => ({
@@ -115,11 +117,21 @@ describe('accessTokenRefreshTimer', () => {
     // Should have attempted refresh
     expect(authClient.post).toHaveBeenCalled();
 
-    // Should have called error callback with FailResult wrapper
-    expect(onRefreshError).toHaveBeenCalled();
+    // Should have called error callback with a normalized authentication failure
+    expect(onRefreshError).toHaveBeenCalledTimes(1);
     const errorArg = vi.mocked(onRefreshError).mock.calls[0][0];
-    expect(errorArg).toHaveProperty('success', false);
-    expect(errorArg).toHaveProperty('error');
+
+    expect(errorArg).toBeInstanceOf(FailResult);
+
+    const failResult = errorArg as FailResult<AuthenticationError>;
+
+    expect(failResult.success).toBe(false);
+
+    if (!failResult.success) {
+      expect(failResult.error).toBeInstanceOf(AuthenticationError);
+      expect(failResult.error.description).toBe('Token refresh failed');
+    }
+
     expect(onRefreshSuccess).not.toHaveBeenCalled();
   });
 
