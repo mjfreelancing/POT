@@ -3,6 +3,7 @@
 import { authClient } from '@/api/authClient';
 import { AuthenticationError } from '@/api/errors/apiErrors';
 import { createAccessTokenRefreshTimer } from '@/features/auth/accessTokenRefreshTimer';
+import { calculateRefreshTime } from '@/lib/jwt';
 import { FailResult } from '@/lib';
 
 // Mock dependencies
@@ -13,7 +14,7 @@ vi.mock('@/api/authClient', () => ({
 }));
 
 vi.mock('@/lib/jwt', () => ({
-  calculateRefreshTime: () => 5 * 60 * 1000, // Always return 5 minutes
+  calculateRefreshTime: vi.fn(() => 5 * 60 * 1000),
 }));
 
 vi.mock('@/lib/logging', () => ({
@@ -57,6 +58,29 @@ describe('accessTokenRefreshTimer', () => {
     timer.start();
 
     // Timer should be set but not triggered yet
+    expect(onRefreshSuccess).not.toHaveBeenCalled();
+    expect(onRefreshError).not.toHaveBeenCalled();
+  });
+
+  it('does not schedule refresh when calculated refresh time is falsy', async () => {
+    vi.mocked(calculateRefreshTime).mockReturnValueOnce(0);
+
+    const onRefreshSuccess = vi.fn();
+    const onRefreshError = vi.fn();
+
+    const timer = createAccessTokenRefreshTimer({
+      currentAccessToken: mockAccessToken,
+      onRefreshSuccess,
+      onRefreshError,
+    });
+
+    timer.start();
+
+    vi.advanceTimersByTime(60 * 60 * 1000);
+    await vi.runAllTimersAsync();
+
+    expect(calculateRefreshTime).toHaveBeenCalledWith(mockAccessToken);
+    expect(authClient.post).not.toHaveBeenCalled();
     expect(onRefreshSuccess).not.toHaveBeenCalled();
     expect(onRefreshError).not.toHaveBeenCalled();
   });
