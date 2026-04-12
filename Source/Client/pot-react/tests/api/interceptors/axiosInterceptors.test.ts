@@ -10,10 +10,14 @@ import { FailResult } from '@/lib';
 import { addCorrelationId } from '@/api/apiHelpers';
 import { ApiErrorResponse } from '@/api/errors/apiErrorResponse';
 import {
+  AuthenticationError,
   ConflictError,
+  ForbiddenError,
+  MethodNotAllowedError,
   NetworkError,
   NotFoundError,
-  UnexpectedError,
+  RateLimitedError,
+  ServerError,
   ValidationError,
 } from '@/api/errors/apiErrors';
 
@@ -33,6 +37,19 @@ vi.mock('@/api/authClient', () => ({
 
 // Import the error handler function from the interceptors module for direct testing
 import { responseErrorHandler } from '../../../src/api/interceptors/axiosInterceptors';
+
+const expectRejectedFailResultErrorType = async <TError>(
+  rejectionPromise: Promise<unknown>,
+  expectedErrorType: new (...args: never[]) => TError,
+) => {
+  await expect(rejectionPromise).rejects.toBeInstanceOf(FailResult);
+
+  const failResult = await rejectionPromise.catch(
+    rejectedError => rejectedError as FailResult<TError>,
+  );
+
+  expect(failResult.error).toBeInstanceOf(expectedErrorType);
+};
 
 describe('Axios Interceptors', () => {
   beforeEach(() => {
@@ -122,17 +139,84 @@ describe('Axios Interceptors', () => {
         statusText: 'Not Found',
       };
 
-      try {
-        // Call the error handler function directly
-        await responseErrorHandler(axiosError);
-        // If we reach here, the test should fail
-        expect(true).toBe(false);
-      } catch (error) {
-        expect(error).toBeInstanceOf(FailResult);
-        expect((error as FailResult<NotFoundError>).error).toBeInstanceOf(
-          NotFoundError,
-        );
-      }
+      const rejectionPromise = responseErrorHandler(axiosError);
+
+      await expectRejectedFailResultErrorType(rejectionPromise, NotFoundError);
+    });
+
+    it('should convert 401 responses to AuthenticationError', async () => {
+      const apiErrorResponse: ApiErrorResponse = {
+        title: 'Unauthorized',
+        detail: 'Authentication required',
+        status: 401,
+      };
+
+      const axiosError = new AxiosError('Unauthorized');
+      axiosError.response = {
+        status: 401,
+        data: apiErrorResponse,
+        headers: {},
+        config: {
+          headers: new AxiosHeaders({ 'X-Correlation-ID': 'test-id' }),
+        } as InternalAxiosRequestConfig,
+        statusText: 'Unauthorized',
+      };
+
+      const rejectionPromise = responseErrorHandler(axiosError);
+
+      await expectRejectedFailResultErrorType(
+        rejectionPromise,
+        AuthenticationError,
+      );
+    });
+
+    it('should convert 403 responses to ForbiddenError', async () => {
+      const apiErrorResponse: ApiErrorResponse = {
+        title: 'Forbidden',
+        detail: 'Access denied',
+        status: 403,
+      };
+
+      const axiosError = new AxiosError('Forbidden');
+      axiosError.response = {
+        status: 403,
+        data: apiErrorResponse,
+        headers: {},
+        config: {
+          headers: new AxiosHeaders({ 'X-Correlation-ID': 'test-id' }),
+        } as InternalAxiosRequestConfig,
+        statusText: 'Forbidden',
+      };
+
+      const rejectionPromise = responseErrorHandler(axiosError);
+
+      await expectRejectedFailResultErrorType(rejectionPromise, ForbiddenError);
+    });
+
+    it('should convert 405 responses to MethodNotAllowedError', async () => {
+      const apiErrorResponse: ApiErrorResponse = {
+        title: 'Method Not Allowed',
+        detail: 'HTTP method is not allowed for this endpoint',
+        status: 405,
+      };
+
+      const axiosError = new AxiosError('Method Not Allowed');
+      axiosError.response = {
+        status: 405,
+        data: apiErrorResponse,
+        headers: {},
+        config: {
+          headers: new AxiosHeaders({ 'X-Correlation-ID': 'test-id' }),
+        } as InternalAxiosRequestConfig,
+        statusText: 'Method Not Allowed',
+      };
+
+      const rejectionPromise = responseErrorHandler(axiosError);
+
+      await expectRejectedFailResultErrorType(
+        rejectionPromise,
+        MethodNotAllowedError,
+      );
     });
 
     it('should convert 409 responses to ConflictError', async () => {
@@ -161,16 +245,9 @@ describe('Axios Interceptors', () => {
         statusText: 'Conflict',
       };
 
-      try {
-        // Call the error handler function directly
-        await responseErrorHandler(axiosError);
-        expect(true).toBe(false);
-      } catch (error) {
-        expect(error).toBeInstanceOf(FailResult);
-        expect((error as FailResult<ConflictError>).error).toBeInstanceOf(
-          ConflictError,
-        );
-      }
+      const rejectionPromise = responseErrorHandler(axiosError);
+
+      await expectRejectedFailResultErrorType(rejectionPromise, ConflictError);
     });
 
     it('should convert 422 responses to ValidationError', async () => {
@@ -199,19 +276,15 @@ describe('Axios Interceptors', () => {
         statusText: 'Unprocessable Entity',
       };
 
-      try {
-        // Call the error handler function directly
-        await responseErrorHandler(axiosError);
-        expect(true).toBe(false);
-      } catch (error) {
-        expect(error).toBeInstanceOf(FailResult);
-        expect((error as FailResult<ValidationError>).error).toBeInstanceOf(
-          ValidationError,
-        );
-      }
+      const rejectionPromise = responseErrorHandler(axiosError);
+
+      await expectRejectedFailResultErrorType(
+        rejectionPromise,
+        ValidationError,
+      );
     });
 
-    it('should convert 500 responses to UnexpectedError', async () => {
+    it('should convert 500 responses to ServerError', async () => {
       const apiErrorResponse: ApiErrorResponse = {
         title: 'Server Error',
         detail: 'Internal server error',
@@ -229,31 +302,75 @@ describe('Axios Interceptors', () => {
         statusText: 'Internal Server Error',
       };
 
-      try {
-        // Call the error handler function directly
-        await responseErrorHandler(axiosError);
-        expect(true).toBe(false);
-      } catch (error) {
-        expect(error).toBeInstanceOf(FailResult);
-        expect((error as FailResult<UnexpectedError>).error).toBeInstanceOf(
-          UnexpectedError,
-        );
-      }
+      const rejectionPromise = responseErrorHandler(axiosError);
+
+      await expectRejectedFailResultErrorType(rejectionPromise, ServerError);
     });
+
+    it('should convert 429 responses to RateLimitedError', async () => {
+      const apiErrorResponse: ApiErrorResponse = {
+        title: 'Too Many Requests',
+        detail: 'Rate limit exceeded',
+        status: 429,
+      };
+
+      const axiosError = new AxiosError('Too Many Requests');
+      axiosError.response = {
+        status: 429,
+        data: apiErrorResponse,
+        headers: {},
+        config: {
+          headers: new AxiosHeaders({ 'X-Correlation-ID': 'test-id' }),
+        } as InternalAxiosRequestConfig,
+        statusText: 'Too Many Requests',
+      };
+
+      const rejectionPromise = responseErrorHandler(axiosError);
+
+      await expectRejectedFailResultErrorType(
+        rejectionPromise,
+        RateLimitedError,
+      );
+    });
+
+    it.each([502, 503, 504])(
+      'should convert %s responses to ServerError',
+      async statusCode => {
+        const apiErrorResponse: ApiErrorResponse = {
+          title: 'Server Error',
+          detail: 'Upstream service failed',
+          status: statusCode,
+        };
+
+        const axiosError = new AxiosError('Server Error');
+        axiosError.response = {
+          status: statusCode,
+          data: apiErrorResponse,
+          headers: {},
+          config: {
+            headers: new AxiosHeaders({ 'X-Correlation-ID': 'test-id' }),
+          } as InternalAxiosRequestConfig,
+          statusText: 'Server Error',
+        };
+
+        const rejectionPromise = responseErrorHandler(axiosError);
+
+        await expectRejectedFailResultErrorType(rejectionPromise, ServerError);
+      },
+    );
 
     it('should convert network errors to NetworkError', async () => {
       const networkError = new AxiosError('Network Error', 'ERR_NETWORK');
 
-      try {
-        // Call the error handler function directly
-        await responseErrorHandler(networkError);
-        expect(true).toBe(false);
-      } catch (error) {
-        expect(error).toBeInstanceOf(FailResult);
-        expect((error as FailResult<NetworkError>).error).toBeInstanceOf(
-          NetworkError,
-        );
-      }
+      Object.defineProperty(networkError, 'isAxiosError', {
+        value: true,
+        writable: true,
+        enumerable: true,
+      });
+
+      const rejectionPromise = responseErrorHandler(networkError);
+
+      await expectRejectedFailResultErrorType(rejectionPromise, NetworkError);
     });
 
     it('should ignore cancelled requests', async () => {
@@ -269,15 +386,10 @@ describe('Axios Interceptors', () => {
         enumerable: true,
       });
 
-      try {
-        // Use the real handler since it's working correctly now
-        await responseErrorHandler(cancelledError);
-        expect(true).toBe(false); // Should not get here
-      } catch (error) {
-        // Should be the original error, not wrapped in a FailResult
-        expect(error).toBe(cancelledError);
-        expect(error).not.toBeInstanceOf(FailResult);
-      }
+      const rejectionPromise = responseErrorHandler(cancelledError);
+
+      await expect(rejectionPromise).rejects.toBe(cancelledError);
+      await expect(rejectionPromise).rejects.not.toBeInstanceOf(FailResult);
     });
   });
 });
