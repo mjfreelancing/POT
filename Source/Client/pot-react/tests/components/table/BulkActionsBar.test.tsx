@@ -2,7 +2,9 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, test, vi } from 'vitest';
 
-import BulkActionsBar, { type BulkAction } from '@/components/table/BulkActionsBar';
+import BulkActionsBar, {
+  type BulkAction,
+} from '@/components/table/BulkActionsBar';
 
 type TestItem = {
   id: string;
@@ -112,9 +114,8 @@ describe('BulkActionsBar', () => {
       screen.getByRole('button', { name: 'Open bulk actions menu' }),
     );
 
-    expect(screen.getByRole('menuitem', { name: 'Disabled Action' })).toHaveAttribute(
-      'aria-disabled',
-      'true',
-    );
+    expect(
+      screen.getByRole('menuitem', { name: 'Disabled Action' }),
+    ).toHaveAttribute('aria-disabled', 'true');
   });
 });

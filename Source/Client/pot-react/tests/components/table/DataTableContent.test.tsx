@@ -29,7 +29,9 @@ type TableMock = {
   };
 };
 
-const createTableMock = (rows: TableMock['getRowModel'] extends () => infer R ? R['rows'] : never): TableMock => ({
+const createTableMock = (
+  rows: TableMock['getRowModel'] extends () => infer R ? R['rows'] : never,
+): TableMock => ({
   getRowModel: () => ({
     rows,
   }),

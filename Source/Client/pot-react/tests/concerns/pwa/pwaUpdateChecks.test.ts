@@ -80,7 +80,7 @@ describe('setupServiceWorkerUpdateChecks', () => {
       },
     );
 
-    vi.spyOn(window, 'setInterval').mockImplementation((handler) => {
+    vi.spyOn(window, 'setInterval').mockImplementation(handler => {
       intervalHandler = handler as () => void;
       return 123 as unknown as number;
     });

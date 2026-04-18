@@ -95,7 +95,11 @@ describe('showUpdatePromptIfNeeded', () => {
     pwaRuntimeState.dismissedWaitingScriptUrl = '/sw.js';
     pwaRuntimeState.dismissedWaitingScriptAt = Date.now() - LATER_SNOOZE_MS - 1;
 
-    await showUpdatePromptIfNeeded('force-deferred-check', updateServiceWorker, true);
+    await showUpdatePromptIfNeeded(
+      'force-deferred-check',
+      updateServiceWorker,
+      true,
+    );
 
     expect(toast).toHaveBeenCalledTimes(1);
 

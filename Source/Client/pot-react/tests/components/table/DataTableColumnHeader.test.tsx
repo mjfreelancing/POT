@@ -14,7 +14,10 @@ type ColumnMock = {
   clearSorting: ReturnType<typeof vi.fn>;
 };
 
-const createColumnMock = (sortState: SortState, canSort = true): ColumnMock => ({
+const createColumnMock = (
+  sortState: SortState,
+  canSort = true,
+): ColumnMock => ({
   getCanSort: vi.fn().mockReturnValue(canSort),
   getIsSorted: vi.fn().mockReturnValue(sortState),
   toggleSorting: vi.fn(),
