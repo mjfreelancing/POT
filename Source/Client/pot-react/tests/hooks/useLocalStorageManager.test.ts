@@ -32,7 +32,11 @@ describe('useLocalStorageManager', () => {
     const defaultValue: StorageData = { alpha: 'fallback' };
 
     renderHook(() =>
-      useLocalStorageManager<StorageData>('pot-manager-key', onError, defaultValue),
+      useLocalStorageManager<StorageData>(
+        'pot-manager-key',
+        onError,
+        defaultValue,
+      ),
     );
 
     expect(useLocalStorage).toHaveBeenCalledWith({
@@ -83,7 +87,11 @@ describe('useLocalStorageManager', () => {
     const defaultValue: StorageData = { alpha: 'fallback' };
 
     const { result } = renderHook(() =>
-      useLocalStorageManager<StorageData>('pot-manager-key', undefined, defaultValue),
+      useLocalStorageManager<StorageData>(
+        'pot-manager-key',
+        undefined,
+        defaultValue,
+      ),
     );
 
     result.current.setProperty('beta', 5);

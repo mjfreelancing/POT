@@ -76,7 +76,10 @@ describe('useLocalStorage', () => {
   });
 
   test('returns undefined and reports error when stored JSON cannot be parsed', () => {
-    window.localStorage.setItem('pot-local-storage-invalid-json', '{invalid-json');
+    window.localStorage.setItem(
+      'pot-local-storage-invalid-json',
+      '{invalid-json',
+    );
     const onError = vi.fn();
 
     const { result } = renderHook(() =>
