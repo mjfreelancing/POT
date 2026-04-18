@@ -3,7 +3,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { Outlet, useNavigate, useSearchParams } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetAllExpenses } from '@/api/hooks';
-import { ErrorSheet, LoadingOverlay } from '@/components/feedback';
+import {
+  EmptyStateMessage,
+  ErrorSheet,
+  LoadingOverlay,
+} from '@/components/feedback';
 import {
   AccountFilter,
   FilterResultsCount,
@@ -11,6 +15,11 @@ import {
 } from '@/components/filters';
 import { Toolbar } from '@/components/layout';
 import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import type { Expense } from '@/data/expense';
@@ -186,6 +195,20 @@ function ExpensesPage() {
     setExpenseData({ filterDescription: trimmedTerm });
   };
 
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setExpenseData({ filterDescription: '', selectedAccountId: null });
+    handleAccountChange(null);
+  };
+
+  const hasNoAccounts = !isLoading && accounts.length === 0;
+  const hasNoExpenses =
+    !isLoading &&
+    accounts.length > 0 &&
+    descriptionFilteredExpenses.length === 0;
+  const hasActiveFilters =
+    searchTerm.length > 0 || validatedSelectedAccountId !== null;
+
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-gradient-to-br from-background to-muted/20">
       <ExpensesHeader />
@@ -216,17 +239,39 @@ function ExpensesPage() {
                 isFilterActive={searchTerm.length > 0}
               />
               <WithPermission permissions={['expense:manage']} mode="all">
-                <Button
-                  onClick={() => navigate('create')}
-                  aria-label="Add a new expense"
-                  size="sm"
-                  variant="default"
-                  className="gap-1.5 font-medium shadow-sm bg-primary active:scale-95 transition-transform"
-                  disabled={accounts.length === 0}
-                >
-                  <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">Add Expense</span>
-                </Button>
+                {accounts.length === 0 ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex" tabIndex={0}>
+                        <Button
+                          onClick={() => navigate('create')}
+                          aria-label="Add a new expense"
+                          size="sm"
+                          variant="default"
+                          className="gap-1.5 font-medium shadow-sm bg-primary active:scale-95 transition-transform"
+                          disabled
+                        >
+                          <Plus className="h-4 w-4" />
+                          <span className="hidden sm:inline">Add Expense</span>
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Create at least one account first.
+                    </TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <Button
+                    onClick={() => navigate('create')}
+                    aria-label="Add a new expense"
+                    size="sm"
+                    variant="default"
+                    className="gap-1.5 font-medium shadow-sm bg-primary active:scale-95 transition-transform"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span className="hidden sm:inline">Add Expense</span>
+                  </Button>
+                )}
               </WithPermission>
             </div>
           </div>
@@ -234,7 +279,35 @@ function ExpensesPage() {
         {/* Table container: flex-1 min-h-0 for proper flexbox, no overflow here */}
         <div className="flex-1 min-h-0 flex flex-col relative">
           {isLoading && <LoadingOverlay />}
-          {isMobile ? (
+          {hasNoAccounts ? (
+            <EmptyStateMessage
+              title="Create an account to get started"
+              description="Every expense entry must be assigned to an account."
+              primaryActionLabel="Create Account"
+              onPrimaryAction={() => navigate('/accounts/create')}
+            />
+          ) : hasNoExpenses ? (
+            <EmptyStateMessage
+              title={
+                hasActiveFilters ? 'No matching expenses' : 'No expenses yet'
+              }
+              description={
+                hasActiveFilters
+                  ? 'Try adjusting your search to find matching expenses.'
+                  : 'Add your first expense to start tracking upcoming obligations.'
+              }
+              primaryActionLabel={
+                hasActiveFilters ? 'Clear filters' : 'Add first expense'
+              }
+              onPrimaryAction={
+                hasActiveFilters
+                  ? handleClearFilters
+                  : () => {
+                      navigate('create');
+                    }
+              }
+            />
+          ) : isMobile ? (
             <ExpenseCardGrid expenses={descriptionFilteredExpenses} />
           ) : (
             <ExpensesTable filteredExpenses={descriptionFilteredExpenses} />

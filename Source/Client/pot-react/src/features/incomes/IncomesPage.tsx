@@ -3,7 +3,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { Outlet, useNavigate, useSearchParams } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetAllIncomes } from '@/api/hooks';
-import { ErrorSheet, LoadingOverlay } from '@/components/feedback';
+import {
+  EmptyStateMessage,
+  ErrorSheet,
+  LoadingOverlay,
+} from '@/components/feedback';
 import {
   AccountFilter,
   FilterResultsCount,
@@ -11,6 +15,11 @@ import {
 } from '@/components/filters';
 import { Toolbar } from '@/components/layout';
 import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import type { Income } from '@/data/income';
@@ -166,6 +175,20 @@ function IncomesPage() {
 
   const navigate = useNavigate();
 
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setIncomeData({ filterDescription: '', selectedAccountId: null });
+    handleAccountChange(null);
+  };
+
+  const hasNoAccounts = !isLoading && accounts.length === 0;
+  const hasNoIncomes =
+    !isLoading &&
+    accounts.length > 0 &&
+    descriptionFilteredIncomes.length === 0;
+  const hasActiveFilters =
+    searchTerm.length > 0 || validatedSelectedAccountId !== null;
+
   // Handle errors
   useEffect(() => {
     if (incomesResult) {
@@ -209,24 +232,74 @@ function IncomesPage() {
                 isFilterActive={searchTerm.length > 0}
               />
               <WithPermission permissions={['income:manage']} mode="all">
-                <Button
-                  onClick={() => navigate('create')}
-                  aria-label="Add a new income"
-                  size="sm"
-                  variant="default"
-                  className="gap-1.5 font-medium shadow-sm bg-primary active:scale-95 transition-transform"
-                  disabled={accounts.length === 0}
-                >
-                  <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">Add Income</span>
-                </Button>
+                {accounts.length === 0 ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex" tabIndex={0}>
+                        <Button
+                          onClick={() => navigate('create')}
+                          aria-label="Add a new income"
+                          size="sm"
+                          variant="default"
+                          className="gap-1.5 font-medium shadow-sm bg-primary active:scale-95 transition-transform"
+                          disabled
+                        >
+                          <Plus className="h-4 w-4" />
+                          <span className="hidden sm:inline">Add Income</span>
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Create at least one account first.
+                    </TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <Button
+                    onClick={() => navigate('create')}
+                    aria-label="Add a new income"
+                    size="sm"
+                    variant="default"
+                    className="gap-1.5 font-medium shadow-sm bg-primary active:scale-95 transition-transform"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span className="hidden sm:inline">Add Income</span>
+                  </Button>
+                )}
               </WithPermission>
             </div>
           </div>
         </Toolbar>
         <div className="flex-1 min-h-0 flex flex-col relative">
           {isLoading && <LoadingOverlay />}
-          {isMobile ? (
+          {hasNoAccounts ? (
+            <EmptyStateMessage
+              title="Create an account to get started"
+              description="Every income entry must be assigned to an account."
+              primaryActionLabel="Create Account"
+              onPrimaryAction={() => navigate('/accounts/create')}
+            />
+          ) : hasNoIncomes ? (
+            <EmptyStateMessage
+              title={
+                hasActiveFilters ? 'No matching incomes' : 'No incomes yet'
+              }
+              description={
+                hasActiveFilters
+                  ? 'Try adjusting your search to find matching incomes.'
+                  : 'Add your first income to start projecting incoming cash flow.'
+              }
+              primaryActionLabel={
+                hasActiveFilters ? 'Clear filters' : 'Add first income'
+              }
+              onPrimaryAction={
+                hasActiveFilters
+                  ? handleClearFilters
+                  : () => {
+                      navigate('create');
+                    }
+              }
+            />
+          ) : isMobile ? (
             <IncomeCardGrid incomes={descriptionFilteredIncomes} />
           ) : (
             <IncomesTable filteredIncomes={descriptionFilteredIncomes} />

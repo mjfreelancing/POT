@@ -1,11 +1,13 @@
 import { Plus } from 'lucide-react';
-import { useMemo, useState } from 'react';
-import { useEffect } from 'react';
-import { Outlet } from 'react-router';
-import { useNavigate } from 'react-router';
+import { useEffect, useMemo, useState } from 'react';
+import { Outlet, useNavigate } from 'react-router';
 
 import { useApiGetAllAccounts } from '@/api/hooks';
-import { ErrorSheet, LoadingOverlay } from '@/components/feedback';
+import {
+  EmptyStateMessage,
+  ErrorSheet,
+  LoadingOverlay,
+} from '@/components/feedback';
 import { FilterResultsCount, SearchInput } from '@/components/filters';
 import { Toolbar } from '@/components/layout';
 import { Button } from '@/components/ui/button';
@@ -95,6 +97,17 @@ function AccountsPage() {
     setAccountData({ filterDescription: trimmedTerm });
   };
 
+  const handleClearSearch = () => {
+    setSearchTerm('');
+    setAccountData({ filterDescription: '' });
+  };
+
+  const hasNoAccounts = !isLoading && accounts.length === 0;
+  const hasNoMatchingAccounts =
+    !isLoading &&
+    accounts.length > 0 &&
+    descriptionFilteredAccounts.length === 0;
+
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-gradient-to-br from-background to-muted/20">
       <AccountsHeader />
@@ -131,7 +144,21 @@ function AccountsPage() {
         </Toolbar>
         <div className="flex-1 min-h-0 flex flex-col relative">
           {isLoading && <LoadingOverlay />}
-          {isMobile ? (
+          {hasNoAccounts ? (
+            <EmptyStateMessage
+              title="No accounts yet"
+              description="Add your first account to start linking incomes and expenses."
+              primaryActionLabel="Add first account"
+              onPrimaryAction={() => navigate('create')}
+            />
+          ) : hasNoMatchingAccounts ? (
+            <EmptyStateMessage
+              title="No matching accounts"
+              description="Try adjusting your search to find the account you need."
+              primaryActionLabel="Clear search"
+              onPrimaryAction={handleClearSearch}
+            />
+          ) : isMobile ? (
             <AccountCardGrid accounts={descriptionFilteredAccounts} />
           ) : (
             <AccountsTable accounts={descriptionFilteredAccounts} />
