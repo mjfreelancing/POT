@@ -80,10 +80,15 @@ describe('setupServiceWorkerUpdateChecks', () => {
       },
     );
 
-    vi.spyOn(window, 'setInterval').mockImplementation(handler => {
-      intervalHandler = handler as () => void;
-      return 123 as unknown as number;
-    });
+    vi.spyOn(window, 'setInterval').mockImplementation(
+      (handler: TimerHandler) => {
+        if (typeof handler === 'function') {
+          intervalHandler = handler as () => void;
+        }
+
+        return 123 as unknown as ReturnType<typeof window.setInterval>;
+      },
+    );
   });
 
   test('attaches listeners once and performs startup check', async () => {

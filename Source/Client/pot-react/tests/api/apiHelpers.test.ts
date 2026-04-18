@@ -269,7 +269,7 @@ describe('API helper utilities', () => {
     it('should initialize headers when config headers are undefined', () => {
       const config = {
         headers: undefined,
-      };
+      } as unknown as InternalAxiosRequestConfig;
 
       const result = addCorrelationId(config);
 

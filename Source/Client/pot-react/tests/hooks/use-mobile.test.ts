@@ -26,6 +26,14 @@ describe('useIsMobile', () => {
           matches: window.innerWidth < 768,
           media: query,
           onchange: null,
+          addListener: (listener: MatchMediaListener) => {
+            changeListeners.push(listener);
+          },
+          removeListener: (listener: MatchMediaListener) => {
+            changeListeners = changeListeners.filter(
+              existingListener => existingListener !== listener,
+            );
+          },
           addEventListener: (
             _eventName: string,
             listener: MatchMediaListener,

@@ -2,6 +2,7 @@ import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import type { Permission } from '@/concerns';
+import type { User } from '@/data/user';
 import usePermissions from '@/hooks/usePermissions';
 import { useUserStore } from '@/stores';
 
@@ -10,10 +11,34 @@ vi.mock('@/stores', () => ({
 }));
 
 type MockUserStoreState = {
-  userInfo: {
-    permissions: Permission[];
-  } | null;
+  userInfo: User | null;
+  setUserInfo: (userInfo: User) => void;
+  clearUserInfo: () => void;
 };
+
+function createMockUserStoreState(
+  permissions: Permission[] | null,
+): MockUserStoreState {
+  return {
+    userInfo: permissions
+      ? ({
+          rowId: 'user-1',
+          etag: 0n,
+          username: 'test-user',
+          displayName: 'Test User',
+          email: 'test@example.com',
+          permissions,
+          site: {
+            rowId: 'site-1',
+            etag: 0n,
+            name: 'Test Site',
+          },
+        } as User)
+      : null,
+    setUserInfo: vi.fn(),
+    clearUserInfo: vi.fn(),
+  };
+}
 
 describe('usePermissions', () => {
   beforeEach(() => {
@@ -22,7 +47,7 @@ describe('usePermissions', () => {
 
   test('exposes an empty permission array when userInfo is missing', () => {
     vi.mocked(useUserStore).mockImplementation(selector =>
-      selector({ userInfo: null } as MockUserStoreState),
+      selector(createMockUserStoreState(null)),
     );
 
     const { result } = renderHook(() => usePermissions());
@@ -33,11 +58,7 @@ describe('usePermissions', () => {
 
   test('hasPermission returns true only for matching permission', () => {
     vi.mocked(useUserStore).mockImplementation(selector =>
-      selector({
-        userInfo: {
-          permissions: ['account:view', 'expense:manage'],
-        },
-      } as MockUserStoreState),
+      selector(createMockUserStoreState(['account:view', 'expense:manage'])),
     );
 
     const { result } = renderHook(() => usePermissions());
@@ -48,11 +69,7 @@ describe('usePermissions', () => {
 
   test('hasAnyPermission returns true when at least one permission matches', () => {
     vi.mocked(useUserStore).mockImplementation(selector =>
-      selector({
-        userInfo: {
-          permissions: ['user:view', 'site:view'],
-        },
-      } as MockUserStoreState),
+      selector(createMockUserStoreState(['user:view', 'site:view'])),
     );
 
     const { result } = renderHook(() => usePermissions());
@@ -68,11 +85,9 @@ describe('usePermissions', () => {
 
   test('hasAllPermissions returns true only when every permission matches', () => {
     vi.mocked(useUserStore).mockImplementation(selector =>
-      selector({
-        userInfo: {
-          permissions: ['user:view', 'user:manage', 'site:view'],
-        },
-      } as MockUserStoreState),
+      selector(
+        createMockUserStoreState(['user:view', 'user:manage', 'site:view']),
+      ),
     );
 
     const { result } = renderHook(() => usePermissions());
@@ -88,11 +103,7 @@ describe('usePermissions', () => {
 
   test('hasAnyPermission and hasAllPermissions keep empty-array semantics', () => {
     vi.mocked(useUserStore).mockImplementation(selector =>
-      selector({
-        userInfo: {
-          permissions: ['account:view'],
-        },
-      } as MockUserStoreState),
+      selector(createMockUserStoreState(['account:view'])),
     );
 
     const { result } = renderHook(() => usePermissions());

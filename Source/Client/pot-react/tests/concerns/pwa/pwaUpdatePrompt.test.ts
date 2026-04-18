@@ -1,3 +1,4 @@
+import type { MouseEvent } from 'react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import {
@@ -7,6 +8,7 @@ import {
 } from '@/concerns/pwa/pwaRuntime';
 import { showUpdatePromptIfNeeded } from '@/concerns/pwa/pwaUpdatePrompt';
 import { getWaitingServiceWorkerScriptUrl } from '@/concerns/pwa/serviceWorkerRegistration';
+import type { ExternalToast } from 'sonner';
 import { toast } from 'sonner';
 
 vi.mock('@/concerns/logging', () => ({
@@ -21,8 +23,9 @@ vi.mock('@/concerns/pwa/serviceWorkerRegistration', () => ({
 }));
 
 vi.mock('sonner', () => {
-  const toastMock = vi.fn();
-  toastMock.dismiss = vi.fn();
+  const toastMock = Object.assign(vi.fn(), {
+    dismiss: vi.fn(),
+  });
 
   return {
     toast: toastMock,
@@ -103,9 +106,19 @@ describe('showUpdatePromptIfNeeded', () => {
 
     expect(toast).toHaveBeenCalledTimes(1);
 
-    const toastOptions = vi.mocked(toast).mock.calls[0]?.[1];
+    const toastOptions = vi.mocked(toast).mock.calls[0]?.[1] as
+      | ExternalToast
+      | undefined;
 
-    toastOptions?.cancel?.onClick?.();
+    const cancelAction = toastOptions?.cancel;
+
+    if (
+      cancelAction &&
+      typeof cancelAction === 'object' &&
+      'onClick' in cancelAction
+    ) {
+      cancelAction.onClick?.({} as MouseEvent<HTMLButtonElement>);
+    }
 
     expect(pwaRuntimeState.dismissedWaitingScriptUrl).toBe('/sw.js');
     expect(pwaRuntimeState.dismissedWaitingScriptAt).toBeTypeOf('number');
