@@ -1,5 +1,5 @@
-import { CircleCheck } from 'lucide-react';
 import { render } from '@testing-library/react';
+import { CircleCheck } from 'lucide-react';
 import { describe, expect, test, vi } from 'vitest';
 
 import { IconToast } from '@/components/feedback/toast/IconToast';

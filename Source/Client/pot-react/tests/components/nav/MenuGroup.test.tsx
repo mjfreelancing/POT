@@ -3,7 +3,9 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { describe, expect, test, vi } from 'vitest';
 
-import MenuGroup, { type MenuGroupDefinition } from '@/components/nav/MenuGroup';
+import MenuGroup, {
+  type MenuGroupDefinition,
+} from '@/components/nav/MenuGroup';
 
 const locationMock = {
   pathname: '/dashboard',
@@ -36,20 +38,27 @@ vi.mock('react-router', () => ({
     </a>
   ),
   useLocation: () => locationMock,
-  matchPath: (
-    matcher: { path: string; end: boolean },
-    currentPath: string,
-  ) => {
+  matchPath: (matcher: { path: string; end: boolean }, currentPath: string) => {
     return matcher.end && matcher.path === currentPath ? { params: {} } : null;
   },
 }));
 
 vi.mock('@/components/ui/sidebar', () => ({
-  SidebarGroup: ({ children }: { children: React.ReactNode }) => <section>{children}</section>,
-  SidebarGroupLabel: ({ children }: { children: React.ReactNode }) => <h3>{children}</h3>,
-  SidebarGroupContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  SidebarMenu: ({ children }: { children: React.ReactNode }) => <ul>{children}</ul>,
-  SidebarMenuItem: ({ children }: { children: React.ReactNode }) => <li>{children}</li>,
+  SidebarGroup: ({ children }: { children: React.ReactNode }) => (
+    <section>{children}</section>
+  ),
+  SidebarGroupLabel: ({ children }: { children: React.ReactNode }) => (
+    <h3>{children}</h3>
+  ),
+  SidebarGroupContent: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  SidebarMenu: ({ children }: { children: React.ReactNode }) => (
+    <ul>{children}</ul>
+  ),
+  SidebarMenuItem: ({ children }: { children: React.ReactNode }) => (
+    <li>{children}</li>
+  ),
   SidebarMenuButton: ({
     children,
     asChild,

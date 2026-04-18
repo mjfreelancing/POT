@@ -11,8 +11,14 @@ vi.mock('@/components/ui/sidebar', () => ({
   }: {
     children: React.ReactNode;
     collapsible?: string;
-  }) => <div data-testid="sidebar" data-collapsible={collapsible}>{children}</div>,
-  SidebarFooter: ({ children }: { children: React.ReactNode }) => <footer>{children}</footer>,
+  }) => (
+    <div data-testid="sidebar" data-collapsible={collapsible}>
+      {children}
+    </div>
+  ),
+  SidebarFooter: ({ children }: { children: React.ReactNode }) => (
+    <footer>{children}</footer>
+  ),
 }));
 
 vi.mock('@/components/theme', () => ({
@@ -31,7 +37,10 @@ describe('AppSidebar', () => {
   test('composes header menus and theme toggle inside sidebar shell', () => {
     render(<AppSidebar />);
 
-    expect(screen.getByTestId('sidebar')).toHaveAttribute('data-collapsible', 'icon');
+    expect(screen.getByTestId('sidebar')).toHaveAttribute(
+      'data-collapsible',
+      'icon',
+    );
     expect(screen.getByTestId('app-sidebar-header')).toBeInTheDocument();
     expect(screen.getByTestId('app-sidebar-menus')).toBeInTheDocument();
     expect(screen.getByTestId('theme-toggle')).toBeInTheDocument();

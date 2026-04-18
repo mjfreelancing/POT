@@ -1,5 +1,5 @@
-import { AlertTriangle } from 'lucide-react';
 import { render } from '@testing-library/react';
+import { AlertTriangle } from 'lucide-react';
 import { describe, expect, test, vi } from 'vitest';
 
 import { ErrorToast } from '@/components/feedback/toast/ErrorToast';

@@ -13,7 +13,7 @@ const menuGroupMock = vi.fn(
       items?: unknown[];
     };
   }) => {
-  return <div data-testid={`menu-group-${group.label.toLowerCase()}`} />;
+    return <div data-testid={`menu-group-${group.label.toLowerCase()}`} />;
   },
 );
 
@@ -29,21 +29,15 @@ vi.mock('@/features/auth/contexts', () => ({
 }));
 
 vi.mock('@/features/maintenance/export', () => ({
-  ExportModal: ({
-    isOpen,
-  }: {
-    isOpen: boolean;
-    onClose: () => void;
-  }) => <div data-testid="export-modal">{String(isOpen)}</div>,
+  ExportModal: ({ isOpen }: { isOpen: boolean; onClose: () => void }) => (
+    <div data-testid="export-modal">{String(isOpen)}</div>
+  ),
 }));
 
 vi.mock('@/features/maintenance/import', () => ({
-  ImportModal: ({
-    isOpen,
-  }: {
-    isOpen: boolean;
-    onClose: () => void;
-  }) => <div data-testid="import-modal">{String(isOpen)}</div>,
+  ImportModal: ({ isOpen }: { isOpen: boolean; onClose: () => void }) => (
+    <div data-testid="import-modal">{String(isOpen)}</div>
+  ),
 }));
 
 vi.mock('@/components/nav/MenuGroup', () => ({
@@ -106,15 +100,20 @@ describe('AppSidebarMenus', () => {
 
     render(<AppSidebarMenus />);
 
-    const maintenanceGroup = menuGroupMock.mock.calls[3][0].group as unknown as {
+    const maintenanceGroup = menuGroupMock.mock.calls[3][0]
+      .group as unknown as {
       items: Array<{
         label: string;
         onClick?: () => void;
       }>;
     };
 
-    const exportAction = maintenanceGroup.items.find(item => item.label === 'Export...');
-    const importAction = maintenanceGroup.items.find(item => item.label === 'Import...');
+    const exportAction = maintenanceGroup.items.find(
+      item => item.label === 'Export...',
+    );
+    const importAction = maintenanceGroup.items.find(
+      item => item.label === 'Import...',
+    );
 
     expect(screen.getByTestId('export-modal')).toHaveTextContent('false');
     expect(screen.getByTestId('import-modal')).toHaveTextContent('false');
