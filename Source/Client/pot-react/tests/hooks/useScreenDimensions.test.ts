@@ -65,12 +65,20 @@ describe('useScreenDimensions', () => {
 
     const { unmount } = renderHook(() => useScreenDimensions());
 
-    expect(addEventListenerSpy).toHaveBeenCalledWith('resize', expect.any(Function));
+    expect(addEventListenerSpy).toHaveBeenCalledWith(
+      'resize',
+      expect.any(Function),
+    );
 
-    const resizeHandler = addEventListenerSpy.mock.calls.find(([eventName]) => eventName === 'resize')?.[1];
+    const resizeHandler = addEventListenerSpy.mock.calls.find(
+      ([eventName]) => eventName === 'resize',
+    )?.[1];
 
     unmount();
 
-    expect(removeEventListenerSpy).toHaveBeenCalledWith('resize', resizeHandler);
+    expect(removeEventListenerSpy).toHaveBeenCalledWith(
+      'resize',
+      resizeHandler,
+    );
   });
 });

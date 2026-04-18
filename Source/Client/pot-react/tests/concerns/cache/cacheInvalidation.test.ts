@@ -9,11 +9,9 @@ type QueryClientMock = {
   invalidateQueries: ReturnType<typeof vi.fn>;
 };
 
-const createQueryClientMock = (): QueryClientMock => {
-  return {
-    invalidateQueries: vi.fn(),
-  };
-};
+const createQueryClientMock = (): QueryClientMock => ({
+  invalidateQueries: vi.fn(),
+});
 
 const extractInvalidatedKeys = (queryClientMock: QueryClientMock): string[] => {
   return queryClientMock.invalidateQueries.mock.calls.map(call => {

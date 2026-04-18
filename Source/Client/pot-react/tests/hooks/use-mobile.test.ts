@@ -20,28 +20,29 @@ describe('useIsMobile', () => {
       value: 1024,
     });
 
-    window.matchMedia = vi.fn().mockImplementation((query: string) => {
-      return {
-        matches: window.innerWidth < 768,
-        media: query,
-        onchange: null,
-        addEventListener: (
-          _eventName: string,
-          listener: MatchMediaListener,
-        ) => {
-          changeListeners.push(listener);
-        },
-        removeEventListener: (
-          _eventName: string,
-          listener: MatchMediaListener,
-        ) => {
-          changeListeners = changeListeners.filter(
-            existingListener => existingListener !== listener,
-          );
-        },
-        dispatchEvent: () => false,
-      } as MediaQueryList;
-    });
+    window.matchMedia = vi.fn().mockImplementation(
+      (query: string) =>
+        ({
+          matches: window.innerWidth < 768,
+          media: query,
+          onchange: null,
+          addEventListener: (
+            _eventName: string,
+            listener: MatchMediaListener,
+          ) => {
+            changeListeners.push(listener);
+          },
+          removeEventListener: (
+            _eventName: string,
+            listener: MatchMediaListener,
+          ) => {
+            changeListeners = changeListeners.filter(
+              existingListener => existingListener !== listener,
+            );
+          },
+          dispatchEvent: () => false,
+        }) as MediaQueryList,
+    );
   });
 
   afterEach(() => {

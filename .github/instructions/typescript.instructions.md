@@ -10,7 +10,9 @@ applyTo: "Source/Client/pot-react/src/**/*.{ts,tsx}"
 
 - Prefer explicit types and `type` aliases where practical.
 - Do not use `any` unless unavoidable at a boundary.
-- Prefer function declarations over arrow functions for exported utilities where practical.
+- Use function declarations for exported utilities. Do not use exported arrow functions.
+- If an exception is required to compile or satisfy framework constraints, the agent must state the reason explicitly in its response before using an exported arrow function.
+- For small local object factory helpers, prefer concise implicit-return arrow functions over block-body `return` wrappers when readability is preserved.
 - Always use braces for `if` statements, including single-line branches.
 - Keep a blank line before and after multi-line `if` blocks for readability consistency.
 - Keep a blank line after early-return guard clauses before continuing with the main execution path.
