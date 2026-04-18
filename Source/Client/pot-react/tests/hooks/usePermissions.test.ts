@@ -61,9 +61,9 @@ describe('usePermissions', () => {
       true,
     );
 
-    expect(result.current.hasAnyPermission(['income:manage', 'user:manage'])).toBe(
-      false,
-    );
+    expect(
+      result.current.hasAnyPermission(['income:manage', 'user:manage']),
+    ).toBe(false);
   });
 
   test('hasAllPermissions returns true only when every permission matches', () => {
