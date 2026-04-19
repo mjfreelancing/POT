@@ -72,4 +72,65 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // Keep vendor dependencies in stable, explicit chunks to avoid a single oversized
+        // bundle and improve long-term cache reuse when app code changes.
+        //
+        // If new heavy dependencies are introduced, place them in a matching chunk bucket
+        // here rather than allowing them to fall into the default app chunk.
+        manualChunks(id) {
+          if (!id.includes('node_modules')) {
+            return;
+          }
+
+          if (
+            // Core React runtime and routing stack
+            id.includes('/react-router/') ||
+            id.includes('/react-dom/') ||
+            id.includes('/react/')
+          ) {
+            return 'react-vendor';
+          }
+
+          if (
+            // Query and table state management
+            id.includes('/@tanstack/react-query/') ||
+            id.includes('/@tanstack/react-table/')
+          ) {
+            return 'tanstack-vendor';
+          }
+
+          if (id.includes('/recharts/')) {
+            // Charting runtime kept isolated due to size
+            return 'charts-vendor';
+          }
+
+          if (id.includes('/@radix-ui/')) {
+            // Radix UI primitives used across shared components
+            return 'radix-vendor';
+          }
+
+          if (
+            // Form handling and schema resolver integration
+            id.includes('/react-hook-form/') ||
+            id.includes('/@hookform/resolvers/')
+          ) {
+            return 'forms-vendor';
+          }
+
+          if (
+            // Shared utility/runtime dependencies used by multiple features
+            id.includes('/zod/') ||
+            id.includes('/date-fns/') ||
+            id.includes('/axios/') ||
+            id.includes('/jwt-decode/')
+          ) {
+            return 'utils-vendor';
+          }
+        },
+      },
+    },
+  },
 });
