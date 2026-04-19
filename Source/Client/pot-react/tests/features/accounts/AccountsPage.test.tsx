@@ -6,9 +6,9 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { useApiGetAllAccounts } from '@/api/hooks';
 import { useErrorContext } from '@/contexts';
 import type { Account } from '@/data';
-import { WithPermission } from '@/features/auth/components';
 import AccountsPage from '@/features/accounts/AccountsPage';
 import useAccountStorage from '@/features/accounts/hooks/useAccountStorage';
+import { WithPermission } from '@/features/auth/components';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { SuccessResult } from '@/lib';
 
