@@ -1,16 +1,8 @@
 import { render, screen } from '@testing-library/react';
-import type { ReactNode } from 'react';
-import { describe, expect, test, vi } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { describe, expect, test } from 'vitest';
 
 import NotePopover from '@/components/feedback/popover/NotePopover';
-
-vi.mock('@/components/ui/popover', () => ({
-  Popover: ({ children }: { children: ReactNode }) => <>{children}</>,
-  PopoverTrigger: ({ children }: { children: ReactNode }) => <>{children}</>,
-  PopoverContent: ({ children }: { children: ReactNode }) => (
-    <div>{children}</div>
-  ),
-}));
 
 describe('NotePopover', () => {
   test('renders nothing when note is empty', () => {
@@ -19,13 +11,20 @@ describe('NotePopover', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  test('renders trigger and note content when note exists', () => {
+  test('renders trigger and note content when note exists', async () => {
+    const user = userEvent.setup();
+
     render(<NotePopover note="Remember to reconcile" ariaLabel="Show note" />);
 
     expect(
       screen.getByRole('button', { name: 'Show note' }),
     ).toBeInTheDocument();
-    expect(screen.getByText('Remember to reconcile')).toBeInTheDocument();
-    expect(screen.getByText('Note')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Show note' }));
+
+    expect(
+      await screen.findByText('Remember to reconcile'),
+    ).toBeInTheDocument();
+    expect(await screen.findByText('Note')).toBeInTheDocument();
   });
 });

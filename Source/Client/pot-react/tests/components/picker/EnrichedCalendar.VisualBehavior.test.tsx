@@ -25,7 +25,7 @@ function querySelectedDayButton(): HTMLButtonElement | null {
     : null;
 }
 
-describe('EnrichedCalendar visual behavior', () => {
+describe('EnrichedCalendar', () => {
   test('keeps selected 31 visible across Mar -> Apr -> May navigation', () => {
     const onDateAccepted = vi.fn();
     const onDateChange = vi.fn();

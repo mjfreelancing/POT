@@ -1,15 +1,10 @@
 import type { Row } from '@tanstack/react-table';
 import { render, screen } from '@testing-library/react';
-import { describe, expect, test, vi } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { describe, expect, test } from 'vitest';
 
 import type { Expense } from '@/data';
 import { getAdornedExpenseDescription } from '@/lib';
-
-vi.mock('@/components/feedback', () => ({
-  NotePopover: ({ note }: { note: string }) => (
-    <span data-testid="note-popover">{note}</span>
-  ),
-}));
 
 function createRow(
   overrides: { description?: string; note?: string | null } = {},
@@ -32,14 +27,16 @@ describe('expenseTableRowUtils', () => {
     expect(screen.getByText('Internet')).toBeInTheDocument();
   });
 
-  test('should render NotePopover when note exists', () => {
+  test('should render NotePopover when note exists', async () => {
+    const user = userEvent.setup();
     const row = createRow({ note: 'Paid via direct debit' });
 
     render(getAdornedExpenseDescription(row));
 
-    expect(screen.getByTestId('note-popover')).toHaveTextContent(
-      'Paid via direct debit',
-    );
+    await user.click(screen.getByRole('button', { name: 'Show note' }));
+
+    expect(screen.getByText('Note')).toBeInTheDocument();
+    expect(screen.getByText('Paid via direct debit')).toBeInTheDocument();
   });
 
   test('should not render NotePopover when note is null', () => {
@@ -47,6 +44,8 @@ describe('expenseTableRowUtils', () => {
 
     render(getAdornedExpenseDescription(row));
 
-    expect(screen.queryByTestId('note-popover')).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Show note' }),
+    ).not.toBeInTheDocument();
   });
 });
