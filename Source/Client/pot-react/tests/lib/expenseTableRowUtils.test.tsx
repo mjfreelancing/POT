@@ -6,16 +6,18 @@ import { describe, expect, test } from 'vitest';
 import type { Expense } from '@/data';
 import { getAdornedExpenseDescription } from '@/lib';
 
+import { createGenericRow } from '../shared/rows/genericRowBuilder';
+
 function createRow(
   overrides: { description?: string; note?: string | null } = {},
 ): Row<Expense> {
-  return {
-    original: {
+  return createGenericRow<Expense>(
+    {
       description: 'Rent',
       note: null,
-      ...overrides,
-    },
-  } as unknown as Row<Expense>;
+    } as Expense,
+    overrides,
+  );
 }
 
 describe('expenseTableRowUtils', () => {

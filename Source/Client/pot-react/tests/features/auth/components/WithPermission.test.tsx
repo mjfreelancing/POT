@@ -1,36 +1,13 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import type { Permission } from '@/concerns';
 import { WithPermission } from '@/features/auth/components/WithPermission';
 import { usePermissions } from '@/hooks';
+import { createPermissionsApi } from '../../../shared/auth/permissionsTestHelpers';
 
 vi.mock('@/hooks', () => ({
   usePermissions: vi.fn(),
 }));
-
-type PermissionsApi = {
-  permissions: Permission[];
-  hasPermission: ReturnType<typeof vi.fn>;
-  hasAllPermissions: ReturnType<typeof vi.fn>;
-  hasAnyPermission: ReturnType<typeof vi.fn>;
-};
-
-function createPermissionsApi(
-  options: {
-    hasAll?: boolean;
-    hasAny?: boolean;
-  } = {},
-): PermissionsApi {
-  const { hasAll = false, hasAny = false } = options;
-
-  return {
-    permissions: [],
-    hasPermission: vi.fn(() => false),
-    hasAllPermissions: vi.fn(() => hasAll),
-    hasAnyPermission: vi.fn(() => hasAny),
-  };
-}
 
 describe('WithPermission', () => {
   beforeEach(() => {

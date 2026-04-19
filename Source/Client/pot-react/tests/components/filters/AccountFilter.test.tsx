@@ -2,9 +2,9 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, test, vi } from 'vitest';
 
-import type { Account } from '@/data';
-
 import AccountFilter from '@/components/filters/AccountFilter';
+
+import { createAccountWithIdentity } from '../../shared/factories/accountFactory';
 
 vi.mock('@/components/ui/select', () => {
   const SelectTrigger = ({
@@ -99,27 +99,11 @@ vi.mock('@/components/ui/select', () => {
   };
 });
 
-const createAccount = (rowId: string, description: string): Account => ({
-  rowId,
-  etag: 0n,
-  bsb: '111-111',
-  number: '12345678',
-  description,
-  balance: 1000,
-  reserved: 100,
-  totalExpenseAccrued: 10,
-  dailyExpenseAccrual: 1,
-  stableExpenseAccrual: 1,
-  available: 900,
-  linkedExpenses: 1,
-  linkedIncomes: 1,
-});
-
 describe('AccountFilter', () => {
   test('renders all accounts option and account descriptions', () => {
     const accounts = [
-      createAccount('account-1', 'Primary Account'),
-      createAccount('account-2', 'Bills Account'),
+      createAccountWithIdentity('account-1', 'Primary Account'),
+      createAccountWithIdentity('account-2', 'Bills Account'),
     ];
 
     render(
@@ -146,7 +130,7 @@ describe('AccountFilter', () => {
 
     render(
       <AccountFilter
-        accounts={[createAccount('account-1', 'Primary Account')]}
+        accounts={[createAccountWithIdentity('account-1', 'Primary Account')]}
         selectedAccountId={null}
         onAccountChange={onAccountChange}
       />,
@@ -167,7 +151,7 @@ describe('AccountFilter', () => {
 
     render(
       <AccountFilter
-        accounts={[createAccount('account-1', 'Primary Account')]}
+        accounts={[createAccountWithIdentity('account-1', 'Primary Account')]}
         selectedAccountId={'account-1'}
         onAccountChange={onAccountChange}
       />,
@@ -186,7 +170,7 @@ describe('AccountFilter', () => {
   test('applies active style when an account is selected', () => {
     render(
       <AccountFilter
-        accounts={[createAccount('account-1', 'Primary Account')]}
+        accounts={[createAccountWithIdentity('account-1', 'Primary Account')]}
         selectedAccountId={'account-1'}
         onAccountChange={vi.fn()}
       />,

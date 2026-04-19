@@ -1,8 +1,9 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, test, vi } from 'vitest';
 
-import type { Account } from '@/data';
 import useAccountFilter from '@/hooks/useAccountFilter';
+
+import { createAccountWithIdentity } from '../shared/factories/accountFactory';
 
 type TestItem = {
   id: string;
@@ -11,28 +12,12 @@ type TestItem = {
   } | null;
 };
 
-const createAccount = (rowId: string, description: string): Account => ({
-  rowId,
-  etag: 1n,
-  bsb: '000-000',
-  number: '00000000',
-  description,
-  balance: 0,
-  reserved: 0,
-  totalExpenseAccrued: 0,
-  dailyExpenseAccrual: 0,
-  stableExpenseAccrual: 0,
-  available: 0,
-  linkedExpenses: 0,
-  linkedIncomes: 0,
-});
-
 describe('useAccountFilter', () => {
   test('builds accountsInItems from used accounts sorted by description', () => {
     const accounts = [
-      createAccount('a-2', 'Zeta'),
-      createAccount('a-1', 'Alpha'),
-      createAccount('a-3', 'Beta'),
+      createAccountWithIdentity('a-2', 'Zeta', { etag: 1n }),
+      createAccountWithIdentity('a-1', 'Alpha', { etag: 1n }),
+      createAccountWithIdentity('a-3', 'Beta', { etag: 1n }),
     ];
 
     const items: TestItem[] = [
@@ -60,7 +45,7 @@ describe('useAccountFilter', () => {
   });
 
   test('includes Not Assigned virtual account when unassigned items exist', () => {
-    const accounts = [createAccount('a-1', 'Alpha')];
+    const accounts = [createAccountWithIdentity('a-1', 'Alpha', { etag: 1n })];
     const items: TestItem[] = [
       { id: '1', account: { rowId: 'a-1' } },
       { id: '2', account: null },
@@ -84,8 +69,8 @@ describe('useAccountFilter', () => {
 
   test('filters to selected account id when account is selected', () => {
     const accounts = [
-      createAccount('a-1', 'Alpha'),
-      createAccount('a-2', 'Beta'),
+      createAccountWithIdentity('a-1', 'Alpha', { etag: 1n }),
+      createAccountWithIdentity('a-2', 'Beta', { etag: 1n }),
     ];
     const items: TestItem[] = [
       { id: '1', account: { rowId: 'a-1' } },
@@ -111,7 +96,7 @@ describe('useAccountFilter', () => {
   });
 
   test('filters to unassigned items when Not Assigned is selected', () => {
-    const accounts = [createAccount('a-1', 'Alpha')];
+    const accounts = [createAccountWithIdentity('a-1', 'Alpha', { etag: 1n })];
     const items: TestItem[] = [
       { id: '1', account: { rowId: 'a-1' } },
       { id: '2', account: null },
@@ -137,8 +122,8 @@ describe('useAccountFilter', () => {
 
   test('clears selected account when it no longer exists in accountsInItems', () => {
     const accounts = [
-      createAccount('a-1', 'Alpha'),
-      createAccount('a-2', 'Beta'),
+      createAccountWithIdentity('a-1', 'Alpha', { etag: 1n }),
+      createAccountWithIdentity('a-2', 'Beta', { etag: 1n }),
     ];
     const onAccountChange = vi.fn();
 
@@ -188,7 +173,7 @@ describe('useAccountFilter', () => {
 
     const { result } = renderHook(() =>
       useAccountFilter({
-        accounts: [createAccount('a-1', 'Alpha')],
+        accounts: [createAccountWithIdentity('a-1', 'Alpha', { etag: 1n })],
         items: [] as TestItem[],
         selectedAccountId: null,
         onAccountChange,

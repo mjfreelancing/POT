@@ -14,31 +14,14 @@ import { FailResult, SuccessResult } from '@/lib';
 
 import { useDelete, useGet, usePost, usePutWithId } from '@/api/hooks/useApi';
 
+import { createAccount } from '../../shared/factories/accountFactory';
+
 vi.mock('@/api/hooks/useApi', () => ({
   useGet: vi.fn(),
   usePost: vi.fn(),
   usePutWithId: vi.fn(),
   useDelete: vi.fn(),
 }));
-
-function createAccount(overrides: Partial<Account>): Account {
-  return {
-    rowId: 'acc-1',
-    etag: 0n,
-    bsb: '000-000',
-    number: '000000',
-    description: 'Default account',
-    balance: 0,
-    reserved: 0,
-    totalExpenseAccrued: 0,
-    dailyExpenseAccrual: 0,
-    stableExpenseAccrual: 0,
-    available: 0,
-    linkedExpenses: 0,
-    linkedIncomes: 0,
-    ...overrides,
-  };
-}
 
 describe('useAccounts hook composition', () => {
   beforeEach(() => {

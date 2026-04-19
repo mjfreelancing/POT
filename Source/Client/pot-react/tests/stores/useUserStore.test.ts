@@ -3,21 +3,7 @@ import { beforeEach, describe, expect, test } from 'vitest';
 import type { User } from '@/data/user';
 import useUserStore from '@/stores/useUserStore';
 
-const createUser = (overrides?: Partial<User>): User => ({
-  rowId: 'user-1',
-  etag: 1 as unknown as bigint,
-  username: 'maria',
-  displayName: 'Maria Carter',
-  email: 'maria@example.com',
-  permissions: ['accounts:read'],
-  site: {
-    rowId: 'site-1',
-    etag: 1 as unknown as bigint,
-    name: 'Main Site',
-    description: 'Primary site',
-  },
-  ...overrides,
-});
+import { createUser } from '../shared/factories/userFactory';
 
 describe('useUserStore', () => {
   beforeEach(async () => {

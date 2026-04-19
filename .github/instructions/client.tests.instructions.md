@@ -41,4 +41,6 @@ applyTo: "Source/Client/pot-react/tests/**"
   - POT: For API hooks and interceptors, assert on the repo `Result` pattern instead of exception-first flow.
   - POT: Mirror existing utility test patterns under `tests/lib/*` where useful.
   - POT: Keep `tests/setup.ts` as the shared setup entry point and keep global side effects minimal.
+  - POT: Shared test helpers live under `tests/shared/*` (for example `factories`, `auth`, `react-query`, `rows`) and should be reused before adding local inline builders.
+  - POT: When a pattern is repeated across tests, treat it as a candidate for extraction into `tests/shared/*` to improve discoverability and consistency.
   - POT: Run `npm run test` and `npm run test:ui` from `Source/Client/pot-react`.

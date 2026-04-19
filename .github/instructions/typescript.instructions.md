@@ -1,5 +1,5 @@
 ---
-applyTo: "Source/Client/pot-react/src/**/*.{ts,tsx}"
+applyTo: "Source/Client/pot-react/{src,tests}/**/*.{ts,tsx}"
 ---
 
 # TypeScript Instructions
@@ -39,7 +39,7 @@ applyTo: "Source/Client/pot-react/src/**/*.{ts,tsx}"
 - Baseline cross-language rules live in `language-agnostic-core.instructions.md`.
 - Keep framework-agnostic TypeScript-only rules here.
 - Put React- or API-specific conventions in separate instruction packs.
-  - POT: Concrete TypeScript client scope is `Source/Client/pot-react/src/**/*.{ts,tsx}`.
+  - POT: Concrete TypeScript client scope is `Source/Client/pot-react/{src,tests}/**/*.{ts,tsx}`.
   - POT: Keep feature logic in `src/features/*`, shared concerns in `src/concerns/*`, and reusable helpers in `src/lib/*`.
   - POT: Do not edit `src/components/ui/*` primitives unless explicitly requested.
   - POT: Standard API usage goes through `src/api/hooks/useApi.ts`.

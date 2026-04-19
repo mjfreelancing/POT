@@ -1,7 +1,6 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 import axios from 'axios';
-import React, { act } from 'react';
+import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -11,7 +10,7 @@ import {
   UnexpectedError,
   ValidationError,
 } from '@/api/errors/apiErrors';
-import { FailResult, FailResultBase, SuccessResult } from '@/lib';
+import { FailResult } from '@/lib';
 
 import {
   useDelete,
@@ -23,6 +22,12 @@ import {
   usePutWithId,
   usePutWithIdNoData,
 } from '@/api/hooks';
+
+import { createQueryHookWrapper } from '../../shared/react-query/queryHookWrapper';
+import {
+  expectFailResult,
+  expectSuccessResult,
+} from '../../shared/react-query/resultAssertionHelpers';
 
 // Mock axios and authClient to prevent initialization errors
 vi.mock('axios');
@@ -38,77 +43,31 @@ vi.mock('@/api/authClient', () => ({
   },
 }));
 
-// Create a wrapper for the QueryClientProvider
-const createWrapper = () => {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: false,
-      },
-    },
-  });
-
-  // Replace the wrapper function with a more explicit approach
-  const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
-    return React.createElement(
-      QueryClientProvider,
-      { client: queryClient },
-      children,
-    );
-  };
-
-  return WrapperComponent;
-};
-
-const expectSuccessResult = <T>(
-  result: SuccessResult<T> | FailResult<FailResultBase>,
-  expected: T,
-) => {
-  expect(result).toBeInstanceOf(SuccessResult);
-  expect(result.success).toBe(true);
-  if (result.success) {
-    // type narrowed
-    expect(result.value).toEqual(expected);
-  }
-};
-
-const expectFailResult = <E extends FailResultBase>(
-  result: SuccessResult<unknown> | FailResult<E>,
-  errorType: new (description: string) => E,
-) => {
-  expect(result).toBeInstanceOf(FailResult);
-  expect(result.success).toBe(false);
-  if (!result.success) {
-    // type narrowed
-    expect(result.error).toBeInstanceOf(errorType);
-  }
-};
-
 const renderUseGetHook = <TResponse>(
   url: string,
   queryKey: string[],
   options?: { usePreviousAsPlaceholder?: boolean },
 ) => {
   return renderHook(() => useGet<TResponse>(url, queryKey, options), {
-    wrapper: createWrapper(),
+    wrapper: createQueryHookWrapper(),
   });
 };
 
 const renderUsePostHook = <TResponse, TData>(url: string) => {
   return renderHook(() => usePost<TResponse, TData>(url), {
-    wrapper: createWrapper(),
+    wrapper: createQueryHookWrapper(),
   });
 };
 
 const renderUsePutHook = <TResponse, TData>(url: string) => {
   return renderHook(() => usePut<TResponse, TData>(url), {
-    wrapper: createWrapper(),
+    wrapper: createQueryHookWrapper(),
   });
 };
 
 const renderUseDeleteHook = <TResponse>(url: string) => {
   return renderHook(() => useDelete<TResponse>(url), {
-    wrapper: createWrapper(),
+    wrapper: createQueryHookWrapper(),
   });
 };
 
@@ -116,7 +75,7 @@ const renderUsePutWithIdHook = <TResponse, TData>(
   urlFn: (id: string) => string,
 ) => {
   return renderHook(() => usePutWithId<TResponse, TData>(urlFn), {
-    wrapper: createWrapper(),
+    wrapper: createQueryHookWrapper(),
   });
 };
 
@@ -124,7 +83,7 @@ const renderUsePutWithIdNoDataHook = <TResponse>(
   urlFn: (id: string) => string,
 ) => {
   return renderHook(() => usePutWithIdNoData<TResponse>(urlFn), {
-    wrapper: createWrapper(),
+    wrapper: createQueryHookWrapper(),
   });
 };
 
@@ -132,7 +91,7 @@ const renderUsePostWithIdHook = <TResponse, TData>(
   urlFn: (id: string) => string,
 ) => {
   return renderHook(() => usePostWithId<TResponse, TData>(urlFn), {
-    wrapper: createWrapper(),
+    wrapper: createQueryHookWrapper(),
   });
 };
 
@@ -140,7 +99,7 @@ const renderUsePostWithIdNoDataHook = <TResponse>(
   urlFn: (id: string) => string,
 ) => {
   return renderHook(() => usePostWithIdNoData<TResponse>(urlFn), {
-    wrapper: createWrapper(),
+    wrapper: createQueryHookWrapper(),
   });
 };
 
@@ -282,7 +241,7 @@ describe('useApi hooks', () => {
             queryKey: ['test', 'first'],
             options: { usePreviousAsPlaceholder: true },
           },
-          wrapper: createWrapper(),
+          wrapper: createQueryHookWrapper(),
         },
       );
 
@@ -338,7 +297,7 @@ describe('useApi hooks', () => {
             queryKey: ['test', 'first'],
             options: { usePreviousAsPlaceholder: false },
           },
-          wrapper: createWrapper(),
+          wrapper: createQueryHookWrapper(),
         },
       );
 
