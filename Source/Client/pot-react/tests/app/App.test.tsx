@@ -1,0 +1,165 @@
+import { render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import type { ReactNode } from 'react';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
+
+import App from '@/App';
+import { logger } from '@/concerns';
+
+let shouldThrowFromRoutes = false;
+
+vi.mock('@/components/nav', () => ({
+  AppSidebar: () => <div data-testid="app-sidebar">Sidebar</div>,
+}));
+
+vi.mock('@/components/ui/sidebar', () => ({
+  SidebarProvider: ({ children }: { children: ReactNode }) => (
+    <div data-testid="sidebar-provider">{children}</div>
+  ),
+}));
+
+vi.mock('@/contexts', () => ({
+  ErrorProvider: ({ children }: { children: ReactNode }) => (
+    <div data-testid="error-provider">{children}</div>
+  ),
+}));
+
+vi.mock('@/features/auth/contexts', () => ({
+  AuthProvider: ({ children }: { children: ReactNode }) => (
+    <div data-testid="auth-provider">{children}</div>
+  ),
+}));
+
+vi.mock('@/components/theme', () => ({
+  ThemeProvider: ({
+    children,
+    defaultTheme,
+    storageKey,
+  }: {
+    children: ReactNode;
+    defaultTheme: string;
+    storageKey: string;
+  }) => (
+    <div
+      data-testid="theme-provider"
+      data-default-theme={defaultTheme}
+      data-storage-key={storageKey}
+    >
+      {children}
+    </div>
+  ),
+}));
+
+vi.mock('@/routes/AppRoutes', () => ({
+  AppRoutes: () => {
+    if (shouldThrowFromRoutes) {
+      throw new Error('Route render failed');
+    }
+
+    return <div data-testid="app-routes">Routes content</div>;
+  },
+}));
+
+vi.mock('@/components/ui/sonner', () => ({
+  Toaster: ({ position }: { position: string }) => (
+    <div data-testid="toaster">{position}</div>
+  ),
+}));
+
+vi.mock('@/components/feedback', () => ({
+  ErrorSheet: ({
+    title,
+    description,
+    onDismiss,
+  }: {
+    title: string;
+    description: string;
+    onDismiss: () => void;
+  }) => (
+    <div data-testid="error-sheet">
+      <p>{title}</p>
+      <p>{description}</p>
+      <button type="button" onClick={onDismiss}>
+        Dismiss
+      </button>
+    </div>
+  ),
+}));
+
+vi.mock('@/concerns', () => ({
+  logger: {
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
+describe('App', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    shouldThrowFromRoutes = false;
+  });
+
+  test('wires global providers and app shell components', () => {
+    render(<App />);
+
+    expect(screen.getByTestId('error-provider')).toBeInTheDocument();
+    expect(screen.getByTestId('auth-provider')).toBeInTheDocument();
+    expect(screen.getByTestId('theme-provider')).toHaveAttribute(
+      'data-default-theme',
+      'system',
+    );
+    expect(screen.getByTestId('theme-provider')).toHaveAttribute(
+      'data-storage-key',
+      'pot-ui-theme',
+    );
+    expect(screen.getByTestId('sidebar-provider')).toBeInTheDocument();
+    expect(screen.getByTestId('app-sidebar')).toBeInTheDocument();
+    expect(screen.getByTestId('app-routes')).toBeInTheDocument();
+    expect(screen.getByTestId('toaster')).toHaveTextContent('top-center');
+
+    expect(logger.info).toHaveBeenCalledWith(
+      'App',
+      expect.stringContaining('Running mode:'),
+    );
+  });
+
+  test('shows global error fallback and error sheet when route rendering throws', async () => {
+    shouldThrowFromRoutes = true;
+
+    render(<App />);
+
+    const fallbackAlert = await screen.findByRole('alert');
+
+    expect(fallbackAlert).toBeInTheDocument();
+    expect(screen.getByText('Something went wrong !')).toBeInTheDocument();
+    expect(
+      within(fallbackAlert).getByText('Route render failed'),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('error-sheet')).toBeInTheDocument();
+    expect(screen.getByText('Application Error')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(logger.error).toHaveBeenCalledWith(
+        'App',
+        'Error boundary caught an error',
+        expect.any(Error),
+      );
+    });
+  });
+
+  test('dismisses error sheet after an application error is surfaced', async () => {
+    const user = userEvent.setup();
+    shouldThrowFromRoutes = true;
+
+    render(<App />);
+
+    expect(await screen.findByTestId('error-sheet')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Dismiss' }));
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('error-sheet')).not.toBeInTheDocument();
+    });
+  });
+});

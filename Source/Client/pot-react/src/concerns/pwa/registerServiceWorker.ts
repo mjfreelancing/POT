@@ -8,9 +8,9 @@ import { showUpdatePromptIfNeeded } from './pwaUpdatePrompt';
 
 // Called once at application startup from main.tsx.
 // Registers SW lifecycle hooks and wires update detection + user prompt behavior.
-const registerServiceWorker = () => {
+const registerServiceWorker = (isDevelopment = import.meta.env.DEV) => {
   // Do not run this flow in Vite dev mode.
-  if (import.meta.env.DEV) {
+  if (isDevelopment) {
     return;
   }
 
