@@ -26,8 +26,7 @@ describe('useWindowFocus', () => {
   test('updates focus state on blur and focus events', () => {
     vi.spyOn(document, 'hasFocus').mockReturnValue(true);
 
-    const onFocus = vi.fn();
-    const { result } = renderHook(() => useWindowFocus(onFocus));
+    const { result } = renderHook(() => useWindowFocus());
 
     expect(result.current).toBe(true);
 
@@ -42,6 +41,19 @@ describe('useWindowFocus', () => {
     });
 
     expect(result.current).toBe(true);
+  });
+
+  test('invokes callback and logs when window gains focus', () => {
+    vi.spyOn(document, 'hasFocus').mockReturnValue(true);
+
+    const onFocus = vi.fn();
+
+    renderHook(() => useWindowFocus(onFocus));
+
+    act(() => {
+      window.dispatchEvent(new Event('focus'));
+    });
+
     expect(onFocus).toHaveBeenCalledTimes(1);
     expect(logger.info).toHaveBeenCalledWith(
       'useWindowFocus',

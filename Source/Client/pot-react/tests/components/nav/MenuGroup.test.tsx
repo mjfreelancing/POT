@@ -118,12 +118,8 @@ describe('MenuGroup', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  test('renders visible href and onClick items and closes mobile sidebar on interactions', async () => {
-    const user = userEvent.setup();
+  test('renders visible href and onClick items', () => {
     hasAnyPermissionMock.mockReturnValue(true);
-    setOpenMobileMock.mockClear();
-
-    const onClick = vi.fn();
 
     const group: MenuGroupDefinition = {
       label: 'Main',
@@ -138,7 +134,30 @@ describe('MenuGroup', () => {
           type: 'onClick',
           label: 'Export',
           icon: TestIcon,
-          onClick,
+          onClick: vi.fn(),
+        },
+      ],
+    };
+
+    render(<MenuGroup group={group} />);
+
+    expect(screen.getByRole('link', { name: 'Dashboard' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Export' })).toBeInTheDocument();
+  });
+
+  test('closes mobile sidebar when href item is clicked', async () => {
+    const user = userEvent.setup();
+    hasAnyPermissionMock.mockReturnValue(true);
+    setOpenMobileMock.mockClear();
+
+    const group: MenuGroupDefinition = {
+      label: 'Main',
+      items: [
+        {
+          type: 'href',
+          label: 'Dashboard',
+          href: '/dashboard',
+          icon: TestIcon,
         },
       ],
     };
@@ -146,10 +165,36 @@ describe('MenuGroup', () => {
     render(<MenuGroup group={group} />);
 
     await user.click(screen.getByRole('link', { name: 'Dashboard' }));
+
+    expect(setOpenMobileMock).toHaveBeenCalledWith(false);
+    expect(setOpenMobileMock).toHaveBeenCalledTimes(1);
+  });
+
+  test('runs onClick action and closes mobile sidebar when onClick item is clicked', async () => {
+    const user = userEvent.setup();
+    hasAnyPermissionMock.mockReturnValue(true);
+    setOpenMobileMock.mockClear();
+
+    const onClick = vi.fn();
+
+    const group: MenuGroupDefinition = {
+      label: 'Main',
+      items: [
+        {
+          type: 'onClick',
+          label: 'Export',
+          icon: TestIcon,
+          onClick,
+        },
+      ],
+    };
+
+    render(<MenuGroup group={group} />);
+
     await user.click(screen.getByRole('button', { name: 'Export' }));
 
     expect(onClick).toHaveBeenCalledTimes(1);
     expect(setOpenMobileMock).toHaveBeenCalledWith(false);
-    expect(setOpenMobileMock).toHaveBeenCalledTimes(2);
+    expect(setOpenMobileMock).toHaveBeenCalledTimes(1);
   });
 });

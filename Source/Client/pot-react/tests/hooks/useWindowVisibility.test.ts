@@ -37,7 +37,29 @@ describe('useWindowVisibility', () => {
     expect(result.current).toBe(false);
   });
 
-  test('updates state on visibility changes and invokes callback when visible', () => {
+  test('updates state on visibility changes', () => {
+    isHidden = true;
+
+    const { result } = renderHook(() => useWindowVisibility());
+
+    expect(result.current).toBe(false);
+
+    act(() => {
+      isHidden = false;
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+
+    expect(result.current).toBe(true);
+
+    act(() => {
+      isHidden = true;
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+
+    expect(result.current).toBe(false);
+  });
+
+  test('invokes callback and logs when window becomes visible', () => {
     isHidden = true;
 
     const onVisible = vi.fn();
@@ -56,6 +78,15 @@ describe('useWindowVisibility', () => {
       'useWindowVisibility',
       'Window became visible, triggering refresh',
     );
+  });
+
+  test('does not invoke callback when window becomes hidden', () => {
+    isHidden = false;
+
+    const onVisible = vi.fn();
+    const { result } = renderHook(() => useWindowVisibility(onVisible));
+
+    expect(result.current).toBe(true);
 
     act(() => {
       isHidden = true;
@@ -63,7 +94,7 @@ describe('useWindowVisibility', () => {
     });
 
     expect(result.current).toBe(false);
-    expect(onVisible).toHaveBeenCalledTimes(1);
+    expect(onVisible).not.toHaveBeenCalled();
   });
 
   test('registers and unregisters visibility change listener', () => {

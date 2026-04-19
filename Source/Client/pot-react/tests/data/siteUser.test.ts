@@ -9,7 +9,7 @@ import {
 } from '@/data/siteUser';
 
 describe('site user schemas', () => {
-  test('parses valid site user and update payloads', () => {
+  test('parses a valid site user payload', () => {
     expect(
       siteUserSchema.parse({
         username: 'jane',
@@ -22,7 +22,9 @@ describe('site user schemas', () => {
         etag: 1n,
       }),
     ).toBeTruthy();
+  });
 
+  test('parses a valid user invitation payload', () => {
     expect(
       userInvitationSchema.parse({
         username: 'new-user',
@@ -30,13 +32,19 @@ describe('site user schemas', () => {
         roleIds: ['550e8400-e29b-41d4-a716-446655440000'],
       }),
     ).toBeTruthy();
+  });
 
+  test('parses a valid user role update payload', () => {
     expect(userRoleUpdateSchema.parse({ etag: 2n, roleIds: [] })).toBeTruthy();
+  });
 
+  test('parses a valid user status update payload', () => {
     expect(
       userStatusUpdateSchema.parse({ etag: 2n, status: 'Disabled' }),
     ).toBeTruthy();
+  });
 
+  test('parses a valid user status value', () => {
     expect(userStatusSchema.parse('Approval')).toBe('Approval');
   });
 
