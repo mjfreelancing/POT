@@ -13,7 +13,7 @@ import {
 } from '@/api/hooks/useExpenses';
 import type { Expense } from '@/data';
 import { FailResult, SuccessResult } from '@/lib';
-import { createExpense } from '@/tests/shared/factories/expenseFactory';
+import { createExpense } from '../../shared/factories/expenseFactory';
 
 import { useDelete, useGet, usePost, usePutWithId } from '@/api/hooks/useApi';
 
