@@ -37,6 +37,7 @@ Comprehensive guide for developers working on the POT React frontend application
 - [API Integration](#api-integration)
 - [Import/Export Features](#importexport-features)
 - [Environment Configuration](#environment-configuration)
+- [Testing Mocking Strategy](#testing-mocking-strategy)
 - [Progressive Web App (PWA)](#progressive-web-app-pwa)
 - [Available Commands](#available-commands)
 
@@ -2822,6 +2823,85 @@ const apiTimeout = import.meta.env.VITE_API_TIMEOUT_MS;
 - Environment variables embedded at build time
 
 **For Docker builds and deployment configuration, see:** [Docker Setup](../../Docker/DEVELOPER.md)
+
+---
+
+## Testing Mocking Strategy
+
+This project currently uses manual mocking (Vitest `vi.mock`) as the default approach. This is intentional and is a good fit for fast, focused frontend tests.
+
+### Definitions
+
+**Manual mocks (current default):**
+
+- Test code mocks hooks, services, or modules directly using `vi.mock`.
+- Example style: mock `useApiGetAllAccounts` or `useLogin`, then assert UI behavior.
+
+**MSW (Mock Service Worker):**
+
+- Mocks network requests at the HTTP boundary (route + method + payload).
+- App code still calls axios/fetch normally; handlers return test responses.
+
+### What We Recommend Today
+
+1. Keep manual mocks as the primary approach for unit and feature tests.
+2. Treat MSW as optional, not mandatory.
+3. Consider MSW only when API-heavy integration scenarios become noisy or brittle with repeated manual mocks.
+
+### Manual Mocks vs MSW: Trade-offs
+
+**Manual mocks strengths:**
+
+- Fast to write and easy to understand.
+- Works well for isolated component/hook behavior.
+- Excellent for failure-path and edge-case targeting.
+
+**Manual mocks weaknesses:**
+
+- Can become repetitive across many tests.
+- Tests may be coupled to internal implementation details (hook/module boundaries).
+- Refactors can require touching many mocks even when user behavior is unchanged.
+
+**MSW strengths:**
+
+- Better simulation of real request/response behavior.
+- Reduces coupling to internal module structure.
+- Centralized request handlers can be reused across suites.
+
+**MSW weaknesses:**
+
+- Extra setup and maintenance overhead.
+- Adds abstraction that can be unnecessary for simple unit tests.
+- Not a replacement for all mocking; some module-level stubs are still needed.
+
+### Decision Triggers: When MSW Is Worth It
+
+Consider introducing MSW if two or more of these are true:
+
+1. Many tests duplicate the same API response wiring and payload shapes.
+2. Integration tests frequently break after internal hook/service refactors.
+3. You want stronger request-contract confidence (method, URL, status, body) in frontend tests.
+4. You need reusable end-to-end-ish UI flows backed by shared API scenarios.
+
+If these are not true, stay with manual mocks.
+
+### Suggested Hybrid Model
+
+1. Unit/component tests: keep manual mocks.
+2. API-contract-centric integration tests: use MSW handlers.
+3. Keep the majority of the test suite fast and simple; use MSW only where it clearly improves confidence.
+
+### Low-Risk Adoption Plan (If You Choose MSW Later)
+
+1. Pilot MSW on one feature area only (for example auth login flow).
+2. Keep existing manual-mock tests during pilot; do not do a big-bang migration.
+3. Compare readability, maintenance cost, and flake rate over a few PRs.
+4. Expand only if there is clear benefit.
+
+### Practical Rule Of Thumb
+
+- If you are testing component logic, state transitions, and conditional rendering: prefer manual mocks.
+- If you are testing request/response contracts across multiple screens or flows: consider MSW.
 
 ---
 
