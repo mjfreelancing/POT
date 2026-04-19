@@ -10,6 +10,7 @@ applyTo: "Source/Client/pot-react/tests/**"
 
 - Use deterministic tests with mocked external boundaries.
 - Prefer behavior-focused assertions over implementation details.
+- For user-visible UI behavior (visual selection, visibility, navigation state, styling state), do not rely only on mocked child-component rendering; include tests that renders the real UI primitive/component and asserts the visible outcome.
 - Mirror source structure in test folders when that improves discoverability.
 - Do not use guard assertions like `expect(true).toBe(false)` to force failures in async tests; prefer explicit `await expect(promise).rejects...` or `await expect(fn).rejects/toThrow...` patterns.
 
@@ -17,7 +18,10 @@ applyTo: "Source/Client/pot-react/tests/**"
 
 - Use the repository's existing client test framework, environment, and shared setup conventions.
 - Prefer user-observable assertions and interactions for component and UI tests.
-- Keep test naming consistent with the surrounding test project or folder.
+- Use `*.test.ts` and `*.test.tsx` as the baseline naming format.
+- Default to `<ComponentName>.test.ts(x)`.
+- When splitting by concern, use `<ComponentName>.<Category>.test.ts(x)` (for example `EnrichedCalendar.Callbacks.test.tsx`).
+- Keep the component name first, and use concise PascalCase category names for the split segment.
 - In test files, add one blank line between adjacent multi-line code blocks (for example back-to-back object literals or multiline assignments) and between adjacent `expect(...)` assertions when either assertion spans multiple lines.
 
 ### API and Utility Coverage
@@ -33,7 +37,7 @@ applyTo: "Source/Client/pot-react/tests/**"
   - POT: Client tests live under `Source/Client/pot-react/tests/**`.
   - POT: Test framework is Vitest plus jsdom (`vitest.config.ts`) with shared setup in `tests/setup.ts`.
   - POT: Use Testing Library queries and user interactions for component and UI tests.
-  - POT: Keep test naming consistent with `*.test.ts` and `*.test.tsx`.
+  - POT: Keep test naming consistent with component-first names: `<ComponentName>.test.tsx` or `<ComponentName>.<Category>.test.tsx` when split.
   - POT: For API hooks and interceptors, assert on the repo `Result` pattern instead of exception-first flow.
   - POT: Mirror existing utility test patterns under `tests/lib/*` where useful.
   - POT: Keep `tests/setup.ts` as the shared setup entry point and keep global side effects minimal.
