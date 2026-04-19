@@ -4,10 +4,10 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { SuccessResult } from '@/lib';
+import { useErrorContext } from '@/contexts';
 import CreateAccountSheet from '@/features/accounts/create/CreateAccountSheet';
 import useCreateAccount from '@/features/accounts/create/hooks/useCreateAccount';
-import { useErrorContext } from '@/contexts';
+import { SuccessResult } from '@/lib';
 
 const createAccountMock = vi.fn();
 const setErrorMock = vi.fn();

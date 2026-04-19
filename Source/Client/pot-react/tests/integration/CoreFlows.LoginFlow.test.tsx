@@ -8,8 +8,8 @@ import { AuthenticationError } from '@/api/errors/apiErrors';
 import { useLogin } from '@/api/hooks/useAuth';
 import { useCacheInvalidation } from '@/concerns';
 import { useAuthContext } from '@/features/auth/contexts';
-import { AppRoutes } from '@/routes/AppRoutes';
 import { FailResult, SuccessResult } from '@/lib';
+import { AppRoutes } from '@/routes/AppRoutes';
 
 type AuthState = {
   isAuthenticated: boolean;
