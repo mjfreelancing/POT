@@ -31,6 +31,7 @@ applyTo: "Source/Server/*Tests/**/*.cs"
 ### Layer-Specific Expectations
 
 - Keep test-only dependencies in test projects; do not add them to production projects.
+- Aim for full coverage of behavior and meaningful branch paths for the production code under test; when coverage gaps are discovered, add targeted tests to close them.
 
 ## Expansion Notes
 
