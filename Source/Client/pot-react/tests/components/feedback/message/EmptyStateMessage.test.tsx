@@ -58,7 +58,27 @@ describe('EmptyStateMessage', () => {
     ).not.toBeInTheDocument();
   });
 
-  test('renders and triggers both primary and secondary actions', async () => {
+  test('renders secondary action when provided', () => {
+    const onPrimaryAction = vi.fn();
+    const onSecondaryAction = vi.fn();
+
+    render(
+      <EmptyStateMessage
+        title="Create an account to get started"
+        description="Every expense entry must be assigned to an account."
+        primaryActionLabel="Create Account"
+        onPrimaryAction={onPrimaryAction}
+        secondaryActionLabel="Go to Accounts"
+        onSecondaryAction={onSecondaryAction}
+      />,
+    );
+
+    expect(
+      screen.getByRole('button', { name: 'Go to Accounts' }),
+    ).toBeInTheDocument();
+  });
+
+  test('triggers secondary action', async () => {
     const user = userEvent.setup();
     const onPrimaryAction = vi.fn();
     const onSecondaryAction = vi.fn();
@@ -74,10 +94,8 @@ describe('EmptyStateMessage', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Create Account' }));
     await user.click(screen.getByRole('button', { name: 'Go to Accounts' }));
 
-    expect(onPrimaryAction).toHaveBeenCalledTimes(1);
     expect(onSecondaryAction).toHaveBeenCalledTimes(1);
   });
 });

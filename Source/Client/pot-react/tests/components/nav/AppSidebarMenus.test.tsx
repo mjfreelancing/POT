@@ -101,7 +101,7 @@ describe('AppSidebarMenus', () => {
     ).not.toBeInTheDocument();
   });
 
-  test('builds all menu groups and hides maintenance actions on mobile', () => {
+  test('renders core menu links for authenticated users', () => {
     vi.mocked(useAuthContext).mockReturnValue({
       isAuthenticated: true,
     } as never);
@@ -118,6 +118,24 @@ describe('AppSidebarMenus', () => {
     );
 
     expect(screen.getByRole('link', { name: 'Dashboard' })).toBeInTheDocument();
+  });
+
+  test('hides maintenance actions on mobile', () => {
+    vi.mocked(useAuthContext).mockReturnValue({
+      isAuthenticated: true,
+    } as never);
+
+    vi.mocked(useSidebar).mockReturnValue({
+      isMobile: true,
+      setOpenMobile: vi.fn(),
+    } as never);
+
+    render(
+      <MemoryRouter>
+        <AppSidebarMenus />
+      </MemoryRouter>,
+    );
+
     expect(
       screen.queryByRole('button', { name: 'Export...' }),
     ).not.toBeInTheDocument();
@@ -126,7 +144,7 @@ describe('AppSidebarMenus', () => {
     ).not.toBeInTheDocument();
   });
 
-  test('opens export and import modals from maintenance action callbacks', () => {
+  test('opens export modal from maintenance action callback', () => {
     vi.mocked(useAuthContext).mockReturnValue({
       isAuthenticated: true,
     } as never);
@@ -143,10 +161,28 @@ describe('AppSidebarMenus', () => {
     );
 
     expect(screen.queryByTestId('export-modal-open')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('import-modal-open')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Export...' }));
     expect(screen.getByTestId('export-modal-open')).toBeInTheDocument();
+  });
+
+  test('opens import modal from maintenance action callback', () => {
+    vi.mocked(useAuthContext).mockReturnValue({
+      isAuthenticated: true,
+    } as never);
+
+    vi.mocked(useSidebar).mockReturnValue({
+      isMobile: false,
+      setOpenMobile: vi.fn(),
+    } as never);
+
+    render(
+      <MemoryRouter>
+        <AppSidebarMenus />
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByTestId('import-modal-open')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Import...' }));
     expect(screen.getByTestId('import-modal-open')).toBeInTheDocument();

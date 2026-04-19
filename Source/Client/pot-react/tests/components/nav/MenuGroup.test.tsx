@@ -170,7 +170,7 @@ describe('MenuGroup', () => {
     expect(setOpenMobileMock).toHaveBeenCalledTimes(1);
   });
 
-  test('runs onClick action and closes mobile sidebar when onClick item is clicked', async () => {
+  test('runs onClick action when onClick item is clicked', async () => {
     const user = userEvent.setup();
     hasAnyPermissionMock.mockReturnValue(true);
     setOpenMobileMock.mockClear();
@@ -194,6 +194,29 @@ describe('MenuGroup', () => {
     await user.click(screen.getByRole('button', { name: 'Export' }));
 
     expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  test('closes mobile sidebar when onClick item is clicked', async () => {
+    const user = userEvent.setup();
+    hasAnyPermissionMock.mockReturnValue(true);
+    setOpenMobileMock.mockClear();
+
+    const group: MenuGroupDefinition = {
+      label: 'Main',
+      items: [
+        {
+          type: 'onClick',
+          label: 'Export',
+          icon: TestIcon,
+          onClick: vi.fn(),
+        },
+      ],
+    };
+
+    render(<MenuGroup group={group} />);
+
+    await user.click(screen.getByRole('button', { name: 'Export' }));
+
     expect(setOpenMobileMock).toHaveBeenCalledWith(false);
     expect(setOpenMobileMock).toHaveBeenCalledTimes(1);
   });

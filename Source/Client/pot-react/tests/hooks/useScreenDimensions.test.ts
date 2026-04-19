@@ -59,16 +59,22 @@ describe('useScreenDimensions', () => {
     });
   });
 
-  test('registers and unregisters resize listener', () => {
+  test('registers resize listener', () => {
     const addEventListenerSpy = vi.spyOn(window, 'addEventListener');
-    const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener');
 
-    const { unmount } = renderHook(() => useScreenDimensions());
+    renderHook(() => useScreenDimensions());
 
     expect(addEventListenerSpy).toHaveBeenCalledWith(
       'resize',
       expect.any(Function),
     );
+  });
+
+  test('unregisters resize listener on unmount', () => {
+    const addEventListenerSpy = vi.spyOn(window, 'addEventListener');
+    const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener');
+
+    const { unmount } = renderHook(() => useScreenDimensions());
 
     const resizeHandler = addEventListenerSpy.mock.calls.find(
       ([eventName]) => eventName === 'resize',
