@@ -178,6 +178,7 @@ This forces a full recalculation pass after rollout and helps rectify any pre-ex
 1. Update accrual-impacting write paths to maintain `AccountAccrual`.
 2. Keep existing expense fields temporarily for safe rollout.
 3. Add parity checks in tests to ensure account-state rule matches current behavior.
+4. Execute an implementation-pattern review checkpoint after migration and entity updates are available, before finalizing the HOW pattern.
 
 ### Phase 3: Status read cutover
 
@@ -237,6 +238,237 @@ Implementation HOW remains open:
 Constraint for this decision:
 
 1. The implementation must support precise accrual-impact detection, including account reassignment, while keeping code ownership clear and testable.
+
+### Proposal For Further Review (Deferred Until Post-Migration Entities Exist)
+
+To avoid losing current architectural guidance while deferring a final commitment too early, the following proposal is retained for post-migration review:
+
+1. Preferred candidate pattern to review first:
+   - Decision/specification object for accrual-impact analysis.
+   - Dedicated mutation service for `AccountAccrual` state transitions.
+   - Feature services orchestrate both components.
+2. Why this is the leading candidate:
+   - Centralized rule logic (single source of truth).
+   - Clear separation of decision logic and state mutation.
+   - Strong unit-testability at analyzer, mutation-service, and orchestration levels.
+3. Why final decision is deferred:
+   - Entity/repository surface will change during migration.
+   - Final method signatures and transaction boundaries should be validated against actual post-migration model shape.
+4. Required outcome of the review checkpoint:
+   - Confirm or reject the hybrid candidate.
+   - Publish final HOW choice and concrete class/interface signatures.
+   - Update this PRD decision log with the selected implementation pattern.
+
+### Detailed Specialist Review Capture (Preserve For Post-Migration Decision)
+
+This section captures the detailed architecture review requested in discussion so design intent is not lost before implementation begins.
+
+#### Candidate Pattern Comparison
+
+1. Pattern A: Simple boolean utility methods
+   - Shape:
+     - `IsExpenseAccrualImpacting(expense) -> bool`
+     - `HasAccrualImpactingChange(before, after) -> bool`
+   - Strengths:
+     - Minimal code and low ceremony.
+     - Very easy to unit test as pure functions.
+     - Fast to introduce during migration.
+   - Risks:
+     - Rule usage can drift across mutation paths.
+     - No structured output for multi-account effects.
+     - Harder to prove all services consistently apply the same logic.
+   - Assessment:
+     - Useful as a temporary step, weaker as final architecture.
+
+2. Pattern B: Decision/specification object with structured result
+   - Shape:
+     - `AnalyzeUpdate(before, after) -> AccrualImpactResult`
+     - `AnalyzeDelete(expense) -> AccrualImpactResult`
+     - `AnalyzeToggleExclusion(expense) -> AccrualImpactResult`
+   - Strengths:
+     - Single source of truth for rules.
+     - Supports account reassignment and multi-account marking naturally.
+     - Highly testable and reviewable.
+   - Risks:
+     - Services must still call and apply results correctly.
+   - Assessment:
+     - Strong candidate.
+
+3. Pattern C: Command/event heavy domain orchestration
+   - Shape:
+     - command handlers/events for dirty-state transitions.
+   - Strengths:
+     - Strong decoupling and audit/event extensibility.
+   - Risks:
+     - High indirection and boilerplate for current scope.
+     - Harder debugging and increased implementation overhead.
+   - Assessment:
+     - Not preferred for this feature scope.
+
+4. Pattern D: Hybrid (recommended candidate for review)
+   - Shape:
+     - Specification/decision analyzer for rule evaluation.
+     - Dedicated mutation service for `AccountAccrual` state changes.
+     - Feature services orchestrate analyzer + mutation service.
+   - Strengths:
+     - Clear responsibilities and low ceremony.
+     - Strong unit and integration testability.
+     - Precise handling of reassignment, delete, toggle conditions.
+     - Supports idempotency and transactional clarity.
+   - Risks:
+     - Requires disciplined service usage and review gates.
+   - Assessment:
+     - Leading candidate for final HOW decision.
+
+#### Pattern Scoring Snapshot (Specialist Summary)
+
+| Pattern                                              | Unit testability             | Service testability                            | Implementation complexity | Migration friendliness | Edge-case miss risk |
+| ---------------------------------------------------- | ---------------------------- | ---------------------------------------------- | ------------------------- | ---------------------- | ------------------- |
+| Pattern A: boolean utility                           | Very high for pure functions | Moderate (usage consistency harder to enforce) | Low                       | High                   | High                |
+| Pattern B: decision/specification object             | Very high                    | High                                           | Medium                    | High                   | Medium              |
+| Pattern C: command/event orchestration               | High                         | Medium                                         | High                      | Medium-low             | Medium-high         |
+| Pattern D: hybrid (specification + mutation service) | Very high                    | Very high                                      | Medium                    | Very high              | Low                 |
+
+Specialist interpretation:
+
+1. Pattern A is simple but easier to apply inconsistently.
+2. Pattern B is strong but still requires clean orchestration discipline.
+3. Pattern C is likely over-scoped for this feature.
+4. Pattern D offers the best balance of precision, maintainability, and testability.
+
+#### Suggested Placement (If Hybrid Is Confirmed)
+
+1. Rule analyzer (application layer)
+   - `Pot.App/Features/Expenses/Accrual/AccrualImpactSpecification.cs`
+2. Analyzer output model
+   - `Pot.App/Features/Expenses/Accrual/Models/AccrualImpactResult.cs`
+3. Account accrual mutation service
+   - `Pot.App/Features/Accounts/Accrual/AccountAccrualMutationService.cs`
+4. Account accrual entity and repository contracts
+   - `Pot.Data/Entities/AccountAccrual.cs`
+   - `Pot.Data/Repositories/...` (account-accrual repository abstraction + implementation)
+
+#### Recommended Component Contract (Draft For Review)
+
+1. Analyzer result model
+   - `AccrualImpactResult`
+     - `IsImpacting : bool`
+     - `AccountRowIdsToMark : Guid[]`
+     - `Reason : string` (diagnostic/logging; optional for correctness)
+
+2. Analyzer interface
+   - `IsExpenseAccrualImpacting(expense)`
+   - `AnalyzeUpdate(before, after)`
+   - `AnalyzeDelete(expense)`
+   - `AnalyzeToggleExclusion(expense)`
+
+3. Mutation service interface
+   - `MarkAccountsDirtyAsync(accountRowIds, reason, cancellationToken)`
+   - `ClearAccrualDirtyAsync(accountRowId, asOfDate, cancellationToken)`
+
+4. Repository requirements
+   - Get account-accrual row by account id.
+   - Batch get by account ids.
+   - Add/update/save with idempotent behavior.
+
+#### Suggested Orchestration Flow (Pseudo)
+
+1. Update expense (impacting fields)
+   - Snapshot original state.
+   - Apply input changes.
+   - Analyze impact.
+   - If impacting, mark returned account ids dirty.
+   - Persist.
+
+2. Update expense (metadata-only)
+   - Snapshot original state.
+   - Apply input changes.
+   - Analyze impact.
+   - If not impacting, skip dirty updates.
+   - Persist.
+
+3. Update expense (account reassignment)
+   - Snapshot original state with old account.
+   - Apply new account.
+   - Analyze impact.
+   - Mark both old and new accounts dirty.
+   - Persist.
+
+4. Delete expense
+   - Analyze deleted expense impact before removal.
+   - If impacting, mark account dirty.
+   - Delete and persist.
+
+5. Toggle exclusion
+   - Toggle flag.
+   - Analyze toggle impact.
+   - Mark account dirty only when accrual-impacting condition is true.
+   - Persist.
+
+6. Accrue success
+   - On successful accrual completion for an account:
+     - `AccruedIsDirty = false`
+     - `LastAccruedDate = asOfDate`
+
+#### Transaction and Idempotency Guidance
+
+1. Dirty-state transitions are idempotent.
+   - If already dirty, no additional state transition is required.
+
+2. Keep mutation and dirty updates in aligned transaction boundaries where practical.
+   - Avoid scenarios where expense writes commit but accrual-state updates fail (or vice versa).
+
+3. Reassignment is a two-account concern.
+   - Always mark both old and new account rows when reassignment is accrual-impacting.
+
+4. Missing account-accrual row handling
+   - Preferred: row exists for every account by lifecycle guarantee.
+   - Fallback: create row lazily and proceed safely.
+
+#### Comprehensive Test Matrix (For Later Implementation)
+
+1. Analyzer unit tests
+   - Impacting updates: amount, next due, accrual window, frequency, frequency count, policy, exclusion.
+   - Non-impacting updates: description, note.
+   - Toggle exclusion with policy None vs non-None.
+   - Delete with accrual-impacting vs non-impacting expense.
+   - Reassignment marks both accounts.
+
+2. Mutation service unit tests
+   - Marks clean account dirty.
+   - No-op/idempotent when already dirty.
+   - Clears dirty and sets `LastAccruedDate` on success.
+   - Handles missing account-accrual row per lifecycle decision.
+   - Batch behavior for multi-account updates.
+
+3. Service orchestration tests
+   - Update path calls analyzer and applies returned account ids.
+   - Metadata-only updates do not dirty accounts.
+   - Delete/toggle conditional behavior enforced.
+   - Reassignment marks both old/new accounts.
+
+4. Repository/data tests
+   - Account-level status rule across all three conditions:
+     - dirty true
+     - never accrued
+     - stale date
+   - Query behavior for account sets.
+
+5. Integration tests
+   - End-to-end status behavior via `/accruals/status` for mixed account scenarios.
+   - Create/update/delete/toggle/renew then status refresh assertions.
+   - Migration parity checks during dual-write window.
+
+#### Acceptance Criteria For Post-Migration HOW Review
+
+The selected HOW pattern must demonstrate:
+
+1. Full coverage of the functional rules matrix.
+2. Explicit support for reassignment and conditional toggle/delete behavior.
+3. Unit-testability of rule logic without database dependencies.
+4. Idempotent dirty-state updates.
+5. Safe transactional behavior for write + dirty-state transitions.
+6. Clear ownership boundaries that align with repository layering.
 
 ## Out of Scope
 
