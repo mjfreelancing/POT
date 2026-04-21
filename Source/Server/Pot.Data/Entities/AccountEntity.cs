@@ -29,6 +29,7 @@ public sealed class AccountEntity : EntityBase
     public double StableExpenseAccrual { get; set; }
 
     public required SiteEntity Site { get; set; }
+    public AccountAccrualEntity? AccountAccrual { get; set; }
     public ICollection<IncomeEntity> Incomes { get; set; } = [];
     public ICollection<ExpenseEntity> Expenses { get; set; } = [];
 }

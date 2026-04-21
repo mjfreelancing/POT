@@ -12,6 +12,7 @@ public sealed class PotDbContext : DbContextBase
 
     public DbSet<UserEntity> Users { get; set; }
     public DbSet<AccountEntity> Accounts { get; set; }
+    public DbSet<AccountAccrualEntity> AccountAccruals { get; set; }
     public DbSet<ExpenseEntity> Expenses { get; set; }
     public DbSet<IncomeEntity> Incomes { get; set; }
     public DbSet<SettingEntity> Settings { get; set; }
@@ -32,6 +33,30 @@ public sealed class PotDbContext : DbContextBase
             .Entity<ExpenseEntity>()
             .Property(expense => expense.AccruedIsDirty)
             .HasDefaultValue(true);
+
+        modelBuilder
+            .Entity<AccountAccrualEntity>(entityBuilder =>
+            {
+                // AccountAccrual stores a single accrual-state row per account.
+                //
+                // We intentionally use AccountId here for consistency with existing table joins
+                // across this codebase, where relationships are persisted with internal Id keys.
+                //
+                // The ForeignKey attribute on AccountAccrualEntity.AccountId identifies the
+                // dependent FK column, and this WithOne mapping keeps the relationship explicit.
+                //
+                // Combined effect:
+                // - AccountAccrual.AccountId -> Account.Id one-to-one mapping.
+                // - External API contracts can still remain RowId-based.
+                entityBuilder
+                    .HasOne(accountAccrual => accountAccrual.Account)
+                    .WithOne(account => account.AccountAccrual);
+
+                // New rows default to dirty so status checks are conservative unless explicitly cleared.
+                entityBuilder
+                    .Property(accountAccrual => accountAccrual.AccruedIsDirty)
+                    .HasDefaultValue(true);
+            });
 
         // Sets up the many-to-many UserRole join table without an explicit model
         modelBuilder
@@ -63,6 +88,11 @@ public sealed class PotDbContext : DbContextBase
         modelBuilder
             .Entity<AccountEntity>()
             .HasQueryFilter(account => account.Site.Id == GetCurrentUserSiteId());
+
+        // Site-specific filter for AccountAccrual (via Account relationship)
+        modelBuilder
+            .Entity<AccountAccrualEntity>()
+            .HasQueryFilter(accountAccrual => accountAccrual.Account.Site.Id == GetCurrentUserSiteId());
 
         // Site-specific filter for Expenses (via Account relationship)
         modelBuilder

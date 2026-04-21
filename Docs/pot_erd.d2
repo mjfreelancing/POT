@@ -28,6 +28,17 @@ auth: Auth {
   }
 }
 
+AccountAccrual: {
+  shape: sql_table
+
+  Id: integer \[NOT NULL\] {constraint: primary_key}
+  RowId: uuid \[NOT NULL\]
+  Etag: bigint \[NOT NULL\]
+  AccountId: integer \[NOT NULL\] {constraint: foreign_key}
+  AccruedIsDirty: boolean \[NOT NULL\]
+  LastAccruedDate: date
+}
+
 finance.Account: {
   shape: sql_table
 
@@ -175,6 +186,18 @@ role_perm.UserRole: {
 
   RolesId: integer \[NOT NULL\] {constraint: foreign_key}
   UsersId: integer \[NOT NULL\] {constraint: foreign_key}
+}
+
+finance.Account.Id <-> AccountAccrual.AccountId: ONE-TO-ONE {
+  source-arrowhead: {
+    shape: cf-one-required
+  }
+  target-arrowhead: {
+    shape: cf-one
+  }
+  style: {
+    font-size: 24
+  }
 }
 
 site.Site.Id <-> finance.Account.SiteId: ONE-TO-MANY {
