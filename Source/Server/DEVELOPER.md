@@ -239,7 +239,7 @@ Let's implement a **Create Account** feature step-by-step.
 
 - Entity created: `AccountEntity` in `Pot.Data/Entities/`
 - Repository created: `IAccountRepository` and `AccountRepository` in `Pot.Data/Repositories/Accounts/`
-- Migration applied: `dotnet ef migrations add AddAccountEntity --project Pot.Data.Migrations`
+- Migration applied: `dotnet ef migrations add AddAccountEntity --project Pot.Data --startup-project Pot.Data.Migrations`
 
 **Step 1: Define API Endpoints Constants**
 
@@ -4547,20 +4547,38 @@ private void OnBeforeSave()
 
 **Location:** `Pot.Data.Migrations/` - Console application for database migrations
 
+### EF CLI Tool Prerequisite
+
+If `dotnet ef` is not recognized, install (or update) the EF CLI tool:
+
+```bash
+dotnet tool install --global dotnet-ef
+```
+
+```bash
+dotnet tool update --global dotnet-ef
+```
+
+Verify installation:
+
+```bash
+dotnet ef --version
+```
+
 ### Creating Migrations
 
 **Using .NET CLI** (Recommended):
 
 ```bash
 # From Source/Server directory
-dotnet ef migrations add MigrationName --project Pot.Data.Migrations
+dotnet ef migrations add MigrationName --project Pot.Data --startup-project Pot.Data.Migrations
 ```
 
 **Using Visual Studio Package Manager Console:**
 
 ```powershell
-# Set Pot.Data.Migrations as startup project
-Add-Migration MigrationName -Project Pot.Data.Migrations
+# Set Pot.Data.Migrations as startup project and Pot.Data as Default project
+Add-Migration MigrationName -Project Pot.Data -StartupProject Pot.Data.Migrations
 ```
 
 **Migration Naming Conventions:**
