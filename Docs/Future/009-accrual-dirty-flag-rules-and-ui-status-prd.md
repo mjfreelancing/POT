@@ -67,7 +67,7 @@ Plan to remove expense-level accrual status columns after migration/cutover:
 
 Required table fields:
 
-1. `AccountRowId` (PK/FK)
+1. `AccountId` (FK to `Account.Id`, unique)
 2. `LastAccruedDate` (`DateOnly`, nullable)
 3. `AccruedIsDirty` (`bool`)
 
@@ -101,7 +101,9 @@ Idempotency rule:
 
 4. Toggle exclusion: mark account dirty only when the expense is accrual-impacting.
 5. Renew expense: mark account dirty.
-6. Delete expense: mark account dirty only when the deleted expense is accrual-impacting.
+6. Delete expense:
+   - If the deleted expense is accrual-impacting and other expenses remain for the account, mark account dirty.
+   - If the deleted expense is the last remaining expense for the account, delete the `AccountAccrual` row and do not mark the account as requiring accrual.
 
 For this PRD, accrual-impacting includes:
 
@@ -131,13 +133,27 @@ Rationale:
 1. Avoid account etag churn from frequent expense writes.
 2. Keep dirty-state writes isolated to dedicated accrual state storage.
 
+### Decision 8: Implementation baseline (simple service-first)
+
+Use a dedicated accrual-state service as the primary boundary for accrual dirty transitions.
+
+Implementation baseline:
+
+1. Feature services call the accrual-state service, not repositories directly, for dirty/clear transitions.
+2. The accrual-state service owns repository interaction for write operations.
+3. A dedicated account-accrual repository remains the data-access layer for `AccountAccrual`.
+4. If read-only access is needed by other services, expose a read-only repository interface (ISP-aligned) without exposing mutation methods.
+5. Use explicit scenario methods (for example create/update/delete/toggle/renew/accrual-success) instead of a generic operation-context input object.
+6. Do not introduce CQRS/event orchestration for this feature unless future complexity requires it.
+7. Do not add dirty reason fields as part of this implementation.
+
 ## Data Model
 
 Proposed logical table (name to be confirmed during implementation design):
 
 1. `AccountAccrual`
 2. Columns:
-   - `AccountRowId` (`Guid`, PK, FK to `Account.RowId`)
+   - `AccountId` (`int`, unique FK to `Account.Id`)
    - `LastAccruedDate` (`DateOnly`, nullable)
    - `AccruedIsDirty` (`bool`, non-null)
 
@@ -148,17 +164,17 @@ Behavioral contract:
 
 ## Functional Rules Matrix
 
-| Event                                 | Required state update                                                                    |
-| ------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Expense create                        | Mark account `AccruedIsDirty = true`.                                                    |
-| Expense update (impacting fields)     | Mark account `AccruedIsDirty = true`.                                                    |
-| Expense update (account reassignment) | Mark old account and new account `AccruedIsDirty = true`.                                |
-| Expense update (metadata-only fields) | No change to account accrual state.                                                      |
-| Toggle exclusion                      | Mark account `AccruedIsDirty = true` only when the expense is accrual-impacting.         |
-| Renew expense                         | Mark account `AccruedIsDirty = true`.                                                    |
-| Delete expense                        | Mark account `AccruedIsDirty = true` only when the deleted expense is accrual-impacting. |
-| Accrue account (success)              | Set `AccruedIsDirty = false`; set `LastAccruedDate = asOfDate`.                          |
-| Status check                          | Account requires update when dirty, never accrued, or last accrued before as-of date.    |
+| Event                                 | Required state update                                                                                                                                        |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Expense create                        | Mark account `AccruedIsDirty = true`.                                                                                                                        |
+| Expense update (impacting fields)     | Mark account `AccruedIsDirty = true`.                                                                                                                        |
+| Expense update (account reassignment) | Mark old account and new account `AccruedIsDirty = true`.                                                                                                    |
+| Expense update (metadata-only fields) | No change to account accrual state.                                                                                                                          |
+| Toggle exclusion                      | Mark account `AccruedIsDirty = true` only when the expense is accrual-impacting.                                                                             |
+| Renew expense                         | Mark account `AccruedIsDirty = true`.                                                                                                                        |
+| Delete expense                        | If deleted expense is accrual-impacting and other expenses remain, mark dirty. If it is the last expense, remove `AccountAccrual` row and do not mark dirty. |
+| Accrue account (success)              | Set `AccruedIsDirty = false`; set `LastAccruedDate = asOfDate`.                                                                                              |
+| Status check                          | Account requires update when dirty, never accrued, or last accrued before as-of date.                                                                        |
 
 ## Recommended Delivery Sequence
 
@@ -178,7 +194,7 @@ This forces a full recalculation pass after rollout and helps rectify any pre-ex
 1. Update accrual-impacting write paths to maintain `AccountAccrual`.
 2. Keep existing expense fields temporarily for safe rollout.
 3. Add parity checks in tests to ensure account-state rule matches current behavior.
-4. Execute an implementation-pattern review checkpoint after migration and entity updates are available, before finalizing the HOW pattern.
+4. Validate service-first scenario-method coverage and keep rule logic internal to the accrual-state service during initial rollout.
 
 ### Phase 3: Status read cutover
 
@@ -203,6 +219,7 @@ This forces a full recalculation pass after rollout and helps rectify any pre-ex
 2. Account reassignment tests covering dual-account dirty updates.
 3. Metadata-only update tests confirming no dirty transition.
 4. Accrual success tests confirming dirty clear and date update.
+5. Last-expense delete tests confirming account-accrual row removal and no dirty status.
 
 ### Data/repository coverage
 
@@ -225,45 +242,35 @@ This forces a full recalculation pass after rollout and helps rectify any pre-ex
 3. Risk: Missed dirty updates in edge mutation paths.
    - Mitigation: explicit mutation matrix coverage and regression tests.
 
-## Open Question
+## Implementation Pattern (Agreed)
 
-Implementation HOW remains open:
+The implementation HOW is intentionally simple for current scope and ownership model.
 
-1. Should accrual-impact detection be implemented as:
+1. Use one dedicated accrual-state service for dirty/clear orchestration.
+2. Keep rule evaluation private to that service initially.
+3. Prefer explicit scenario methods instead of generic operation-context inputs.
+4. Keep repository usage behind the service for write paths.
+5. Allow ISP-based read-only repository interfaces for consumers that only need reads.
 
-- a dedicated boolean method,
-- a decision/specification object, or
-- another pattern?
+Initial scenario method shape (illustrative):
 
-Constraint for this decision:
+1. `MarkDirtyForCreate(...)`
+2. `MarkDirtyForUpdate(...)`
+3. `MarkDirtyForDelete(...)`
+4. `MarkDirtyForToggle(...)`
+5. `MarkDirtyForRenew(...)`
+6. `ClearDirtyOnAccrualSuccess(accountRowId, asOfDate, ...)`
 
-1. The implementation must support precise accrual-impact detection, including account reassignment, while keeping code ownership clear and testable.
+Future evolution option (only if needed):
 
-### Proposal For Further Review (Deferred Until Post-Migration Entities Exist)
+1. Extract private rule logic into a dedicated specification/decision component.
+2. Keep public service contract stable while moving internals.
 
-To avoid losing current architectural guidance while deferring a final commitment too early, the following proposal is retained for post-migration review:
+### Detailed Specialist Review Capture (Context Archive)
 
-1. Preferred candidate pattern to review first:
-   - Decision/specification object for accrual-impact analysis.
-   - Dedicated mutation service for `AccountAccrual` state transitions.
-   - Feature services orchestrate both components.
-2. Why this is the leading candidate:
-   - Centralized rule logic (single source of truth).
-   - Clear separation of decision logic and state mutation.
-   - Strong unit-testability at analyzer, mutation-service, and orchestration levels.
-3. Why final decision is deferred:
-   - Entity/repository surface will change during migration.
-   - Final method signatures and transaction boundaries should be validated against actual post-migration model shape.
-4. Required outcome of the review checkpoint:
-   - Confirm or reject the hybrid candidate.
-   - Publish final HOW choice and concrete class/interface signatures.
-   - Update this PRD decision log with the selected implementation pattern.
+This section captures the broader architecture review requested in discussion so design intent is not lost. The agreed implementation baseline for this PRD is the simple service-first model above.
 
-### Detailed Specialist Review Capture (Preserve For Post-Migration Decision)
-
-This section captures the detailed architecture review requested in discussion so design intent is not lost before implementation begins.
-
-#### Candidate Pattern Comparison
+#### Candidate Pattern Comparison (Historical)
 
 1. Pattern A: Simple boolean utility methods
    - Shape:
@@ -305,7 +312,7 @@ This section captures the detailed architecture review requested in discussion s
    - Assessment:
      - Not preferred for this feature scope.
 
-4. Pattern D: Hybrid (recommended candidate for review)
+4. Pattern D: Hybrid (recommended in specialist analysis)
    - Shape:
      - Specification/decision analyzer for rule evaluation.
      - Dedicated mutation service for `AccountAccrual` state changes.
@@ -318,7 +325,7 @@ This section captures the detailed architecture review requested in discussion s
    - Risks:
      - Requires disciplined service usage and review gates.
    - Assessment:
-     - Leading candidate for final HOW decision.
+     - Strong architecture option if future complexity grows.
 
 #### Pattern Scoring Snapshot (Specialist Summary)
 
@@ -336,7 +343,7 @@ Specialist interpretation:
 3. Pattern C is likely over-scoped for this feature.
 4. Pattern D offers the best balance of precision, maintainability, and testability.
 
-#### Suggested Placement (If Hybrid Is Confirmed)
+#### Suggested Placement (If Future Refactor Adopts Hybrid)
 
 1. Rule analyzer (application layer)
    - `Pot.App/Features/Expenses/Accrual/AccrualImpactSpecification.cs`
@@ -348,13 +355,12 @@ Specialist interpretation:
    - `Pot.Data/Entities/AccountAccrual.cs`
    - `Pot.Data/Repositories/...` (account-accrual repository abstraction + implementation)
 
-#### Recommended Component Contract (Draft For Review)
+#### Recommended Component Contract (Reference Only)
 
 1. Analyzer result model
    - `AccrualImpactResult`
      - `IsImpacting : bool`
      - `AccountRowIdsToMark : Guid[]`
-     - `Reason : string` (diagnostic/logging; optional for correctness)
 
 2. Analyzer interface
    - `IsExpenseAccrualImpacting(expense)`
@@ -363,7 +369,7 @@ Specialist interpretation:
    - `AnalyzeToggleExclusion(expense)`
 
 3. Mutation service interface
-   - `MarkAccountsDirtyAsync(accountRowIds, reason, cancellationToken)`
+   - `MarkAccountsDirtyAsync(accountRowIds, cancellationToken)`
    - `ClearAccrualDirtyAsync(accountRowId, asOfDate, cancellationToken)`
 
 4. Repository requirements
@@ -459,7 +465,7 @@ Specialist interpretation:
    - Create/update/delete/toggle/renew then status refresh assertions.
    - Migration parity checks during dual-write window.
 
-#### Acceptance Criteria For Post-Migration HOW Review
+#### Acceptance Criteria For Future Refactor Consideration
 
 The selected HOW pattern must demonstrate:
 
