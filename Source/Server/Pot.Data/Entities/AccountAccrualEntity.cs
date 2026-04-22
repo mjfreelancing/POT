@@ -28,5 +28,7 @@ public sealed class AccountAccrualEntity : EntityBase
     public bool AccruedIsDirty { get; set; } = true;
     public DateOnly? LastAccruedDate { get; set; }
 
-    public required AccountEntity Account { get; set; }
+    // Not marked as 'required' so FK-only insert paths can set AccountId without assigning
+    // the navigation and inadvertently triggering EF graph attachment side effects.
+    public AccountEntity Account { get; set; } = null!;
 }

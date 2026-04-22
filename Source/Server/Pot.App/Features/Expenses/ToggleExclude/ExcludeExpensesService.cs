@@ -2,6 +2,7 @@
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
+using Pot.App.Concerns.Accruals;
 using Pot.App.Errors;
 using Pot.App.Features.Expenses.ToggleExclude.Models;
 using Pot.Data.Repositories.Expenses;
@@ -10,11 +11,13 @@ namespace Pot.App.Features.Expenses.ToggleExclude;
 
 internal sealed class ExcludeExpensesService : IExcludeExpensesService
 {
+    private readonly IAccountAccrualDirtyMarker _accountAccrualDirtyMarker;
     private readonly IPersistableExpenseRepository _expenseRepository;
     private readonly ILogger _logger;
 
-    public ExcludeExpensesService(IPersistableExpenseRepository expenseRepository, ILogger<ExcludeExpensesService> logger)
+    public ExcludeExpensesService(IAccountAccrualDirtyMarker accountAccrualDirtyMarker, IPersistableExpenseRepository expenseRepository, ILogger<ExcludeExpensesService> logger)
     {
+        _accountAccrualDirtyMarker = accountAccrualDirtyMarker.WhenNotNull();
         _expenseRepository = expenseRepository.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
@@ -46,6 +49,10 @@ internal sealed class ExcludeExpensesService : IExcludeExpensesService
                 expense.ExcludeFromCalcs = !expense.ExcludeFromCalcs;
                 expense.AccruedIsDirty = true;
             }
+
+            await _accountAccrualDirtyMarker
+                .MarkDirtyForToggleAsync(expenses, cancellationToken)
+                .ConfigureAwait(false);
 
             await _expenseRepository.SaveAsync(cancellationToken);
         }

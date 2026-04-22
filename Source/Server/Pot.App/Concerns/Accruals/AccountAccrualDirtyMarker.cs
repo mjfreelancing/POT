@@ -18,36 +18,85 @@ internal sealed class AccountAccrualDirtyMarker : IAccountAccrualDirtyMarker
         _logger = logger.WhenNotNull();
     }
 
-    public async Task MarkDirtyForCreateAsync(AccountEntity account, CancellationToken cancellationToken)
+    public Task MarkDirtyForCreateAsync(AccountEntity account, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
         _ = account.WhenNotNull();
 
-        var accountAccrual = await _accountAccrualRepository
-            .Set<AccountAccrualEntity>()
-            .SingleOrDefaultAsync(item => item.AccountId == account.Id, cancellationToken)
-            .ConfigureAwait(false);
+        return MarkDirtyForAccountsAsync([account], cancellationToken);
+    }
 
-        if (accountAccrual is null)
+    public Task MarkDirtyForToggleAsync(IReadOnlyCollection<ExpenseEntity> expenses, CancellationToken cancellationToken)
+    {
+        _logger.LogCall(this);
+
+        _ = expenses.WhenNotNull();
+
+        var expenseAccounts = expenses
+            .Select(expense => expense.Account)
+            .DistinctBy(account => account.Id)
+            .ToArray();
+
+        return MarkDirtyForAccountsAsync(expenseAccounts, cancellationToken);
+    }
+
+    private async Task MarkDirtyForAccountsAsync(IReadOnlyCollection<AccountEntity> accounts, CancellationToken cancellationToken)
+    {
+        if (accounts.Count == 0)
         {
-            accountAccrual = new AccountAccrualEntity
-            {
-                AccountId = account.Id,
-                Account = account,
-                AccruedIsDirty = true
-            };
-
-            _accountAccrualRepository.Add(accountAccrual);
-
             return;
         }
 
-        if (!accountAccrual.AccruedIsDirty)
-        {
-            accountAccrual.AccruedIsDirty = true;
+        var accountIds = accounts
+            .Select(account => account.Id)
+            .ToArray();
 
-            _accountAccrualRepository.Update(accountAccrual);
+        var existingAccountAccruals = await _accountAccrualRepository.AccountAccruals
+            .Where(item => accountIds.Contains(item.AccountId))
+            .ToDictionaryAsync(item => item.AccountId, cancellationToken)
+            .ConfigureAwait(false);
+
+        foreach (var account in accounts)
+        {
+            if (!existingAccountAccruals.TryGetValue(account.Id, out var accountAccrual))
+            {
+                accountAccrual = new AccountAccrualEntity
+                {
+                    AccountId = account.Id,
+
+                    // Intentionally assigning only AccountId (FK) and not assigning the Account navigation.
+                    //
+                    // Why this is required:
+                    // - This concern can be called in flows where the DbContext is already tracking
+                    //   account/expense graphs loaded by other repositories in the same request.
+                    // - If we assign Account = account here, EF Core may walk that navigation graph during Add(),
+                    //   attempt to attach related entities, and collide with instances already tracked in the
+                    //   current context.
+                    // - Those collisions can surface as identity tracking conflicts (same key, different instance),
+                    //   which are runtime correctness issues, not just test-only artifacts.
+                    //
+                    // Why FK-only is the correct pattern here:
+                    // - Persisting this row only requires AccountId; the Account navigation is not needed for this
+                    //   write path.
+                    // - FK-only insertion keeps the operation narrowly scoped to AccountAccrual and avoids
+                    //   accidental graph-attach side effects.
+                    // - It also preserves the intended transaction boundary where the caller coordinates SaveAsync.
+
+                    AccruedIsDirty = true
+                };
+
+                _accountAccrualRepository.Add(accountAccrual);
+
+                continue;
+            }
+
+            if (!accountAccrual.AccruedIsDirty)
+            {
+                accountAccrual.AccruedIsDirty = true;
+
+                _accountAccrualRepository.Update(accountAccrual);
+            }
         }
     }
 }
