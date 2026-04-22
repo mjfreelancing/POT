@@ -2,6 +2,7 @@
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
+using Pot.App.Concerns.Accruals;
 using Pot.App.Concerns.Time;
 using Pot.App.Errors;
 using Pot.App.Features.Expenses.Create.EntityChecks;
@@ -16,14 +17,16 @@ namespace Pot.App.Features.Expenses.Create;
 internal sealed class CreateExpenseService : ICreateExpenseService
 {
     private readonly IPersistableAccountRepository _accountRepository;
+    private readonly IAccountAccrualDirtyMarker _accountAccrualDirtyMarker;
     private readonly IPreCreateChecker _preCreateChecker;
     private readonly ITimeProvider _timeProvider;
     private readonly ILogger _logger;
 
-    public CreateExpenseService(IPersistableAccountRepository accountRepository, IPreCreateChecker preCreateChecker,
+    public CreateExpenseService(IPersistableAccountRepository accountRepository, IAccountAccrualDirtyMarker accountAccrualDirtyMarker, IPreCreateChecker preCreateChecker,
         ITimeProvider timeProvider, ILogger<CreateExpenseService> logger)
     {
         _accountRepository = accountRepository.WhenNotNull();
+        _accountAccrualDirtyMarker = accountAccrualDirtyMarker.WhenNotNull();
         _preCreateChecker = preCreateChecker.WhenNotNull();
         _timeProvider = timeProvider.WhenNotNull();
         _logger = logger.WhenNotNull();
@@ -74,6 +77,10 @@ internal sealed class CreateExpenseService : ICreateExpenseService
         }
 
         expenseAccount.Expenses.Add(expenseToCreate);
+
+        await _accountAccrualDirtyMarker
+            .MarkDirtyForCreateAsync(expenseAccount, cancellationToken)
+            .ConfigureAwait(false);
 
         await _accountRepository
             .UpdateAndSaveAsync(expenseAccount, cancellationToken)
