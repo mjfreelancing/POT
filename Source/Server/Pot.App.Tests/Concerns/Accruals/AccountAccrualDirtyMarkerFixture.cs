@@ -74,7 +74,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
         }
     }
 
-    public class MarkDirtyForCreateAsync : AccountAccrualDirtyMarkerFixture
+    public class MarkDirtyForAccountAsync : AccountAccrualDirtyMarkerFixture
     {
         [Fact]
         public async Task Should_Throw_When_Account_Is_Null()
@@ -83,7 +83,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
 
             var exception = await Should.ThrowAsync<ArgumentNullException>(async () =>
             {
-                await context.Marker.MarkDirtyForCreateAsync(null!, CancellationToken.None);
+                await context.Marker.MarkDirtyForAccountAsync(null!, CancellationToken.None);
             });
 
             exception.ParamName.ShouldBe("account");
@@ -96,11 +96,11 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
 
             var account = context.AddAccount("Logging Branch Account");
 
-            await context.Marker.MarkDirtyForCreateAsync(account, CancellationToken.None);
+            await context.Marker.MarkDirtyForAccountAsync(account, CancellationToken.None);
 
             context.LogCollector.ShouldContainLogCall(
                 category: typeof(AccountAccrualDirtyMarker).FullName!,
-                callerName: nameof(AccountAccrualDirtyMarker.MarkDirtyForCreateAsync),
+                callerName: nameof(AccountAccrualDirtyMarker.MarkDirtyForAccountAsync),
                 callerType: typeof(AccountAccrualDirtyMarker));
         }
 
@@ -113,7 +113,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
 
             context.DbContext.AccountAccruals.Count().ShouldBe(0);
 
-            await context.Marker.MarkDirtyForCreateAsync(account, CancellationToken.None);
+            await context.Marker.MarkDirtyForAccountAsync(account, CancellationToken.None);
 
             var accountAccrualEntry = context.DbContext.ChangeTracker
                 .Entries<AccountAccrualEntity>()
@@ -143,7 +143,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
             await context.DbContext.SaveChangesAsync();
             context.DbContext.ChangeTracker.Clear();
 
-            await context.Marker.MarkDirtyForCreateAsync(account, CancellationToken.None);
+            await context.Marker.MarkDirtyForAccountAsync(account, CancellationToken.None);
 
             var accountAccrualEntry = context.DbContext.ChangeTracker
                 .Entries<AccountAccrualEntity>()
@@ -172,7 +172,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
             await context.DbContext.SaveChangesAsync();
             context.DbContext.ChangeTracker.Clear();
 
-            await context.Marker.MarkDirtyForCreateAsync(account, CancellationToken.None);
+            await context.Marker.MarkDirtyForAccountAsync(account, CancellationToken.None);
 
             var accountAccrual = await context.DbContext.AccountAccruals.SingleAsync();
 
@@ -181,7 +181,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
         }
     }
 
-    public class MarkDirtyForToggleAsync : AccountAccrualDirtyMarkerFixture
+    public class MarkDirtyForExpensesAsync : AccountAccrualDirtyMarkerFixture
     {
         [Fact]
         public async Task Should_Throw_When_Expenses_Are_Null()
@@ -190,7 +190,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
 
             var exception = await Should.ThrowAsync<ArgumentNullException>(async () =>
             {
-                await context.Marker.MarkDirtyForToggleAsync(null!, CancellationToken.None);
+                await context.Marker.MarkDirtyForExpensesAsync(null!, CancellationToken.None);
             });
 
             exception.ParamName.ShouldBe("expenses");
@@ -207,11 +207,11 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
                 EntityFactory.CreateExpense(account, false, "Toggle Logging Expense", 15.0d, "2026-04-01", "2026-04-30", null, Frequency.Months, 1)
             };
 
-            await context.Marker.MarkDirtyForToggleAsync(expenses, CancellationToken.None);
+            await context.Marker.MarkDirtyForExpensesAsync(expenses, CancellationToken.None);
 
             context.LogCollector.ShouldContainLogCall(
                 category: typeof(AccountAccrualDirtyMarker).FullName!,
-                callerName: nameof(AccountAccrualDirtyMarker.MarkDirtyForToggleAsync),
+                callerName: nameof(AccountAccrualDirtyMarker.MarkDirtyForExpensesAsync),
                 callerType: typeof(AccountAccrualDirtyMarker));
         }
 
@@ -220,7 +220,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
         {
             using var context = CreateTestContext();
 
-            await context.Marker.MarkDirtyForToggleAsync([], CancellationToken.None);
+            await context.Marker.MarkDirtyForExpensesAsync([], CancellationToken.None);
 
             context.DbContext.ChangeTracker.HasChanges().ShouldBeFalse();
         }
@@ -261,7 +261,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
                 EntityFactory.CreateExpense(existingCleanAccount, false, "Toggle Existing Clean Expense Duplicate Account", 55.0d, "2026-04-01", "2026-04-30", null, Frequency.Months, 1)
             };
 
-            await context.Marker.MarkDirtyForToggleAsync(expenses, CancellationToken.None);
+            await context.Marker.MarkDirtyForExpensesAsync(expenses, CancellationToken.None);
 
             var accountAccrualEntries = context.DbContext.ChangeTracker
                 .Entries<AccountAccrualEntity>()

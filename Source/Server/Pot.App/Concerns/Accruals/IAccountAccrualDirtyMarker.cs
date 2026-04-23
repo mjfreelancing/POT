@@ -5,6 +5,6 @@ namespace Pot.App.Concerns.Accruals;
 
 public interface IAccountAccrualDirtyMarker : IPotScopedDependency
 {
-    Task MarkDirtyForCreateAsync(AccountEntity account, CancellationToken cancellationToken);
-    Task MarkDirtyForToggleAsync(IReadOnlyCollection<ExpenseEntity> expenses, CancellationToken cancellationToken);
+    Task MarkDirtyForAccountAsync(AccountEntity account, CancellationToken cancellationToken);
+    Task MarkDirtyForExpensesAsync(IReadOnlyCollection<ExpenseEntity> expenses, CancellationToken cancellationToken);
 }

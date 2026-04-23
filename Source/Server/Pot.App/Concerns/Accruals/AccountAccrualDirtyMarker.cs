@@ -18,7 +18,7 @@ internal sealed class AccountAccrualDirtyMarker : IAccountAccrualDirtyMarker
         _logger = logger.WhenNotNull();
     }
 
-    public Task MarkDirtyForCreateAsync(AccountEntity account, CancellationToken cancellationToken)
+    public Task MarkDirtyForAccountAsync(AccountEntity account, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
@@ -27,7 +27,7 @@ internal sealed class AccountAccrualDirtyMarker : IAccountAccrualDirtyMarker
         return MarkDirtyForAccountsAsync([account], cancellationToken);
     }
 
-    public Task MarkDirtyForToggleAsync(IReadOnlyCollection<ExpenseEntity> expenses, CancellationToken cancellationToken)
+    public Task MarkDirtyForExpensesAsync(IReadOnlyCollection<ExpenseEntity> expenses, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
@@ -41,9 +41,9 @@ internal sealed class AccountAccrualDirtyMarker : IAccountAccrualDirtyMarker
         return MarkDirtyForAccountsAsync(expenseAccounts, cancellationToken);
     }
 
-    private async Task MarkDirtyForAccountsAsync(IReadOnlyCollection<AccountEntity> accounts, CancellationToken cancellationToken)
+    private async Task MarkDirtyForAccountsAsync(AccountEntity[] accounts, CancellationToken cancellationToken)
     {
-        if (accounts.Count == 0)
+        if (accounts.Length == 0)
         {
             return;
         }

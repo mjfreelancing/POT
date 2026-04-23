@@ -51,7 +51,7 @@ internal sealed class ExcludeExpensesService : IExcludeExpensesService
             }
 
             await _accountAccrualDirtyMarker
-                .MarkDirtyForToggleAsync(expenses, cancellationToken)
+                .MarkDirtyForExpensesAsync(expenses, cancellationToken)
                 .ConfigureAwait(false);
 
             await _expenseRepository.SaveAsync(cancellationToken);

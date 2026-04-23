@@ -79,7 +79,7 @@ internal sealed class CreateExpenseService : ICreateExpenseService
         expenseAccount.Expenses.Add(expenseToCreate);
 
         await _accountAccrualDirtyMarker
-            .MarkDirtyForCreateAsync(expenseAccount, cancellationToken)
+            .MarkDirtyForAccountAsync(expenseAccount, cancellationToken)
             .ConfigureAwait(false);
 
         await _accountRepository

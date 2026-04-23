@@ -3,6 +3,7 @@ using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
 using Pot.App.Calculators;
+using Pot.App.Concerns.Accruals;
 using Pot.App.Errors;
 using Pot.App.Features.Expenses.Renew.Models;
 using Pot.Data.Repositories.Expenses;
@@ -11,13 +12,15 @@ namespace Pot.App.Features.Expenses.Renew;
 
 internal sealed class RenewExpensesService : IRenewExpensesService
 {
+    private readonly IAccountAccrualDirtyMarker _accountAccrualDirtyMarker;
     private readonly IPersistableExpenseRepository _expenseRepository;
     private readonly IExpenseRenewalCalculator _renewalCalculator;
     private readonly ILogger _logger;
 
-    public RenewExpensesService(IPersistableExpenseRepository expenseRepository, IExpenseRenewalCalculator renewalCalculator,
-        ILogger<RenewExpensesService> logger)
+    public RenewExpensesService(IAccountAccrualDirtyMarker accountAccrualDirtyMarker, IPersistableExpenseRepository expenseRepository,
+        IExpenseRenewalCalculator renewalCalculator, ILogger<RenewExpensesService> logger)
     {
+        _accountAccrualDirtyMarker = accountAccrualDirtyMarker.WhenNotNull();
         _expenseRepository = expenseRepository.WhenNotNull();
         _renewalCalculator = renewalCalculator.WhenNotNull();
         _logger = logger.WhenNotNull();
@@ -45,7 +48,17 @@ internal sealed class RenewExpensesService : IRenewExpensesService
                 return EnrichedResult.Fail<bool>(expenseRenewError);
             }
 
+            var originalDueDates = expenses.ToDictionary(expense => expense.RowId, expense => expense.NextDue);
+
             _renewalCalculator.Renew(expenses, input.Mode, input.AsOfDate);
+
+            var renewedExpenses = expenses
+                .Where(expense => originalDueDates[expense.RowId] != expense.NextDue)
+                .ToArray();
+
+            await _accountAccrualDirtyMarker
+                .MarkDirtyForExpensesAsync(renewedExpenses, cancellationToken)
+                .ConfigureAwait(false);
 
             await _expenseRepository.SaveAsync(cancellationToken);
         }
