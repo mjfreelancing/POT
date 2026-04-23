@@ -86,11 +86,11 @@ internal sealed class UpdateExpenseService : IUpdateExpenseService
             var localCurrentDate = _timeProvider.GetLocalDateNow();
             var existingAccount = expenseToUpdate.Account;
 
-            var before = GetAccrualDirtyState(expenseToUpdate);
+            var before = GetExpenseAccrualState(expenseToUpdate);
 
             UpdateExpenseEntity(expenseToUpdate, input, expenseAccount, localCurrentDate);
 
-            var after = GetAccrualDirtyState(expenseToUpdate);
+            var after = GetExpenseAccrualState(expenseToUpdate);
             var accountIdsToMarkDirty = _accountAccrualDirtyMarker.GetAccountIdsToMarkDirty(before, after);
 
             foreach (var accountId in accountIdsToMarkDirty)
@@ -114,7 +114,7 @@ internal sealed class UpdateExpenseService : IUpdateExpenseService
         }
     }
 
-    private static ExpenseAccrualState GetAccrualDirtyState(ExpenseEntity expense)
+    private static ExpenseAccrualState GetExpenseAccrualState(ExpenseEntity expense)
     {
         return new ExpenseAccrualState
         {
