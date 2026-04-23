@@ -2,6 +2,8 @@
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
+using Pot.App.Concerns.Accruals;
+using Pot.App.Concerns.Accruals.Models;
 using Pot.App.Concerns.Time;
 using Pot.App.Errors;
 using Pot.App.Extensions;
@@ -17,15 +19,18 @@ namespace Pot.App.Features.Expenses.Update;
 
 internal sealed class UpdateExpenseService : IUpdateExpenseService
 {
+    private readonly IAccountAccrualDirtyMarker _accountAccrualDirtyMarker;
     private readonly IPersistableExpenseRepository _expenseRepository;
     private readonly IPersistableAccountRepository _accountRepository;
     private readonly IPreUpdateChecker _preUpdateChecker;
     private readonly ITimeProvider _timeProvider;
     private readonly ILogger _logger;
 
-    public UpdateExpenseService(IPersistableExpenseRepository expenseRepository, IPersistableAccountRepository accountRepository,
-        IPreUpdateChecker preUpdateChecker, ITimeProvider timeProvider, ILogger<UpdateExpenseService> logger)
+    public UpdateExpenseService(IAccountAccrualDirtyMarker accountAccrualDirtyMarker, IPersistableExpenseRepository expenseRepository,
+        IPersistableAccountRepository accountRepository, IPreUpdateChecker preUpdateChecker, ITimeProvider timeProvider,
+        ILogger<UpdateExpenseService> logger)
     {
+        _accountAccrualDirtyMarker = accountAccrualDirtyMarker.WhenNotNull();
         _expenseRepository = expenseRepository.WhenNotNull();
         _accountRepository = accountRepository.WhenNotNull(); ;
         _preUpdateChecker = preUpdateChecker.WhenNotNull();
@@ -78,7 +83,26 @@ internal sealed class UpdateExpenseService : IUpdateExpenseService
                 return EnrichedResult.Fail<Output>(apiError);
             }
 
-            UpdateExpenseEntity(expenseToUpdate, input, expenseAccount, _timeProvider.GetLocalDateNow());
+            var localCurrentDate = _timeProvider.GetLocalDateNow();
+            var existingAccount = expenseToUpdate.Account;
+
+            var before = GetAccrualDirtyState(expenseToUpdate);
+
+            UpdateExpenseEntity(expenseToUpdate, input, expenseAccount, localCurrentDate);
+
+            var after = GetAccrualDirtyState(expenseToUpdate);
+            var accountIdsToMarkDirty = _accountAccrualDirtyMarker.GetAccountIdsToMarkDirty(before, after);
+
+            foreach (var accountId in accountIdsToMarkDirty)
+            {
+                var accountToMarkDirty = accountId == existingAccount.Id
+                    ? existingAccount
+                    : expenseAccount;
+
+                await _accountAccrualDirtyMarker
+                    .MarkDirtyForAccountAsync(accountToMarkDirty, cancellationToken)
+                    .ConfigureAwait(false);
+            }
 
             // Not calling _accountRepository.Update(account) as this will mark the
             // entity as modified even if nothing was changed.
@@ -88,6 +112,22 @@ internal sealed class UpdateExpenseService : IUpdateExpenseService
 
             return EnrichedResult.Success(output);
         }
+    }
+
+    private static ExpenseAccrualState GetAccrualDirtyState(ExpenseEntity expense)
+    {
+        return new ExpenseAccrualState
+        {
+            AccountId = expense.Account.Id,
+            ExcludeFromCalcs = expense.ExcludeFromCalcs,
+            AccrualStart = expense.AccrualStart,
+            NextDue = expense.NextDue,
+            EndDate = expense.EndDate,
+            AccrualPolicy = expense.AccrualPolicy,
+            Frequency = expense.Frequency,
+            FrequencyCount = expense.FrequencyCount,
+            Amount = expense.Amount
+        };
     }
 
     private static void UpdateExpenseEntity(ExpenseEntity expenseToUpdate, Input input, AccountEntity expenseAccount, DateOnly localCurrentDate)

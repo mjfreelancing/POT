@@ -2,6 +2,7 @@
 using AllOverIt.Logging.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Pot.App.Concerns.Accruals.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.AccountAccrual;
 
@@ -16,6 +17,26 @@ internal sealed class AccountAccrualDirtyMarker : IAccountAccrualDirtyMarker
     {
         _accountAccrualRepository = accountAccrualRepository.WhenNotNull();
         _logger = logger.WhenNotNull();
+    }
+
+    public int[] GetAccountIdsToMarkDirty(ExpenseAccrualState before, ExpenseAccrualState after)
+    {
+        _logger.LogCall(this);
+
+        _ = before.WhenNotNull();
+        _ = after.WhenNotNull();
+
+        if (before == after)
+        {
+            return [];
+        }
+
+        if (before.AccountId == after.AccountId)
+        {
+            return [after.AccountId];
+        }
+
+        return [before.AccountId, after.AccountId];
     }
 
     public Task MarkDirtyForAccountAsync(AccountEntity account, CancellationToken cancellationToken)

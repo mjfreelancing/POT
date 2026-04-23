@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using NSubstitute;
 using Pot.App.Concerns.Accruals;
+using Pot.App.Concerns.Accruals.Models;
 using Pot.Data;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.AccountAccrual;
@@ -90,7 +91,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
         }
 
         [Fact]
-        public async Task Should_LogCall_When_Marking_Dirty_For_Create()
+        public async Task Should_LogCall_When_Marking_Dirty_For_Account()
         {
             using var context = CreateTestContext();
 
@@ -197,7 +198,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
         }
 
         [Fact]
-        public async Task Should_LogCall_When_Marking_Dirty_For_Toggle()
+        public async Task Should_LogCall_When_Marking_Dirty_For_Expenses()
         {
             using var context = CreateTestContext();
 
@@ -277,6 +278,112 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
             var addedEntry = accountAccrualEntries.Single(entry => entry.State == EntityState.Added);
             addedEntry.Entity.AccountId.ShouldBe(missingAccrualAccount.Id);
             addedEntry.Entity.AccruedIsDirty.ShouldBeTrue();
+        }
+    }
+
+    public class GetAccountIdsToMarkDirty : AccountAccrualDirtyMarkerFixture
+    {
+        [Fact]
+        public void Should_LogCall_When_Getting_AccountIds_For_Update()
+        {
+            using var context = CreateTestContext();
+
+            var before = CreateDirtyState(accountId: 15);
+            var after = CreateDirtyState(accountId: 15);
+
+            _ = context.Marker.GetAccountIdsToMarkDirty(before, after);
+
+            context.LogCollector.ShouldContainLogCall(
+                category: typeof(AccountAccrualDirtyMarker).FullName!,
+                callerName: nameof(AccountAccrualDirtyMarker.GetAccountIdsToMarkDirty),
+                callerType: typeof(AccountAccrualDirtyMarker));
+        }
+
+        [Fact]
+        public void Should_Throw_When_Before_Is_Null()
+        {
+            using var context = CreateTestContext();
+
+            var exception = Should.Throw<ArgumentNullException>(() =>
+            {
+                var after = CreateDirtyState(accountId: 11);
+
+                _ = context.Marker.GetAccountIdsToMarkDirty(null!, after);
+            });
+
+            exception.ParamName.ShouldBe("before");
+        }
+
+        [Fact]
+        public void Should_Throw_When_After_Is_Null()
+        {
+            using var context = CreateTestContext();
+
+            var exception = Should.Throw<ArgumentNullException>(() =>
+            {
+                var before = CreateDirtyState(accountId: 11);
+
+                _ = context.Marker.GetAccountIdsToMarkDirty(before, null!);
+            });
+
+            exception.ParamName.ShouldBe("after");
+        }
+
+        [Fact]
+        public void Should_Return_Empty_When_Update_Is_Not_Dirty_Impacting()
+        {
+            using var context = CreateTestContext();
+
+            var before = CreateDirtyState(accountId: 11);
+            var after = CreateDirtyState(accountId: 11);
+
+            var accountIds = context.Marker.GetAccountIdsToMarkDirty(before, after);
+
+            accountIds.ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void Should_Return_Single_Account_When_Dirty_Impact_Is_Same_Account()
+        {
+            using var context = CreateTestContext();
+
+            var before = CreateDirtyState(accountId: 12);
+            var after = CreateDirtyState(accountId: 12, mutate: state => state with { Amount = 220.0d });
+
+            var accountIds = context.Marker.GetAccountIdsToMarkDirty(before, after);
+
+            accountIds.ShouldBe([12]);
+        }
+
+        [Fact]
+        public void Should_Return_Both_Accounts_When_Reassigned()
+        {
+            using var context = CreateTestContext();
+
+            var before = CreateDirtyState(accountId: 13);
+            var after = CreateDirtyState(accountId: 14);
+
+            var accountIds = context.Marker.GetAccountIdsToMarkDirty(before, after);
+
+            accountIds.ShouldBe([13, 14]);
+        }
+
+        private static ExpenseAccrualState CreateDirtyState(int accountId, Func<ExpenseAccrualState, ExpenseAccrualState>? mutate = null)
+        {
+            var state = new ExpenseAccrualState
+            {
+                AccountId = accountId,
+                ExcludeFromCalcs = false,
+                AccrualStart = new DateOnly(2026, 1, 1),
+                NextDue = new DateOnly(2026, 2, 1),
+                EndDate = null,
+                AccrualPolicy = AccrualPolicy.Automatic,
+                Frequency = Frequency.Months,
+                FrequencyCount = 1,
+                Amount = 120.0d
+            };
+
+            return mutate?.Invoke(state) ?? state;
         }
     }
 
