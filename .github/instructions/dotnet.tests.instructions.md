@@ -16,6 +16,7 @@ applyTo: "Source/Server/*Tests/**/*.cs"
 ### Conventions
 
 - Use xUnit naming and structure consistent with the repository.
+- Keep test method order aligned with the implementation logic order when practical (for example, log/assert-first tests should appear before later-branch tests in the same fixture).
 - Keep assertion style consistent within each test project.
 - Keep reusable helpers in a shared test utility project when they are cross-project.
 - When setup or assertion patterns repeat, prefer adding or extending shared helpers rather than duplicating logic in individual fixtures.

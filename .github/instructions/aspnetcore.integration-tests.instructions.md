@@ -17,6 +17,7 @@ applyTo: "Source/Server/Pot.AspNetCore.Integration.Tests/**/*.cs"
 ### Organization and Assertions
 
 - Organize tests by feature first, then cross-cutting concerns.
+- Keep test order aligned with endpoint/handler implementation flow when practical (for example, early validation or logging-path tests should appear before deeper branch-path tests).
 - Assert HTTP status first, then critical contract fields and headers.
 - Prefer typed response models over ad-hoc JSON traversal.
 - Validate API contracts with real HTTP calls through test host factories.

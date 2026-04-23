@@ -18,6 +18,7 @@ applyTo: "Source/Client/pot-react/tests/**"
 ### Tooling and Naming
 
 - Use the repository's existing client test framework, environment, and shared setup conventions.
+- Keep test case order aligned with the implementation logic order when practical so the suite reads in the same flow as the production code.
 - Prefer user-observable assertions and interactions for component and UI tests.
 - Use `*.test.ts` and `*.test.tsx` as the baseline naming format.
 - Default to `<ComponentName>.test.ts(x)`.
