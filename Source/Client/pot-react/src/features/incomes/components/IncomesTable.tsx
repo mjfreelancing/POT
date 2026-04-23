@@ -81,8 +81,13 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
   const canManageIncomes = hasPermission('income:manage');
 
   async function processMarkAsReceived() {
-    const { excludedIncomes, futureIncomes, overdueIncomes } =
-      splitIncomesByActionability(pendingIncomes);
+    const {
+      excludedIncomes,
+      endedIncomes,
+      futureIncomes,
+      dueTodayIncomes,
+      overdueIncomes,
+    } = splitIncomesByActionability(pendingIncomes);
 
     let hasErrors = false;
 
@@ -101,11 +106,14 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
       }
     }
 
-    // Process overdue incomes (advance renewal)
-    if (overdueIncomes.length > 0) {
-      const overdueRowIds = overdueIncomes.map(item => item.rowId);
+    // Process due today and overdue incomes (advance renewal)
+    if (dueTodayIncomes.length > 0 || overdueIncomes.length > 0) {
+      const renewalRowIds = [...dueTodayIncomes, ...overdueIncomes].map(
+        item => item.rowId,
+      );
+
       const result = await renewIncomes(
-        overdueRowIds,
+        renewalRowIds,
         RenewalMode.Overdue,
         renewIncomesMutation,
         queryClient,
@@ -125,6 +133,12 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
         );
       }
 
+      if (dueTodayIncomes.length > 0) {
+        messages.push(
+          `${dueTodayIncomes.length} due today income${dueTodayIncomes.length > 1 ? 's' : ''} processed`,
+        );
+      }
+
       if (overdueIncomes.length > 0) {
         messages.push(
           `${overdueIncomes.length} overdue income${overdueIncomes.length > 1 ? 's' : ''} advanced`,
@@ -134,6 +148,12 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
       if (excludedIncomes.length > 0) {
         messages.push(
           `${excludedIncomes.length} excluded income${excludedIncomes.length > 1 ? 's' : ''} skipped`,
+        );
+      }
+
+      if (endedIncomes.length > 0) {
+        messages.push(
+          `${endedIncomes.length} ended income${endedIncomes.length > 1 ? 's' : ''} skipped`,
         );
       }
       toast(
@@ -150,11 +170,18 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
   }
 
   function getConfirmationMessage(incomes: Income[]): React.ReactNode {
-    const { excludedIncomes, futureIncomes, overdueIncomes } =
-      splitIncomesByActionability(incomes);
+    const {
+      excludedIncomes,
+      endedIncomes,
+      futureIncomes,
+      dueTodayIncomes,
+      overdueIncomes,
+    } = splitIncomesByActionability(incomes);
 
     const excludedCount = excludedIncomes.length;
+    const endedCount = endedIncomes.length;
     const futureCount = futureIncomes.length;
+    const dueTodayCount = dueTodayIncomes.length;
     const overdueCount = overdueIncomes.length;
 
     return (
@@ -182,6 +209,17 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
             </div>
           </div>
         )}
+        {dueTodayCount > 0 && (
+          <div className="flex items-start gap-3">
+            <CheckCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold text-amber-700 dark:text-amber-300">
+                {dueTodayCount} due today income{dueTodayCount > 1 ? 's' : ''}
+              </span>{' '}
+              will be processed and moved forward to the next period.
+            </div>
+          </div>
+        )}
         {excludedCount > 0 && (
           <div className="flex items-start gap-3">
             <EyeOff className="h-5 w-5 text-slate-600 dark:text-slate-400 flex-shrink-0 mt-0.5" />
@@ -190,6 +228,17 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
                 {excludedCount} excluded income{excludedCount > 1 ? 's' : ''}
               </span>{' '}
               will be skipped. Excluded items are not updated by this action.
+            </div>
+          </div>
+        )}
+        {endedCount > 0 && (
+          <div className="flex items-start gap-3">
+            <EyeOff className="h-5 w-5 text-slate-600 dark:text-slate-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold text-slate-700 dark:text-slate-300">
+                {endedCount} ended income{endedCount > 1 ? 's' : ''}
+              </span>{' '}
+              will be skipped. Ended items are not updated by this action.
             </div>
           </div>
         )}
@@ -204,10 +253,18 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
     {
       label: 'Mark as Received',
       isDisabled: !canManageIncomes,
-      // Hide this action when exactly one excluded item is selected because
-      // renewal is skipped for excluded items and the due date would not change.
-      isHidden: (selectedItems: Income[]) =>
-        selectedItems.length === 1 && selectedItems[0].excludeFromCalcs,
+      // Hide this action when all selected items are non-actionable.
+      // Excluded or ended items are skipped and would not change due dates.
+      isHidden: (selectedItems: Income[]) => {
+        if (selectedItems.length === 0) {
+          return false;
+        }
+
+        const { actionableIncomes } =
+          splitIncomesByActionability(selectedItems);
+
+        return actionableIncomes.length === 0;
+      },
       onClick: async (selectedItems: Income[]) => {
         setPendingIncomes(selectedItems);
         setShowConfirmation(true);

@@ -84,8 +84,15 @@ function getUrgencyStyle(days: number): {
  * Styled consistently with dashboard ExpenseCard with action menu.
  */
 function ExpenseMobileCard({ expense }: ExpenseMobileCardProps) {
-  const { description, nextDue, amount, note, account, excludeFromCalcs } =
-    expense;
+  const {
+    description,
+    nextDue,
+    endDate,
+    amount,
+    note,
+    account,
+    excludeFromCalcs,
+  } = expense;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showMarkAsPaidDialog, setShowMarkAsPaidDialog] = useState(false);
   const [isRenewing, setIsRenewing] = useState(false);
@@ -102,16 +109,19 @@ function ExpenseMobileCard({ expense }: ExpenseMobileCardProps) {
   const searchSuffix = location.search;
 
   const days = getDaysDue(nextDue);
+  const isEndedForDisplay = endDate ? getDaysDue(endDate) < 0 : false;
   const { borderClass, bgClass } = getUrgencyStyle(days);
 
   // Wrap the current item in a single-item array so mobile and table flows
-  // share the same actionability rules (excluded/future/overdue) in one place.
-  const { excludedExpenses, overdueExpenses } = splitExpensesByActionability([
-    expense,
-  ]);
+  // share the same actionability rules (excluded/ended/due-today/future/overdue) in one place.
+  const { excludedExpenses, endedExpenses, dueTodayExpenses, overdueExpenses } =
+    splitExpensesByActionability([expense]);
 
   const isExcludedForAction = excludedExpenses.length > 0;
+  const isEndedForAction = endedExpenses.length > 0;
+  const isDueTodayForAction = dueTodayExpenses.length > 0;
   const isOverdueForAction = overdueExpenses.length > 0;
+  const canMarkAsPaid = !isExcludedForAction && !isEndedForAction;
   const isActionInProgress = isRenewing || isTogglingExclusion;
 
   function getMarkAsPaidConfirmationMessage(): React.ReactNode {
@@ -134,6 +144,25 @@ function ExpenseMobileCard({ expense }: ExpenseMobileCardProps) {
       );
     }
 
+    if (isEndedForAction) {
+      return (
+        <div className="space-y-3">
+          <div className="flex items-start gap-3">
+            <EyeOff className="h-5 w-5 text-slate-600 dark:text-slate-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold text-slate-700 dark:text-slate-300">
+                {description}
+              </span>{' '}
+              has ended and will be skipped.
+            </div>
+          </div>
+          <div className="text-sm text-muted-foreground pt-2 border-t">
+            This action cannot be undone.
+          </div>
+        </div>
+      );
+    }
+
     if (isOverdueForAction) {
       return (
         <div className="space-y-3">
@@ -144,6 +173,26 @@ function ExpenseMobileCard({ expense }: ExpenseMobileCardProps) {
                 {description}
               </span>{' '}
               is overdue and will be caught up to its next scheduled due date.
+            </div>
+          </div>
+          <div className="text-sm text-muted-foreground pt-2 border-t">
+            This action cannot be undone.
+          </div>
+        </div>
+      );
+    }
+
+    if (isDueTodayForAction) {
+      return (
+        <div className="space-y-3">
+          <div className="flex items-start gap-3">
+            <CheckCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold text-amber-700 dark:text-amber-300">
+                {description}
+              </span>{' '}
+              is due today and will be processed and moved forward to the next
+              period.
             </div>
           </div>
           <div className="text-sm text-muted-foreground pt-2 border-t">
@@ -196,8 +245,23 @@ function ExpenseMobileCard({ expense }: ExpenseMobileCardProps) {
       return;
     }
 
+    if (isEndedForAction) {
+      setShowMarkAsPaidDialog(false);
+      toast(
+        <SuccessToast
+          icon={EyeOff}
+          title="Expense Skipped"
+          description={`${description} has ended and was not updated.`}
+        />,
+      );
+      return;
+    }
+
     setIsRenewing(true);
-    const mode = isOverdueForAction ? RenewalMode.Overdue : RenewalMode.Future;
+    const mode =
+      isOverdueForAction || isDueTodayForAction
+        ? RenewalMode.Overdue
+        : RenewalMode.Future;
 
     const result = await renewExpenses(
       [expense.rowId],
@@ -210,11 +274,16 @@ function ExpenseMobileCard({ expense }: ExpenseMobileCardProps) {
     setShowMarkAsPaidDialog(false);
 
     if (result.success) {
-      const icon = isOverdueForAction ? FastForward : CheckCircle;
-      const title = isOverdueForAction ? 'Renewal Advanced' : 'Marked as Paid';
-      const successDescription = isOverdueForAction
-        ? `${description} renewal advanced.`
-        : `${description} marked as paid.`;
+      const icon =
+        isOverdueForAction || isDueTodayForAction ? FastForward : CheckCircle;
+      const title =
+        isOverdueForAction || isDueTodayForAction
+          ? 'Renewal Advanced'
+          : 'Marked as Paid';
+      const successDescription =
+        isOverdueForAction || isDueTodayForAction
+          ? `${description} renewal advanced.`
+          : `${description} marked as paid.`;
 
       toast(
         <SuccessToast
@@ -283,8 +352,11 @@ function ExpenseMobileCard({ expense }: ExpenseMobileCardProps) {
           'transition-all duration-200 hover:shadow-md py-2 lg:py-2.5 gap-0 flex flex-col',
           excludeFromCalcs &&
             'opacity-70 border-slate-400/80 dark:border-slate-500/80',
-          !excludeFromCalcs && borderClass,
-          !excludeFromCalcs && bgClass,
+          !excludeFromCalcs &&
+            (isEndedForDisplay
+              ? 'border-slate-400/80 dark:border-slate-500/80 bg-slate-100/45 dark:bg-slate-800/45'
+              : borderClass),
+          !excludeFromCalcs && !isEndedForDisplay && bgClass,
         )}
       >
         <CardContent className="px-2 lg:px-2.5 flex flex-col flex-1">
@@ -340,7 +412,11 @@ function ExpenseMobileCard({ expense }: ExpenseMobileCardProps) {
                   </div>
                   <div className="mt-px min-h-[0.875rem] flex items-center justify-end text-[10px] lg:text-xs leading-none text-muted-foreground">
                     {!excludeFromCalcs &&
-                      (days > 0 ? (
+                      (isEndedForDisplay ? (
+                        <span className="text-slate-600 dark:text-slate-400">
+                          Ended
+                        </span>
+                      ) : days > 0 ? (
                         `(${days} ${days === 1 ? 'day' : 'days'})`
                       ) : days < 0 ? (
                         <span className="text-red-600 dark:text-red-400">
@@ -395,8 +471,8 @@ function ExpenseMobileCard({ expense }: ExpenseMobileCardProps) {
                     <DropdownMenuLabel className="text-sm font-semibold">
                       Actions
                     </DropdownMenuLabel>
-                    {/* Excluded items cannot be marked as paid because renewal is skipped and due date does not change. */}
-                    {!isExcludedForAction && (
+                    {/* Excluded and ended items cannot be marked as paid because renewal is skipped and due date does not change. */}
+                    {canMarkAsPaid && (
                       <WithPermission
                         permissions={['expense:manage']}
                         mode="all"

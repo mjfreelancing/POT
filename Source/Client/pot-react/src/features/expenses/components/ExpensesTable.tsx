@@ -107,8 +107,13 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
   const canManageExpenses = hasPermission('expense:manage');
 
   async function processMarkAsPaid() {
-    const { excludedExpenses, futureExpenses, overdueExpenses } =
-      splitExpensesByActionability(pendingExpenses);
+    const {
+      excludedExpenses,
+      endedExpenses,
+      futureExpenses,
+      dueTodayExpenses,
+      overdueExpenses,
+    } = splitExpensesByActionability(pendingExpenses);
 
     let hasErrors = false;
 
@@ -127,11 +132,14 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
       }
     }
 
-    // Process overdue expenses (advance renewal)
-    if (overdueExpenses.length > 0) {
-      const overdueRowIds = overdueExpenses.map(item => item.rowId);
+    // Process due today and overdue expenses (advance renewal)
+    if (dueTodayExpenses.length > 0 || overdueExpenses.length > 0) {
+      const renewalRowIds = [...dueTodayExpenses, ...overdueExpenses].map(
+        item => item.rowId,
+      );
+
       const result = await renewExpenses(
-        overdueRowIds,
+        renewalRowIds,
         RenewalMode.Overdue,
         renewExpensesMutation,
         queryClient,
@@ -151,6 +159,12 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
         );
       }
 
+      if (dueTodayExpenses.length > 0) {
+        messages.push(
+          `${dueTodayExpenses.length} due today expense${dueTodayExpenses.length > 1 ? 's' : ''} processed`,
+        );
+      }
+
       if (overdueExpenses.length > 0) {
         messages.push(
           `${overdueExpenses.length} overdue expense${overdueExpenses.length > 1 ? 's' : ''} advanced`,
@@ -160,6 +174,12 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
       if (excludedExpenses.length > 0) {
         messages.push(
           `${excludedExpenses.length} excluded expense${excludedExpenses.length > 1 ? 's' : ''} skipped`,
+        );
+      }
+
+      if (endedExpenses.length > 0) {
+        messages.push(
+          `${endedExpenses.length} ended expense${endedExpenses.length > 1 ? 's' : ''} skipped`,
         );
       }
 
@@ -177,11 +197,18 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
   }
 
   function getConfirmationMessage(expenses: Expense[]): React.ReactNode {
-    const { excludedExpenses, futureExpenses, overdueExpenses } =
-      splitExpensesByActionability(expenses);
+    const {
+      excludedExpenses,
+      endedExpenses,
+      futureExpenses,
+      dueTodayExpenses,
+      overdueExpenses,
+    } = splitExpensesByActionability(expenses);
 
     const excludedCount = excludedExpenses.length;
+    const endedCount = endedExpenses.length;
     const futureCount = futureExpenses.length;
+    const dueTodayCount = dueTodayExpenses.length;
     const overdueCount = overdueExpenses.length;
 
     return (
@@ -209,6 +236,17 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
             </div>
           </div>
         )}
+        {dueTodayCount > 0 && (
+          <div className="flex items-start gap-3">
+            <CheckCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold text-amber-700 dark:text-amber-300">
+                {dueTodayCount} due today expense{dueTodayCount > 1 ? 's' : ''}
+              </span>{' '}
+              will be processed and moved forward to the next period.
+            </div>
+          </div>
+        )}
         {excludedCount > 0 && (
           <div className="flex items-start gap-3">
             <EyeOff className="h-5 w-5 text-slate-600 dark:text-slate-400 flex-shrink-0 mt-0.5" />
@@ -217,6 +255,17 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
                 {excludedCount} excluded expense{excludedCount > 1 ? 's' : ''}
               </span>{' '}
               will be skipped. Excluded items are not updated by this action.
+            </div>
+          </div>
+        )}
+        {endedCount > 0 && (
+          <div className="flex items-start gap-3">
+            <EyeOff className="h-5 w-5 text-slate-600 dark:text-slate-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold text-slate-700 dark:text-slate-300">
+                {endedCount} ended expense{endedCount > 1 ? 's' : ''}
+              </span>{' '}
+              will be skipped. Ended items are not updated by this action.
             </div>
           </div>
         )}
@@ -231,10 +280,18 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
     {
       label: 'Mark as Paid',
       isDisabled: !canManageExpenses,
-      // Hide this action when exactly one excluded item is selected because
-      // renewal is skipped for excluded items and the due date would not change.
-      isHidden: (selectedItems: Expense[]) =>
-        selectedItems.length === 1 && selectedItems[0].excludeFromCalcs,
+      // Hide this action when all selected items are non-actionable.
+      // Excluded or ended items are skipped and would not change due dates.
+      isHidden: (selectedItems: Expense[]) => {
+        if (selectedItems.length === 0) {
+          return false;
+        }
+
+        const { actionableExpenses } =
+          splitExpensesByActionability(selectedItems);
+
+        return actionableExpenses.length === 0;
+      },
       onClick: async (selectedItems: Expense[]) => {
         setPendingExpenses(selectedItems);
         setShowConfirmation(true);
