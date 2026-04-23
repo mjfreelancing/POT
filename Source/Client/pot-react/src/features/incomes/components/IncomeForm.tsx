@@ -78,22 +78,26 @@ function IncomeForm({
   isEditMode = false,
 }: IncomeFormProps) {
   const { pickerDate, syncPickerDate } = useEndDatePicker(form);
+  const frequency = form.watch('frequency');
+  const frequencyCount = form.watch('frequencyCount');
+
   useEffect(() => {
     if (isEditMode) {
       form.setFocus('amount');
     }
   }, [isEditMode, form]);
 
-  // Watch for frequency changes to handle One Time frequency
+  // Keep frequency count aligned with selected frequency mode.
   useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === 'frequency' && value.frequency === Frequency.OneTime) {
-        form.setValue('frequencyCount', 0);
-      }
-    });
+    if (frequency === Frequency.OneTime && frequencyCount !== 0) {
+      form.setValue('frequencyCount', 0, { shouldValidate: true });
+      return;
+    }
 
-    return () => subscription.unsubscribe();
-  }, [form]);
+    if (frequency !== Frequency.OneTime && frequencyCount === 0) {
+      form.setValue('frequencyCount', 1, { shouldValidate: true });
+    }
+  }, [form, frequency, frequencyCount]);
 
   return (
     <Form {...form}>

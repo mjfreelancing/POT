@@ -116,6 +116,7 @@ function ExpenseForm({
     syncPickerDate: syncAccrualStartPickerDate,
   } = useAccrualStartPicker(form);
   const frequency = form.watch('frequency');
+  const frequencyCount = form.watch('frequencyCount');
   const accrualPolicy = form.watch('accrualPolicy');
   const accrualStart = form.watch('accrualStart');
   const lastAutomaticAccrualStartRef = useRef<string | undefined>(
@@ -128,12 +129,17 @@ function ExpenseForm({
     }
   }, [isEditMode, form]);
 
-  // Keep frequency count valid for One Time frequency.
+  // Keep frequency count aligned with selected frequency mode.
   useEffect(() => {
-    if (frequency === Frequency.OneTime) {
+    if (frequency === Frequency.OneTime && frequencyCount !== 0) {
       form.setValue('frequencyCount', 0, { shouldValidate: true });
+      return;
     }
-  }, [form, frequency]);
+
+    if (frequency !== Frequency.OneTime && frequencyCount === 0) {
+      form.setValue('frequencyCount', 1, { shouldValidate: true });
+    }
+  }, [form, frequency, frequencyCount]);
 
   useEffect(() => {
     if (accrualPolicy === AccrualPolicy.Automatic) {
