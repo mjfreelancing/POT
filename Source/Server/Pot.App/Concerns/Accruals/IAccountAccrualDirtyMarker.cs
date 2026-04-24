@@ -15,6 +15,9 @@ public interface IAccountAccrualDirtyMarker : IPotScopedDependency
     // Marks the account as dirty for accrual recalculation.
     Task MarkDirtyForAccountAsync(AccountEntity account, CancellationToken cancellationToken);
 
+    // Clears account dirty state and stamps the last accrued date after successful accrual completion.
+    Task ClearDirtyOnAccrualSuccessAsync(AccountEntity account, DateOnly asOfDate, CancellationToken cancellationToken);
+
     // Marks the accounts as dirty for accrual recalculation based on the expenses.
     Task MarkDirtyForExpensesAsync(IReadOnlyCollection<ExpenseEntity> expenses, CancellationToken cancellationToken);
 }

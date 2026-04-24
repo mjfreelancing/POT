@@ -281,6 +281,141 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
         }
     }
 
+    public class ClearDirtyOnAccrualSuccessAsync : AccountAccrualDirtyMarkerFixture
+    {
+        [Fact]
+        public async Task Should_LogCall_When_Clearing_Dirty_On_Accrual_Success()
+        {
+            using var context = CreateTestContext();
+
+            var account = context.AddAccount("Clear Dirty Logging Account");
+
+            await context.Marker.ClearDirtyOnAccrualSuccessAsync(account, new DateOnly(2026, 5, 1), CancellationToken.None);
+
+            context.LogCollector.ShouldContainLogCall(
+                category: typeof(AccountAccrualDirtyMarker).FullName!,
+                callerName: nameof(AccountAccrualDirtyMarker.ClearDirtyOnAccrualSuccessAsync),
+                callerType: typeof(AccountAccrualDirtyMarker));
+        }
+
+        [Fact]
+        public async Task Should_Throw_When_Account_Is_Null()
+        {
+            using var context = CreateTestContext();
+
+            var exception = await Should.ThrowAsync<ArgumentNullException>(async () =>
+            {
+                await context.Marker.ClearDirtyOnAccrualSuccessAsync(null!, new DateOnly(2026, 5, 1), CancellationToken.None);
+            });
+
+            exception.ParamName.ShouldBe("account");
+        }
+
+        [Fact]
+        public async Task Should_Add_AccountAccrual_When_Missing_And_Set_Clean_With_Date()
+        {
+            using var context = CreateTestContext();
+
+            var account = context.AddAccount("Clear Dirty Missing Account");
+            var asOfDate = new DateOnly(2026, 5, 1);
+
+            await context.Marker.ClearDirtyOnAccrualSuccessAsync(account, asOfDate, CancellationToken.None);
+
+            var accountAccrualEntry = context.DbContext.ChangeTracker
+                .Entries<AccountAccrualEntity>()
+                .Single();
+
+            accountAccrualEntry.State.ShouldBe(EntityState.Added);
+            accountAccrualEntry.Entity.AccountId.ShouldBe(account.Id);
+            accountAccrualEntry.Entity.AccruedIsDirty.ShouldBeFalse();
+            accountAccrualEntry.Entity.LastAccruedDate.ShouldBe(asOfDate);
+        }
+
+        [Fact]
+        public async Task Should_Update_AccountAccrual_When_Existing_Row_Is_Dirty()
+        {
+            using var context = CreateTestContext();
+
+            var account = context.AddAccount("Clear Dirty Existing Dirty Account");
+            var asOfDate = new DateOnly(2026, 5, 3);
+
+            context.DbContext.AccountAccruals.Add(new AccountAccrualEntity
+            {
+                AccountId = account.Id,
+                Account = account,
+                AccruedIsDirty = true,
+                LastAccruedDate = new DateOnly(2026, 4, 30)
+            });
+
+            await context.DbContext.SaveChangesAsync();
+            context.DbContext.ChangeTracker.Clear();
+
+            await context.Marker.ClearDirtyOnAccrualSuccessAsync(account, asOfDate, CancellationToken.None);
+
+            var accountAccrualEntry = context.DbContext.ChangeTracker
+                .Entries<AccountAccrualEntity>()
+                .Single();
+
+            accountAccrualEntry.State.ShouldBe(EntityState.Modified);
+            accountAccrualEntry.Entity.AccruedIsDirty.ShouldBeFalse();
+            accountAccrualEntry.Entity.LastAccruedDate.ShouldBe(asOfDate);
+        }
+
+        [Fact]
+        public async Task Should_Update_AccountAccrual_When_LastAccruedDate_Differs()
+        {
+            using var context = CreateTestContext();
+
+            var account = context.AddAccount("Clear Dirty Existing Clean Old Date Account");
+            var asOfDate = new DateOnly(2026, 5, 4);
+
+            context.DbContext.AccountAccruals.Add(new AccountAccrualEntity
+            {
+                AccountId = account.Id,
+                Account = account,
+                AccruedIsDirty = false,
+                LastAccruedDate = new DateOnly(2026, 5, 1)
+            });
+
+            await context.DbContext.SaveChangesAsync();
+            context.DbContext.ChangeTracker.Clear();
+
+            await context.Marker.ClearDirtyOnAccrualSuccessAsync(account, asOfDate, CancellationToken.None);
+
+            var accountAccrualEntry = context.DbContext.ChangeTracker
+                .Entries<AccountAccrualEntity>()
+                .Single();
+
+            accountAccrualEntry.State.ShouldBe(EntityState.Modified);
+            accountAccrualEntry.Entity.AccruedIsDirty.ShouldBeFalse();
+            accountAccrualEntry.Entity.LastAccruedDate.ShouldBe(asOfDate);
+        }
+
+        [Fact]
+        public async Task Should_Not_Modify_AccountAccrual_When_Already_Clean_And_Date_Matches()
+        {
+            using var context = CreateTestContext();
+
+            var account = context.AddAccount("Clear Dirty Existing Clean Current Date Account");
+            var asOfDate = new DateOnly(2026, 5, 5);
+
+            context.DbContext.AccountAccruals.Add(new AccountAccrualEntity
+            {
+                AccountId = account.Id,
+                Account = account,
+                AccruedIsDirty = false,
+                LastAccruedDate = asOfDate
+            });
+
+            await context.DbContext.SaveChangesAsync();
+            context.DbContext.ChangeTracker.Clear();
+
+            await context.Marker.ClearDirtyOnAccrualSuccessAsync(account, asOfDate, CancellationToken.None);
+
+            context.DbContext.ChangeTracker.HasChanges().ShouldBeFalse();
+        }
+    }
+
     public class GetAccountIdsToMarkDirty : AccountAccrualDirtyMarkerFixture
     {
         [Fact]

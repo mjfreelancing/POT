@@ -59,6 +59,37 @@ internal sealed class AccountAccrualDirtyMarker : IAccountAccrualDirtyMarker
         return MarkDirtyForAccountsAsync([account], cancellationToken);
     }
 
+    public async Task ClearDirtyOnAccrualSuccessAsync(AccountEntity account, DateOnly asOfDate, CancellationToken cancellationToken)
+    {
+        _logger.LogCall(this);
+
+        _ = account.WhenNotNull();
+
+        var accountAccrual = await _accountAccrualRepository.AccountAccruals
+            .SingleOrDefaultAsync(item => item.AccountId == account.Id, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (accountAccrual is null)
+        {
+            _accountAccrualRepository.Add(new AccountAccrualEntity
+            {
+                AccountId = account.Id,
+                AccruedIsDirty = false,
+                LastAccruedDate = asOfDate
+            });
+
+            return;
+        }
+
+        if (accountAccrual.AccruedIsDirty || accountAccrual.LastAccruedDate != asOfDate)
+        {
+            accountAccrual.AccruedIsDirty = false;
+            accountAccrual.LastAccruedDate = asOfDate;
+
+            _accountAccrualRepository.Update(accountAccrual);
+        }
+    }
+
     public Task MarkDirtyForExpensesAsync(IReadOnlyCollection<ExpenseEntity> expenses, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
