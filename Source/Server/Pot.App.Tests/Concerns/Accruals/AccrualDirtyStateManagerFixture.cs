@@ -771,6 +771,30 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
         }
 
         [Fact]
+        public void Should_Return_Empty_When_Reassigned_And_Both_States_Are_Ended_OneTime()
+        {
+            using var context = CreateTestContext();
+
+            var asOfDate = new DateOnly(2026, 2, 10);
+            var before = CreateDirtyState(accountId: 31, mutate: state => state with
+            {
+                Frequency = Frequency.OneTime,
+                EndDate = new DateOnly(2026, 2, 8)
+            });
+
+            var after = CreateDirtyState(accountId: 32, mutate: state => state with
+            {
+                Frequency = Frequency.OneTime,
+                EndDate = new DateOnly(2026, 2, 9),
+                Amount = 180.0d
+            });
+
+            var accountIds = context.Marker.GetAccountsRequiringRecalc(before, after, asOfDate);
+
+            accountIds.ShouldBeEmpty();
+        }
+
+        [Fact]
         public void Should_Return_Single_Account_When_Frequency_Changes_To_OneTime_With_Past_Due_And_No_EndDate()
         {
             using var context = CreateTestContext();
@@ -929,6 +953,19 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
             var expense = EntityFactory.CreateExpense(account, false, "Delete Impact OneTime After Expense", 25.0d, "2026-01-01", "2026-02-01", "2026-02-10", Frequency.OneTime, 1);
 
             var result = context.Marker.IsExpenseDeletionImpactful(expense, new DateOnly(2026, 2, 9));
+
+            result.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void Should_Return_True_When_OneTime_EndDate_Is_Null()
+        {
+            using var context = CreateTestContext();
+
+            var account = context.AddAccount("Delete Impact OneTime Null EndDate Account");
+            var expense = EntityFactory.CreateExpense(account, false, "Delete Impact OneTime Null EndDate Expense", 25.0d, "2026-01-01", "2026-02-01", null, Frequency.OneTime, 1);
+
+            var result = context.Marker.IsExpenseDeletionImpactful(expense, new DateOnly(2026, 2, 10));
 
             result.ShouldBeTrue();
         }

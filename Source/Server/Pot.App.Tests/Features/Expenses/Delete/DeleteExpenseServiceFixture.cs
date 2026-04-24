@@ -285,6 +285,78 @@ public class DeleteExpenseServiceFixture : PotFixtureBase
 
             accountAccrual.AccruedIsDirty.ShouldBeTrue();
         }
+
+        [Fact]
+        public async Task Should_Not_Mark_AccountAccrual_Dirty_When_Deleting_OneTime_Ended_Expense_Before_AsOfDate_And_Account_Has_Other_Expenses()
+        {
+            using var context = CreateTestContext();
+
+            var account = context.AddAccount("OneTime Ended Before Expense Account");
+            var expenseToDelete = context.AddExpense(account, "OneTime Ended Before Expense To Delete", excludeFromCalcs: false);
+            expenseToDelete.Frequency = Frequency.OneTime;
+            expenseToDelete.EndDate = new DateOnly(2026, 1, 31);
+            _ = context.AddExpense(account, "Expense To Keep", excludeFromCalcs: false);
+            _ = context.AddAccountAccrual(account, isDirty: false);
+
+            await context.DbContext.SaveChangesAsync();
+
+            var result = await context.Service.DeleteExpenseAsync(expenseToDelete.RowId, CancellationToken.None);
+
+            result.IsSuccess.ShouldBeTrue();
+            context.DbContext.Expenses.Count(item => item.Account.Id == account.Id).ShouldBe(1);
+
+            var accountAccrual = context.DbContext.AccountAccruals.Single(item => item.AccountId == account.Id);
+
+            accountAccrual.AccruedIsDirty.ShouldBeFalse();
+        }
+
+        [Fact]
+        public async Task Should_Mark_AccountAccrual_Dirty_When_Deleting_OneTime_Expense_Ending_On_AsOfDate_And_Account_Has_Other_Expenses()
+        {
+            using var context = CreateTestContext();
+
+            var account = context.AddAccount("OneTime Equal EndDate Expense Account");
+            var expenseToDelete = context.AddExpense(account, "OneTime Equal EndDate Expense To Delete", excludeFromCalcs: false);
+            expenseToDelete.Frequency = Frequency.OneTime;
+            expenseToDelete.EndDate = new DateOnly(2026, 2, 1);
+            _ = context.AddExpense(account, "Expense To Keep", excludeFromCalcs: false);
+            _ = context.AddAccountAccrual(account, isDirty: false);
+
+            await context.DbContext.SaveChangesAsync();
+
+            var result = await context.Service.DeleteExpenseAsync(expenseToDelete.RowId, CancellationToken.None);
+
+            result.IsSuccess.ShouldBeTrue();
+            context.DbContext.Expenses.Count(item => item.Account.Id == account.Id).ShouldBe(1);
+
+            var accountAccrual = context.DbContext.AccountAccruals.Single(item => item.AccountId == account.Id);
+
+            accountAccrual.AccruedIsDirty.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task Should_Mark_AccountAccrual_Dirty_When_Deleting_OneTime_Expense_Ending_After_AsOfDate_And_Account_Has_Other_Expenses()
+        {
+            using var context = CreateTestContext();
+
+            var account = context.AddAccount("OneTime After EndDate Expense Account");
+            var expenseToDelete = context.AddExpense(account, "OneTime After EndDate Expense To Delete", excludeFromCalcs: false);
+            expenseToDelete.Frequency = Frequency.OneTime;
+            expenseToDelete.EndDate = new DateOnly(2026, 2, 2);
+            _ = context.AddExpense(account, "Expense To Keep", excludeFromCalcs: false);
+            _ = context.AddAccountAccrual(account, isDirty: false);
+
+            await context.DbContext.SaveChangesAsync();
+
+            var result = await context.Service.DeleteExpenseAsync(expenseToDelete.RowId, CancellationToken.None);
+
+            result.IsSuccess.ShouldBeTrue();
+            context.DbContext.Expenses.Count(item => item.Account.Id == account.Id).ShouldBe(1);
+
+            var accountAccrual = context.DbContext.AccountAccruals.Single(item => item.AccountId == account.Id);
+
+            accountAccrual.AccruedIsDirty.ShouldBeTrue();
+        }
     }
 
     private static TestContext CreateTestContext()
