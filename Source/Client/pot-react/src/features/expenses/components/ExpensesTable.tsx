@@ -38,6 +38,7 @@ import {
 } from '@/lib';
 
 import { renewExpenses, toggleExcludeExpenses } from '../bulkActions';
+import { shouldHideMarkAsPaidAction } from '../utils/expenseActionability';
 import { splitExpensesByActionability } from '../utils/splitExpensesByActionability';
 import ExpenseActions from './ExpenseActions';
 
@@ -283,14 +284,7 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
       // Hide this action when all selected items are non-actionable.
       // Excluded or ended items are skipped and would not change due dates.
       isHidden: (selectedItems: Expense[]) => {
-        if (selectedItems.length === 0) {
-          return false;
-        }
-
-        const { actionableExpenses } =
-          splitExpensesByActionability(selectedItems);
-
-        return actionableExpenses.length === 0;
+        return shouldHideMarkAsPaidAction(selectedItems);
       },
       onClick: async (selectedItems: Expense[]) => {
         setPendingExpenses(selectedItems);

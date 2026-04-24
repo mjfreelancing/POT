@@ -42,7 +42,7 @@ import {
 
 import { renewExpenses, toggleExcludeExpenses } from '../bulkActions';
 import useDeleteExpense from '../delete/hooks/useDeleteExpense';
-import { splitExpensesByActionability } from '../utils/splitExpensesByActionability';
+import { getSingleExpenseActionability } from '../utils/expenseActionability';
 
 type ExpenseMobileCardProps = {
   expense: Expense;
@@ -112,16 +112,13 @@ function ExpenseMobileCard({ expense }: ExpenseMobileCardProps) {
   const isEndedForDisplay = endDate ? getDaysDue(endDate) < 0 : false;
   const { borderClass, bgClass } = getUrgencyStyle(days);
 
-  // Wrap the current item in a single-item array so mobile and table flows
-  // share the same actionability rules (excluded/ended/due-today/future/overdue) in one place.
-  const { excludedExpenses, endedExpenses, dueTodayExpenses, overdueExpenses } =
-    splitExpensesByActionability([expense]);
-
-  const isExcludedForAction = excludedExpenses.length > 0;
-  const isEndedForAction = endedExpenses.length > 0;
-  const isDueTodayForAction = dueTodayExpenses.length > 0;
-  const isOverdueForAction = overdueExpenses.length > 0;
-  const canMarkAsPaid = !isExcludedForAction && !isEndedForAction;
+  const {
+    canMarkAsPaid,
+    isExcludedForAction,
+    isEndedForAction,
+    isDueTodayForAction,
+    isOverdueForAction,
+  } = getSingleExpenseActionability(expense);
   const isActionInProgress = isRenewing || isTogglingExclusion;
 
   function getMarkAsPaidConfirmationMessage(): React.ReactNode {

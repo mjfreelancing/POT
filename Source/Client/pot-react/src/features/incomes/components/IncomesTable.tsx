@@ -31,6 +31,7 @@ import {
 } from '@/lib';
 
 import { renewIncomes, toggleExcludeIncomes } from '../bulkActions';
+import { shouldHideMarkAsReceivedAction } from '../utils/incomeActionability';
 import { splitIncomesByActionability } from '../utils/splitIncomesByActionability';
 import IncomeActions from './IncomeActions';
 
@@ -256,14 +257,7 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
       // Hide this action when all selected items are non-actionable.
       // Excluded or ended items are skipped and would not change due dates.
       isHidden: (selectedItems: Income[]) => {
-        if (selectedItems.length === 0) {
-          return false;
-        }
-
-        const { actionableIncomes } =
-          splitIncomesByActionability(selectedItems);
-
-        return actionableIncomes.length === 0;
+        return shouldHideMarkAsReceivedAction(selectedItems);
       },
       onClick: async (selectedItems: Income[]) => {
         setPendingIncomes(selectedItems);

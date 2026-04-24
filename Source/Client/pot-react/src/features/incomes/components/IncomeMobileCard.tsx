@@ -39,7 +39,7 @@ import {
 
 import { renewIncomes, toggleExcludeIncomes } from '../bulkActions';
 import useDeleteIncome from '../delete/hooks/useDeleteIncome';
-import { splitIncomesByActionability } from '../utils/splitIncomesByActionability';
+import { getSingleIncomeActionability } from '../utils/incomeActionability';
 
 type IncomeMobileCardProps = {
   income: Income;
@@ -106,16 +106,13 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
   const isEndedForDisplay = endDate ? getDaysDue(endDate) < 0 : false;
   const { borderClass, bgClass } = getUrgencyStyle(days);
 
-  // Wrap the current item in a single-item array so mobile and table flows
-  // share the same actionability rules (excluded/ended/due-today/future/overdue) in one place.
-  const { excludedIncomes, endedIncomes, dueTodayIncomes, overdueIncomes } =
-    splitIncomesByActionability([income]);
-
-  const isExcludedForAction = excludedIncomes.length > 0;
-  const isEndedForAction = endedIncomes.length > 0;
-  const isDueTodayForAction = dueTodayIncomes.length > 0;
-  const isOverdueForAction = overdueIncomes.length > 0;
-  const canMarkAsReceived = !isExcludedForAction && !isEndedForAction;
+  const {
+    canMarkAsReceived,
+    isExcludedForAction,
+    isEndedForAction,
+    isDueTodayForAction,
+    isOverdueForAction,
+  } = getSingleIncomeActionability(income);
   const isActionInProgress = isRenewing || isTogglingExclusion;
 
   function getMarkAsReceivedConfirmationMessage(): React.ReactNode {
