@@ -39,6 +39,17 @@ internal sealed class AccountAccrualDirtyMarker : IAccountAccrualDirtyMarker
         return [before.AccountId, after.AccountId];
     }
 
+    public bool IsDirtyImpactingDelete(ExpenseEntity expense, DateOnly asOfDate)
+    {
+        _logger.LogCall(this);
+
+        _ = expense.WhenNotNull();
+
+        var hasEnded = expense.EndDate.HasValue && expense.EndDate.Value <= asOfDate;
+
+        return !expense.ExcludeFromCalcs && !hasEnded;
+    }
+
     public Task MarkDirtyForAccountAsync(AccountEntity account, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

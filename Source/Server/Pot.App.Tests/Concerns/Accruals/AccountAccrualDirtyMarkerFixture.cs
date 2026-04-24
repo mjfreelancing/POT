@@ -387,6 +387,77 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
         }
     }
 
+    public class IsDirtyImpactingDelete : AccountAccrualDirtyMarkerFixture
+    {
+        [Fact]
+        public void Should_LogCall_When_Checking_Delete_Impact()
+        {
+            using var context = CreateTestContext();
+
+            var account = context.AddAccount("Delete Impact Logging Account");
+            var expense = EntityFactory.CreateExpense(account, false, "Delete Impact Logging Expense", 25.0d, "2026-01-01", "2026-02-01", null, Frequency.Months, 1);
+
+            _ = context.Marker.IsDirtyImpactingDelete(expense, new DateOnly(2026, 1, 15));
+
+            context.LogCollector.ShouldContainLogCall(
+                category: typeof(AccountAccrualDirtyMarker).FullName!,
+                callerName: nameof(AccountAccrualDirtyMarker.IsDirtyImpactingDelete),
+                callerType: typeof(AccountAccrualDirtyMarker));
+        }
+
+        [Fact]
+        public void Should_Throw_When_Expense_Is_Null()
+        {
+            using var context = CreateTestContext();
+
+            var exception = Should.Throw<ArgumentNullException>(() =>
+            {
+                _ = context.Marker.IsDirtyImpactingDelete(null!, new DateOnly(2026, 1, 15));
+            });
+
+            exception.ParamName.ShouldBe("expense");
+        }
+
+        [Fact]
+        public void Should_Return_True_When_Not_Excluded_And_Not_Ended()
+        {
+            using var context = CreateTestContext();
+
+            var account = context.AddAccount("Delete Impact Active Account");
+            var expense = EntityFactory.CreateExpense(account, false, "Delete Impact Active Expense", 25.0d, "2026-01-01", "2026-02-01", "2026-02-15", Frequency.Months, 1);
+
+            var result = context.Marker.IsDirtyImpactingDelete(expense, new DateOnly(2026, 2, 14));
+
+            result.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void Should_Return_False_When_Excluded()
+        {
+            using var context = CreateTestContext();
+
+            var account = context.AddAccount("Delete Impact Excluded Account");
+            var expense = EntityFactory.CreateExpense(account, true, "Delete Impact Excluded Expense", 25.0d, "2026-01-01", "2026-02-01", null, Frequency.Months, 1);
+
+            var result = context.Marker.IsDirtyImpactingDelete(expense, new DateOnly(2026, 2, 1));
+
+            result.ShouldBeFalse();
+        }
+
+        [Fact]
+        public void Should_Return_False_When_Ended_On_Or_Before_AsOfDate()
+        {
+            using var context = CreateTestContext();
+
+            var account = context.AddAccount("Delete Impact Ended Account");
+            var expense = EntityFactory.CreateExpense(account, false, "Delete Impact Ended Expense", 25.0d, "2026-01-01", "2026-02-01", "2026-02-10", Frequency.Months, 1);
+
+            var result = context.Marker.IsDirtyImpactingDelete(expense, new DateOnly(2026, 2, 10));
+
+            result.ShouldBeFalse();
+        }
+    }
+
     private static TestContext CreateTestContext()
     {
         var dbOptions = new DbContextOptionsBuilder<PotDbContext>()
