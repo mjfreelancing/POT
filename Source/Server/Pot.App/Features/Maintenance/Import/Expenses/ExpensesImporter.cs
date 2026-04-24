@@ -98,8 +98,6 @@ internal sealed class ExpensesImporter : IExpensesImporter
 
             // Not imported - all calculations would need to be refreshed anyway
             // Accrued = import.Accrued,
-            // AccruedIsDirty = import.AccruedIsDirty,
-            // LastAccruedUpdate = import.LastAccruedUpdate,
         };
 
         var createResult = await _createExpenseService
@@ -132,8 +130,6 @@ internal sealed class ExpensesImporter : IExpensesImporter
 
             // Not imported - all calculations would need to be refreshed anyway
             // Accrued = import.Accrued,
-            // AccruedIsDirty = import.AccruedIsDirty,
-            // LastAccruedUpdate = import.LastAccruedUpdate,
         };
 
         var updateResult = await _updateExpenseService

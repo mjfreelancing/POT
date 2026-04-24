@@ -22,10 +22,10 @@ Status legend:
 | 006 | Login long-wait progress feedback                          | Complete | High     | 2026-04-06   | [Login Long-Wait Progress Feedback Plan](006-login-long-wait-progress-feedback.md)                                          | Keep normal login behavior, but for rare long waits show non-blocking progress updates every 5 seconds until a 2 minute login-only timeout.                          |
 | 007 | Docker build performance and selective local workflows     | Planned  | High     | 2026-04-08   | [Docker Build Performance and Selective Local Workflows PRD](007-docker-build-performance-and-selective-local-workflows.md) | Reduce Docker build times by excluding test graph from runtime image builds, enabling cache-first task defaults, and adding server-only/client-only local workflows. |
 | 008 | Authentication abuse protection and lockout policy         | Proposed | High     | 2026-04-11   | [Authentication Abuse Protection and Lockout Policy (Draft)](008-authentication-abuse-protection-and-lockout-policy.md)     | Define post-session-architecture brute-force and credential-stuffing protections, lockout policy options, auditability, and operational response controls.           |
-| 009 | Accrual dirty-flag rules and UI status accuracy            | Planning | High     | 2026-04-18   | [Accrual Dirty Flag Rules And UI Status PRD](009-accrual-dirty-flag-rules-and-ui-status-prd.md)                             | Define explicit dirty-trigger semantics, reduce false update notices, and align status signals with account-level accrual recalculation requirements.                |
+| 009 | Accrual dirty-flag rules and UI status accuracy            | Complete | High     | 2026-04-25   | [Accrual Dirty Flag Rules And UI Status PRD](009-accrual-dirty-flag-rules-and-ui-status-prd.md)                             | Define explicit dirty-trigger semantics, reduce false update notices, and align status signals with account-level accrual recalculation requirements.                |
 
 ## Notes
 
 - This folder is intentionally implementation-planning focused.
 - Keep one row per feature and link to a dedicated detail document when available.
-- Current date of this index update: 2026-04-18.
+- Current date of this index update: 2026-04-25.

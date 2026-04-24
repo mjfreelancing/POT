@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Pot.App.Concerns.Accruals.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.AccountAccrual;
+using Pot.Shared.Enumerations;
 
 namespace Pot.App.Concerns.Accruals;
 
@@ -19,7 +20,7 @@ internal sealed class AccrualDirtyStateManager : IAccrualDirtyStateManager
         _logger = logger.WhenNotNull();
     }
 
-    public int[] GetAccountsRequiringRecalc(ExpenseAccrualState before, ExpenseAccrualState after)
+    public int[] GetAccountsRequiringRecalc(ExpenseAccrualState before, ExpenseAccrualState after, DateOnly asOfDate)
     {
         _logger.LogCall(this);
 
@@ -32,6 +33,14 @@ internal sealed class AccrualDirtyStateManager : IAccrualDirtyStateManager
         }
 
         if (before.ExcludeFromCalcs && after.ExcludeFromCalcs)
+        {
+            return [];
+        }
+
+        var beforeHasEnded = HasEndedForDirtyImpact(before.Frequency, before.EndDate, asOfDate);
+        var afterHasEnded = HasEndedForDirtyImpact(after.Frequency, after.EndDate, asOfDate);
+
+        if (beforeHasEnded && afterHasEnded)
         {
             return [];
         }
@@ -50,7 +59,7 @@ internal sealed class AccrualDirtyStateManager : IAccrualDirtyStateManager
 
         _ = expense.WhenNotNull();
 
-        var hasEnded = expense.EndDate.HasValue && expense.EndDate.Value <= asOfDate;
+        var hasEnded = HasEndedForDirtyImpact(expense.Frequency, expense.EndDate, asOfDate);
 
         return !expense.ExcludeFromCalcs && !hasEnded;
     }
@@ -163,5 +172,12 @@ internal sealed class AccrualDirtyStateManager : IAccrualDirtyStateManager
                 _accountAccrualRepository.Update(accountAccrual);
             }
         }
+    }
+
+    private static bool HasEndedForDirtyImpact(Frequency frequency, DateOnly? endDate, DateOnly asOfDate)
+    {
+        return frequency == Frequency.OneTime &&
+               endDate.HasValue &&
+               endDate.Value < asOfDate;
     }
 }

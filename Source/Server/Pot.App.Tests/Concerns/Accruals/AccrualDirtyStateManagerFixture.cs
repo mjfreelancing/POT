@@ -506,8 +506,9 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
 
             var before = CreateDirtyState(accountId: 15);
             var after = CreateDirtyState(accountId: 15);
+            var asOfDate = new DateOnly(2026, 2, 1);
 
-            _ = context.Marker.GetAccountsRequiringRecalc(before, after);
+            _ = context.Marker.GetAccountsRequiringRecalc(before, after, asOfDate);
 
             context.LogCollector.ShouldContainLogCall(
                 category: typeof(AccrualDirtyStateManager).FullName!,
@@ -524,7 +525,7 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
             {
                 var after = CreateDirtyState(accountId: 11);
 
-                _ = context.Marker.GetAccountsRequiringRecalc(null!, after);
+                _ = context.Marker.GetAccountsRequiringRecalc(null!, after, new DateOnly(2026, 2, 1));
             });
 
             exception.ParamName.ShouldBe("before");
@@ -539,7 +540,7 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
             {
                 var before = CreateDirtyState(accountId: 11);
 
-                _ = context.Marker.GetAccountsRequiringRecalc(before, null!);
+                _ = context.Marker.GetAccountsRequiringRecalc(before, null!, new DateOnly(2026, 2, 1));
             });
 
             exception.ParamName.ShouldBe("after");
@@ -553,7 +554,7 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
             var before = CreateDirtyState(accountId: 11);
             var after = CreateDirtyState(accountId: 11);
 
-            var accountIds = context.Marker.GetAccountsRequiringRecalc(before, after);
+            var accountIds = context.Marker.GetAccountsRequiringRecalc(before, after, new DateOnly(2026, 2, 1));
 
             accountIds.ShouldBeEmpty();
         }
@@ -566,7 +567,7 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
             var before = CreateDirtyState(accountId: 16, mutate: state => state with { ExcludeFromCalcs = true });
             var after = CreateDirtyState(accountId: 16, mutate: state => state with { ExcludeFromCalcs = true, Amount = 220.0d });
 
-            var accountIds = context.Marker.GetAccountsRequiringRecalc(before, after);
+            var accountIds = context.Marker.GetAccountsRequiringRecalc(before, after, new DateOnly(2026, 2, 1));
 
             accountIds.ShouldBeEmpty();
         }
@@ -579,7 +580,7 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
             var before = CreateDirtyState(accountId: 12);
             var after = CreateDirtyState(accountId: 12, mutate: state => state with { Amount = 220.0d });
 
-            var accountIds = context.Marker.GetAccountsRequiringRecalc(before, after);
+            var accountIds = context.Marker.GetAccountsRequiringRecalc(before, after, new DateOnly(2026, 2, 1));
 
             accountIds.ShouldBe([12]);
         }
@@ -592,9 +593,229 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
             var before = CreateDirtyState(accountId: 13);
             var after = CreateDirtyState(accountId: 14);
 
-            var accountIds = context.Marker.GetAccountsRequiringRecalc(before, after);
+            var accountIds = context.Marker.GetAccountsRequiringRecalc(before, after, new DateOnly(2026, 2, 1));
 
             accountIds.ShouldBe([13, 14]);
+        }
+
+        [Fact]
+        public void Should_Return_Empty_When_Both_States_Are_Ended_OneTime()
+        {
+            using var context = CreateTestContext();
+
+            var asOfDate = new DateOnly(2026, 2, 10);
+            var before = CreateDirtyState(accountId: 17, mutate: state => state with
+            {
+                Frequency = Frequency.OneTime,
+                EndDate = new DateOnly(2026, 2, 8)
+            });
+
+            var after = CreateDirtyState(accountId: 17, mutate: state => state with
+            {
+                Frequency = Frequency.OneTime,
+                EndDate = new DateOnly(2026, 2, 9),
+                Amount = 220.0d
+            });
+
+            var accountIds = context.Marker.GetAccountsRequiringRecalc(before, after, asOfDate);
+
+            accountIds.ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void Should_Return_Single_Account_When_Both_States_Are_OneTime_And_EndDate_Equals_AsOfDate()
+        {
+            using var context = CreateTestContext();
+
+            var asOfDate = new DateOnly(2026, 2, 10);
+            var before = CreateDirtyState(accountId: 21, mutate: state => state with
+            {
+                Frequency = Frequency.OneTime,
+                EndDate = asOfDate,
+                Amount = 120.0d
+            });
+
+            var after = CreateDirtyState(accountId: 21, mutate: state => state with
+            {
+                Frequency = Frequency.OneTime,
+                EndDate = asOfDate,
+                Amount = 180.0d
+            });
+
+            var accountIds = context.Marker.GetAccountsRequiringRecalc(before, after, asOfDate);
+
+            accountIds.ShouldBe([21]);
+        }
+
+        [Fact]
+        public void Should_Return_Single_Account_When_Both_States_Are_OneTime_And_EndDate_After_AsOfDate()
+        {
+            using var context = CreateTestContext();
+
+            var asOfDate = new DateOnly(2026, 2, 10);
+            var before = CreateDirtyState(accountId: 22, mutate: state => state with
+            {
+                Frequency = Frequency.OneTime,
+                EndDate = new DateOnly(2026, 2, 11),
+                Amount = 120.0d
+            });
+
+            var after = CreateDirtyState(accountId: 22, mutate: state => state with
+            {
+                Frequency = Frequency.OneTime,
+                EndDate = new DateOnly(2026, 2, 11),
+                Amount = 180.0d
+            });
+
+            var accountIds = context.Marker.GetAccountsRequiringRecalc(before, after, asOfDate);
+
+            accountIds.ShouldBe([22]);
+        }
+
+        [Fact]
+        public void Should_Return_Single_Account_When_Before_Ended_OneTime_And_After_EndDate_Equals_AsOfDate()
+        {
+            using var context = CreateTestContext();
+
+            var asOfDate = new DateOnly(2026, 2, 10);
+            var before = CreateDirtyState(accountId: 23, mutate: state => state with
+            {
+                Frequency = Frequency.OneTime,
+                EndDate = new DateOnly(2026, 2, 9),
+                Amount = 120.0d
+            });
+
+            var after = CreateDirtyState(accountId: 23, mutate: state => state with
+            {
+                Frequency = Frequency.OneTime,
+                EndDate = asOfDate,
+                Amount = 180.0d
+            });
+
+            var accountIds = context.Marker.GetAccountsRequiringRecalc(before, after, asOfDate);
+
+            accountIds.ShouldBe([23]);
+        }
+
+        [Fact]
+        public void Should_Return_Single_Account_When_Before_EndDate_Equals_AsOfDate_And_After_Ended_OneTime()
+        {
+            using var context = CreateTestContext();
+
+            var asOfDate = new DateOnly(2026, 2, 10);
+            var before = CreateDirtyState(accountId: 24, mutate: state => state with
+            {
+                Frequency = Frequency.OneTime,
+                EndDate = asOfDate,
+                Amount = 120.0d
+            });
+
+            var after = CreateDirtyState(accountId: 24, mutate: state => state with
+            {
+                Frequency = Frequency.OneTime,
+                EndDate = new DateOnly(2026, 2, 9),
+                Amount = 180.0d
+            });
+
+            var accountIds = context.Marker.GetAccountsRequiringRecalc(before, after, asOfDate);
+
+            accountIds.ShouldBe([24]);
+        }
+
+        [Fact]
+        public void Should_Return_Single_Account_When_NonOneTime_And_EndDate_Before_AsOfDate()
+        {
+            using var context = CreateTestContext();
+
+            var asOfDate = new DateOnly(2026, 2, 10);
+            var before = CreateDirtyState(accountId: 25, mutate: state => state with
+            {
+                Frequency = Frequency.Months,
+                EndDate = new DateOnly(2026, 2, 9),
+                Amount = 120.0d
+            });
+
+            var after = CreateDirtyState(accountId: 25, mutate: state => state with
+            {
+                Frequency = Frequency.Months,
+                EndDate = new DateOnly(2026, 2, 9),
+                Amount = 180.0d
+            });
+
+            var accountIds = context.Marker.GetAccountsRequiringRecalc(before, after, asOfDate);
+
+            accountIds.ShouldBe([25]);
+        }
+
+        [Fact]
+        public void Should_Return_Both_Accounts_When_Reassigned_And_Both_OneTime_EndDate_Equals_AsOfDate()
+        {
+            using var context = CreateTestContext();
+
+            var asOfDate = new DateOnly(2026, 2, 10);
+            var before = CreateDirtyState(accountId: 26, mutate: state => state with
+            {
+                Frequency = Frequency.OneTime,
+                EndDate = asOfDate
+            });
+
+            var after = CreateDirtyState(accountId: 27, mutate: state => state with
+            {
+                Frequency = Frequency.OneTime,
+                EndDate = asOfDate
+            });
+
+            var accountIds = context.Marker.GetAccountsRequiringRecalc(before, after, asOfDate);
+
+            accountIds.ShouldBe([26, 27]);
+        }
+
+        [Fact]
+        public void Should_Return_Single_Account_When_Frequency_Changes_To_OneTime_With_Past_Due_And_No_EndDate()
+        {
+            using var context = CreateTestContext();
+
+            var asOfDate = new DateOnly(2026, 2, 10);
+            var before = CreateDirtyState(accountId: 18, mutate: state => state with
+            {
+                Frequency = Frequency.Months,
+                NextDue = new DateOnly(2026, 2, 9),
+                EndDate = null
+            });
+
+            var after = CreateDirtyState(accountId: 18, mutate: state => state with
+            {
+                Frequency = Frequency.OneTime,
+                NextDue = new DateOnly(2026, 2, 9),
+                EndDate = null
+            });
+
+            var accountIds = context.Marker.GetAccountsRequiringRecalc(before, after, asOfDate);
+
+            accountIds.ShouldBe([18]);
+        }
+
+        [Fact]
+        public void Should_Return_Both_Accounts_When_Reassigned_And_Only_After_State_Is_Ended_OneTime()
+        {
+            using var context = CreateTestContext();
+
+            var asOfDate = new DateOnly(2026, 2, 10);
+            var before = CreateDirtyState(accountId: 19, mutate: state => state with
+            {
+                Frequency = Frequency.Months,
+                EndDate = null
+            });
+
+            var after = CreateDirtyState(accountId: 20, mutate: state => state with
+            {
+                Frequency = Frequency.OneTime,
+                EndDate = new DateOnly(2026, 2, 9)
+            });
+
+            var accountIds = context.Marker.GetAccountsRequiringRecalc(before, after, asOfDate);
+
+            accountIds.ShouldBe([19, 20]);
         }
 
         private static ExpenseAccrualState CreateDirtyState(int accountId, Func<ExpenseAccrualState, ExpenseAccrualState>? mutate = null)
@@ -674,16 +895,55 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
         }
 
         [Fact]
-        public void Should_Return_False_When_Ended_On_Or_Before_AsOfDate()
+        public void Should_Return_False_When_OneTime_EndDate_Is_Before_AsOfDate()
         {
             using var context = CreateTestContext();
 
-            var account = context.AddAccount("Delete Impact Ended Account");
-            var expense = EntityFactory.CreateExpense(account, false, "Delete Impact Ended Expense", 25.0d, "2026-01-01", "2026-02-01", "2026-02-10", Frequency.Months, 1);
+            var account = context.AddAccount("Delete Impact OneTime Ended Account");
+            var expense = EntityFactory.CreateExpense(account, false, "Delete Impact OneTime Ended Expense", 25.0d, "2026-01-01", "2026-02-01", "2026-02-09", Frequency.OneTime, 1);
 
             var result = context.Marker.IsExpenseDeletionImpactful(expense, new DateOnly(2026, 2, 10));
 
             result.ShouldBeFalse();
+        }
+
+        [Fact]
+        public void Should_Return_True_When_OneTime_EndDate_Equals_AsOfDate()   // The expense has not ended until 'tomorrow'
+        {
+            using var context = CreateTestContext();
+
+            var account = context.AddAccount("Delete Impact OneTime Equal Account");
+            var expense = EntityFactory.CreateExpense(account, false, "Delete Impact OneTime Equal Expense", 25.0d, "2026-01-01", "2026-02-01", "2026-02-10", Frequency.OneTime, 1);
+
+            var result = context.Marker.IsExpenseDeletionImpactful(expense, new DateOnly(2026, 2, 10));
+
+            result.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void Should_Return_True_When_OneTime_EndDate_Is_After_AsOfDate()
+        {
+            using var context = CreateTestContext();
+
+            var account = context.AddAccount("Delete Impact OneTime After Account");
+            var expense = EntityFactory.CreateExpense(account, false, "Delete Impact OneTime After Expense", 25.0d, "2026-01-01", "2026-02-01", "2026-02-10", Frequency.OneTime, 1);
+
+            var result = context.Marker.IsExpenseDeletionImpactful(expense, new DateOnly(2026, 2, 9));
+
+            result.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void Should_Return_True_When_Recurring_EndDate_Is_Before_AsOfDate()
+        {
+            using var context = CreateTestContext();
+
+            var account = context.AddAccount("Delete Impact Recurring Ended Account");
+            var expense = EntityFactory.CreateExpense(account, false, "Delete Impact Recurring Ended Expense", 25.0d, "2026-01-01", "2026-02-01", "2026-02-09", Frequency.Months, 1);
+
+            var result = context.Marker.IsExpenseDeletionImpactful(expense, new DateOnly(2026, 2, 10));
+
+            result.ShouldBeTrue();
         }
     }
 

@@ -7,7 +7,7 @@ namespace Pot.App.Concerns.Accruals;
 public interface IAccrualDirtyStateManager : IPotScopedDependency
 {
     // Returns account Ids that should be marked dirty based on the change in accrual state.
-    int[] GetAccountsRequiringRecalc(ExpenseAccrualState before, ExpenseAccrualState after);
+    int[] GetAccountsRequiringRecalc(ExpenseAccrualState before, ExpenseAccrualState after, DateOnly asOfDate);
 
     // Returns true when deleting the expense impacts account accrual state.
     bool IsExpenseDeletionImpactful(ExpenseEntity expense, DateOnly asOfDate);

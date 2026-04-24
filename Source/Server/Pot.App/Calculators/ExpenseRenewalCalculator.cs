@@ -14,8 +14,6 @@ internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
 
         foreach (var expense in expenses)
         {
-            // Leave expense.AccruedIsDirty in its current state - if it was dirty then the accruals should still be updated
-
             // Frequency.OneTime expenses do not renew
             if (expense.ExcludeFromCalcs || expense.Frequency == Frequency.OneTime)
             {

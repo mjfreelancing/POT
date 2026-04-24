@@ -264,7 +264,7 @@ public class DeleteExpenseServiceFixture : PotFixtureBase
         }
 
         [Fact]
-        public async Task Should_Not_Mark_AccountAccrual_Dirty_When_Deleting_Ended_Expense_And_Account_Has_Other_Expenses()
+        public async Task Should_Mark_AccountAccrual_Dirty_When_Deleting_Recurring_Ended_Expense_And_Account_Has_Other_Expenses()
         {
             using var context = CreateTestContext();
 
@@ -283,7 +283,7 @@ public class DeleteExpenseServiceFixture : PotFixtureBase
 
             var accountAccrual = context.DbContext.AccountAccruals.Single(item => item.AccountId == account.Id);
 
-            accountAccrual.AccruedIsDirty.ShouldBeFalse();
+            accountAccrual.AccruedIsDirty.ShouldBeTrue();
         }
     }
 

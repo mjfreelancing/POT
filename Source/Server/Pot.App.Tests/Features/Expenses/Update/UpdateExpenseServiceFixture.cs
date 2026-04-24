@@ -244,7 +244,7 @@ public class UpdateExpenseServiceFixture : PotFixtureBase
 
             _accrualDirtyStateManagerFake
                 .DidNotReceive()
-                .GetAccountsRequiringRecalc(Arg.Any<ExpenseAccrualState>(), Arg.Any<ExpenseAccrualState>());
+                .GetAccountsRequiringRecalc(Arg.Any<ExpenseAccrualState>(), Arg.Any<ExpenseAccrualState>(), Arg.Any<DateOnly>());
 
             await _expenseRepositoryFake
                 .DidNotReceive()
@@ -282,7 +282,8 @@ public class UpdateExpenseServiceFixture : PotFixtureBase
             _accrualDirtyStateManagerFake
                 .GetAccountsRequiringRecalc(
                     Arg.Do<ExpenseAccrualState>(state => beforeState = state),
-                    Arg.Do<ExpenseAccrualState>(state => afterState = state))
+                    Arg.Do<ExpenseAccrualState>(state => afterState = state),
+                    Arg.Is<DateOnly>(date => date == localDate))
                 .Returns(accountIdsToMarkDirty);
 
             _accrualDirtyStateManagerFake
@@ -346,7 +347,7 @@ public class UpdateExpenseServiceFixture : PotFixtureBase
             _timeProviderFake.GetLocalDateNow().Returns(new DateOnly(2026, 4, 24));
 
             _accrualDirtyStateManagerFake
-                .GetAccountsRequiringRecalc(Arg.Any<ExpenseAccrualState>(), Arg.Any<ExpenseAccrualState>())
+                .GetAccountsRequiringRecalc(Arg.Any<ExpenseAccrualState>(), Arg.Any<ExpenseAccrualState>(), Arg.Any<DateOnly>())
                 .Returns(Array.Empty<int>());
 
             _accrualDirtyStateManagerFake
@@ -393,7 +394,7 @@ public class UpdateExpenseServiceFixture : PotFixtureBase
             _timeProviderFake.GetLocalDateNow().Returns(new DateOnly(2026, 4, 24));
 
             _accrualDirtyStateManagerFake
-                .GetAccountsRequiringRecalc(Arg.Any<ExpenseAccrualState>(), Arg.Any<ExpenseAccrualState>())
+                .GetAccountsRequiringRecalc(Arg.Any<ExpenseAccrualState>(), Arg.Any<ExpenseAccrualState>(), Arg.Any<DateOnly>())
                 .Returns(accountIdsToMarkDirty);
 
             _accrualDirtyStateManagerFake

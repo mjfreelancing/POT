@@ -90,7 +90,7 @@ internal sealed class UpdateExpenseService : IUpdateExpenseService
             UpdateExpenseEntity(expenseToUpdate, input, expenseAccount, localCurrentDate);
 
             var after = GetExpenseAccrualState(expenseToUpdate);
-            var accountIdsToMarkDirty = _accrualDirtyStateManager.GetAccountsRequiringRecalc(before, after);
+            var accountIdsToMarkDirty = _accrualDirtyStateManager.GetAccountsRequiringRecalc(before, after, localCurrentDate);
 
             await _accrualDirtyStateManager
                 .SetAccountsDirtyAsync(accountIdsToMarkDirty, cancellationToken)
