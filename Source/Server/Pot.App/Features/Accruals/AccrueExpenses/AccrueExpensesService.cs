@@ -1,4 +1,4 @@
-﻿using AllOverIt.Assertion;
+using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
@@ -15,18 +15,18 @@ namespace Pot.App.Features.Accruals.AccrueExpenses;
 
 internal sealed class AccrueExpensesService : IAccrueExpensesService
 {
-    private readonly IAccountAccrualDirtyMarker _accountAccrualDirtyMarker;
+    private readonly IAccrualDirtyStateManager _accrualDirtyStateManager;
     private readonly IAccountRepository _accountRepository;
     private readonly IPersistableExpenseRepository _expenseRepository;
     private readonly IAccrueExpenseCalculator _accrueExpenseCalculator;
     private readonly ITimeProvider _timeProvider;
     private readonly ILogger _logger;
 
-    public AccrueExpensesService(IAccountAccrualDirtyMarker accountAccrualDirtyMarker, IAccountRepository accountRepository,
+    public AccrueExpensesService(IAccrualDirtyStateManager accrualDirtyStateManager, IAccountRepository accountRepository,
         IPersistableExpenseRepository expenseRepository, IAccrueExpenseCalculator accrueExpenseCalculator,
         ITimeProvider timeProvider, ILogger<AccrueExpensesService> logger)
     {
-        _accountAccrualDirtyMarker = accountAccrualDirtyMarker.WhenNotNull();
+        _accrualDirtyStateManager = accrualDirtyStateManager.WhenNotNull();
         _accountRepository = accountRepository.WhenNotNull();
         _expenseRepository = expenseRepository.WhenNotNull();
         _accrueExpenseCalculator = accrueExpenseCalculator.WhenNotNull();
@@ -61,8 +61,8 @@ internal sealed class AccrueExpensesService : IAccrueExpensesService
 
                 _accrueExpenseCalculator.AccrueExpenses(account, expenses, localCurrentDate);
 
-                await _accountAccrualDirtyMarker
-                    .ClearDirtyOnAccrualSuccessAsync(account, localCurrentDate, cancellationToken)
+                await _accrualDirtyStateManager
+                    .SetAccountCleanAsync(account.Id, localCurrentDate, cancellationToken)
                     .ConfigureAwait(false);
             }
 

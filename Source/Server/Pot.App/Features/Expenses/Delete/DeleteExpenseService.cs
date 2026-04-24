@@ -1,4 +1,4 @@
-﻿using AllOverIt.Assertion;
+using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.EntityFrameworkCore;
@@ -14,16 +14,16 @@ namespace Pot.App.Features.Expenses.Delete;
 
 internal sealed class DeleteExpenseService : IDeleteExpenseService
 {
-    private readonly IAccountAccrualDirtyMarker _accountAccrualDirtyMarker;
+    private readonly IAccrualDirtyStateManager _accrualDirtyStateManager;
     private readonly IPersistableAccountAccrualRepository _accountAccrualRepository;
     private readonly IPersistableExpenseRepository _expenseRepository;
     private readonly ITimeProvider _timeProvider;
     private readonly ILogger _logger;
 
-    public DeleteExpenseService(IAccountAccrualDirtyMarker accountAccrualDirtyMarker, IPersistableAccountAccrualRepository accountAccrualRepository,
+    public DeleteExpenseService(IAccrualDirtyStateManager accrualDirtyStateManager, IPersistableAccountAccrualRepository accountAccrualRepository,
         IPersistableExpenseRepository expenseRepository, ITimeProvider timeProvider, ILogger<DeleteExpenseService> logger)
     {
-        _accountAccrualDirtyMarker = accountAccrualDirtyMarker.WhenNotNull();
+        _accrualDirtyStateManager = accrualDirtyStateManager.WhenNotNull();
         _accountAccrualRepository = accountAccrualRepository.WhenNotNull();
         _expenseRepository = expenseRepository.WhenNotNull();
         _timeProvider = timeProvider.WhenNotNull();
@@ -70,10 +70,10 @@ internal sealed class DeleteExpenseService : IDeleteExpenseService
             {
                 var localCurrentDate = _timeProvider.GetLocalDateNow();
 
-                if (_accountAccrualDirtyMarker.IsDirtyImpactingDelete(expense, localCurrentDate))
+                if (_accrualDirtyStateManager.IsExpenseDeletionImpactful(expense, localCurrentDate))
                 {
-                    await _accountAccrualDirtyMarker
-                        .MarkDirtyForAccountAsync(expense.Account, cancellationToken)
+                    await _accrualDirtyStateManager
+                        .SetAccountsDirtyAsync([expense.Account.Id], cancellationToken)
                         .ConfigureAwait(false);
                 }
             }

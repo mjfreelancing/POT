@@ -15,16 +15,16 @@ using Shouldly;
 
 namespace Pot.App.Tests.Concerns.Accruals;
 
-public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
+public class AccrualDirtyStateManagerFixture : PotFixtureBase
 {
     private sealed class TestContext : IDisposable
     {
-        public AccountAccrualDirtyMarker Marker { get; }
+        public AccrualDirtyStateManager Marker { get; }
         public PotDbContext DbContext { get; }
         public SiteEntity Site { get; }
         public FakeLogCollector LogCollector { get; }
 
-        public TestContext(AccountAccrualDirtyMarker marker, PotDbContext dbContext, SiteEntity site, FakeLogCollector logCollector)
+        public TestContext(AccrualDirtyStateManager marker, PotDbContext dbContext, SiteEntity site, FakeLogCollector logCollector)
         {
             Marker = marker;
             DbContext = dbContext;
@@ -48,15 +48,23 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
         }
     }
 
-    public class Constructor : AccountAccrualDirtyMarkerFixture
+    public class Constructor : AccrualDirtyStateManagerFixture
     {
+        private readonly IPersistableAccountAccrualRepository _accountAccrualRepositoryFake;
+        private readonly ILogger<AccrualDirtyStateManager> _loggerFake;
+
+        public Constructor()
+        {
+            _accountAccrualRepositoryFake = Substitute.For<IPersistableAccountAccrualRepository>();
+            _loggerFake = Substitute.For<ILogger<AccrualDirtyStateManager>>();
+        }
+
         [Fact]
         public void Should_Throw_When_AccountAccrualRepository_Is_Null()
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
             {
-                var logger = Substitute.For<ILogger<AccountAccrualDirtyMarker>>();
-                _ = new AccountAccrualDirtyMarker(null!, logger);
+                _ = new AccrualDirtyStateManager(null!, _loggerFake);
             });
 
             exception.ParamName.ShouldBe("accountAccrualRepository");
@@ -67,27 +75,26 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
             {
-                var repository = Substitute.For<IPersistableAccountAccrualRepository>();
-                _ = new AccountAccrualDirtyMarker(repository, null!);
+                _ = new AccrualDirtyStateManager(_accountAccrualRepositoryFake, null!);
             });
 
             exception.ParamName.ShouldBe("logger");
         }
     }
 
-    public class MarkDirtyForAccountAsync : AccountAccrualDirtyMarkerFixture
+    public class SetAccountsDirtyAsync_ByAccountIds : AccrualDirtyStateManagerFixture
     {
         [Fact]
-        public async Task Should_Throw_When_Account_Is_Null()
+        public async Task Should_Throw_When_AccountIds_Are_Null()
         {
             using var context = CreateTestContext();
 
             var exception = await Should.ThrowAsync<ArgumentNullException>(async () =>
             {
-                await context.Marker.MarkDirtyForAccountAsync(null!, CancellationToken.None);
+                await context.Marker.SetAccountsDirtyAsync((IReadOnlyCollection<int>)null!, CancellationToken.None);
             });
 
-            exception.ParamName.ShouldBe("account");
+            exception.ParamName.ShouldBe("accountIds");
         }
 
         [Fact]
@@ -97,12 +104,12 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
 
             var account = context.AddAccount("Logging Branch Account");
 
-            await context.Marker.MarkDirtyForAccountAsync(account, CancellationToken.None);
+            await context.Marker.SetAccountsDirtyAsync([account.Id], CancellationToken.None);
 
             context.LogCollector.ShouldContainLogCall(
-                category: typeof(AccountAccrualDirtyMarker).FullName!,
-                callerName: nameof(AccountAccrualDirtyMarker.MarkDirtyForAccountAsync),
-                callerType: typeof(AccountAccrualDirtyMarker));
+                category: typeof(AccrualDirtyStateManager).FullName!,
+                callerName: nameof(AccrualDirtyStateManager.SetAccountsDirtyAsync),
+                callerType: typeof(AccrualDirtyStateManager));
         }
 
         [Fact]
@@ -114,7 +121,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
 
             context.DbContext.AccountAccruals.Count().ShouldBe(0);
 
-            await context.Marker.MarkDirtyForAccountAsync(account, CancellationToken.None);
+            await context.Marker.SetAccountsDirtyAsync([account.Id], CancellationToken.None);
 
             var accountAccrualEntry = context.DbContext.ChangeTracker
                 .Entries<AccountAccrualEntity>()
@@ -144,7 +151,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
             await context.DbContext.SaveChangesAsync();
             context.DbContext.ChangeTracker.Clear();
 
-            await context.Marker.MarkDirtyForAccountAsync(account, CancellationToken.None);
+            await context.Marker.SetAccountsDirtyAsync([account.Id], CancellationToken.None);
 
             var accountAccrualEntry = context.DbContext.ChangeTracker
                 .Entries<AccountAccrualEntity>()
@@ -173,16 +180,34 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
             await context.DbContext.SaveChangesAsync();
             context.DbContext.ChangeTracker.Clear();
 
-            await context.Marker.MarkDirtyForAccountAsync(account, CancellationToken.None);
+            await context.Marker.SetAccountsDirtyAsync([account.Id], CancellationToken.None);
 
             var accountAccrual = await context.DbContext.AccountAccruals.SingleAsync();
 
             accountAccrual.AccruedIsDirty.ShouldBeTrue();
             context.DbContext.ChangeTracker.HasChanges().ShouldBeFalse();
         }
+
+        [Fact]
+        public async Task Should_Normalize_Duplicate_AccountIds_When_Marking_Dirty()
+        {
+            using var context = CreateTestContext();
+
+            var account = context.AddAccount("Duplicate Id Branch Account");
+
+            await context.Marker.SetAccountsDirtyAsync([account.Id, account.Id, account.Id], CancellationToken.None);
+
+            var accountAccrualEntries = context.DbContext.ChangeTracker
+                .Entries<AccountAccrualEntity>()
+                .ToArray();
+
+            accountAccrualEntries.Length.ShouldBe(1);
+            accountAccrualEntries.Single().Entity.AccountId.ShouldBe(account.Id);
+            accountAccrualEntries.Single().Entity.AccruedIsDirty.ShouldBeTrue();
+        }
     }
 
-    public class MarkDirtyForExpensesAsync : AccountAccrualDirtyMarkerFixture
+    public class SetAccountsDirtyAsync_ByExpenses : AccrualDirtyStateManagerFixture
     {
         [Fact]
         public async Task Should_Throw_When_Expenses_Are_Null()
@@ -191,7 +216,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
 
             var exception = await Should.ThrowAsync<ArgumentNullException>(async () =>
             {
-                await context.Marker.MarkDirtyForExpensesAsync(null!, CancellationToken.None);
+                await context.Marker.SetAccountsDirtyAsync((IReadOnlyCollection<ExpenseEntity>)null!, CancellationToken.None);
             });
 
             exception.ParamName.ShouldBe("expenses");
@@ -208,12 +233,12 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
                 EntityFactory.CreateExpense(account, false, "Toggle Logging Expense", 15.0d, "2026-04-01", "2026-04-30", null, Frequency.Months, 1)
             };
 
-            await context.Marker.MarkDirtyForExpensesAsync(expenses, CancellationToken.None);
+            await context.Marker.SetAccountsDirtyAsync(expenses, CancellationToken.None);
 
             context.LogCollector.ShouldContainLogCall(
-                category: typeof(AccountAccrualDirtyMarker).FullName!,
-                callerName: nameof(AccountAccrualDirtyMarker.MarkDirtyForExpensesAsync),
-                callerType: typeof(AccountAccrualDirtyMarker));
+                category: typeof(AccrualDirtyStateManager).FullName!,
+                callerName: nameof(AccrualDirtyStateManager.SetAccountsDirtyAsync),
+                callerType: typeof(AccrualDirtyStateManager));
         }
 
         [Fact]
@@ -221,7 +246,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
         {
             using var context = CreateTestContext();
 
-            await context.Marker.MarkDirtyForExpensesAsync([], CancellationToken.None);
+            await context.Marker.SetAccountsDirtyAsync(Array.Empty<ExpenseEntity>(), CancellationToken.None);
 
             context.DbContext.ChangeTracker.HasChanges().ShouldBeFalse();
         }
@@ -262,7 +287,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
                 EntityFactory.CreateExpense(existingCleanAccount, false, "Toggle Existing Clean Expense Duplicate Account", 55.0d, "2026-04-01", "2026-04-30", null, Frequency.Months, 1)
             };
 
-            await context.Marker.MarkDirtyForExpensesAsync(expenses, CancellationToken.None);
+            await context.Marker.SetAccountsDirtyAsync(expenses, CancellationToken.None);
 
             var accountAccrualEntries = context.DbContext.ChangeTracker
                 .Entries<AccountAccrualEntity>()
@@ -281,7 +306,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
         }
     }
 
-    public class ClearDirtyOnAccrualSuccessAsync : AccountAccrualDirtyMarkerFixture
+    public class SetAccountCleanAsync : AccrualDirtyStateManagerFixture
     {
         [Fact]
         public async Task Should_LogCall_When_Clearing_Dirty_On_Accrual_Success()
@@ -290,25 +315,12 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
 
             var account = context.AddAccount("Clear Dirty Logging Account");
 
-            await context.Marker.ClearDirtyOnAccrualSuccessAsync(account, new DateOnly(2026, 5, 1), CancellationToken.None);
+            await context.Marker.SetAccountCleanAsync(account.Id, new DateOnly(2026, 5, 1), CancellationToken.None);
 
             context.LogCollector.ShouldContainLogCall(
-                category: typeof(AccountAccrualDirtyMarker).FullName!,
-                callerName: nameof(AccountAccrualDirtyMarker.ClearDirtyOnAccrualSuccessAsync),
-                callerType: typeof(AccountAccrualDirtyMarker));
-        }
-
-        [Fact]
-        public async Task Should_Throw_When_Account_Is_Null()
-        {
-            using var context = CreateTestContext();
-
-            var exception = await Should.ThrowAsync<ArgumentNullException>(async () =>
-            {
-                await context.Marker.ClearDirtyOnAccrualSuccessAsync(null!, new DateOnly(2026, 5, 1), CancellationToken.None);
-            });
-
-            exception.ParamName.ShouldBe("account");
+                category: typeof(AccrualDirtyStateManager).FullName!,
+                callerName: nameof(AccrualDirtyStateManager.SetAccountCleanAsync),
+                callerType: typeof(AccrualDirtyStateManager));
         }
 
         [Fact]
@@ -319,7 +331,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
             var account = context.AddAccount("Clear Dirty Missing Account");
             var asOfDate = new DateOnly(2026, 5, 1);
 
-            await context.Marker.ClearDirtyOnAccrualSuccessAsync(account, asOfDate, CancellationToken.None);
+            await context.Marker.SetAccountCleanAsync(account.Id, asOfDate, CancellationToken.None);
 
             var accountAccrualEntry = context.DbContext.ChangeTracker
                 .Entries<AccountAccrualEntity>()
@@ -350,7 +362,37 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
             await context.DbContext.SaveChangesAsync();
             context.DbContext.ChangeTracker.Clear();
 
-            await context.Marker.ClearDirtyOnAccrualSuccessAsync(account, asOfDate, CancellationToken.None);
+            await context.Marker.SetAccountCleanAsync(account.Id, asOfDate, CancellationToken.None);
+
+            var accountAccrualEntry = context.DbContext.ChangeTracker
+                .Entries<AccountAccrualEntity>()
+                .Single();
+
+            accountAccrualEntry.State.ShouldBe(EntityState.Modified);
+            accountAccrualEntry.Entity.AccruedIsDirty.ShouldBeFalse();
+            accountAccrualEntry.Entity.LastAccruedDate.ShouldBe(asOfDate);
+        }
+
+        [Fact]
+        public async Task Should_Update_AccountAccrual_When_Dirty_And_Date_Matches()
+        {
+            using var context = CreateTestContext();
+
+            var account = context.AddAccount("Clear Dirty Existing Dirty Matching Date Account");
+            var asOfDate = new DateOnly(2026, 5, 3);
+
+            context.DbContext.AccountAccruals.Add(new AccountAccrualEntity
+            {
+                AccountId = account.Id,
+                Account = account,
+                AccruedIsDirty = true,
+                LastAccruedDate = asOfDate
+            });
+
+            await context.DbContext.SaveChangesAsync();
+            context.DbContext.ChangeTracker.Clear();
+
+            await context.Marker.SetAccountCleanAsync(account.Id, asOfDate, CancellationToken.None);
 
             var accountAccrualEntry = context.DbContext.ChangeTracker
                 .Entries<AccountAccrualEntity>()
@@ -380,7 +422,37 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
             await context.DbContext.SaveChangesAsync();
             context.DbContext.ChangeTracker.Clear();
 
-            await context.Marker.ClearDirtyOnAccrualSuccessAsync(account, asOfDate, CancellationToken.None);
+            await context.Marker.SetAccountCleanAsync(account.Id, asOfDate, CancellationToken.None);
+
+            var accountAccrualEntry = context.DbContext.ChangeTracker
+                .Entries<AccountAccrualEntity>()
+                .Single();
+
+            accountAccrualEntry.State.ShouldBe(EntityState.Modified);
+            accountAccrualEntry.Entity.AccruedIsDirty.ShouldBeFalse();
+            accountAccrualEntry.Entity.LastAccruedDate.ShouldBe(asOfDate);
+        }
+
+        [Fact]
+        public async Task Should_Update_AccountAccrual_When_LastAccruedDate_Is_Null()
+        {
+            using var context = CreateTestContext();
+
+            var account = context.AddAccount("Clear Dirty Existing Clean Null Date Account");
+            var asOfDate = new DateOnly(2026, 5, 6);
+
+            context.DbContext.AccountAccruals.Add(new AccountAccrualEntity
+            {
+                AccountId = account.Id,
+                Account = account,
+                AccruedIsDirty = false,
+                LastAccruedDate = null
+            });
+
+            await context.DbContext.SaveChangesAsync();
+            context.DbContext.ChangeTracker.Clear();
+
+            await context.Marker.SetAccountCleanAsync(account.Id, asOfDate, CancellationToken.None);
 
             var accountAccrualEntry = context.DbContext.ChangeTracker
                 .Entries<AccountAccrualEntity>()
@@ -410,13 +482,13 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
             await context.DbContext.SaveChangesAsync();
             context.DbContext.ChangeTracker.Clear();
 
-            await context.Marker.ClearDirtyOnAccrualSuccessAsync(account, asOfDate, CancellationToken.None);
+            await context.Marker.SetAccountCleanAsync(account.Id, asOfDate, CancellationToken.None);
 
             context.DbContext.ChangeTracker.HasChanges().ShouldBeFalse();
         }
     }
 
-    public class GetAccountIdsToMarkDirty : AccountAccrualDirtyMarkerFixture
+    public class GetAccountsRequiringRecalc : AccrualDirtyStateManagerFixture
     {
         [Fact]
         public void Should_LogCall_When_Getting_AccountIds_For_Update()
@@ -426,12 +498,12 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
             var before = CreateDirtyState(accountId: 15);
             var after = CreateDirtyState(accountId: 15);
 
-            _ = context.Marker.GetAccountIdsToMarkDirty(before, after);
+            _ = context.Marker.GetAccountsRequiringRecalc(before, after);
 
             context.LogCollector.ShouldContainLogCall(
-                category: typeof(AccountAccrualDirtyMarker).FullName!,
-                callerName: nameof(AccountAccrualDirtyMarker.GetAccountIdsToMarkDirty),
-                callerType: typeof(AccountAccrualDirtyMarker));
+                category: typeof(AccrualDirtyStateManager).FullName!,
+                callerName: nameof(AccrualDirtyStateManager.GetAccountsRequiringRecalc),
+                callerType: typeof(AccrualDirtyStateManager));
         }
 
         [Fact]
@@ -443,7 +515,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
             {
                 var after = CreateDirtyState(accountId: 11);
 
-                _ = context.Marker.GetAccountIdsToMarkDirty(null!, after);
+                _ = context.Marker.GetAccountsRequiringRecalc(null!, after);
             });
 
             exception.ParamName.ShouldBe("before");
@@ -458,7 +530,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
             {
                 var before = CreateDirtyState(accountId: 11);
 
-                _ = context.Marker.GetAccountIdsToMarkDirty(before, null!);
+                _ = context.Marker.GetAccountsRequiringRecalc(before, null!);
             });
 
             exception.ParamName.ShouldBe("after");
@@ -472,7 +544,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
             var before = CreateDirtyState(accountId: 11);
             var after = CreateDirtyState(accountId: 11);
 
-            var accountIds = context.Marker.GetAccountIdsToMarkDirty(before, after);
+            var accountIds = context.Marker.GetAccountsRequiringRecalc(before, after);
 
             accountIds.ShouldBeEmpty();
         }
@@ -485,7 +557,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
             var before = CreateDirtyState(accountId: 16, mutate: state => state with { ExcludeFromCalcs = true });
             var after = CreateDirtyState(accountId: 16, mutate: state => state with { ExcludeFromCalcs = true, Amount = 220.0d });
 
-            var accountIds = context.Marker.GetAccountIdsToMarkDirty(before, after);
+            var accountIds = context.Marker.GetAccountsRequiringRecalc(before, after);
 
             accountIds.ShouldBeEmpty();
         }
@@ -498,7 +570,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
             var before = CreateDirtyState(accountId: 12);
             var after = CreateDirtyState(accountId: 12, mutate: state => state with { Amount = 220.0d });
 
-            var accountIds = context.Marker.GetAccountIdsToMarkDirty(before, after);
+            var accountIds = context.Marker.GetAccountsRequiringRecalc(before, after);
 
             accountIds.ShouldBe([12]);
         }
@@ -511,7 +583,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
             var before = CreateDirtyState(accountId: 13);
             var after = CreateDirtyState(accountId: 14);
 
-            var accountIds = context.Marker.GetAccountIdsToMarkDirty(before, after);
+            var accountIds = context.Marker.GetAccountsRequiringRecalc(before, after);
 
             accountIds.ShouldBe([13, 14]);
         }
@@ -535,7 +607,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
         }
     }
 
-    public class IsDirtyImpactingDelete : AccountAccrualDirtyMarkerFixture
+    public class IsExpenseDeletionImpactful : AccrualDirtyStateManagerFixture
     {
         [Fact]
         public void Should_LogCall_When_Checking_Delete_Impact()
@@ -545,12 +617,12 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
             var account = context.AddAccount("Delete Impact Logging Account");
             var expense = EntityFactory.CreateExpense(account, false, "Delete Impact Logging Expense", 25.0d, "2026-01-01", "2026-02-01", null, Frequency.Months, 1);
 
-            _ = context.Marker.IsDirtyImpactingDelete(expense, new DateOnly(2026, 1, 15));
+            _ = context.Marker.IsExpenseDeletionImpactful(expense, new DateOnly(2026, 1, 15));
 
             context.LogCollector.ShouldContainLogCall(
-                category: typeof(AccountAccrualDirtyMarker).FullName!,
-                callerName: nameof(AccountAccrualDirtyMarker.IsDirtyImpactingDelete),
-                callerType: typeof(AccountAccrualDirtyMarker));
+                category: typeof(AccrualDirtyStateManager).FullName!,
+                callerName: nameof(AccrualDirtyStateManager.IsExpenseDeletionImpactful),
+                callerType: typeof(AccrualDirtyStateManager));
         }
 
         [Fact]
@@ -560,7 +632,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
 
             var exception = Should.Throw<ArgumentNullException>(() =>
             {
-                _ = context.Marker.IsDirtyImpactingDelete(null!, new DateOnly(2026, 1, 15));
+                _ = context.Marker.IsExpenseDeletionImpactful(null!, new DateOnly(2026, 1, 15));
             });
 
             exception.ParamName.ShouldBe("expense");
@@ -574,7 +646,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
             var account = context.AddAccount("Delete Impact Active Account");
             var expense = EntityFactory.CreateExpense(account, false, "Delete Impact Active Expense", 25.0d, "2026-01-01", "2026-02-01", "2026-02-15", Frequency.Months, 1);
 
-            var result = context.Marker.IsDirtyImpactingDelete(expense, new DateOnly(2026, 2, 14));
+            var result = context.Marker.IsExpenseDeletionImpactful(expense, new DateOnly(2026, 2, 14));
 
             result.ShouldBeTrue();
         }
@@ -587,7 +659,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
             var account = context.AddAccount("Delete Impact Excluded Account");
             var expense = EntityFactory.CreateExpense(account, true, "Delete Impact Excluded Expense", 25.0d, "2026-01-01", "2026-02-01", null, Frequency.Months, 1);
 
-            var result = context.Marker.IsDirtyImpactingDelete(expense, new DateOnly(2026, 2, 1));
+            var result = context.Marker.IsExpenseDeletionImpactful(expense, new DateOnly(2026, 2, 1));
 
             result.ShouldBeFalse();
         }
@@ -600,7 +672,7 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
             var account = context.AddAccount("Delete Impact Ended Account");
             var expense = EntityFactory.CreateExpense(account, false, "Delete Impact Ended Expense", 25.0d, "2026-01-01", "2026-02-01", "2026-02-10", Frequency.Months, 1);
 
-            var result = context.Marker.IsDirtyImpactingDelete(expense, new DateOnly(2026, 2, 10));
+            var result = context.Marker.IsExpenseDeletionImpactful(expense, new DateOnly(2026, 2, 10));
 
             result.ShouldBeFalse();
         }
@@ -626,10 +698,10 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
 
         var repositoryLogger = new FakeLogger<AccountAccrualRepository>();
         var markerLogCollector = new FakeLogCollector();
-        var markerLogger = new FakeLogger<AccountAccrualDirtyMarker>(markerLogCollector);
+        var markerLogger = new FakeLogger<AccrualDirtyStateManager>(markerLogCollector);
 
         var repository = new AccountAccrualRepository(dbContext, repositoryLogger);
-        var marker = new AccountAccrualDirtyMarker(repository, markerLogger);
+        var marker = new AccrualDirtyStateManager(repository, markerLogger);
 
         return new TestContext(marker, dbContext, site, markerLogCollector);
     }

@@ -87,20 +87,30 @@ public class DeleteExpenseServiceFixture : PotFixtureBase
 
     public class Constructor : DeleteExpenseServiceFixture
     {
+        private readonly IAccrualDirtyStateManager _accrualDirtyStateManagerFake;
+        private readonly IPersistableAccountAccrualRepository _accountAccrualRepositoryFake;
+        private readonly IPersistableExpenseRepository _expenseRepositoryFake;
+        private readonly ITimeProvider _timeProviderFake;
+
+        public Constructor()
+        {
+            _accrualDirtyStateManagerFake = Substitute.For<IAccrualDirtyStateManager>();
+            _accountAccrualRepositoryFake = Substitute.For<IPersistableAccountAccrualRepository>();
+            _expenseRepositoryFake = Substitute.For<IPersistableExpenseRepository>();
+            _timeProviderFake = Substitute.For<ITimeProvider>();
+        }
+
         [Fact]
-        public void Should_Throw_When_AccountAccrualDirtyMarker_Is_Null()
+        public void Should_Throw_When_AccrualDirtyStateManager_Is_Null()
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
             {
-                var accountAccrualRepository = Substitute.For<IPersistableAccountAccrualRepository>();
-                var expenseRepository = Substitute.For<IPersistableExpenseRepository>();
-                var timeProvider = Substitute.For<ITimeProvider>();
                 var logger = Substitute.For<ILogger<DeleteExpenseService>>();
 
-                _ = new DeleteExpenseService(null!, accountAccrualRepository, expenseRepository, timeProvider, logger);
+                _ = new DeleteExpenseService(null!, _accountAccrualRepositoryFake, _expenseRepositoryFake, _timeProviderFake, logger);
             });
 
-            exception.ParamName.ShouldBe("accountAccrualDirtyMarker");
+            exception.ParamName.ShouldBe("accrualDirtyStateManager");
         }
 
         [Fact]
@@ -108,12 +118,9 @@ public class DeleteExpenseServiceFixture : PotFixtureBase
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
             {
-                var accountAccrualDirtyMarker = Substitute.For<IAccountAccrualDirtyMarker>();
-                var expenseRepository = Substitute.For<IPersistableExpenseRepository>();
-                var timeProvider = Substitute.For<ITimeProvider>();
                 var logger = Substitute.For<ILogger<DeleteExpenseService>>();
 
-                _ = new DeleteExpenseService(accountAccrualDirtyMarker, null!, expenseRepository, timeProvider, logger);
+                _ = new DeleteExpenseService(_accrualDirtyStateManagerFake, null!, _expenseRepositoryFake, _timeProviderFake, logger);
             });
 
             exception.ParamName.ShouldBe("accountAccrualRepository");
@@ -124,12 +131,9 @@ public class DeleteExpenseServiceFixture : PotFixtureBase
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
             {
-                var accountAccrualDirtyMarker = Substitute.For<IAccountAccrualDirtyMarker>();
-                var accountAccrualRepository = Substitute.For<IPersistableAccountAccrualRepository>();
-                var timeProvider = Substitute.For<ITimeProvider>();
                 var logger = Substitute.For<ILogger<DeleteExpenseService>>();
 
-                _ = new DeleteExpenseService(accountAccrualDirtyMarker, accountAccrualRepository, null!, timeProvider, logger);
+                _ = new DeleteExpenseService(_accrualDirtyStateManagerFake, _accountAccrualRepositoryFake, null!, _timeProviderFake, logger);
             });
 
             exception.ParamName.ShouldBe("expenseRepository");
@@ -140,12 +144,9 @@ public class DeleteExpenseServiceFixture : PotFixtureBase
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
             {
-                var accountAccrualDirtyMarker = Substitute.For<IAccountAccrualDirtyMarker>();
-                var accountAccrualRepository = Substitute.For<IPersistableAccountAccrualRepository>();
-                var expenseRepository = Substitute.For<IPersistableExpenseRepository>();
                 var logger = Substitute.For<ILogger<DeleteExpenseService>>();
 
-                _ = new DeleteExpenseService(accountAccrualDirtyMarker, accountAccrualRepository, expenseRepository, null!, logger);
+                _ = new DeleteExpenseService(_accrualDirtyStateManagerFake, _accountAccrualRepositoryFake, _expenseRepositoryFake, null!, logger);
             });
 
             exception.ParamName.ShouldBe("timeProvider");
@@ -156,12 +157,7 @@ public class DeleteExpenseServiceFixture : PotFixtureBase
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
             {
-                var accountAccrualDirtyMarker = Substitute.For<IAccountAccrualDirtyMarker>();
-                var accountAccrualRepository = Substitute.For<IPersistableAccountAccrualRepository>();
-                var expenseRepository = Substitute.For<IPersistableExpenseRepository>();
-                var timeProvider = Substitute.For<ITimeProvider>();
-
-                _ = new DeleteExpenseService(accountAccrualDirtyMarker, accountAccrualRepository, expenseRepository, timeProvider, null!);
+                _ = new DeleteExpenseService(_accrualDirtyStateManagerFake, _accountAccrualRepositoryFake, _expenseRepositoryFake, _timeProviderFake, null!);
             });
 
             exception.ParamName.ShouldBe("logger");
@@ -204,6 +200,21 @@ public class DeleteExpenseServiceFixture : PotFixtureBase
             var account = context.AddAccount("Single Expense Account");
             var expense = context.AddExpense(account, "Only Expense");
             _ = context.AddAccountAccrual(account, isDirty: false);
+
+            var result = await context.Service.DeleteExpenseAsync(expense.RowId, CancellationToken.None);
+
+            result.IsSuccess.ShouldBeTrue();
+            context.DbContext.Expenses.Count(item => item.Account.Id == account.Id).ShouldBe(0);
+            context.DbContext.AccountAccruals.Count(item => item.AccountId == account.Id).ShouldBe(0);
+        }
+
+        [Fact]
+        public async Task Should_Succeed_When_Deleting_Last_Expense_And_AccountAccrual_Is_Missing()
+        {
+            using var context = CreateTestContext();
+
+            var account = context.AddAccount("Single Expense Missing Accrual Account");
+            var expense = context.AddExpense(account, "Only Expense Missing Accrual");
 
             var result = await context.Service.DeleteExpenseAsync(expense.RowId, CancellationToken.None);
 
@@ -300,13 +311,13 @@ public class DeleteExpenseServiceFixture : PotFixtureBase
         timeProvider.GetLocalDateNow().Returns(new DateOnly(2026, 2, 1));
 
         var accountAccrualRepositoryLogger = new FakeLogger<AccountAccrualRepository>();
-        var accountAccrualMarkerLogger = new FakeLogger<AccountAccrualDirtyMarker>();
+        var accountAccrualMarkerLogger = new FakeLogger<AccrualDirtyStateManager>();
 
         var expenseRepository = new ExpenseRepository(dbContext);
         var accountAccrualRepository = new AccountAccrualRepository(dbContext, accountAccrualRepositoryLogger);
-        var accountAccrualDirtyMarker = new AccountAccrualDirtyMarker(accountAccrualRepository, accountAccrualMarkerLogger);
+        var accrualDirtyStateManager = new AccrualDirtyStateManager(accountAccrualRepository, accountAccrualMarkerLogger);
 
-        var service = new DeleteExpenseService(accountAccrualDirtyMarker, accountAccrualRepository, expenseRepository, timeProvider, serviceLogger);
+        var service = new DeleteExpenseService(accrualDirtyStateManager, accountAccrualRepository, expenseRepository, timeProvider, serviceLogger);
 
         return new TestContext(service, dbContext, site, serviceLogCollector);
     }

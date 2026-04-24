@@ -8,18 +8,18 @@ using Pot.Data.Repositories.AccountAccrual;
 
 namespace Pot.App.Concerns.Accruals;
 
-internal sealed class AccountAccrualDirtyMarker : IAccountAccrualDirtyMarker
+internal sealed class AccrualDirtyStateManager : IAccrualDirtyStateManager
 {
     private readonly IPersistableAccountAccrualRepository _accountAccrualRepository;
-    private readonly ILogger<AccountAccrualDirtyMarker> _logger;
+    private readonly ILogger<AccrualDirtyStateManager> _logger;
 
-    public AccountAccrualDirtyMarker(IPersistableAccountAccrualRepository accountAccrualRepository, ILogger<AccountAccrualDirtyMarker> logger)
+    public AccrualDirtyStateManager(IPersistableAccountAccrualRepository accountAccrualRepository, ILogger<AccrualDirtyStateManager> logger)
     {
         _accountAccrualRepository = accountAccrualRepository.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
-    public int[] GetAccountIdsToMarkDirty(ExpenseAccrualState before, ExpenseAccrualState after)
+    public int[] GetAccountsRequiringRecalc(ExpenseAccrualState before, ExpenseAccrualState after)
     {
         _logger.LogCall(this);
 
@@ -44,7 +44,7 @@ internal sealed class AccountAccrualDirtyMarker : IAccountAccrualDirtyMarker
         return [before.AccountId, after.AccountId];
     }
 
-    public bool IsDirtyImpactingDelete(ExpenseEntity expense, DateOnly asOfDate)
+    public bool IsExpenseDeletionImpactful(ExpenseEntity expense, DateOnly asOfDate)
     {
         _logger.LogCall(this);
 
@@ -55,30 +55,28 @@ internal sealed class AccountAccrualDirtyMarker : IAccountAccrualDirtyMarker
         return !expense.ExcludeFromCalcs && !hasEnded;
     }
 
-    public Task MarkDirtyForAccountAsync(AccountEntity account, CancellationToken cancellationToken)
+    public Task SetAccountsDirtyAsync(IReadOnlyCollection<int> accountIds, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
-        _ = account.WhenNotNull();
+        _ = accountIds.WhenNotNull();
 
-        return MarkDirtyForAccountsAsync([account], cancellationToken);
+        return SetAccountsDirtyByIdAsync(accountIds.Distinct().ToArray(), cancellationToken);
     }
 
-    public async Task ClearDirtyOnAccrualSuccessAsync(AccountEntity account, DateOnly asOfDate, CancellationToken cancellationToken)
+    public async Task SetAccountCleanAsync(int accountId, DateOnly asOfDate, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
-        _ = account.WhenNotNull();
-
         var accountAccrual = await _accountAccrualRepository.AccountAccruals
-            .SingleOrDefaultAsync(item => item.AccountId == account.Id, cancellationToken)
+            .SingleOrDefaultAsync(item => item.AccountId == accountId, cancellationToken)
             .ConfigureAwait(false);
 
         if (accountAccrual is null)
         {
             _accountAccrualRepository.Add(new AccountAccrualEntity
             {
-                AccountId = account.Id,
+                AccountId = accountId,
                 AccruedIsDirty = false,
                 LastAccruedDate = asOfDate
             });
@@ -95,7 +93,7 @@ internal sealed class AccountAccrualDirtyMarker : IAccountAccrualDirtyMarker
         }
     }
 
-    public Task MarkDirtyForExpensesAsync(IReadOnlyCollection<ExpenseEntity> expenses, CancellationToken cancellationToken)
+    public Task SetAccountsDirtyAsync(IReadOnlyCollection<ExpenseEntity> expenses, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
@@ -104,34 +102,31 @@ internal sealed class AccountAccrualDirtyMarker : IAccountAccrualDirtyMarker
         var expenseAccounts = expenses
             .Select(expense => expense.Account)
             .DistinctBy(account => account.Id)
+            .Select(account => account.Id)
             .ToArray();
 
-        return MarkDirtyForAccountsAsync(expenseAccounts, cancellationToken);
+        return SetAccountsDirtyByIdAsync(expenseAccounts, cancellationToken);
     }
 
-    private async Task MarkDirtyForAccountsAsync(AccountEntity[] accounts, CancellationToken cancellationToken)
+    private async Task SetAccountsDirtyByIdAsync(int[] accountIds, CancellationToken cancellationToken)
     {
-        if (accounts.Length == 0)
+        if (accountIds.Length == 0)
         {
             return;
         }
-
-        var accountIds = accounts
-            .Select(account => account.Id)
-            .ToArray();
 
         var existingAccountAccruals = await _accountAccrualRepository.AccountAccruals
             .Where(item => accountIds.Contains(item.AccountId))
             .ToDictionaryAsync(item => item.AccountId, cancellationToken)
             .ConfigureAwait(false);
 
-        foreach (var account in accounts)
+        foreach (var accountId in accountIds)
         {
-            if (!existingAccountAccruals.TryGetValue(account.Id, out var accountAccrual))
+            if (!existingAccountAccruals.TryGetValue(accountId, out var accountAccrual))
             {
                 accountAccrual = new AccountAccrualEntity
                 {
-                    AccountId = account.Id,
+                    AccountId = accountId,
 
                     // Intentionally assigning only AccountId (FK) and not assigning the Account navigation.
                     //

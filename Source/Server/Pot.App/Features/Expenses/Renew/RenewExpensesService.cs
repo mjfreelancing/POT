@@ -1,4 +1,4 @@
-﻿using AllOverIt.Assertion;
+using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
@@ -12,15 +12,15 @@ namespace Pot.App.Features.Expenses.Renew;
 
 internal sealed class RenewExpensesService : IRenewExpensesService
 {
-    private readonly IAccountAccrualDirtyMarker _accountAccrualDirtyMarker;
+    private readonly IAccrualDirtyStateManager _accrualDirtyStateManager;
     private readonly IPersistableExpenseRepository _expenseRepository;
     private readonly IExpenseRenewalCalculator _renewalCalculator;
     private readonly ILogger _logger;
 
-    public RenewExpensesService(IAccountAccrualDirtyMarker accountAccrualDirtyMarker, IPersistableExpenseRepository expenseRepository,
+    public RenewExpensesService(IAccrualDirtyStateManager accrualDirtyStateManager, IPersistableExpenseRepository expenseRepository,
         IExpenseRenewalCalculator renewalCalculator, ILogger<RenewExpensesService> logger)
     {
-        _accountAccrualDirtyMarker = accountAccrualDirtyMarker.WhenNotNull();
+        _accrualDirtyStateManager = accrualDirtyStateManager.WhenNotNull();
         _expenseRepository = expenseRepository.WhenNotNull();
         _renewalCalculator = renewalCalculator.WhenNotNull();
         _logger = logger.WhenNotNull();
@@ -56,8 +56,8 @@ internal sealed class RenewExpensesService : IRenewExpensesService
                 .Where(expense => originalDueDates[expense.RowId] != expense.NextDue)
                 .ToArray();
 
-            await _accountAccrualDirtyMarker
-                .MarkDirtyForExpensesAsync(renewedExpenses, cancellationToken)
+            await _accrualDirtyStateManager
+                .SetAccountsDirtyAsync(renewedExpenses, cancellationToken)
                 .ConfigureAwait(false);
 
             await _expenseRepository.SaveAsync(cancellationToken);

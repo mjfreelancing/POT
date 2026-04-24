@@ -89,21 +89,32 @@ public class AccrueExpensesServiceFixture : PotFixtureBase
 
     public class Constructor : AccrueExpensesServiceFixture
     {
+        private readonly IAccrualDirtyStateManager _accrualDirtyStateManagerFake;
+        private readonly IAccountRepository _accountRepositoryFake;
+        private readonly IPersistableExpenseRepository _expenseRepositoryFake;
+        private readonly IAccrueExpenseCalculator _accrueExpenseCalculatorFake;
+        private readonly ITimeProvider _timeProviderFake;
+
+        public Constructor()
+        {
+            _accrualDirtyStateManagerFake = Substitute.For<IAccrualDirtyStateManager>();
+            _accountRepositoryFake = Substitute.For<IAccountRepository>();
+            _expenseRepositoryFake = Substitute.For<IPersistableExpenseRepository>();
+            _accrueExpenseCalculatorFake = Substitute.For<IAccrueExpenseCalculator>();
+            _timeProviderFake = Substitute.For<ITimeProvider>();
+        }
+
         [Fact]
-        public void Should_Throw_When_AccountAccrualDirtyMarker_Is_Null()
+        public void Should_Throw_When_AccrualDirtyStateManager_Is_Null()
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
             {
-                var accountRepository = Substitute.For<IAccountRepository>();
-                var expenseRepository = Substitute.For<IPersistableExpenseRepository>();
-                var calculator = Substitute.For<IAccrueExpenseCalculator>();
-                var timeProvider = Substitute.For<ITimeProvider>();
                 var logger = Substitute.For<ILogger<AccrueExpensesService>>();
 
-                _ = new AccrueExpensesService(null!, accountRepository, expenseRepository, calculator, timeProvider, logger);
+                _ = new AccrueExpensesService(null!, _accountRepositoryFake, _expenseRepositoryFake, _accrueExpenseCalculatorFake, _timeProviderFake, logger);
             });
 
-            exception.ParamName.ShouldBe("accountAccrualDirtyMarker");
+            exception.ParamName.ShouldBe("accrualDirtyStateManager");
         }
 
         [Fact]
@@ -111,13 +122,9 @@ public class AccrueExpensesServiceFixture : PotFixtureBase
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
             {
-                var accountAccrualDirtyMarker = Substitute.For<IAccountAccrualDirtyMarker>();
-                var expenseRepository = Substitute.For<IPersistableExpenseRepository>();
-                var calculator = Substitute.For<IAccrueExpenseCalculator>();
-                var timeProvider = Substitute.For<ITimeProvider>();
                 var logger = Substitute.For<ILogger<AccrueExpensesService>>();
 
-                _ = new AccrueExpensesService(accountAccrualDirtyMarker, null!, expenseRepository, calculator, timeProvider, logger);
+                _ = new AccrueExpensesService(_accrualDirtyStateManagerFake, null!, _expenseRepositoryFake, _accrueExpenseCalculatorFake, _timeProviderFake, logger);
             });
 
             exception.ParamName.ShouldBe("accountRepository");
@@ -128,13 +135,9 @@ public class AccrueExpensesServiceFixture : PotFixtureBase
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
             {
-                var accountAccrualDirtyMarker = Substitute.For<IAccountAccrualDirtyMarker>();
-                var accountRepository = Substitute.For<IAccountRepository>();
-                var calculator = Substitute.For<IAccrueExpenseCalculator>();
-                var timeProvider = Substitute.For<ITimeProvider>();
                 var logger = Substitute.For<ILogger<AccrueExpensesService>>();
 
-                _ = new AccrueExpensesService(accountAccrualDirtyMarker, accountRepository, null!, calculator, timeProvider, logger);
+                _ = new AccrueExpensesService(_accrualDirtyStateManagerFake, _accountRepositoryFake, null!, _accrueExpenseCalculatorFake, _timeProviderFake, logger);
             });
 
             exception.ParamName.ShouldBe("expenseRepository");
@@ -145,13 +148,9 @@ public class AccrueExpensesServiceFixture : PotFixtureBase
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
             {
-                var accountAccrualDirtyMarker = Substitute.For<IAccountAccrualDirtyMarker>();
-                var accountRepository = Substitute.For<IAccountRepository>();
-                var expenseRepository = Substitute.For<IPersistableExpenseRepository>();
-                var timeProvider = Substitute.For<ITimeProvider>();
                 var logger = Substitute.For<ILogger<AccrueExpensesService>>();
 
-                _ = new AccrueExpensesService(accountAccrualDirtyMarker, accountRepository, expenseRepository, null!, timeProvider, logger);
+                _ = new AccrueExpensesService(_accrualDirtyStateManagerFake, _accountRepositoryFake, _expenseRepositoryFake, null!, _timeProviderFake, logger);
             });
 
             exception.ParamName.ShouldBe("accrueExpenseCalculator");
@@ -162,13 +161,9 @@ public class AccrueExpensesServiceFixture : PotFixtureBase
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
             {
-                var accountAccrualDirtyMarker = Substitute.For<IAccountAccrualDirtyMarker>();
-                var accountRepository = Substitute.For<IAccountRepository>();
-                var expenseRepository = Substitute.For<IPersistableExpenseRepository>();
-                var calculator = Substitute.For<IAccrueExpenseCalculator>();
                 var logger = Substitute.For<ILogger<AccrueExpensesService>>();
 
-                _ = new AccrueExpensesService(accountAccrualDirtyMarker, accountRepository, expenseRepository, calculator, null!, logger);
+                _ = new AccrueExpensesService(_accrualDirtyStateManagerFake, _accountRepositoryFake, _expenseRepositoryFake, _accrueExpenseCalculatorFake, null!, logger);
             });
 
             exception.ParamName.ShouldBe("timeProvider");
@@ -179,13 +174,7 @@ public class AccrueExpensesServiceFixture : PotFixtureBase
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
             {
-                var accountAccrualDirtyMarker = Substitute.For<IAccountAccrualDirtyMarker>();
-                var accountRepository = Substitute.For<IAccountRepository>();
-                var expenseRepository = Substitute.For<IPersistableExpenseRepository>();
-                var calculator = Substitute.For<IAccrueExpenseCalculator>();
-                var timeProvider = Substitute.For<ITimeProvider>();
-
-                _ = new AccrueExpensesService(accountAccrualDirtyMarker, accountRepository, expenseRepository, calculator, timeProvider, null!);
+                _ = new AccrueExpensesService(_accrualDirtyStateManagerFake, _accountRepositoryFake, _expenseRepositoryFake, _accrueExpenseCalculatorFake, _timeProviderFake, null!);
             });
 
             exception.ParamName.ShouldBe("logger");
@@ -266,6 +255,59 @@ public class AccrueExpensesServiceFixture : PotFixtureBase
         }
 
         [Fact]
+        public async Task Should_Succeed_When_No_Accounts_Are_Provided()
+        {
+            using var context = CreateTestContext();
+
+            var input = new Input
+            {
+                RowIds = []
+            };
+
+            var result = await context.Service.AccrueAsync(input, CancellationToken.None);
+
+            result.IsSuccess.ShouldBeTrue();
+            context.DbContext.AccountAccruals.Count().ShouldBe(0);
+        }
+
+        [Fact]
+        public async Task Should_Process_Multiple_Accounts_When_More_Than_One_Is_Provided()
+        {
+            using var context = CreateTestContext();
+
+            var firstAccount = context.AddAccount("Accrue Multi Account One");
+            var secondAccount = context.AddAccount("Accrue Multi Account Two");
+
+            var firstExpense = context.AddExpense(firstAccount, "Accrue Multi Expense One");
+            var secondExpense = context.AddExpense(secondAccount, "Accrue Multi Expense Two");
+
+            context.AddAccountAccrual(firstAccount, isDirty: true, lastAccruedDate: new DateOnly(2026, 5, 1));
+
+            var input = new Input
+            {
+                RowIds = [firstAccount.RowId, secondAccount.RowId]
+            };
+
+            var result = await context.Service.AccrueAsync(input, CancellationToken.None);
+
+            result.IsSuccess.ShouldBeTrue();
+
+            var accountAccruals = context.DbContext.AccountAccruals
+                .Where(item => item.AccountId == firstAccount.Id || item.AccountId == secondAccount.Id)
+                .ToArray();
+
+            accountAccruals.Length.ShouldBe(2);
+            accountAccruals.All(item => !item.AccruedIsDirty).ShouldBeTrue();
+            accountAccruals.All(item => item.LastAccruedDate == context.LocalCurrentDate).ShouldBeTrue();
+
+            firstExpense.AccruedIsDirty.ShouldBeFalse();
+            firstExpense.LastAccruedUpdate.ShouldBe(context.LocalCurrentDate);
+
+            secondExpense.AccruedIsDirty.ShouldBeFalse();
+            secondExpense.LastAccruedUpdate.ShouldBe(context.LocalCurrentDate);
+        }
+
+        [Fact]
         public async Task Should_Fail_When_Account_Does_Not_Exist()
         {
             using var context = CreateTestContext();
@@ -308,10 +350,10 @@ public class AccrueExpensesServiceFixture : PotFixtureBase
         var accountRepository = new AccountRepository(dbContext);
 
         var accountAccrualRepositoryLogger = new FakeLogger<AccountAccrualRepository>();
-        var accountAccrualMarkerLogger = new FakeLogger<AccountAccrualDirtyMarker>();
+        var accountAccrualMarkerLogger = new FakeLogger<AccrualDirtyStateManager>();
 
         var accountAccrualRepository = new AccountAccrualRepository(dbContext, accountAccrualRepositoryLogger);
-        var accountAccrualDirtyMarker = new AccountAccrualDirtyMarker(accountAccrualRepository, accountAccrualMarkerLogger);
+        var accrualDirtyStateManager = new AccrualDirtyStateManager(accountAccrualRepository, accountAccrualMarkerLogger);
 
         var accrueExpenseCalculator = new AccrueExpenseCalculator(timeProvider);
 
@@ -319,7 +361,7 @@ public class AccrueExpensesServiceFixture : PotFixtureBase
         var serviceLogger = new FakeLogger<AccrueExpensesService>(serviceLogCollector);
 
         var service = new AccrueExpensesService(
-            accountAccrualDirtyMarker,
+            accrualDirtyStateManager,
             accountRepository,
             expenseRepository,
             accrueExpenseCalculator,

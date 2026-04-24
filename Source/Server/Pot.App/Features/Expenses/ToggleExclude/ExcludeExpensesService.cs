@@ -1,4 +1,4 @@
-﻿using AllOverIt.Assertion;
+using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
@@ -11,13 +11,13 @@ namespace Pot.App.Features.Expenses.ToggleExclude;
 
 internal sealed class ExcludeExpensesService : IExcludeExpensesService
 {
-    private readonly IAccountAccrualDirtyMarker _accountAccrualDirtyMarker;
+    private readonly IAccrualDirtyStateManager _accrualDirtyStateManager;
     private readonly IPersistableExpenseRepository _expenseRepository;
     private readonly ILogger _logger;
 
-    public ExcludeExpensesService(IAccountAccrualDirtyMarker accountAccrualDirtyMarker, IPersistableExpenseRepository expenseRepository, ILogger<ExcludeExpensesService> logger)
+    public ExcludeExpensesService(IAccrualDirtyStateManager accrualDirtyStateManager, IPersistableExpenseRepository expenseRepository, ILogger<ExcludeExpensesService> logger)
     {
-        _accountAccrualDirtyMarker = accountAccrualDirtyMarker.WhenNotNull();
+        _accrualDirtyStateManager = accrualDirtyStateManager.WhenNotNull();
         _expenseRepository = expenseRepository.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
@@ -50,8 +50,8 @@ internal sealed class ExcludeExpensesService : IExcludeExpensesService
                 expense.AccruedIsDirty = true;
             }
 
-            await _accountAccrualDirtyMarker
-                .MarkDirtyForExpensesAsync(expenses, cancellationToken)
+            await _accrualDirtyStateManager
+                .SetAccountsDirtyAsync(expenses, cancellationToken)
                 .ConfigureAwait(false);
 
             await _expenseRepository.SaveAsync(cancellationToken);
