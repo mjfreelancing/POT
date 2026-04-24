@@ -120,13 +120,14 @@ public class RenewExpensesServiceFixture : PotFixtureBase
                 .Returns(1);
 
             var service = new RenewExpensesService(_accrualDirtyStateManagerFake, _expenseRepositoryFake, _renewalCalculatorFake, logger);
-
-            _ = await service.RenewAsync(new Input
+            var input = new Input
             {
                 RowIds = [],
                 AsOfDate = new DateOnly(2026, 4, 24),
                 Mode = RenewalMode.Overdue
-            }, CancellationToken.None);
+            };
+
+            _ = await service.RenewAsync(input, CancellationToken.None);
 
             logCollector.ShouldContainLogCall(
                 category: typeof(RenewExpensesService).FullName!,

@@ -74,12 +74,14 @@ internal sealed class AccrualDirtyStateManager : IAccrualDirtyStateManager
 
         if (accountAccrual is null)
         {
-            _accountAccrualRepository.Add(new AccountAccrualEntity
+            accountAccrual = new AccountAccrualEntity
             {
                 AccountId = accountId,
                 AccruedIsDirty = false,
                 LastAccruedDate = asOfDate
-            });
+            };
+
+            _accountAccrualRepository.Add(accountAccrual);
 
             return;
         }

@@ -102,11 +102,12 @@ public class ExcludeExpensesServiceFixture : PotFixtureBase
                 .Returns(1);
 
             var service = new ExcludeExpensesService(_accrualDirtyStateManagerFake, _expenseRepositoryFake, logger);
-
-            _ = await service.ToggleExclusionAsync(new Input
+            var input = new Input
             {
                 RowIds = []
-            }, CancellationToken.None);
+            };
+
+            _ = await service.ToggleExclusionAsync(input, CancellationToken.None);
 
             logCollector.ShouldContainLogCall(
                 category: typeof(ExcludeExpensesService).FullName!,

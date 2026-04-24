@@ -139,14 +139,15 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
             using var context = CreateTestContext();
 
             var account = context.AddAccount("Clean Branch Account");
-
-            context.DbContext.AccountAccruals.Add(new AccountAccrualEntity
+            var accountAccrual = new AccountAccrualEntity
             {
                 AccountId = account.Id,
                 Account = account,
                 AccruedIsDirty = false,
                 LastAccruedDate = new DateOnly(2026, 4, 1)
-            });
+            };
+
+            context.DbContext.AccountAccruals.Add(accountAccrual);
 
             await context.DbContext.SaveChangesAsync();
             context.DbContext.ChangeTracker.Clear();
@@ -168,23 +169,24 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
             using var context = CreateTestContext();
 
             var account = context.AddAccount("Dirty Branch Account");
-
-            context.DbContext.AccountAccruals.Add(new AccountAccrualEntity
+            var accountAccrual = new AccountAccrualEntity
             {
                 AccountId = account.Id,
                 Account = account,
                 AccruedIsDirty = true,
                 LastAccruedDate = new DateOnly(2026, 4, 2)
-            });
+            };
+
+            context.DbContext.AccountAccruals.Add(accountAccrual);
 
             await context.DbContext.SaveChangesAsync();
             context.DbContext.ChangeTracker.Clear();
 
             await context.Marker.SetAccountsDirtyAsync([account.Id], CancellationToken.None);
 
-            var accountAccrual = await context.DbContext.AccountAccruals.SingleAsync();
+            var persistedAccountAccrual = await context.DbContext.AccountAccruals.SingleAsync();
 
-            accountAccrual.AccruedIsDirty.ShouldBeTrue();
+            persistedAccountAccrual.AccruedIsDirty.ShouldBeTrue();
             context.DbContext.ChangeTracker.HasChanges().ShouldBeFalse();
         }
 
@@ -259,22 +261,24 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
             var existingCleanAccount = context.AddAccount("Toggle Existing Clean Account");
             var missingAccrualAccount = context.AddAccount("Toggle Missing Accrual Account");
             var existingDirtyAccount = context.AddAccount("Toggle Existing Dirty Account");
+            var existingCleanAccountAccrual = new AccountAccrualEntity
+            {
+                AccountId = existingCleanAccount.Id,
+                Account = existingCleanAccount,
+                AccruedIsDirty = false,
+                LastAccruedDate = new DateOnly(2026, 4, 10)
+            };
+            var existingDirtyAccountAccrual = new AccountAccrualEntity
+            {
+                AccountId = existingDirtyAccount.Id,
+                Account = existingDirtyAccount,
+                AccruedIsDirty = true,
+                LastAccruedDate = new DateOnly(2026, 4, 11)
+            };
 
             context.DbContext.AccountAccruals.AddRange(
-                new AccountAccrualEntity
-                {
-                    AccountId = existingCleanAccount.Id,
-                    Account = existingCleanAccount,
-                    AccruedIsDirty = false,
-                    LastAccruedDate = new DateOnly(2026, 4, 10)
-                },
-                new AccountAccrualEntity
-                {
-                    AccountId = existingDirtyAccount.Id,
-                    Account = existingDirtyAccount,
-                    AccruedIsDirty = true,
-                    LastAccruedDate = new DateOnly(2026, 4, 11)
-                });
+                existingCleanAccountAccrual,
+                existingDirtyAccountAccrual);
 
             await context.DbContext.SaveChangesAsync();
             context.DbContext.ChangeTracker.Clear();
@@ -350,14 +354,15 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
 
             var account = context.AddAccount("Clear Dirty Existing Dirty Account");
             var asOfDate = new DateOnly(2026, 5, 3);
-
-            context.DbContext.AccountAccruals.Add(new AccountAccrualEntity
+            var accountAccrual = new AccountAccrualEntity
             {
                 AccountId = account.Id,
                 Account = account,
                 AccruedIsDirty = true,
                 LastAccruedDate = new DateOnly(2026, 4, 30)
-            });
+            };
+
+            context.DbContext.AccountAccruals.Add(accountAccrual);
 
             await context.DbContext.SaveChangesAsync();
             context.DbContext.ChangeTracker.Clear();
@@ -380,14 +385,15 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
 
             var account = context.AddAccount("Clear Dirty Existing Dirty Matching Date Account");
             var asOfDate = new DateOnly(2026, 5, 3);
-
-            context.DbContext.AccountAccruals.Add(new AccountAccrualEntity
+            var accountAccrual = new AccountAccrualEntity
             {
                 AccountId = account.Id,
                 Account = account,
                 AccruedIsDirty = true,
                 LastAccruedDate = asOfDate
-            });
+            };
+
+            context.DbContext.AccountAccruals.Add(accountAccrual);
 
             await context.DbContext.SaveChangesAsync();
             context.DbContext.ChangeTracker.Clear();
@@ -410,14 +416,15 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
 
             var account = context.AddAccount("Clear Dirty Existing Clean Old Date Account");
             var asOfDate = new DateOnly(2026, 5, 4);
-
-            context.DbContext.AccountAccruals.Add(new AccountAccrualEntity
+            var accountAccrual = new AccountAccrualEntity
             {
                 AccountId = account.Id,
                 Account = account,
                 AccruedIsDirty = false,
                 LastAccruedDate = new DateOnly(2026, 5, 1)
-            });
+            };
+
+            context.DbContext.AccountAccruals.Add(accountAccrual);
 
             await context.DbContext.SaveChangesAsync();
             context.DbContext.ChangeTracker.Clear();
@@ -440,14 +447,15 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
 
             var account = context.AddAccount("Clear Dirty Existing Clean Null Date Account");
             var asOfDate = new DateOnly(2026, 5, 6);
-
-            context.DbContext.AccountAccruals.Add(new AccountAccrualEntity
+            var accountAccrual = new AccountAccrualEntity
             {
                 AccountId = account.Id,
                 Account = account,
                 AccruedIsDirty = false,
                 LastAccruedDate = null
-            });
+            };
+
+            context.DbContext.AccountAccruals.Add(accountAccrual);
 
             await context.DbContext.SaveChangesAsync();
             context.DbContext.ChangeTracker.Clear();
@@ -470,14 +478,15 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
 
             var account = context.AddAccount("Clear Dirty Existing Clean Current Date Account");
             var asOfDate = new DateOnly(2026, 5, 5);
-
-            context.DbContext.AccountAccruals.Add(new AccountAccrualEntity
+            var accountAccrual = new AccountAccrualEntity
             {
                 AccountId = account.Id,
                 Account = account,
                 AccruedIsDirty = false,
                 LastAccruedDate = asOfDate
-            });
+            };
+
+            context.DbContext.AccountAccruals.Add(accountAccrual);
 
             await context.DbContext.SaveChangesAsync();
             context.DbContext.ChangeTracker.Clear();

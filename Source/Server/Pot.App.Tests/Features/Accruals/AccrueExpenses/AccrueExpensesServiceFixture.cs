@@ -71,12 +71,14 @@ public class AccrueExpensesServiceFixture : PotFixtureBase
 
         public void AddAccountAccrual(AccountEntity account, bool isDirty, DateOnly? lastAccruedDate)
         {
-            DbContext.AccountAccruals.Add(new AccountAccrualEntity
+            var accountAccrual = new AccountAccrualEntity
             {
                 AccountId = account.Id,
                 AccruedIsDirty = isDirty,
                 LastAccruedDate = lastAccruedDate
-            });
+            };
+
+            DbContext.AccountAccruals.Add(accountAccrual);
 
             DbContext.SaveChanges();
         }
