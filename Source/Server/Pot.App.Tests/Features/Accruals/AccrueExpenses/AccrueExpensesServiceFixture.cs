@@ -228,9 +228,6 @@ public class AccrueExpensesServiceFixture : PotFixtureBase
 
             accountAccrual.AccruedIsDirty.ShouldBeFalse();
             accountAccrual.LastAccruedDate.ShouldBe(context.LocalCurrentDate);
-
-            expense.AccruedIsDirty.ShouldBeFalse();
-            expense.LastAccruedUpdate.ShouldBe(context.LocalCurrentDate);
         }
 
         [Fact]
@@ -301,12 +298,6 @@ public class AccrueExpensesServiceFixture : PotFixtureBase
             accountAccruals.Length.ShouldBe(2);
             accountAccruals.All(item => !item.AccruedIsDirty).ShouldBeTrue();
             accountAccruals.All(item => item.LastAccruedDate == context.LocalCurrentDate).ShouldBeTrue();
-
-            firstExpense.AccruedIsDirty.ShouldBeFalse();
-            firstExpense.LastAccruedUpdate.ShouldBe(context.LocalCurrentDate);
-
-            secondExpense.AccruedIsDirty.ShouldBeFalse();
-            secondExpense.LastAccruedUpdate.ShouldBe(context.LocalCurrentDate);
         }
 
         [Fact]

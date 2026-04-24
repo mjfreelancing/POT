@@ -1,4 +1,4 @@
-﻿using Pot.App.Calculators;
+using Pot.App.Calculators;
 using Pot.Data.Entities;
 using Pot.Shared.Enumerations;
 using Pot.TestUtils;
@@ -51,7 +51,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
         public void Should_Not_Renew_Expense_Excluded_From_Calcs()
         {
             var expense = EntityFactory.CreateExpense(_account, true, "Excluded Expense", 100, "2025-01-01", "2025-01-15", null, Frequency.Months, 1);
-            expense.AccruedIsDirty = false;
 
             var asOfDate = new DateOnly(2025, 1, 20);
 
@@ -62,14 +61,12 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 
             expense.NextDue.ShouldBe(originalNextDue);
             expense.AccrualStart.ShouldBe(originalAccrualStart);
-            expense.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
         public void Should_Not_Renew_One_Time_Expense()
         {
             var expense = EntityFactory.CreateExpense(_account, false, "OneTime Expense", 100, "2025-01-01", "2025-01-15", null, Frequency.OneTime, 1);
-            expense.AccruedIsDirty = false;
 
             var asOfDate = new DateOnly(2025, 1, 20);
 
@@ -80,49 +77,42 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 
             expense.NextDue.ShouldBe(originalNextDue);
             expense.AccrualStart.ShouldBe(originalAccrualStart);
-            expense.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
         public void Should_Not_Reset_IsDirty_When_Expense_Not_Renewed()
         {
             var expense = EntityFactory.CreateExpense(_account, false, "Future Expense", 100, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
-            expense.AccruedIsDirty = true;
 
             var asOfDate = new DateOnly(2025, 1, 15);
 
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // Expense should not be renewed because NextDue > asOfDate
-            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
         public void Should_Set_IsDirty_When_Expense_Is_Renewed()
         {
             var expense = EntityFactory.CreateExpense(_account, false, "Past Due Expense", 100, "2025-01-01", "2025-01-10", null, Frequency.Months, 1);
-            expense.AccruedIsDirty = false;
 
             var asOfDate = new DateOnly(2025, 1, 20);
 
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // Expense should be renewed, and IsDirty should become true
-            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
         public void Should_Not_Set_IsDirty_When_Expense_Is_Not_Renewed()
         {
             var expense = EntityFactory.CreateExpense(_account, false, "Future Expense", 100, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
-            expense.AccruedIsDirty = false;
 
             var asOfDate = new DateOnly(2025, 1, 15);
 
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // Expense should not be renewed because NextDue > asOfDate
-            expense.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
@@ -167,41 +157,33 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 
             // 3 days past due - should advance 3 times
             var expense1 = EntityFactory.CreateExpense(_account, false, "3 Days Past", 100, "2025-01-10", "2025-01-17", null, Frequency.Days, 1);
-            expense1.AccruedIsDirty = false;
 
             // 1 day past due - should advance 1 time
             var expense2 = EntityFactory.CreateExpense(_account, false, "1 Day Past", 100, "2025-01-12", "2025-01-19", null, Frequency.Days, 1);
-            expense2.AccruedIsDirty = false;
 
             // Due today - should not advance (only advance if < AsOfDate)
             var expense3 = EntityFactory.CreateExpense(_account, false, "Due Today", 100, "2025-01-13", "2025-01-20", null, Frequency.Days, 1);
-            expense3.AccruedIsDirty = false;
 
             // Not yet due - should not advance
             var expense4 = EntityFactory.CreateExpense(_account, false, "Future Due", 100, "2025-01-14", "2025-01-21", null, Frequency.Days, 1);
-            expense4.AccruedIsDirty = false;
 
             _calculator.Renew([expense1, expense2, expense3, expense4], RenewalMode.Overdue, asOfDate);
 
             // expense1: 2025-01-17 -> 2025-01-18 -> 2025-01-19 -> 2025-01-20 -> 2025-01-21
             expense1.NextDue.ShouldBe(new DateOnly(2025, 1, 21));
             expense1.AccrualStart.ShouldBe(new DateOnly(2025, 1, 20));
-            expense1.AccruedIsDirty.ShouldBeTrue();
 
             // expense2: 2025-01-19 -> 2025-01-20 -> 2025-01-21
             expense2.NextDue.ShouldBe(new DateOnly(2025, 1, 21));
             expense2.AccrualStart.ShouldBe(new DateOnly(2025, 1, 20));
-            expense2.AccruedIsDirty.ShouldBeTrue();
 
             // expense3: 2025-01-20 -> 2025-01-21 (does renew once since nextDue <= asOfDate)
             expense3.NextDue.ShouldBe(new DateOnly(2025, 1, 21));
             expense3.AccrualStart.ShouldBe(new DateOnly(2025, 1, 20));
-            expense3.AccruedIsDirty.ShouldBeTrue();
 
             // expense4: No change (NextDue > asOfDate)
             expense4.NextDue.ShouldBe(new DateOnly(2025, 1, 21));
             expense4.AccrualStart.ShouldBe(new DateOnly(2025, 1, 14));
-            expense4.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
@@ -217,41 +199,33 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 
             // 3 weeks past due - should advance 3 times (7 days each)
             var expense1 = EntityFactory.CreateExpense(_account, false, "3 Weeks Past", 100, "2025-01-06", "2025-01-20", null, Frequency.Weeks, 1);
-            expense1.AccruedIsDirty = false;
 
             // 1 week past due - should advance 1 time
             var expense2 = EntityFactory.CreateExpense(_account, false, "1 Week Past", 100, "2025-01-20", "2025-02-03", null, Frequency.Weeks, 1);
-            expense2.AccruedIsDirty = false;
 
             // Due today - should not advance
             var expense3 = EntityFactory.CreateExpense(_account, false, "Due Today", 100, "2025-01-27", "2025-02-10", null, Frequency.Weeks, 1);
-            expense3.AccruedIsDirty = false;
 
             // Not yet due - should not advance
             var expense4 = EntityFactory.CreateExpense(_account, false, "Future Due", 100, "2025-02-03", "2025-02-17", null, Frequency.Weeks, 1);
-            expense4.AccruedIsDirty = false;
 
             _calculator.Renew([expense1, expense2, expense3, expense4], RenewalMode.Overdue, asOfDate);
 
             // expense1: 2025-01-20 -> 2025-01-27 -> 2025-02-03 -> 2025-02-10 -> 2025-02-17
             expense1.NextDue.ShouldBe(new DateOnly(2025, 2, 17));
             expense1.AccrualStart.ShouldBe(new DateOnly(2025, 2, 10));
-            expense1.AccruedIsDirty.ShouldBeTrue();
 
             // expense2: 2025-02-03 -> 2025-02-10 -> 2025-02-17
             expense2.NextDue.ShouldBe(new DateOnly(2025, 2, 17));
             expense2.AccrualStart.ShouldBe(new DateOnly(2025, 2, 10));
-            expense2.AccruedIsDirty.ShouldBeTrue();
 
             // expense3: 2025-02-10 -> 2025-02-17 (does renew once)
             expense3.NextDue.ShouldBe(new DateOnly(2025, 2, 17));
             expense3.AccrualStart.ShouldBe(new DateOnly(2025, 2, 10));
-            expense3.AccruedIsDirty.ShouldBeTrue();
 
             // expense4: No change
             expense4.NextDue.ShouldBe(new DateOnly(2025, 2, 17));
             expense4.AccrualStart.ShouldBe(new DateOnly(2025, 2, 3));
-            expense4.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
@@ -267,41 +241,33 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 
             // 3 months past due - should advance 3 times
             var expense1 = EntityFactory.CreateExpense(_account, false, "3 Months Past", 100, "2025-01-15", "2025-02-15", null, Frequency.Months, 1);
-            expense1.AccruedIsDirty = false;
 
             // 1 month past due - should advance 1 time
             var expense2 = EntityFactory.CreateExpense(_account, false, "1 Month Past", 100, "2025-03-15", "2025-04-15", null, Frequency.Months, 1);
-            expense2.AccruedIsDirty = false;
 
             // Due today - should not advance
             var expense3 = EntityFactory.CreateExpense(_account, false, "Due Today", 100, "2025-04-15", "2025-05-15", null, Frequency.Months, 1);
-            expense3.AccruedIsDirty = false;
 
             // Not yet due - should not advance
             var expense4 = EntityFactory.CreateExpense(_account, false, "Future Due", 100, "2025-05-15", "2025-06-15", null, Frequency.Months, 1);
-            expense4.AccruedIsDirty = false;
 
             _calculator.Renew([expense1, expense2, expense3, expense4], RenewalMode.Overdue, asOfDate);
 
             // expense1: 2025-02-15 -> 2025-03-15 -> 2025-04-15 -> 2025-05-15 -> 2025-06-15
             expense1.NextDue.ShouldBe(new DateOnly(2025, 6, 15));
             expense1.AccrualStart.ShouldBe(new DateOnly(2025, 5, 15));
-            expense1.AccruedIsDirty.ShouldBeTrue();
 
             // expense2: 2025-04-15 -> 2025-05-15 -> 2025-06-15
             expense2.NextDue.ShouldBe(new DateOnly(2025, 6, 15));
             expense2.AccrualStart.ShouldBe(new DateOnly(2025, 5, 15));
-            expense2.AccruedIsDirty.ShouldBeTrue();
 
             // expense3: 2025-05-15 -> 2025-06-15 (does renew once)
             expense3.NextDue.ShouldBe(new DateOnly(2025, 6, 15));
             expense3.AccrualStart.ShouldBe(new DateOnly(2025, 5, 15));
-            expense3.AccruedIsDirty.ShouldBeTrue();
 
             // expense4: No change
             expense4.NextDue.ShouldBe(new DateOnly(2025, 6, 15));
             expense4.AccrualStart.ShouldBe(new DateOnly(2025, 5, 15));
-            expense4.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
@@ -317,41 +283,33 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 
             // 3 years past due - should advance 3 times
             var expense1 = EntityFactory.CreateExpense(_account, false, "3 Years Past", 100, "2024-03-15", "2025-03-15", null, Frequency.Years, 1);
-            expense1.AccruedIsDirty = false;
 
             // 1 year past due - should advance 1 time
             var expense2 = EntityFactory.CreateExpense(_account, false, "1 Year Past", 100, "2026-03-15", "2027-03-15", null, Frequency.Years, 1);
-            expense2.AccruedIsDirty = false;
 
             // Due today - should not advance
             var expense3 = EntityFactory.CreateExpense(_account, false, "Due Today", 100, "2027-03-15", "2028-03-15", null, Frequency.Years, 1);
-            expense3.AccruedIsDirty = false;
 
             // Not yet due - should not advance
             var expense4 = EntityFactory.CreateExpense(_account, false, "Future Due", 100, "2028-03-15", "2029-03-15", null, Frequency.Years, 1);
-            expense4.AccruedIsDirty = false;
 
             _calculator.Renew([expense1, expense2, expense3, expense4], RenewalMode.Overdue, asOfDate);
 
             // expense1: 2025-03-15 -> 2026-03-15 -> 2027-03-15 -> 2028-03-15 -> 2029-03-15
             expense1.NextDue.ShouldBe(new DateOnly(2029, 3, 15));
             expense1.AccrualStart.ShouldBe(new DateOnly(2028, 3, 15));
-            expense1.AccruedIsDirty.ShouldBeTrue();
 
             // expense2: 2027-03-15 -> 2028-03-15 -> 2029-03-15
             expense2.NextDue.ShouldBe(new DateOnly(2029, 3, 15));
             expense2.AccrualStart.ShouldBe(new DateOnly(2028, 3, 15));
-            expense2.AccruedIsDirty.ShouldBeTrue();
 
             // expense3: 2028-03-15 -> 2029-03-15 (does renew once)
             expense3.NextDue.ShouldBe(new DateOnly(2029, 3, 15));
             expense3.AccrualStart.ShouldBe(new DateOnly(2028, 3, 15));
-            expense3.AccruedIsDirty.ShouldBeTrue();
 
             // expense4: No change
             expense4.NextDue.ShouldBe(new DateOnly(2029, 3, 15));
             expense4.AccrualStart.ShouldBe(new DateOnly(2028, 3, 15));
-            expense4.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
@@ -361,23 +319,19 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 
             // Weekly with FrequencyCount = 2 (every 2 weeks = 14 days)
             var expense1 = EntityFactory.CreateExpense(_account, false, "BiWeekly", 100, "2025-01-01", "2025-01-01", null, Frequency.Weeks, 2);
-            expense1.AccruedIsDirty = false;
 
             // Monthly with FrequencyCount = 3 (every 3 months)
             var expense2 = EntityFactory.CreateExpense(_account, false, "Quarterly", 200, "2024-11-15", "2025-02-15", null, Frequency.Months, 3);
-            expense2.AccruedIsDirty = false;
 
             _calculator.Renew([expense1, expense2], RenewalMode.Overdue, asOfDate);
 
             // expense1: 2025-01-01 -> 2025-01-15 -> 2025-01-29 -> 2025-02-12 -> 2025-02-26 (14 days later each time)
             expense1.NextDue.ShouldBe(new DateOnly(2025, 2, 26));
             expense1.AccrualStart.ShouldBe(new DateOnly(2025, 2, 12));
-            expense1.AccruedIsDirty.ShouldBeTrue();
 
             // expense2: 2025-02-15 -> 2025-05-15 (due on asOfDate, renews once)
             expense2.NextDue.ShouldBe(new DateOnly(2025, 5, 15));
             expense2.AccrualStart.ShouldBe(new DateOnly(2025, 2, 15));
-            expense2.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -386,14 +340,12 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 
             var asOfDate = new DateOnly(2025, 1, 20);
             var expense = EntityFactory.CreateExpense(_account, false, "Ending Expense", 100, "2025-01-01", "2025-01-10", "2025-01-20", Frequency.Months, 1);
-            expense.AccruedIsDirty = false;
 
             var originalNextDue = expense.NextDue;
 
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             expense.NextDue.ShouldBe(originalNextDue);
-            expense.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
@@ -402,30 +354,24 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             var asOfDate = new DateOnly(2025, 2, 10);
 
             var dailyExpense = EntityFactory.CreateExpense(_account, false, "Daily", 10, "2025-01-01", "2025-02-05", null, Frequency.Days, 1);
-            dailyExpense.AccruedIsDirty = false;
 
             var weeklyExpense = EntityFactory.CreateExpense(_account, false, "Weekly", 50, "2025-01-15", "2025-02-05", null, Frequency.Weeks, 1);
-            weeklyExpense.AccruedIsDirty = false;
 
             var monthlyExpense = EntityFactory.CreateExpense(_account, false, "Monthly", 100, "2024-12-10", "2025-01-10", null, Frequency.Months, 1);
-            monthlyExpense.AccruedIsDirty = false;
 
             _calculator.Renew([dailyExpense, weeklyExpense, monthlyExpense], RenewalMode.Overdue, asOfDate);
 
             // Daily: 2025-02-05 -> 2025-02-06 -> ... -> 2025-02-10 -> 2025-02-11
             dailyExpense.NextDue.ShouldBe(new DateOnly(2025, 2, 11));
             dailyExpense.AccrualStart.ShouldBe(new DateOnly(2025, 2, 10));
-            dailyExpense.AccruedIsDirty.ShouldBeTrue();
 
             // Weekly: 2025-02-05 -> 2025-02-12 (7 days), renews past AsOfDate
             weeklyExpense.NextDue.ShouldBe(new DateOnly(2025, 2, 12));
             weeklyExpense.AccrualStart.ShouldBe(new DateOnly(2025, 2, 5));
-            weeklyExpense.AccruedIsDirty.ShouldBeTrue();
 
             // Monthly: 2025-01-10 -> 2025-02-10 -> 2025-03-10
             monthlyExpense.NextDue.ShouldBe(new DateOnly(2025, 3, 10));
             monthlyExpense.AccrualStart.ShouldBe(new DateOnly(2025, 2, 10));
-            monthlyExpense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -435,7 +381,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 
             // Expense should renew multiple times but stop before exceeding EndDate
             var expense = EntityFactory.CreateExpense(_account, false, "Limited Renewal", 100, "2025-01-01", "2025-01-01", "2025-02-20", Frequency.Weeks, 1);
-            expense.AccruedIsDirty = false;
 
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
@@ -444,7 +389,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             // Loop exits because 2025-02-19 > 2025-02-15
             expense.NextDue.ShouldBe(new DateOnly(2025, 2, 19));
             expense.AccrualStart.ShouldBe(new DateOnly(2025, 2, 12));
-            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -454,14 +398,12 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 
             // Expense starting on Feb 29 (leap year)
             var expense = EntityFactory.CreateExpense(_account, false, "Leap Year", 100, "2024-02-29", "2024-02-29", null, Frequency.Years, 1);
-            expense.AccruedIsDirty = false;
 
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // 2024-02-29 -> 2025-02-28 -> 2026-02-28 (365 days later in non-leap year, then 365 days again)
             expense.NextDue.ShouldBe(new DateOnly(2026, 2, 28));
             expense.AccrualStart.ShouldBe(new DateOnly(2025, 2, 28));
-            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -489,7 +431,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             // Should renew to next week: 2025-01-19 -> 2025-01-26
             expense.NextDue.ShouldBe(new DateOnly(2025, 1, 26));
             expense.AccrualStart.ShouldBe(new DateOnly(2025, 1, 19));
-            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -499,30 +440,12 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 
             // Expense where next renewal lands exactly on EndDate
             var expense = EntityFactory.CreateExpense(_account, false, "Exact EndDate", 100, "2025-01-01", "2025-01-08", "2025-02-12", Frequency.Weeks, 1);
-            expense.AccruedIsDirty = false;
 
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // Should renew to 2025-02-12 (which equals EndDate)
             expense.NextDue.ShouldBe(new DateOnly(2025, 2, 12));
             expense.AccrualStart.ShouldBe(new DateOnly(2025, 2, 5));
-            expense.AccruedIsDirty.ShouldBeTrue();
-        }
-
-        [Fact]
-        public void Should_Not_Modify_LastAccruedUpdate_During_Renewal()
-        {
-            var lastAccruedUpdate = new DateOnly(2025, 1, 5);
-
-            var expense = EntityFactory.CreateExpense(_account, false, "Test Expense", 100, "2025-01-01", "2025-01-10", null, Frequency.Weeks, 1);
-            expense.LastAccruedUpdate = lastAccruedUpdate;
-
-            var asOfDate = new DateOnly(2025, 1, 20);
-
-            _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
-
-            // LastAccruedUpdate should not be modified by the renewal process
-            expense.LastAccruedUpdate.ShouldBe(lastAccruedUpdate);
         }
 
         [Fact]
@@ -533,7 +456,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 
             var originalAmount = expense.Amount;
             var asOfDate = new DateOnly(2025, 1, 20);
-
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // These fields should not be modified
@@ -548,7 +470,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             var asOfDate = new DateOnly(2025, 4, 15);
 
             var expense = EntityFactory.CreateExpense(_account, false, "Month End 31st", 100, "2025-01-31", "2025-01-31", null, Frequency.Months, 1);
-            expense.AccruedIsDirty = false;
 
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
@@ -561,7 +482,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 
             expense.NextDue.ShouldBe(new DateOnly(2025, 4, 28));
             expense.AccrualStart.ShouldBe(new DateOnly(2025, 3, 28));
-            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -582,7 +502,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             // The expense permanently drifts from 31st to 28th
             expense.NextDue.ShouldBe(new DateOnly(2025, 4, 28));
             expense.AccrualStart.ShouldBe(new DateOnly(2025, 3, 28));
-            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -597,7 +516,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             // Jan 31 -> Feb 28 -> Mar 31 -> Apr 30 (final renewal beyond asOfDate)
             expense.NextDue.ShouldBe(new DateOnly(2025, 4, 30));
             expense.AccrualStart.ShouldBe(new DateOnly(2025, 3, 31));
-            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -607,14 +525,12 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 
             // Semi-annual (every 6 months)
             var expense = EntityFactory.CreateExpense(_account, false, "Semi-Annual", 100, "2025-01-15", "2025-01-15", null, Frequency.Months, 6);
-            expense.AccruedIsDirty = false;
 
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // 2025-01-15 -> 2025-07-15 -> 2026-01-15 -> 2026-07-15 -> 2027-01-15 -> 2027-07-15
             expense.NextDue.ShouldBe(new DateOnly(2027, 7, 15));
             expense.AccrualStart.ShouldBe(new DateOnly(2027, 1, 15));
-            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -623,25 +539,19 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             var asOfDate = new DateOnly(2025, 1, 20);
 
             var excluded = EntityFactory.CreateExpense(_account, true, "Excluded", 100, "2025-01-01", "2025-01-10", null, Frequency.Weeks, 1);
-            excluded.AccruedIsDirty = false;
 
             var oneTime = EntityFactory.CreateExpense(_account, false, "OneTime", 100, "2025-01-01", "2025-01-10", null, Frequency.OneTime, 1);
-            oneTime.AccruedIsDirty = false;
 
             var renewable = EntityFactory.CreateExpense(_account, false, "Renewable", 100, "2025-01-01", "2025-01-10", null, Frequency.Weeks, 1);
-            renewable.AccruedIsDirty = false;
 
             _calculator.Renew([excluded, oneTime, renewable], RenewalMode.Overdue, asOfDate);
 
             // Only renewable should be renewed
             excluded.NextDue.ShouldBe(new DateOnly(2025, 1, 10));
-            excluded.AccruedIsDirty.ShouldBeFalse();
 
             oneTime.NextDue.ShouldBe(new DateOnly(2025, 1, 10));
-            oneTime.AccruedIsDirty.ShouldBeFalse();
 
             renewable.NextDue.ShouldBe(new DateOnly(2025, 1, 24));
-            renewable.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -662,13 +572,11 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
                 AccrualPolicy.None);
 
             nonePolicyExpense.AccrualStart = new DateOnly(2025, 1, 1); // Legacy/non-canonical value
-            nonePolicyExpense.AccruedIsDirty = false;
 
             _calculator.Renew([nonePolicyExpense], RenewalMode.Overdue, asOfDate);
 
             nonePolicyExpense.NextDue.ShouldBe(new DateOnly(2025, 2, 17));
             nonePolicyExpense.AccrualStart.ShouldBeNull();
-            nonePolicyExpense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -700,19 +608,15 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
                 1,
                 AccrualPolicy.None);
 
-            automaticExpense.AccruedIsDirty = false;
             noneExpense.AccrualStart = new DateOnly(2025, 1, 1); // Legacy/non-canonical value
-            noneExpense.AccruedIsDirty = false;
 
             _calculator.Renew([automaticExpense, noneExpense], RenewalMode.Overdue, asOfDate);
 
             automaticExpense.NextDue.ShouldBe(new DateOnly(2025, 2, 17));
             automaticExpense.AccrualStart.ShouldBe(new DateOnly(2025, 2, 10));
-            automaticExpense.AccruedIsDirty.ShouldBeTrue();
 
             noneExpense.NextDue.ShouldBe(new DateOnly(2025, 2, 17));
             noneExpense.AccrualStart.ShouldBeNull();
-            noneExpense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -733,13 +637,11 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
                 AccrualPolicy.None);
 
             noneExpense.AccrualStart = null;
-            noneExpense.AccruedIsDirty = false;
 
             _calculator.Renew([noneExpense], RenewalMode.Overdue, asOfDate);
 
             noneExpense.NextDue.ShouldBe(new DateOnly(2025, 1, 1));
             noneExpense.AccrualStart.ShouldBeNull();
-            noneExpense.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
@@ -749,7 +651,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 
             // Expense where NextDue already equals EndDate (has reached its end)
             var expense = EntityFactory.CreateExpense(_account, false, "Already At EndDate", 100, "2025-01-01", "2025-01-15", "2025-01-15", Frequency.Weeks, 1);
-            expense.AccruedIsDirty = false;
 
             var originalNextDue = expense.NextDue;
             var originalAccrualStart = expense.AccrualStart;
@@ -759,7 +660,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             // Should not renew because NextDue == EndDate at the start
             expense.NextDue.ShouldBe(originalNextDue);
             expense.AccrualStart.ShouldBe(originalAccrualStart);
-            expense.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
@@ -769,7 +669,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 
             // Expense where NextDue is already past EndDate (shouldn't happen in normal flow, but validates the guard)
             var expense = EntityFactory.CreateExpense(_account, false, "Past EndDate", 100, "2025-01-01", "2025-01-18", "2025-01-15", Frequency.Weeks, 1);
-            expense.AccruedIsDirty = false;
 
             var originalNextDue = expense.NextDue;
             var originalAccrualStart = expense.AccrualStart;
@@ -779,7 +678,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             // Should not renew because NextDue > EndDate at the start
             expense.NextDue.ShouldBe(originalNextDue);
             expense.AccrualStart.ShouldBe(originalAccrualStart);
-            expense.AccruedIsDirty.ShouldBeFalse();
         }
     }
 
@@ -799,7 +697,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
         {
             // Expense due in the future (Feb 20)
             var expense = EntityFactory.CreateExpense(_account, false, "Weekly Expense", 100, "2025-01-01", "2025-02-20", null, Frequency.Weeks, 1);
-            expense.AccruedIsDirty = false;
 
             var asOfDate = new DateOnly(2025, 2, 10); // Today is Feb 10
 
@@ -808,7 +705,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             // Should advance exactly once: Feb 20 + 7 days = Feb 27
             expense.NextDue.ShouldBe(new DateOnly(2025, 2, 27));
             expense.AccrualStart.ShouldBe(asOfDate); // Accruals start from the date the request was made
-            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -827,7 +723,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
                 AccrualPolicy.None);
 
             expense.AccrualStart = new DateOnly(2025, 1, 1); // Legacy/non-canonical value
-            expense.AccruedIsDirty = false;
 
             var asOfDate = new DateOnly(2025, 2, 10);
 
@@ -835,7 +730,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 
             expense.NextDue.ShouldBe(new DateOnly(2025, 2, 17));
             expense.AccrualStart.ShouldBeNull();
-            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -843,7 +737,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
         {
             // Expense due in the future (Mar 15)
             var expense = EntityFactory.CreateExpense(_account, false, "Monthly Expense", 200, "2025-01-01", "2025-03-15", null, Frequency.Months, 1);
-            expense.AccruedIsDirty = false;
 
             var asOfDate = new DateOnly(2025, 2, 10); // Today is Feb 10
 
@@ -852,7 +745,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             // Should advance exactly once: Mar 15 + 1 month = Apr 15
             expense.NextDue.ShouldBe(new DateOnly(2025, 4, 15));
             expense.AccrualStart.ShouldBe(asOfDate); // Accruals start from the date the request was made
-            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -860,7 +752,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
         {
             // Expense due in the future (Dec 25, 2025)
             var expense = EntityFactory.CreateExpense(_account, false, "Yearly Expense", 1000, "2025-01-01", "2025-12-25", null, Frequency.Years, 1);
-            expense.AccruedIsDirty = false;
 
             var asOfDate = new DateOnly(2025, 2, 10); // Today is Feb 10
 
@@ -869,7 +760,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             // Should advance exactly once: Dec 25, 2025 + 1 year = Dec 25, 2026
             expense.NextDue.ShouldBe(new DateOnly(2026, 12, 25));
             expense.AccrualStart.ShouldBe(asOfDate); // Accruals start from the date the request was made
-            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -877,7 +767,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
         {
             // Expense due in the future with EndDate that would be exceeded
             var expense = EntityFactory.CreateExpense(_account, false, "Ending Expense", 100, "2025-01-01", "2025-02-20", "2025-02-25", Frequency.Weeks, 1);
-            expense.AccruedIsDirty = false;
 
             var originalNextDue = expense.NextDue;
             var originalAccrualStart = expense.AccrualStart;
@@ -890,14 +779,12 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             // So expense should NOT be renewed
             expense.NextDue.ShouldBe(originalNextDue);
             expense.AccrualStart.ShouldBe(originalAccrualStart);
-            expense.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
         public void Should_Not_Renew_OneTime_Expense_In_Future_Mode()
         {
             var expense = EntityFactory.CreateExpense(_account, false, "OneTime Expense", 100, "2025-01-01", "2025-02-20", null, Frequency.OneTime, 1);
-            expense.AccruedIsDirty = false;
 
             var originalNextDue = expense.NextDue;
             var originalAccrualStart = expense.AccrualStart;
@@ -909,14 +796,12 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             // OneTime expenses should never renew
             expense.NextDue.ShouldBe(originalNextDue);
             expense.AccrualStart.ShouldBe(originalAccrualStart);
-            expense.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
         public void Should_Not_Renew_Excluded_Expense_In_Future_Mode()
         {
             var expense = EntityFactory.CreateExpense(_account, true, "Excluded Expense", 100, "2025-01-01", "2025-02-20", null, Frequency.Months, 1);
-            expense.AccruedIsDirty = false;
 
             var originalNextDue = expense.NextDue;
             var originalAccrualStart = expense.AccrualStart;
@@ -928,7 +813,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             // Excluded expenses should not renew
             expense.NextDue.ShouldBe(originalNextDue);
             expense.AccrualStart.ShouldBe(originalAccrualStart);
-            expense.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
@@ -938,9 +822,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             var monthlyExpense = EntityFactory.CreateExpense(_account, false, "Monthly", 100, "2025-01-01", "2025-03-01", null, Frequency.Months, 1);
             var yearlyExpense = EntityFactory.CreateExpense(_account, false, "Yearly", 1000, "2025-01-01", "2025-12-25", null, Frequency.Years, 1);
 
-            weeklyExpense.AccruedIsDirty = false;
-            monthlyExpense.AccruedIsDirty = false;
-            yearlyExpense.AccruedIsDirty = false;
 
             var asOfDate = new DateOnly(2025, 2, 10);
 
@@ -949,17 +830,14 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             // Weekly: Feb 15 + 7 days = Feb 22
             weeklyExpense.NextDue.ShouldBe(new DateOnly(2025, 2, 22));
             weeklyExpense.AccrualStart.ShouldBe(asOfDate);
-            weeklyExpense.AccruedIsDirty.ShouldBeTrue();
 
             // Monthly: Mar 1 + 1 month = Apr 1
             monthlyExpense.NextDue.ShouldBe(new DateOnly(2025, 4, 1));
             monthlyExpense.AccrualStart.ShouldBe(asOfDate);
-            monthlyExpense.AccruedIsDirty.ShouldBeTrue();
 
             // Yearly: Dec 25, 2025 + 1 year = Dec 25, 2026
             yearlyExpense.NextDue.ShouldBe(new DateOnly(2026, 12, 25));
             yearlyExpense.AccrualStart.ShouldBe(asOfDate);
-            yearlyExpense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -978,7 +856,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
                 AccrualPolicy.None);
 
             nonePolicyExpense.AccrualStart = new DateOnly(2025, 1, 1); // Legacy/non-canonical value
-            nonePolicyExpense.AccruedIsDirty = false;
 
             var asOfDate = new DateOnly(2025, 2, 10);
 
@@ -986,7 +863,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 
             nonePolicyExpense.NextDue.ShouldBe(new DateOnly(2025, 2, 27));
             nonePolicyExpense.AccrualStart.ShouldBeNull();
-            nonePolicyExpense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -1016,9 +892,7 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
                 1,
                 AccrualPolicy.None);
 
-            automaticExpense.AccruedIsDirty = false;
             noneExpense.AccrualStart = new DateOnly(2025, 1, 1); // Legacy/non-canonical value
-            noneExpense.AccruedIsDirty = false;
 
             var asOfDate = new DateOnly(2025, 2, 10);
 
@@ -1026,11 +900,9 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 
             automaticExpense.NextDue.ShouldBe(new DateOnly(2025, 2, 27));
             automaticExpense.AccrualStart.ShouldBe(asOfDate);
-            automaticExpense.AccruedIsDirty.ShouldBeTrue();
 
             noneExpense.NextDue.ShouldBe(new DateOnly(2025, 2, 27));
             noneExpense.AccrualStart.ShouldBeNull();
-            noneExpense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -1049,7 +921,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
                 AccrualPolicy.None);
 
             noneExpense.AccrualStart = null;
-            noneExpense.AccruedIsDirty = false;
 
             var asOfDate = new DateOnly(2025, 2, 10);
 
@@ -1057,7 +928,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
 
             noneExpense.NextDue.ShouldBe(new DateOnly(2025, 2, 20));
             noneExpense.AccrualStart.ShouldBeNull();
-            noneExpense.AccruedIsDirty.ShouldBeFalse();
         }
     }
 
@@ -1077,7 +947,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
         {
             // Expense overdue by one period (due Feb 3, today is Feb 10)
             var expense = EntityFactory.CreateExpense(_account, false, "Overdue Expense", 100, "2025-01-01", "2025-02-03", null, Frequency.Weeks, 1);
-            expense.AccruedIsDirty = false;
 
             var asOfDate = new DateOnly(2025, 2, 10);
 
@@ -1086,7 +955,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             // Should advance to first date after Feb 10: Feb 3 -> Feb 10 -> Feb 17
             expense.NextDue.ShouldBe(new DateOnly(2025, 2, 17));
             expense.AccrualStart.ShouldBe(new DateOnly(2025, 2, 10)); // Previous NextDue before advancing to Feb 17
-            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -1094,7 +962,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
         {
             // Expense overdue by multiple periods (due Jan 1, today is Feb 10)
             var expense = EntityFactory.CreateExpense(_account, false, "Very Overdue", 100, "2025-01-01", "2025-01-01", null, Frequency.Weeks, 1);
-            expense.AccruedIsDirty = false;
 
             var asOfDate = new DateOnly(2025, 2, 10);
 
@@ -1103,7 +970,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             // Should catch up through multiple iterations: Jan 1 -> Jan 8 -> Jan 15 -> ... -> Feb 12
             expense.NextDue.ShouldBe(new DateOnly(2025, 2, 12));
             expense.AccrualStart.ShouldBe(new DateOnly(2025, 2, 5)); // Previous NextDue before advancing to Feb 12
-            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -1112,14 +978,12 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             // Expense due today
             var asOfDate = new DateOnly(2025, 2, 10);
             var expense = EntityFactory.CreateExpense(_account, false, "Due Today", 100, "2025-01-01", "2025-02-10", null, Frequency.Weeks, 1);
-            expense.AccruedIsDirty = false;
 
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // Due today should be treated as overdue and advance
             expense.NextDue.ShouldBe(new DateOnly(2025, 2, 17));
             expense.AccrualStart.ShouldBe(new DateOnly(2025, 2, 10)); // Previous NextDue before advancing to Feb 17
-            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -1140,13 +1004,11 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
                 AccrualPolicy.None);
 
             expense.AccrualStart = new DateOnly(2025, 1, 1); // Legacy/non-canonical value
-            expense.AccruedIsDirty = false;
 
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             expense.NextDue.ShouldBe(new DateOnly(2025, 2, 17));
             expense.AccrualStart.ShouldBeNull();
-            expense.AccruedIsDirty.ShouldBeTrue();
         }
 
         [Fact]
@@ -1155,14 +1017,12 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             // Expense is overdue but the next period would exceed its end date
             var asOfDate = new DateOnly(2025, 2, 15);
             var expense = EntityFactory.CreateExpense(_account, false, "Overdue with near EndDate", 100, "2025-01-01", "2025-01-01", "2025-01-25", Frequency.Months, 1);
-            expense.AccruedIsDirty = false;
 
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
             // Should remain unchanged since next period (2025-02-01) exceeds EndDate (2025-01-25)
             expense.NextDue.ShouldBe(new DateOnly(2025, 1, 1), "expense should not advance beyond its end date");
             expense.AccrualStart.ShouldBe(new DateOnly(2025, 1, 1));
-            expense.AccruedIsDirty.ShouldBeFalse();
         }
 
         [Fact]
@@ -1172,7 +1032,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             // This tests the scenario where the first iteration succeeds, but a later one would exceed EndDate
             var asOfDate = new DateOnly(2025, 2, 15);
             var expense = EntityFactory.CreateExpense(_account, false, "Multi-Week Overdue Near End", 100, "2025-01-01", "2025-01-15", "2025-02-20", Frequency.Weeks, 1);
-            expense.AccruedIsDirty = false;
 
             _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
 
@@ -1180,7 +1039,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
             // Should stop at Feb 19
             expense.NextDue.ShouldBe(new DateOnly(2025, 2, 19), "should advance through multiple periods but stop before exceeding end date");
             expense.AccrualStart.ShouldBe(new DateOnly(2025, 2, 12)); // Previous NextDue before advancing to Feb 19
-            expense.AccruedIsDirty.ShouldBeTrue();
         }
     }
 }

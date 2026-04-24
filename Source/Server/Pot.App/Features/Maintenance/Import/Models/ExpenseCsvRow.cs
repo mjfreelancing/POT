@@ -49,16 +49,8 @@ internal sealed class ExpenseCsvRow : IExpenseCsvRow
     public double Accrued { get; init; }
 
     [Index(11)]
-    public bool AccruedIsDirty { get; init; }
-
-    [Index(12)]
-    [Format("yyyy-MM-dd")]
-    [TypeConverter(typeof(NullableDateOnlyConverter))]
-    public DateOnly? LastAccruedUpdate { get; init; }
-
-    [Index(13)]
     public string Note { get; init; } = string.Empty;
 
-    [Index(14)]
+    [Index(12)]
     public Guid AccountRowId { get; init; }
 }

@@ -305,7 +305,6 @@ public class UpdateExpenseServiceFixture : PotFixtureBase
 
             existingExpense.Description.ShouldBe(input.Description);
             existingExpense.Account.ShouldBe(targetAccount);
-            existingExpense.AccruedIsDirty.ShouldBeTrue();
 
             beforeState.ShouldNotBeNull();
             var before = beforeState!;
@@ -453,8 +452,7 @@ public class UpdateExpenseServiceFixture : PotFixtureBase
             AccrualPolicy = AccrualPolicy.Automatic,
             Frequency = Frequency.Months,
             FrequencyCount = 1,
-            Account = ownerAccount,
-            AccruedIsDirty = false
+            Account = ownerAccount
         };
     }
 

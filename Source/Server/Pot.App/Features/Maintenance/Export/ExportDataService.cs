@@ -62,7 +62,7 @@ internal sealed class ExportDataService : IExportDataService
 
     private Task<byte[]> ExportMetadataAsync()
     {
-        var metadata = new MetadataV2
+        var metadata = new MetadataV3
         {
             CreatedAt = DateTime.UtcNow
         };

@@ -279,8 +279,7 @@ public class RenewExpensesServiceFixture : PotFixtureBase
             AccrualPolicy = AccrualPolicy.Automatic,
             Frequency = Frequency.Months,
             FrequencyCount = 1,
-            Account = account,
-            AccruedIsDirty = false
+            Account = account
         };
     }
 }

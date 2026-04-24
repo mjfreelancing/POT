@@ -59,8 +59,7 @@ internal sealed class CreateExpenseService : ICreateExpenseService
             FrequencyCount = input.FrequencyCount,
             Amount = input.Amount,
             Note = input.Note,
-            Account = expenseAccount,
-            AccruedIsDirty = true                       // The default is true, but being explicit
+            Account = expenseAccount
         };
 
         // Provided when importing

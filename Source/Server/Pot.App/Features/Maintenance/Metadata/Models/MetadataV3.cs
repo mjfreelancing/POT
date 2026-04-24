@@ -1,12 +1,12 @@
 ﻿namespace Pot.App.Features.Maintenance.Metadata.Models;
 
 /// <summary>
-/// Exported columns for metadata version 2.
+/// Exported columns for metadata version 3.
 ///
-/// Diff from previous version (late v1):
-/// - accounts.csv: unchanged from late v1.
-/// - incomes.csv: unchanged from late v1.
-/// - expenses.csv: added AccrualPolicy after EndDate.
+/// Diff from previous version (v2):
+/// - accounts.csv: unchanged from v2.
+/// - incomes.csv: unchanged from v2.
+/// - expenses.csv: removed AccruedIsDirty and LastAccruedUpdate.
 ///
 /// accounts.csv:
 /// - RowId (Guid)
@@ -43,12 +43,10 @@
 /// - FrequencyCount (int)
 /// - Amount (double)
 /// - Accrued (double)
-/// - AccruedIsDirty (bool)
-/// - LastAccruedUpdate (DateOnly?)
 /// - Note (string?)
 /// - AccountRowId (Guid)
 /// </summary>
-internal sealed class MetadataV2 : MetadataBase
+internal sealed class MetadataV3 : MetadataBase
 {
-    public override int Version => 2;
+    public override int Version => 3;
 }

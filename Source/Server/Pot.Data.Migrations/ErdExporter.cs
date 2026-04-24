@@ -63,7 +63,8 @@ internal sealed class ErdExporter
                     entities
                         .Add<AccountEntity>()
                         .Add<ExpenseEntity>()
-                        .Add<IncomeEntity>();
+                        .Add<IncomeEntity>()
+                        .Add<AccountAccrualEntity>();
                 });
 
                 // Add Site group

@@ -47,7 +47,6 @@ internal sealed class ExcludeExpensesService : IExcludeExpensesService
             foreach (var expense in expenses)
             {
                 expense.ExcludeFromCalcs = !expense.ExcludeFromCalcs;
-                expense.AccruedIsDirty = true;
             }
 
             await _accrualDirtyStateManager

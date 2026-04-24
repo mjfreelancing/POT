@@ -43,7 +43,6 @@ internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
                     // The expense.Accrued will be updated next time the account's 'accrue expenses' is performed.
                     expense.AccrualStart = GetRenewedAccrualStart(expense.AccrualPolicy, asOfDate);
                     expense.NextDue = nextDue;
-                    expense.AccruedIsDirty = true;
                 }
             }
             else
@@ -65,7 +64,6 @@ internal sealed class ExpenseRenewalCalculator : IExpenseRenewalCalculator
                         // The expense.Accrued will be updated next time the account's 'accrue expenses' is performed.
                         expense.AccrualStart = GetRenewedAccrualStart(expense.AccrualPolicy, nextDue);
                         expense.NextDue = calculatedNextDue;
-                        expense.AccruedIsDirty = true;
                         nextDue = calculatedNextDue;
                     }
                     else

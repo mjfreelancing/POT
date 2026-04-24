@@ -30,11 +30,6 @@ public sealed class PotDbContext : DbContextBase
         base.OnModelCreating(modelBuilder);
 
         modelBuilder
-            .Entity<ExpenseEntity>()
-            .Property(expense => expense.AccruedIsDirty)
-            .HasDefaultValue(true);
-
-        modelBuilder
             .Entity<AccountAccrualEntity>(entityBuilder =>
             {
                 // AccountAccrual stores a single accrual-state row per account.

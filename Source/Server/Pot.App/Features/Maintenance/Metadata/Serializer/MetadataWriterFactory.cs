@@ -5,5 +5,5 @@ namespace Pot.App.Features.Maintenance.Metadata.Serializer;
 
 internal sealed class MetadataWriterFactory : IMetadataWriterFactory
 {
-    public IEnrichedBinaryValueWriter CreateWriter() => new MetadataV2Writer();
+    public IEnrichedBinaryValueWriter CreateWriter() => new MetadataV3Writer();
 }

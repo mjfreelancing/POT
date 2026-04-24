@@ -63,9 +63,7 @@ public static class EntityFactory
             AccrualPolicy = accrualPolicy ?? (frequency == Frequency.OneTime ? AccrualPolicy.None : AccrualPolicy.Automatic),
             Frequency = frequency,
             FrequencyCount = frequencyCount,
-            Accrued = 0.0d,
-            AccruedIsDirty = true,
-            LastAccruedUpdate = null
+            Accrued = 0.0d
         };
 
         return expense;

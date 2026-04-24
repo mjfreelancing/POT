@@ -33,14 +33,12 @@ internal sealed class AccrueExpenseCalculator : IAccrueExpenseCalculator
         ResetAccountAccruals(account);
 
         // Sorted will be important if there's ever an option to not allow negative balances.
-        // Can't pre-filter since we need to set AccruedIsDirty = false even if the expense is not processed.
+        // Keep full iteration because account-level outputs are reset each run before conditional expense processing.
         var sortedExpenses = expenses.OrderBy(expense => expense.NextDue);
 
         foreach (var expense in sortedExpenses)
         {
             expense.Accrued = 0.0d;
-            expense.AccruedIsDirty = false;
-            expense.LastAccruedUpdate = currentDateValue;
 
             var processExpense =
                 // The current implementation does not include 'ExcludeFromCalcs' items, but keep here for now so we're not making assumptions.

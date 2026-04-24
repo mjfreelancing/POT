@@ -135,8 +135,5 @@ internal sealed class UpdateExpenseService : IUpdateExpenseService
         expenseToUpdate.Amount = input.Amount;
         expenseToUpdate.Note = input.Note;
         expenseToUpdate.Account = expenseAccount;
-
-        // While not all columns affect accruals, most of them do, so just mark dirty and play on the side of caution
-        expenseToUpdate.AccruedIsDirty = true;
     }
 }

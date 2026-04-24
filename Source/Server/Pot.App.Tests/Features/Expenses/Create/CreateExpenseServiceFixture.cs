@@ -233,7 +233,6 @@ public class CreateExpenseServiceFixture : PotFixtureBase
             var createdExpense = account.Expenses.Single();
             createdExpense.Description.ShouldBe(input.Description);
             createdExpense.Account.ShouldBe(account);
-            createdExpense.AccruedIsDirty.ShouldBeTrue();
 
             markedAccountIds.ShouldBe([account.Id]);
 

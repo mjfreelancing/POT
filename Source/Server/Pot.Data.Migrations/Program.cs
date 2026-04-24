@@ -8,6 +8,10 @@ using Pot.Shared;
 
 namespace Pot.Data.Migrations;
 
+// CLI commands:
+//   dotnet ef migrations add <migration-name> --project Pot.Data --startup-project Pot.Data.Migrations
+//   dotnet ef migrations remove
+
 internal class Program
 {
     static async Task Main(string[] args)

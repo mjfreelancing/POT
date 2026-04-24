@@ -28,7 +28,7 @@ auth: Auth {
   }
 }
 
-AccountAccrual: {
+finance.AccountAccrual: {
   shape: sql_table
 
   Id: integer \[NOT NULL\] {constraint: primary_key}
@@ -72,8 +72,6 @@ finance.Expense: {
   FrequencyCount: integer \[NOT NULL\]
   Amount: double precision \[NOT NULL\]
   Accrued: double precision \[NOT NULL\]
-  AccruedIsDirty: boolean \[NOT NULL\]
-  LastAccruedUpdate: date
   Note: text
   AccountId: integer \[NOT NULL\] {constraint: foreign_key}
 }
@@ -188,7 +186,7 @@ role_perm.UserRole: {
   UsersId: integer \[NOT NULL\] {constraint: foreign_key}
 }
 
-finance.Account.Id <-> AccountAccrual.AccountId: ONE-TO-ONE {
+finance.Account.Id <-> finance.AccountAccrual.AccountId: ONE-TO-ONE {
   source-arrowhead: {
     shape: cf-one-required
   }

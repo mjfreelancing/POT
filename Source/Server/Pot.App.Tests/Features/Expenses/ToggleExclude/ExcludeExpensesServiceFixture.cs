@@ -181,8 +181,6 @@ public class ExcludeExpensesServiceFixture : PotFixtureBase
 
             firstExpense.ExcludeFromCalcs.ShouldBeTrue();
             secondExpense.ExcludeFromCalcs.ShouldBeFalse();
-            firstExpense.AccruedIsDirty.ShouldBeTrue();
-            secondExpense.AccruedIsDirty.ShouldBeTrue();
 
             markedExpenses.ShouldNotBeNull();
             markedExpenses.Count.ShouldBe(2);
@@ -220,8 +218,7 @@ public class ExcludeExpensesServiceFixture : PotFixtureBase
             AccrualPolicy = AccrualPolicy.Automatic,
             Frequency = Frequency.Months,
             FrequencyCount = 1,
-            Account = account,
-            AccruedIsDirty = false
+            Account = account
         };
     }
 }

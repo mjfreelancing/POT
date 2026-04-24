@@ -24,8 +24,6 @@ public sealed class ExpenseEntity : EntityBase, IHasNextDue
     public int FrequencyCount { get; set; }
     public double Amount { get; set; }
     public double Accrued { get; set; }
-    public bool AccruedIsDirty { get; set; } = true;            // See OnModelCreating in PotDbContext
-    public DateOnly? LastAccruedUpdate { get; set; }            // Local timezone
     public string? Note { get; set; }
 
     public required AccountEntity Account { get; set; }
