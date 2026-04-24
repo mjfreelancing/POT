@@ -280,6 +280,8 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
   const bulkActions: BulkAction<Expense>[] = [
     {
       label: 'Mark as Paid',
+      icon: CheckCircle,
+      iconClassName: 'text-action-progress',
       isDisabled: !canManageExpenses,
       // Hide this action when all selected items are non-actionable.
       // Excluded or ended items are skipped and would not change due dates.
@@ -294,6 +296,8 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
     },
     {
       label: 'Toggle Exclusion',
+      icon: EyeOff,
+      iconClassName: 'text-action-toggle',
       isDisabled: !canManageExpenses,
       onClick: async (selectedItems: Expense[]) => {
         const result = await toggleExcludeExpenses(

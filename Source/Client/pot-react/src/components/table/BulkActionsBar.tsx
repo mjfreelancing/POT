@@ -16,6 +16,10 @@ import {
 type BulkAction<TData> = {
   /** Display label for the action (e.g., "Delete", "Export") */
   label: string;
+  /** Optional icon component to render before the action label */
+  icon?: React.ComponentType<{ className?: string }>;
+  /** Optional class name applied to the icon */
+  iconClassName?: string;
   /** Function called when the action is triggered, receives all selected items */
   onClick: (selectedItems: TData[]) => void;
   /** Whether this action is currently disabled */
@@ -123,6 +127,7 @@ function BulkActionsBar<TData>({
             }
 
             const isDisabled = selectedCount === 0 || action.isDisabled;
+            const IconComponent = action.icon;
 
             if (!isDisabled) {
               return (
@@ -135,6 +140,15 @@ function BulkActionsBar<TData>({
                     }
                   }}
                 >
+                  {IconComponent && (
+                    <IconComponent
+                      className={
+                        action.iconClassName
+                          ? `${action.iconClassName} mr-2 h-4 w-4`
+                          : 'mr-2 h-4 w-4'
+                      }
+                    />
+                  )}
                   {action.label}
                 </DropdownMenuItem>
               );
@@ -147,6 +161,15 @@ function BulkActionsBar<TData>({
                   aria-disabled={true}
                   className="pointer-events-none"
                 >
+                  {IconComponent && (
+                    <IconComponent
+                      className={
+                        action.iconClassName
+                          ? `${action.iconClassName} mr-2 h-4 w-4`
+                          : 'mr-2 h-4 w-4'
+                      }
+                    />
+                  )}
                   {action.label}
                 </DropdownMenuItem>
               </div>

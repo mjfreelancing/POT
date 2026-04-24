@@ -253,6 +253,8 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
   const bulkActions: BulkAction<Income>[] = [
     {
       label: 'Mark as Received',
+      icon: CheckCircle,
+      iconClassName: 'text-action-progress',
       isDisabled: !canManageIncomes,
       // Hide this action when all selected items are non-actionable.
       // Excluded or ended items are skipped and would not change due dates.
@@ -267,6 +269,8 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
     },
     {
       label: 'Toggle Exclusion',
+      icon: EyeOff,
+      iconClassName: 'text-action-toggle',
       isDisabled: !canManageIncomes,
       onClick: async (selectedItems: Income[]) => {
         const result = await toggleExcludeIncomes(

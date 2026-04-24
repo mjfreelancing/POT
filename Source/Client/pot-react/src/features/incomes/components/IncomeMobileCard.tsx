@@ -488,7 +488,7 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
                           onClick={() => setShowMarkAsReceivedDialog(true)}
                           disabled={isActionInProgress}
                         >
-                          <CheckCircle className="mr-2 h-4 w-4" />
+                          <CheckCircle className="text-action-progress mr-2 h-4 w-4" />
                           Mark as Received
                         </DropdownMenuItem>
                       </WithPermission>
@@ -499,7 +499,7 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
                         onClick={processToggleExclusion}
                         disabled={isActionInProgress}
                       >
-                        <EyeOff className="mr-2 h-4 w-4" />
+                        <EyeOff className="text-action-toggle mr-2 h-4 w-4" />
                         Toggle Exclusion
                       </DropdownMenuItem>
                     </WithPermission>
@@ -515,7 +515,7 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
                         }
                         disabled={isActionInProgress}
                       >
-                        <Pencil className="mr-2 h-4 w-4" />
+                        <Pencil className="text-action-neutral mr-2 h-4 w-4" />
                         Edit
                       </DropdownMenuItem>
                     </WithPermission>
@@ -527,7 +527,7 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
                         }
                         disabled={isActionInProgress}
                       >
-                        <Copy className="mr-2 h-4 w-4" />
+                        <Copy className="text-action-neutral mr-2 h-4 w-4" />
                         Duplicate
                       </DropdownMenuItem>
                     </WithPermission>

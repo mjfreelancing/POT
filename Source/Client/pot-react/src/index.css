@@ -189,4 +189,16 @@
   .text-destructive-high-contrast {
     @apply text-red-600 dark:text-red-500;
   }
+
+  .text-action-progress {
+    @apply text-green-600 dark:text-green-400;
+  }
+
+  .text-action-toggle {
+    @apply text-emerald-600 dark:text-emerald-400;
+  }
+
+  .text-action-neutral {
+    @apply text-amber-600 dark:text-amber-400;
+  }
 }

@@ -312,7 +312,7 @@ function ExpenseActions({ expense }: ExpenseActionsProps) {
                 onClick={() => setShowMarkAsPaidDialog(true)}
                 disabled={isActionInProgress}
               >
-                <CheckCircle className="mr-2 h-4 w-4" />
+                <CheckCircle className="text-action-progress mr-2 h-4 w-4" />
                 Mark as Paid
               </DropdownMenuItem>
             </WithPermission>
@@ -323,7 +323,7 @@ function ExpenseActions({ expense }: ExpenseActionsProps) {
               onClick={processToggleExclusion}
               disabled={isActionInProgress}
             >
-              <EyeOff className="mr-2 h-4 w-4" />
+              <EyeOff className="text-action-toggle mr-2 h-4 w-4" />
               Toggle Exclusion
             </DropdownMenuItem>
           </WithPermission>
@@ -337,7 +337,7 @@ function ExpenseActions({ expense }: ExpenseActionsProps) {
               }
               disabled={isActionInProgress}
             >
-              <Pencil className="mr-2 h-4 w-4" />
+              <Pencil className="text-action-neutral mr-2 h-4 w-4" />
               Edit
             </DropdownMenuItem>
           </WithPermission>
@@ -349,7 +349,7 @@ function ExpenseActions({ expense }: ExpenseActionsProps) {
               }
               disabled={isActionInProgress}
             >
-              <Copy className="mr-2 h-4 w-4" />
+              <Copy className="text-action-neutral mr-2 h-4 w-4" />
               Duplicate
             </DropdownMenuItem>
           </WithPermission>
