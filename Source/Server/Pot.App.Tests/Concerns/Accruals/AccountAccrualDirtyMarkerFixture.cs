@@ -478,6 +478,19 @@ public class AccountAccrualDirtyMarkerFixture : PotFixtureBase
         }
 
         [Fact]
+        public void Should_Return_Empty_When_Expense_Remains_Excluded_After_Edit()
+        {
+            using var context = CreateTestContext();
+
+            var before = CreateDirtyState(accountId: 16, mutate: state => state with { ExcludeFromCalcs = true });
+            var after = CreateDirtyState(accountId: 16, mutate: state => state with { ExcludeFromCalcs = true, Amount = 220.0d });
+
+            var accountIds = context.Marker.GetAccountIdsToMarkDirty(before, after);
+
+            accountIds.ShouldBeEmpty();
+        }
+
+        [Fact]
         public void Should_Return_Single_Account_When_Dirty_Impact_Is_Same_Account()
         {
             using var context = CreateTestContext();

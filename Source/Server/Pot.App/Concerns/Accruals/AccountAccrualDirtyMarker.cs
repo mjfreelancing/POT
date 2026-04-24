@@ -31,6 +31,11 @@ internal sealed class AccountAccrualDirtyMarker : IAccountAccrualDirtyMarker
             return [];
         }
 
+        if (before.ExcludeFromCalcs && after.ExcludeFromCalcs)
+        {
+            return [];
+        }
+
         if (before.AccountId == after.AccountId)
         {
             return [after.AccountId];
