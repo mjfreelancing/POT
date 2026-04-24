@@ -59,11 +59,6 @@ public class ExpenseRepositoryFixture : PotFixtureBase
             return Repository.GetExpensesForAccountAsync(accountRowId, cancellationToken);
         }
 
-        public Task<Guid[]> GetRequiredAccountAccrualsAsync(Guid[] accountRowIds, DateOnly asOfDate, CancellationToken cancellationToken = default)
-        {
-            return Repository.GetRequiredAccountAccrualsAsync(accountRowIds, asOfDate, cancellationToken);
-        }
-
         public void Dispose()
         {
             DbContext.Dispose();
@@ -244,70 +239,6 @@ public class ExpenseRepositoryFixture : PotFixtureBase
 
             result.Length.ShouldBe(1);
             result.ShouldContain(dueOnAsOfDate.RowId);
-        }
-    }
-
-    public class GetRequiredAccountAccrualsAsync : ExpenseRepositoryFixture
-    {
-        [Fact]
-        public async Task Should_Return_Distinct_Account_RowIds_That_Require_Accrual_Update()
-        {
-            using var context = CreateTestContext();
-
-            var asOfDate = new DateOnly(2025, 1, 20);
-
-            var account = EntityFactory.CreateAccount(context.Site, "Expense Account", 1000.0);
-            var otherAccount = EntityFactory.CreateAccount(context.Site, "Other Account", 500.0);
-
-            var dirtyExpense = EntityFactory.CreateExpense(account, false, "Dirty", 100, "2025-01-01", "2025-01-10", null, Frequency.Weeks, 1);
-            dirtyExpense.AccruedIsDirty = true;
-            dirtyExpense.LastAccruedUpdate = asOfDate;
-
-            var staleExpense = EntityFactory.CreateExpense(account, true, "Stale", 100, "2025-01-01", "2025-01-10", null, Frequency.Weeks, 1);
-            staleExpense.AccruedIsDirty = false;
-            staleExpense.LastAccruedUpdate = asOfDate.AddDays(-1);
-
-            var upToDateExpense = EntityFactory.CreateExpense(account, false, "UpToDate", 100, "2025-01-01", "2025-01-10", null, Frequency.Weeks, 1);
-            upToDateExpense.AccruedIsDirty = false;
-            upToDateExpense.LastAccruedUpdate = asOfDate;
-
-            var noAccrualNeededOtherAccount = EntityFactory.CreateExpense(otherAccount, false, "Other UpToDate", 100, "2025-01-01", "2025-01-10", null, Frequency.Weeks, 1);
-            noAccrualNeededOtherAccount.AccruedIsDirty = false;
-            noAccrualNeededOtherAccount.LastAccruedUpdate = asOfDate;
-
-            account.Expenses.Add(dirtyExpense);
-            account.Expenses.Add(staleExpense);
-            account.Expenses.Add(upToDateExpense);
-            otherAccount.Expenses.Add(noAccrualNeededOtherAccount);
-
-            await context.AddAccountsAsync(account, otherAccount);
-
-            var result = await context.GetRequiredAccountAccrualsAsync([account.RowId, otherAccount.RowId], asOfDate);
-
-            result.Length.ShouldBe(1);
-            result[0].ShouldBe(account.RowId);
-        }
-
-        [Fact]
-        public async Task Should_Include_Account_When_LastAccruedUpdate_Is_Null()
-        {
-            using var context = CreateTestContext();
-
-            var asOfDate = new DateOnly(2025, 1, 20);
-            var account = EntityFactory.CreateAccount(context.Site, "Expense Account", 1000.0);
-
-            var missingAccrualExpense = EntityFactory.CreateExpense(account, false, "Missing Accrual", 100, "2025-01-01", "2025-01-10", null, Frequency.Weeks, 1);
-            missingAccrualExpense.AccruedIsDirty = false;
-            missingAccrualExpense.LastAccruedUpdate = null;
-
-            account.Expenses.Add(missingAccrualExpense);
-
-            await context.AddAccountsAsync(account);
-
-            var result = await context.GetRequiredAccountAccrualsAsync([account.RowId], asOfDate);
-
-            result.Length.ShouldBe(1);
-            result[0].ShouldBe(account.RowId);
         }
     }
 

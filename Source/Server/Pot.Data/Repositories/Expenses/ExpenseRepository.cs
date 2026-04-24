@@ -59,19 +59,4 @@ internal sealed class ExpenseRepository : PersistableRepository, IPersistableExp
             .Select(expense => expense.RowId)
             .ToArrayAsync(cancellationToken);
     }
-
-    public Task<Guid[]> GetRequiredAccountAccrualsAsync(Guid[] accountRowIds, DateOnly asOfDate, CancellationToken cancellationToken)
-    {
-        var isInAccountSet = ExpenseSpecifications.IsInAccountSet(accountRowIds).Expression;
-        var requiresAccrualUpdate = ExpenseSpecifications.RequiresAccrualUpdate(asOfDate).Expression;
-
-        // Not excluding expenses marked as ExcludeFromCalcs as they may still require an accrual update,
-        // such as when toggling the flag.
-        return Expenses
-            .Where(isInAccountSet)
-            .Where(requiresAccrualUpdate)
-            .Select(expense => expense.Account.RowId)
-            .Distinct()
-            .ToArrayAsync(cancellationToken);
-    }
 }

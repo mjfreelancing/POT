@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pot.Data.Entities;
+using Pot.Data.Specifications;
 
 namespace Pot.Data.Repositories.AccountAccrual;
 
@@ -19,9 +20,12 @@ internal sealed class AccountAccrualRepository : PersistableRepository, IPersist
 
     public Task<Guid[]> GetRequiredAccountAccrualsAsync(Guid[] accountRowIds, DateOnly asOfDate, CancellationToken cancellationToken)
     {
+        var isInAccountSet = AccountAccrualSpecifications.IsInAccountSet(accountRowIds).Expression;
+        var requiresAccrualUpdate = AccountAccrualSpecifications.RequiresAccrualUpdate(asOfDate).Expression;
+
         return AccountAccruals
-            .Where(item => accountRowIds.Contains(item.Account.RowId))
-            .Where(item => item.AccruedIsDirty || item.LastAccruedDate == null || item.LastAccruedDate < asOfDate)
+            .Where(isInAccountSet)
+            .Where(requiresAccrualUpdate)
             .Select(item => item.Account.RowId)
             .ToArrayAsync(cancellationToken);
     }

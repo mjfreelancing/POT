@@ -108,8 +108,5 @@ public class AccrualsStatusServiceFixture
 
         await accountAccrualRepository.Received(1)
             .GetRequiredAccountAccrualsAsync(accountRowIds, asOfDate, Arg.Any<CancellationToken>());
-
-        await expenseRepository.DidNotReceive()
-            .GetRequiredAccountAccrualsAsync(Arg.Any<Guid[]>(), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>());
     }
 }
