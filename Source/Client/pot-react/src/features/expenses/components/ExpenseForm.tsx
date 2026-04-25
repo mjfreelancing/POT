@@ -142,6 +142,15 @@ function ExpenseForm({
   }, [form, frequency, frequencyCount]);
 
   useEffect(() => {
+    if (
+      frequency === Frequency.OneTime &&
+      form.getValues('endDate') !== undefined
+    ) {
+      syncPickerDate(undefined);
+    }
+  }, [form, frequency, syncPickerDate]);
+
+  useEffect(() => {
     if (accrualPolicy === AccrualPolicy.Automatic) {
       lastAutomaticAccrualStartRef.current = accrualStart;
     }
@@ -219,6 +228,7 @@ function ExpenseForm({
                 triggerId="endDate-picker"
                 actionLabel="Clear"
                 onActionClick={() => syncPickerDate(undefined)}
+                disabled={frequency === Frequency.OneTime}
               />
             </FormLabeledItem>
           )}

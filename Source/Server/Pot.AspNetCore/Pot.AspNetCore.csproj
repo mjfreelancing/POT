@@ -15,4 +15,8 @@
 	  <ProjectReference Include="..\Pot.App\Pot.App.csproj" />
 	  <ProjectReference Include="..\Pot.Data\Pot.Data.csproj" />
 	</ItemGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="Pot.AspNetCore.Tests" />
+	</ItemGroup>
 </Project>

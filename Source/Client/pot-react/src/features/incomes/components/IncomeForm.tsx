@@ -99,6 +99,15 @@ function IncomeForm({
     }
   }, [form, frequency, frequencyCount]);
 
+  useEffect(() => {
+    if (
+      frequency === Frequency.OneTime &&
+      form.getValues('endDate') !== undefined
+    ) {
+      syncPickerDate(undefined);
+    }
+  }, [form, frequency, syncPickerDate]);
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -171,6 +180,7 @@ function IncomeForm({
                 triggerId="endDate-picker"
                 actionLabel="Clear"
                 onActionClick={() => syncPickerDate(undefined)}
+                disabled={frequency === Frequency.OneTime}
               />
             </FormLabeledItem>
           )}

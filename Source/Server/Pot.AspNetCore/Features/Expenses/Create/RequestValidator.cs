@@ -74,6 +74,16 @@ internal sealed class RequestValidator : PotValidatorBase<Request>
 
                 context.AddFailure(failure);
             }
+
+            if (validationContext.Frequency == Frequency.OneTime)
+            {
+                var failure = new ValidationFailure(nameof(Request.EndDate), "A one-time expense does not have an end date", value)
+                {
+                    ErrorCode = ErrorCodes.Invalid
+                };
+
+                context.AddFailure(failure);
+            }
         });
 
         this.CustomRuleFor(request => request.FrequencyCount, (value, context) =>
