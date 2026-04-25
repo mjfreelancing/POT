@@ -108,10 +108,10 @@ function BulkActionsBar<TData>({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            variant="outline"
+            variant="default"
             size="sm"
             disabled={selectedCount === 0}
-            className="hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100 transition-colors"
+            className="font-semibold shadow-sm data-[state=open]:bg-primary/90"
             aria-label="Open bulk actions menu"
           >
             Actions
