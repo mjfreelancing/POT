@@ -29,7 +29,10 @@ function UserMenu() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="flex items-center gap-2 px-3">
+          <Button
+            variant="outline"
+            className="h-9 rounded-lg border-border/80 bg-slate-100 px-3 shadow-sm transition-colors hover:bg-slate-200 dark:bg-slate-800/40 dark:hover:bg-slate-700/40 data-[state=open]:bg-slate-200 dark:data-[state=open]:bg-slate-700/40"
+          >
             <span className="font-medium text-base md:text-lg">
               {userInfo?.displayName ?? 'User'}
             </span>
