@@ -23,13 +23,13 @@ import { useErrorContext } from '@/contexts';
 import type { Income } from '@/data';
 import { WithPermission } from '@/features/auth/components';
 import {
+  cn,
   formatDate,
   formatMoneyValue,
   getDaysDue,
   RenewalMode,
   todayIsoFormat,
 } from '@/lib';
-import { cn } from '@/lib';
 
 type IncomeCardProps = {
   income: Income;
