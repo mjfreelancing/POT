@@ -40,6 +40,7 @@ function AccountMobileCard({ account }: AccountMobileCardProps) {
   const { error, setError } = useErrorContext();
   const navigate = useNavigate();
   const { deleteAccount } = useDeleteAccount(account.rowId);
+  const hasLinkedData = account.linkedExpenses > 0 || account.linkedIncomes > 0;
 
   // Determine account status for styling (same logic as dashboard)
   const getAccountStatus = () => {
@@ -205,7 +206,7 @@ function AccountMobileCard({ account }: AccountMobileCardProps) {
                           navigate(`/accounts/edit/${account.rowId}`)
                         }
                       >
-                        <Pencil className="mr-2 h-4 w-4" />
+                        <Pencil className="text-action-neutral mr-2 h-4 w-4" />
                         Edit
                       </DropdownMenuItem>
                     </WithPermission>
@@ -213,10 +214,7 @@ function AccountMobileCard({ account }: AccountMobileCardProps) {
                     <WithPermission permissions={['account:manage']} mode="all">
                       <DropdownMenuItem
                         className="text-destructive-high-contrast"
-                        disabled={
-                          account.linkedExpenses > 0 ||
-                          account.linkedIncomes > 0
-                        }
+                        disabled={hasLinkedData}
                         onClick={() => setShowDeleteDialog(true)}
                       >
                         <Trash2 className="mr-2 h-4 w-4 text-destructive-high-contrast" />

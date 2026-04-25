@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
-import { BanknoteArrowDown, BanknoteArrowUp } from 'lucide-react';
+import { BanknoteArrowDown, BanknoteArrowUp, Calculator } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router';
 
 import { useApiAccrueAccountExpenses } from '@/api/hooks';
@@ -149,6 +149,8 @@ function AccountsTable({ accounts }: AccountsTableProps) {
   const bulkActions: BulkAction<Account>[] = [
     {
       label: 'Accrue Expenses',
+      icon: Calculator,
+      iconClassName: 'text-action-neutral',
       isDisabled: !canManageExpenses,
       onClick: async (selectedItems: Account[]) => {
         const accountRowIds = selectedItems.map(item => item.rowId);
