@@ -287,7 +287,7 @@ function IncomeCard({ income }: IncomeCardProps) {
                             onClick={() => setShowConfirmation(true)}
                             disabled={isRenewing}
                           >
-                            <CheckCircle className="mr-2 h-4 w-4" />
+                            <CheckCircle className="text-action-progress mr-2 h-4 w-4" />
                             Mark as Received
                           </DropdownMenuItem>
                         </DropdownMenuContent>
