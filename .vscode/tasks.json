@@ -62,6 +62,19 @@
         "isDefault": false
       },
       "problemMatcher": []
+    },
+    {
+      "label": "server-run-test-coverage",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./code_coverage.ps1",
+      "options": {
+        "cwd": "${workspaceFolder}/Source/Server"
+      },
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      },
+      "problemMatcher": []
     }
   ]
 }
