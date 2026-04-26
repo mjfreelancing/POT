@@ -22,14 +22,14 @@ import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import { useUserStore } from '@/stores';
 
-import type { SiteSettingsFields } from './siteSettingsSchema';
-import { siteSettingsSchema } from './siteSettingsSchema';
+import type { SiteDetailsFields } from './siteDetailsSchema';
+import { siteDetailsSchema } from './siteDetailsSchema';
 
-type SiteSettingsFormProps = {
+type SiteDetailsFormProps = {
   readonly?: boolean;
 };
 
-function SiteSettingsForm({ readonly = false }: SiteSettingsFormProps) {
+function SiteDetailsForm({ readonly = false }: SiteDetailsFormProps) {
   const { userInfo, setUserInfo } = useUserStore();
   const updateSite = useApiUpdateSite();
   const { error, setError } = useErrorContext();
@@ -38,8 +38,8 @@ function SiteSettingsForm({ readonly = false }: SiteSettingsFormProps) {
   const userDetails = userInfo!;
   const siteDetails = userDetails.site;
 
-  const form = useForm<SiteSettingsFields>({
-    resolver: zodResolver(siteSettingsSchema),
+  const form = useForm<SiteDetailsFields>({
+    resolver: zodResolver(siteDetailsSchema),
     defaultValues: {
       name: siteDetails.name,
       description: siteDetails.description || '',
@@ -48,10 +48,10 @@ function SiteSettingsForm({ readonly = false }: SiteSettingsFormProps) {
   });
 
   useEffect(() => {
-    logger.info('SiteSettingsForm', 'Mounted');
+    logger.info('SiteDetailsForm', 'Mounted');
 
     return () => {
-      logger.info('SiteSettingsForm', 'Unmounted');
+      logger.info('SiteDetailsForm', 'Unmounted');
     };
   }, []);
 
@@ -62,7 +62,7 @@ function SiteSettingsForm({ readonly = false }: SiteSettingsFormProps) {
     });
   }, [siteDetails, form]);
 
-  async function onSubmit(values: SiteSettingsFields) {
+  async function onSubmit(values: SiteDetailsFields) {
     // Clear any previous errors
     setError(null);
 
@@ -89,8 +89,8 @@ function SiteSettingsForm({ readonly = false }: SiteSettingsFormProps) {
         () => (
           <SuccessToast
             icon={Building2}
-            title="Site Settings Updated"
-            description="Your site settings were updated successfully."
+            title="Site Details Updated"
+            description="Your site details were updated successfully."
           />
         ),
         { duration: 5000 },
@@ -161,11 +161,11 @@ function SiteSettingsForm({ readonly = false }: SiteSettingsFormProps) {
         />
 
         <Button type="submit" className="w-full mt-2" disabled={readonly}>
-          {readonly ? 'View Site Settings' : 'Update Site Settings'}
+          {readonly ? 'View Site Details' : 'Update Site Details'}
         </Button>
       </form>
     </Form>
   );
 }
 
-export default SiteSettingsForm;
+export default SiteDetailsForm;

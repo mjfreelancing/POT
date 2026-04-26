@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { logoutManager } from '@/concerns';
 import { useAuthContext } from '@/features/auth/contexts';
-import { AccountSettingsSheet } from '@/features/userSettings/UserSettingsSheet';
+import { AccountSettingsSheet } from '@/features/userSettings/POTSettingsSheet';
 
 function UserMenu() {
   const { userInfo } = useAuthContext();
