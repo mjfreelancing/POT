@@ -22,8 +22,15 @@ const AppContent = () => (
       <div className="flex-1 relative min-w-0">
         {/* Subtle background pattern */}
         <div className="absolute inset-0 opacity-[0.02] bg-[radial-gradient(circle_at_1px_1px,_oklch(var(--foreground))_1px,_transparent_0)] [background-size:20px_20px]" />
+        {/*
+          Toaster must live outside the z-10 div below. That div creates a CSS stacking context
+          (position: relative + z-index), which would confine Sonner's z-index: 999999999 to a
+          z-10 paint layer. Radix portals (Sheet, Dialog) render at document.body level with z-50,
+          which would paint above the toasts. Placing Toaster here avoids that stacking context —
+          this div has no z-index, so Sonner's fixed position is evaluated at the root level.
+        */}
+        <Toaster position="top-center" />
         <div className="relative z-10 h-full">
-          <Toaster position="top-center" />
           <AppRoutes />
         </div>
       </div>
