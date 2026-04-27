@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Building2 } from 'lucide-react';
-import { useEffect } from 'react';
+import { forwardRef, useEffect, useImperativeHandle } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -22,14 +22,25 @@ import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import { useUserStore } from '@/stores';
 
+import type {
+  SettingsSectionFormHandle,
+  SettingsSectionFormProps,
+  SettingsSectionFormSubmitResult,
+} from '../settingsSectionForm';
 import type { SiteDetailsFields } from './siteDetailsSchema';
 import { siteDetailsSchema } from './siteDetailsSchema';
 
-type SiteDetailsFormProps = {
+type SiteDetailsFormProps = SettingsSectionFormProps & {
   readonly?: boolean;
 };
 
-function SiteDetailsForm({ readonly = false }: SiteDetailsFormProps) {
+const SiteDetailsForm = forwardRef<
+  SettingsSectionFormHandle,
+  SiteDetailsFormProps
+>(function SiteDetailsForm(
+  { readonly = false, onDirtyChange }: SiteDetailsFormProps,
+  ref,
+) {
   const { userInfo, setUserInfo } = useUserStore();
   const updateSite = useApiUpdateSite();
   const { error, setError } = useErrorContext();
@@ -46,6 +57,7 @@ function SiteDetailsForm({ readonly = false }: SiteDetailsFormProps) {
     },
     mode: 'onSubmit',
   });
+  const isDirty = form.formState.isDirty;
 
   useEffect(() => {
     logger.info('SiteDetailsForm', 'Mounted');
@@ -62,7 +74,13 @@ function SiteDetailsForm({ readonly = false }: SiteDetailsFormProps) {
     });
   }, [siteDetails, form]);
 
-  async function onSubmit(values: SiteDetailsFields) {
+  useEffect(() => {
+    onDirtyChange?.(!readonly && isDirty);
+  }, [isDirty, onDirtyChange, readonly]);
+
+  async function onSubmit(
+    values: SiteDetailsFields,
+  ): Promise<SettingsSectionFormSubmitResult> {
     // Clear any previous errors
     setError(null);
 
@@ -81,7 +99,7 @@ function SiteDetailsForm({ readonly = false }: SiteDetailsFormProps) {
         description: result.error.description,
       });
 
-      return;
+      return 'invalid';
     }
 
     if (result && result.success) {
@@ -96,7 +114,10 @@ function SiteDetailsForm({ readonly = false }: SiteDetailsFormProps) {
         { duration: 5000 },
       );
 
-      form.reset();
+      form.reset({
+        name: values.name,
+        description: values.description,
+      });
     }
 
     setUserInfo({
@@ -108,11 +129,57 @@ function SiteDetailsForm({ readonly = false }: SiteDetailsFormProps) {
         description: values.description,
       },
     });
+
+    return 'saved';
   }
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      submit: async () => {
+        if (readonly) {
+          return 'blocked';
+        }
+
+        let submitResult: SettingsSectionFormSubmitResult = 'invalid';
+
+        await form.handleSubmit(
+          async values => {
+            submitResult = await onSubmit(values);
+          },
+          async () => {
+            submitResult = 'invalid';
+          },
+        )();
+
+        return submitResult;
+      },
+      discard: () => {
+        setError(null);
+        form.reset({
+          name: siteDetails.name,
+          description: siteDetails.description || '',
+        });
+      },
+    }),
+    [
+      form,
+      onSubmit,
+      readonly,
+      setError,
+      siteDetails.description,
+      siteDetails.name,
+    ],
+  );
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        onSubmit={form.handleSubmit(async values => {
+          await onSubmit(values);
+        })}
+        className="space-y-6"
+      >
         {error && (
           <ErrorSheet
             title={error.title}
@@ -166,6 +233,6 @@ function SiteDetailsForm({ readonly = false }: SiteDetailsFormProps) {
       </form>
     </Form>
   );
-}
+});
 
 export default SiteDetailsForm;

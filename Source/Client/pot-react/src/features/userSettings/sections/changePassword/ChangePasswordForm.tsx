@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import useChangePassword from '@/api/hooks/useChangePassword';
@@ -14,15 +14,24 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { logger } from '@/concerns';
-import { logoutManager } from '@/concerns';
+import { logger, logoutManager } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 
+import type {
+  SettingsSectionFormHandle,
+  SettingsSectionFormProps,
+  SettingsSectionFormSubmitResult,
+} from '../settingsSectionForm';
 import type { ChangePasswordFields } from './changePasswordSchema';
 import { changePasswordSchema } from './changePasswordSchema';
 import PasswordChangedDialog from './PasswordChangedDialog';
 
-function ChangePasswordForm() {
+type ChangePasswordFormProps = SettingsSectionFormProps;
+
+const ChangePasswordForm = forwardRef<
+  SettingsSectionFormHandle,
+  ChangePasswordFormProps
+>(function ChangePasswordForm({ onDirtyChange }: ChangePasswordFormProps, ref) {
   const [showPasswordChangedDialog, setShowPasswordChangedDialog] =
     useState(false);
   const form = useForm<ChangePasswordFields>({
@@ -34,6 +43,7 @@ function ChangePasswordForm() {
     },
     mode: 'onSubmit',
   });
+  const isDirty = form.formState.isDirty;
 
   const { changePassword, isPending } = useChangePassword();
   const { error, setError } = useErrorContext();
@@ -46,7 +56,13 @@ function ChangePasswordForm() {
     };
   }, []);
 
-  async function onSubmit(values: ChangePasswordFields) {
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
+
+  async function onSubmit(
+    values: ChangePasswordFields,
+  ): Promise<SettingsSectionFormSubmitResult> {
     // Clear any previous errors
     setError(null);
 
@@ -61,22 +77,65 @@ function ChangePasswordForm() {
         description: result.error.description,
       });
 
-      return;
+      return 'invalid';
     }
 
     if (result && result.success) {
       // Show modal dialog instead of toast
+      form.reset({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      });
       setShowPasswordChangedDialog(true);
+
+      return 'blocked';
     }
+
+    return 'invalid';
   }
 
   function handleLogoutAfterPasswordChange() {
     logoutManager.logout();
   }
 
+  useImperativeHandle(
+    ref,
+    () => ({
+      submit: async () => {
+        let submitResult: SettingsSectionFormSubmitResult = 'invalid';
+
+        await form.handleSubmit(
+          async values => {
+            submitResult = await onSubmit(values);
+          },
+          async () => {
+            submitResult = 'invalid';
+          },
+        )();
+
+        return submitResult;
+      },
+      discard: () => {
+        setError(null);
+        form.reset({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: '',
+        });
+      },
+    }),
+    [form, onSubmit, setError],
+  );
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        onSubmit={form.handleSubmit(async values => {
+          await onSubmit(values);
+        })}
+        className="space-y-6"
+      >
         {error && (
           <ErrorSheet
             title={error.title}
@@ -171,6 +230,6 @@ function ChangePasswordForm() {
       />
     </Form>
   );
-}
+});
 
 export default ChangePasswordForm;

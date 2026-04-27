@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Key } from 'lucide-react';
-import { useEffect } from 'react';
+import { forwardRef, useEffect, useImperativeHandle } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -21,10 +21,20 @@ import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import { useUserStore } from '@/stores';
 
+import type {
+  SettingsSectionFormHandle,
+  SettingsSectionFormProps,
+  SettingsSectionFormSubmitResult,
+} from '../settingsSectionForm';
 import type { UserDetailsFields } from './userDetailsSchema';
 import { userDetailsSchema } from './userDetailsSchema';
 
-function UserDetailsForm() {
+type UserDetailsFormProps = SettingsSectionFormProps;
+
+const UserDetailsForm = forwardRef<
+  SettingsSectionFormHandle,
+  UserDetailsFormProps
+>(function UserDetailsForm({ onDirtyChange }: UserDetailsFormProps, ref) {
   const { userInfo, setUserInfo } = useUserStore();
   const updateUser = useApiUpdateUser();
   const { error, setError } = useErrorContext();
@@ -41,6 +51,7 @@ function UserDetailsForm() {
     },
     mode: 'onSubmit',
   });
+  const isDirty = form.formState.isDirty;
 
   useEffect(() => {
     logger.info('UserDetailsForm', 'Mounted');
@@ -58,7 +69,13 @@ function UserDetailsForm() {
     });
   }, [userDetails, form]);
 
-  async function onSubmit(values: UserDetailsFields) {
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
+
+  async function onSubmit(
+    values: UserDetailsFields,
+  ): Promise<SettingsSectionFormSubmitResult> {
     // Clear any previous errors
     setError(null);
 
@@ -77,7 +94,7 @@ function UserDetailsForm() {
         description: result.error.description,
       });
 
-      return;
+      return 'invalid';
     }
 
     if (result && result.success) {
@@ -92,7 +109,11 @@ function UserDetailsForm() {
         { duration: 5000 },
       );
 
-      form.reset();
+      form.reset({
+        username: userDetails.username,
+        displayName: values.displayName,
+        email: values.email,
+      });
     }
 
     setUserInfo({
@@ -101,11 +122,54 @@ function UserDetailsForm() {
       displayName: values.displayName,
       email: values.email,
     });
+
+    return 'saved';
   }
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      submit: async () => {
+        let submitResult: SettingsSectionFormSubmitResult = 'invalid';
+
+        await form.handleSubmit(
+          async values => {
+            submitResult = await onSubmit(values);
+          },
+          async () => {
+            submitResult = 'invalid';
+          },
+        )();
+
+        return submitResult;
+      },
+      discard: () => {
+        setError(null);
+        form.reset({
+          username: userDetails.username,
+          displayName: userDetails.displayName,
+          email: userDetails.email,
+        });
+      },
+    }),
+    [
+      form,
+      onSubmit,
+      setError,
+      userDetails.displayName,
+      userDetails.email,
+      userDetails.username,
+    ],
+  );
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        onSubmit={form.handleSubmit(async values => {
+          await onSubmit(values);
+        })}
+        className="space-y-6"
+      >
         {error && (
           <ErrorSheet
             title={error.title}
@@ -176,6 +240,6 @@ function UserDetailsForm() {
       </form>
     </Form>
   );
-}
+});
 
 export default UserDetailsForm;

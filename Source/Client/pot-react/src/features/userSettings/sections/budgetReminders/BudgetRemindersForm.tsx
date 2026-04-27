@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import { PiggyBank } from 'lucide-react';
-import { useEffect } from 'react';
+import { forwardRef, useEffect, useImperativeHandle } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -31,6 +31,11 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { logger, useCacheInvalidation } from '@/concerns';
 import { useErrorContext } from '@/contexts';
+import type {
+  SettingsSectionFormHandle,
+  SettingsSectionFormProps,
+  SettingsSectionFormSubmitResult,
+} from '@/features/userSettings/sections/settingsSectionForm';
 
 import type {
   BudgetRemindersFields,
@@ -38,7 +43,7 @@ import type {
 } from './budgetRemindersSchema';
 import { budgetRemindersSchema } from './budgetRemindersSchema';
 
-type BudgetRemindersFormProps = {
+type BudgetRemindersFormProps = SettingsSectionFormProps & {
   readonly?: boolean;
 };
 
@@ -51,18 +56,53 @@ type ReminderSettingRecord = {
 };
 
 const EMAIL_BUDGET_REMINDER_CATEGORY = 'EmailBudgetReminder';
+
+// Fallback values used when the settings row does not yet exist in the database.
+// These must match the server-side defaults in SettingsService.GetEmailBudgetReminderSettingsAsync.
+const DEFAULT_ENABLED = false;
+const DEFAULT_REMINDER_DAYS = 7;
+const DEFAULT_LOCAL_HOUR_TRIGGER = 6; // 6 AM
+
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, hour) => ({
   value: hour,
   label: formatHourLabel(hour),
 }));
 
-function BudgetRemindersForm({ readonly = false }: BudgetRemindersFormProps) {
+const BudgetRemindersForm = forwardRef<
+  SettingsSectionFormHandle,
+  BudgetRemindersFormProps
+>(function BudgetRemindersForm(
+  { readonly = false, onDirtyChange }: BudgetRemindersFormProps,
+  ref,
+) {
   const queryClient = useQueryClient();
   const invalidateCache = useCacheInvalidation(queryClient);
   const settingsQuery = useApiGetSettings();
   const updateSetting = useApiUpdateSetting();
   const { error, setError } = useErrorContext();
 
+  // Derive primitive values from the server response so effect dependency arrays
+  // contain stable primitive values rather than the settings object. Using the
+  // object directly would cause the hydration effect to run on every render
+  // because a new object reference is created each time the query resolves.
+  const reminderSettings = getBudgetReminderSettings(settingsQuery.data);
+  const hasReminderSettings = reminderSettings !== null;
+  const enabledValue = asBoolean(
+    reminderSettings?.Enabled?.value,
+    DEFAULT_ENABLED,
+  );
+  const reminderDaysValue = asNumber(
+    reminderSettings?.ReminderDays?.value,
+    DEFAULT_REMINDER_DAYS,
+  );
+  const localHourTriggerValue = asNumber(
+    reminderSettings?.LocalHourTrigger?.value,
+    DEFAULT_LOCAL_HOUR_TRIGGER,
+  );
+
+  // defaultValues seed the form on first mount. After that, the hydration
+  // effect below is responsible for syncing server values back into the form
+  // whenever they change and the form is not dirty.
   const form = useForm<
     BudgetRemindersFormValues,
     undefined,
@@ -70,12 +110,13 @@ function BudgetRemindersForm({ readonly = false }: BudgetRemindersFormProps) {
   >({
     resolver: zodResolver(budgetRemindersSchema),
     defaultValues: {
-      enabled: false,
-      reminderDays: 7,
-      localHourTrigger: 6,
+      enabled: enabledValue,
+      reminderDays: reminderDaysValue,
+      localHourTrigger: localHourTriggerValue,
     },
     mode: 'onSubmit',
   });
+  const isDirty = form.formState.isDirty;
 
   useEffect(() => {
     logger.info('BudgetRemindersForm', 'Mounted');
@@ -85,17 +126,12 @@ function BudgetRemindersForm({ readonly = false }: BudgetRemindersFormProps) {
     };
   }, []);
 
-  const reminderSettings = getBudgetReminderSettings(settingsQuery.data);
-  const hasReminderSettings = reminderSettings !== null;
-  const enabledValue = asBoolean(reminderSettings?.Enabled?.value, false);
-  const reminderDaysValue = asNumber(reminderSettings?.ReminderDays?.value, 7);
-  const localHourTriggerValue = asNumber(
-    reminderSettings?.LocalHourTrigger?.value,
-    6,
-  );
-
+  // Hydration effect: keeps the form in sync with the server-side values after
+  // background refetches or cache invalidations. Only runs when the form is
+  // clean — if the user has unsaved edits, the incoming server values are
+  // ignored so local changes are never silently overwritten.
   useEffect(() => {
-    if (!hasReminderSettings) {
+    if (!hasReminderSettings || isDirty) {
       return;
     }
 
@@ -108,11 +144,21 @@ function BudgetRemindersForm({ readonly = false }: BudgetRemindersFormProps) {
     enabledValue,
     form,
     hasReminderSettings,
+    isDirty,
     localHourTriggerValue,
     reminderDaysValue,
   ]);
 
-  async function onSubmit(values: BudgetRemindersFields) {
+  // Propagates React Hook Form's (RHF) isDirty flag to the parent sheet via the onDirtyChange
+  // callback. The readonly guard ensures a read-only form never reports itself
+  // as dirty, which would incorrectly trigger the unsaved-changes prompt.
+  useEffect(() => {
+    onDirtyChange?.(!readonly && isDirty);
+  }, [isDirty, onDirtyChange, readonly]);
+
+  async function onSubmit(
+    values: BudgetRemindersFields,
+  ): Promise<SettingsSectionFormSubmitResult> {
     setError(null);
 
     const settingUpdates: { key: ReminderSettingKey; value: string }[] = [
@@ -147,7 +193,7 @@ function BudgetRemindersForm({ readonly = false }: BudgetRemindersFormProps) {
           description: result.error.description,
         });
 
-        return;
+        return 'invalid';
       }
 
       const nextSetting: ReminderSettingRecord = {
@@ -172,6 +218,11 @@ function BudgetRemindersForm({ readonly = false }: BudgetRemindersFormProps) {
 
     await queryClient.invalidateQueries({ queryKey: ['settings'] });
     invalidateCache(['me']);
+    form.reset({
+      enabled: values.enabled,
+      reminderDays: values.reminderDays,
+      localHourTrigger: values.localHourTrigger,
+    });
 
     toast(
       () => (
@@ -183,14 +234,70 @@ function BudgetRemindersForm({ readonly = false }: BudgetRemindersFormProps) {
       ),
       { duration: 5000 },
     );
+
+    return 'saved';
   }
 
   const isPending = settingsQuery.isLoading || updateSetting.isPending;
 
+  // Exposes submit() and discard() to the parent sheet via the forwarded ref.
+  //
+  // submit()  — delegates to RHF handleSubmit(), which validates first. On
+  //             success it calls onSubmit() and returns its result ('saved' or
+  //             'invalid'). On validation failure it short-circuits to 'invalid'.
+  //             Returns 'blocked' immediately when in readonly mode.
+  //
+  // discard() — resets the form to the last known server values (the primitives
+  //             derived above) and clears any visible API error. RHF will mark
+  //             the form as clean after reset, which triggers the dirty-change
+  //             effect and notifies the parent sheet.
+  useImperativeHandle(
+    ref,
+    () => ({
+      submit: async () => {
+        if (readonly) {
+          return 'blocked';
+        }
+
+        let submitResult: SettingsSectionFormSubmitResult = 'invalid';
+
+        await form.handleSubmit(
+          async values => {
+            submitResult = await onSubmit(values);
+          },
+          async () => {
+            submitResult = 'invalid';
+          },
+        )();
+
+        return submitResult;
+      },
+      discard: () => {
+        setError(null);
+        form.reset({
+          enabled: enabledValue,
+          reminderDays: reminderDaysValue,
+          localHourTrigger: localHourTriggerValue,
+        });
+      },
+    }),
+    [
+      enabledValue,
+      form,
+      localHourTriggerValue,
+      onSubmit,
+      readonly,
+      reminderDaysValue,
+      setError,
+    ],
+  );
+
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={form.handleSubmit(async values => {
+          await onSubmit(values);
+        })}
         className="space-y-6"
         noValidate
       >
@@ -262,8 +369,13 @@ function BudgetRemindersForm({ readonly = false }: BudgetRemindersFormProps) {
                   value={
                     typeof field.value === 'number' ? String(field.value) : ''
                   }
-                  onValueChange={value => field.onChange(Number(value))}
-                  name={field.name}
+                  onValueChange={value => {
+                    if (value === '') {
+                      return;
+                    }
+
+                    field.onChange(Number(value));
+                  }}
                   disabled={readonly || isPending}
                 >
                   <SelectTrigger
@@ -300,7 +412,7 @@ function BudgetRemindersForm({ readonly = false }: BudgetRemindersFormProps) {
       </form>
     </Form>
   );
-}
+});
 
 function getBudgetReminderSettings(
   result: ReturnType<typeof useApiGetSettings>['data'],
