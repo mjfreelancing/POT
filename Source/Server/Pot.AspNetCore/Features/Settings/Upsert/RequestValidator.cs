@@ -4,7 +4,7 @@ using FluentValidation;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.Shared.Enumerations;
 
-namespace Pot.AspNetCore.Features.Settings.Update;
+namespace Pot.AspNetCore.Features.Settings.Upsert;
 
 internal sealed class RequestValidator : PotValidatorBase<Request>
 {

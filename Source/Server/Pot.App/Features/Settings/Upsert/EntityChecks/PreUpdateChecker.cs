@@ -3,11 +3,11 @@ using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.ChainOfResponsibility;
 using Microsoft.Extensions.Logging;
 using Pot.App.Errors;
-using Pot.App.Features.Settings.Update.EntityChecks.Checks;
-using Pot.App.Features.Settings.Update.Models;
+using Pot.App.Features.Settings.Upsert.EntityChecks.Checks;
+using Pot.App.Features.Settings.Upsert.Models;
 using Pot.Data.Entities;
 
-namespace Pot.App.Features.Settings.Update.EntityChecks;
+namespace Pot.App.Features.Settings.Upsert.EntityChecks;
 
 internal sealed class PreUpdateChecker : ChainOfResponsibilityAsyncComposer<InputState, ApiDetailError>, IPreUpdateChecker
 {

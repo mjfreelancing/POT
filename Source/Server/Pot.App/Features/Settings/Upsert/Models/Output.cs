@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Features.Settings.Update.Models;
+﻿namespace Pot.App.Features.Settings.Upsert.Models;
 
 public sealed class Output
 {

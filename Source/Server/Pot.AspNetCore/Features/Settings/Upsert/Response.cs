@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
-using Pot.App.Features.Settings.Update.Models;
+using Pot.App.Features.Settings.Upsert.Models;
 using Pot.AspNetCore.Models;
 
-namespace Pot.AspNetCore.Features.Settings.Update;
+namespace Pot.AspNetCore.Features.Settings.Upsert;
 
 internal sealed class Response : ResponseBase
 {

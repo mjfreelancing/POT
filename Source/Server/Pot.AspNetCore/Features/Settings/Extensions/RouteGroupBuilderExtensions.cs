@@ -1,3 +1,5 @@
+﻿using Pot.AspNetCore.Features.Settings.Upsert;
+
 namespace Pot.AspNetCore.Features.Settings.Extensions;
 
 internal static class RouteGroupBuilderExtensions
@@ -20,7 +22,7 @@ internal static class RouteGroupBuilderExtensions
     public static RouteGroupBuilder UpdateSettings(this RouteGroupBuilder routeGroupBuilder)
     {
         routeGroupBuilder
-            .MapPut(SettingsEndpoints.Update, Update.Handler.Invoke)
+            .MapPut(SettingsEndpoints.Update, Handler.Invoke)
             .RequireAuthorization("site:manage")
             .WithName(nameof(UpdateSettings))
             .WithSummary("Update a setting")

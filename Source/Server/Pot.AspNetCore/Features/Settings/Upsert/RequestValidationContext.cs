@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Features.Settings.Update;
+﻿namespace Pot.AspNetCore.Features.Settings.Upsert;
 
 // This is needed to pass the category and key from the endpoint to the handler, since they are not
 // part of the request body and we want to avoid using route parameters in the handler signature.

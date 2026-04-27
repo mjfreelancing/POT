@@ -1,7 +1,7 @@
-using Pot.App.Features.Settings.Update.Models;
+﻿using Pot.App.Features.Settings.Upsert.Models;
 using Pot.Data.Entities;
 
-namespace Pot.App.Features.Settings.Update.Mappings;
+namespace Pot.App.Features.Settings.Upsert.Mappings;
 
 internal static class EntityMapping
 {

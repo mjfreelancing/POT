@@ -2,7 +2,7 @@
 using Pot.App.Errors;
 using Pot.Shared.DependencyInjection;
 
-namespace Pot.App.Features.Settings.Update.EntityChecks.Checks;
+namespace Pot.App.Features.Settings.Upsert.EntityChecks.Checks;
 
 // A marker interface so each handler can be dependency injected into the PreUpdateChecker
 internal interface IPreUpdateCheck : IPotScopedDependency;

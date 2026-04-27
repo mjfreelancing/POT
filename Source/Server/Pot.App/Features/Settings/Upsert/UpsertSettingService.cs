@@ -6,18 +6,18 @@ using Pot.App.Errors;
 using Pot.App.Extensions;
 using Pot.App.Features.Settings.Models;
 using Pot.App.Features.Settings.Models.EmailBudgetReminder;
-using Pot.App.Features.Settings.Update.EntityChecks;
-using Pot.App.Features.Settings.Update.Mappings;
-using Pot.App.Features.Settings.Update.Models;
+using Pot.App.Features.Settings.Upsert.EntityChecks;
+using Pot.App.Features.Settings.Upsert.Mappings;
+using Pot.App.Features.Settings.Upsert.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Settings;
 using Pot.Data.Repositories.Sites;
 using Pot.Shared.Enumerations;
 using System.Diagnostics;
 
-namespace Pot.App.Features.Settings.Update;
+namespace Pot.App.Features.Settings.Upsert;
 
-internal sealed class UpdateSettingService : IUpdateSettingService
+internal sealed class UpsertSettingService : IUpsertSettingService
 {
     // Registry of setting validators mapped by category.
     // Each category maps to a generic validator function that delegates to the category-specific
@@ -33,8 +33,8 @@ internal sealed class UpdateSettingService : IUpdateSettingService
     private readonly IPreUpdateChecker _preUpdateChecker;
     private readonly ILogger _logger;
 
-    public UpdateSettingService(IPersistableSettingsRepository settingsRepository, ISiteRepository siteRepository,
-        IPreUpdateChecker preUpdateChecker, ILogger<UpdateSettingService> logger)
+    public UpsertSettingService(IPersistableSettingsRepository settingsRepository, ISiteRepository siteRepository,
+        IPreUpdateChecker preUpdateChecker, ILogger<UpsertSettingService> logger)
     {
         _settingsRepository = settingsRepository.WhenNotNull();
         _siteRepository = siteRepository.WhenNotNull();
@@ -42,7 +42,7 @@ internal sealed class UpdateSettingService : IUpdateSettingService
         _logger = logger.WhenNotNull();
     }
 
-    public async Task<EnrichedResult<Output>> UpdateSettingAsync(Input input, CancellationToken cancellationToken)
+    public async Task<EnrichedResult<Output>> UpsertSettingAsync(Input input, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
@@ -88,7 +88,7 @@ internal sealed class UpdateSettingService : IUpdateSettingService
                 return EnrichedResult.Fail<Output>(validationError);
             }
 
-            // We can now crate (or update) the setting with confidence that the value is valid for the category and key.
+            // We can now create (or update) the setting with confidence that the value is valid for the category and key.
             if (settingToUpdate is null)
             {
                 // Create new setting

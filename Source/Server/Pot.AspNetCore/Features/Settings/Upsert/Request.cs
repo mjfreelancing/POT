@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Pot.AspNetCore.Features.Settings.Update;
+namespace Pot.AspNetCore.Features.Settings.Upsert;
 
 public sealed class Request
 {

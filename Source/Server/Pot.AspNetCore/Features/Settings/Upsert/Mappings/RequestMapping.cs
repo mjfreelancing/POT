@@ -1,7 +1,8 @@
-﻿using Pot.App.Features.Settings.Update.Models;
+﻿using Pot.App.Features.Settings.Upsert.Models;
+using Pot.AspNetCore.Features.Settings.Upsert;
 using Pot.Shared.Enumerations;
 
-namespace Pot.AspNetCore.Features.Settings.Update.Mappings;
+namespace Pot.AspNetCore.Features.Settings.Upsert.Mappings;
 
 internal static class RequestMapping
 {
