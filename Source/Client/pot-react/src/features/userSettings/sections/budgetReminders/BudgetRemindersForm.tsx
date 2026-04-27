@@ -409,7 +409,7 @@ const BudgetRemindersForm = forwardRef<
         />
 
         {!readonly && (
-          <Button type="submit" className="w-full mt-2" disabled={isPending}>
+          <Button type="submit" className="w-full mt-2" disabled={!isDirty || isPending}>
             Update Budget Reminders
           </Button>
         )}

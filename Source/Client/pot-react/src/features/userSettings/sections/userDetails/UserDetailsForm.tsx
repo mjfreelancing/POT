@@ -234,7 +234,7 @@ const UserDetailsForm = forwardRef<
           )}
         />
 
-        <Button type="submit" className="w-full mt-2">
+        <Button type="submit" className="w-full mt-2" disabled={!isDirty}>
           Update User Details
         </Button>
       </form>
