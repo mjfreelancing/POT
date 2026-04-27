@@ -339,28 +339,30 @@ function AccountSettingsSheet(props: AccountSettingsSheetProps): JSX.Element {
       <Sheet open={open} modal>
         <SheetContent
           side="right"
-          className="w-full sm:max-w-sm p-6 overflow-y-auto [&>button:first-of-type]:hidden"
+          className="w-full sm:max-w-sm flex flex-col [&>button:first-of-type]:hidden"
         >
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <DialogTitle className="text-lg font-semibold">
-                POT Settings
-              </DialogTitle>
-              <DialogDescription className="sr-only">
-                Manage your POT settings
-              </DialogDescription>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Close POT settings"
-                onClick={requestSheetClose}
-              >
-                <XIcon className="size-5" />
-              </Button>
-            </div>
+          {/* Sticky header — sits outside the scroll container so it remains visible when scrolling */}
+          <div className="flex items-center justify-between px-6 pt-6 pb-4 shrink-0">
+            <DialogTitle className="text-lg font-semibold">
+              POT Settings
+            </DialogTitle>
+            <DialogDescription className="sr-only">
+              Manage your POT settings
+            </DialogDescription>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Close POT settings"
+              onClick={requestSheetClose}
+            >
+              <XIcon className="size-5" />
+            </Button>
+          </div>
 
-            <Separator />
+          <Separator className="mx-6" />
 
+          {/* Scrollable content area */}
+          <div className="flex-1 overflow-y-auto px-6 pb-6 pt-6">
             <Accordion
               type="single"
               collapsible
