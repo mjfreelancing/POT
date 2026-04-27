@@ -55,7 +55,7 @@ const App = () => {
     <ErrorProvider>
       <AuthProvider>
         <ThemeProvider defaultTheme="system" storageKey="pot-ui-theme">
-          <div className="flex h-screen w-screen overflow-x-hidden">
+          <div className="flex h-screen w-screen overflow-hidden">
             <ErrorBoundary
               fallbackRender={({ error }) => (
                 <div

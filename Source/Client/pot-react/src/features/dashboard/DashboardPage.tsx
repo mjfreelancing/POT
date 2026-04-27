@@ -52,7 +52,7 @@ function DashboardPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20">
+    <div className="flex flex-col h-full bg-gradient-to-br from-background to-muted/20">
       <DashboardHeader />
 
       <div className="flex-1 min-h-0 p-3 sm:p-4 overflow-auto">
