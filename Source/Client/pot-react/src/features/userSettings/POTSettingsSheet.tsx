@@ -119,7 +119,7 @@ function AccountSettingsSheet(props: AccountSettingsSheetProps): JSX.Element {
                         <div className="flex flex-col items-start">
                           <span>Site Details</span>
                           <span className="text-sm font-normal text-muted-foreground group-hover:text-muted-foreground/80">
-                            Update your site name and description
+                            Customize your site name and description
                           </span>
                         </div>
                       </div>
@@ -144,7 +144,7 @@ function AccountSettingsSheet(props: AccountSettingsSheetProps): JSX.Element {
                     <div className="flex flex-col items-start">
                       <span>User Details</span>
                       <span className="text-sm font-normal text-muted-foreground group-hover:text-muted-foreground/80">
-                        Update your profile information
+                        Update your name and contact details
                       </span>
                     </div>
                   </div>
@@ -167,7 +167,7 @@ function AccountSettingsSheet(props: AccountSettingsSheetProps): JSX.Element {
                     <div className="flex flex-col items-start">
                       <span>Change Password</span>
                       <span className="text-sm font-normal text-muted-foreground group-hover:text-muted-foreground/80">
-                        Update your account password
+                        Secure your account with a new password
                       </span>
                     </div>
                   </div>
