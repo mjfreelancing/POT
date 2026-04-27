@@ -4,4 +4,5 @@ export * from './approvals';
 export * from './expense';
 export * from './identity';
 export * from './income';
+export * from './settings';
 export * from './user';

@@ -12,6 +12,7 @@ export * from './useMe';
 export * from './usePasswordReset';
 export * from './useProjections';
 export * from './useRoles';
+export * from './useSettings';
 export * from './useSignup';
 export * from './useUser';
 export * from './useUsers';

@@ -49,7 +49,7 @@
  * - Ensure accessibility with sufficient text contrast
  * - Reinforce brand identity through consistent color usage
  */
-import { Building2, KeyIcon, UserIcon, XIcon } from 'lucide-react';
+import { Building2, KeyIcon, PiggyBank, UserIcon, XIcon } from 'lucide-react';
 import type { JSX } from 'react';
 
 import {
@@ -64,6 +64,7 @@ import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { usePermissions } from '@/hooks';
 
+import BudgetRemindersForm from './sections/budgetReminders/BudgetRemindersForm';
 import ChangePasswordForm from './sections/changePassword/ChangePasswordForm';
 import SiteDetailsForm from './sections/siteDetails/SiteDetailsForm';
 import UserDetailsForm from './sections/userDetails/UserDetailsForm';
@@ -83,7 +84,7 @@ function AccountSettingsSheet(props: AccountSettingsSheetProps): JSX.Element {
     <Sheet open={open} modal={false}>
       <SheetContent
         side="right"
-        className="w-full md:max-w-md p-6 overflow-y-auto [&>button:first-of-type]:hidden"
+        className="w-full sm:max-w-sm p-6 overflow-y-auto [&>button:first-of-type]:hidden"
       >
         <div className="space-y-6">
           <div className="flex items-center justify-between">
@@ -176,6 +177,33 @@ function AccountSettingsSheet(props: AccountSettingsSheetProps): JSX.Element {
                 </AccordionContent>
               </AccordionItem>
             </div>
+
+            {(hasPermission('site:view') || hasPermission('site:manage')) && (
+              <>
+                <div className="py-3" />
+
+                <div className="border border-border/40 rounded-lg bg-gradient-to-br from-blue-500/5 to-blue-500/10 hover:from-blue-500/10 hover:to-blue-500/15 transition-all shadow-sm">
+                  <AccordionItem className="px-4" value="budget-reminders">
+                    <AccordionTrigger className="text-lg font-semibold text-primary [&[data-state=open]>div]:text-primary/90 hover:no-underline [&>div]:transition-all group">
+                      <div className="flex items-center gap-3 opacity-80 group-hover:opacity-100">
+                        <div className="p-2 rounded-md bg-blue-500/10 transition-colors group-hover:bg-blue-500/15">
+                          <PiggyBank className="size-5 text-blue-400" />
+                        </div>
+                        <div className="flex flex-col items-start">
+                          <span>Budget Reminders</span>
+                          <span className="text-sm font-normal text-muted-foreground group-hover:text-muted-foreground/80">
+                            Set budget email alerts
+                          </span>
+                        </div>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="flex flex-col gap-4 pt-2">
+                      <BudgetRemindersForm readonly={!canManageSite} />
+                    </AccordionContent>
+                  </AccordionItem>
+                </div>
+              </>
+            )}
           </Accordion>
         </div>
       </SheetContent>
