@@ -219,7 +219,11 @@ const ChangePasswordForm = forwardRef<
           </ul>
         </div>
 
-        <Button type="submit" className="w-full mt-2" disabled={!isDirty || isPending}>
+        <Button
+          type="submit"
+          className="w-full mt-2"
+          disabled={!isDirty || isPending}
+        >
           Change Password
         </Button>
       </form>
