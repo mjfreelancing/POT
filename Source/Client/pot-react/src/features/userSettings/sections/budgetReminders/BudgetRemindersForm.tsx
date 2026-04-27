@@ -301,6 +301,12 @@ const BudgetRemindersForm = forwardRef<
         className="space-y-6"
         noValidate
       >
+        {readonly && (
+          <div className="inline-flex rounded-md border border-border/50 bg-amber-500/10 px-2 py-1 text-xs text-amber-700 dark:text-amber-400">
+            View only
+          </div>
+        )}
+
         {error && (
           <ErrorSheet
             title={error.title}
@@ -402,13 +408,11 @@ const BudgetRemindersForm = forwardRef<
           )}
         />
 
-        <Button
-          type="submit"
-          className="w-full mt-2"
-          disabled={readonly || isPending}
-        >
-          {readonly ? 'View Budget Reminders' : 'Update Budget Reminders'}
-        </Button>
+        {!readonly && (
+          <Button type="submit" className="w-full mt-2" disabled={isPending}>
+            Update Budget Reminders
+          </Button>
+        )}
       </form>
     </Form>
   );
