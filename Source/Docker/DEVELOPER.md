@@ -680,10 +680,12 @@ docker-compose -p pot logs -f
 
 **Available tasks** (run from VS Code Task menu):
 
-- `docker-start-pot-client-server` - Build and start all services
-- `docker-stop-pot-client-server` - Stop all services
-- `pot-server-build-and-deploy-azure` - Build and push server to registry
-- `pot-client-build-and-deploy-azure` - Build and push client to registry
+- `docker-start-client-server` - Build and start all services
+- `docker-stop-client-server` - Stop all services
+- `azure-server-build-and-deploy` - Build and push server to registry
+- `azure-server-build-and-deploy-no-cache` - Build and push server to registry without Docker build cache
+- `azure-client-build-and-deploy` - Build and push client to registry
+- `azure-client-build-and-deploy-no-cache` - Build and push client to registry without Docker build cache
 
 ---
 

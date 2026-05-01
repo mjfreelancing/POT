@@ -32,7 +32,7 @@ If a step fails, summarize the root error and provide the smallest next correcti
 
 - Add repository-specific task names, compose paths, endpoints, and safety boundaries in consuming copies.
 - Keep service-specific safety rules aligned with any Docker instruction file used by the repository.
-  - POT: Start task is `docker-start-pot-client-server`; stop task is `docker-stop-pot-client-server`.
+  - POT: Start task is `docker-start-client-server`; stop task is `docker-stop-client-server`.
   - POT: Compose file is `Source/Docker/docker-compose-client-server.yml`.
   - POT: Direct compose commands should include `--env-file .env --env-file .env.development`.
   - POT: Protected data path is `Source/Docker/postgres-data/**`.

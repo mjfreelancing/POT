@@ -60,31 +60,15 @@ COPY Server ./Server
 # Result: Subsequent dotnet commands can reference projects by relative paths
 WORKDIR /app/Server
 
-# Restore NuGet package dependencies defined in .csproj files
-# Purpose: Downloads all NuGet packages before building
+# Restore NuGet package dependencies for runtime projects
+# Purpose: Restore only the runtime project graph needed for server and migrations outputs
 # How it works:
-#   - Scans all .csproj files in solution for <PackageReference> entries
-#   - Downloads packages from NuGet.org to local cache
-#   - Creates assets files (project.assets.json) for build system
-# Why separate from build: Docker layer caching (could be optimized further)
-# Result: All dependencies available for compilation step
-RUN dotnet restore
-
-# ============================================================================
-# BUILD PROCESS
-# ============================================================================
-# Compile the entire solution in Release configuration
-# Purpose: Compile all C# source code into .NET assemblies (DLLs)
-# Syntax breakdown:
-#   - dotnet build: MSBuild command to compile projects
-#   - -c Release: Use Release configuration (optimizations enabled, no debug symbols)
-#   - --no-restore: Skip restore step (already done above)
-# What Release configuration does:
-#   - Enables compiler optimizations (inlining, dead code elimination)
-#   - Removes debug symbols and assertions
-#   - Defines RELEASE conditional compilation symbol
-# Result: Compiled DLLs in bin/Release/ directories for all projects
-RUN dotnet build -c Release --no-restore
+#   - Restores Pot.AspNetCore and all transitive project/package dependencies
+#   - Restores Pot.Data.Migrations and all transitive project/package dependencies
+#   - Avoids solution-wide traversal of unrelated projects (for example test projects)
+# Result: Runtime publish commands can execute with --no-restore
+RUN dotnet restore Pot.AspNetCore/Pot.AspNetCore.csproj && \
+    dotnet restore Pot.Data.Migrations/Pot.Data.Migrations.csproj
 
 # ============================================================================
 # PUBLISH - Main API Application
@@ -102,7 +86,7 @@ RUN dotnet build -c Release --no-restore
 #   - UseAppHost=false: Creates only DLL, invoked with 'dotnet Pot.AspNetCore.dll'
 #   - Containers use runtime image, DLL-only approach is standard and smaller
 # Result: Complete application in /app/server/ ready to run with 'dotnet Pot.AspNetCore.dll'
-RUN dotnet publish Pot.AspNetCore/Pot.AspNetCore.csproj -c Release -o /app/server -p:UseAppHost=false
+RUN dotnet publish Pot.AspNetCore/Pot.AspNetCore.csproj -c Release --no-restore -o /app/server -p:UseAppHost=false
 
 # ============================================================================
 # PUBLISH - Database Migrations Tool
@@ -112,7 +96,7 @@ RUN dotnet publish Pot.AspNetCore/Pot.AspNetCore.csproj -c Release -o /app/serve
 # Why separate publish: Migrations run before API starts (in entrypoint.sh)
 # Output location: /app/migrations/ (different from API at /app/server/)
 # Result: Migration tool in /app/migrations/ ready to run with 'dotnet Pot.Data.Migrations.dll'
-RUN dotnet publish Pot.Data.Migrations/Pot.Data.Migrations.csproj -c Release -o /app/migrations -p:UseAppHost=false
+RUN dotnet publish Pot.Data.Migrations/Pot.Data.Migrations.csproj -c Release --no-restore -o /app/migrations -p:UseAppHost=false
 
 # ============================================================================
 # RUNTIME STAGE - Minimal Production Image

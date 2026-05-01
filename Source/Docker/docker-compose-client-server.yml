@@ -16,7 +16,7 @@
 #   - Start all services: docker-compose -p pot -f docker-compose-client-server.yml up -d
 #   - Stop all services: docker-compose -p pot -f docker-compose-client-server.yml down
 #   - View logs: docker-compose -p pot -f docker-compose-client-server.yml logs -f
-#   - Recommended: Use VS Code tasks (docker-start-pot-client-server, docker-stop-pot-client-server)
+#   - Recommended: Use VS Code tasks (docker-start-client-server, docker-stop-client-server)
 
 # ============================================================================
 # SERVICE DEFINITIONS
@@ -484,7 +484,7 @@ services:
         - NODE_ENV=production
       # Note: NGINX_CONFIG and VITE_API_BASE_URL not specified here
       #   - Defaults used: nginx.conf (proxies /api to backend)
-      #   - For Azure, these are overridden in azure-pot-client-build-and-deploy task
+      #   - For Azure, these are overridden in azure-client-build-and-deploy task
 
       # Service dependencies: Ensure API is running before starting client
       # Why: Client may call API immediately on first load

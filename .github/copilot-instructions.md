@@ -24,7 +24,7 @@ Use path-scoped instructions for implementation details:
 
 ## Shared Integration Workflows
 
-- Preferred full-stack startup in VS Code: task `docker-start-pot-client-server`; stop with `docker-stop-pot-client-server`.
+- Preferred full-stack startup in VS Code: task `docker-start-client-server`; stop with `docker-stop-client-server`.
 - Docker compose reference: `Source/Docker/docker-compose-client-server.yml`.
 - Port map: client `5175`, API `5241`, Postgres host `5444`.
 - Vite alias `@` maps to `src`; dev proxy forwards `/api` to local backend `http://localhost:5242` (`Source/Client/pot-react/vite.config.ts`).

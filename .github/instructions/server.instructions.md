@@ -41,6 +41,6 @@ applyTo: "Source/Server/**"
   - POT: After editing entities or schema-impacting models, prompt the developer to run and review `add-migration`; do not generate migrations autonomously unless explicitly asked.
   - POT: Keep health checks available at `/_health`.
   - POT: Run server commands from `Source/Server`, including `dotnet run --project Pot.Data.Migrations`, `dotnet run --project Pot.AspNetCore`, and `dotnet test`.
-  - POT: Docker API port is `5241`; local non-Docker backend for frontend proxy is `5242`; cross-stack startup uses `docker-start-pot-client-server`.
+  - POT: Docker API port is `5241`; local non-Docker backend for frontend proxy is `5242`; cross-stack startup uses `docker-start-client-server`.
 - Keep transport and persistence rules in the subsection that matches the affected lifecycle stage.
 - Move language-level rules to `csharp.instructions.md` or another language-specific baseline instead of duplicating them here.

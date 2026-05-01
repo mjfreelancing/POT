@@ -26,11 +26,21 @@ If you're using VS Code, you can start everything with built-in tasks.
 
 > **Note:** The VS Code task creates timestamped Docker images (e.g., `pot-server:20251109-143052`) for versioning. These images will accumulate over time and consume disk space. You'll need to periodically clean them up using `docker image prune` or manually delete old images with `docker rmi <image-name>`.
 
+### Task Policy and Workflow Matrix
+
+POT uses a **cache-first default** for local and Azure image builds. Use the explicit `-no-cache` task variants only when you need a clean rebuild.
+
+| Workflow                                | Default Task (cache-enabled) | No-Cache Task                         | Stop Task                   | Notes                                         |
+| --------------------------------------- | ---------------------------- | ------------------------------------- | --------------------------- | --------------------------------------------- |
+| Full stack (client + server + postgres) | `docker-start-client-server` | `docker-start-client-server-no-cache` | `docker-stop-client-server` | Standard local workflow                       |
+| Server only (server + postgres)         | `docker-start-server`        | `docker-start-server-no-cache`        | `docker-stop-server`        | Verify API at `http://localhost:5241/_health` |
+| Client only (client only)               | `docker-start-client`        | `docker-start-client-no-cache`        | `docker-stop-client`        | Backend (`server`) must already be running    |
+
 ### Step 1: Start Services
 
 1. Press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (Mac)
 2. Type "Run Task" and press Enter
-3. Select `docker-start-pot-client-server`
+3. Select `docker-start-client-server`
 
 The task will build and start all services. This may take several minutes on the first run.
 
@@ -120,7 +130,7 @@ You should see the POT login/signup page.
 
 1. Press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (Mac)
 2. Type "Run Task" and press Enter
-3. Select `docker-stop-pot-client-server`
+3. Select `docker-stop-client-server`
 
 ---
 

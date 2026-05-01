@@ -25,7 +25,7 @@ applyTo: "Source/Docker/**"
 ## Expansion Notes
 
 - Keep task names and compose file paths in project-specific overlays or token files.
-  - POT: Prefer VS Code tasks `docker-start-pot-client-server` and `docker-stop-pot-client-server` for full-stack lifecycle.
+  - POT: Prefer VS Code tasks `docker-start-client-server` and `docker-stop-client-server` for full-stack lifecycle.
   - POT: Primary compose file is `Source/Docker/docker-compose-client-server.yml`.
   - POT: Direct compose commands should load `--env-file .env --env-file .env.development`.
   - POT: Expected host ports are client `5175`, API `5241`, and Postgres `5444`.

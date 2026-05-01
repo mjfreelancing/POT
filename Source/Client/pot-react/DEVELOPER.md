@@ -3160,7 +3160,7 @@ When the full stack is running through Docker, the client is served by nginx on 
 
 Use the following sanity-check flow before deploying:
 
-1. Start the Docker stack using the existing `docker-start-pot-client-server` task
+1. Start the Docker stack using the existing `docker-start-client-server` task
 2. Open `http://localhost:5175` in Chrome or Edge
 3. Perform a hard refresh with `Ctrl+Shift+R` so the latest service worker registration is picked up
 4. Open DevTools → **Application → Manifest** and confirm the app name, icons, theme colour, and `standalone` display mode

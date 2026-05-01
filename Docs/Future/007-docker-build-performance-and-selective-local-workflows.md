@@ -56,7 +56,7 @@ The result is longer feedback cycles for local iteration and repeated deployment
 1. Build cache policy:
 
 - Default tasks should use cache-enabled builds.
-- Keep explicit clean-build task variants with `--no-cache` for troubleshooting and deterministic rebuild needs.
+- Plan to add explicit `-no-cache` task variants for troubleshooting and deterministic rebuild needs.
 
 2. Server runtime build graph policy:
 
@@ -73,7 +73,7 @@ The result is longer feedback cycles for local iteration and repeated deployment
 
 - Keep existing Azure tasks and image tags.
 - Switch default Azure build tasks to cached mode.
-- Add clean Azure task variants for forced rebuilds.
+- Add `-no-cache` Azure task variants for forced rebuilds.
 
 5. Task naming policy:
 
@@ -82,17 +82,17 @@ The result is longer feedback cycles for local iteration and repeated deployment
 - Confirmed task labels:
   - `docker-start-client-server`
   - `docker-stop-client-server`
-  - `docker-start-client-server-clean`
+  - `docker-start-client-server-no-cache`
   - `docker-start-server`
   - `docker-stop-server`
-  - `docker-start-server-clean`
+  - `docker-start-server-no-cache`
   - `docker-start-client`
   - `docker-stop-client`
-  - `docker-start-client-clean`
+  - `docker-start-client-no-cache`
   - `azure-server-build-and-deploy`
-  - `azure-server-build-and-deploy-clean`
+  - `azure-server-build-and-deploy-no-cache`
   - `azure-client-build-and-deploy`
-  - `azure-client-build-and-deploy-clean`
+  - `azure-client-build-and-deploy-no-cache`
 
 6. Advanced Docker cache policy:
 
@@ -119,7 +119,7 @@ The result is longer feedback cycles for local iteration and repeated deployment
 
 - Keep full-stack start/stop tasks with renamed labels: `docker-start-client-server` and `docker-stop-client-server`.
 - Remove `--no-cache` from default full-stack build task.
-- Add explicit clean variant: `docker-start-client-server-clean`.
+- Add explicit `-no-cache` variant: `docker-start-client-server-no-cache`.
 
 2. New local selective tasks:
 
@@ -134,20 +134,20 @@ The result is longer feedback cycles for local iteration and repeated deployment
 
 - Use renamed default labels: `azure-server-build-and-deploy` and `azure-client-build-and-deploy`.
 - Remove `--no-cache` in default variants.
-- Add clean variants using `--no-cache`: `azure-server-build-and-deploy-clean` and `azure-client-build-and-deploy-clean`.
+- Add `-no-cache` variants using `--no-cache`: `azure-server-build-and-deploy-no-cache` and `azure-client-build-and-deploy-no-cache`.
 
 ### C) Documentation Updates
 
 1. Update Docker developer docs with:
 
 - Cache-enabled default task policy.
-- Clean-build troubleshooting commands.
+- `-no-cache` troubleshooting commands.
 - Server-only/client-only local workflow commands.
 
 2. Update Azure deployment notes with:
 
 - Cache-enabled default build commands.
-- Optional clean build commands and when to use them.
+- Optional `-no-cache` build commands and when to use them.
 
 ## Option Analysis
 
@@ -177,7 +177,7 @@ Decision (Confirmed): Option A is selected for this iteration. Option B is defer
 2. Existing full-stack local task remains available and functionally equivalent from a user perspective.
 3. Default local full-stack task uses Docker cache by default.
 4. Default Azure server/client tasks use Docker cache by default.
-5. Clean rebuild variants exist for local full-stack and Azure server/client tasks.
+5. Explicit `-no-cache` variants exist for local full-stack and Azure server/client tasks.
 6. Server-only local task flow exists and can run without building client image.
 7. Client-only local task flow exists and can run without building server image.
 8. Docker documentation includes updated task matrix and usage guidance.
@@ -193,7 +193,7 @@ Decision (Confirmed): Option A is selected for this iteration. Option B is defer
 2. Post-change timing capture:
 
 - Same commands/workflows with cached defaults.
-- Clean variants measured separately.
+- `-no-cache` variants measured separately.
 
 3. Functional validation:
 
@@ -204,7 +204,7 @@ Decision (Confirmed): Option A is selected for this iteration. Option B is defer
 
 1. Risk: Cache can hide stale dependency issues.
 
-- Mitigation: Provide explicit clean task variants and document usage triggers.
+- Mitigation: Provide explicit `-no-cache` task variants and document usage triggers.
 
 2. Risk: Project-targeted restore/publish might miss an implicit dependency previously surfaced by solution build.
 
@@ -218,7 +218,7 @@ Decision (Confirmed): Option A is selected for this iteration. Option B is defer
 
 1. Phase 1 (Task policy):
 
-- Introduce cache-enabled defaults and clean variants for local full-stack and Azure tasks.
+- Introduce cache-enabled defaults and `-no-cache` variants for local full-stack and Azure tasks.
 
 2. Phase 2 (Server Dockerfile optimization):
 
@@ -242,3 +242,32 @@ Decision (Confirmed): Option A is selected for this iteration. Option B is defer
 ## Open Questions
 
 None.
+
+## Implementation Validation Snapshot (2026-05-01)
+
+This section captures the execution outcomes from the completed implementation run so timing evidence is retained independently of temporary execution checklists.
+
+### Timing Comparison (Baseline vs Post-Change)
+
+| Workflow                    | Baseline | Post-Change (default cached path) | Delta                       |
+| --------------------------- | -------- | --------------------------------- | --------------------------- |
+| Full-stack local build + up | `99.94s` | `13.62s`                          | `-86.32s` (~`86.4%` faster) |
+| Azure server build-only     | `58.73s` | `6.22s`                           | `-52.51s` (~`89.4%` faster) |
+| Azure client build-only     | `43.99s` | `33.49s`                          | `-10.50s` (~`23.9%` faster) |
+
+Notes:
+
+- Azure measurements are build-only (push excluded) for deterministic local timing comparison.
+- Full-stack measurement includes `build` and `up -d` path used by the default local task.
+
+### Functional Validation Snapshot
+
+- Full-stack API health `http://localhost:5241/_health`: `200`
+- Full-stack frontend health `http://localhost:5175/health`: `200`
+- Server-only API health `http://localhost:5241/_health`: `200`
+- Client-only frontend health `http://localhost:5175/health`: `200`
+
+### Acceptance Criteria Cross-Check
+
+- PRD acceptance criteria 1-8 were validated as satisfied during final execution checks.
+- No regressions were identified in runtime health behavior after the Docker/task changes.

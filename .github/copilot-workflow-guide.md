@@ -64,5 +64,5 @@ Why this matters: without this setting, Copilot may not reliably load `.github/i
 
 ## Repo notes
 
-- Preferred full stack startup task: `docker-start-pot-client-server`.
+- Preferred full stack startup task: `docker-start-client-server`.
 - Main references: `Docs/ARCHITECTURE.md`, `Docs/LOCAL-SETUP.md`, `Docs/DOCKER-SETUP.md`.
