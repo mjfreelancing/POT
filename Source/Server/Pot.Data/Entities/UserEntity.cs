@@ -42,6 +42,7 @@ public sealed class UserEntity : EntityBase
 
     public required SiteEntity Site { get; set; }
 
+    public ICollection<AuthSessionEntity> AuthSessions { get; set; } = [];
     public ICollection<OneTimePasswordEntity> OneTimePasswords { get; set; } = [];
     public ICollection<RoleEntity> Roles { get; set; } = [];   // Skip navigation property (skips join table)
 }

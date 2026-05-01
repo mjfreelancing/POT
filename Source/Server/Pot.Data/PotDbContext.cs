@@ -18,6 +18,7 @@ public sealed class PotDbContext : DbContextBase
     public DbSet<SettingEntity> Settings { get; set; }
     public DbSet<RoleEntity> Roles { get; set; }
     public DbSet<OneTimePasswordEntity> OneTimePasswords { get; set; }
+    public DbSet<AuthSessionEntity> AuthSessions { get; set; }
 
     public PotDbContext(DbContextOptions<PotDbContext> options, ICurrentUserContext currentUserDataContext)
         : base(options)

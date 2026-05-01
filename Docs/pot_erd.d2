@@ -56,6 +56,22 @@ finance.Account: {
   SiteId: integer \[NOT NULL\] {constraint: foreign_key}
 }
 
+AuthSession: {
+  shape: sql_table
+
+  Id: integer \[NOT NULL\] {constraint: primary_key}
+  RowId: uuid \[NOT NULL\]
+  Etag: bigint \[NOT NULL\]
+  UserId: integer \[NOT NULL\] {constraint: foreign_key}
+  RefreshTokenHash: character varying(100)(100) \[NOT NULL\]
+  CreatedUtc: timestamp with time zone \[NOT NULL\]
+  ExpiresUtc: timestamp with time zone \[NOT NULL\]
+  RevokedUtc: timestamp with time zone
+  LastSeenUtc: timestamp with time zone
+  UserAgent: character varying(512)(512)
+  IpAddress: character varying(45)(45)
+}
+
 finance.Expense: {
   shape: sql_table
 
@@ -199,6 +215,18 @@ finance.Account.Id <-> finance.AccountAccrual.AccountId: ONE-TO-ONE {
 }
 
 site.Site.Id <-> finance.Account.SiteId: ONE-TO-MANY {
+  source-arrowhead: {
+    shape: cf-one-required
+  }
+  target-arrowhead: {
+    shape: cf-many
+  }
+  style: {
+    font-size: 24
+  }
+}
+
+auth.User.Id <-> AuthSession.UserId: ONE-TO-MANY {
   source-arrowhead: {
     shape: cf-one-required
   }
