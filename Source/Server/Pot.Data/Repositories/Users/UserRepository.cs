@@ -13,6 +13,7 @@ internal sealed class UserRepository : PersistableRepository, IPersistableUserRe
     private readonly ICurrentUserContext _currentUserContext;
 
     public IQueryable<UserEntity> Users => Set<UserEntity>();
+    public IQueryable<AuthSessionEntity> AuthSessions => Set<AuthSessionEntity>();
 
     public UserRepository(PotDbContext dbContext, ICurrentUserContext currentUserContext)
         : base(dbContext)
