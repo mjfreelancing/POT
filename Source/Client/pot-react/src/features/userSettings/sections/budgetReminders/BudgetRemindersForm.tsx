@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
-import { PiggyBank } from 'lucide-react';
+import { CalendarClock } from 'lucide-react';
 import { forwardRef, useEffect, useImperativeHandle } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -227,7 +227,7 @@ const BudgetRemindersForm = forwardRef<
     toast(
       () => (
         <SuccessToast
-          icon={PiggyBank}
+          icon={CalendarClock}
           title="Budget Reminders Updated"
           description="Your budget reminder settings were updated successfully."
         />
