@@ -1,6 +1,6 @@
 ﻿using AllOverIt.Logging.Extensions;
-using Pot.AspNetCore.Concerns.Auth;
 using Pot.AspNetCore.Concerns.Auth.Configuration;
+using Pot.AspNetCore.Concerns.Auth.Services;
 using Pot.AspNetCore.Features.Me.Services;
 
 namespace Pot.AspNetCore.Features.Auth.Logout;

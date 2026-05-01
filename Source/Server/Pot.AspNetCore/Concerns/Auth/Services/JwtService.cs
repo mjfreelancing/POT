@@ -7,7 +7,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace Pot.AspNetCore.Concerns.Auth;
+namespace Pot.AspNetCore.Concerns.Auth.Services;
 
 internal sealed class JwtService : IJwtService
 {

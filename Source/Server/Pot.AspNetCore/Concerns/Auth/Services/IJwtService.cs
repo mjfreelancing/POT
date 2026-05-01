@@ -2,7 +2,7 @@
 using Pot.Shared.DependencyInjection;
 using System.Security.Claims;
 
-namespace Pot.AspNetCore.Concerns.Auth;
+namespace Pot.AspNetCore.Concerns.Auth.Services;
 
 public interface IJwtService : IPotSingletonDependency
 {

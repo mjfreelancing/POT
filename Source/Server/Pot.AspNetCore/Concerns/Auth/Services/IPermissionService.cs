@@ -1,6 +1,6 @@
 ﻿using Pot.Shared.DependencyInjection;
 
-namespace Pot.AspNetCore.Concerns.Auth;
+namespace Pot.AspNetCore.Concerns.Auth.Services;
 
 public interface IPermissionService : IPotScopedDependency
 {

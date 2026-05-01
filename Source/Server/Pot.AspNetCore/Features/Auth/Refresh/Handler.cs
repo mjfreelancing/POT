@@ -2,8 +2,8 @@
 using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Pot.AspNetCore.Concerns.Auth;
 using Pot.AspNetCore.Concerns.Auth.Configuration;
+using Pot.AspNetCore.Concerns.Auth.Services;
 using Pot.AspNetCore.Extensions;
 using System.ComponentModel;
 

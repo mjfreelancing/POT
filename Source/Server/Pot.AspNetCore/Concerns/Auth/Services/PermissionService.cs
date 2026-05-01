@@ -4,7 +4,7 @@ using Pot.AspNetCore.Concerns.Auth.Configuration;
 using Pot.Data.Repositories.Roles;
 using System.Data;
 
-namespace Pot.AspNetCore.Concerns.Auth;
+namespace Pot.AspNetCore.Concerns.Auth.Services;
 
 internal sealed class PermissionService : IPermissionService
 {

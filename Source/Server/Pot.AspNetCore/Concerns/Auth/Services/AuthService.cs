@@ -15,9 +15,8 @@ using Pot.Shared.Enumerations;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
-using System.Text;
 
-namespace Pot.AspNetCore.Concerns.Auth;
+namespace Pot.AspNetCore.Concerns.Auth.Services;
 
 // AuthService flow summary (current implementation as of PRD 001/002 Step 1.2).
 //
@@ -39,8 +38,8 @@ namespace Pot.AspNetCore.Concerns.Auth;
 //   4) Save session + user login metadata.
 // - RefreshAsync:
 //   1) Optionally parse expired access token subject for consistency check.
-//   2) Find AuthSession by refresh-token hash.
-//   3) Reject if session is revoked/expired or subject mismatch is detected.
+//   2) Resolve active AuthSession by refresh-token hash.
+//   3) Reject if session resolution fails or subject mismatch is detected.
 //   4) Rotate tokens and update same session row (hash, expiry, last-seen).
 // - LogoutAsync (CURRENT BEHAVIOR):
 //   1) Revoke all active sessions for the user.
@@ -101,18 +100,20 @@ internal sealed class AuthService : IAuthService
 
     private const int RefreshTokenExpiryDays = 30;
 
-    private readonly IPersistableUserRepository _userRepository;
     private readonly IJwtService _jwtService;
+    private readonly IAuthSessionService _authSessionService;
     private readonly IUserPasswordHasher _passwordHasher;
+    private readonly IPersistableUserRepository _userRepository;
     private readonly ITimeProvider _timeProvider;
     private readonly ILogger _logger;
 
-    public AuthService(IJwtService jwtService, IUserPasswordHasher passwordHasher, IPersistableUserRepository userRepository,
-        ITimeProvider timeProvider, ILogger<AuthService> logger)
+    public AuthService(IJwtService jwtService, IAuthSessionService authSessionService, IUserPasswordHasher passwordHasher,
+        IPersistableUserRepository userRepository, ITimeProvider timeProvider, ILogger<AuthService> logger)
     {
-        _userRepository = userRepository.WhenNotNull();
         _jwtService = jwtService.WhenNotNull();
+        _authSessionService = authSessionService.WhenNotNull();
         _passwordHasher = passwordHasher.WhenNotNull();
+        _userRepository = userRepository.WhenNotNull();
         _timeProvider = timeProvider.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
@@ -155,13 +156,13 @@ internal sealed class AuthService : IAuthService
 
             // 2) Issue a new access token + refresh token pair for this login.
             var authTokens = CreateUserAuthTokens(user);
+            var nowUtc = _timeProvider.GetUtcDateTimeNow();
 
             // 3) Persist a dedicated AuthSession for this login so refresh lifecycle is per-session.
-            var authSession = CreateAuthSession(user, authTokens);
-            _userRepository.Add(authSession);
+            _authSessionService.CreateSession(user, authTokens.RefreshToken, authTokens.RefreshTokenExpiryUtc, nowUtc);
 
             // 4) Update login audit field and commit atomically with session creation.
-            user.LastLoggedInUtc = _timeProvider.GetUtcDateTimeNow();
+            user.LastLoggedInUtc = nowUtc;
 
             await _userRepository
                 .SaveAsync(cancellationToken)
@@ -188,8 +189,12 @@ internal sealed class AuthService : IAuthService
                 return EnrichedResult.Success(false);
             }
 
+            var nowUtc = _timeProvider.GetUtcDateTimeNow();
+
             // 2) Revoke all active AuthSession rows for this user.
-            RevokeUserAuthSessions(user);
+            _ = await _authSessionService
+                .RevokeAllSessionsForUserAsync(user.Id, nowUtc, cancellationToken)
+                .ConfigureAwait(false);
 
             // 3) Clear legacy user-level refresh token fields (kept temporarily during transition).
             user.RefreshToken = null;
@@ -231,23 +236,14 @@ internal sealed class AuthService : IAuthService
         {
             var nowUtc = _timeProvider.GetUtcDateTimeNow();
 
-            // 1) Resolve session by refresh-token hash (DB stores only hashes, not raw token values).
-            var refreshTokenHash = HashRefreshToken(refreshToken);
-
-            var authSession = await _userRepository.AuthSessions
-                .Include(session => session.User)
-                .SingleOrDefaultAsync(session => session.RefreshTokenHash == refreshTokenHash, cancellationToken)
+            // 1) Resolve active session by refresh-token hash (DB stores only hashes, not raw token values).
+            var authSession = await _authSessionService
+                .ResolveActiveSessionByRefreshTokenAsync(refreshToken, nowUtc, cancellationToken)
                 .ConfigureAwait(false);
 
             if (authSession is null)
             {
-                // Unknown refresh token.
-                return CreateAuthError();
-            }
-
-            if (authSession.RevokedUtc is not null || authSession.ExpiresUtc <= nowUtc)
-            {
-                // Known session but no longer active.
+                // Unknown refresh token or known session that is no longer active.
                 return CreateAuthError();
             }
 
@@ -261,7 +257,7 @@ internal sealed class AuthService : IAuthService
             var authTokens = CreateUserAuthTokens(authSession.User);
 
             // 3) Persist new refresh-token hash/expiry and last-seen metadata for this same session row.
-            UpdateAuthSession(authSession, authTokens, nowUtc);
+            _authSessionService.RotateRefreshToken(authSession, authTokens.RefreshToken, authTokens.RefreshTokenExpiryUtc, nowUtc);
 
             await _userRepository
                 .SaveAsync(cancellationToken)
@@ -295,8 +291,12 @@ internal sealed class AuthService : IAuthService
             // 2) Write new password hash.
             user.PasswordHash = _passwordHasher.GetHash(user, newPassword);
 
+            var nowUtc = _timeProvider.GetUtcDateTimeNow();
+
             // 3) Revoke all refresh sessions and legacy refresh fields.
-            RevokeUserAuthSessions(user);
+            _ = await _authSessionService
+                .RevokeAllSessionsForUserAsync(user.Id, nowUtc, cancellationToken)
+                .ConfigureAwait(false);
 
             // Clear out the legacy refresh token so the caller is forced to login again
             user.RefreshToken = null;
@@ -311,44 +311,6 @@ internal sealed class AuthService : IAuthService
         }
 
         return EnrichedResult.Success(true);
-    }
-
-    private AuthSessionEntity CreateAuthSession(UserEntity user, AuthTokens authTokens)
-    {
-        // Create one session record per login event.
-        return new AuthSessionEntity
-        {
-            UserId = user.Id,
-            User = user,
-            RefreshTokenHash = HashRefreshToken(authTokens.RefreshToken),
-            CreatedUtc = _timeProvider.GetUtcDateTimeNow(),
-            ExpiresUtc = authTokens.RefreshTokenExpiryUtc,
-            LastSeenUtc = _timeProvider.GetUtcDateTimeNow()
-        };
-    }
-
-    private static void UpdateAuthSession(AuthSessionEntity authSession, AuthTokens authTokens, DateTime nowUtc)
-    {
-        // Session-level rotation: old refresh token hash is replaced by the new one.
-        authSession.RefreshTokenHash = HashRefreshToken(authTokens.RefreshToken);
-        authSession.ExpiresUtc = authTokens.RefreshTokenExpiryUtc;
-        authSession.LastSeenUtc = nowUtc;
-    }
-
-    private void RevokeUserAuthSessions(UserEntity user)
-    {
-        // Current behavior revokes every active session for the user.
-        // Step 2.4 will narrow logout to current-session semantics.
-        var nowUtc = _timeProvider.GetUtcDateTimeNow();
-        var userAuthSessions = _userRepository
-            .Set<AuthSessionEntity>()
-            .Where(authSession => authSession.UserId == user.Id && authSession.RevokedUtc == null);
-
-        foreach (var authSession in userAuthSessions)
-        {
-            authSession.RevokedUtc = nowUtc;
-            authSession.LastSeenUtc = nowUtc;
-        }
     }
 
     private AuthTokens CreateUserAuthTokens(UserEntity user)
@@ -373,15 +335,6 @@ internal sealed class AuthService : IAuthService
         rng.GetBytes(randomNumber);
 
         return Convert.ToBase64String(randomNumber);
-    }
-
-    private static string HashRefreshToken(string refreshToken)
-    {
-        // Deterministic hash allows exact-match lookup while keeping raw tokens out of storage.
-        var refreshTokenBytes = Encoding.UTF8.GetBytes(refreshToken);
-        var refreshTokenHash = SHA256.HashData(refreshTokenBytes);
-
-        return Convert.ToHexString(refreshTokenHash);
     }
 
     private static EnrichedResult<AuthTokens?> CreateAuthError()

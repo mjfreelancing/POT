@@ -1,5 +1,6 @@
 ﻿using AllOverIt.Assertion;
 using Microsoft.AspNetCore.Authorization;
+using Pot.AspNetCore.Concerns.Auth.Services;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace Pot.AspNetCore.Concerns.Auth;
