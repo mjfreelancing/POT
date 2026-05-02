@@ -73,6 +73,21 @@ internal sealed class AccrualDirtyStateManager : IAccrualDirtyStateManager
         return SetAccountsDirtyByIdAsync(accountIds.Distinct().ToArray(), cancellationToken);
     }
 
+    public Task SetAccountsDirtyAsync(IReadOnlyCollection<ExpenseEntity> expenses, CancellationToken cancellationToken)
+    {
+        _logger.LogCall(this);
+
+        _ = expenses.WhenNotNull();
+
+        var expenseAccounts = expenses
+            .Select(expense => expense.Account)
+            .DistinctBy(account => account.Id)
+            .Select(account => account.Id)
+            .ToArray();
+
+        return SetAccountsDirtyByIdAsync(expenseAccounts, cancellationToken);
+    }
+
     public async Task SetAccountCleanAsync(int accountId, DateOnly asOfDate, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
@@ -102,21 +117,6 @@ internal sealed class AccrualDirtyStateManager : IAccrualDirtyStateManager
 
             _accountAccrualRepository.Update(accountAccrual);
         }
-    }
-
-    public Task SetAccountsDirtyAsync(IReadOnlyCollection<ExpenseEntity> expenses, CancellationToken cancellationToken)
-    {
-        _logger.LogCall(this);
-
-        _ = expenses.WhenNotNull();
-
-        var expenseAccounts = expenses
-            .Select(expense => expense.Account)
-            .DistinctBy(account => account.Id)
-            .Select(account => account.Id)
-            .ToArray();
-
-        return SetAccountsDirtyByIdAsync(expenseAccounts, cancellationToken);
     }
 
     private async Task SetAccountsDirtyByIdAsync(int[] accountIds, CancellationToken cancellationToken)
