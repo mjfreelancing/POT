@@ -28,13 +28,13 @@ If you're using VS Code, you can start everything with built-in tasks.
 
 ### Task Policy and Workflow Matrix
 
-POT uses a **cache-first default** for local and Azure image builds. Use the explicit `-no-cache` task variants only when you need a clean rebuild.
+POT Docker build tasks always use `--no-cache` to guarantee fresh image builds.
 
-| Workflow                                | Default Task (cache-enabled) | No-Cache Task                         | Stop Task                   | Notes                                         |
-| --------------------------------------- | ---------------------------- | ------------------------------------- | --------------------------- | --------------------------------------------- |
-| Full stack (client + server + postgres) | `docker-start-client-server` | `docker-start-client-server-no-cache` | `docker-stop-client-server` | Standard local workflow                       |
-| Server only (server + postgres)         | `docker-start-server`        | `docker-start-server-no-cache`        | `docker-stop-server`        | Verify API at `http://localhost:5241/_health` |
-| Client only (client only)               | `docker-start-client`        | `docker-start-client-no-cache`        | `docker-stop-client`        | Backend (`server`) must already be running    |
+| Workflow                                | Start Task                   | Stop Task                   | Notes                                         |
+| --------------------------------------- | ---------------------------- | --------------------------- | --------------------------------------------- |
+| Full stack (client + server + postgres) | `docker-start-client-server` | `docker-stop-client-server` | Standard local workflow                       |
+| Server only (server + postgres)         | `docker-start-server`        | `docker-stop-server`        | Verify API at `http://localhost:5241/_health` |
+| Client only (client only)               | `docker-start-client`        | `docker-stop-client`        | Backend (`server`) must already be running    |
 
 ### Step 1: Start Services
 

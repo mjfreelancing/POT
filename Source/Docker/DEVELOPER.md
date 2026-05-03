@@ -682,10 +682,8 @@ docker-compose -p pot logs -f
 
 - `docker-start-client-server` - Build and start all services
 - `docker-stop-client-server` - Stop all services
-- `azure-server-build-and-deploy` - Build and push server to registry
-- `azure-server-build-and-deploy-no-cache` - Build and push server to registry without Docker build cache
-- `azure-client-build-and-deploy` - Build and push client to registry
-- `azure-client-build-and-deploy-no-cache` - Build and push client to registry without Docker build cache
+- `azure-server-build-and-deploy` - Build and push server to registry (`--no-cache`)
+- `azure-client-build-and-deploy` - Build and push client to registry (`--no-cache`)
 
 ---
 

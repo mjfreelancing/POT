@@ -243,6 +243,26 @@ Decision (Confirmed): Option A is selected for this iteration. Option B is defer
 
 None.
 
+## Supplementary Implementation Note (2026-05-03)
+
+After production deployment validation, the cache-enabled task variants proposed in this PRD were removed from `.vscode/tasks.json`.
+
+What changed:
+
+- Removed duplicate `-no-cache` task labels.
+- Kept canonical task labels (for example `docker-start-client-server`, `azure-server-build-and-deploy`) and made them always run with `--no-cache`.
+
+Why this change was made:
+
+- A cache-enabled deploy task completed in seconds with all build/publish layers marked `CACHED`, which made it possible to push an image that did not include the latest code changes.
+- For deployment workflows, deterministic freshness is preferred over build speed.
+- Removing parallel cache/no-cache task variants reduces operator error risk (running the wrong similarly named task).
+
+Resulting policy:
+
+- Docker task naming is now singular per workflow (no cache suffix variants).
+- VS Code Docker build/deploy tasks prioritize correctness and release safety by always forcing rebuilds.
+
 ## Implementation Validation Snapshot (2026-05-01)
 
 This section captures the execution outcomes from the completed implementation run so timing evidence is retained independently of temporary execution checklists.
