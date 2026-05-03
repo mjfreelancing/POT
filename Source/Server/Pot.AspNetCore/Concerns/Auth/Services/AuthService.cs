@@ -57,6 +57,22 @@ namespace Pot.AspNetCore.Concerns.Auth.Services;
 // - Refresh-token rotation is one-time-use per successful refresh.
 // - Session revoke and TokenVersion are intentionally separate controls.
 //
+// TokenVersion explained:
+// - JWTs are stateless: the server cannot revoke a live access token by deleting a record.
+//   An attacker holding a stolen access token can use it until it naturally expires.
+// - TokenVersion bridges that gap. The User row holds a monotonically incrementing integer.
+//   Every issued JWT embeds the TokenVersion at the time of issuance. The authentication
+//   middleware validates the claim on every request; if the token version in the JWT is
+//   lower than the current User.TokenVersion the request is rejected immediately.
+// - This provides synchronous, global revocation without a per-request session DB lookup.
+// - Per-session revocation (RevokedUtc on AuthSession) only prevents future refresh calls;
+//   it cannot cancel a live access token already held by a client. TokenVersion does.
+// - TokenVersion is therefore incremented only on global-revoke paths:
+//     * ChangePasswordAsync  — credentials compromised, all devices must re-authenticate.
+//     * Any future logout-all operation.
+//   It is deliberately NOT incremented on single-device logout; that path revokes only the
+//   AuthSession row so other devices keep their access tokens and can refresh normally.
+//
 internal sealed class AuthService : IAuthService
 {
     private sealed class UserIsNotDisabledSpecification : Specification<UserEntity?>
