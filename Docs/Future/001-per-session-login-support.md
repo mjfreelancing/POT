@@ -19,10 +19,10 @@ Resolve two linked but distinct problems:
 
 ## PRD Status
 
-- Stage: Planning
-- Code changes: Not started
+- Stage: Implemented
+- Code changes: Complete (delivered together with PRD 002 as a single rollout)
 - Requirement interview mode: Completed for client storage (D001-D007 confirmed)
-- Last updated: 2026-04-02
+- Last updated: 2026-05-03
 
 ## Product Requirements (Draft)
 
@@ -45,25 +45,53 @@ Resolve two linked but distinct problems:
 2. Avoid introducing authentication regressions while session architecture evolves.
 3. Ensure changes can be rolled out safely behind feature flags where needed.
 
-## Current Browser Storage Inventory (Verified)
+## Original Browser Storage Inventory (Pre-Implementation Baseline)
 
-The following settings are currently stored in browser localStorage.
+The following settings were stored in browser localStorage at the time this PRD was written. These are preserved as the baseline that motivated the storage scoping work.
 
-| Item ID | Domain            | Storage Key     | Stored Fields                                                                            | Current Store | Source                                                                                                                                                                                                                           |
-| ------- | ----------------- | --------------- | ---------------------------------------------------------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| S001    | Theme             | pot-ui-theme    | theme: dark \| light \| system                                                           | localStorage  | [Source/Client/pot-react/src/App.tsx](../../Source/Client/pot-react/src/App.tsx#L57), [Source/Client/pot-react/src/components/theme/ThemeProvider.tsx](../../Source/Client/pot-react/src/components/theme/ThemeProvider.tsx#L54) |
-| S002    | Auth/User cache   | pot-user        | userInfo object (persisted Zustand slice)                                                | localStorage  | [Source/Client/pot-react/src/stores/useUserStore.ts](../../Source/Client/pot-react/src/stores/useUserStore.ts#L24)                                                                                                               |
-| S003    | Dashboard UI      | pot-dashboard   | quickActionsOpen, accountsOpen, incomesOpen, expensesOpen, expensesPeriod, incomesPeriod | localStorage  | [Source/Client/pot-react/src/features/dashboard/hooks/useDashboardStorage.ts](../../Source/Client/pot-react/src/features/dashboard/hooks/useDashboardStorage.ts#L4)                                                              |
-| S004    | Accounts filter   | pot-accounts    | filterDescription                                                                        | localStorage  | [Source/Client/pot-react/src/features/accounts/hooks/useAccountStorage.ts](../../Source/Client/pot-react/src/features/accounts/hooks/useAccountStorage.ts#L8)                                                                    |
-| S005    | Incomes filters   | pot-incomes     | selectedAccountId, filterDescription                                                     | localStorage  | [Source/Client/pot-react/src/features/incomes/hooks/useIncomeStorage.ts](../../Source/Client/pot-react/src/features/incomes/hooks/useIncomeStorage.ts#L4)                                                                        |
-| S006    | Expenses filters  | pot-expenses    | selectedAccountId, filterDescription                                                     | localStorage  | [Source/Client/pot-react/src/features/expenses/hooks/useExpenseStorage.ts](../../Source/Client/pot-react/src/features/expenses/hooks/useExpenseStorage.ts#L4)                                                                    |
-| S007    | Projections state | pot-projections | startDate, metric, period, hiddenSeries                                                  | localStorage  | [Source/Client/pot-react/src/features/projections/hooks/useProjectionStorage.ts](../../Source/Client/pot-react/src/features/projections/hooks/useProjectionStorage.ts#L24)                                                       |
+| Item ID | Domain            | Storage Key     | Stored Fields                                                                            | Store        |
+| ------- | ----------------- | --------------- | ---------------------------------------------------------------------------------------- | ------------ |
+| S001    | Theme             | pot-ui-theme    | theme: dark \| light \| system                                                           | localStorage |
+| S002    | Auth/User cache   | pot-user        | userInfo object (persisted Zustand slice)                                                | localStorage |
+| S003    | Dashboard UI      | pot-dashboard   | quickActionsOpen, accountsOpen, incomesOpen, expensesOpen, expensesPeriod, incomesPeriod | localStorage |
+| S004    | Accounts filter   | pot-accounts    | filterDescription                                                                        | localStorage |
+| S005    | Incomes filters   | pot-incomes     | selectedAccountId, filterDescription                                                     | localStorage |
+| S006    | Expenses filters  | pot-expenses    | selectedAccountId, filterDescription                                                     | localStorage |
+| S007    | Projections state | pot-projections | startDate, metric, period, hiddenSeries                                                  | localStorage |
 
-Notes:
+Notes (original state):
 
-- No active sessionStorage usage found in current client source.
-- Access token is currently memory-only, not browser persisted.
-- AUTH_STORAGE_KEY exists in types but does not currently drive active persisted auth token storage.
+- All items used flat, unscoped localStorage keys shared across all users and environments.
+- No sessionStorage usage existed in the client source.
+- Access token was memory-only, not browser persisted.
+- AUTH_STORAGE_KEY existed in types but did not drive active persisted auth token storage.
+
+## Implemented Browser Storage Inventory
+
+The following reflects the storage keys and backends in use after the scoping work was completed.
+
+| Item ID | Domain            | Implemented Storage Key                                      | Stored Fields                                                                            | Store                                  |
+| ------- | ----------------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------- | -------------------------------------- |
+| S001    | Theme             | `pot:{env}:user:{userId}:theme` (post-login); none pre-login | theme: dark \| light \| system                                                           | localStorage (post-login only)         |
+| S002    | Auth/User cache   | `pot:{env}:user`                                             | userInfo object (persisted Zustand slice)                                                | localStorage                           |
+| S003    | Dashboard UI      | `pot:{env}:user:{userId}:dashboard`                          | quickActionsOpen, accountsOpen, incomesOpen, expensesOpen, expensesPeriod, incomesPeriod | localStorage                           |
+| S004    | Accounts filter   | `pot:{env}:user:{userId}:accounts`                           | filterDescription                                                                        | sessionStorage (tab-scoped)            |
+| S005    | Incomes filters   | `pot:{env}:user:{userId}:incomes`                            | selectedAccountId, filterDescription                                                     | sessionStorage (tab-scoped)            |
+| S006    | Expenses filters  | `pot:{env}:user:{userId}:expenses`                           | selectedAccountId, filterDescription                                                     | sessionStorage (tab-scoped)            |
+| S007    | Projections state | `pot:{env}:user:{userId}:projections`                        | full projection state mirrored across sessionStorage and localStorage                    | sessionStorage + localStorage (hybrid) |
+
+Notes (implemented state):
+
+- `{env}` resolves to `prod` or `dev` based on the Vite `MODE` environment variable.
+- `{userId}` is the authenticated user's `rowId` from the Zustand user store.
+- S001 pre-login: no storage access; system/browser default theme applied. Post-login: `ThemeProvider` remounts via `key` prop on user change, reading from the user-scoped key.
+- S002 key is env-scoped only (not user-scoped) because it is the Zustand persist store that holds the user identity itself.
+- S004–S006 use sessionStorage — keys are user-scoped but reset when the tab session ends.
+- S007 uses a hybrid policy with read order `sessionStorage -> localStorage -> defaults`.
+- If a tab has no session entry yet, localStorage seeds that tab's initial state and is copied into sessionStorage.
+- After initial seeding, writes mirror the full projection state to both stores so new tabs can start from the last-used state while already-open tabs remain independent.
+- Removing a stored `startDate` also updates both stores so the next load falls back to today while retaining the other projection preferences.
+- Legacy flat keys (pot-ui-theme, pot-user, pot-dashboard, pot-accounts, pot-incomes, pot-expenses, pot-projections) are purged on first load as a temporary migration step.
 
 ## Storage Policy Decision Framework
 
@@ -93,21 +121,21 @@ If hybrid/tab policies are used, load order must be:
 
 ## Completed Client Storage Decision Matrix
 
-| Decision ID | Setting Item                             | Decision Status | Selected Policy                                    |
-| ----------- | ---------------------------------------- | --------------- | -------------------------------------------------- |
-| D001        | S001 Theme (pot-ui-theme)                | Confirmed       | Persistent per environment + user                  |
-| D002        | S002 User cache (pot-user)               | Confirmed       | Persistent per environment + user, clear on logout |
-| D003        | S003 Dashboard UI (pot-dashboard)        | Confirmed       | Persistent per environment + user                  |
-| D004        | S004 Accounts filter (pot-accounts)      | Confirmed       | Tab-session per environment + user                 |
-| D005        | S005 Incomes filters (pot-incomes)       | Confirmed       | Tab-session per environment + user                 |
-| D006        | S006 Expenses filters (pot-expenses)     | Confirmed       | Tab-session per environment + user                 |
-| D007        | S007 Projections state (pot-projections) | Confirmed       | Hybrid                                             |
+| Decision ID | Setting Item                             | Decision Status | Selected Policy                                            |
+| ----------- | ---------------------------------------- | --------------- | ---------------------------------------------------------- |
+| D001        | S001 Theme                               | Confirmed       | Persistent per user (post-login); system default pre-login |
+| D002        | S002 User cache (pot-user)               | Confirmed       | Persistent per environment + user, clear on logout         |
+| D003        | S003 Dashboard UI (pot-dashboard)        | Confirmed       | Persistent per environment + user                          |
+| D004        | S004 Accounts filter (pot-accounts)      | Confirmed       | Tab-session per environment + user                         |
+| D005        | S005 Incomes filters (pot-incomes)       | Confirmed       | Tab-session per environment + user                         |
+| D006        | S006 Expenses filters (pot-expenses)     | Confirmed       | Tab-session per environment + user                         |
+| D007        | S007 Projections state (pot-projections) | Confirmed       | Hybrid                                                     |
 
 ## Decision Log
 
-1. D001 (S001 Theme): Persistent per environment + user.
+1. D001 (S001 Theme): Env-scoped global persistence pre-login; persistent per user post-login.
 
-- Rationale: Supports fast visual differentiation between production and docker and keeps theme stable across relogin.
+- Rationale: Before authentication, users can still choose a theme and expect it to survive refreshes, so the app stores that preference under an env-scoped global key. After login, the theme becomes user-specific and is read from a user-scoped key so different users on the same browser stay isolated.
 
 2. D002 (S002 User cache): Persistent per environment + user, clear on logout.
 
@@ -135,15 +163,15 @@ If hybrid/tab policies are used, load order must be:
 
 ## Finalized Storage Requirements (Client)
 
-| Item ID | Key             | Final Policy                                       | Field-Level Requirement                                                                   |
-| ------- | --------------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| S001    | pot-ui-theme    | Persistent per environment + user                  | Persist theme across relogin; isolate production vs docker settings.                      |
-| S002    | pot-user        | Persistent per environment + user, clear on logout | Persist cached userInfo only for active user context; clear on logout to prevent leakage. |
-| S003    | pot-dashboard   | Persistent per environment + user                  | Persist panel open/close and period preferences.                                          |
-| S004    | pot-accounts    | Tab-session per environment + user                 | filterDescription resets on new tab session.                                              |
-| S005    | pot-incomes     | Tab-session per environment + user                 | selectedAccountId and filterDescription reset on new tab session.                         |
-| S006    | pot-expenses    | Tab-session per environment + user                 | selectedAccountId and filterDescription reset on new tab session.                         |
-| S007    | pot-projections | Hybrid                                             | Persistent: metric, period, hiddenSeries. Tab-session: startDate.                         |
+| Item ID | Key                             | Final Policy                                       | Field-Level Requirement                                                                                                                                 |
+| ------- | ------------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| S001    | `pot:{env}:user:{userId}:theme` | Persistent per user (post-login)                   | Pre-login: system default, no persistence. Post-login: persists theme per user; isolated per user and environment; survives re-login for the same user. |
+| S002    | pot-user                        | Persistent per environment + user, clear on logout | Persist cached userInfo only for active user context; clear on logout to prevent leakage.                                                               |
+| S003    | pot-dashboard                   | Persistent per environment + user                  | Persist panel open/close and period preferences.                                                                                                        |
+| S004    | pot-accounts                    | Tab-session per environment + user                 | filterDescription resets on new tab session.                                                                                                            |
+| S005    | pot-incomes                     | Tab-session per environment + user                 | selectedAccountId and filterDescription reset on new tab session.                                                                                       |
+| S006    | pot-expenses                    | Tab-session per environment + user                 | selectedAccountId and filterDescription reset on new tab session.                                                                                       |
+| S007    | pot-projections                 | Hybrid                                             | Session-first tab state with local fallback and defaults. Full state is mirrored to both stores so fresh tabs seed from the last-used projection state. |
 
 Implementation note:
 
@@ -477,7 +505,7 @@ Apply finalized policy map to current storage points:
 
 1. Theme (S001)
 
-- Update [Source/Client/pot-react/src/App.tsx](../../Source/Client/pot-react/src/App.tsx#L57) and [Source/Client/pot-react/src/components/theme/ThemeProvider.tsx](../../Source/Client/pot-react/src/components/theme/ThemeProvider.tsx#L54) to use environment + user persistent keying.
+- Implemented. `App.tsx` uses a `ThemedApp` component that reads `userId` from Zustand (`useUserStore`) and passes `buildUserScopedKey({ userId, feature: 'theme' })` or `null` to `ThemeProvider`. Pre-login: system default, no persistence. Post-login: user-scoped localStorage. `ThemeProvider` remounts via `key` prop when the user changes, triggering a fresh read of the new user's stored preference.
 
 2. User cache (S002)
 
@@ -495,8 +523,9 @@ Apply finalized policy map to current storage points:
 5. Projections hybrid behavior (S007)
 
 - Update [Source/Client/pot-react/src/features/projections/hooks/useProjectionStorage.ts](../../Source/Client/pot-react/src/features/projections/hooks/useProjectionStorage.ts#L24) so:
-  - Persistent: metric, period, hiddenSeries
-  - Tab-session: startDate
+  - Read order is session, then local, then defaults
+  - Local data seeds a fresh tab when no session entry exists yet
+  - Full projection state is mirrored to both stores after seeding
 
 ### Workstream C: Rehydration and Logout Rules
 

@@ -50,10 +50,10 @@ When a user logs in or refreshes on device/browser B, device/browser A can be fo
 
 ## PRD Status
 
-- Stage: Proposed
-- Code changes: Not started
-- Decisions finalized: None yet
-- Last updated: 2026-04-11
+- Stage: Implemented
+- Code changes: Complete (delivered together with PRD 001 as a single rollout)
+- Decisions finalized: AuthSession row per login; per-session logout does NOT increment TokenVersion; password change IS global revoke (TokenVersion++); legacy RefreshToken/RefreshTokenExpiryUtc columns removed
+- Last updated: 2026-05-03
 
 ## Draft Security Coordination Notes (Not Agreed)
 
