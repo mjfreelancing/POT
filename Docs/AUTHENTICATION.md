@@ -928,13 +928,11 @@ const changePasswordSchema = z
 **Common Errors:**
 
 - **Invalid Current Password:**
-
   - Error: "Invalid user or password"
   - User must re-enter correct current password
   - No hints about which is wrong (security)
 
 - **Weak New Password:**
-
   - Error: Specific requirement not met
   - Frontend shows which rules failed
   - User corrects and resubmits
@@ -984,7 +982,7 @@ POT implements **proactive token refresh** - tokens are refreshed automatically 
 ```typescript
 export function calculateRefreshTime(
   accessToken: string,
-  refreshBeforeExpiryPercentage: number = 0.8
+  refreshBeforeExpiryPercentage: number = 0.8,
 ): number {
   const decoded = jwtDecode<TokenPayload>(accessToken);
   const expiryTime = decoded.exp * 1000; // Convert to milliseconds
@@ -1080,7 +1078,7 @@ const login = useCallback(
     logger.info("Auth", "User logged in");
     setTokens({ accessToken });
   },
-  [setTokens]
+  [setTokens],
 );
 
 const logout = useCallback(async () => {
@@ -1277,14 +1275,12 @@ POT uses a **dual-storage approach** for maximum security:
 This architecture addresses the fundamental security challenge of single-page applications (SPAs):
 
 1. **The localStorage Problem:**
-
    - Traditional approach: Store both tokens in localStorage
    - **Critical vulnerability:** Any XSS attack can steal tokens from localStorage
    - localStorage is accessible to all JavaScript on the page (including malicious scripts)
    - Compromised tokens = full account access until token expires
 
 2. **The Cookie-Only Problem:**
-
    - Alternative approach: Store both tokens in cookies
    - Access tokens would need to be readable by JavaScript (to add to API headers)
    - This defeats the security benefit of HTTP-only cookies
@@ -1360,7 +1356,7 @@ useEffect(() => {
     // No token in memory - try to refresh from cookie
     logger.info(
       "AccessTokenContext",
-      "No access token in memory, attempting refresh from cookie"
+      "No access token in memory, attempting refresh from cookie",
     );
 
     const result = await refreshAccessToken(); // Calls /auth/refresh
@@ -1538,12 +1534,10 @@ Authentication__Cookie__Domain = .payontime.com.au
 `SameSite` controls when browsers send cookies with cross-origin requests:
 
 - **`Strict`** - Cookie **never** sent on cross-origin requests
-
   - ❌ Blocks all cross-subdomain requests
   - Not suitable for our architecture
 
 - **`Lax`** - Cookie sent on "safe" top-level navigation (GET requests)
-
   - ✅ Works with `Domain=.payontime.com.au` for cross-subdomain requests
   - ✅ Cookies sent with XHR/fetch when `withCredentials: true` is set
   - ✅ CSRF protection (blocks POST from other sites)
@@ -1669,32 +1663,27 @@ server {
 **Solutions:**
 
 1. **Check cookie exists:**
-
    - Open DevTools → Application → Cookies
    - Look for `pot_refresh_token` cookie
    - Verify domain, path, expiry
 
 2. **Check cookie is sent:**
-
    - Open DevTools → Network → `/api/auth/refresh` request
    - Look in Request Headers for `Cookie: pot_refresh_token=...`
    - If missing, cookie not being sent
 
 3. **Check `SameSite` policy:**
-
    - Cookie should be `SameSite=Lax` (not `Strict`)
    - `Strict` blocks cookie on page refresh
    - Verify in DevTools → Application → Cookies
 
 4. **Check `withCredentials` is configured:**
-
    - Axios must have `withCredentials: true` to send cookies
    - Regular axios client: Set in `axios.defaults.withCredentials`
    - Auth client: Set in `authClient.defaults.withCredentials`
    - Without this, cookies won't be sent even if they exist
 
 5. **Check domains match:**
-
    - Development: Both `localhost`
    - Production: Cookie domain `.payontime.com.au` matches `api.payontime.com.au`
    - If mismatched, update frontend API URL or backend CORS
@@ -1711,12 +1700,10 @@ server {
 **Solutions:**
 
 1. **Development:**
-
    - `Cors__AllowedOrigins=http://localhost:5175`
    - Must match Vite dev server URL (check `vite.config.ts` server port)
 
 2. **Production:**
-
    - `Cors__AllowedOrigins=https://payontime.com.au`
    - Must match custom domain (not Azure default URL)
    - Update after deploying custom domain
@@ -1837,17 +1824,17 @@ POT uses a per-session model for refresh token lifecycle. Each login event creat
 
 ### AuthSession Model
 
-| Column             | Type        | Description                                                     |
-| ------------------ | ----------- | --------------------------------------------------------------- |
-| `RowId`            | `Guid`      | External identifier returned to no caller; used for DB lookups  |
-| `UserId`           | `int` (FK)  | The user this session belongs to                                |
+| Column             | Type        | Description                                                       |
+| ------------------ | ----------- | ----------------------------------------------------------------- |
+| `RowId`            | `Guid`      | External identifier returned to no caller; used for DB lookups    |
+| `UserId`           | `int` (FK)  | The user this session belongs to                                  |
 | `RefreshTokenHash` | `string`    | SHA-256 hash of the opaque refresh token (raw token never stored) |
-| `CreatedUtc`       | `DateTime`  | When the session was created (login time)                       |
-| `ExpiresUtc`       | `DateTime`  | When the session expires (30 days from creation)                |
-| `RevokedUtc`       | `DateTime?` | Set when the session is explicitly revoked; `null` = active     |
-| `LastSeenUtc`      | `DateTime?` | Updated on every successful refresh                             |
-| `UserAgent`        | `string?`   | Client user-agent string captured at login                      |
-| `IpAddress`        | `string?`   | Client IP address captured at login                             |
+| `CreatedUtc`       | `DateTime`  | When the session was created (login time)                         |
+| `ExpiresUtc`       | `DateTime`  | When the session expires (30 days from creation)                  |
+| `RevokedUtc`       | `DateTime?` | Set when the session is explicitly revoked; `null` = active       |
+| `LastSeenUtc`      | `DateTime?` | Updated on every successful refresh                               |
+| `UserAgent`        | `string?`   | Client user-agent string captured at login                        |
+| `IpAddress`        | `string?`   | Client IP address captured at login                               |
 
 ### Session Lifecycle
 
@@ -1865,7 +1852,7 @@ These two mechanisms solve different problems and are deliberately kept separate
 
 **Per-session revocation (`RevokedUtc`):**
 
-- Prevents future *refresh* calls from this device.
+- Prevents future _refresh_ calls from this device.
 - Does not affect other sessions.
 - Does not cancel a live access token already held by a client — a revoked session only stops renewal.
 
@@ -1880,7 +1867,7 @@ These two mechanisms solve different problems and are deliberately kept separate
 
 **Why both are needed:**
 
-A revoked `AuthSession` stops the attacker from getting a *new* access token via refresh. But if the attacker already holds a live access token (e.g., stolen before logout), it remains usable until expiry (up to 15 minutes) unless `TokenVersion` is also incremented. For normal logout this trade-off is acceptable. For a security-sensitive event like a password change, `TokenVersion` ensures immediate revocation across all devices.
+A revoked `AuthSession` stops the attacker from getting a _new_ access token via refresh. But if the attacker already holds a live access token (e.g., stolen before logout), it remains usable until expiry (up to 15 minutes) unless `TokenVersion` is also incremented. For normal logout this trade-off is acceptable. For a security-sensitive event like a password change, `TokenVersion` ensures immediate revocation across all devices.
 
 ---
 
@@ -1908,7 +1895,6 @@ A revoked `AuthSession` stops the attacker from getting a *new* access token via
 **Roles:**
 
 1. **Admin** - Full access to site features
-
    - `site:manage`, `site:view`
    - `user:manage`, `user:view`
    - `account:manage`, `account:view`
@@ -1917,7 +1903,6 @@ A revoked `AuthSession` stops the attacker from getting a *new* access token via
    - `maintenance:export`, `maintenance:import`
 
 2. **Viewer** - Read-only access
-
    - `account:view`
    - `expense:view`
    - `income:view`
