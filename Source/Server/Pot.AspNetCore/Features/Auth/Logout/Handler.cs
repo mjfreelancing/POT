@@ -15,12 +15,13 @@ internal sealed class Handler
 
         try
         {
+            var refreshToken = RefreshTokenHelper.GetFromCookie(httpContext, authOptions);
             var userInfo = await userService.GetMeInfoAsync(httpContext, cancellationToken);
 
             // Ignore if the user was not found - don't want to provide any hints to the caller
             if (userInfo is not null)
             {
-                _ = await authService.LogoutAsync(userInfo.RowId, cancellationToken);
+                _ = await authService.LogoutAsync(userInfo.RowId, refreshToken, cancellationToken);
             }
         }
         finally

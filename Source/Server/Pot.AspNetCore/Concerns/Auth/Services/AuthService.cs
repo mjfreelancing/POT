@@ -41,10 +41,11 @@ namespace Pot.AspNetCore.Concerns.Auth.Services;
 //   2) Resolve active AuthSession by refresh-token hash.
 //   3) Reject if session resolution fails or subject mismatch is detected.
 //   4) Rotate tokens and update same session row (hash, expiry, last-seen).
-// - LogoutAsync (CURRENT BEHAVIOR):
-//   1) Revoke all active sessions for the user.
-//   2) Clear legacy user-level refresh fields.
-//   3) Increment TokenVersion (global access-token invalidation).
+// - LogoutAsync:
+//   1) Return early if no refresh token cookie is present (anonymous/expired cookie).
+//   2) Resolve the active AuthSession for this specific refresh token.
+//   3) Revoke only that session row; TokenVersion is NOT incremented so other devices are unaffected.
+//   4) Clear legacy user-level refresh fields during transition period.
 // - ChangePasswordAsync:
 //   1) Validate current password.
 //   2) Persist new password hash.
@@ -55,12 +56,6 @@ namespace Pot.AspNetCore.Concerns.Auth.Services;
 // - No raw refresh token is persisted.
 // - Refresh-token rotation is one-time-use per successful refresh.
 // - Session revoke and TokenVersion are intentionally separate controls.
-//
-// TODO (Step 2.4): Update this summary after current-session logout is implemented.
-// Expected future logout behavior:
-// - Revoke only the current AuthSession.
-// - Do not increment TokenVersion for normal logout.
-// - Keep TokenVersion increment on global-revoke flows (e.g., password change).
 //
 internal sealed class AuthService : IAuthService
 {
@@ -173,43 +168,52 @@ internal sealed class AuthService : IAuthService
         }
     }
 
-    public async Task<EnrichedResult<bool>> LogoutAsync(Guid userId, CancellationToken cancellationToken)
+    public async Task<EnrichedResult<bool>> LogoutAsync(Guid userId, string? refreshToken, CancellationToken cancellationToken)
     {
         _logger.LogCall(this, new { userId });
 
+        // No refresh token means no active session to revoke (e.g., anonymous or already expired cookie).
+        if (refreshToken.IsNullOrEmpty())
+        {
+            return EnrichedResult.Success(false);
+        }
+
         using (_userRepository.WithTracking())
         {
-            // 1) Load the currently authenticated user row.
+            var nowUtc = _timeProvider.GetUtcDateTimeNow();
+
+            // 1) Resolve the active session for this refresh token only. Must be inside WithTracking so
+            //    the entity is change-tracked and the revocation mutation is detected by SaveChangesAsync.
+            var authSession = await _authSessionService
+                .ResolveActiveSessionByRefreshTokenAsync(refreshToken!, nowUtc, cancellationToken)
+                .ConfigureAwait(false);
+
+            // Session not found (already revoked, expired, or token mismatch) - treat as a no-op.
+            if (authSession is null)
+            {
+                return EnrichedResult.Success(false);
+            }
+
+            // 2) Revoke only this session row. TokenVersion is NOT incremented: other devices remain unaffected.
+            _authSessionService.RevokeCurrentSession(authSession, nowUtc);
+
+            // 3) Load the user to clear legacy refresh token fields kept during the transition period.
             var user = await _userRepository.Users
                 .SingleOrDefaultAsync(user => user.RowId == userId, cancellationToken)
                 .ConfigureAwait(false);
 
-            if (user is null)
+            if (user is not null)
             {
-                // Not doing anything with this result - merely indicating the user is not logged out since not found)
-                return EnrichedResult.Success(false);
+                user.RefreshToken = null;
+                user.RefreshTokenExpiryUtc = null;
             }
-
-            var nowUtc = _timeProvider.GetUtcDateTimeNow();
-
-            // 2) Revoke all active AuthSession rows for this user.
-            _ = await _authSessionService
-                .RevokeAllSessionsForUserAsync(user.Id, nowUtc, cancellationToken)
-                .ConfigureAwait(false);
-
-            // 3) Clear legacy user-level refresh token fields (kept temporarily during transition).
-            user.RefreshToken = null;
-            user.RefreshTokenExpiryUtc = null;
-
-            // 4) Current behavior is still global access-token invalidation via TokenVersion.
-            user.TokenVersion++;
 
             await _userRepository
                 .SaveAsync(cancellationToken)
                 .ConfigureAwait(false);
-
-            return EnrichedResult.Success(true);
         }
+
+        return EnrichedResult.Success(true);
     }
 
     public async Task<EnrichedResult<AuthTokens?>> RefreshAsync(string? accessToken, string refreshToken, CancellationToken cancellationToken)
