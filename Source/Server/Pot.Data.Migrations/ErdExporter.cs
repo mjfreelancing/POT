@@ -92,6 +92,7 @@ internal sealed class ErdExporter
                 {
                     entities
                         .Add<UserEntity>()
+                        .Add<AuthSessionEntity>()
                         .Add<OneTimePasswordEntity>();
                 });
 

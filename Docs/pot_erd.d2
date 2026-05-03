@@ -56,7 +56,7 @@ finance.Account: {
   SiteId: integer \[NOT NULL\] {constraint: foreign_key}
 }
 
-AuthSession: {
+auth.AuthSession: {
   shape: sql_table
 
   Id: integer \[NOT NULL\] {constraint: primary_key}
@@ -224,7 +224,7 @@ site.Site.Id <-> finance.Account.SiteId: ONE-TO-MANY {
   }
 }
 
-auth.User.Id <-> AuthSession.UserId: ONE-TO-MANY {
+auth.User.Id <-> auth.AuthSession.UserId: ONE-TO-MANY {
   source-arrowhead: {
     shape: cf-one-required
   }
