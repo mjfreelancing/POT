@@ -46,6 +46,27 @@ describe('useLocalStorageManager', () => {
     });
   });
 
+  test('passes custom storage backend through to useLocalStorage', () => {
+    const onError = vi.fn();
+    const defaultValue: StorageData = { alpha: 'fallback' };
+
+    renderHook(() =>
+      useLocalStorageManager<StorageData>(
+        'pot-manager-key',
+        onError,
+        defaultValue,
+        sessionStorage,
+      ),
+    );
+
+    expect(useLocalStorage).toHaveBeenCalledWith({
+      key: 'pot-manager-key',
+      defaultValue,
+      onError,
+      storage: sessionStorage,
+    });
+  });
+
   test('getProperty returns stored property value when present', () => {
     getItemMock.mockReturnValue({ alpha: 'stored', beta: 10 });
 

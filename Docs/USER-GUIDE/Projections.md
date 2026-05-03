@@ -172,7 +172,13 @@ The detail sheet appears only when metric is Income or Expenses and the user cli
 
 ## Persistence Behavior
 
-Projection preferences are stored in local storage under key pot-projections.
+Projection preferences are stored under the authenticated user's scoped projections key.
+
+Storage behavior:
+
+- The page reads `sessionStorage` first, then falls back to `localStorage`, then defaults.
+- If a tab has no session entry yet but local storage has saved projection state, that saved state seeds the tab and is copied into `sessionStorage`.
+- Updates mirror the full projection state to both stores so a fresh tab can start from the most recently used settings while already-open tabs can continue independently.
 
 Persisted values:
 
@@ -189,6 +195,7 @@ Period persistence rules:
 Start date persistence rules:
 
 - If the user sets start date to today, startDate is removed from storage.
+- When startDate is removed, the remaining projection preferences are retained in both stores.
 - If a stored start date is before today on load, it is removed and replaced with today in page state.
 
 ## Step-By-Step Usage

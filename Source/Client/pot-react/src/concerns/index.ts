@@ -30,6 +30,15 @@ export { logger } from './logging';
 export { registerServiceWorker } from './pwa';
 
 // Storage concerns
-export { buildEnvScopedKey, buildUserScopedKey, resolveStorageBackend, resolveStorageEnv } from './storage';
-export type { MigrationEntry, StorageMode, UserScopedKeyOptions } from './storage';
-export { migrateStorageEntries } from './storage';
+export type {
+  LegacyStorageKey,
+  StorageMode,
+  UserScopedKeyOptions,
+} from './storage';
+export {
+  buildEnvScopedKey,
+  buildUserScopedKey,
+  purgeLegacyStorageKeys,
+  resolveStorageBackend,
+  resolveStorageEnv,
+} from './storage';

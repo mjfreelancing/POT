@@ -1,11 +1,15 @@
+import {
+  buildEnvScopedKey,
+  buildUserScopedKey,
+  purgeLegacyStorageKeys,
+} from '@/concerns/storage';
 import useLocalStorageManager from '@/hooks/useLocalStorageManager';
 import type { DisplayError } from '@/lib';
+import useUserStore from '@/stores/useUserStore';
 
 type AccountStorageData = {
   filterDescription: string | null;
 };
-
-const ACCOUNT_STORAGE_KEY = 'pot-accounts';
 
 const accountStorageDefaults: AccountStorageData = {
   filterDescription: null,
@@ -19,15 +23,40 @@ type StorageErrorHandler = (error: DisplayError) => void;
  * @returns Storage utilities for account data
  */
 function useAccountStorage(onError?: StorageErrorHandler) {
+  const userId = useUserStore(store => store.userInfo?.rowId);
+  const storageKey = userId
+    ? buildUserScopedKey({ userId, feature: 'accounts' })
+    : buildEnvScopedKey('unauthenticated:accounts');
+
+  // TEMPORARY: remove the legacy flat key now that the user is known and a scoped key is active.
+  if (userId) {
+    purgeLegacyStorageKeys([{ key: 'pot-accounts', storage: localStorage }]);
+  }
+
   const { getProperty, setProperty } =
-    useLocalStorageManager<AccountStorageData>(ACCOUNT_STORAGE_KEY, onError);
+    useLocalStorageManager<AccountStorageData>(
+      storageKey,
+      onError,
+      accountStorageDefaults,
+      sessionStorage,
+    );
 
   return {
-    getAccountData: () => ({
-      filterDescription: getProperty('filterDescription'),
-    }),
+    getAccountData: () => {
+      if (!userId) {
+        return accountStorageDefaults;
+      }
+
+      return {
+        filterDescription: getProperty('filterDescription'),
+      };
+    },
 
     setAccountData: (data: Partial<AccountStorageData>) => {
+      if (!userId) {
+        return;
+      }
+
       if (data.filterDescription !== undefined) {
         setProperty(
           'filterDescription',

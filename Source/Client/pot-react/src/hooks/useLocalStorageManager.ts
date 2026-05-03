@@ -24,11 +24,13 @@ function useLocalStorageManager<T>(
   key: string,
   onError?: (error: DisplayError) => void,
   defaultValue: T = {} as T,
+  storage?: Storage,
 ): LocalStorageManager<T> {
   const { getItem, setItem } = useLocalStorage<T>({
     key,
     defaultValue,
     onError,
+    storage,
   });
 
   /**

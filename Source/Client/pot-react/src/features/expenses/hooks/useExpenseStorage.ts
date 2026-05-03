@@ -1,7 +1,11 @@
+import {
+  buildEnvScopedKey,
+  buildUserScopedKey,
+  purgeLegacyStorageKeys,
+} from '@/concerns/storage';
 import useLocalStorageManager from '@/hooks/useLocalStorageManager';
 import type { DisplayError } from '@/lib';
-
-const EXPENSE_STORAGE_KEY = 'pot-expenses';
+import useUserStore from '@/stores/useUserStore';
 
 type ExpenseStorageData = {
   selectedAccountId: string | null;
@@ -21,16 +25,41 @@ type StorageErrorHandler = (error: DisplayError) => void;
  * @returns Storage utilities for expense data
  */
 function useExpenseStorage(onError?: StorageErrorHandler) {
+  const userId = useUserStore(store => store.userInfo?.rowId);
+  const storageKey = userId
+    ? buildUserScopedKey({ userId, feature: 'expenses' })
+    : buildEnvScopedKey('unauthenticated:expenses');
+
+  // TEMPORARY: remove the legacy flat key now that the user is known and a scoped key is active.
+  if (userId) {
+    purgeLegacyStorageKeys([{ key: 'pot-expenses', storage: localStorage }]);
+  }
+
   const { getProperty, setProperty } =
-    useLocalStorageManager<ExpenseStorageData>(EXPENSE_STORAGE_KEY, onError);
+    useLocalStorageManager<ExpenseStorageData>(
+      storageKey,
+      onError,
+      expenseStorageDefaults,
+      sessionStorage,
+    );
 
   return {
-    getExpenseData: () => ({
-      selectedAccountId: getProperty('selectedAccountId'),
-      filterDescription: getProperty('filterDescription'),
-    }),
+    getExpenseData: () => {
+      if (!userId) {
+        return expenseStorageDefaults;
+      }
+
+      return {
+        selectedAccountId: getProperty('selectedAccountId'),
+        filterDescription: getProperty('filterDescription'),
+      };
+    },
 
     setExpenseData: (data: Partial<ExpenseStorageData>) => {
+      if (!userId) {
+        return;
+      }
+
       if (data.selectedAccountId !== undefined) {
         setProperty('selectedAccountId', data.selectedAccountId);
       }

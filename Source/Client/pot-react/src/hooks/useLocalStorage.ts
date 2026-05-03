@@ -1,10 +1,16 @@
 import { logger } from '@/concerns';
-import { type DisplayError,getErrorMessage } from '@/lib';
+import { type DisplayError, getErrorMessage } from '@/lib';
 
 type LocalStorageProps<T> = {
   key: string;
   defaultValue?: T;
   onError?: (error: DisplayError) => void;
+  /**
+   * The Web Storage backend to use. Defaults to `window.localStorage`.
+   * Pass `window.sessionStorage` for session-scoped storage that is cleared
+   * when the browser tab or session ends.
+   */
+  storage?: Storage;
 };
 
 function getDisplayError(error: unknown): DisplayError {
@@ -31,10 +37,10 @@ function getDisplayError(error: unknown): DisplayError {
  *
  * 2. Zustand persist middleware - Operates outside component lifecycle
  *    - Third-party middleware that directly accesses localStorage
- *    - Configuration: { name: 'pot-user' }
+ *    - Configuration: { name: buildEnvScopedKey('user') }
  *
- * 3. ThemeProvider.tsx - Simple implementation with direct localStorage access
- *    - Uses 'app-ui-theme' (different prefix convention)
+ * 3. ThemeProvider.tsx - Direct localStorage access in context provider
+ *    - Uses an env-scoped global key pre-login and a user-scoped key post-login
  *
  * Attempting to centralize the prefix would create a split architecture where:
  * - Some code looks for 'pot-projections' (prefix in constant)
@@ -58,10 +64,11 @@ const useLocalStorage = <T = Record<string, unknown>>({
   key,
   defaultValue,
   onError,
+  storage = window.localStorage,
 }: LocalStorageProps<T>) => {
   const setItem = (value: T) => {
     try {
-      window.localStorage.setItem(key, JSON.stringify(value));
+      storage.setItem(key, JSON.stringify(value));
     } catch (error) {
       logger.error(
         'useLocalStorage',
@@ -75,7 +82,7 @@ const useLocalStorage = <T = Record<string, unknown>>({
 
   const getItem = (): T | undefined => {
     try {
-      const item = window.localStorage.getItem(key);
+      const item = storage.getItem(key);
 
       return item ? JSON.parse(item) : defaultValue;
     } catch (error) {
@@ -92,7 +99,7 @@ const useLocalStorage = <T = Record<string, unknown>>({
 
   const removeItem = () => {
     try {
-      window.localStorage.removeItem(key);
+      storage.removeItem(key);
     } catch (error) {
       logger.error(
         'useLocalStorage',

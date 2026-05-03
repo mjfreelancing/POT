@@ -75,6 +75,26 @@ describe('useLocalStorage', () => {
     expect(window.localStorage.getItem('pot-local-storage-remove')).toBeNull();
   });
 
+  test('uses injected sessionStorage backend instead of localStorage', () => {
+    const { result } = renderHook(() =>
+      useLocalStorage<TestPayload>({
+        key: 'pot-local-storage-session',
+        storage: window.sessionStorage,
+      }),
+    );
+
+    act(() => {
+      result.current.setItem({ value: 'session-stored' });
+    });
+
+    expect(window.sessionStorage.getItem('pot-local-storage-session')).toBe(
+      '{"value":"session-stored"}',
+    );
+    expect(window.localStorage.getItem('pot-local-storage-session')).toBeNull();
+
+    expect(result.current.getItem()).toEqual({ value: 'session-stored' });
+  });
+
   test('returns undefined and reports error when stored JSON cannot be parsed', () => {
     window.localStorage.setItem(
       'pot-local-storage-invalid-json',

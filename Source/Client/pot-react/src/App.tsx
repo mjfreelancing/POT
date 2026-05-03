@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 
 import { ErrorSheet } from '@/components/feedback';
 import { Toaster } from '@/components/ui/sonner';
 import { logger } from '@/concerns';
+import { buildEnvScopedKey, buildUserScopedKey } from '@/concerns/storage';
 import type { DisplayError } from '@/lib';
 
 import { AppSidebar } from './components/nav';
@@ -12,6 +13,7 @@ import { SidebarProvider } from './components/ui/sidebar';
 import { ErrorProvider } from './contexts';
 import { AuthProvider } from './features/auth/contexts';
 import { AppRoutes } from './routes/AppRoutes';
+import { useUserStore } from './stores';
 
 const AppContent = () => (
   <SidebarProvider>
@@ -38,6 +40,23 @@ const AppContent = () => (
   </SidebarProvider>
 );
 
+function ThemedApp({ children }: { children: ReactNode }) {
+  const userId = useUserStore(store => store.userInfo?.rowId);
+  const storageKey = userId
+    ? buildUserScopedKey({ userId, feature: 'theme' })
+    : buildEnvScopedKey('theme');
+
+  return (
+    <ThemeProvider
+      key={userId ?? 'global-theme'}
+      defaultTheme="system"
+      storageKey={storageKey}
+    >
+      {children}
+    </ThemeProvider>
+  );
+}
+
 const App = () => {
   logger.info('App', `Running mode: ${import.meta.env.MODE}`);
   const [error, setError] = useState<DisplayError | null>();
@@ -61,7 +80,7 @@ const App = () => {
   return (
     <ErrorProvider>
       <AuthProvider>
-        <ThemeProvider defaultTheme="system" storageKey="pot-ui-theme">
+        <ThemedApp>
           <div className="flex h-screen w-screen overflow-hidden">
             <ErrorBoundary
               fallbackRender={({ error }) => (
@@ -91,7 +110,7 @@ const App = () => {
               onDismiss={() => setError(null)}
             />
           )}
-        </ThemeProvider>
+        </ThemedApp>
       </AuthProvider>
     </ErrorProvider>
   );

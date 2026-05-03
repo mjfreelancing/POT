@@ -30,8 +30,14 @@ describe('buildUserScopedKey', () => {
   test('is deterministic — same inputs always produce the same key', () => {
     vi.stubEnv('MODE', 'development');
 
-    const key1 = buildUserScopedKey({ userId: 'user-xyz', feature: 'projections' });
-    const key2 = buildUserScopedKey({ userId: 'user-xyz', feature: 'projections' });
+    const key1 = buildUserScopedKey({
+      userId: 'user-xyz',
+      feature: 'projections',
+    });
+    const key2 = buildUserScopedKey({
+      userId: 'user-xyz',
+      feature: 'projections',
+    });
 
     expect(key1).toBe(key2);
   });

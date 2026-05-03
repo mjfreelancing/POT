@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, test } from 'vitest';
 
+import { buildEnvScopedKey } from '@/concerns/storage';
 import type { User } from '@/data/user';
 import useUserStore from '@/stores/useUserStore';
 
@@ -32,10 +33,11 @@ describe('useUserStore', () => {
 
   test('persists only userInfo in localStorage', () => {
     const user = createUser();
+    const storageKey = buildEnvScopedKey('user');
 
     useUserStore.getState().setUserInfo(user);
 
-    const persistedRaw = window.localStorage.getItem('pot-user');
+    const persistedRaw = window.localStorage.getItem(storageKey);
 
     expect(persistedRaw).not.toBeNull();
 
@@ -57,11 +59,12 @@ describe('useUserStore', () => {
       displayName: 'Alex Riley',
       email: 'alex@example.com',
     });
+    const storageKey = buildEnvScopedKey('user');
 
     useUserStore.getState().clearUserInfo();
 
     window.localStorage.setItem(
-      'pot-user',
+      storageKey,
       JSON.stringify({
         state: {
           userInfo: persistedUser,

@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Key } from 'lucide-react';
-import { forwardRef, useEffect, useImperativeHandle } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -73,58 +73,61 @@ const UserDetailsForm = forwardRef<
     onDirtyChange?.(isDirty);
   }, [isDirty, onDirtyChange]);
 
-  async function onSubmit(
-    values: UserDetailsFields,
-  ): Promise<SettingsSectionFormSubmitResult> {
-    // Clear any previous errors
-    setError(null);
+  const onSubmit = useCallback(
+    async (
+      values: UserDetailsFields,
+    ): Promise<SettingsSectionFormSubmitResult> => {
+      // Clear any previous errors
+      setError(null);
 
-    const result = await updateUser.mutateAsync({
-      id: userDetails.rowId,
-      data: {
-        displayName: values.displayName,
-        email: values.email,
-        etag: userDetails.etag,
-      },
-    });
-
-    if (!result.success) {
-      setError({
-        title: result.error.code,
-        description: result.error.description,
+      const result = await updateUser.mutateAsync({
+        id: userDetails.rowId,
+        data: {
+          displayName: values.displayName,
+          email: values.email,
+          etag: userDetails.etag,
+        },
       });
 
-      return 'invalid';
-    }
+      if (!result.success) {
+        setError({
+          title: result.error.code,
+          description: result.error.description,
+        });
 
-    if (result && result.success) {
-      toast(
-        () => (
-          <SuccessToast
-            icon={Key}
-            title="User Details Updated"
-            description="Your user details were updated successfully."
-          />
-        ),
-        { duration: 5000 },
-      );
+        return 'invalid';
+      }
 
-      form.reset({
-        username: userDetails.username,
+      if (result && result.success) {
+        toast(
+          () => (
+            <SuccessToast
+              icon={Key}
+              title="User Details Updated"
+              description="Your user details were updated successfully."
+            />
+          ),
+          { duration: 5000 },
+        );
+
+        form.reset({
+          username: userDetails.username,
+          displayName: values.displayName,
+          email: values.email,
+        });
+      }
+
+      setUserInfo({
+        ...userDetails,
+        etag: result.value.etag,
         displayName: values.displayName,
         email: values.email,
       });
-    }
 
-    setUserInfo({
-      ...userDetails,
-      etag: result.value.etag,
-      displayName: values.displayName,
-      email: values.email,
-    });
-
-    return 'saved';
-  }
+      return 'saved';
+    },
+    [form, setError, setUserInfo, updateUser, userDetails],
+  );
 
   useImperativeHandle(
     ref,

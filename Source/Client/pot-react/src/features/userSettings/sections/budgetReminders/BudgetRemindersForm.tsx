@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import { CalendarClock } from 'lucide-react';
-import { forwardRef, useEffect, useImperativeHandle } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -156,87 +156,97 @@ const BudgetRemindersForm = forwardRef<
     onDirtyChange?.(!readonly && isDirty);
   }, [isDirty, onDirtyChange, readonly]);
 
-  async function onSubmit(
-    values: BudgetRemindersFields,
-  ): Promise<SettingsSectionFormSubmitResult> {
-    setError(null);
+  const onSubmit = useCallback(
+    async (
+      values: BudgetRemindersFields,
+    ): Promise<SettingsSectionFormSubmitResult> => {
+      setError(null);
 
-    const settingUpdates: { key: ReminderSettingKey; value: string }[] = [
-      { key: 'Enabled', value: String(values.enabled) },
-      { key: 'ReminderDays', value: String(values.reminderDays) },
-      { key: 'LocalHourTrigger', value: String(values.localHourTrigger) },
-    ];
+      const settingUpdates: { key: ReminderSettingKey; value: string }[] = [
+        { key: 'Enabled', value: String(values.enabled) },
+        { key: 'ReminderDays', value: String(values.reminderDays) },
+        { key: 'LocalHourTrigger', value: String(values.localHourTrigger) },
+      ];
 
-    let latestEnabled = reminderSettings?.Enabled;
-    let latestReminderDays = reminderSettings?.ReminderDays;
-    let latestLocalHourTrigger = reminderSettings?.LocalHourTrigger;
+      let latestEnabled = reminderSettings?.Enabled;
+      let latestReminderDays = reminderSettings?.ReminderDays;
+      let latestLocalHourTrigger = reminderSettings?.LocalHourTrigger;
 
-    for (const settingUpdate of settingUpdates) {
-      const existingSetting =
-        settingUpdate.key === 'Enabled'
-          ? latestEnabled
-          : settingUpdate.key === 'ReminderDays'
-            ? latestReminderDays
-            : latestLocalHourTrigger;
+      for (const settingUpdate of settingUpdates) {
+        const existingSetting =
+          settingUpdate.key === 'Enabled'
+            ? latestEnabled
+            : settingUpdate.key === 'ReminderDays'
+              ? latestReminderDays
+              : latestLocalHourTrigger;
 
-      const result = await updateSetting.mutateAsync({
-        id: `${EMAIL_BUDGET_REMINDER_CATEGORY}/${settingUpdate.key}`,
-        data: {
-          value: settingUpdate.value,
-          etag: existingSetting?.etag ?? null,
-        },
-      });
-
-      if (!result.success) {
-        setError({
-          title: result.error.code,
-          description: result.error.description,
+        const result = await updateSetting.mutateAsync({
+          id: `${EMAIL_BUDGET_REMINDER_CATEGORY}/${settingUpdate.key}`,
+          data: {
+            value: settingUpdate.value,
+            etag: existingSetting?.etag ?? null,
+          },
         });
 
-        return 'invalid';
+        if (!result.success) {
+          setError({
+            title: result.error.code,
+            description: result.error.description,
+          });
+
+          return 'invalid';
+        }
+
+        const nextSetting: ReminderSettingRecord = {
+          rowId: result.value.rowId,
+          etag: result.value.etag,
+          value:
+            settingUpdate.key === 'Enabled'
+              ? values.enabled
+              : settingUpdate.key === 'ReminderDays'
+                ? values.reminderDays
+                : values.localHourTrigger,
+        };
+
+        if (settingUpdate.key === 'Enabled') {
+          latestEnabled = nextSetting;
+        } else if (settingUpdate.key === 'ReminderDays') {
+          latestReminderDays = nextSetting;
+        } else {
+          latestLocalHourTrigger = nextSetting;
+        }
       }
 
-      const nextSetting: ReminderSettingRecord = {
-        rowId: result.value.rowId,
-        etag: result.value.etag,
-        value:
-          settingUpdate.key === 'Enabled'
-            ? values.enabled
-            : settingUpdate.key === 'ReminderDays'
-              ? values.reminderDays
-              : values.localHourTrigger,
-      };
+      await queryClient.invalidateQueries({ queryKey: ['settings'] });
+      invalidateCache(['me']);
+      form.reset({
+        enabled: values.enabled,
+        reminderDays: values.reminderDays,
+        localHourTrigger: values.localHourTrigger,
+      });
 
-      if (settingUpdate.key === 'Enabled') {
-        latestEnabled = nextSetting;
-      } else if (settingUpdate.key === 'ReminderDays') {
-        latestReminderDays = nextSetting;
-      } else {
-        latestLocalHourTrigger = nextSetting;
-      }
-    }
+      toast(
+        () => (
+          <SuccessToast
+            icon={CalendarClock}
+            title="Budget Reminders Updated"
+            description="Your budget reminder settings were updated successfully."
+          />
+        ),
+        { duration: 5000 },
+      );
 
-    await queryClient.invalidateQueries({ queryKey: ['settings'] });
-    invalidateCache(['me']);
-    form.reset({
-      enabled: values.enabled,
-      reminderDays: values.reminderDays,
-      localHourTrigger: values.localHourTrigger,
-    });
-
-    toast(
-      () => (
-        <SuccessToast
-          icon={CalendarClock}
-          title="Budget Reminders Updated"
-          description="Your budget reminder settings were updated successfully."
-        />
-      ),
-      { duration: 5000 },
-    );
-
-    return 'saved';
-  }
+      return 'saved';
+    },
+    [
+      form,
+      invalidateCache,
+      queryClient,
+      reminderSettings,
+      setError,
+      updateSetting,
+    ],
+  );
 
   const isPending = settingsQuery.isLoading || updateSetting.isPending;
 

@@ -1,11 +1,15 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 
+import { purgeLegacyStorageKeys } from '@/concerns/storage';
+
+const LEGACY_THEME_STORAGE_KEY = 'pot-ui-theme';
+
 type Theme = 'dark' | 'light' | 'system';
 
 type ThemeProviderProps = {
   children: React.ReactNode;
   defaultTheme?: Theme;
-  storageKey?: string;
+  storageKey?: string | null;
 };
 
 type ThemeProviderState = {
@@ -26,9 +30,18 @@ function ThemeProvider({
   storageKey = 'app-ui-theme',
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme,
-  );
+  const [theme, setTheme] = useState<Theme>(() => {
+    // TEMPORARY: remove legacy theme keys so stale data does not persist under old keys.
+    purgeLegacyStorageKeys([
+      { key: LEGACY_THEME_STORAGE_KEY, storage: localStorage },
+    ]);
+
+    if (!storageKey) {
+      return defaultTheme;
+    }
+
+    return (localStorage.getItem(storageKey) as Theme) || defaultTheme;
+  });
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -51,7 +64,10 @@ function ThemeProvider({
   const value = {
     theme,
     setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme);
+      if (storageKey) {
+        localStorage.setItem(storageKey, theme);
+      }
+
       setTheme(theme);
     },
   };
@@ -73,5 +89,5 @@ const useTheme = () => {
   return context;
 };
 
-export type { ThemeProviderProps };
 export { ThemeProvider, useTheme };
+export type { ThemeProviderProps };

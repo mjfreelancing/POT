@@ -16,28 +16,23 @@ type ApiErrorResponse = {
   instance?: string;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const getNotFoundMessage = (_error: ApiErrorResponse): string => {
+const getNotFoundMessage = (_: ApiErrorResponse): string => {
   return 'The requested resource was not found';
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const getMethodNotAllowedMessage = (_error: ApiErrorResponse): string => {
+const getMethodNotAllowedMessage = (_: ApiErrorResponse): string => {
   return 'The requested method is not allowed for this resource';
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const getAuthenticationMessage = (_error: ApiErrorResponse): string => {
+const getAuthenticationMessage = (_: ApiErrorResponse): string => {
   return 'Invalid username or password';
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const getForbiddenMessage = (_error: ApiErrorResponse): string => {
+const getForbiddenMessage = (_: ApiErrorResponse): string => {
   return 'You do not have permission to access this resource';
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const getRateLimitedMessage = (_error: ApiErrorResponse): string => {
+const getRateLimitedMessage = (_: ApiErrorResponse): string => {
   return 'Too many requests. Please wait a moment and try again.';
 };
 
@@ -93,7 +88,6 @@ const getErrorTitle = (error: ApiErrorResponse): string => {
   return error.detail ?? error.title ?? 'An unknown error occurred';
 };
 
-export type { ApiErrorDetail, ApiErrorResponse };
 export {
   getAuthenticationMessage,
   getConflictMessage,
@@ -105,3 +99,4 @@ export {
   getServerErrorMessage,
   getValidationMessage,
 };
+export type { ApiErrorDetail, ApiErrorResponse };

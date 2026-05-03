@@ -1285,7 +1285,8 @@ Theme management components.
 **Theme Features:**
 
 - Three theme modes: light, dark, system
-- Persists to localStorage
+- Auth-aware persistence: env-scoped global localStorage pre-login; per-user localStorage post-login
+- Isolated per user and environment — different users on the same browser profile have independent preferences
 - Respects system preference
 - Smooth transitions
 - Accessible
@@ -1294,9 +1295,20 @@ Theme management components.
 
 ```tsx
 import { ThemeProvider } from '@/components/theme';
+import { buildEnvScopedKey, buildUserScopedKey } from '@/concerns/storage';
 
-// In App.tsx or root component
-<ThemeProvider defaultTheme="system">
+// ThemeProvider accepts string | null for storageKey.
+// App.tsx uses an env-scoped global key pre-login and a user-scoped key post-login.
+// The key prop forces a remount when auth context changes so the provider re-reads the correct stored theme.
+<ThemeProvider
+  key={userId ?? 'global-theme'}
+  defaultTheme="system"
+  storageKey={
+    userId
+      ? buildUserScopedKey({ userId, feature: 'theme' })
+      : buildEnvScopedKey('theme')
+  }
+>
   <YourApp />
 </ThemeProvider>;
 ```

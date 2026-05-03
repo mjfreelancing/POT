@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Building2 } from 'lucide-react';
-import { forwardRef, useEffect, useImperativeHandle } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -78,60 +78,63 @@ const SiteDetailsForm = forwardRef<
     onDirtyChange?.(!readonly && isDirty);
   }, [isDirty, onDirtyChange, readonly]);
 
-  async function onSubmit(
-    values: SiteDetailsFields,
-  ): Promise<SettingsSectionFormSubmitResult> {
-    // Clear any previous errors
-    setError(null);
+  const onSubmit = useCallback(
+    async (
+      values: SiteDetailsFields,
+    ): Promise<SettingsSectionFormSubmitResult> => {
+      // Clear any previous errors
+      setError(null);
 
-    const result = await updateSite.mutateAsync({
-      id: siteDetails.rowId,
-      data: {
-        name: values.name,
-        description: values.description,
-        etag: siteDetails.etag,
-      },
-    });
-
-    if (!result.success) {
-      setError({
-        title: result.error.code,
-        description: result.error.description,
+      const result = await updateSite.mutateAsync({
+        id: siteDetails.rowId,
+        data: {
+          name: values.name,
+          description: values.description,
+          etag: siteDetails.etag,
+        },
       });
 
-      return 'invalid';
-    }
+      if (!result.success) {
+        setError({
+          title: result.error.code,
+          description: result.error.description,
+        });
 
-    if (result && result.success) {
-      toast(
-        () => (
-          <SuccessToast
-            icon={Building2}
-            title="Site Details Updated"
-            description="Your site details were updated successfully."
-          />
-        ),
-        { duration: 5000 },
-      );
+        return 'invalid';
+      }
 
-      form.reset({
-        name: values.name,
-        description: values.description,
+      if (result && result.success) {
+        toast(
+          () => (
+            <SuccessToast
+              icon={Building2}
+              title="Site Details Updated"
+              description="Your site details were updated successfully."
+            />
+          ),
+          { duration: 5000 },
+        );
+
+        form.reset({
+          name: values.name,
+          description: values.description,
+        });
+      }
+
+      setUserInfo({
+        ...userDetails,
+        site: {
+          ...siteDetails,
+          etag: result.value.etag,
+          name: values.name,
+          description: values.description,
+        },
       });
-    }
 
-    setUserInfo({
-      ...userDetails,
-      site: {
-        ...siteDetails,
-        etag: result.value.etag,
-        name: values.name,
-        description: values.description,
-      },
-    });
-
-    return 'saved';
-  }
+      return 'saved';
+    },
+    [form, setError, setUserInfo, siteDetails, updateSite, userDetails],
+  );
 
   useImperativeHandle(
     ref,

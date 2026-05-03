@@ -1,12 +1,15 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import App from '@/App';
 import { logger } from '@/concerns';
+import { useUserStore } from '@/stores';
 
 let shouldThrowFromRoutes = false;
+const themeProviderMounts = vi.fn();
+const themeProviderUnmounts = vi.fn();
 
 vi.mock('@/components/nav', () => ({
   AppSidebar: () => <div data-testid="app-sidebar">Sidebar</div>,
@@ -38,16 +41,26 @@ vi.mock('@/components/theme', () => ({
   }: {
     children: ReactNode;
     defaultTheme: string;
-    storageKey: string;
-  }) => (
-    <div
-      data-testid="theme-provider"
-      data-default-theme={defaultTheme}
-      data-storage-key={storageKey}
-    >
-      {children}
-    </div>
-  ),
+    storageKey: string | null;
+  }) => {
+    useEffect(() => {
+      themeProviderMounts(storageKey);
+
+      return () => {
+        themeProviderUnmounts(storageKey);
+      };
+    }, []);
+
+    return (
+      <div
+        data-testid="theme-provider"
+        data-default-theme={defaultTheme}
+        data-storage-key={storageKey}
+      >
+        {children}
+      </div>
+    );
+  },
 }));
 
 vi.mock('@/routes/AppRoutes', () => ({
@@ -94,10 +107,17 @@ vi.mock('@/concerns', () => ({
   },
 }));
 
+vi.mock('@/stores', () => ({
+  useUserStore: vi.fn().mockReturnValue(null),
+}));
+
 describe('App', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     shouldThrowFromRoutes = false;
+    themeProviderMounts.mockClear();
+    themeProviderUnmounts.mockClear();
+    vi.mocked(useUserStore).mockReturnValue(null);
   });
 
   test('wires global providers and app shell components', () => {
@@ -111,7 +131,7 @@ describe('App', () => {
     );
     expect(screen.getByTestId('theme-provider')).toHaveAttribute(
       'data-storage-key',
-      'pot-ui-theme',
+      'pot:dev:theme',
     );
     expect(screen.getByTestId('sidebar-provider')).toBeInTheDocument();
     expect(screen.getByTestId('app-sidebar')).toBeInTheDocument();
@@ -122,6 +142,39 @@ describe('App', () => {
       'App',
       expect.stringContaining('Running mode:'),
     );
+  });
+
+  test('passes user-scoped theme storage key when user is authenticated', () => {
+    vi.mocked(useUserStore).mockReturnValue('user-row-id-abc');
+
+    render(<App />);
+
+    expect(screen.getByTestId('theme-provider')).toHaveAttribute(
+      'data-storage-key',
+      'pot:dev:user:user-row-id-abc:theme',
+    );
+  });
+
+  test('remounts ThemeProvider when auth state changes so theme storage is re-read', () => {
+    const { rerender } = render(<App />);
+
+    expect(themeProviderMounts).toHaveBeenCalledWith('pot:dev:theme');
+
+    vi.mocked(useUserStore).mockReturnValue('user-row-id-abc');
+    rerender(<App />);
+
+    expect(themeProviderUnmounts).toHaveBeenCalledWith('pot:dev:theme');
+    expect(themeProviderMounts).toHaveBeenLastCalledWith(
+      'pot:dev:user:user-row-id-abc:theme',
+    );
+
+    vi.mocked(useUserStore).mockReturnValue(null);
+    rerender(<App />);
+
+    expect(themeProviderUnmounts).toHaveBeenCalledWith(
+      'pot:dev:user:user-row-id-abc:theme',
+    );
+    expect(themeProviderMounts).toHaveBeenLastCalledWith('pot:dev:theme');
   });
 
   test('shows global error fallback and error sheet when route rendering throws', async () => {

@@ -10,7 +10,8 @@
     // Refer to: https://ui.shadcn.com/docs/installation/vite
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@tests/*": ["./tests/*"]
     },
 
     /* Bundler mode */

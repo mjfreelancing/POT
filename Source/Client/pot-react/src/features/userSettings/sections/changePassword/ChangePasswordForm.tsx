@@ -1,5 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from 'react';
 import { useForm } from 'react-hook-form';
 
 import useChangePassword from '@/api/hooks/useChangePassword';
@@ -60,40 +66,43 @@ const ChangePasswordForm = forwardRef<
     onDirtyChange?.(isDirty);
   }, [isDirty, onDirtyChange]);
 
-  async function onSubmit(
-    values: ChangePasswordFields,
-  ): Promise<SettingsSectionFormSubmitResult> {
-    // Clear any previous errors
-    setError(null);
+  const onSubmit = useCallback(
+    async (
+      values: ChangePasswordFields,
+    ): Promise<SettingsSectionFormSubmitResult> => {
+      // Clear any previous errors
+      setError(null);
 
-    const result = await changePassword({
-      currentPassword: values.currentPassword,
-      newPassword: values.newPassword,
-    });
-
-    if (result && !result.success) {
-      setError({
-        title: result.error.code,
-        description: result.error.description,
+      const result = await changePassword({
+        currentPassword: values.currentPassword,
+        newPassword: values.newPassword,
       });
+
+      if (result && !result.success) {
+        setError({
+          title: result.error.code,
+          description: result.error.description,
+        });
+
+        return 'invalid';
+      }
+
+      if (result && result.success) {
+        // Show modal dialog instead of toast
+        form.reset({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: '',
+        });
+        setShowPasswordChangedDialog(true);
+
+        return 'blocked';
+      }
 
       return 'invalid';
-    }
-
-    if (result && result.success) {
-      // Show modal dialog instead of toast
-      form.reset({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
-      });
-      setShowPasswordChangedDialog(true);
-
-      return 'blocked';
-    }
-
-    return 'invalid';
-  }
+    },
+    [changePassword, form, setError],
+  );
 
   function handleLogoutAfterPasswordChange() {
     logoutManager.logout();
