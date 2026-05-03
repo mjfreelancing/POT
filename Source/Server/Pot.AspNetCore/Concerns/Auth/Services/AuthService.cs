@@ -34,7 +34,7 @@ namespace Pot.AspNetCore.Concerns.Auth.Services;
 // - LoginAsync:
 //   1) Validate username/password and account status.
 //   2) Issue new access/refresh tokens.
-//   3) Create AuthSession with refresh-token hash and expiry.
+//   3) Create AuthSession with refresh-token hash, expiry, and request metadata.
 //   4) Save session + user login metadata.
 // - RefreshAsync:
 //   1) Optionally parse expired access token subject for consistency check.
@@ -118,7 +118,8 @@ internal sealed class AuthService : IAuthService
         _logger = logger.WhenNotNull();
     }
 
-    public async Task<EnrichedResult<AuthTokens?>> LoginAsync(string username, string password, CancellationToken cancellationToken)
+    public async Task<EnrichedResult<AuthTokens?>> LoginAsync(string username, string password, LoginRequestContext context,
+        CancellationToken cancellationToken)
     {
         _logger.LogCall(this, new { username });
 
@@ -159,7 +160,7 @@ internal sealed class AuthService : IAuthService
             var nowUtc = _timeProvider.GetUtcDateTimeNow();
 
             // 3) Persist a dedicated AuthSession for this login so refresh lifecycle is per-session.
-            _authSessionService.CreateSession(user, authTokens.RefreshToken, authTokens.RefreshTokenExpiryUtc, nowUtc);
+            _authSessionService.CreateSession(user, authTokens.RefreshToken, authTokens.RefreshTokenExpiryUtc, nowUtc, context);
 
             // 4) Update login audit field and commit atomically with session creation.
             user.LastLoggedInUtc = nowUtc;

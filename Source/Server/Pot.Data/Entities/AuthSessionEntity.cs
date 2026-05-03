@@ -10,6 +10,9 @@ namespace Pot.Data.Entities;
 [Index(nameof(RevokedUtc), nameof(ExpiresUtc))]
 public sealed class AuthSessionEntity : EntityBase
 {
+    public const int MaxUserAgentLength = 512;
+    public const int MaxIpAddressLength = 45;
+
     [ForeignKey(nameof(User))]
     public int UserId { get; set; }
 
@@ -24,9 +27,9 @@ public sealed class AuthSessionEntity : EntityBase
     public DateTime? RevokedUtc { get; set; }
     public DateTime? LastSeenUtc { get; set; }
 
-    [MaxLength(512)]
+    [MaxLength(MaxUserAgentLength)]
     public string? UserAgent { get; set; }
 
-    [MaxLength(45)]
+    [MaxLength(MaxIpAddressLength)]
     public string? IpAddress { get; set; }
 }

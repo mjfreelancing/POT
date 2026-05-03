@@ -1,6 +1,7 @@
 ﻿using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.AspNetCore.Concerns.Auth.Configuration;
+using Pot.AspNetCore.Concerns.Auth.Models;
 using Pot.AspNetCore.Concerns.Auth.Services;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Extensions;
@@ -24,7 +25,11 @@ internal sealed class Handler
             return TypedResults.Problem(problemDetails);
         }
 
-        var authResult = await authService.LoginAsync(request.Username.Trim(), request.Password, cancellationToken);
+        var loginContext = new LoginRequestContext(
+            UserAgent: httpContext.Request.Headers.UserAgent.ToString(),
+            IpAddress: httpContext.Connection.RemoteIpAddress?.ToString());
+
+        var authResult = await authService.LoginAsync(request.Username.Trim(), request.Password, loginContext, cancellationToken);
 
         if (!authResult.IsSuccess)
         {

@@ -24,14 +24,16 @@ public class ProjectionsServiceFixture : PotFixtureBase
     {
         private PotDbContext DbContext { get; }
         private ProjectionsService Service { get; }
+        private ILogger<ProjectionsService> Logger { get; }
 
         public SiteEntity Site { get; }
 
-        public TestContext(PotDbContext dbContext, ProjectionsService service, SiteEntity site)
+        public TestContext(PotDbContext dbContext, ProjectionsService service, SiteEntity site, ILogger<ProjectionsService> logger)
         {
             DbContext = dbContext;
             Service = service;
             Site = site;
+            Logger = logger;
         }
 
         public Task<int> AddAccountAsync(AccountEntity account)
@@ -54,6 +56,14 @@ public class ProjectionsServiceFixture : PotFixtureBase
         {
             return Service.GetFinancialProjectionsAsync(options, cancellationToken);
         }
+
+        /*
+        TODO(logging): Re-enable when the replacement logging test framework is available.
+        public Task<LoggerCallContext> CaptureLogCallsAsync(Func<Task> action)
+        {
+            return Logger.CaptureLogCallsAsync(action);
+        }
+        */
 
         public void Dispose()
         {
@@ -190,6 +200,28 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
     public class GetFinancialProjectionsAsync : ProjectionsServiceFixture
     {
+        /*
+        TODO(logging): Re-enable when the replacement logging test framework is available.
+        [Fact]
+        public async Task Should_LogCall_When_Getting_Financial_Projections()
+        {
+            using var context = CreateTestContext();
+
+            var options = new ProjectionOptions
+            {
+                StartDate = _currentDate,
+                DaysForecast = 1
+            };
+
+            var callContext = await context.CaptureLogCallsAsync(async () =>
+            {
+                _ = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
+            });
+
+            _ = callContext.ShouldLogCall<ProjectionsService>(nameof(ProjectionsService.GetFinancialProjectionsAsync));
+        }
+        */
+
         public class Validation : GetFinancialProjectionsAsync
         {
             [Fact]
@@ -2530,7 +2562,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
             timeProvider,
             logger);
 
-        return new TestContext(dbContext, service, site);
+        return new TestContext(dbContext, service, site, logger);
     }
 
     // Helper method to validate that dates are consecutive starting from a specific date
@@ -2613,4 +2645,3 @@ public class ProjectionsServiceFixture : PotFixtureBase
         }
     }
 }
-

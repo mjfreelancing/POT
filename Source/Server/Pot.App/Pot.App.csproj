@@ -15,12 +15,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<!--Required for mocking ILogger<T> where T is internal-->
-		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-			<_Parameter1>DynamicProxyGenAssembly2</_Parameter1>
-		</AssemblyAttribute>
-		
 		<InternalsVisibleTo Include="Pot.App.Tests" />
+
+		<!--Required for mocking ILogger<T> where T is internal-->
+		<InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
 	</ItemGroup>
 
 </Project>

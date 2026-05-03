@@ -1,5 +1,7 @@
 ﻿using AllOverIt.Assertion;
+using AllOverIt.Extensions;
 using AllOverIt.Logging.Extensions;
+using Pot.AspNetCore.Concerns.Auth.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.AuthSessions;
 using System.Security.Cryptography;
@@ -18,7 +20,8 @@ internal sealed class AuthSessionService : IAuthSessionService
         _logger = logger.WhenNotNull();
     }
 
-    public AuthSessionEntity CreateSession(UserEntity user, string refreshToken, DateTime refreshTokenExpiryUtc, DateTime nowUtc)
+    public AuthSessionEntity CreateSession(UserEntity user, string refreshToken, DateTime refreshTokenExpiryUtc,
+        DateTime nowUtc, LoginRequestContext context)
     {
         _logger.LogCall(this, new { userId = user.Id });
 
@@ -29,7 +32,9 @@ internal sealed class AuthSessionService : IAuthSessionService
             RefreshTokenHash = HashRefreshToken(refreshToken),
             CreatedUtc = nowUtc,
             ExpiresUtc = refreshTokenExpiryUtc,
-            LastSeenUtc = nowUtc
+            LastSeenUtc = nowUtc,
+            UserAgent = NormalizeValue(context.UserAgent, AuthSessionEntity.MaxUserAgentLength),
+            IpAddress = NormalizeValue(context.IpAddress, AuthSessionEntity.MaxIpAddressLength)
         };
 
         _authSessionRepository.Add(authSession);
@@ -99,5 +104,19 @@ internal sealed class AuthSessionService : IAuthSessionService
         var refreshTokenHash = SHA256.HashData(refreshTokenBytes);
 
         return Convert.ToHexString(refreshTokenHash);
+    }
+
+    private static string? NormalizeValue(string? value, int maxLength)
+    {
+        var trimmedValue = value?.Trim();
+
+        if (trimmedValue.IsNullOrEmpty())
+        {
+            return null;
+        }
+
+        return trimmedValue.Length <= maxLength
+            ? trimmedValue
+            : trimmedValue[..maxLength];
     }
 }

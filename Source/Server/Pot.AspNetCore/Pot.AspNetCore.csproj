@@ -18,5 +18,9 @@
 
 	<ItemGroup>
 		<InternalsVisibleTo Include="Pot.AspNetCore.Tests" />
+		<InternalsVisibleTo Include="Pot.AspNetCore.Integration.Tests" />
+
+		<!--Required for mocking ILogger<T> where T is internal-->
+		<InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
 	</ItemGroup>
 </Project>

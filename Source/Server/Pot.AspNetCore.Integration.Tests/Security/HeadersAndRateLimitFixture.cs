@@ -1,15 +1,23 @@
-﻿using Pot.AspNetCore.Integration.Tests.Host;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Pot.AspNetCore.Integration.Tests.Host;
 using Pot.AspNetCore.Integration.Tests.Host.Extensions;
+using Pot.Data;
 using Shouldly;
 using System.Globalization;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Testcontainers.PostgreSql;
 
 namespace Pot.AspNetCore.Integration.Tests.Security;
 
-public class HeadersAndRateLimitFixture : IClassFixture<ProductionApiWebApplicationFactory>
+/// <summary>
+/// Integration tests for security headers and rate limiting enforcement.
+/// Follows the IAsyncLifetime pattern for test isolation (see LoginFixture for detailed explanation).
+/// </summary>
+public class HeadersAndRateLimitFixture : IAsyncLifetime
 {
     private const string AccessControlAllowOrigin = "Access-Control-Allow-Origin";
 
@@ -25,16 +33,48 @@ public class HeadersAndRateLimitFixture : IClassFixture<ProductionApiWebApplicat
 
     private const string AllowedOrigin = "http://localhost:3000";
 
-    private readonly ProductionApiWebApplicationFactory _factory;
+    private PostgreSqlContainer? _container;
+    private ProductionApiWebApplicationFactory? _factory;
 
-    public HeadersAndRateLimitFixture(ProductionApiWebApplicationFactory factory)
+    async Task IAsyncLifetime.InitializeAsync()
     {
-        _factory = factory;
+        _container = new PostgreSqlBuilder("postgres:13")
+            .WithDatabase(ApiWebApplicationFactory.TestDatabase)
+            .WithUsername(ApiWebApplicationFactory.TestUsername)
+            .WithPassword(ApiWebApplicationFactory.TestPassword)
+            .Build();
+
+        await _container.StartAsync();
+
+        _factory = new ProductionApiWebApplicationFactory(
+            _container.Hostname,
+            _container.GetMappedPublicPort(5432));
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<PotDbContext>();
+            await dbContext.Database.MigrateAsync();
+        }
+    }
+
+    async Task IAsyncLifetime.DisposeAsync()
+    {
+        if (_factory is not null)
+        {
+            _factory.Dispose();
+        }
+
+        if (_container is not null)
+        {
+            await _container.DisposeAsync();
+        }
     }
 
     [Fact]
     public async Task Should_Return_TooManyRequests_When_Anonymous_RateLimit_Is_Exceeded()
     {
+        _factory.ShouldNotBeNull("Factory must be initialized by IAsyncLifetime.InitializeAsync()");
+
         using var client = _factory.CreateClient();
         client.DefaultRequestHeaders.Add("Origin", AllowedOrigin);
 
