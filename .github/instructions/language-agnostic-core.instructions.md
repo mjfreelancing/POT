@@ -18,6 +18,7 @@ applyTo: "**/*"
 - Do not remove existing comments. If a comment appears out of date and needs correction, ask the user to confirm before changing it. Simple spelling corrections are allowed.
 - In multi-line boolean expressions, place logical operators (`&&`, `||`) at the end of the preceding line, not at the start of the next line.
 - Keep code units focused and avoid unnecessary abstraction.
+- For mutating operations, avoid nested calls and prefer intermediate variables so intent is easier to review, debug, and unit test.
 
 ### Reuse and Boundaries
 
