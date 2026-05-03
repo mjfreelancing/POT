@@ -28,3 +28,8 @@ export { logger } from './logging';
 
 // PWA concerns
 export { registerServiceWorker } from './pwa';
+
+// Storage concerns
+export { buildEnvScopedKey, buildUserScopedKey, resolveStorageBackend, resolveStorageEnv } from './storage';
+export type { MigrationEntry, StorageMode, UserScopedKeyOptions } from './storage';
+export { migrateStorageEntries } from './storage';
