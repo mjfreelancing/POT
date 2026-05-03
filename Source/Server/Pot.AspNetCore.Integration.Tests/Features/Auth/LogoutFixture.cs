@@ -5,6 +5,7 @@ using Pot.App.Concerns.Auth;
 using Pot.AspNetCore.Integration.Tests.Host;
 using Pot.AspNetCore.Integration.Tests.Host.Extensions;
 using Pot.Data;
+using Pot.Data.Entities;
 using Pot.TestUtils;
 using Shouldly;
 using System.Net;
@@ -189,6 +190,41 @@ public class LogoutFixture : IAsyncLifetime
         deviceBRefreshStatus.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
+    [Fact]
+    public async Task Should_Not_Increment_TokenVersion_When_Logging_Out()
+    {
+        var (userRowId, username, password) = await CreateEnabledUserAsync();
+        var deviceA = await LoginAsync(username, password, "POT Device A/1.0");
+
+        var tokenVersionBeforeLogout = await GetUserTokenVersionAsync(userRowId);
+
+        var logoutStatus = await LogoutAsync(deviceA.AccessToken, deviceA.RefreshToken);
+
+        logoutStatus.ShouldBe(HttpStatusCode.OK);
+
+        var tokenVersionAfterLogout = await GetUserTokenVersionAsync(userRowId);
+
+        tokenVersionAfterLogout.ShouldBe(tokenVersionBeforeLogout);
+    }
+
+    [Fact]
+    public async Task Should_Increment_TokenVersion_When_Password_Is_Changed()
+    {
+        const string newPassword = "NewPassword789!";
+        var (userRowId, username, password) = await CreateEnabledUserAsync();
+        var deviceA = await LoginAsync(username, password, "POT Device A/1.0");
+
+        var tokenVersionBeforeChange = await GetUserTokenVersionAsync(userRowId);
+
+        var changePasswordStatus = await ChangePasswordAsync(deviceA.AccessToken, password, newPassword);
+
+        changePasswordStatus.ShouldBe(HttpStatusCode.OK);
+
+        var tokenVersionAfterChange = await GetUserTokenVersionAsync(userRowId);
+
+        tokenVersionAfterChange.ShouldBe(tokenVersionBeforeChange + 1);
+    }
+
     private async Task<(Guid UserRowId, string Username, string Password)> CreateEnabledUserAsync()
     {
         _factory.ShouldNotBeNull();
@@ -311,5 +347,20 @@ public class LogoutFixture : IAsyncLifetime
         return refreshTokenCookie!
             .Split(';', 2, StringSplitOptions.TrimEntries)[0]
             .Split('=', 2)[1];
+    }
+
+    private async Task<int> GetUserTokenVersionAsync(Guid userRowId)
+    {
+        _factory.ShouldNotBeNull();
+
+        using var scope = _factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<PotDbContext>();
+
+        var tokenVersion = await dbContext.Set<UserEntity>()
+            .Where(user => user.RowId == userRowId)
+            .Select(user => user.TokenVersion)
+            .SingleAsync();
+
+        return tokenVersion;
     }
 }

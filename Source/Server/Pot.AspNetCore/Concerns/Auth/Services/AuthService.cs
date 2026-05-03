@@ -45,11 +45,10 @@ namespace Pot.AspNetCore.Concerns.Auth.Services;
 //   1) Return early if no refresh token cookie is present (anonymous/expired cookie).
 //   2) Resolve the active AuthSession for this specific refresh token.
 //   3) Revoke only that session row; TokenVersion is NOT incremented so other devices are unaffected.
-//   4) Clear legacy user-level refresh fields during transition period.
 // - ChangePasswordAsync:
 //   1) Validate current password.
 //   2) Persist new password hash.
-//   3) Revoke all sessions + clear legacy refresh fields.
+//   3) Revoke all sessions for this user.
 //   4) Increment TokenVersion (global access-token invalidation).
 //
 // Security intent:
@@ -213,17 +212,6 @@ internal sealed class AuthService : IAuthService
             // 2) Revoke only this session row. TokenVersion is NOT incremented: other devices remain unaffected.
             _authSessionService.RevokeCurrentSession(authSession, nowUtc);
 
-            // 3) Load the user to clear legacy refresh token fields kept during the transition period.
-            var user = await _userRepository.Users
-                .SingleOrDefaultAsync(user => user.RowId == userId, cancellationToken)
-                .ConfigureAwait(false);
-
-            if (user is not null)
-            {
-                user.RefreshToken = null;
-                user.RefreshTokenExpiryUtc = null;
-            }
-
             await _userRepository
                 .SaveAsync(cancellationToken)
                 .ConfigureAwait(false);
@@ -314,14 +302,10 @@ internal sealed class AuthService : IAuthService
 
             var nowUtc = _timeProvider.GetUtcDateTimeNow();
 
-            // 3) Revoke all refresh sessions and legacy refresh fields.
+            // 3) Revoke all sessions for this user.
             _ = await _authSessionService
                 .RevokeAllSessionsForUserAsync(user.Id, nowUtc, cancellationToken)
                 .ConfigureAwait(false);
-
-            // Clear out the legacy refresh token so the caller is forced to login again
-            user.RefreshToken = null;
-            user.RefreshTokenExpiryUtc = null;
 
             // 4) Invalidate all existing access tokens.
             user.TokenVersion++;

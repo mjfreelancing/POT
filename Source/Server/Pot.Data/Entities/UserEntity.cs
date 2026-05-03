@@ -34,10 +34,6 @@ public sealed class UserEntity : EntityBase
     // Used to invalidate all previously issued access tokens.
     public int TokenVersion { get; set; }
 
-    [MediumString]
-    public string? RefreshToken { get; set; }
-
-    public DateTime? RefreshTokenExpiryUtc { get; set; }
     public DateTime? LastLoggedInUtc { get; set; }
 
     public required SiteEntity Site { get; set; }

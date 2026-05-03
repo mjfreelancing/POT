@@ -182,8 +182,6 @@ auth.User: {
   Status: character varying(50)(50) \[NOT NULL\]
   PasswordHash: character varying(100)(100) \[NOT NULL\]
   TokenVersion: integer \[NOT NULL\]
-  RefreshToken: character varying(100)(100)
-  RefreshTokenExpiryUtc: timestamp with time zone
   LastLoggedInUtc: timestamp with time zone
   SiteId: integer \[NOT NULL\] {constraint: foreign_key}
 }
