@@ -1,23 +1,17 @@
-using Microsoft.AspNetCore.Mvc.Testing;
+﻿using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Pot.App.Concerns.Auth;
-using Pot.AspNetCore.Integration.Tests.Host;
 using Pot.Data;
 using Pot.Data.Entities;
 using Pot.TestUtils;
 using Shouldly;
 using System.Net;
 using System.Net.Http.Json;
-using Testcontainers.PostgreSql;
 
 namespace Pot.AspNetCore.Integration.Tests.Features.Auth;
 
-/// <summary>
-/// Integration tests for the refresh endpoint.
-/// Follows the same IAsyncLifetime + TestContainers isolation pattern as the other auth fixtures.
-/// </summary>
-public class RefreshFixture : IAsyncLifetime
+public class RefreshFixture : IntegrationFixtureBase
 {
     private sealed class LoginResponse
     {
@@ -35,41 +29,6 @@ public class RefreshFixture : IAsyncLifetime
     private const string LoginSuccessStatus = "Success";
     private const string RefreshTokenCookieName = "pot_refresh_token";
     private const string SetCookieHeader = "Set-Cookie";
-
-    private PostgreSqlContainer? _container;
-    private ProductionApiWebApplicationFactory? _factory;
-
-    async Task IAsyncLifetime.InitializeAsync()
-    {
-        _container = new PostgreSqlBuilder("postgres:13")
-            .WithDatabase(ApiWebApplicationFactory.TestDatabase)
-            .WithUsername(ApiWebApplicationFactory.TestUsername)
-            .WithPassword(ApiWebApplicationFactory.TestPassword)
-            .Build();
-
-        await _container.StartAsync();
-
-        _factory = new ProductionApiWebApplicationFactory(
-            _container.Hostname,
-            _container.GetMappedPublicPort(5432));
-
-        using var scope = _factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<PotDbContext>();
-        await dbContext.Database.MigrateAsync();
-    }
-
-    async Task IAsyncLifetime.DisposeAsync()
-    {
-        if (_factory is not null)
-        {
-            _factory.Dispose();
-        }
-
-        if (_container is not null)
-        {
-            await _container.DisposeAsync();
-        }
-    }
 
     [Fact]
     public async Task Should_Rotate_RefreshToken_And_Update_LastSeenUtc_On_Same_Session_When_Posting_Refresh_Endpoint()
@@ -173,9 +132,7 @@ public class RefreshFixture : IAsyncLifetime
 
     private async Task<(Guid UserRowId, string Username, string Password)> CreateEnabledUserAsync()
     {
-        _factory.ShouldNotBeNull();
-
-        using var scope = _factory.Services.CreateScope();
+        using var scope = CreateScope();
 
         var dbContext = scope.ServiceProvider.GetRequiredService<PotDbContext>();
         var passwordHasher = scope.ServiceProvider.GetRequiredService<IUserPasswordHasher>();
@@ -198,9 +155,7 @@ public class RefreshFixture : IAsyncLifetime
 
     private async Task<AuthResponse> LoginAsync(string username, string password, string userAgent)
     {
-        _factory.ShouldNotBeNull();
-
-        using var client = _factory.CreateClient(new WebApplicationFactoryClientOptions
+        using var client = CreateClient(new WebApplicationFactoryClientOptions
         {
             HandleCookies = false
         });
@@ -227,9 +182,7 @@ public class RefreshFixture : IAsyncLifetime
 
     private async Task<AuthResponse> RefreshAsync(string accessToken, string refreshToken)
     {
-        _factory.ShouldNotBeNull();
-
-        using var client = _factory.CreateClient(new WebApplicationFactoryClientOptions
+        using var client = CreateClient(new WebApplicationFactoryClientOptions
         {
             HandleCookies = false
         });
@@ -252,9 +205,7 @@ public class RefreshFixture : IAsyncLifetime
 
     private async Task<List<AuthSessionEntity>> GetAuthSessionsAsync(Guid userRowId)
     {
-        _factory.ShouldNotBeNull();
-
-        using var scope = _factory.Services.CreateScope();
+        using var scope = CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<PotDbContext>();
 
         return await dbContext.Set<AuthSessionEntity>()
@@ -266,9 +217,7 @@ public class RefreshFixture : IAsyncLifetime
 
     private async Task UpdateAuthSessionAsync(Guid sessionRowId, Action<AuthSessionEntity> update)
     {
-        _factory.ShouldNotBeNull();
-
-        using var scope = _factory.Services.CreateScope();
+        using var scope = CreateScope();
 
         var dbContext = scope.ServiceProvider.GetRequiredService<PotDbContext>();
         var authSession = await dbContext.Set<AuthSessionEntity>()

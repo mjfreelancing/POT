@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Pot.App.Concerns.Auth;
-using Pot.AspNetCore.Integration.Tests.Host;
 using Pot.AspNetCore.Integration.Tests.Host.Extensions;
 using Pot.Data;
 using Pot.Data.Entities;
@@ -10,17 +9,10 @@ using Pot.TestUtils;
 using Shouldly;
 using System.Net;
 using System.Net.Http.Json;
-using Testcontainers.PostgreSql;
-
-using LogoutHandler = Pot.AspNetCore.Features.Auth.Logout.Handler;
 
 namespace Pot.AspNetCore.Integration.Tests.Features.Auth;
 
-/// <summary>
-/// Integration tests for the logout endpoint.
-/// Follows the IAsyncLifetime pattern for test isolation (see LoginFixture for detailed explanation).
-/// </summary>
-public class LogoutFixture : IAsyncLifetime
+public class LogoutFixture : IntegrationFixtureBase
 {
     private sealed class LoginResponse
     {
@@ -34,43 +26,6 @@ public class LogoutFixture : IAsyncLifetime
     private const string SetCookieHeader = "Set-Cookie";
     private const string RefreshTokenCookieName = "pot_refresh_token";
     private const string CorrelationIdProperty = "correlationId";
-
-    private PostgreSqlContainer? _container;
-    private ProductionApiWebApplicationFactory? _factory;
-
-    async Task IAsyncLifetime.InitializeAsync()
-    {
-        _container = new PostgreSqlBuilder("postgres:13")
-            .WithDatabase(ApiWebApplicationFactory.TestDatabase)
-            .WithUsername(ApiWebApplicationFactory.TestUsername)
-            .WithPassword(ApiWebApplicationFactory.TestPassword)
-            .Build();
-
-        await _container.StartAsync();
-
-        _factory = new ProductionApiWebApplicationFactory(
-            _container.Hostname,
-            _container.GetMappedPublicPort(5432));
-
-        using (var scope = _factory.Services.CreateScope())
-        {
-            var dbContext = scope.ServiceProvider.GetRequiredService<PotDbContext>();
-            await dbContext.Database.MigrateAsync();
-        }
-    }
-
-    async Task IAsyncLifetime.DisposeAsync()
-    {
-        if (_factory is not null)
-        {
-            _factory.Dispose();
-        }
-
-        if (_container is not null)
-        {
-            await _container.DisposeAsync();
-        }
-    }
 
     /*
     TODO(logging): Re-enable when the replacement logging test framework is available.
@@ -105,9 +60,7 @@ public class LogoutFixture : IAsyncLifetime
     [Fact]
     public async Task Should_Return_MethodNotAllowed_When_Getting_Logout_Endpoint()
     {
-        _factory.ShouldNotBeNull("Factory must be initialized by IAsyncLifetime.InitializeAsync()");
-
-        using var client = _factory.CreateClient();
+        using var client = CreateClient();
 
         var actual = await client.GetAsync("/api/auth/logout");
 
@@ -117,9 +70,7 @@ public class LogoutFixture : IAsyncLifetime
     [Fact]
     public async Task Should_Return_Ok_When_Posting_Logout_Endpoint_Anonymously()
     {
-        _factory.ShouldNotBeNull("Factory must be initialized by IAsyncLifetime.InitializeAsync()");
-
-        using var client = _factory.CreateClient();
+        using var client = CreateClient();
 
         var response = await client.PostAsync("/api/auth/logout", null);
 
@@ -129,9 +80,7 @@ public class LogoutFixture : IAsyncLifetime
     [Fact]
     public async Task Should_Clear_RefreshToken_Cookie_When_Posting_Logout_Endpoint()
     {
-        _factory.ShouldNotBeNull("Factory must be initialized by IAsyncLifetime.InitializeAsync()");
-
-        using var client = _factory.CreateClient();
+        using var client = CreateClient();
 
         var response = await client.PostAsync("/api/auth/logout", null);
         var setCookieValues = response.ShouldHaveHeaderValues(SetCookieHeader);
@@ -227,9 +176,7 @@ public class LogoutFixture : IAsyncLifetime
 
     private async Task<(Guid UserRowId, string Username, string Password)> CreateEnabledUserAsync()
     {
-        _factory.ShouldNotBeNull();
-
-        using var scope = _factory.Services.CreateScope();
+        using var scope = CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<PotDbContext>();
         var passwordHasher = scope.ServiceProvider.GetRequiredService<IUserPasswordHasher>();
 
@@ -251,9 +198,7 @@ public class LogoutFixture : IAsyncLifetime
 
     private async Task<AuthTokens> LoginAsync(string username, string password, string userAgent)
     {
-        _factory.ShouldNotBeNull();
-
-        using var client = _factory.CreateClient(new WebApplicationFactoryClientOptions
+        using var client = CreateClient(new WebApplicationFactoryClientOptions
         {
             HandleCookies = false
         });
@@ -280,9 +225,7 @@ public class LogoutFixture : IAsyncLifetime
 
     private async Task<HttpStatusCode> LogoutAsync(string accessToken, string refreshToken)
     {
-        _factory.ShouldNotBeNull();
-
-        using var client = _factory.CreateClient(new WebApplicationFactoryClientOptions
+        using var client = CreateClient(new WebApplicationFactoryClientOptions
         {
             HandleCookies = false
         });
@@ -298,9 +241,7 @@ public class LogoutFixture : IAsyncLifetime
 
     private async Task<HttpStatusCode> RefreshAsync(string accessToken, string refreshToken)
     {
-        _factory.ShouldNotBeNull();
-
-        using var client = _factory.CreateClient(new WebApplicationFactoryClientOptions
+        using var client = CreateClient(new WebApplicationFactoryClientOptions
         {
             HandleCookies = false
         });
@@ -316,9 +257,7 @@ public class LogoutFixture : IAsyncLifetime
 
     private async Task<HttpStatusCode> ChangePasswordAsync(string accessToken, string currentPassword, string newPassword)
     {
-        _factory.ShouldNotBeNull();
-
-        using var client = _factory.CreateClient(new WebApplicationFactoryClientOptions
+        using var client = CreateClient(new WebApplicationFactoryClientOptions
         {
             HandleCookies = false
         });
@@ -351,9 +290,7 @@ public class LogoutFixture : IAsyncLifetime
 
     private async Task<int> GetUserTokenVersionAsync(Guid userRowId)
     {
-        _factory.ShouldNotBeNull();
-
-        using var scope = _factory.Services.CreateScope();
+        using var scope = CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<PotDbContext>();
 
         var tokenVersion = await dbContext.Set<UserEntity>()

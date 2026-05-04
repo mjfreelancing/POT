@@ -1,30 +1,14 @@
-﻿using Pot.AspNetCore.Integration.Tests.Host;
-using Pot.AspNetCore.Integration.Tests.Host.Extensions;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Pot.Data;
+using Pot.AspNetCore.Integration.Tests.Host;
+using Pot.AspNetCore.Integration.Tests.Host.Extensions;
 using Shouldly;
 using System.Net.Http.Json;
-using Testcontainers.PostgreSql;
 
 namespace Pot.AspNetCore.Integration.Tests.Pipeline;
 
-/// <summary>
-/// Integration tests for CORS (Cross-Origin Resource Sharing) policy enforcement.
-/// Follows the IAsyncLifetime pattern for test isolation (see LoginFixture for detailed explanation).
-/// 
-/// This fixture demonstrates how custom factories can be created during test execution while
-/// still receiving proper container connection details (see DelimitedCorsApiWebApplicationFactory).
-/// </summary>
-public class CorsFixture : IAsyncLifetime
+public class CorsFixture : IntegrationFixtureBase
 {
-    /// <summary>
-    /// Custom factory for testing CORS with different origin delimiters (comma vs semicolon).
-    /// Accepts database connection details from the parent fixture's container,
-    /// matching the pattern required by ApiWebApplicationFactory.
-    /// </summary>
     private sealed class DelimitedCorsApiWebApplicationFactory : ApiWebApplicationFactory
     {
         private readonly string _delimiter;
@@ -64,49 +48,10 @@ public class CorsFixture : IAsyncLifetime
     private const string AllowedOrigin2 = "https://www.localhost:3000";
     private const string DisallowedOrigin = "https://disallowed.example.com";
 
-    private PostgreSqlContainer? _container;
-    private ProductionApiWebApplicationFactory? _factory;
-
-    async Task IAsyncLifetime.InitializeAsync()
-    {
-        _container = new PostgreSqlBuilder("postgres:13")
-            .WithDatabase(ApiWebApplicationFactory.TestDatabase)
-            .WithUsername(ApiWebApplicationFactory.TestUsername)
-            .WithPassword(ApiWebApplicationFactory.TestPassword)
-            .Build();
-
-        await _container.StartAsync();
-
-        _factory = new ProductionApiWebApplicationFactory(
-            _container.Hostname,
-            _container.GetMappedPublicPort(5432));
-
-        using (var scope = _factory.Services.CreateScope())
-        {
-            var dbContext = scope.ServiceProvider.GetRequiredService<PotDbContext>();
-            await dbContext.Database.MigrateAsync();
-        }
-    }
-
-    async Task IAsyncLifetime.DisposeAsync()
-    {
-        if (_factory is not null)
-        {
-            _factory.Dispose();
-        }
-
-        if (_container is not null)
-        {
-            await _container.DisposeAsync();
-        }
-    }
-
     [Fact]
     public async Task Should_Return_Cors_Headers_For_Configured_Origin_Preflight_Request()
     {
-        _factory.ShouldNotBeNull("Factory must be initialized by IAsyncLifetime.InitializeAsync()");
-
-        using var client = _factory.CreateClient();
+        using var client = CreateClient();
 
         using var request = new HttpRequestMessage(HttpMethod.Options, "/api/auth/logout");
         request.Headers.Add("Origin", AllowedOrigin);
@@ -124,13 +69,8 @@ public class CorsFixture : IAsyncLifetime
     [InlineData(";")]
     public async Task Should_Return_Cors_Headers_For_Second_Configured_Origin_Preflight_Request(string delimiter)
     {
-        _container.ShouldNotBeNull("Container must be initialized by IAsyncLifetime.InitializeAsync()");
-
         // Create a custom factory with the same container connection details
-        using var factory = new DelimitedCorsApiWebApplicationFactory(
-            delimiter,
-            _container.Hostname,
-            _container.GetMappedPublicPort(5432));
+        using var factory = new DelimitedCorsApiWebApplicationFactory(delimiter, DbHost, DbPort);
 
         using var client = factory.CreateClient();
 
@@ -148,9 +88,7 @@ public class CorsFixture : IAsyncLifetime
     [Fact]
     public async Task Should_Not_Return_AccessControlAllowOrigin_For_Disallowed_Origin_Preflight_Request()
     {
-        _factory.ShouldNotBeNull("Factory must be initialized by IAsyncLifetime.InitializeAsync()");
-
-        using var client = _factory.CreateClient();
+        using var client = CreateClient();
 
         using var request = new HttpRequestMessage(HttpMethod.Options, "/api/auth/logout");
         request.Headers.Add("Origin", DisallowedOrigin);
@@ -164,9 +102,7 @@ public class CorsFixture : IAsyncLifetime
     [Fact]
     public async Task Should_Return_Cors_Headers_For_Configured_Origin_On_Validation_Error_Response()
     {
-        _factory.ShouldNotBeNull("Factory must be initialized by IAsyncLifetime.InitializeAsync()");
-
-        using var client = _factory.CreateClient();
+        using var client = CreateClient();
 
         using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/login")
         {
@@ -186,9 +122,7 @@ public class CorsFixture : IAsyncLifetime
     [Fact]
     public async Task Should_Not_Return_AccessControlAllowOrigin_For_Disallowed_Origin_On_Validation_Error_Response()
     {
-        _factory.ShouldNotBeNull("Factory must be initialized by IAsyncLifetime.InitializeAsync()");
-
-        using var client = _factory.CreateClient();
+        using var client = CreateClient();
 
         using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/login")
         {
