@@ -5,18 +5,6 @@ using Microsoft.Extensions.Options;
 
 namespace Pot.Data.Configuration;
 
-// DbBackupConfigurationSetup is registered with ConfigureOptions in ServiceCollectionExtensions, and replaces the following code:
-//
-//   services.Configure<DbBackupConfiguration>(options => configuration.GetSection("Database").Bind(options))
-//       .PostConfigure<DbBackupConfiguration>(options =>
-//       {
-//           // Validate required fields
-//           _ = options.Host.WhenNotNullOrEmpty();
-//           _ = options.Name.WhenNotNullOrEmpty();
-//           _ = options.Username.WhenNotNullOrEmpty();
-//           _ = options.Password.WhenNotNullOrEmpty();
-//       });
-
 public class DatabaseConfigurationSetup : IConfigureOptions<DatabaseConfiguration>, IValidateOptions<DatabaseConfiguration>
 {
     private const string SectionName = "Database";

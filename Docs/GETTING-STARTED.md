@@ -88,22 +88,28 @@ Navigate to the Docker directory:
 cd Source/Docker
 ```
 
-You'll find one environment file in version control:
+You'll find these Docker environment files in version control:
 
-- `.env` - Base configuration (database name, Docker Compose project name) - **already exists**
+- `.env` - Base configuration (database name, Docker Compose project name)
+- `.env.development.template` - Starter development overrides you can copy for local use
 
-You need to create a second file for local secrets:
+For local secrets, create your working copy:
 
-- `.env.development` - Development-specific settings (passwords, SMTP, JWT secrets) - **you must create this**
+- `.env.development` - Development-specific settings actually used by Docker Compose - **create this from the template**
 
-> **Important:** `.env.development` is excluded from version control (`.gitignore`) because it contains sensitive information. Each developer must create their own copy with their credentials.
+> **Important:** `.env.development` is excluded from version control (`.gitignore`) because it contains sensitive information. Keep `.env.development.template` as the tracked starter file, then copy or rename it to `.env.development` for your machine.
 
 ### Step 2: Create `.env.development` File
 
-Create a new file named `.env.development` in the `Source/Docker/` directory with the following template:
+Copy `Source/Docker/.env.development.template` to `Source/Docker/.env.development`, then edit the copied file as needed.
+
+You can use the template as-is to get the Docker stack running locally. It contains startup-safe defaults for database, CORS, and placeholder SMTP values.
+
+`Source/Docker/.env.development.template` currently contains:
 
 ```bash
-# Development environment overrides
+# Development environment overrides for the Docker full-stack workflow.
+# This file is intentionally local-only because it contains secrets.
 
 # Database Configuration
 POSTGRES_USER=postgres
@@ -112,24 +118,30 @@ POSTGRES_PASSWORD=password
 # JWT Configuration
 JWT_ISSUER=http://localhost:5241
 JWT_AUDIENCE=http://localhost:5241
-JWT_SECRET_KEY=YOUR-128-CHARACTER-SECRET-KEY-HERE-REPLACE-THIS-ENTIRE-STRING-WITH-RANDOM-CHARACTERS-MUST-BE-EXACTLY-128-CHARS-LONG-XXXXXXXX
+JWT_SECRET_KEY=REPLACE_THIS_WITH_AN_EXACTLY_128_CHARACTER_RANDOM_SECRET_KEY_FOR_LOCAL_DEVELOPMENT_ONLY_0123456789ABCDEFGHIJKLMNOPQRSTUVW
 
 # SMTP Configuration
-SMTP_HOST=your-smtp-server.com
-SMTP_PORT=587
-SMTP_REQUIRE_TLS=true
-SMTP_AUTH_USERNAME=your-email@domain.com
-SMTP_AUTH_PASSWORD=your-email-app-password
+# These placeholder values satisfy startup validation only.
+# Replace them with real provider credentials before testing email flows.
+SMTP_HOST=localhost
+SMTP_PORT=2525
+SMTP_REQUIRE_TLS=false
+SMTP_AUTH_USERNAME=test
+SMTP_AUTH_PASSWORD=test
 SMTP_FROM_NAME=POT - Do Not Reply
-SMTP_FROM_ADDRESS=your-email@domain.com
+SMTP_FROM_ADDRESS=pot@example.local
 
 # CORS Configuration
 CORS_ALLOWED_ORIGINS=http://localhost:5175
 
 # Platform Admin Configuration
-# Leave empty for initial setup - add your user GUID after first signup
+# Leave empty for initial setup. Add your user GUID after first signup.
 PLATFORM_ADMIN_USERIDS=
 ```
+
+> **Startup-only option:** If you just need the Docker stack to boot before wiring up a real mail provider, you can temporarily use `SMTP_HOST=localhost`, `SMTP_PORT=2525`, `SMTP_REQUIRE_TLS=false`, `SMTP_AUTH_USERNAME=test`, `SMTP_AUTH_PASSWORD=test`, and `SMTP_FROM_ADDRESS=pot@example.local`. The server only requires these values to be present at startup. Email-dependent flows will still fail until you replace them with real SMTP credentials.
+
+> **Full usage:** Before using signup, password reset, or any other email flow, replace the placeholder SMTP settings with real provider credentials. Replace the placeholder `JWT_SECRET_KEY` with a real random 128-character secret before relying on the environment beyond basic local startup.
 
 ### Step 3: Configure Each Setting
 
@@ -197,14 +209,14 @@ PLATFORM_ADMIN_USERIDS=
 
 ### Step 4: Create Required Directories
 
-Create the PostgreSQL data directory for persistent storage:
+Create the Docker bind-mount directories for persistent storage and backups:
 
 ```bash
 # From the project root
 mkdir -p Source/Docker/postgres-data
 ```
 
-> **Note:** The PostgreSQL Docker container uses this directory as a mounted volume to persist database data. Without this directory, the container will fail to start. The data stored here survives container restarts, allowing you to maintain your database state across Docker sessions.
+> **Note:** The PostgreSQL Docker container uses `Source/Docker/postgres-data` as a mounted volume to persist database data between container recreations. Creating this directory before first run avoids bind mount issues.
 
 ---
 

@@ -113,7 +113,6 @@ postgres:
     POSTGRES_DB: pot
   volumes:
     - postgres-data:/var/lib/postgresql/data
-    - ./postgres-backups:/backups
   healthcheck:
     test: ["CMD-SHELL", "pg_isready -U postgres"]
     interval: 10s
@@ -174,19 +173,39 @@ client:
 
 ```properties
 COMPOSE_PROJECT_NAME=pot
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=password123
-POSTGRES_DB=pot
+POSTGRES_DB=Pot
 ```
+
+**`.env.development.template`** - Tracked starter file for local development.
+
+Copy or rename this file to `.env.development` before running Docker Compose. The template is enough for basic local startup, but placeholder SMTP and JWT values should be replaced for full usage.
 
 **`.env.development`** - Local development overrides:
 
 ```properties
-POSTGRES_PORT=5432
-SERVER_PORT=5241
-CLIENT_PORT=5175
-ASPNETCORE_ENVIRONMENT=Development
-VITE_API_BASE_URL=http://localhost:5241/api
+# Database Configuration
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=password
+
+# JWT Configuration
+JWT_ISSUER=http://localhost:5241
+JWT_AUDIENCE=http://localhost:5241
+JWT_SECRET_KEY=<exactly-128-random-characters>
+
+# SMTP Configuration
+SMTP_HOST=localhost
+SMTP_PORT=2525
+SMTP_REQUIRE_TLS=false
+SMTP_AUTH_USERNAME=test
+SMTP_AUTH_PASSWORD=test
+SMTP_FROM_NAME=POT - Do Not Reply
+SMTP_FROM_ADDRESS=pot@example.local
+
+# CORS Configuration
+CORS_ALLOWED_ORIGINS=http://localhost:5175
+
+# Platform Admin Configuration
+PLATFORM_ADMIN_USERIDS=
 ```
 
 **Loading order:**
@@ -197,28 +216,50 @@ docker-compose --env-file .env --env-file .env.development -f docker-compose.yml
 
 ### Server Container Variables
 
-**Required:**
+For the current `docker-compose-client-server.yml`, `.env.development` is used for value substitution into the compose file.
 
-- `ASPNETCORE_ENVIRONMENT` - Environment (Development, Production)
-- `ConnectionStrings__DefaultConnection` - PostgreSQL connection string
+**Required by the current compose file:**
 
-**Optional:**
+- `POSTGRES_USER` - PostgreSQL superuser name
+- `POSTGRES_PASSWORD` - PostgreSQL superuser password
+- `JWT_ISSUER` - JWT issuer
+- `JWT_AUDIENCE` - JWT audience
+- `JWT_SECRET_KEY` - JWT signing key
+- `SMTP_HOST` - SMTP server host
+- `SMTP_PORT` - SMTP server port
+- `SMTP_REQUIRE_TLS` - SMTP TLS toggle
+- `SMTP_AUTH_USERNAME` - SMTP username
+- `SMTP_AUTH_PASSWORD` - SMTP password
+- `SMTP_FROM_NAME` - Email display name
+- `SMTP_FROM_ADDRESS` - Email from address
+- `CORS_ALLOWED_ORIGINS` - Allowed browser origins
+- `PLATFORM_ADMIN_USERIDS` - Comma-separated platform admin GUIDs
 
-- `ASPNETCORE_URLS` - Listening URLs (default: `http://+:8080`)
-- `Logging__LogLevel__Default` - Log level
-- `Jwt__Secret` - JWT signing secret
-- `Jwt__Issuer` - JWT issuer
-- `Jwt__Audience` - JWT audience
+**Not currently consumed by the full-stack compose file:**
 
-**Example:**
+- `POSTGRES_PORT`
+- `SERVER_PORT`
+- `CLIENT_PORT`
+- `VITE_API_BASE_URL`
+
+**Notes:**
+
+- The committed `.env` currently supplies `COMPOSE_PROJECT_NAME` and `POSTGRES_DB`.
+- The server validates SMTP settings at startup, so SMTP values must be present and non-empty.
+- Placeholder SMTP values allow the containers to start, but email-dependent flows will fail until you replace them with real credentials.
+
+**Example runtime environment inside the server container:**
 
 ```yaml
 environment:
-  - ASPNETCORE_ENVIRONMENT=Development
-  - ConnectionStrings__DefaultConnection=Host=postgres;Database=pot;Username=postgres;Password=password123
-  - Jwt__Secret=your-secret-key-min-32-chars-long
-  - Jwt__Issuer=pot-api
-  - Jwt__Audience=pot-client
+  - ASPNETCORE_ENVIRONMENT=Production
+  - DATABASE__HOST=pot-postgres
+  - DATABASE__USERNAME=${POSTGRES_USER}
+  - DATABASE__PASSWORD=${POSTGRES_PASSWORD}
+  - DATABASE__NAME=${POSTGRES_DB}
+  - JWT__ISSUER=${JWT_ISSUER}
+  - JWT__AUDIENCE=${JWT_AUDIENCE}
+  - JWT__SECRETKEY=${JWT_SECRET_KEY}
 ```
 
 ### Client Container Build Arguments
@@ -296,13 +337,6 @@ volumes:
   - postgres-data:/var/lib/postgresql/data
 ```
 
-**Database backups:**
-
-```yaml
-volumes:
-  - ./postgres-backups:/backups
-```
-
 ### Volume Commands
 
 ```bash
@@ -317,42 +351,6 @@ docker volume rm pot_postgres-data
 
 # Remove all unused volumes
 docker volume prune
-```
-
-### Backup & Restore
-
-**Backup database:**
-
-```bash
-# From host
-docker exec pot-postgres pg_dump -U postgres pot > backup.sql
-
-# Inside container
-docker exec -it pot-postgres bash
-pg_dump -U postgres pot > /backups/backup-$(date +%Y%m%d-%H%M%S).sql
-```
-
-**Restore database:**
-
-```bash
-# From host
-docker exec -i pot-postgres psql -U postgres pot < backup.sql
-
-# Inside container
-docker exec -it pot-postgres bash
-psql -U postgres pot < /backups/backup-20250112.sql
-```
-
-**Export with data:**
-
-```bash
-docker exec pot-postgres pg_dump -U postgres -Fc pot > pot.dump
-```
-
-**Import from dump:**
-
-```bash
-docker exec -i pot-postgres pg_restore -U postgres -d pot < pot.dump
 ```
 
 ---

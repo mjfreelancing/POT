@@ -22,6 +22,13 @@ The Docker setup runs the complete stack:
 
 If you're using VS Code, you can start everything with built-in tasks.
 
+Before you run the task, make sure these local prerequisites exist:
+
+- `Source/Docker/.env.development`
+- `Source/Docker/postgres-data/`
+
+If `Source/Docker/.env.development` does not exist yet, copy or rename `Source/Docker/.env.development.template` first. The template is sufficient for basic local startup, but you should still replace the placeholder SMTP and JWT values for full, correct usage.
+
 > **Important:** VS Code must be opened at the workspace root (the `POT` folder) for tasks to work correctly. The tasks are defined in `.vscode/tasks.json` and rely on the workspace folder structure.
 
 > **Note:** The VS Code task creates timestamped Docker images (e.g., `pot-server:20251109-143052`) for versioning. These images will accumulate over time and consume disk space. You'll need to periodically clean them up using `docker image prune` or manually delete old images with `docker rmi <image-name>`.

@@ -426,22 +426,6 @@ services:
     ports:
       - "5241:5241"
 
-    # Volume mounts: Persist backup files between container recreations
-    # Purpose: Store database backup files on host for safekeeping
-    volumes:
-      # Backup directory mapping
-      # Syntax: "HOST_PATH:CONTAINER_PATH"
-      #   - Left side (./postgres-backups): Directory on host (relative to compose file)
-      #   - Right side (/backups): Directory inside container where app writes backups
-      # Why needed:
-      #   - Application can create database backups (pg_dump)
-      #   - Backups stored in container are lost if container is deleted
-      #   - Mounting to host preserves backups permanently
-      # Important: ./postgres-backups directory must exist on host before first run
-      # Security: Add postgres-backups/ to .gitignore (don't commit backup files)
-      # Result: Backup files accessible at Source/Docker/postgres-backups/
-      - ./postgres-backups:/backups
-
     # Restart policy: Automatically restart on failure
     # Value: always (same as postgres, ensures high availability)
     # Result: API restarts after crashes, Docker restarts, or host reboots

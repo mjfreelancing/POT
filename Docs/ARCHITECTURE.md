@@ -66,6 +66,7 @@ POT/
 │   └── Docker/                               # Docker configuration
 │       ├── docker-compose-client-server.yml
 │       ├── .env                              # Base environment variables
+│       ├── .env.development.template         # Tracked development env template
 │       ├── .env.development                  # Development settings
 │       └── DEVELOPER.md                      # Docker development guide
 │
@@ -229,12 +230,12 @@ POT runs in Docker containers for consistent development and deployment:
 ## Development Workflow
 
 1. **Clone the repository**
-2. **Configure environment** - Create `Source/Docker/.env.development` with:
+2. **Configure environment** - Copy `Source/Docker/.env.development.template` to `Source/Docker/.env.development`, then update it as needed for:
    - Database credentials
    - SMTP settings (for email verification)
    - JWT configuration
    - CORS settings
-3. **Create required directories** - `Source/Docker/postgres-data/`
+3. **Create required directory** - `Source/Docker/postgres-data/`
 4. **Start services** - Docker containers (recommended) or run manually
 5. **Access application** - Navigate to http://localhost:5175
 6. **First-time setup** - Create user account and configure platform admin
