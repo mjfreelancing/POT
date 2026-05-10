@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetExpenseById } from '@/api/hooks';
 import {
@@ -19,6 +19,8 @@ type DuplicateExpenseProps = {
  */
 function DuplicateExpense({ duplicateId }: DuplicateExpenseProps) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const returnPath = `/expenses${location.search}`;
 
   // Load both accounts and duplicate expense in parallel
   const { data: accountsResult, isLoading: isAccountsLoading } =
@@ -43,7 +45,7 @@ function DuplicateExpense({ duplicateId }: DuplicateExpenseProps) {
         result={accountsResult}
         fallbackTitle="Error Loading Accounts"
         fallbackDescription="Failed to load accounts. Please try again."
-        onDismiss={() => navigate('/expenses')}
+        onDismiss={() => navigate(returnPath, { replace: true })}
       />
     );
   }
@@ -55,7 +57,7 @@ function DuplicateExpense({ duplicateId }: DuplicateExpenseProps) {
         result={duplicateExpenseResult}
         fallbackTitle="Error Loading Expense"
         fallbackDescription="Failed to load the expense to duplicate. Please try again."
-        onDismiss={() => navigate('/expenses')}
+        onDismiss={() => navigate(returnPath, { replace: true })}
       />
     );
   }

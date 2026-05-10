@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 
 import { useApiGetAllAccounts } from '@/api/hooks';
 import {
@@ -15,6 +15,8 @@ import CreateExpenseForm from '../components/CreateExpenseForm';
  */
 function CreateNewExpense() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const returnPath = `/expenses${location.search}`;
   const { data: accountsResult, isLoading: isAccountsLoading } =
     useApiGetAllAccounts();
 
@@ -35,7 +37,7 @@ function CreateNewExpense() {
         result={accountsResult}
         fallbackTitle="Error Loading Accounts"
         fallbackDescription="Failed to load accounts. Please try again."
-        onDismiss={() => navigate('/expenses')}
+        onDismiss={() => navigate(returnPath, { replace: true })}
       />
     );
   }

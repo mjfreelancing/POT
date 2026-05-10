@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 
 import { useApiGetAllAccounts } from '@/api/hooks';
 import {
@@ -15,6 +15,8 @@ import CreateIncomeForm from '../components/CreateIncomeForm';
  */
 function CreateNewIncome() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const returnPath = `/incomes${location.search}`;
   const { data: accountsResult, isLoading: isAccountsLoading } =
     useApiGetAllAccounts();
 
@@ -32,7 +34,7 @@ function CreateNewIncome() {
         result={accountsResult}
         fallbackTitle="Error Loading Accounts"
         fallbackDescription="Failed to load accounts. Please try again."
-        onDismiss={() => navigate('/incomes')}
+        onDismiss={() => navigate(returnPath, { replace: true })}
       />
     );
   }

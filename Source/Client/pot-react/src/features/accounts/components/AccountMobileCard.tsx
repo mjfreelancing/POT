@@ -23,8 +23,10 @@ import { useErrorContext } from '@/contexts';
 import type { Account } from '@/data';
 import { WithPermission } from '@/features/auth/components';
 import { cn, formatMoneyValue } from '@/lib';
+import useUserStore from '@/stores/useUserStore';
 
 import useDeleteAccount from '../delete/hooks/useDeleteAccount';
+import persistLinkedAccountFilter from '../utils/persistLinkedAccountFilter';
 
 type AccountMobileCardProps = {
   account: Account;
@@ -41,6 +43,7 @@ function AccountMobileCard({ account }: AccountMobileCardProps) {
   const navigate = useNavigate();
   const { deleteAccount } = useDeleteAccount(account.rowId);
   const hasLinkedData = account.linkedExpenses > 0 || account.linkedIncomes > 0;
+  const userId = useUserStore(store => store.userInfo?.rowId);
 
   // Determine account status for styling (same logic as dashboard)
   const getAccountStatus = () => {
@@ -159,9 +162,19 @@ function AccountMobileCard({ account }: AccountMobileCardProps) {
                       <StatusBadge
                         color="yellow"
                         tooltip={`View ${account.linkedExpenses} linked ${account.linkedExpenses === 1 ? 'expense' : 'expenses'}`}
-                        onClick={() =>
-                          navigate(`/expenses?accountId=${account.rowId}`)
-                        }
+                        onClick={() => {
+                          const accountId = account.rowId.toString();
+
+                          // Persist account context before navigation so feature links and list pages
+                          // resolve against the same account selection after route changes.
+                          persistLinkedAccountFilter({
+                            userId,
+                            feature: 'expenses',
+                            accountId,
+                          });
+
+                          navigate(`/expenses?accountId=${accountId}`);
+                        }}
                         className="cursor-pointer hover:opacity-80 transition-opacity h-8 flex items-center"
                       >
                         <BanknoteArrowDown className="h-3 w-3" />
@@ -172,9 +185,19 @@ function AccountMobileCard({ account }: AccountMobileCardProps) {
                       <StatusBadge
                         color="green"
                         tooltip={`View ${account.linkedIncomes} linked ${account.linkedIncomes === 1 ? 'income' : 'incomes'}`}
-                        onClick={() =>
-                          navigate(`/incomes?accountId=${account.rowId}`)
-                        }
+                        onClick={() => {
+                          const accountId = account.rowId.toString();
+
+                          // Persist account context before navigation so feature links and list pages
+                          // resolve against the same account selection after route changes.
+                          persistLinkedAccountFilter({
+                            userId,
+                            feature: 'incomes',
+                            accountId,
+                          });
+
+                          navigate(`/incomes?accountId=${accountId}`);
+                        }}
                         className="cursor-pointer hover:opacity-80 transition-opacity h-8 flex items-center"
                       >
                         <BanknoteArrowUp className="h-3 w-3" />

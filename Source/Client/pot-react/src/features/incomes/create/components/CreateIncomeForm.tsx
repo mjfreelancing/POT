@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { useErrorContext } from '@/contexts';
@@ -28,7 +28,9 @@ function CreateIncomeForm({
   duplicateIncome,
 }: CreateIncomeFormProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { createIncome } = useCreateIncome();
+  const returnPath = `/incomes${location.search}`;
 
   const getDefaultValues = useCallback((): IncomeFormData => {
     if (duplicateIncome) {
@@ -84,7 +86,7 @@ function CreateIncomeForm({
     const result = await createIncome(income);
 
     if (result.success) {
-      navigate('/incomes');
+      navigate(returnPath, { replace: true });
     } else {
       setError({
         title: result.error.code,
@@ -107,7 +109,7 @@ function CreateIncomeForm({
       <IncomeForm
         form={form}
         onSubmit={onSubmit}
-        onCancel={() => navigate('/incomes')}
+        onCancel={() => navigate(returnPath, { replace: true })}
         submitLabel="Create"
         accounts={accountsList}
       />

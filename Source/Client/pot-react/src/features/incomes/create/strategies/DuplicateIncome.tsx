@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetIncomeById } from '@/api/hooks';
 import {
@@ -19,6 +19,8 @@ type DuplicateIncomeProps = {
  */
 function DuplicateIncome({ duplicateId }: DuplicateIncomeProps) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const returnPath = `/incomes${location.search}`;
 
   // Load both accounts and duplicate income in parallel
   const { data: accountsResult, isLoading: isAccountsLoading } =
@@ -43,7 +45,7 @@ function DuplicateIncome({ duplicateId }: DuplicateIncomeProps) {
         result={accountsResult}
         fallbackTitle="Error Loading Accounts"
         fallbackDescription="Failed to load accounts. Please try again."
-        onDismiss={() => navigate('/incomes')}
+        onDismiss={() => navigate(returnPath, { replace: true })}
       />
     );
   }
@@ -55,7 +57,7 @@ function DuplicateIncome({ duplicateId }: DuplicateIncomeProps) {
         result={duplicateIncomeResult}
         fallbackTitle="Error Loading Income"
         fallbackDescription="Failed to load the income to duplicate. Please try again."
-        onDismiss={() => navigate('/incomes')}
+        onDismiss={() => navigate(returnPath, { replace: true })}
       />
     );
   }

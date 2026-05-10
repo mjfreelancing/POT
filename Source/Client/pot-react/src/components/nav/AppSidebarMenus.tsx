@@ -10,11 +10,13 @@ import {
   Users,
 } from 'lucide-react';
 import { useState } from 'react';
+import { useLocation } from 'react-router';
 
 import { SidebarContent, useSidebar } from '@/components/ui/sidebar';
 import { useAuthContext } from '@/features/auth/contexts';
 import { ExportModal } from '@/features/maintenance/export';
 import { ImportModal } from '@/features/maintenance/import';
+import { useFeatureFilterHref } from '@/hooks/useFeatureFilterHref';
 
 import type { MenuGroupDefinition } from './MenuGroup';
 import MenuGroup from './MenuGroup';
@@ -22,8 +24,13 @@ import MenuGroup from './MenuGroup';
 function AppSidebarMenus() {
   const { isAuthenticated } = useAuthContext();
   const { isMobile } = useSidebar();
+  const location = useLocation();
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
+  // Build dynamic hrefs for feature-based navigation with account filters
+  const expensesHref = useFeatureFilterHref('expenses');
+  const incomesHref = useFeatureFilterHref('incomes');
 
   // Only show menu items when authenticated
   if (!isAuthenticated) {
@@ -64,14 +71,14 @@ function AppSidebarMenus() {
           type: 'href',
           label: 'Expenses',
           icon: Receipt,
-          href: '/expenses',
+          href: expensesHref,
           permissions: ['expense:view'],
         },
         {
           type: 'href',
           label: 'Income',
           icon: TrendingUp,
-          href: '/incomes',
+          href: incomesHref,
           permissions: ['income:view'],
         },
         {
@@ -124,7 +131,7 @@ function AppSidebarMenus() {
 
   return (
     <>
-      <SidebarContent>
+      <SidebarContent key={location.pathname}>
         <MenuGroup group={menuGroups.analysis} />
         <MenuGroup group={menuGroups.manage} />
         <MenuGroup group={menuGroups.platform} />

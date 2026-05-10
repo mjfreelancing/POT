@@ -17,8 +17,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useErrorContext } from '@/contexts';
 import type { Account } from '@/data';
 import { usePermissions } from '@/hooks';
+import useUserStore from '@/stores/useUserStore';
 
 import { accrueAllAccountExpenses } from '../utils/bulkActions';
+import persistLinkedAccountFilter from '../utils/persistLinkedAccountFilter';
 import AccountActions from './AccountActions';
 
 type AccountsTableProps = {
@@ -31,6 +33,7 @@ function AccountsTable({ accounts }: AccountsTableProps) {
   const queryClient = useQueryClient();
   const accrueExpensesMutation = useApiAccrueAccountExpenses();
   const { error, setError } = useErrorContext();
+  const userId = useUserStore(store => store.userInfo?.rowId);
 
   const { hasPermission } = usePermissions();
   const canManageExpenses = hasPermission('expense:manage');
@@ -73,9 +76,19 @@ function AccountsTable({ accounts }: AccountsTableProps) {
                   <StatusBadge
                     color="yellow"
                     tooltip={`View ${account.linkedExpenses} linked ${account.linkedExpenses === 1 ? 'expense' : 'expenses'}`}
-                    onClick={() =>
-                      navigate(`/expenses?accountId=${account.rowId}`)
-                    }
+                    onClick={() => {
+                      const accountId = account.rowId.toString();
+
+                      // Persist account context before navigation so feature links and list pages
+                      // resolve against the same account selection after route changes.
+                      persistLinkedAccountFilter({
+                        userId,
+                        feature: 'expenses',
+                        accountId,
+                      });
+
+                      navigate(`/expenses?accountId=${accountId}`);
+                    }}
                     className="cursor-pointer hover:opacity-80 transition-opacity"
                   >
                     <BanknoteArrowDown />
@@ -86,9 +99,19 @@ function AccountsTable({ accounts }: AccountsTableProps) {
                   <StatusBadge
                     color="green"
                     tooltip={`View ${account.linkedIncomes} linked ${account.linkedIncomes === 1 ? 'income' : 'incomes'}`}
-                    onClick={() =>
-                      navigate(`/incomes?accountId=${account.rowId}`)
-                    }
+                    onClick={() => {
+                      const accountId = account.rowId.toString();
+
+                      // Persist account context before navigation so feature links and list pages
+                      // resolve against the same account selection after route changes.
+                      persistLinkedAccountFilter({
+                        userId,
+                        feature: 'incomes',
+                        accountId,
+                      });
+
+                      navigate(`/incomes?accountId=${accountId}`);
+                    }}
                     className="cursor-pointer hover:opacity-80 transition-opacity"
                   >
                     <BanknoteArrowUp />

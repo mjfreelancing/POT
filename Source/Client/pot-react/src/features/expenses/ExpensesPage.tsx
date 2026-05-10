@@ -1,6 +1,11 @@
 import { Plus } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
-import { Outlet, useNavigate, useSearchParams } from 'react-router';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  Outlet,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetAllExpenses } from '@/api/hooks';
 import {
@@ -92,20 +97,131 @@ function ExpensesPage() {
     [expensesLoading, accountsLoading, expensesFetching, accountsFetching],
   );
 
-  // Get account filter from storage and/or URL
+  /**
+   * Account filter state model:
+   * - Render-time filter state comes only from the URL `accountId` query parameter.
+   * - This page writes storage but does not read storage for rendering.
+   * - The sidebar reads storage to build feature links with the last selected account.
+   *
+   * Storage is written from explicit interactions and URL sync paths:
+   * - Badge navigation writes storage before route change.
+   * - Filter changes write storage via `updateSelectedAccount`.
+   * - URL-driven account changes are promoted to storage by the consolidated effect.
+   */
+  const location = useLocation();
   const urlAccountId = searchParams.get('accountId');
-  const storedData = getExpenseData();
-  const isEditing = window.location.pathname.includes('/edit/');
 
-  // When returning from edit mode, restore URL from storage if needed
+  // RULE 1: URL is the sole render-time source of truth. No storage fallback.
+  // If URL has ?accountId, use it. Otherwise, null (explicitly unfiltered, not a fallback).
+  const selectedAccountId = urlAccountId || null;
+
+  // Derive isSubRoute from React Router location, not fragile window.location.pathname.includes()
+  // isSubRoute = true when in an edit or create flow (sub-routes of the expenses list)
+  const isSubRoute = useMemo(() => {
+    const pathname = location.pathname;
+    // Match: /expenses/edit/<id>, /expenses/edit, /expenses/create
+    return (
+      pathname.includes('/edit/') ||
+      pathname.includes('/edit') ||
+      pathname.includes('/create')
+    );
+  }, [location.pathname]);
+
+  // Memoize updateSelectedAccount to satisfy dependency array requirements.
+  // This function updates storage and optionally the URL when a filter is explicitly selected.
+  // When isSubRoute=true (inside edit/create flow), skips URL update to preserve list filter state.
+  const updateSelectedAccount = useCallback(
+    (accountId: string | null) => {
+      setExpenseData({ selectedAccountId: accountId });
+
+      if (isSubRoute) {
+        return;
+      }
+
+      if (accountId) {
+        const newSearchParams = new URLSearchParams();
+        newSearchParams.set('accountId', accountId);
+
+        setSearchParams(newSearchParams, { replace: true });
+
+        return;
+      }
+
+      setSearchParams(new URLSearchParams(), { replace: true });
+    },
+    [isSubRoute, setExpenseData, setSearchParams],
+  );
+
+  // Base-route mount behavior:
+  // when there is no `accountId` in the URL and we are on the list route,
+  // clear stored account selection so subsequent sidebar links stay unfiltered.
   useEffect(() => {
-    if (!isEditing && !urlAccountId && storedData?.selectedAccountId) {
-      const newSearchParams = new URLSearchParams();
-      newSearchParams.set('accountId', storedData.selectedAccountId);
-
-      setSearchParams(newSearchParams);
+    // Only clear storage when:
+    // 1. No URL account param (base route)
+    // 2. Not in a sub-route (edit/create flows don't affect filter)
+    // 3. Accounts query is resolved before writing storage
+    if (urlAccountId !== null || isSubRoute) {
+      return;
     }
-  }, [isEditing, urlAccountId, storedData?.selectedAccountId, setSearchParams]);
+
+    if (!accountsResult?.success) {
+      return;
+    }
+
+    // Base route with no URL param: write null to storage to clear filter
+    setExpenseData({ selectedAccountId: null });
+  }, [urlAccountId, isSubRoute, accountsResult?.success, setExpenseData]);
+
+  // Consolidated URL -> storage sync:
+  // - clears invalid account IDs from URL/storage
+  // - promotes valid URL account IDs into storage so sidebar links stay aligned
+  // - skips edit/create sub-routes to avoid mutating list URL state mid-flow
+  useEffect(() => {
+    if (
+      !urlAccountId ||
+      isSubRoute ||
+      accountsLoading ||
+      accountsFetching ||
+      !accountsResult?.success
+    ) {
+      return;
+    }
+
+    if (urlAccountId === 'not-assigned') {
+      // 'not-assigned' is a valid special token representing unfiltered state.
+      // It should be promoted to storage just like any other valid account ID.
+      setExpenseData({ selectedAccountId: urlAccountId });
+      return;
+    }
+
+    const hasMatchingAccount = accounts.some(
+      account => account.rowId.toString() === urlAccountId,
+    );
+
+    if (!hasMatchingAccount) {
+      // Invalid account (deleted or never existed): clear URL and storage.
+      updateSelectedAccount(null);
+      return;
+    }
+
+    // Valid account in URL and differs from storage: promote to storage.
+    const storedData = getExpenseData();
+    const storedSelectedAccountId = storedData?.selectedAccountId || null;
+
+    if (urlAccountId !== storedSelectedAccountId) {
+      setExpenseData({ selectedAccountId: urlAccountId });
+    }
+  }, [
+    urlAccountId,
+    isSubRoute,
+    accountsLoading,
+    accountsFetching,
+    accountsResult?.success,
+    accounts,
+    getExpenseData,
+    setExpenseData,
+    updateSelectedAccount,
+  ]);
 
   // Use the shared account filtering hook with controlled state
   const {
@@ -115,50 +231,23 @@ function ExpensesPage() {
   } = useAccountFilter<Expense>({
     accounts,
     items: expenses,
-    selectedAccountId: urlAccountId || storedData?.selectedAccountId || null,
-    onAccountChange: accountId => {
-      if (accountId) {
-        // Always update storage
-        setExpenseData({ selectedAccountId: accountId });
-
-        // Only update URL if not editing
-        if (!isEditing) {
-          const newSearchParams = new URLSearchParams();
-          newSearchParams.set('accountId', accountId);
-
-          setSearchParams(newSearchParams);
-        }
-      } else {
-        // Always update storage
-        setExpenseData({ selectedAccountId: null });
-
-        // Only update URL if not editing
-        if (!isEditing) {
-          setSearchParams(new URLSearchParams());
-        }
-      }
-    },
+    selectedAccountId,
+    onAccountChange: updateSelectedAccount,
   });
-
-  // Get initial account ID from URL or storage
-  const initialAccountId = useMemo(
-    () => urlAccountId || storedData?.selectedAccountId || null,
-    [urlAccountId, storedData?.selectedAccountId],
-  );
 
   // Validate the selected account ID for display in header
   const validatedSelectedAccountId = useMemo(() => {
-    if (!initialAccountId) {
+    if (!selectedAccountId) {
       return null;
     }
 
     // Check if it's a valid account that has items
     const isValidAccount = accountsInItems.some(
-      account => account.rowId.toString() === initialAccountId,
+      account => account.rowId.toString() === selectedAccountId,
     );
 
-    return isValidAccount ? initialAccountId : null;
-  }, [initialAccountId, accountsInItems]);
+    return isValidAccount ? selectedAccountId : null;
+  }, [selectedAccountId, accountsInItems]);
 
   // Filter expenses by description (case-insensitive)
   const descriptionFilteredExpenses = useMemo(() => {
@@ -188,6 +277,7 @@ function ExpensesPage() {
   }, [expensesResult, setError]);
 
   const navigate = useNavigate();
+  const createPath = location.search ? `create${location.search}` : 'create';
 
   const handleSearchTermChange = (term: string) => {
     const trimmedTerm = term.trim();
@@ -244,7 +334,7 @@ function ExpensesPage() {
                     <TooltipTrigger asChild>
                       <span className="inline-flex" tabIndex={0}>
                         <Button
-                          onClick={() => navigate('create')}
+                          onClick={() => navigate(createPath)}
                           aria-label="Add a new expense"
                           size="sm"
                           variant="default"
@@ -262,7 +352,7 @@ function ExpensesPage() {
                   </Tooltip>
                 ) : (
                   <Button
-                    onClick={() => navigate('create')}
+                    onClick={() => navigate(createPath)}
                     aria-label="Add a new expense"
                     size="sm"
                     variant="default"
@@ -303,7 +393,7 @@ function ExpensesPage() {
                 hasActiveFilters
                   ? handleClearFilters
                   : () => {
-                      navigate('create');
+                      navigate(createPath);
                     }
               }
             />
