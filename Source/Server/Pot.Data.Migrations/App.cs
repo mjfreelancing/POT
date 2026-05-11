@@ -60,10 +60,14 @@ internal sealed class App : ConsoleAppBase
 
                 await _erdExporter.ExportSchemaAsDiagramAsync("..\\..\\..\\..\\..\\..\\Docs\\pot_erd.d2");
             }
+
+            ExitCode = 0;
         }
         catch (Exception exception)
         {
             _logger.LogException(exception);
+
+            ExitCode = -1;
         }
         finally
         {
@@ -71,8 +75,6 @@ internal sealed class App : ConsoleAppBase
 
             _logger.LogInformation("Migration END");
         }
-
-        ExitCode = 0;
     }
 
     private async Task WaitForDatabaseIsReadyAsync(CancellationToken cancellationToken)
