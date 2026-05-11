@@ -220,6 +220,10 @@ services:
       # Full path: Source/Docker/Server/Dockerfile
       dockerfile: Docker/Server/Dockerfile
 
+      # Disable layer caching: Always build from scratch
+      # Why: Ensures the image always reflects the latest state
+      no_cache: true
+
     # Service dependencies: Controls startup order
     # Purpose: Ensure database is healthy before starting server
     # Syntax options:
@@ -457,6 +461,10 @@ services:
       # Dockerfile location: Path relative to context
       # Full path: Source/Docker/Client/Dockerfile
       dockerfile: Docker/Client/Dockerfile
+
+      # Disable layer caching: Always build from scratch
+      # Why: Ensures the image always reflects the latest state
+      no_cache: true
 
       # Build arguments: Pass values to Dockerfile ARG instructions
       # Purpose: Configure build-time settings (different from runtime ENV)

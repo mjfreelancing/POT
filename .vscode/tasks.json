@@ -4,7 +4,7 @@
     {
       "label": "docker-start-client-server",
       "type": "shell",
-      "command": "$env:IMAGE_TAG = Get-Date -Format 'yyyyMMdd-HHmmss'; docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-client-server.yml build --no-cache; docker tag pot-server:$env:IMAGE_TAG pot-server:latest; docker tag pot-client:$env:IMAGE_TAG pot-client:latest; $env:IMAGE_TAG = 'latest'; docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-client-server.yml up -d",
+      "command": "$env:IMAGE_TAG = Get-Date -Format 'yyyyMMdd-HHmmss'; docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-client-server.yml build; docker tag pot-server:$env:IMAGE_TAG pot-server:latest; docker tag pot-client:$env:IMAGE_TAG pot-client:latest; $env:IMAGE_TAG = 'latest'; docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-client-server.yml up -d",
       "options": {
         "cwd": "${workspaceFolder}/Source/Docker"
       },
@@ -30,7 +30,7 @@
     {
       "label": "docker-start-server",
       "type": "shell",
-      "command": "$env:IMAGE_TAG = Get-Date -Format 'yyyyMMdd-HHmmss'; docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-client-server.yml build --no-cache server postgres; docker tag pot-server:$env:IMAGE_TAG pot-server:latest; $env:IMAGE_TAG = 'latest'; docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-client-server.yml up -d postgres server",
+      "command": "$env:IMAGE_TAG = Get-Date -Format 'yyyyMMdd-HHmmss'; docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-client-server.yml build server postgres; docker tag pot-server:$env:IMAGE_TAG pot-server:latest; $env:IMAGE_TAG = 'latest'; docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-client-server.yml up -d postgres server",
       "options": {
         "cwd": "${workspaceFolder}/Source/Docker"
       },
@@ -56,7 +56,7 @@
     {
       "label": "docker-start-client",
       "type": "shell",
-      "command": "$env:IMAGE_TAG = Get-Date -Format 'yyyyMMdd-HHmmss'; docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-client-server.yml build --no-cache client; docker tag pot-client:$env:IMAGE_TAG pot-client:latest; $env:IMAGE_TAG = 'latest'; docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-client-server.yml up -d --no-deps client",
+      "command": "$env:IMAGE_TAG = Get-Date -Format 'yyyyMMdd-HHmmss'; docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-client-server.yml build client; docker tag pot-client:$env:IMAGE_TAG pot-client:latest; $env:IMAGE_TAG = 'latest'; docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-client-server.yml up -d --no-deps client",
       "options": {
         "cwd": "${workspaceFolder}/Source/Docker"
       },
