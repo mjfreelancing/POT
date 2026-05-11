@@ -14,6 +14,18 @@
     "prettier": "prettier . --write",
     "test": "vitest",
     "test:ui": "vitest --ui --api 9527 --coverage.enabled --coverage.provider=istanbul --coverage.all",
+    "e2e": "playwright test --reporter=line",
+    "e2e:ui": "playwright test --ui",
+    "e2e:headed": "playwright test --headed",
+    "e2e:debug": "playwright test --debug",
+    "e2e:smoke": "playwright test --reporter=line e2e/tests/smoke",
+    "e2e:smoke:headed": "playwright test e2e/tests/smoke --headed",
+    "e2e:chromium": "playwright test --reporter=line --project chromium",
+    "e2e:edge": "playwright test --reporter=line --project edge",
+    "e2e:mobile": "playwright test --reporter=line --project mobile-chrome --project mobile-safari",
+    "e2e:all": "playwright test --project chromium --project edge --project mobile-chrome --project mobile-safari",
+    "e2e:report": "playwright show-report",
+    "e2e:install": "playwright install chromium webkit",
     "type:check": "tsc --noEmit"
   },
   "dependencies": {
@@ -59,6 +71,8 @@
   "devDependencies": {
     "@eslint/js": "^9.23.0",
     "@faker-js/faker": "^9.8.0",
+    "@playwright/test": "^1.59.1",
+    "@testcontainers/postgresql": "^11.14.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
