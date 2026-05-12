@@ -50,9 +50,7 @@ These items come from discovery spikes and are treated as design inputs unless s
 ### R1. Local-Only Execution
 
 - Tests must run locally on developer machines.
-- Supported local modes:
-  - App via local dev server.
-  - App via local Docker stack.
+- Supported local App via local Docker stack.
 - No CI requirements in this phase.
 
 ### R2. Authentication Baseline
@@ -199,6 +197,75 @@ Constraint:
 
 - Worker-scoped auth must not hide tests that require unique user/session setup (multi-role tests use separate fixtures).
 - Each worker is isolated; parallel workers can have different authenticated users without conflict.
+
+### D5. OTP Delivery Strategy For Local E2E
+
+Decision:
+
+- Approved: retain real OTP generation/verification logic, but replace SMTP destination with a local email sink for OTP-required scenarios.
+
+Selected approach:
+
+- Use a local sink mailbox service (for example MailPit) in the Docker E2E stack.
+- Keep existing server OTP flow unchanged:
+  - server generates OTP,
+  - server queues email,
+  - worker sends email,
+  - test reads OTP from sink mailbox.
+- For seeded-user login paths, OTP is not required because users are pre-created in the golden export.
+- For signup/password-reset coverage, tests explicitly exercise OTP flows by reading the sinked email and submitting the OTP through existing endpoints/UI.
+
+Constraints:
+
+- No new server endpoints for test-only OTP retrieval.
+- No bypass of OTP verification logic in production code paths.
+- Sink mailbox configuration must be local E2E scoped only and not used in normal runtime environments.
+
+### D6. Seed Data Source Strategy
+
+Decision:
+
+- Approved: use a single golden export containing site, users, roles, and financial data.
+
+Selected approach:
+
+- Site and users are created manually once and exported as part of the golden seed artifact.
+- Seed runs restore from the golden artifact.
+- Data freshness is maintained by renewal/accrual operations and targeted per-test additions in setup.
+
+Constraint:
+
+- Automated user-creation coverage is deferred and tracked separately from baseline seeded execution.
+
+### D7. OTP Strategy For E2E
+
+Decision:
+
+- Approved: use sink-mailbox based OTP capture for OTP-required flows.
+
+Selected approach:
+
+- Seeded-user flows rely on pre-created users in the golden artifact and do not require OTP.
+- Signup/password-reset coverage reads OTP values from the local sink mailbox and submits through existing application paths.
+
+Constraint:
+
+- OTP behavior remains production-faithful and is not bypassed in application code paths.
+
+### D8. Post-Import Setup Strategy
+
+Decision:
+
+- Approved: artifact import plus renewal/accrual as the baseline seeded setup path.
+
+Selected approach:
+
+- No per-run custom bootstrap app is required for baseline seeded runs.
+- Setup relies on restoring the golden artifact and running existing server-side refresh operations.
+
+Constraint:
+
+- Any additional setup logic must remain deterministic and reproducible from the imported artifact.
 
 ## Proposed Architecture (Draft, Aligned to Approved Decisions)
 
