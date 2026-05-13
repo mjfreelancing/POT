@@ -9,8 +9,6 @@
 
 Define the minimum, approved infrastructure required to create reliable local Playwright E2E tests for POT before implementing scenario tests.
 
-This remains a planning document. It captures discovery-informed inputs so planning decisions are evidence-based.
-
 ## Scope For This Phase
 
 In scope:
@@ -18,11 +16,10 @@ In scope:
 - Local E2E execution only.
 - Playwright infrastructure for deterministic local runs.
 - Login/auth support for all tests.
-- Database state strategy (blank vs seeded) per test.
+- Database state strategy (blank, site-and-users-only, or fully seeded) per test.
 - Support for long cross-feature flows.
 - Support for multi-user/concurrency test flows.
 - Documentation and instruction guidance for future agents.
-- Recording discovery-informed outcomes as planning inputs.
 
 Out of scope:
 
@@ -42,7 +39,7 @@ These items come from discovery spikes and are treated as design inputs unless s
 - Force both `DOTNET_ENVIRONMENT=Production` and `ASPNETCORE_ENVIRONMENT=Production` for consistent E2E host behavior.
 - Standardize on npm-first execution modes (`e2e`, `e2e:smoke`, `e2e:edge`, `e2e:mobile`, `e2e:all`, etc.).
 - Define browser/device matrix coverage for Chromium, Edge, mobile Chrome, and mobile Safari.
-- Prefer line reporter for non-interactive runs to keep terminal execution non-blocking.
+- Prefer line reporter for non-interactive agent runs to keep terminal execution non-blocking.
 - Include Playwright browser install flow as an explicit prerequisite for required runtime binaries.
 
 ## Requirements
@@ -50,7 +47,7 @@ These items come from discovery spikes and are treated as design inputs unless s
 ### R1. Local-Only Execution
 
 - Tests must run locally on developer machines.
-- Supported local App via local Docker stack.
+- Supported via local Docker stack.
 - No CI requirements in this phase.
 
 ### R2. Authentication Baseline
@@ -63,25 +60,57 @@ These items come from discovery spikes and are treated as design inputs unless s
 
 ### R3. Explicit Data State Per Test
 
-Each test must declare one of:
+Each test must declare one of three database start states:
 
-- Blank database start state.
-- Seeded database start state.
+**Mode 1: Blank**
+
+- Migrations applied; no site, no users, no financial data.
+- Used exclusively for tests that exercise user registration and OTP-based signup flows.
+- Auth fixture is not applicable for tests running in this mode (unauthenticated by design).
+
+**Mode 2: Site-and-users-only**
+
+- Site and canonical E2E users exist; no financial data has been imported.
+- Established by loading the committed data-only SQL seed file (`e2e/seed/baseline.sql`) into the Testcontainers database after migrations run.
+- Used for tests that create their own income/expense entries to assert specific financial behaviors.
+- Auth fixture applies normally (users are already present).
+
+**Mode 3: Fully seeded**
+
+- Site and canonical E2E users exist; financial data imported from an export artifact; renewal/accrual run to advance data to local machine date.
+- Established by loading the SQL seed file (same as Mode 2), then importing the financial artifact via the server API, then running renewal/accrual.
+- Used for projection, filter, and long-flow scenarios that require realistic financial state.
+- Auth fixture applies normally.
 
 Additional rules:
 
 - State setup must be deterministic.
 - Tests must not depend on leftover data from previous tests.
 - Cleanup behavior must be defined for each state mode.
-- Seeded scenarios use local machine date as the baseline for time-based calculations.
+- Fully seeded scenarios use local machine date as the baseline for time-based calculations.
 
-Approved seeded-data approach:
+Import constraint:
 
-- Maintain a pre-prepared sample database export/import artifact anchored to a reference date.
-- Seed tests by importing that artifact through existing server APIs (no new server endpoints).
-- After import, run server-side renewal/accrual operations to advance data from the reference date to the current local machine date.
-- Tests query the API after renewal/accrual to retrieve expected values.
-- UI assertions compare displayed values against API-returned values (no hardcoded expectations).
+- The export/import artifact contains financial data only; it does not encode site configuration or user records.
+- The site and users must already exist in the database before the import artifact can be applied.
+- Modes 2 and 3 therefore require site and users to be established first (either via the golden state or per-test setup).
+- Attempting to import a financial artifact into a blank database (no site present) must be rejected by the server; this rejection behavior is a required test scenario in its own right (Mode 1 / blank database, unauthenticated or admin-authenticated import attempt → expect failure response).
+
+Approved setup sequence for modes 2 and 3:
+
+1. After Testcontainers starts and migrations run, load `e2e/seed/baseline.sql` into the container database via `psql`. This file is a `pg_dump --data-only` snapshot of the site and canonical user rows and is committed to the repository.
+2. _(Mode 3 only)_ Import the financial export artifact through existing server APIs (no new server endpoints).
+3. _(Mode 3 only)_ Run server-side renewal/accrual operations to advance data from the artifact reference date to the current local machine date.
+4. Tests intercept the API responses already requested by the client (via `page.waitForResponse()`) to retrieve expected values; no separate API calls are made.
+5. UI assertions compare displayed values against API-returned values (no hardcoded expectations).
+
+SQL seed file rules:
+
+- File path: `e2e/seed/baseline.sql`.
+- Generated once from a manually prepared database using `pg_dump --data-only --table=<site-and-user-tables>`.
+- Committed to the repository; human-reviewable and incrementally extensible.
+- Must be regenerated when the canonical site key, usernames, or role assignments change.
+- Schema changes that add non-nullable columns without defaults require regeneration; otherwise the file is resilient to additive schema changes.
 
 Rationale for local-date approach:
 
@@ -133,8 +162,8 @@ Guardrails:
 
 Accrual testing guidance:
 
-- After seed/import and renewal/accrual steps, query the relevant API response used by the page.
-- Build expected values from that payload.
+- After seed/import and renewal/accrual steps, intercept the API response the page already requests using `page.waitForResponse()`; register the listener before the navigation or action that triggers the request.
+- Build expected values from that intercepted payload.
 - Assert that table/card/form values in the UI match those expectations.
 
 ## Decisions
@@ -225,12 +254,14 @@ Constraints:
 
 Decision:
 
-- Approved: use a single golden export containing site, users, roles, and financial data.
+- Approved: use a committed data-only SQL seed file for the site-and-users baseline, combined with a separate financial export artifact for fully seeded runs.
 
 Selected approach:
 
-- Site and users are created manually once and exported as part of the golden seed artifact.
-- Seed runs restore from the golden artifact.
+- The export/import artifact contains financial data only; site configuration and user records are not part of the artifact.
+- The site and canonical users are established by loading `e2e/seed/baseline.sql` (a `pg_dump --data-only` snapshot) into the Testcontainers database after migrations.
+- The SQL seed file is committed to the repository, is human-reviewable, and can be extended over time as test requirements grow.
+- Fully seeded runs load the SQL seed file first, then import the financial artifact via the server API, then run renewal/accrual.
 - Data freshness is maintained by renewal/accrual operations and targeted per-test additions in setup.
 
 Constraint:
@@ -261,11 +292,28 @@ Decision:
 Selected approach:
 
 - No per-run custom bootstrap app is required for baseline seeded runs.
-- Setup relies on restoring the golden artifact and running existing server-side refresh operations.
+- Setup relies on loading the SQL seed file (site/users), importing the financial artifact, and running existing server-side refresh operations.
 
 Constraint:
 
-- Any additional setup logic must remain deterministic and reproducible from the imported artifact.
+- Any additional setup logic must remain deterministic and reproducible from the SQL seed file and financial artifact.
+
+### D9. Site-and-Users Baseline Mechanism
+
+Decision:
+
+- Approved: use a committed data-only SQL seed file (`e2e/seed/baseline.sql`) loaded via `psql` after migrations.
+
+Rationale:
+
+- Testcontainers runs migrations before test fixtures execute; a full `pg_restore` (including schema) would conflict with already-created tables. A `pg_dump --data-only` avoids this entirely.
+- The SQL file is small, version-controlled, human-reviewable, and incrementally extensible without new tooling.
+- Resilient to most schema changes (additive columns with defaults do not require regeneration).
+- No additional server endpoints or bootstrap applications are required.
+
+Constraint:
+
+- The SQL seed file must be regenerated when canonical identities (site key, usernames, roles) change or when non-nullable columns without defaults are added to covered tables.
 
 ## Proposed Architecture (Draft, Aligned to Approved Decisions)
 
@@ -412,28 +460,43 @@ export const test = base.extend<{}, AuthFixtures>({
 
 **How**:
 
-- Each test declares its data state: blank or seeded.
-- Fixture imports artifact via existing server APIs if seeded.
-- Runs renewal/accrual to advance data to local machine date.
-- Test runs with fresh, isolated data.
+- Each test declares its data state: blank, site-and-users-only, or fully seeded.
+- Modes 2 and 3 load the SQL seed file into the Testcontainers database; mode 3 then imports the financial artifact and runs renewal/accrual.
 - Cleanup happens automatically (container is disposable).
+
+**Three fixture modes**:
+
+- `dbBlank`: No site, no users, no financial data. Used for signup/OTP tests and blank-database import rejection tests.
+- `dbSiteAndUsers`: SQL seed file loaded; site and canonical users present; no financial data. Used for tests that supply their own financial entries.
+- `dbSeeded`: SQL seed file loaded; financial artifact imported via API; renewal/accrual run to local date. Used for financial scenario and projection tests.
 
 **Example**:
 
 ```typescript
 // fixtures/db.ts
+import { execSync } from "child_process";
+
 export const test = base.extend<DbFixtures>({
   dbBlank: async ({ request }, use) => {
-    // Test starts with blank database (no import needed)
+    // Migrations applied; no site or users. For signup/OTP and negative-path import tests.
+    await use();
+  },
+  dbSiteAndUsers: async ({ request }, use) => {
+    // Load data-only SQL seed: site and canonical users.
+    execSync(`psql ${process.env.DATABASE_URL} -f e2e/seed/baseline.sql`);
+    // Tests add their own income/expense entries as needed.
     await use();
   },
   dbSeeded: async ({ request }, use) => {
-    // Import seeded artifact
+    // Load data-only SQL seed: site and canonical users.
+    execSync(`psql ${process.env.DATABASE_URL} -f e2e/seed/baseline.sql`);
+
+    // Import financial artifact via existing server API.
     await request.post("/api/import/artifact", {
       data: { artifactName: "sample-export-2026-05-11.export" },
     });
 
-    // Advance data from reference date to local date
+    // Advance data from reference date to local date.
     await request.post("/api/renewal-and-accrual/process");
 
     await use();
@@ -499,22 +562,31 @@ e2e/.auth
 
 **Rationale**: Auth state contains sensitive cookies/tokens; should never be committed.
 
-### Pattern 6: Data Import Artifact Management
+### Pattern 6: Seed Artifacts — SQL Baseline and Financial Export
 
-**Artifact Location**: `Data/Exports/pot-{ISO8601-timestamp}.export`
+Two committed artifacts together establish the fully seeded state.
 
-**Approach**:
+**SQL seed file**
 
-- Maintain a single "golden" export at a known reference date (e.g., 2026-01-01).
-- During fixture setup, import the artifact via API.
-- Run server renewal/accrual to advance all time-based calculations to local machine date.
-- Result: Deterministic seeded state that works across leap years, future dates, etc.
+- Path: `e2e/seed/baseline.sql`
+- Content: `pg_dump --data-only` snapshot of site and canonical user rows.
+- Loaded into the Testcontainers database via `psql` after migrations, before any API calls.
+- Committed to the repository; version-controlled and human-reviewable.
+- Regenerate when canonical identities change or a breaking schema change affects covered tables.
+
+**Financial export artifact**
+
+- Path: `Data/Exports/pot-{ISO8601-timestamp}.export`
+- Content: Financial data only (no site or user records); anchored to a known reference date.
+- Imported via the existing server import API after the SQL seed file has been loaded.
+- Run server renewal/accrual after import to advance calculations to local machine date.
 
 **Why this works**:
 
-- Server does all calculations (R7: API-driven expectations).
-- No clock manipulation needed.
-- Reproducible from reference date to any local date.
+- Migrations run first; the data-only SQL file never conflicts with the schema.
+- SQL file is small, reviewable, and extensible as test requirements grow.
+- Server does all financial calculations (R7: API-driven expectations).
+- No clock manipulation needed; reproducible from reference date to any local date.
 
 ## PRD 011 Scenario Coverage Intent
 
