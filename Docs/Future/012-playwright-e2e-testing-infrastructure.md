@@ -172,8 +172,7 @@ Accrual testing guidance:
 
 Decision:
 
-- Approved: Option 1.
-- Headless is default; headed is available for debugging and demos.
+- Approved: Headless is default; headed is available for debugging and demos.
 
 Operational requirement:
 
@@ -189,12 +188,16 @@ Selected approach:
 
 - Use Testcontainers-managed disposable Postgres for isolation.
 - Do not mutate existing manual-test databases.
-- Seed using import artifact through existing server APIs.
-- Use defined start date + renewal/accrual operations for deterministic time-based datasets.
+- Execute data setup through three explicit modes using one deterministic fixture pipeline:
+  - Mode 1 (Blank): migrations only; no site, users, or financial data.
+  - Mode 2 (Site-and-users-only): migrations plus site-and-user baseline setup.
+  - Mode 3 (Fully seeded): mode 2 plus financial import and renewal/accrual.
+- Run migrations before any mode-specific setup.
+- Keep orchestration concerns here (container lifecycle, mode sequencing, teardown) and keep artifact/source details in D6, D8, and D9.
 
 Open implementation detail:
 
-- Exact command sequence for import + renewal/accrual needs to be documented during infrastructure build.
+- Exact fixture entry points, command wrappers, and teardown boundaries per mode need to be documented during infrastructure build.
 
 ### D3. Should We Use Testcontainers?
 
@@ -241,7 +244,7 @@ Selected approach:
   - server queues email,
   - worker sends email,
   - test reads OTP from sink mailbox.
-- For seeded-user login paths, OTP is not required because users are pre-created in the golden export.
+- For seeded-user login paths, OTP is not required because users are pre-created via the SQL seed baseline (`e2e/seed/baseline.sql`).
 - For signup/password-reset coverage, tests explicitly exercise OTP flows by reading the sinked email and submitting the OTP through existing endpoints/UI.
 
 Constraints:
@@ -276,7 +279,7 @@ Decision:
 
 Selected approach:
 
-- Seeded-user flows rely on pre-created users in the golden artifact and do not require OTP.
+- Seeded-user flows rely on pre-created users from the SQL seed baseline (`e2e/seed/baseline.sql`) and do not require OTP.
 - Signup/password-reset coverage reads OTP values from the local sink mailbox and submits through existing application paths.
 
 Constraint:
