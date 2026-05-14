@@ -1,8 +1,9 @@
 # POT E2E Testing Infrastructure
 
-**Status**: Level 1 (App Loads) - In Progress  
-**Last Updated**: 2026-05-11  
-**Phase**: Phase B Infrastructure Baseline
+**Status**: Phase A/B Planning - Infrastructure not yet complete  
+**Last Updated**: 2026-05-14  
+**Phase**: Phase A (Infrastructure Baseline) → Phase B (Seeded Execution Ready)
+**Readiness**: Pre-Gate A (Pending: seed data strategy, auth fixtures, database modes)
 
 This document explains the E2E testing setup, how it works, and how to troubleshoot issues.
 
@@ -22,6 +23,245 @@ npm run e2e:edge              # Run tests using Microsoft Edge channel
 npm run e2e:mobile            # Run mobile emulation (Chrome + Safari profiles)
 npm run e2e:ui                # Open Playwright UI mode
 npm run e2e:debug             # Step-through debug mode
+```
+
+**Database Modes** (PENDING: npm script setup):
+
+```bash
+npm run e2e:blank             # Blank database (no site, no users, no financial data)
+npm run e2e:seeded-users      # Site + canonical users, no financial data
+npm run e2e:fully-seeded      # Site + users + financial data (imported + renewal run)
+```
+
+---
+
+## Database Modes
+
+E2E tests use one of three database setup modes, depending on what they're testing:
+
+### Mode 1: Blank
+
+**What it is**: Migrations run, database schema created, no data.
+
+**Use for**:
+
+- Signup flow tests (create users from scratch)
+- Password reset / OTP tests (if implemented)
+- Blank database error handling tests
+- Unauthenticated feature tests
+
+**Expected state**:
+
+- `sites` table: empty (COUNT = 0)
+- `users` table: empty (COUNT = 0)
+- No auth required; tests interact with public pages
+
+### Mode 2: Site-and-Users-Only
+
+**What it is**: Migrations run, SQL seed file loaded (site + canonical users created).
+
+**Use for**:
+
+- Login validation tests
+- Auth fixture tests
+- Feature tests that create their own financial data
+- Tests that need authenticated user context but don't require historical data
+
+**Expected state**:
+
+- `sites` table: 1 row (`pot-e2e-site`)
+- `users` table: 2 rows (`e2e_admin`, `e2e_viewer`)
+- `expenses` / `income` tables: empty (COUNT = 0)
+- Auth fixture runs automatically; tests start authenticated
+
+**Canonical Users**:
+
+- **Admin**: username `e2e_admin`, role: Admin, has full mutation access
+- **Viewer**: username `e2e_viewer`, role: Viewer, has read-only access
+
+### Mode 3: Fully Seeded
+
+**What it is**: Migrations run, SQL seed file loaded, financial export artifact imported via API, renewal/accrual run to advance data to local date.
+
+**Use for**:
+
+- Projection and forecasting tests
+- Report and filter tests (requires existing financial data)
+- Multi-user collaboration scenarios
+- Dashboard and analytics tests
+- Data reconciliation tests
+
+**Expected state**:
+
+- Site and users present (same as Mode 2)
+- `expenses` / `income` tables: populated with test data
+- Projected financial values calculated and available
+- All renewal/accrual computations complete
+
+**Setup Timeline**:
+
+1. Migrations create schema
+2. SQL seed loads site/users
+3. Dev server connects to test database
+4. Import API called to load financial artifact
+5. Renewal/accrual API called to advance data to today
+6. Tests execute with full financial state ready
+
+---
+
+## Test Organization and Categories
+
+### Smoke Tests (Level 1, 2, 3)
+
+Located in `tests/smoke/`:
+
+| File                | Mode           | Purpose                              | Status               |
+| ------------------- | -------------- | ------------------------------------ | -------------------- |
+| `appLoads.test.ts`  | Blank          | Verify app renders with fresh schema | ✅ Complete          |
+| `seedUsers.test.ts` | Site-and-Users | Verify auth and dashboard display    | ⏳ PENDING (Phase B) |
+| `seedData.test.ts`  | Fully-Seeded   | Verify financial data displays       | ⏳ PENDING (Phase B) |
+
+**How to run**:
+
+```bash
+npm run e2e:smoke              # Run all smoke tests (default mode)
+npm run e2e:smoke:headed       # Run with browser visible
+```
+
+### Scenario Tests (PRD 011 - Account Filter)
+
+Located in `tests/scenarios/` (future):
+
+- Account filter persistence tests
+- Sidebar reactivity tests
+- URL query string contracts
+- Mobile/responsive tests
+
+**Status**: Blocked until Gate A passes (see Phase 8 in TODO).
+
+### Auth Tests
+
+Located in `tests/auth/` (future):
+
+- Login flow validation
+- Token refresh and expiry
+- OTP-based signup (when OTP sink integrated)
+- Permission enforcement
+
+### Integration Tests
+
+Located in `tests/integration/` (future):
+
+- Multi-step workflows combining features
+- Cross-user collaboration scenarios
+- API integration with UI correctness
+
+---
+
+## How to Add a New Test
+
+**Quick Checklist**:
+
+1. **Decide your test category**: Smoke? Scenario? Auth? Integration?
+
+2. **Decide your database mode**:
+
+   - Blank: You need empty database or you're testing signup/errors
+   - Site-and-Users: You need auth and will create your own financial data
+   - Fully-Seeded: You need realistic historical data
+
+3. **Create your test file**:
+
+   ```bash
+   touch Source/Client/pot-react/e2e/tests/{category}/{testName}.test.ts
+   ```
+
+4. **Import from fixtures** (NOT from `@playwright/test`):
+
+   ```typescript
+   import { test, expect } from '../fixtures/auth';
+   ```
+
+5. **Write your test**:
+
+   ```typescript
+   test('my feature works', async ({ page }) => {
+     // Auth fixture runs automatically; tests start authenticated if mode supports it
+     await page.goto('/dashboard');
+     await expect(page.locator('#siteName')).toContainText('POT E2E Site');
+   });
+   ```
+
+6. **Validate API responses** (not hardcoded values):
+
+   ```typescript
+   // GOOD: Derive expected values from API
+   const responsePromise = page.waitForResponse('**/api/projections');
+   await page.goto('/projections');
+   const response = await responsePromise;
+   const projections = await response.json();
+   await expect(page.locator('[data-total]')).toContainText(projections.total);
+
+   // BAD: Hardcoded expected value
+   // await expect(page.locator('[data-total]')).toContainText('$12,345.67');
+   ```
+
+7. **Test locally**:
+
+   ```bash
+   npm run e2e:headed  # Run with browser visible
+   ```
+
+8. **Commit and let CI verify**:
+   ```bash
+   git add tests/
+   git commit -m "Add test for my feature"
+   git push
+   ```
+
+### Common Patterns
+
+**Pattern 1: Read-only test (assumes auth)**
+
+```typescript
+test('can view dashboard', async ({ page }) => {
+  await page.goto('/dashboard');
+  await expect(page.locator('h1')).toContainText('Dashboard');
+});
+```
+
+**Pattern 2: Create data and verify**
+
+```typescript
+test('can create expense', async ({ page, request }) => {
+  await page.goto('/expenses/new');
+  await page.fill('[name="amount"]', '50.00');
+  await page.fill('[name="description"]', 'Lunch');
+  await page.click('button[type="submit"]');
+
+  // Verify API returned the created expense
+  const response = await request.get('/api/expenses?limit=1');
+  const expenses = await response.json();
+  await expect(expenses[0].description).toBe('Lunch');
+});
+```
+
+**Pattern 3: Long-flow test**
+
+```typescript
+test('can import and view financial data', async ({ page, request }) => {
+  // Fully-seeded mode has financial data ready
+  await page.goto('/dashboard');
+
+  // Navigate through flow
+  await page.click('[href="/projections"]');
+  await expect(page.locator('[data-projection]')).toBeVisible();
+
+  // Verify calculations
+  const response = await request.get('/api/projections');
+  const data = await response.json();
+  await expect(page.locator('[data-total]')).toContainText(data.total);
+});
 ```
 
 ---
@@ -578,6 +818,103 @@ const baseURL = `http://${serverHost}:${serverPort}`;
 
 ---
 
-**Last Updated**: 2026-05-11  
-**Author**: Implementation Phase B  
-**Status**: Living Document - Updates as we progress
+**Last Updated**: 2026-05-14  
+**Author**: E2E Infrastructure Planning & PRD 012  
+**Status**: Living Document - In Active Development (Phase 0-1)
+
+---
+
+## PENDING UPDATES (Next Iteration)
+
+Sections marked **PENDING** need to be filled in once decisions are made. These are tracked in the main TODO checklist.
+
+- **PENDING**: Database mode npm scripts (`npm run e2e:blank`, `npm run e2e:seeded-users`, `npm run e2e:fully-seeded`)
+
+  - Requires: Phase 1 environment setup and playwright.config.ts configuration
+  - Tracked in: TODO Phase 4.2.4
+
+- **PENDING**: Level 2 and Level 3 smoke tests (`seedUsers.test.ts`, `seedData.test.ts`)
+
+  - Requires: SQL seed file generation, auth fixtures, database mode orchestration
+  - Tracked in: TODO Phase 5.4
+
+- **PENDING**: Exact import/renewal API contracts
+
+  - Required before: Phase 4 implementation
+  - Tracked in: TODO "DECISION REQUIRED" section
+
+- **PENDING**: `.github/instructions/playwright-e2e.instructions.md` creation
+
+  - Requires: Phase 7 documentation lock
+  - Tracked in: TODO Phase 7.2
+
+- **PENDING**: `e2e/AUTHORING.md` creation
+  - Requires: Phase 7 documentation lock
+  - Tracked in: TODO Phase 7.3
+
+**How to identify PENDING items**: Search for "PENDING" or "⏳" in this document. Cross-reference with the TODO checklist to see what's blocking each item.
+
+---
+
+## Reference Documentation
+
+### Hierarchical Order (Read in This Order)
+
+1. **This README** (`e2e/README.md`)
+
+   - Quick start, database modes, test organization
+   - For: first-time users, quick reference
+
+2. **E2E TODO Checklist** (`Docs/Future/playwright-e2e-todo.md`)
+
+   - Phase-by-phase implementation plan
+   - Dependencies and decision points
+   - For: developers implementing infrastructure
+
+3. **PRD 012** (`Docs/Future/012-playwright-e2e-testing-infrastructure.md`)
+
+   - Design decisions (D1-D9), requirements (R1-R7), patterns
+   - For: understanding rationale and deep dive
+
+4. **Playwright Official Docs**
+
+   - Global setup/teardown: https://playwright.dev/docs/test-global-setup-teardown
+   - Fixtures: https://playwright.dev/docs/test-fixtures
+   - Authentication: https://playwright.dev/docs/auth
+   - For: Playwright-specific API reference
+
+5. **Testcontainers Node Docs**
+   - PostgreSQL module: https://node.testcontainers.org/modules/postgresql/
+   - For: Container orchestration details
+
+### POT-Specific Documentation (When Created)
+
+- `.github/instructions/playwright-e2e.instructions.md` (PENDING Phase 7)
+- `e2e/AUTHORING.md` (PENDING Phase 7)
+
+### External References
+
+- **Playwright Best Practices**: https://playwright.dev/docs/best-practices
+- **Testcontainers Best Practices**: https://testcontainers.com/guides/
+- **ASP.NET Core Configuration**: https://learn.microsoft.com/en-us/dotnet/core/configuration/
+
+---
+
+## Document Evolution
+
+This README was created as part of Phase A/B E2E infrastructure planning (May 2026). It is a living document that will be updated as:
+
+1. **Phase 1 completes**: Browser/env validation
+2. **Phase 2 completes**: Seed data strategy locked
+3. **Phase 3 completes**: Auth fixtures implemented
+4. **Phase 4 completes**: Database lifecycle tested
+5. **Phase 5 completes**: Core helpers released
+6. **Phase 6-7 complete**: Documentation finalized
+
+Each phase completion will add concrete examples and resolve PENDING items.
+
+---
+
+**Status**: Phase A/B Planning - Infrastructure not yet built  
+**Current Blocker**: Seed data strategy (Phase 2) - See TODO for resolution  
+**Next Steps**: Complete Phase 1-2 checklist items, then proceed to Phase 3
