@@ -2,7 +2,7 @@
 
 **Status:** Planning (Active Discovery)
 **Priority:** High
-**Last Updated:** 2026-05-16
+**Last Updated:** 2026-05-17
 **Feature ID:** 012
 
 ## Purpose
@@ -195,6 +195,23 @@ Additional rules:
 - Classification must hold for local parallel execution. CI `workers: 1` serialises all tests but is not a substitute for correct classification; parallelism bugs suppressed by CI serialisation will surface when worker count is increased.
 - There are no per-test isolated containers. All workers in a single run share one API process and one database instance.
 
+### R9. Test Coverage Discovery Prerequisite
+
+Before any Phase B scenario tests are written, a coverage discovery and test design exercise must be completed and its output reviewed. Writing tests ad-hoc without this exercise leads to data contention, missed isolation requirements, and structural rework.
+
+**Required outputs of the exercise:**
+
+- A full enumeration of UI operations by feature area (accounts, income, expenses, projections, users, settings, etc.), categorised as read, write, or destructive.
+- For each operation: a proposed execution-safety classification (parallel-safe, fixture-managed, or isolated-sequence) per R8 rules.
+- For each mutation or destructive operation: a data strategy decision — self-owned (test creates and owns its own data via `beforeAll`/`afterAll` API calls) or seeded (test reads from `baseline.sql` records that no other test mutates).
+- Identification of tests that depend on sequences of operations across multiple features (long-flow tests), which must be designed as a single serial block rather than independent tests.
+
+**Delivery format:**
+
+- A separate planning document (new PRD or spike). Its scope is test design only; infrastructure decisions remain in this document.
+- The planning document must be reviewed before any fixture-managed or isolated-sequence tests are added to the repository.
+- Parallel-safe smoke tests may be added before this exercise is complete, provided they qualify under R8 rules without ambiguity.
+
 ## Decisions
 
 ### D1. Test Visibility Mode (Headless vs Headed)
@@ -258,6 +275,7 @@ Constraint:
 
 - Worker-scoped auth must not hide tests that require unique user/session setup (multi-role tests use separate fixtures).
 - Each worker is isolated; parallel workers can have different authenticated users without conflict.
+- Stale storage state: closing a browser context without an explicit server-side logout leaves the server session valid. If a `.auth/{id}.json` file from a prior run is reused, the fixture must verify the stored session is still accepted by the server before relying on it; a stale or expired file must be deleted and replaced with a fresh login.
 
 ### D5. OTP Delivery Strategy For Local E2E
 
