@@ -26,9 +26,10 @@ Status legend:
 | 010 | AuthSession retention and background cleanup policy        | Proposed | Medium   | 2026-05-01   | [AuthSession Retention and Background Cleanup Policy (Draft)](010-auth-session-retention-and-cleanup-policy.md)             | Define retention windows and a background cleanup worker to bound AuthSession growth while preserving short-term security and operational investigation context.          |
 | 011 | Account filter navigation and URL state consistency        | Complete | High     | 2026-05-10   | [Account Filter Navigation and URL State Consistency PRD](011-account-filter-navigation-url-state-consistency-prd.md)       | Implemented URL-authoritative account filtering with dynamic sidebar link context, create/edit return-path preservation, and validated behavior across all ten scenarios. |
 | 012 | Playwright E2E testing infrastructure                      | Planning | High     | 2026-05-10   | [Playwright E2E Testing Infrastructure PRD](012-playwright-e2e-testing-infrastructure.md)                                   | Design comprehensive E2E test architecture with database fixtures, auth helpers, test data management, multi-user support, and CI integration patterns.                   |
+| 013 | DB readiness health check and worker startup gate          | Backlog  | Low      | 2026-05-16   | [DB Readiness Health Check and Worker Startup Gate PRD](013-db-readiness-health-check-and-worker-startup-gate.md)           | Register a DB health check on `/_health` and gate `ExpiredOtpCleanupWorker` and `BudgetReminderEmailWorker` on DB readiness before entering their execution loops.        |
 
 ## Notes
 
 - This folder is intentionally implementation-planning focused.
 - Keep one row per feature and link to a dedicated detail document when available.
-- Current date of this index update: 2026-05-10.
+- Current date of this index update: 2026-05-16.
