@@ -2,7 +2,7 @@
 
 **Status:** Planning (Active Discovery)
 **Priority:** High
-**Last Updated:** 2026-05-11
+**Last Updated:** 2026-05-16
 **Feature ID:** 012
 
 ## Purpose
@@ -166,6 +166,35 @@ Accrual testing guidance:
 - Build expected values from that intercepted payload.
 - Assert that table/card/form values in the UI match those expectations.
 
+### R8. Test Execution Safety Classification
+
+Every test must be explicitly classified as one of three execution-safety classes before it is written. The infrastructure provides one shared API process and one shared Testcontainers database per test run; classification determines whether a test is safe to run concurrently with others.
+
+**Parallel-safe**
+
+- The test calls only GET endpoints or performs UI-only interactions that do not trigger server-side state changes.
+- The test does not assert on data that a concurrently-running sibling test could also create, modify, or delete.
+- May run freely against shared infrastructure with any number of parallel workers.
+
+**Fixture-managed**
+
+- The test creates, updates, or deletes its own records.
+- Must be placed inside a `test.describe.serial()` block so steps are never interleaved with other workers.
+- Must clean up created data in `afterEach` teardown (not `afterAll`) so cleanup is guaranteed even when a step fails.
+- Sibling parallel-safe tests are unaffected because they do not query the mutation test's records.
+
+**Isolated-sequence**
+
+- The test triggers operations with global side effects: import, accrual, renewal, or any operation that changes aggregate or calculated financial state visible to all tests.
+- Must run in a dedicated Playwright invocation (separate npm script) with no other tests competing for shared infrastructure.
+- Must reset the database to a known baseline using `applyDatabaseSeedMode()` in `beforeAll` before the sequence begins.
+- Must not be included in the same Playwright invocation as parallel-safe or fixture-managed tests.
+
+Additional rules:
+
+- Classification must hold for local parallel execution. CI `workers: 1` serialises all tests but is not a substitute for correct classification; parallelism bugs suppressed by CI serialisation will surface when worker count is increased.
+- There are no per-test isolated containers. All workers in a single run share one API process and one database instance.
+
 ## Decisions
 
 ### D1. Test Visibility Mode (Headless vs Headed)
@@ -317,6 +346,35 @@ Rationale:
 Constraint:
 
 - The SQL seed file must be regenerated when canonical identities (site key, usernames, roles) change or when non-nullable columns without defaults are added to covered tables.
+
+### D10. Test Isolation Strategy
+
+Decision:
+
+- Approved: three-class classification model (parallel-safe, fixture-managed, isolated-sequence); per-test isolated containers are explicitly rejected.
+
+Selected approach:
+
+- Infrastructure provides one shared API process and one Testcontainers database per run. Isolation is achieved through classification and execution discipline, not container proliferation.
+- Parallel-safe tests run freely against shared infrastructure with full worker parallelism.
+- Fixture-managed tests serialise within their suite via `test.describe.serial()` and restore baseline state in `afterEach` teardown.
+- Isolated-sequence tests run in a dedicated Playwright invocation (separate npm script). The database is reset to a known mode via `applyDatabaseSeedMode()` (from `e2e/helpers/databaseSeed.ts`) in `beforeAll` before the sequence begins.
+
+Rationale:
+
+- Shared infrastructure with classification discipline is simpler to maintain and faster to execute than per-test containers.
+- The three classes map cleanly onto test categories: smoke and read-only navigation tests → parallel-safe; CRUD and feature-level mutation tests → fixture-managed; import, accrual, and projection flow tests → isolated-sequence.
+- `applyDatabaseSeedMode()` provides the same state guarantees as a fresh container without the startup overhead.
+
+Constraints:
+
+- Any test that triggers import, accrual, or renewal must be placed in an isolated-sequence run; running such a test alongside parallel-safe or fixture-managed tests in the same invocation is not permitted.
+- Per-test isolated containers are not approved for any phase of this infrastructure.
+
+Technical reference:
+
+- Worker configuration, code patterns, and the test-class decision guide are in `Source/Client/pot-react/e2e/README.md` under “Test Isolation and Concurrency Model”.
+- Classification rules for agents are in `.github/instructions/playwright-e2e.instructions.md` under “Test Isolation Classification”.
 
 ## Proposed Architecture (Draft, Aligned to Approved Decisions)
 
