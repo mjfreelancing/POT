@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../fixtures/auth';
 
 test('app shell loads at root route', async ({ page }) => {
   await page.goto('/');

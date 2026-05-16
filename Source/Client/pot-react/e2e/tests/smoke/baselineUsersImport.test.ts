@@ -1,4 +1,6 @@
-import { expect, test, type Browser } from '@playwright/test';
+import type { Browser } from '@playwright/test';
+
+import { expect, test } from '../../fixtures/auth';
 
 import { listExistingUsernames } from '../../helpers/databaseSeed';
 

@@ -4,7 +4,7 @@ import {
   StartedPostgreSqlContainer,
 } from '@testcontainers/postgresql';
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -141,6 +141,11 @@ export default async (config: FullConfig) => {
   console.log('🐘 Starting Testcontainers Postgres...');
 
   try {
+    // Clear auth state files from any previous run to prevent stale sessions.
+    const authDirectory = resolve(currentDirectory, 'e2e/.auth');
+    rmSync(authDirectory, { recursive: true, force: true });
+    console.log('🗑️  Cleared stale auth state from previous run');
+
     configureDotNetEnvironment();
 
     // Create and start a PostgreSQL container bound to fixed host port 55432.
