@@ -44,6 +44,15 @@ applyTo: "Source/Client/pot-react/e2e/**"
 - Keep tests independent from prior test data unless a fixture explicitly defines shared setup.
 - Prefer deterministic fixture setup over in-test ad hoc data mutation.
 
+### Test Isolation Classification
+
+- Classify every test as one of **parallel-safe**, **fixture-managed**, or **isolated-sequence** before writing it.
+- A test is **parallel-safe** only when it never calls a state-changing endpoint and never asserts on shared mutable state. No special configuration required. Exception: calls that produce only transient server-side state (such as an authenticated session) with no observable effect on other tests are treated as parallel-safe, provided any browser context created solely for that call is closed immediately after the assertion.
+- A test is **fixture-managed** when it creates or deletes its own records. Wrap in `test.describe.serial()`; clean up in `afterEach` (not `afterAll`) so cleanup runs even on failure.
+- A test is **isolated-sequence** when it triggers import, accrual, renewal, or any operation with aggregate or global side effects. Run it via a dedicated npm script with `workers: 1` and call `applyDatabaseSeedMode()` (from `e2e/helpers/databaseSeed.ts`) in `beforeAll`.
+- CI `workers: 1` does not make a test parallel-safe. Classify for local parallel execution; CI serialisation is a safety net, not the isolation mechanism.
+- There are no per-test isolated containers. All workers in a run share one API process (port `5242`) and one Testcontainers database (port `55432`).
+
 ### Browser Tooling Interactions
 
 - For browser-driven exploration with `mcp_microsoft_pla_browser_click`:
@@ -82,4 +91,5 @@ applyTo: "Source/Client/pot-react/e2e/**"
     - If a click does not produce expected state change, check dialog presence and network requests before retrying.
 
   - POT: Keep line reporter for non-interactive agent runs (`npm run e2e` currently uses `--reporter=line` in `package.json`).
+  - POT: The `/api/auth/login` endpoint creates a transient session only; smoke tests that call it and immediately close the browser context qualify for the parallel-safe transient-session exception.
   - POT: Current Playwright config is in `Source/Client/pot-react/playwright.config.ts` with `testDir: './e2e'`; keep new tests under `Source/Client/pot-react/e2e`.
