@@ -20,7 +20,8 @@ internal static class RateLimiterPolicy
     // - Authenticated users get generous limits (they're trusted, paying customers)
     // - Anonymous users get strict limits (potential attackers, scrapers, bots)
     // - Limits designed for typical SPA usage patterns (burst on page load, then occasional requests)
-    public static RateLimitPartition<string> CreateChainedPolicy(HttpContext httpContext)
+    public static RateLimitPartition<string> CreateChainedPolicy(HttpContext httpContext, int anonymousPermitLimit,
+        TimeSpan anonymousWindow, int authenticatedPermitLimit, TimeSpan authenticatedWindow)
     {
         var subject = httpContext.User.FindFirstValue(JwtRegisteredClaimNames.Sub);
         var isAuthenticated = subject.IsNotNullOrEmpty();
@@ -50,10 +51,10 @@ internal static class RateLimiterPolicy
             // - Aligns with typical user interaction patterns
             return RateLimitPartition.GetSlidingWindowLimiter(partitionKey, _ => new SlidingWindowRateLimiterOptions
             {
-                PermitLimit = 50,                       // 50 requests per window
-                Window = TimeSpan.FromSeconds(30),      // 30 second window
-                SegmentsPerWindow = 10,                 // 10 segments = 3 sec each
-                QueueLimit = 0,                         // No queueing - fail fast
+                PermitLimit = authenticatedPermitLimit,
+                Window = authenticatedWindow,
+                SegmentsPerWindow = RateLimiterDefaults.AuthenticatedSegmentsPerWindow,
+                QueueLimit = RateLimiterDefaults.NoQueueLimit,      // No queueing - fail fast
             });
         }
         else
@@ -78,9 +79,9 @@ internal static class RateLimiterPolicy
             // - Window resets before frontend timeout (10s) expires
             return RateLimitPartition.GetFixedWindowLimiter(partitionKey, _ => new FixedWindowRateLimiterOptions
             {
-                PermitLimit = 15,                       // 15 requests per window
-                Window = TimeSpan.FromSeconds(10),      // 10 second window
-                QueueLimit = 0,                         // No queueing - fail fast
+                PermitLimit = anonymousPermitLimit,
+                Window = anonymousWindow,
+                QueueLimit = RateLimiterDefaults.NoQueueLimit,      // No queueing - fail fast
             });
         }
     }

@@ -146,8 +146,9 @@ internal sealed class AuthService : IAuthService
             }
 
             var userSpecification = CreateValidUserSpecification(_passwordHasher, password);
+            var credentialsValid = userSpecification.IsSatisfiedBy(user);
 
-            if (!userSpecification.IsSatisfiedBy(user))
+            if (!credentialsValid)
             {
                 return CreateAuthError();
             }
@@ -167,6 +168,7 @@ internal sealed class AuthService : IAuthService
 
             // 2) Issue a new access token + refresh token pair for this login.
             var authTokens = CreateUserAuthTokens(user);
+
             var nowUtc = _timeProvider.GetUtcDateTimeNow();
 
             // 3) Persist a dedicated AuthSession for this login so refresh lifecycle is per-session.

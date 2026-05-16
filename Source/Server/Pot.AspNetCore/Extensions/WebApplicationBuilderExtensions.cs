@@ -6,7 +6,6 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Pot.App.Concerns.Validation;
-using Pot.App.Errors;
 using Pot.App.Extensions;
 using Pot.AspNetCore.Concerns.Auth;
 using Pot.AspNetCore.Concerns.Auth.Configuration;
@@ -17,7 +16,7 @@ using Pot.AspNetCore.Concerns.Email.Configuration;
 using Pot.AspNetCore.Concerns.ExceptionHandlers;
 using Pot.AspNetCore.Concerns.Logging;
 using Pot.AspNetCore.Concerns.Middleware;
-using Pot.AspNetCore.Concerns.RateLimiting;
+using Pot.AspNetCore.Concerns.RateLimiting.Configuration;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Features.Auth.Extensions;
 using Pot.Data;
@@ -28,8 +27,6 @@ using Pot.EmailSender.Extensions;
 using Pot.Shared.DependencyInjection;
 using Pot.Shared.Enumerations;
 using Pot.Shared.Extensions;
-using System.Threading.RateLimiting;
-
 namespace Pot.AspNetCore.Extensions;
 
 internal static class WebApplicationBuilderExtensions
@@ -99,24 +96,30 @@ internal static class WebApplicationBuilderExtensions
 
     public static WebApplicationBuilder AddPotRateLimiting(this WebApplicationBuilder builder)
     {
-        builder.Services.AddRateLimiter(limiterOptions =>
-        {
-            limiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+        // WARNING:
+        //
+        // RateLimiting configuration keys:
+        //  - RateLimiting:Anonymous:PermitLimit
+        //  - RateLimiting:Anonymous:WindowSeconds
+        //  - RateLimiting:Authenticated:PermitLimit
+        //  - RateLimiting:Authenticated:WindowSeconds
+        //
+        // must NOT be added to any configuration file (appsettings.json, appsettings.*.json, environment-specific overrides, etc.).
+        // These are exclusively for E2E test runs, injected as command-line arguments by the Playwright webServer configuration.
+        // The hardcoded defaults in RateLimiterDefaults are the production values and are the source of truth for production behaviour.
+        builder.Services
+            // Binds configuration from the "RateLimiting" section onto a RateLimitingConfiguration instance.
+            // These options will only be present during E2E tests to allow for more aggressive rate limiting,
+            // so that the rate limiting behaviour can be reliably tested without needing to wait for long windows.
+            .ConfigureOptions<RateLimitingConfigurationSetup>()
 
-            limiterOptions.OnRejected = async (context, cancellationToken) =>
-            {
-                if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
-                {
-                    context.HttpContext.Response.Headers.RetryAfter = $"{retryAfter.TotalSeconds}";
-                }
+            // Allow for injection of RateLimitingConfiguration instead of IOptions<RateLimitingConfiguration>
+            .AddSingletonFromOptions<RateLimitingConfiguration>()
 
-                var errorDetail = ApiDetailErrorFactory.CreateTooManyRequests(retryAfter.TotalSeconds);
+            // Sets up rate limiter options - configures the rejection handler and chained policy
+            .ConfigureOptions<RateLimiterOptionsSetup>()
 
-                await context.HttpContext.Response.WriteAsJsonAsync(errorDetail.ToProblemDetails(), cancellationToken);
-            };
-
-            limiterOptions.AddPolicy(RateLimiterPolicy.Chained, RateLimiterPolicy.CreateChainedPolicy);
-        });
+            .AddRateLimiter();
 
         return builder;
     }
