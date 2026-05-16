@@ -212,6 +212,8 @@ Before any Phase B scenario tests are written, a coverage discovery and test des
 - The planning document must be reviewed before any fixture-managed or isolated-sequence tests are added to the repository.
 - Parallel-safe smoke tests may be added before this exercise is complete, provided they qualify under R8 rules without ambiguity.
 
+**Output:** `014-e2e-test-coverage-discovery.md` — coverage map produced via live browser exploration. Covers all routes, UI operations, test classification, locator reference, role differences, mobile behaviour, and deferred items.
+
 ## Decisions
 
 ### D1. Test Visibility Mode (Headless vs Headed)
