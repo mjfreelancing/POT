@@ -36,6 +36,7 @@ applyTo: "Source/Client/pot-react/e2e/**"
 - Use descriptive test titles that read as behavior statements.
 - Keep each test focused on one user journey outcome.
 - Add comments only for non-obvious setup or complex assertions.
+- Place all `test(...)` and `test.describe(...)` blocks before any private helper functions in the file. Helpers go at the bottom so tests are visible without scrolling.
 
 ### Stability and Determinism
 
