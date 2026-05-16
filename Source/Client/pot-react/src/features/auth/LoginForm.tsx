@@ -180,7 +180,11 @@ function LoginForm({
                     tabIndex={2}
                   />
                 </div>
-                {error && <div role="alert" className="text-red-600 text-sm">{error}</div>}
+                {error && (
+                  <div role="alert" className="text-red-600 text-sm">
+                    {error}
+                  </div>
+                )}
                 <div className="flex flex-col gap-3">
                   <div aria-live="polite" className="sr-only">
                     {loadingLiveText}
