@@ -27,10 +27,11 @@ export default defineConfig({
       stderr: 'pipe',
     },
     {
-      command: 'npm run dev -- --host 127.0.0.1 --strictPort',
+      command:
+        'npm run build && npm run preview -- --host 127.0.0.1 --strictPort',
       port: 5175,
       reuseExistingServer: false,
-      timeout: 120000,
+      timeout: 180000,
     },
   ],
   projects: [

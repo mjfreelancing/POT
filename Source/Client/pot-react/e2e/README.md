@@ -1,7 +1,7 @@
 # POT E2E Testing Infrastructure
 
 **Status**: Phase A/B Planning - Infrastructure not yet complete  
-**Last Updated**: 2026-05-14  
+**Last Updated**: 2026-05-16  
 **Phase**: Phase A (Infrastructure Baseline) → Phase B (Seeded Execution Ready)
 **Readiness**: Pre-Gate A (Pending: seed data strategy, auth fixtures, database modes)
 
@@ -14,15 +14,22 @@ This document explains the E2E testing setup, how it works, and how to troublesh
 ### Using npm Scripts (From `Source/Client/pot-react`)
 
 ```bash
-npm run e2e                    # Run all tests (headless, default)
-npm run e2e:all                # Run the full browser/device matrix
-npm run e2e:headed            # Run tests with browser visible (debugging)
-npm run e2e:smoke             # Run smoke tests only
-npm run e2e:smoke:headed      # Run smoke tests with browser visible
-npm run e2e:edge              # Run tests using Microsoft Edge channel
-npm run e2e:mobile            # Run mobile emulation (Chrome + Safari profiles)
-npm run e2e:ui                # Open Playwright UI mode
-npm run e2e:debug             # Step-through debug mode
+npm run e2e                    # Alias of e2e:dev (headless default)
+npm run e2e:all                # Alias of e2e:all:dev (full matrix default)
+npm run e2e:dev                # Run all tests against dev-mode UI server
+npm run e2e:all:dev            # Run full browser/device matrix in dev mode
+npm run e2e:prodlike           # Run all tests against production-like UI build + preview
+npm run e2e:all:prodlike       # Run full browser/device matrix in production-like mode
+npm run e2e:headed             # Run tests with browser visible (debugging)
+npm run e2e:smoke              # Run smoke tests only
+npm run e2e:smoke:headed       # Run smoke tests with browser visible
+npm run e2e:chromium           # Run tests using Chromium only
+npm run e2e:edge               # Run tests using Microsoft Edge channel
+npm run e2e:mobile             # Run mobile emulation (Chrome + Safari profiles)
+npm run e2e:ui                 # Open Playwright UI mode
+npm run e2e:debug              # Step-through debug mode
+npm run e2e:report             # Open the last HTML test report
+npm run e2e:install            # Install required Playwright browsers (chromium, webkit)
 ```
 
 **Database Modes** (PENDING: npm script setup):
@@ -109,17 +116,169 @@ E2E tests use one of three database setup modes, depending on what they're testi
 
 ---
 
+## Test Isolation and Concurrency Model
+
+Understanding this model is essential before writing any new test. A single E2E run uses
+exactly **one API process** and **one Testcontainers database** — both shared across all
+Playwright workers. Any test that writes to the database changes state that every other
+concurrently-running test can observe.
+
+### Infrastructure Constraints
+
+| Resource      | Value                                 | Shared by                                          |
+| ------------- | ------------------------------------- | -------------------------------------------------- |
+| API process   | `http://127.0.0.1:5242`               | All workers                                        |
+| Database      | Testcontainers Postgres, port `55432` | All workers                                        |
+| Baseline seed | `e2e/seed/baseline.sql` (Mode 2)      | Loaded once in `globalSetup`, before any test runs |
+
+There are **no per-test isolated containers**. Tests achieve isolation through serialisation
+and fixture teardown, not separate infrastructure.
+
+### Worker Configuration
+
+| Setting         | Local              | CI     |
+| --------------- | ------------------ | ------ |
+| `fullyParallel` | `true`             | `true` |
+| `workers`       | auto (½ CPU count) | `1`    |
+| `retries`       | `0`                | `2`    |
+
+With `fullyParallel: true` and multiple local workers, tests in **different files** and
+**within the same file** can run simultaneously. CI forces `workers: 1`, serialising
+everything — which hides parallelism bugs locally. Always classify tests for parallel
+safety; never rely on CI serialisation to cover a classification mistake.
+
+### Test Safety Classification
+
+Every test must be one of three classes before it is written:
+
+| Class                 | DB Writes?                                                                                                 | Requirement                                                                                                           |
+| --------------------- | ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **Parallel-safe**     | No (GET-only or UI-only)                                                                                   | Runs freely with all workers in parallel                                                                              |
+| **Fixture-managed**   | Yes — creates / updates / deletes its own records only                                                     | `test.describe.serial()` block; `afterEach` teardown cleans up every run, including on failure                        |
+| **Isolated sequence** | Yes — triggers import, accrual, renewal, or any operation that changes aggregate / calculated global state | Dedicated npm script or separate Playwright project; `workers: 1`; `applyDatabaseSeedMode()` resets DB in `beforeAll` |
+
+### Parallel-Safe Tests
+
+Parallel-safe tests only read data. They are safe to run concurrently against the shared
+infrastructure and make up the majority of tests.
+
+All of the following must be true:
+
+- Only calls GET endpoints, or interacts with UI without triggering server-side state changes.
+- Asserts against seed data or data created within the same test — never against data that
+  a concurrent sibling test could also create or delete.
+- Does not assert the absence of records that a sibling test may create.
+
+Smoke tests and read-only view, filter, and navigation tests fall into this class.
+
+### Fixture-Managed Tests (Mutation with Cleanup)
+
+Tests that create, update, or delete their own records must:
+
+1. Use `test.describe.serial()` so steps within the suite are never interleaved with other workers.
+2. Clean up in `afterEach` — not `afterAll` — so cleanup runs even when a step fails.
+
+```typescript
+import { test, expect } from '../fixtures/auth';
+
+test.describe.serial('expense CRUD', () => {
+  let createdExpenseId: string;
+
+  test.afterEach(async ({ request }) => {
+    if (createdExpenseId) {
+      await request.delete(`/api/expenses/${createdExpenseId}`);
+      createdExpenseId = '';
+    }
+  });
+
+  test('creates an expense', async ({ page, request }) => {
+    // ... create the expense, capture the returned ID into createdExpenseId
+  });
+
+  test('edits the expense', async ({ page }) => {
+    // ... uses createdExpenseId set by the previous step
+  });
+});
+```
+
+Parallel-safe tests running concurrently are unaffected because they do not query the
+created records. The teardown guarantees the baseline is restored regardless of pass/fail.
+
+### Isolated Sequence Tests (Long-Running / Global State)
+
+Tests that trigger **import**, **accrual**, **renewal**, or any operation that modifies
+aggregate financial state (projection totals, accrual history, renewal state) cannot share
+infrastructure with any other test. These operations:
+
+- Take seconds to minutes to complete.
+- Produce side effects immediately visible to all workers.
+- Require a known starting state that a concurrent test could invalidate.
+
+"Their own api/db" means a **dedicated test run** — a separate Playwright invocation that
+uses the shared infrastructure exclusively, with no other tests competing for it.
+
+Strategy:
+
+1. Place them in `tests/sequences/`.
+2. Run via a dedicated npm script (e.g. `e2e:sequences`) with `--project=chromium` and a
+   serialised worker model.
+3. Call `applyDatabaseSeedMode()` (from `e2e/helpers/databaseSeed.ts`) in `beforeAll` to
+   reset the database to the required mode before the sequence begins.
+4. Never run sequence tests in the same Playwright invocation as parallel-safe tests.
+
+```typescript
+import { test } from '@playwright/test';
+import { applyDatabaseSeedMode } from '../helpers/databaseSeed';
+
+test.describe.serial('import and projection flow', () => {
+  test.beforeAll(async () => {
+    await applyDatabaseSeedMode('seeded-users');
+  });
+
+  test('imports financial data', async ({ page }) => {
+    /* ... */
+  });
+  test('runs accrual', async ({ page }) => {
+    /* ... */
+  });
+  test('verifies projection totals', async ({ page }) => {
+    /* ... */
+  });
+});
+```
+
+### Decision Guide for New Tests
+
+Ask in order:
+
+1. **Does this test call any POST, PUT, PATCH, or DELETE endpoint, or trigger any action
+   that writes to the database?**
+
+   > **Exception**: Authentication calls (e.g. POST `/api/auth/login`) that create a
+   > transient session with no effect on data other tests observe are treated as
+   > parallel-safe provided the browser context is closed immediately after the assertion.
+
+   - No (or login-only POST with immediate context teardown) → **Parallel-safe**
+   - Yes → go to 2
+
+2. **Does this test call import, accrual, renewal, or any operation that changes aggregate
+   or calculated global data (projections, totals, accrual state)?**
+   - Yes → **Isolated sequence** (dedicated npm script, `workers: 1`, `applyDatabaseSeedMode()` in `beforeAll`)
+   - No → **Fixture-managed** (create own records, delete in `afterEach` teardown)
+
+---
+
 ## Test Organization and Categories
 
 ### Smoke Tests (Level 1, 2, 3)
 
 Located in `tests/smoke/`:
 
-| File                | Mode           | Purpose                              | Status               |
-| ------------------- | -------------- | ------------------------------------ | -------------------- |
-| `appLoads.test.ts`  | Blank          | Verify app renders with fresh schema | ✅ Complete          |
-| `seedUsers.test.ts` | Site-and-Users | Verify auth and dashboard display    | ⏳ PENDING (Phase B) |
-| `seedData.test.ts`  | Fully-Seeded   | Verify financial data displays       | ⏳ PENDING (Phase B) |
+| File                          | Mode           | Purpose                                  | Status               |
+| ----------------------------- | -------------- | ---------------------------------------- | -------------------- |
+| `appSmoke.test.ts`            | Blank          | Verify app renders with fresh schema     | ✅ Complete          |
+| `baselineUsersImport.test.ts` | Site-and-Users | Verify seeded users exist and can log in | ✅ Complete          |
+| `seedData.test.ts`            | Fully-Seeded   | Verify financial data displays           | ⏳ PENDING (Phase B) |
 
 **How to run**:
 
@@ -329,61 +488,70 @@ E2E Tests (interact with app)
 ### Phase 1: Playwright Initialization
 
 ```
-1. npm run e2e
-2. Playwright reads playwright.config.ts
+1. npm run e2e (alias of npm run e2e:dev)
+2. Playwright reads playwright.config.ts (dev mode)
+   or playwright.prod.config.ts (production-like mode)
 3. Finds globalSetup: './playwright.globalSetup.ts'
 4. Playwright knows to run globalSetup FIRST
 ```
 
-### Phase 2: Global Setup (Container Startup)
+### Phase 2: API + UI Startup
 
 ```
-5. playwright.globalSetup.ts executes
-6. Creates PostgreSqlContainer("postgres:16")
-7. Starts container with:
-   - Database: pot_e2e
-   - Username: test_user
-   - Password: test_pass
-8. Gets connection URI: postgresql://test_user:test_pass@localhost:RANDOM_PORT/pot_e2e
-9. Parses URI and sets individual environment variables:
-   - DATABASE__HOST, DATABASE__PORT, DATABASE__NAME
-   - DATABASE__USERNAME, DATABASE__PASSWORD, DATABASE__SSLMODE
-10. Forces .NET host environment to Production:
-   - DOTNET_ENVIRONMENT=Production
-   - ASPNETCORE_ENVIRONMENT=Production
-11. Runs Pot.Data.Migrations with `dotnet run --no-launch-profile`
+5. Playwright reads webServer config from the selected Playwright config
+6. Starts dedicated API process on http://127.0.0.1:5242
+7. API reads DB, JWT, CORS, and rate-limiting config from CLI args
+   (hardcoded in playwright.config.ts to fixed port 55432)
+8. Starts UI process on http://127.0.0.1:5175
+9. In dev mode: npm run dev -- --host 127.0.0.1 --strictPort
+10. In production-like mode: npm run build && npm run preview -- --host 127.0.0.1 --strictPort
+```
+
+### Phase 3: Global Setup (Container Startup)
+
+```
+11. playwright.globalSetup.ts executes
+12. Creates PostgreSqlContainer("postgres:16")
+13. Starts container with fixed host port 55432:
+    - Database: pot_e2e
+    - Username: test_user
+    - Password: test_pass
+14. Gets connection URI: postgresql://test_user:test_pass@localhost:55432/pot_e2e
+15. Parses URI and sets environment variables for child processes (migration runner):
+    - DATABASE__HOST, DATABASE__PORT, DATABASE__NAME
+    - DATABASE__USERNAME, DATABASE__PASSWORD, DATABASE__SSLMODE
+16. Forces .NET host environment to Production (for migration runner):
+    - DOTNET_ENVIRONMENT=Production
+    - ASPNETCORE_ENVIRONMENT=Production
+17. Runs Pot.Data.Migrations with `dotnet run --no-launch-profile`
     against the Testcontainers database
-12. Returns control to Playwright
+18. Runs baseline seed from e2e/seed/baseline.sql
+19. Returns control to Playwright
 ```
 
-### Phase 3: Dev Server Startup
-
-```
-13. Playwright reads webServer config from playwright.config.ts
-14. Starts: npm run dev (your Vite dev server)
-15. Dev server reads DATABASE__* environment variables (set by globalSetup)
-16. ASP.NET Core configuration maps DATABASE__HOST → Database:Host, etc.
-17. Backend connects to the migrated Testcontainers Postgres instance
-18. Dev server listens on http://127.0.0.1:5175
-```
+> **Note**: webServers start before globalSetup in Playwright's execution model. The API
+> cannot use env vars set in globalSetup because it is already running by then. All API
+> config (DB, JWT, CORS, rate-limiting) is passed as CLI args in `playwright.config.ts`.
+> The env vars set in globalSetup are only consumed by child processes it spawns
+> (migration runner).
 
 ### Phase 4: Tests Run
 
 ```
-19. Playwright spawns browser
-20. Tests execute (e.g., appSmoke.test.ts)
-21. Tests navigate to http://127.0.0.1:5175 (hits dev server)
-22. Dev server queries test database
-23. App renders and responds to test interactions
+21. Playwright spawns browser
+22. Tests execute (e.g., appSmoke.test.ts)
+23. Tests navigate to http://127.0.0.1:5175 (hits UI server)
+24. UI proxies /api requests to dedicated API at http://127.0.0.1:5242
+25. App renders and responds to test interactions
 ```
 
 ### Phase 5: Cleanup
 
 ```
-24. Tests complete
-25. playwright.globalTeardown runs
-26. Container stops (Testcontainers auto-cleanup)
-27. Temporary database is discarded
+26. Tests complete
+27. playwright.globalTeardown runs
+28. Container stops (Testcontainers auto-cleanup)
+29. Temporary database is discarded
 ```
 
 ---
@@ -401,18 +569,57 @@ globalSetup: './playwright.globalSetup.ts',
 - Uses a string path (Playwright handles resolution in ESM context)
 
 ```typescript
-webServer: {
-  command: 'npm run dev',
-  port: 5175,
-  reuseExistingServer: !process.env.CI,
-  timeout: 120000,
-}
+webServer: [
+  {
+    command:
+      'dotnet run --no-launch-profile --project Pot.AspNetCore/Pot.AspNetCore.csproj -- --urls http://127.0.0.1:5242 --Cors:AllowedOrigins=http://127.0.0.1:5175,http://localhost:5175 --Jwt:Issuer=pot-e2e --Jwt:Audience=pot-e2e-client --Jwt:SecretKey=F4B58D0C1Z2B3E4D5F6A7B8C9D0E1F2A3B4C536E7F8A194A0EF29B0C1D2E3F4A5B6C7D8E9F0A1B2CWD4E5F6A7B8C9D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B6C --Database:Host=localhost --Database:Port=55432 --Database:Name=pot_e2e --Database:Username=test_user --Database:Password=test_pass --Database:SSLMode=disable --RateLimiting:Anonymous:PermitLimit=200 --RateLimiting:Anonymous:WindowSeconds=10 --RateLimiting:Authenticated:PermitLimit=500 --RateLimiting:Authenticated:WindowSeconds=30',
+    cwd: '../../Server',
+    port: 5242,
+    reuseExistingServer: false,
+    timeout: 120000,
+    stdout: 'pipe',
+    stderr: 'pipe',
+  },
+  {
+    command: 'npm run dev -- --host 127.0.0.1 --strictPort',
+    port: 5175,
+    reuseExistingServer: false,
+    timeout: 120000,
+  },
+];
 ```
 
-- `command`: Starts the dev server
-- `port`: Dev server must listen on 5175
-- `reuseExistingServer`: In local mode, reuse if already running (no restart)
-- `timeout`: Wait up to 2 minutes for dev server to start
+- First entry starts dedicated API for tests
+- Second entry starts UI server for tests
+- `reuseExistingServer: false` ensures tests do not attach to unrelated running services
+- `timeout`: Wait up to 2 minutes for each server startup
+
+### playwright.prod.config.ts
+
+```typescript
+webServer: [
+  {
+    command:
+      'dotnet run --no-launch-profile --project Pot.AspNetCore/Pot.AspNetCore.csproj -- --urls http://127.0.0.1:5242 --Cors:AllowedOrigins=http://127.0.0.1:5175,http://localhost:5175 --Jwt:Issuer=pot-e2e --Jwt:Audience=pot-e2e-client --Jwt:SecretKey=F4B58D0C1Z2B3E4D5F6A7B8C9D0E1F2A3B4C536E7F8A194A0EF29B0C1D2E3F4A5B6C7D8E9F0A1B2CWD4E5F6A7B8C9D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B6C --Database:Host=localhost --Database:Port=55432 --Database:Name=pot_e2e --Database:Username=test_user --Database:Password=test_pass --Database:SSLMode=disable --RateLimiting:Anonymous:PermitLimit=200 --RateLimiting:Anonymous:WindowSeconds=10 --RateLimiting:Authenticated:PermitLimit=500 --RateLimiting:Authenticated:WindowSeconds=30',
+    cwd: '../../Server',
+    port: 5242,
+    reuseExistingServer: false,
+    timeout: 120000,
+    stdout: 'pipe',
+    stderr: 'pipe',
+  },
+  {
+    command:
+      'npm run build && npm run preview -- --host 127.0.0.1 --strictPort',
+    port: 5175,
+    reuseExistingServer: false,
+    timeout: 180000,
+  },
+];
+```
+
+- Uses production-like UI artifact serving for higher confidence checks
+- Recommended for CI/nightly runs alongside faster dev-mode runs
 
 ```typescript
 use: {
@@ -439,7 +646,7 @@ process.env.DATABASE__PORT = url.port;
 process.env.DATABASE__NAME = url.pathname.substring(1);
 process.env.DATABASE__USERNAME = url.username;
 process.env.DATABASE__PASSWORD = url.password;
-process.env.DATABASE__SSLMODE = 'Disable';
+process.env.DATABASE__SSLMODE = 'disable';
 
 process.env.DOTNET_ENVIRONMENT = 'Production';
 process.env.ASPNETCORE_ENVIRONMENT = 'Production';
@@ -475,36 +682,177 @@ await runDatabaseMigrations();
 
 **How It Works:**
 
+The API and migration runner each get DB config through separate channels, both targeting fixed port 55432:
+
 ```
-Testcontainers Postgres
-   ↓ (provides: postgresql://test_user:test_pass@localhost:XXXXX/pot_e2e)
-playwright.globalSetup.ts (parses URI)
-   ↓ (sets: DATABASE__HOST, DATABASE__PORT, etc.)
-Environment Variables
-   ↓ (read by .NET Core configuration: Database:Host, Database:Port, etc.)
-ASP.NET Core DatabaseConfiguration
-   ↓ (builds connection string)
-Backend Server (connects to test DB)
-   ↓
-Dev Server on http://127.0.0.1:5175
+playwright.config.ts (CLI args: --Database:Port=55432, --Jwt:Issuer=pot-e2e, etc.)
+   ↓ (passed when webServer starts — BEFORE globalSetup runs)
+Backend API (http://127.0.0.1:5242)
+   ↓ (reads CLI args directly as ASP.NET Core configuration)
+Connects to Testcontainers Postgres at localhost:55432
+
+playwright.globalSetup.ts (parses container URI → port 55432)
+   ↓ (sets: DATABASE__HOST, DATABASE__PORT=55432, DATABASE__NAME, etc.)
+Migration runner (Pot.Data.Migrations child process)
+   ↓ (reads DATABASE__* env vars; .NET Core maps them to Database:* keys)
+Connects to Testcontainers Postgres at localhost:55432
 ```
 
 ### Why This Works
 
 - ✅ No changes to backend code needed
-- ✅ Backend's existing configuration reads the environment variables
-- ✅ .NET Core automatically maps `DATABASE__HOST` → `Database:Host` (double underscore becomes colon)
-- ✅ The backend validates all required fields are present
+- ✅ Fixed port 55432 ensures both the API and migration runner target the same container
+- ✅ API reads config from CLI args (`--Database:Host`, `--Database:Port`, etc.) — no env-var mapping needed
+- ✅ Migration runner reads `DATABASE__*` env vars; .NET Core maps them to `Database:*` keys automatically
 - ✅ Connection string is built by the backend using the same logic as production
 
 ### Current State
 
-✅ Testcontainers Postgres starts  
-✅ `DATABASE__*` environment variables are set  
+✅ Testcontainers Postgres starts on fixed port 55432  
+✅ API configured via CLI args in `playwright.config.ts` and connects  
+✅ `DATABASE__*` environment variables set for migration runner  
 ✅ `Pot.Data.Migrations` runs against the test database  
-✅ Database schema is created before server startup  
-✅ Individual environment variables set  
-✅ Dev server reads them and connects
+✅ Baseline seed (`e2e/seed/baseline.sql`) loaded before tests run
+
+---
+
+## Seed Data Management
+
+### Overview
+
+E2E tests use seed data to create reproducible baseline state. The seed data file `seed/baseline.sql` contains the database state for the "Site-and-Users-Only" and "Fully-Seeded" modes.
+
+**Current Seed State**:
+
+- **File**: `e2e/seed/baseline.sql` (2,089 bytes)
+- **Tables**: `Site`, `User`, `UserRole`
+- **Data**: 1 test site (`pot-e2e-site`), 2 test users (`e2e_admin`, `e2e_viewer`)
+- **Generated**: 2026-05-16
+
+### When to Regenerate Seed Data
+
+Regenerate `baseline.sql` when:
+
+1. **Canonical identities change**: usernames, site key, role assignments
+2. **Schema changes**: New non-nullable columns added to `Site`, `User`, or `UserRole` tables without defaults
+3. **Role structure changes**: Admin/Viewer role definitions or permissions change
+
+Do **NOT** regenerate just because:
+
+- Financial data changes (financial artifacts are separate)
+- Test data is stale (use fully-seeded mode with fresh artifact import)
+
+### Regenerating Seed Data
+
+**Prerequisites**:
+
+- **PowerShell 7 or later (`pwsh`)**
+  - This script uses PowerShell 7-only syntax features (try/catch with argument arrays, etc.)
+  - If you have pwsh installed but your terminal is using the old Windows PowerShell, run `pwsh` first to switch shells
+
+**Quick Path (Using Script)**:
+
+Instead of running manual commands, use the provided PowerShell 7 script from `Source/Client/pot-react/e2e/scripts/`:
+
+```bash
+# If you're in Windows PowerShell, launch pwsh first
+pwsh ./test-e2e-seed-export.ps1
+
+# Or, if you're already in a pwsh shell
+./test-e2e-seed-export.ps1
+```
+
+The script handles all steps below, including validation and error checking.
+
+---
+
+**Manual Path**:
+
+**Prerequisites**:
+
+- Docker Desktop running with POT dev stack (run `docker-start-client-server` task)
+- PostgreSQL client tools available (or use `docker exec`)
+
+**Steps**:
+
+1. **Ensure dev database has the canonical test users**:
+
+   - Start the POT dev server (not E2E Testcontainers; your local Docker stack)
+   - Create or verify these users exist in your dev database:
+     - Site: `pot-e2e-site` (display name: `POT E2E Site`)
+     - User: `e2e_admin` (email: `e2e_admin@local.test`, role: Admin)
+     - User: `e2e_viewer` (email: `e2e_viewer@local.test`, role: Viewer)
+
+2. **Export the seed data**:
+
+   ```bash
+   # From workspace root
+   mkdir -p Source/Client/pot-react/e2e/seed
+
+   # Export only the canonical data (no financial artifacts)
+   docker exec -e PGPASSWORD=password pot-postgres pg_dump \
+     --data-only \
+     -t '"Site"' \
+     -t '"User"' \
+     -t '"UserRole"' \
+     -U postgres \
+     -d Pot \
+     > Source/Client/pot-react/e2e/seed/baseline.sql
+   ```
+
+3. **Verify the export**:
+
+   ```bash
+   # Check file size and contents
+   wc -l Source/Client/pot-react/e2e/seed/baseline.sql
+   head -20 Source/Client/pot-react/e2e/seed/baseline.sql  # Should show SQL
+   ```
+
+4. **Test the export** (optional but recommended):
+
+   ```bash
+   # Create a temporary test database and load the seed to verify it works
+   # This validates that the seed file is syntactically correct
+   ```
+
+5. **Commit the updated seed file**:
+
+   ```bash
+   git add Source/Client/pot-react/e2e/seed/baseline.sql
+   git commit -m "Update E2E seed data (baseline.sql)"
+   git push
+   ```
+
+### Seed Data File Format
+
+The `baseline.sql` file is a PostgreSQL `pg_dump` data-only export. It contains:
+
+- `COPY` statements for each table
+- INSERT statements with sequence values
+- No schema definitions (schema is created by migrations)
+
+**Example structure**:
+
+```sql
+COPY public."Site" (...) FROM stdin;
+...
+\.
+
+COPY public."User" (...) FROM stdin;
+...
+\.
+
+COPY public."UserRole" (...) FROM stdin;
+...
+\.
+```
+
+### Key Points
+
+- **Migrations create the schema first**, then the seed data is loaded on top
+- **Seed data is deterministic**: Same seed file produces same users/site every test run
+- **No plaintext passwords in seed**: User records contain only bcrypt hashes; plaintext test passwords are hardcoded in test files
+- **Role assignments are preserved**: Admin/Viewer role links are exported and reloaded
 
 ---
 
@@ -521,10 +869,15 @@ e2e/
 ├── playwright.globalSetup.ts          # Container startup orchestrator
 ├── tests/                             # Test files
 │   ├── smoke/
-│   │   └── appLoads.test.ts          # Level 1: app renders
+│   │   ├── appSmoke.test.ts           # Level 1: app renders
+│   │   └── baselineUsersImport.test.ts # Level 2: seeded users can log in
 │   ├── core/                         # (future)
 │   ├── auth/                         # (future)
 │   └── concurrency/                  # (future)
+├── scripts/                          # Utility scripts
+│   └── test-e2e-seed-export.ps1     # Export seed data from local Docker DB
+├── seed/                             # Seed data files
+│   └── baseline.sql                  # Canonical test data (Site, User, UserRole)
 ├── fixtures/                         # Test fixtures (future)
 │   ├── auth.ts                       # Auth fixture
 │   ├── db.ts                         # Database fixture
@@ -588,13 +941,15 @@ Database configured: Host=localhost, Port=XXXXX, Database=pot_e2e
 
 ### Issue: "Backend failed to connect to database"
 
-**Cause**: Environment variables not set correctly, or backend didn't pick them up  
+**Cause**: The API reads all DB config from CLI args in `playwright.config.ts` (not env vars). The
+Testcontainers container must be running on port 55432 before the API starts (it is, because the container
+starts in `globalSetup` and the webServer `--Database:Port=55432` arg is hardcoded to match).  
 **Fix**:
 
-1. Verify global setup ran and logged the environment variables (should see `✅ Environment variables set for backend`)
-2. Check that variables are in the correct format: `DATABASE__HOST` (double underscore, uppercase)
-3. Look for errors in the dev server output mentioning missing Database configuration
-4. Check that all six DATABASE\_\_\* variables are set (HOST, PORT, NAME, USERNAME, PASSWORD, SSLMODE)
+1. Verify Testcontainers started (look for `✅ Postgres container started` in globalSetup output)
+2. Verify migration runner received the DATABASE vars (look for `✅ Environment variables set for child processes`)
+3. Check `playwright.config.ts` webServer command includes `--Database:Port=55432`
+4. Look for errors in the API process output (piped to test runner logs via `stdout: 'pipe'`)
 
 ### Issue: "Test passes locally but fails in CI"
 
@@ -634,23 +989,27 @@ Database configured: Host=localhost, Port=XXXXX, Database=pot_e2e
 
 ### During Test Execution
 
-| Variable             | Value                         | Set By                      | Read By              |
-| -------------------- | ----------------------------- | --------------------------- | -------------------- |
-| `DATABASE__HOST`     | `localhost` or container host | `playwright.globalSetup.ts` | Dev Server (ASP.NET) |
-| `DATABASE__PORT`     | Dynamic port (e.g., `55432`)  | `playwright.globalSetup.ts` | Dev Server (ASP.NET) |
-| `DATABASE__NAME`     | `pot_e2e`                     | `playwright.globalSetup.ts` | Dev Server (ASP.NET) |
-| `DATABASE__USERNAME` | `test_user`                   | `playwright.globalSetup.ts` | Dev Server (ASP.NET) |
-| `DATABASE__PASSWORD` | `test_pass`                   | `playwright.globalSetup.ts` | Dev Server (ASP.NET) |
-| `DATABASE__SSLMODE`  | `Disable`                     | `playwright.globalSetup.ts` | Dev Server (ASP.NET) |
-| `NODE_ENV`           | (depends on config)           | Playwright                  | Dev Server / Vite    |
-| `CI`                 | `undefined` (local) / `true`  | Environment                 | Playwright           |
+| Variable             | Value                        | Set By                      | Read By                                  |
+| -------------------- | ---------------------------- | --------------------------- | ---------------------------------------- |
+| `DATABASE__HOST`     | `localhost`                  | `playwright.globalSetup.ts` | Migration runner (`Pot.Data.Migrations`) |
+| `DATABASE__PORT`     | `55432` (fixed)              | `playwright.globalSetup.ts` | Migration runner (`Pot.Data.Migrations`) |
+| `DATABASE__NAME`     | `pot_e2e`                    | `playwright.globalSetup.ts` | Migration runner (`Pot.Data.Migrations`) |
+| `DATABASE__USERNAME` | `test_user`                  | `playwright.globalSetup.ts` | Migration runner (`Pot.Data.Migrations`) |
+| `DATABASE__PASSWORD` | `test_pass`                  | `playwright.globalSetup.ts` | Migration runner (`Pot.Data.Migrations`) |
+| `DATABASE__SSLMODE`  | `disable`                    | `playwright.globalSetup.ts` | Migration runner (`Pot.Data.Migrations`) |
+| `NODE_ENV`           | (depends on config)          | Playwright                  | Dev Server / Vite                        |
+| `CI`                 | `undefined` (local) / `true` | Environment                 | Playwright                               |
+
+> **Note**: The API (dev server) does **not** read these `DATABASE__*` env vars. It receives
+> all DB config via CLI args hardcoded in `playwright.config.ts`. These env vars are only
+> consumed by the migration runner child process spawned from `playwright.globalSetup.ts`.
 
 ### How to Debug Environment Variables
 
 Add logging to `playwright.globalSetup.ts`:
 
 ```typescript
-console.log('✅ Environment variables set for backend');
+console.log('✅ Environment variables set for migration runner');
 console.log('DATABASE__HOST:', process.env.DATABASE__HOST);
 console.log('DATABASE__PORT:', process.env.DATABASE__PORT);
 console.log('DATABASE__NAME:', process.env.DATABASE__NAME);
@@ -726,7 +1085,7 @@ server = await new GenericContainer('pot-server:test-e2e')
   .withEnv('DATABASE__NAME', 'pot_e2e')
   .withEnv('DATABASE__USERNAME', 'test_user')
   .withEnv('DATABASE__PASSWORD', 'test_pass')
-  .withEnv('DATABASE__SSLMODE', 'Disable')
+  .withEnv('DATABASE__SSLMODE', 'disable')
   .withExposedPorts(5241)
   .withWaitStrategy(Wait.forLogMessage('Now listening on'))
   .start();
@@ -818,7 +1177,7 @@ const baseURL = `http://${serverHost}:${serverPort}`;
 
 ---
 
-**Last Updated**: 2026-05-14  
+**Last Updated**: 2026-05-16  
 **Author**: E2E Infrastructure Planning & PRD 012  
 **Status**: Living Document - In Active Development (Phase 0-1)
 
@@ -833,7 +1192,7 @@ Sections marked **PENDING** need to be filled in once decisions are made. These 
   - Requires: Phase 1 environment setup and playwright.config.ts configuration
   - Tracked in: TODO Phase 4.2.4
 
-- **PENDING**: Level 2 and Level 3 smoke tests (`seedUsers.test.ts`, `seedData.test.ts`)
+- **PENDING**: Level 3 smoke test (`seedData.test.ts`); Level 2 is now complete (`baselineUsersImport.test.ts`)
 
   - Requires: SQL seed file generation, auth fixtures, database mode orchestration
   - Tracked in: TODO Phase 5.4
