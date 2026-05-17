@@ -1,0 +1,37 @@
+# ============================================================================
+# POT E2E - POSTGRES COMPOSE FILE
+# ============================================================================
+# Provides a local PostgreSQL container for use during E2E testing.
+# This is the database backend when running E2E tests against a local stack.
+#
+# Project name "pot-e2e" appears as the container group in Docker Desktop.
+#
+# Usage:
+#   Start:  .\Start-E2EPot.ps1
+#   Stop:   docker compose -p pot-e2e stop
+#   Remove: docker compose -p pot-e2e down
+#
+# Data is stored at ./postgres-data (relative to this file) and is NOT removed
+# by 'docker compose down' or 'docker compose down -v' — bind mounts are never
+# managed by Docker. Delete the postgres-data folder manually to wipe the data.
+
+name: pot-e2e
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: pot-e2e-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: Pot
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: "pg_isready -U postgres -d Pot"
+      interval: 5s
+      timeout: 5s
+      retries: 10

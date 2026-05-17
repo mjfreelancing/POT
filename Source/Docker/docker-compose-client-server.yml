@@ -126,7 +126,9 @@ services:
     #   - Database data must survive container restarts
     #   - Development data (users, accounts, transactions) preserved
     #   - Avoids re-running migrations and re-seeding data
-    # Important: ./postgres-data directory must exist before first run
+    # Important: ./postgres-data directory must exist before first start.
+    # Start-ProdlikePot.ps1 creates it automatically; for manual starts run:
+    #   New-Item -ItemType Directory -Force -Path postgres-data
     # Security: Add postgres-data/ to .gitignore (don't commit database files)
     # Result: Database data persists in Source/Docker/postgres-data/ directory
     volumes:

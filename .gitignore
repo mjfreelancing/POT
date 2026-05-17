@@ -398,10 +398,8 @@ FodyWeavers.xsd
 *.sln.iml
 
 /_Local Ignore
-/Data
 Source/Client/pot-react/coverage
-Source/Docker/postgres-data
-Source/Docker/postgres-backups
+**/postgres-data/
 
 # Environment-specific configuration files
 *.development*
@@ -413,3 +411,4 @@ Source/Server/CoverageArtifacts
 
 # MCP tool output (browser exploration artefacts)
 .playwright-mcp
+Data/Azure

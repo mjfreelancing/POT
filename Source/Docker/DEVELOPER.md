@@ -647,14 +647,30 @@ docker-compose -p pot up --build -d
 
 ### Starting Development Environment
 
+The `postgres-data` directory must exist before the first start. The PowerShell script and the VS Code tasks both create it automatically.
+
+**Using the PowerShell script (standalone):**
+
+```powershell
+cd Source/Docker
+.\Start-ProdlikePot.ps1
+```
+
+The script creates `postgres-data` if needed, builds all images, and starts all services.
+
+**Using the terminal directly:**
+
 ```bash
 cd Source/Docker
 
+# Create postgres-data if this is a first-time run
+New-Item -ItemType Directory -Force -Path postgres-data
+
 # Start all services
-docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-client-server.yml up --build -d
+docker-compose --env-file .env --env-file .env.development -f docker-compose-client-server.yml up --build -d
 
 # Watch logs
-docker-compose -p pot logs -f
+docker-compose logs -f
 ```
 
 ### Making Changes
@@ -678,7 +694,7 @@ docker-compose -p pot logs -f
 
 **Available tasks** (run from VS Code Task menu):
 
-- `docker-start-client-server` - Build and start all services
+- `docker-start-client-server` - Build and start all services (equivalent to `Start-ProdlikePot.ps1`)
 - `docker-stop-client-server` - Stop all services
 - `azure-server-build-and-deploy` - Build and push server to registry (`--no-cache`)
 - `azure-client-build-and-deploy` - Build and push client to registry (`--no-cache`)
