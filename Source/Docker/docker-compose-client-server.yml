@@ -13,14 +13,15 @@
 #   - Health checks for service monitoring
 #
 # How to use:
-#   - Start all services: docker-compose -p pot -f docker-compose-client-server.yml up -d
-#   - Stop all services: docker-compose -p pot -f docker-compose-client-server.yml down
-#   - View logs: docker-compose -p pot -f docker-compose-client-server.yml logs -f
+#   - Start all services: docker-compose -f docker-compose-client-server.yml up -d
+#   - Stop all services: docker-compose -f docker-compose-client-server.yml down
+#   - View logs: docker-compose -f docker-compose-client-server.yml logs -f
 #   - Recommended: Use VS Code tasks (docker-start-client-server, docker-stop-client-server)
 
 # ============================================================================
 # SERVICE DEFINITIONS
 # ============================================================================
+
 services:
   # ==========================================================================
   # POSTGRES DATABASE SERVICE
