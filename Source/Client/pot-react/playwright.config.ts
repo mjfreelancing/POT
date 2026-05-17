@@ -9,6 +9,14 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   globalSetup: './playwright.globalSetup.ts',
+  // globalTeardown cleans up the runtime state file written by globalSetup.
+  // It does NOT explicitly stop the Testcontainers container — on Docker Desktop for Windows,
+  // calling `docker stop` during teardown leaves the port in TIME_WAIT, which prevents
+  // Docker from rebinding 55432 on the next run. Instead, the Testcontainers Ryuk reaper
+  // stops the container after the process exits (reliable for normal and interrupted runs).
+  // For runs where Ryuk also cannot fire (hard kill), globalSetup detects the stale
+  // container from the runtime state file and removes it before starting a new one.
+  globalTeardown: './playwright.globalSetup.ts',
   use: {
     baseURL: 'http://127.0.0.1:5175',
     trace: 'on-first-retry',

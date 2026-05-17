@@ -4,7 +4,13 @@ import {
   StartedPostgreSqlContainer,
 } from '@testcontainers/postgresql';
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -146,6 +152,53 @@ export default async (config: FullConfig) => {
     rmSync(authDirectory, { recursive: true, force: true });
     console.log('🗑️  Cleared stale auth state from previous run');
 
+    // Remove any stale container left by an interrupted previous run.
+    //
+    // When a run is hard-killed (SIGKILL, crash, forced IDE stop), neither globalTeardown
+    // nor the Testcontainers Ryuk reaper has a chance to clean up. The container keeps
+    // running and holds port 55432, causing the next run to fail with "port already allocated".
+    //
+    // We handle this by checking the runtime state file written during the previous
+    // globalSetup. If it still exists here, that run never cleaned up. We force-remove
+    // the stale container now, before binding port 55432 for the new run.
+    //
+    // `docker rm -f` is used (not `docker stop` + `docker rm`) to avoid Docker Desktop
+    // on Windows holding the port reservation in TIME_WAIT after a graceful stop.
+    const staleContainerId = existsSync(runtimeStatePath)
+      ? (
+          JSON.parse(readFileSync(runtimeStatePath, 'utf-8')) as {
+            databaseContainerId?: string;
+          }
+        ).databaseContainerId
+      : undefined;
+
+    if (staleContainerId) {
+      console.log(
+        `🧹 Stale container from previous run detected: ${staleContainerId}`,
+      );
+
+      const removeResult = spawnSync('docker', ['rm', '-f', staleContainerId], {
+        encoding: 'utf-8',
+      });
+
+      if (removeResult.status === 0) {
+        // Docker Desktop on Windows needs a moment after force-removal before the port
+        // binding is fully released. Without this delay the next container start can
+        // still see the port as allocated.
+        console.log(
+          '   Removed. Waiting 3 s for Docker Desktop to release port 55432...',
+        );
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        console.log('✅ Stale container removed');
+      } else {
+        console.warn(
+          `⚠️  Could not remove stale container (may already be gone): ${removeResult.stderr || removeResult.stdout}`,
+        );
+      }
+
+      rmSync(runtimeStatePath, { force: true });
+    }
+
     configureDotNetEnvironment();
 
     // Create and start a PostgreSQL container bound to fixed host port 55432.
@@ -209,13 +262,23 @@ export default async (config: FullConfig) => {
 
 /**
  * Global teardown runs after all tests complete.
- * Playwright automatically calls this, but we can define custom cleanup if needed.
  *
- * In this case, Testcontainers handles cleanup automatically when the container
- * goes out of scope, so we don't need to manually stop it.
+ * We do NOT call `docker stop` here. On Docker Desktop for Windows, stopping a container
+ * explicitly during teardown leaves the port in TCP TIME_WAIT. Docker Desktop's proxy layer
+ * then reports the port as "already allocated" on the very next test run.
+ *
+ * Instead we rely on the Testcontainers Ryuk reaper, which removes the container AFTER
+ * the Playwright process exits. By the time the user starts another run, the port has been
+ * cleanly released.
+ *
+ * For runs where Ryuk also cannot fire (hard kill / SIGKILL), globalSetup detects the
+ * leftover container from the runtime state file at the start of the next run and removes
+ * it with `docker rm -f` (see stale cleanup block in the default export above).
+ *
+ * This function's only job is to delete the runtime state file so a stale container ID
+ * written by this run cannot confuse the next run's stale-cleanup logic.
  */
 export async function globalTeardown() {
-  console.log(
-    '🛑 Test run complete. Container will be cleaned up by Testcontainers.',
-  );
+  rmSync(runtimeStatePath, { force: true });
+  console.log('✅ Runtime state cleared');
 }
