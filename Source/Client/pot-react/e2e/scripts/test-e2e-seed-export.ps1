@@ -4,8 +4,9 @@
 .SYNOPSIS
     Test E2E seed data export from local Docker database
 .DESCRIPTION
-    Exports Site, User, and UserRole tables from the running pot-postgres container
-    to seed/baseline.sql for reproducible E2E testing.
+    Exports Site, User, and UserRole tables from the running pot-e2e-postgres container
+    to a timestamped file (baseline_yyyyMMdd_HHmmss.sql) to prevent accidental overwrites.
+    After verification, the script offers to promote the export to baseline.sql for E2E use.
 .EXAMPLE
     # If you're in Windows PowerShell (5.x), launch pwsh first
     pwsh ./test-e2e-seed-export.ps1
@@ -15,11 +16,16 @@
 #>
 
 param(
-    [switch]$Force,
-    [string]$OutputPath = "../seed/baseline.sql"
+    [string]$OutputPath = ""
 )
 
 $ErrorActionPreference = "Stop"
+
+$timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
+
+if (-not $OutputPath) {
+    $OutputPath = "../seed/baseline_$timestamp.sql"
+}
 
 if (-not [System.IO.Path]::IsPathRooted($OutputPath)) {
     $OutputPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot $OutputPath))
@@ -50,14 +56,14 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Host " ✓" -ForegroundColor $Success
 
-# Check if pot-postgres container exists and is running
-Write-Host "  • Checking pot-postgres container..." -NoNewline
-$container = & docker ps --filter "name=pot-postgres" --quiet 2>&1
+# Check if pot-e2e-postgres container exists and is running
+Write-Host "  • Checking pot-e2e-postgres container..." -NoNewline
+$container = & docker ps --filter "name=pot-e2e-postgres" --quiet 2>&1
 if (-not $container) {
     Write-Host " ✗" -ForegroundColor $Error_
     Write-Host ""
     Write-Host "  Container not found. Start it with:" -ForegroundColor $Warning
-    Write-Host "    npm run docker-start-client-server" -ForegroundColor $Warning
+    Write-Host "    .\Start-E2EPot.ps1  (from Data/E2E Docker/)" -ForegroundColor $Warning
     exit 1
 }
 Write-Host " ✓" -ForegroundColor $Success
@@ -81,7 +87,7 @@ try {
         'exec'
         '-e'
         'PGPASSWORD=password'
-        'pot-postgres'
+        'pot-e2e-postgres'
         'pg_dump'
         '--data-only'
         '-t'
@@ -106,9 +112,10 @@ try {
         throw "Database export failed"
     }
     
-    $output | Out-File -FilePath $OutputPath -Encoding UTF8 -Force:$Force
+    $output | Out-File -FilePath $OutputPath -Encoding UTF8
     Write-Host " ✓" -ForegroundColor $Success
-} catch {
+}
+catch {
     Write-Host " ✗" -ForegroundColor $Error_
     Write-Host ""
     Write-Host $_.Exception.Message -ForegroundColor $Error_
@@ -160,4 +167,7 @@ Write-Host "══════════════════════�
 Write-Host ""
 Write-Host "Location: $OutputPath"
 Write-Host "Size: $fileSize bytes"
+Write-Host ""
+Write-Host "To use for E2E, rename to baseline.sql:" -ForegroundColor $Warning
+Write-Host "  Rename-Item '$OutputPath' 'baseline.sql'" -ForegroundColor $Warning
 Write-Host ""

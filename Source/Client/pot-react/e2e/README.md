@@ -775,11 +775,11 @@ The script handles all steps below, including validation and error checking.
 
 **Steps**:
 
-1. **Ensure dev database has the canonical test users**:
+1. **Ensure the E2E Docker database has the canonical test users**:
 
-   - Start the POT dev server (not E2E Testcontainers; your local Docker stack)
-   - Create or verify these users exist in your dev database:
-     - Site: `pot-e2e-site` (display name: `POT E2E Site`)
+   - Start the E2E Docker postgres container: `.\Start-E2EPot.ps1` (from `Data/E2E Docker/`)
+   - Start your local client/server applications — they will automatically connect to the E2E postgres on `localhost:5432`
+   - Create or verify these users exist:
      - User: `e2e_admin` (email: `e2e_admin@local.test`, role: Admin)
      - User: `e2e_viewer` (email: `e2e_viewer@local.test`, role: Viewer)
 
@@ -790,7 +790,7 @@ The script handles all steps below, including validation and error checking.
    mkdir -p Source/Client/pot-react/e2e/seed
 
    # Export only the canonical data (no financial artifacts)
-   docker exec -e PGPASSWORD=password pot-postgres pg_dump \
+   docker exec -e PGPASSWORD=password pot-e2e-postgres pg_dump \
      --data-only \
      -t '"Site"' \
      -t '"User"' \
