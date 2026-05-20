@@ -108,10 +108,11 @@ E2E tests use one of three database setup modes, depending on what they're testi
 **Setup Timeline**:
 
 1. Migrations create schema
-2. SQL seed loads site/users
-3. Dev server connects to test database
-4. Import API called to load financial artifact
-5. Renewal/accrual API called to advance data to today
+2. SQL seed loads site/users via `docker exec psql`
+3. `GET /_health` polled on the API until HTTP 200 — confirms the API's database connection
+   has recovered from the TCP disruption caused by `docker exec` in step 2
+4. Financial artifact imported via API (`POST /api/maintenance/import`)
+5. Renewal/accrual APIs called to advance data to today
 6. Tests execute with full financial state ready
 
 ---
@@ -436,13 +437,17 @@ playwright.globalSetup.ts
     ↓
 Testcontainers (@testcontainers/postgresql)
     ↓
-PostgreSQL 16 Container (disposable)
+PostgreSQL 16 Container (disposable, port 55432)
     ↓
-Pot.Data.Migrations (schema creation)
-   ↓
-POT Dev Server (connects to test DB)
+Pot.Data.Migrations (schema creation via dotnet run)
     ↓
-E2E Tests (interact with app)
+Baseline seed (docker exec psql — briefly disrupts Docker TCP on Windows)
+    ↓
+GET /_health polling — waits until API confirms database connection is healthy
+    ↓
+Financial artifact import + renewal/accrual via API
+    ↓
+E2E Tests (interact with app against confirmed-ready state)
 ```
 
 ### Key Files
@@ -507,7 +512,13 @@ E2E Tests (interact with app)
 10. In production-like mode: npm run build && npm run preview -- --host 127.0.0.1 --strictPort
 ```
 
-### Phase 3: Global Setup (Container Startup)
+> **Important**: The API starts here pointing at port 55432, but the Postgres container does
+> not exist yet — it is created in Phase 3. The API's initial connection attempts to the
+> database will fail. This is expected and handled: `waitForDatabaseReady()` in Phase 3
+> polls `GET /_health` until the API confirms its database connection is healthy before
+> any test-data API calls are made.
+
+### Phase 3: Global Setup (Container Startup + Seed + Health Gate)
 
 ```
 11. playwright.globalSetup.ts executes
@@ -524,34 +535,49 @@ E2E Tests (interact with app)
     - DOTNET_ENVIRONMENT=Production
     - ASPNETCORE_ENVIRONMENT=Production
 17. Runs Pot.Data.Migrations with `dotnet run --no-launch-profile`
-    against the Testcontainers database
-18. Runs baseline seed from e2e/seed/baseline.sql
-19. Returns control to Playwright
+    against the Testcontainers database (synchronous — waits for completion)
+18. Runs baseline seed via `docker exec psql` (synchronous — waits for completion)
+    ⚠️  On Docker Desktop for Windows, running `docker exec` briefly disrupts the host's
+    TCP stack (WSAECONNABORTED / error 10053). This temporarily breaks any open TCP
+    connections from the host to Docker containers — including the API's Postgres
+    connection pool. The next step exists specifically to recover from this.
+19. Polls GET /_health on the API at http://127.0.0.1:5242 every 2 seconds
+    (waitForDatabaseReady) until the API returns HTTP 200.
+    This confirms two things:
+      a) The API's Postgres connection pool has recovered from the docker exec disruption
+      b) The API can successfully reach the database (covers the case where the API
+         started in Phase 2 before the container existed)
+    globalSetup does not proceed past this point until HTTP 200 is received.
+20. Imports the financial artifact via POST /api/maintenance/import
+    (login → import → accrue expenses → renew incomes → renew expenses)
+21. Returns control to Playwright
 ```
 
 > **Note**: webServers start before globalSetup in Playwright's execution model. The API
 > cannot use env vars set in globalSetup because it is already running by then. All API
 > config (DB, JWT, CORS, rate-limiting) is passed as CLI args in `playwright.config.ts`.
 > The env vars set in globalSetup are only consumed by child processes it spawns
-> (migration runner).
+> (migration runner). The API's initial DB connection fails silently because the container
+> doesn't exist yet; `waitForDatabaseReady()` in step 19 is the gate that ensures DB
+> availability before any globalSetup API calls or test execution.
 
 ### Phase 4: Tests Run
 
 ```
-21. Playwright spawns browser
-22. Tests execute (e.g., appSmoke.test.ts)
-23. Tests navigate to http://127.0.0.1:5175 (hits UI server)
-24. UI proxies /api requests to dedicated API at http://127.0.0.1:5242
-25. App renders and responds to test interactions
+22. Playwright spawns browser
+23. Tests execute (e.g., appSmoke.test.ts)
+24. Tests navigate to http://127.0.0.1:5175 (hits UI server)
+25. UI proxies /api requests to dedicated API at http://127.0.0.1:5242
+26. App renders and responds to test interactions
 ```
 
 ### Phase 5: Cleanup
 
 ```
-26. Tests complete
-27. playwright.globalTeardown runs
-28. Container stops (Testcontainers auto-cleanup)
-29. Temporary database is discarded
+27. Tests complete
+28. playwright.globalTeardown runs
+29. Container stops (Testcontainers auto-cleanup)
+30. Temporary database is discarded
 ```
 
 ---
@@ -712,7 +738,9 @@ Connects to Testcontainers Postgres at localhost:55432
 ✅ API configured via CLI args in `playwright.config.ts` and connects  
 ✅ `DATABASE__*` environment variables set for migration runner  
 ✅ `Pot.Data.Migrations` runs against the test database  
-✅ Baseline seed (`e2e/seed/baseline.sql`) loaded before tests run
+✅ Baseline seed (`e2e/seed/baseline.sql`) loaded before tests run  
+✅ `GET /_health` polled until API confirms database is reachable (recovers from `docker exec` TCP disruption on Windows)  
+✅ Financial artifact imported and renewal/accrual run before tests execute
 
 ---
 

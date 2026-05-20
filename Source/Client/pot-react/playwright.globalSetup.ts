@@ -43,6 +43,19 @@ const migrationProjectPath = resolve(
   'Pot.Data.Migrations/Pot.Data.Migrations.csproj',
 );
 const baselineSqlPath = resolve(currentDirectory, 'e2e/seed/baseline.sql');
+const financialArtifactPath = resolve(
+  currentDirectory,
+  'e2e/seed/financial.export',
+);
+
+// API base URL must match the webServer port configured in playwright.config.ts.
+const apiBaseUrl = 'http://127.0.0.1:5242';
+
+// Canonical admin credentials matching baseline.sql seed data.
+const adminCredentials = {
+  username: 'e2e_admin',
+  password: 'E2E_admin-password',
+};
 
 function writeRuntimeState(databaseContainerId: string): void {
   const runtimeDirectory = resolve(currentDirectory, 'e2e/.runtime');
@@ -129,6 +142,207 @@ function runDatabaseMigrations(): Promise<void> {
   });
 }
 
+async function runFinancialImportAndRenewal(): Promise<void> {
+  console.log('📦 Importing financial artifact and running renewal/accrual...');
+
+  // Step 1: Login to get an access token for subsequent API calls.
+  const loginResponse = await fetch(`${apiBaseUrl}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(adminCredentials),
+  });
+
+  if (!loginResponse.ok) {
+    const body = await loginResponse.text();
+    throw new Error(
+      `Login failed during financial import setup: ${loginResponse.status} ${body}`,
+    );
+  }
+
+  const loginBody = (await loginResponse.json()) as {
+    status: string;
+    accessToken?: string;
+  };
+
+  if (!loginBody.accessToken) {
+    throw new Error(
+      `Login did not return an access token. Status: ${loginBody.status}`,
+    );
+  }
+
+  const accessToken = loginBody.accessToken;
+  const authHeaders = { Authorization: `Bearer ${accessToken}` };
+
+  // Step 2: Import the financial artifact via multipart form upload.
+  console.log('   Importing financial artifact...');
+
+  const fileBuffer = readFileSync(financialArtifactPath);
+  const formData = new FormData();
+  formData.append('File', new Blob([fileBuffer]), 'financial.export');
+
+  const importResponse = await fetch(`${apiBaseUrl}/api/maintenance/import`, {
+    method: 'POST',
+    headers: authHeaders,
+    body: formData,
+  });
+
+  if (!importResponse.ok) {
+    const body = await importResponse.text();
+    throw new Error(
+      `Financial artifact import failed: ${importResponse.status} ${body}`,
+    );
+  }
+
+  const importBody = (await importResponse.json()) as { imported: number };
+  console.log(`   Imported ${importBody.imported} records`);
+
+  // Compute today's local date once for all renewal operations (format: YYYY-MM-DD).
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+  // Step 3: Fetch all accounts and accrue expenses.
+  const accountsResponse = await fetch(`${apiBaseUrl}/api/accounts`, {
+    headers: authHeaders,
+  });
+
+  if (!accountsResponse.ok) {
+    const body = await accountsResponse.text();
+    throw new Error(
+      `Failed to fetch accounts after import: ${accountsResponse.status} ${body}`,
+    );
+  }
+
+  const accounts = (await accountsResponse.json()) as Array<{ rowId: string }>;
+  const accountRowIds = accounts.map(account => account.rowId);
+
+  console.log(`   Found ${accountRowIds.length} account(s)`);
+
+  if (accountRowIds.length > 0) {
+    const accrueResponse = await fetch(
+      `${apiBaseUrl}/api/accruals/accrue-expenses`,
+      {
+        method: 'POST',
+        headers: { ...authHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rowIds: accountRowIds }),
+      },
+    );
+
+    if (!accrueResponse.ok) {
+      const body = await accrueResponse.text();
+      throw new Error(
+        `Accrue expenses failed: ${accrueResponse.status} ${body}`,
+      );
+    }
+
+    console.log('   Accrued expenses for all accounts');
+  }
+
+  // Step 4: Fetch all incomes and run renewal.
+  const incomesResponse = await fetch(`${apiBaseUrl}/api/incomes`, {
+    headers: authHeaders,
+  });
+
+  if (!incomesResponse.ok) {
+    const body = await incomesResponse.text();
+    throw new Error(
+      `Failed to fetch incomes after import: ${incomesResponse.status} ${body}`,
+    );
+  }
+
+  const incomes = (await incomesResponse.json()) as Array<{ rowId: string }>;
+  const incomeRowIds = incomes.map(income => income.rowId);
+
+  if (incomeRowIds.length > 0) {
+    const renewIncomesResponse = await fetch(
+      `${apiBaseUrl}/api/incomes/renew`,
+      {
+        method: 'POST',
+        headers: { ...authHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rowIds: incomeRowIds,
+          asOfDate: today,
+          mode: 'Overdue',
+        }),
+      },
+    );
+
+    if (!renewIncomesResponse.ok) {
+      const body = await renewIncomesResponse.text();
+      throw new Error(
+        `Income renewal failed: ${renewIncomesResponse.status} ${body}`,
+      );
+    }
+
+    console.log(`   Renewed ${incomeRowIds.length} income(s)`);
+  }
+
+  // Step 5: Fetch all expenses and run renewal.
+  const expensesResponse = await fetch(`${apiBaseUrl}/api/expenses`, {
+    headers: authHeaders,
+  });
+
+  if (!expensesResponse.ok) {
+    const body = await expensesResponse.text();
+    throw new Error(
+      `Failed to fetch expenses after import: ${expensesResponse.status} ${body}`,
+    );
+  }
+
+  const expenses = (await expensesResponse.json()) as Array<{ rowId: string }>;
+  const expenseRowIds = expenses.map(expense => expense.rowId);
+
+  if (expenseRowIds.length > 0) {
+    const renewExpensesResponse = await fetch(
+      `${apiBaseUrl}/api/expenses/renew`,
+      {
+        method: 'POST',
+        headers: { ...authHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rowIds: expenseRowIds,
+          asOfDate: today,
+          mode: 'Overdue',
+        }),
+      },
+    );
+
+    if (!renewExpensesResponse.ok) {
+      const body = await renewExpensesResponse.text();
+      throw new Error(
+        `Expense renewal failed: ${renewExpensesResponse.status} ${body}`,
+      );
+    }
+
+    console.log(`   Renewed ${expenseRowIds.length} expense(s)`);
+  }
+
+  console.log('✅ Financial import and renewal/accrual completed');
+}
+
+async function waitForDatabaseReady(): Promise<void> {
+  console.log('⏳ Waiting for database to become ready...');
+
+  while (true) {
+    try {
+      const response = await fetch(`${apiBaseUrl}/_health/ready`);
+
+      if (response.ok) {
+        console.log('✅ Database is ready');
+        return;
+      }
+
+      console.log(
+        `   /_health/ready returned ${response.status} — retrying in 2 s...`,
+      );
+    } catch (error) {
+      // Server temporarily unreachable during Docker network disruption — keep polling.
+      const message = error instanceof Error ? error.message : String(error);
+      console.log(`   Server unreachable (${message}) — retrying in 2 s...`);
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 2000));
+  }
+}
+
 function configureDotNetEnvironment(): void {
   // Only DOTNET_ENVIRONMENT and ASPNETCORE_ENVIRONMENT are set here.
   // These are consumed by the migration runner child process spawned from globalSetup.
@@ -209,6 +423,16 @@ export default async (config: FullConfig) => {
       .withUsername('test_user')
       .withPassword('test_pass')
       .withExposedPorts({ container: 5432, host: 55432 })
+      .withCopyContentToContainer([
+        {
+          // Install citext before the container first starts so that when the API server
+          // opens its initial connection, Npgsql loads citext into its type cache.
+          // Without this, Npgsql caches types from an empty DB (no citext), and login
+          // fails later with "citext could not be found in the types loaded by Npgsql".
+          content: 'CREATE EXTENSION IF NOT EXISTS citext;\n',
+          target: '/docker-entrypoint-initdb.d/01-init-citext.sql',
+        },
+      ])
       .start();
 
     // Get the connection URI (format: postgresql://user:pass@host:port/database)
@@ -254,6 +478,16 @@ export default async (config: FullConfig) => {
 
     await runDatabaseMigrations();
     runBaselineSeed(postgresContainer.getId(), username, password, database);
+    await waitForDatabaseReady();
+
+    if (existsSync(financialArtifactPath)) {
+      await runFinancialImportAndRenewal();
+    } else {
+      throw new Error(
+        'Financial artifact not found at e2e/seed/financial.export. ' +
+          'Create an export from the application and place it at that path before running E2E tests.',
+      );
+    }
   } catch (error) {
     console.error('❌ Failed to start Postgres container:', error);
     throw error;

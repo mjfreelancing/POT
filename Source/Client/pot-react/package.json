@@ -14,7 +14,7 @@
     "prettier": "prettier . --write",
     "test": "vitest",
     "test:ui": "vitest --ui --api 9527 --coverage.enabled --coverage.provider=istanbul --coverage.all",
-    "e2e": "npm run e2e:dev",
+    "e2e": "npm run e2e:chromium",
     "e2e:dev": "playwright test --reporter=line",
     "e2e:prodlike": "playwright test --config=playwright.prod.config.ts --reporter=line",
     "e2e:ui": "playwright test --ui",

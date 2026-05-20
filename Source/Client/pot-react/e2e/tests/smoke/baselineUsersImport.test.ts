@@ -32,7 +32,12 @@ async function loginViaUi(
   browser: Browser,
   credentials: { username: string; password: string },
 ): Promise<void> {
-  const context = await browser.newContext();
+  // Pass an explicit empty storageState to prevent Playwright from inheriting the
+  // worker's auth cookie. This test must verify login from a truly unauthenticated state.
+  const context = await browser.newContext({
+    storageState: { cookies: [], origins: [] },
+  });
+
   const page = await context.newPage();
 
   await page.goto('/login');
