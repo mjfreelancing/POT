@@ -412,3 +412,4 @@ Source/Server/CoverageArtifacts
 # MCP tool output (browser exploration artefacts)
 .playwright-mcp
 Data/Azure
+Data/*Backup*/
