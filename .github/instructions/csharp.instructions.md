@@ -28,6 +28,21 @@ applyTo: "Source/Server/**/*.cs"
 - Default to sealed classes unless extensibility is required.
 - Do not use primary constructors; prefer explicit constructor definitions for clarity and testability.
 
+### XML Documentation
+
+- Add XML doc comments to all `public` and `internal` types (classes, interfaces, records, structs, enums) and their members, unless the member is an explicit interface implementation (use `<inheritdoc />` there instead).
+- Document all `protected` members, as they form part of the API available to derived classes. Do not document `private` members unless the logic is genuinely non-obvious and a comment would be clearer as a doc comment than an inline remark.
+- Use `<inheritdoc />` on any method, property, or type that fully implements or overrides a documented base/interface member. Add extra `<remarks>` only when the override meaningfully diverges from the contract.
+- Keep `<summary>` text concise — one or two sentences that describe _what_ the member does, not _how_. Avoid restating the member name.
+- Write `<param>` entries for every parameter; omitting them will trigger analyser warnings.
+- Write `<returns>` when the return type alone does not communicate what the value represents (e.g. a `bool` whose meaning is ambiguous, or a complex result type). Omit it for `void` and for trivially named return types.
+- Use `<see cref="..." />` to cross-reference related types or members. Prefer `cref` over repeating a type name as plain text.
+- Use `<see langword="..." />` for C# keywords appearing in documentation text (e.g. `<see langword="null" />`, `<see langword="true" />`, `<see langword="false" />`, `<see langword="async" />`).
+- Use `<remarks>` for context that does not belong in `<summary>`: threading notes, side effects, interaction with other members, or rationale for a non-obvious design decision.
+- Use `<exception cref="..." />` on `public` and `internal` methods that deliberately throw (not for exceptions thrown deep in a call chain).
+- Do not add documentation solely to satisfy an analyzer warning on auto-generated, trivial boilerplate, or test helper code; suppress the warning instead if documentation adds no value.
+- Enum members should each carry a `<summary>` describing what the value represents.
+
 ### C# Architecture
 
 - Keep handlers thin: validate, map input, call service, map result.
