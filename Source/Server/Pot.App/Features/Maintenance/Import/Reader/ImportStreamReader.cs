@@ -39,12 +39,12 @@ internal sealed class ImportStreamReader : IImportStreamReader
         return _archive;
     }
 
-    public MetadataBase GetMetadata()
+    public TMetadata GetMetadata<TMetadata>() where TMetadata : MetadataBase
     {
         _logger.LogCall(this);
 
         using var stream = GetEntry("metadata");
-        return _metadataSerializer.Deserialize(stream);
+        return _metadataSerializer.Deserialize<TMetadata>(stream);
     }
 
     public int ReadMetadataVersion()

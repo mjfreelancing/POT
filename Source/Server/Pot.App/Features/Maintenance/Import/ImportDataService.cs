@@ -71,10 +71,9 @@ internal sealed class ImportDataService : IImportDataService
                     return EnrichedResult.Fail<int>(unsupportedMetadataVersionError);
                 }
 
-                var metadataBase = _importStreamReader.GetMetadata();
+                var metadata = _importStreamReader.GetMetadata<MetadataV3>();
 
-                var metadataV2 = (MetadataV2)metadataBase;
-                _logger.LogInformation("Importing data (as v{MetadataVersion}) from {MetadataCreatedAt}", metadataV2.Version, metadataV2.CreatedAt);
+                _logger.LogInformation("Importing data (as v{MetadataVersion}) from {MetadataCreatedAt}", metadata.Version, metadata.CreatedAt);
 
                 using var transaction = await _transactionFactory.CreateTransactionAsync(cancellationToken);
 

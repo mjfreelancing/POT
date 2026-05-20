@@ -6,5 +6,5 @@ namespace Pot.App.Features.Maintenance.Metadata.Serializer;
 public interface IMetadataSerializer : IPotSingletonDependency
 {
     byte[] Serialize<TMetadata>(TMetadata metadata) where TMetadata : MetadataBase;
-    MetadataBase Deserialize(Stream zipStream);
+    TMetadata Deserialize<TMetadata>(Stream zipStream) where TMetadata : MetadataBase;
 }

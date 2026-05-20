@@ -41,7 +41,7 @@ internal sealed class MetadataSerializer : IMetadataSerializer
         return stream.ToArray();
     }
 
-    public MetadataBase Deserialize(Stream zipStream)
+    public TMetadata Deserialize<TMetadata>(Stream zipStream) where TMetadata : MetadataBase
     {
         using var reader = new EnrichedBinaryReader(zipStream, Encoding.UTF8, true);
 
@@ -55,6 +55,6 @@ internal sealed class MetadataSerializer : IMetadataSerializer
         // Add a version specific reader
         reader.Readers.Add(metadataReader);
 
-        return (MetadataBase)reader.ReadObject()!;
+        return (TMetadata)reader.ReadObject()!;
     }
 }

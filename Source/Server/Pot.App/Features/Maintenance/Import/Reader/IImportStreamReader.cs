@@ -10,7 +10,11 @@ public interface IImportStreamReader : IPotScopedDependency
 
     IDisposable Open(Stream stream);
     int ReadMetadataVersion();
-    MetadataBase GetMetadata();
+
+    // Forcing the caller to specify the expected metadata type since they must know the expected type
+    // of metadata to read. The version is read separately to allow for version-specific handling
+    // before reading the metadata.
+    TMetadata GetMetadata<TMetadata>() where TMetadata : MetadataBase;
 
     // Note: ICsvRowEnumerator<T> is IDisposable
     ICsvRowEnumerator<IAccountCsvRow> GetAccounts();
