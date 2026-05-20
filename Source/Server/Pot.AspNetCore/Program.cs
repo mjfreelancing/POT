@@ -1,4 +1,5 @@
-﻿using Pot.AspNetCore.Extensions;
+﻿using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Pot.AspNetCore.Extensions;
 using Pot.AspNetCore.Features.Accounts.Extensions;
 using Pot.AspNetCore.Features.Accruals.Extensions;
 using Pot.AspNetCore.Features.Approvals.Extensions;
@@ -12,7 +13,6 @@ using Pot.AspNetCore.Features.Roles.Extensions;
 using Pot.AspNetCore.Features.Settings.Extensions;
 using Pot.AspNetCore.Features.Sites.Extensions;
 using Pot.AspNetCore.Features.Users.Extensions;
-using Pot.Data;
 
 namespace Pot.AspNetCore;
 
@@ -24,13 +24,10 @@ public class Program
 
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services
-            .AddHealthChecks()
-            .AddDbContextCheck<PotDbContext>();
-
         builder.Services.AddCors();
 
         builder
+            .AddPotHealthChecks()
             .AddExceptionHandlers()
             .AddPotAuth()
             .AddPotCors()
@@ -54,7 +51,20 @@ public class Program
         // Not required since we are behind a reverse proxy in Azure that handles HTTPS
         // app.UseHttpsRedirection();
 
-        app.MapHealthChecks("/_health");
+        // Liveness: always Healthy while the app is running — no checks are executed.
+        // Used by production monitoring (called every 10 s) so no DB query is incurred.
+        app.MapHealthChecks("/_health", new HealthCheckOptions
+        {
+            Predicate = _ => false,
+        });
+
+        // Readiness: runs checks tagged "ready" to confirm the schema is fully migrated.
+        // Used by E2E tests to gate on DB and schema availability.
+        // Background workers gate using IHealthCheckService directly (by name), not via this endpoint.
+        app.MapHealthChecks("/_health/ready", new HealthCheckOptions
+        {
+            Predicate = registration => registration.Tags.Contains("ready"),
+        });
 
         // REQUIRED ORDER:
         // 1. UseCors() must run before authentication/authorization so CORS headers are included on all responses (including failures).

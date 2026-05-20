@@ -5,6 +5,7 @@ using AllOverIt.Validation.Extensions;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Pot.App.Concerns.Validation;
 using Pot.App.Extensions;
 using Pot.AspNetCore.Concerns.Auth;
@@ -32,6 +33,32 @@ namespace Pot.AspNetCore.Extensions;
 internal static class WebApplicationBuilderExtensions
 {
     private static readonly Type ScopedLifetimeValidatorType = typeof(IScopedLifetimeValidator);
+
+    public static WebApplicationBuilder AddPotHealthChecks(this WebApplicationBuilder builder)
+    {
+        builder.Services
+            .AddHealthChecks()
+            .AddDbContextCheck<PotDbContext>(
+                "database",
+                tags: ["ready"],
+                customTestQuery: async (context, cancellationToken) =>
+                {
+                    try
+                    {
+                        var migrations = await context.Database
+                            .GetAppliedMigrationsAsync(cancellationToken)
+                            .ConfigureAwait(false);
+
+                        return migrations.Any();
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                });
+
+        return builder;
+    }
 
     public static WebApplicationBuilder AddPotAuth(this WebApplicationBuilder builder)
     {
