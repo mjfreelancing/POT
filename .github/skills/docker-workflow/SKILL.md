@@ -1,7 +1,10 @@
 ---
-name: docker_workflow
-description: Run Docker lifecycle workflows with task-first defaults.
+name: docker-workflow
+description: Run Docker lifecycle workflows including build, start, stop, status, and health checks using repository task and compose wrappers. Use when working with Docker containers, compose services, or container lifecycle tasks.
+license: MIT
 ---
+
+# Docker Workflow
 
 Handle Docker workflows using the safest, most repeatable repository path.
 
@@ -11,8 +14,8 @@ Handle Docker workflows using the safest, most repeatable repository path.
 
 ## Workflow
 
-- Prefer repository task or command wrappers over ad-hoc shell sequences.
-- Validate health and status after lifecycle changes.
+1. Prefer repository task or command wrappers over ad-hoc shell sequences.
+2. Validate health and status after lifecycle changes.
 
 ## Commands and Rules
 
@@ -28,13 +31,11 @@ Handle Docker workflows using the safest, most repeatable repository path.
 
 If a step fails, summarize the root error and provide the smallest next corrective step.
 
-## Expansion Notes
+## Repository Notes
 
 - Add repository-specific task names, compose paths, endpoints, and safety boundaries in consuming copies.
 - Keep service-specific safety rules aligned with any Docker instruction file used by the repository.
-  - POT: Start task is `docker-start-client-server`; stop task is `docker-stop-client-server`.
-  - POT: Compose file is `Source/Docker/docker-compose-client-server.yml`.
-  - POT: Direct compose commands should include `--env-file .env --env-file .env.development`.
-  - POT: Protected data path is `Source/Docker/postgres-data/**`.
-  - POT: Expected services are `pot-react`, `pot-aspnet`, and `pot-postgres`.
-  - POT: Health endpoints are `http://localhost:5241/_health` and `http://localhost:5175/health`.
+  - POT: Prefer VS Code tasks `docker-start-client-server` and `docker-stop-client-server` for full-stack lifecycle.
+  - POT: Compose file is `Source/Docker/docker-compose-client-server.yml`; direct commands load `--env-file .env --env-file .env.development`.
+  - POT: Health endpoints are API `http://localhost:5241/_health` and client `http://localhost:5175/health`.
+  - POT: Treat `Source/Docker/postgres-data/**` as protected runtime data.

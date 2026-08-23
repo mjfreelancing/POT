@@ -40,14 +40,12 @@ param(
 $ErrorActionPreference = "Continue"
 
 # Auto-install implies install flow is enabled.
-if ($AutoInstall)
-{
+if ($AutoInstall) {
     $OfferInstall = $true
 }
 
 # Small helper to standardize yes/no prompts.
-function Test-InstallConsent
-{
+function Test-InstallConsent {
     param(
         [string]$Prompt
     )
@@ -57,21 +55,18 @@ function Test-InstallConsent
 }
 
 # Installs one tool using winget when possible.
-function Install-ToolWithWinget
-{
+function Install-ToolWithWinget {
     param(
         [pscustomobject]$Tool
     )
 
-    if ([string]::IsNullOrWhiteSpace($Tool.WingetId))
-    {
+    if ([string]::IsNullOrWhiteSpace($Tool.WingetId)) {
         # Some tools may intentionally not have a configured package id.
         Write-Host "[agent-diagnostics] Skipping $($Tool.Name): no winget package configured."
         return
     }
 
-    if ($null -eq (Get-Command winget -ErrorAction SilentlyContinue))
-    {
+    if ($null -eq (Get-Command winget -ErrorAction SilentlyContinue)) {
         # winget is required for the auto-install path.
         Write-Warning "[agent-diagnostics] winget is not available. Install '$($Tool.Name)' manually."
         return
@@ -79,8 +74,7 @@ function Install-ToolWithWinget
 
     $installCommand = "winget install --id $($Tool.WingetId) -e --source winget --accept-package-agreements --accept-source-agreements"
 
-    if ($DryRun)
-    {
+    if ($DryRun) {
         # Dry-run mode prints the exact command for transparency.
         Write-Host "[agent-diagnostics] [DryRun] $installCommand"
         return
@@ -99,7 +93,7 @@ Write-Host "[agent-diagnostics] CWD: $((Get-Location).Path)"
 # - `Purpose` text is shown to users when tools are missing.
 $checks = @(
     @{ Name = "git"; Required = $true; Version = { git --version }; Purpose = "Source control operations and repository workflows."; WingetId = "Git.Git" },
-    @{ Name = "dotnet"; Required = $true; Version = { dotnet --version }; Purpose = "Build, test, and run the .NET server projects."; WingetId = "Microsoft.DotNet.SDK.9" },
+    @{ Name = "dotnet"; Required = $true; Version = { dotnet --version }; Purpose = "Build, test, and run the .NET server projects."; WingetId = "Microsoft.DotNet.SDK.10" },
     @{ Name = "node"; Required = $true; Version = { node --version }; Purpose = "Run client tooling and scripts."; WingetId = "OpenJS.NodeJS.LTS" },
     @{ Name = "npm"; Required = $true; Version = { npm --version }; Purpose = "Install and run JavaScript/TypeScript dependencies."; WingetId = "OpenJS.NodeJS.LTS" },
     @{ Name = "docker"; Required = $false; Version = { docker --version }; Purpose = "Run local containerized client/server stack."; WingetId = "Docker.DockerDesktop" },
@@ -112,57 +106,52 @@ $checks = @(
 # Collect normalized results in one list so they can be reported consistently.
 $results = New-Object System.Collections.Generic.List[object]
 
-foreach ($check in $checks)
-{
+foreach ($check in $checks) {
     # `Get-Command` tells us whether the executable is discoverable on PATH.
     $cmd = Get-Command $check.Name -ErrorAction SilentlyContinue
 
-    if ($null -eq $cmd)
-    {
+    if ($null -eq $cmd) {
         # Missing tools still get a result row, including purpose and install metadata.
         $results.Add([PSCustomObject]@{
-            Tool = $check.Name
-            Status = if ($check.Required) { "MISSING (REQUIRED)" } else { "MISSING (OPTIONAL)" }
-            Location = "-"
-            Version = "-"
-            Required = $check.Required
-            Purpose = $check.Purpose
-            WingetId = $check.WingetId
-        })
+                Tool     = $check.Name
+                Status   = if ($check.Required) { "MISSING (REQUIRED)" } else { "MISSING (OPTIONAL)" }
+                Location = "-"
+                Version  = "-"
+                Required = $check.Required
+                Purpose  = $check.Purpose
+                WingetId = $check.WingetId
+            })
 
         continue
     }
 
     $version = "unknown"
 
-    try
-    {
+    try {
         # Run each version command to show concrete environment state.
         $output = & $check.Version 2>&1
         $version = ($output | Select-Object -First 1 | Out-String).Trim()
     }
-    catch
-    {
+    catch {
         $version = "error: $($_.Exception.Message)"
     }
 
     $status = "FOUND"
 
     # Special-case: Windows Store Python alias can appear "found" but not usable.
-    if ($check.Name -eq "python" -and $version -match "Python was not found")
-    {
+    if ($check.Name -eq "python" -and $version -match "Python was not found") {
         $status = "UNUSABLE (ALIAS)"
     }
 
     $results.Add([PSCustomObject]@{
-        Tool = $check.Name
-        Status = $status
-        Location = $cmd.Source
-        Version = $version
-        Required = $check.Required
-        Purpose = $check.Purpose
-        WingetId = $check.WingetId
-    })
+            Tool     = $check.Name
+            Status   = $status
+            Location = $cmd.Source
+            Version  = $version
+            Required = $check.Required
+            Purpose  = $check.Purpose
+            WingetId = $check.WingetId
+        })
 }
 
 # Show the primary status table first so users can quickly scan environment health.
@@ -175,18 +164,15 @@ $optionalNeedsAttention = $results | Where-Object {
 }
 
 # Explain missing/alias optional tools and why they matter.
-if ($optionalNeedsAttention.Count -gt 0)
-{
+if ($optionalNeedsAttention.Count -gt 0) {
     Write-Host ""
     Write-Host "[agent-diagnostics] Optional tools needing attention:"
 
-    foreach ($tool in $optionalNeedsAttention)
-    {
+    foreach ($tool in $optionalNeedsAttention) {
         Write-Host "- $($tool.Tool): $($tool.Status)"
         Write-Host "  Used for: $($tool.Purpose)"
 
-        if ($tool.Tool -eq "python" -and $tool.Status -eq "UNUSABLE (ALIAS)")
-        {
+        if ($tool.Tool -eq "python" -and $tool.Status -eq "UNUSABLE (ALIAS)") {
             # This is a common Windows issue when App Execution Aliases intercept python.exe.
             Write-Host "  Note: Windows Store alias is intercepting 'python'. Install Python and disable App Execution Alias for python.exe/python3.exe."
         }
@@ -194,8 +180,7 @@ if ($optionalNeedsAttention.Count -gt 0)
 }
 
 # Optional install flow (only when explicitly requested).
-if ($OfferInstall -and $optionalNeedsAttention.Count -gt 0)
-{
+if ($OfferInstall -and $optionalNeedsAttention.Count -gt 0) {
     Write-Host ""
     Write-Host "[agent-diagnostics] Install flow enabled."
 
@@ -203,30 +188,25 @@ if ($OfferInstall -and $optionalNeedsAttention.Count -gt 0)
     # Skip duplicate `py` prompt in that case.
     $hasPythonAttention = $optionalNeedsAttention.Tool -contains "python"
 
-    foreach ($tool in $optionalNeedsAttention)
-    {
-        if ($tool.Tool -eq "py" -and $hasPythonAttention)
-        {
+    foreach ($tool in $optionalNeedsAttention) {
+        if ($tool.Tool -eq "py" -and $hasPythonAttention) {
             continue
         }
 
         # In AutoInstall mode we skip prompts; otherwise ask per tool.
         $shouldInstall = $AutoInstall -or (Test-InstallConsent -Prompt "Install '$($tool.Tool)' now?")
 
-        if ($shouldInstall)
-        {
+        if ($shouldInstall) {
             Install-ToolWithWinget -Tool $tool
         }
     }
 
-    if (-not $DryRun)
-    {
+    if (-not $DryRun) {
         Write-Host ""
         Write-Host "[agent-diagnostics] Re-run diagnostics after installation to refresh statuses."
     }
 }
-elseif ($optionalNeedsAttention.Count -gt 0)
-{
+elseif ($optionalNeedsAttention.Count -gt 0) {
     # Guide users toward the opt-in install modes.
     Write-Host ""
     Write-Host "[agent-diagnostics] Run with -OfferInstall to be prompted for optional installs."
@@ -235,8 +215,7 @@ elseif ($optionalNeedsAttention.Count -gt 0)
 }
 
 # Required tools are mandatory for this repository's expected workflows.
-if ($missingRequired.Count -gt 0)
-{
+if ($missingRequired.Count -gt 0) {
     Write-Warning "[agent-diagnostics] Missing required tools detected: $($missingRequired.Tool -join ', ')"
     exit 1
 }

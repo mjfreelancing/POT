@@ -1,7 +1,10 @@
 ---
-name: feature_implementation
-description: Implement a feature with a concise cross-layer checklist and focused validation.
+name: feature-implementation
+description: Implement a feature with a concise cross-layer checklist and focused validation. Use when asked to implement a feature that spans client, API, application, data, or infrastructure layers.
+license: MIT
 ---
+
+# Feature Implementation
 
 Implement a feature with minimal, targeted edits and root-cause focus.
 
@@ -30,8 +33,7 @@ Implement a feature with minimal, targeted edits and root-cause focus.
 - Do not change public API shape unless requested or approved.
 - Keep UI consistent with the repository's existing design system and shared components.
 
-## Expansion Notes
+## Repository Notes
 
 - Add recurring delivery steps to `Checklist` only when they are feature-implementation specific.
-- Keep coding standards in instruction files and reference them from this prompt.
-  - POT: Keep schema changes in `Pot.Data.Migrations` when server-side data changes are involved.
+- Keep coding standards in instruction files and reference them from this skill.

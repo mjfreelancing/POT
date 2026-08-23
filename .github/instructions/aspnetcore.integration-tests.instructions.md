@@ -42,5 +42,6 @@ applyTo: "Source/Server/Pot.AspNetCore.Integration.Tests/**/*.cs"
 - Keep endpoint-family patterns in this file.
 - Keep generic unit-test rules in `dotnet.tests.instructions.md`.
   - POT: Integration tests live under `Source/Server/Pot.AspNetCore.Integration.Tests/**`.
-  - POT: For logging assertions, prefer `FakeLogCollector` or `FakeLogger` helpers from `Pot.TestUtils`.
+  - POT: For logging assertions in unit tests, use the NSubstitute capture pattern (`CaptureLogCalls`/`CaptureLogCallsAsync` returning `LoggerCallContext`).
+  - POT: For hosted integration tests, assert logs with `FakeLogCollector` via the test host (`GetFakeLogCollector()`, from `Microsoft.Extensions.Diagnostics.Testing`) rather than through `Pot.TestUtils`.
   - POT: For targeted integration reruns from `Source/Server`, use `dotnet test Pot.AspNetCore.Integration.Tests/Pot.AspNetCore.Integration.Tests.csproj --filter "FullyQualifiedName~<FixtureOrTestName>"`.

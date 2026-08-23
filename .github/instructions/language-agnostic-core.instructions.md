@@ -18,7 +18,16 @@ applyTo: "**/*"
 - Do not remove existing comments. If a comment appears out of date and needs correction, ask the user to confirm before changing it. Simple spelling corrections are allowed.
 - In multi-line boolean expressions, place logical operators (`&&`, `||`) at the end of the preceding line, not at the start of the next line.
 - Keep code units focused and avoid unnecessary abstraction.
-- For mutating operations, avoid nested calls and prefer intermediate variables so intent is easier to review, debug, and unit test.
+- Avoid inline construction of model/request objects in method call arguments. Extract to a named variable so the intent is explicit and the call site remains readable.
+
+  ```csharp
+  // CORRECT:
+  var request = new ParseRequest { Path = solutionPath, MaxDepth = 3 };
+  var result = await parser.ParseAsync(request, cancellationToken);
+
+  // WRONG:
+  var result = await parser.ParseAsync(new ParseRequest { Path = solutionPath, MaxDepth = 3 }, cancellationToken);
+  ```
 
 ### Reuse and Boundaries
 
@@ -33,6 +42,10 @@ applyTo: "**/*"
 - Preserve public API shape unless change is explicitly requested.
 - Keep boundary contracts stable and versioned where applicable.
 - Handle success/failure outcomes explicitly.
+
+## Precedence
+
+When a rule in this file conflicts with a language-specific instruction file, the language-specific file takes precedence.
 
 ## Expansion Notes
 

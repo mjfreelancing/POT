@@ -56,7 +56,7 @@ applyTo: "Source/Client/pot-react/e2e/**"
 
 ### Browser Tooling Interactions
 
-- For browser-driven exploration with `mcp_microsoft_pla_browser_click`:
+- For browser-driven exploration with `mcp_playwright_browser_click`:
   - Capture a fresh page snapshot before targeting an element.
   - Use exact target references from the snapshot when available.
   - Provide a human-readable `element` description that reflects user intent.
@@ -87,7 +87,7 @@ applyTo: "Source/Client/pot-react/e2e/**"
     - Validate response contract shape.
     - Assert UI values rendered from payload-derived expectations.
 
-  - POT: For browser-tool exploration sessions using `mcp_microsoft_pla_browser_click`:
+  - POT: For browser-tool exploration sessions using `mcp_playwright_browser_click`:
     - Prefer targeting links/buttons by accessible name from snapshot output.
     - If a click does not produce expected state change, check dialog presence and network requests before retrying.
 

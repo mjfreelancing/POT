@@ -8,19 +8,24 @@ Instruction authoring model:
 - Keep prompts workflow-focused and avoid duplicating instruction rules.
 - Keep implementation details in path-scoped instruction files.
 
-Use path-scoped instructions for implementation details:
+## Required setting
 
-- Language-agnostic baseline: `.github/instructions/language-agnostic-core.instructions.md` (`applyTo: **/*`)
-- ASP.NET Core API baseline: `.github/instructions/aspnetcore-api.instructions.md` (`applyTo: **/*.cs`)
-- C# scope: `.github/instructions/csharp.instructions.md` (`applyTo: Source/Server/**/*.cs`)
-- .NET test baseline: `.github/instructions/dotnet.tests.instructions.md` (`applyTo: Source/Server/*Tests/**/*.cs`)
-- React client scope: `.github/instructions/react-client.instructions.md` (`applyTo: Source/Client/pot-react/**`)
-- TypeScript scope: `.github/instructions/typescript.instructions.md` (`applyTo: Source/Client/pot-react/src/**/*.{ts,tsx}`)
-- Client tests scope: `.github/instructions/client.tests.instructions.md` (`applyTo: Source/Client/pot-react/tests/**`)
-- Postgres/EF Core baseline: `.github/instructions/postgres-efcore.instructions.md` (`applyTo: **/*.cs`)
-- Server scope: `.github/instructions/server.instructions.md` (`applyTo: Source/Server/**`)
-- Integration tests scope: `.github/instructions/aspnetcore.integration-tests.instructions.md` (`applyTo: Source/Server/Pot.AspNetCore.Integration.Tests/**/*.cs`)
-- Docker scope: `.github/instructions/docker.instructions.md` (`applyTo: Source/Docker/**`)
+- `.vscode/settings.json` sets `github.copilot.chat.codeGeneration.useInstructionFiles: true`; without it, Copilot may not reliably load the scoped instruction files below.
+
+Use path-scoped instructions for implementation details. The authoritative `applyTo` scope for each file is its own front matter; see `.github/instructions/README.md` for the catalog.
+
+- Language-agnostic baseline: `.github/instructions/language-agnostic-core.instructions.md`
+- ASP.NET Core API baseline: `.github/instructions/aspnetcore-api.instructions.md`
+- C# scope: `.github/instructions/csharp.instructions.md`
+- Coding patterns and AllOverIt preferences: `.github/instructions/coding-patterns.instructions.md`
+- .NET test baseline: `.github/instructions/dotnet.tests.instructions.md`
+- ASP.NET Core integration tests scope: `.github/instructions/aspnetcore.integration-tests.instructions.md`
+- Postgres/EF Core baseline: `.github/instructions/postgres-efcore.instructions.md`
+- React client scope: `.github/instructions/react-client.instructions.md`
+- TypeScript scope: `.github/instructions/typescript.instructions.md`
+- Client tests scope: `.github/instructions/client.tests.instructions.md`
+- Playwright E2E scope: `.github/instructions/playwright-e2e.instructions.md`
+- Docker scope: `.github/instructions/docker.instructions.md`
 
 ## Shared Integration Workflows
 

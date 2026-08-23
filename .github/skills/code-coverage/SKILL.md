@@ -1,7 +1,10 @@
 ---
-name: code_coverage
-description: Run repository coverage workflow and summarize results.
+name: code-coverage
+description: Run the repository code coverage workflow and summarize results. Use when asked to run coverage, generate coverage reports, or summarize coverage metrics and failures.
+license: MIT
 ---
+
+# Code Coverage
 
 Run code coverage using repository defaults.
 
@@ -30,11 +33,9 @@ Adjust the example commands below to match your repository structure.
 - Headline coverage summary or key metrics when available
 - Any warnings, failed modules, or missing artifacts
 
-## Expansion Notes
+## Repository Notes
 
 - Keep tool-specific coverage details in repository scripts and coverage configuration files.
-  - POT: Primary coverage workflow is `./code_coverage.ps1` from `Source/Server`.
-  - POT: Optional direct .NET command is `dotnet test pot.sln --collect:"XPlat Code Coverage" --settings coverlet.runsettings` from `Source/Server`.
-  - POT: HTML report is generated under `Source/Server/CoverageReport`.
-  - POT: Coverage artifacts are retained under `Source/Server/CoverageArtifacts`.
-- Add repository-specific commands and output paths in consuming copies of this prompt.
+- Add repository-specific commands and output paths in consuming copies.
+  - POT: Coverage entry point is `Source/Server/code_coverage.ps1` (or the `server-run-test-coverage` task) run from `Source/Server`.
+  - POT: Report artifacts land in `Source/Server/CoverageReport/` (HTML) and `Source/Server/CoverageArtifacts/` (timestamped raw runs).
