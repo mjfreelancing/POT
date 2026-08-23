@@ -14,12 +14,12 @@ POT is projection-first: optimize for future cash-flow projections, not historic
 
 ## Folder contents
 
-| Folder                  | Purpose                                                                                                |
-| ----------------------- | ------------------------------------------------------------------------------------------------------ |
-| `instructions/`         | Always-on, path-scoped guidance loaded per file pattern. See `instructions/README.md` for the catalog. |
-| `prompts/`              | Reusable task entry points for common testing/documentation work. See `prompts/README.md`.             |
-| `skills/`               | On-demand multi-step workflows (slash commands) such as coverage, Docker lifecycle, and PRDs. See `skills/README.md`. |
-| `scripts/`              | Copyable utility packs, currently `agent-env-tools` (environment diagnostics). See `scripts/README.md`.|
+| Folder          | Purpose                                                                                                               |
+| --------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `instructions/` | Always-on, path-scoped guidance loaded per file pattern. See `instructions/README.md` for the catalog.                |
+| `prompts/`      | Reusable task entry points for common testing/documentation work. See `prompts/README.md`.                            |
+| `skills/`       | On-demand multi-step workflows (slash commands) such as coverage, Docker lifecycle, and PRDs. See `skills/README.md`. |
+| `scripts/`      | Copyable utility packs, currently `agent-env-tools` (environment diagnostics). See `scripts/README.md`.               |
 
 ## Provenance and mirror workflow
 
