@@ -164,7 +164,7 @@ function IncomesOverview({ isOpen, onOpenChange }: IncomesOverviewProps) {
       <div className="relative">
         <CollapsibleSection
           icon={<Landmark className="h-5 w-5" aria-hidden="true" />}
-          title="Income Overview"
+          title="Incomes Overview"
           isOpen={isOpen}
           onOpenChange={onOpenChange}
         >
