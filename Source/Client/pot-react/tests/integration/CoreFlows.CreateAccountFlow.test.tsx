@@ -20,7 +20,7 @@ vi.mock('@/contexts', () => ({
   useErrorContext: vi.fn(),
 }));
 
-function renderCreateAccountFlow(initialPath: string = '/accounts/create') {
+function renderCreateAccountFlow(initialPath = '/accounts/create') {
   const queryClient = new QueryClient();
 
   return render(
@@ -88,5 +88,40 @@ describe('Core Flow Integration - Create Account', () => {
       await screen.findByRole('heading', { name: 'Accounts page' }),
     ).toBeInTheDocument();
     expect(setErrorMock).not.toHaveBeenCalled();
+  });
+
+  test('masks raw BSB digits to the canonical format before submit', async () => {
+    // Step 1: Mock a successful account create response.
+    createAccountMock.mockResolvedValueOnce(
+      new SuccessResult({
+        rowId: 'account-created-2',
+      }),
+    );
+
+    // Step 2: Render the real create-account route and sheet UI.
+    renderCreateAccountFlow('/accounts/create');
+
+    // Step 3: Type the BSB without a dash; the mask should normalize it to XXX-XXX.
+    await userEvent.type(screen.getByLabelText('BSB'), '111222');
+    await userEvent.type(screen.getByLabelText('Account Number'), '12345678');
+    await userEvent.type(
+      screen.getByLabelText('Description'),
+      'Masked BSB Account',
+    );
+    await userEvent.clear(screen.getByLabelText('Balance'));
+    await userEvent.type(screen.getByLabelText('Balance'), '100');
+    await userEvent.clear(screen.getByLabelText('Reserved'));
+    await userEvent.type(screen.getByLabelText('Reserved'), '10');
+
+    // Step 4: Submit and verify the payload contains the canonical BSB format.
+    await userEvent.click(screen.getByRole('button', { name: 'Create' }));
+
+    expect(createAccountMock).toHaveBeenCalledWith({
+      bsb: '111-222',
+      number: '12345678',
+      description: 'Masked BSB Account',
+      balance: 100,
+      reserved: 10,
+    });
   });
 });

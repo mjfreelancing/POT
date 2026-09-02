@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 
 import type { MoneyValueChangeEvent } from '@/components/input';
-import { MoneyValueInput } from '@/components/input';
+import { BsbInput, MoneyValueInput } from '@/components/input';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -49,10 +49,12 @@ function AccountForm({
             <FormItem className="space-y-1">
               <FormLabel htmlFor="bsb-input">BSB</FormLabel>
               <FormControl>
-                <Input
+                {/* Masked input normalizes BSB to XXX-XXX whether the user types
+                    digits with or without the separating dash. */}
+                <BsbInput
                   {...field}
                   id="bsb-input"
-                  placeholder={isEditMode ? undefined : 'Enter the Account BSB'}
+                  placeholder={isEditMode ? undefined : 'XXX-XXX'}
                   aria-description="Enter BSB in the format XXX-XXX"
                   readOnly={isEditMode}
                   className={

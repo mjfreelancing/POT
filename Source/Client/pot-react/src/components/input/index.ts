@@ -1,3 +1,5 @@
+export type { BsbInputProps } from './BsbInput';
+export { default as BsbInput } from './BsbInput';
 export type {
   MoneyValueChangeEvent,
   MoneyValueInputElement,
