@@ -322,6 +322,27 @@ describe('UsersPage', () => {
     });
   });
 
+  test('renders and dismisses page error sheet from error context', async () => {
+    vi.mocked(useErrorContext).mockReturnValue({
+      error: {
+        title: 'Users Error',
+        description: 'Could not load users',
+      },
+      setError: setErrorMock,
+    });
+
+    renderUsersPage();
+
+    // getByText throws if more than one ErrorSheet instance matches, so a
+    // single match locks in the page-level single-render behavior.
+    expect(screen.getByText('Users Error')).toBeInTheDocument();
+    expect(screen.getByText('Could not load users')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+
+    expect(setErrorMock).toHaveBeenCalledWith(null);
+  });
+
   test('shows permission denied message when user cannot view users', () => {
     vi.mocked(usePermissions).mockReturnValue(
       createPermissionsApi({ hasAny: false }),

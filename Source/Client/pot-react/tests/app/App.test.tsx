@@ -155,7 +155,7 @@ describe('App', () => {
     );
   });
 
-  test('remounts ThemeProvider when auth state changes so theme storage is re-read', () => {
+  test('does not remount ThemeProvider when auth state changes — storage key is re-read reactively', () => {
     const { rerender } = render(<App />);
 
     expect(themeProviderMounts).toHaveBeenCalledWith('pot:dev:theme');
@@ -163,18 +163,24 @@ describe('App', () => {
     vi.mocked(useUserStore).mockReturnValue('user-row-id-abc');
     rerender(<App />);
 
-    expect(themeProviderUnmounts).toHaveBeenCalledWith('pot:dev:theme');
-    expect(themeProviderMounts).toHaveBeenLastCalledWith(
+    // The provider stays mounted: ThemeProvider re-reads its theme from the
+    // new storage key internally, so the app subtree is not torn down.
+    expect(themeProviderUnmounts).not.toHaveBeenCalled();
+    expect(themeProviderMounts).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('theme-provider')).toHaveAttribute(
+      'data-storage-key',
       'pot:dev:user:user-row-id-abc:theme',
     );
 
     vi.mocked(useUserStore).mockReturnValue(null);
     rerender(<App />);
 
-    expect(themeProviderUnmounts).toHaveBeenCalledWith(
-      'pot:dev:user:user-row-id-abc:theme',
+    expect(themeProviderUnmounts).not.toHaveBeenCalled();
+    expect(themeProviderMounts).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('theme-provider')).toHaveAttribute(
+      'data-storage-key',
+      'pot:dev:theme',
     );
-    expect(themeProviderMounts).toHaveBeenLastCalledWith('pot:dev:theme');
   });
 
   test('shows global error fallback and error sheet when route rendering throws', async () => {

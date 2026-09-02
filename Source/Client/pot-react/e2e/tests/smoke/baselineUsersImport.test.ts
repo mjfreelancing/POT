@@ -3,29 +3,37 @@ import type { Browser } from '@playwright/test';
 import { expect, test } from '../../fixtures/auth';
 
 import { listExistingUsernames } from '../../helpers/databaseSeed';
+import { adminCredentials, viewerCredentials } from '../../helpers/secrets';
 
-const adminCredentials = {
-  username: 'e2e_admin',
-  password: 'E2E_admin-password',
-};
+test.describe('E2E baseline smoke', () => {
+  test('baseline seed contains all canonical users', async () => {
+    // e2e_pwchange is a dedicated identity for the user-settings password-change
+    // E2E test, with its own unique password E2E_pwchange-password (Viewer role;
+    // see baseline.sql + secrets.ts).
+    const existingUsernames = await listExistingUsernames([
+      'e2e_admin',
+      'e2e_viewer',
+      'e2e_pwchange',
+    ]);
 
-const viewerCredentials = {
-  username: 'e2e_viewer',
-  password: 'E2E_viewer-password',
-};
+    expect(existingUsernames).toEqual([
+      'e2e_admin',
+      'e2e_pwchange',
+      'e2e_viewer',
+    ]);
+  });
 
-test('imports baseline users and allows both canonical users to login via UI', async ({
-  browser,
-}) => {
-  const existingUsernames = await listExistingUsernames([
-    'e2e_admin',
-    'e2e_viewer',
-  ]);
+  test('e2e_admin can log in via UI and reach the dashboard', async ({
+    browser,
+  }) => {
+    await loginViaUi(browser, adminCredentials);
+  });
 
-  expect(existingUsernames).toEqual(['e2e_admin', 'e2e_viewer']);
-
-  await loginViaUi(browser, adminCredentials);
-  await loginViaUi(browser, viewerCredentials);
+  test('e2e_viewer can log in via UI and reach the dashboard', async ({
+    browser,
+  }) => {
+    await loginViaUi(browser, viewerCredentials);
+  });
 });
 
 async function loginViaUi(

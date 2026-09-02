@@ -71,6 +71,14 @@ export default defineConfig({
         secure: false,
       },
     },
+    // E2E runs must not receive Vite HMR/full-reload messages: under full-matrix
+    // parallel load the dev server can emit a full-reload with NO file changes
+    // (runtime optimizeDeps re-discovery), force-reloading a page mid-test
+    // (observed: the userSettings sheet wiped to /dashboard, the login form to
+    // /login). With HMR off there is no websocket to deliver the reload, so the
+    // page can never be reloaded behind a test. Playwright sets E2E=1 on the
+    // Vite webServer; a normal `npm run dev` leaves HMR enabled.
+    ...(process.env.E2E === '1' ? { hmr: false } : {}),
   },
   build: {
     rollupOptions: {

@@ -11,8 +11,11 @@ import {
   rmSync,
   writeFileSync,
 } from 'node:fs';
+import { Socket } from 'node:net';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { adminCredentials } from './e2e/helpers/secrets';
 
 /**
  * Global setup runs once per test run, before any tests execute.
@@ -50,12 +53,6 @@ const financialArtifactPath = resolve(
 
 // API base URL must match the webServer port configured in playwright.config.ts.
 const apiBaseUrl = 'http://127.0.0.1:5242';
-
-// Canonical admin credentials matching baseline.sql seed data.
-const adminCredentials = {
-  username: 'e2e_admin',
-  password: 'E2E_admin-password',
-};
 
 function writeRuntimeState(databaseContainerId: string): void {
   const runtimeDirectory = resolve(currentDirectory, 'e2e/.runtime');
@@ -321,7 +318,14 @@ async function runFinancialImportAndRenewal(): Promise<void> {
 async function waitForDatabaseReady(): Promise<void> {
   console.log('⏳ Waiting for database to become ready...');
 
-  while (true) {
+  // Bound the retry loop so a broken setup fails fast with a readable error
+  // instead of hanging forever (previously an unbounded while loop — see A1).
+  const maxAttempts = 60; // ~2 minutes at 2 s intervals
+  let attempt = 0;
+
+  while (attempt < maxAttempts) {
+    attempt += 1;
+
     try {
       const response = await fetch(`${apiBaseUrl}/_health/ready`);
 
@@ -331,16 +335,67 @@ async function waitForDatabaseReady(): Promise<void> {
       }
 
       console.log(
-        `   /_health/ready returned ${response.status} — retrying in 2 s...`,
+        `   /_health/ready returned ${response.status} — retrying in 2 s... (attempt ${attempt}/${maxAttempts})`,
       );
     } catch (error) {
       // Server temporarily unreachable during Docker network disruption — keep polling.
       const message = error instanceof Error ? error.message : String(error);
-      console.log(`   Server unreachable (${message}) — retrying in 2 s...`);
+      console.log(
+        `   Server unreachable (${message}) — retrying in 2 s... (attempt ${attempt}/${maxAttempts})`,
+      );
     }
 
     await new Promise(resolve => setTimeout(resolve, 2000));
   }
+
+  throw new Error(
+    `Database readiness check timed out after ${maxAttempts} attempts (~${(maxAttempts * 2) / 60} min). ` +
+      `The API at ${apiBaseUrl} never returned /_health/ready. ` +
+      'Check Source/Server/e2e-server.log for startup errors (e.g. a failed DB connection).',
+  );
+}
+
+/**
+ * Waits until nothing is listening on the given host port, with a bounded timeout.
+ *
+ * Used after force-removing a stale container: Docker Desktop on Windows can take a
+ * moment to release the host port binding after `docker rm -f`. Polling is more
+ * reliable than a fixed sleep and fails fast if the port is never released (see G3).
+ */
+async function waitForPortReleased(
+  port: number,
+  maxAttempts = 30,
+): Promise<void> {
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const portClosed = await new Promise<boolean>(resolveSocket => {
+      const socket = new Socket();
+      socket.setTimeout(1000);
+      socket.once('connect', () => {
+        socket.destroy();
+        resolveSocket(false);
+      });
+      socket.once('error', () => {
+        socket.destroy();
+        resolveSocket(true);
+      });
+      socket.once('timeout', () => {
+        socket.destroy();
+        resolveSocket(false);
+      });
+      socket.connect(port, '127.0.0.1');
+    });
+
+    if (portClosed) {
+      return;
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }
+
+  throw new Error(
+    `Port ${port} was not released after ${maxAttempts} attempts. ` +
+      'A previous run may have left a container or process bound to it. Check `docker ps`.',
+  );
 }
 
 function configureDotNetEnvironment(): void {
@@ -355,6 +410,71 @@ function configureDotNetEnvironment(): void {
   console.log('✅ .NET environment set for migration runner');
   console.log('   DOTNET_ENVIRONMENT=Production');
   console.log('   ASPNETCORE_ENVIRONMENT=Production');
+}
+
+const clientBaseUrl = 'http://127.0.0.1:5175';
+
+// Pre-warm the shared stack so the FIRST test of the run doesn't pay the cold-start
+// cost (the source of the attempt-1 flakes: attempt 1 runs cold, the retry runs warm
+// and always passes). Route modules are React Router lazy() imports — a plain HTTP
+// fetch does NOT transform them — so we mount every authenticated route once in a
+// real browser with an authenticated storage state, forcing Vite to transform the
+// lazy chunks and the API to serve its first reads before any test runs. (The API
+// login/read paths are already warmed by runFinancialImportAndRenewal().)
+// NON-FATAL: any failure just means tests pay the cold cost; the run continues.
+async function warmUpSharedStack(): Promise<void> {
+  console.log('🌡️ Pre-warming shared stack (Vite route transforms)...');
+
+  try {
+    const { chromium, request } = await import('playwright');
+
+    const requestContext = await request.newContext({
+      baseURL: apiBaseUrl,
+      timeout: 60_000,
+    });
+
+    const loginResponse = await requestContext.post('/api/auth/login', {
+      data: adminCredentials,
+    });
+
+    if (!loginResponse.ok()) {
+      await requestContext.dispose();
+      console.warn(`   Warm-up login failed: ${loginResponse.status()}`);
+      return;
+    }
+
+    const storageState = await requestContext.storageState();
+    await requestContext.dispose();
+
+    const browser = await chromium.launch();
+    const context = await browser.newContext({ storageState });
+    const page = await context.newPage();
+
+    try {
+      for (const route of [
+        '/dashboard',
+        '/expenses',
+        '/incomes',
+        '/accounts',
+        '/projections',
+        '/users',
+        '/approvals/pending',
+      ]) {
+        // domcontentloaded is enough to trigger the lazy route mount + chunk
+        // transform; networkidle would hang on the dashboard's polling.
+        await page
+          .goto(`${clientBaseUrl}${route}`, { waitUntil: 'domcontentloaded' })
+          .catch(() => {});
+      }
+    } finally {
+      await browser.close();
+    }
+
+    console.log('✅ Shared stack warm');
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn(`⚠️  Shared-stack warm-up skipped: ${message}`);
+  }
 }
 
 export default async (config: FullConfig) => {
@@ -396,13 +516,14 @@ export default async (config: FullConfig) => {
       });
 
       if (removeResult.status === 0) {
-        // Docker Desktop on Windows needs a moment after force-removal before the port
-        // binding is fully released. Without this delay the next container start can
-        // still see the port as allocated.
+        // Docker Desktop on Windows needs a moment after force-removal before the
+        // host port binding is fully released. Instead of a blind fixed sleep,
+        // poll until a connection to 55432 is refused, with a bounded timeout so
+        // we never hang on a broken Docker state (see G3).
         console.log(
-          '   Removed. Waiting 3 s for Docker Desktop to release port 55432...',
+          '   Removed. Waiting for Docker Desktop to release port 55432...',
         );
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        await waitForPortReleased(55432);
         console.log('✅ Stale container removed');
       } else {
         console.warn(
@@ -488,6 +609,8 @@ export default async (config: FullConfig) => {
           'Create an export from the application and place it at that path before running E2E tests.',
       );
     }
+
+    await warmUpSharedStack();
   } catch (error) {
     console.error('❌ Failed to start Postgres container:', error);
     throw error;

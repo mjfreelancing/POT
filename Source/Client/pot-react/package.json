@@ -26,8 +26,8 @@
     "e2e:edge": "playwright test --reporter=line --project edge",
     "e2e:mobile": "playwright test --reporter=line --project mobile-chrome --project mobile-safari",
     "e2e:all": "npm run e2e:all:dev",
-    "e2e:all:dev": "playwright test --project chromium --project edge --project mobile-chrome --project mobile-safari",
-    "e2e:all:prodlike": "playwright test --config=playwright.prod.config.ts --project chromium --project edge --project mobile-chrome --project mobile-safari --reporter=line",
+    "e2e:all:dev": "playwright test --project chromium --project edge --project mobile-chrome --project mobile-safari --reporter=line,html",
+    "e2e:all:prodlike": "playwright test --config=playwright.prod.config.ts --project chromium --project edge --project mobile-chrome --project mobile-safari --reporter=line,html",
     "e2e:report": "playwright show-report",
     "e2e:install": "playwright install chromium webkit",
     "type:check": "tsc --noEmit"

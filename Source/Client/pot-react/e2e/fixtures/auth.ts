@@ -1,90 +1,118 @@
-import { test as baseTest, expect } from '@playwright/test';
-import { existsSync, mkdirSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { test as baseTest, expect, type StorageState } from '@playwright/test';
 
-const currentFilePath = fileURLToPath(import.meta.url);
-const currentDirectory = dirname(currentFilePath);
-
-// Resolved path to the e2e/.auth directory, one level up from e2e/fixtures.
-const authDirectory = resolve(currentDirectory, '../.auth');
+import {
+  adminCredentials,
+  pwChangeCredentials,
+  viewerCredentials,
+} from '../helpers/secrets';
 
 // API base URL for the E2E test server — must match playwright.config.ts webServer port.
 const apiBaseUrl = 'http://127.0.0.1:5242';
 
-// Canonical admin credentials matching baseline.sql seed data.
-const adminCredentials = {
-  username: 'e2e_admin',
-  password: 'E2E_admin-password',
+type E2eCredentials = {
+  username: string;
+  password: string;
 };
 
-type WorkerFixtures = {
-  workerStorageState: string;
+type LoginResult = {
+  storageState: StorageState;
+  accessToken: string;
 };
 
 /**
- * Extended test fixture that provides worker-scoped authentication.
+ * Builds a Playwright `test` extended with a per-test authenticated storage
+ * state for the given canonical credentials.
  *
- * Each Playwright worker logs in once via the API and saves the resulting
- * HTTP-only refresh token cookie to e2e/.auth/{parallelIndex}.json.
- * The saved state is reused for every test in that worker without re-logging in.
+ * A fresh login per test is REQUIRED because the server rotates the refresh
+ * token on every `/api/auth/refresh` call. A storage state's refresh cookie is
+ * therefore single-use: once a test's page load refreshes the token, that cookie
+ * is invalidated server-side, and any later test reusing the same state gets a
+ * 401 and is redirected to the login page.
  *
- * The storageState override wires the saved file into each test's browser
- * context automatically, so tests start with the refresh token cookie in place.
- * The app then calls /api/auth/refresh on first use to obtain an access token.
+ * (This replaces the earlier worker-scoped shared-file approach, which failed
+ * intermittently when a worker was reused across multiple auth-using tests —
+ * see the "D3 within-run stale session" finding.)
  *
- * Auth state files are cleared by playwright.globalSetup.ts at the start of
- * each run to prevent stale sessions from prior runs (see D4 in PRD 012).
+ * The single per-test login is also exposed as an `accessToken` fixture (the
+ * 15-minute JWT from the login response), so fixture-managed suites can reuse
+ * that token for API setup/cleanup instead of performing an extra PBKDF2 login
+ * per operation. This cuts the number of expensive password verifies per test
+ * from ~3 to 1, which is a meaningful load reduction on the shared local stack.
  */
-export const test = baseTest.extend<{}, WorkerFixtures>({
-  storageState: [
-    async ({ workerStorageState }, use) => {
-      await use(workerStorageState);
-    },
-    { scope: 'test' },
-  ],
-
-  workerStorageState: [
-    async ({ playwright }, use, workerInfo) => {
-      const authFile = resolve(
-        authDirectory,
-        `${workerInfo.parallelIndex}.json`,
-      );
-
-      if (!existsSync(authFile)) {
+function createAuthenticatedTest(credentials: E2eCredentials) {
+  return baseTest.extend<{ loginResult: LoginResult; accessToken: string }>({
+    loginResult: [
+      async ({ playwright }, use) => {
         console.log(
-          `[auth] Creating new auth state for worker ${workerInfo.parallelIndex}`,
+          `[auth] Logging in as ${credentials.username} for test (fresh session)...`,
         );
 
+        // 60s per-action timeout mirrors the test timeout: on a loaded shared
+        // stack the first (cold) PBKDF2 login can exceed Playwright's 30s
+        // request default and fail the fixture before the test body runs.
         const requestContext = await playwright.request.newContext({
           baseURL: apiBaseUrl,
+          timeout: 60_000,
         });
 
-        const response = await requestContext.post('/api/auth/login', {
-          data: adminCredentials,
+        // Tolerate ONE slow-but-healthy cold login (the API may still be
+        // finishing JIT/EF warm-up). This is setup resilience, not a test retry.
+        let response = await requestContext.post('/api/auth/login', {
+          data: credentials,
         });
+
+        if (!response.ok()) {
+          console.warn(
+            `[auth] login attempt 1 failed (${response.status()}); retrying once`,
+          );
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          response = await requestContext.post('/api/auth/login', {
+            data: credentials,
+          });
+        }
 
         if (!response.ok()) {
           const body = await response.text();
           await requestContext.dispose();
           throw new Error(
-            `Auth fixture login failed for worker ${workerInfo.parallelIndex}: ${response.status()} ${body}`,
+            `Auth fixture login failed (${credentials.username}): ${response.status()} ${body}`,
           );
         }
 
-        mkdirSync(authDirectory, { recursive: true });
-        await requestContext.storageState({ path: authFile });
+        const body = (await response.json()) as { accessToken: string };
+        const state = await requestContext.storageState();
         await requestContext.dispose();
-      } else {
-        console.log(
-          `[auth] Reusing existing auth state for worker ${workerInfo.parallelIndex}`,
-        );
-      }
 
-      await use(authFile);
-    },
-    { scope: 'worker' },
-  ],
-});
+        await use({ storageState: state, accessToken: body.accessToken });
+      },
+      { scope: 'test' },
+    ],
+    storageState: [
+      async ({ loginResult }, use) => {
+        await use(loginResult.storageState);
+      },
+      { scope: 'test' },
+    ],
+    accessToken: [
+      async ({ loginResult }, use) => {
+        await use(loginResult.accessToken);
+      },
+      { scope: 'test' },
+    ],
+  });
+}
+
+// Admin test: authenticated as e2e_admin (full access).
+export const test = createAuthenticatedTest(adminCredentials);
+
+// Viewer test: authenticated as e2e_viewer (read-only access).
+export const viewerTest = createAuthenticatedTest(viewerCredentials);
+
+// Password-change test: authenticated as e2e_pwchange, a canonical seed user
+// (Viewer role) with its OWN unique password E2E_pwchange-password (see
+// baseline.sql + secrets.ts). It exists so the user-settings password-change
+// tests can rotate the password (bumping TokenVersion + revoking ITS sessions)
+// without invalidating the shared admin session every other suite depends on.
+export const pwChangeTest = createAuthenticatedTest(pwChangeCredentials);
 
 export { expect };

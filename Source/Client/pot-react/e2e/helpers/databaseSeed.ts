@@ -1,18 +1,12 @@
 /// <reference types="node" />
 
 /**
- * Database seed helpers for isolated-sequence E2E tests.
+ * Database query helpers for parallel-safe E2E tests.
  *
- * These helpers allow a test suite to reset the shared Testcontainers database
- * to a known state before a sequence of tests begins. They are only intended
- * for use in isolated-sequence tests (separate npm invocation, workers: 1).
- *
- * Parallel-safe and fixture-managed tests must not call these functions —
- * they share the database established by globalSetup and manage their own
- * state through afterEach cleanup.
+ * These helpers run read-only queries against the shared Testcontainers
+ * database established by globalSetup. They must never mutate state.
  *
  * Available exports:
- *   applyDatabaseSeedMode  — reset the database to blank, seeded-users, or fully-seeded
  *   listExistingUsernames  — query which of a given set of usernames exist in the database
  *
  * Container ID resolution order (used by all docker exec calls):
@@ -25,35 +19,6 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-
-/**
- * The three database start states a test suite can request.
- *
- * blank        — migrations applied; no site, no users, no financial data.
- *                Used for tests that exercise first-run / registration flows.
- *
- * seeded-users — site and canonical E2E users exist; no financial data.
- *                Established by loading e2e/seed/baseline.sql into the container.
- *                Used when a test creates its own financial records.
- *
- * fully-seeded — seeded-users state plus financial artifact imported and
- *                renewal/accrual run to advance data to the current date.
- *                Used for projection, filter, and long-flow scenarios.
- */
-type E2eDatabaseSeedMode = 'blank' | 'seeded-users' | 'fully-seeded';
-
-// Async callback responsible for importing the financial artifact and running
-// server-side renewal/accrual. Required when mode is 'fully-seeded'.
-type FullySeededHook = () => Promise<void>;
-
-type ApplyDatabaseSeedModeOptions = {
-  mode: E2eDatabaseSeedMode;
-  // Absolute path to e2e/seed/baseline.sql — the committed data-only pg_dump snapshot.
-  baselineSqlPath: string;
-  // Required when mode === 'fully-seeded'. Must import the financial artifact
-  // and run server-side renewal/accrual before resolving.
-  runFullySeededSetup?: FullySeededHook;
-};
 
 // Throws if the named environment variable is absent or empty.
 function requireEnvironmentVariable(name: string): string {
@@ -104,48 +69,6 @@ function getContainerIdFromEnvironment(): string {
   }
 
   return requireEnvironmentVariable('DATABASE_CONTAINER_ID');
-}
-
-// Pipes a SQL file into the running Postgres container via `docker exec ... psql`.
-// Uses ON_ERROR_STOP=1 so any SQL error immediately aborts and is surfaced as a
-// thrown error rather than silently continuing.
-async function importSqlIntoRunningPostgresContainer(
-  baselineSqlPath: string,
-): Promise<void> {
-  const containerId = getContainerIdFromEnvironment();
-  const databaseUrl = new URL(requireEnvironmentVariable('DATABASE_URL'));
-  const sql = readFileSync(baselineSqlPath, 'utf-8');
-  const username = decodeURIComponent(databaseUrl.username);
-  const password = decodeURIComponent(databaseUrl.password);
-  const database = decodeURIComponent(databaseUrl.pathname.replace(/^\//, ''));
-
-  const result = spawnSync(
-    'docker',
-    [
-      'exec',
-      '-i',
-      '-e',
-      `PGPASSWORD=${password}`,
-      containerId,
-      'psql',
-      '-v',
-      'ON_ERROR_STOP=1',
-      '-U',
-      username,
-      '--dbname',
-      database,
-    ],
-    {
-      encoding: 'utf-8',
-      input: sql,
-    },
-  );
-
-  if (result.status !== 0) {
-    throw new Error(
-      `Failed to import SQL into PostgreSQL container. ${result.stderr || result.stdout}`,
-    );
-  }
 }
 
 /**
@@ -210,43 +133,4 @@ async function listExistingUsernames(usernames: string[]): Promise<string[]> {
     .filter(entry => entry.length > 0);
 }
 
-/**
- * Resets the shared Testcontainers database to the requested seed mode.
- *
- * Intended for use in isolated-sequence tests only — call from `beforeAll` to
- * establish a known database state before the test sequence begins.
- *
- * Mode behaviour:
- *   blank        — no-op; the container already has only migrations applied.
- *   seeded-users — loads baseline.sql (site + canonical users) via psql.
- *   fully-seeded — loads baseline.sql then calls runFullySeededSetup() to
- *                  import the financial artifact and run renewal/accrual.
- *
- * Throws if mode is 'fully-seeded' and runFullySeededSetup is not provided.
- */
-async function applyDatabaseSeedMode(
-  options: ApplyDatabaseSeedModeOptions,
-): Promise<void> {
-  switch (options.mode) {
-    case 'blank':
-      return;
-
-    case 'seeded-users':
-      await importSqlIntoRunningPostgresContainer(options.baselineSqlPath);
-      return;
-
-    case 'fully-seeded':
-      if (!options.runFullySeededSetup) {
-        throw new Error(
-          'Fully-seeded mode requires runFullySeededSetup to complete artifact import and renewal/accrual.',
-        );
-      }
-
-      await importSqlIntoRunningPostgresContainer(options.baselineSqlPath);
-      await options.runFullySeededSetup();
-      return;
-  }
-}
-
-export { applyDatabaseSeedMode, listExistingUsernames };
-export type { E2eDatabaseSeedMode };
+export { listExistingUsernames };

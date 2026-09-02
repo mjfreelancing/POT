@@ -92,6 +92,27 @@ describe('ThemeProvider', () => {
     expect(screen.getByTestId('theme-value')).toHaveTextContent('light');
   });
 
+  test('re-reads theme when storageKey changes without remounting', () => {
+    localStorage.setItem('pot:dev:theme', 'dark');
+    localStorage.setItem('pot:dev:user:abc:theme', 'light');
+
+    const { rerender } = render(
+      <ThemeProvider storageKey="pot:dev:theme">
+        <ThemeProbe />
+      </ThemeProvider>,
+    );
+
+    expect(screen.getByTestId('theme-value')).toHaveTextContent('dark');
+
+    rerender(
+      <ThemeProvider storageKey="pot:dev:user:abc:theme">
+        <ThemeProbe />
+      </ThemeProvider>,
+    );
+
+    expect(screen.getByTestId('theme-value')).toHaveTextContent('light');
+  });
+
   test('uses defaultTheme when storageKey is null', () => {
     render(
       <ThemeProvider storageKey={null} defaultTheme="dark">
