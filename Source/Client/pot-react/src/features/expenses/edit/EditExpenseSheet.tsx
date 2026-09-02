@@ -5,7 +5,6 @@ import { useLocation, useNavigate, useParams } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetExpenseById } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
-import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { useErrorContext } from '@/contexts';
 import type { Account, EditExpense, Expense } from '@/data';
 import { ApiErrorSheetState } from '@/features/shared/sheets/asyncSheetStates';
@@ -60,7 +59,7 @@ const EditExpenseSheetInternal: React.FC<EditExpenseSheetInternalProps> = ({
     values: defaultValues, // Use current values to avoid initial blank form
   });
 
-  const { error, setError } = useErrorContext();
+  const { setError } = useErrorContext();
 
   const onSubmit = async (values: ExpenseFormData) => {
     const payload: EditExpense = {
@@ -87,13 +86,6 @@ const EditExpenseSheetInternal: React.FC<EditExpenseSheetInternalProps> = ({
 
   return (
     <ExpenseSheet title="Edit Expense">
-      {error && (
-        <ErrorSheet
-          title={error.title}
-          description={error.description}
-          onDismiss={() => setError(null)}
-        />
-      )}
       <ExpenseForm
         form={form}
         onSubmit={onSubmit}

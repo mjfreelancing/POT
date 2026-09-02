@@ -5,7 +5,6 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { useApiUpdateUser } from '@/api/hooks/useUser';
-import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { SuccessToast } from '@/components/feedback/toast';
 import { Button } from '@/components/ui/button';
 import {
@@ -37,7 +36,7 @@ const UserDetailsForm = forwardRef<
 >(function UserDetailsForm({ onDirtyChange }: UserDetailsFormProps, ref) {
   const { userInfo, setUserInfo } = useUserStore();
   const updateUser = useApiUpdateUser();
-  const { error, setError } = useErrorContext();
+  const { setError } = useErrorContext();
 
   // Will not be null once the user has logged in - can't get here until then
   const userDetails = userInfo!;
@@ -173,13 +172,6 @@ const UserDetailsForm = forwardRef<
         })}
         className="space-y-6"
       >
-        {error && (
-          <ErrorSheet
-            title={error.title}
-            description={error.description}
-            onDismiss={() => setError(null)}
-          />
-        )}
         <FormField
           control={form.control}
           name="username"

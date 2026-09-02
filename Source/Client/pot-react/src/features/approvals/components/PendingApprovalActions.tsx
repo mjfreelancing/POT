@@ -8,7 +8,6 @@ import {
 import { toast } from 'sonner';
 
 import { useUpdatePendingUserStatus } from '@/api/hooks';
-import { ErrorSheet } from '@/components/feedback';
 import { SuccessToast } from '@/components/feedback/toast';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,8 +17,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useCacheInvalidation } from '@/concerns';
-import { logger } from '@/concerns';
+import { logger, useCacheInvalidation } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import type { PendingApprovalUser } from '@/data/approvals';
 
@@ -31,7 +29,7 @@ function PendingApprovalActions({ user }: PendingApprovalActionsProps) {
   const queryClient = useQueryClient();
   const invalidateCache = useCacheInvalidation(queryClient);
   const updateStatusMutation = useUpdatePendingUserStatus();
-  const { error, setError } = useErrorContext();
+  const { setError } = useErrorContext();
 
   const handleApprove = async () => {
     logger.info('PendingApprovalActions', 'Approving user', {
@@ -113,14 +111,6 @@ function PendingApprovalActions({ user }: PendingApprovalActionsProps) {
 
   return (
     <>
-      {error && (
-        <ErrorSheet
-          title={error.title}
-          description={error.description}
-          onDismiss={() => setError(null)}
-        />
-      )}
-
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">

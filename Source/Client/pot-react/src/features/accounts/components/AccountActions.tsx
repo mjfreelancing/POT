@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { ConfirmationDialog } from '@/components/dialog';
-import { ErrorSheet } from '@/components/feedback';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -24,7 +23,7 @@ type AccountActionsProps = {
 
 function AccountActions({ account }: AccountActionsProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const { error, setError } = useErrorContext();
+  const { setError } = useErrorContext();
   const navigate = useNavigate();
   const { deleteAccount } = useDeleteAccount(account.rowId);
   const hasLinkedData = account.linkedExpenses > 0 || account.linkedIncomes > 0;
@@ -45,14 +44,6 @@ function AccountActions({ account }: AccountActionsProps) {
 
   return (
     <>
-      {error && (
-        <ErrorSheet
-          title={error.title}
-          description={error.description}
-          onDismiss={() => setError(null)}
-        />
-      )}
-
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">

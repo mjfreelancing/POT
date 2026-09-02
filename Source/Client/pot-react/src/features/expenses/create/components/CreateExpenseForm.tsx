@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router';
 
-import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { useErrorContext } from '@/contexts';
 import type { Account, CreateExpense, Expense } from '@/data';
 import { AccrualPolicy, Frequency, todayIsoFormat } from '@/lib';
@@ -79,7 +78,7 @@ function CreateExpenseForm({
     form.reset(defaultValues);
   }, [defaultValues, form]);
 
-  const { error, setError } = useErrorContext();
+  const { setError } = useErrorContext();
 
   const onSubmit = async (values: ExpenseFormData) => {
     const expense: CreateExpense = {
@@ -106,13 +105,6 @@ function CreateExpenseForm({
 
   return (
     <ExpenseSheet title={sheetTitle}>
-      {error && (
-        <ErrorSheet
-          title={error.title}
-          description={error.description}
-          onDismiss={() => setError(null)}
-        />
-      )}
       <ExpenseForm
         form={form}
         onSubmit={onSubmit}

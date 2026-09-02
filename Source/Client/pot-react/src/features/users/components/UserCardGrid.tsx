@@ -1,6 +1,4 @@
-import { ErrorSheet } from '@/components/feedback';
 import { Card, CardContent } from '@/components/ui/card';
-import { useErrorContext } from '@/contexts';
 import type { SiteUser } from '@/data/siteUser';
 
 import UserMobileCard from './UserMobileCard';
@@ -24,17 +22,8 @@ function UserCardGrid({
   onResendInvitation,
   currentUsername,
 }: UserCardGridProps) {
-  const { error, setError } = useErrorContext();
-
   return (
     <>
-      {error && (
-        <ErrorSheet
-          title={error.title}
-          description={error.description}
-          onDismiss={() => setError(null)}
-        />
-      )}
       <Card className="card-elevated flex flex-col flex-1 min-h-0 py-2 gap-0">
         <CardContent className="px-4 py-2 flex-1 min-h-0 overflow-auto">
           <div className="grid grid-cols-1 gap-3">

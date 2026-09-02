@@ -2,7 +2,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 
-import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { useErrorContext } from '@/contexts';
 import type { CreateAccount } from '@/data';
 
@@ -13,7 +12,7 @@ import { accountFormSchema } from '../schemas/accountFormSchema';
 import useCreateAccount from './hooks/useCreateAccount';
 
 function CreateAccountSheet() {
-  const { error, setError } = useErrorContext();
+  const { setError } = useErrorContext();
   const navigate = useNavigate();
   const { createAccount } = useCreateAccount();
 
@@ -45,13 +44,6 @@ function CreateAccountSheet() {
 
   return (
     <AccountSheet title="Create Account">
-      {error && (
-        <ErrorSheet
-          title={error.title}
-          description={error.description}
-          onDismiss={() => setError(null)}
-        />
-      )}
       <AccountForm
         form={form}
         onSubmit={onSubmit}

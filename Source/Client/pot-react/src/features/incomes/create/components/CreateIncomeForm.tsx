@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router';
 
-import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { useErrorContext } from '@/contexts';
 import type { Account, CreateIncome, Income } from '@/data';
 import { Frequency, todayIsoFormat } from '@/lib';
@@ -75,7 +74,7 @@ function CreateIncomeForm({
     form.reset(defaultValues);
   }, [defaultValues, form]);
 
-  const { error, setError } = useErrorContext();
+  const { setError } = useErrorContext();
 
   const onSubmit = async (values: IncomeFormData) => {
     const income: CreateIncome = {
@@ -99,13 +98,6 @@ function CreateIncomeForm({
 
   return (
     <IncomeSheet title={sheetTitle}>
-      {error && (
-        <ErrorSheet
-          title={error.title}
-          description={error.description}
-          onDismiss={() => setError(null)}
-        />
-      )}
       <IncomeForm
         form={form}
         onSubmit={onSubmit}

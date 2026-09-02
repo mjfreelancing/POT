@@ -3,7 +3,6 @@ import { CheckCircle, ThumbsDown, ThumbsUp } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useUpdatePendingUserStatus } from '@/api/hooks';
-import { ErrorSheet } from '@/components/feedback';
 import { SuccessToast } from '@/components/feedback/toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -25,7 +24,7 @@ function PendingApprovalMobileCard({ user }: PendingApprovalMobileCardProps) {
   const queryClient = useQueryClient();
   const invalidateCache = useCacheInvalidation(queryClient);
   const updateStatusMutation = useUpdatePendingUserStatus();
-  const { error, setError } = useErrorContext();
+  const { setError } = useErrorContext();
 
   const handleApprove = async () => {
     logger.info('PendingApprovalMobileCard', 'Approving user', {
@@ -105,14 +104,6 @@ function PendingApprovalMobileCard({ user }: PendingApprovalMobileCardProps) {
 
   return (
     <>
-      {error && (
-        <ErrorSheet
-          title={error.title}
-          description={error.description}
-          onDismiss={() => setError(null)}
-        />
-      )}
-
       <Card
         className={cn(
           'transition-all duration-200 hover:shadow-md py-2 lg:py-2.5 gap-0 flex flex-col',

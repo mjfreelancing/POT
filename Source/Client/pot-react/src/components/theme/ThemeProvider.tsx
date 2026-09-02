@@ -24,24 +24,43 @@ const initialState: ThemeProviderState = {
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
+// Reads the persisted theme for the given storage key, removing legacy keys so
+// stale data does not persist under old keys. Shared by the initial state and
+// the storage-key-change effect so both stay in sync.
+function readThemeFromStorage(
+  storageKey: string | null | undefined,
+  defaultTheme: Theme,
+): Theme {
+  // TEMPORARY: remove legacy theme keys so stale data does not persist under old keys.
+  purgeLegacyStorageKeys([
+    { key: LEGACY_THEME_STORAGE_KEY, storage: localStorage },
+  ]);
+
+  if (!storageKey) {
+    return defaultTheme;
+  }
+
+  return (localStorage.getItem(storageKey) as Theme) || defaultTheme;
+}
+
 function ThemeProvider({
   children,
   defaultTheme = 'system',
   storageKey = 'app-ui-theme',
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    // TEMPORARY: remove legacy theme keys so stale data does not persist under old keys.
-    purgeLegacyStorageKeys([
-      { key: LEGACY_THEME_STORAGE_KEY, storage: localStorage },
-    ]);
+  const [theme, setTheme] = useState<Theme>(() =>
+    readThemeFromStorage(storageKey, defaultTheme),
+  );
 
-    if (!storageKey) {
-      return defaultTheme;
-    }
-
-    return (localStorage.getItem(storageKey) as Theme) || defaultTheme;
-  });
+  useEffect(() => {
+    // Re-read the theme when the storage key changes — e.g. when the signed-in
+    // user's identity resolves after mount and the key becomes user-scoped.
+    // Previously App.tsx forced this re-read via a key={userId} on the provider,
+    // which remounted the whole app subtree (including the error boundary).
+    // Reading reactively avoids that full remount.
+    setTheme(readThemeFromStorage(storageKey, defaultTheme));
+  }, [storageKey, defaultTheme]);
 
   useEffect(() => {
     const root = window.document.documentElement;

@@ -6,7 +6,6 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { useRoles, useUpdateUserRole } from '@/api/hooks';
-import { ErrorSheet } from '@/components/feedback';
 import { SuccessToast } from '@/components/feedback/toast';
 import { Button } from '@/components/ui/button';
 import {
@@ -62,7 +61,7 @@ export function UserRoleDialog({ user, isOpen, onClose }: UserRoleDialogProps) {
   const updateRoleMutation = useUpdateUserRole();
   const queryClient = useQueryClient();
   const invalidateCache = useCacheInvalidation(queryClient);
-  const { error, setError } = useErrorContext();
+  const { setError } = useErrorContext();
 
   const roles: Role[] = rolesQuery.data?.success ? rolesQuery.data.value : [];
   const isLoadingRoles = rolesQuery.isLoading;
@@ -144,14 +143,6 @@ export function UserRoleDialog({ user, isOpen, onClose }: UserRoleDialogProps) {
 
   return (
     <>
-      {error && (
-        <ErrorSheet
-          title={error.title}
-          description={error.description}
-          onDismiss={() => setError(null)}
-        />
-      )}
-
       <Dialog open={isOpen} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

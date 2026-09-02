@@ -1,6 +1,5 @@
 import type { ColumnDef } from '@tanstack/react-table';
 
-import { ErrorSheet } from '@/components/feedback';
 import {
   createActionsColumn,
   createRowIdGetter,
@@ -8,7 +7,6 @@ import {
   DataTableColumnHeader,
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
-import { useErrorContext } from '@/contexts';
 import type { SiteUser } from '@/data/siteUser';
 import { formatDateTime } from '@/lib';
 
@@ -21,8 +19,6 @@ type UsersTableProps = {
 };
 
 function UsersTable({ users, onChangeRole }: UsersTableProps) {
-  const { error, setError } = useErrorContext();
-
   const columns: ColumnDef<SiteUser>[] = [
     {
       id: 'username',
@@ -139,13 +135,6 @@ function UsersTable({ users, onChangeRole }: UsersTableProps) {
 
   return (
     <>
-      {error && (
-        <ErrorSheet
-          title={error.title}
-          description={error.description}
-          onDismiss={() => setError(null)}
-        />
-      )}
       <Card className="card-elevated flex flex-col flex-1 min-h-0">
         <CardContent className="px-4 flex-1 min-h-0 flex flex-col">
           <DataTable

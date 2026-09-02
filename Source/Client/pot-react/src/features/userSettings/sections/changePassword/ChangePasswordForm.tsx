@@ -9,7 +9,6 @@ import {
 import { useForm } from 'react-hook-form';
 
 import useChangePassword from '@/api/hooks/useChangePassword';
-import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -52,7 +51,7 @@ const ChangePasswordForm = forwardRef<
   const isDirty = form.formState.isDirty;
 
   const { changePassword, isPending } = useChangePassword();
-  const { error, setError } = useErrorContext();
+  const { setError } = useErrorContext();
 
   useEffect(() => {
     logger.info('ChangePasswordForm', 'Mounted');
@@ -145,13 +144,6 @@ const ChangePasswordForm = forwardRef<
         })}
         className="space-y-6"
       >
-        {error && (
-          <ErrorSheet
-            title={error.title}
-            description={error.description}
-            onDismiss={() => setError(null)}
-          />
-        )}
         <FormField
           control={form.control}
           name="currentPassword"

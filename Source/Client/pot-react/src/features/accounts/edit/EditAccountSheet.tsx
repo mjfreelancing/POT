@@ -26,7 +26,7 @@ const EditAccountSheetInternal: React.FC<EditAccountSheetInternalProps> = ({
 }) => {
   const navigate = useNavigate();
   const { editAccount } = useEditAccount();
-  const { error, setError } = useErrorContext();
+  const { setError } = useErrorContext();
 
   const defaultValues = useMemo(
     () => ({
@@ -66,13 +66,6 @@ const EditAccountSheetInternal: React.FC<EditAccountSheetInternalProps> = ({
 
   return (
     <AccountSheet title="Edit Account">
-      {error && (
-        <ErrorSheet
-          title={error.title}
-          description={error.description}
-          onDismiss={() => setError(null)}
-        />
-      )}
       <AccountForm
         form={form}
         onSubmit={onSubmit}

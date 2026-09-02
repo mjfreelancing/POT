@@ -9,7 +9,6 @@ import {
   useApiGetSettings,
   useApiUpdateSetting,
 } from '@/api/hooks/useSettings';
-import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { SuccessToast } from '@/components/feedback/toast';
 import { Button } from '@/components/ui/button';
 import {
@@ -79,7 +78,7 @@ const BudgetRemindersForm = forwardRef<
   const invalidateCache = useCacheInvalidation(queryClient);
   const settingsQuery = useApiGetSettings();
   const updateSetting = useApiUpdateSetting();
-  const { error, setError } = useErrorContext();
+  const { setError } = useErrorContext();
 
   // Derive primitive values from the server response so effect dependency arrays
   // contain stable primitive values rather than the settings object. Using the
@@ -315,14 +314,6 @@ const BudgetRemindersForm = forwardRef<
           <div className="inline-flex rounded-md border border-border/50 bg-amber-500/10 px-2 py-1 text-xs text-amber-700 dark:text-amber-400">
             View only
           </div>
-        )}
-
-        {error && (
-          <ErrorSheet
-            title={error.title}
-            description={error.description}
-            onDismiss={() => setError(null)}
-          />
         )}
 
         <FormField

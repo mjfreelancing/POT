@@ -5,7 +5,6 @@ import { useLocation, useNavigate, useParams } from 'react-router';
 
 import { useApiGetAllAccounts, useApiGetIncomeById } from '@/api/hooks';
 import LoadingMessage from '@/components/feedback/message/LoadingMessage';
-import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { useErrorContext } from '@/contexts';
 import type { Account, EditIncome, Income } from '@/data';
 import { ApiErrorSheetState } from '@/features/shared/sheets/asyncSheetStates';
@@ -58,7 +57,7 @@ const EditIncomeSheetInternal: React.FC<EditIncomeSheetInternalProps> = ({
     values: defaultValues, // Use current values to avoid initial blank form
   });
 
-  const { error, setError } = useErrorContext();
+  const { setError } = useErrorContext();
 
   const onSubmit = async (values: IncomeFormData) => {
     const payload: EditIncome = {
@@ -82,13 +81,6 @@ const EditIncomeSheetInternal: React.FC<EditIncomeSheetInternalProps> = ({
 
   return (
     <IncomeSheet title="Edit Income">
-      {error && (
-        <ErrorSheet
-          title={error.title}
-          description={error.description}
-          onDismiss={() => setError(null)}
-        />
-      )}
       <IncomeForm
         form={form}
         onSubmit={onSubmit}

@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { ConfirmationDialog } from '@/components/dialog';
-import { ErrorSheet, StatusBadge } from '@/components/feedback';
+import { StatusBadge } from '@/components/feedback';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -39,7 +39,7 @@ type AccountMobileCardProps = {
 function AccountMobileCard({ account }: AccountMobileCardProps) {
   const { description, bsb, number, balance, available } = account;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const { error, setError } = useErrorContext();
+  const { setError } = useErrorContext();
   const navigate = useNavigate();
   const { deleteAccount } = useDeleteAccount(account.rowId);
   const hasLinkedData = account.linkedExpenses > 0 || account.linkedIncomes > 0;
@@ -84,14 +84,6 @@ function AccountMobileCard({ account }: AccountMobileCardProps) {
 
   return (
     <>
-      {error && (
-        <ErrorSheet
-          title={error.title}
-          description={error.description}
-          onDismiss={() => setError(null)}
-        />
-      )}
-
       <Card
         className={cn(
           'transition-all duration-200 hover:shadow-md py-2 lg:py-2.5 gap-0 flex flex-col',

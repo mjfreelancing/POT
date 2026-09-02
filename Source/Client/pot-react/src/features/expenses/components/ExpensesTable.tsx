@@ -10,7 +10,7 @@ import {
   useApiToggleExcludeExpenses,
 } from '@/api/hooks/useExpenses';
 import { ConfirmationDialog } from '@/components/dialog';
-import { ErrorSheet, SuccessToast } from '@/components/feedback';
+import { SuccessToast } from '@/components/feedback';
 import type { BulkAction } from '@/components/table';
 import {
   createAccountDescriptionColumn,
@@ -100,7 +100,7 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
   const queryClient = useQueryClient();
   const renewExpensesMutation = useApiRenewExpenses();
   const excludeExpensesMutation = useApiToggleExcludeExpenses();
-  const { error, setError } = useErrorContext();
+  const { setError } = useErrorContext();
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [pendingExpenses, setPendingExpenses] = useState<Expense[]>([]);
 
@@ -319,14 +319,6 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
 
   return (
     <>
-      {error && (
-        <ErrorSheet
-          title={error.title}
-          description={error.description}
-          onDismiss={() => setError(null)}
-        />
-      )}
-
       <ConfirmationDialog
         open={showConfirmation}
         title="Mark Expenses as Paid"

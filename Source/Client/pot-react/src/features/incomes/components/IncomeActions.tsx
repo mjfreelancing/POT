@@ -14,7 +14,6 @@ import { toast } from 'sonner';
 
 import { useApiRenewIncomes, useApiToggleExcludeIncomes } from '@/api/hooks';
 import { ConfirmationDialog } from '@/components/dialog';
-import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { SuccessToast } from '@/components/feedback/toast';
 import { Button } from '@/components/ui/button';
 import {
@@ -47,7 +46,7 @@ function IncomeActions({ income }: IncomeActionsProps) {
     useState(false);
   const [isRenewing, setIsRenewing] = useState(false);
   const [isTogglingExclusion, setIsTogglingExclusion] = useState(false);
-  const { error, setError } = useErrorContext();
+  const { setError } = useErrorContext();
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
@@ -285,14 +284,6 @@ function IncomeActions({ income }: IncomeActionsProps) {
 
   return (
     <>
-      {error && (
-        <ErrorSheet
-          title={error.title}
-          description={error.description}
-          onDismiss={() => setError(null)}
-        />
-      )}
-
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">

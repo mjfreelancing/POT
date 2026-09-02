@@ -41,7 +41,7 @@ function InviteUserSheet() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const invalidateCache = useCacheInvalidation(queryClient);
-  const { error, setError } = useErrorContext();
+  const { setError } = useErrorContext();
 
   const form = useForm<UserInvitationFormData>({
     resolver: zodResolver(userInvitationFormSchema),
@@ -125,14 +125,6 @@ function InviteUserSheet() {
             Invite New User form
           </DialogDescription>
           <Separator />
-
-          {error && (
-            <ErrorSheet
-              title={error.title}
-              description={error.description}
-              onDismiss={() => setError(null)}
-            />
-          )}
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

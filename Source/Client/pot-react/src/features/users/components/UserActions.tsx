@@ -10,7 +10,6 @@ import {
 import { toast } from 'sonner';
 
 import { useResendInvitation, useUpdateUserStatus } from '@/api/hooks';
-import { ErrorSheet } from '@/components/feedback';
 import { SuccessToast } from '@/components/feedback/toast';
 import { Button } from '@/components/ui/button';
 import {
@@ -36,7 +35,7 @@ function UserActions({ user, onChangeRole }: UserActionsProps) {
   const invalidateCache = useCacheInvalidation(queryClient);
   const resendInvitationMutation = useResendInvitation();
   const updateStatusMutation = useUpdateUserStatus();
-  const { error, setError } = useErrorContext();
+  const { setError } = useErrorContext();
   const { hasPermission } = usePermissions();
   const { userInfo } = useAuthContext();
   const canManageUsers = hasPermission('user:manage');
@@ -116,14 +115,6 @@ function UserActions({ user, onChangeRole }: UserActionsProps) {
 
   return (
     <>
-      {error && (
-        <ErrorSheet
-          title={error.title}
-          description={error.description}
-          onDismiss={() => setError(null)}
-        />
-      )}
-
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">

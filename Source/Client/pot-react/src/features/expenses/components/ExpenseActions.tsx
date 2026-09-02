@@ -17,7 +17,6 @@ import {
   useApiToggleExcludeExpenses,
 } from '@/api/hooks/useExpenses';
 import { ConfirmationDialog } from '@/components/dialog';
-import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { SuccessToast } from '@/components/feedback/toast';
 import { Button } from '@/components/ui/button';
 import {
@@ -49,7 +48,7 @@ function ExpenseActions({ expense }: ExpenseActionsProps) {
   const [showMarkAsPaidDialog, setShowMarkAsPaidDialog] = useState(false);
   const [isRenewing, setIsRenewing] = useState(false);
   const [isTogglingExclusion, setIsTogglingExclusion] = useState(false);
-  const { error, setError } = useErrorContext();
+  const { setError } = useErrorContext();
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
@@ -286,14 +285,6 @@ function ExpenseActions({ expense }: ExpenseActionsProps) {
 
   return (
     <>
-      {error && (
-        <ErrorSheet
-          title={error.title}
-          description={error.description}
-          onDismiss={() => setError(null)}
-        />
-      )}
-
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">

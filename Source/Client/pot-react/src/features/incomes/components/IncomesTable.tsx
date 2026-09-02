@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 import { useApiRenewIncomes, useApiToggleExcludeIncomes } from '@/api/hooks';
 import { ConfirmationDialog } from '@/components/dialog';
-import { ErrorSheet, SuccessToast } from '@/components/feedback';
+import { SuccessToast } from '@/components/feedback';
 import type { BulkAction } from '@/components/table';
 import {
   createAccountDescriptionColumn,
@@ -74,7 +74,7 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
   const queryClient = useQueryClient();
   const renewIncomesMutation = useApiRenewIncomes();
   const excludeIncomesMutation = useApiToggleExcludeIncomes();
-  const { error, setError } = useErrorContext();
+  const { setError } = useErrorContext();
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [pendingIncomes, setPendingIncomes] = useState<Income[]>([]);
 
@@ -292,14 +292,6 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
 
   return (
     <>
-      {error && (
-        <ErrorSheet
-          title={error.title}
-          description={error.description}
-          onDismiss={() => setError(null)}
-        />
-      )}
-
       <ConfirmationDialog
         open={showConfirmation}
         title="Mark Incomes as Received"

@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 
 import { useApiRenewIncomes, useApiToggleExcludeIncomes } from '@/api/hooks';
 import { ConfirmationDialog } from '@/components/dialog';
-import { ErrorSheet, NotePopover } from '@/components/feedback';
+import { NotePopover } from '@/components/feedback';
 import { SuccessToast } from '@/components/feedback/toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -95,7 +95,7 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
     useState(false);
   const [isRenewing, setIsRenewing] = useState(false);
   const [isTogglingExclusion, setIsTogglingExclusion] = useState(false);
-  const { error, setError } = useErrorContext();
+  const { setError } = useErrorContext();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const location = useLocation();
@@ -334,14 +334,6 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
 
   return (
     <>
-      {error && (
-        <ErrorSheet
-          title={error.title}
-          description={error.description}
-          onDismiss={() => setError(null)}
-        />
-      )}
-
       <Card
         className={cn(
           'transition-all duration-200 hover:shadow-md py-2 lg:py-2.5 gap-0 flex flex-col',

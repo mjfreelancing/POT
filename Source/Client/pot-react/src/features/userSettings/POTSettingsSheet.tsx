@@ -59,6 +59,7 @@ import {
 import type { JSX } from 'react';
 import { useEffect, useRef, useState } from 'react';
 
+import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import {
   Accordion,
   AccordionContent,
@@ -70,14 +71,15 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogDescription as ModalDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogDescription as ModalDescription,
   DialogTitle as ModalTitle,
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { useErrorContext } from '@/contexts';
 import type { SettingsSectionFormHandle } from '@/features/userSettings/sections/settingsSectionForm';
 import { usePermissions } from '@/hooks';
 
@@ -114,6 +116,7 @@ function AccountSettingsSheet(props: AccountSettingsSheetProps): JSX.Element {
   const { open, onClose, onOpenChange } = props;
   const { hasPermission } = usePermissions();
   const canManageSite = hasPermission('site:manage');
+  const { error, setError } = useErrorContext();
 
   // Tracks which accordion section is currently open. Only one section is open
   // at a time; an empty string means no section is open.
@@ -366,6 +369,14 @@ function AccountSettingsSheet(props: AccountSettingsSheetProps): JSX.Element {
           </div>
 
           <Separator className="mx-6" />
+
+          {error && (
+            <ErrorSheet
+              title={error.title}
+              description={error.description}
+              onDismiss={() => setError(null)}
+            />
+          )}
 
           {/* Scrollable content area */}
           <div className="flex-1 overflow-y-auto px-6 pb-6 pt-6">

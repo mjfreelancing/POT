@@ -47,11 +47,10 @@ function ThemedApp({ children }: { children: ReactNode }) {
     : buildEnvScopedKey('theme');
 
   return (
-    <ThemeProvider
-      key={userId ?? 'global-theme'}
-      defaultTheme="system"
-      storageKey={storageKey}
-    >
+    // No key here: ThemeProvider re-reads its theme reactively when storageKey
+    // changes (see ThemeProvider), so the whole app subtree no longer remounts
+    // when the signed-in user's identity resolves after mount.
+    <ThemeProvider defaultTheme="system" storageKey={storageKey}>
       {children}
     </ThemeProvider>
   );

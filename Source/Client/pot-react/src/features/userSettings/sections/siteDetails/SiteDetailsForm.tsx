@@ -5,7 +5,6 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { useApiUpdateSite } from '@/api/hooks/useSite';
-import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import { SuccessToast } from '@/components/feedback/toast';
 import { Button } from '@/components/ui/button';
 import {
@@ -43,7 +42,7 @@ const SiteDetailsForm = forwardRef<
 ) {
   const { userInfo, setUserInfo } = useUserStore();
   const updateSite = useApiUpdateSite();
-  const { error, setError } = useErrorContext();
+  const { setError } = useErrorContext();
 
   // Will not be null once the user has logged in - can't get here until then
   const userDetails = userInfo!;
@@ -189,13 +188,6 @@ const SiteDetailsForm = forwardRef<
           </div>
         )}
 
-        {error && (
-          <ErrorSheet
-            title={error.title}
-            description={error.description}
-            onDismiss={() => setError(null)}
-          />
-        )}
         <FormField
           control={form.control}
           name="name"

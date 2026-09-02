@@ -4,7 +4,7 @@ import { BanknoteArrowDown, BanknoteArrowUp, Calculator } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router';
 
 import { useApiAccrueAccountExpenses } from '@/api/hooks';
-import { ErrorSheet, StatusBadge } from '@/components/feedback';
+import { StatusBadge } from '@/components/feedback';
 import type { BulkAction } from '@/components/table';
 import {
   createActionsColumn,
@@ -32,7 +32,7 @@ function AccountsTable({ accounts }: AccountsTableProps) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const accrueExpensesMutation = useApiAccrueAccountExpenses();
-  const { error, setError } = useErrorContext();
+  const { setError } = useErrorContext();
   const userId = useUserStore(store => store.userInfo?.rowId);
 
   const { hasPermission } = usePermissions();
@@ -198,13 +198,6 @@ function AccountsTable({ accounts }: AccountsTableProps) {
 
   return (
     <>
-      {error && (
-        <ErrorSheet
-          title={error.title}
-          description={error.description}
-          onDismiss={() => setError(null)}
-        />
-      )}
       <Card className="card-elevated flex flex-col flex-1 min-h-0">
         <CardContent className="px-4 flex-1 min-h-0 flex flex-col">
           <DataTable
