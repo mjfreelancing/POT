@@ -75,9 +75,7 @@ describe('ImportModal', () => {
     );
 
     expect(fileInput).toHaveValue('');
-    expect(
-      screen.getByRole('button', { name: 'Import Data' }),
-    ).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Import Data' })).toBeDisabled();
   });
 
   test('shows the selected file name and enables import once a file is chosen', async () => {

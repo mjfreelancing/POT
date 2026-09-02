@@ -83,7 +83,9 @@ test.describe('short landscape viewport (desktop layout, ~390px tall)', () => {
     // The surrounding page content must scroll so the chart is reachable.
     // The chart SVG is nested inside the page's scrollable content area, so it
     // is a reliable anchor for walking up to that scroll container.
-    const metrics = await measureContentScroll(page.locator('.recharts-surface'));
+    const metrics = await measureContentScroll(
+      page.locator('.recharts-surface'),
+    );
 
     expect(metrics.scrollable).toBe(true);
     expect(metrics.clientHeight).toBeGreaterThan(0);

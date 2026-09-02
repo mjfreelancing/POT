@@ -71,10 +71,10 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogDescription as ModalDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogDescription as ModalDescription,
   DialogTitle as ModalTitle,
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
