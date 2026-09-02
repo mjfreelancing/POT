@@ -33,4 +33,4 @@ When a new version is detected, show targeted notifications explaining what chan
 ## Related Documents
 
 - Future index: [Docs/Future/README.md](README.md)
-- Import preflight awareness: [Docs/Future/004-import-preflight-awareness.md](004-import-preflight-awareness.md)
+- Import preflight awareness: [Docs/Future/PRD-004-import-preflight-awareness.md](PRD-004-import-preflight-awareness.md)

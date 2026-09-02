@@ -11,9 +11,9 @@ Define how AuthSession records should be retained, revoked, and periodically pur
 
 ## Relationship To Other Features
 
-- Depends on: [Server Login/Logout Session Architecture Placeholder](002-server-login-logout-session-architecture.md)
-- Related to: [Per-Session Login Support Plan](001-per-session-login-support.md)
-- Supports future security workflows in: [Authentication Abuse Protection and Lockout Policy (Draft)](008-authentication-abuse-protection-and-lockout-policy.md)
+- Depends on: [Server Login/Logout Session Architecture Placeholder](PRD-002-server-login-logout-session-architecture.md)
+- Related to: [Per-Session Login Support Plan](PRD-001-per-session-login-support.md)
+- Supports future security workflows in: [Authentication Abuse Protection and Lockout Policy (Draft)](PRD-008-authentication-abuse-protection-and-lockout-policy.md)
 
 ## PRD Status
 
@@ -114,6 +114,6 @@ When this PRD moves from Proposed to Planning, re-evaluate this baseline recomme
 ## Related Documents
 
 - Future index: [Docs/Future/README.md](README.md)
-- Session architecture: [Server Login/Logout Session Architecture Placeholder](002-server-login-logout-session-architecture.md)
-- Client/server session umbrella: [Per-Session Login Support Plan](001-per-session-login-support.md)
-- Abuse controls: [Authentication Abuse Protection and Lockout Policy (Draft)](008-authentication-abuse-protection-and-lockout-policy.md)
+- Session architecture: [Server Login/Logout Session Architecture Placeholder](PRD-002-server-login-logout-session-architecture.md)
+- Client/server session umbrella: [Per-Session Login Support Plan](PRD-001-per-session-login-support.md)
+- Abuse controls: [Authentication Abuse Protection and Lockout Policy (Draft)](PRD-008-authentication-abuse-protection-and-lockout-policy.md)

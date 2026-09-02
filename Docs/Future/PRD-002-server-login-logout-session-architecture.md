@@ -46,7 +46,7 @@ When a user logs in or refreshes on device/browser B, device/browser A can be fo
 
 - Feature 001 addresses client-side storage policies and does not change server auth behavior in its first phase.
 - This Feature 002 document is the server-side companion plan.
-- Related: [Docs/Future/001-per-session-login-support.md](001-per-session-login-support.md)
+- Related: [Docs/Future/PRD-001-per-session-login-support.md](PRD-001-per-session-login-support.md)
 
 ## PRD Status
 
@@ -202,6 +202,6 @@ Targeted execution convention (from repo guidance):
 ## Related Documents
 
 - Future index: [Docs/Future/README.md](README.md)
-- Client-side companion plan: [Docs/Future/001-per-session-login-support.md](001-per-session-login-support.md)
-- Auth abuse controls follow-on: [Docs/Future/008-authentication-abuse-protection-and-lockout-policy.md](008-authentication-abuse-protection-and-lockout-policy.md)
+- Client-side companion plan: [Docs/Future/PRD-001-per-session-login-support.md](PRD-001-per-session-login-support.md)
+- Auth abuse controls follow-on: [Docs/Future/PRD-008-authentication-abuse-protection-and-lockout-policy.md](PRD-008-authentication-abuse-protection-and-lockout-policy.md)
 - Current auth reference: [Docs/AUTHENTICATION.md](../AUTHENTICATION.md)

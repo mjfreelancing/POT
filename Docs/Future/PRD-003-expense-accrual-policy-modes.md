@@ -229,5 +229,5 @@ No open decisions currently tracked.
 
 - Future index: [Docs/Future/README.md](README.md)
 - Existing planning docs:
-  - [Docs/Future/001-per-session-login-support.md](001-per-session-login-support.md)
-  - [Docs/Future/002-server-login-logout-session-architecture.md](002-server-login-logout-session-architecture.md)
+  - [Docs/Future/PRD-001-per-session-login-support.md](PRD-001-per-session-login-support.md)
+  - [Docs/Future/PRD-002-server-login-logout-session-architecture.md](PRD-002-server-login-logout-session-architecture.md)
