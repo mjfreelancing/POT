@@ -17,6 +17,7 @@ import type { SiteUser } from '@/data/siteUser';
 import { useAuthContext } from '@/features/auth/contexts';
 import UsersPage from '@/features/users/UsersPage';
 import { useIsMobile, usePermissions } from '@/hooks';
+import { useIsShortViewport } from '@/hooks/use-short-viewport';
 import { FailResult, SuccessResult } from '@/lib';
 
 import { createPermissionsApi } from '../../shared/auth/permissionsTestHelpers';
@@ -72,6 +73,10 @@ vi.mock('@/features/auth/contexts', () => ({
 vi.mock('@/hooks', () => ({
   useIsMobile: vi.fn(),
   usePermissions: vi.fn(),
+}));
+
+vi.mock('@/hooks/use-short-viewport', () => ({
+  useIsShortViewport: vi.fn(),
 }));
 
 vi.mock('@/components/layout', () => ({
@@ -217,6 +222,7 @@ describe('UsersPage', () => {
       createPermissionsApi({ hasAny: true }),
     );
     vi.mocked(useIsMobile).mockReturnValue(false);
+    vi.mocked(useIsShortViewport).mockReturnValue(false);
 
     vi.mocked(useQueryClient).mockReturnValue(
       {} as ReturnType<typeof useQueryClient>,

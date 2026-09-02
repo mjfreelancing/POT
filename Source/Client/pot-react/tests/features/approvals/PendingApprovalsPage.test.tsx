@@ -8,6 +8,7 @@ import { useErrorContext } from '@/contexts';
 import type { PendingApprovalUser } from '@/data/approvals';
 import PendingApprovalsPage from '@/features/approvals/pages/PendingApprovalsPage';
 import { useIsMobile, usePermissions } from '@/hooks';
+import { useIsShortViewport } from '@/hooks/use-short-viewport';
 import { FailResult, SuccessResult } from '@/lib';
 
 import { createPermissionsApi } from '../../shared/auth/permissionsTestHelpers';
@@ -24,6 +25,10 @@ vi.mock('@/contexts', () => ({
 vi.mock('@/hooks', () => ({
   useIsMobile: vi.fn(),
   usePermissions: vi.fn(),
+}));
+
+vi.mock('@/hooks/use-short-viewport', () => ({
+  useIsShortViewport: vi.fn(),
 }));
 
 vi.mock('@/components/layout', () => ({
@@ -80,6 +85,7 @@ describe('PendingApprovalsPage', () => {
       createPermissionsApi({ hasAny: true }),
     );
     vi.mocked(useIsMobile).mockReturnValue(false);
+    vi.mocked(useIsShortViewport).mockReturnValue(false);
   });
 
   test('renders desktop pending approvals table when not mobile', () => {

@@ -29,6 +29,7 @@ import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import type { Income } from '@/data/income';
 import { useAccountFilter, useIsMobile } from '@/hooks';
+import { useIsShortViewport } from '@/hooks/use-short-viewport';
 
 import { WithPermission } from '../auth/components';
 import { IncomeCardGrid, IncomesHeader, IncomesTable } from './components';
@@ -47,6 +48,17 @@ function IncomesPage() {
   const { error, setError } = useErrorContext();
   const [searchTerm, setSearchTerm] = useState<string>('');
   const isMobile = useIsMobile();
+  const isShortViewport = useIsShortViewport();
+
+  // On short viewports (e.g. phone landscape) the fixed header + toolbar can
+  // crowd out the table region entirely, so scroll the whole content area below
+  // the header instead of only the table/card region.
+  const contentAreaClass = isShortViewport
+    ? 'flex-1 min-h-0 flex flex-col gap-4 p-6 overflow-y-auto'
+    : 'flex-1 min-h-0 flex flex-col gap-4 p-6';
+  const listRegionClass = isShortViewport
+    ? 'relative'
+    : 'flex-1 min-h-0 flex flex-col relative';
 
   // Setup local storage for persistent filters
   const { getIncomeData, setIncomeData } = useIncomeStorage(error => {
@@ -297,7 +309,7 @@ function IncomesPage() {
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-gradient-to-br from-background to-muted/20">
       <IncomesHeader />
-      <div className="flex-1 min-h-0 flex flex-col p-6 gap-4">
+      <div className={contentAreaClass}>
         <Toolbar>
           <div className="w-full space-y-3">
             <div className="flex flex-col sm:flex-row gap-3">
@@ -360,7 +372,7 @@ function IncomesPage() {
             </div>
           </div>
         </Toolbar>
-        <div className="flex-1 min-h-0 flex flex-col relative">
+        <div className={listRegionClass}>
           {isLoading && <LoadingOverlay />}
           {hasNoAccounts ? (
             <EmptyStateMessage

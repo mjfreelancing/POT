@@ -139,8 +139,12 @@ export default defineConfig({
         // immediately skip on
         // mobile, but each still runs the auth fixture (a PBKDF2 login) first —
         // excluding the file here removes 8 wasted logins per matrix run.
+        // shortLandscapeScroll.test.ts overrides the viewport to a short
+        // landscape size (desktop layout), so it is excluded from the portrait
+        // phone projects.
         '**/settings/userSettings.test.ts',
         '**/filters/filters.test.ts',
+        '**/rendering/shortLandscapeScroll.test.ts',
       ],
       use: {
         ...devices['Pixel 7'],
@@ -151,6 +155,7 @@ export default defineConfig({
       testIgnore: [
         '**/settings/userSettings.test.ts',
         '**/filters/filters.test.ts',
+        '**/rendering/shortLandscapeScroll.test.ts',
       ],
       use: {
         ...devices['iPhone 14'],

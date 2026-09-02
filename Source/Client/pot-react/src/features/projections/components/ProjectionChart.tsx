@@ -26,6 +26,7 @@ import type {
   ProjectionMetric,
 } from '@/data/projection';
 import { PROJECTION_METRICS } from '@/data/projection';
+import { useIsShortViewport } from '@/hooks/use-short-viewport';
 import { formatMoneyValue, normalizeToLocalMidnight } from '@/lib';
 
 import { useProjectionChartData } from '../hooks/useProjectionChartData';
@@ -74,6 +75,21 @@ function ProjectionChart({
     seriesKeys,
     hasData,
   } = useProjectionChartData(data, selectedMetric);
+
+  // On short viewports (e.g. a phone rotated to landscape) the md "fill the
+  // card" layout can collapse the chart area to zero height, leaving nothing to
+  // render or scroll. Fall back to the fixed-height mobile chart and let the
+  // page scroll to it, so the chart always renders.
+  const isShortViewport = useIsShortViewport();
+  const cardClass = isShortViewport
+    ? 'flex flex-col'
+    : 'flex flex-col md:h-full';
+  const chartAreaClass = isShortViewport
+    ? 'flex-1 px-2 md:px-6 overflow-x-auto min-h-[500px]'
+    : 'flex-1 px-2 md:px-6 overflow-x-auto min-h-[500px] md:min-h-0';
+  const chartContainerClass = isShortViewport
+    ? 'aspect-auto h-[500px]'
+    : 'aspect-auto h-[500px] md:h-full';
 
   // Type assertion for chart data to include our transaction items
   type ChartDataPoint = (typeof allChartData)[number] & {
@@ -397,7 +413,7 @@ function ProjectionChart({
 
   return (
     <Card
-      className="flex flex-col md:h-full"
+      className={cardClass}
       style={{
         background:
           'linear-gradient(to bottom, rgba(148, 163, 184, 0.01), rgba(148, 163, 184, 0.04))',
@@ -425,10 +441,10 @@ function ProjectionChart({
       />
       <CardContent className="flex-1 flex flex-col p-0">
         {hasData ? (
-          <div className="flex-1 px-2 md:px-6 overflow-x-auto min-h-[500px] md:min-h-0">
+          <div className={chartAreaClass}>
             <ChartContainer
               config={chartConfig}
-              className="aspect-auto h-[500px] md:h-full"
+              className={chartContainerClass}
               style={{ minWidth: '600px' }}
             >
               {getChartType() === 'line' ? (

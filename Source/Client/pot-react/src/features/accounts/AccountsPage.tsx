@@ -15,6 +15,7 @@ import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import { WithPermission } from '@/features/auth/components';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsShortViewport } from '@/hooks/use-short-viewport';
 
 import { AccountCardGrid, AccountsHeader, AccountsTable } from './components';
 import useAccountStorage from './hooks/useAccountStorage';
@@ -32,6 +33,17 @@ function AccountsPage() {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const isShortViewport = useIsShortViewport();
+
+  // On short viewports (e.g. phone landscape) the fixed header + toolbar can
+  // crowd out the table region entirely, so scroll the whole content area below
+  // the header instead of only the table/card region.
+  const contentAreaClass = isShortViewport
+    ? 'flex-1 min-h-0 flex flex-col gap-4 p-6 overflow-y-auto'
+    : 'flex-1 min-h-0 flex flex-col gap-4 p-6';
+  const listRegionClass = isShortViewport
+    ? 'relative'
+    : 'flex-1 min-h-0 flex flex-col relative';
 
   const {
     data: accountsData,
@@ -111,7 +123,7 @@ function AccountsPage() {
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-gradient-to-br from-background to-muted/20">
       <AccountsHeader />
-      <div className="flex-1 min-h-0 flex flex-col p-6 gap-4">
+      <div className={contentAreaClass}>
         <Toolbar>
           <div className="w-full space-y-3">
             <SearchInput
@@ -142,7 +154,7 @@ function AccountsPage() {
             </div>
           </div>
         </Toolbar>
-        <div className="flex-1 min-h-0 flex flex-col relative">
+        <div className={listRegionClass}>
           {isLoading && <LoadingOverlay />}
           {hasNoAccounts ? (
             <EmptyStateMessage

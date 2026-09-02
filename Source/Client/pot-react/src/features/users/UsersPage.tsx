@@ -20,6 +20,7 @@ import type { SiteUser } from '@/data/siteUser';
 import { WithPermission } from '@/features/auth/components';
 import { useAuthContext } from '@/features/auth/contexts';
 import { useIsMobile, usePermissions } from '@/hooks';
+import { useIsShortViewport } from '@/hooks/use-short-viewport';
 
 import { UserCardGrid, UserRoleDialog, UsersTable } from './components';
 
@@ -28,6 +29,17 @@ function UsersPage() {
   const { userInfo } = useAuthContext();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const isShortViewport = useIsShortViewport();
+
+  // On short viewports (e.g. phone landscape) the fixed header + toolbar can
+  // crowd out the table region entirely, so scroll the whole content area below
+  // the header instead of only the table/card region.
+  const contentAreaClass = isShortViewport
+    ? 'flex-1 min-h-0 flex flex-col gap-4 p-6 overflow-y-auto'
+    : 'flex-1 min-h-0 flex flex-col gap-4 p-6';
+  const listRegionClass = isShortViewport
+    ? 'relative'
+    : 'flex-1 min-h-0 flex flex-col relative';
   const [userRoleDialogOpen, setUserRoleDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<SiteUser | null>(null);
   const { error, setError } = useErrorContext();
@@ -146,7 +158,7 @@ function UsersPage() {
         title="Users"
         subtitle="Manage user accounts and permissions"
       />
-      <div className="flex-1 min-h-0 flex flex-col p-6 gap-4">
+      <div className={contentAreaClass}>
         <Toolbar>
           <Badge variant="secondary" className="px-3 py-1.5 text-sm">
             <span className="font-semibold">{users.length}</span>{' '}
@@ -166,7 +178,7 @@ function UsersPage() {
           </div>
         </Toolbar>
 
-        <div className="flex-1 min-h-0 flex flex-col relative">
+        <div className={listRegionClass}>
           {isLoading && <LoadingOverlay />}
           {isMobile ? (
             <UserCardGrid

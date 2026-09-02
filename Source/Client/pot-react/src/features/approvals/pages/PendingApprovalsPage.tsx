@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/layout';
 import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import { useIsMobile, usePermissions } from '@/hooks';
+import { useIsShortViewport } from '@/hooks/use-short-viewport';
 
 import { PendingApprovalCardGrid } from '../components/PendingApprovalCardGrid';
 import { PendingApprovalsTable } from '../components/PendingApprovalsTable';
@@ -14,6 +15,17 @@ function PendingApprovalsPage() {
   const { hasAnyPermission } = usePermissions();
   const { error, setError } = useErrorContext();
   const isMobile = useIsMobile();
+  const isShortViewport = useIsShortViewport();
+
+  // On short viewports (e.g. phone landscape) the fixed header can crowd out the
+  // list region entirely, so scroll the whole content area below the header
+  // instead of only the table/card region.
+  const contentAreaClass = isShortViewport
+    ? 'flex-1 min-h-0 flex flex-col gap-4 p-6 overflow-y-auto'
+    : 'flex-1 min-h-0 flex flex-col gap-4 p-6';
+  const listRegionClass = isShortViewport
+    ? 'relative'
+    : 'flex-1 min-h-0 flex flex-col relative';
 
   const {
     data: approvalsData,
@@ -65,8 +77,8 @@ function PendingApprovalsPage() {
         title="Pending Approvals"
         subtitle="Review and approve user signups"
       />
-      <div className="flex-1 min-h-0 flex flex-col p-6 gap-4">
-        <div className="flex-1 min-h-0 flex flex-col relative">
+      <div className={contentAreaClass}>
+        <div className={listRegionClass}>
           {isLoading && <LoadingOverlay />}
           {isMobile ? (
             <PendingApprovalCardGrid users={pendingApprovals} />

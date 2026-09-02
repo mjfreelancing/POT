@@ -1,4 +1,5 @@
 export * from './use-mobile';
+export * from './use-short-viewport';
 export { default as useAccountFilter } from './useAccountFilter';
 export { default as useDelayedValue } from './useDelayedValue';
 export * from './useDelayedValue';

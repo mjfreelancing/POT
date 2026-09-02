@@ -10,6 +10,7 @@ import { WithPermission } from '@/features/auth/components';
 import IncomesPage from '@/features/incomes/IncomesPage';
 import useIncomeStorage from '@/features/incomes/hooks/useIncomeStorage';
 import { useAccountFilter, useIsMobile } from '@/hooks';
+import { useIsShortViewport } from '@/hooks/use-short-viewport';
 import { SuccessResult } from '@/lib';
 
 import { createAccountWithIdentity } from '../../shared/factories/accountFactory';
@@ -45,6 +46,10 @@ vi.mock('@/features/incomes/hooks/useIncomeStorage', () => ({
 vi.mock('@/hooks', () => ({
   useAccountFilter: vi.fn(),
   useIsMobile: vi.fn(),
+}));
+
+vi.mock('@/hooks/use-short-viewport', () => ({
+  useIsShortViewport: vi.fn(),
 }));
 
 vi.mock('@/features/auth/components', () => ({
@@ -147,6 +152,7 @@ describe('IncomesPage', () => {
     });
 
     vi.mocked(useIsMobile).mockReturnValue(false);
+    vi.mocked(useIsShortViewport).mockReturnValue(false);
 
     vi.mocked(WithPermission).mockImplementation(({ children }) => (
       <>{children}</>

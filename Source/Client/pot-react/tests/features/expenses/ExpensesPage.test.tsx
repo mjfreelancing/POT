@@ -11,6 +11,7 @@ import ExpensesPage from '@/features/expenses/ExpensesPage';
 import useExpenseStorage from '@/features/expenses/hooks/useExpenseStorage';
 import { useAccountFilter } from '@/hooks';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsShortViewport } from '@/hooks/use-short-viewport';
 import { SuccessResult } from '@/lib';
 
 import { createAccountWithIdentity } from '../../shared/factories/accountFactory';
@@ -49,6 +50,10 @@ vi.mock('@/hooks', () => ({
 
 vi.mock('@/hooks/use-mobile', () => ({
   useIsMobile: vi.fn(),
+}));
+
+vi.mock('@/hooks/use-short-viewport', () => ({
+  useIsShortViewport: vi.fn(),
 }));
 
 vi.mock('@/features/auth/components', () => ({
@@ -151,6 +156,7 @@ describe('ExpensesPage', () => {
     });
 
     vi.mocked(useIsMobile).mockReturnValue(false);
+    vi.mocked(useIsShortViewport).mockReturnValue(false);
 
     vi.mocked(WithPermission).mockImplementation(({ children }) => (
       <>{children}</>
