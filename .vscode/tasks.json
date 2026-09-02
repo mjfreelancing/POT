@@ -127,19 +127,6 @@
         "isDefault": false
       },
       "problemMatcher": []
-    },
-    {
-      "label": "docker-build-server-e2e",
-      "type": "shell",
-      "command": "docker build --no-cache -t pot-server:test-e2e -f Docker/Server/Dockerfile .",
-      "options": {
-        "cwd": "${workspaceFolder}/Source"
-      },
-      "group": {
-        "kind": "build",
-        "isDefault": false
-      },
-      "problemMatcher": []
     }
   ]
 }
