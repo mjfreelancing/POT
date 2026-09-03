@@ -28,7 +28,10 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-    "types": ["vite-plugin-pwa/client"]
+    // 'node' is included because src/lib/utils.ts reads process.env.NODE_ENV and
+    // the vitest suites (tsconfig.app includes tests/) set it; the browser bundle
+    // itself has process.env.NODE_ENV replaced by Vite at build time.
+    "types": ["vite-plugin-pwa/client", "node"]
   },
   "include": ["src", "tests"]
 }
