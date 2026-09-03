@@ -56,8 +56,7 @@ const registerInProduction = () => {
   registerServiceWorker(false);
 
   const options = vi.mocked(registerSW).mock.calls[0]?.[0] as
-    | RegisterSwOptions
-    | undefined;
+    RegisterSwOptions | undefined;
 
   return { options, updateServiceWorker };
 };

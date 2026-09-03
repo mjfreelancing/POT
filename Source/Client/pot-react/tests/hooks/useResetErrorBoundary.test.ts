@@ -15,6 +15,7 @@ describe('useResetErrorBoundary', () => {
     vi.clearAllMocks();
 
     vi.mocked(useErrorBoundary).mockReturnValue({
+      error: undefined,
       resetBoundary: resetBoundaryMock,
       showBoundary: vi.fn(),
     });

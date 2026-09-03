@@ -297,9 +297,8 @@ describe('setupAuthInterceptors', () => {
     const { responseErrorHandler } = await loadInterceptors(tokenProvider);
 
     const { FailResult: RuntimeFailResult } = await import('@/lib');
-    const { AuthenticationError: RuntimeAuthenticationError } = await import(
-      '@/api/errors/apiErrors'
-    );
+    const { AuthenticationError: RuntimeAuthenticationError } =
+      await import('@/api/errors/apiErrors');
     const failResult = new RuntimeFailResult(
       new RuntimeAuthenticationError('Refresh token expired'),
     );

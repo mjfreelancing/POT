@@ -60,12 +60,14 @@ const App = () => {
   logger.info('App', `Running mode: ${import.meta.env.MODE}`);
   const [error, setError] = useState<DisplayError | null>();
 
-  const handleError = (error: Error) => {
+  const handleError = (error: unknown) => {
+    const message = error instanceof Error ? error.message : String(error);
+
     logger.error('App', 'Error boundary caught an error', error);
 
     setError({
       title: 'Application Error',
-      description: error.message,
+      description: message,
     });
   };
 
@@ -82,21 +84,26 @@ const App = () => {
         <ThemedApp>
           <div className="flex h-screen w-screen overflow-hidden">
             <ErrorBoundary
-              fallbackRender={({ error }) => (
-                <div
-                  role="alert"
-                  className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4"
-                >
+              fallbackRender={({ error }) => {
+                const message =
+                  error instanceof Error ? error.message : String(error);
+
+                return (
                   <div
-                    className={`bg-white dark:bg-gray-800 text-red-700 p-6 rounded-lg shadow-lg ${getErrorWidthClass(error.message)} w-full text-center`}
+                    role="alert"
+                    className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4"
                   >
-                    <p className="text-lg font-medium mb-2">
-                      Something went wrong !
-                    </p>
-                    <pre className="whitespace-pre-wrap">{error.message}</pre>
+                    <div
+                      className={`bg-white dark:bg-gray-800 text-red-700 p-6 rounded-lg shadow-lg ${getErrorWidthClass(message)} w-full text-center`}
+                    >
+                      <p className="text-lg font-medium mb-2">
+                        Something went wrong !
+                      </p>
+                      <pre className="whitespace-pre-wrap">{message}</pre>
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              }}
               onError={handleError}
             >
               <AppContent />

@@ -214,8 +214,7 @@ describe('useApi hooks', () => {
       const secondResponse = { id: 2, name: 'Second Item' };
 
       let resolveSecondRequest:
-        | ((value: { data: typeof secondResponse }) => void)
-        | undefined;
+        ((value: { data: typeof secondResponse }) => void) | undefined;
 
       const secondRequest = new Promise<{ data: typeof secondResponse }>(
         resolve => {
@@ -270,8 +269,7 @@ describe('useApi hooks', () => {
       const secondResponse = { id: 2, name: 'Second Item' };
 
       let resolveSecondRequest:
-        | ((value: { data: typeof secondResponse }) => void)
-        | undefined;
+        ((value: { data: typeof secondResponse }) => void) | undefined;
 
       const secondRequest = new Promise<{ data: typeof secondResponse }>(
         resolve => {

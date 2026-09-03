@@ -3,11 +3,7 @@ type ChartType = 'line' | 'bar';
 
 // Projection metric types for chart display
 type ProjectionMetric =
-  | 'balance'
-  | 'available'
-  | 'dailyAccrual'
-  | 'incomeReceived'
-  | 'expensesPaid';
+  'balance' | 'available' | 'dailyAccrual' | 'incomeReceived' | 'expensesPaid';
 
 // Default projection metric to use
 const DEFAULT_PROJECTION_METRIC: ProjectionMetric = 'balance';

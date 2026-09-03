@@ -102,8 +102,7 @@ type SettingsSectionValue =
   | 'budget-reminders';
 
 type PendingNavigationAction =
-  | { type: 'close' }
-  | { type: 'section'; target: SettingsSectionValue };
+  { type: 'close' } | { type: 'section'; target: SettingsSectionValue };
 
 const SECTION_LABELS: Record<Exclude<SettingsSectionValue, ''>, string> = {
   'site-settings': 'Site Details',

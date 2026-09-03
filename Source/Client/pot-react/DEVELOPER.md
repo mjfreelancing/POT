@@ -1002,11 +1002,7 @@ type BadgeColor =
 type BadgeVariant = 'filled' | 'outline';
 
 type StatusBadgeType =
-  | 'excluded'
-  | 'due-today'
-  | 'overdue'
-  | 'due-soon'
-  | 'ended';
+  'excluded' | 'due-today' | 'overdue' | 'due-soon' | 'ended';
 ```
 
 **Dark Mode Support:**

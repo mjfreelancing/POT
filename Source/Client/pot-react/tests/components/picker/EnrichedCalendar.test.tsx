@@ -177,7 +177,9 @@ describe('EnrichedCalendar', () => {
       />,
     );
 
-    const lastCalendarCall = calendarSpy.mock.calls.at(-1)?.[0] as {
+    const lastCalendarCall = calendarSpy.mock.calls[
+      calendarSpy.mock.calls.length - 1
+    ]?.[0] as {
       fromDate: Date;
       toDate: Date;
     };

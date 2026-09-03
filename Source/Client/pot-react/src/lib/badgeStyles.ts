@@ -72,11 +72,7 @@
  */
 
 type StatusBadgeType =
-  | 'excluded'
-  | 'due-today'
-  | 'overdue'
-  | 'due-soon'
-  | 'ended';
+  'excluded' | 'due-today' | 'overdue' | 'due-soon' | 'ended';
 type BadgeVariant = 'filled' | 'outline';
 type BadgeColor =
   | 'red'

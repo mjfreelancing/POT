@@ -17,8 +17,7 @@ class FailResult<TFail extends FailResultBase> {
 }
 
 type Result<TSuccess, TFail extends FailResultBase> =
-  | SuccessResult<TSuccess>
-  | FailResult<TFail>;
+  SuccessResult<TSuccess> | FailResult<TFail>;
 
 export { FailResult, FailResultBase, SuccessResult };
 export type { Result };
