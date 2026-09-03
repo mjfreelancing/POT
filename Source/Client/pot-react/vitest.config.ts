@@ -9,6 +9,25 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./tests/setup.ts'],
+    // Vitest 4 simplified its default excludes (only node_modules + .git), so
+    // without explicit excludes the Playwright E2E files (e2e/**/*.test.ts) and
+    // generated artifacts would be swept into `vitest run`. Keep the unit suite
+    // scoped to ./tests (also enforced by `--dir tests` in scripts).
+    exclude: [
+      '**/node_modules/**',
+      '**/.git/**',
+      '**/e2e/**',
+      '**/playwright-report/**',
+      '**/test-results/**',
+      '**/coverage/**',
+      '**/dist/**',
+    ],
+    coverage: {
+      provider: 'istanbul',
+      // Vitest 4 removed coverage.all; explicit include keeps uncovered src
+      // files in the report (was the previous coverage.all behaviour).
+      include: ['src/**'],
+    },
   },
   resolve: {
     alias: {
