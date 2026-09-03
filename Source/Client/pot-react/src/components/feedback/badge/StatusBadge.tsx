@@ -13,13 +13,7 @@ import {
  * Each color provides consistent styling with light/dark mode support.
  */
 type BadgeColor =
-  | 'red'
-  | 'orange'
-  | 'green'
-  | 'yellow'
-  | 'blue'
-  | 'purple'
-  | 'gray';
+  'red' | 'orange' | 'green' | 'yellow' | 'blue' | 'purple' | 'gray';
 
 /**
  * Props for the StatusBadge component.

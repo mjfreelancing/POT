@@ -373,10 +373,7 @@ function ProjectionChart({
               color: chartConfig[key]?.color,
               dataKey: key,
               value: hoveredPoint[key] as
-                | string
-                | number
-                | (string | number)[]
-                | undefined,
+                string | number | (string | number)[] | undefined,
             }))
             .filter(entry => typeof entry.value === 'number')
         : payload;

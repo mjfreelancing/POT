@@ -23,8 +23,7 @@ const pwaRuntimeState = {
   updateCheckListenersAttached: false,
   registeredServiceWorkerUrl: undefined as string | undefined,
   latestServiceWorkerRegistration: undefined as
-    | ServiceWorkerRegistration
-    | undefined,
+    ServiceWorkerRegistration | undefined,
   refreshInProgress: false,
   promptedWaitingScriptUrl: undefined as string | undefined,
   dismissedWaitingScriptUrl: undefined as string | undefined,

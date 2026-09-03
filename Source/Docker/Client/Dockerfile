@@ -10,10 +10,12 @@
 # Security benefit: No build tools or source code in production image reduces attack surface
 
 # Base image selection:
-#   - node:20: Uses Node.js version 20 (LTS - Long Term Support)
-#   - alpine3.20: Minimal Linux distribution (~5MB vs ~200MB for standard distros)
+#   - node:24: Uses Node.js version 24 (LTS - Long Term Support)
+#     Required for the upgraded client toolchain: Vite 8 (>=20.19), react-router 8 (>=22.22),
+#     ESLint 10 (>=20.19/22.13), @testing-library/jest-dom 7 (>=22).
+#   - alpine: Minimal Linux distribution (~5MB vs ~200MB for standard distros)
 #   - AS build: Names this stage "build" so we can reference it later with COPY --from=build
-FROM node:20-alpine3.20 AS build
+FROM node:24-alpine AS build
 
 # ============================================================================
 # BUILD ARGUMENTS - Runtime Configuration at Build Time

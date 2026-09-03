@@ -54,8 +54,7 @@ describe('useMe hook composition', () => {
     });
 
     const placeholderData = call?.[2]?.placeholderData as
-      | ((previous: unknown) => unknown)
-      | undefined;
+      ((previous: unknown) => unknown) | undefined;
 
     expect(placeholderData?.(queryResult.data)).toBe(queryResult.data);
 

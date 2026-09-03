@@ -3,10 +3,7 @@
  * Shared between password reset and signup flows
  */
 export type OtpVerificationStatus =
-  | 'Success'
-  | 'InvalidCode'
-  | 'Expired'
-  | 'TooManyAttempts';
+  'Success' | 'InvalidCode' | 'Expired' | 'TooManyAttempts';
 
 /**
  * Props for the reusable OTP verification form component

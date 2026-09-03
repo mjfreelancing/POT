@@ -107,8 +107,7 @@ describe('showUpdatePromptIfNeeded', () => {
     expect(toast).toHaveBeenCalledTimes(1);
 
     const toastOptions = vi.mocked(toast).mock.calls[0]?.[1] as
-      | ExternalToast
-      | undefined;
+      ExternalToast | undefined;
 
     const cancelAction = toastOptions?.cancel;
 
