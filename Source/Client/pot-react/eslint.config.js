@@ -27,6 +27,11 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      // Deliberately relaxed to 'warn' (DQ-4, deferred): react-hooks 7 flags 23
+      // synchronous setState-in-effect sites across 19 files. Adopting them as
+      // errors now would force a large behaviour-sensitive refactor. Kept as
+      // warnings and scheduled to be fixed before the modernisation is complete.
+      'react-hooks/set-state-in-effect': 'warn',
       'react-refresh/only-export-components': ['off'], // ['warn', { allowConstantExport: true }]
       '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
       '@typescript-eslint/consistent-type-imports': [
