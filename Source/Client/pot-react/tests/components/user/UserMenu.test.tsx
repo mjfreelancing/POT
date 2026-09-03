@@ -52,7 +52,7 @@ vi.mock('@/components/ui/dropdown-menu', () => ({
   DropdownMenuSeparator: () => <hr />,
 }));
 
-vi.mock('@/features/userSettings/UserSettingsSheet', () => ({
+vi.mock('@/features/userSettings/POTSettingsSheet', () => ({
   AccountSettingsSheet: ({
     open,
     onClose,
