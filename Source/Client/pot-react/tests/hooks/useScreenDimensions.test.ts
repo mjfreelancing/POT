@@ -70,21 +70,26 @@ describe('useScreenDimensions', () => {
     );
   });
 
-  test('unregisters resize listener on unmount', () => {
+  test('unregisters resize listener on unmount', async () => {
     const addEventListenerSpy = vi.spyOn(window, 'addEventListener');
     const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener');
 
     const { unmount } = renderHook(() => useScreenDimensions());
 
-    const resizeHandler = addEventListenerSpy.mock.calls.find(
-      ([eventName]) => eventName === 'resize',
-    )?.[1];
+    const resizeHandlers = addEventListenerSpy.mock.calls
+      .filter(([eventName]) => eventName === 'resize')
+      .map(([, handler]) => handler);
+    // Under React 19.2's dev effect double-invocation the effect may register
+    // twice; unmount cleans up the most recently registered handler.
+    const activeResizeHandler = resizeHandlers[resizeHandlers.length - 1];
 
-    unmount();
+    await act(async () => {
+      unmount();
+    });
 
     expect(removeEventListenerSpy).toHaveBeenCalledWith(
       'resize',
-      resizeHandler,
+      activeResizeHandler,
     );
   });
 });
