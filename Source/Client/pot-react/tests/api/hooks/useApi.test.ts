@@ -10,8 +10,6 @@ import {
   UnexpectedError,
   ValidationError,
 } from '@/api/errors/apiErrors';
-import { FailResult } from '@/lib';
-
 import {
   useDelete,
   useGet,
@@ -22,6 +20,7 @@ import {
   usePutWithId,
   usePutWithIdNoData,
 } from '@/api/hooks';
+import { FailResult } from '@/lib';
 
 import { createQueryHookWrapper } from '../../shared/react-query/queryHookWrapper';
 import {

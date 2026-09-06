@@ -1,8 +1,8 @@
 import {
-  test as baseTest,
-  expect,
   type Browser,
+  expect,
   type Page,
+  test as baseTest,
 } from '@playwright/test';
 
 import { test as adminTest } from '../../fixtures/auth';

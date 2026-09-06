@@ -42,7 +42,7 @@ vi.mock('@/components/ui/select', () => {
     onValueChange: (value: string) => void;
     name?: string;
   }>) => {
-    const optionElements: Array<{ value: string; label: string }> = [];
+    const optionElements: { value: string; label: string }[] = [];
 
     const walk = (nodeChildren: React.ReactNode) => {
       React.Children.forEach(nodeChildren, node => {

@@ -1,4 +1,4 @@
-import type { APIRequestContext, Playwright } from '@playwright/test';
+import type { APIRequestContext } from '@playwright/test';
 import { expect } from '@playwright/test';
 
 /**
@@ -10,6 +10,20 @@ import { expect } from '@playwright/test';
 export const E2E_API_BASE_URL = 'http://127.0.0.1:5242';
 
 /**
+ * Structural type for the part of the Playwright worker fixture this helper
+ * uses. (`Playwright` is not exported by name from '@playwright/test', so we
+ * type only the `request` factory we call.)
+ */
+type E2eRequestFactory = {
+  request: {
+    newContext(options?: {
+      baseURL?: string;
+      timeout?: number;
+    }): Promise<APIRequestContext>;
+  };
+};
+
+/**
  * Creates an unauthenticated API request context with a 60s per-action timeout.
  *
  * The timeout mirrors the E2E test timeout: a cold first API call on the loaded
@@ -17,7 +31,7 @@ export const E2E_API_BASE_URL = 'http://127.0.0.1:5242';
  * previously documented in filters.test.ts / quickActions.test.ts).
  */
 export async function createE2eRequestContext(
-  playwright: Playwright,
+  playwright: E2eRequestFactory,
 ): Promise<APIRequestContext> {
   return playwright.request.newContext({
     baseURL: E2E_API_BASE_URL,

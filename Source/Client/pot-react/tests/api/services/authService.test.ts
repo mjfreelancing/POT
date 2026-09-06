@@ -1,11 +1,10 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { authClient } from '@/api/authClient';
 import { AuthenticationError } from '@/api/errors/apiErrors';
 import { refreshAccessToken } from '@/api/services/authService';
-import { FailResult, SuccessResult } from '@/lib';
-
-import { authClient } from '@/api/authClient';
 import { logger } from '@/concerns';
+import { FailResult, SuccessResult } from '@/lib';
 
 vi.mock('@/api/authClient', () => ({
   authClient: {

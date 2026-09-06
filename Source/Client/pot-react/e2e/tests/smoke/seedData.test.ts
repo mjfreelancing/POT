@@ -15,9 +15,9 @@ test('dashboard renders seeded financial accounts from the API', async ({
   const accountsResponse = await accountsResponsePromise;
   expect(accountsResponse.ok()).toBeTruthy();
 
-  const accounts = (await accountsResponse.json()) as Array<{
+  const accounts = (await accountsResponse.json()) as {
     description: string;
-  }>;
+  }[];
 
   // The fully-seeded database contains financial accounts (imported + renewed).
   expect(accounts.length).toBeGreaterThan(0);

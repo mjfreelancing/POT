@@ -2,6 +2,7 @@ import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { UnexpectedError } from '@/api/errors/apiErrors';
+import { useDelete, useGet, usePost, usePutWithId } from '@/api/hooks/useApi';
 import {
   useApiCreateExpense,
   useApiDeleteExpense,
@@ -13,9 +14,8 @@ import {
 } from '@/api/hooks/useExpenses';
 import type { Expense } from '@/data';
 import { FailResult, SuccessResult } from '@/lib';
-import { createExpense } from '../../shared/factories/expenseFactory';
 
-import { useDelete, useGet, usePost, usePutWithId } from '@/api/hooks/useApi';
+import { createExpense } from '../../shared/factories/expenseFactory';
 
 vi.mock('@/api/hooks/useApi', () => ({
   useGet: vi.fn(),

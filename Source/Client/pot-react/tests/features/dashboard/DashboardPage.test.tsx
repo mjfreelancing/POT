@@ -1,12 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import DashboardPage from '@/features/dashboard/DashboardPage';
-
-import type { ReactNode } from 'react';
-
 import { useErrorContext } from '@/contexts';
+import DashboardPage from '@/features/dashboard/DashboardPage';
 import useDashboardStorage from '@/features/dashboard/hooks/useDashboardStorage';
 
 type MockSectionProps = {

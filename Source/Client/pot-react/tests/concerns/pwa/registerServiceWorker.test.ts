@@ -1,3 +1,4 @@
+import { registerSW } from 'virtual:pwa-register';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { logger } from '@/concerns/logging';
@@ -5,7 +6,6 @@ import { pwaRuntimeState } from '@/concerns/pwa/pwaRuntime';
 import { setupServiceWorkerUpdateChecks } from '@/concerns/pwa/pwaUpdateChecks';
 import { showUpdatePromptIfNeeded } from '@/concerns/pwa/pwaUpdatePrompt';
 import { registerServiceWorker } from '@/concerns/pwa/registerServiceWorker';
-import { registerSW } from 'virtual:pwa-register';
 
 vi.mock('virtual:pwa-register', () => ({
   registerSW: vi.fn(),

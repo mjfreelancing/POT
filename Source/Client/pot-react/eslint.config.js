@@ -37,8 +37,41 @@ export default tseslint.config(
         'error',
         { argsIgnorePattern: '^_$', varsIgnorePattern: '^_$' },
       ],
+      // Test doubles (empty mocks/stubs) are intentional in the test suites.
+      '@typescript-eslint/no-empty-function': [
+        'error',
+        { allow: ['arrowFunctions', 'methods'] },
+      ],
       'simple-import-sort/imports': 'error',
       'simple-import-sort/exports': 'error',
+    },
+  },
+  {
+    // E2E runs under Node (Playwright + global setup), not the browser.
+    files: [
+      'e2e/**/*.{ts,tsx}',
+      'playwright.config.ts',
+      'playwright.prod.config.ts',
+      'playwright.globalSetup.ts',
+    ],
+    languageOptions: {
+      globals: globals.node,
+    },
+    rules: {
+      // The E2E suites deliberately use inline `import()` type annotations
+      // (e.g. `import('@playwright/test').TestInfo`) throughout; converting all
+      // of them to named type imports is not worth the churn. Other rules
+      // (import sort, array-type, no-unused-vars, …) still apply.
+      '@typescript-eslint/consistent-type-imports': 'off',
+    },
+  },
+  {
+    // Unit tests use the Vitest `typeof import('...')` re-export idiom, which
+    // conflicts with the type-import style rule. Keep that hygiene in src (app
+    // code) but allow it in tests.
+    files: ['tests/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/consistent-type-imports': 'off',
     },
   },
 );

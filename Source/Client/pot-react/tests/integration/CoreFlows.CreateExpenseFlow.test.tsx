@@ -39,7 +39,7 @@ function LocationProbe() {
   );
 }
 
-function renderCreateExpenseFlow(initialPath: string = '/expenses/create') {
+function renderCreateExpenseFlow(initialPath = '/expenses/create') {
   const queryClient = new QueryClient();
 
   return render(

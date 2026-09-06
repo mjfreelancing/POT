@@ -1,11 +1,11 @@
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { useGet } from '@/api/hooks/useApi';
 import { useMe } from '@/api/hooks/useMe';
+import { useAccessToken } from '@/features/auth/contexts';
 import { SuccessResult } from '@/lib';
 
-import { useGet } from '@/api/hooks/useApi';
-import { useAccessToken } from '@/features/auth/contexts';
 import { createUser } from '../../shared/factories/userFactory';
 
 vi.mock('@/api/hooks/useApi', () => ({

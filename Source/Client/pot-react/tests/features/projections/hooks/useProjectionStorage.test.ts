@@ -1,13 +1,12 @@
 import { renderHook } from '@testing-library/react';
+import { createUser } from '@tests/shared/factories/userFactory';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import type { ProjectionMetric } from '@/data/projection';
 import useProjectionStorage, {
   projectionStorageDefaults,
 } from '@/features/projections/hooks/useProjectionStorage';
 import useUserStore from '@/stores/useUserStore';
-
-import type { ProjectionMetric } from '@/data/projection';
-import { createUser } from '@tests/shared/factories/userFactory';
 
 vi.mock('@/stores/useUserStore', () => ({
   default: vi.fn(),

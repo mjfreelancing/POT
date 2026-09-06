@@ -4,11 +4,10 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { UnexpectedError } from '@/api/errors/apiErrors';
 import { useApiGetProjection } from '@/api/hooks/useProjections';
-import ProjectionsPage from '@/features/projections/ProjectionsPage';
-import useProjectionStorage from '@/features/projections/hooks/useProjectionStorage';
-import { FailResult, SuccessResult } from '@/lib';
-
 import type { ProjectionMetric } from '@/data/projection';
+import useProjectionStorage from '@/features/projections/hooks/useProjectionStorage';
+import ProjectionsPage from '@/features/projections/ProjectionsPage';
+import { FailResult, SuccessResult } from '@/lib';
 
 import { createProjection } from '../../shared/factories/projectionFactory';
 

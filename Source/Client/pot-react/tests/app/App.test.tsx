@@ -49,6 +49,8 @@ vi.mock('@/components/theme', () => ({
       return () => {
         themeProviderUnmounts(storageKey);
       };
+      // Mount/unmount counting only — run exactly once regardless of props.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

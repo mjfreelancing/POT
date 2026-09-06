@@ -1,10 +1,9 @@
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { usePutWithId } from '@/api/hooks/useApi';
 import { useApiUpdateSite } from '@/api/hooks/useSite';
 import { SuccessResult } from '@/lib';
-
-import { usePutWithId } from '@/api/hooks/useApi';
 
 vi.mock('@/api/hooks/useApi', () => ({
   usePutWithId: vi.fn(),

@@ -1,13 +1,13 @@
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { useGet, usePutWithId } from '@/api/hooks/useApi';
 import {
   useGetPendingApprovals,
   useUpdatePendingUserStatus,
 } from '@/api/hooks/useApprovals';
 import { SuccessResult } from '@/lib';
 
-import { useGet, usePutWithId } from '@/api/hooks/useApi';
 import {
   createPendingApprovalUser,
   createPendingUserStatusUpdate,

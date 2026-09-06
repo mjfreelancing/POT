@@ -1,5 +1,4 @@
 import { expect, test } from '../../fixtures/auth';
-
 import { authHeaders } from '../../helpers/api';
 
 // Covers the responsive data-table/card-grid switch. On narrow viewports the

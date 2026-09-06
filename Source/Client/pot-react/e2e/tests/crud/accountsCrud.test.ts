@@ -1,4 +1,5 @@
 import type { APIRequestContext } from '@playwright/test';
+
 import { expect, test } from '../../fixtures/auth';
 
 // Covers the accounts CRUD flow:

@@ -51,7 +51,7 @@ vi.mock('@/features/dashboard/DashboardPage', () => ({
   default: () => <h1>Dashboard page</h1>,
 }));
 
-function renderLoginFlow(initialPath: string = '/login') {
+function renderLoginFlow(initialPath = '/login') {
   const queryClient = new QueryClient();
 
   return render(

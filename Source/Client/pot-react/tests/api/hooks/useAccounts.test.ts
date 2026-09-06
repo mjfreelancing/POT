@@ -9,10 +9,9 @@ import {
   useApiGetAllAccounts,
   useApiUpdateAccount,
 } from '@/api/hooks/useAccounts';
+import { useDelete, useGet, usePost, usePutWithId } from '@/api/hooks/useApi';
 import type { Account } from '@/data';
 import { FailResult, SuccessResult } from '@/lib';
-
-import { useDelete, useGet, usePost, usePutWithId } from '@/api/hooks/useApi';
 
 import { createAccount } from '../../shared/factories/accountFactory';
 

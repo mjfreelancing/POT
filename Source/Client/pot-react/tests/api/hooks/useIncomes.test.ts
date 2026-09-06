@@ -2,6 +2,7 @@ import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { UnexpectedError } from '@/api/errors/apiErrors';
+import { useDelete, useGet, usePost, usePutWithId } from '@/api/hooks/useApi';
 import {
   useApiCreateIncome,
   useApiDeleteIncome,
@@ -14,7 +15,6 @@ import {
 import type { Income } from '@/data';
 import { FailResult, SuccessResult } from '@/lib';
 
-import { useDelete, useGet, usePost, usePutWithId } from '@/api/hooks/useApi';
 import { createIncome } from '../../shared/factories/incomeFactory';
 
 vi.mock('@/api/hooks/useApi', () => ({

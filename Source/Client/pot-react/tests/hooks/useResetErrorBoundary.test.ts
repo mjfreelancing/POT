@@ -1,8 +1,8 @@
 import { renderHook } from '@testing-library/react';
+import { useErrorBoundary } from 'react-error-boundary';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import useResetErrorBoundary from '@/hooks/useResetErrorBoundary';
-import { useErrorBoundary } from 'react-error-boundary';
 
 vi.mock('react-error-boundary', () => ({
   useErrorBoundary: vi.fn(),

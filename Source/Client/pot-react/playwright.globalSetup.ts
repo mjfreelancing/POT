@@ -477,7 +477,7 @@ async function warmUpSharedStack(): Promise<void> {
   }
 }
 
-export default async (config: FullConfig) => {
+export default async (_config: FullConfig) => {
   console.log('🐘 Starting Testcontainers Postgres...');
 
   try {

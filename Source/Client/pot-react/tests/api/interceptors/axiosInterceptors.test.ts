@@ -1,14 +1,13 @@
+import type {
+  InternalAxiosRequestConfig} from 'axios';
 import axios, {
   AxiosError,
-  AxiosHeaders,
-  InternalAxiosRequestConfig,
+  AxiosHeaders
 } from 'axios';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { FailResult, FailResultBase } from '@/lib';
-
 import { addCorrelationId } from '@/api/apiHelpers';
-import { ApiErrorResponse } from '@/api/errors/apiErrorResponse';
+import type { ApiErrorResponse } from '@/api/errors/apiErrorResponse';
 import {
   AuthenticationError,
   ConflictError,
@@ -20,6 +19,8 @@ import {
   ServerError,
   ValidationError,
 } from '@/api/errors/apiErrors';
+import type { FailResultBase } from '@/lib';
+import { FailResult } from '@/lib';
 
 // Explicitly mock axios
 vi.mock('axios');

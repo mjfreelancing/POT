@@ -4,8 +4,8 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { useApiGetProjection } from '@/api/hooks/useProjections';
 import type { ProjectionMetric } from '@/data/projection';
-import ProjectionsPage from '@/features/projections/ProjectionsPage';
 import useProjectionStorage from '@/features/projections/hooks/useProjectionStorage';
+import ProjectionsPage from '@/features/projections/ProjectionsPage';
 import { SuccessResult } from '@/lib';
 
 import { createProjection } from '../shared/factories/projectionFactory';

@@ -2,6 +2,12 @@ import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import {
+  useGet,
+  usePost,
+  usePostWithIdNoData,
+  usePutWithId,
+} from '@/api/hooks/useApi';
+import {
   useInviteUser,
   useResendInvitation,
   useUpdateUserRole,
@@ -9,13 +15,6 @@ import {
   useUsers,
 } from '@/api/hooks/useUsers';
 import { SuccessResult } from '@/lib';
-
-import {
-  useGet,
-  usePost,
-  usePostWithIdNoData,
-  usePutWithId,
-} from '@/api/hooks/useApi';
 
 vi.mock('@/api/hooks/useApi', () => ({
   useGet: vi.fn(),

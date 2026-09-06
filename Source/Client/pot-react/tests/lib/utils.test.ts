@@ -5,6 +5,9 @@ import { cn, isDevelopment, isNumber, noop } from '@/lib';
 describe('Utils', () => {
   describe('cn', () => {
     test('should merge class names and remove falsy entries', () => {
+      // The constant `false && 'hidden'` is deliberate: it proves falsy
+      // expressions are dropped.
+      // eslint-disable-next-line no-constant-binary-expression
       const result = cn('px-2', false && 'hidden', undefined, 'py-4');
 
       expect(result).toBe('px-2 py-4');

@@ -1,5 +1,4 @@
 import { expect, test } from '../../fixtures/auth';
-
 import {
   createE2eRequestContext as createRequestContext,
   deleteIncomeViaApi,

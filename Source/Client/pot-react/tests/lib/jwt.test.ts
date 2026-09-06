@@ -1,3 +1,4 @@
+import { jwtDecode } from 'jwt-decode';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { logger } from '@/concerns';
@@ -7,7 +8,6 @@ import {
   getTokenExpirationTime,
   isTokenExpiringSoon,
 } from '@/lib/jwt';
-import { jwtDecode } from 'jwt-decode';
 
 vi.mock('jwt-decode', () => ({
   jwtDecode: vi.fn(),

@@ -1,10 +1,9 @@
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { usePost } from '@/api/hooks/useApi';
 import { useCompleteSignup, useRequestSignup } from '@/api/hooks/useSignup';
 import { SuccessResult } from '@/lib';
-
-import { usePost } from '@/api/hooks/useApi';
 
 vi.mock('@/api/hooks/useApi', () => ({
   usePost: vi.fn(),

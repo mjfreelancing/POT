@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker';
-import { AxiosError, AxiosHeaders, InternalAxiosRequestConfig } from 'axios';
+import type { InternalAxiosRequestConfig } from 'axios';
+import { AxiosError, AxiosHeaders } from 'axios';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {

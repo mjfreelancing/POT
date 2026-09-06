@@ -7,9 +7,9 @@
     "dev": "vite --port 5175",
     "build": "tsc -b && vite build",
     "preview": "vite preview --port 5175",
-    "lint": "eslint  src/**/*.{ts,tsx}",
-    "lint:fix": "eslint --fix src/**/*.{ts,tsx}",
-    "lint:sort": "eslint --fix --fix-type layout,suggestion src/**/*.{ts,tsx}",
+    "lint": "eslint src/**/*.{ts,tsx} tests/**/*.{ts,tsx} e2e/**/*.{ts,tsx}",
+    "lint:fix": "eslint --fix src/**/*.{ts,tsx} tests/**/*.{ts,tsx} e2e/**/*.{ts,tsx}",
+    "lint:sort": "eslint --fix --fix-type layout,suggestion src/**/*.{ts,tsx} tests/**/*.{ts,tsx} e2e/**/*.{ts,tsx}",
     "format:fix": "npm run lint:sort && npm run prettier",
     "prettier": "prettier . --write",
     "test": "vitest",
@@ -30,7 +30,7 @@
     "e2e:all:prodlike": "playwright test --config=playwright.prod.config.ts --project chromium --project edge --project mobile-chrome --project mobile-safari --reporter=line,html",
     "e2e:report": "playwright show-report",
     "e2e:install": "playwright install chromium webkit",
-    "type:check": "tsc --noEmit"
+    "type:check": "tsc -b"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

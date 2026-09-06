@@ -11,10 +11,10 @@ type TestRow = {
 
 type TableMock = {
   getRowModel: () => {
-    rows: Array<{
+    rows: {
       id: string;
       getIsSelected: () => boolean;
-      getVisibleCells: () => Array<{
+      getVisibleCells: () => {
         id: string;
         column: {
           columnDef: {
@@ -24,8 +24,8 @@ type TableMock = {
         getContext: () => {
           value: string;
         };
-      }>;
-    }>;
+      }[];
+    }[];
   };
 };
 

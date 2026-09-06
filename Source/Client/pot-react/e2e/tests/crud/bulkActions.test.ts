@@ -1,6 +1,6 @@
-import type { APIRequestContext, Playwright } from '@playwright/test';
-import { expect, test } from '../../fixtures/auth';
+import type { APIRequestContext } from '@playwright/test';
 
+import { expect, test } from '../../fixtures/auth';
 import {
   authHeaders,
   createE2eRequestContext as createRequestContext,
@@ -134,7 +134,7 @@ test.describe.serial('Bulk mark-as-paid/received (fixture-managed)', () => {
       await expect(dialog.getByText(/1 expense not yet due/)).toBeVisible();
 
       // Capture the renew calls so we can assert per-type behaviour.
-      const renewRequests: Array<{ mode?: string; rowIds?: string[] }> = [];
+      const renewRequests: { mode?: string; rowIds?: string[] }[] = [];
       page.on('request', req => {
         if (
           req.url().includes('/api/expenses/renew') &&
@@ -241,7 +241,7 @@ test.describe.serial('Bulk mark-as-paid/received (fixture-managed)', () => {
       ).toBeVisible();
       await expect(dialog.getByText(/1 income not yet due/)).toBeVisible();
 
-      const renewRequests: Array<{ mode?: string; rowIds?: string[] }> = [];
+      const renewRequests: { mode?: string; rowIds?: string[] }[] = [];
       page.on('request', req => {
         if (
           req.url().includes('/api/incomes/renew') &&

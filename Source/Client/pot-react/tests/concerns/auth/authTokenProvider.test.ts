@@ -1,10 +1,9 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { AuthenticationError } from '@/api/errors/apiErrors';
-import { FailResult, SuccessResult } from '@/lib';
-
 import { refreshAccessToken } from '@/api/services/authService';
 import logoutManager from '@/concerns/auth/logoutManager';
+import { FailResult, SuccessResult } from '@/lib';
 
 vi.mock('@/api/services/authService', () => ({
   refreshAccessToken: vi.fn(),

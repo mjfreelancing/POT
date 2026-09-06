@@ -39,7 +39,7 @@ function LocationProbe() {
   );
 }
 
-function renderCreateIncomeFlow(initialPath: string = '/incomes/create') {
+function renderCreateIncomeFlow(initialPath = '/incomes/create') {
   const queryClient = new QueryClient();
 
   return render(

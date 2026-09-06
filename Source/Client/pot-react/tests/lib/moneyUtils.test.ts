@@ -1,7 +1,8 @@
 import { faker } from '@faker-js/faker';
 import { describe, expect, test } from 'vitest';
 
-import { MoneyValue, formatMoneyValue } from '@/lib';
+import type {MoneyValue } from '@/lib';
+import { formatMoneyValue } from '@/lib';
 
 describe('Money Utils', () => {
   describe('formatMoneyValue', () => {

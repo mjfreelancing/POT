@@ -1,4 +1,5 @@
-import { test as baseTest, expect, type StorageState } from '@playwright/test';
+import type { APIRequestContext } from '@playwright/test';
+import { expect,test as baseTest } from '@playwright/test';
 
 import {
   adminCredentials,
@@ -14,6 +15,10 @@ type E2eCredentials = {
   username: string;
   password: string;
 };
+
+// StorageState is not exported by name from '@playwright/test', so derive it
+// from the request context's storageState() return type.
+type StorageState = Awaited<ReturnType<APIRequestContext['storageState']>>;
 
 type LoginResult = {
   storageState: StorageState;

@@ -1,4 +1,5 @@
 import { format } from 'date-fns';
+
 import { expect, test } from '../../fixtures/auth';
 
 // Covers the EnrichedCalendar date
@@ -20,9 +21,6 @@ import { expect, test } from '../../fixtures/auth';
 //
 // Parallel-safe: opens the create sheet + calendar but never submits the form
 // (no mutations, no teardown).
-
-const isMobileProject = (testInfo: import('@playwright/test').TestInfo) =>
-  testInfo.project.name.startsWith('mobile');
 
 const today = new Date();
 

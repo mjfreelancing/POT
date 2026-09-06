@@ -1,5 +1,4 @@
 import { expect, pwChangeTest, test } from '../../fixtures/auth';
-
 import { authHeaders } from '../../helpers/api';
 
 // Covers the user settings flow: profile (display name)

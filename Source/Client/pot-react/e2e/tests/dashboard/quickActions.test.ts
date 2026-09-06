@@ -1,10 +1,10 @@
-import type { APIRequestContext, Page, Playwright } from '@playwright/test';
+import type { APIRequestContext, Page } from '@playwright/test';
+
 import {
   expect,
   quickActionsTest as test,
   viewerTest,
 } from '../../fixtures/auth';
-
 import {
   authHeaders,
   createE2eRequestContext as createRequestContext,

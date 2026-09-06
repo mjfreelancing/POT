@@ -6,11 +6,10 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { AuthenticationError, UnexpectedError } from '@/api/errors/apiErrors';
 import { useLogin } from '@/api/hooks/useAuth';
-import LoginPage from '@/features/auth/LoginPage';
-import { useAuthContext } from '@/features/auth/contexts';
-import { FailResult, SuccessResult } from '@/lib';
-
 import { useCacheInvalidation } from '@/concerns';
+import { useAuthContext } from '@/features/auth/contexts';
+import LoginPage from '@/features/auth/LoginPage';
+import { FailResult, SuccessResult } from '@/lib';
 
 const navigateMock = vi.fn();
 

@@ -1,4 +1,6 @@
 import type { MouseEvent } from 'react';
+import type { ExternalToast } from 'sonner';
+import { toast } from 'sonner';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import {
@@ -8,8 +10,6 @@ import {
 } from '@/concerns/pwa/pwaRuntime';
 import { showUpdatePromptIfNeeded } from '@/concerns/pwa/pwaUpdatePrompt';
 import { getWaitingServiceWorkerScriptUrl } from '@/concerns/pwa/serviceWorkerRegistration';
-import type { ExternalToast } from 'sonner';
-import { toast } from 'sonner';
 
 vi.mock('@/concerns/logging', () => ({
   logger: {

@@ -5,9 +5,8 @@ import {
   useApiAccrualsStatus,
   useApiAccrueAccountExpenses,
 } from '@/api/hooks/useAccrualsStatus';
-import { SuccessResult } from '@/lib';
-
 import { useGet, usePost } from '@/api/hooks/useApi';
+import { SuccessResult } from '@/lib';
 
 vi.mock('@/api/hooks/useApi', () => ({
   useGet: vi.fn(),

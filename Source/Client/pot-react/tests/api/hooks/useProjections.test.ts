@@ -2,10 +2,9 @@ import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { UnexpectedError } from '@/api/errors/apiErrors';
+import { useGet } from '@/api/hooks/useApi';
 import { useApiGetProjection } from '@/api/hooks/useProjections';
 import { FailResult, SuccessResult } from '@/lib';
-
-import { useGet } from '@/api/hooks/useApi';
 
 vi.mock('@/api/hooks/useApi', () => ({
   useGet: vi.fn(),

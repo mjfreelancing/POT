@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { PermissionGuard } from '@/features/auth/components/PermissionGuard';
 import { usePermissions } from '@/hooks';
+
 import { createPermissionsApi } from '../../../shared/auth/permissionsTestHelpers';
 
 vi.mock('@/hooks', () => ({

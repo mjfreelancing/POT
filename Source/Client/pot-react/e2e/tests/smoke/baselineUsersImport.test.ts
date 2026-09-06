@@ -1,7 +1,6 @@
 import type { Browser } from '@playwright/test';
 
 import { expect, test } from '../../fixtures/auth';
-
 import { listExistingUsernames } from '../../helpers/databaseSeed';
 import { adminCredentials, viewerCredentials } from '../../helpers/secrets';
 

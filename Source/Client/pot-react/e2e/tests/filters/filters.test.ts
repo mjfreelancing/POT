@@ -1,6 +1,6 @@
-import type { APIRequestContext, Playwright } from '@playwright/test';
-import { expect, test } from '../../fixtures/auth';
+import type { APIRequestContext } from '@playwright/test';
 
+import { expect, test } from '../../fixtures/auth';
 import {
   authHeaders,
   createE2eRequestContext as createRequestContext,
