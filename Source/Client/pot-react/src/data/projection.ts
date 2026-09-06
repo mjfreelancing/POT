@@ -38,8 +38,8 @@ const PROJECTION_METRICS: Record<ProjectionMetric, MetricConfig> = {
   },
 
   incomeReceived: {
-    title: 'Future Income',
-    filterLabel: 'Income',
+    title: 'Future Incomes',
+    filterLabel: 'Incomes',
     chartType: 'bar',
   },
 

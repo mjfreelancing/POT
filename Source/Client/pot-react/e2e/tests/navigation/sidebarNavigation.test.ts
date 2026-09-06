@@ -29,7 +29,7 @@ const sidebarLinks = [
     heading: 'Expense Management',
   },
   {
-    linkName: 'Income',
+    linkName: 'Incomes',
     pathname: '/incomes',
     heading: 'Income Management',
   },

@@ -136,7 +136,7 @@ function IncomeDetails({
               </div>
               {visibleItems.length === 0 ? (
                 <div className="px-3 py-3 space-y-2 text-sm text-muted-foreground">
-                  <p>No income to display for this date</p>
+                  <p>No incomes to display for this date</p>
                   <p className="text-xs">
                     Check if any accounts are hidden in the chart
                   </p>

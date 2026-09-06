@@ -76,7 +76,7 @@ function AppSidebarMenus() {
         },
         {
           type: 'href',
-          label: 'Income',
+          label: 'Incomes',
           icon: TrendingUp,
           href: incomesHref,
           permissions: ['income:view'],
