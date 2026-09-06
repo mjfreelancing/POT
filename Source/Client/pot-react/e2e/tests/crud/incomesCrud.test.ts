@@ -1,5 +1,9 @@
-import type { APIRequestContext } from '@playwright/test';
 import { expect, test } from '../../fixtures/auth';
+
+import {
+  createE2eRequestContext as createRequestContext,
+  deleteIncomeViaApi,
+} from '../../helpers/api';
 
 // Covers the incomes CRUD flow:
 // create -> edit -> delete end-to-end against the real stack.
@@ -10,8 +14,6 @@ import { expect, test } from '../../fixtures/auth';
 //
 // Desktop-only: the desktop flow uses the incomes table + row action menu; the
 // mobile income card flows are covered by mobileCardGrids.test.ts.
-
-const apiBaseUrl = 'http://127.0.0.1:5242';
 
 const isMobileProject = (testInfo: import('@playwright/test').TestInfo) =>
   testInfo.project.name.startsWith('mobile');
@@ -26,28 +28,9 @@ const makeUniqueIncome = () => ({
 // RowId created during this serial suite, cleaned up in afterEach.
 const createdIncomeRowIds: string[] = [];
 
-// Deletes a test-created income through the API using the fixture's access
-// token (no extra login). 404 is tolerated: the test may already have deleted
-// it via the UI before cleanup runs.
-async function deleteIncomeViaApi(
-  request: APIRequestContext,
-  accessToken: string,
-  rowId: string,
-): Promise<void> {
-  const response = await request.delete(`/api/incomes/${rowId}`, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-
-  expect([200, 204, 404]).toContain(response.status());
-}
-
 test.describe.serial('Incomes CRUD (fixture-managed)', () => {
   test.afterEach(async ({ playwright, accessToken }) => {
-    // 60s per-action timeout mirrors the test timeout (see filters.test.ts).
-    const request = await playwright.request.newContext({
-      baseURL: apiBaseUrl,
-      timeout: 60_000,
-    });
+    const request = await createRequestContext(playwright);
 
     try {
       for (const rowId of createdIncomeRowIds.splice(0)) {

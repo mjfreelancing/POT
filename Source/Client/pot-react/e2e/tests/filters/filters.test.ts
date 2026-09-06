@@ -1,6 +1,15 @@
 import type { APIRequestContext, Playwright } from '@playwright/test';
 import { expect, test } from '../../fixtures/auth';
 
+import {
+  authHeaders,
+  createE2eRequestContext as createRequestContext,
+  createExpenseViaApi,
+  createIncomeViaApi,
+  deleteExpenseViaApi,
+  deleteIncomeViaApi,
+} from '../../helpers/api';
+import { toIsoDate } from '../../helpers/dates';
 // Covers the filters: the SearchInput (with its
 // "Clear search input" button) and the AccountFilter ("Filter by account")
 // select, including the PRD 011 URL query-string contract — the `accountId`
@@ -15,42 +24,12 @@ import { expect, test } from '../../fixtures/auth';
 // Desktop-only: filter UI is exercised on desktop; mobile filter/layout
 // behavior is covered by mobileCardGrids.test.ts.
 
-const apiBaseUrl = 'http://127.0.0.1:5242';
-
 const isMobileProject = (testInfo: import('@playwright/test').TestInfo) =>
   testInfo.project.name.startsWith('mobile');
-
-// Local-date ISO (YYYY-MM-DD) so created records classify the same way the app
-// does.
-const toIsoDate = (date: Date): string => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-
-  return `${year}-${month}-${day}`;
-};
 
 // RowIds created during this serial suite, cleaned up in afterEach.
 const createdExpenseRowIds: string[] = [];
 const createdIncomeRowIds: string[] = [];
-
-// Creates an unauthenticated API request context. Auth comes from the
-// `accessToken` fixture (the single per-test login), avoiding an extra PBKDF2
-// login per operation. The 60s per-action timeout mirrors the test timeout so a
-// cold first API call on a loaded machine does not throw before the test can
-// complete (observed attempt-1 setup failures on a loaded local stack).
-async function createRequestContext(
-  playwright: Playwright,
-): Promise<APIRequestContext> {
-  return playwright.request.newContext({
-    baseURL: apiBaseUrl,
-    timeout: 60_000,
-  });
-}
-
-const authHeaders = (accessToken: string) => ({
-  Authorization: `Bearer ${accessToken}`,
-});
 
 // Selects a Radix Select option via the AT/keyboard activation path — no pointer
 // events (immune to Radix's pointerTypeRef mouse-selection contract, which .click()
@@ -110,82 +89,6 @@ async function getAccountsViaApi(
   expect(accounts.length).toBeGreaterThan(1);
 
   return accounts;
-}
-
-async function createExpenseViaApi(
-  request: APIRequestContext,
-  accessToken: string,
-  accountRowId: string,
-  payload: { description: string; nextDue: string; amount: number },
-): Promise<{ rowId: string }> {
-  const response = await request.post('/api/expenses', {
-    headers: authHeaders(accessToken),
-    data: {
-      description: payload.description,
-      nextDue: payload.nextDue,
-      accrualStart: null,
-      accrualPolicy: 'None',
-      endDate: null,
-      frequency: 'Months',
-      frequencyCount: 1,
-      amount: payload.amount,
-      note: null,
-      accountRowId,
-    },
-  });
-
-  expect(response.ok()).toBeTruthy();
-
-  return (await response.json()) as { rowId: string };
-}
-
-async function createIncomeViaApi(
-  request: APIRequestContext,
-  accessToken: string,
-  accountRowId: string,
-  payload: { description: string; nextDue: string; amount: number },
-): Promise<{ rowId: string }> {
-  const response = await request.post('/api/incomes', {
-    headers: authHeaders(accessToken),
-    data: {
-      description: payload.description,
-      nextDue: payload.nextDue,
-      endDate: null,
-      frequency: 'Months',
-      frequencyCount: 1,
-      amount: payload.amount,
-      note: null,
-      accountRowId,
-    },
-  });
-
-  expect(response.ok()).toBeTruthy();
-
-  return (await response.json()) as { rowId: string };
-}
-
-async function deleteExpenseViaApi(
-  request: APIRequestContext,
-  accessToken: string,
-  rowId: string,
-): Promise<void> {
-  const response = await request.delete(`/api/expenses/${rowId}`, {
-    headers: authHeaders(accessToken),
-  });
-
-  expect([200, 204, 404]).toContain(response.status());
-}
-
-async function deleteIncomeViaApi(
-  request: APIRequestContext,
-  accessToken: string,
-  rowId: string,
-): Promise<void> {
-  const response = await request.delete(`/api/incomes/${rowId}`, {
-    headers: authHeaders(accessToken),
-  });
-
-  expect([200, 204, 404]).toContain(response.status());
 }
 
 test.describe.serial('Filters (fixture-managed)', () => {

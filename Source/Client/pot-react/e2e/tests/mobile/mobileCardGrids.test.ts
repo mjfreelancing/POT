@@ -1,5 +1,7 @@
 import { expect, test } from '../../fixtures/auth';
 
+import { authHeaders } from '../../helpers/api';
+
 // Covers the responsive data-table/card-grid switch. On narrow viewports the
 // accounts / expenses / incomes pages swap their desktop `DataTable` for a
 // 2-column mobile card grid (`AccountCardGrid` / `ExpenseCardGrid` /
@@ -26,10 +28,6 @@ const isMobileProject = (testInfo: import('@playwright/test').TestInfo) =>
   testInfo.project.name.startsWith('mobile');
 
 const apiBaseUrl = 'http://127.0.0.1:5242';
-
-const authHeaders = (accessToken: string) => ({
-  Authorization: `Bearer ${accessToken}`,
-});
 
 test('expenses page: data table on desktop, card grid on mobile', async ({
   page,

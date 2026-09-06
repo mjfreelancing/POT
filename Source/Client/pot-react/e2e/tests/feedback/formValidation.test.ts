@@ -7,9 +7,11 @@ import { expect, test } from '../../fixtures/auth';
 
 test.describe('account create form validation', () => {
   test('shows field errors when submitting an empty form', async ({ page }) => {
-    await page.goto('/accounts');
-    await page.getByRole('button', { name: 'Add a new account' }).click();
-    await expect(page).toHaveURL(/\/accounts\/create$/);
+    // Validation is client-side and needs no accounts data, so navigate straight
+    // to the create route. Going via /accounts makes the test depend on the list
+    // toolbar mounting, which is load-sensitive under the shared-stack matrix.
+    await page.goto('/accounts/create');
+    await expect(page.getByRole('button', { name: 'Create' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Create' }).click();
 
@@ -29,9 +31,9 @@ test.describe('account create form validation', () => {
   });
 
   test('shows a BSB format error for an invalid BSB', async ({ page }) => {
-    await page.goto('/accounts');
-    await page.getByRole('button', { name: 'Add a new account' }).click();
-    await expect(page).toHaveURL(/\/accounts\/create$/);
+    // Navigate straight to the create route (see the empty-form test above).
+    await page.goto('/accounts/create');
+    await expect(page.getByRole('button', { name: 'Create' })).toBeVisible();
 
     await page.getByLabel('BSB').fill('123');
     await page.getByRole('button', { name: 'Create' }).click();

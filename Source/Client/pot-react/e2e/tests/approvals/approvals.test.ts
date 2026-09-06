@@ -1,6 +1,11 @@
 import type { APIRequestContext, Playwright } from '@playwright/test';
 import { expect, test } from '../../fixtures/auth';
 
+import {
+  authHeaders,
+  createE2eRequestContext as createRequestContext,
+} from '../../helpers/api';
+
 // Covers the approvals flow: approve/reject a pending
 // platform approval from /approvals/pending.
 //
@@ -21,27 +26,8 @@ import { expect, test } from '../../fixtures/auth';
 // Desktop-only: the approvals table + row menu are desktop; mobile card flows
 // are covered by mobileCardGrids.test.ts.
 
-const apiBaseUrl = 'http://127.0.0.1:5242';
-
 const isMobileProject = (testInfo: import('@playwright/test').TestInfo) =>
   testInfo.project.name.startsWith('mobile');
-
-// Unauthenticated API request context; auth comes from the accessToken fixture.
-async function createRequestContext(
-  playwright: Playwright,
-): Promise<APIRequestContext> {
-  // 60s per-action timeout mirrors the test timeout (same rationale as
-  // filters.test.ts): a cold first API call on the loaded shared stack can
-  // exceed Playwright's 30s request default.
-  return playwright.request.newContext({
-    baseURL: apiBaseUrl,
-    timeout: 60_000,
-  });
-}
-
-const authHeaders = (accessToken: string) => ({
-  Authorization: `Bearer ${accessToken}`,
-});
 
 // Invites a user, flips them to status 'Approval' (so they appear on
 // /approvals/pending), and returns the unique username used to locate the row.

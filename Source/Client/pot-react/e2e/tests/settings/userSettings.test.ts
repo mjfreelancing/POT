@@ -1,5 +1,7 @@
 import { expect, pwChangeTest, test } from '../../fixtures/auth';
 
+import { authHeaders } from '../../helpers/api';
+
 // Covers the user settings flow: profile (display name)
 // update and password change from the "POT Settings" sheet (user menu ->
 // Settings).
@@ -54,10 +56,6 @@ const isNotChromium = (testInfo: import('@playwright/test').TestInfo) =>
   testInfo.project.name !== 'chromium';
 
 const apiBaseUrl = 'http://127.0.0.1:5242';
-
-const authHeaders = (accessToken: string) => ({
-  Authorization: `Bearer ${accessToken}`,
-});
 
 // Both tests below mutate the SAME shared user (e2e_pwchange), so they must run
 // one at a time in declaration order — never concurrently within a worker.

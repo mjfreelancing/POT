@@ -5,6 +5,16 @@ import {
   viewerTest,
 } from '../../fixtures/auth';
 
+import {
+  authHeaders,
+  createE2eRequestContext as createRequestContext,
+  createExpenseViaApi,
+  createIncomeViaApi,
+  deleteExpenseViaApi,
+  deleteIncomeViaApi,
+} from '../../helpers/api';
+import { toIsoDate } from '../../helpers/dates';
+
 // Covers the dashboard quick actions: the four
 // action cards on /dashboard — Renew Expenses, Renew Incomes, Accrue Expenses,
 // Renew & Accrue — are driven by the accruals-status endpoint and only enabled
@@ -26,43 +36,12 @@ import {
 // E2E site. It is CHROMIUM-ONLY in playwright.config.ts: chromium + edge
 // running the same file against one DB would race each other's actions.
 
-const apiBaseUrl = 'http://127.0.0.1:5242';
-
 const isMobileProject = (testInfo: import('@playwright/test').TestInfo) =>
   testInfo.project.name.startsWith('mobile');
-
-// Local-date ISO (YYYY-MM-DD) so "overdue" classification matches the app's
-// local-date handling.
-const toIsoDate = (date: Date): string => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-
-  return `${year}-${month}-${day}`;
-};
 
 // RowIds created during this serial suite, cleaned up in afterEach.
 const createdExpenseRowIds: string[] = [];
 const createdIncomeRowIds: string[] = [];
-
-// Creates an unauthenticated API request context. Auth comes from the
-// `accessToken` fixture (the single per-test login), avoiding an extra PBKDF2
-// login per operation.
-async function createRequestContext(
-  playwright: Playwright,
-): Promise<APIRequestContext> {
-  // 60s per-action timeout mirrors the test timeout (same rationale as
-  // filters.test.ts): a cold first API call on the loaded shared stack can
-  // exceed Playwright's 30s request default.
-  return playwright.request.newContext({
-    baseURL: apiBaseUrl,
-    timeout: 60_000,
-  });
-}
-
-const authHeaders = (accessToken: string) => ({
-  Authorization: `Bearer ${accessToken}`,
-});
 
 async function createAccountViaApi(
   request: APIRequestContext,
@@ -106,82 +85,6 @@ async function getOrCreateAccountRowId(
   const account = await createAccountViaApi(request, accessToken);
 
   return account.rowId;
-}
-
-async function createExpenseViaApi(
-  request: APIRequestContext,
-  accessToken: string,
-  accountRowId: string,
-  payload: { description: string; nextDue: string; amount: number },
-): Promise<{ rowId: string }> {
-  const response = await request.post('/api/expenses', {
-    headers: authHeaders(accessToken),
-    data: {
-      description: payload.description,
-      nextDue: payload.nextDue,
-      accrualStart: null,
-      accrualPolicy: 'Automatic',
-      endDate: null,
-      frequency: 'Months',
-      frequencyCount: 1,
-      amount: payload.amount,
-      note: null,
-      accountRowId,
-    },
-  });
-
-  expect(response.ok()).toBeTruthy();
-
-  return (await response.json()) as { rowId: string };
-}
-
-async function createIncomeViaApi(
-  request: APIRequestContext,
-  accessToken: string,
-  accountRowId: string,
-  payload: { description: string; nextDue: string; amount: number },
-): Promise<{ rowId: string }> {
-  const response = await request.post('/api/incomes', {
-    headers: authHeaders(accessToken),
-    data: {
-      description: payload.description,
-      nextDue: payload.nextDue,
-      endDate: null,
-      frequency: 'Months',
-      frequencyCount: 1,
-      amount: payload.amount,
-      note: null,
-      accountRowId,
-    },
-  });
-
-  expect(response.ok()).toBeTruthy();
-
-  return (await response.json()) as { rowId: string };
-}
-
-async function deleteExpenseViaApi(
-  request: APIRequestContext,
-  accessToken: string,
-  rowId: string,
-): Promise<void> {
-  const response = await request.delete(`/api/expenses/${rowId}`, {
-    headers: authHeaders(accessToken),
-  });
-
-  expect([200, 204, 404]).toContain(response.status());
-}
-
-async function deleteIncomeViaApi(
-  request: APIRequestContext,
-  accessToken: string,
-  rowId: string,
-): Promise<void> {
-  const response = await request.delete(`/api/incomes/${rowId}`, {
-    headers: authHeaders(accessToken),
-  });
-
-  expect([200, 204, 404]).toContain(response.status());
 }
 
 // The Quick Actions section is open by default (fresh login = no persisted
@@ -242,6 +145,7 @@ test.describe.serial('Dashboard quick actions (fixture-managed)', () => {
           nextDue: overdueDate,
           amount: 40,
         },
+        'Automatic',
       );
       const overdueExpense2 = await createExpenseViaApi(
         request,
@@ -252,6 +156,7 @@ test.describe.serial('Dashboard quick actions (fixture-managed)', () => {
           nextDue: overdueDate,
           amount: 50,
         },
+        'Automatic',
       );
 
       createdExpenseRowIds.push(overdueExpense1.rowId, overdueExpense2.rowId);
@@ -452,6 +357,7 @@ test.describe.serial('Dashboard quick actions (fixture-managed)', () => {
           nextDue: overdueDate,
           amount: 60,
         },
+        'Automatic',
       );
 
       createdExpenseRowIds.push(overdueExpense.rowId);
@@ -536,6 +442,7 @@ test.describe.serial('Dashboard quick actions (fixture-managed)', () => {
           nextDue: overdueDate,
           amount: 70,
         },
+        'Automatic',
       );
       const overdueIncome = await createIncomeViaApi(
         request,

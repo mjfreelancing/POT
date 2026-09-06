@@ -191,9 +191,8 @@ test.describe.serial('Accounts CRUD (fixture-managed)', () => {
       return route.continue();
     });
 
-    await page.goto('/accounts');
-    await page.getByRole('button', { name: 'Add a new account' }).click();
-    await expect(page).toHaveURL(/\/accounts\/create$/);
+    await page.goto('/accounts/create');
+    await expect(page.getByRole('button', { name: 'Create' })).toBeVisible();
 
     await page.getByLabel('BSB').fill('111-222');
     await page.getByLabel('Account Number').fill('98765432');

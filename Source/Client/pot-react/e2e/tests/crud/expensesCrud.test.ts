@@ -1,5 +1,9 @@
-import type { APIRequestContext } from '@playwright/test';
 import { expect, test } from '../../fixtures/auth';
+
+import {
+  createE2eRequestContext as createRequestContext,
+  deleteExpenseViaApi,
+} from '../../helpers/api';
 
 // Covers the expenses CRUD flow:
 // create -> edit -> delete end-to-end against the real stack, including the
@@ -14,8 +18,6 @@ import { expect, test } from '../../fixtures/auth';
 // Desktop-only: the desktop flow uses the expenses table + row action menu; the
 // mobile expense card flows are covered by mobileCardGrids.test.ts.
 
-const apiBaseUrl = 'http://127.0.0.1:5242';
-
 const isMobileProject = (testInfo: import('@playwright/test').TestInfo) =>
   testInfo.project.name.startsWith('mobile');
 
@@ -29,28 +31,9 @@ const makeUniqueExpense = () => ({
 // RowIds created during this serial suite, cleaned up in afterEach.
 const createdExpenseRowIds: string[] = [];
 
-// Deletes a test-created expense through the API using the fixture's access
-// token (no extra login). 404 is tolerated: the test may already have deleted
-// it via the UI before cleanup runs.
-async function deleteExpenseViaApi(
-  request: APIRequestContext,
-  accessToken: string,
-  rowId: string,
-): Promise<void> {
-  const response = await request.delete(`/api/expenses/${rowId}`, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-
-  expect([200, 204, 404]).toContain(response.status());
-}
-
 test.describe.serial('Expenses CRUD (fixture-managed)', () => {
   test.afterEach(async ({ playwright, accessToken }) => {
-    // 60s per-action timeout mirrors the test timeout (see filters.test.ts).
-    const request = await playwright.request.newContext({
-      baseURL: apiBaseUrl,
-      timeout: 60_000,
-    });
+    const request = await createRequestContext(playwright);
 
     try {
       for (const rowId of createdExpenseRowIds.splice(0)) {
@@ -182,9 +165,10 @@ test.describe.serial('Expenses CRUD (fixture-managed)', () => {
       'Expenses table CRUD is desktop-only; mobile uses the card grid',
     );
 
-    await page.goto('/expenses');
-    await page.getByRole('button', { name: 'Add a new expense' }).click();
-    await expect(page).toHaveURL(/\/expenses\/create$/);
+    // Validation needs no list data; go straight to the create route so the
+    // test does not depend on the load-sensitive /expenses list mount.
+    await page.goto('/expenses/create');
+    await expect(page.getByRole('button', { name: 'Create' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Create' }).click();
 
