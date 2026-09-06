@@ -3,6 +3,7 @@ import { test as baseTest, expect, type StorageState } from '@playwright/test';
 import {
   adminCredentials,
   pwChangeCredentials,
+  quickActionsCredentials,
   viewerCredentials,
 } from '../helpers/secrets';
 
@@ -114,5 +115,12 @@ export const viewerTest = createAuthenticatedTest(viewerCredentials);
 // tests can rotate the password (bumping TokenVersion + revoking ITS sessions)
 // without invalidating the shared admin session every other suite depends on.
 export const pwChangeTest = createAuthenticatedTest(pwChangeCredentials);
+
+// Quick-actions test: authenticated as e2e_quickactions, an Admin on its own
+// site (see baseline.sql). Dedicated to the dashboard quick-actions suite so
+// its whole-site renew/accrue actions are isolated from the shared E2E site.
+export const quickActionsTest = createAuthenticatedTest(
+  quickActionsCredentials,
+);
 
 export { expect };

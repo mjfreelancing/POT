@@ -1,5 +1,9 @@
 import type { APIRequestContext, Page, Playwright } from '@playwright/test';
-import { expect, test } from '../../fixtures/auth';
+import {
+  expect,
+  quickActionsTest as test,
+  viewerTest,
+} from '../../fixtures/auth';
 
 // Covers the dashboard quick actions: the four
 // action cards on /dashboard — Renew Expenses, Renew Incomes, Accrue Expenses,
@@ -16,6 +20,11 @@ import { expect, test } from '../../fixtures/auth';
 //
 // Desktop-only: the dashboard quick-action cards are exercised on desktop;
 // mobile layout is covered by mobileCardGrids.test.ts.
+//
+// Runs as e2e_quickactions (Admin on its OWN site, see baseline.sql) so the
+// whole-site renew/accrue actions never sweep other suites' rows on the shared
+// E2E site. It is CHROMIUM-ONLY in playwright.config.ts: chromium + edge
+// running the same file against one DB would race each other's actions.
 
 const apiBaseUrl = 'http://127.0.0.1:5242';
 
@@ -55,7 +64,30 @@ const authHeaders = (accessToken: string) => ({
   Authorization: `Bearer ${accessToken}`,
 });
 
-async function getFirstAccountRowId(
+async function createAccountViaApi(
+  request: APIRequestContext,
+  accessToken: string,
+): Promise<{ rowId: string }> {
+  const response = await request.post('/api/accounts', {
+    headers: authHeaders(accessToken),
+    data: {
+      bsb: '000-000',
+      number: '00000000',
+      description: 'E2E Quick Actions Account',
+      balance: 0,
+      reserved: 0,
+    },
+  });
+
+  expect(response.ok()).toBeTruthy();
+
+  return (await response.json()) as { rowId: string };
+}
+
+// The quick-actions suite runs as e2e_quickactions on its own isolated site,
+// which has no seeded accounts (accounts are not part of the baseline seed).
+// Create one on first use; later tests in the serial suite reuse it.
+async function getOrCreateAccountRowId(
   request: APIRequestContext,
   accessToken: string,
 ): Promise<string> {
@@ -66,9 +98,14 @@ async function getFirstAccountRowId(
   expect(response.ok()).toBeTruthy();
 
   const accounts = (await response.json()) as { rowId: string }[];
-  expect(accounts.length).toBeGreaterThan(0);
 
-  return accounts[0].rowId;
+  if (accounts.length > 0) {
+    return accounts[0].rowId;
+  }
+
+  const account = await createAccountViaApi(request, accessToken);
+
+  return account.rowId;
 }
 
 async function createExpenseViaApi(
@@ -193,7 +230,7 @@ test.describe.serial('Dashboard quick actions (fixture-managed)', () => {
     const request = await createRequestContext(playwright);
 
     try {
-      const accountRowId = await getFirstAccountRowId(request, accessToken);
+      const accountRowId = await getOrCreateAccountRowId(request, accessToken);
       const stamp = Date.now();
 
       const overdueExpense1 = await createExpenseViaApi(
@@ -300,7 +337,7 @@ test.describe.serial('Dashboard quick actions (fixture-managed)', () => {
     const request = await createRequestContext(playwright);
 
     try {
-      const accountRowId = await getFirstAccountRowId(request, accessToken);
+      const accountRowId = await getOrCreateAccountRowId(request, accessToken);
       const stamp = Date.now();
 
       const overdueIncome1 = await createIncomeViaApi(
@@ -401,7 +438,7 @@ test.describe.serial('Dashboard quick actions (fixture-managed)', () => {
     const request = await createRequestContext(playwright);
 
     try {
-      const accountRowId = await getFirstAccountRowId(request, accessToken);
+      const accountRowId = await getOrCreateAccountRowId(request, accessToken);
       const stamp = Date.now();
 
       // Creating an expense marks the account accrual dirty (the seed already
@@ -487,7 +524,7 @@ test.describe.serial('Dashboard quick actions (fixture-managed)', () => {
     const request = await createRequestContext(playwright);
 
     try {
-      const accountRowId = await getFirstAccountRowId(request, accessToken);
+      const accountRowId = await getOrCreateAccountRowId(request, accessToken);
       const stamp = Date.now();
 
       const overdueExpense = await createExpenseViaApi(
@@ -583,28 +620,29 @@ test.describe.serial('Dashboard quick actions (fixture-managed)', () => {
     }
   });
 
-  test('viewer does not see quick actions (PermissionGuard)', async ({
-    page,
-  }, testInfo) => {
-    test.skip(
-      isMobileProject(testInfo),
-      'Quick actions are desktop-only; mobile layout is covered by mobileCardGrids.test.ts',
-    );
+  viewerTest(
+    'viewer does not see quick actions (PermissionGuard)',
+    async ({ page }, testInfo) => {
+      viewerTest.skip(
+        isMobileProject(testInfo),
+        'Quick actions are desktop-only; mobile layout is covered by mobileCardGrids.test.ts',
+      );
 
-    await page.goto('/dashboard');
+      await page.goto('/dashboard');
 
-    // The whole Quick Actions section is hidden for the viewer (they lack
-    // expense/income/account manage permissions).
-    await expect(page.getByText('Quick Actions', { exact: true })).toHaveCount(
-      0,
-    );
-    await expect(
-      page.getByRole('heading', { name: 'Renew Expenses' }),
-    ).toHaveCount(0);
+      // The whole Quick Actions section is hidden for the viewer (they lack
+      // expense/income/account manage permissions).
+      await expect(
+        page.getByText('Quick Actions', { exact: true }),
+      ).toHaveCount(0);
+      await expect(
+        page.getByRole('heading', { name: 'Renew Expenses' }),
+      ).toHaveCount(0);
 
-    // View-only sections are still visible.
-    await expect(
-      page.getByText('Accounts Overview', { exact: true }),
-    ).toBeVisible();
-  });
+      // View-only sections are still visible.
+      await expect(
+        page.getByText('Accounts Overview', { exact: true }),
+      ).toBeVisible();
+    },
+  );
 });

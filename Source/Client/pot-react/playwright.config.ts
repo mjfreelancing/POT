@@ -122,9 +122,17 @@ export default defineConfig({
     // other project's session) — see the file's header comment. Excluding it
     // here keeps the parallel matrix green (an in-body skip cannot stop the
     // auth fixture from running, which is where the collision bites).
+    //
+    // quickActions.test.ts is also CHROMIUM-ONLY. It runs as e2e_quickactions
+    // on its own isolated site, and the dashboard renew/accrue actions operate
+    // over the whole site; running the same file on chromium + edge against one
+    // shared DB would let the two instances sweep each other's rows mid-test.
     {
       name: 'edge',
-      testIgnore: ['**/settings/userSettings.test.ts'],
+      testIgnore: [
+        '**/settings/userSettings.test.ts',
+        '**/dashboard/quickActions.test.ts',
+      ],
       use: {
         browserName: 'chromium',
         channel: 'msedge',
@@ -141,10 +149,12 @@ export default defineConfig({
         // excluding the file here removes 8 wasted logins per matrix run.
         // shortLandscapeScroll.test.ts overrides the viewport to a short
         // landscape size (desktop layout), so it is excluded from the portrait
-        // phone projects.
+        // phone projects. quickActions.test.ts is chromium-only (desktop
+        // whole-site renew/accrue suite on its own isolated user/site).
         '**/settings/userSettings.test.ts',
         '**/filters/filters.test.ts',
         '**/rendering/shortLandscapeScroll.test.ts',
+        '**/dashboard/quickActions.test.ts',
       ],
       use: {
         ...devices['Pixel 7'],
@@ -156,6 +166,7 @@ export default defineConfig({
         '**/settings/userSettings.test.ts',
         '**/filters/filters.test.ts',
         '**/rendering/shortLandscapeScroll.test.ts',
+        '**/dashboard/quickActions.test.ts',
       ],
       use: {
         ...devices['iPhone 14'],

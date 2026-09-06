@@ -24,4 +24,17 @@ const pwChangeCredentials = {
   password: 'E2E_pwchange-password',
 } as const;
 
-export { adminCredentials, pwChangeCredentials, viewerCredentials };
+// Dedicated identity for the dashboard quick-actions suite. It is an Admin on
+// its OWN site (see baseline.sql) so the suite's whole-site renew/accrue
+// actions never touch the shared E2E site's data.
+const quickActionsCredentials = {
+  username: 'e2e_quickactions',
+  password: 'E2E_quickactions-password',
+} as const;
+
+export {
+  adminCredentials,
+  pwChangeCredentials,
+  quickActionsCredentials,
+  viewerCredentials,
+};
