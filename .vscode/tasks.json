@@ -127,6 +127,32 @@
         "isDefault": false
       },
       "problemMatcher": []
+    },
+    {
+      "label": "docker-start-e2e-postgres",
+      "type": "shell",
+      "command": "if (-not (Test-Path 'postgres-data')) { New-Item -ItemType Directory -Path 'postgres-data' | Out-Null }; docker compose -f docker-compose.yml up -d",
+      "options": {
+        "cwd": "${workspaceFolder}/Data/E2E Docker"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "docker-stop-e2e-postgres",
+      "type": "shell",
+      "command": "docker compose -f docker-compose.yml stop",
+      "options": {
+        "cwd": "${workspaceFolder}/Data/E2E Docker"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": []
     }
   ]
 }
