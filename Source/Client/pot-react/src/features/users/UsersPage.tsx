@@ -155,7 +155,7 @@ function UsersPage() {
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-gradient-to-br from-background to-muted/20">
       <PageHeader
-        title="Users"
+        title="User Management"
         subtitle="Manage user accounts and permissions"
       />
       <div className={contentAreaClass}>

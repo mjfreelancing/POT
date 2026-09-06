@@ -36,7 +36,7 @@ const sidebarLinks = [
   {
     linkName: 'Users',
     pathname: '/users',
-    heading: 'Users',
+    heading: 'User Management',
   },
   {
     linkName: 'Approvals',

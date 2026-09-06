@@ -236,7 +236,9 @@ describe('UsersPage', () => {
   test('renders desktop users table with user count', () => {
     renderUsersPage();
 
-    expect(screen.getByRole('heading', { name: 'Users' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'User Management' }),
+    ).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
     expect(screen.getByText('table:maria|alex')).toBeInTheDocument();
     expect(screen.queryByText('cards:maria|alex')).not.toBeInTheDocument();
