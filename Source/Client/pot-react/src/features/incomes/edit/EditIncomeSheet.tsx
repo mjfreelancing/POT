@@ -8,6 +8,7 @@ import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import { useErrorContext } from '@/contexts';
 import type { Account, EditIncome, Income } from '@/data';
 import { ApiErrorSheetState } from '@/features/shared/sheets/asyncSheetStates';
+import { listFilterQuery } from '@/lib';
 
 import IncomeForm from '../components/IncomeForm';
 import IncomeSheet from '../components/IncomeSheet';
@@ -33,7 +34,7 @@ const EditIncomeSheetInternal: React.FC<EditIncomeSheetInternalProps> = ({
   // Preserve account filter query when exiting edit. If we drop it, the parent page
   // restores it from storage after navigation, which can remount the edit route.
   // We also navigate with replace:true so browser Back does not reopen the edit sheet.
-  const returnPath = `/incomes${location.search}`;
+  const returnPath = `/incomes${listFilterQuery(location.search)}`;
 
   const defaultValues = useMemo(
     () => ({
@@ -98,8 +99,8 @@ function EditIncomeSheet() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Keep the current query string when dismissing this route-level sheet.
-  const returnPath = `/incomes${location.search}`;
+  // Dismiss back to the list carrying only list filter params (accountId).
+  const returnPath = `/incomes${listFilterQuery(location.search)}`;
   const {
     data: incomeResult,
     isLoading: isIncomeLoading,

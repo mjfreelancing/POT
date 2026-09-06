@@ -5,6 +5,7 @@ import {
   ApiErrorSheetState,
   CreateSheetLoadingState,
 } from '@/features/shared/sheets/asyncSheetStates';
+import { listFilterQuery } from '@/lib';
 
 import ExpenseSheet from '../../components/ExpenseSheet';
 import CreateExpenseForm from '../components/CreateExpenseForm';
@@ -16,7 +17,7 @@ import CreateExpenseForm from '../components/CreateExpenseForm';
 function CreateNewExpense() {
   const navigate = useNavigate();
   const location = useLocation();
-  const returnPath = `/expenses${location.search}`;
+  const returnPath = `/expenses${listFilterQuery(location.search)}`;
   const { data: accountsResult, isLoading: isAccountsLoading } =
     useApiGetAllAccounts();
 

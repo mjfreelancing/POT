@@ -30,6 +30,7 @@ import { useErrorContext } from '@/contexts';
 import type { Income } from '@/data/income';
 import { useAccountFilter, useIsMobile } from '@/hooks';
 import { useIsShortViewport } from '@/hooks/use-short-viewport';
+import { listFilterQuery } from '@/lib';
 
 import { WithPermission } from '../auth/components';
 import { IncomeCardGrid, IncomesHeader, IncomesTable } from './components';
@@ -276,7 +277,10 @@ function IncomesPage() {
   }, [filteredIncomes, searchTerm]);
 
   const navigate = useNavigate();
-  const createPath = location.search ? `create${location.search}` : 'create';
+
+  // Only list filter params (accountId) are forwarded into the create route, so
+  // a transient param such as `duplicate` can never reopen a stale duplicate.
+  const createPath = `create${listFilterQuery(location.search)}`;
 
   const handleClearFilters = () => {
     setSearchTerm('');

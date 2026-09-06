@@ -34,6 +34,7 @@ import {
   formatDate,
   formatMoneyValue,
   getDaysDue,
+  listFilterQuery,
   RenewalMode,
 } from '@/lib';
 
@@ -212,8 +213,14 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
     );
   }
 
-  // Carry active list filters (for example accountId) into edit route.
-  const searchSuffix = location.search;
+  // Only forward list filter params (accountId); never echo transient params.
+  const searchSuffix = listFilterQuery(location.search);
+
+  // Duplicate opens the create route carrying the duplicate param plus any
+  // active list filter, so the round-trip returns to the same list state.
+  const duplicatePath = `/incomes/create${listFilterQuery(location.search, {
+    duplicate: String(income.rowId),
+  })}`;
 
   const handleDelete = async () => {
     const result = await deleteIncome();
@@ -514,9 +521,7 @@ function IncomeMobileCard({ income }: IncomeMobileCardProps) {
 
                     <WithPermission permissions={['income:manage']} mode="all">
                       <DropdownMenuItem
-                        onClick={() =>
-                          navigate(`/incomes/create?duplicate=${income.rowId}`)
-                        }
+                        onClick={() => navigate(duplicatePath)}
                         disabled={isActionInProgress}
                       >
                         <Copy className="text-action-neutral mr-2 h-4 w-4" />

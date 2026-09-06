@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from 'react-router';
 
 import { useErrorContext } from '@/contexts';
 import type { Account, CreateIncome, Income } from '@/data';
-import { Frequency, todayIsoFormat } from '@/lib';
+import { Frequency, listFilterQuery, todayIsoFormat } from '@/lib';
 
 import IncomeForm from '../../components/IncomeForm';
 import IncomeSheet from '../../components/IncomeSheet';
@@ -29,7 +29,10 @@ function CreateIncomeForm({
   const navigate = useNavigate();
   const location = useLocation();
   const { createIncome } = useCreateIncome();
-  const returnPath = `/incomes${location.search}`;
+
+  // Return deterministically: only list filter params (accountId) are carried
+  // back, so the transient `duplicate` param never leaks onto the list URL.
+  const returnPath = `/incomes${listFilterQuery(location.search)}`;
 
   const getDefaultValues = useCallback((): IncomeFormData => {
     if (duplicateIncome) {

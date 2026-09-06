@@ -5,6 +5,7 @@ import {
   ApiErrorSheetState,
   CreateSheetLoadingState,
 } from '@/features/shared/sheets/asyncSheetStates';
+import { listFilterQuery } from '@/lib';
 
 import IncomeSheet from '../../components/IncomeSheet';
 import CreateIncomeForm from '../components/CreateIncomeForm';
@@ -16,7 +17,7 @@ import CreateIncomeForm from '../components/CreateIncomeForm';
 function CreateNewIncome() {
   const navigate = useNavigate();
   const location = useLocation();
-  const returnPath = `/incomes${location.search}`;
+  const returnPath = `/incomes${listFilterQuery(location.search)}`;
   const { data: accountsResult, isLoading: isAccountsLoading } =
     useApiGetAllAccounts();
 

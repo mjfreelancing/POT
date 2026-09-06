@@ -8,6 +8,7 @@ import LoadingMessage from '@/components/feedback/message/LoadingMessage';
 import { useErrorContext } from '@/contexts';
 import type { Account, EditExpense, Expense } from '@/data';
 import { ApiErrorSheetState } from '@/features/shared/sheets/asyncSheetStates';
+import { listFilterQuery } from '@/lib';
 
 import ExpenseForm from '../components/ExpenseForm';
 import ExpenseSheet from '../components/ExpenseSheet';
@@ -33,7 +34,7 @@ const EditExpenseSheetInternal: React.FC<EditExpenseSheetInternalProps> = ({
   // Preserve account filter query when exiting edit. If we drop it, the parent page
   // restores it from storage after navigation, which can remount the edit route.
   // We also navigate with replace:true so browser Back does not reopen the edit sheet.
-  const returnPath = `/expenses${location.search}`;
+  const returnPath = `/expenses${listFilterQuery(location.search)}`;
 
   const defaultValues = useMemo(
     () => ({
@@ -103,8 +104,8 @@ function EditExpenseSheet() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Keep the current query string when dismissing this route-level sheet.
-  const returnPath = `/expenses${location.search}`;
+  // Dismiss back to the list carrying only list filter params (accountId).
+  const returnPath = `/expenses${listFilterQuery(location.search)}`;
   const {
     data: expenseResult,
     isLoading: isExpenseLoading,

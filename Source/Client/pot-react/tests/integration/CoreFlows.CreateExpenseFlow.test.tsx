@@ -1,22 +1,24 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, Route, Routes } from 'react-router';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { useApiGetAllAccounts } from '@/api/hooks';
+import { useApiGetAllAccounts, useApiGetExpenseById } from '@/api/hooks';
 import { useErrorContext } from '@/contexts';
 import CreateExpenseSheet from '@/features/expenses/create/CreateExpenseSheet';
 import useCreateExpense from '@/features/expenses/create/hooks/useCreateExpense';
 import { SuccessResult, todayIsoFormat } from '@/lib';
 
 import { createAccountWithIdentity } from '../shared/factories/accountFactory';
+import { createExpense } from '../shared/factories/expenseFactory';
 
 const createExpenseMock = vi.fn();
 const setErrorMock = vi.fn();
 
 vi.mock('@/api/hooks', () => ({
   useApiGetAllAccounts: vi.fn(),
+  useApiGetExpenseById: vi.fn(),
 }));
 
 vi.mock('@/features/expenses/create/hooks/useCreateExpense', () => ({
@@ -27,6 +29,16 @@ vi.mock('@/contexts', () => ({
   useErrorContext: vi.fn(),
 }));
 
+function LocationProbe() {
+  const location = useLocation();
+
+  return (
+    <div data-testid="location-probe">
+      {`probe:${location.pathname}${location.search}`}
+    </div>
+  );
+}
+
 function renderCreateExpenseFlow(initialPath: string = '/expenses/create') {
   const queryClient = new QueryClient();
 
@@ -35,7 +47,15 @@ function renderCreateExpenseFlow(initialPath: string = '/expenses/create') {
       <MemoryRouter initialEntries={[initialPath]}>
         <Routes>
           <Route path="/expenses/create" element={<CreateExpenseSheet />} />
-          <Route path="/expenses" element={<h1>Expenses page</h1>} />
+          <Route
+            path="/expenses"
+            element={
+              <>
+                <h1>Expenses page</h1>
+                <LocationProbe />
+              </>
+            }
+          />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
@@ -103,5 +123,38 @@ describe('Core Flow Integration - Create Expense', () => {
       await screen.findByRole('heading', { name: 'Expenses page' }),
     ).toBeInTheDocument();
     expect(setErrorMock).not.toHaveBeenCalled();
+  });
+
+  test('duplicating an expense returns to the list without a stale duplicate param', async () => {
+    createExpenseMock.mockResolvedValueOnce(
+      new SuccessResult({ rowId: 'expense-created-2' }),
+    );
+
+    vi.mocked(useApiGetExpenseById).mockReturnValue({
+      data: new SuccessResult(
+        createExpense({ rowId: 'expense-9', description: 'Rent' }),
+      ),
+      isLoading: false,
+    } as unknown as ReturnType<typeof useApiGetExpenseById>);
+
+    renderCreateExpenseFlow('/expenses/create?duplicate=expense-9');
+
+    // The duplicate form is pre-filled from the source expense; submit as-is.
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Create' }),
+    );
+
+    expect(createExpenseMock).toHaveBeenCalledWith(
+      expect.objectContaining({ description: 'Copy of Rent' }),
+    );
+
+    // Returns to a clean list URL - the transient duplicate param must not be
+    // carried forward, otherwise the next "Add" would reopen the duplicate.
+    expect(
+      await screen.findByRole('heading', { name: 'Expenses page' }),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('location-probe')).toHaveTextContent(
+      'probe:/expenses',
+    );
   });
 });

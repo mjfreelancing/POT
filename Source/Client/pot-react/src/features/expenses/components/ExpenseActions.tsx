@@ -30,7 +30,7 @@ import {
 import { useErrorContext } from '@/contexts';
 import type { Expense } from '@/data';
 import { WithPermission } from '@/features/auth/components';
-import { RenewalMode } from '@/lib';
+import { listFilterQuery, RenewalMode } from '@/lib';
 
 import { renewExpenses, toggleExcludeExpenses } from '../bulkActions';
 import useDeleteExpense from '../delete/hooks/useDeleteExpense';
@@ -56,8 +56,14 @@ function ExpenseActions({ expense }: ExpenseActionsProps) {
   const renewExpensesMutation = useApiRenewExpenses();
   const excludeExpensesMutation = useApiToggleExcludeExpenses();
 
-  // Carry active list filters (for example accountId) into edit route.
-  const searchSuffix = location.search;
+  // Only forward list filter params (accountId); never echo transient params.
+  const searchSuffix = listFilterQuery(location.search);
+
+  // Duplicate opens the create route carrying the duplicate param plus any
+  // active list filter, so the round-trip returns to the same list state.
+  const duplicatePath = `/expenses/create${listFilterQuery(location.search, {
+    duplicate: String(expense.rowId),
+  })}`;
 
   const {
     isExcludedForAction,
@@ -335,9 +341,7 @@ function ExpenseActions({ expense }: ExpenseActionsProps) {
 
           <WithPermission permissions={['expense:manage']} mode="all">
             <DropdownMenuItem
-              onClick={() =>
-                navigate(`/expenses/create?duplicate=${expense.rowId}`)
-              }
+              onClick={() => navigate(duplicatePath)}
               disabled={isActionInProgress}
             >
               <Copy className="text-action-neutral mr-2 h-4 w-4" />

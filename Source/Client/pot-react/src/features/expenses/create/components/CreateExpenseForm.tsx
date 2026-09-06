@@ -5,7 +5,12 @@ import { useLocation, useNavigate } from 'react-router';
 
 import { useErrorContext } from '@/contexts';
 import type { Account, CreateExpense, Expense } from '@/data';
-import { AccrualPolicy, Frequency, todayIsoFormat } from '@/lib';
+import {
+  AccrualPolicy,
+  Frequency,
+  listFilterQuery,
+  todayIsoFormat,
+} from '@/lib';
 
 import ExpenseForm from '../../components/ExpenseForm';
 import ExpenseSheet from '../../components/ExpenseSheet';
@@ -29,7 +34,10 @@ function CreateExpenseForm({
   const navigate = useNavigate();
   const location = useLocation();
   const { createExpense } = useCreateExpense();
-  const returnPath = `/expenses${location.search}`;
+
+  // Return deterministically: only list filter params (accountId) are carried
+  // back, so the transient `duplicate` param never leaks onto the list URL.
+  const returnPath = `/expenses${listFilterQuery(location.search)}`;
 
   const getDefaultValues = useCallback((): ExpenseFormData => {
     if (duplicateExpense) {

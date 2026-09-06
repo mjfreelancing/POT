@@ -31,6 +31,7 @@ import type { Expense } from '@/data/expense';
 import { useAccountFilter } from '@/hooks';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useIsShortViewport } from '@/hooks/use-short-viewport';
+import { listFilterQuery } from '@/lib';
 
 import { WithPermission } from '../auth/components';
 import { ExpenseCardGrid, ExpensesHeader, ExpensesTable } from './components';
@@ -289,7 +290,10 @@ function ExpensesPage() {
   }, [expensesResult, setError]);
 
   const navigate = useNavigate();
-  const createPath = location.search ? `create${location.search}` : 'create';
+
+  // Only list filter params (accountId) are forwarded into the create route, so
+  // a transient param such as `duplicate` can never reopen a stale duplicate.
+  const createPath = `create${listFilterQuery(location.search)}`;
 
   const handleSearchTermChange = (term: string) => {
     const trimmedTerm = term.trim();

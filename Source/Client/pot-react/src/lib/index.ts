@@ -11,4 +11,5 @@ export * from './moneyUtils';
 export * from './result';
 export * from './tableRowUtils';
 export * from './types';
+export * from './urlParams';
 export * from './utils';

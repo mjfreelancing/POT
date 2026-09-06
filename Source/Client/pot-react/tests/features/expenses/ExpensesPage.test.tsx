@@ -216,6 +216,26 @@ describe('ExpensesPage', () => {
     expect(navigateMock).toHaveBeenCalledWith('create');
   });
 
+  test('does not forward a stale duplicate param into the create route', async () => {
+    // Seed the real router URL (createPath is built from location.search, not
+    // from the mocked useSearchParams used for accountId).
+    render(
+      <MemoryRouter initialEntries={['/expenses?duplicate=expense-1']}>
+        <ExpensesPage />
+      </MemoryRouter>,
+    );
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Add a new expense' }),
+    );
+
+    // Regression: if the list URL ever retains the transient `duplicate` param
+    // (for example after a duplicate save), "Add" must not reopen the duplicate
+    // form - it should navigate to a fresh create form instead.
+    expect(navigateMock).toHaveBeenCalledWith('create');
+    expect(navigateMock).not.toHaveBeenCalledWith('create?duplicate=expense-1');
+  });
+
   test('shows no-accounts state and navigates to create account from action', async () => {
     vi.mocked(useApiGetAllAccounts).mockReturnValue({
       data: new SuccessResult([]),

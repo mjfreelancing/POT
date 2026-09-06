@@ -5,6 +5,7 @@ import {
   ApiErrorSheetState,
   CreateSheetLoadingState,
 } from '@/features/shared/sheets/asyncSheetStates';
+import { listFilterQuery } from '@/lib';
 
 import IncomeSheet from '../../components/IncomeSheet';
 import CreateIncomeForm from '../components/CreateIncomeForm';
@@ -20,7 +21,7 @@ type DuplicateIncomeProps = {
 function DuplicateIncome({ duplicateId }: DuplicateIncomeProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const returnPath = `/incomes${location.search}`;
+  const returnPath = `/incomes${listFilterQuery(location.search)}`;
 
   // Load both accounts and duplicate income in parallel
   const { data: accountsResult, isLoading: isAccountsLoading } =
