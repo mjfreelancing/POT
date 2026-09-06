@@ -1,5 +1,5 @@
 import { addDays, addMonths, format, parseISO } from 'date-fns';
-import { useState } from 'react';
+import type { MouseEvent } from 'react';
 import {
   Bar,
   BarChart,
@@ -248,18 +248,14 @@ function ProjectionChart({
     getVisibleLineYStats(visibleValueRange);
   const visibleBarYDomain = getVisibleBarYDomain(visibleValueRange);
 
-  const [selectedBarSeriesKey, setSelectedBarSeriesKey] = useState<
-    string | null
-  >(null);
-
-  // Detail sheets are rendered from a selected date and bar scope.
-  // We derive a single date key once so all item extraction uses identical matching.
+  // Detail sheets are rendered from a selected date. A bar-chart click anywhere
+  // within a date column (including blank areas) opens the sheet for that day.
   const selectedDateKey = selectedDate
     ? format(selectedDate, 'yyyy-MM-dd')
     : null;
 
-  // Full-day item sets across all accounts. These drive denominator counts
-  // so account-scoped sheets can show "X of N items" instead of losing context.
+  // Full-day item sets across all accounts. The detail sheet shows the whole
+  // day, filtered only by the series the user has hidden in the legend.
   const selectedDateIncomeItems = selectedDateKey
     ? data.accounts.flatMap(account => {
         const dateData = account.dates.find(d => d.date === selectedDateKey);
@@ -274,17 +270,6 @@ function ProjectionChart({
         }));
       })
     : [];
-
-  // Scoping rule for detail sheets:
-  // - null/global: include all accounts for the selected date
-  // - account key: include only that account's items
-  const scopedIncomeItems = selectedDateIncomeItems.filter(item => {
-    return (
-      selectedBarSeriesKey === null ||
-      selectedBarSeriesKey === 'global' ||
-      item.accountRowId === selectedBarSeriesKey
-    );
-  });
 
   const selectedDateExpenseItems = selectedDateKey
     ? data.accounts.flatMap(account => {
@@ -301,14 +286,53 @@ function ProjectionChart({
       })
     : [];
 
-  // Same scoping semantics as income so both detail sheets behave identically.
-  const scopedExpenseItems = selectedDateExpenseItems.filter(item => {
-    return (
-      selectedBarSeriesKey === null ||
-      selectedBarSeriesKey === 'global' ||
-      item.accountRowId === selectedBarSeriesKey
+  // A click anywhere within a bar date column (on a bar or the blank area
+  // around it) opens that day's detail sheet for the legend-visible accounts.
+  // Bars are only ~1px wide when many dates share a chart window, so relying
+  // on bar shapes alone would make the chart almost impossible to click.
+  function handleBarChartClick(event: MouseEvent<HTMLDivElement>) {
+    if (getChartType() !== 'bar' || chartData.length === 0) {
+      return;
+    }
+
+    const gridElement = event.currentTarget.querySelector(
+      '.recharts-cartesian-grid',
     );
-  });
+
+    if (!gridElement) {
+      return;
+    }
+
+    const gridRect = gridElement.getBoundingClientRect();
+    const clickX = event.clientX;
+    const clickY = event.clientY;
+
+    // Ignore clicks outside the plotted area (axis labels, empty margins).
+    if (
+      clickX < gridRect.left ||
+      clickX > gridRect.right ||
+      clickY < gridRect.top ||
+      clickY > gridRect.bottom
+    ) {
+      return;
+    }
+
+    // Recharts lays one equal-width category band per data point across the
+    // grid, so the clicked date index follows directly from the x offset.
+    const bandWidth = gridRect.width / chartData.length;
+    const dateIndex = Math.min(
+      chartData.length - 1,
+      Math.max(0, Math.floor((clickX - gridRect.left) / bandWidth)),
+    );
+
+    const clickedPoint = chartData[dateIndex];
+
+    if (typeof clickedPoint?.date !== 'string') {
+      return;
+    }
+
+    onToggleDetails(parseISO(clickedPoint.date));
+  }
 
   function renderTooltipContent(
     active?: boolean,
@@ -446,6 +470,7 @@ function ProjectionChart({
               config={chartConfig}
               className={chartContainerClass}
               style={{ minWidth: '600px' }}
+              onClick={handleBarChartClick}
             >
               {getChartType() === 'line' ? (
                 <LineChart
@@ -562,20 +587,6 @@ function ProjectionChart({
                         hide={!isVisible}
                         opacity={0.8}
                         cursor="pointer"
-                        onClick={clickedBarDatum => {
-                          const clickedDate =
-                            typeof clickedBarDatum?.payload?.date === 'string'
-                              ? clickedBarDatum.payload.date
-                              : null;
-
-                          if (!clickedDate) {
-                            return;
-                          }
-
-                          // Scope detail sheets to the exact bar that was clicked.
-                          setSelectedBarSeriesKey(key);
-                          onToggleDetails(parseISO(clickedDate));
-                        }}
                         isAnimationActive={true}
                         animationDuration={700}
                         animationEasing="ease-in-out"
@@ -596,19 +607,13 @@ function ProjectionChart({
         <IncomeDetails
           isOpen={isDetailsOpen}
           onOpenChange={open => {
-            if (!open) {
-              setSelectedBarSeriesKey(null);
-            }
-
             onToggleDetails(open ? selectedDate : null);
           }}
           date={selectedDate}
-          items={scopedIncomeItems}
+          items={selectedDateIncomeItems}
           totalItemCount={selectedDateIncomeItems.length}
           chartConfig={chartConfig}
           hiddenSeries={hiddenSeries}
-          // Only total-bar selection bypasses hidden-series filtering.
-          showAllAccounts={selectedBarSeriesKey === 'global'}
         />
       )}
 
@@ -617,19 +622,13 @@ function ProjectionChart({
         <ExpenseDetails
           isOpen={isDetailsOpen}
           onOpenChange={open => {
-            if (!open) {
-              setSelectedBarSeriesKey(null);
-            }
-
             onToggleDetails(open ? selectedDate : null);
           }}
           date={selectedDate}
-          items={scopedExpenseItems}
+          items={selectedDateExpenseItems}
           totalItemCount={selectedDateExpenseItems.length}
           chartConfig={chartConfig}
           hiddenSeries={hiddenSeries}
-          // Only total-bar selection bypasses hidden-series filtering.
-          showAllAccounts={selectedBarSeriesKey === 'global'}
         />
       )}
     </Card>
