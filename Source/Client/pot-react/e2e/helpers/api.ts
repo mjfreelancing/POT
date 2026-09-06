@@ -143,3 +143,52 @@ export async function deleteIncomeViaApi(
 
   expect([200, 204, 404]).toContain(response.status());
 }
+
+/**
+ * Creates an account and returns its rowId.
+ *
+ * @param description unique per suite/test so the created row can be asserted
+ *   in the UI (and so cleanup never touches another suite's rows).
+ *
+ * The BSB/number are generated per call because `(Bsb, Number)` is globally
+ * unique (NOT per-site): suites that create their own accounts (e.g.
+ * mobileCardGrids, quickActions on its isolated site) must never collide with
+ * each other's persistent accounts.
+ */
+export async function createAccountViaApi(
+  request: APIRequestContext,
+  accessToken: string,
+  description = 'E2E Quick Actions Account',
+): Promise<{ rowId: string }> {
+  const uniqueNumber = `${Date.now()}${Math.floor(Math.random() * 1_000_000)}`;
+
+  const response = await request.post('/api/accounts', {
+    headers: authHeaders(accessToken),
+    data: {
+      bsb: '000-000',
+      number: uniqueNumber,
+      description,
+      balance: 0,
+      reserved: 0,
+    },
+  });
+
+  expect(response.ok()).toBeTruthy();
+
+  return (await response.json()) as { rowId: string };
+}
+
+/**
+ * Deletes a test-created account. 404 is tolerated (see deleteExpenseViaApi).
+ */
+export async function deleteAccountViaApi(
+  request: APIRequestContext,
+  accessToken: string,
+  rowId: string,
+): Promise<void> {
+  const response = await request.delete(`/api/accounts/${rowId}`, {
+    headers: authHeaders(accessToken),
+  });
+
+  expect([200, 204, 404]).toContain(response.status());
+}

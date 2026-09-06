@@ -7,6 +7,7 @@ import {
 } from '../../fixtures/auth';
 import {
   authHeaders,
+  createAccountViaApi,
   createE2eRequestContext as createRequestContext,
   createExpenseViaApi,
   createIncomeViaApi,
@@ -42,26 +43,6 @@ const isMobileProject = (testInfo: import('@playwright/test').TestInfo) =>
 // RowIds created during this serial suite, cleaned up in afterEach.
 const createdExpenseRowIds: string[] = [];
 const createdIncomeRowIds: string[] = [];
-
-async function createAccountViaApi(
-  request: APIRequestContext,
-  accessToken: string,
-): Promise<{ rowId: string }> {
-  const response = await request.post('/api/accounts', {
-    headers: authHeaders(accessToken),
-    data: {
-      bsb: '000-000',
-      number: '00000000',
-      description: 'E2E Quick Actions Account',
-      balance: 0,
-      reserved: 0,
-    },
-  });
-
-  expect(response.ok()).toBeTruthy();
-
-  return (await response.json()) as { rowId: string };
-}
 
 // The quick-actions suite runs as e2e_quickactions on its own isolated site,
 // which has no seeded accounts (accounts are not part of the baseline seed).
