@@ -38,13 +38,14 @@ import { test as adminTest } from '../../fixtures/auth';
 //        user's username, then closes via Escape AND via its explicit "Cancel"
 //        footer button. Read-only (never submits "Update Role").
 //
-// Documented, NOT E2E-tested (consistent with the projection-detail-sheet
-// decision in mobileSheetsDialogs.test.ts): the settings "Unsaved Changes"
-// dialog passes the custom `modal`
-// prop to DialogContent, which sets onPointerDownOutside={e => e.preventDefault()}
-// -> a backdrop click does NOT close it (only Escape / the footer actions do).
-// Reaching it requires a settings dirty-flow (edit a field, then attempt to
-// close), so it is documented rather than tested here.
+// 5.   Settings "Unsaved Changes" guard (POTSettingsSheet.tsx) — covered by the
+//      "settings Unsaved Changes dialog" test at the bottom of this file. The
+//      v3-parity contract (restored after the shadcn v4 ui migration made
+//      DialogContent render a close ✕ by default): NO ✕ close button
+//      (showCloseButton={false}), a backdrop click does NOT close it
+//      (onInteractOutside prevented), but Escape closes it — only the footer
+//      actions (Keep Editing / Discard Changes / Save Changes) resolve the
+//      pending navigation.
 //
 // Parallel-safe: read-only (no mutations) across all 4 projects.
 
@@ -180,5 +181,64 @@ adminTest(
       .getByRole('button', { name: 'Cancel', exact: true })
       .click();
     await expect(reopenedDialog).toBeHidden();
+  },
+);
+
+adminTest(
+  'settings "Unsaved Changes" dialog: no ✕, backdrop click does not close, Escape closes',
+  async ({ page }) => {
+    // Deliberately never SAVES the dirty settings form — the guard is resolved
+    // with Escape and the page is torn down, so no server mutation occurs and
+    // this is safe on every project (unlike the chromium-only userSettings
+    // tests that mutate the shared e2e_pwchange identity).
+    await page.goto('/dashboard');
+
+    // Open the user menu, then the POT Settings sheet.
+    await page.getByRole('button', { name: 'e2e_admin' }).click();
+    await page.getByRole('menuitem', { name: 'Settings' }).click();
+    await expect(page.getByText('POT Settings', { exact: true })).toBeVisible();
+
+    // Open "User Details" and dirty the Display Name field (no save).
+    await page.getByRole('button', { name: /User Details/ }).click();
+    const displayNameInput = page.getByLabel('Display Name', { exact: true });
+    await expect(displayNameInput).toBeVisible();
+    await displayNameInput.fill('unsaved-guard-check');
+
+    // Attempting to close while dirty opens the Unsaved Changes guard dialog.
+    await page
+      .getByRole('button', { name: 'Close POT settings', exact: true })
+      .click();
+    const dialog = page.getByRole('dialog', {
+      name: 'Unsaved Changes',
+      exact: true,
+    });
+    await expect(dialog).toBeVisible();
+    await expect(
+      dialog.getByRole('heading', { name: 'Unsaved Changes', exact: true }),
+    ).toBeVisible();
+
+    // Contract 1 — forced-choice: no close ✕ (only the footer actions
+    // Keep Editing / Discard Changes / Save Changes).
+    await expect(
+      dialog.getByRole('button', { name: 'Close', exact: true }),
+    ).toHaveCount(0);
+    await expect(
+      dialog.getByRole('button', { name: 'Keep Editing', exact: true }),
+    ).toBeVisible();
+    await expect(
+      dialog.getByRole('button', { name: 'Discard Changes', exact: true }),
+    ).toBeVisible();
+
+    // Contract 2 — a backdrop click does NOT dismiss it (v3 parity).
+    await page
+      .locator('[data-slot="dialog-overlay"]')
+      .click({ position: { x: 5, y: 5 } });
+    await expect(dialog).toBeVisible();
+
+    // Contract 3 — Escape dismisses the guard (v3 parity), but the sheet stays
+    // open on the dirty section (nothing was saved).
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(page.getByText('POT Settings', { exact: true })).toBeVisible();
   },
 );

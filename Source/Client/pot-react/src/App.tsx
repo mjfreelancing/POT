@@ -3,6 +3,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 
 import { ErrorSheet } from '@/components/feedback';
 import { Toaster } from '@/components/ui/sonner';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { logger } from '@/concerns';
 import { buildEnvScopedKey, buildUserScopedKey } from '@/concerns/storage';
 import type { DisplayError } from '@/lib';
@@ -32,9 +33,11 @@ const AppContent = () => (
           this div has no z-index, so Sonner's fixed position is evaluated at the root level.
         */}
         <Toaster position="top-center" />
-        <div className="relative z-10 h-full">
-          <AppRoutes />
-        </div>
+        <TooltipProvider>
+          <div className="relative z-10 h-full">
+            <AppRoutes />
+          </div>
+        </TooltipProvider>
       </div>
     </div>
   </SidebarProvider>

@@ -43,20 +43,20 @@ const monthLabel = (monthOffset: number): string =>
 const calendarPopover = (page: import('@playwright/test').Page) =>
   page.locator('[data-slot="popover-content"]');
 
-// react-day-picker v9 day cells are <button name="day" role="gridcell">; the
-// adjacent-month (outside) days carry the `day-outside` class and are excluded
-// so a day number always resolves to the current month's cell.
+// react-day-picker v10 renders each day as a grid cell (`day`) containing a
+// `day_button`. The shadcn registry Calendar sets only data-day/data-selected-*
+// on the button; the "outside" modifier lands on the day grid cell as the
+// `rdp-outside` class (no data-outside attribute). Outside (adjacent-month)
+// buttons are therefore excluded by checking no ancestor cell carries
+// `rdp-outside`.
 //
-// hasText is a SUBSTRING match: a bare '1' also matches 10-19/21/31, so any
-// day passed to this helper must be anchored to its exact value or the locator
-// fails with a strict-mode violation. This bit hard on the FIRST day of a month
-// (today.getDate() === 1 -> 12 matching cells) and is date-boundary-dependent:
-// it only stayed green because earlier runs landed on days like 31 whose string
-// is unambiguous. Anchoring to `^dayNumber$` makes every day unambiguous.
+// The button text is the bare day number, so the XPath matches only the button
+// whose entire text is exactly `dayNumber` (a bare '1' must not match 10-19,
+// 21 or 31).
 const dayButton = (page: import('@playwright/test').Page, dayNumber: number) =>
-  page
-    .locator('button[name="day"]:not(.day-outside)')
-    .filter({ hasText: new RegExp(`^${dayNumber}$`) });
+  page.locator(
+    `xpath=//button[@data-day][not(ancestor::*[contains(concat(' ', normalize-space(@class), ' '), ' rdp-outside ')])][normalize-space(.)='${dayNumber}']`,
+  );
 
 async function openNextDueCalendar(page: import('@playwright/test').Page) {
   // The calendar popover (a floating-ui popper anchored to the field) can
@@ -122,7 +122,7 @@ test('selecting a day and Accept applies it to the field', async ({ page }) => {
 
   const selectedDay = dayButton(page, 15);
   await selectedDay.click();
-  await expect(selectedDay).toHaveAttribute('aria-selected', 'true');
+  await expect(selectedDay).toHaveAttribute('data-selected-single', 'true');
 
   await popover.getByRole('button', { name: 'Accept' }).click();
   await expect(popover).toHaveCount(0); // picker closed
@@ -151,10 +151,10 @@ test('Today jumps to today and Accept applies it', async ({ page }) => {
   await openNextDueCalendar(page);
   const popover = calendarPopover(page);
 
-  await popover.getByRole('button', { name: 'Today' }).click();
+  await popover.getByRole('button', { name: 'Today', exact: true }).click();
 
   const todayDay = dayButton(page, today.getDate());
-  await expect(todayDay).toHaveAttribute('aria-selected', 'true');
+  await expect(todayDay).toHaveAttribute('data-selected-single', 'true');
 
   await popover.getByRole('button', { name: 'Accept' }).click();
   await expect(popover).toHaveCount(0);
@@ -183,19 +183,25 @@ test('calendar renders the expected day-grid structure and styling', async ({
   // react-day-picker renders the month as a table grid.
   await expect(popover.locator('table')).toBeVisible();
 
-  // A full month of in-month day cells renders (>= 28 days).
+  // A full month of in-month day buttons renders (>= 28 days).
   const inMonthDayCount = await popover
-    .locator('button[name="day"]:not(.day-outside)')
+    .locator(
+      'xpath=.//button[@data-day][not(ancestor::*[contains(concat(" ", normalize-space(@class), " "), " rdp-outside ")])]',
+    )
     .count();
   expect(inMonthDayCount).toBeGreaterThanOrEqual(28);
 
-  // Today's cell carries the shadcn "today" accent styling hook (day_today).
+  // Today's cell carries the shadcn "today" accent styling hook
+  // (rdp-today on the grid cell, not the button).
   const todayButton = dayButton(page, today.getDate());
-  await expect(todayButton).toHaveClass(/bg-accent/);
+  const todayCell = todayButton.locator(
+    'xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " rdp-today ")]',
+  );
+  await expect(todayCell).toHaveClass(/bg-accent/);
 
-  // Selecting a day applies the shadcn "selected" styling hook (day_selected).
+  // Selecting a day applies the shadcn "selected" styling hook.
   await dayButton(page, 15).click();
   const selectedButton = dayButton(page, 15);
-  await expect(selectedButton).toHaveAttribute('aria-selected', 'true');
+  await expect(selectedButton).toHaveAttribute('data-selected-single', 'true');
   await expect(selectedButton).toHaveClass(/bg-primary/);
 });

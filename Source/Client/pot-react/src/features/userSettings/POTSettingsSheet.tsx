@@ -96,7 +96,8 @@ type SettingsSectionValue =
   | 'budget-reminders';
 
 type PendingNavigationAction =
-  { type: 'close' } | { type: 'section'; target: SettingsSectionValue };
+  | { type: 'close' }
+  | { type: 'section'; target: SettingsSectionValue };
 
 const SECTION_LABELS: Record<Exclude<SettingsSectionValue, ''>, string> = {
   'site-settings': 'Site Details',
@@ -517,7 +518,12 @@ function AccountSettingsSheet(props: AccountSettingsSheetProps): JSX.Element {
           }
         }}
       >
-        <DialogContent className="sm:max-w-md z-[70]" modal>
+        <DialogContent
+          className="sm:max-w-md z-[70]"
+          showCloseButton={false}
+          // v3 parity contract: no close ✕, backdrop click blocked; Escape closes.
+          onInteractOutside={event => event.preventDefault()}
+        >
           <DialogHeader>
             <ModalTitle>Unsaved Changes</ModalTitle>
             <ModalDescription>

@@ -31,22 +31,18 @@ vi.mock('@/components/ui/calendar', () => ({
   Calendar: ({
     selected,
     month,
-    fromDate,
-    toDate,
     disabled,
     onSelect,
     onMonthChange,
   }: {
     selected: Date | undefined;
     month: Date;
-    fromDate?: Date;
-    toDate?: Date;
     disabled?: (date: Date) => boolean;
-    onSelect?: (value: Date | undefined, dayClicked: Date) => void;
+    onSelect?: (value: Date | undefined, triggerDate: Date) => void;
     onMonthChange?: (month: Date) => void;
     mode?: string;
   }) => {
-    calendarSpy({ selected, month, fromDate, toDate, disabled });
+    calendarSpy({ selected, month, disabled });
 
     return (
       <div data-testid="calendar">
@@ -165,8 +161,8 @@ describe('EnrichedCalendar', () => {
   });
 
   test('forwards date constraints and disables Today when today is outside range', () => {
-    const minDate = new Date('2100-01-01T00:00:00.000Z');
-    const maxDate = new Date('2100-12-31T00:00:00.000Z');
+    const minDate = new Date(2100, 0, 1);
+    const maxDate = new Date(2100, 11, 31);
 
     render(
       <EnrichedCalendar
@@ -180,12 +176,13 @@ describe('EnrichedCalendar', () => {
     const lastCalendarCall = calendarSpy.mock.calls[
       calendarSpy.mock.calls.length - 1
     ]?.[0] as {
-      fromDate: Date;
-      toDate: Date;
+      disabled?: (date: Date) => boolean;
     };
 
-    expect(lastCalendarCall.fromDate).toEqual(minDate);
-    expect(lastCalendarCall.toDate).toEqual(maxDate);
+    expect(lastCalendarCall.disabled?.(minDate)).toBe(false);
+    expect(lastCalendarCall.disabled?.(maxDate)).toBe(false);
+    expect(lastCalendarCall.disabled?.(new Date(2099, 11, 31))).toBe(true);
+    expect(lastCalendarCall.disabled?.(new Date(2101, 0, 1))).toBe(true);
     expect(screen.getByRole('button', { name: 'Today' })).toBeDisabled();
   });
 

@@ -1,9 +1,4 @@
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+export { cn } from "cn";
 
 const isDevelopment = () => process.env.NODE_ENV === 'development';
 
@@ -15,4 +10,4 @@ function isNumber(value: unknown): value is number {
   return typeof value === 'number' && !isNaN(value);
 }
 
-export { cn, isDevelopment, noop, isNumber };
+export { isDevelopment, noop, isNumber };

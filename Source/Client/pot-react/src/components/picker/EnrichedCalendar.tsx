@@ -6,7 +6,7 @@ import {
   ChevronsRight,
 } from 'lucide-react';
 import * as React from 'react';
-import type { DayPickerSingleProps } from 'react-day-picker';
+import type { OnSelectHandler } from 'react-day-picker';
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -227,15 +227,15 @@ function EnrichedCalendar({
     return isBeforeMinDate(today) || isAfterMaxDate(today);
   }
 
-  const handleDateSelectInCalendar: DayPickerSingleProps['onSelect'] = (
+  const handleDateSelectInCalendar: OnSelectHandler<Date | undefined> = (
     newSelection,
-    dayClicked,
+    triggerDate,
   ) => {
     // If clicking on the same date as currently selected, maintain current selection
     if (
       newSelection === undefined &&
       pickerDate &&
-      isSameDate(dayClicked, pickerDate)
+      isSameDate(triggerDate, pickerDate)
     ) {
       return;
     }
@@ -520,12 +520,13 @@ function EnrichedCalendar({
         onSelect={handleDateSelectInCalendar}
         month={currentDisplayMonth}
         onMonthChange={handleMonthChange}
-        initialFocus
+        autoFocus
         showOutsideDays
-        fromDate={minDate}
-        toDate={maxDate}
+        // The default caption and nav are hidden because EnrichedCalendar
+        // renders its own custom month/year navigation header.
         components={{
-          Caption: () => null,
+          MonthCaption: () => <></>,
+          Nav: () => <></>,
         }}
         // Prevent selection of days outside allowed range
         disabled={(date: Date) => isBeforeMinDate(date) || isAfterMaxDate(date)}

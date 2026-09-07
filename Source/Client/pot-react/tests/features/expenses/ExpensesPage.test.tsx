@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { useApiGetAllAccounts, useApiGetAllExpenses } from '@/api/hooks';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { useErrorContext } from '@/contexts';
 import type { Account, Expense } from '@/data';
 import { WithPermission } from '@/features/auth/components';
@@ -96,7 +97,9 @@ vi.mock('@/concerns', () => ({
 function renderExpensesPage() {
   return render(
     <MemoryRouter>
-      <ExpensesPage />
+      <TooltipProvider>
+        <ExpensesPage />
+      </TooltipProvider>
     </MemoryRouter>,
   );
 }

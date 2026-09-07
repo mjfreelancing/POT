@@ -5,7 +5,7 @@ import EnrichedCalendar from '@/components/picker/EnrichedCalendar';
 
 function getSelectedDayButton(): HTMLButtonElement {
   const selectedDayButton = document.querySelector(
-    'button[aria-selected="true"]',
+    'button[data-selected-single="true"]',
   );
 
   if (!(selectedDayButton instanceof HTMLButtonElement)) {
@@ -17,12 +17,29 @@ function getSelectedDayButton(): HTMLButtonElement {
 
 function querySelectedDayButton(): HTMLButtonElement | null {
   const selectedDayButton = document.querySelector(
-    'button[aria-selected="true"]',
+    'button[data-selected-single="true"]',
   );
 
   return selectedDayButton instanceof HTMLButtonElement
     ? selectedDayButton
     : null;
+}
+
+function isOutsideDay(dayButton: HTMLElement): boolean {
+  // react-day-picker v10 applies the "outside" modifier to the day grid cell
+  // (rdp-outside), not to the day button itself — the registry Calendar keeps
+  // only data-day/data-selected-single on the button.
+  let node: HTMLElement | null = dayButton;
+
+  while (node) {
+    if (node.classList.contains('rdp-outside')) {
+      return true;
+    }
+
+    node = node.parentElement;
+  }
+
+  return false;
 }
 
 describe('EnrichedCalendar', () => {
@@ -42,7 +59,7 @@ describe('EnrichedCalendar', () => {
 
     const selectedInMarch = getSelectedDayButton();
     expect(selectedInMarch).toHaveTextContent('31');
-    expect(selectedInMarch.className).not.toContain('day-outside');
+    expect(isOutsideDay(selectedInMarch)).toBe(false);
 
     fireEvent.click(screen.getByTitle('Next Month'));
 
@@ -50,7 +67,7 @@ describe('EnrichedCalendar', () => {
 
     const selectedInApril = getSelectedDayButton();
     expect(selectedInApril).toHaveTextContent('31');
-    expect(selectedInApril.className).toContain('day-outside');
+    expect(isOutsideDay(selectedInApril)).toBe(true);
 
     fireEvent.click(screen.getByTitle('Next Month'));
 
@@ -58,7 +75,7 @@ describe('EnrichedCalendar', () => {
 
     const selectedInMay = getSelectedDayButton();
     expect(selectedInMay).toHaveTextContent('31');
-    expect(selectedInMay.className).not.toContain('day-outside');
+    expect(isOutsideDay(selectedInMay)).toBe(false);
 
     fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
 
@@ -84,7 +101,7 @@ describe('EnrichedCalendar', () => {
 
     const selectedInMarch = getSelectedDayButton();
     expect(selectedInMarch).toHaveTextContent('31');
-    expect(selectedInMarch.className).not.toContain('day-outside');
+    expect(isOutsideDay(selectedInMarch)).toBe(false);
 
     fireEvent.click(screen.getByTitle('Previous Month'));
 
@@ -97,7 +114,7 @@ describe('EnrichedCalendar', () => {
 
     const selectedInJanuary = getSelectedDayButton();
     expect(selectedInJanuary).toHaveTextContent('31');
-    expect(selectedInJanuary.className).not.toContain('day-outside');
+    expect(isOutsideDay(selectedInJanuary)).toBe(false);
 
     fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
 
