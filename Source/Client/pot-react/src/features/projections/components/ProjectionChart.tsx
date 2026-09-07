@@ -334,14 +334,17 @@ function ProjectionChart({
     onToggleDetails(parseISO(clickedPoint.date));
   }
 
+  type RenderTooltipEntry = {
+    color?: string;
+    dataKey?: unknown;
+    value?: unknown;
+    payload?: Record<string, unknown>;
+    name?: unknown;
+  };
+
   function renderTooltipContent(
     active?: boolean,
-    payload?: {
-      color?: string;
-      dataKey?: string | number;
-      value?: string | number | (string | number)[];
-      payload?: Record<string, unknown>;
-    }[],
+    payload?: readonly RenderTooltipEntry[],
     label?: string | number,
     chartConfig?: Record<string, { label?: React.ReactNode; color?: string }>,
   ) {
@@ -419,11 +422,15 @@ function ProjectionChart({
                   style={{ backgroundColor: entry.color }}
                 />
                 <span className="text-sm text-muted-foreground">
-                  {chartConfig[String(entry.dataKey)]?.label || entry.dataKey}
+                  {chartConfig[String(entry.dataKey)]?.label ||
+                    String(entry.dataKey)}
                 </span>
               </div>
               <span className="font-semibold text-foreground">
-                {getDisplayValue(entry.value)}
+                {getDisplayValue(
+                  entry.value as
+                    string | number | (string | number)[] | undefined,
+                )}
               </span>
             </div>
           ))}
@@ -536,7 +543,6 @@ function ProjectionChart({
                       strokeDasharray="6 6"
                       strokeWidth={1.5}
                       ifOverflow="extendDomain"
-                      isFront={true}
                     />
                   )}
                 </LineChart>
