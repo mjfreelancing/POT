@@ -34,9 +34,8 @@ internal sealed class CheckDescriptionDoesNotExist : PreUpdateCheckBase
             var sameDescription = AccountSpecifications.IsSameDescription(input.Description);
             var predicate = notSameAccount.And(sameDescription).Expression;
 
-            // Account descriptions are globally unique
+            // Description uniqueness is per-site; the query filter restricts the check to the current site
             var descriptionExists = await _accountRepository.Accounts
-                .IgnoreQueryFilters()
                 .AnyAsync(predicate, cancellationToken)
                 .ConfigureAwait(false);
 

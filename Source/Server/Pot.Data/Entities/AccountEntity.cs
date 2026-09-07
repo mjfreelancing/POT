@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Pot.Data.Entities;
 
-[Index(nameof(Description), IsUnique = true)]
+[Index("SiteId", nameof(Description), IsUnique = true)]
 [Index(nameof(Bsb), nameof(Number), IsUnique = true)]
 public sealed class AccountEntity : EntityBase
 {
