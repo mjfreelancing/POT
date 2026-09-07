@@ -13,7 +13,7 @@ const BaseIncomeSchema = z.object({
   description: z.string(),
   nextDue: z.string(),
   endDate: z.string().nullable(),
-  frequency: z.nativeEnum(Frequency),
+  frequency: z.enum(Frequency),
   frequencyCount: z.number(),
   amount: z.number(),
   note: z.string().nullable(),
@@ -41,7 +41,7 @@ const ToggleExcludeIncomesSchema = z.object({
 
 const RenewIncomesSchema = z.object({
   rowIds: z.string().array(),
-  mode: z.nativeEnum(RenewalMode),
+  mode: z.enum(RenewalMode),
   asOfDate: z.string(),
 });
 

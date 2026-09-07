@@ -4,14 +4,14 @@ import { Frequency, isAfterDate } from '@/lib';
 
 const MoneyValueSchema = z
   .number({
-    required_error: 'This field is required',
+    error: 'This field is required',
   })
-  .min(0, 'Value must be positive');
+  .min(0, 'Value must be 0 or greater');
 
 const incomeFormSchema = z
   .object({
     excludeFromCalcs: z.boolean(),
-    description: z.string().min(1, 'A description is required'),
+    description: z.string().min(1, 'Description is required'),
     nextDue: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
     endDate: z
       .string()
@@ -19,7 +19,7 @@ const incomeFormSchema = z
       .refine(val => val === undefined || /^\d{4}-\d{2}-\d{2}$/.test(val), {
         message: 'Date must be YYYY-MM-DD',
       }),
-    frequency: z.nativeEnum(Frequency),
+    frequency: z.enum(Frequency),
     frequencyCount: z.number(),
     amount: MoneyValueSchema,
     note: z
@@ -39,8 +39,8 @@ const incomeFormSchema = z
         code: z.ZodIssueCode.custom,
         message:
           data.frequency === Frequency.OneTime
-            ? 'Must be 0'
-            : 'Must be at least 1',
+            ? 'Must be zero when Frequency is One Time'
+            : 'Must be greater than zero',
         path: ['frequencyCount'],
       });
     }
@@ -51,8 +51,8 @@ const incomeFormSchema = z
       if (isAfterDate(data.nextDue, data.endDate)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: 'Cannot be after end date',
-          path: ['nextDue'],
+          message: 'Cannot be earlier than the next due date',
+          path: ['endDate'],
         });
       }
     }

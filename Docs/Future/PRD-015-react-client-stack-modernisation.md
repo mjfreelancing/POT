@@ -1,6 +1,6 @@
 # React Client Stack Modernisation — Feasibility Audit & PRD
 
-**Status:** In Progress — Inc 0–4 committed; Inc 5 (lucide-react 1.41) validated, date-fns 4 split → Inc 8
+**Status:** In Progress — Inc 0–4 committed; Inc 5 (lucide) & Inc 6 (zod 4) validated; date-fns 4 split → Inc 8
 **Priority:** Medium
 **Last Updated:** 2026-09-07
 **Feature ID:** 015
@@ -24,6 +24,7 @@ _Living tracker — update this section after every increment/commit._
 - **Inc 5 split (date-fns 4 deferred).** Discovered `react-day-picker@8.10.2` (still v8 until Inc 8) declares a hard peer `date-fns ^2.28.0 || ^3.0.0`. Installing date-fns 4 makes `npm ci` fail with ERESOLVE — and the Docker client build runs `RUN npm ci` — so date-fns 4 is **not** durably shippable while react-day-picker is on v8 (the app itself was functionally green: cold tsc, unit 690, build all passed). → **Inc 5 = lucide-react 1.41 only** (date-fns pinned back to `^3.6.0`, `npm ci` green). **date-fns 4 moves to ride with the react-day-picker major (Inc 8)**, which removes the date-fns dependency.
 - lucide-react target revised **1.40.0 → 1.41.0** (current `latest`, same major). Deprecated `-Icon` aliases renamed to canonical names across 12 files (`ui/*`: accordion, checkbox, dialog, dropdown-menu, input-otp, select, sheet, sidebar; plus `EnrichedDatePicker`, `ExpenseDetails`, `IncomeDetails`, `POTSettingsSheet`). Aliases are deprecated-but-present in 1.41, so this is forward-cleanup rather than a compile-block.
 - Inc 5 (lucide part) validated: cold `npx tsc -b --force` exit 0 · unit suite 690/690 · `format:fix` · lint (24 warnings / 0 errors) · `npm run build` exit 0 · `npm ci` exit 0.
+- **Inc 6 (zod 4.5.4) validated.** Added the §13 pre-work form-schema parse guard tests first (5 files / 31 tests + shared `tests/shared/schemaAssertions.ts` `flattenIssues` helper) for the uncovered form schemas (userFormSchemas 0%, budgetReminders 25%, changePassword 33%, expense 56%, income 70%) — green on zod 3, then migrated. Canonical migration across the 18 zod files: the ONLY hard break was `required_error`/`invalid_type_error` → `{ error }` (zod 4.5.4 keeps a classic v3-compat layer for the rest); also `z.nativeEnum(X)` → `z.enum(X)` (merged in v4), `z.string().email('…')` → `z.email('…')`, `.nonempty('…')` → `.min(1, '…')`. refine/superRefine `{ message }` + `z.ZodIssueCode` remain accepted (classic layer) → left as-is, messages locked by guard tests. `@hookform/resolvers` 5.9.1 already zod-4-capable (no bump). Gates: cold tsc exit 0 · unit **721/721** (142 files) · format:fix · lint (24w/0e) · build exit 0 · `npm ci` exit 0.
 
 ### Increment status
 
@@ -35,7 +36,7 @@ _Living tracker — update this section after every increment/commit._
 | 3   | Test stack — vitest 4.1.11, jsdom 30, jest-dom 7, faker 10, testcontainers 12 + config rework                    | ✅ Committed   | unit 679, coverage (45.13% / 34.7% branch — no shift vs baseline), E2E |
 | 4   | Lint correctness — ESLint 10.9.1, @eslint/js 10, react-hooks 7.1.1                                               | ✅ Committed   | format:fix, lint (24 warnings / 0 errors), type:check, unit 679        |
 | 5   | Utilities — lucide-react 1.41 (date-fns 4 split out → pairs with Inc 8)                                        | ✅ Validated   | cold tsc, unit 690, format:fix, lint (24w), build, npm ci |
-| 6   | zod 4                                                                                                            | ⛔ Not started | —                                                                      |
+| 6   | zod 4 — 4.5.4, canonical idioms + §13 form-schema guard tests                                                      | ✅ Validated   | cold tsc, unit 721, format:fix, lint (24w), build, npm ci |
 | 7   | recharts 3                                                                                                       | ⛔ Not started | —                                                                      |
 | 8   | react-day-picker 10 (+ date-fns 4, absorbed from Inc 5)                                                          | ⛔ Not started | —                                                                      |
 | 9   | @tanstack/react-table 9                                                                                          | ⛔ Not started | —                                                                      |
@@ -48,7 +49,7 @@ _Living tracker — update this section after every increment/commit._
 1. **`react-hooks/set-state-in-effect`: 23 warnings across 19 files** (DataTable, ThemeProvider, AccountsPage, useAccountEditor, LoginForm, PasswordResetDialog, OtpVerificationForm ×4, SignupDialog, AccrualsContext, ExpensesPage, ExpenseForm ×2, IncomesPage, IncomeForm, ProjectionsPage ×2, ChartControls, POTSettingsSheet, use-mobile, use-short-viewport, useDelayedValue). Fix deliberately (matchMedia hooks → `useSyncExternalStore`; forms/pages/contexts → render-time state adjustment), gated by their tests. [DQ-4]
 2. `DataTable.tsx` React-compiler warning: "Compilation Skipped: Use of incompatible library".
 3. Open decisions: DQ-1 (TS 6 first, then 7), DQ-2 (`@daypicker/react` vs compat name), DQ-3 (coverage — measured: no re-baseline needed), DQ-5 (run all 13 increments vs stop after safe set), DQ-7 (no React Compiler opt-in).
-4. Coverage-audit pre-work for the risky increments (6–9): add guard tests first per §13 (zod form schemas, ProjectionChart smoke, real `ui/calendar` render, real `DataTable` render).
+4. Coverage-audit pre-work for the risky increments (6–9): zod form-schema guard tests **done** (Inc 6 — 5 files/31 tests + shared `flattenIssues` helper); remaining pre-work — ProjectionChart render smoke (Inc 7), real `ui/calendar` render (Inc 8), real `DataTable` render (Inc 9).
 
 ### Per-increment gate (from §6.1)
 

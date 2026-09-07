@@ -172,7 +172,7 @@ test.describe.serial('Expenses CRUD (fixture-managed)', () => {
     await page.getByRole('button', { name: 'Create' }).click();
 
     await expect(
-      page.getByText('A description is required', { exact: true }),
+      page.getByText('Description is required', { exact: true }),
     ).toBeVisible();
     await expect(
       page.getByText('An account is required', { exact: true }),

@@ -22,11 +22,10 @@ test.describe('account create form validation', () => {
 
     // Account Number and Description min(1) failures.
     await expect(
-      page
-        .getByText('String must contain at least 1 character(s)', {
-          exact: true,
-        })
-        .first(),
+      page.getByText('Account number is required', { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByText('Description is required', { exact: true }),
     ).toBeVisible();
   });
 

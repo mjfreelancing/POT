@@ -14,8 +14,7 @@ const budgetRemindersSchema = z.object({
     normalizeNumberInput,
     z
       .number({
-        required_error: 'Reminder days is required',
-        invalid_type_error: 'Reminder days is required',
+        error: 'Reminder days is required',
       })
       .int('Reminder days must be a whole number')
       .min(0, 'Reminder days must be between 0 and 31')
@@ -25,8 +24,7 @@ const budgetRemindersSchema = z.object({
     normalizeNumberInput,
     z
       .number({
-        required_error: 'Reminder hour is required',
-        invalid_type_error: 'Reminder hour is required',
+        error: 'Reminder hour is required',
       })
       .int('Reminder hour must be a whole number')
       .min(0, 'Reminder hour must be between 0 and 23')

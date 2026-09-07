@@ -13,9 +13,9 @@ const BaseExpenseSchema = z.object({
   description: z.string(),
   nextDue: z.string(),
   accrualStart: z.string().nullable(),
-  accrualPolicy: z.nativeEnum(AccrualPolicy),
+  accrualPolicy: z.enum(AccrualPolicy),
   endDate: z.string().nullable(),
-  frequency: z.nativeEnum(Frequency),
+  frequency: z.enum(Frequency),
   frequencyCount: z.number(),
   amount: z.number(),
   note: z.string().nullable(),
@@ -44,7 +44,7 @@ const ToggleExcludeExpensesSchema = z.object({
 
 const RenewExpensesSchema = z.object({
   rowIds: z.string().array(),
-  mode: z.nativeEnum(RenewalMode),
+  mode: z.enum(RenewalMode),
   asOfDate: z.string(),
 });
 

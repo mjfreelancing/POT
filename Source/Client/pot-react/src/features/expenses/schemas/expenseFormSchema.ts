@@ -4,16 +4,16 @@ import { AccrualPolicy, Frequency, isAfterDate } from '@/lib';
 
 const MoneyValueSchema = z
   .number({
-    required_error: 'This field is required',
+    error: 'This field is required',
   })
-  .min(0, 'Value must be positive');
+  .min(0, 'Value must be 0 or greater');
 
 const expenseFormSchema = z
   .object({
     excludeFromCalcs: z.boolean(),
-    description: z.string().min(1, 'A description is required'),
+    description: z.string().min(1, 'Description is required'),
     nextDue: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
-    accrualPolicy: z.nativeEnum(AccrualPolicy),
+    accrualPolicy: z.enum(AccrualPolicy),
     accrualStart: z
       .string()
       .optional()
@@ -26,7 +26,7 @@ const expenseFormSchema = z
       .refine(val => val === undefined || /^\d{4}-\d{2}-\d{2}$/.test(val), {
         message: 'Date must be YYYY-MM-DD',
       }),
-    frequency: z.nativeEnum(Frequency),
+    frequency: z.enum(Frequency),
     frequencyCount: z.number(),
     amount: MoneyValueSchema,
     note: z
@@ -46,8 +46,8 @@ const expenseFormSchema = z
         code: z.ZodIssueCode.custom,
         message:
           data.frequency === Frequency.OneTime
-            ? 'Must be 0'
-            : 'Must be at least 1',
+            ? 'Must be zero when Frequency is One Time'
+            : 'Must be greater than zero',
         path: ['frequencyCount'],
       });
     }
@@ -55,7 +55,7 @@ const expenseFormSchema = z
     if (data.accrualPolicy === AccrualPolicy.None && data.accrualStart) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'Must be empty when policy is None',
+        message: 'Must be empty when Accrual Policy is None',
         path: ['accrualStart'],
       });
     }
@@ -66,8 +66,8 @@ const expenseFormSchema = z
       if (isAfterDate(data.nextDue, data.endDate)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: 'Cannot be after end date',
-          path: ['nextDue'],
+          message: 'Cannot be earlier than the next due date',
+          path: ['endDate'],
         });
       }
 
@@ -76,7 +76,7 @@ const expenseFormSchema = z
         if (isAfterDate(data.accrualStart, data.endDate)) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: 'Cannot be after end date',
+            message: 'Cannot be after the end date',
             path: ['accrualStart'],
           });
         }

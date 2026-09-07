@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 // User invitation form schema with validation messages
 export const userInvitationFormSchema = z.object({
-  username: z.string().nonempty('Username must be provided'),
-  email: z.string().email('Please enter a valid email address'),
+  username: z.string().min(1, 'Username must be provided'),
+  email: z.email('Please enter a valid email address'),
   roleId: z.string().min(1, 'Please select a role'),
 });
 
