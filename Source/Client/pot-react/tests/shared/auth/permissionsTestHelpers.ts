@@ -1,4 +1,4 @@
-import { type Mock,vi } from 'vitest';
+import { type Mock, vi } from 'vitest';
 
 import type { Permission } from '@/concerns';
 

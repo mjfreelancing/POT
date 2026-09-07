@@ -49,13 +49,7 @@
  * - Ensure accessibility with sufficient text contrast
  * - Reinforce brand identity through consistent color usage
  */
-import {
-  Building2,
-  CalendarClock,
-  KeyIcon,
-  UserIcon,
-  XIcon,
-} from 'lucide-react';
+import { Building2, CalendarClock, Key, User, X } from 'lucide-react';
 import type { JSX } from 'react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -363,7 +357,7 @@ function AccountSettingsSheet(props: AccountSettingsSheetProps): JSX.Element {
               aria-label="Close POT settings"
               onClick={requestSheetClose}
             >
-              <XIcon className="size-5" />
+              <X className="size-5" />
             </Button>
           </div>
 
@@ -423,7 +417,7 @@ function AccountSettingsSheet(props: AccountSettingsSheetProps): JSX.Element {
                   <AccordionTrigger className="text-lg font-semibold text-primary [&[data-state=open]>div]:text-primary/90 hover:no-underline [&>div]:transition-all group">
                     <div className="flex items-center gap-3 opacity-80 group-hover:opacity-100">
                       <div className="p-2 rounded-md bg-blue-500/10 transition-colors group-hover:bg-blue-500/15">
-                        <UserIcon className="size-5 text-blue-400" />
+                        <User className="size-5 text-blue-400" />
                       </div>
                       <div className="flex flex-col items-start">
                         <span>User Details</span>
@@ -451,7 +445,7 @@ function AccountSettingsSheet(props: AccountSettingsSheetProps): JSX.Element {
                   <AccordionTrigger className="text-lg font-semibold text-primary [&[data-state=open]>div]:text-primary/90 hover:no-underline [&>div]:transition-all group">
                     <div className="flex items-center gap-3 opacity-80 group-hover:opacity-100">
                       <div className="p-2 rounded-md bg-blue-500/10 transition-colors group-hover:bg-blue-500/15">
-                        <KeyIcon className="size-5 text-blue-400" />
+                        <Key className="size-5 text-blue-400" />
                       </div>
                       <div className="flex flex-col items-start">
                         <span>Change Password</span>

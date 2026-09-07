@@ -1,6 +1,6 @@
 import { expect } from 'vitest';
 
-import type { FailResultBase} from '@/lib';
+import type { FailResultBase } from '@/lib';
 import { FailResult, SuccessResult } from '@/lib';
 
 function expectSuccessResult<T>(

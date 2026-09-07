@@ -3,9 +3,7 @@ import userEvent from '@testing-library/user-event';
 import React, { act } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import type {
-  MoneyValueChangeEvent,
-} from '@/components/input/MoneyValueInput';
+import type { MoneyValueChangeEvent } from '@/components/input/MoneyValueInput';
 import MoneyValueInput from '@/components/input/MoneyValueInput';
 
 /**

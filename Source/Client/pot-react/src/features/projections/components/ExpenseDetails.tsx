@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { XIcon } from 'lucide-react';
+import { X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import type { ChartConfig } from '@/components/ui/chart';
@@ -76,7 +76,7 @@ function ExpenseDetails({
               aria-label="Close expense details"
               onClick={() => onOpenChange(false)}
             >
-              <XIcon className="size-5" />
+              <X className="size-5" />
             </Button>
           </div>
 

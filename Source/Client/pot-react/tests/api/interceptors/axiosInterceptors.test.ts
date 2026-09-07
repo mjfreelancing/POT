@@ -1,9 +1,5 @@
-import type {
-  InternalAxiosRequestConfig} from 'axios';
-import axios, {
-  AxiosError,
-  AxiosHeaders
-} from 'axios';
+import type { InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosHeaders } from 'axios';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { addCorrelationId } from '@/api/apiHelpers';

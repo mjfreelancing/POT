@@ -1,4 +1,4 @@
-import { expect,test as baseTest } from '@playwright/test';
+import { expect, test as baseTest } from '@playwright/test';
 
 // Covers the PWA contract in BOTH environments (dev and prodlike configs):
 // - DEV (playwright.config.ts, Vite dev server, E2E=1): vite-plugin-pwa gates

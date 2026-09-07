@@ -162,7 +162,11 @@ test('accounts page: data table on desktop, card grid on mobile', async ({
   let createdRowId: string | undefined;
 
   try {
-    const account = await createAccountViaApi(request, accessToken, description);
+    const account = await createAccountViaApi(
+      request,
+      accessToken,
+      description,
+    );
     createdRowId = account.rowId;
 
     await page.goto('/accounts');

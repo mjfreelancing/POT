@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import type { ComponentProps } from 'react';
 import * as React from 'react';
 
@@ -72,7 +72,7 @@ function EnrichedDatePicker({
             triggerClassName,
           )}
         >
-          <CalendarIcon className="mr-2 size-4" />
+          <Calendar className="mr-2 size-4" />
           {triggerLabel
             ? triggerLabel(selectedDate)
             : defaultTriggerLabel(selectedDate)}

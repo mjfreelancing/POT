@@ -1,5 +1,5 @@
 import type { APIRequestContext } from '@playwright/test';
-import { expect,test as baseTest } from '@playwright/test';
+import { expect, test as baseTest } from '@playwright/test';
 
 import {
   adminCredentials,
