@@ -508,24 +508,26 @@ services:
     ports:
       - "5175:80"
 
-    # Health check: Monitor nginx and backend API availability
-    # Purpose: Verify client container is serving traffic and can reach backend
+    # Health check: Monitor backend API availability from the client container
+    # Purpose: Verify the client container can reach the backend on the shared network
     healthcheck:
-      # Test command: Check if API health endpoint is accessible through client container
-      # Why check API (not just nginx):
-      #   - Verifies nginx is running (wget works)
-      #   - Verifies nginx can proxy to backend (API responds)
-      #   - Comprehensive health check for full stack
+      # Test command: Check the API health endpoint from inside the client container
+      # Why check the API (not just nginx):
+      #   - Verifies the client container has network connectivity to the API
+      #   - Verifies the API responds (comprehensive full-stack signal)
       # Syntax: wget [options] URL
       #   - -q: Quiet mode (no output)
       #   - --spider: Don't download, just check if URL exists
-      #   - http://localhost:5241/_health: API health endpoint (internal container port)
+      #   - http://server:5241/_health: API health endpoint (server container)
       # Exit codes:
       #   - 0: Success (healthy)
       #   - 1: Failure (unhealthy) - triggers "|| exit 1"
-      # Important: Uses localhost:5241 referring to server container's IP on shared network
-      # Note: Could also check nginx only: wget --spider http://localhost:80/health
-      test: "wget -q --spider http://localhost:5241/_health || exit 1"
+      # Important: Uses the compose service name 'server' - containers reach each
+      #   other by service name on the shared network. 'localhost' would resolve to
+      #   the client container itself, where nothing listens on 5241 (nginx is on :80).
+      # Note: To additionally verify nginx serves the SPA, check nginx directly:
+      #   wget --spider http://localhost:80/health
+      test: "wget -q --spider http://server:5241/_health || exit 1"
 
       # Interval: Check every 10 seconds
       # Why less frequent than postgres: Client availability less critical for other services
