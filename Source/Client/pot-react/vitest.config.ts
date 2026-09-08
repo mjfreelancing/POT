@@ -1,6 +1,5 @@
 /// <reference types="vitest" />
 import react from '@vitejs/plugin-react';
-import path from 'path';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
@@ -31,12 +30,11 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@tests': path.resolve(__dirname, './tests'),
-      'virtual:pwa-register': path.resolve(
-        __dirname,
-        './tests/mocks/virtual-pwa-register.ts',
-      ),
+      // import.meta.dirname (Node >= 20.11) requires @types/node for typing
+      '@': import.meta.dirname + '/src',
+      '@tests': import.meta.dirname + '/tests',
+      'virtual:pwa-register':
+        import.meta.dirname + '/tests/mocks/virtual-pwa-register.ts',
     },
   },
 });
