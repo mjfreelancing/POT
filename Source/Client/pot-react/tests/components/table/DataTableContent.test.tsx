@@ -1,8 +1,8 @@
-import type { Row } from '@tanstack/react-table';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, test } from 'vitest';
 
 import DataTableContent from '@/components/table/DataTableContent';
+import type { AppRow } from '@/components/table/tableFeatures';
 
 type TestRow = {
   id: string;
@@ -14,7 +14,7 @@ type TableMock = {
     rows: {
       id: string;
       getIsSelected: () => boolean;
-      getVisibleCells: () => {
+      getAllCells: () => {
         id: string;
         column: {
           columnDef: {
@@ -44,7 +44,7 @@ describe('DataTableContent', () => {
       {
         id: 'row-1',
         getIsSelected: () => true,
-        getVisibleCells: () => [
+        getAllCells: () => [
           {
             id: 'cell-1',
             column: {
@@ -65,7 +65,7 @@ describe('DataTableContent', () => {
         <DataTableContent<TestRow>
           table={tableMock as never}
           tableColumns={[{ id: 'name' } as never]}
-          highlightRowFilter={(row: Row<TestRow>) => row.id === 'row-1'}
+          highlightRowFilter={(row: AppRow<TestRow>) => row.id === 'row-1'}
           highlightClassName="bg-amber-100"
         />
       </table>,

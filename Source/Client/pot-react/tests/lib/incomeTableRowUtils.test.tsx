@@ -1,8 +1,8 @@
-import type { Row } from '@tanstack/react-table';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, test } from 'vitest';
 
+import type { AppRow } from '@/components/table/tableFeatures';
 import type { Income } from '@/data';
 import { getAdornedIncomeDescription } from '@/lib';
 
@@ -10,7 +10,7 @@ import { createGenericRow } from '../shared/rows/genericRowBuilder';
 
 function createRow(
   overrides: { description?: string; note?: string | null } = {},
-): Row<Income> {
+): AppRow<Income> {
   return createGenericRow<Income>(
     {
       description: 'Salary',

@@ -1,8 +1,8 @@
-import type { ColumnDef } from '@tanstack/react-table';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, test, vi } from 'vitest';
 
+import type { AppColumnDef } from '@/components/table';
 import DataTable from '@/components/table/DataTable';
 import DataTableColumnHeader from '@/components/table/DataTableColumnHeader';
 
@@ -17,7 +17,7 @@ type TestRow = {
   amount: number;
 };
 
-const columns: ColumnDef<TestRow>[] = [
+const columns: AppColumnDef<TestRow>[] = [
   {
     id: 'description',
     accessorKey: 'description',
@@ -55,7 +55,9 @@ describe('DataTable (real render)', () => {
       <DataTable<TestRow, unknown> columns={columns} data={rows} />,
     );
 
-    expect(screen.getByRole('columnheader', { name: /description/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('columnheader', { name: /description/i }),
+    ).toBeInTheDocument();
     expect(getFirstColumnTexts()).toEqual(['Bravo', 'Alpha', 'Charlie']);
 
     rerender(<DataTable<TestRow, unknown> columns={columns} data={[]} />);
@@ -98,13 +100,17 @@ describe('DataTable (real render)', () => {
     );
 
     // The row checkbox aria-label uses the resolved row id (custom getRowId).
-    await user.click(screen.getByRole('checkbox', { name: 'Select row row-2' }));
+    await user.click(
+      screen.getByRole('checkbox', { name: 'Select row row-2' }),
+    );
     expect(onSelectionChange).toHaveBeenLastCalledWith([
       expect.objectContaining({ rowId: 'row-2', description: 'Bravo' }),
     ]);
 
     // Selection is stable across re-renders because it keys on rowId, not index.
-    await user.click(screen.getByRole('checkbox', { name: 'Select row row-1' }));
+    await user.click(
+      screen.getByRole('checkbox', { name: 'Select row row-1' }),
+    );
     expect(onSelectionChange).toHaveBeenLastCalledWith([
       expect.objectContaining({ rowId: 'row-2' }),
       expect.objectContaining({ rowId: 'row-1' }),

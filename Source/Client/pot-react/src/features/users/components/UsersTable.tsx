@@ -1,6 +1,5 @@
-import type { ColumnDef } from '@tanstack/react-table';
-
 import {
+  type AppColumnDef,
   createActionsColumn,
   createRowIdGetter,
   DataTable,
@@ -19,7 +18,7 @@ type UsersTableProps = {
 };
 
 function UsersTable({ users, onChangeRole }: UsersTableProps) {
-  const columns: ColumnDef<SiteUser>[] = [
+  const columns: AppColumnDef<SiteUser>[] = [
     {
       id: 'username',
       accessorKey: 'username',
@@ -27,7 +26,7 @@ function UsersTable({ users, onChangeRole }: UsersTableProps) {
         <DataTableColumnHeader column={column} title="Username" />
       ),
       enableSorting: true,
-      sortingFn: 'text',
+      sortFn: 'text',
       cell: ({ row }) => {
         const user = row.original;
         return (
@@ -49,7 +48,7 @@ function UsersTable({ users, onChangeRole }: UsersTableProps) {
         <DataTableColumnHeader column={column} title="Email" />
       ),
       enableSorting: true,
-      sortingFn: 'text',
+      sortFn: 'text',
     },
     {
       id: 'roles',
@@ -95,7 +94,7 @@ function UsersTable({ users, onChangeRole }: UsersTableProps) {
         <DataTableColumnHeader column={column} title="Status" />
       ),
       enableSorting: true,
-      sortingFn: 'text',
+      sortFn: 'text',
       cell: ({ row }) => {
         return <UserStatusBadge status={row.original.status} />;
       },
@@ -107,7 +106,7 @@ function UsersTable({ users, onChangeRole }: UsersTableProps) {
         <DataTableColumnHeader column={column} title="Last Login" />
       ),
       enableSorting: true,
-      sortingFn: 'datetime',
+      sortFn: 'datetime',
       cell: ({ row }) => {
         const lastLoggedInUtc = row.original.lastLoggedInUtc;
 

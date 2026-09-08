@@ -1,16 +1,18 @@
-import type { Column } from '@tanstack/react-table';
+import type { RowData } from '@tanstack/react-table';
 import { ArrowUpDown, ChevronDown, ChevronUp } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib';
 
-type DataTableColumnHeaderProps<TData, TValue> = {
-  column: Column<TData, TValue>;
+import type { AppColumn } from './tableFeatures';
+
+type DataTableColumnHeaderProps<TData extends RowData, TValue = unknown> = {
+  column: AppColumn<TData, TValue>;
   title: string;
   className?: string;
 } & React.HTMLAttributes<HTMLDivElement>;
 
-function DataTableColumnHeader<TData, TValue>({
+function DataTableColumnHeader<TData extends RowData, TValue = unknown>({
   column,
   title,
   className,

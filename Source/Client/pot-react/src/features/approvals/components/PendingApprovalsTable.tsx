@@ -1,6 +1,5 @@
-import type { ColumnDef } from '@tanstack/react-table';
-
 import {
+  type AppColumnDef,
   createActionsColumn,
   createRowIdGetter,
   DataTable,
@@ -16,7 +15,7 @@ type PendingApprovalsTableProps = {
 };
 
 function PendingApprovalsTable({ users }: PendingApprovalsTableProps) {
-  const columns: ColumnDef<PendingApprovalUser>[] = [
+  const columns: AppColumnDef<PendingApprovalUser>[] = [
     {
       id: 'username',
       accessorKey: 'username',
@@ -24,7 +23,7 @@ function PendingApprovalsTable({ users }: PendingApprovalsTableProps) {
         <DataTableColumnHeader column={column} title="Username" />
       ),
       enableSorting: true,
-      sortingFn: 'text',
+      sortFn: 'text',
       cell: ({ row }) => {
         return <div className="font-medium">{row.original.username}</div>;
       },
@@ -36,7 +35,7 @@ function PendingApprovalsTable({ users }: PendingApprovalsTableProps) {
         <DataTableColumnHeader column={column} title="Email" />
       ),
       enableSorting: true,
-      sortingFn: 'text',
+      sortFn: 'text',
     },
     createActionsColumn<PendingApprovalUser>(user => (
       <PendingApprovalActions user={user} />

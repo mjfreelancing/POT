@@ -1,15 +1,17 @@
-import type { Row } from '@tanstack/react-table';
+import type { RowData } from '@tanstack/react-table';
 
-function createGenericRow<TData extends object>(
+import type { AppRow } from '@/components/table/tableFeatures';
+
+function createGenericRow<TData extends RowData>(
   defaults: TData,
   overrides: Partial<TData> = {},
-): Row<TData> {
+): AppRow<TData> {
   return {
     original: {
       ...defaults,
       ...overrides,
     },
-  } as unknown as Row<TData>;
+  } as unknown as AppRow<TData>;
 }
 
 export { createGenericRow };

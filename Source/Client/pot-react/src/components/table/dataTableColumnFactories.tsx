@@ -1,4 +1,4 @@
-import type { ColumnDef, Row } from '@tanstack/react-table';
+import type { RowData } from '@tanstack/react-table';
 import type { ReactNode } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -13,28 +13,29 @@ import {
   getTableBadgeClass,
 } from '../../lib';
 import DataTableColumnHeader from './DataTableColumnHeader';
+import type { AppColumnDef, AppRow } from './tableFeatures';
 
 // Parameter types for our column factory functions
-type BaseColumnParams<TData> = {
+type BaseColumnParams<TData extends RowData> = {
   accessorKey: keyof TData & string;
   header: string;
-  options?: Partial<ColumnDef<TData>>;
+  options?: Partial<AppColumnDef<TData>>;
 };
 
-type MoneyColumnParams<TData> = BaseColumnParams<TData>;
+type MoneyColumnParams<TData extends RowData> = BaseColumnParams<TData>;
 
-type DateColumnParams<TData> = BaseColumnParams<TData> & {
+type DateColumnParams<TData extends RowData> = BaseColumnParams<TData> & {
   // Function type for providing custom null value handling in date columns.
   // When undefined is returned, no content is displayed for null dates.
   // When a string is returned, it's displayed with muted styling.
-  getNullValue?: (row: Row<TData>) => string | undefined;
+  getNullValue?: (row: AppRow<TData>) => string | undefined;
 };
 
-type FrequencyColumnParams<TData> = {
+type FrequencyColumnParams<TData extends RowData> = {
   countKey: keyof TData & string;
   frequencyKey: keyof TData & string;
   header: string;
-  options?: Partial<ColumnDef<TData>>;
+  options?: Partial<AppColumnDef<TData>>;
 };
 
 type NextDueStatusRow = {
@@ -62,12 +63,18 @@ const renderMinWidthTableCell = (content: ReactNode) => {
 };
 
 // Gets the money value from a row.
-const getMoneyValue = <TData,>(row: Row<TData>, key: string): MoneyValue => {
+const getMoneyValue = <TData extends RowData>(
+  row: AppRow<TData>,
+  key: string,
+): MoneyValue => {
   return parseFloat(row.getValue(key));
 };
 
 // Formats a money value as a string.
-const formatCellMoneyValue = <TData,>(row: Row<TData>, key: string) => {
+const formatCellMoneyValue = <TData extends RowData>(
+  row: AppRow<TData>,
+  key: string,
+) => {
   const value = getMoneyValue(row, key);
   return formatMoneyValue(value);
 };
@@ -97,9 +104,9 @@ const frequencySingularMap: Record<Frequency, string> = {
 //
 // Using DataTableColumnHeader as decribed at https://ui.shadcn.com/docs/components/data-table#reusable-components
 // for a sortable header with a title.
-const createMoneyValueColumn = <TData,>(
+const createMoneyValueColumn = <TData extends RowData>(
   params: MoneyColumnParams<TData>,
-): ColumnDef<TData> => {
+): AppColumnDef<TData> => {
   const { accessorKey, header, options = {} } = params;
   const { enableSorting = false, ...restOptions } = options;
 
@@ -119,9 +126,9 @@ const createMoneyValueColumn = <TData,>(
   };
 };
 
-const createDateColumn = <TData,>(
+const createDateColumn = <TData extends RowData>(
   params: DateColumnParams<TData>,
-): ColumnDef<TData> => {
+): AppColumnDef<TData> => {
   const { accessorKey, header, getNullValue, options = {} } = params;
   const { enableSorting = false, ...restOptions } = options;
 
@@ -157,15 +164,15 @@ const createDateColumn = <TData,>(
 };
 
 const createNextDueStatusColumn = <
-  TData extends NextDueStatusRow,
->(): ColumnDef<TData> => ({
+  TData extends RowData & NextDueStatusRow,
+>(): AppColumnDef<TData> => ({
   id: 'nextDue',
   accessorKey: 'nextDue',
   header: ({ column }) => (
     <DataTableColumnHeader column={column} title="Next Due" />
   ),
   enableSorting: true,
-  sortingFn: 'datetime',
+  sortFn: 'datetime',
   cell: ({ row }) => {
     const { nextDue, endDate, excludeFromCalcs } = row.original;
     const formattedDate = formatDate(nextDue);
@@ -215,8 +222,8 @@ const createNextDueStatusColumn = <
 });
 
 const createRecurringEndDateColumn = <
-  TData extends RecurringEndDateRow,
->(): ColumnDef<TData> => ({
+  TData extends RowData & RecurringEndDateRow,
+>(): AppColumnDef<TData> => ({
   id: 'endDate',
   accessorKey: 'endDate',
   header: 'End Date',
@@ -247,8 +254,8 @@ const createRecurringEndDateColumn = <
 });
 
 const createAccountDescriptionColumn = <
-  TData extends AccountDescriptionRow,
->(): ColumnDef<TData> => ({
+  TData extends RowData & AccountDescriptionRow,
+>(): AppColumnDef<TData> => ({
   id: 'accountDescription',
   header: 'Account',
   cell: ({ row }) => {
@@ -262,9 +269,9 @@ const createAccountDescriptionColumn = <
   },
 });
 
-const createActionsColumn = <TData,>(
+const createActionsColumn = <TData extends RowData>(
   renderActions: (item: TData) => ReactNode,
-): ColumnDef<TData> => ({
+): AppColumnDef<TData> => ({
   id: 'actions',
   cell: ({ row }) => {
     return (
@@ -276,9 +283,9 @@ const createActionsColumn = <TData,>(
 /**
  * Creates a column showing "<count> <frequency>" based on two keys.
  */
-const createFrequencyColumn = <TData,>(
+const createFrequencyColumn = <TData extends RowData>(
   params: FrequencyColumnParams<TData>,
-): ColumnDef<TData> => {
+): AppColumnDef<TData> => {
   const { countKey, frequencyKey, header, options = {} } = params;
   const { enableSorting = false, ...restOptions } = options;
 

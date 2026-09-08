@@ -9,3 +9,4 @@ export { default as DataTableContent } from './DataTableContent';
 export * from './DataTableHeader';
 export { default as DataTableHeader } from './DataTableHeader';
 export * from './dataTableUtils';
+export * from './tableFeatures';

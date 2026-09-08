@@ -1,16 +1,17 @@
-import type { HeaderGroup } from '@tanstack/react-table';
-import { flexRender } from '@tanstack/react-table';
+import type { HeaderGroup, RowData } from '@tanstack/react-table';
+import { FlexRender } from '@tanstack/react-table';
 
 import { TableHead, TableHeader, TableRow } from '../ui/table';
+import type { AppTableFeatures } from './tableFeatures';
 
 /**
  * Props for the DataTableHeader component.
  *
  * @template TData - The type of the data objects in the table.
  */
-type DataTableHeaderProps<TData> = {
+type DataTableHeaderProps<TData extends RowData> = {
   /** Header groups from react-table containing header information */
-  headerGroups: HeaderGroup<TData>[];
+  headerGroups: HeaderGroup<AppTableFeatures, TData>[];
   /** CSS class for the TableHeader wrapper element */
   headerClassName?: string;
   /** CSS class for each TableRow in the header */
@@ -25,7 +26,7 @@ type DataTableHeaderProps<TData> = {
  * This component handles:
  * - Rendering header groups and individual headers
  * - Applying consistent styling across header elements
- * - Proper integration with react-table's flexRender system
+ * - Proper integration with react-table's FlexRender system
  * - Handling placeholder headers (empty cells)
  *
  * Features:
@@ -46,7 +47,7 @@ type DataTableHeaderProps<TData> = {
  *
  * @template TData - The type of data items in the table
  */
-function DataTableHeader<TData>({
+function DataTableHeader<TData extends RowData>({
   headerGroups,
   headerClassName = 'bg-gray-200 dark:bg-gray-700',
   rowClassName = 'bg-gray-200 dark:bg-gray-700',
@@ -63,12 +64,7 @@ function DataTableHeader<TData>({
             return (
               <TableHead key={header.id} className={customClass}>
                 {/* Only render header content if it's not a placeholder */}
-                {header.isPlaceholder
-                  ? null
-                  : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext(),
-                    )}
+                {header.isPlaceholder ? null : <FlexRender header={header} />}
               </TableHead>
             );
           })}
@@ -82,16 +78,3 @@ export default DataTableHeader;
 
 // Export types for use in other components
 export type { DataTableHeaderProps };
-
-// TypeScript module augmentation for @tanstack/react-table
-// This allows us to add custom properties (headerClassName, cellClassName) to the meta field of ColumnDef.
-// Without this, TypeScript will not recognize these properties and will show type errors when accessing them.
-// This is only for type safety and editor support; it does not affect runtime behavior.
-declare module '@tanstack/react-table' {
-  // Must use interface for module augmentation.
-  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-unused-vars
-  interface ColumnMeta<TData = unknown, TValue = unknown> {
-    headerClassName?: string;
-    cellClassName?: string;
-  }
-}

@@ -1,11 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query';
-import type { ColumnDef } from '@tanstack/react-table';
 import { BanknoteArrowDown, BanknoteArrowUp, Calculator } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router';
 
 import { useApiAccrueAccountExpenses } from '@/api/hooks';
 import { StatusBadge } from '@/components/feedback';
-import type { BulkAction } from '@/components/table';
+import type { AppColumnDef, BulkAction } from '@/components/table';
 import {
   createActionsColumn,
   createMoneyValueColumn,
@@ -38,7 +37,7 @@ function AccountsTable({ accounts }: AccountsTableProps) {
   const { hasPermission } = usePermissions();
   const canManageExpenses = hasPermission('expense:manage');
 
-  const columns: ColumnDef<Account>[] = [
+  const columns: AppColumnDef<Account>[] = [
     {
       id: 'bsb_number',
       accessorKey: 'bsb_number',
@@ -61,7 +60,7 @@ function AccountsTable({ accounts }: AccountsTableProps) {
         <DataTableColumnHeader column={column} title="Description" />
       ),
       enableSorting: true,
-      sortingFn: 'text',
+      sortFn: 'text',
       cell: ({ row }) => {
         const account = row.original;
         const hasLinkedData =
@@ -129,7 +128,7 @@ function AccountsTable({ accounts }: AccountsTableProps) {
       header: 'Balance',
       options: {
         enableSorting: true,
-        sortingFn: 'basic',
+        sortFn: 'basic',
       },
     }),
     createMoneyValueColumn<Account>({
@@ -137,7 +136,7 @@ function AccountsTable({ accounts }: AccountsTableProps) {
       header: 'Reserved',
       options: {
         enableSorting: true,
-        sortingFn: 'basic',
+        sortFn: 'basic',
       },
     }),
     createMoneyValueColumn<Account>({
@@ -145,7 +144,7 @@ function AccountsTable({ accounts }: AccountsTableProps) {
       header: 'Total Accrued',
       options: {
         enableSorting: true,
-        sortingFn: 'basic',
+        sortFn: 'basic',
       },
     }),
     createMoneyValueColumn<Account>({
@@ -153,7 +152,7 @@ function AccountsTable({ accounts }: AccountsTableProps) {
       header: 'Daily Accrual',
       options: {
         enableSorting: true,
-        sortingFn: 'basic',
+        sortFn: 'basic',
       },
     }),
     createMoneyValueColumn<Account>({
@@ -161,7 +160,7 @@ function AccountsTable({ accounts }: AccountsTableProps) {
       header: 'Available',
       options: {
         enableSorting: true,
-        sortingFn: 'basic',
+        sortFn: 'basic',
       },
     }),
     createActionsColumn<Account>(account => (

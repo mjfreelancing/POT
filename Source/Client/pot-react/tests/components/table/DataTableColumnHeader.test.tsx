@@ -1,9 +1,9 @@
-import type { Column } from '@tanstack/react-table';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, test, vi } from 'vitest';
 
 import DataTableColumnHeader from '@/components/table/DataTableColumnHeader';
+import type { AppColumn } from '@/components/table/tableFeatures';
 
 type SortState = false | 'asc' | 'desc';
 
@@ -24,16 +24,20 @@ const createColumnMock = (
   clearSorting: vi.fn(),
 });
 
+const renderHeader = (columnMock: ColumnMock) => {
+  render(
+    <DataTableColumnHeader
+      column={columnMock as unknown as AppColumn<Record<string, unknown>>}
+      title="Amount"
+    />,
+  );
+};
+
 describe('DataTableColumnHeader', () => {
   test('renders plain title when column is not sortable', () => {
     const columnMock = createColumnMock(false, false);
 
-    render(
-      <DataTableColumnHeader
-        column={columnMock as unknown as Column<unknown, unknown>}
-        title="Amount"
-      />,
-    );
+    renderHeader(columnMock);
 
     expect(screen.getByText('Amount')).toBeInTheDocument();
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
@@ -43,12 +47,7 @@ describe('DataTableColumnHeader', () => {
     const user = userEvent.setup();
     const columnMock = createColumnMock(false);
 
-    render(
-      <DataTableColumnHeader
-        column={columnMock as unknown as Column<unknown, unknown>}
-        title="Amount"
-      />,
-    );
+    renderHeader(columnMock);
 
     await user.click(screen.getByRole('button', { name: 'Amount' }));
 
@@ -60,12 +59,7 @@ describe('DataTableColumnHeader', () => {
     const user = userEvent.setup();
     const columnMock = createColumnMock('asc');
 
-    render(
-      <DataTableColumnHeader
-        column={columnMock as unknown as Column<unknown, unknown>}
-        title="Amount"
-      />,
-    );
+    renderHeader(columnMock);
 
     await user.click(screen.getByRole('button', { name: 'Amount' }));
 
@@ -77,12 +71,7 @@ describe('DataTableColumnHeader', () => {
     const user = userEvent.setup();
     const columnMock = createColumnMock('desc');
 
-    render(
-      <DataTableColumnHeader
-        column={columnMock as unknown as Column<unknown, unknown>}
-        title="Amount"
-      />,
-    );
+    renderHeader(columnMock);
 
     await user.click(screen.getByRole('button', { name: 'Amount' }));
 

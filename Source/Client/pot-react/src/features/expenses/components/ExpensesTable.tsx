@@ -1,5 +1,4 @@
 import { useQueryClient } from '@tanstack/react-query';
-import type { ColumnDef, Row } from '@tanstack/react-table';
 import { CheckCircle, EyeOff, FastForward } from 'lucide-react';
 import { useState } from 'react';
 import { useParams } from 'react-router';
@@ -11,7 +10,7 @@ import {
 } from '@/api/hooks/useExpenses';
 import { ConfirmationDialog } from '@/components/dialog';
 import { SuccessToast } from '@/components/feedback';
-import type { BulkAction } from '@/components/table';
+import type { AppColumnDef, AppRow, BulkAction } from '@/components/table';
 import {
   createAccountDescriptionColumn,
   createActionsColumn,
@@ -42,7 +41,7 @@ import { shouldHideMarkAsPaidAction } from '../utils/expenseActionability';
 import { splitExpensesByActionability } from '../utils/splitExpensesByActionability';
 import ExpenseActions from './ExpenseActions';
 
-const columns: ColumnDef<Expense>[] = [
+const columns: AppColumnDef<Expense>[] = [
   {
     id: 'description',
     accessorKey: 'description',
@@ -50,7 +49,7 @@ const columns: ColumnDef<Expense>[] = [
       <DataTableColumnHeader column={column} title="Description" />
     ),
     enableSorting: true,
-    sortingFn: 'text',
+    sortFn: 'text',
     cell: ({ row }) => getAdornedExpenseDescription(row),
   },
   createMoneyValueColumn<Expense>({
@@ -58,7 +57,7 @@ const columns: ColumnDef<Expense>[] = [
     header: 'Amount',
     options: {
       enableSorting: true,
-      sortingFn: 'basic',
+      sortFn: 'basic',
     },
   }),
   createFrequencyColumn<Expense>({
@@ -84,7 +83,7 @@ const columns: ColumnDef<Expense>[] = [
         return renderMinWidthTableCell(formatMoneyValue(row.original.accrued));
       },
       enableSorting: true,
-      sortingFn: 'basic',
+      sortFn: 'basic',
     },
   }),
   createAccountDescriptionColumn<Expense>(),
@@ -340,10 +339,10 @@ function ExpensesTable({ filteredExpenses }: ExpensesTableProps) {
             enableRowSelection={hasAnyBulkPermission}
             bulkActions={bulkActions}
             getRowId={createRowIdGetter<Expense>()}
-            highlightRowFilter={(row: Row<Expense>) =>
+            highlightRowFilter={(row: AppRow<Expense>) =>
               row.original.rowId.toString() === editingId
             }
-            getRowClassName={(row: Row<Expense>) =>
+            getRowClassName={(row: AppRow<Expense>) =>
               getTableRowClassName(row.original, { exclude: ['OVERDUE'] })
             }
           />

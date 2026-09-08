@@ -1,5 +1,4 @@
 import { useQueryClient } from '@tanstack/react-query';
-import type { ColumnDef, Row } from '@tanstack/react-table';
 import { CheckCircle, EyeOff, FastForward } from 'lucide-react';
 import { useState } from 'react';
 import { useParams } from 'react-router';
@@ -8,7 +7,7 @@ import { toast } from 'sonner';
 import { useApiRenewIncomes, useApiToggleExcludeIncomes } from '@/api/hooks';
 import { ConfirmationDialog } from '@/components/dialog';
 import { SuccessToast } from '@/components/feedback';
-import type { BulkAction } from '@/components/table';
+import type { AppColumnDef, AppRow, BulkAction } from '@/components/table';
 import {
   createAccountDescriptionColumn,
   createActionsColumn,
@@ -39,7 +38,7 @@ type IncomesTableProps = {
   filteredIncomes: Income[];
 };
 
-const columns: ColumnDef<Income>[] = [
+const columns: AppColumnDef<Income>[] = [
   {
     id: 'description',
     accessorKey: 'description',
@@ -47,7 +46,7 @@ const columns: ColumnDef<Income>[] = [
       <DataTableColumnHeader column={column} title="Description" />
     ),
     enableSorting: true,
-    sortingFn: 'text',
+    sortFn: 'text',
     cell: ({ row }) => getAdornedIncomeDescription(row),
   },
   createMoneyValueColumn<Income>({
@@ -55,7 +54,7 @@ const columns: ColumnDef<Income>[] = [
     header: 'Amount',
     options: {
       enableSorting: true,
-      sortingFn: 'basic',
+      sortFn: 'basic',
     },
   }),
   createFrequencyColumn<Income>({
@@ -313,10 +312,10 @@ function IncomesTable({ filteredIncomes }: IncomesTableProps) {
             enableRowSelection={hasAnyBulkPermission}
             bulkActions={bulkActions}
             getRowId={createRowIdGetter<Income>()}
-            highlightRowFilter={(row: Row<Income>) =>
+            highlightRowFilter={(row: AppRow<Income>) =>
               row.original.rowId.toString() === editingId
             }
-            getRowClassName={(row: Row<Income>) =>
+            getRowClassName={(row: AppRow<Income>) =>
               getTableRowClassName(row.original, { exclude: ['OVERDUE'] })
             }
           />

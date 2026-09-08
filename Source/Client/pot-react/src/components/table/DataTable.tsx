@@ -1,23 +1,23 @@
 import type {
   ColumnDef,
-  HeaderContext,
-  Row,
+  RowData,
   RowSelectionState,
   SortingState,
-  TableOptions,
 } from '@tanstack/react-table';
-import {
-  flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from '@tanstack/react-table';
+import { FlexRender, useTable } from '@tanstack/react-table';
 import React, { useEffect, useState } from 'react';
 
 import { Checkbox } from '../ui/checkbox';
 import type { BulkAction } from './BulkActionsBar';
 import BulkActionsBar from './BulkActionsBar';
 import DataTableHeader from './DataTableHeader';
+import {
+  type AppColumnDef,
+  type AppHeaderContext,
+  type AppRow,
+  type AppTableFeatures,
+  appTableFeatures,
+} from './tableFeatures';
 
 const DEFAULT_HIGHLIGHT_ROW_CLASS = 'bg-yellow-200 dark:bg-yellow-800';
 
@@ -26,12 +26,13 @@ const DEFAULT_HIGHLIGHT_ROW_CLASS = 'bg-yellow-200 dark:bg-yellow-800';
  * @template TData - The type of the data objects in the table.
  * @template TValue - The type of the value for each column.
  */
-type DataTableProps<TData, TValue> = {
+type DataTableProps<TData extends RowData, TValue = unknown> = {
   /**
    * Column definitions array describing how to render and access data for each column.
-   * Use @tanstack/react-table ColumnDef format, or the provided column factory functions.
+   * Use @tanstack/react-table ColumnDef format (typed via AppColumnDef), or the
+   * provided column factory functions.
    */
-  columns: ColumnDef<TData, TValue>[];
+  columns: AppColumnDef<TData, TValue>[];
 
   /** Array of data objects to display in the table rows. */
   data: TData[];
@@ -40,7 +41,7 @@ type DataTableProps<TData, TValue> = {
    * Optional function to determine if a row should be highlighted.
    * Receives the row object and returns true if the row should be highlighted.
    */
-  highlightRowFilter?: (row: Row<TData>) => boolean;
+  highlightRowFilter?: (row: AppRow<TData>) => boolean;
 
   /**
    * Optional Tailwind CSS class(es) to apply to rows that match the highlightRowFilter.
@@ -83,35 +84,16 @@ type DataTableProps<TData, TValue> = {
   getRowClassName?: RowClassNameFunction<TData>;
 };
 
-// Extend ColumnMeta to allow headerClassName and cellClassName
-// DataTableColumnMeta allows per-column styling for both header and body cells.
-// - headerClassName: applies only to the <th> (header cell) for this column. Use for alignment, width, etc.
-// - cellClassName: applies only to the <td> (body cell) for this column. Use for alignment, width, etc.
-//
-// DataTableHeader also accepts a cellClassName prop, which acts as a default for all header cells.
-// If a column's meta.headerClassName is set, it overrides the default cellClassName for that column's header.
-// This allows you to have a global default style for headers, but override it for special columns (like selection checkboxes).
-type DataTableColumnMeta = {
-  /**
-   * CSS class for the <th> (header cell) of this column.
-   * Overrides the cellClassName prop on DataTableHeader for this column only.
-   */
-  headerClassName?: string;
-  /**
-   * CSS class for the <td> (body cell) of this column.
-   * Used for per-column body cell styling.
-   */
-  cellClassName?: string;
-};
-
 /**
  * Function type for providing custom row styling based on row data.
  * When undefined is returned, no additional class is applied.
  * @template TData - The type of data in the row.
  */
-type RowClassNameFunction<TData> = (row: Row<TData>) => string | undefined;
+type RowClassNameFunction<TData extends RowData> = (
+  row: AppRow<TData>,
+) => string | undefined;
 
-function DataTable<TData, TValue>({
+function DataTable<TData extends RowData, TValue = unknown>({
   columns,
   data,
   highlightRowFilter,
@@ -128,25 +110,23 @@ function DataTable<TData, TValue>({
 
   // Create columns with optional selection column prepended
   // When row selection is enabled, we add a checkbox column at the beginning
-  const tableColumns: ColumnDef<TData, TValue>[] = enableRowSelection
+  const tableColumns: AppColumnDef<TData, TValue>[] = enableRowSelection
     ? [
         {
           id: 'select',
-          header: ({ table }: HeaderContext<TData, TValue>) => (
+          header: ({ table }: AppHeaderContext<TData, TValue>) => (
             <div className="flex justify-center w-full">
               <Checkbox
                 checked={
-                  table.getIsAllPageRowsSelected() ||
-                  (table.getIsSomePageRowsSelected() && 'indeterminate')
+                  table.getIsAllRowsSelected() ||
+                  (table.getIsSomeRowsSelected() && 'indeterminate')
                 }
-                onCheckedChange={value =>
-                  table.toggleAllPageRowsSelected(!!value)
-                }
+                onCheckedChange={value => table.toggleAllRowsSelected(!!value)}
                 aria-label="Select all"
               />
             </div>
           ),
-          cell: ({ row }: { row: Row<TData> }) => (
+          cell: ({ row }: { row: AppRow<TData> }) => (
             <div className="flex justify-center w-full">
               <Checkbox
                 checked={row.getIsSelected()}
@@ -156,8 +136,6 @@ function DataTable<TData, TValue>({
             </div>
           ),
           enableSorting: false, // Selection column doesn't need sorting
-          enableHiding: false, // Selection column shouldn't be hideable
-          // Add className for header/cell alignment
           meta: {
             headerClassName: 'text-center px-0 w-[40px]',
             cellClassName: 'text-center px-0 w-[40px]',
@@ -167,12 +145,15 @@ function DataTable<TData, TValue>({
       ]
     : columns; // If selection is disabled, use columns as-is
 
-  // Initialize the react-table instance with our configuration
-  const tableOptions: TableOptions<TData> = {
+  // Initialize the react-table instance with our configuration.
+  // react-table v9 requires the shared appTableFeatures registry so the
+  // sorting + row-selection APIs type-check and are wired into the row models.
+  const table = useTable<typeof appTableFeatures, TData>({
+    features: appTableFeatures,
     data,
-    columns: tableColumns,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
+    // react-table v9 types column values as `unknown` on the options object;
+    // the friendly AppColumnDef<TData, TValue> is structurally the same.
+    columns: tableColumns as ColumnDef<AppTableFeatures, TData, unknown>[],
     // Table behavior configuration
     onSortingChange: setSorting, // Handle sort state changes
     onRowSelectionChange: setRowSelection, // Handle selection state changes
@@ -184,9 +165,7 @@ function DataTable<TData, TValue>({
       sorting, // Current sort state
       rowSelection, // Current selection state
     },
-  };
-
-  const table = useReactTable(tableOptions);
+  });
 
   // Extract selection information for bulk actions and parent notifications
   const selectedRows = table.getFilteredSelectedRowModel().rows;
@@ -200,16 +179,6 @@ function DataTable<TData, TValue>({
     }
   }, [selectedItems, onSelectionChange]);
 
-  // Scenarios for header styling:
-  // 1. Style on <TableHeader> (<thead>) paints the entire header section uniformly.
-  //    - Pros: Single spot for styling, automatically covers all header rows.
-  //    - Cons: Any custom background on individual <tr> or <th> can override it or introduce gaps.
-  // 2. Style on each <TableRow> (<tr>) allows different header rows to have distinct backgrounds.
-  //    - Pros: Fine-grained control per row; guarantees that each row’s own class takes precedence.
-  //    - Cons: You must remember to apply the class to every header <tr>; new rows need manual updates.
-  // 3. Style on each <TableHead> (<th>) controls text appearance (uppercase, bold) without affecting background.
-  //    - Pros: Keeps background styling separate from text styling, consistent typography.
-  //    - Cons: Does not affect row background, so must be combined with header or row styles for full effect.
   return (
     <div className="flex flex-col h-full">
       <BulkActionsBar
@@ -252,12 +221,9 @@ function DataTable<TData, TValue>({
                         .filter(Boolean)
                         .join(' ')}
                     >
-                      {row.getVisibleCells().map(cell => (
+                      {row.getAllCells().map(cell => (
                         <td key={cell.id} className="px-4 py-2.5 align-middle">
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
+                          <FlexRender cell={cell} />
                         </td>
                       ))}
                     </tr>
@@ -283,4 +249,4 @@ function DataTable<TData, TValue>({
 
 export default DataTable;
 export { DEFAULT_HIGHLIGHT_ROW_CLASS };
-export type { DataTableColumnMeta, DataTableProps, RowClassNameFunction };
+export type { DataTableProps, RowClassNameFunction };

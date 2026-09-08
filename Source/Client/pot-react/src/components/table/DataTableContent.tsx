@@ -1,16 +1,13 @@
-import type {
-  ColumnDef,
-  Row,
-  Table as ReactTable,
-} from '@tanstack/react-table';
-import { flexRender } from '@tanstack/react-table';
+import type { RowData } from '@tanstack/react-table';
+import { FlexRender } from '@tanstack/react-table';
 
 import { TableBody, TableCell, TableRow } from '../ui/table';
+import type { AppColumnDef, AppRow, AppTable } from './tableFeatures';
 
-type DataTableContentProps<TData, TValue = unknown> = {
-  table: ReactTable<TData>;
-  tableColumns: ColumnDef<TData, TValue>[];
-  highlightRowFilter?: (row: Row<TData>) => boolean;
+type DataTableContentProps<TData extends RowData, TValue = unknown> = {
+  table: AppTable<TData>;
+  tableColumns: AppColumnDef<TData, TValue>[];
+  highlightRowFilter?: (row: AppRow<TData>) => boolean;
   highlightClassName?: string;
 };
 
@@ -20,7 +17,7 @@ type DataTableContentProps<TData, TValue = unknown> = {
  * This component is extracted to avoid code duplication between
  * the sticky and standard table implementations.
  */
-function DataTableContent<TData, TValue = unknown>({
+function DataTableContent<TData extends RowData, TValue = unknown>({
   table,
   tableColumns,
   highlightRowFilter,
@@ -37,9 +34,9 @@ function DataTableContent<TData, TValue = unknown>({
               highlightRowFilter?.(row) ? highlightClassName : undefined
             }
           >
-            {row.getVisibleCells().map(cell => (
+            {row.getAllCells().map(cell => (
               <TableCell key={cell.id}>
-                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                <FlexRender cell={cell} />
               </TableCell>
             ))}
           </TableRow>
