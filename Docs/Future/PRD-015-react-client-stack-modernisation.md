@@ -43,22 +43,22 @@ _Living tracker — update this section after every increment/commit._
 
 ### Increment status
 
-| Inc | Scope                                                                                                            | Status         | Validated gates                                                                          |
-| --- | ---------------------------------------------------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------- |
-| 0   | Node 24 baseline — Docker image `node:24-alpine`, `engines >=22.22`, `@types/node` 24                            | ✅ Committed   | type:check, lint, unit 679, docker image build (Azure args)                              |
-| 1   | Foundation refresh — React 19.2.8 + all in-range deps                                                            | ✅ Committed   | type:check, lint, `tsc -b && vite build`, unit 679, docker image build                   |
-| 2   | Lint & format refresh — eslint 9.39, typescript-eslint 8.69, prettier 3.9.6, import-sort 14, react-refresh 0.5.6 | ✅ Committed   | lint, type:check, unit 679, E2E                                                          |
-| 3   | Test stack — vitest 4.1.11, jsdom 30, jest-dom 7, faker 10, testcontainers 12 + config rework                    | ✅ Committed   | unit 679, coverage (45.13% / 34.7% branch — no shift vs baseline), E2E                   |
-| 4   | Lint correctness — ESLint 10.9.1, @eslint/js 10, react-hooks 7.1.1                                               | ✅ Committed   | format:fix, lint (24 warnings / 0 errors), type:check, unit 679                          |
-| 5   | Utilities — lucide-react 1.41 (date-fns 4 split out → pairs with Inc 8)                                          | ✅ Validated   | cold tsc, unit 690, format:fix, lint (24w), build, npm ci                                |
-| 6   | zod 4 — 4.5.4, canonical idioms + §13 form-schema guard tests                                                    | ✅ Validated   | cold tsc, unit 721, format:fix, lint (24w), build, npm ci                                |
-| 7   | recharts 3 — 3.10.1 + §13 chart smoke tests                                                                      | ✅ Validated   | cold tsc, unit 733, format:fix, lint (24w), build, npm ci, chart E2E                     |
-| 8   | react-day-picker 10.0.1 + date-fns 4.4.0 (absorbed from Inc 5)                                                   | ✅ Validated   | cold tsc, unit 735, format:fix, lint (24w), build, npm ci, calendar E2E                  |
-| 8b  | Adopt shadcn v4 ui layer — `ui/*` registry-truth (`cn` pkg, `radix-ui`), CLI-managed                             | ✅ Validated   | cold tsc, unit 735, format:fix, lint (24w), build, npm ci, calendar E2E, full E2E matrix |
-| 9   | @tanstack/react-table 9                                                                                          | ✅ Validated   | cold tsc, unit 736, format:fix, lint (23w), build, npm ci, modalDialogs E2E              |
-| 10  | Vite 6→8 — vite 8.2.2, plugin-react 6.1.1, oxc-transform-react 0.145.0                                           | ✅ Validated   | cold tsc, unit 738, format:fix, lint (23w), build, npm ci, full E2E 273p/0f/66s          |
-| 11  | react-router 7→8 (8.3.1) — ES2022 tsconfig bump, zero source changes                                             | ✅ Validated   | cold tsc, unit 738, format:fix, lint (23w), build, npm ci, full E2E 273p/0f/66s          |
-| 12  | TypeScript 5.7 → 6.0.3 (TS 7.0.2 deferred — typescript-eslint caps <6.1.0)                                      | ✅ Validated   | cold tsc, unit 738, format:fix, lint (23w), build, npm ci, full E2E 272p/1 flaky/66s      |
+| Inc | Scope                                                                                                            | Status       | Validated gates                                                                          |
+| --- | ---------------------------------------------------------------------------------------------------------------- | ------------ | ---------------------------------------------------------------------------------------- |
+| 0   | Node 24 baseline — Docker image `node:24-alpine`, `engines >=22.22`, `@types/node` 24                            | ✅ Committed | type:check, lint, unit 679, docker image build (Azure args)                              |
+| 1   | Foundation refresh — React 19.2.8 + all in-range deps                                                            | ✅ Committed | type:check, lint, `tsc -b && vite build`, unit 679, docker image build                   |
+| 2   | Lint & format refresh — eslint 9.39, typescript-eslint 8.69, prettier 3.9.6, import-sort 14, react-refresh 0.5.6 | ✅ Committed | lint, type:check, unit 679, E2E                                                          |
+| 3   | Test stack — vitest 4.1.11, jsdom 30, jest-dom 7, faker 10, testcontainers 12 + config rework                    | ✅ Committed | unit 679, coverage (45.13% / 34.7% branch — no shift vs baseline), E2E                   |
+| 4   | Lint correctness — ESLint 10.9.1, @eslint/js 10, react-hooks 7.1.1                                               | ✅ Committed | format:fix, lint (24 warnings / 0 errors), type:check, unit 679                          |
+| 5   | Utilities — lucide-react 1.41 (date-fns 4 split out → pairs with Inc 8)                                          | ✅ Validated | cold tsc, unit 690, format:fix, lint (24w), build, npm ci                                |
+| 6   | zod 4 — 4.5.4, canonical idioms + §13 form-schema guard tests                                                    | ✅ Validated | cold tsc, unit 721, format:fix, lint (24w), build, npm ci                                |
+| 7   | recharts 3 — 3.10.1 + §13 chart smoke tests                                                                      | ✅ Validated | cold tsc, unit 733, format:fix, lint (24w), build, npm ci, chart E2E                     |
+| 8   | react-day-picker 10.0.1 + date-fns 4.4.0 (absorbed from Inc 5)                                                   | ✅ Validated | cold tsc, unit 735, format:fix, lint (24w), build, npm ci, calendar E2E                  |
+| 8b  | Adopt shadcn v4 ui layer — `ui/*` registry-truth (`cn` pkg, `radix-ui`), CLI-managed                             | ✅ Validated | cold tsc, unit 735, format:fix, lint (24w), build, npm ci, calendar E2E, full E2E matrix |
+| 9   | @tanstack/react-table 9                                                                                          | ✅ Validated | cold tsc, unit 736, format:fix, lint (23w), build, npm ci, modalDialogs E2E              |
+| 10  | Vite 6→8 — vite 8.2.2, plugin-react 6.1.1, oxc-transform-react 0.145.0                                           | ✅ Validated | cold tsc, unit 738, format:fix, lint (23w), build, npm ci, full E2E 273p/0f/66s          |
+| 11  | react-router 7→8 (8.3.1) — ES2022 tsconfig bump, zero source changes                                             | ✅ Validated | cold tsc, unit 738, format:fix, lint (23w), build, npm ci, full E2E 273p/0f/66s          |
+| 12  | TypeScript 5.7 → 6.0.3 (TS 7.0.2 deferred — typescript-eslint caps <6.1.0)                                       | ✅ Validated | cold tsc, unit 738, format:fix, lint (23w), build, npm ci, full E2E 272p/1 flaky/66s     |
 
 ### Open follow-ups (must resolve before modernisation is declared done)
 
