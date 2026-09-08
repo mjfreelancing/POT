@@ -205,9 +205,11 @@ const createNextDueStatusColumn = <
         </Badge>
       );
     } else if (daysDue <= 7) {
+      const dayLabel = daysDue === 1 ? 'day' : 'days';
+
       badge = (
         <Badge variant="default" className={getStatusBadgeClass('due-soon')}>
-          Due Soon
+          In {daysDue} {dayLabel}
         </Badge>
       );
     }

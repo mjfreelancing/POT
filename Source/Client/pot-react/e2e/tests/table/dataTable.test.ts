@@ -213,10 +213,12 @@ test('Next Due status badges carry their semantic colors', async ({
   );
   expect(dueSoon, 'seed data must contain a Due Soon expense').toBeTruthy();
 
+  const daysDue = daysUntil(dueSoon!.nextDue);
+  const dueSoonLabel = `In ${daysDue} ${daysDue === 1 ? 'day' : 'days'}`;
   const dueSoonBadge = page
     .getByRole('row')
     .filter({ hasText: dueSoon!.description })
-    .getByText('Due Soon', { exact: true });
+    .getByText(dueSoonLabel, { exact: true });
   await expect(dueSoonBadge).toBeVisible();
   await expect(dueSoonBadge).toHaveClass(new RegExp(statusColorClass.orange));
 });

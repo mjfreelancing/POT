@@ -1,8 +1,9 @@
 import { expect, test } from '../../fixtures/auth';
 
 // Desktop-only: the /incomes page renders a data table on desktop but mobile
-// cards on mobile, and the mobile card shows "(N days)" instead of a "Due Soon"
-// badge. The mobile list rendering is covered by mobileCardGrids.test.ts.
+// cards on mobile, where the Next Due status is shown as a "(N days)" caption
+// instead of the table's "In N days" badge. The mobile list rendering is
+// covered by mobileCardGrids.test.ts.
 const isMobileProject = (testInfo: import('@playwright/test').TestInfo) =>
   testInfo.project.name.startsWith('mobile');
 
@@ -81,7 +82,7 @@ const expectedStatusBadge = (income: Income): string | null => {
   }
 
   if (daysDue <= 7) {
-    return 'Due Soon';
+    return `In ${daysDue} ${daysDue === 1 ? 'day' : 'days'}`;
   }
 
   return null;
