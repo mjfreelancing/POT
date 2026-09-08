@@ -20,9 +20,9 @@ Technical guide for Docker configuration and container orchestration in the POT 
 
 POT uses Docker for local development and production deployment. The application consists of three containers:
 
-1. **pot-postgres** - PostgreSQL database
-2. **pot-server** - ASP.NET Core API
-3. **pot-client** - React frontend (Vite + nginx)
+1. **pot-postgres** - PostgreSQL database (image `pot-postgres`)
+2. **pot-aspnet** - ASP.NET Core API (image `pot-server`)
+3. **pot-react** - React frontend (image `pot-client`; Vite build served by nginx)
 
 **Docker Compose Files:**
 
@@ -36,9 +36,9 @@ POT uses Docker for local development and production deployment. The application
 ### Container Dependencies
 
 ```
-pot-client (port 5175)
+pot-react (port 5175)
     ↓ depends on
-pot-server (port 5241)
+pot-aspnet (port 5241)
     ↓ depends on
 pot-postgres (port 5432)
 ```
@@ -47,20 +47,20 @@ pot-postgres (port 5432)
 
 1. PostgreSQL starts and becomes healthy
 2. Server starts after PostgreSQL is healthy, runs migrations
-3. Client starts after server is healthy
+3. Client starts after the server container is running (compose uses `depends_on: server` with no `service_healthy` condition — the server service has no health check)
 
 ### Port Mapping
 
 **Development:**
 
 - Client: `http://localhost:5175` → container port 80
-- Server: `http://localhost:5241` → container port 8080
+- Server: `http://localhost:5241` → container port 5241
 - PostgreSQL: `localhost:5432` → container port 5432
 
 **Production (Azure):**
 
 - Client: `https://yourdomain.com` → port 80
-- Server: `https://api.yourdomain.com` → port 8080
+- Server: `https://api.yourdomain.com` → port 5241
 - PostgreSQL: Internal network (not exposed)
 
 ---
@@ -102,9 +102,11 @@ docker-compose -p pot logs -f postgres
 
 ```yaml
 postgres:
-  image: postgres:17
+  build:
+    context: Postgres
+    dockerfile: Dockerfile
   container_name: pot-postgres
-  restart: unless-stopped
+  restart: always
   ports:
     - "5432:5432"
   environment:
@@ -127,16 +129,18 @@ server:
   build:
     context: ..
     dockerfile: Docker/Server/Dockerfile
-  container_name: pot-server
-  restart: unless-stopped
+  image: pot-server:${IMAGE_TAG:-latest}
+  container_name: pot-aspnet
+  restart: always
   depends_on:
     postgres:
       condition: service_healthy
   ports:
-    - "5241:8080"
+    - "5241:5241"
   environment:
-    - ASPNETCORE_ENVIRONMENT=Development
-    - ConnectionStrings__DefaultConnection=Host=postgres;Database=pot;Username=postgres;Password=password123
+    - ASPNETCORE_ENVIRONMENT=Production
+    - ASPNETCORE_URLS=http://+:5241
+    # DB / JWT / SMTP / CORS / platform-admin values are substituted from .env / .env.development
   networks:
     - pot-network
 ```
@@ -149,16 +153,15 @@ client:
     context: ..
     dockerfile: Docker/Client/Dockerfile
     args:
-      NGINX_CONFIG: nginx.conf
-      VITE_API_BASE_URL: http://localhost:5241/api
-      VITE_API_TIMEOUT_MS: 30000
-  container_name: pot-client
-  restart: unless-stopped
+      NODE_ENV: production
+  container_name: pot-react
+  restart: always
   depends_on:
-    server:
-      condition: service_started
+    - server
   ports:
     - "5175:80"
+  healthcheck:
+    test: "wget -q --spider http://server:5241/_health || exit 1"
   networks:
     - pot-network
 ```
@@ -280,9 +283,10 @@ ARG VITE_API_TIMEOUT_MS=30000
 client:
   build:
     args:
-      NGINX_CONFIG: nginx.conf
-      VITE_API_BASE_URL: http://localhost:5242/api
-      VITE_API_TIMEOUT_MS: 30000
+      NODE_ENV: production
+      # NGINX_CONFIG / VITE_API_BASE_URL / VITE_API_TIMEOUT_MS default from the
+      # Dockerfile + the app's .env.production (/api); override them for Azure
+      # via the azure-client-build-and-deploy task.
 ```
 
 **Important:** Changing these requires rebuild:
@@ -311,8 +315,8 @@ networks:
 
 **Service DNS:**
 
-- Server can reach PostgreSQL at `postgres:5432`
-- Client can reach server at `server:8080`
+- Server can reach PostgreSQL at `pot-postgres:5432`
+- Client can reach server at `server:5241` (client nginx proxies `/api/` to `http://server:5241/api/`)
 
 **Example connection string:**
 
@@ -374,11 +378,13 @@ healthcheck:
 - Retries 5 times before marking unhealthy
 - Server waits for `service_healthy` before starting
 
-### Server Health Check (optional)
+### Server Health Check (not currently configured)
+
+The `docker-compose-client-server.yml` does **not** define a health check on the `server` service (the client depends on it via plain `depends_on`, not `service_healthy`). If one were added, it would probe the Kestrel port inside the container:
 
 ```yaml
 healthcheck:
-  test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+  test: ["CMD-SHELL", "wget -q --spider http://localhost:5241/_health || exit 1"]
   interval: 30s
   timeout: 10s
   retries: 3
@@ -387,8 +393,25 @@ healthcheck:
 
 **Requires:**
 
-- Health check endpoint in ASP.NET Core
-- curl installed in container
+- The ASP.NET Core `/_health` endpoint
+- A probe tool (wget/curl) in the runtime image
+
+### Client Health Check
+
+The `client` service health check runs inside the client container and verifies the client can reach the backend across the `pot-network`:
+
+```yaml
+healthcheck:
+  test: "wget -q --spider http://server:5241/_health || exit 1"
+  interval: 10s
+  timeout: 5s
+  start_period: 5s
+```
+
+**Notes:**
+
+- `localhost` inside the client container is the client itself (nginx on :80), so the probe targets the API by its compose service name `server` (`pot-aspnet:5241` also resolves on the network).
+- To check the SPA from the host instead, `curl http://localhost:5175/health` returns `healthy` from the client nginx (`location /health` in `nginx.conf`).
 
 ### Checking Health Status
 
@@ -398,7 +421,8 @@ docker ps
 
 # Inspect specific container health
 docker inspect --format='{{.State.Health.Status}}' pot-postgres
-docker inspect --format='{{.State.Health.Status}}' pot-server
+docker inspect --format='{{.State.Health.Status}}' pot-aspnet
+docker inspect --format='{{.State.Health.Status}}' pot-react
 
 # View health check logs
 docker inspect pot-postgres | grep -A 10 Health
@@ -422,7 +446,7 @@ docker inspect pot-postgres | grep -A 10 Health
 
 ```dockerfile
 # Build stage
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION}-alpine AS build
 WORKDIR /src
 COPY ["Server/Pot.AspNetCore/Pot.AspNetCore.csproj", "Server/Pot.AspNetCore/"]
 RUN dotnet restore "Server/Pot.AspNetCore/Pot.AspNetCore.csproj"
@@ -434,10 +458,10 @@ FROM build AS publish
 RUN dotnet publish "Server/Pot.AspNetCore/Pot.AspNetCore.csproj" -c Release -o /app/publish
 
 # Runtime stage
-FROM mcr.microsoft.com/dotnet/aspnet:9.0
+FROM mcr.microsoft.com/dotnet/aspnet:${DOTNET_VERSION}-alpine
 WORKDIR /app
 COPY --from=publish /app/publish .
-EXPOSE 8080
+EXPOSE 5241
 ENTRYPOINT ["dotnet", "Pot.AspNetCore.dll"]
 ```
 
@@ -495,30 +519,49 @@ server {
     location / {
         try_files $uri $uri/ /index.html;
     }
+
+    # Forward API requests to the server container (compose service 'server')
+    location /api/ {
+        proxy_pass http://server:5241/api/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    # Health check endpoint (host: curl http://localhost:5175/health)
+    location /health {
+        return 200 'healthy';
+        add_header Content-Type text/plain;
+    }
 }
 ```
 
-**Production (Azure):** `Source/Docker/Client/nginx.azure.conf`
+**Note:** the file also applies a PWA cache policy (`index.html`/`sw.js`/`manifest.webmanifest` → `no-cache`; `/assets/` → immutable). See the file for the full config.
+
+**Production (Azure):** `Source/Docker/Client/nginx.azure.conf` (selected by the `azure-client-build-and-deploy` task)
 
 ```nginx
 server {
     listen 80;
-    server_name yourdomain.com;
+    server_name localhost;
+    root /usr/share/nginx/html;
+    index index.html;
 
     location / {
         try_files $uri $uri/ /index.html;
     }
 
-    location /api {
-        proxy_pass http://server:8080;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+    # Health check endpoint
+    location /health {
+        return 200 'healthy';
+        add_header Content-Type text/plain;
     }
 }
 ```
+
+**Important:** On Azure there is **no `/api` reverse proxy**. Azure Container Apps run the client and API as isolated containers with no shared network, so the SPA calls the public API URL directly; that absolute base URL (`https://api.payontime.com.au/api`) is baked into the image at build time via `VITE_API_BASE_URL`.
 
 ---
 
@@ -529,8 +572,8 @@ server {
 **Check logs:**
 
 ```bash
-docker logs pot-server
-docker logs pot-client
+docker logs pot-aspnet
+docker logs pot-react
 docker logs pot-postgres
 ```
 
@@ -546,9 +589,9 @@ docker logs pot-postgres
 **From server container:**
 
 ```bash
-docker exec -it pot-server bash
+docker exec -it pot-aspnet bash
 apt-get update && apt-get install -y postgresql-client
-psql -h postgres -U postgres -d pot
+psql -h pot-postgres -U postgres -d pot
 ```
 
 **From host:**
@@ -575,15 +618,16 @@ Host:postgres,Database:pot,Username:postgres,Password:password123
 **Check network connectivity:**
 
 ```bash
-docker exec -it pot-client sh
+docker exec -it pot-react sh
 apk add curl
-curl http://server:8080/api/health
+curl http://server:5241/_health
 ```
 
 **Verify VITE_API_BASE_URL:**
 
-- Development: `http://localhost:5242/api`
-- Production with nginx proxy: `/api`
+- Docker client: `/api` (nginx proxies to `http://server:5241/api/`)
+- Non-Docker local dev (Vite dev server): `http://localhost:5242/api`
+- Azure: `https://api.payontime.com.au/api` (baked at build time)
 
 **Rebuild if API URL changed:**
 
