@@ -13,7 +13,9 @@
  *    - from-blue-500/5 to-blue-500/10 gives depth with very low opacity (5-10%)
  *    - hover states increase opacity (10-15%) for interactive feedback
  *    - Uses brand blue to maintain consistency with main dashboard
- *    - Elements start at 80% opacity and increase to 100% on hover
+ *    - Hover emphasis is colour-only: the row stays fully opaque while the tile
+ *      background and icon colour brighten (no whole-row opacity fade, which
+ *      caused a subpixel rasterisation flicker over light cards)
  *    - Subtle brightening of icon backgrounds on hover
  *    - Removes default accordion underline for cleaner interaction
  *    - transition-all ensures smooth state changes
@@ -23,6 +25,7 @@
  *    - rounded-md on icon container for subtle separation
  *    - bg-blue-500/10 matches gradient theme with slightly higher opacity
  *    - text-blue-400 for icon color aligns with application's primary brand color
+ *    - Icon colour brightens to text-blue-500 on hover for colour-only feedback
  *
  * 4. Typography
  *    - text-lg + font-semibold for section headers
@@ -387,9 +390,9 @@ function AccountSettingsSheet(props: AccountSettingsSheetProps): JSX.Element {
                   <div className="border border-border/40 rounded-lg bg-gradient-to-br from-blue-500/5 to-blue-500/10 hover:from-blue-500/10 hover:to-blue-500/15 transition-all shadow-sm">
                     <AccordionItem className="px-4" value="site-settings">
                       <AccordionTrigger className="text-lg font-semibold text-primary [&[data-state=open]>div]:text-primary/90 hover:no-underline [&>div]:transition-all group">
-                        <div className="flex items-center gap-3 opacity-80 group-hover:opacity-100">
+                        <div className="flex items-center gap-3">
                           <div className="p-2 rounded-md bg-blue-500/10 transition-colors group-hover:bg-blue-500/15">
-                            <Building2 className="size-5 text-blue-400" />
+                            <Building2 className="size-5 text-blue-400 transition-colors group-hover:text-blue-500" />
                           </div>
                           <div className="flex flex-col items-start">
                             <span>Site Details</span>
@@ -418,9 +421,9 @@ function AccountSettingsSheet(props: AccountSettingsSheetProps): JSX.Element {
               <div className="border border-border/40 rounded-lg bg-gradient-to-br from-blue-500/5 to-blue-500/10 hover:from-blue-500/10 hover:to-blue-500/15 transition-all shadow-sm">
                 <AccordionItem className="px-4" value="user-details">
                   <AccordionTrigger className="text-lg font-semibold text-primary [&[data-state=open]>div]:text-primary/90 hover:no-underline [&>div]:transition-all group">
-                    <div className="flex items-center gap-3 opacity-80 group-hover:opacity-100">
+                    <div className="flex items-center gap-3">
                       <div className="p-2 rounded-md bg-blue-500/10 transition-colors group-hover:bg-blue-500/15">
-                        <User className="size-5 text-blue-400" />
+                        <User className="size-5 text-blue-400 transition-colors group-hover:text-blue-500" />
                       </div>
                       <div className="flex flex-col items-start">
                         <span>User Details</span>
@@ -446,9 +449,9 @@ function AccountSettingsSheet(props: AccountSettingsSheetProps): JSX.Element {
               <div className="border border-border/40 rounded-lg bg-gradient-to-br from-blue-500/5 to-blue-500/10 hover:from-blue-500/10 hover:to-blue-500/15 transition-all shadow-sm">
                 <AccordionItem className="px-4" value="change-password">
                   <AccordionTrigger className="text-lg font-semibold text-primary [&[data-state=open]>div]:text-primary/90 hover:no-underline [&>div]:transition-all group">
-                    <div className="flex items-center gap-3 opacity-80 group-hover:opacity-100">
+                    <div className="flex items-center gap-3">
                       <div className="p-2 rounded-md bg-blue-500/10 transition-colors group-hover:bg-blue-500/15">
-                        <Key className="size-5 text-blue-400" />
+                        <Key className="size-5 text-blue-400 transition-colors group-hover:text-blue-500" />
                       </div>
                       <div className="flex flex-col items-start">
                         <span>Change Password</span>
@@ -476,9 +479,9 @@ function AccountSettingsSheet(props: AccountSettingsSheetProps): JSX.Element {
                   <div className="border border-border/40 rounded-lg bg-gradient-to-br from-blue-500/5 to-blue-500/10 hover:from-blue-500/10 hover:to-blue-500/15 transition-all shadow-sm">
                     <AccordionItem className="px-4" value="budget-reminders">
                       <AccordionTrigger className="text-lg font-semibold text-primary [&[data-state=open]>div]:text-primary/90 hover:no-underline [&>div]:transition-all group">
-                        <div className="flex items-center gap-3 opacity-80 group-hover:opacity-100">
+                        <div className="flex items-center gap-3">
                           <div className="p-2 rounded-md bg-blue-500/10 transition-colors group-hover:bg-blue-500/15">
-                            <CalendarClock className="size-5 text-blue-400" />
+                            <CalendarClock className="size-5 text-blue-400 transition-colors group-hover:text-blue-500" />
                           </div>
                           <div className="flex flex-col items-start">
                             <span>Budget Reminders</span>
