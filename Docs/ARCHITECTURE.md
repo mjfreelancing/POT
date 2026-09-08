@@ -7,11 +7,11 @@ This document provides a high-level overview of POT's technical architecture.
 ### Frontend
 
 - **React 19** - Modern UI library with latest features
-- **TypeScript 5** - Type-safe development
-- **Vite 6** - Fast build tool and dev server
+- **TypeScript 6** - Type-safe development
+- **Vite 8** - Fast build tool and dev server
 - **TailwindCSS** - Utility-first CSS framework
 - **shadcn/ui** - High-quality, customizable UI components
-- **React Router v7** - Client-side routing
+- **React Router v8** - Client-side routing
 - **React Query** - Server state management and caching
 - **Zustand** - Global state management
 - **React Hook Form** - Form handling
@@ -21,7 +21,7 @@ This document provides a high-level overview of POT's technical architecture.
 ### Backend
 
 - **ASP.NET Core** - High-performance web framework
-- **.NET 9** - .NET runtime
+- **.NET 10** - .NET runtime
 - **Minimal APIs** - Lightweight API endpoints
 - **Entity Framework Core** - Object-relational mapping
 - **PostgreSQL** - Relational database

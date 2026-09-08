@@ -8,10 +8,10 @@ Before you begin, ensure you have the following installed:
 
 ### Required Software
 
-- **Node.js** (v20 or later) - [Download](https://nodejs.org/)
+- **Node.js** (v22.22.2 or later; Node 24.x LTS recommended) - [Download](https://nodejs.org/)
   - Required for frontend development and Docker builds
 - **npm** (comes with Node.js)
-- **.NET 9 SDK** - [Download](https://dotnet.microsoft.com/download/dotnet/9.0)
+- **.NET 10 SDK** - [Download](https://dotnet.microsoft.com/download/dotnet/10.0)
   - **Only required if** building/running the backend locally outside Docker
   - **Not needed** if using Docker for development (Docker handles the .NET runtime)
 - **Git** - [Download](https://git-scm.com/)
@@ -36,13 +36,13 @@ Before you begin, ensure you have the following installed:
 After installing the prerequisites, verify they're working:
 
 ```bash
-# Check Node.js version (should be v20 or later)
+# Check Node.js version (should be v22.22.2 or later)
 node --version
 
 # Check npm version
 npm --version
 
-# Check .NET version (should be 9.x)
+# Check .NET version (should be 10.x)
 dotnet --version
 
 # Check Docker is running
@@ -52,6 +52,26 @@ docker ps
 # Check Git
 git --version
 ```
+
+### Tooling Version Reference
+
+POT is built against the following tooling versions. **Required** is the minimum the code enforces; **Recommended / verified** is what the maintainers build and test with. Planning and decision records under `Docs/Future/` may quote older versions as of their writing date — this table reflects the current codebase.
+
+| Tool | Required | Recommended / verified |
+| --- | --- | --- |
+| Node.js | `>= 22.22.0` | Node **24.x LTS** (24.15.0) |
+| npm | bundled with Node.js | bundled with Node 24 (npm 11.x) |
+| .NET SDK | 10.0 | 10.0 |
+| Docker client base image | — | `node:24-alpine` |
+| Docker server base image | — | `mcr.microsoft.com/dotnet/sdk:10.0-alpine` (build) · `mcr.microsoft.com/dotnet/aspnet:10.0-alpine` (runtime) |
+
+Where these are declared:
+
+- **Node.js `engines`** — `Source/Client/pot-react/package.json`
+- **.NET target framework** — `Source/Server/Directory.Build.props` (`net10.0`)
+- **Docker base images** — `Source/Docker/Client/Dockerfile` and `Source/Docker/Server/Dockerfile` (`ARG DOTNET_VERSION=10.0`)
+
+> **Why Node 24.15.0 and not just 22.22.0?** jsdom 30 — the client unit-test DOM — declares engines `^22.22.2 || ^24.15.0 || >=26.0.0`. On earlier Node 24.x (e.g. 24.7.0) `npm ci` prints an `EBADENGINE` warning. It is cosmetic, but using 24.15.0+ keeps installs warning-free. Docker client builds use `node:24-alpine` and are unaffected.
 
 ## Clone the Repository
 

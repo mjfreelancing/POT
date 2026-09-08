@@ -48,7 +48,7 @@ Comprehensive guide for developers working on the POT React frontend application
 **Tech Stack:**
 
 - React 19 + TypeScript
-- Vite 6 (build tool)
+- Vite 8 (build tool)
 - Zustand (global state)
 - React Query (server state)
 - TailwindCSS + shadcn/ui (styling)
