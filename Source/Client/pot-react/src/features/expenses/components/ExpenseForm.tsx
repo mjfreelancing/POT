@@ -54,10 +54,15 @@ function useEndDatePicker(form: UseFormReturn<ExpenseFormData>) {
     endDateValue ? new Date(endDateValue) : undefined,
   );
 
-  // Keep local state in sync with form value
-  useEffect(() => {
+  // Keep local state in sync with the form value. Render-time adjustment when the
+  // watched value changes (documented pattern) instead of an effect, which the
+  // react-hooks rules discourage.
+  const [prevEndDateValue, setPrevEndDateValue] = useState(endDateValue);
+
+  if (prevEndDateValue !== endDateValue) {
+    setPrevEndDateValue(endDateValue);
     setPickerDate(endDateValue ? new Date(endDateValue) : undefined);
-  }, [endDateValue]);
+  }
 
   // Called when user accepts a date selection or clears the field
   function syncPickerDate(date: Date | undefined) {
@@ -80,14 +85,31 @@ function useAccrualStartPicker(form: UseFormReturn<ExpenseFormData>) {
     accrualStartValue ? new Date(accrualStartValue) : undefined,
   );
 
-  useEffect(() => {
-    if (accrualPolicyValue === AccrualPolicy.None) {
-      setPickerDate(undefined);
-      return;
-    }
+  // Keep local state in sync with the watched accrual-policy/start values.
+  // Render-time adjustment when either changes instead of an effect, which the
+  // react-hooks rules discourage.
+  const [prevAccrualSource, setPrevAccrualSource] = useState({
+    policy: accrualPolicyValue,
+    start: accrualStartValue,
+  });
 
-    setPickerDate(accrualStartValue ? new Date(accrualStartValue) : undefined);
-  }, [accrualPolicyValue, accrualStartValue]);
+  if (
+    prevAccrualSource.policy !== accrualPolicyValue ||
+    prevAccrualSource.start !== accrualStartValue
+  ) {
+    setPrevAccrualSource({
+      policy: accrualPolicyValue,
+      start: accrualStartValue,
+    });
+
+    setPickerDate(
+      accrualPolicyValue === AccrualPolicy.None
+        ? undefined
+        : accrualStartValue
+          ? new Date(accrualStartValue)
+          : undefined,
+    );
+  }
 
   function syncPickerDate(date: Date | undefined) {
     setPickerDate(date);

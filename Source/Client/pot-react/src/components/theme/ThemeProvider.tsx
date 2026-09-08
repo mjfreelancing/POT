@@ -53,14 +53,22 @@ function ThemeProvider({
     readThemeFromStorage(storageKey, defaultTheme),
   );
 
-  useEffect(() => {
-    // Re-read the theme when the storage key changes — e.g. when the signed-in
-    // user's identity resolves after mount and the key becomes user-scoped.
-    // Previously App.tsx forced this re-read via a key={userId} on the provider,
-    // which remounted the whole app subtree (including the error boundary).
-    // Reading reactively avoids that full remount.
+  // Re-read the theme when the storage key (or default) changes — e.g. when the
+  // signed-in user's identity resolves after mount and the key becomes
+  // user-scoped. Previously App.tsx forced this re-read via a key={userId} on
+  // the provider (remounting the whole app subtree incl. the error boundary);
+  // later it moved to an effect, which the react-hooks rules discourage. Doing
+  // it as a render-time state adjustment (documented "adjusting state when a
+  // prop changes" pattern) avoids both the remount and the effect.
+  const [themeSource, setThemeSource] = useState({ storageKey, defaultTheme });
+
+  if (
+    themeSource.storageKey !== storageKey ||
+    themeSource.defaultTheme !== defaultTheme
+  ) {
+    setThemeSource({ storageKey, defaultTheme });
     setTheme(readThemeFromStorage(storageKey, defaultTheme));
-  }, [storageKey, defaultTheme]);
+  }
 
   useEffect(() => {
     const root = window.document.documentElement;

@@ -162,31 +162,29 @@ function ProjectionsPage() {
     }
   }
 
-  // This ensures the start date is never before today, which can occur if
-  // the user leaves the page open overnight. If it is, update it to today.
-  const ensureValidStartDate = useCallback(() => {
-    const currentToday = normalizeToLocalMidnight(new Date());
+  // Ensure the start date is never before today, which can occur if the user
+  // leaves the page open overnight. If it is, bring it up to today as a
+  // render-time state adjustment (pure setState that converges) instead of an
+  // effect, which the react-hooks rules discourage; the storage cleanup then
+  // runs in an effect that performs no setState.
+  const currentToday = normalizeToLocalMidnight(new Date());
+  const needsStartDateClamp = isAfterDate(currentToday, startDate);
 
-    if (isAfterDate(currentToday, startDate)) {
+  if (needsStartDateClamp) {
+    setStartDate(currentToday);
+  }
+
+  useEffect(() => {
+    if (needsStartDateClamp) {
       logger.info(
         'ProjectionsPage',
         'startDate is earlier than today. Updating startDate.',
         formatDate(currentToday),
       );
 
-      handleStartDateChange(currentToday);
-
-      return currentToday;
+      removeStorageStartDate();
     }
-
-    return startDate;
-  }, [startDate, handleStartDateChange]);
-
-  // Validate startDate on page mount or re-render to ensure it's not before today
-  // which can occur if the user leaves the page open overnight.
-  useEffect(() => {
-    ensureValidStartDate();
-  }, [ensureValidStartDate]);
+  }, [needsStartDateClamp, currentToday, removeStorageStartDate]);
 
   // Always fetch 12 months of data from the selected start date
   const apiEndDate = addDays(addMonths(startDate, 12), -1);
@@ -202,20 +200,34 @@ function ProjectionsPage() {
     [projectionLoading, projectionFetching],
   );
 
-  useEffect(() => {
-    if (!projectionData) {
-      return;
-    }
+  // Reflect the latest projection query result in the API error state. The query
+  // hook rebuilds its Result object on every render, so this is keyed on the
+  // result CONTENT (success vs error code/description), not object identity.
+  // Render-time adjustment keyed on content changes rather than in an effect,
+  // which the react-hooks rules discourage. A persistent failure won't re-set,
+  // so a dismissed error sheet stays dismissed.
+  const projectionResultKey = projectionData
+    ? projectionData.success
+      ? 'ok'
+      : `${projectionData.error.code}:${projectionData.error.description}`
+    : 'none';
+  const [prevProjectionResultKey, setPrevProjectionResultKey] =
+    useState<string>('none');
 
-    if (projectionData.success) {
-      setApiError(null);
-    } else {
-      setApiError({
-        title: projectionData.error.code,
-        description: projectionData.error.description,
-      });
+  if (prevProjectionResultKey !== projectionResultKey) {
+    setPrevProjectionResultKey(projectionResultKey);
+
+    if (projectionData) {
+      if (projectionData.success) {
+        setApiError(null);
+      } else {
+        setApiError({
+          title: projectionData.error.code,
+          description: projectionData.error.description,
+        });
+      }
     }
-  }, [projectionData]);
+  }
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-card">

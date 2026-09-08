@@ -52,10 +52,15 @@ function useEndDatePicker(form: UseFormReturn<IncomeFormData>) {
     endDateValue ? new Date(endDateValue) : undefined,
   );
 
-  // Keep local state in sync with form value
-  useEffect(() => {
+  // Keep local state in sync with the form value. Render-time adjustment when the
+  // watched value changes (documented pattern) instead of an effect, which the
+  // react-hooks rules discourage.
+  const [prevEndDateValue, setPrevEndDateValue] = useState(endDateValue);
+
+  if (prevEndDateValue !== endDateValue) {
+    setPrevEndDateValue(endDateValue);
     setPickerDate(endDateValue ? new Date(endDateValue) : undefined);
-  }, [endDateValue]);
+  }
 
   function syncPickerDate(date: Date | undefined) {
     setPickerDate(date);

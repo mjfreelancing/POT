@@ -2,7 +2,6 @@ import React, {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
 } from 'react';
@@ -79,23 +78,23 @@ const AccrualsProvider: React.FC<{ children: React.ReactNode }> = ({
     [accrualsStatusData],
   );
 
-  useEffect(() => {
-    // Only set error if we don't already have one to prevent infinite loops
-    if (error === null) {
-      // Check results in order of importance
-      if (accountsData?.success === false) {
-        setError({
-          title: accountsData.error.code,
-          description: accountsData.error.description,
-        });
-      } else if (accrualsStatusData?.success === false) {
-        setError({
-          title: accrualsStatusData.error.code,
-          description: accrualsStatusData.error.description,
-        });
-      }
+  // Capture the first query failure as the context error (checked in order of
+  // importance). Done as a render-time state adjustment (only while error is
+  // still null, so it is set once and never clobbered/cleared) rather than in an
+  // effect, which the react-hooks rules discourage.
+  if (error === null) {
+    if (accountsData?.success === false) {
+      setError({
+        title: accountsData.error.code,
+        description: accountsData.error.description,
+      });
+    } else if (accrualsStatusData?.success === false) {
+      setError({
+        title: accrualsStatusData.error.code,
+        description: accrualsStatusData.error.description,
+      });
     }
-  }, [accountsData, accrualsStatusData, error, setError]);
+  }
 
   const isLoading = accountsIsLoading || accrualsStatusIsLoading;
 

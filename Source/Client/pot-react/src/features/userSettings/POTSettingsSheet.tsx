@@ -51,7 +51,7 @@
  */
 import { Building2, CalendarClock, Key, User, X } from 'lucide-react';
 import type { JSX } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import ErrorSheet from '@/components/feedback/sheet/ErrorSheet';
 import {
@@ -142,18 +142,21 @@ function AccountSettingsSheet(props: AccountSettingsSheetProps): JSX.Element {
 
   // Reset all tracking state when the sheet closes so that reopening the sheet
   // always starts clean — no leftover dirty flags or pending actions from the
-  // previous session.
-  useEffect(() => {
-    if (open) {
-      return;
-    }
+  // previous session. Done as a render-time state adjustment on the open → closed
+  // transition (documented "adjusting state when a prop changes" pattern) rather
+  // than from an effect, which the react-hooks rules discourage.
+  const [wasOpen, setWasOpen] = useState(open);
 
+  if (wasOpen && !open) {
+    setWasOpen(false);
     setActiveSection('');
     setIsActiveSectionDirty(false);
     setPendingAction(null);
     setIsUnsavedChangesDialogOpen(false);
     setIsResolvingUnsavedChanges(false);
-  }, [open]);
+  } else if (wasOpen !== open) {
+    setWasOpen(open);
+  }
 
   // Called by each form's onDirtyChange callback whenever its dirty state
   // changes. The equality guard prevents a redundant state update, which would

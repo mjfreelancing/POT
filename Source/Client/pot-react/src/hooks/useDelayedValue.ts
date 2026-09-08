@@ -25,28 +25,34 @@ function useDelayedValue<T>({
   initialValue,
   delayedValue,
 }: UseDelayedValueProps<T>): T {
-  const [value, setValue] = useState<T>(initialValue);
+  // Tracks whether the delay has elapsed during the CURRENT true episode. The value is
+  // derived below (not stored), so flipping `condition` back to false reverts to
+  // `initialValue` immediately with no state write in the effect.
+  const [revealed, setRevealed] = useState(false);
 
   // Use a ref to store the delay value to avoid unnecessary re-renders - the value is never
   // changed so this avoids having to add it to the dependency array.
   const delayRef = useRef(delay);
 
   useEffect(() => {
-    let timeout: number;
-
-    if (condition) {
-      timeout = window.setTimeout(
-        () => setValue(delayedValue),
-        delayRef.current,
-      );
-    } else {
-      setValue(initialValue);
+    if (!condition) {
+      return undefined;
     }
 
-    return () => window.clearTimeout(timeout);
-  }, [condition, initialValue, delayedValue]);
+    const timeout = window.setTimeout(
+      () => setRevealed(true),
+      delayRef.current,
+    );
 
-  return value;
+    return () => {
+      window.clearTimeout(timeout);
+      // End of a true episode: drop the revealed flag so the next true episode starts
+      // from `initialValue` and re-observes the full delay.
+      setRevealed(false);
+    };
+  }, [condition]);
+
+  return condition && revealed ? delayedValue : initialValue;
 }
 
 export default useDelayedValue;

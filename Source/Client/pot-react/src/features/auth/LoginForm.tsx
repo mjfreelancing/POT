@@ -56,11 +56,21 @@ function LoginForm({
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
 
+  // Reset the long-wait clock on every sign-in attempt boundary (start and end)
+  // so the loading live region never shows stale text. Done as a render-time
+  // state adjustment on the isLoading transition rather than in an effect, which
+  // the react-hooks rules discourage.
+  const [prevIsLoading, setPrevIsLoading] = useState(isLoading);
+
+  if (prevIsLoading !== isLoading) {
+    setPrevIsLoading(isLoading);
+    setIsLongWait(false);
+    setElapsedSeconds(0);
+  }
+
   useEffect(() => {
     if (!isLoading) {
-      setIsLongWait(false);
-      setElapsedSeconds(0);
-      return;
+      return undefined;
     }
 
     const startTimerId = window.setTimeout(() => {

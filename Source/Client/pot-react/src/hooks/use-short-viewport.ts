@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 
 /**
  * Maximum viewport height (px) at which the fixed-height list page layout
@@ -10,30 +10,25 @@ import { useEffect, useState } from 'react';
  */
 const SHORT_VIEWPORT_MAX_HEIGHT = 560;
 
+function subscribe(onStoreChange: () => void) {
+  const mql = window.matchMedia(
+    `(max-height: ${SHORT_VIEWPORT_MAX_HEIGHT - 1}px)`,
+  );
+
+  mql.addEventListener('change', onStoreChange);
+
+  return () => mql.removeEventListener('change', onStoreChange);
+}
+
+function getSnapshot() {
+  return window.innerHeight < SHORT_VIEWPORT_MAX_HEIGHT;
+}
+
 /**
  * Returns true while the viewport is too short for the fixed header + toolbar +
  * internal-table-scroll list layout to leave a usable table region. Reactive to
  * window resizes and orientation changes.
  */
 export function useIsShortViewport() {
-  const [isShortViewport, setIsShortViewport] = useState<
-    boolean | undefined
-  >(undefined);
-
-  useEffect(() => {
-    const mql = window.matchMedia(
-      `(max-height: ${SHORT_VIEWPORT_MAX_HEIGHT - 1}px)`,
-    );
-
-    const onChange = () => {
-      setIsShortViewport(window.innerHeight < SHORT_VIEWPORT_MAX_HEIGHT);
-    };
-
-    mql.addEventListener('change', onChange);
-    setIsShortViewport(window.innerHeight < SHORT_VIEWPORT_MAX_HEIGHT);
-
-    return () => mql.removeEventListener('change', onChange);
-  }, []);
-
-  return !!isShortViewport;
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }

@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { EnrichedDatePicker } from '@/components/picker/EnrichedDatePicker';
 import { Button } from '@/components/ui/button';
@@ -65,11 +65,16 @@ function ChartControls({
   const minPeriodMonths = 1;
   const maxPeriodMonths = 12;
 
-  useEffect(() => {
-    // Keep the input display in sync with external period updates (preset clicks,
-    // restored storage values, or parent-driven updates).
+  // Keep the input display in sync with external period updates (preset clicks,
+  // restored storage values, or parent-driven updates). Render-time state
+  // adjustment on the period change instead of an effect, which the react-hooks
+  // rules discourage.
+  const [prevPeriod, setPrevPeriod] = useState(period);
+
+  if (prevPeriod !== period) {
+    setPrevPeriod(period);
     setCustomPeriodInput(period.toString());
-  }, [period]);
+  }
 
   function clampPeriodMonths(value: number): number {
     return Math.min(

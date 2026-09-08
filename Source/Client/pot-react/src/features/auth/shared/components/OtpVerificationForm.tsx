@@ -28,43 +28,55 @@ function OtpVerificationForm({
   const [resendCountdown, setResendCountdown] = useState(
     defaultCountdownSeconds,
   );
-  const [canResend, setCanResend] = useState(false);
 
-  // Update countdown when retryMinutes changes (from TooManyAttempts)
-  useEffect(() => {
-    if (retryMinutes && retryMinutes > 0) {
-      // Convert minutes to seconds
-      setResendCountdown(retryMinutes * 60);
-      setCanResend(false);
+  // Whether the resend button is available - derived from the countdown so there
+  // is no separate flag to keep in sync.
+  const canResend = resendCountdown === 0;
+
+  // Reset the countdown when a resend cooldown is imposed (TooManyAttempts with
+  // retryMinutes). Done as a render-time state adjustment on the cooldown
+  // transition rather than in an effect, which the react-hooks rules discourage.
+  const cooldownSeconds =
+    verificationStatus === 'TooManyAttempts' && retryMinutes && retryMinutes > 0
+      ? retryMinutes * 60
+      : null;
+  const [prevCooldownSeconds, setPrevCooldownSeconds] = useState<number | null>(
+    cooldownSeconds,
+  );
+
+  if (prevCooldownSeconds !== cooldownSeconds) {
+    setPrevCooldownSeconds(cooldownSeconds);
+
+    if (cooldownSeconds !== null) {
+      setResendCountdown(cooldownSeconds);
     }
-  }, [retryMinutes]);
+  }
 
-  // Force countdown reset when status is TooManyAttempts
-  useEffect(() => {
-    if (verificationStatus === 'TooManyAttempts' && retryMinutes) {
-      // Convert minutes to seconds
-      setResendCountdown(retryMinutes * 60);
-      setCanResend(false);
-    }
-  }, [verificationStatus, retryMinutes]);
+  // Clear the verification code when a new verification error message arrives.
+  // Render-time adjustment on the message transition rather than in an effect.
+  const [prevVerificationMessage, setPrevVerificationMessage] =
+    useState(verificationMessage);
 
-  // Clear verification code when an error occurs
-  useEffect(() => {
+  if (prevVerificationMessage !== verificationMessage) {
+    setPrevVerificationMessage(verificationMessage);
+
     if (verificationMessage) {
       setVerificationCode('');
     }
-  }, [verificationMessage]);
+  }
 
-  // Countdown timer for resend
+  // Countdown timer for resend - only decrements via the async setTimeout
+  // callback (allowed); canResend is derived from the countdown hitting zero.
   useEffect(() => {
-    if (resendCountdown > 0) {
-      const timer = setTimeout(() => {
-        setResendCountdown(prev => prev - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else {
-      setCanResend(true);
+    if (resendCountdown <= 0) {
+      return undefined;
     }
+
+    const timer = window.setTimeout(() => {
+      setResendCountdown(prev => prev - 1);
+    }, 1000);
+
+    return () => window.clearTimeout(timer);
   }, [resendCountdown]);
 
   // Notify parent when countdown state changes
@@ -85,9 +97,8 @@ function OtpVerificationForm({
   const handleResend = async () => {
     if (canResend) {
       await onResendCode();
-      // Reset countdown
+      // Reset countdown (canResend is derived from the countdown value)
       setResendCountdown(defaultCountdownSeconds);
-      setCanResend(false);
       setVerificationCode('');
     }
   };

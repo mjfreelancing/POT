@@ -50,11 +50,24 @@ function PasswordResetDialog({
     setRetryMinutes(undefined);
   };
 
-  // Log dialog mount/unmount for analytics
+  // Log dialog mount/unmount for analytics (no state changes, so no effect lint).
   useEffect(() => {
     if (open) {
       logger.info('PasswordResetDialog', 'Mounted');
-    } else {
+    }
+
+    return () => {
+      if (open) {
+        logger.info('PasswordResetDialog', 'Unmounted');
+      }
+    };
+  }, [open]);
+
+  // Reset when the user closes the dialog (Escape/backdrop/✕). Kept in the close
+  // handler rather than an effect because it also runs flow/parent side effects
+  // (reset(), onError(null)); the react-hooks rules discourage setState in effects.
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
       // Reset if there was a rate limit or expired code - otherwise preserve state for accidental closes
       if (
         verificationStatus === 'TooManyAttempts' ||
@@ -71,12 +84,9 @@ function PasswordResetDialog({
         onError(null);
       }
     }
-    return () => {
-      if (open) {
-        logger.info('PasswordResetDialog', 'Unmounted');
-      }
-    };
-  }, [open, onError, reset, verificationStatus]);
+
+    onOpenChange(nextOpen);
+  };
 
   const handleUsernameSubmit = async (username: string) => {
     updateUsername(username);
@@ -250,7 +260,7 @@ function PasswordResetDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-sm top-[30%] translate-y-[-30%] left-[60%] translate-x-[-40%] flex flex-col">
         <DialogHeader>
           <DialogTitle className={state === 'success' ? 'text-center' : ''}>

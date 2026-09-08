@@ -16,6 +16,7 @@ import { useErrorContext } from '@/contexts';
 import { WithPermission } from '@/features/auth/components';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useIsShortViewport } from '@/hooks/use-short-viewport';
+import useUserStore from '@/stores/useUserStore';
 
 import { AccountCardGrid, AccountsHeader, AccountsTable } from './components';
 import useAccountStorage from './hooks/useAccountStorage';
@@ -94,14 +95,34 @@ function AccountsPage() {
     });
   });
 
-  // Apply stored description filter on mount
-  useEffect(() => {
+  // Apply the persisted description filter on mount and again when the signed-in
+  // user becomes known (the user-scoped storage key only resolves after useMe()
+  // populates the user store — the page can mount before that). Done as
+  // render-time state adjustments rather than in an effect, which the
+  // react-hooks rules discourage.
+  const userId = useUserStore(store => store.userInfo?.rowId);
+  const [hasAppliedFilterOnMount, setHasAppliedFilterOnMount] = useState(false);
+  const [filterUserId, setFilterUserId] = useState<string | undefined>(userId);
+
+  if (!hasAppliedFilterOnMount) {
+    setHasAppliedFilterOnMount(true);
+
     const storedFilter = getAccountData().filterDescription;
 
     if (storedFilter) {
       setSearchTerm(storedFilter);
     }
-  }, [getAccountData]);
+  }
+
+  if (filterUserId !== userId) {
+    setFilterUserId(userId);
+
+    const storedFilter = getAccountData().filterDescription;
+
+    if (storedFilter) {
+      setSearchTerm(storedFilter);
+    }
+  }
 
   const handleSearchTermChange = (term: string) => {
     const trimmedTerm = term.trim();
