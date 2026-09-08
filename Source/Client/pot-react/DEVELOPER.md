@@ -2966,10 +2966,11 @@ PWA support was added using [`vite-plugin-pwa`](https://vite-pwa-org.netlify.app
 
 **Packages installed:**
 
-| Package                      | Role                                                              |
-| ---------------------------- | ----------------------------------------------------------------- |
-| `vite-plugin-pwa@^1.2.0`     | Vite plugin — generates service worker and manifest at build time |
-| `@vite-pwa/assets-generator` | CLI tool — generates PNG icon variants from the source SVG        |
+| Package                  | Role                                                              |
+| ------------------------ | ----------------------------------------------------------------- |
+| `vite-plugin-pwa@^1.3.0` | Vite plugin — generates service worker and manifest at build time |
+
+> **Note:** `@vite-pwa/assets-generator` (the icon-generation CLI) is intentionally **not** installed by default: it pulls `sharp@0.33.x`, which carried dev-only CVEs (fixed in `sharp >= 0.35`). The generated icons are committed under `public/`, so nothing in the build or CI needs it. Install it temporarily only when regenerating icons — see [Icon Generation](#icon-generation).
 
 ---
 
@@ -2991,13 +2992,24 @@ Because `workbox-build` pins `@rollup/plugin-terser@0.4.4` which in turn pins `s
 
 ### Icon Generation
 
-Icons were generated from the existing `public/pot-icon.svg` using the assets generator CLI:
+The PWA icons are committed under `public/` and were generated from `public/pot-icon.svg` with the [`@vite-pwa/assets-generator`](https://vite-pwa-org.netlify.app/assets-generator/) CLI.
+
+**Regenerating icons (generator not installed by default):**
+
+The generator devDependency was removed (2026-09-08) because it pulls `sharp@0.33.x`, which has dev-only CVEs (fixed in `sharp >= 0.35`); the generated icons are committed, so no build or CI step needs it. To regenerate after changing `pot-icon.svg`:
 
 ```bash
+# 1. Install temporarily (saved to package.json so install/uninstall stay consistent)
+npm install -D @vite-pwa/assets-generator
+
+# 2. Regenerate the icons into public/
 npx pwa-assets-generator --preset minimal-2023 public/pot-icon.svg
+
+# 3. Remove again (restores a clean `npm audit`)
+npm uninstall -D @vite-pwa/assets-generator
 ```
 
-This produced the following files in `public/`:
+The CLI produced the following files in `public/`:
 
 | File                           | Purpose                                                |
 | ------------------------------ | ------------------------------------------------------ |
