@@ -32,20 +32,18 @@ type EditAccount = z.infer<typeof EditAccountSchema>;
 
 const EMPTY_ACCOUNT_ARRAY: Account[] = [];
 
-const compareAccountBsbNumber = (lhs: Account, rhs: Account): number => {
-  const bsbCompare = lhs.bsb.localeCompare(rhs.bsb, 'en', {
+// Default ordering key for the accounts list. Applied by useApiGetAllAccounts so every
+// consumer (tables, card grids, pickers) inherits the same order.
+const compareAccountDescription = (lhs: Account, rhs: Account): number => {
+  return lhs.description.localeCompare(rhs.description, 'en', {
     sensitivity: 'base',
   });
-
-  return bsbCompare !== 0
-    ? bsbCompare
-    : lhs.number.localeCompare(rhs.number, 'en', { sensitivity: 'base' });
 };
 
 export {
   AccountSchema,
   BaseAccountSchema,
-  compareAccountBsbNumber,
+  compareAccountDescription,
   CreateAccountSchema,
   EditAccountSchema,
   EMPTY_ACCOUNT_ARRAY,

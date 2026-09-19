@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import type { Account, CreateAccount, EditAccount, Identity } from '@/data';
-import { compareAccountBsbNumber } from '@/data';
+import { compareAccountDescription } from '@/data';
 import { type FailResultBase, type Result, SuccessResult } from '@/lib';
 
 import { useDelete, useGet, usePost, usePutWithId } from './useApi';
@@ -18,7 +18,7 @@ const useApiGetAllAccounts = () => {
     if (result?.success) {
       // spreading [...result.value] to create a shallow copy of the array since
       // sort() mutates the source array in the react-query cache.
-      const sortedResults = [...result.value].sort(compareAccountBsbNumber);
+      const sortedResults = [...result.value].sort(compareAccountDescription);
       return new SuccessResult(sortedResults);
     }
 

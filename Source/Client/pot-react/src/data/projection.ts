@@ -108,7 +108,19 @@ type Projection = {
   global: DateValues[]; // Global daily balances
 };
 
+// Default ordering key for projection accounts. Applied by useApiGetProjection so the
+// chart legend and the detail sections present accounts consistently.
+const compareProjectionAccountDescription = (
+  lhs: AccountDailyValues,
+  rhs: AccountDailyValues,
+): number => {
+  return lhs.description.localeCompare(rhs.description, 'en', {
+    sensitivity: 'base',
+  });
+};
+
 export {
+  compareProjectionAccountDescription,
   DEFAULT_PROJECTION_METRIC,
   DEFAULT_PROJECTION_PERIOD,
   PROJECTION_METRICS,

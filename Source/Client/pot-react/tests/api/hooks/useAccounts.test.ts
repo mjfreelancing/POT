@@ -29,9 +29,9 @@ describe('useAccounts hook composition', () => {
 
   test('useApiGetAllAccounts fetches accounts and returns sorted success data', () => {
     const unsortedAccounts: Account[] = [
-      createAccount({ rowId: 'acc-3', bsb: '999-111', number: '222222' }),
-      createAccount({ rowId: 'acc-2', bsb: '111-111', number: '999999' }),
-      createAccount({ rowId: 'acc-1', bsb: '111-111', number: '000001' }),
+      createAccount({ rowId: 'acc-3', description: 'Savings account' }),
+      createAccount({ rowId: 'acc-2', description: 'Main account' }),
+      createAccount({ rowId: 'acc-1', description: 'Emergency fund' }),
     ];
 
     const queryResult = {

@@ -1,4 +1,5 @@
 import type { Projection } from '@/data/projection';
+import { compareProjectionAccountDescription } from '@/data/projection';
 import { type FailResultBase, type Result, SuccessResult } from '@/lib';
 
 import { useGet } from './useApi';
@@ -17,7 +18,13 @@ const useApiGetProjection = (startDate: string, endDate: string) => {
   let data: Result<Projection, FailResultBase>;
 
   if (result?.success) {
-    data = new SuccessResult(result.value);
+    // Accounts are presented alphabetically by description. Copy before sorting so the
+    // React Query cache entry is not mutated in place.
+    const accounts = [...result.value.accounts].sort(
+      compareProjectionAccountDescription,
+    );
+
+    data = new SuccessResult({ ...result.value, accounts });
   } else {
     // type narrowed to FailResult<FailResultBase> since result cannot be undefined at this point
     data = result;

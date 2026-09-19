@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 
 import type { Account } from '@/data';
+import { compareAccountDescription } from '@/data';
 
 /**
  * Represents any item that can be associated with an account.
@@ -113,7 +114,7 @@ function useAccountFilter<T extends ItemWithAccount>({
     const accountsInUse = Array.from(uniqueAccountIds)
       .map(accountId => accountsMap.get(accountId))
       .filter((account): account is Account => account !== undefined)
-      .sort((lhs, rhs) => lhs.description.localeCompare(rhs.description));
+      .sort(compareAccountDescription);
 
     // Add a virtual "Not Assigned" account if there are unassigned items.
     // This allows users to filter specifically for items without accounts.

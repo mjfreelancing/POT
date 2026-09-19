@@ -1,6 +1,7 @@
 import { describe, expect, expectTypeOf, test } from 'vitest';
 
 import {
+  compareProjectionAccountDescription,
   DEFAULT_PROJECTION_METRIC,
   DEFAULT_PROJECTION_PERIOD,
   PROJECTION_METRICS,
@@ -39,5 +40,30 @@ describe('projection contracts', () => {
     expectTypeOf(PROJECTION_PERIODS).toEqualTypeOf<
       readonly { label: string; value: number }[]
     >();
+  });
+
+  test('compareProjectionAccountDescription sorts by description (case-insensitive)', () => {
+    const holidaySavings = {
+      description: 'Holiday savings',
+    } as Parameters<typeof compareProjectionAccountDescription>[0];
+
+    const mainAccount = {
+      description: 'Main account',
+    } as Parameters<typeof compareProjectionAccountDescription>[1];
+
+    expect(
+      compareProjectionAccountDescription(holidaySavings, mainAccount),
+    ).toBeLessThan(0);
+
+    const sameDescriptionDifferentCase = {
+      description: 'main account',
+    } as Parameters<typeof compareProjectionAccountDescription>[0];
+
+    expect(
+      compareProjectionAccountDescription(
+        mainAccount,
+        sameDescriptionDifferentCase,
+      ),
+    ).toBe(0);
   });
 });

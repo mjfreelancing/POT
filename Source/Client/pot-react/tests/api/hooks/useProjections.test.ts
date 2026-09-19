@@ -6,6 +6,8 @@ import { useGet } from '@/api/hooks/useApi';
 import { useApiGetProjection } from '@/api/hooks/useProjections';
 import { FailResult, SuccessResult } from '@/lib';
 
+import { createProjection } from '../../shared/factories/projectionFactory';
+
 vi.mock('@/api/hooks/useApi', () => ({
   useGet: vi.fn(),
 }));
@@ -46,6 +48,43 @@ describe('useProjections hook composition', () => {
         global: [],
       });
     }
+  });
+
+  test('returns accounts sorted by description without mutating the query data', () => {
+    const projection = createProjection({
+      accounts: [
+        { rowId: 'acc-3', description: 'Savings account', dates: [] },
+        { rowId: 'acc-2', description: 'Main account', dates: [] },
+        { rowId: 'acc-1', description: 'Emergency fund', dates: [] },
+      ],
+    });
+
+    const queryResult = {
+      isLoading: false,
+      isSuccess: true,
+      data: new SuccessResult(projection),
+    };
+
+    vi.mocked(useGet).mockReturnValue(
+      queryResult as unknown as ReturnType<typeof useGet>,
+    );
+
+    const { result } = renderHook(() =>
+      useApiGetProjection('2026-04-01', '2026-04-30'),
+    );
+
+    if (result.current.data?.success) {
+      expect(
+        result.current.data.value.accounts.map(account => account.rowId),
+      ).toEqual(['acc-1', 'acc-2', 'acc-3']);
+    }
+
+    // Verify the source query data was not mutated by sorting.
+    expect(projection.accounts.map(account => account.rowId)).toEqual([
+      'acc-3',
+      'acc-2',
+      'acc-1',
+    ]);
   });
 
   test('passes through failure results unchanged', () => {

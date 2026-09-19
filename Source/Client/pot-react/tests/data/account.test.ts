@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 
 import {
   AccountSchema,
-  compareAccountBsbNumber,
+  compareAccountDescription,
   CreateAccountSchema,
   EditAccountSchema,
 } from '@/data';
@@ -42,29 +42,25 @@ describe('account schemas and comparator', () => {
     expect(() => AccountSchema.parse({ rowId: 'x', etag: 1n })).toThrow();
   });
 
-  test('compareAccountBsbNumber sorts by bsb then number (case-insensitive)', () => {
-    const accountA = {
-      bsb: '111-111',
-      number: '999',
-    } as Parameters<typeof compareAccountBsbNumber>[0];
+  test('compareAccountDescription sorts by description (case-insensitive)', () => {
+    const holidaySavings = {
+      description: 'Holiday savings',
+    } as Parameters<typeof compareAccountDescription>[0];
 
-    const accountB = {
-      bsb: '222-222',
-      number: '000',
-    } as Parameters<typeof compareAccountBsbNumber>[1];
+    const mainAccount = {
+      description: 'Main account',
+    } as Parameters<typeof compareAccountDescription>[1];
 
-    expect(compareAccountBsbNumber(accountA, accountB)).toBeLessThan(0);
+    expect(compareAccountDescription(holidaySavings, mainAccount)).toBeLessThan(
+      0,
+    );
 
-    const accountC = {
-      bsb: '123-456',
-      number: 'A10',
-    } as Parameters<typeof compareAccountBsbNumber>[0];
+    const sameDescriptionDifferentCase = {
+      description: 'main account',
+    } as Parameters<typeof compareAccountDescription>[0];
 
-    const accountD = {
-      bsb: '123-456',
-      number: 'a20',
-    } as Parameters<typeof compareAccountBsbNumber>[1];
-
-    expect(compareAccountBsbNumber(accountC, accountD)).toBeLessThan(0);
+    expect(
+      compareAccountDescription(mainAccount, sameDescriptionDifferentCase),
+    ).toBe(0);
   });
 });
