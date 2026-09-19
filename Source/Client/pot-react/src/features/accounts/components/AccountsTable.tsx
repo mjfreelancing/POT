@@ -148,8 +148,8 @@ function AccountsTable({ accounts }: AccountsTableProps) {
       },
     }),
     createMoneyValueColumn<Account>({
-      accessorKey: 'dailyExpenseAccrual',
-      header: 'Daily Accrual',
+      accessorKey: 'stableExpenseAccrual',
+      header: 'Daily Need',
       options: {
         enableSorting: true,
         sortFn: 'basic',
