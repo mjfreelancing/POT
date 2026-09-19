@@ -21,6 +21,7 @@ import { useIsShortViewport } from '@/hooks/use-short-viewport';
 import { FailResult, SuccessResult } from '@/lib';
 
 import { createPermissionsApi } from '../../shared/auth/permissionsTestHelpers';
+import { createSiteUser } from '../../shared/factories/siteUserFactory';
 
 const navigateMock = vi.fn();
 const invalidateCacheMock = vi.fn();
@@ -163,17 +164,8 @@ describe('UsersPage', () => {
   const resendInvitationMutateAsyncMock = vi.fn();
 
   const users: SiteUser[] = [
-    {
-      rowId: '11111111-1111-1111-1111-111111111111',
-      etag: 1n,
-      username: 'maria',
-      displayName: 'Maria Carter',
-      email: 'maria@example.com',
-      roles: ['Admin'],
-      status: 'Enabled',
-      lastLoggedInUtc: null,
-    },
-    {
+    createSiteUser(),
+    createSiteUser({
       rowId: '22222222-2222-2222-2222-222222222222',
       etag: 2n,
       username: 'alex',
@@ -181,8 +173,7 @@ describe('UsersPage', () => {
       email: 'alex@example.com',
       roles: ['Viewer'],
       status: 'Pending',
-      lastLoggedInUtc: null,
-    },
+    }),
   ];
 
   beforeEach(async () => {
