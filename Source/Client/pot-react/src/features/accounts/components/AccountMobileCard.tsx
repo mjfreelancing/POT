@@ -37,7 +37,8 @@ type AccountMobileCardProps = {
  * Styled consistently with dashboard AccountCard but with action menu instead of status badge.
  */
 function AccountMobileCard({ account }: AccountMobileCardProps) {
-  const { description, bsb, number, balance, available } = account;
+  const { description, bsb, number, balance, available, stableExpenseAccrual } =
+    account;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { setError } = useErrorContext();
   const navigate = useNavigate();
@@ -141,6 +142,14 @@ function AccountMobileCard({ account }: AccountMobileCardProps) {
                     )}
                   >
                     {formatMoneyValue(available)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[11px] lg:text-sm font-medium text-foreground">
+                    Daily Need:
+                  </span>
+                  <span className="text-sm lg:text-lg font-semibold text-information">
+                    {formatMoneyValue(stableExpenseAccrual)}
                   </span>
                 </div>
               </div>
