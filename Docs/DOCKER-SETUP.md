@@ -27,7 +27,7 @@ Before you run the task, make sure these local prerequisites exist:
 - `Source/Docker/.env.development`
 - `Source/Docker/postgres-data/`
 
-If `Source/Docker/.env.development` does not exist yet, copy or rename `Source/Docker/.env.development.template` first. The template is sufficient for basic local startup, but you should still replace the placeholder SMTP and JWT values for full, correct usage.
+If `Source/Docker/.env.development` does not exist yet, create it. It is git-ignored, so the repository does not ship one; it needs the database credentials, JWT keys, SMTP settings, CORS origins and platform admin IDs described in the [Docker Developer Guide](../Source/Docker/DEVELOPER.md#environment-variables).
 
 > **Important:** VS Code must be opened at the workspace root (the `POT` folder) for tasks to work correctly. The tasks are defined in `.vscode/tasks.json` and rely on the workspace folder structure.
 
@@ -61,7 +61,7 @@ docker ps
 
 You should see three running containers (container names → image names):
 
-- `pot-postgres` → `pot-postgres` - PostgreSQL database
+- `pot-postgres` → `pot-prodlike-postgres` - PostgreSQL database
 - `pot-aspnet` → `pot-server:latest` - ASP.NET Core API
 - `pot-react` → `pot-client:latest` - React frontend (nginx)
 
@@ -154,7 +154,7 @@ cd Source/Docker
 Start all services using Docker Compose:
 
 ```bash
-docker-compose --env-file .env --env-file .env.development -p pot -f docker-compose-client-server.yml up -d
+docker-compose --env-file .env --env-file .env.development -f docker-compose-client-server.yml up -d
 ```
 
 This command will:
@@ -178,7 +178,7 @@ docker ps
 
 You should see three running containers (container names → image names):
 
-- `pot-postgres` → `pot-postgres` - PostgreSQL database
+- `pot-postgres` → `pot-prodlike-postgres` - PostgreSQL database
 - `pot-aspnet` → `pot-server:latest` - ASP.NET Core API
 - `pot-react` → `pot-client:latest` - React frontend (nginx)
 
@@ -256,7 +256,7 @@ When you're done:
 
 ```bash
 cd Source/Docker
-docker-compose -p pot -f docker-compose-client-server.yml down
+docker-compose -f docker-compose-client-server.yml down
 ```
 
 ---

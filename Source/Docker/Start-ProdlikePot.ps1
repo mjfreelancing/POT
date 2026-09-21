@@ -59,7 +59,7 @@ Write-Host ''
 Write-Host 'POT prodlike stack is running.' -ForegroundColor Green
 Write-Host '  Client:     http://localhost:5175'
 Write-Host '  Server:     http://localhost:5241'
-Write-Host '  PostgreSQL: localhost:5432'
+Write-Host '  PostgreSQL: localhost:5444'
 Write-Host ''
 Write-Host 'To stop:   docker-compose --env-file "' -NoNewline
 Write-Host $envFile -NoNewline

@@ -41,7 +41,6 @@ Comprehensive guide for developers working on the POT ASP.NET Core backend. This
   - [Middleware](#middleware)
   - [Problem Details](#problem-details)
 - [Entity Framework Core](#entity-framework-core)
-  - [EntityBase](#entitybase)
   - [Entity Naming Convention](#entity-naming-convention)
   - [Table Naming Convention](#table-naming-convention)
   - [Enriched Enums](#enriched-enums)
@@ -53,7 +52,7 @@ Comprehensive guide for developers working on the POT ASP.NET Core backend. This
 - [Dependency Injection](#dependency-injection)
   - [Auto-Registration Pattern](#auto-registration-pattern)
   - [Service Lifetimes](#service-lifetimes)
-- [Testing Patterns](#testing-patterns)
+- [Accrual Metrics Semantics](#accrual-metrics-semantics)
 - [Available Commands](#available-commands)
 
 ---
@@ -71,17 +70,21 @@ Source/Server/
 │   ├── Concerns/          # Cross-cutting application logic (auth, CSV, time, validation, zip)
 │   ├── Errors/            # Problem details error definitions
 │   ├── Extensions/        # Service extensions and helpers
-│   ├── Features/          # Feature-based services (Accounts, Accruals, Approvals, Auth,
-│   │                      # Expenses, Incomes, Maintenance, Me, Otp, Projections, Roles, Sites, Users)
+│   ├── Features/          # Feature-based services (AccountAccruals, Accounts, Accruals, Approvals, Auth,
+│   │                      # Expenses, Incomes, Maintenance, Me, Notifications, Otp, Projections,
+│   │                      # Roles, Settings, Sites, Users)
 │   ├── AppContext.cs      # Application context for current user/site
+│   ├── IAppContext.cs     # Application context interface
 │   └── DependencyRegistrar.cs  # Marker class for auto-registration
 ├── Pot.AspNetCore/        # API Layer - HTTP endpoints, handlers, requests/responses
 │   ├── Concerns/          # Cross-cutting infrastructure (Auth, Converters, Cors, Email,
-│   │                      # ExceptionHandlers, Logging, Middleware, ProblemDetails, RateLimiting, Validation)
+│   │                      # ExceptionHandlers, Health, Logging, Middleware, ProblemDetails,
+│   │                      # RateLimiting, Validation)
 │   ├── Extensions/        # Web application builder extensions
 │   ├── Features/          # Feature-based endpoints with handlers (Accounts, Accruals, Approvals, Auth,
-│   │                      # Expenses, Incomes, Maintenance, Me, Projections, Roles, Sites, Users, Workers)
-│   ├── Models/            # Shared API models (PagedRequest, PagedResponse, ResponseBase)
+│   │                      # Expenses, Incomes, Maintenance, Me, Projections, Roles, Settings, Sites,
+│   │                      # Users, Workers)
+│   ├── Models/            # Shared API models (ResponseBase)
 │   ├── Utils/             # API utilities (parameter binding)
 │   ├── DependencyRegistrar.cs  # Marker class for auto-registration
 │   └── Program.cs         # Application startup and configuration
@@ -91,12 +94,13 @@ Source/Server/
 │   ├── Entities/          # Database entities (AccountEntity, ExpenseEntity, IncomeEntity, etc.)
 │   ├── Extensions/        # EF Core extensions and query helpers
 │   ├── Migrations/        # EF Core migrations (generated)
-│   ├── Repositories/      # Data access repositories (Accounts, Expenses, Incomes, Otp,
-│   │                      # Projections, Roles, Settings, Sites, Users)
+│   ├── Repositories/      # Data access repositories (AccountAccrual, Accounts, AuthSessions, Expenses,
+│   │                      # Incomes, Otp, Projections, Roles, Settings, Sites, Users)
 │   ├── Specifications/    # Query specifications - reusable LINQ expressions
 │   ├── UnitOfWork/        # Unit of work pattern implementation
 │   ├── CurrentUserContext.cs   # Current user context for multi-tenancy
 │   ├── DbContextBase.cs   # Base DbContext with common configuration
+│   ├── IPotTransactionFactory.cs  # Transaction factory interface
 │   ├── PotDataRegistrar.cs     # Marker class for data layer registration
 │   ├── PotDbContext.cs    # Main database context
 │   └── PotTransactionFactory.cs  # Database transaction factory
@@ -122,11 +126,23 @@ Source/Server/
 │   └── RazorComponentRenderer.cs        # Razor component to HTML renderer
 └── Pot.Shared/            # Shared Layer - Common types, interfaces, extensions
     ├── DependencyInjection/  # Marker interfaces (IPotScopedDependency, IPotSingletonDependency)
-    ├── Enumerations/      # Enriched enums (ApprovalStatus, Frequency, OtpReason, OtpStatus,
-    │                      # Permission, Role, SettingCategory, UserStatus)
+    ├── Enumerations/      # Enriched enums (AccrualPolicy, ApprovalStatus, Frequency, OtpReason,
+    │                      # OtpStatus, Permission, RenewalMode, Role, SettingCategory, UserStatus)
     ├── Extensions/        # Shared extensions (date/time, frequency, service collection)
     ├── ICurrentUserContext.cs  # Interface for current user context
-    └── Paging.cs          # Pagination helpers
+```
+
+**Test Projects:**
+
+```
+Source/Server/
+├── Pot.App.Tests/         # App/business layer unit tests
+├── Pot.AspNetCore.Tests/  # API layer unit tests (non-hosted)
+├── Pot.AspNetCore.Integration.Tests/  # Hosted API integration tests (HTTP boundary)
+├── Pot.Data.Tests/        # Data layer unit tests
+├── Pot.Shared.Tests/      # Shared layer unit tests
+└── Pot.TestUtils/         # Shared test infrastructure (PotFixtureBase, EntityFactory,
+                           # CollectionAssertionExtensions)
 ```
 
 ### Key Architectural Principles
@@ -171,7 +187,7 @@ Source/Server/
 
 **7. Health Checks**
 
-- API and database health monitoring at `/_health` endpoint
+- Liveness monitoring at `/_health` (executes no checks); database/schema readiness at `/_health/ready`
 - Used by infrastructure monitoring and container orchestration
 
 **8. Explicit Transactions**
@@ -201,11 +217,11 @@ Source/Server/
 - Entities: `AccountEntity`, `ExpenseEntity` (must end with `Entity` suffix)
 - Services: `CreateAccountService`, `UpdateAccountService` (verb + entity pattern)
 - Repositories: `AccountRepository`, `ExpenseRepository` (entity + Repository)
-- Handlers: `Handler` (static class with `Invoke` method per operation)
+- Handlers: `Handler` (sealed class with a static `Invoke` method per operation)
 
 **Error Handling:**
 
-- Use `ProblemDetailsErrorFactory` to create standardized errors
+- Use `ApiDetailErrorFactory` to create standardized errors
 - Business rule violations return `EnrichedResult.Fail<T>(error)` from services
 - Services log errors before returning failure results
 - API handlers convert errors to Problem Details via `ToProblemDetails()` extension
@@ -471,6 +487,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Create account")
             .WithDescription("Create new account details")
             .ProducesProblem(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
@@ -592,7 +609,7 @@ namespace Pot.App.Features.Accounts.Create.EntityChecks;
 
 internal interface IPreCreateChecker : IPotScopedDependency
 {
-    Task<ProblemDetailsError?> CanSaveAsync(AccountEntity accountToCreate, CancellationToken cancellationToken);
+    Task<ApiDetailError?> CanSaveAsync(AccountEntity accountToCreate, CancellationToken cancellationToken);
 }
 ```
 
@@ -609,7 +626,7 @@ using Pot.Data.Entities;
 
 namespace Pot.App.Features.Accounts.Create.EntityChecks;
 
-internal sealed class PreCreateChecker : ChainOfResponsibilityAsyncComposer<InputState, ProblemDetailsError?>, IPreCreateChecker
+internal sealed class PreCreateChecker : ChainOfResponsibilityAsyncComposer<InputState, ApiDetailError?>, IPreCreateChecker
 {
     private readonly ILogger _logger;
 
@@ -619,7 +636,7 @@ internal sealed class PreCreateChecker : ChainOfResponsibilityAsyncComposer<Inpu
         _logger = logger.WhenNotNull();
     }
 
-    public Task<ProblemDetailsError?> CanSaveAsync(AccountEntity accountToCreate, CancellationToken cancellationToken)
+    public Task<ApiDetailError?> CanSaveAsync(AccountEntity accountToCreate, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
@@ -657,7 +674,7 @@ internal sealed class CheckAccountNumberDoesNotExist : PreCreateCheckBase
         _logger = logger.WhenNotNull();
     }
 
-    public override async Task<ProblemDetailsError?> HandleAsync(InputState state, CancellationToken cancellationToken)
+    public override async Task<ApiDetailError?> HandleAsync(InputState state, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
@@ -669,10 +686,10 @@ internal sealed class CheckAccountNumberDoesNotExist : PreCreateCheckBase
 
         if (accountExists)
         {
-            return ProblemDetailsErrorFactory.CreateEntityExistsError(
-                "Account",
+            return ApiDetailErrorFactory.CreateEntityExistsError(
                 $"{nameof(AccountEntity.Bsb)}, {nameof(AccountEntity.Number)}",
-                $"{account.Bsb}, {account.Number}");
+                $"{account.Bsb}, {account.Number}",
+                "The account number already exists");
         }
 
         // Call next handler in chain
@@ -811,6 +828,7 @@ Verify in `Pot.AspNetCore/Extensions/WebApplicationBuilderExtensions.cs`:
 ```csharp
 builder.Services
     .AutoRegisterScoped<DependencyRegistrar, IPotScopedDependency>(/* filters */)
+    .AutoRegisterSingleton<DependencyRegistrar, IPotSingletonDependency>(/* filters */)
     .AddAppDependencies();
 ```
 
@@ -819,14 +837,14 @@ builder.Services
 **Using Scalar (Development):**
 
 1. Run the application: `dotnet run --project Pot.AspNetCore`
-2. Navigate to: `https://localhost:7241/scalar/v1`
+2. Navigate to: `http://localhost:5242/scalar`
 3. Find "Accounts Api" → "Create account"
 4. Execute test request
 
 **Using Postman:**
 
 ```http
-POST https://localhost:7241/api/accounts
+POST http://localhost:5242/api/accounts
 Content-Type: application/json
 Authorization: Bearer {your-jwt-token}
 
@@ -850,30 +868,44 @@ Authorization: Bearer {your-jwt-token}
 
 **Validation Error Response (422 Unprocessable Entity):**
 
+`type` and `title` are supplied by ASP.NET Core; the members below are the ones POT sets.
+
 ```json
 {
-  "type": "https://tools.ietf.org/html/rfc9110#section-15.5.23",
-  "title": "Unprocessable Entity",
   "status": 422,
-  "errors": {
-    "Bsb": ["'Bsb' must not be empty."],
-    "Number": ["'Number' must not be empty."]
-  },
+  "detail": "One or more validation errors occurred.",
+  "errors": [
+    {
+      "errorCode": "NotEmptyValidator",
+      "propertyName": "Bsb",
+      "attemptedValue": "",
+      "errorMessage": "'Bsb' must not be empty."
+    },
+    {
+      "errorCode": "NotEmptyValidator",
+      "propertyName": "Number",
+      "attemptedValue": "",
+      "errorMessage": "'Number' must not be empty."
+    }
+  ],
   "correlationId": "8e9f7c6d-5b4a-3f2e-1d0c-9a8b7c6d5e4f"
 }
 ```
 
-**Business Rule Violation (422 Unprocessable Entity):**
+**Business Rule Violation (409 Conflict):**
 
 ```json
 {
-  "type": "https://tools.ietf.org/html/rfc9110#section-15.5.23",
-  "title": "Conflict",
-  "status": 422,
-  "detail": "The operation would conflict with another Account entity.",
-  "errors": {
-    "Bsb, Number": ["123-456, 12345678"]
-  }
+  "status": 409,
+  "detail": "The account number already exists",
+  "errors": [
+    {
+      "errorCode": "Conflict",
+      "propertyName": "Bsb, Number",
+      "attemptedValue": "123-456, 12345678",
+      "errorMessage": "The account number already exists"
+    }
+  ]
 }
 ```
 
@@ -919,8 +951,7 @@ Pot.AspNetCore/
 │   ├── Middleware/                        # Custom middleware
 │   └── ProblemDetails/                    # Problem details customization
 ├── Models/                                # Shared API models
-│   ├── ResponseBase.cs                    # Base response with RowId, Etag
-│   └── PagedResponse.cs                   # Paged collection response
+│   └── ResponseBase.cs                    # Base response with RowId, Etag
 └── Program.cs                             # Application startup
 ```
 
@@ -965,16 +996,25 @@ Pot.App/
 │   ├── Expenses/                               # Similar structure
 │   └── ...
 ├── Concerns/                                   # Cross-cutting application logic
-│   ├── Validation/                             # Application-level validation
+│   ├── Accruals/                               # Accrual recalculation support
+│   ├── Auth/                                   # Authentication/authorization helpers
+│   ├── Csv/                                    # CSV parsing helpers
 │   ├── Time/                                   # Time provider abstraction
-│   └── ...
-├── Errors/                                     # Problem details error definitions
-│   ├── ProblemDetailsError.cs                  # Error model
-│   ├── ProblemDetailsErrorFactory.cs           # Error creation factory
-│   └── ErrorCodes.cs                           # Error code constants
+│   ├── Validation/                             # Application-level validation
+│   └── Zip/                                    # Archive helpers
+├── Errors/                                     # API error definitions
+│   ├── ApiErrorBase.cs                         # Error base carrying the ErrorType
+│   ├── ApiBasicError.cs                        # Error with code and message
+│   ├── ApiDetailError.cs                       # Error with property details
+│   ├── ApiDetailErrorCollection.cs             # Error collection
+│   ├── ApiDetailErrorFactory.cs                # Error creation factory
+│   ├── ErrorCodes.cs                           # Error code constants
+│   └── ErrorType.cs                            # Error type enumeration
 ├── Calculators/                                # Domain calculators
-│   ├── Accruals/                               # Expense accrual calculations
-│   └── Projections/                            # Financial projection calculations
+│   ├── AccrueExpenseCalculator.cs              # Expense accrual calculations
+│   ├── ExpenseRenewalCalculator.cs             # Expense renewal calculations
+│   ├── IncomeRenewalCalculator.cs              # Income renewal calculations
+│   └── ...                                     # Corresponding interfaces
 └── DependencyRegistrar.cs                      # Auto-registration marker class
 ```
 
@@ -996,7 +1036,7 @@ public async Task<EnrichedResult<Output>> OperationAsync(Input input, Cancellati
     using (_repository.WithTracking())
     {
         // 1. Load entity
-        var entity = await _repository.GetAsync(input.Id, cancellationToken);
+        var entity = await _repository.GetByPrimaryKeyAsync<Entity, Guid>(input.Id, cancellationToken);
 
         // 2. Run entity checks (business rules)
         var problemDetails = await _entityChecker.CanSaveAsync(entity, cancellationToken);
@@ -1044,13 +1084,15 @@ Pot.Data/
 │   │   ├── IAccountRepository.cs          # Account repository interface
 │   │   ├── IPersistableAccountRepository.cs   # Persistable account repository interface
 │   │   ├── AccountRepository.cs           # Account repository implementation
-│   │   ├── Dtos/                          # Repository-specific DTOs
-│   │   └── Specifications/                # Account query specifications
+│   │   └── Dtos/                          # Repository-specific DTOs
 │   ├── Expenses/                          # Similar structure
 │   └── ...
 ├── Specifications/
+│   ├── AccountAccrualSpecifications.cs    # Account accrual specifications
+│   ├── AccountSpecifications.cs           # Account-specific specifications
 │   ├── EntitySpecifications.cs            # Generic entity specifications
-│   └── AccountSpecifications.cs           # Account-specific specifications
+│   ├── ExpenseSpecifications.cs           # Expense-specific specifications
+│   └── IncomeSpecifications.cs            # Income-specific specifications
 ├── Configuration/
 │   └── DatabaseConfiguration.cs           # Database connection configuration
 ├── Extensions/
@@ -1062,6 +1104,7 @@ Pot.Data/
 │   └── UnitOfWork.cs                      # Unit of work implementation
 ├── DbContextBase.cs                       # Base DbContext with conventions
 ├── PotDbContext.cs                        # Application DbContext
+├── PotDataRegistrar.cs                    # Marker class for data layer registration
 ├── CurrentUserContext.cs                  # Current user context implementation
 ├── IPotTransactionFactory.cs              # Transaction factory interface
 └── PotTransactionFactory.cs               # Transaction factory implementation
@@ -1116,14 +1159,16 @@ Pot.Shared/
 │   ├── ApprovalStatus.cs                  # Enriched enum for approval status
 │   └── ...
 ├── Extensions/
-│   ├── FrequencyExtensions.cs             # Frequency utility methods
+│   ├── AccrualPolicyExtensions.cs         # Accrual policy utility methods
+│   ├── DateOnlyExtensions.cs              # DateOnly utility methods
 │   ├── DateTimeExtensions.cs              # DateTime utility methods
+│   ├── FrequencyExtensions.cs             # Frequency utility methods
+│   ├── ServiceCollectionExtensions.cs     # Service registration helpers
 │   └── ...
 ├── DependencyInjection/
 │   ├── IPotScopedDependency.cs            # Marker for scoped services
 │   └── IPotSingletonDependency.cs         # Marker for singleton services
-├── ICurrentUserContext.cs                 # Current user context interface
-└── Paging.cs                              # Pagination models
+└── ICurrentUserContext.cs                 # Current user context interface
 ```
 
 **Key Components:**
@@ -1208,17 +1253,16 @@ public static async Task<Results<CreatedAtRoute<Response>, ProblemHttpResult>> I
 **2. GetAll Handler (GET - No Request Body):**
 
 ```csharp
-public static async Task<Results<Ok<PagedResponse<Response>>, ProblemHttpResult>> Invoke(
-    Request request,  // Query parameters from route
+public static async Task<Ok<Response[]>> Invoke(
     IService service,
     ILogger<Handler> logger,
     CancellationToken cancellationToken)
 {
     logger.LogCall(null);
 
-    var result = await service.GetAllAsync(request.Paging, cancellationToken);
+    var items = await service.GetAllAsync(cancellationToken);
 
-    return Response.Ok(result);  // PagedResponse factory
+    return Response.Ok(items);  // Collection response factory
 }
 ```
 
@@ -1226,28 +1270,19 @@ public static async Task<Results<Ok<PagedResponse<Response>>, ProblemHttpResult>
 
 ```csharp
 public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke(
-    Guid id,  // Route parameter
-    IService service,
-    IProblemDetailsInspector problemDetailsInspector,
+    [Description("The account Id")] Guid id,  // Route parameter
+    IGetAccountService accountService,
     ILogger<Handler> logger,
     CancellationToken cancellationToken)
 {
     logger.LogCall(null);
 
-    // Validate route parameter
-    var request = new Request { Id = id };
-    var problemDetails = problemDetailsInspector.Validate(request);
-
-    if (problemDetails.IsProblem())
-    {
-        logger.LogErrors(problemDetails);
-        return TypedResults.Problem(problemDetails);
-    }
-
-    var result = await service.GetAsync(id, cancellationToken);
+    // Route parameters are not validated in the handler; an unknown id surfaces as a
+    // not-found error from the service.
+    var result = await accountService.GetAccountWithLinkedCountsAsync(id, cancellationToken);
 
     return result.IsSuccess
-        ? TypedResults.Ok(result.Value)
+        ? Response.Ok(result.Value!)
         : TypedResults.Problem(result.Error!.ToProblemDetails());
 }
 ```
@@ -1256,9 +1291,9 @@ public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke(
 
 ```csharp
 public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke(
-    Guid id,  // Route parameter
+    [Description("The account Id")] Guid id,  // Route parameter
     Request request,  // Request body
-    IService service,
+    IUpdateAccountService accountService,
     IProblemDetailsInspector problemDetailsInspector,
     ILogger<Handler> logger,
     CancellationToken cancellationToken)
@@ -1274,12 +1309,12 @@ public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke(
         return TypedResults.Problem(problemDetails);
     }
 
-    var input = request.MapToInput(id);  // Include route parameter in mapping
+    var accountInput = request.MapToInput(id);  // Include route parameter in mapping
 
-    var result = await service.UpdateAsync(input, cancellationToken);
+    var result = await accountService.UpdateAccountAsync(accountInput, cancellationToken);
 
     return result.IsSuccess
-        ? TypedResults.Ok(result.Value)
+        ? Response.Ok(result.Value!)
         : TypedResults.Problem(result.Error!.ToProblemDetails());
 }
 ```
@@ -1288,24 +1323,15 @@ public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke(
 
 ```csharp
 public static async Task<Results<Ok, ProblemHttpResult>> Invoke(
-    Guid id,
-    IService service,
-    IProblemDetailsInspector problemDetailsInspector,
+    [Description("The account Id")] Guid id,
+    IDeleteAccountService accountService,
     ILogger<Handler> logger,
     CancellationToken cancellationToken)
 {
     logger.LogCall(null);
 
-    var request = new Request { Id = id };
-    var problemDetails = problemDetailsInspector.Validate(request);
-
-    if (problemDetails.IsProblem())
-    {
-        logger.LogErrors(problemDetails);
-        return TypedResults.Problem(problemDetails);
-    }
-
-    var result = await service.DeleteAsync(id, cancellationToken);
+    // A delete has no request body or route validation to perform
+    var result = await accountService.DeleteAccountAsync(id, cancellationToken);
 
     return result.IsSuccess
         ? TypedResults.Ok()
@@ -1317,7 +1343,7 @@ public static async Task<Results<Ok, ProblemHttpResult>> Invoke(
 
 ```csharp
 public static async Task<Results<Ok, ProblemHttpResult>> Invoke(
-    Guid id,
+    Request request,  // Action payload in the request body
     IService service,
     IProblemDetailsInspector problemDetailsInspector,
     ILogger<Handler> logger,
@@ -1325,7 +1351,6 @@ public static async Task<Results<Ok, ProblemHttpResult>> Invoke(
 {
     logger.LogCall(null);
 
-    var request = new Request { Id = id };
     var problemDetails = problemDetailsInspector.Validate(request);
 
     if (problemDetails.IsProblem())
@@ -1334,7 +1359,9 @@ public static async Task<Results<Ok, ProblemHttpResult>> Invoke(
         return TypedResults.Problem(problemDetails);
     }
 
-    var result = await service.PerformActionAsync(id, cancellationToken);
+    var input = request.MapToInput();
+
+    var result = await service.PerformActionAsync(input, cancellationToken);
 
     return result.IsSuccess
         ? TypedResults.Ok()
@@ -1358,11 +1385,11 @@ internal sealed class RequestValidator : PotValidatorBase<Request>
 {
     public RequestValidator()
     {
-        RuleFor(x => x.Bsb).IsNotEmpty().MaximumLength(7);
-        RuleFor(x => x.Number).IsNotEmpty().MaximumLength(20);
-        RuleFor(x => x.Description).IsNotEmpty().MaximumLength(255);
-        RuleFor(x => x.Balance).IsGreaterThanOrEqualTo(0.0d);
-        RuleFor(x => x.Reserved).IsGreaterThanOrEqualTo(0.0d);
+        RuleFor(account => account.Bsb).IsNotEmpty();
+        RuleFor(account => account.Number).IsNotEmpty();
+        RuleFor(account => account.Description).IsNotEmpty();
+        RuleFor(account => account.Balance).IsGreaterThanOrEqualTo(0.0d);
+        RuleFor(account => account.Reserved).IsGreaterThanOrEqualTo(0.0d);
     }
 }
 ```
@@ -1378,23 +1405,40 @@ internal sealed class RequestValidator : PotValidatorBase<Request>
 Some validations require additional context (e.g., comparing two dates):
 
 ```csharp
+using AllOverIt.Validation.Extensions;
+using FluentValidation.Results;
+using Pot.App.Errors;
+using Pot.AspNetCore.Concerns.Validation;
+
+namespace Pot.AspNetCore.Features.Expenses.Create;
+
 internal sealed class RequestValidator : PotValidatorBase<Request>
 {
     public RequestValidator()
     {
-        RuleFor(x => x.Description).IsNotEmpty();
-        RuleFor(x => x.NextDue).IsNotEmpty();
-        RuleFor(x => x.EndDate).IsNotEmpty();
+        RuleFor(request => request.Description).IsNotEmpty();
 
-        // Validation requiring context
-        RuleFor(x => x.EndDate)
-            .Must((request, endDate, context) =>
+        // Custom rules receive FluentValidation's ValidationContext; retrieve the request's
+        // context data through the AllOverIt helper rather than casting.
+        this.CustomRuleFor(request => request.EndDate, (value, context) =>
+        {
+            if (!value.HasValue)
             {
-                var validationContext = (RequestValidationContext)context;
-                return validationContext.EndDate is null || validationContext.EndDate >= validationContext.NextDue;
-            })
-            .WithMessage("'End Date' must be greater than or equal to 'Next Due'.")
-            .When(x => x.EndDate.HasValue);
+                return;
+            }
+
+            var validationContext = context.GetContextData<Request, RequestValidationContext>();
+
+            if (validationContext.NextDue > value.Value)
+            {
+                var failure = new ValidationFailure(nameof(Request.EndDate), "Cannot be earlier than the next due date", value)
+                {
+                    ErrorCode = ErrorCodes.Invalid
+                };
+
+                context.AddFailure(failure);
+            }
+        });
     }
 }
 
@@ -1403,6 +1447,7 @@ var validationContext = new RequestValidationContext
 {
     NextDue = request.NextDue,
     EndDate = request.EndDate,
+    AccrualPolicy = request.AccrualPolicy,
     Frequency = request.Frequency
 };
 
@@ -1424,9 +1469,6 @@ RuleFor(x => x.Quantity).IsGreaterThan(0);
 
 // Guid validation
 RuleFor(x => x.Id).IsNotEmpty();
-
-// Email validation
-RuleFor(x => x.Email).IsEmailAddress();
 
 // Enum validation
 RuleFor(x => x.Frequency).IsInEnum();
@@ -1511,26 +1553,23 @@ public static Ok<Response> Ok(Output output)
 }
 ```
 
-**3. Paged Response (200 OK with pagination):**
+**3. Collection Response (200 OK with an array body):**
 
 ```csharp
-public static Ok<PagedResponse<Response>> Ok(PagedResult<Output> pagedResult)
+public static Ok<Response[]> Ok(List<Output> items)
 {
-    var response = PagedResponse<Response>.FromPagedResult(
-        pagedResult,
-        output => new Response(output));
+    var responses = items.SelectToArray(item => new Response(item));
 
-    return TypedResults.Ok(response);
+    return TypedResults.Ok(responses);
 }
 ```
 
 **4. No Content Response (200 OK no body):**
 
+Delete handlers return the no-body result directly - there is no zero-argument `Response.Ok()` factory:
+
 ```csharp
-public static Ok Ok()
-{
-    return TypedResults.Ok();
-}
+return TypedResults.Ok();
 ```
 
 **Why ResponseBase?**
@@ -1567,6 +1606,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Create account")
             .WithDescription("Create new account details")
             .ProducesProblem(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
@@ -1644,8 +1684,9 @@ internal static class WebApplicationExtensions
 **Program.cs Integration:**
 
 ```csharp
-app.UsePotMiddleware()
-   .UseScalarOpenApi()
+app.UsePotMiddleware();
+
+app.UseScalarOpenApi()
    .AddAuthEndpoints()
    .AddAccountEndpoints()  // <-- Register feature endpoints
    .AddExpenseEndpoints()
@@ -1814,23 +1855,17 @@ public async Task<EnrichedResult<Output>> UpdateAsync(Input input, CancellationT
     using (_repository.WithTracking())
     {
         // Load entity
-        var entity = await _repository.GetAsync(input.RowId, cancellationToken);
+        var entity = await _repository.GetByPrimaryKeyAsync<Entity, Guid>(input.RowId, cancellationToken);
 
         if (entity is null)
         {
-            var error = ProblemDetailsErrorFactory.CreateEntityNotFoundError(
+            var error = ApiDetailErrorFactory.CreateEntityNotFoundError(
                 input.RowId, "The entity does not exist.");
             return EnrichedResult.Fail<Output>(error);
         }
 
-        // Check Etag for optimistic concurrency
-        if (entity.Etag != input.Etag)
-        {
-            var error = ProblemDetailsErrorFactory.CreateEtagConflict("Entity", input.Etag);
-            return EnrichedResult.Fail<Output>(error);
-        }
-
-        // Run entity checks
+        // Run entity checks - business rules including etag validation, which is implemented
+        // as a check in the chain (CheckHasSameEtag -> CreateEtagConflict("<EntityType>", input.Etag))
         var problemDetails = await _preUpdateChecker.CanSaveAsync(input, entity, cancellationToken);
         if (problemDetails is not null)
         {
@@ -1852,53 +1887,44 @@ public async Task<EnrichedResult<Output>> UpdateAsync(Input input, CancellationT
 **3. Delete Service:**
 
 ```csharp
-public async Task<EnrichedResult> DeleteAsync(Guid rowId, CancellationToken cancellationToken)
+public async Task<EnrichedResult<bool>> DeleteAsync(Guid rowId, CancellationToken cancellationToken)
 {
     _logger.LogCall(this);
 
-    using (_repository.WithTracking())
+    var problemDetails = await _preDeleteChecker.CanDeleteAsync(rowId, cancellationToken);
+
+    if (problemDetails is not null)
     {
-        var entity = await _repository.GetAsync(rowId, cancellationToken);
-
-        if (entity is null)
-        {
-            var error = ProblemDetailsErrorFactory.CreateEntityNotFoundError(
-                rowId, "The entity does not exist.");
-            return EnrichedResult.Fail(error);
-        }
-
-        // Check if entity can be deleted
-        var problemDetails = await _preDeleteChecker.CanDeleteAsync(entity, cancellationToken);
-        if (problemDetails is not null)
-        {
-            return EnrichedResult.Fail(problemDetails);
-        }
-
-        _repository.Delete(entity);
-        await _repository.SaveAsync(cancellationToken);
-
-        return EnrichedResult.Success();
+        return EnrichedResult.Fail<bool>(problemDetails);
     }
+
+    var entity = await _repository.GetByPrimaryKeyAsync<Entity, Guid>(rowId, cancellationToken);
+
+    if (entity is null)
+    {
+        var error = ApiDetailErrorFactory.CreateEntityNotFoundError(
+            rowId, "The entity does not exist.");
+
+        return EnrichedResult.Fail<bool>(error);
+    }
+
+    _repository.Delete(entity);
+    await _repository.SaveAsync(cancellationToken);
+
+    return EnrichedResult.Success(true);
 }
 ```
 
 **4. GetAll Service:**
 
 ```csharp
-public async Task<PagedResult<Output>> GetAllAsync(Paging paging, CancellationToken cancellationToken)
+public async Task<List<Output>> GetAllAccountsAsync(CancellationToken cancellationToken)
 {
     _logger.LogCall(this);
 
-    // No tracking needed for read-only operations (default behavior)
-    var query = _repository.Entities
-        .OrderBy(e => e.Description);
+    var accounts = await _accountRepository.GetAllAccountsWithLinkedCountsAsync(cancellationToken);
 
-    var pagedResult = await query.ToPagedResultAsync(
-        paging,
-        entity => entity.MapToOutput(),
-        cancellationToken);
-
-    return pagedResult;
+    return accounts.SelectToList(account => account.MapToOutput());
 }
 ```
 
@@ -1909,11 +1935,11 @@ public async Task<EnrichedResult<Output>> GetAsync(Guid rowId, CancellationToken
 {
     _logger.LogCall(this);
 
-    var entity = await _repository.GetOrDefaultAsync(rowId, cancellationToken);
+    var entity = await _repository.GetByPrimaryKeyAsync<Entity, Guid>(rowId, cancellationToken);
 
     if (entity is null)
     {
-        var error = ProblemDetailsErrorFactory.CreateEntityNotFoundError(
+        var error = ApiDetailErrorFactory.CreateEntityNotFoundError(
             rowId, "The entity does not exist.");
         return EnrichedResult.Fail<Output>(error);
     }
@@ -1961,7 +1987,7 @@ namespace Pot.App.Features.Accounts.Create.EntityChecks;
 
 internal interface IPreCreateChecker : IPotScopedDependency
 {
-    Task<ProblemDetailsError?> CanSaveAsync(AccountEntity accountToCreate, CancellationToken cancellationToken);
+    Task<ApiDetailError?> CanSaveAsync(AccountEntity accountToCreate, CancellationToken cancellationToken);
 }
 ```
 
@@ -1981,15 +2007,12 @@ internal sealed class InputState
 **3. Define Individual Check Interface:**
 
 ```csharp
-using AllOverIt.Patterns.ChainOfResponsibility;
-using Pot.App.Errors;
 using Pot.Shared.DependencyInjection;
 
-namespace Pot.App.Features.Accounts.Create.EntityChecks;
+namespace Pot.App.Features.Accounts.Create.EntityChecks.Checks;
 
-internal interface IPreCreateCheck : IAsyncChainOfResponsibilityHandler<InputState, ProblemDetailsError?>, IPotScopedDependency
-{
-}
+// A marker interface so each handler can be dependency injected into the PreCreateChecker
+internal interface IPreCreateCheck : IPotScopedDependency;
 ```
 
 **4. Create Base Class for Checks:**
@@ -2000,7 +2023,7 @@ using Pot.App.Errors;
 
 namespace Pot.App.Features.Accounts.Create.EntityChecks.Checks;
 
-internal abstract class PreCreateCheckBase : AsyncChainOfResponsibilityHandlerBase<InputState, ProblemDetailsError?>, IPreCreateCheck
+internal abstract class PreCreateCheckBase : ChainOfResponsibilityHandlerAsync<InputState, ApiDetailError?>, IPreCreateCheck
 {
 }
 ```
@@ -2018,7 +2041,7 @@ using Pot.Data.Entities;
 
 namespace Pot.App.Features.Accounts.Create.EntityChecks;
 
-internal sealed class PreCreateChecker : ChainOfResponsibilityAsyncComposer<InputState, ProblemDetailsError?>, IPreCreateChecker
+internal sealed class PreCreateChecker : ChainOfResponsibilityAsyncComposer<InputState, ApiDetailError?>, IPreCreateChecker
 {
     private readonly ILogger _logger;
 
@@ -2028,7 +2051,7 @@ internal sealed class PreCreateChecker : ChainOfResponsibilityAsyncComposer<Inpu
         _logger = logger.WhenNotNull();
     }
 
-    public Task<ProblemDetailsError?> CanSaveAsync(AccountEntity accountToCreate, CancellationToken cancellationToken)
+    public Task<ApiDetailError?> CanSaveAsync(AccountEntity accountToCreate, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
@@ -2068,7 +2091,7 @@ internal sealed class CheckAccountNumberDoesNotExist : PreCreateCheckBase
         _logger = logger.WhenNotNull();
     }
 
-    public override async Task<ProblemDetailsError?> HandleAsync(
+    public override async Task<ApiDetailError?> HandleAsync(
         InputState state,
         CancellationToken cancellationToken)
     {
@@ -2082,10 +2105,10 @@ internal sealed class CheckAccountNumberDoesNotExist : PreCreateCheckBase
 
         if (accountExists)
         {
-            return ProblemDetailsErrorFactory.CreateEntityExistsError(
-                "Account",
+            return ApiDetailErrorFactory.CreateEntityExistsError(
                 $"{nameof(AccountEntity.Bsb)}, {nameof(AccountEntity.Number)}",
-                $"{account.Bsb}, {account.Number}");
+                $"{account.Bsb}, {account.Number}",
+                "The account number already exists");
         }
 
         // Call next handler in chain (or return null if no more handlers)
@@ -2097,7 +2120,7 @@ internal sealed class CheckAccountNumberDoesNotExist : PreCreateCheckBase
 **Entity Check Guidelines:**
 
 - Each check validates **one business rule**
-- Return `ProblemDetailsError` for violations
+- Return `ApiDetailError` for violations
 - Return `null` and call `base.HandleAsync()` to continue chain
 - Log entry point for observability
 - Use `ConfigureAwait(false)` for async operations
@@ -2122,7 +2145,7 @@ POT uses `EnrichedResult<T>` from AllOverIt library to represent operation outco
 var result = EnrichedResult.Success(output);
 
 // Failure result
-var result = EnrichedResult.Fail<Output>(problemDetailsError);
+var result = EnrichedResult.Fail<Output>(apiDetailError);
 
 // Checking result
 if (result.IsSuccess)
@@ -2139,9 +2162,9 @@ else
 
 ```csharp
 public bool IsSuccess { get; }
-public bool IsFailure { get; }
-public T? Value { get; }           // Null if IsFailure
-public TError? Error { get; }      // Null if IsSuccess
+public bool IsFail { get; }
+public T? Value { get; }              // The result value
+public EnrichedError? Error { get; }  // Throws InvalidOperationException if the result is not in an error state
 ```
 
 **Service Layer Pattern:**
@@ -2152,14 +2175,14 @@ public async Task<EnrichedResult<Output>> OperationAsync(Input input, Cancellati
     // Business rule violation - return failure
     if (someBusinessRuleViolated)
     {
-        var error = ProblemDetailsErrorFactory.CreateConflict("PropertyName", attemptedValue, "Error message");
+        var error = ApiDetailErrorFactory.CreateEntityExistsError("PropertyName", attemptedValue, "Error message");
         return EnrichedResult.Fail<Output>(error);
     }
 
     // Entity not found - return failure
     if (entity is null)
     {
-        var error = ProblemDetailsErrorFactory.CreateEntityNotFoundError(id, "Entity does not exist");
+        var error = ApiDetailErrorFactory.CreateEntityNotFoundError(id, "Entity does not exist");
         return EnrichedResult.Fail<Output>(error);
     }
 
@@ -2182,16 +2205,24 @@ public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke(...)
 }
 ```
 
-**ProblemDetailsError Structure:**
+**ApiDetailError Structure:**
 
 ```csharp
-public class ProblemDetailsError : ProblemDetailsBasicError
+public class ApiBasicError : ApiErrorBase
+{
+    public required string ErrorCode { get; init; }
+    public required string ErrorMessage { get; init; }
+    public object? CustomState { get; init; }
+
+    public ApiBasicError(ErrorType errorType) : base(errorType) { }
+}
+
+public class ApiDetailError : ApiBasicError
 {
     public string PropertyName { get; init; } = string.Empty;
     public object? AttemptedValue { get; init; }
-    public string ErrorCode { get; init; } = string.Empty;
-    public string ErrorMessage { get; init; } = string.Empty;
-    public ProblemType ProblemType { get; init; }  // NotFound, Conflict, Constraint, etc.
+
+    public ApiDetailError(ErrorType errorType) : base(errorType) { }
 }
 ```
 
@@ -2199,33 +2230,33 @@ public class ProblemDetailsError : ProblemDetailsBasicError
 
 ```csharp
 // Entity not found (404)
-var error = ProblemDetailsErrorFactory.CreateEntityNotFoundError(
+var error = ApiDetailErrorFactory.CreateEntityNotFoundError(
     attemptedValue: rowId,
     errorMessage: "The account does not exist.");
 
-// Entity exists conflict (422)
-var error = ProblemDetailsErrorFactory.CreateEntityExistsError(
-    entityType: "Account",
-    propertyName: "Bsb, Number",
-    attemptedValue: $"{bsb}, {number}");
+// Entity exists conflict (409)
+var error = ApiDetailErrorFactory.CreateEntityExistsError(
+    propertyName: $"{nameof(AccountEntity.Bsb)}, {nameof(AccountEntity.Number)}",
+    attemptedValue: $"{account.Bsb}, {account.Number}",
+    errorMessage: "The account number already exists");
 
 // Entity constraint violation (422)
-var error = ProblemDetailsErrorFactory.CreateEntityConstraintError(
+var error = ApiDetailErrorFactory.CreateEntityConstraintError(
     propertyName: "AccountId",
     attemptedValue: accountId,
     errorMessage: "Cannot delete account with linked expenses.");
 
 // ETag conflict (409)
-var error = ProblemDetailsErrorFactory.CreateEtagConflict(
+var error = ApiDetailErrorFactory.CreateEtagConflict(
     entityType: "Account",
     attemptedValue: attemptedEtag);
 
 // Generic unprocessable entity (422)
-var error = ProblemDetailsErrorFactory.CreateUnprocessableEntityError(
+var error = ApiDetailErrorFactory.CreateUnprocessableEntityError(
     errorMessage: "The operation cannot be completed.");
 
 // With property name (422)
-var error = ProblemDetailsErrorFactory.CreateUnprocessableEntityError(
+var error = ApiDetailErrorFactory.CreateUnprocessableEntityError(
     propertyName: "Balance",
     attemptedValue: -100,
     errorMessage: "Balance cannot be negative.");
@@ -2261,7 +2292,7 @@ public async Task<EnrichedResult<Output>> UpdateUserRolesAsync(Input input, Canc
 
         if (user is null)
         {
-            var error = ProblemDetailsErrorFactory.CreateEntityNotFoundError(
+            var error = ApiDetailErrorFactory.CreateEntityNotFoundError(
                 input.RowId, "The user does not exist.");
             return EnrichedResult.Fail<Output>(error);
         }
@@ -2351,16 +2382,20 @@ IPersistableAccountRepository (adds write operations)
 
 ```csharp
 // Pot.Data/Repositories/IRepositoryBase.cs
-public interface IRepositoryBase
+public interface IRepositoryBase : IPotScopedDependency
 {
+    // On IRepositoryBase just in case a read entity needs to be attached to another processed by IPersistableRepository
     IDisposable WithTracking();
-    IQueryable<TEntity> Set<TEntity>() where TEntity : EntityBase;
+
     EntityEntry GetEntry<TEntity>(TEntity entity) where TEntity : EntityBase;
     ValueTask<TEntity?> GetByPrimaryKeyAsync<TEntity, TKey>(TKey id, CancellationToken cancellationToken) where TEntity : EntityBase;
+    ValueTask<TEntity?> GetByPrimaryKeyAsync<TEntity>(object?[]? values, CancellationToken cancellationToken) where TEntity : EntityBase;
+
+    IQueryable<TEntity> Set<TEntity>() where TEntity : EntityBase;
 }
 
 // Pot.Data/Repositories/IPersistableRepository.cs
-public interface IPersistableRepository : IRepositoryBase
+public interface IPersistableRepository
 {
     EntityEntry<TEntity> Add<TEntity>(TEntity entity) where TEntity : EntityBase;
     EntityEntry<TEntity> Update<TEntity>(TEntity entity) where TEntity : EntityBase;
@@ -2418,11 +2453,12 @@ Provides core query capabilities without write operations:
 - `WithTracking()` - Enable change tracking for a scope
 - `Set<TEntity>()` - Access DbSet for entity queries
 - `GetEntry<TEntity>()` - Get entity entry metadata
-- `GetByPrimaryKeyAsync<TEntity, TKey>()` - Retrieve by primary key
+- `GetByPrimaryKeyAsync<TEntity, TKey>()` - Retrieve by primary key (typed key)
+- `GetByPrimaryKeyAsync<TEntity>()` - Retrieve by primary key (key values array)
 
 **`IPersistableRepository` (Write Operations):**
 
-Extends `IRepositoryBase` with data modification methods:
+Declares data modification methods. It does **not** inherit `IRepositoryBase` - feature repositories compose both, for example `IPersistableAccountRepository : IAccountRepository, IPersistableRepository`:
 
 - `Add<TEntity>()` - Add entity to context
 - `Update<TEntity>()` - Update entity in context
@@ -2431,9 +2467,9 @@ Extends `IRepositoryBase` with data modification methods:
 - `AddAndSaveAsync<TEntity>()` - Add and immediately save
 - `UpdateAndSaveAsync<TEntity>()` - Update and immediately save
 
-**⚠️ Critical: WithTracking() Requirement for Persistable Operations**
+**⚠️ Critical: WithTracking() Requirement for Loaded Entities**
 
-When using `IPersistableRepository` methods (Add, Update, Delete), **you must wrap operations in `WithTracking()`** or changes will not be saved:
+`Add`/`Update`/`Delete` attach the entity to the context themselves, so they do not need a tracking scope. A tracking scope **is** required when you load an entity and then mutate its properties, because queries return untracked entities by default:
 
 ```csharp
 // ❌ INCORRECT - Changes will not be saved (no tracking enabled)
@@ -2553,15 +2589,20 @@ internal sealed class AccountRepository : PersistableRepository, IPersistableAcc
 
 **Repository Method Naming Conventions:**
 
-- `GetAsync()` - Returns entity, throws if not found
-- `GetOrDefaultAsync()` - Returns entity or null
-- `ExistsAsync()` - Returns bool
-- `GetAllAsync()` - Returns collection
-- `AddAsync()` - Adds entity (deferred)
-- `UpdateAsync()` - Updates entity (deferred)
-- `DeleteAsync()` - Deletes entity (deferred)
-- `SaveAsync()` - Persists changes
+Entity-specific methods are prefixed with the entity name, for example:
+
+- `GetAccountAsync()` - Returns entity, throws if not found
+- `GetAccountOrDefaultAsync()` - Returns entity or null
+- `AccountExistsAsync()` - Returns bool
+- `HasExpensesAsync()` / `HasIncomesAsync()` - Returns bool
+- `GetAllAccountsWithLinkedCountsAsync()` - Returns collection
+- `Add()` - Attaches entity to the context (changes persisted by `Save()` / `SaveAsync()`)
+- `Update()` - Attaches entity to the context (changes persisted by `Save()` / `SaveAsync()`)
+- `Delete()` - Attaches entity to the context (changes persisted by `Save()` / `SaveAsync()`)
+- `Save()` / `SaveAsync()` - Persists changes
 - `AddAndSaveAsync()` - Adds and persists immediately
+- `UpdateAndSaveAsync()` - Updates and persists immediately
+- `GetByPrimaryKeyAsync()` - Base helper for primary-key lookup
 
 ### Tracking vs No-Tracking
 
@@ -2608,34 +2649,16 @@ public async Task<EnrichedResult<Output>> UpdateAccountAsync(Input input, Cancel
 
 ```csharp
 // Pot.Data/Extensions/DbContextExtensions.cs
-public static IDisposable WithAutoTracking(this DbContext context)
+// Reference count tracking scopes per DbContext instance
+private static readonly ConditionalWeakTable<DbContext, TrackingCounter> TrackingCounters = [];
+
+public static IDisposable WithAutoTracking(this DbContext dbContext)
 {
-    return new AutoTrackingScope(context);
-}
+    var counter = TrackingCounters.GetOrCreateValue(dbContext);
 
-private sealed class AutoTrackingScope : IDisposable
-{
-    private readonly DbContext _context;
-    private readonly bool _wasTracking;
-
-    public AutoTrackingScope(DbContext context)
-    {
-        _context = context;
-        _wasTracking = _context.ChangeTracker.QueryTrackingBehavior != QueryTrackingBehavior.NoTrackingWithIdentityResolution;
-
-        if (!_wasTracking)
-        {
-            _context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.TrackAll;
-        }
-    }
-
-    public void Dispose()
-    {
-        if (!_wasTracking)
-        {
-            _context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTrackingWithIdentityResolution;
-        }
-    }
+    return new Raii(
+        () => { counter.Increment(dbContext); },
+        () => { counter.Decrement(dbContext); });
 }
 ```
 
@@ -2673,48 +2696,37 @@ Specifications are reusable LINQ expressions that encapsulate query logic. They 
 
 ```csharp
 // Pot.Data/Specifications/EntitySpecifications.cs
-using AllOverIt.Filtering.Specifications;
+using AllOverIt.Patterns.Specification;
 using Pot.Data.Entities;
 
 namespace Pot.Data.Specifications;
 
 public static class EntitySpecifications
 {
-    public static Specification<TEntity> IsSameId<TEntity>(Guid rowId) where TEntity : EntityBase
+    public static ILinqSpecification<TEntity> IsSameId<TEntity>(Guid rowId) where TEntity : EntityBase
     {
-        return new Specification<TEntity>(entity => entity.RowId == rowId);
-    }
-
-    public static Specification<TEntity> IsSameEtag<TEntity>(long etag) where TEntity : EntityBase
-    {
-        return new Specification<TEntity>(entity => entity.Etag == etag);
+        return LinqSpecification<TEntity>.Create(entity => entity.RowId == rowId);
     }
 }
 
-// Pot.Data/Repositories/Accounts/Specifications/AccountSpecifications.cs
-using AllOverIt.Filtering.Specifications;
+// Pot.Data/Specifications/AccountSpecifications.cs
+using AllOverIt.Patterns.Specification;
 using Pot.Data.Entities;
 
 namespace Pot.Data.Specifications;
 
 public static class AccountSpecifications
 {
-    public static Specification<AccountEntity> IsSameBsbNumber(string bsb, string number)
+    public static ILinqSpecification<AccountEntity> IsSameBsbNumber(string bsb, string number)
     {
-        return new Specification<AccountEntity>(account =>
-            account.Bsb == bsb && account.Number == number);
+        // This appears case-insensitive but the database schema uses CITEXT for the text fields
+        return LinqSpecification<AccountEntity>.Create(account => account.Bsb == bsb && account.Number == number);
     }
 
-    public static Specification<AccountEntity> HasDescription(string description)
+    public static ILinqSpecification<AccountEntity> IsSameDescription(string description)
     {
-        return new Specification<AccountEntity>(account =>
-            account.Description == description);
-    }
-
-    public static Specification<AccountEntity> HasMinimumBalance(double minimumBalance)
-    {
-        return new Specification<AccountEntity>(account =>
-            account.Balance >= minimumBalance);
+        // This appears case-insensitive but the database schema uses CITEXT for the text fields
+        return LinqSpecification<AccountEntity>.Create(account => account.Description == description);
     }
 }
 ```
@@ -2731,7 +2743,7 @@ public Task<AccountEntity?> GetAccountOrDefaultAsync(string bsb, string number, 
 }
 
 // In entity check
-public override async Task<ProblemDetailsError?> HandleAsync(InputState state, CancellationToken cancellationToken)
+public override async Task<ApiDetailError?> HandleAsync(InputState state, CancellationToken cancellationToken)
 {
     var account = state.AccountToCreate;
 
@@ -2740,7 +2752,7 @@ public override async Task<ProblemDetailsError?> HandleAsync(InputState state, C
 
     if (exists)
     {
-        return ProblemDetailsErrorFactory.CreateEntityExistsError(/* ... */);
+        return ApiDetailErrorFactory.CreateEntityExistsError(/* ... */);
     }
 
     return await base.HandleAsync(state, cancellationToken);
@@ -2751,24 +2763,24 @@ public override async Task<ProblemDetailsError?> HandleAsync(InputState state, C
 
 ```csharp
 // AND combination
-var spec = AccountSpecifications.HasMinimumBalance(1000)
-    .And(AccountSpecifications.HasDescription("Savings"));
+var spec = AccountSpecifications.IsSameBsbNumber("123-456", "00112233")
+    .And(AccountSpecifications.IsSameDescription("Savings"));
 
 var accounts = await _repository.Accounts
     .Where(spec.Expression)
     .ToListAsync(cancellationToken);
 
 // OR combination
-var spec = AccountSpecifications.HasDescription("Savings")
-    .Or(AccountSpecifications.HasDescription("Checking"));
+var spec = AccountSpecifications.IsSameDescription("Savings")
+    .Or(AccountSpecifications.IsSameDescription("Checking"));
 
 var accounts = await _repository.Accounts
     .Where(spec.Expression)
     .ToListAsync(cancellationToken);
 
 // NOT combination
-var spec = AccountSpecifications.HasMinimumBalance(0)
-    .And(AccountSpecifications.HasDescription("Closed").Not());
+var spec = AccountSpecifications.IsSameBsbNumber("123-456", "00112233")
+    .And(AccountSpecifications.IsSameDescription("Closed").Not());
 
 var accounts = await _repository.Accounts
     .Where(spec.Expression)
@@ -2828,11 +2840,11 @@ namespace Pot.AspNetCore.Features.Accounts.Update.Mappings;
 
 internal static class RequestMapping
 {
-    public static Input MapToInput(this Request request, Guid id)
+    public static Input MapToInput(this Request request, Guid accountId)
     {
         return new Input
         {
-            RowId = id,  // From route
+            RowId = accountId,  // From route
             Etag = request.Etag,
             Bsb = request.Bsb,
             Number = request.Number,
@@ -2899,22 +2911,28 @@ namespace Pot.App.Features.Expenses.GetAll.Mappings;
 
 internal static class EntityMapping
 {
-    public static Output MapToOutput(this ExpenseEntity entity)
+    public static Output MapToOutput(this ExpenseEntity expense)
     {
         return new Output
         {
-            RowId = entity.RowId,
-            Etag = entity.Etag,
-            AccountRowId = entity.Account.RowId,
-            Description = entity.Description,
-            Amount = entity.Amount,
-            Frequency = entity.Frequency,
-            FrequencyCount = entity.FrequencyCount,
-            NextDue = entity.NextDue,
-            EndDate = entity.EndDate,
-            IsExcluded = entity.IsExcluded,
-            AccruedAmount = entity.AccruedAmount,
-            DailyAccrual = entity.DailyAccrual
+            RowId = expense.RowId,
+            Etag = expense.Etag,
+            ExcludeFromCalcs = expense.ExcludeFromCalcs,
+            Description = expense.Description,
+            NextDue = expense.NextDue,
+            EndDate = expense.EndDate,
+            AccrualStart = expense.AccrualStart,
+            AccrualPolicy = expense.AccrualPolicy,
+            Frequency = expense.Frequency,
+            FrequencyCount = expense.FrequencyCount,
+            Amount = expense.Amount,
+            Accrued = expense.Accrued,
+            Note = expense.Note,
+            Account = new Output.AccountModel
+            {
+                RowId = expense.Account.RowId,
+                Description = expense.Account.Description
+            }
         };
     }
 }
@@ -2922,14 +2940,10 @@ internal static class EntityMapping
 
 **Collection Mapping:**
 
-```csharp
-public static IEnumerable<Output> MapToOutput(this IEnumerable<AccountEntity> entities)
-{
-    return entities.Select(entity => entity.MapToOutput());
-}
+Collections are mapped with `SelectToList(...)` over the single-item extension; no collection overload of `MapToOutput` exists:
 
-// Usage
-var outputs = entities.MapToOutput();
+```csharp
+var outputs = entities.SelectToList(entity => entity.MapToOutput());
 ```
 
 **Mapping Guidelines:**
@@ -2964,9 +2978,11 @@ Concerns/
 ├── Validation/              # FluentValidation setup, problem details inspection
 ├── Cors/                    # CORS configuration
 ├── RateLimiting/            # Rate limiting policies
-├── Middleware/              # Custom middleware (correlation ID, user context)
+├── Middleware/              # Custom middleware (raw request logging, correlation ID, user context)
 ├── ProblemDetails/          # RFC 7807 problem details customization
 ├── ExceptionHandlers/       # Global exception handlers
+├── Email/                   # SMTP configuration setup
+├── Health/                  # Service health polling
 ├── Logging/                 # Logging configuration and formatters
 └── Converters/              # JSON converters (enriched enums, GUIDs)
 ```
@@ -3027,8 +3043,7 @@ public static WebApplicationBuilder AddPotAuth(this WebApplicationBuilder builde
   "Jwt": {
     "SecretKey": "your-secret-key-min-32-chars",
     "Issuer": "POT",
-    "Audience": "POT",
-    "ExpiryMinutes": 60
+    "Audience": "POT"
   }
 }
 ```
@@ -3059,26 +3074,33 @@ public override async Task<AuthorizationPolicy?> GetPolicyAsync(string policyNam
 
 **Permission Handler:** `Pot.AspNetCore/Concerns/Auth/PermissionAuthorizationHandler.cs`
 
-Validates user has required permission:
+Resolves the user's permissions from the database (they are not carried as claims):
 
 ```csharp
-protected override Task HandleRequirementAsync(
+protected override async Task HandleRequirementAsync(
     AuthorizationHandlerContext context,
     PermissionRequirement requirement)
 {
-    // Get permissions from user claims
-    var permissions = context.User.Claims
-        .Where(c => c.Type == "permission")
-        .Select(c => c.Value)
-        .ToList();
+    var userRowId = context.User.Claims
+        .SingleOrDefault(claim => claim.Type == JwtRegisteredClaimNames.Sub)?.Value;
 
-    // Check if user has required permission
+    if (!Guid.TryParse(userRowId, out Guid parsedUserRowId))
+    {
+        return;
+    }
+
+    using var scope = _serviceScopeFactory.CreateScope();
+
+    var permissionService = scope.ServiceProvider.GetRequiredService<IPermissionService>();
+
+    var permissions = await permissionService
+        .GetPermissionsAsync(parsedUserRowId, CancellationToken.None)
+        .ConfigureAwait(false);
+
     if (permissions.Contains(requirement.Permission))
     {
         context.Succeed(requirement);
     }
-
-    return Task.CompletedTask;
 }
 ```
 
@@ -3094,33 +3116,27 @@ routeGroupBuilder
 
 **Permission Patterns:**
 
-- **View permissions**: `account:view`, `expense:view`, `income:view`
-- **Manage permissions**: `account:manage`, `expense:manage`, `income:manage`
-- **Admin permissions**: `user:manage`, `role:manage`, `approval:manage`
-- **Platform admin**: `platform:admin` (super user, bypasses most checks)
+- **View permissions**: `site:view`, `user:view`, `account:view`, `expense:view`, `income:view`
+- **Manage permissions**: `site:manage`, `user:manage`, `account:manage`, `expense:manage`, `income:manage`
+- **Maintenance permissions**: `maintenance:export`, `maintenance:import`
+- **Platform admin**: `platform:manage` (granted in addition to the user's site permissions)
 
 **JWT Token Claims:**
 
 ```json
 {
+  "jti": "token-id", // Unique token identifier
   "sub": "user-guid", // User identifier (RowId)
-  "email": "user@example.com", // User email
-  "permission": [
-    // Permissions array
-    "account:view",
-    "account:manage",
-    "expense:view",
-    "expense:manage"
-  ],
+  "token_version": 3, // Incremented to invalidate existing tokens
   "iat": 1732800000, // Issued at
-  "exp": 1732803600 // Expiration
+  "exp": 1732800900 // Expiration
 }
 ```
 
 **Refresh Token Pattern:**
 
-- Access token: Short-lived (60 minutes by default)
-- Refresh token: Long-lived (7 days), stored in HTTP-only cookie
+- Access token: Short-lived (15 minutes)
+- Refresh token: Long-lived (30 days), stored in HTTP-only cookie
 - `/api/auth/refresh` endpoint exchanges refresh token for new access token
 - Refresh tokens tracked in database, can be revoked
 
@@ -3191,6 +3207,13 @@ internal sealed class ProblemDetailsInspector : IProblemDetailsInspector
         return AsProblemDetails(validationResult);
     }
 
+    public async Task<Microsoft.AspNetCore.Mvc.ProblemDetails> ValidateAsync<TType>(TType instance, CancellationToken cancellationToken)
+    {
+        var validationResult = await _validationInvoker.ValidateAsync(instance, cancellationToken);
+
+        return AsProblemDetails(validationResult);
+    }
+
     private static Microsoft.AspNetCore.Mvc.ProblemDetails AsProblemDetails(ValidationResult validationResult)
     {
         return validationResult.IsValid
@@ -3208,7 +3231,7 @@ using AllOverIt.Validation;
 
 namespace Pot.AspNetCore.Concerns.Validation;
 
-public abstract class PotValidatorBase<TType> : ValidatorBase<TType>
+internal abstract class PotValidatorBase<TType> : ValidatorBase<TType>
 {
     // Provides base FluentValidation setup
     // Auto-registered as singleton (unless marked with IScopedLifetimeValidator)
@@ -3245,9 +3268,9 @@ public static async Task<Results<CreatedAtRoute<Response>, ProblemHttpResult>> I
 
 ```csharp
 // Pot.AspNetCore/Concerns/ProblemDetails/NoProblemDetails.cs
-public static class NoProblemDetails
+internal sealed class NoProblemDetails : Microsoft.AspNetCore.Mvc.ProblemDetails
 {
-    public static readonly Microsoft.AspNetCore.Mvc.ProblemDetails Single = new();
+    public static readonly NoProblemDetails Single = new();
 }
 
 // Extension method
@@ -3288,7 +3311,7 @@ public static WebApplicationBuilder AddPotCors(this WebApplicationBuilder builde
 **CORS Options Setup:** `Pot.AspNetCore/Concerns/Cors/Configuration/CorsOptionsSetup.cs`
 
 ```csharp
-internal sealed class CorsOptionsSetup : IConfigureOptions<CorsOptions>
+public sealed class CorsOptionsSetup : IConfigureOptions<CorsOptions>
 {
     private readonly CorsConfiguration _corsConfiguration;
 
@@ -3301,8 +3324,10 @@ internal sealed class CorsOptionsSetup : IConfigureOptions<CorsOptions>
     {
         options.AddDefaultPolicy(policy =>
         {
+            var allowedOrigins = _corsConfiguration.GetAllowedOrigins().ToArray();
+
             policy
-                .WithOrigins(_corsConfiguration.AllowedOrigins)
+                .WithOrigins(allowedOrigins)
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials()
@@ -3321,10 +3346,12 @@ The frontend export feature needs to extract filenames from the `Content-Disposi
 ```json
 {
   "Cors": {
-    "AllowedOrigins": ["http://localhost:5173", "https://app.example.com"]
+    "AllowedOrigins": "http://localhost:5175"
   }
 }
 ```
+
+Note: `AllowedOrigins` is a delimited **string** (not a JSON array). Empty means no cross-origin access; the development settings allow the Vite dev server on port 5175.
 
 **Program.cs Usage:**
 
@@ -3354,39 +3381,38 @@ Rate limiting prevents API abuse by limiting the number of requests per time win
 ```csharp
 public static WebApplicationBuilder AddPotRateLimiting(this WebApplicationBuilder builder)
 {
-    builder.Services.AddRateLimiter(limiterOptions =>
-    {
-        limiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    // WARNING: The RateLimiting configuration keys (RateLimiting:Anonymous:PermitLimit,
+    // RateLimiting:Anonymous:WindowSeconds, RateLimiting:Authenticated:PermitLimit,
+    // RateLimiting:Authenticated:WindowSeconds) must NOT be added to any configuration file.
+    // They are injected as command-line arguments by the Playwright webServer configuration for
+    // E2E runs only; the hardcoded RateLimiterDefaults values are the production source of truth.
+    builder.Services
+        // Binds the "RateLimiting" section (present only during E2E runs, for more aggressive limits)
+        .ConfigureOptions<RateLimitingConfigurationSetup>()
 
-        limiterOptions.OnRejected = async (context, cancellationToken) =>
-        {
-            if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
-            {
-                context.HttpContext.Response.Headers.RetryAfter = $"{retryAfter.TotalSeconds}";
-            }
+        // Allow for injection of RateLimitingConfiguration instead of IOptions<RateLimitingConfiguration>
+        .AddSingletonFromOptions<RateLimitingConfiguration>()
 
-            var errorDetail = ProblemDetailsErrorFactory.CreateTooManyRequests(retryAfter.TotalSeconds);
+        // Sets up rate limiter options - configures the rejection handler and chained policy
+        .ConfigureOptions<RateLimiterOptionsSetup>()
 
-            await context.HttpContext.Response.WriteAsJsonAsync(
-                errorDetail.ToProblemDetails(),
-                cancellationToken);
-        };
-
-        limiterOptions.AddPolicy(RateLimiterPolicy.Chained, RateLimiterPolicy.CreateChainedPolicy);
-    });
+        .AddRateLimiter();
 
     return builder;
 }
 ```
 
+The 429 rejection status, `Retry-After` header, error body and `.AddPolicy(RateLimiterPolicy.Chained, RateLimiterPolicy.CreateChainedPolicy)` wiring live in `Concerns/RateLimiting/Configuration/RateLimiterOptionsSetup.cs`.
+
 **Chained Policy:** `Pot.AspNetCore/Concerns/RateLimiting/RateLimiterPolicy.cs`
 
 ```csharp
-public static class RateLimiterPolicy
+internal static class RateLimiterPolicy
 {
     public const string Chained = "ChainedPolicy";
 
-    public static RateLimitPartition<string> CreateChainedPolicy(HttpContext httpContext)
+    public static RateLimitPartition<string> CreateChainedPolicy(HttpContext httpContext, int anonymousPermitLimit,
+        TimeSpan anonymousWindow, int authenticatedPermitLimit, TimeSpan authenticatedWindow)
     {
         var subject = httpContext.User.FindFirstValue(JwtRegisteredClaimNames.Sub);
         var isAuthenticated = subject.IsNotNullOrEmpty();
@@ -3457,20 +3483,25 @@ app.MapGroup(AccountsEndpoints.Group)
 
 ```json
 {
-  "type": "https://tools.ietf.org/html/rfc6585#section-4",
-  "title": "Too Many Requests",
   "status": 429,
   "detail": "Too many requests. Please wait and try again after 42.5 seconds.",
-  "correlationId": "8e9f7c6d-5b4a-3f2e-1d0c-9a8b7c6d5e4f"
+  "errors": [
+    {
+      "errorCode": "TooManyRequests",
+      "errorMessage": "Too many requests. Please wait and try again after 42.5 seconds."
+    }
+  ]
 }
 ```
+
+The rate limiter writes this body via `errorDetail.ToProblemDetails()` directly, so it carries `status`, `detail` and the `errors` array only - no `type`, `title` or `correlationId` extensions (those are added by `AddCustomProblemDetails`, which the limiter bypasses).
 
 **Response Headers:**
 
 ```
 HTTP/1.1 429 Too Many Requests
 Retry-After: 42.5
-Content-Type: application/problem+json
+Content-Type: application/json; charset=utf-8
 ```
 
 ### Middleware
@@ -3482,6 +3513,11 @@ POT uses custom middleware for cross-cutting request/response processing.
 ```csharp
 public static WebApplication UsePotMiddleware(this WebApplication app)
 {
+    if (!app.Environment.IsProduction())
+    {
+        app.UseMiddleware<RawRequestLoggingMiddleware>();
+    }
+
     app.UseMiddleware<CorrelationIdMiddleware>();
     app.UseMiddleware<UserContextMiddleware>();
 
@@ -3494,13 +3530,13 @@ public static WebApplication UsePotMiddleware(this WebApplication app)
 ```csharp
 app.UseExceptionHandler();          // 1. Global exception handling
 // app.UseHttpsRedirection();       // (Not used - behind Azure reverse proxy)
-app.MapHealthChecks("/_health");    // 2. Health check endpoint
-app.UseCors();                      // 3. CORS (must be before auth)
-app.UseAuthentication();            // 4. JWT authentication
-app.UseAuthorization();             // 5. Permission authorization
-app.UseRateLimiter();               // 6. Rate limiting
-app.UseMiddleware<CorrelationIdMiddleware>();  // 7. Correlation ID
-app.UseMiddleware<UserContextMiddleware>();    // 8. User context
+app.MapHealthChecks("/_health");         // 2. Liveness endpoint (executes no checks)
+app.MapHealthChecks("/_health/ready");   // 3. Readiness endpoint (checks tagged "ready")
+app.UseCors();                           // 4. CORS (must be before auth)
+app.UseAuthentication();                 // 5. JWT authentication
+app.UseAuthorization();                  // 6. Permission authorization
+app.UseRateLimiter();                    // 7. Rate limiting
+app.UsePotMiddleware();                  // 8. Raw request logging (non-production), correlation ID, user context
 // ... endpoint routing ...
 ```
 
@@ -3510,31 +3546,56 @@ Generates unique correlation ID for each request for tracing and debugging.
 
 ```csharp
 // Pot.AspNetCore/Concerns/Middleware/CorrelationIdMiddleware.cs
-internal sealed class CorrelationIdMiddleware
+internal sealed class CorrelationIdMiddleware : IMiddleware
 {
-    private readonly RequestDelegate _next;
+    private readonly IProblemDetailsService _problemDetailsService;
 
-    public CorrelationIdMiddleware(RequestDelegate next)
+    public CorrelationIdMiddleware(IProblemDetailsService problemDetailsService)
     {
-        _next = next;
+        problemDetailsService.WhenNotNull();
+
+        _problemDetailsService = problemDetailsService;
     }
 
-    public async Task InvokeAsync(HttpContext context)
+    public async Task InvokeAsync(HttpContext httpContext, RequestDelegate next)
     {
-        // Generate correlation ID if not provided
-        var correlationId = context.Request.Headers["X-Correlation-ID"].FirstOrDefault()
-            ?? Guid.NewGuid().ToString();
+        if (httpContext.Request.TryGetCorrelationId(out var correlationId))
+        {
+            if (correlationId.Length > 128)
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
 
-        // Store in HttpContext for logging
-        context.TraceIdentifier = correlationId;
+                var problemDetails = new Microsoft.AspNetCore.Mvc.ProblemDetails
+                {
+                    Detail = "CorrelationId exceeds max length of 128 chars",
+                    Status = httpContext.Response.StatusCode
+                };
 
-        // Add to response headers
-        context.Response.Headers.Append("X-Correlation-ID", correlationId);
+                var problemDetailsContext = new ProblemDetailsContext
+                {
+                    HttpContext = httpContext,
+                    ProblemDetails = problemDetails
+                };
 
-        await _next(context);
+                await _problemDetailsService.WriteAsync(problemDetailsContext);
+
+                return;
+            }
+
+            httpContext.TraceIdentifier = correlationId;
+        }
+
+        var activityFeature = httpContext.Features.GetRequiredFeature<IHttpActivityFeature>();
+        var activity = activityFeature.Activity;
+
+        activity.AddTag("correlationId", httpContext.TraceIdentifier);
+
+        await next(httpContext);
     }
 }
 ```
+
+The header is `X-Correlation-Id` (via `Request.TryGetCorrelationId()`). When it is absent the request's `TraceIdentifier` is left as the framework default, and no response header is echoed - the id is recorded on the current `Activity` for tracing.
 
 **UserContextMiddleware:**
 
@@ -3620,15 +3681,11 @@ public async Task<EnrichedResult<Output>> CreateAsync(Input input, CancellationT
 **Usage in Repositories:**
 
 ```csharp
+// Pot.Data/Repositories/Sites/SiteRepository.cs
 // Repositories use current user context for multi-tenancy
 public SiteEntity GetCurrentSite()
 {
-    var userRowId = _currentUserContext.UserRowId;
-
-    return Users
-        .Include(user => user.Site)
-        .Single(user => user.RowId == userRowId)
-        .Site;
+    return _userRepository.GetCurrentUser(true).Site;
 }
 ```
 
@@ -3659,16 +3716,20 @@ public static WebApplicationBuilder AddCustomProblemDetails(this WebApplicationB
 
 **Problem Details Structure:**
 
+The `errors` extension is always an **array** of error detail objects. `type` and `title` are supplied by ASP.NET Core.
+
 ```json
 {
-  "type": "https://tools.ietf.org/html/rfc9110#section-15.5.23",
-  "title": "Unprocessable Entity",
   "status": 422,
   "detail": "One or more validation errors occurred.",
-  "errors": {
-    "Bsb": ["'Bsb' must not be empty."],
-    "Number": ["'Number' must not be empty."]
-  },
+  "errors": [
+    {
+      "errorCode": "NotEmptyValidator",
+      "propertyName": "Bsb",
+      "attemptedValue": "",
+      "errorMessage": "'Bsb' must not be empty."
+    }
+  ],
   "correlationId": "8e9f7c6d-5b4a-3f2e-1d0c-9a8b7c6d5e4f",
   "instance": "POST /api/accounts"
 }
@@ -3676,7 +3737,7 @@ public static WebApplicationBuilder AddCustomProblemDetails(this WebApplicationB
 
 **Problem Types:**
 
-- **400 Bad Request**: Malformed request (rare - usually caught by model binding)
+- **400 Bad Request**: Malformed request, or a correlation ID longer than 128 characters (`CorrelationIdMiddleware`)
 - **401 Unauthorized**: No authentication token provided
 - **403 Forbidden**: Authenticated but lacks required permission
 - **404 Not Found**: Entity not found
@@ -3688,26 +3749,44 @@ public static WebApplicationBuilder AddCustomProblemDetails(this WebApplicationB
 **Converting Service Errors to Problem Details:**
 
 ```csharp
-// Extension method
-public static Microsoft.AspNetCore.Mvc.ProblemDetails ToProblemDetails(this ProblemDetailsError error)
+// Pot.AspNetCore/Extensions/EnrichedErrorExtensions.cs
+internal static class EnrichedErrorExtensions
 {
-    var problemDetails = new Microsoft.AspNetCore.Mvc.ProblemDetails
+    public static Microsoft.AspNetCore.Mvc.ProblemDetails ToProblemDetails(this EnrichedError enrichedError)
     {
-        Type = error.ProblemType.GetTypeUri(),
-        Title = error.ProblemType.GetTitle(),
-        Status = error.ProblemType.GetStatusCode(),
-        Detail = error.ErrorMessage
-    };
+        var error = enrichedError as ApiErrorBase;
 
-    if (error.PropertyName.IsNotNullOrEmpty())
-    {
-        problemDetails.Extensions.Add("errors", new Dictionary<string, string[]>
+        var statusCode = error!.ErrorType switch
         {
-            [error.PropertyName] = [error.AttemptedValue?.ToString() ?? string.Empty]
-        });
-    }
+            ErrorType.Auth => StatusCodes.Status401Unauthorized,
+            ErrorType.NotFound => StatusCodes.Status404NotFound,
+            ErrorType.Conflict => StatusCodes.Status409Conflict,
+            ErrorType.Constraint => StatusCodes.Status422UnprocessableEntity,
+            ErrorType.UnprocessableEntity => StatusCodes.Status422UnprocessableEntity,
+            ErrorType.TooManyRequests => StatusCodes.Status429TooManyRequests,
+            ErrorType.Server => StatusCodes.Status500InternalServerError,
+            _ => throw new UnreachableException($"Unknown problem type: {error.ErrorType}")
+        };
 
-    return problemDetails;
+        // Note: 'errors' must be an array of objects
+        var errors = enrichedError switch
+        {
+            ApiDetailError problemDetailsError => [problemDetailsError.GetErrorDetails()],
+            ApiBasicError problemDetailsBasicError => [problemDetailsBasicError.GetErrorDetails()],
+            ApiDetailErrorCollection problemDetailsErrorCollection => problemDetailsErrorCollection.Errors.SelectToArray(error => error.GetErrorDetails()),
+            _ => throw new UnreachableException($"Unknown enriched error type: {enrichedError.GetType()}")
+        };
+
+        return new Microsoft.AspNetCore.Mvc.ProblemDetails
+        {
+            Detail = error.Description,
+            Status = statusCode,
+            Extensions = new Dictionary<string, object?>
+            {
+                { "errors", errors }
+            }
+        };
+    }
 }
 ```
 
@@ -3715,13 +3794,17 @@ public static Microsoft.AspNetCore.Mvc.ProblemDetails ToProblemDetails(this Prob
 
 ```csharp
 // Pot.AspNetCore/Concerns/ExceptionHandlers/DatabaseExceptionHandler.cs
+// Note: Exception handlers are registered as a Singleton.
 internal sealed class DatabaseExceptionHandler : IExceptionHandler
 {
-    private readonly ILogger<DatabaseExceptionHandler> _logger;
+    // Will also catch UniqueConstraintException and ReferenceConstraintException
+    private static readonly Type DbUpdateExceptionType = typeof(DbUpdateException);
 
-    public DatabaseExceptionHandler(ILogger<DatabaseExceptionHandler> logger)
+    private readonly IProblemDetailsService _problemDetailsService;
+
+    public DatabaseExceptionHandler(IProblemDetailsService problemDetailsService)
     {
-        _logger = logger;
+        _problemDetailsService = problemDetailsService.WhenNotNull();
     }
 
     public async ValueTask<bool> TryHandleAsync(
@@ -3729,26 +3812,47 @@ internal sealed class DatabaseExceptionHandler : IExceptionHandler
         Exception exception,
         CancellationToken cancellationToken)
     {
-        if (exception is not DbUpdateException dbUpdateException)
+        var exceptionType = exception.GetType();
+
+        if (exceptionType.IsDerivedFrom(DbUpdateExceptionType))
         {
-            return false;  // Not handled, pass to next handler
+            ProblemDetailsContext problemContext;
+
+            if (exception.InnerException is PostgresException postgresException)
+            {
+                var errorDetail = new ApiDetailError(ErrorType.Server)
+                {
+                    ErrorCode = ErrorCodes.Database,
+                    ErrorMessage = postgresException.MessageText
+                };
+
+                problemContext = ProblemDetailsContextFactory.Create(
+                    httpContext,
+                    StatusCodes.Status500InternalServerError,
+                    postgresException.MessageText,
+                    exception,
+                    [errorDetail]);
+            }
+            else
+            {
+                var errorDetail = new ApiDetailError(ErrorType.Server)
+                {
+                    ErrorCode = ErrorCodes.Database,
+                    ErrorMessage = exception.Message
+                };
+
+                problemContext = ProblemDetailsContextFactory.Create(
+                    httpContext,
+                    StatusCodes.Status500InternalServerError,
+                    exception.Message,
+                    exception,
+                    [errorDetail]);
+            }
+
+            return await _problemDetailsService.TryWriteAsync(problemContext);
         }
 
-        _logger.LogError(dbUpdateException, "Database update error");
-
-        var problemDetails = new ProblemDetails
-        {
-            Type = "https://tools.ietf.org/html/rfc9110#section-15.6.1",
-            Title = "Database Error",
-            Status = StatusCodes.Status500InternalServerError,
-            Detail = "An error occurred while updating the database."
-        };
-
-        httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
-
-        await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
-
-        return true;  // Handled
+        return false;
     }
 }
 ```
@@ -3845,7 +3949,7 @@ private static void SetTableName(IMutableEntityType entityType, string entityNam
 
 ```csharp
 // Pot.Data/Entities/AccountEntity.cs
-[Index(nameof(Description), IsUnique = true)]
+[Index("SiteId", nameof(Description), IsUnique = true)]  // Description unique per site
 [Index(nameof(Bsb), nameof(Number), IsUnique = true)]
 public sealed class AccountEntity : EntityBase
 {
@@ -3936,7 +4040,7 @@ public sealed class AccountEntity : EntityBase
 2. **Set default values explicitly when needed**
 
    ```csharp
-   modelBuilder.Entity<ExpenseEntity>()
+   modelBuilder.Entity<AccountAccrualEntity>()
        .Property(e => e.AccruedIsDirty)
        .HasDefaultValue(true);
    ```
@@ -3954,7 +4058,7 @@ public sealed class AccountEntity : EntityBase
 
    ```csharp
    // ✅ GOOD - No tracking needed for read-only queries (default behavior)
-   var accounts = await _accountRepository.GetAllAccountsAsync(cancellationToken);
+   var accounts = await _accountRepository.GetAllAccountsWithLinkedCountsAsync(cancellationToken);
 
    // ✅ GOOD - Enable tracking when updating entities
    using (_accountRepository.WithTracking())
@@ -4089,7 +4193,7 @@ SELECT description, frequency FROM "Expense";
 **Required for API requests/responses:**
 
 ```csharp
-// Pot.AspNetCore/Program.cs - AddHttpJsonOptions()
+// Pot.AspNetCore/Extensions/WebApplicationBuilderExtensions.cs - AddHttpJsonOptions()
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.Converters.Add(EnrichedEnumJsonConverter<Frequency>.Create());
@@ -4127,14 +4231,16 @@ Without these converters, JSON serialization/deserialization fails with non-obvi
 
 ### Available Enriched Enums
 
-- `Frequency` - Days, Weeks, Months, Years, OneTime
-- `UserStatus` - Active, Inactive, Approval, Suspended
-- `ApprovalStatus` - Pending, Approved, Rejected
-- `Role` - Admin, User, etc.
-- `Permission` - account:view, expense:manage, etc.
-- `OtpStatus` - Pending, Used, Expired
-- `OtpReason` - Login, Registration, PasswordReset
-- `SettingCategory` - Application settings categories
+- `Frequency` - Days, Weeks, Months, Years, OneTime, EndOfMonth
+- `UserStatus` - Enabled, Disabled, Pending, Approval
+- `ApprovalStatus` - Approved, Rejected
+- `Role` - Admin, Viewer
+- `Permission` - site:manage/view, user:manage/view, account:manage/view, expense:manage/view, income:manage/view, maintenance:export/import
+- `OtpStatus` - Active, Used, Invalidated, Expired, Failed
+- `OtpReason` - Signup, PasswordReset
+- `SettingCategory` - EmailBudgetReminder
+- `RenewalMode` - Overdue, Future
+- `AccrualPolicy` - Automatic, None
 
 ---
 
@@ -4244,7 +4350,7 @@ modelBuilder
 
 ### Cascade Delete Behavior
 
-**Default:** Cascade delete is **disabled globally** for all foreign keys.
+**Default:** Cascade delete is **disabled (Restrict)** for all foreign keys on `EntityBase`-derived entities. The EF-managed join tables (`UserRole`, `RolePermission`) keep the default `Cascade` behaviour.
 
 ```csharp
 // DbContextBase.cs - DisableCascadeDelete()
@@ -4273,7 +4379,7 @@ Indexes are defined using **Data Annotations** directly on entity classes:
 
 ```csharp
 // AccountEntity.cs
-[Index(nameof(Description), IsUnique = true)]
+[Index("SiteId", nameof(Description), IsUnique = true)]  // Description unique per site
 [Index(nameof(Bsb), nameof(Number), IsUnique = true)]
 public sealed class AccountEntity : EntityBase
 {
@@ -4312,6 +4418,7 @@ public sealed class ExpenseEntity : EntityBase
 [Index(nameof(Status), nameof(ExpiryUtc))]
 [Index(nameof(Username), nameof(Status), nameof(CreatedUtc))]
 [Index(nameof(Reason), nameof(Username), nameof(RefCode))]
+[Index(nameof(ExpiryUtc))]
 public sealed class OneTimePasswordEntity : EntityBase
 {
     // Properties...
@@ -4363,6 +4470,11 @@ private void SetupQueryFilters(ModelBuilder modelBuilder)
         .Entity<AccountEntity>()
         .HasQueryFilter(account => account.Site.Id == GetCurrentUserSiteId());
 
+    // Site-specific filter for AccountAccrual (via Account relationship)
+    modelBuilder
+        .Entity<AccountAccrualEntity>()
+        .HasQueryFilter(accountAccrual => accountAccrual.Account.Site.Id == GetCurrentUserSiteId());
+
     // Site-specific filter for Expenses (via Account relationship)
     modelBuilder
         .Entity<ExpenseEntity>()
@@ -4372,6 +4484,11 @@ private void SetupQueryFilters(ModelBuilder modelBuilder)
     modelBuilder
         .Entity<IncomeEntity>()
         .HasQueryFilter(income => income.Account.Site.Id == GetCurrentUserSiteId());
+
+    // Query Settings (if they have a direct Site relationship)
+    modelBuilder
+        .Entity<SettingEntity>()
+        .HasQueryFilter(setting => setting.Site != null && setting.Site.Id == GetCurrentUserSiteId());
 }
 
 private int GetCurrentUserSiteId()
@@ -4431,6 +4548,8 @@ public Task<bool> AccountExistsAsync(string bsb, string number, CancellationToke
 ```
 
 2. **Cross-Site Admin Operations:** Platform admins viewing pending user approvals
+
+Note: `UserEntity` has no site query filter, so `IgnoreQueryFilters()` here is defensive rather than a bypass.
 
 ```csharp
 // Pot.App/Features/Approvals/Pending/GetPendingApprovalsService.cs
@@ -4495,7 +4614,7 @@ private void OnBeforeSave()
 
         if (entity is not null)
         {
-            entity.Etag = DateTime.UtcNow.GetEtag();  // Unix timestamp
+            entity.Etag = DateTime.UtcNow.GetEtag();  // Unix millisecond timestamp
         }
     }
 }
@@ -4503,9 +4622,9 @@ private void OnBeforeSave()
 
 **ETag Values:**
 
-- Generated from `DateTime.UtcNow` converted to Unix timestamp (long)
+- Generated from `DateTime.UtcNow.GetEtag()`, which returns a Unix millisecond timestamp (long)
 - Updated automatically on insert and update operations
-- Unique per save operation (timestamp precision)
+- Millisecond precision - entities saved in the same operation share the same value
 
 ### Usage Pattern
 
@@ -4523,14 +4642,14 @@ private void OnBeforeSave()
 {
   "rowId": "550e8400-e29b-41d4-a716-446655440000",
   "description": "Rent",
-  "etag": 1700000000
+  "etag": 1758237600000
 }
 
 // PUT request includes ETag
 {
   "rowId": "550e8400-e29b-41d4-a716-446655440000",
   "description": "Monthly Rent",
-  "etag": 1700000000  // Must match database value
+  "etag": 1758237600000  // Must match database value
 }
 ```
 
@@ -4593,13 +4712,13 @@ Add-Migration MigrationName -Project Pot.Data -StartupProject Pot.Data.Migration
 
 ```bash
 cd Source/Server
-dotnet ef database update --project Pot.Data.Migrations
+dotnet ef database update --project Pot.Data --startup-project Pot.Data.Migrations
 ```
 
 **Using Visual Studio:**
 
 ```powershell
-Update-Database -Project Pot.Data.Migrations
+Update-Database -Project Pot.Data -StartupProject Pot.Data.Migrations
 ```
 
 **Using Migrations Console App:**
@@ -4630,30 +4749,30 @@ await GenericHost
             .AddDbContextFactory<PotDbContext>(/*...*/)
             .AddSingleton<IDatabaseMigrator, PotDbMigrator>();
     })
-    .RunConsoleAsync();
+    .RunConsoleAsync(options => options.SuppressStatusMessages = true);
 
-// App.cs applies migrations
-await dbContext.Database.MigrateAsync();  // Applies all pending migrations
+// App.cs applies migrations (after waiting for the database to be ready)
+await _databaseMigrator.MigrateAsync();  // IDatabaseMigrator -> PotDbMigrator
 ```
 
 ### Rollback Migrations
 
 ```bash
 # .NET CLI
-dotnet ef database update PreviousMigrationName --project Pot.Data.Migrations
+dotnet ef database update PreviousMigrationName --project Pot.Data --startup-project Pot.Data.Migrations
 
 # Visual Studio
-Update-Database -Migration PreviousMigrationName -Project Pot.Data.Migrations
+Update-Database -Migration PreviousMigrationName -Project Pot.Data -StartupProject Pot.Data.Migrations
 ```
 
 ### Remove Last Migration (not yet applied)
 
 ```bash
 # .NET CLI
-dotnet ef migrations remove --project Pot.Data.Migrations
+dotnet ef migrations remove --project Pot.Data --startup-project Pot.Data.Migrations
 
 # Visual Studio
-Remove-Migration -Project Pot.Data.Migrations
+Remove-Migration -Project Pot.Data -StartupProject Pot.Data.Migrations
 ```
 
 ### Migration Guidelines
@@ -4693,7 +4812,7 @@ public void Configure(CorsOptions options)
     {
         policy
             // Allow frontend URLs from configuration
-            .WithOrigins(_corsConfiguration.AllowedOrigins)
+            .WithOrigins(_corsConfiguration.GetAllowedOrigins().ToArray())
 
             .AllowAnyMethod()
             .AllowAnyHeader()
@@ -4728,9 +4847,7 @@ The frontend export feature needs to extract filenames from the `Content-Disposi
 // appsettings.Development.json
 {
   "Cors": {
-    "AllowedOrigins": [
-      "http://localhost:5175" // Vite dev server
-    ]
+    "AllowedOrigins": "http://localhost:5175" // Vite dev server (delimited string, not an array)
   }
 }
 ```
@@ -4864,6 +4981,8 @@ public interface ITimeProvider : IPotSingletonDependency
     DateOnly GetLocalDateNow();
     DateTime GetLocalDateTimeNow();
     TimeSpan GetLocalTimeZoneOffset();
+
+    Task DelayAsync(TimeSpan delay, CancellationToken cancellationToken);
 }
 ```
 
@@ -4904,6 +5023,8 @@ public static WebApplicationBuilder AddAspNetValidation(this WebApplicationBuild
         validationRegistry.AddAppValidators();
     });
 
+    builder.Services.AddSingleton<IProblemDetailsInspector, ProblemDetailsInspector>();
+
     return builder;
 }
 ```
@@ -4940,13 +5061,13 @@ builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionAuthorizat
 
 The server tracks two different daily accrual concepts for expenses.
 
-### Dynamic DailyExpenseAccrual
+### Dynamic Accrual (`DailyExpenseAccrual`)
 
 - Purpose: operational projection behavior and event-date simulation.
 - Behavior: changes through each cycle as due dates approach and renew.
 - Primary use: projections and date-by-date cashflow mechanics.
 
-### Stable StableExpenseAccrual
+### Stable Accrual (`StableExpenseAccrual`)
 
 - Purpose: long-run daily funding guidance.
 - Behavior: designed to be more stable than dynamic accrual.
@@ -4969,29 +5090,30 @@ This preserves due-date debit behavior while disabling pre-funding accrual behav
 
 ### Development
 
-| Command                                 | Description                                         |
-| --------------------------------------- | --------------------------------------------------- |
-| `dotnet run --project Pot.AspNetCore`   | Start API server (typically https://localhost:7241) |
-| `dotnet build`                          | Build solution                                      |
-| `dotnet watch --project Pot.AspNetCore` | Run API with hot reload                             |
+| Command                                 | Description                                        |
+| --------------------------------------- | -------------------------------------------------- |
+| `dotnet run --project Pot.AspNetCore`   | Start API server (typically http://localhost:5242) |
+| `dotnet build`                          | Build solution                                     |
+| `dotnet watch --project Pot.AspNetCore` | Run API with hot reload                            |
 
 ### Migrations
 
-| Command                                                                   | Description                     |
-| ------------------------------------------------------------------------- | ------------------------------- |
-| `dotnet ef migrations add <Name> --project Pot.Data.Migrations`           | Create new migration            |
-| `dotnet ef database update --project Pot.Data.Migrations`                 | Apply pending migrations        |
-| `dotnet ef migrations remove --project Pot.Data.Migrations`               | Remove last unapplied migration |
-| `dotnet ef database update <MigrationName> --project Pot.Data.Migrations` | Rollback to specific migration  |
-| `dotnet run --project Pot.Data.Migrations`                                | Run migrations console app      |
+| Command                                                                                              | Description                     |
+| ---------------------------------------------------------------------------------------------------- | ------------------------------- |
+| `dotnet ef migrations add <Name> --project Pot.Data --startup-project Pot.Data.Migrations`           | Create new migration            |
+| `dotnet ef database update --project Pot.Data --startup-project Pot.Data.Migrations`                 | Apply pending migrations        |
+| `dotnet ef migrations remove --project Pot.Data --startup-project Pot.Data.Migrations`               | Remove last unapplied migration |
+| `dotnet ef database update <MigrationName> --project Pot.Data --startup-project Pot.Data.Migrations` | Rollback to specific migration  |
+| `dotnet run --project Pot.Data.Migrations`                                                           | Run migrations console app      |
 
 ### Testing & Quality
 
-| Command                                       | Description                     |
-| --------------------------------------------- | ------------------------------- |
-| `dotnet test`                                 | Run all unit tests              |
-| `dotnet test --collect:"XPlat Code Coverage"` | Run tests with code coverage    |
-| `dotnet format`                               | Format code using .editorconfig |
+| Command                                       | Description                                                             |
+| --------------------------------------------- | ----------------------------------------------------------------------- |
+| `dotnet test`                                 | Run all unit tests                                                      |
+| `dotnet test --collect:"XPlat Code Coverage"` | Run tests with code coverage                                            |
+| `pwsh -NoProfile -File ./code_coverage.ps1`   | Tests + HTML coverage report (VS Code task: `server-run-test-coverage`) |
+| `dotnet format`                               | Format code using .editorconfig                                         |
 
 ---
 
