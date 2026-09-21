@@ -1,8 +1,8 @@
 # React Client Stack Modernisation — Feasibility Audit & PRD
 
-**Status:** In Progress — Inc 0–4 committed; Inc 5–8, 8b, 9 validated
+**Status:** Complete — Inc 0–12 implemented and validated; closure verification recorded 2026-09-21
 **Priority:** Medium
-**Last Updated:** 2026-09-08
+**Last Updated:** 2026-09-21
 **Feature ID:** 015
 **Scope:** Client only — `Source/Client/pot-react` (React 19 + TypeScript SPA). No server, database, or Docker-infra changes beyond what a client toolchain bump requires.
 **Audience:** Solo developer / reviewer (lean, decision-oriented).
@@ -41,6 +41,14 @@ _Living tracker — update this section after every increment/commit._
 
 - **Inc 12 (TypeScript → 6.0.3, final increment) validated — TS 7 deferred.** **DQ-1 resolved:** verified the registry — TS `latest` is 7.0.2 but **typescript-eslint 8.70.0 (latest) peer-caps TS at `>=4.8.4 <6.1.0`**, and no stable typescript-eslint supports TS 7 yet (only canary/alpha). TS 6 stable line is 6.0.2/**6.0.3** (6.0.0 was never published; `latest` dist-tag jumped 5.7 → 7.0.2). Forcing TS 7 would break the lint gate → **held at TS 6.0.3**, exactly per DQ-1's recommended answer. User confirmed choice 2026-09-08. Install: `typescript ~5.7.2 → ~6.0.3` + `typescript-eslint ^8.69.0 → ^8.70.0` (lockstep; clean, no ERESOLVE; eslint 10.9.1 peer OK). **Zero source/config changes** — cold tsc passed immediately (TS 6 majors didn't affect this codebase). Gates: cold tsc exit 0 · unit **147 files / 738 passed / 0 failed** · format:fix · lint 23w/0e (typescript-eslint 8.70 — no new findings) · build exit 0 · `npm ci` exit 0 · **full E2E matrix 272 passed / 1 flaky (retry-passed) / 66 skipped / 0 failed** (8.3m). E2E note: the `html` reporter opened a report server (`Serving HTML report… Press Ctrl+C`) after the run and blocked the process exit — tests were done and green; killed the report server. One more orphaned `playwright test-server` cleaned up after (same class as Inc 10's hang culprit). **Modernisation Inc 0–12 complete; remaining work = the open follow-ups below (23 set-state-in-effect warnings, react-compiler warning, etc.) + TS 7 later once typescript-eslint supports it.**
 
+### Closure (2026-09-21)
+
+- **Marked Complete.** All thirteen increments (Inc 0–12) are validated and the four open follow-ups above are closed. The two deferred tracks live in their own documents: TypeScript 7 → [PRD 016](PRD-016-typescript-7-upgrade.md); version drift that accumulated after the 2026-09-08 validation → [PRD 017](PRD-017-client-dependency-drift-maintenance.md).
+- **Gates re-run in the closure session (2026-09-21):** cold `npx tsc -b --force` exit 0 · `npm run lint` 0 problems (0 errors / 0 warnings — the DQ-4 fix is still holding) · unit **155 files / 780 tests** green · `npm run build` exit 0 (Vite 8.2.2, 4132 modules) · `npm ci --dry-run` exit 0 (lock in sync) · **full E2E matrix 273 passed / 0 failed / 66 skipped** (8.2 m).
+- **recharts correction.** Inc 7 above records the 3.10.1 target, but the tree had actually resolved **3.8.0** (the install saved `^3.8.0`, so `package-lock.json` pinned 3.8.0). Closure bumped recharts to **3.10.1** (`^3.10.1`) — an in-major move — and re-ran every gate above; doc and tree now agree.
+- **Known monitored flake (not a closure blocker).** `tests/api/interceptors/authInterceptor.test.ts` failed 2 tests once during closure verification (parallel full-suite load) and passed 9/9 standalone; the file passed in the closure's final full-suite run. This is the load-contention flake first recorded 2026-09-07 (Inc 9 notes) — do not block work on it.
+- **Success criterion "all dependencies at latest" is now read as: latest at validation time, with a recorded deferral for anything that moves later.** Versions that moved after 2026-09-08 are enumerated and scheduled in PRD 017 rather than reopening this PRD.
+
 ### Increment status
 
 | Inc | Scope                                                                                                            | Status       | Validated gates                                                                          |
@@ -61,6 +69,8 @@ _Living tracker — update this section after every increment/commit._
 | 12  | TypeScript 5.7 → 6.0.3 (TS 7.0.2 deferred — typescript-eslint caps <6.1.0)                                       | ✅ Validated | cold tsc, unit 738, format:fix, lint (23w), build, npm ci, full E2E 272p/1 flaky/66s     |
 
 ### Open follow-ups (must resolve before modernisation is declared done)
+
+_All four items are closed as of 2026-09-21 — see the Closure note below._
 
 1. **`react-hooks/set-state-in-effect` — RESOLVED 2026-09-08 (0 warnings; DQ-4 complete).** All 22 sites across 17 files were refactored deliberately: matchMedia hooks (`use-mobile`, `use-short-viewport`) → `useSyncExternalStore`; reset/derive-on-prop-change sites (ThemeProvider, POTSettingsSheet, AccountsPage, ExpensesPage, IncomesPage, ExpenseForm ×2 pickers, IncomeForm, OtpVerificationForm ×4, ProjectionsPage, ChartControls, AccrualsContext) → render-time state adjustments; close-time flow resets (PasswordResetDialog, SignupDialog) → `onOpenChange` handler; LoginForm → render-phase clock reset + timer-only effect; `useAccountEditor` → derived snapshot + `form.reset` in an effect. **Gotcha found during E2E:** ProjectionsPage's API-error adjustment must be keyed on result CONTENT, not object identity — `useApiGetProjection` rebuilds its `Result` every render, so an identity-keyed render-phase update caused “Too many re-renders” (caught by projection E2E, not unit). The eslint `set-state-in-effect: 'warn'` override was removed (back to recommended `error`), locking in no-regressions.
 2. `DataTable.tsx` React-compiler warning: "Compilation Skipped: Use of incompatible library". — **No action (2026-09-08):** verified editor-only. The message comes from React Compiler dev tooling (not enabled — DQ-7) inspecting the file; it is absent from lint, cold tsc, build, and source. React Compiler isn't adopted, so there is nothing to fix in code. Revisit only if the compiler is ever opted into.
