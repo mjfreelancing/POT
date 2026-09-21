@@ -28,7 +28,8 @@ internal sealed class ExpiredOtpCleanupWorker : BackgroundWorker
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // Will not throw
+        // Waits for the database to become ready; cancellation while waiting (host shutdown)
+        // surfaces as an OperationCanceledException, which the host treats as a normal stop.
         await _serviceHealthPoller
             .WaitForHealthyAsync(DatabaseHealthPollerOptions, stoppingToken)
             .ConfigureAwait(false);
