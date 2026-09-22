@@ -1,13 +1,14 @@
 import type { MouseEvent } from 'react';
-import type { ExternalToast } from 'sonner';
+import type { Action, ExternalToast } from 'sonner';
 import { toast } from 'sonner';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import {
-  LATER_SNOOZE_MS,
   pwaRuntimeState,
+  REFRESH_FALLBACK_TIMEOUT_MS,
   UPDATE_TOAST_ID,
 } from '@/concerns/pwa/pwaRuntime';
+import { startUpdateEnforcement } from '@/concerns/pwa/pwaUpdateEnforcement';
 import { showUpdatePromptIfNeeded } from '@/concerns/pwa/pwaUpdatePrompt';
 import { getWaitingServiceWorkerScriptUrl } from '@/concerns/pwa/serviceWorkerRegistration';
 
@@ -22,6 +23,10 @@ vi.mock('@/concerns/pwa/serviceWorkerRegistration', () => ({
   getWaitingServiceWorkerScriptUrl: vi.fn(),
 }));
 
+vi.mock('@/concerns/pwa/pwaUpdateEnforcement', () => ({
+  startUpdateEnforcement: vi.fn(),
+}));
+
 vi.mock('sonner', () => {
   const toastMock = Object.assign(vi.fn(), {
     dismiss: vi.fn(),
@@ -32,37 +37,58 @@ vi.mock('sonner', () => {
   };
 });
 
+const resetRuntimeState = () => {
+  pwaRuntimeState.updateCheckIntervalId = undefined;
+  pwaRuntimeState.enforcementIntervalId = undefined;
+  pwaRuntimeState.updateCheckListenersAttached = false;
+  pwaRuntimeState.registeredServiceWorkerUrl = undefined;
+  pwaRuntimeState.latestServiceWorkerRegistration = undefined;
+  pwaRuntimeState.refreshInProgress = false;
+  pwaRuntimeState.promptedWaitingScriptUrl = undefined;
+  pwaRuntimeState.pendingUpdateScriptUrl = undefined;
+  pwaRuntimeState.pendingUpdateDetectedAt = undefined;
+  pwaRuntimeState.lastUserActivityAt = undefined;
+};
+
+// jsdom does not implement the service worker API used by the activation path.
+const stubServiceWorkerNavigator = () => {
+  Object.defineProperty(navigator, 'serviceWorker', {
+    configurable: true,
+    value: new EventTarget(),
+  });
+};
+
+const locationReload = vi.fn();
+
+// jsdom marks location.reload as non-configurable, so the whole location is replaced instead.
+const stubWindowLocation = () => {
+  Object.defineProperty(window, 'location', {
+    configurable: true,
+    value: { reload: locationReload },
+  });
+};
+
+const getToastOptions = () =>
+  vi.mocked(toast).mock.calls[0]?.[1] as ExternalToast | undefined;
+
+const getToastAction = () => getToastOptions()?.action as Action | undefined;
+
 const flushPromises = async () => {
   await Promise.resolve();
   await Promise.resolve();
 };
 
 describe('showUpdatePromptIfNeeded', () => {
-  let visibilityState: DocumentVisibilityState;
-
   beforeEach(() => {
     vi.clearAllMocks();
+    // Fake timers keep the reload fallback dormant unless a test advances them on purpose.
     vi.useFakeTimers();
-
-    pwaRuntimeState.updateCheckIntervalId = undefined;
-    pwaRuntimeState.laterSnoozeTimeoutId = undefined;
-    pwaRuntimeState.updateCheckListenersAttached = false;
-    pwaRuntimeState.registeredServiceWorkerUrl = undefined;
-    pwaRuntimeState.latestServiceWorkerRegistration = undefined;
-    pwaRuntimeState.refreshInProgress = false;
-    pwaRuntimeState.promptedWaitingScriptUrl = undefined;
-    pwaRuntimeState.dismissedWaitingScriptUrl = undefined;
-    pwaRuntimeState.dismissedWaitingScriptAt = undefined;
-
-    visibilityState = 'visible';
-
-    Object.defineProperty(document, 'visibilityState', {
-      configurable: true,
-      get: () => visibilityState,
-    });
+    resetRuntimeState();
+    stubServiceWorkerNavigator();
+    stubWindowLocation();
   });
 
-  test('does not show prompt when there is no waiting worker and prompt is not forced', async () => {
+  test('does not show prompt when there is no waiting worker', async () => {
     pwaRuntimeState.promptedWaitingScriptUrl = '/old-sw.js';
 
     vi.mocked(getWaitingServiceWorkerScriptUrl).mockResolvedValue(undefined);
@@ -90,60 +116,85 @@ describe('showUpdatePromptIfNeeded', () => {
     expect(toast).toHaveBeenCalledTimes(1);
   });
 
-  test('later action stores snooze state and re-prompts after snooze expires when visible', async () => {
-    vi.mocked(getWaitingServiceWorkerScriptUrl).mockResolvedValue(undefined);
+  test('does not show prompt while an update is already being applied', async () => {
+    pwaRuntimeState.refreshInProgress = true;
+
+    vi.mocked(getWaitingServiceWorkerScriptUrl).mockResolvedValue('/sw.js');
 
     const updateServiceWorker = vi.fn().mockResolvedValue(undefined);
 
-    pwaRuntimeState.dismissedWaitingScriptUrl = '/sw.js';
-    pwaRuntimeState.dismissedWaitingScriptAt = Date.now() - LATER_SNOOZE_MS - 1;
-
-    await showUpdatePromptIfNeeded(
-      'force-deferred-check',
-      updateServiceWorker,
-      true,
-    );
-
-    expect(toast).toHaveBeenCalledTimes(1);
-
-    const toastOptions = vi.mocked(toast).mock.calls[0]?.[1] as
-      ExternalToast | undefined;
-
-    const cancelAction = toastOptions?.cancel;
-
-    if (
-      cancelAction &&
-      typeof cancelAction === 'object' &&
-      'onClick' in cancelAction
-    ) {
-      cancelAction.onClick?.({} as MouseEvent<HTMLButtonElement>);
-    }
-
-    expect(pwaRuntimeState.dismissedWaitingScriptUrl).toBe('/sw.js');
-    expect(pwaRuntimeState.dismissedWaitingScriptAt).toBeTypeOf('number');
-    expect(pwaRuntimeState.promptedWaitingScriptUrl).toBeUndefined();
-    expect(vi.mocked(toast).dismiss).toHaveBeenCalledWith(UPDATE_TOAST_ID);
-
-    vi.advanceTimersByTime(LATER_SNOOZE_MS);
-    await flushPromises();
-
-    expect(toast).toHaveBeenCalledTimes(2);
-  });
-
-  test('does not force prompt during active snooze for same worker key', async () => {
-    vi.mocked(getWaitingServiceWorkerScriptUrl).mockResolvedValue(undefined);
-
-    pwaRuntimeState.dismissedWaitingScriptUrl = '/sw.js';
-    pwaRuntimeState.dismissedWaitingScriptAt = Date.now();
-
-    const updateServiceWorker = vi.fn().mockResolvedValue(undefined);
-
-    await showUpdatePromptIfNeeded(
-      'force-deferred-check',
-      updateServiceWorker,
-      true,
-    );
+    await showUpdatePromptIfNeeded('onNeedRefresh-event', updateServiceWorker);
 
     expect(toast).not.toHaveBeenCalled();
+  });
+
+  test('shows a persistent prompt that can only be applied, not deferred', async () => {
+    vi.mocked(getWaitingServiceWorkerScriptUrl).mockResolvedValue('/sw.js');
+
+    const updateServiceWorker = vi.fn().mockResolvedValue(undefined);
+
+    await showUpdatePromptIfNeeded('onNeedRefresh-event', updateServiceWorker);
+
+    const toastOptions = getToastOptions();
+
+    expect(toastOptions?.id).toBe(UPDATE_TOAST_ID);
+    expect(toastOptions?.duration).toBe(Infinity);
+    expect(toastOptions?.dismissible).toBe(false);
+    expect(getToastAction()?.label).toBe('Update now');
+    expect(toastOptions?.cancel).toBeUndefined();
+  });
+
+  test('starts automatic enforcement for the waiting worker', async () => {
+    vi.mocked(getWaitingServiceWorkerScriptUrl).mockResolvedValue('/sw.js');
+
+    const updateServiceWorker = vi.fn().mockResolvedValue(undefined);
+
+    await showUpdatePromptIfNeeded('onNeedRefresh-event', updateServiceWorker);
+
+    expect(startUpdateEnforcement).toHaveBeenCalledWith(
+      '/sw.js',
+      expect.any(Function),
+    );
+  });
+
+  test('applies the update when the refresh action is invoked', async () => {
+    vi.mocked(getWaitingServiceWorkerScriptUrl).mockResolvedValue('/sw.js');
+
+    const updateServiceWorker = vi.fn().mockResolvedValue(undefined);
+
+    await showUpdatePromptIfNeeded('onNeedRefresh-event', updateServiceWorker);
+
+    getToastAction()?.onClick({} as MouseEvent<HTMLButtonElement>);
+
+    expect(updateServiceWorker).toHaveBeenCalledWith(true);
+  });
+
+  test('applies the update when automatic enforcement fires', async () => {
+    vi.mocked(getWaitingServiceWorkerScriptUrl).mockResolvedValue('/sw.js');
+
+    const updateServiceWorker = vi.fn().mockResolvedValue(undefined);
+
+    await showUpdatePromptIfNeeded('onNeedRefresh-event', updateServiceWorker);
+
+    const applyUpdate = vi.mocked(startUpdateEnforcement).mock.calls[0]?.[1];
+
+    applyUpdate?.();
+
+    expect(updateServiceWorker).toHaveBeenCalledWith(true);
+  });
+
+  test('forces a reload when activation does not hand off control in time', async () => {
+    vi.mocked(getWaitingServiceWorkerScriptUrl).mockResolvedValue('/sw.js');
+
+    const updateServiceWorker = vi.fn().mockResolvedValue(undefined);
+
+    await showUpdatePromptIfNeeded('onNeedRefresh-event', updateServiceWorker);
+
+    getToastAction()?.onClick({} as MouseEvent<HTMLButtonElement>);
+
+    vi.advanceTimersByTime(REFRESH_FALLBACK_TIMEOUT_MS);
+    await flushPromises();
+
+    expect(locationReload).toHaveBeenCalled();
   });
 });

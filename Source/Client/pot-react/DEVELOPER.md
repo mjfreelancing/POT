@@ -3087,25 +3087,26 @@ POT now uses an explicit app-side registration flow so users get a clear update 
 - The update prompt can be triggered in two paths:
   - `onNeedRefresh` callback from `registerSW`
   - Explicit post-check detection when `registration.waiting` exists after `registration.update()`
-- When a new waiting service worker is detected, the app shows a persistent top-center toast:
-  - Message: `Update Available`
-  - Action: `Refresh` (attempts waiting-worker activation and always forces a reload path; it falls back to a hard reload if activation times out or if no `controllerchange` is observed within 1.5 seconds)
-  - Cancel: `Later`
-- Prompt dedupe behavior:
+- When a new waiting service worker is detected, the app shows a persistent top-center toast that must be applied rather than deferred:
+  - Message: `Update Available`, with the consequence stated up front: "Applied automatically in a moment. Unsaved edits will be lost."
+  - Action: `Update now` (attempts waiting-worker activation and always forces a reload path; it falls back to a hard reload if activation times out or if no `controllerchange` is observed within 1.5 seconds)
+  - The prompt is not dismissible (`dismissible: false`) and has no cancel action, because an update must always be applied
+- Prompt dedupe and enforcement behavior:
   - Duplicate prompt events for the same waiting worker are suppressed while a prompt cycle is active
-  - Choosing `Later` snoozes re-prompts for that same waiting worker key for the same configured period (currently 30 minutes)
-  - After snooze expiry, the app can force a deferred re-prompt even if `registration.waiting` is no longer present at that exact moment
-  - If the tab is visible, re-prompt can occur at snooze expiry without requiring a refocus click
-  - If snooze expires while hidden, returning to a visible tab re-evaluates and can re-prompt immediately
+  - `src/concerns/pwa/pwaUpdateEnforcement.ts` enforces the detected update when the user does not apply it through the prompt action, because an update must always be applied
+  - The update is applied once the user has been quiet for `UPDATE_QUIET_PERIOD_MS` (currently 45 seconds without keydown/input/pointerdown). A hidden tab receives no input events, so leaving the tab also counts as quiet and the update applies in the background
+  - Interacting with the app keeps extending the quiet window, but `UPDATE_MAX_DEFER_MS` (currently 5 minutes) is a hard cap: after that the update is applied regardless, so a stale client can never keep running indefinitely
+  - The quiet window trades a small chance of discarding a half-typed form against never leaving a stale client running. The app has no global unsaved-changes tracking (only `POTSettingsSheet` tracks dirty state, for its own navigation), so the prompt copy states the consequence instead of attempting to preserve drafts
 
 This closes the stale-bundle gap where users might otherwise keep using an older version until a manual hard refresh.
 
-Why `prompt` matters: with `autoUpdate`, a browser-triggered update can refresh immediately and skip the in-app toast path. `prompt` ensures the waiting state is exposed to `onNeedRefresh`, which drives POT's `Refresh`/`Later` UX.
+Why `prompt` matters: with `autoUpdate`, a browser-triggered update can refresh immediately and skip the in-app toast path. `prompt` ensures the waiting state is exposed to `onNeedRefresh`, which drives POT's enforced update prompt UX.
 
 Expected detection timing:
 
 - If a user refocuses the app tab after deployment, detection should occur quickly via focus/visibility checks
 - If a user keeps the tab open and idle, detection occurs within the configured periodic check window (currently 30 minutes)
+- Detection currently relies only on the service worker lifecycle (`registration.update()` / `onNeedRefresh`). There is no client/server version handshake, so if the server deploys a breaking API change, an already-open client can keep running the old build until the next service worker check detects the new client assets
 
 ---
 

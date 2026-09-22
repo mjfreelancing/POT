@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { logger } from '@/concerns/logging';
 import {
-  LATER_SNOOZE_MS,
   pwaRuntimeState,
   UPDATE_CHECK_INTERVAL_MS,
 } from '@/concerns/pwa/pwaRuntime';
@@ -44,14 +43,15 @@ describe('setupServiceWorkerUpdateChecks', () => {
     vi.clearAllMocks();
 
     pwaRuntimeState.updateCheckIntervalId = undefined;
-    pwaRuntimeState.laterSnoozeTimeoutId = undefined;
+    pwaRuntimeState.enforcementIntervalId = undefined;
     pwaRuntimeState.updateCheckListenersAttached = false;
     pwaRuntimeState.registeredServiceWorkerUrl = undefined;
     pwaRuntimeState.latestServiceWorkerRegistration = undefined;
     pwaRuntimeState.refreshInProgress = false;
     pwaRuntimeState.promptedWaitingScriptUrl = undefined;
-    pwaRuntimeState.dismissedWaitingScriptUrl = undefined;
-    pwaRuntimeState.dismissedWaitingScriptAt = undefined;
+    pwaRuntimeState.pendingUpdateScriptUrl = undefined;
+    pwaRuntimeState.pendingUpdateDetectedAt = undefined;
+    pwaRuntimeState.lastUserActivityAt = undefined;
 
     visibilityState = 'visible';
 
@@ -183,27 +183,5 @@ describe('setupServiceWorkerUpdateChecks', () => {
     await flushPromises();
 
     expect(registration.update).toHaveBeenCalledTimes(4);
-  });
-
-  test('re-prompts when later snooze expired and tab becomes visible', async () => {
-    const registration = createRegistrationMock();
-
-    vi.mocked(getServiceWorkerRegistration).mockResolvedValue(
-      registration as unknown as ServiceWorkerRegistration,
-    );
-
-    const onWaitingServiceWorkerDetected = vi.fn().mockResolvedValue(undefined);
-
-    setupServiceWorkerUpdateChecks('/sw.js', onWaitingServiceWorkerDetected);
-    await flushPromises();
-
-    pwaRuntimeState.dismissedWaitingScriptUrl = '/sw.js';
-    pwaRuntimeState.dismissedWaitingScriptAt = Date.now() - LATER_SNOOZE_MS - 1;
-
-    visibilityState = 'visible';
-    visibilityHandler?.();
-    await flushPromises();
-
-    expect(onWaitingServiceWorkerDetected).toHaveBeenCalledTimes(1);
   });
 });

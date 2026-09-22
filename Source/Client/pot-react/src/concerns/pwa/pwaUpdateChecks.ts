@@ -1,10 +1,6 @@
 import { logger } from '@/concerns/logging';
 
-import {
-  hasLaterSnoozeExpired,
-  pwaRuntimeState,
-  UPDATE_CHECK_INTERVAL_MS,
-} from './pwaRuntime';
+import { pwaRuntimeState, UPDATE_CHECK_INTERVAL_MS } from './pwaRuntime';
 import { getServiceWorkerRegistration } from './serviceWorkerRegistration';
 
 const requestServiceWorkerUpdateCheck = async (
@@ -104,12 +100,6 @@ const setupServiceWorkerUpdateChecks = (
   // Re-check when tab becomes visible again.
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
-      // If user clicked Later and snooze has elapsed while tab was hidden,
-      // force a deferred re-prompt as soon as tab is visible again.
-      if (hasLaterSnoozeExpired()) {
-        void onWaitingServiceWorkerDetected();
-      }
-
       void requestServiceWorkerUpdateCheck(
         'tab-visible',
         serviceWorkerUrl,

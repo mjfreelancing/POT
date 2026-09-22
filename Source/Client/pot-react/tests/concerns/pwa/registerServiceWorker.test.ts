@@ -39,14 +39,15 @@ type RegisterSwOptions = {
 
 const resetRuntimeState = () => {
   pwaRuntimeState.updateCheckIntervalId = undefined;
-  pwaRuntimeState.laterSnoozeTimeoutId = undefined;
+  pwaRuntimeState.enforcementIntervalId = undefined;
   pwaRuntimeState.updateCheckListenersAttached = false;
   pwaRuntimeState.registeredServiceWorkerUrl = undefined;
   pwaRuntimeState.latestServiceWorkerRegistration = undefined;
   pwaRuntimeState.refreshInProgress = false;
   pwaRuntimeState.promptedWaitingScriptUrl = undefined;
-  pwaRuntimeState.dismissedWaitingScriptUrl = undefined;
-  pwaRuntimeState.dismissedWaitingScriptAt = undefined;
+  pwaRuntimeState.pendingUpdateScriptUrl = undefined;
+  pwaRuntimeState.pendingUpdateDetectedAt = undefined;
+  pwaRuntimeState.lastUserActivityAt = undefined;
 };
 
 const registerInProduction = () => {
