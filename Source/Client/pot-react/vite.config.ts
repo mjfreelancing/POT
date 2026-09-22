@@ -1,14 +1,38 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+
+// Identity of the deployed build, used by the in-app deployed-build check
+// (see src/concerns/pwa/pwaVersionCheck.ts). A timestamp is used because the Docker and Azure
+// build contexts do not include .git, and it changes on every build.
+const clientBuildId = new Date().toISOString();
+
+// Emits the deployed build identity as a static file so a running client can compare it with the
+// build id baked into its own bundle. JSON is not covered by the workbox `globPatterns` below, so
+// this file is never precached and every read comes from the network.
+const clientBuildIdPlugin = (): Plugin => ({
+  name: 'pot-client-build-id',
+  apply: 'build',
+  generateBundle() {
+    this.emitFile({
+      type: 'asset',
+      fileName: 'version.json',
+      source: `${JSON.stringify({ buildId: clientBuildId }, null, 2)}\n`,
+    });
+  },
+});
 
 // https://vite.dev/config/
 export default defineConfig({
+  define: {
+    'import.meta.env.VITE_CLIENT_BUILD_ID': JSON.stringify(clientBuildId),
+  },
   // Refer to: https://ui.shadcn.com/docs/installation/vite
   plugins: [
     react(),
     tailwindcss(),
+    clientBuildIdPlugin(),
     VitePWA({
       registerType: 'prompt',
       injectRegister: 'auto',

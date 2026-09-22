@@ -6,6 +6,7 @@ import {
   UPDATE_CHECK_INTERVAL_MS,
 } from '@/concerns/pwa/pwaRuntime';
 import { setupServiceWorkerUpdateChecks } from '@/concerns/pwa/pwaUpdateChecks';
+import { startVersionChecks } from '@/concerns/pwa/pwaVersionCheck';
 import { getServiceWorkerRegistration } from '@/concerns/pwa/serviceWorkerRegistration';
 
 vi.mock('@/concerns/logging', () => ({
@@ -17,6 +18,10 @@ vi.mock('@/concerns/logging', () => ({
 
 vi.mock('@/concerns/pwa/serviceWorkerRegistration', () => ({
   getServiceWorkerRegistration: vi.fn(),
+}));
+
+vi.mock('@/concerns/pwa/pwaVersionCheck', () => ({
+  startVersionChecks: vi.fn(),
 }));
 
 type RegistrationMock = {
@@ -128,6 +133,36 @@ describe('setupServiceWorkerUpdateChecks', () => {
     expect(window.setInterval).toHaveBeenCalledTimes(1);
   });
 
+  test('starts deployed-build checks that reuse the service worker check path', async () => {
+    const registration = createRegistrationMock();
+    vi.mocked(getServiceWorkerRegistration).mockResolvedValue(
+      registration as unknown as ServiceWorkerRegistration,
+    );
+
+    const onWaitingServiceWorkerDetected = vi.fn().mockResolvedValue(undefined);
+
+    setupServiceWorkerUpdateChecks(
+      '/sw.js',
+      onWaitingServiceWorkerDetected,
+      'build-1',
+    );
+    await flushPromises();
+
+    expect(startVersionChecks).toHaveBeenCalledWith({
+      clientBuildId: 'build-1',
+      onVersionChanged: expect.any(Function),
+    });
+
+    const versionCheckOptions =
+      vi.mocked(startVersionChecks).mock.calls[0]?.[0];
+
+    await versionCheckOptions?.onVersionChanged();
+
+    // The deployed-build channel cannot apply anything itself, so it runs the same check path.
+    expect(registration.update).toHaveBeenCalledTimes(2);
+    expect(onWaitingServiceWorkerDetected).not.toHaveBeenCalled();
+  });
+
   test('calls waiting callback when updated registration has waiting worker', async () => {
     const registration = createRegistrationMock();
     registration.waiting = { scriptURL: '/sw.js' } as ServiceWorker;
@@ -144,7 +179,41 @@ describe('setupServiceWorkerUpdateChecks', () => {
     expect(onWaitingServiceWorkerDetected).toHaveBeenCalledTimes(1);
     expect(logger.info).toHaveBeenCalledWith(
       'PWA',
-      'Waiting service worker detected after update check (startup)',
+      'Service worker update check (startup): waiting service worker detected',
+    );
+  });
+
+  test('logs the outcome when the check finds no waiting worker', async () => {
+    const registration = createRegistrationMock();
+
+    vi.mocked(getServiceWorkerRegistration).mockResolvedValue(
+      registration as unknown as ServiceWorkerRegistration,
+    );
+
+    setupServiceWorkerUpdateChecks(
+      '/sw.js',
+      vi.fn().mockResolvedValue(undefined),
+    );
+    await flushPromises();
+
+    expect(logger.info).toHaveBeenCalledWith(
+      'PWA',
+      'Service worker update check (startup): no waiting service worker',
+    );
+  });
+
+  test('logs the outcome when no registration is available', async () => {
+    vi.mocked(getServiceWorkerRegistration).mockResolvedValue(undefined);
+
+    setupServiceWorkerUpdateChecks(
+      '/sw.js',
+      vi.fn().mockResolvedValue(undefined),
+    );
+    await flushPromises();
+
+    expect(logger.info).toHaveBeenCalledWith(
+      'PWA',
+      'Service worker update check (startup): no registration available',
     );
   });
 

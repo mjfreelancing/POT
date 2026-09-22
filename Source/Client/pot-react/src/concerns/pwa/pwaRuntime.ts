@@ -4,6 +4,12 @@ const UPDATE_TOAST_ID = 'pwa-update-available';
 // How often an active tab checks for a new service worker.
 const UPDATE_CHECK_INTERVAL_MS = 1000 * 60 * 30;
 
+// How often an active tab compares its build with the deployed build.
+const VERSION_CHECK_INTERVAL_MS = 1000 * 60 * 5;
+
+// Static file emitted by the client build that identifies the deployed build.
+const VERSION_FILE_URL = '/version.json';
+
 // A detected update is applied once the user has been quiet for this long.
 // Applying during a quiet moment avoids discarding a partially typed form where possible.
 const UPDATE_QUIET_PERIOD_MS = 1000 * 45;
@@ -26,7 +32,10 @@ const REFRESH_FALLBACK_TIMEOUT_MS = 1500;
 const pwaRuntimeState = {
   updateCheckIntervalId: undefined as number | undefined,
   enforcementIntervalId: undefined as number | undefined,
+  versionCheckIntervalId: undefined as number | undefined,
   updateCheckListenersAttached: false,
+  versionCheckListenersAttached: false,
+  versionCheckInFlight: false,
   activityListenersAttached: false,
   registeredServiceWorkerUrl: undefined as string | undefined,
   latestServiceWorkerRegistration: undefined as
@@ -36,6 +45,7 @@ const pwaRuntimeState = {
   pendingUpdateScriptUrl: undefined as string | undefined,
   pendingUpdateDetectedAt: undefined as number | undefined,
   lastUserActivityAt: undefined as number | undefined,
+  handledRemoteBuildId: undefined as string | undefined,
 };
 
 type PendingUpdateTiming = {
@@ -70,4 +80,6 @@ export {
   UPDATE_MAX_DEFER_MS,
   UPDATE_QUIET_PERIOD_MS,
   UPDATE_TOAST_ID,
+  VERSION_CHECK_INTERVAL_MS,
+  VERSION_FILE_URL,
 };

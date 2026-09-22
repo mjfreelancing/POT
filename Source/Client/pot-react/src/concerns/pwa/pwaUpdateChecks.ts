@@ -1,6 +1,7 @@
 import { logger } from '@/concerns/logging';
 
 import { pwaRuntimeState, UPDATE_CHECK_INTERVAL_MS } from './pwaRuntime';
+import { startVersionChecks } from './pwaVersionCheck';
 import { getServiceWorkerRegistration } from './serviceWorkerRegistration';
 
 const requestServiceWorkerUpdateCheck = async (
@@ -19,13 +20,19 @@ const requestServiceWorkerUpdateCheck = async (
     if (registration.waiting) {
       logger.info(
         'PWA',
-        `Waiting service worker detected after update check (${reason})`,
+        `Service worker update check (${reason}): waiting service worker detected`,
       );
 
       await onWaitingServiceWorkerDetected?.();
 
       return;
     }
+
+    // Log the outcome of every check so this channel can be watched in DevTools.
+    logger.info(
+      'PWA',
+      `Service worker update check (${reason}): no waiting service worker`,
+    );
 
     pwaRuntimeState.promptedWaitingScriptUrl = undefined;
   };
@@ -39,6 +46,10 @@ const requestServiceWorkerUpdateCheck = async (
     );
 
     if (!registration) {
+      logger.info(
+        'PWA',
+        `Service worker update check (${reason}): no registration available`,
+      );
       return;
     }
 
@@ -73,6 +84,7 @@ const requestServiceWorkerUpdateCheck = async (
 const setupServiceWorkerUpdateChecks = (
   serviceWorkerUrl: string,
   onWaitingServiceWorkerDetected: () => Promise<void>,
+  clientBuildId?: string,
 ) => {
   // Avoid duplicate listeners (possible if initialization path changes in future).
   if (pwaRuntimeState.updateCheckListenersAttached) {
@@ -80,6 +92,19 @@ const setupServiceWorkerUpdateChecks = (
   }
 
   pwaRuntimeState.updateCheckListenersAttached = true;
+
+  // Second detection channel: a deployed build that differs from the running build triggers the
+  // same check path, so both channels share one prompt and one apply. It cannot prompt on its own
+  // because a prompt still requires a waiting worker.
+  startVersionChecks({
+    clientBuildId,
+    onVersionChanged: () =>
+      requestServiceWorkerUpdateCheck(
+        'version-mismatch',
+        serviceWorkerUrl,
+        onWaitingServiceWorkerDetected,
+      ),
+  });
 
   // Immediate startup check catches updates deployed before this session opened.
   void requestServiceWorkerUpdateCheck(

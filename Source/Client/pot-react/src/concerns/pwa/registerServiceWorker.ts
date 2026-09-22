@@ -34,11 +34,17 @@ const registerServiceWorker = (isDevelopment = import.meta.env.DEV) => {
       logger.info('PWA', `Service worker registered: ${serviceWorkerUrl}`);
 
       // Use one callback for all update-check sources so prompt rules stay consistent.
-      setupServiceWorkerUpdateChecks(serviceWorkerUrl, async () =>
-        showUpdatePromptIfNeeded(
+      const onWaitingServiceWorkerDetected = async () => {
+        await showUpdatePromptIfNeeded(
           'post-update-check-waiting',
           updateServiceWorker,
-        ),
+        );
+      };
+
+      setupServiceWorkerUpdateChecks(
+        serviceWorkerUrl,
+        onWaitingServiceWorkerDetected,
+        import.meta.env.VITE_CLIENT_BUILD_ID,
       );
     },
 

@@ -1,5 +1,5 @@
 import { registerSW } from 'virtual:pwa-register';
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { logger } from '@/concerns/logging';
 import { pwaRuntimeState } from '@/concerns/pwa/pwaRuntime';
@@ -65,7 +65,12 @@ const registerInProduction = () => {
 describe('registerServiceWorker', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubEnv('VITE_CLIENT_BUILD_ID', 'test-build-id');
     resetRuntimeState();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   test('does not register service worker in dev mode', () => {
@@ -112,6 +117,7 @@ describe('registerServiceWorker', () => {
     expect(setupServiceWorkerUpdateChecks).toHaveBeenCalledWith(
       '/sw.js',
       expect.any(Function),
+      'test-build-id',
     );
 
     const postCheckCallback = vi.mocked(setupServiceWorkerUpdateChecks).mock

@@ -3087,8 +3087,9 @@ POT now uses an explicit app-side registration flow so users get a clear update 
 - The update prompt can be triggered in two paths:
   - `onNeedRefresh` callback from `registerSW`
   - Explicit post-check detection when `registration.waiting` exists after `registration.update()`
+- Every service worker update check logs its outcome (`waiting service worker detected`, `no waiting service worker`, `no registration available`, or a failure), so both detection channels can be watched in DevTools during testing
 - When a new waiting service worker is detected, the app shows a persistent top-center toast that must be applied rather than deferred:
-  - Message: `Update Available`, with the consequence stated up front: "Applied automatically in a moment. Unsaved edits will be lost."
+  - Message: `Update Available` with "Unsaved edits will be lost", so the consequence of the enforced update is stated up front
   - Action: `Update now` (attempts waiting-worker activation and always forces a reload path; it falls back to a hard reload if activation times out or if no `controllerchange` is observed within 1.5 seconds)
   - The prompt is not dismissible (`dismissible: false`) and has no cancel action, because an update must always be applied
 - Prompt dedupe and enforcement behavior:
@@ -3097,6 +3098,15 @@ POT now uses an explicit app-side registration flow so users get a clear update 
   - The update is applied once the user has been quiet for `UPDATE_QUIET_PERIOD_MS` (currently 45 seconds without keydown/input/pointerdown). A hidden tab receives no input events, so leaving the tab also counts as quiet and the update applies in the background
   - Interacting with the app keeps extending the quiet window, but `UPDATE_MAX_DEFER_MS` (currently 5 minutes) is a hard cap: after that the update is applied regardless, so a stale client can never keep running indefinitely
   - The quiet window trades a small chance of discarding a half-typed form against never leaving a stale client running. The app has no global unsaved-changes tracking (only `POTSettingsSheet` tracks dirty state, for its own navigation), so the prompt copy states the consequence instead of attempting to preserve drafts
+- Deployed-build detection (`src/concerns/pwa/pwaVersionCheck.ts`) is a second, independent detection channel:
+  - `vite.config.ts` bakes a build identity into the bundle (`import.meta.env.VITE_CLIENT_BUILD_ID`) and emits the same value as `dist/version.json`. A build timestamp is used because the Docker and Azure build contexts exclude `.git`
+  - A running client fetches `/version.json` with `cache: 'no-store'` on startup, on window focus, on tab-visible, and every `VERSION_CHECK_INTERVAL_MS` (currently 5 minutes) while visible
+  - On a mismatch it only calls `requestServiceWorkerUpdateCheck('version-mismatch', ...)`. This channel never prompts, never applies, and never reloads by itself, because only the service worker can fetch and activate the new client assets
+  - Both channels enter the same check path, so the existing `promptedWaitingScriptUrl` dedupe and `refreshInProgress` lock keep a double trigger to one prompt and one reload. A prompt still requires a waiting worker, so a mismatch noticed before install completes simply waits for `onNeedRefresh`
+  - Only a deployed build that has not already been handled triggers a check (`handledRemoteBuildId`), so a mismatch that cannot be resolved yet does not re-trigger on every check
+  - `/version.json` must stay out of the precache: it is JSON, which `workbox.globPatterns` does not cover, and nginx serves it with `Cache-Control: no-cache` in both `nginx.conf` and `nginx.azure.conf`
+  - Offline and transient failures log a warning and are retried by the next check
+  - Every completed check logs its outcome (`up to date`, `deployed build differs`, `already handled`, or skipped while one is in flight), so the channel can be watched in DevTools during testing
 
 This closes the stale-bundle gap where users might otherwise keep using an older version until a manual hard refresh.
 
@@ -3106,7 +3116,8 @@ Expected detection timing:
 
 - If a user refocuses the app tab after deployment, detection should occur quickly via focus/visibility checks
 - If a user keeps the tab open and idle, detection occurs within the configured periodic check window (currently 30 minutes)
-- Detection currently relies only on the service worker lifecycle (`registration.update()` / `onNeedRefresh`). There is no client/server version handshake, so if the server deploys a breaking API change, an already-open client can keep running the old build until the next service worker check detects the new client assets
+- The deployed-build check retries independently of the service worker path: on focus/visibility, immediately at startup, and every 5 minutes while visible. That covers a service worker check that missed or failed, for example while the client container is being recreated
+- Detection does not use a client/server version handshake, so a breaking API change still relies on the backward-compatibility policy. The deployed-build check only reports that a newer _client_ build exists
 
 ---
 

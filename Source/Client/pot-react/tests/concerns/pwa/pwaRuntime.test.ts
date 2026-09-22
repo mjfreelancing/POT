@@ -8,6 +8,8 @@ import {
   UPDATE_MAX_DEFER_MS,
   UPDATE_QUIET_PERIOD_MS,
   UPDATE_TOAST_ID,
+  VERSION_CHECK_INTERVAL_MS,
+  VERSION_FILE_URL,
 } from '@/concerns/pwa/pwaRuntime';
 
 describe('pwaRuntime', () => {
@@ -21,6 +23,12 @@ describe('pwaRuntime', () => {
   test('exposes the stable update toast id and check interval', () => {
     expect(UPDATE_TOAST_ID).toBe('pwa-update-available');
     expect(UPDATE_CHECK_INTERVAL_MS).toBe(30 * 60 * 1000);
+  });
+
+  test('exposes the deployed build file and its check interval', () => {
+    expect(VERSION_FILE_URL).toBe('/version.json');
+    expect(VERSION_CHECK_INTERVAL_MS).toBe(5 * 60 * 1000);
+    expect(VERSION_CHECK_INTERVAL_MS).toBeLessThan(UPDATE_CHECK_INTERVAL_MS);
   });
 
   test('keeps the quiet window and evaluation tick inside the maximum deferral window', () => {
