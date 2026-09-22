@@ -7,6 +7,9 @@
     "source.organizeImports.csharp": "explicit",
     "source.fixAll.csharp": "explicit"
   },
+  // The "canonical class" hint (e.g. w-[180px] -> w-45) is noise: this repo's deliberate
+  // arbitrary pixel values are documented in Source/Client/pot-react/DEVELOPER.md.
+  "tailwindCSS.lint.suggestCanonicalClasses": "ignore",
   "[csharp]": {
     "editor.defaultFormatter": "ms-dotnettools.csharp"
   },

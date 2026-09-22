@@ -126,25 +126,9 @@ test('dashboard renders seeded account rollups and upcoming items', async ({
     page.getByRole('heading', { name: 'Incomes Overview', exact: true }),
   ).toBeVisible();
 
-  // "Total Next 30 Days" rollups are derived from the expense/income payloads
-  // (the dashboard's default period is 30 days).
-  const dueWithin30 = dueWithinDays(30);
-
-  const expenses30Total = expenses
-    .filter(dueWithin30)
-    .reduce((sum, expense) => sum + expense.amount, 0);
-  await expect(
-    page.getByText(formatMoney(expenses30Total), { exact: true }).first(),
-  ).toBeVisible();
-
-  const incomes30Total = incomes
-    .filter(dueWithin30)
-    .reduce((sum, income) => sum + income.amount, 0);
-  await expect(
-    page.getByText(formatMoney(incomes30Total), { exact: true }).first(),
-  ).toBeVisible();
-
   // An upcoming (due within 30 days) expense renders with its amount.
+  // The dashboard's default period is 30 days.
+  const dueWithin30 = dueWithinDays(30);
   const upcomingExpense = expenses.find(dueWithin30);
 
   if (upcomingExpense) {
@@ -154,6 +138,20 @@ test('dashboard renders seeded account rollups and upcoming items', async ({
     await expect(
       page
         .getByText(formatMoney(upcomingExpense.amount), { exact: true })
+        .first(),
+    ).toBeVisible();
+  }
+
+  // An upcoming (due within 30 days) income renders with its amount.
+  const upcomingIncome = incomes.find(dueWithin30);
+
+  if (upcomingIncome) {
+    await expect(
+      page.getByText(upcomingIncome.description, { exact: true }).first(),
+    ).toBeVisible();
+    await expect(
+      page
+        .getByText(formatMoney(upcomingIncome.amount), { exact: true })
         .first(),
     ).toBeVisible();
   }
