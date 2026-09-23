@@ -55,18 +55,32 @@ internal sealed class BudgetReminderEmailWorker : BackgroundWorker
 
                     foreach (var user in allUsers)
                     {
-                        // We need a new scope for each user to ensure the site filtering is applied correctly
-                        using var userScope = _scopeFactory.CreateScope();
-                        var userServiceProvider = userScope.ServiceProvider;
+                        try
+                        {
+                            // We need a new scope for each user to ensure the site filtering is applied correctly
+                            using var userScope = _scopeFactory.CreateScope();
+                            var userServiceProvider = userScope.ServiceProvider;
 
-                        var userContext = userServiceProvider.GetRequiredService<ICurrentUserContext>();
-                        userContext.SetUserRowId(user.RowId);
+                            var userContext = userServiceProvider.GetRequiredService<ICurrentUserContext>();
+                            userContext.SetUserRowId(user.RowId);
 
-                        var reminderService = userServiceProvider.GetRequiredService<IBudgetReminderService>();
+                            var reminderService = userServiceProvider.GetRequiredService<IBudgetReminderService>();
 
-                        await reminderService
-                            .SendRemindersAsync(stoppingToken)
-                            .ConfigureAwait(false);
+                            await reminderService
+                                .SendRemindersAsync(stoppingToken)
+                                .ConfigureAwait(false);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            // Cancellation is a host shutdown, not a per-user failure; the outer handler stops the worker.
+                            throw;
+                        }
+                        catch (Exception exception)
+                        {
+                            // One user's failure must not prevent the remaining users being processed in this cycle.
+                            logger.LogError(exception, "An error occurred while sending the budget reminder email for user {UserRowId}: {ExceptionMessage}",
+                                user.RowId, exception.Message);
+                        }
                     }
                 }
                 catch (OperationCanceledException)
