@@ -67,7 +67,7 @@ internal sealed class SendEmailChannel : ISendEmailChannelReader, ISendEmailChan
             }
             catch (Exception exception)
             {
-                logger?.LogError(exception, "An error occurred during the Expired OTP cleanup process: {ExceptionMessage}", exception.Message);
+                logger?.LogError(exception, "An error occurred while processing the email channel: {ExceptionMessage}", exception.Message);
             }
         }
     }
