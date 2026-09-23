@@ -81,7 +81,7 @@ public class ExpenseRepositoryFixture : PotFixtureBase
 
             await context.AddAccountsAsync(account);
 
-            var result = await context.GetAllExpensesAsync();
+            var result = await context.GetAllExpensesAsync(Xunit.TestContext.Current.CancellationToken);
 
             result.Count.ShouldBe(2);
             result.ShouldContain(expense => expense.RowId == expense1.RowId && expense.Account.RowId == account.RowId);
@@ -104,7 +104,7 @@ public class ExpenseRepositoryFixture : PotFixtureBase
 
             await context.AddAccountsAsync(account);
 
-            var result = await context.GetExpenseOrDefaultAsync(expense.RowId);
+            var result = await context.GetExpenseOrDefaultAsync(expense.RowId, Xunit.TestContext.Current.CancellationToken);
 
             result.ShouldNotBeNull();
             result.RowId.ShouldBe(expense.RowId);
@@ -116,7 +116,7 @@ public class ExpenseRepositoryFixture : PotFixtureBase
         {
             using var context = CreateTestContext();
 
-            var result = await context.GetExpenseOrDefaultAsync(Guid.NewGuid());
+            var result = await context.GetExpenseOrDefaultAsync(Guid.NewGuid(), Xunit.TestContext.Current.CancellationToken);
 
             result.ShouldBeNull();
         }
@@ -138,7 +138,7 @@ public class ExpenseRepositoryFixture : PotFixtureBase
 
             await context.AddAccountsAsync(account);
 
-            var result = await context.GetExpensesAsync([requestedExpense.RowId]);
+            var result = await context.GetExpensesAsync([requestedExpense.RowId], Xunit.TestContext.Current.CancellationToken);
 
             result.Count.ShouldBe(1);
             result[0].RowId.ShouldBe(requestedExpense.RowId);
@@ -166,7 +166,7 @@ public class ExpenseRepositoryFixture : PotFixtureBase
 
             await context.AddAccountsAsync(account, otherAccount);
 
-            var result = await context.GetExpensesForAccountAsync(account.RowId);
+            var result = await context.GetExpensesForAccountAsync(account.RowId, Xunit.TestContext.Current.CancellationToken);
 
             result.Count.ShouldBe(2);
             result.ShouldContain(expense => expense.RowId == includedExpense.RowId);
@@ -208,7 +208,7 @@ public class ExpenseRepositoryFixture : PotFixtureBase
 
             await context.AddAccountsAsync(account, otherAccount);
 
-            var result = await context.GetRequiredRenewalsAsync([account.RowId], asOfDate);
+            var result = await context.GetRequiredRenewalsAsync([account.RowId], asOfDate, Xunit.TestContext.Current.CancellationToken);
 
             result.Length.ShouldBe(2);
             result.ShouldContain(eligibleNoEndDate.RowId);
@@ -235,7 +235,7 @@ public class ExpenseRepositoryFixture : PotFixtureBase
 
             await context.AddAccountsAsync(account);
 
-            var result = await context.GetRequiredRenewalsAsync([account.RowId], asOfDate);
+            var result = await context.GetRequiredRenewalsAsync([account.RowId], asOfDate, Xunit.TestContext.Current.CancellationToken);
 
             result.Length.ShouldBe(1);
             result.ShouldContain(dueOnAsOfDate.RowId);

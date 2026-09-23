@@ -11,7 +11,7 @@ public class HealthCheckFixture : IntegrationFixtureBase
     {
         using var client = CreateClient();
 
-        var response = await client.GetAsync("/_health/ready");
+        var response = await client.GetAsync("/_health/ready", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
@@ -26,14 +26,14 @@ public class HealthCheckUnhealthyFixture : IAsyncLifetime
 
     private ProductionApiWebApplicationFactory? _factory;
 
-    async Task IAsyncLifetime.InitializeAsync()
+    async ValueTask IAsyncLifetime.InitializeAsync()
     {
         _factory = new ProductionApiWebApplicationFactory("127.0.0.1", UnreachableDbPort);
 
         await Task.CompletedTask;
     }
 
-    async Task IAsyncLifetime.DisposeAsync()
+    async ValueTask IAsyncDisposable.DisposeAsync()
     {
         _factory?.Dispose();
         _factory = null;
@@ -48,7 +48,7 @@ public class HealthCheckUnhealthyFixture : IAsyncLifetime
 
         using var client = _factory.CreateClient();
 
-        var response = await client.GetAsync("/_health/ready");
+        var response = await client.GetAsync("/_health/ready", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
     }

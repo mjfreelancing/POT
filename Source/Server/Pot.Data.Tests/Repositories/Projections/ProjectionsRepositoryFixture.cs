@@ -65,7 +65,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
                 var account = EntityFactory.CreateAccount(context.Site, "Test Account", 1000.0);
                 await context.AddAccountAsync(account);
 
-                var result = await context.GetAllAccountsAsync();
+                var result = await context.GetAllAccountsAsync(Xunit.TestContext.Current.CancellationToken);
 
                 result.Count.ShouldBe(1);
                 result[0].Description.ShouldBe("Test Account");
@@ -82,7 +82,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 await context.AddAccountsAsync(ownAccount, otherAccount);
 
-                var result = await context.GetAllAccountsAsync();
+                var result = await context.GetAllAccountsAsync(Xunit.TestContext.Current.CancellationToken);
 
                 result.Count.ShouldBe(1);
                 result[0].Description.ShouldBe("Own Account");
@@ -99,7 +99,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 await context.AddAccountsAsync(account1, account2, account3);
 
-                var result = await context.GetAllAccountsAsync();
+                var result = await context.GetAllAccountsAsync(Xunit.TestContext.Current.CancellationToken);
 
                 result.Count.ShouldBe(3);
                 result.ShouldHaveValues(account => account.Description, new[] { "Account 1", "Account 2", "Account 3" });
@@ -110,7 +110,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
             {
                 using var context = CreateTestContext();
 
-                var result = await context.GetAllAccountsAsync();
+                var result = await context.GetAllAccountsAsync(Xunit.TestContext.Current.CancellationToken);
 
                 result.ShouldBeEmpty();
             }
@@ -125,7 +125,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 await context.AddAccountsAsync(otherAccount1, otherAccount2);
 
-                var result = await context.GetAllAccountsAsync();
+                var result = await context.GetAllAccountsAsync(Xunit.TestContext.Current.CancellationToken);
 
                 result.ShouldBeEmpty();
             }
@@ -147,7 +147,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 await context.AddAccountAsync(account);
 
-                var result = await context.GetAllAccountsAsync();
+                var result = await context.GetAllAccountsAsync(Xunit.TestContext.Current.CancellationToken);
 
                 result.Count.ShouldBe(1);
                 result[0].Expenses.Count.ShouldBe(2);
@@ -166,7 +166,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 await context.AddAccountAsync(account);
 
-                var result = await context.GetAllAccountsAsync();
+                var result = await context.GetAllAccountsAsync(Xunit.TestContext.Current.CancellationToken);
 
                 result.Count.ShouldBe(1);
                 result[0].Expenses.ShouldBeEmpty();
@@ -190,7 +190,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 await context.AddAccountAsync(account);
 
-                var result = await context.GetAllAccountsAsync();
+                var result = await context.GetAllAccountsAsync(Xunit.TestContext.Current.CancellationToken);
 
                 result.Count.ShouldBe(1);
                 result[0].Expenses.Count.ShouldBe(2);
@@ -214,7 +214,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 await context.AddAccountAsync(account);
 
-                var result = await context.GetAllAccountsAsync();
+                var result = await context.GetAllAccountsAsync(Xunit.TestContext.Current.CancellationToken);
 
                 result.Count.ShouldBe(1);
                 result[0].Incomes.Count.ShouldBe(2);
@@ -233,7 +233,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 await context.AddAccountAsync(account);
 
-                var result = await context.GetAllAccountsAsync();
+                var result = await context.GetAllAccountsAsync(Xunit.TestContext.Current.CancellationToken);
 
                 result.Count.ShouldBe(1);
                 result[0].Incomes.ShouldBeEmpty();
@@ -257,7 +257,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 await context.AddAccountAsync(account);
 
-                var result = await context.GetAllAccountsAsync();
+                var result = await context.GetAllAccountsAsync(Xunit.TestContext.Current.CancellationToken);
 
                 result.Count.ShouldBe(1);
                 result[0].Incomes.Count.ShouldBe(2);
@@ -292,7 +292,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 await context.AddAccountsAsync(ownAccount, otherAccount);
 
-                var result = await context.GetAllAccountsAsync();
+                var result = await context.GetAllAccountsAsync(Xunit.TestContext.Current.CancellationToken);
 
                 result.Count.ShouldBe(1);
                 result[0].Description.ShouldBe("Own Account");
@@ -311,7 +311,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 await context.AddAccountAsync(account);
 
-                var result = await context.GetAllAccountsAsync();
+                var result = await context.GetAllAccountsAsync(Xunit.TestContext.Current.CancellationToken);
 
                 result.Count.ShouldBe(1);
                 result[0].Description.ShouldBe("Empty Account");
@@ -333,7 +333,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 await context.AddAccountAsync(account);
 
-                var result = await context.GetAllAccountsAsync();
+                var result = await context.GetAllAccountsAsync(Xunit.TestContext.Current.CancellationToken);
 
                 result.Count.ShouldBe(1);
                 result[0].Description.ShouldBe("Account With Excluded Items");
@@ -364,7 +364,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 await context.AddAccountsAsync(account1, account2, account3, otherAccount);
 
-                var result = await context.GetAllAccountsAsync();
+                var result = await context.GetAllAccountsAsync(Xunit.TestContext.Current.CancellationToken);
 
                 result.Count.ShouldBe(3);
                 result.ShouldHaveValues(account => account.Description, new[] { "Account 1", "Account 2", "Account 3" });
@@ -392,7 +392,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
             {
                 using var context = CreateTestContext();
 
-                var result = await context.GetAllAccountsAsync();
+                var result = await context.GetAllAccountsAsync(Xunit.TestContext.Current.CancellationToken);
 
                 result.ShouldBeEmpty();
             }
@@ -437,7 +437,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 await context.AddAccountAsync(account);
 
-                var result = await context.GetAllAccountsAsync();
+                var result = await context.GetAllAccountsAsync(Xunit.TestContext.Current.CancellationToken);
 
                 result.Count.ShouldBe(1);
                 result[0].Expenses.Count.ShouldBe(10);

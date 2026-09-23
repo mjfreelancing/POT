@@ -57,7 +57,7 @@ public class CorsFixture : IntegrationFixtureBase
         request.Headers.Add("Origin", AllowedOrigin);
         request.Headers.Add("Access-Control-Request-Method", "POST");
 
-        var response = await client.SendAsync(request);
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
         var allowOriginValues = response.ShouldHaveHeaderValues(AccessControlAllowOrigin);
 
         allowOriginValues.Single().ShouldBe(AllowedOrigin);
@@ -78,7 +78,7 @@ public class CorsFixture : IntegrationFixtureBase
         request.Headers.Add("Origin", AllowedOrigin2);
         request.Headers.Add("Access-Control-Request-Method", "POST");
 
-        var response = await client.SendAsync(request);
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
         var allowOriginValues = response.ShouldHaveHeaderValues(AccessControlAllowOrigin);
 
         allowOriginValues.Single().ShouldBe(AllowedOrigin2);
@@ -94,7 +94,7 @@ public class CorsFixture : IntegrationFixtureBase
         request.Headers.Add("Origin", DisallowedOrigin);
         request.Headers.Add("Access-Control-Request-Method", "POST");
 
-        var response = await client.SendAsync(request);
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.ShouldNotContainHeader(AccessControlAllowOrigin);
     }
@@ -111,7 +111,7 @@ public class CorsFixture : IntegrationFixtureBase
 
         request.Headers.Add("Origin", AllowedOrigin);
 
-        var response = await client.SendAsync(request);
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
         var allowOriginValues = response.ShouldHaveHeaderValues(AccessControlAllowOrigin);
 
         ((int)response.StatusCode).ShouldBe(422);
@@ -131,7 +131,7 @@ public class CorsFixture : IntegrationFixtureBase
 
         request.Headers.Add("Origin", DisallowedOrigin);
 
-        var response = await client.SendAsync(request);
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
 
         ((int)response.StatusCode).ShouldBe(422);
         response.ShouldNotContainHeader(AccessControlAllowOrigin);

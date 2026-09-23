@@ -657,7 +657,7 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
 
             context.DbContext.AccountAccruals.Add(accountAccrual);
 
-            await context.DbContext.SaveChangesAsync();
+            await context.DbContext.SaveChangesAsync(Xunit.TestContext.Current.CancellationToken);
             context.DbContext.ChangeTracker.Clear();
 
             await context.Marker.SetAccountsDirtyAsync([account.Id], CancellationToken.None);
@@ -687,12 +687,12 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
 
             context.DbContext.AccountAccruals.Add(accountAccrual);
 
-            await context.DbContext.SaveChangesAsync();
+            await context.DbContext.SaveChangesAsync(Xunit.TestContext.Current.CancellationToken);
             context.DbContext.ChangeTracker.Clear();
 
             await context.Marker.SetAccountsDirtyAsync([account.Id], CancellationToken.None);
 
-            var persistedAccountAccrual = await context.DbContext.AccountAccruals.SingleAsync();
+            var persistedAccountAccrual = await context.DbContext.AccountAccruals.SingleAsync(Xunit.TestContext.Current.CancellationToken);
 
             persistedAccountAccrual.AccruedIsDirty.ShouldBeTrue();
             context.DbContext.ChangeTracker.HasChanges().ShouldBeFalse();
@@ -791,7 +791,7 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
                 existingCleanAccountAccrual,
                 existingDirtyAccountAccrual);
 
-            await context.DbContext.SaveChangesAsync();
+            await context.DbContext.SaveChangesAsync(Xunit.TestContext.Current.CancellationToken);
             context.DbContext.ChangeTracker.Clear();
 
             var expenses = new List<ExpenseEntity>
@@ -878,7 +878,7 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
 
             context.DbContext.AccountAccruals.Add(accountAccrual);
 
-            await context.DbContext.SaveChangesAsync();
+            await context.DbContext.SaveChangesAsync(Xunit.TestContext.Current.CancellationToken);
             context.DbContext.ChangeTracker.Clear();
 
             await context.Marker.SetAccountCleanAsync(account.Id, asOfDate, CancellationToken.None);
@@ -909,7 +909,7 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
 
             context.DbContext.AccountAccruals.Add(accountAccrual);
 
-            await context.DbContext.SaveChangesAsync();
+            await context.DbContext.SaveChangesAsync(Xunit.TestContext.Current.CancellationToken);
             context.DbContext.ChangeTracker.Clear();
 
             await context.Marker.SetAccountCleanAsync(account.Id, asOfDate, CancellationToken.None);
@@ -940,7 +940,7 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
 
             context.DbContext.AccountAccruals.Add(accountAccrual);
 
-            await context.DbContext.SaveChangesAsync();
+            await context.DbContext.SaveChangesAsync(Xunit.TestContext.Current.CancellationToken);
             context.DbContext.ChangeTracker.Clear();
 
             await context.Marker.SetAccountCleanAsync(account.Id, asOfDate, CancellationToken.None);
@@ -971,7 +971,7 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
 
             context.DbContext.AccountAccruals.Add(accountAccrual);
 
-            await context.DbContext.SaveChangesAsync();
+            await context.DbContext.SaveChangesAsync(Xunit.TestContext.Current.CancellationToken);
             context.DbContext.ChangeTracker.Clear();
 
             await context.Marker.SetAccountCleanAsync(account.Id, asOfDate, CancellationToken.None);
@@ -1002,7 +1002,7 @@ public class AccrualDirtyStateManagerFixture : PotFixtureBase
 
             context.DbContext.AccountAccruals.Add(accountAccrual);
 
-            await context.DbContext.SaveChangesAsync();
+            await context.DbContext.SaveChangesAsync(Xunit.TestContext.Current.CancellationToken);
             context.DbContext.ChangeTracker.Clear();
 
             await context.Marker.SetAccountCleanAsync(account.Id, asOfDate, CancellationToken.None);

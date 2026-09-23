@@ -32,7 +32,7 @@ public abstract class IntegrationFixtureBase : IAsyncLifetime
             : _factory.CreateClient(clientOptions);
     }
 
-    async Task IAsyncLifetime.InitializeAsync()
+    async ValueTask IAsyncLifetime.InitializeAsync()
     {
         // Step 1: Create a fresh isolated Postgres container for this fixture
         _container = new PostgreSqlBuilder("postgres:13")
@@ -58,7 +58,7 @@ public abstract class IntegrationFixtureBase : IAsyncLifetime
         await dbContext.Database.MigrateAsync();
     }
 
-    async Task IAsyncLifetime.DisposeAsync()
+    async ValueTask IAsyncDisposable.DisposeAsync()
     {
         _factory?.Dispose();
         _factory = null;

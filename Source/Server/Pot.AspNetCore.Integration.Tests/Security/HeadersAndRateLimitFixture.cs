@@ -45,11 +45,11 @@ public class HeadersAndRateLimitFixture : IntegrationFixtureBase
 
         for (var index = 0; index < RateLimiterDefaults.AnonymousPermitLimit; index++)
         {
-            var response = await client.PostAsync("/api/auth/logout", null);
+            var response = await client.PostAsync("/api/auth/logout", null, TestContext.Current.CancellationToken);
             response.StatusCode.ShouldNotBe(HttpStatusCode.TooManyRequests);
         }
 
-        var throttledResponse = await client.PostAsync("/api/auth/logout", null);
+        var throttledResponse = await client.PostAsync("/api/auth/logout", null, TestContext.Current.CancellationToken);
         var problemDetails = await ReadProblemDetailsAsync(throttledResponse);
 
         throttledResponse.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
@@ -78,11 +78,11 @@ public class HeadersAndRateLimitFixture : IntegrationFixtureBase
 
         for (var index = 0; index < RateLimiterDefaults.AuthenticatedPermitLimit; index++)
         {
-            var response = await client.GetAsync("/api/me");
+            var response = await client.GetAsync("/api/me", TestContext.Current.CancellationToken);
             response.StatusCode.ShouldNotBe(HttpStatusCode.TooManyRequests);
         }
 
-        var throttledResponse = await client.GetAsync("/api/me");
+        var throttledResponse = await client.GetAsync("/api/me", TestContext.Current.CancellationToken);
         var problemDetails = await ReadProblemDetailsAsync(throttledResponse);
 
         throttledResponse.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
@@ -114,7 +114,7 @@ public class HeadersAndRateLimitFixture : IntegrationFixtureBase
 
         for (var index = 0; index < requestCount; index++)
         {
-            var response = await client.GetAsync("/api/me");
+            var response = await client.GetAsync("/api/me", TestContext.Current.CancellationToken);
             response.StatusCode.ShouldNotBe(HttpStatusCode.TooManyRequests);
         }
     }

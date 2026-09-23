@@ -39,7 +39,7 @@ public class LoginFixture : IntegrationFixtureBase
 
         request.Headers.Add("User-Agent", "POT Integration Test Agent/1.0");
 
-        var response = await client.SendAsync(request);
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
 

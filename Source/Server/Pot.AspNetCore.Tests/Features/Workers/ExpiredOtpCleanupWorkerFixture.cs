@@ -88,7 +88,7 @@ public class ExpiredOtpCleanupWorkerFixture : PotFixtureBase
 
             await hostedService.StartAsync(CancellationToken.None);
 
-            var pollerOptions = await healthCheckRequested.Task.WaitAsync(HealthCheckRequestTimeout);
+            var pollerOptions = await healthCheckRequested.Task.WaitAsync(HealthCheckRequestTimeout, TestContext.Current.CancellationToken);
 
             pollerOptions.Name.ShouldBe(DatabaseHealthCheckName);
             _ = scopeFactoryFake.DidNotReceive().CreateScope();

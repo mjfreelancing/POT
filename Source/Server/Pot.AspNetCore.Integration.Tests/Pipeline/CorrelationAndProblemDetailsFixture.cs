@@ -30,7 +30,7 @@ public class CorrelationAndProblemDetailsFixture : IntegrationFixtureBase
         using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/logout");
         request.Headers.Add(CorrelationIdHeader, new string('a', 129));
 
-        var response = await client.SendAsync(request);
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
         var problemDetails = await ReadProblemDetailsAsync(response);
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
@@ -48,7 +48,7 @@ public class CorrelationAndProblemDetailsFixture : IntegrationFixtureBase
         using var request = new HttpRequestMessage(HttpMethod.Get, "/api/me");
         request.Headers.Add(CorrelationIdHeader, new string('a', 128));
 
-        var response = await client.SendAsync(request);
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
 
         // Should get 401 Unauthorized (not 400 BadRequest), confirming correlation ID was accepted
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
@@ -68,7 +68,7 @@ public class CorrelationAndProblemDetailsFixture : IntegrationFixtureBase
 
         request.Headers.Add(CorrelationIdHeader, correlationId);
 
-        var response = await client.SendAsync(request);
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
         var problemDetails = await ReadProblemDetailsAsync(response);
 
         response.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
@@ -89,7 +89,7 @@ public class CorrelationAndProblemDetailsFixture : IntegrationFixtureBase
             Content = JsonContent.Create(new { Username = string.Empty, Password = string.Empty })
         };
 
-        var response = await client.SendAsync(request);
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
         var problemDetails = await ReadProblemDetailsAsync(response);
 
         response.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);

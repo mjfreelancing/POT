@@ -62,7 +62,7 @@ public class LogoutFixture : IntegrationFixtureBase
     {
         using var client = CreateClient();
 
-        var actual = await client.GetAsync("/api/auth/logout");
+        var actual = await client.GetAsync("/api/auth/logout", TestContext.Current.CancellationToken);
 
         actual.StatusCode.ShouldBe(HttpStatusCode.MethodNotAllowed);
     }
@@ -72,7 +72,7 @@ public class LogoutFixture : IntegrationFixtureBase
     {
         using var client = CreateClient();
 
-        var response = await client.PostAsync("/api/auth/logout", null);
+        var response = await client.PostAsync("/api/auth/logout", null, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
@@ -82,7 +82,7 @@ public class LogoutFixture : IntegrationFixtureBase
     {
         using var client = CreateClient();
 
-        var response = await client.PostAsync("/api/auth/logout", null);
+        var response = await client.PostAsync("/api/auth/logout", null, TestContext.Current.CancellationToken);
         var setCookieValues = response.ShouldHaveHeaderValues(SetCookieHeader);
 
         setCookieValues.ShouldContainValue($"{RefreshTokenCookieName}=", StringComparison.Ordinal);

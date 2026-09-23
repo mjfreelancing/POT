@@ -56,7 +56,7 @@ public class ServiceHealthPollerFixture : PotFixtureBase
 
             var waitTask = serviceHealthPoller.WaitForHealthyAsync(CreatePollerOptions(), CancellationToken.None);
 
-            (await Task.WhenAny(waitTask, Task.Delay(TimeSpan.FromSeconds(2)))).ShouldBe(waitTask);
+            (await Task.WhenAny(waitTask, Task.Delay(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken))).ShouldBe(waitTask);
 
             _ = _healthCheckServiceFake
                 .Received(1)

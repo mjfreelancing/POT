@@ -101,7 +101,8 @@ public class AccountAccrualRepositoryFixture : PotFixtureBase
                 staleAccount.RowId,
                 upToDateAccount.RowId
             ],
-            asOfDate);
+            asOfDate,
+            Xunit.TestContext.Current.CancellationToken);
 
             result.Length.ShouldBe(3);
             result.ShouldContain(dirtyAccount.RowId);

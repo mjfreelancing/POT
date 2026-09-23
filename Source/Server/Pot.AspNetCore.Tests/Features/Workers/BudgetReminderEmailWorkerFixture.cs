@@ -95,7 +95,7 @@ public class BudgetReminderEmailWorkerFixture : PotFixtureBase
 
             await hostedService.StartAsync(CancellationToken.None);
 
-            var pollerOptions = await healthCheckRequested.Task.WaitAsync(HealthCheckRequestTimeout);
+            var pollerOptions = await healthCheckRequested.Task.WaitAsync(HealthCheckRequestTimeout, TestContext.Current.CancellationToken);
 
             pollerOptions.Name.ShouldBe(DatabaseHealthCheckName);
             _ = scopeFactoryFake.DidNotReceive().CreateScope();
@@ -172,7 +172,7 @@ public class BudgetReminderEmailWorkerFixture : PotFixtureBase
 
             await hostedService.StartAsync(CancellationToken.None);
 
-            await allUsersAttempted.Task.WaitAsync(UserProcessingTimeout);
+            await allUsersAttempted.Task.WaitAsync(UserProcessingTimeout, TestContext.Current.CancellationToken);
 
             attemptedUserRowIds.ShouldBe([users[0].RowId, users[1].RowId, users[2].RowId]);
 

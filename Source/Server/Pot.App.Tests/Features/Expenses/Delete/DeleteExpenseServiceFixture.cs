@@ -300,7 +300,7 @@ public class DeleteExpenseServiceFixture : PotFixtureBase
             _ = context.AddExpense(account, "Expense To Keep", excludeFromCalcs: false);
             _ = context.AddAccountAccrual(account, isDirty: false);
 
-            await context.DbContext.SaveChangesAsync();
+            await context.DbContext.SaveChangesAsync(Xunit.TestContext.Current.CancellationToken);
 
             var result = await context.Service.DeleteExpenseAsync(expenseToDelete.RowId, CancellationToken.None);
 
@@ -324,7 +324,7 @@ public class DeleteExpenseServiceFixture : PotFixtureBase
             _ = context.AddExpense(account, "Expense To Keep", excludeFromCalcs: false);
             _ = context.AddAccountAccrual(account, isDirty: false);
 
-            await context.DbContext.SaveChangesAsync();
+            await context.DbContext.SaveChangesAsync(Xunit.TestContext.Current.CancellationToken);
 
             var result = await context.Service.DeleteExpenseAsync(expenseToDelete.RowId, CancellationToken.None);
 
@@ -348,7 +348,7 @@ public class DeleteExpenseServiceFixture : PotFixtureBase
             _ = context.AddExpense(account, "Expense To Keep", excludeFromCalcs: false);
             _ = context.AddAccountAccrual(account, isDirty: false);
 
-            await context.DbContext.SaveChangesAsync();
+            await context.DbContext.SaveChangesAsync(Xunit.TestContext.Current.CancellationToken);
 
             var result = await context.Service.DeleteExpenseAsync(expenseToDelete.RowId, CancellationToken.None);
 
@@ -372,7 +372,7 @@ public class DeleteExpenseServiceFixture : PotFixtureBase
             _ = context.AddExpense(account, "Expense To Keep", excludeFromCalcs: false);
             _ = context.AddAccountAccrual(account, isDirty: false);
 
-            await context.DbContext.SaveChangesAsync();
+            await context.DbContext.SaveChangesAsync(Xunit.TestContext.Current.CancellationToken);
 
             var result = await context.Service.DeleteExpenseAsync(expenseToDelete.RowId, CancellationToken.None);
 

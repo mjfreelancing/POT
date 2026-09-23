@@ -43,7 +43,7 @@ namespace Pot.AspNetCore.Integration.Tests.Host;
 ///     private PostgreSqlContainer _container = null!;
 ///     private ApiWebApplicationFactory _factory = null!;
 ///
-///     async Task IAsyncLifetime.InitializeAsync()
+///     async ValueTask IAsyncLifetime.InitializeAsync()
 ///     {
 ///         _container = new PostgreSqlBuilder("postgres:13")
 ///             .WithDatabase("pot_test")
@@ -64,7 +64,7 @@ namespace Pot.AspNetCore.Integration.Tests.Host;
 ///         await dbContext.Database.MigrateAsync();
 ///     }
 ///
-///     async Task IAsyncLifetime.DisposeAsync()
+///     async ValueTask IAsyncDisposable.DisposeAsync()
 ///     {
 ///         if (_factory is not null) _factory.Dispose();
 ///         if (_container is not null) await _container.DisposeAsync();
