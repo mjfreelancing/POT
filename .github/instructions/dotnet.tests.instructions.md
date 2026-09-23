@@ -51,6 +51,10 @@ applyTo: "Source/Server/*Tests/**/*.cs"
 
 - Keep framework/tooling choices in project-level docs if needed.
   - POT: Repository test projects are `Pot.App.Tests`, `Pot.Data.Tests`, `Pot.AspNetCore.Tests`, `Pot.Shared.Tests`, and `Pot.AspNetCore.Integration.Tests`.
+  - POT: Test projects use xUnit.net v3 via the `xunit.v3.mtp-off` package with the VSTest adapter (`xunit.runner.visualstudio`) and `Microsoft.NET.Test.Sdk`. The `mtp-off` variant is deliberate: v3 projects are Microsoft Testing Platform (MTP) enabled by default, and on .NET 10+ SDKs an MTP-enabled project cannot be executed through the VSTest target that `dotnet test` and `--collect`/`--settings` rely on.
+  - POT: v3 test projects must set `<OutputType>Exe</OutputType>`; the build fails without it.
+  - POT: In v3, `IAsyncLifetime.InitializeAsync` returns `ValueTask`, and disposal comes from `IAsyncDisposable` rather than `IAsyncLifetime` (implement it explicitly as `async ValueTask IAsyncDisposable.DisposeAsync()`).
+  - POT: Pass `TestContext.Current.CancellationToken` to awaited calls that accept a cancellation token (analyzer xUnit1051 enforces this). Fixtures that declare their own nested `TestContext` helper type must qualify it as `Xunit.TestContext.Current.CancellationToken`, because the nested type shadows the framework type.
   - POT: Current assertion stack uses Shouldly with NSubstitute.
   - POT: Follow `*Fixture.cs` naming with descriptive method names.
   - POT: Shared helpers live in `Pot.TestUtils` when they are genuinely cross-project.
