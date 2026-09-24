@@ -80,7 +80,7 @@ function AccountActions({ account }: AccountActionsProps) {
       <ConfirmationDialog
         open={showDeleteDialog}
         title="Delete Account"
-        description={`Are you sure you want to delete account (${account.bsb}) ${account.number}?`}
+        description={`Are you sure you want to delete account "${account.description}"?`}
         confirmLabel="Delete"
         cancelLabel="Cancel"
         onConfirm={handleDelete}

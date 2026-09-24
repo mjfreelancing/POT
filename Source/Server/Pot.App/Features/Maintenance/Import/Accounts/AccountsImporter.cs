@@ -74,8 +74,6 @@ internal sealed class AccountsImporter : IAccountsImporter
         var input = new Features.Accounts.Create.Models.Input
         {
             RowId = csvRow.RowId,
-            Bsb = csvRow.Bsb,
-            Number = csvRow.Number,
             Description = csvRow.Description,
             Balance = csvRow.Balance,
             Reserved = csvRow.Reserved
@@ -101,8 +99,6 @@ internal sealed class AccountsImporter : IAccountsImporter
         {
             Etag = accountEtag,
             RowId = csvRow.RowId,
-            Bsb = csvRow.Bsb,
-            Number = csvRow.Number,
             Description = csvRow.Description,
             Balance = csvRow.Balance,
             Reserved = csvRow.Reserved,

@@ -71,9 +71,12 @@ internal sealed class ImportDataService : IImportDataService
                     return EnrichedResult.Fail<int>(unsupportedMetadataVersionError);
                 }
 
-                var metadata = _importStreamReader.GetMetadata<MetadataV3>();
+                var metadata = _importStreamReader.GetMetadata<MetadataV4>();
 
-                _logger.LogInformation("Importing data (as v{MetadataVersion}) from {MetadataCreatedAt}", metadata.Version, metadata.CreatedAt);
+                // This is the version read from the package, not MetadataV4.Version (a type constant):
+                // The deserializer reads past the version in the metadata entry. The gate above
+                // guarantees it equals MetadataBase.CurrentVersion.
+                _logger.LogInformation("Importing data (as v{MetadataVersion}) from {MetadataCreatedAt}", metadataVersion, metadata.CreatedAt);
 
                 using var transaction = await _transactionFactory.CreateTransactionAsync(cancellationToken);
 

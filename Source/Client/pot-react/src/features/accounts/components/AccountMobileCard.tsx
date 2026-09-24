@@ -37,8 +37,7 @@ type AccountMobileCardProps = {
  * Styled consistently with dashboard AccountCard but with action menu instead of status badge.
  */
 function AccountMobileCard({ account }: AccountMobileCardProps) {
-  const { description, bsb, number, balance, available, stableExpenseAccrual } =
-    account;
+  const { description, balance, available, stableExpenseAccrual } = account;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { setError } = useErrorContext();
   const navigate = useNavigate();
@@ -98,10 +97,6 @@ function AccountMobileCard({ account }: AccountMobileCardProps) {
               <h3 className="font-bold text-base lg:text-lg leading-tight text-green-700 dark:text-green-300">
                 {description}
               </h3>
-              <div className="text-[10px] lg:text-xs text-muted-foreground mt-1 space-y-0.5">
-                <div>BSB: {bsb}</div>
-                <div>Acc: {number}</div>
-              </div>
             </div>
 
             {/* Spacer to push content to bottom */}

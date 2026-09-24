@@ -19,11 +19,9 @@ const apiBaseUrl = 'http://127.0.0.1:5242';
 const isMobileProject = (testInfo: import('@playwright/test').TestInfo) =>
   testInfo.project.name.startsWith('mobile');
 
-// A unique BSB + number pair so repeated runs never collide with
+// A unique description so repeated runs never collide with
 // the seed data or with accounts from an earlier run.
 const makeUniqueAccount = () => ({
-  bsb: '111-222',
-  number: `E2E${Date.now()}`.slice(0, 20),
   description: `E2E Account ${Date.now()}`,
   balance: 1234.5,
   reserved: 100,
@@ -86,8 +84,6 @@ test.describe.serial('Accounts CRUD (fixture-managed)', () => {
     await page.getByRole('button', { name: 'Add a new account' }).click();
     await expect(page).toHaveURL(/\/accounts\/create$/);
 
-    await page.getByLabel('BSB').fill(account.bsb);
-    await page.getByLabel('Account Number').fill(account.number);
     // exact name avoids the accounts page 'Search accounts by description' input.
     await page
       .getByRole('textbox', { name: 'Description', exact: true })
@@ -195,8 +191,6 @@ test.describe.serial('Accounts CRUD (fixture-managed)', () => {
     await page.goto('/accounts/create');
     await expect(page.getByRole('button', { name: 'Create' })).toBeVisible();
 
-    await page.getByLabel('BSB').fill('111-222');
-    await page.getByLabel('Account Number').fill('98765432');
     // exact name avoids the accounts page 'Search accounts by description' input.
     await page
       .getByRole('textbox', { name: 'Description', exact: true })

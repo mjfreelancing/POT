@@ -3,8 +3,6 @@ import { z } from 'zod';
 import { EtagSchema, IdentitySchema } from './identity';
 
 const BaseAccountSchema = z.object({
-  bsb: z.string(),
-  number: z.string(),
   description: z.string(),
   balance: z.number(),
   reserved: z.number(),

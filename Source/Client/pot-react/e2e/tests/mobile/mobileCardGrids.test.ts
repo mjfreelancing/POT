@@ -177,18 +177,16 @@ test('accounts page: data table on desktop, card grid on mobile', async ({
     await expect(page.getByText(description).first()).toBeVisible();
 
     if (isMobile) {
-      // Card grid: no <table>; the mobile account card's "BSB:"/"Balance:"
-      // labels render (the table shows those values in plain cells / column
-      // headers without the colon, so the "BSB:" text is card-only). The card
-      // renders "BSB: <value>" in ONE text node, so match by substring.
+      // Card grid: no <table>; the mobile account card's "Balance:" label
+      // renders (the table shows the value in a plain cell / column header
+      // without the colon, so the "Balance:" text is card-only).
       await expect(page.getByRole('table')).toHaveCount(0);
-      await expect(page.getByText(/BSB:/).first()).toBeVisible();
       await expect(
         page.getByText('Balance:', { exact: true }).first(),
       ).toBeVisible();
     } else {
       await expect(page.getByRole('table')).toBeVisible();
-      await expect(page.getByText(/BSB:/)).toHaveCount(0);
+      await expect(page.getByText('Balance:', { exact: true })).toHaveCount(0);
     }
   } finally {
     if (createdRowId) {

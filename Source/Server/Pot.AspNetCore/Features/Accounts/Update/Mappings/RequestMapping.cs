@@ -10,8 +10,6 @@ internal static class RequestMapping
         {
             RowId = accountId,
             Etag = request.Etag,
-            Bsb = request.Bsb,
-            Number = request.Number,
             Description = request.Description,
             Balance = request.Balance,
             Reserved = request.Reserved

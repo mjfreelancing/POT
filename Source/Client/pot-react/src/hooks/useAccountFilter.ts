@@ -122,8 +122,6 @@ function useAccountFilter<T extends ItemWithAccount>({
       accountsInUse.unshift({
         rowId: 'not-assigned',
         description: 'Not Assigned',
-        bsb: '',
-        number: '',
         balance: 0,
         reserved: 0,
         totalExpenseAccrued: 0,

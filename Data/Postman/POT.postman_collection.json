@@ -309,7 +309,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"bsb\": \"650-123\",\r\n    \"number\": \"222 333 444\",\r\n    \"description\": \"Joint Account 123\",\r\n    \"balance\": 1212,\r\n    \"reserved\": 11,\r\n    \"allocated\": 0.00,\r\n    \"dailyAccrual\": 0.00\r\n}",
+              "raw": "{\r\n    \"description\": \"Joint Account 123\",\r\n    \"balance\": 1212,\r\n    \"reserved\": 11,\r\n    \"allocated\": 0.00,\r\n    \"dailyAccrual\": 0.00\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -335,7 +335,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"eTag\": 1758529853593,\r\n    \"bsb\": \"650-000\",\r\n    \"number\": \"037 654 606\",\r\n    \"description\": \"NPBS Mortgage Loan - DEMO\",\r\n    \"balance\": 24315.33,\r\n    \"reserved\": 10000\r\n}\r\n",
+              "raw": "{\r\n    \"eTag\": 1758529853593,\r\n    \"description\": \"NPBS Mortgage Loan - DEMO\",\r\n    \"balance\": 24315.33,\r\n    \"reserved\": 10000\r\n}\r\n",
               "options": {
                 "raw": {
                   "language": "json"

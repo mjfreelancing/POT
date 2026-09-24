@@ -10,14 +10,13 @@ type AccountCardProps = {
 
 /**
  * A card component to display individual account information.
- * Shows account name, BSB, account number, balance, available funds, and status.
+ * Shows account name, balance, available funds, and status.
  *
  * @example
  * <AccountCard account={accountData} />
  */
 function AccountCard({ account }: AccountCardProps) {
-  const { description, bsb, number, balance, available, stableExpenseAccrual } =
-    account;
+  const { description, balance, available, stableExpenseAccrual } = account;
 
   // Determine account status based on available funds
   const getAccountStatus = () => {
@@ -64,10 +63,6 @@ function AccountCard({ account }: AccountCardProps) {
             <h3 className="font-bold text-base lg:text-lg leading-tight text-green-700 dark:text-green-300">
               {description}
             </h3>
-            <div className="text-[10px] lg:text-xs text-muted-foreground mt-1 space-y-0.5">
-              <div>BSB: {bsb}</div>
-              <div>Acc: {number}</div>
-            </div>
           </div>
 
           {/* Spacer to push content to bottom */}

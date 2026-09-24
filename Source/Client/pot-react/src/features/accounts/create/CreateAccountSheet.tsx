@@ -20,8 +20,6 @@ function CreateAccountSheet() {
     resolver: zodResolver(accountFormSchema),
     mode: 'onSubmit',
     defaultValues: {
-      bsb: '',
-      number: '',
       description: '',
       balance: 0,
       reserved: 0,

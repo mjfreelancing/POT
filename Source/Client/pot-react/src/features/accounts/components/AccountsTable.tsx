@@ -39,21 +39,6 @@ function AccountsTable({ accounts }: AccountsTableProps) {
 
   const columns: AppColumnDef<Account>[] = [
     {
-      id: 'bsb_number',
-      accessorKey: 'bsb_number',
-      header: 'BSB / Number',
-      cell: ({ row }) => {
-        const { bsb, number } = row.original;
-
-        return (
-          <div>
-            <div className="text-sm text-muted-foreground">({bsb})</div>
-            <span>{number}</span>
-          </div>
-        );
-      },
-    },
-    {
       id: 'description',
       accessorKey: 'description',
       header: ({ column }) => (

@@ -10,8 +10,6 @@ import {
 describe('account schemas and comparator', () => {
   test('parses valid account payloads', () => {
     const base = {
-      bsb: '123-456',
-      number: '00112233',
       description: 'Main account',
       balance: 100,
       reserved: 20,

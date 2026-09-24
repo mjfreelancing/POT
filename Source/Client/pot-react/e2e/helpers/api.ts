@@ -148,25 +148,18 @@ export async function deleteIncomeViaApi(
  * Creates an account and returns its rowId.
  *
  * @param description unique per suite/test so the created row can be asserted
- *   in the UI (and so cleanup never touches another suite's rows).
- *
- * The BSB/number are generated per call because `(Bsb, Number)` is globally
- * unique (NOT per-site): suites that create their own accounts (e.g.
- * mobileCardGrids, quickActions on its isolated site) must never collide with
- * each other's persistent accounts.
+ *   in the UI (and so cleanup never touches another suite's rows). Account
+ *   descriptions are unique per site, so suites sharing a site must pass
+ *   distinct values.
  */
 export async function createAccountViaApi(
   request: APIRequestContext,
   accessToken: string,
   description = 'E2E Quick Actions Account',
 ): Promise<{ rowId: string }> {
-  const uniqueNumber = `${Date.now()}${Math.floor(Math.random() * 1_000_000)}`;
-
   const response = await request.post('/api/accounts', {
     headers: authHeaders(accessToken),
     data: {
-      bsb: '000-000',
-      number: uniqueNumber,
       description,
       balance: 0,
       reserved: 0,

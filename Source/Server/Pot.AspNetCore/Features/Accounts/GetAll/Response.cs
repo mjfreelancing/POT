@@ -9,12 +9,6 @@ namespace Pot.AspNetCore.Features.Accounts.GetAll;
 
 internal sealed class Response : ResponseBase
 {
-    [Description("The account BSB")]
-    public string Bsb { get; init; }
-
-    [Description("The account number")]
-    public string Number { get; init; }
-
     [Description("A description of the account")]
     public string Description { get; init; }
 
@@ -55,8 +49,6 @@ internal sealed class Response : ResponseBase
 
         RowId = account.RowId;
         Etag = account.Etag;
-        Bsb = account.Bsb;
-        Number = account.Number;
         Description = account.Description;
         Balance = account.Balance;
         Reserved = account.Reserved;

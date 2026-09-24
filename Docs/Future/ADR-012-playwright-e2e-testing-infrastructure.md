@@ -346,6 +346,20 @@ container (`docker exec -i ... psql -v ON_ERROR_STOP=1 ...`). It is data-only; s
 from migrations. No `-f` flag (no filesystem path inside the container). The seed file must
 not contain schema DDL, `CREATE DATABASE`, or `\connect` metacommands.
 
+`financial.export` is a maintenance export package, so it is versioned and the API's importer
+accepts only the current version. When the package format changes, this artifact must be
+converted in the same change or global setup fails at the import step. Convert it by rewriting
+the `metadata` entry with the current serializer
+(`MetadataSerializer.Serialize(new MetadataV<N> { CreatedAt = … })`) so the version integer, the
+embedded assembly-qualified type name and its length prefix are all correct, then apply the
+format delta to the CSV entries and leave the other entries byte-identical. Do not relabel the
+version integer alone: `MetadataSerializer.Deserialize<T>` constructs the type the payload
+names, so a payload naming the previous version's type throws `InvalidCastException` (a 500),
+even though a genuine stale package is rejected cleanly (422) by the version gate. API output
+for a local run is written to `../../Server/e2e-server.log` (survives the run; overwritten each
+run), which is where an import failure's exception appears — the harness reports only a generic
+500 otherwise.
+
 `citext` is installed by the container init script before the API's first connection so that
 Npgsql loads the type into its cache (otherwise login fails later with a "citext not found"
 type-cache error).

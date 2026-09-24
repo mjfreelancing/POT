@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 
 import type { MoneyValueChangeEvent } from '@/components/input';
-import { BsbInput, MoneyValueInput } from '@/components/input';
+import { MoneyValueInput } from '@/components/input';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -42,58 +42,6 @@ function AccountForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="bsb"
-          render={({ field }) => (
-            <FormItem className="space-y-1">
-              <FormLabel htmlFor="bsb-input">BSB</FormLabel>
-              <FormControl>
-                {/* Masked input normalizes BSB to XXX-XXX whether the user types
-                    digits with or without the separating dash. */}
-                <BsbInput
-                  {...field}
-                  id="bsb-input"
-                  placeholder={isEditMode ? undefined : 'XXX-XXX'}
-                  aria-description="Enter BSB in the format XXX-XXX"
-                  readOnly={isEditMode}
-                  className={
-                    isEditMode ? 'bg-muted cursor-not-allowed' : undefined
-                  }
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="number"
-          render={({ field }) => (
-            <FormItem className="space-y-1">
-              <FormLabel htmlFor="account-number-input">
-                Account Number
-              </FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  id="account-number-input"
-                  placeholder={
-                    isEditMode ? undefined : 'Enter the Account Number'
-                  }
-                  aria-description="Your bank account number"
-                  readOnly={isEditMode}
-                  className={
-                    isEditMode ? 'bg-muted cursor-not-allowed' : undefined
-                  }
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
         <FormField
           control={form.control}
           name="description"

@@ -8,8 +8,6 @@ internal static class RequestMapping
     {
         return new Input
         {
-            Bsb = request.Bsb,
-            Number = request.Number,
             Description = request.Description,
             Balance = request.Balance,
             Reserved = request.Reserved

@@ -4,8 +4,6 @@ function createAccount(overrides: Partial<Account> = {}): Account {
   return {
     rowId: 'account-1',
     etag: 0n,
-    bsb: '000-000',
-    number: '00000000',
     description: 'Default account',
     balance: 0,
     reserved: 0,

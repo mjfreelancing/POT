@@ -7,11 +7,9 @@ import { formatMoneyValue } from '@/lib';
 import { createAccount } from '../../../shared/factories/accountFactory';
 
 describe('AccountCard', () => {
-  test('renders the account name, BSB/number, balance, available, and daily need', () => {
+  test('renders the account name, balance, available, and daily need', () => {
     const account = createAccount({
       description: 'Main account',
-      bsb: '112-879',
-      number: '431685312',
       balance: 1703,
       available: 679.55,
       stableExpenseAccrual: 12.55,
@@ -22,9 +20,6 @@ describe('AccountCard', () => {
     expect(
       screen.getByRole('heading', { level: 3, name: 'Main account' }),
     ).toBeInTheDocument();
-
-    expect(screen.getByText('BSB: 112-879')).toBeInTheDocument();
-    expect(screen.getByText('Acc: 431685312')).toBeInTheDocument();
 
     expect(screen.getByText('Balance:')).toBeInTheDocument();
     expect(screen.getByText(formatMoneyValue(1703))).toBeInTheDocument();

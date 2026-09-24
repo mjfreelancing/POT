@@ -38,8 +38,6 @@ internal sealed class CreateAccountService : ICreateAccountService
             var accountToCreate = new AccountEntity
             {
                 Site = userSite,
-                Bsb = input.Bsb,
-                Number = input.Number,
                 Description = input.Description,
                 Balance = input.Balance,
                 Reserved = input.Reserved

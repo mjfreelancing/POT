@@ -5,18 +5,8 @@ using System.ComponentModel.DataAnnotations;
 namespace Pot.Data.Entities;
 
 [Index("SiteId", nameof(Description), IsUnique = true)]
-[Index(nameof(Bsb), nameof(Number), IsUnique = true)]
 public sealed class AccountEntity : EntityBase
 {
-    [Required]
-    [AccountBsb]
-    [MaxLength(7)]
-    public required string Bsb { get; set; }
-
-    [Required]
-    [MaxLength(20)]
-    public required string Number { get; set; }
-
     [Required]
     [MediumString]
     [Citext]

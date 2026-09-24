@@ -8,23 +8,17 @@ internal sealed class AccountCsvRow : IAccountCsvRow
     public Guid RowId { get; init; }
 
     [Index(1)]
-    public string Bsb { get; init; } = string.Empty;
-
-    [Index(2)]
-    public string Number { get; init; } = string.Empty;
-
-    [Index(3)]
     public string Description { get; init; } = string.Empty;
 
-    [Index(4)]
+    [Index(2)]
     public double Balance { get; init; }
 
-    [Index(5)]
+    [Index(3)]
     public double Reserved { get; init; }
 
-    [Index(6)]
+    [Index(4)]
     public double TotalExpenseAccrued { get; init; }
 
-    [Index(7)]
+    [Index(5)]
     public double DailyExpenseAccrual { get; init; }
 }

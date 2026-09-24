@@ -196,8 +196,6 @@ public class ExcludeExpensesServiceFixture : PotFixtureBase
         {
             Id = accountId,
             RowId = Guid.NewGuid(),
-            Bsb = "123-456",
-            Number = "12345678",
             Description = $"Account-{accountId}",
             Balance = 1000.0d,
             Reserved = 0.0d,

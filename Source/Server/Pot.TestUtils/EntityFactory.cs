@@ -35,8 +35,6 @@ public static class EntityFactory
         {
             RowId = Guid.NewGuid(),
             Description = description,
-            Bsb = "123-456",
-            Number = "12345678",
             Balance = balance,
             Reserved = reserved,
             TotalExpenseAccrued = 0.0d,

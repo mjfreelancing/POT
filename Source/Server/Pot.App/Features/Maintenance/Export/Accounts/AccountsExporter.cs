@@ -26,8 +26,6 @@ internal sealed class AccountsExporter : MemoryCsvExporterBase<AccountData>, IAc
             var accountData = new AccountData
             {
                 RowId = account.RowId,
-                Bsb = account.Bsb,
-                Number = account.Number,
                 Description = account.Description,
                 Balance = account.Balance,
                 Reserved = account.Reserved,
@@ -47,8 +45,6 @@ internal sealed class AccountsExporter : MemoryCsvExporterBase<AccountData>, IAc
         var serializer = new CsvSerializer<AccountData>();
 
         serializer.AddField(nameof(AccountData.RowId), entity => entity.RowId);
-        serializer.AddField(nameof(AccountData.Bsb), entity => entity.Bsb);
-        serializer.AddField(nameof(AccountData.Number), entity => entity.Number);
         serializer.AddField(nameof(AccountData.Description), entity => entity.Description);
         serializer.AddField(nameof(AccountData.Balance), entity => entity.Balance);
         serializer.AddField(nameof(AccountData.Reserved), entity => entity.Reserved);

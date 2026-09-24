@@ -4,8 +4,6 @@ import type { UseFormReturn } from 'react-hook-form';
 import type { Account } from '@/data';
 
 type AccountFormValues = {
-  bsb: string;
-  number: string;
   description: string;
   balance: number;
   reserved: number;
@@ -13,8 +11,6 @@ type AccountFormValues = {
 
 function toAccountFormValues(account: Account): AccountFormValues {
   return {
-    bsb: account.bsb,
-    number: account.number,
     description: account.description,
     balance: account.balance,
     reserved: account.reserved,
@@ -51,8 +47,6 @@ function useAccountEditor(
     const currentReserved = Number(currentValues.reserved);
 
     return (
-      currentValues.bsb !== originalValues.bsb ||
-      currentValues.number !== originalValues.number ||
       currentValues.description !== originalValues.description ||
       currentBalance !== originalValues.balance ||
       currentReserved !== originalValues.reserved

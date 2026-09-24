@@ -70,17 +70,4 @@ internal sealed class AccountRepository : PersistableRepository, IPersistableAcc
             })
             .ToArrayAsync(cancellationToken);
     }
-
-    public Task<bool> AccountExistsAsync(string bsb, string number, CancellationToken cancellationToken)
-    {
-        // Account numbers are globally unique
-        return Accounts
-            .IgnoreQueryFilters()
-            .AnyAsync(AccountSpecifications.IsSameBsbNumber(bsb, number).Expression, cancellationToken);
-    }
-
-    public Task<AccountEntity?> GetAccountOrDefaultAsync(string bsb, string number, CancellationToken cancellationToken)
-    {
-        return Accounts.SingleOrDefaultAsync(AccountSpecifications.IsSameBsbNumber(bsb, number).Expression, cancellationToken);
-    }
 }

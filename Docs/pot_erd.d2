@@ -45,8 +45,6 @@ finance.Account: {
   Id: integer \[NOT NULL\] {constraint: primary_key}
   RowId: uuid \[NOT NULL\]
   Etag: bigint \[NOT NULL\]
-  Bsb: character varying(7)(7) \[NOT NULL\]
-  Number: character varying(20)(20) \[NOT NULL\]
   Description: citext(100) \[NOT NULL\]
   Balance: double precision \[NOT NULL\]
   Reserved: double precision \[NOT NULL\]

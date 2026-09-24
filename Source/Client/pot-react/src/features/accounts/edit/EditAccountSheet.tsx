@@ -30,8 +30,6 @@ const EditAccountSheetInternal: React.FC<EditAccountSheetInternalProps> = ({
 
   const defaultValues = useMemo(
     () => ({
-      bsb: accountData.bsb,
-      number: accountData.number,
       description: accountData.description,
       balance: accountData.balance,
       reserved: accountData.reserved,

@@ -13,10 +13,11 @@
 /// - MetadataV1 (includes initial v1 and late-v1 schema variants)
 /// - MetadataV2
 /// - MetadataV3
+/// - MetadataV4
 /// </summary>
 public abstract class MetadataBase
 {
-    public const int CurrentVersion = 3;
+    public const int CurrentVersion = 4;
 
     public abstract int Version { get; }
     public required DateTime CreatedAt { get; init; }

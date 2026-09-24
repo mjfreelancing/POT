@@ -29,10 +29,9 @@ public class CheckDescriptionDoesNotExistFixture : PotFixtureBase
             CurrentSite = currentSite;
         }
 
-        public AccountEntity AddAccount(SiteEntity site, string description, string number)
+        public AccountEntity AddAccount(SiteEntity site, string description)
         {
             var account = EntityFactory.CreateAccount(site, description, balance: 0.0d);
-            account.Number = number;
 
             DbContext.Add(account);
             DbContext.SaveChanges();
@@ -45,8 +44,6 @@ public class CheckDescriptionDoesNotExistFixture : PotFixtureBase
             var input = new Input
             {
                 RowId = accountToUpdate.RowId,
-                Bsb = accountToUpdate.Bsb,
-                Number = accountToUpdate.Number,
                 Description = newDescription,
                 Balance = accountToUpdate.Balance,
                 Reserved = accountToUpdate.Reserved
@@ -74,8 +71,8 @@ public class CheckDescriptionDoesNotExistFixture : PotFixtureBase
         {
             using var context = CreateTestContext(out var otherSite);
 
-            var accountToUpdate = context.AddAccount(context.CurrentSite, "Old Account", "11111111");
-            context.AddAccount(otherSite, "Everyday", "22222222");
+            var accountToUpdate = context.AddAccount(context.CurrentSite, "Old Account");
+            context.AddAccount(otherSite, "Everyday");
 
             var error = await context.UpdateDescriptionAsync(accountToUpdate, "Everyday");
 
@@ -87,8 +84,8 @@ public class CheckDescriptionDoesNotExistFixture : PotFixtureBase
         {
             using var context = CreateTestContext(out _);
 
-            var accountToUpdate = context.AddAccount(context.CurrentSite, "Old Account", "11111111");
-            context.AddAccount(context.CurrentSite, "Everyday", "22222222");
+            var accountToUpdate = context.AddAccount(context.CurrentSite, "Old Account");
+            context.AddAccount(context.CurrentSite, "Everyday");
 
             var error = await context.UpdateDescriptionAsync(accountToUpdate, "Everyday");
 
@@ -103,7 +100,7 @@ public class CheckDescriptionDoesNotExistFixture : PotFixtureBase
         {
             using var context = CreateTestContext(out _);
 
-            var accountToUpdate = context.AddAccount(context.CurrentSite, "Everyday", "11111111");
+            var accountToUpdate = context.AddAccount(context.CurrentSite, "Everyday");
 
             var error = await context.UpdateDescriptionAsync(accountToUpdate, "Everyday");
 

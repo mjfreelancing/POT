@@ -7,12 +7,6 @@ public sealed class Request
     [Description("The account's entity tag")]
     public long Etag { get; init; }
 
-    [Description("The account BSB")]
-    public required string Bsb { get; init; }
-
-    [Description("The account number")]
-    public required string Number { get; init; }
-
     [Description("A description of the account")]
     public required string Description { get; init; }
 

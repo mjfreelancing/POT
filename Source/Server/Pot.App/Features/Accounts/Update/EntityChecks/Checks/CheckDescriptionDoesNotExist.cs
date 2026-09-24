@@ -1,6 +1,6 @@
 ﻿using AllOverIt.Assertion;
+using AllOverIt.Expressions;
 using AllOverIt.Logging.Extensions;
-using AllOverIt.Patterns.Specification.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pot.App.Errors;
@@ -30,9 +30,9 @@ internal sealed class CheckDescriptionDoesNotExist : PreUpdateCheckBase
 
         if (account.Description != input.Description)
         {
-            var notSameAccount = AccountSpecifications.IsSameBsbNumber(input.Bsb, input.Number).Not();
-            var sameDescription = AccountSpecifications.IsSameDescription(input.Description);
-            var predicate = notSameAccount.And(sameDescription).Expression;
+            var predicate = AccountSpecifications
+                .IsSameDescription(input.Description).Expression
+                .And(item => item.Id != account.Id);
 
             // Description uniqueness is per-site; the query filter restricts the check to the current site
             var descriptionExists = await _accountRepository.Accounts

@@ -70,8 +70,6 @@ internal sealed class UpdateAccountService : IUpdateAccountService
 
     private static void UpdateAccountEntity(AccountEntity accountToUpdate, Input request)
     {
-        accountToUpdate.Bsb = request.Bsb;
-        accountToUpdate.Number = request.Number;
         accountToUpdate.Description = request.Description;
         accountToUpdate.Balance = request.Balance;
         accountToUpdate.Reserved = request.Reserved;
