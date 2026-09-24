@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.App.Concerns.Time;
 using Pot.App.Features.Maintenance.Export;
+using Pot.App.Features.Maintenance.Metadata.Models;
 
 namespace Pot.AspNetCore.Features.Maintenance.Export;
 
@@ -21,7 +22,7 @@ internal sealed class Handler
         stream.Position = 0;
 
         var timestamp = timeProvider.GetLocalDateTimeNow();
-        var fileName = $"pot-{timestamp:yyyy-MM-dd_HHmmss}.export";
+        var fileName = $"pot-{timestamp:yyyy-MM-dd_HHmmss}.v{MetadataBase.CurrentVersion}.export";
 
         // The stream is disposed of after the response is sent.
         return TypedResults.File(stream, "application/octet-stream", fileName);

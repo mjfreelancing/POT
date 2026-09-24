@@ -51,9 +51,10 @@ test('export downloads the financial data with the server file name', async ({
 
   const download = await downloadPromise;
 
-  // Server names the file pot-<yyyy-MM-dd_HHmmss>.export (Handler.cs).
+  // Server names the file pot-<yyyy-MM-dd_HHmmss>.v<packageVersion>.export
+  // (Handler.cs), where the version is the current import/export package version.
   expect(download.suggestedFilename()).toMatch(
-    /^pot-\d{4}-\d{2}-\d{2}_\d{6}\.export$/,
+    /^pot-\d{4}-\d{2}-\d{2}_\d{6}\.v4\.export$/,
   );
 
   // Success toast confirms the export completed.
