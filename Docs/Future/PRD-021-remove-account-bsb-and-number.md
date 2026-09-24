@@ -88,31 +88,25 @@ This is a breaking contract change for both request and response payloads. It is
 
 ### Export/import package
 
-`accounts.csv` loses two columns, so the package format advances to v4 (`MetadataV1` → `V2` → `V3` → `V4`). The importer accepts a **version window** of v3–v4 instead of only the current version, which is possible only because the CSV mapping changes at the same time.
+`accounts.csv` loses two columns, so the package format advances to `MetadataV4` (`MetadataV1` → `V2` → `V3` → `V4`). The importer continues to accept **only the current version**, exactly as it does today.
 
-#### Version window
+#### Why the version bump is required
 
-`MetadataBase` gains `MinimumSupportedVersion` (`3`) beside `CurrentVersion` (`4`), and `ImportDataService` rejects a package whose version falls outside `[MinimumSupportedVersion, CurrentVersion]`. The upper bound restates the check that exists today; the lower bound is a deliberate constant, raised only when an older shape genuinely becomes unreadable.
+`CurrentVersion` must become `4`. Removing the columns without bumping would leave two incompatible `accounts.csv` shapes both claiming to be v3, and the importer would accept either and misread one of them. The bump is what makes a superseded package fail cleanly at the existing gate instead of importing wrongly, and it is why a stale export has to be re-exported after upgrading.
 
-#### Name-based CSV mapping (all three files)
+`ImportDataService`'s `metadataVersion != MetadataBase.CurrentVersion` check is unchanged; no minimum-version constant is introduced.
 
-The import rows map columns by position (`[Index(n)]`), while the exporters write them by name (`AddField(nameof(...))`). Removing two columns from the middle of `accounts.csv` therefore shifts every later field for a positional reader: a v3 file would put `Bsb` into `Description` and the account number into `Balance`, yielding either a misleading "invalid format" 422 or silently wrong money values. Relaxing the version gate without changing the mapping would convert a clean rejection into misread data.
+#### Row mapping
 
-- `AccountCsvRow`, `ExpenseCsvRow`, and `IncomeCsvRow` switch to `[Name(nameof(...))]` mapping, so column order stops mattering.
-- A v3 `accounts.csv` then reads correctly with the v4 row type: `Bsb` and `Number` are unmapped and ignored, and every v4 property name is already a header in v3.
-- One row type per file reads every supported version, so the window adds no version-specific reader code. The exporter already depends on this tolerance: it writes nine `accounts.csv` columns while `AccountCsvRow` maps eight, so an unmapped trailing column is ignored today.
+`AccountCsvRow` maps columns by position (`[Index(n)]`), so removing the two columns re-indexes every subsequent property rather than deleting two entries. `ExpenseCsvRow` and `IncomeCsvRow` are untouched. Only the current version is ever read, so the positional reader never sees a superseded column set, and the package has a single producer — the server writes both the CSV entries and the binary metadata — so the exporter and importer are always released in step.
 
 #### Metadata
 
 The metadata payload is an `int32` version followed by a `DateTime`, identical for every version; the version-specific readers differ only in the type they construct, and `ReadMetadataVersion()` reads the version straight from the stream. `MetadataV4`, `MetadataV4Reader`, and `MetadataV4Writer` are therefore added for the version constant and the column documentation only.
 
 - `MetadataBase.CurrentVersion` becomes `4`; `MetadataReaderFactory` and `MetadataWriterFactory` produce the V4 reader/writer; `ExportDataService` emits `MetadataV4`.
-- `ImportDataService` deserializes with the latest metadata type and logs the version read from the stream, not `metadata.Version` (a compile-time constant that would report v4 for a v3 package).
+- `ImportDataService` logs the version read from the stream rather than `metadata.Version`, which is a compile-time constant.
 - `AccountData`, `AccountsExporter`, `IAccountCsvRow`, `AccountCsvRow`, and `AccountsImporter` drop both fields.
-
-#### Gate before writing the mapping change
-
-Name-based mapping is viable only if CsvHelper fails loudly when a mapped property has no matching header. If it throws a `CsvHelperException` subtype, that already surfaces through `IsInvalidImportPayloadException` as a 422 and the approach proceeds as designed. If it instead leaves the property at its default, a later version that drops or renames a column would import zero-filled values undetected. Settle this with a test (or a throwaway spike) before changing the mapping; if the behaviour is the silent case, **stop and review options** rather than proceeding.
 
 ### Reference artifacts
 
@@ -126,7 +120,7 @@ Name-based mapping is viable only if CsvHelper fails loudly when a mapped proper
 - Masked storage or masked display variants (BSB plus last-3/4 digits) — rejected in favour of removal.
 - Audit logging of bank-detail access, because no bank details remain to audit.
 - Existing plaintext copies on disk (`Data/Exports`, `Data/Backups`, `Data/ProdLike Backups`, `Data/Azure/Backups`, `Data/Azure/Exports`). Their disposition is the repository owner's concern; this PRD neither inventories nor purges them.
-- The maintenance import/export transport, endpoints, or permissions. The CSV column set, the version gate, and the CSV mapping mechanism do change, as described above.
+- The maintenance import/export transport, endpoints, permissions, and version gate. The CSV column set changes, which re-indexes `AccountCsvRow`.
 - `Projections` and `Accruals` behaviour: both already resolve accounts by `AccountRowId`.
 
 ## Tests
@@ -139,7 +133,7 @@ Coverage is removal-shaped: delete the tests that assert the removed behaviour, 
 - **Client unit** — delete `tests/components/input/BsbInput.test.tsx`; drop the BSB cases from `tests/features/accounts/schemas/accountFormSchema.test.ts`; update `tests/data/account.test.ts`, `tests/features/dashboard/components/AccountCard.test.tsx`, `tests/shared/factories/accountFactory.ts`, and `tests/integration/CoreFlows.CreateAccountFlow.test.tsx` (including deletion of the BSB-masking test).
 - **E2E** — `e2e/tests/crud/accountsCrud.test.ts` stops filling the BSB field; the BSB format-validation test in `e2e/tests/feedback/formValidation.test.ts` is deleted; the `BSB:` card assertion in `e2e/tests/mobile/mobileCardGrids.test.ts` is replaced with a description-based assertion; `e2e/helpers/api.ts` switches its per-call uniqueness from the `(Bsb, Number)` pair to a unique description per site, since that index comment documents the collision-avoidance this removal invalidates.
 - **Migration** — verify the drop applies cleanly against a database at the previous revision, and that the unique per-site description index continues to reject duplicates.
-- **Import compatibility** — the maintenance import/export path currently has no test coverage, so this is new ground. Cover: a v3 package and a v4 package both import; a version below the minimum and one above the current version are both rejected; a v3 `accounts.csv` carrying `Bsb`/`Number` imports with those columns ignored and every remaining field landing on the correct property; expenses and incomes behave the same under name-based mapping; and a header missing a mapped column produces the existing 422 rather than importing defaults. The missing-header case is the gate above and is written first.
+- **Import/export round-trip** — the maintenance path currently has no test coverage, so this is new ground. Cover: an export → import round-trip for accounts, expenses and incomes preserves the data; each `accounts.csv` column lands on the intended `AccountCsvRow` property after the re-index; and a superseded (v3) package is rejected with the existing version error rather than imported. Its value here is regression protection for the re-index — catching the exporter and importer being edited out of step — rather than compatibility engineering, since no third party produces a package.
 
 ## Design Notes (Rationale and Rejected Alternatives)
 
@@ -152,10 +146,11 @@ Reference notes for future maintainers, recording why the design looks the way i
 - **The global-uniqueness check disappears with the pair.** `AccountExistsAsync(bsb, number)` deliberately called `IgnoreQueryFilters()` because account numbers were globally unique, unlike the per-site description index. No replacement global check is needed: the description constraint is intentionally site-scoped.
 - **Rejected: BSB plus last-3/4 digits.** Considered as a middle ground. Rejected because the residual value has no use in a projection tool, and the partial value would perpetuate the idea that bank details belong in the product.
 - **Rejected: keep the columns but stop reading them.** Leaves the plaintext data at rest, which is the primary risk, while creating an orphaned schema element.
-- **v3 is supported on import, and the asymmetry with v1 is the reason.** The v1 rejection exists because v2 *added* `AccrualPolicy`, so importing v1 would mean inventing semantics for a field the user never set. v3 → v4 only *removes* columns whose values this change deliberately discards, so nothing is guessed and no correctness is traded away. Supporting v3 therefore costs a mapping change, not a semantic assumption.
-- **Name-based mapping is a prerequisite for the window, not a tidy-up.** With positional rows on one side and named columns on the other, the column set was the only thing holding the format together. Making both sides name-based allows the column set to be a superset in one direction and a subset in the other, which is what lets one row type serve both v3 and v4.
-- **Rejected: version-specific row types (`AccountCsvRowV3` plus `AccountCsvRowV4`).** Keeps the positional coupling, duplicates a row type per supported version, and needs a captured package per version as a test asset. Name-based mapping reads every supported version with one row type and can be tested by reordering or adding columns in a fixture.
-- **Rejected: writing `Bsb`/`Number` as empty placeholder columns.** Would hold the format stable while leaving the coupling in place, and would leave the export appearing to model fields the product no longer has.
-- **`MinimumSupportedVersion` is a deliberate constant, not a derived value.** A window is a standing commitment to keep reading those shapes, so lowering or raising the floor should be a conscious decision rather than a side effect of adding a version.
-- **Single-release sequencing.** Server and client ship together in one release, so the contract break is atomic. A staged rollout was rejected because the de-expose step is the security win and splitting it from the column drop would leave the plaintext data in place for the duration of the delay.
+- **Only the current version is ever imported, and the v1 precedent is why.** A version window's floor collapses the moment a release _adds_ a column whose value cannot be safely defaulted, and the v1 rejection records exactly that reasoning — `AccrualPolicy` could have been defaulted, but the user would not review the result, so the import was rejected instead. A window would therefore pay only in the narrowing case, which is this change, at the cost of a permanent compatibility matrix and retained v3 packages as test assets that a later version would retire anyway.
+- **Rejected: a v3–v4 version window.** Considered and dropped for the reason above. Under a single supported version a superseded package fails cleanly at the gate, which is the correct outcome for an import the code cannot read faithfully.
+- **Rejected: switching the CSV row types to name-based mapping.** Its purpose was to enable the window. It is also not unambiguously safer: a renamed column would leave the mapped property at its default, whereas the positional reader tends to misalign into a `FormatException`. Re-indexing `AccountCsvRow` is the smaller and more predictable change.
+- **The positional column-order coupling is accepted.** A package is only ever produced by the server, which writes the CSV entries and the binary metadata together, and only the current version is read; hand-crafting one would mean reproducing the binary metadata entry exactly. There is therefore no independent producer whose column order could disagree with the importer's indices. A mismatch could only come from the exporter and importer being edited out of step within one version, which is a code defect the round-trip test catches rather than a compatibility problem the design has to absorb.
+- **Rejected: version-specific row types (`AccountCsvRowV3` plus `AccountCsvRowV4`).** They exist only to serve a window, and there is no window.
+- **Rejected: writing `Bsb`/`Number` as empty placeholder columns.** Would hold the format stable while leaving the positional coupling in place, and would leave the export appearing to model fields the product no longer has.
+- **No deployment until the whole change is complete.** Server and client therefore reach production together, so the contract break is atomic. The work is nonetheless built as ordered code increments; those are commits, not rollout stages — the client cannot create or update accounts between them, which is acceptable precisely because nothing is exposed until every increment lands. A staged deployment was rejected because the de-expose step is the security win and splitting it from the column drop would leave the plaintext data in place for the duration of the delay.
 - **The duplicate-check error payload needs no separate fix.** That check echoed the full BSB and account number into an API error message; deleting the check removes the leak rather than redacting it.
