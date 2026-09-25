@@ -97,7 +97,6 @@ Source/Server/
 │   ├── Repositories/      # Data access repositories (AccountAccrual, Accounts, AuthSessions, Expenses,
 │   │                      # Incomes, Otp, Projections, Roles, Settings, Sites, Users)
 │   ├── Specifications/    # Query specifications - reusable LINQ expressions
-│   ├── UnitOfWork/        # Unit of work pattern implementation
 │   ├── CurrentUserContext.cs   # Current user context for multi-tenancy
 │   ├── DbContextBase.cs   # Base DbContext with common configuration
 │   ├── IPotTransactionFactory.cs  # Transaction factory interface
@@ -1099,9 +1098,6 @@ Pot.Data/
 │   ├── DbContextExtensions.cs             # DbContext extension methods
 │   └── QueryableExtensions.cs             # IQueryable extension methods
 ├── Migrations/                            # EF Core migrations
-├── UnitOfWork/
-│   ├── IUnitOfWork.cs                     # Unit of work interface
-│   └── UnitOfWork.cs                      # Unit of work implementation
 ├── DbContextBase.cs                       # Base DbContext with conventions
 ├── PotDbContext.cs                        # Application DbContext
 ├── PotDataRegistrar.cs                    # Marker class for data layer registration
