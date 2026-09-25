@@ -100,10 +100,10 @@ public sealed class PotDbContext : DbContextBase
             .Entity<IncomeEntity>()
             .HasQueryFilter(income => income.Account.Site.Id == GetCurrentUserSiteId());
 
-        // Query Settings (if they have a direct Site relationship)
+        // Site-specific filter for Settings (a setting is always owned by a site)
         modelBuilder
             .Entity<SettingEntity>()
-            .HasQueryFilter(setting => setting.Site != null && setting.Site.Id == GetCurrentUserSiteId());
+            .HasQueryFilter(setting => setting.Site.Id == GetCurrentUserSiteId());
     }
 
     private int GetCurrentUserSiteId()

@@ -78,21 +78,6 @@ public class SettingsRepositoryFixture : PotFixtureBase
         }
 
         [Fact]
-        public async Task Should_Not_Return_Settings_That_Are_Not_Linked_To_A_Site()
-        {
-            using var context = CreateTestContext();
-
-            await context.AddSettingsAsync(
-                CreateSetting(context.Site, EnabledKey, "true"),
-                CreateSetting(null, ReminderDaysKey, "7"));
-
-            var result = await context.Repository.GetAllSettingsAsync(Xunit.TestContext.Current.CancellationToken);
-
-            result.Count.ShouldBe(1);
-            result[0].Key.ShouldBe(EnabledKey);
-        }
-
-        [Fact]
         public async Task Should_Return_Empty_List_When_There_Are_No_Settings()
         {
             using var context = CreateTestContext();
@@ -176,7 +161,7 @@ public class SettingsRepositoryFixture : PotFixtureBase
         }
     }
 
-    private static SettingEntity CreateSetting(SiteEntity? site, string key, string value)
+    private static SettingEntity CreateSetting(SiteEntity site, string key, string value)
     {
         return new SettingEntity
         {
