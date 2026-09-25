@@ -332,8 +332,7 @@ internal static class WebApplicationBuilderExtensions
                 var connectionString = databaseConfiguration.GetConnectionString();
 
                 options.ConfigurePostgres(connectionString);
-            })
-            .AddUnitOfWork();
+            });
 
         return builder;
     }
