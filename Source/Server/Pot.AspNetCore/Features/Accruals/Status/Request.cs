@@ -7,7 +7,7 @@ public sealed class Request
     [Description("The Account Ids")]
     public Guid[] AccountRowIds { get; init; } = [];
 
-    // Binds to query string parameters such as ?RowIds=val1,val2,val3
+    // Binds to query string parameters such as ?AccountRowIds=val1,val2,val3
     // Whitespace around the commas is stripped
     public static ValueTask<Request?> BindAsync(HttpContext context/*, ParameterInfo _*/)
     {

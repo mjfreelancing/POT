@@ -1,26 +1,22 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Pot.App.Concerns.Auth;
+using Pot.AspNetCore.Integration.Tests.Host;
 using Pot.AspNetCore.Integration.Tests.Host.Extensions;
 using Pot.Data;
 using Pot.Data.Entities;
-using Pot.TestUtils;
 using Shouldly;
 using System.Net;
 using System.Net.Http.Json;
 
 namespace Pot.AspNetCore.Integration.Tests.Features.Auth;
 
-public class LoginFixture : IntegrationFixtureBase
+public class LoginFixture : IntegrationAuthFixtureBase
 {
-    private const string SetCookieHeader = "Set-Cookie";
-    private const string RefreshTokenCookieName = "pot_refresh_token";
-
     [Fact]
     public async Task Should_Create_AuthSession_And_Set_RefreshToken_Cookie_When_Posting_Login_Endpoint()
     {
-        var (UserRowId, Username, Password) = await CreateEnabledUserAsync();
+        var user = await CreateEnabledUserAsync("login", "Login User");
 
         // Disable automatic cookie handling. The refresh token cookie uses HTTP-only and other directives that
         // cause CookieContainerHandler to fail parsing Set-Cookie. This is safe because this test manually extracts
@@ -34,7 +30,7 @@ public class LoginFixture : IntegrationFixtureBase
 
         using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/login")
         {
-            Content = JsonContent.Create(new { Username, Password })
+            Content = JsonContent.Create(new { Username = user.Username, Password = user.Password })
         };
 
         request.Headers.Add("User-Agent", "POT Integration Test Agent/1.0");
@@ -56,34 +52,11 @@ public class LoginFixture : IntegrationFixtureBase
 
         refreshToken.ShouldNotBeNullOrWhiteSpace();
 
-        var authSession = await GetAuthSessionAsync(UserRowId);
+        var authSession = await GetAuthSessionAsync(user.UserRowId);
 
         authSession.RefreshTokenHash.ShouldNotBe(refreshToken);
         authSession.RefreshTokenHash.ShouldNotBeNullOrWhiteSpace();
         authSession.UserAgent.ShouldBe("POT Integration Test Agent/1.0");
-    }
-
-    private async Task<(Guid UserRowId, string Username, string Password)> CreateEnabledUserAsync()
-    {
-        using var scope = CreateScope();
-
-        var dbContext = scope.ServiceProvider.GetRequiredService<PotDbContext>();
-        var passwordHasher = scope.ServiceProvider.GetRequiredService<IUserPasswordHasher>();
-        var uniqueValue = Guid.NewGuid().ToString("N");
-        var site = EntityFactory.CreateSite(name: $"Login Site {uniqueValue}");
-        var username = $"login-{uniqueValue}";
-        const string password = "Password123!";
-
-        var user = EntityFactory.CreateUser(site, username, $"{username}@example.com", "Login User");
-
-        user.PasswordHash = passwordHasher.GetHash(user, password);
-
-        dbContext.Add(site);
-        dbContext.Add(user);
-
-        await dbContext.SaveChangesAsync();
-
-        return (user.RowId, username, password);
     }
 
     private async Task<AuthSessionEntity> GetAuthSessionAsync(Guid userRowId)

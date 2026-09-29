@@ -101,6 +101,8 @@ Every run SHALL fully seed the database: migrations → `e2e/seed/baseline.sql` 
 canonical users) → import `e2e/seed/financial.export` (63 records) → server renewal/accrual
 to the local date. There SHALL be no mode-selection variable or mode-specific scripts.
 
+> **Note (2026-09-27).** The final leg is renewal only: [PRD-023](PRD-023-dynamic-accrual-calculation.md) removed the accrual command surface when accrual became derived on read, so there is no accrual step to run after an import. The seeded-data guarantee R2 states is unchanged; see the matching note under R10.
+
 - **Rationale:** Most tests benefit from seeded data; a single mode removes a script matrix
   and configuration surface for no coverage gain.
 - **Status:** Implemented. **Ref:** ADR §4, §8.
@@ -189,6 +191,8 @@ and gate test start on a **bounded** `GET /_health/ready` check (throws with a p
 server log rather than hanging). The client dev server SHALL disable HMR for E2E (`E2E=1`),
 and the shared stack SHALL be pre-warmed by mounting the authenticated routes once so the
 first test does not pay the cold start.
+
+> **Note (2026-09-27).** The import-and-renew step no longer accrues: [PRD-023](PRD-023-dynamic-accrual-calculation.md) removed the accrual command surface, so `runFinancialImportAndRenewal` logs in, imports, then renews incomes and expenses. Nothing else in R10 changed.
 
 - **Status:** Implemented. **Ref:** ADR §8, §13.
 

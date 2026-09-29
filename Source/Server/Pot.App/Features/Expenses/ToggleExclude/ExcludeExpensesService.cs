@@ -2,26 +2,27 @@ using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
-using Pot.App.Concerns.Accruals;
 using Pot.App.Errors;
 using Pot.App.Features.Expenses.ToggleExclude.Models;
 using Pot.Data.Repositories.Expenses;
 
 namespace Pot.App.Features.Expenses.ToggleExclude;
 
+/// <summary>
+/// Default implementation of <see cref="IExcludeExpensesService"/>.
+/// </summary>
 internal sealed class ExcludeExpensesService : IExcludeExpensesService
 {
-    private readonly IAccrualDirtyStateManager _accrualDirtyStateManager;
     private readonly IPersistableExpenseRepository _expenseRepository;
     private readonly ILogger _logger;
 
-    public ExcludeExpensesService(IAccrualDirtyStateManager accrualDirtyStateManager, IPersistableExpenseRepository expenseRepository, ILogger<ExcludeExpensesService> logger)
+    public ExcludeExpensesService(IPersistableExpenseRepository expenseRepository, ILogger<ExcludeExpensesService> logger)
     {
-        _accrualDirtyStateManager = accrualDirtyStateManager.WhenNotNull();
         _expenseRepository = expenseRepository.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<bool>> ToggleExclusionAsync(Input input, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
@@ -48,10 +49,6 @@ internal sealed class ExcludeExpensesService : IExcludeExpensesService
             {
                 expense.ExcludeFromCalcs = !expense.ExcludeFromCalcs;
             }
-
-            await _accrualDirtyStateManager
-                .SetAccountsDirtyAsync(expenses, cancellationToken)
-                .ConfigureAwait(false);
 
             await _expenseRepository.SaveAsync(cancellationToken);
         }

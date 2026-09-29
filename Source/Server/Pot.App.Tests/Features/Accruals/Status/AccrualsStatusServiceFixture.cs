@@ -2,7 +2,6 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Pot.App.Features.Accruals.Status;
 using Pot.App.Features.Accruals.Status.Models;
-using Pot.Data.Repositories.AccountAccrual;
 using Pot.Data.Repositories.Expenses;
 using Pot.Data.Repositories.Incomes;
 using Shouldly;
@@ -11,26 +10,13 @@ namespace Pot.App.Tests.Features.Accruals.Status;
 
 public class AccrualsStatusServiceFixture
 {
-    private readonly IAccountAccrualRepository _accountAccrualRepositoryFake;
     private readonly IExpenseRepository _expenseRepositoryFake;
     private readonly IIncomeRepository _incomeRepositoryFake;
 
     public AccrualsStatusServiceFixture()
     {
-        _accountAccrualRepositoryFake = Substitute.For<IAccountAccrualRepository>();
         _expenseRepositoryFake = Substitute.For<IExpenseRepository>();
         _incomeRepositoryFake = Substitute.For<IIncomeRepository>();
-    }
-
-    [Fact]
-    public void Should_Throw_When_AccountAccrualRepository_Is_Null()
-    {
-        var logger = Substitute.For<ILogger<AccrualsStatusService>>();
-
-        Should.Throw<ArgumentNullException>(() =>
-        {
-            _ = new AccrualsStatusService(null!, _expenseRepositoryFake, _incomeRepositoryFake, logger);
-        });
     }
 
     [Fact]
@@ -40,7 +26,7 @@ public class AccrualsStatusServiceFixture
 
         Should.Throw<ArgumentNullException>(() =>
         {
-            _ = new AccrualsStatusService(_accountAccrualRepositoryFake, null!, _incomeRepositoryFake, logger);
+            _ = new AccrualsStatusService(null!, _incomeRepositoryFake, logger);
         });
     }
 
@@ -51,7 +37,7 @@ public class AccrualsStatusServiceFixture
 
         Should.Throw<ArgumentNullException>(() =>
         {
-            _ = new AccrualsStatusService(_accountAccrualRepositoryFake, _expenseRepositoryFake, null!, logger);
+            _ = new AccrualsStatusService(_expenseRepositoryFake, null!, logger);
         });
     }
 
@@ -60,7 +46,7 @@ public class AccrualsStatusServiceFixture
     {
         Should.Throw<ArgumentNullException>(() =>
         {
-            _ = new AccrualsStatusService(_accountAccrualRepositoryFake, _expenseRepositoryFake, _incomeRepositoryFake, null!);
+            _ = new AccrualsStatusService(_expenseRepositoryFake, _incomeRepositoryFake, null!);
         });
     }
 
@@ -101,10 +87,9 @@ public class AccrualsStatusServiceFixture
     */
 
     [Fact]
-    public async Task Should_Get_Account_Accrual_Status_From_AccountAccrual_Repository()
+    public async Task Should_Get_Required_Renewals_From_The_Renewal_Repositories()
     {
         var service = new AccrualsStatusService(
-            _accountAccrualRepositoryFake,
             _expenseRepositoryFake,
             _incomeRepositoryFake,
             Substitute.For<ILogger<AccrualsStatusService>>());
@@ -113,14 +98,10 @@ public class AccrualsStatusServiceFixture
         var asOfDate = new DateOnly(2026, 4, 24);
 
         var expectedExpenseRenewals = new[] { accountRowIds[0] };
-        var expectedAccountAccruals = new[] { accountRowIds[1] };
-        var expectedIncomeRenewals = Array.Empty<Guid>();
+        var expectedIncomeRenewals = new[] { accountRowIds[1] };
 
         _expenseRepositoryFake.GetRequiredRenewalsAsync(accountRowIds, asOfDate, Arg.Any<CancellationToken>())
             .Returns(expectedExpenseRenewals);
-
-        _accountAccrualRepositoryFake.GetRequiredAccountAccrualsAsync(accountRowIds, asOfDate, Arg.Any<CancellationToken>())
-            .Returns(expectedAccountAccruals);
 
         _incomeRepositoryFake.GetRequiredRenewalsAsync(accountRowIds, asOfDate, Arg.Any<CancellationToken>())
             .Returns(expectedIncomeRenewals);
@@ -136,10 +117,6 @@ public class AccrualsStatusServiceFixture
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldNotBeNull();
         result.Value.ExpenseRenewalsRequired.ShouldBe(expectedExpenseRenewals);
-        result.Value.AccountAccrualsRequired.ShouldBe(expectedAccountAccruals);
         result.Value.IncomeRenewalsRequired.ShouldBe(expectedIncomeRenewals);
-
-        await _accountAccrualRepositoryFake.Received(1)
-            .GetRequiredAccountAccrualsAsync(accountRowIds, asOfDate, Arg.Any<CancellationToken>());
     }
 }

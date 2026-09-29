@@ -9,6 +9,9 @@ using Pot.Data.Repositories.Accounts;
 
 namespace Pot.App.Features.Maintenance.Import.Accounts;
 
+/// <summary>
+/// Default implementation of <see cref="IAccountsImporter"/>.
+/// </summary>
 internal sealed class AccountsImporter : IAccountsImporter
 {
     private readonly IPersistableAccountRepository _accountRepository;
@@ -25,6 +28,7 @@ internal sealed class AccountsImporter : IAccountsImporter
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<int>> ImportAsync(IEnumerable<IAccountCsvRow> csvRows, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
@@ -77,11 +81,6 @@ internal sealed class AccountsImporter : IAccountsImporter
             Description = csvRow.Description,
             Balance = csvRow.Balance,
             Reserved = csvRow.Reserved
-
-            // Not imported - all calculations would need to be refreshed anyway
-            // TotalExpenseAccrued = csvRow.TotalExpenseAccrued,
-            // DailyExpenseAccrual = csvRow.DailyExpenseAccrual,
-            // StableExpenseAccrual = csvRow.StableExpenseAccrual
         };
 
         var createResult = await _createAccountService
@@ -101,12 +100,7 @@ internal sealed class AccountsImporter : IAccountsImporter
             RowId = csvRow.RowId,
             Description = csvRow.Description,
             Balance = csvRow.Balance,
-            Reserved = csvRow.Reserved,
-
-            // Not imported - all calculations would need to be refreshed anyway
-            // TotalExpenseAccrued = csvRow.TotalExpenseAccrued,
-            // DailyExpenseAccrual = csvRow.DailyExpenseAccrual,
-            // StableExpenseAccrual = csvRow.StableExpenseAccrual
+            Reserved = csvRow.Reserved
         };
 
         var updateResult = await _updateAccountService

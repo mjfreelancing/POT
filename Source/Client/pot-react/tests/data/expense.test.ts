@@ -45,6 +45,7 @@ describe('expense schemas and comparator', () => {
         excludeFromCalcs: false,
         account: { rowId: 'acc-1', description: 'Main' },
         accrued: 12.5,
+        arrears: 2.5,
       }),
     ).toBeTruthy();
 

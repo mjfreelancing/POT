@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using NSubstitute;
-using Pot.App.Concerns.Accruals;
 using Pot.App.Concerns.Time;
 using Pot.App.Errors;
 using Pot.App.Features.Expenses.Create;
@@ -19,14 +18,12 @@ public class CreateExpenseServiceFixture : PotFixtureBase
     public class Constructor : CreateExpenseServiceFixture
     {
         private readonly IPersistableAccountRepository _accountRepositoryFake;
-        private readonly IAccrualDirtyStateManager _accrualDirtyStateManagerFake;
         private readonly IPreCreateChecker _preCreateCheckerFake;
         private readonly ITimeProvider _timeProviderFake;
 
         public Constructor()
         {
             _accountRepositoryFake = Substitute.For<IPersistableAccountRepository>();
-            _accrualDirtyStateManagerFake = Substitute.For<IAccrualDirtyStateManager>();
             _preCreateCheckerFake = Substitute.For<IPreCreateChecker>();
             _timeProviderFake = Substitute.For<ITimeProvider>();
         }
@@ -38,23 +35,10 @@ public class CreateExpenseServiceFixture : PotFixtureBase
             {
                 var logger = Substitute.For<ILogger<CreateExpenseService>>();
 
-                _ = new CreateExpenseService(null!, _accrualDirtyStateManagerFake, _preCreateCheckerFake, _timeProviderFake, logger);
+                _ = new CreateExpenseService(null!, _preCreateCheckerFake, _timeProviderFake, logger);
             });
 
             exception.ParamName.ShouldBe("accountRepository");
-        }
-
-        [Fact]
-        public void Should_Throw_When_AccrualDirtyStateManager_Is_Null()
-        {
-            var exception = Should.Throw<ArgumentNullException>(() =>
-            {
-                var logger = Substitute.For<ILogger<CreateExpenseService>>();
-
-                _ = new CreateExpenseService(_accountRepositoryFake, null!, _preCreateCheckerFake, _timeProviderFake, logger);
-            });
-
-            exception.ParamName.ShouldBe("accrualDirtyStateManager");
         }
 
         [Fact]
@@ -64,7 +48,7 @@ public class CreateExpenseServiceFixture : PotFixtureBase
             {
                 var logger = Substitute.For<ILogger<CreateExpenseService>>();
 
-                _ = new CreateExpenseService(_accountRepositoryFake, _accrualDirtyStateManagerFake, null!, _timeProviderFake, logger);
+                _ = new CreateExpenseService(_accountRepositoryFake, null!, _timeProviderFake, logger);
             });
 
             exception.ParamName.ShouldBe("preCreateChecker");
@@ -77,7 +61,7 @@ public class CreateExpenseServiceFixture : PotFixtureBase
             {
                 var logger = Substitute.For<ILogger<CreateExpenseService>>();
 
-                _ = new CreateExpenseService(_accountRepositoryFake, _accrualDirtyStateManagerFake, _preCreateCheckerFake, null!, logger);
+                _ = new CreateExpenseService(_accountRepositoryFake, _preCreateCheckerFake, null!, logger);
             });
 
             exception.ParamName.ShouldBe("timeProvider");
@@ -88,7 +72,7 @@ public class CreateExpenseServiceFixture : PotFixtureBase
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
             {
-                _ = new CreateExpenseService(_accountRepositoryFake, _accrualDirtyStateManagerFake, _preCreateCheckerFake, _timeProviderFake, null!);
+                _ = new CreateExpenseService(_accountRepositoryFake, _preCreateCheckerFake, _timeProviderFake, null!);
             });
 
             exception.ParamName.ShouldBe("logger");
@@ -98,14 +82,12 @@ public class CreateExpenseServiceFixture : PotFixtureBase
     public class CreateExpenseAsync : CreateExpenseServiceFixture
     {
         private readonly IPersistableAccountRepository _accountRepositoryFake;
-        private readonly IAccrualDirtyStateManager _accrualDirtyStateManagerFake;
         private readonly IPreCreateChecker _preCreateCheckerFake;
         private readonly ITimeProvider _timeProviderFake;
 
         public CreateExpenseAsync()
         {
             _accountRepositoryFake = Substitute.For<IPersistableAccountRepository>();
-            _accrualDirtyStateManagerFake = Substitute.For<IAccrualDirtyStateManager>();
             _preCreateCheckerFake = Substitute.For<IPreCreateChecker>();
             _timeProviderFake = Substitute.For<ITimeProvider>();
         }
@@ -142,7 +124,7 @@ public class CreateExpenseServiceFixture : PotFixtureBase
                 .GetAccountOrDefaultAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
                 .Returns((AccountEntity?)null);
 
-            var service = new CreateExpenseService(_accountRepositoryFake, _accrualDirtyStateManagerFake, _preCreateCheckerFake, _timeProviderFake, logger);
+            var service = new CreateExpenseService(_accountRepositoryFake, _preCreateCheckerFake, _timeProviderFake, logger);
 
             var input = CreateInput(accountRowId: Guid.NewGuid());
 
@@ -153,10 +135,6 @@ public class CreateExpenseServiceFixture : PotFixtureBase
             await _preCreateCheckerFake
                 .DidNotReceive()
                 .CanSaveAsync(Arg.Any<ExpenseEntity>(), Arg.Any<CancellationToken>());
-
-            await _accrualDirtyStateManagerFake
-                .DidNotReceive()
-                .SetAccountsDirtyAsync(Arg.Any<IReadOnlyCollection<int>>(), Arg.Any<CancellationToken>());
         }
 
         [Fact]
@@ -175,7 +153,7 @@ public class CreateExpenseServiceFixture : PotFixtureBase
                 .CanSaveAsync(Arg.Any<ExpenseEntity>(), Arg.Any<CancellationToken>())
                 .Returns(checkerError);
 
-            var service = new CreateExpenseService(_accountRepositoryFake, _accrualDirtyStateManagerFake, _preCreateCheckerFake, _timeProviderFake, logger);
+            var service = new CreateExpenseService(_accountRepositoryFake, _preCreateCheckerFake, _timeProviderFake, logger);
 
             var input = CreateInput(accountRowId: account.RowId);
 
@@ -183,23 +161,18 @@ public class CreateExpenseServiceFixture : PotFixtureBase
 
             result.IsSuccess.ShouldBeFalse();
 
-            await _accrualDirtyStateManagerFake
-                .DidNotReceive()
-                .SetAccountsDirtyAsync(Arg.Any<IReadOnlyCollection<int>>(), Arg.Any<CancellationToken>());
-
             await _accountRepositoryFake
                 .DidNotReceive()
                 .UpdateAndSaveAsync(Arg.Any<AccountEntity>(), Arg.Any<CancellationToken>());
         }
 
         [Fact]
-        public async Task Should_Create_Expense_And_Mark_Account_Dirty_When_Request_Is_Valid()
+        public async Task Should_Create_Expense_When_Request_Is_Valid()
         {
             var logger = Substitute.For<ILogger<CreateExpenseService>>();
 
             var account = CreateAccount(accountId: 17);
             var localDate = new DateOnly(2026, 4, 24);
-            var markedAccountIds = Array.Empty<int>();
 
             _timeProviderFake.GetLocalDateNow().Returns(localDate);
 
@@ -211,15 +184,11 @@ public class CreateExpenseServiceFixture : PotFixtureBase
                 .CanSaveAsync(Arg.Any<ExpenseEntity>(), Arg.Any<CancellationToken>())
                 .Returns((ApiDetailError?)null);
 
-            _accrualDirtyStateManagerFake
-                .SetAccountsDirtyAsync(Arg.Do<IReadOnlyCollection<int>>(ids => markedAccountIds = ids.ToArray()), Arg.Any<CancellationToken>())
-                .Returns(Task.CompletedTask);
-
             _accountRepositoryFake
                 .UpdateAndSaveAsync(Arg.Any<AccountEntity>(), Arg.Any<CancellationToken>())
                 .Returns(1);
 
-            var service = new CreateExpenseService(_accountRepositoryFake, _accrualDirtyStateManagerFake, _preCreateCheckerFake, _timeProviderFake, logger);
+            var service = new CreateExpenseService(_accountRepositoryFake, _preCreateCheckerFake, _timeProviderFake, logger);
 
             var input = CreateInput(accountRowId: account.RowId);
 
@@ -234,8 +203,6 @@ public class CreateExpenseServiceFixture : PotFixtureBase
             var createdExpense = account.Expenses.Single();
             createdExpense.Description.ShouldBe(input.Description);
             createdExpense.Account.ShouldBe(account);
-
-            markedAccountIds.ShouldBe([account.Id]);
 
             await _accountRepositoryFake
                 .Received(1)
@@ -258,15 +225,11 @@ public class CreateExpenseServiceFixture : PotFixtureBase
                 .CanSaveAsync(Arg.Do<ExpenseEntity>(expense => capturedExpense = expense), Arg.Any<CancellationToken>())
                 .Returns((ApiDetailError?)null);
 
-            _accrualDirtyStateManagerFake
-                .SetAccountsDirtyAsync(Arg.Any<IReadOnlyCollection<int>>(), Arg.Any<CancellationToken>())
-                .Returns(Task.CompletedTask);
-
             _accountRepositoryFake
                 .UpdateAndSaveAsync(Arg.Any<AccountEntity>(), Arg.Any<CancellationToken>())
                 .Returns(1);
 
-            var service = new CreateExpenseService(_accountRepositoryFake, _accrualDirtyStateManagerFake, _preCreateCheckerFake, _timeProviderFake, logger);
+            var service = new CreateExpenseService(_accountRepositoryFake, _preCreateCheckerFake, _timeProviderFake, logger);
 
             var input = CreateInput(accountRowId: account.RowId);
             input = new Input

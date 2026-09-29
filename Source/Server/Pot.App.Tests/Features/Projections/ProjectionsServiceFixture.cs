@@ -22,7 +22,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
     // Test context class to hold all dependencies - reset for each test
     private sealed class TestContext : IDisposable
     {
-        private PotDbContext DbContext { get; }
+        public PotDbContext DbContext { get; }
         private ProjectionsService Service { get; }
         private ILogger<ProjectionsService> Logger { get; }
 
@@ -72,9 +72,9 @@ public class ProjectionsServiceFixture : PotFixtureBase
     }
 
     private readonly ITimeProvider _timeProvider;
-    private readonly IExpenseRenewalCalculator _expenseRenewalCalculator;
-    private readonly IIncomeRenewalCalculator _incomeRenewalCalculator;
-    private readonly IAccrueExpenseCalculator _accrueExpenseCalculator;
+    private readonly IExpenseRenewalFold _expenseRenewalFold;
+    private readonly IIncomeRenewalFold _incomeRenewalFold;
+    private readonly IAccrualCalculator _accrualCalculator;
     private readonly ILogger<ProjectionsService> _logger;
 
     protected readonly DateOnly _currentDate = new(2025, 1, 15);
@@ -86,9 +86,9 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
         _timeProvider = Substitute.For<ITimeProvider>();
         _timeProvider.GetLocalDateNow().Returns(_currentDate);
-        _expenseRenewalCalculator = new ExpenseRenewalCalculator();
-        _incomeRenewalCalculator = new IncomeRenewalCalculator();
-        _accrueExpenseCalculator = new AccrueExpenseCalculator(_timeProvider);
+        _expenseRenewalFold = new ExpenseRenewalFold();
+        _incomeRenewalFold = new IncomeRenewalFold();
+        _accrualCalculator = new AccrualCalculator();
         _logger = Substitute.For<ILogger<ProjectionsService>>();
     }
 
@@ -108,9 +108,9 @@ public class ProjectionsServiceFixture : PotFixtureBase
             {
                 _ = new ProjectionsService(
                     null!,
-                    _expenseRenewalCalculator,
-                    _incomeRenewalCalculator,
-                    _accrueExpenseCalculator,
+                    _expenseRenewalFold,
+                    _incomeRenewalFold,
+                    _accrualCalculator,
                     _timeProvider,
                     _logger);
             });
@@ -118,51 +118,51 @@ public class ProjectionsServiceFixture : PotFixtureBase
         }
 
         [Fact]
-        public void Should_Throw_When_ExpenseRenewalCalculator_Null()
+        public void Should_Throw_When_ExpenseRenewalFold_Null()
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
             {
                 _ = new ProjectionsService(
                     _projectionRepository,
                     null!,
-                    _incomeRenewalCalculator,
-                    _accrueExpenseCalculator,
+                    _incomeRenewalFold,
+                    _accrualCalculator,
                     _timeProvider,
                     _logger);
             });
-            exception.ParamName.ShouldBe("expenseRenewalCalculator");
+            exception.ParamName.ShouldBe("expenseRenewalFold");
         }
 
         [Fact]
-        public void Should_Throw_When_IncomeRenewalCalculator_Null()
+        public void Should_Throw_When_IncomeRenewalFold_Null()
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
             {
                 _ = new ProjectionsService(
                     _projectionRepository,
-                    _expenseRenewalCalculator,
+                    _expenseRenewalFold,
                     null!,
-                    _accrueExpenseCalculator,
+                    _accrualCalculator,
                     _timeProvider,
                     _logger);
             });
-            exception.ParamName.ShouldBe("incomeRenewalCalculator");
+            exception.ParamName.ShouldBe("incomeRenewalFold");
         }
 
         [Fact]
-        public void Should_Throw_When_AccrueExpenseCalculator_Null()
+        public void Should_Throw_When_AccrualCalculator_Null()
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
             {
                 _ = new ProjectionsService(
                     _projectionRepository,
-                    _expenseRenewalCalculator,
-                    _incomeRenewalCalculator,
+                    _expenseRenewalFold,
+                    _incomeRenewalFold,
                     null!,
                     _timeProvider,
                     _logger);
             });
-            exception.ParamName.ShouldBe("accrueExpenseCalculator");
+            exception.ParamName.ShouldBe("accrualCalculator");
         }
 
         [Fact]
@@ -172,9 +172,9 @@ public class ProjectionsServiceFixture : PotFixtureBase
             {
                 _ = new ProjectionsService(
                     _projectionRepository,
-                    _expenseRenewalCalculator,
-                    _incomeRenewalCalculator,
-                    _accrueExpenseCalculator,
+                    _expenseRenewalFold,
+                    _incomeRenewalFold,
+                    _accrualCalculator,
                     null!,
                     _logger);
             });
@@ -188,9 +188,9 @@ public class ProjectionsServiceFixture : PotFixtureBase
             {
                 _ = new ProjectionsService(
                     _projectionRepository,
-                    _expenseRenewalCalculator,
-                    _incomeRenewalCalculator,
-                    _accrueExpenseCalculator,
+                    _expenseRenewalFold,
+                    _incomeRenewalFold,
+                    _accrualCalculator,
                     _timeProvider,
                     null!);
             });
@@ -282,7 +282,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
                 result.IsSuccess.ShouldBeTrue();
-                result.Value!.Accounts.Count.ShouldBe(1);
+                result.Value!.Accounts.Length.ShouldBe(1);
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -1090,7 +1090,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 result.IsSuccess.ShouldBeTrue();
 
-                result.Value!.Accounts.Count.ShouldBe(2);
+                result.Value!.Accounts.Length.ShouldBe(2);
 
                 var checkingProjection = result.Value!.Accounts.First(account => account.Description == "Visa");
                 var savingsProjection = result.Value!.Accounts.First(account => account.Description == "Savings");
@@ -1543,7 +1543,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 result.IsSuccess.ShouldBeTrue();
 
-                result.Value!.Accounts.Count.ShouldBe(3);
+                result.Value!.Accounts.Length.ShouldBe(3);
 
                 var visaProjection = result.Value!.Accounts.Single(account => account.Description == "Visa");
                 var savingsProjection = result.Value!.Accounts.Single(account => account.Description == "Savings");
@@ -2055,7 +2055,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 primeDays[0].Date.ShouldBe(new DateOnly(2025, 1, 15));
 
                 // Verify ending balance calculation
-                // Starting: 2000, Prime paid on day 0: 2000 - 139 = 1861
+                // Starting: 2000, Prime paid on day 0 (Jan 15): 2000 - 139 = 1861
                 // Income: bi-weekly salary (actual count from test)
                 // Expenses: rent(12) + utilities(12) + internet(12) + groceries(~52) + gas(~26) + insurance(4) + prime(1)
                 var finalDay = accountProjection.Dates.Last();
@@ -2063,7 +2063,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 // Calculate exact final balance based on actual occurrences
                 var totalIncome = salaryDays.Count * 2000.0d;
-                var totalExpenses = 139.0d + // Prime (day 0)
+                var totalExpenses = 139.0d + // Prime (day 0, Jan 15)
                                    (rentDays.Count * 1200.0d) +
                                    (utilityDays.Count * 150.0d) +
                                    (internetDays.Count * 60.0d) +
@@ -2133,11 +2133,12 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 // After payment, expense renews for next period (Feb 20, 31 days away)
                 // New daily accrual = 200 / 31 = 6.451612903...
-                // Available on payment day = Balance - Reserved - Accrued + ExpensesPaid
-                // Available = 4800 - 1000 - 0 + 200 = 4000
+                // On the payment day the occurrence is measured before the renewal advances the schedule, so the
+                // accrual is the full amount and the settled accrual cancels it. Available = 4800 - 1000 -
+                // 200 + 200 = 3800, which is Balance - Reserved, so the day no longer overshoots the balance.
                 var nextBillDailyAccrual = 200.0d / 31.0d;
-                accountProjection.Dates[5].Available.ShouldBe(4000.0d,
-                    "day 6: available = balance(4800) - reserved(1000) - accrued(0, just reset) + expensesPaid(200) = 4000");
+                accountProjection.Dates[5].Available.ShouldBe(3800.0d,
+                    "day 6: available = balance(4800) - reserved(1000) - accrued(200, the occurrence being settled) + accrualSettledByPayments(200) = 3800");
 
                 // Days 6-29 (Jan 21 - Feb 13): After expense, balance constant at 4800
                 // Accrual accumulates for next period (due Feb 20)
@@ -2237,7 +2238,13 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 var account = EntityFactory.CreateAccount(context.Site, "Visa", 1000.0d);
                 var expense = EntityFactory.CreateExpense(account, false, "Bill", 100.0d, "2025-01-01", "2025-01-30", null, Frequency.Months, 1);
 
+                // Overdue as at today: today's fold catches it up before the window opens, so no emitted day
+                // carries its un-settled current-cycle obligation. Its arrears is pre-existing debt and is held
+                // throughout, and its quarterly next occurrence falls beyond the window.
+                var overdueExpense = EntityFactory.CreateExpense(account, false, "Quarterly Bill", 100.0d, "2025-01-10", "2025-01-10", null, Frequency.Months, 3);
+
                 account.Expenses.Add(expense);
+                account.Expenses.Add(overdueExpense);
 
                 await context.AddAccountAsync(account);
 
@@ -2269,6 +2276,18 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 // Days 6-29 (Jan 31 - Feb 23): After expense
                 ValidateNoActivityRange(accountProjection.Dates, 6, 29, expectedBalance: 900.0d);
+
+                // First emitted day (Jan 25): the held arrears of 100, plus the two accruals in progress - the
+                // monthly bill 24 days into its 29-day cycle (82.76) and the quarterly bill 15 days into its
+                // 90-day cycle (16.67). Available = 1000 - 199.43 = 800.57, so the pre-window un-settled obligation
+                // is not carried in addition to the arrears (which would deduct 299.43).
+                accountProjection.Dates[0].Available.ShouldBe(800.57d, 0.01d);
+
+                foreach (var projection in accountProjection.Dates)
+                {
+                    (projection.Balance - projection.Available).ShouldBeGreaterThanOrEqualTo(100.0d,
+                        $"arrears is held on {projection.Date:yyyy-MM-dd}");
+                }
             }
 
             [Fact]
@@ -2332,7 +2351,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 var account = EntityFactory.CreateAccount(context.Site, "Visa", 5000.0d);
 
                 // Expense 1: Accrual starts before projection start (Jan 10), due Jan 30
-                // This should accrue from day 1 of projection (Jan 15)
+                // This should accrue from day 0 of projection (Jan 15)
                 var expense1 = EntityFactory.CreateExpense(account, false, "Rent", 900.0d, "2025-01-10", "2025-01-30", null, Frequency.Months, 1);
 
                 // Expense 2: Accrual starts on last day of projection (Feb 13), due Feb 20
@@ -2397,10 +2416,11 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 var paymentDayDailyAccrual = 900.0d / nextPeriodDays;
                 accountProjection.Dates[15].DailyAccrual.ShouldBe(paymentDayDailyAccrual, 0.01, "daily accrual on payment day");
 
-                // On payment day: Available = Balance - Reserved - Accrued + ExpensesPaid
-                // Available = 4100 - 0 - 0 + 900 = 5000 (accrued reset to 0, expensesPaid added back)
-                accountProjection.Dates[15].Available.ShouldBe(5000.0d,
-                    "available on payment day = balance(4100) - reserved(0) - accrued(0, just reset) + expensesPaid(900) = 5000");
+                // On payment day the occurrence is measured before the renewal advances the schedule, so the accrual
+                // is the full amount and the settled accrual cancels it: Available = 4100 - 0 - 900 + 900 =
+                // 4100, so the day no longer overshoots the balance.
+                accountProjection.Dates[15].Available.ShouldBe(4100.0d,
+                    "available on payment day = balance(4100) - reserved(0) - accrued(900, the occurrence being settled) + accrualSettledByPayments(900) = 4100");
 
                 // Days 16-28 (Jan 31 - Feb 12): Rent now accruing for next period (due Feb 28)
                 // DailyAccrual varies each day because it recalculates as: (remaining balance) / (days until due)
@@ -2446,6 +2466,211 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 lastDay.Available.ShouldBe(lastDayExpectedAvailable, $"available should be 4100 - {lastDayAccrued:F2} accrued");
                 lastDay.IncomeReceived.ShouldBe(0.0d);
                 lastDay.ExpensesPaid.ShouldBe(0.0d);
+            }
+        }
+
+        public class SettlementAndArrears : GetFinancialProjectionsAsync
+        {
+            [Fact]
+            public async Task Should_Deduct_An_Unsettled_Expense_Due_Today()
+            {
+                using var context = CreateTestContext();
+
+                var account = EntityFactory.CreateAccount(context.Site, "Visa", 1000.0d);
+
+                // Due today and never acknowledged. The window assumes it is paid, so its amount leaves the balance
+                // while the settled accrual of that same row is added back.
+                var expense = EntityFactory.CreateExpense(account, false, "Bill", 100.0d, "2025-01-01", "2025-01-15", null, Frequency.Months, 1);
+
+                account.Expenses.Add(expense);
+
+                await context.AddAccountAsync(account);
+
+                var options = new ProjectionOptions
+                {
+                    StartDate = _currentDate,
+                    DaysForecast = 30
+                };
+
+                var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
+
+                result.IsSuccess.ShouldBeTrue();
+
+                var accountProjection = result.Value!.Accounts[0];
+
+                ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
+
+                // Today deducts the bill and reports 900, not the un-paid bank balance of 1000.
+                accountProjection.Dates[0].Date.ShouldBe(_currentDate);
+                accountProjection.Dates[0].ExpensesPaid.ShouldBe(100.0d);
+                accountProjection.Dates[0].Balance.ShouldBe(900.0d);
+                accountProjection.Dates[0].Available.ShouldBe(900.0d, "the add-back cancels the accrued amount");
+
+                // The occurrence renews after the day is measured, so no further payment falls inside the window.
+                ValidateNoActivityRange(accountProjection.Dates, 1, 29, expectedBalance: 900.0d);
+            }
+
+            [Fact]
+            public async Task Should_Measure_An_Unsettled_Overdue_Expense_As_Arrears_Today()
+            {
+                using var context = CreateTestContext();
+
+                var account = EntityFactory.CreateAccount(context.Site, "Visa", 1000.0d);
+
+                // Due yesterday and never acknowledged.
+                var expense = EntityFactory.CreateExpense(account, false, "Bill", 100.0d, "2025-01-14", "2025-01-14", null, Frequency.Months, 1);
+
+                account.Expenses.Add(expense);
+
+                await context.AddAccountAsync(account);
+
+                var options = new ProjectionOptions
+                {
+                    StartDate = _currentDate,
+                    DaysForecast = 30
+                };
+
+                var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
+
+                result.IsSuccess.ShouldBeTrue();
+
+                var accountProjection = result.Value!.Accounts[0];
+
+                ValidateConsecutiveDates(accountProjection.Dates, _currentDate, 30);
+
+                // Today: the past-due occurrence is owed as arrears (100) while the cycle in progress ramps
+                // towards 2025-02-14, one day in at 100/31. Available = 1000 - 3.23 - 100 = 896.77. Nothing is paid,
+                // so the balance is untouched.
+                accountProjection.Dates[0].Balance.ShouldBe(1000.0d);
+                accountProjection.Dates[0].ExpensesPaid.ShouldBe(0.0d);
+                accountProjection.Dates[0].Available.ShouldBe(896.77d, 0.01d);
+                accountProjection.Dates[0].DailyAccrual.ShouldBe(3.2258d, 0.001d);
+
+                // Day 1: the current-cycle obligation measured on today is released by the fold, while the arrears
+                // stays held, so available keeps falling by the ramp alone.
+                accountProjection.Dates[1].Balance.ShouldBe(1000.0d);
+                accountProjection.Dates[1].Available.ShouldBe(893.55d, 0.01d);
+            }
+
+            [Fact]
+            public async Task Should_Not_Exceed_The_Balance_For_A_Non_Accruing_Expense_Due_On_A_Payment_Day()
+            {
+                using var context = CreateTestContext();
+
+                var account = EntityFactory.CreateAccount(context.Site, "Visa", 1000.0d);
+
+                // A None policy row is still a payment: it is due, so its amount leaves the balance, but it accrues
+                // nothing, so the add-back must not credit it.
+                var expense = EntityFactory.CreateExpense(account, false, "Bill", 100.0d, "2025-01-01", "2025-01-20", null,
+                    Frequency.Months, 1, AccrualPolicy.None);
+
+                account.Expenses.Add(expense);
+
+                await context.AddAccountAsync(account);
+
+                var options = new ProjectionOptions
+                {
+                    StartDate = _currentDate,
+                    DaysForecast = 30
+                };
+
+                var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
+
+                result.IsSuccess.ShouldBeTrue();
+
+                var accountProjection = result.Value!.Accounts[0];
+
+                var paymentDay = accountProjection.Dates[5];
+
+                paymentDay.Date.ShouldBe(new DateOnly(2025, 1, 20));
+                paymentDay.ExpensesPaid.ShouldBe(100.0d);
+                paymentDay.Balance.ShouldBe(900.0d);
+                paymentDay.Available.ShouldBe(paymentDay.Balance, "a non-accruing row is not credited back");
+
+                ValidateNoActivityRange(accountProjection.Dates, 0, 4, expectedBalance: 1000.0d);
+            }
+
+            [Fact]
+            public async Task Should_Not_Debit_Arrears_From_The_Balance_And_Hold_It_For_The_Window()
+            {
+                using var context = CreateTestContext();
+
+                var account = EntityFactory.CreateAccount(context.Site, "Visa", 1000.0d);
+
+                // Weekly from 2024-12-25, so three occurrences (Dec 25, Jan 1, Jan 8) are un-settled today and the
+                // cycle in progress is due today.
+                var expense = EntityFactory.CreateExpense(account, false, "Bill", 70.0d, "2024-12-25", "2024-12-25", null, Frequency.Weeks, 1);
+
+                account.Expenses.Add(expense);
+
+                await context.AddAccountAsync(account);
+
+                var options = new ProjectionOptions
+                {
+                    StartDate = _currentDate,
+                    DaysForecast = 30
+                };
+
+                var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
+
+                result.IsSuccess.ShouldBeTrue();
+
+                var accountProjection = result.Value!.Accounts[0];
+
+                // Today: the persisted cursor is still a week behind, so the row is not in the paid set at all -
+                // only a due-today occurrence is. Its obligation is the past-due 210 plus the cycle in progress at
+                // 70: Available = 1000 - 70 - 210 = 720, which is Balance less TotalCommitted.
+                accountProjection.Dates[0].ExpensesPaid.ShouldBe(0.0d);
+                accountProjection.Dates[0].Balance.ShouldBe(1000.0d);
+                accountProjection.Dates[0].Available.ShouldBe(720.0d, 0.01d);
+
+                // Held for the whole window: unlike the current-cycle obligation, the arrears never releases.
+                foreach (var projection in accountProjection.Dates)
+                {
+                    (projection.Balance - projection.Available).ShouldBeGreaterThanOrEqualTo(210.0d,
+                        $"arrears is held on {projection.Date:yyyy-MM-dd}");
+                }
+
+                // The next weekly occurrence takes only its own 70 out of the balance, so the arrears is never debited.
+                var nextOccurrence = accountProjection.Dates[7];
+
+                nextOccurrence.Date.ShouldBe(new DateOnly(2025, 1, 22));
+                nextOccurrence.ExpensesPaid.ShouldBe(70.0d);
+                nextOccurrence.Balance.ShouldBe(930.0d);
+            }
+
+            [Fact]
+            public async Task Should_Not_Write_Entities_Or_Save_When_Projecting()
+            {
+                using var context = CreateTestContext();
+
+                var account = EntityFactory.CreateAccount(context.Site, "Visa", 1000.0d, reserved: 250.0d);
+                var expense = EntityFactory.CreateExpense(account, false, "Bill", 100.0d, "2025-01-01", "2025-01-20", null, Frequency.Months, 1);
+                var income = EntityFactory.CreateIncome(account, false, "Salary", 2000.0d, "2025-01-10", null, Frequency.Weeks, 1);
+
+                account.Expenses.Add(expense);
+                account.Incomes.Add(income);
+
+                await context.AddAccountAsync(account);
+
+                var options = new ProjectionOptions
+                {
+                    StartDate = _currentDate,
+                    DaysForecast = 30
+                };
+
+                var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
+
+                result.IsSuccess.ShouldBeTrue();
+
+                // The running balance is loop-local and the schedule cursors are value types, so the projection path
+                // neither mutates the graph nor leaves anything to save.
+                account.Balance.ShouldBe(1000.0d);
+                account.Reserved.ShouldBe(250.0d);
+                expense.NextDue.ShouldBe(new DateOnly(2025, 1, 20));
+                expense.AccrualStart.ShouldBe(new DateOnly(2025, 1, 1));
+                income.NextDue.ShouldBe(new DateOnly(2025, 1, 10));
+                context.DbContext.ChangeTracker.HasChanges().ShouldBeFalse();
             }
         }
 
@@ -2519,6 +2744,23 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 // Days 11-29 (Jan 26 - Feb 13): After all transactions
                 ValidateNoActivityRange(global, 11, 29, expectedBalance: 3500.0d);
+
+                // Every term is additive, so the global line is the sum of the accounts' lines. Available is the one
+                // that matters most here: the settled accrual and the held arrears have to reach the rollup as well
+                // as the per-account rows, and nothing else in this fixture asserts the global Available.
+                for (int i = 0; i < global.Length; i++)
+                {
+                    var dayNumber = i + 1;
+
+                    global[i].Balance.ShouldBe(account1Projection.Dates[i].Balance + account2Projection.Dates[i].Balance, 0.01d,
+                        $"day {dayNumber} global balance is the sum of the accounts");
+
+                    global[i].Available.ShouldBe(account1Projection.Dates[i].Available + account2Projection.Dates[i].Available, 0.01d,
+                        $"day {dayNumber} global available is the sum of the accounts");
+
+                    global[i].DailyAccrual.ShouldBe(account1Projection.Dates[i].DailyAccrual + account2Projection.Dates[i].DailyAccrual, 0.01d,
+                        $"day {dayNumber} global daily accrual is the sum of the accounts");
+                }
             }
         }
     }
@@ -2548,17 +2790,17 @@ public class ProjectionsServiceFixture : PotFixtureBase
         var timeProvider = Substitute.For<ITimeProvider>();
         timeProvider.GetLocalDateNow().Returns(_currentDate);
 
-        var expenseRenewalCalculator = new ExpenseRenewalCalculator();
-        var incomeRenewalCalculator = new IncomeRenewalCalculator();
-        var accrueExpenseCalculator = new AccrueExpenseCalculator(timeProvider);
+        var expenseRenewalFold = new ExpenseRenewalFold();
+        var incomeRenewalFold = new IncomeRenewalFold();
+        var accrualCalculator = new AccrualCalculator();
 
         var logger = Substitute.For<ILogger<ProjectionsService>>();
 
         var service = new ProjectionsService(
             repository,
-            expenseRenewalCalculator,
-            incomeRenewalCalculator,
-            accrueExpenseCalculator,
+            expenseRenewalFold,
+            incomeRenewalFold,
+            accrualCalculator,
             timeProvider,
             logger);
 

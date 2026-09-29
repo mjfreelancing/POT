@@ -1,13 +1,14 @@
 ﻿using Pot.App.Features.Accounts.Get.Models;
 using Pot.Data.Repositories.Accounts.Dtos;
+using Pot.Shared.Models;
 
 namespace Pot.App.Features.Accounts.Get.Mappings;
 
 internal static class EntityMapping
 {
-    public static Output MapToOutput(this AccountWithLinkedCounts dto)
+    public static Output MapToOutput(this AccountWithLinkedCounts accountDetails, AccountAccrualView accrualView)
     {
-        var account = dto.Account;
+        var account = accountDetails.Account;
 
         return new Output
         {
@@ -16,11 +17,12 @@ internal static class EntityMapping
             Description = account.Description,
             Balance = account.Balance,
             Reserved = account.Reserved,
-            TotalExpenseAccrued = account.TotalExpenseAccrued,
-            DailyExpenseAccrual = account.DailyExpenseAccrual,
-            StableExpenseAccrual = account.StableExpenseAccrual,
-            LinkedExpenses = dto.LinkedExpenses,
-            LinkedIncomes = dto.LinkedIncomes
+            TotalExpenseAccrued = accrualView.TotalExpenseAccrued,
+            TotalArrears = accrualView.TotalArrears,
+            TotalCommitted = accrualView.TotalCommitted,
+            StableExpenseAccrual = accrualView.StableExpenseAccrual,
+            LinkedExpenses = accountDetails.LinkedExpenses,
+            LinkedIncomes = accountDetails.LinkedIncomes
         };
     }
 }

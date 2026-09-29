@@ -6,6 +6,9 @@ using Pot.App.Features.Maintenance.Export.Models;
 
 namespace Pot.App.Features.Maintenance.Export.Accounts;
 
+/// <summary>
+/// Default implementation of <see cref="IAccountsExporter"/>.
+/// </summary>
 internal sealed class AccountsExporter : MemoryCsvExporterBase<AccountData>, IAccountsExporter
 {
     private readonly IGetAllAccountsService _expensesService;
@@ -15,11 +18,14 @@ internal sealed class AccountsExporter : MemoryCsvExporterBase<AccountData>, IAc
         _expensesService = expensesService.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<byte[]> ExportAllAsync(CancellationToken cancellationToken)
     {
         Configure();
 
-        var accounts = await _expensesService.GetAllAccountsAsync(cancellationToken);
+        var accounts = await _expensesService
+            .GetAllAccountsAsync(cancellationToken)
+            .ConfigureAwait(false);
 
         foreach (var account in accounts)
         {
@@ -28,18 +34,16 @@ internal sealed class AccountsExporter : MemoryCsvExporterBase<AccountData>, IAc
                 RowId = account.RowId,
                 Description = account.Description,
                 Balance = account.Balance,
-                Reserved = account.Reserved,
-                TotalExpenseAccrued = account.TotalExpenseAccrued,
-                DailyExpenseAccrual = account.DailyExpenseAccrual,
-                StableExpenseAccrual = account.StableExpenseAccrual
+                Reserved = account.Reserved
             };
 
-            await AddDataAsync(accountData, cancellationToken);
+            await AddDataAsync(accountData, cancellationToken).ConfigureAwait(false);
         }
 
-        return await GetContentAsync(cancellationToken);
+        return await GetContentAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     protected override ICsvSerializer<AccountData> CreateSerializer(IEnumerable<AccountData>? configData = null)
     {
         var serializer = new CsvSerializer<AccountData>();
@@ -48,9 +52,6 @@ internal sealed class AccountsExporter : MemoryCsvExporterBase<AccountData>, IAc
         serializer.AddField(nameof(AccountData.Description), entity => entity.Description);
         serializer.AddField(nameof(AccountData.Balance), entity => entity.Balance);
         serializer.AddField(nameof(AccountData.Reserved), entity => entity.Reserved);
-        serializer.AddField(nameof(AccountData.TotalExpenseAccrued), entity => entity.TotalExpenseAccrued);
-        serializer.AddField(nameof(AccountData.DailyExpenseAccrual), entity => entity.DailyExpenseAccrual);
-        serializer.AddField(nameof(AccountData.StableExpenseAccrual), entity => entity.StableExpenseAccrual);
 
         return serializer;
     }

@@ -28,17 +28,6 @@ auth: Auth {
   }
 }
 
-finance.AccountAccrual: {
-  shape: sql_table
-
-  Id: integer \[NOT NULL\] {constraint: primary_key}
-  RowId: uuid \[NOT NULL\]
-  Etag: bigint \[NOT NULL\]
-  AccountId: integer \[NOT NULL\] {constraint: foreign_key}
-  AccruedIsDirty: boolean \[NOT NULL\]
-  LastAccruedDate: date
-}
-
 finance.Account: {
   shape: sql_table
 
@@ -48,9 +37,6 @@ finance.Account: {
   Description: citext(100) \[NOT NULL\]
   Balance: double precision \[NOT NULL\]
   Reserved: double precision \[NOT NULL\]
-  TotalExpenseAccrued: double precision \[NOT NULL\]
-  DailyExpenseAccrual: double precision \[NOT NULL\]
-  StableExpenseAccrual: double precision \[NOT NULL\]
   SiteId: integer \[NOT NULL\] {constraint: foreign_key}
 }
 
@@ -85,7 +71,6 @@ finance.Expense: {
   Frequency: character varying(50)(50) \[NOT NULL\]
   FrequencyCount: integer \[NOT NULL\]
   Amount: double precision \[NOT NULL\]
-  Accrued: double precision \[NOT NULL\]
   Note: text
   AccountId: integer \[NOT NULL\] {constraint: foreign_key}
 }
@@ -196,18 +181,6 @@ role_perm.UserRole: {
 
   RolesId: integer \[NOT NULL\] {constraint: foreign_key}
   UsersId: integer \[NOT NULL\] {constraint: foreign_key}
-}
-
-finance.Account.Id <-> finance.AccountAccrual.AccountId: ONE-TO-ONE {
-  source-arrowhead: {
-    shape: cf-one-required
-  }
-  target-arrowhead: {
-    shape: cf-one
-  }
-  style: {
-    font-size: 24
-  }
 }
 
 site.Site.Id <-> finance.Account.SiteId: ONE-TO-MANY {

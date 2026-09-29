@@ -73,6 +73,5 @@ internal sealed class UpdateAccountService : IUpdateAccountService
         accountToUpdate.Description = request.Description;
         accountToUpdate.Balance = request.Balance;
         accountToUpdate.Reserved = request.Reserved;
-        // TotalExpenseAccrued and DailyExpenseAccrual will need to be re-calculated
     }
 }

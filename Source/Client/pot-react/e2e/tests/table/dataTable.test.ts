@@ -13,7 +13,7 @@ import { expect, test } from '../../fixtures/auth';
 // Parallel-safe: read-only (list GETs + client-side interactions only).
 //
 // Expected values are derived from the intercepted /api/expenses payload, never
-// hardcoded (PRD R7). Date math mirrors the app's normalizeToLocalMidnight /
+// hardcoded. Date math mirrors the app's normalizeToLocalMidnight /
 // getDaysDue so badge expectations match exactly (timezone-safe).
 
 const isMobileProject = (testInfo: import('@playwright/test').TestInfo) =>

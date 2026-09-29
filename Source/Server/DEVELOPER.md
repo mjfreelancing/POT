@@ -70,7 +70,7 @@ Source/Server/
 │   ├── Concerns/          # Cross-cutting application logic (auth, CSV, time, validation, zip)
 │   ├── Errors/            # Problem details error definitions
 │   ├── Extensions/        # Service extensions and helpers
-│   ├── Features/          # Feature-based services (AccountAccruals, Accounts, Accruals, Approvals, Auth,
+│   ├── Features/          # Feature-based services (Accounts, Accruals, Approvals, Auth,
 │   │                      # Expenses, Incomes, Maintenance, Me, Notifications, Otp, Projections,
 │   │                      # Roles, Settings, Sites, Users)
 │   ├── AppContext.cs      # Application context for current user/site
@@ -94,7 +94,7 @@ Source/Server/
 │   ├── Entities/          # Database entities (AccountEntity, ExpenseEntity, IncomeEntity, etc.)
 │   ├── Extensions/        # EF Core extensions and query helpers
 │   ├── Migrations/        # EF Core migrations (generated)
-│   ├── Repositories/      # Data access repositories (AccountAccrual, Accounts, AuthSessions, Expenses,
+│   ├── Repositories/      # Data access repositories (Accounts, AuthSessions, Expenses,
 │   │                      # Incomes, Otp, Projections, Roles, Settings, Sites, Users)
 │   ├── Specifications/    # Query specifications - reusable LINQ expressions
 │   ├── CurrentUserContext.cs   # Current user context for multi-tenancy
@@ -995,7 +995,6 @@ Pot.App/
 │   ├── Expenses/                               # Similar structure
 │   └── ...
 ├── Concerns/                                   # Cross-cutting application logic
-│   ├── Accruals/                               # Accrual recalculation support
 │   ├── Auth/                                   # Authentication/authorization helpers
 │   ├── Csv/                                    # CSV parsing helpers
 │   ├── Time/                                   # Time provider abstraction
@@ -1009,8 +1008,11 @@ Pot.App/
 │   ├── ApiDetailErrorFactory.cs                # Error creation factory
 │   ├── ErrorCodes.cs                           # Error code constants
 │   └── ErrorType.cs                            # Error type enumeration
+├── Mappings/                                   # Entity → calculation input projections
+│   ├── ExpenseAccrualMapping.cs                # Expense → ExpenseAccrualInput
+│   └── IncomeScheduleMapping.cs                # Income → IncomeScheduleInput
 ├── Calculators/                                # Domain calculators
-│   ├── AccrueExpenseCalculator.cs              # Expense accrual calculations
+│   ├── AccrualCalculator.cs                    # Expense accrual calculations
 │   ├── ExpenseRenewalCalculator.cs             # Expense renewal calculations
 │   ├── IncomeRenewalCalculator.cs              # Income renewal calculations
 │   └── ...                                     # Corresponding interfaces
@@ -1087,7 +1089,6 @@ Pot.Data/
 │   ├── Expenses/                          # Similar structure
 │   └── ...
 ├── Specifications/
-│   ├── AccountAccrualSpecifications.cs    # Account accrual specifications
 │   ├── AccountSpecifications.cs           # Account-specific specifications
 │   ├── EntitySpecifications.cs            # Generic entity specifications
 │   ├── ExpenseSpecifications.cs           # Expense-specific specifications
@@ -4036,9 +4037,9 @@ public sealed class AccountEntity : EntityBase
 2. **Set default values explicitly when needed**
 
    ```csharp
-   modelBuilder.Entity<AccountAccrualEntity>()
-       .Property(e => e.AccruedIsDirty)
-       .HasDefaultValue(true);
+   modelBuilder.Entity<OneTimePasswordEntity>()
+       .Property(otp => otp.AttemptCount)
+       .HasDefaultValue(0);
    ```
 
 3. **Use global query filters** for multi-tenancy
@@ -4466,11 +4467,6 @@ private void SetupQueryFilters(ModelBuilder modelBuilder)
         .Entity<AccountEntity>()
         .HasQueryFilter(account => account.Site.Id == GetCurrentUserSiteId());
 
-    // Site-specific filter for AccountAccrual (via Account relationship)
-    modelBuilder
-        .Entity<AccountAccrualEntity>()
-        .HasQueryFilter(accountAccrual => accountAccrual.Account.Site.Id == GetCurrentUserSiteId());
-
     // Site-specific filter for Expenses (via Account relationship)
     modelBuilder
         .Entity<ExpenseEntity>()
@@ -4481,10 +4477,10 @@ private void SetupQueryFilters(ModelBuilder modelBuilder)
         .Entity<IncomeEntity>()
         .HasQueryFilter(income => income.Account.Site.Id == GetCurrentUserSiteId());
 
-    // Query Settings (if they have a direct Site relationship)
+    // Site-specific filter for Settings (a setting is always owned by a site)
     modelBuilder
         .Entity<SettingEntity>()
-        .HasQueryFilter(setting => setting.Site != null && setting.Site.Id == GetCurrentUserSiteId());
+        .HasQueryFilter(setting => setting.Site.Id == GetCurrentUserSiteId());
 }
 
 private int GetCurrentUserSiteId()
@@ -5055,6 +5051,8 @@ builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionAuthorizat
 
 ## Accrual Metrics Semantics
 
+Accrual is derived on read, never stored. `Pot.App/Calculators/AccrualCalculator.cs` computes it for an as-of date from the accrual-relevant facts plus each expense's schedule cursor, and every accrual-bearing read obtains its values from that one engine, so the values read are always the current ones.
+
 The server tracks two different daily accrual concepts for expenses.
 
 ### Dynamic Accrual (`DailyExpenseAccrual`)
@@ -5078,7 +5076,16 @@ The server tracks two different daily accrual concepts for expenses.
 - No contribution to `DailyExpenseAccrual`
 - No contribution to `StableExpenseAccrual`
 
-This preserves due-date debit behavior while disabling pre-funding accrual behavior.
+This preserves due-date debit behavior while disabling pre-funding accrual behavior. It does **not** disable arrears: `TotalArrears` follows the schedule, so a `None`-policy row whose due date has passed still carries it.
+
+### Account-Level Obligation Terms
+
+- `TotalExpenseAccrued`: the accrual of the cycles in progress.
+- `TotalArrears`: one `Amount` per past-due, un-settled occurrence.
+- `TotalCommitted`: `TotalExpenseAccrued + TotalArrears`, rendered as the `Committed` column on the accounts table.
+- `Available = Balance - Reserved - TotalCommitted` on the accounts read. The projection chart composes its own `Available` from the running forecast balance.
+
+A bill due today is the current bill: it accrues in full and is **not** counted as arrears.
 
 ---
 

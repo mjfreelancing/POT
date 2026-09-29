@@ -20,6 +20,7 @@ function createExpense(overrides: Partial<Expense> = {}): Expense {
       description: 'Default account',
     },
     accrued: 0,
+    arrears: 0,
     ...overrides,
   };
 }

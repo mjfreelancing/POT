@@ -23,47 +23,6 @@ namespace Pot.Data.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "citext");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Pot.Data.Entities.AccountAccrualEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AccountId")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("AccruedIsDirty")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
-
-                    b.Property<long>("Etag")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateOnly?>("LastAccruedDate")
-                        .HasColumnType("date");
-
-                    b.Property<Guid>("RowId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AccountId")
-                        .IsUnique();
-
-                    b.HasIndex("Etag");
-
-                    b.HasIndex("RowId")
-                        .IsUnique();
-
-                    b.HasIndex("AccruedIsDirty", "LastAccruedDate");
-
-                    b.ToTable("AccountAccrual");
-                });
-
             modelBuilder.Entity("Pot.Data.Entities.AccountEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -73,9 +32,6 @@ namespace Pot.Data.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<double>("Balance")
-                        .HasColumnType("double precision");
-
-                    b.Property<double>("DailyExpenseAccrual")
                         .HasColumnType("double precision");
 
                     b.Property<string>("Description")
@@ -95,12 +51,6 @@ namespace Pot.Data.Migrations
 
                     b.Property<int>("SiteId")
                         .HasColumnType("integer");
-
-                    b.Property<double>("StableExpenseAccrual")
-                        .HasColumnType("double precision");
-
-                    b.Property<double>("TotalExpenseAccrued")
-                        .HasColumnType("double precision");
 
                     b.HasKey("Id");
 
@@ -193,9 +143,6 @@ namespace Pot.Data.Migrations
 
                     b.Property<DateOnly?>("AccrualStart")
                         .HasColumnType("date");
-
-                    b.Property<double>("Accrued")
-                        .HasColumnType("double precision");
 
                     b.Property<double>("Amount")
                         .HasColumnType("double precision");
@@ -645,17 +592,6 @@ namespace Pot.Data.Migrations
                     b.ToTable("UserRole");
                 });
 
-            modelBuilder.Entity("Pot.Data.Entities.AccountAccrualEntity", b =>
-                {
-                    b.HasOne("Pot.Data.Entities.AccountEntity", "Account")
-                        .WithOne("AccountAccrual")
-                        .HasForeignKey("Pot.Data.Entities.AccountAccrualEntity", "AccountId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Account");
-                });
-
             modelBuilder.Entity("Pot.Data.Entities.AccountEntity", b =>
                 {
                     b.HasOne("Pot.Data.Entities.SiteEntity", "Site")
@@ -764,8 +700,6 @@ namespace Pot.Data.Migrations
 
             modelBuilder.Entity("Pot.Data.Entities.AccountEntity", b =>
                 {
-                    b.Navigation("AccountAccrual");
-
                     b.Navigation("Expenses");
 
                     b.Navigation("Incomes");

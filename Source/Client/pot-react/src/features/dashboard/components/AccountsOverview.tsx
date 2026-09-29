@@ -69,11 +69,6 @@ function AccountsOverview({ isOpen, onOpenChange }: AccountsOverviewProps) {
       0,
     );
 
-    const totalDailyAccrual = accounts.reduce(
-      (sum, acct) => sum + acct.dailyExpenseAccrual,
-      0,
-    );
-
     const totalStableExpenseAccrual = accounts.reduce(
       (sum, acct) => sum + acct.stableExpenseAccrual,
       0,
@@ -83,7 +78,6 @@ function AccountsOverview({ isOpen, onOpenChange }: AccountsOverviewProps) {
       totalBalance,
       totalReserved,
       totalAvailable,
-      totalDailyAccrual,
       totalStableExpenseAccrual,
     );
   }, [accounts, setSummary]);

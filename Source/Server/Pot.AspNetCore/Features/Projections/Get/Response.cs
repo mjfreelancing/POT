@@ -6,8 +6,8 @@ namespace Pot.AspNetCore.Features.Projections.Get;
 
 internal sealed class Response
 {
-    public List<AccountDailyFinancialProjection> Accounts { get; init; }
-    public List<DateProjection> Global { get; init; }
+    public AccountDailyFinancialProjection[] Accounts { get; init; }
+    public DateProjection[] Global { get; init; }
 
     public static Ok<Response> Ok(Output projections)
     {

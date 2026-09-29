@@ -43,7 +43,7 @@ internal sealed class Response : ResponseBase
     [Description("A note about the income")]
     public string? Note { get; init; }
 
-    public static Ok<Response[]> Ok(List<Output> incomes)
+    public static Ok<Response[]> Ok(Output[] incomes)
     {
         var responses = incomes.SelectToArray(income => new Response(income));
 

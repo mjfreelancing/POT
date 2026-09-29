@@ -1,11 +1,12 @@
 ﻿using Pot.App.Features.Expenses.Get.Models;
 using Pot.Data.Entities;
+using Pot.Shared.Models;
 
 namespace Pot.App.Features.Expenses.Get.Mappings;
 
 internal static class EntityMapping
 {
-    public static Output MapToOutput(this ExpenseEntity expense)
+    public static Output MapToOutput(this ExpenseEntity expense, ExpenseAccrualDetail accrual)
     {
         return new Output
         {
@@ -20,7 +21,8 @@ internal static class EntityMapping
             Frequency = expense.Frequency,
             FrequencyCount = expense.FrequencyCount,
             Amount = expense.Amount,
-            Accrued = expense.Accrued,
+            Accrued = accrual.Accrued,
+            Arrears = accrual.Arrears,
             Note = expense.Note,
             Account = new Output.AccountModel
             {

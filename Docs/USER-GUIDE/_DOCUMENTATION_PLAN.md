@@ -4,9 +4,9 @@ This document outlines the structure and content requirements for each user guid
 
 ---
 
-## 1. Accounts.md
+## 1. Dashboard.md
 
-**Purpose**: Foundation layer - create and manage financial accounts (FIRST STEP for new users)
+**Purpose**: Landing view - at-a-glance financial health and the quick actions available after sign-in
 
 **Sections**:
 
@@ -62,10 +62,12 @@ This document outlines the structure and content requirements for each user guid
   - Account types (checking, savings, credit card)
   - Current balance (manual entry)
   - Reserved amount (funds set aside)
-  - Available calculation (Balance - Reserved - Accrued Expenses)
-  - Expense accruals (what they are and why they matter)
+  - Available calculation (Balance - Reserved - Committed, where Committed is accrued plus arrears)
+  - Accrued, Arrears and Committed (what each includes and why it matters)
   - Daily Need (stable daily funding target)
   - Difference between Daily Need (stable) and Projection Accruals (dynamic)
+- Column Hints
+  - Hovering a column heading reveals a hint describing what that column shows
 - Step-by-Step Guide
   - **Creating an Account**
     - Screenshot of create account form
@@ -86,23 +88,22 @@ This document outlines the structure and content requirements for each user guid
   - **Deleting an Account**
     - When/why you'd delete
     - Warning about linked expenses/income
-  - **Accruing Account Expenses**
-    - What this action does
-    - When to use it
-    - How it affects Available calculation
+  - **Understanding Accrual Totals**
+    - What Accrued, Arrears and Committed each include
+    - Why a bill due today counts as accrued and not as arrears
 - Common Workflows
   - "I just got my bank statement, balance changed"
   - "I want to set aside $500 for an emergency fund"
   - "I need to add my new credit card"
   - "An account was closed"
 - Permission-Based Features
-  - Site Owners & Admins: Create, edit, delete, accrue
+  - Site Owners & Admins: Create, edit, delete
   - Viewers: View only
 - Tips & Best Practices
   - Update balances regularly (weekly or monthly)
   - Use Reserved for funds you don't want to spend
   - Name accounts clearly (include bank name)
-  - Accrue expenses before checking projections for accuracy
+  - Read Accrued, Arrears and Committed together: they show what the balance is committed to
 
 ---
 
@@ -127,6 +128,8 @@ This document outlines the structure and content requirements for each user guid
   - ExcludeFromCalcs (temporarily exclude from projections)
   - Overdue vs Future items
   - Renewal logic (how advancing works)
+- Column Hints
+  - Hovering a column heading reveals a hint describing what that column shows
 - Step-by-Step Guide
   - **Creating an Expense**
     - Screenshot of create form
@@ -230,6 +233,8 @@ This document outlines the structure and content requirements for each user guid
   - ExcludeFromCalcs (temporarily exclude from projections)
   - Overdue vs Future items
   - Renewal logic (same as expenses, but for income)
+- Column Hints
+  - Hovering a column heading reveals a hint describing what that column shows
 - Step-by-Step Guide
   - **Creating Income**
     - Screenshot of create form
@@ -326,12 +331,12 @@ This document outlines the structure and content requirements for each user guid
   - Projection period (1-12 months)
   - Metrics tracked:
     - Balance (account balance over time)
-    - Available (balance minus reserved minus accrued expenses)
+    - Available (balance minus reserved minus committed obligations, where committed is accrued plus arrears)
     - Expenses Paid (cumulative expense payments)
     - Incomes Received (cumulative income receipts)
   - Account-level vs All Accounts view
   - Daily vs monthly granularity
-  - Expense accrual impact
+  - Expense accrual and past-due arrears impact
   - How renewals affect projections
 - Step-by-Step Guide
   - **Viewing Projections**
@@ -378,7 +383,7 @@ This document outlines the structure and content requirements for each user guid
   - Check projections weekly (after updating balances)
   - Use 3-6 month view for best planning balance
   - Focus on Available line (most accurate for spending power)
-  - Accrue expenses before viewing for accuracy
+  - Arrears is held across the whole window, so a past-due bill lowers every day's Available line until it is settled
   - Test "what if" scenarios with exclude toggles
   - Plan transfers between accounts when you see shortfalls
   - Don't panic over small negative blips (timing differences)

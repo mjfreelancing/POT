@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Pot.App.Concerns.Auth;
+using Pot.AspNetCore.Integration.Tests.Host;
 using Pot.AspNetCore.Integration.Tests.Host.Extensions;
 using Pot.Data;
 using Pot.Data.Entities;
@@ -12,19 +12,8 @@ using System.Net.Http.Json;
 
 namespace Pot.AspNetCore.Integration.Tests.Features.Auth;
 
-public class LogoutFixture : IntegrationFixtureBase
+public class LogoutFixture : IntegrationAuthFixtureBase
 {
-    private sealed class LoginResponse
-    {
-        public string? Status { get; set; }
-        public string? AccessToken { get; set; }
-    }
-
-    private sealed record AuthTokens(string AccessToken, string RefreshToken);
-
-    private const string LoginSuccessStatus = "Success";
-    private const string SetCookieHeader = "Set-Cookie";
-    private const string RefreshTokenCookieName = "pot_refresh_token";
     private const string CorrelationIdProperty = "correlationId";
 
     /*
@@ -92,9 +81,9 @@ public class LogoutFixture : IntegrationFixtureBase
     [Fact]
     public async Task Should_Not_Revoke_Other_Sessions_When_Logging_Out()
     {
-        var (_, username, password) = await CreateEnabledUserAsync();
-        var deviceA = await LoginAsync(username, password, "POT Device A/1.0");
-        var deviceB = await LoginAsync(username, password, "POT Device B/1.0");
+        var user = await CreateEnabledUserAsync("logout", "Logout User");
+        var deviceA = await LoginAsync(user, "POT Device A/1.0");
+        var deviceB = await LoginAsync(user, "POT Device B/1.0");
 
         var logoutStatus = await LogoutAsync(deviceA.AccessToken, deviceA.RefreshToken);
 
@@ -108,8 +97,8 @@ public class LogoutFixture : IntegrationFixtureBase
     [Fact]
     public async Task Should_Reject_Refresh_After_Logout()
     {
-        var (_, username, password) = await CreateEnabledUserAsync();
-        var deviceA = await LoginAsync(username, password, "POT Device A/1.0");
+        var user = await CreateEnabledUserAsync("logout", "Logout User");
+        var deviceA = await LoginAsync(user, "POT Device A/1.0");
 
         var logoutStatus = await LogoutAsync(deviceA.AccessToken, deviceA.RefreshToken);
 
@@ -124,11 +113,11 @@ public class LogoutFixture : IntegrationFixtureBase
     public async Task Should_Revoke_All_Sessions_When_Password_Changed()
     {
         const string newPassword = "NewPassword456!";
-        var (_, username, password) = await CreateEnabledUserAsync();
-        var deviceA = await LoginAsync(username, password, "POT Device A/1.0");
-        var deviceB = await LoginAsync(username, password, "POT Device B/1.0");
+        var user = await CreateEnabledUserAsync("logout", "Logout User");
+        var deviceA = await LoginAsync(user, "POT Device A/1.0");
+        var deviceB = await LoginAsync(user, "POT Device B/1.0");
 
-        var changePasswordStatus = await ChangePasswordAsync(deviceA.AccessToken, password, newPassword);
+        var changePasswordStatus = await ChangePasswordAsync(deviceA.AccessToken, user.Password, newPassword);
 
         changePasswordStatus.ShouldBe(HttpStatusCode.OK);
 
@@ -142,16 +131,16 @@ public class LogoutFixture : IntegrationFixtureBase
     [Fact]
     public async Task Should_Not_Increment_TokenVersion_When_Logging_Out()
     {
-        var (userRowId, username, password) = await CreateEnabledUserAsync();
-        var deviceA = await LoginAsync(username, password, "POT Device A/1.0");
+        var user = await CreateEnabledUserAsync("logout", "Logout User");
+        var deviceA = await LoginAsync(user, "POT Device A/1.0");
 
-        var tokenVersionBeforeLogout = await GetUserTokenVersionAsync(userRowId);
+        var tokenVersionBeforeLogout = await GetUserTokenVersionAsync(user.UserRowId);
 
         var logoutStatus = await LogoutAsync(deviceA.AccessToken, deviceA.RefreshToken);
 
         logoutStatus.ShouldBe(HttpStatusCode.OK);
 
-        var tokenVersionAfterLogout = await GetUserTokenVersionAsync(userRowId);
+        var tokenVersionAfterLogout = await GetUserTokenVersionAsync(user.UserRowId);
 
         tokenVersionAfterLogout.ShouldBe(tokenVersionBeforeLogout);
     }
@@ -160,67 +149,18 @@ public class LogoutFixture : IntegrationFixtureBase
     public async Task Should_Increment_TokenVersion_When_Password_Is_Changed()
     {
         const string newPassword = "NewPassword789!";
-        var (userRowId, username, password) = await CreateEnabledUserAsync();
-        var deviceA = await LoginAsync(username, password, "POT Device A/1.0");
+        var user = await CreateEnabledUserAsync("logout", "Logout User");
+        var deviceA = await LoginAsync(user, "POT Device A/1.0");
 
-        var tokenVersionBeforeChange = await GetUserTokenVersionAsync(userRowId);
+        var tokenVersionBeforeChange = await GetUserTokenVersionAsync(user.UserRowId);
 
-        var changePasswordStatus = await ChangePasswordAsync(deviceA.AccessToken, password, newPassword);
+        var changePasswordStatus = await ChangePasswordAsync(deviceA.AccessToken, user.Password, newPassword);
 
         changePasswordStatus.ShouldBe(HttpStatusCode.OK);
 
-        var tokenVersionAfterChange = await GetUserTokenVersionAsync(userRowId);
+        var tokenVersionAfterChange = await GetUserTokenVersionAsync(user.UserRowId);
 
         tokenVersionAfterChange.ShouldBe(tokenVersionBeforeChange + 1);
-    }
-
-    private async Task<(Guid UserRowId, string Username, string Password)> CreateEnabledUserAsync()
-    {
-        using var scope = CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<PotDbContext>();
-        var passwordHasher = scope.ServiceProvider.GetRequiredService<IUserPasswordHasher>();
-
-        var username = $"user_{Guid.NewGuid():N}";
-        const string password = "Password123!";
-
-        var site = EntityFactory.CreateSite();
-        var user = EntityFactory.CreateUser(site, username, $"{username}@example.com", "Logout User");
-
-        user.PasswordHash = passwordHasher.GetHash(user, password);
-
-        dbContext.Add(site);
-        dbContext.Add(user);
-
-        await dbContext.SaveChangesAsync();
-
-        return (user.RowId, username, password);
-    }
-
-    private async Task<AuthTokens> LoginAsync(string username, string password, string userAgent)
-    {
-        using var client = CreateClient(new WebApplicationFactoryClientOptions
-        {
-            HandleCookies = false
-        });
-
-        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/login")
-        {
-            Content = JsonContent.Create(new { Username = username, Password = password })
-        };
-
-        request.Headers.Add("User-Agent", userAgent);
-
-        var response = await client.SendAsync(request);
-        var body = await response.Content.ReadFromJsonAsync<LoginResponse>();
-
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        body.ShouldNotBeNull();
-        body.Status.ShouldBe(LoginSuccessStatus);
-        body.AccessToken.ShouldNotBeNullOrWhiteSpace();
-
-        var refreshToken = ExtractRefreshToken(response);
-
-        return new AuthTokens(body.AccessToken!, refreshToken);
     }
 
     private async Task<HttpStatusCode> LogoutAsync(string accessToken, string refreshToken)
@@ -272,20 +212,6 @@ public class LogoutFixture : IntegrationFixtureBase
         var response = await client.SendAsync(request);
 
         return response.StatusCode;
-    }
-
-    private static string ExtractRefreshToken(HttpResponseMessage response)
-    {
-        response.Headers.TryGetValues(SetCookieHeader, out var setCookieValues).ShouldBeTrue();
-
-        var refreshTokenCookie = setCookieValues!
-            .FirstOrDefault(cookie => cookie.StartsWith($"{RefreshTokenCookieName}=", StringComparison.Ordinal));
-
-        refreshTokenCookie.ShouldNotBeNull();
-
-        return refreshTokenCookie!
-            .Split(';', 2, StringSplitOptions.TrimEntries)[0]
-            .Split('=', 2)[1];
     }
 
     private async Task<int> GetUserTokenVersionAsync(Guid userRowId)

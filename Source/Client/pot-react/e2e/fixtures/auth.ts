@@ -1,5 +1,5 @@
 import type { APIRequestContext } from '@playwright/test';
-import { expect, test as baseTest } from '@playwright/test';
+import { expect,test as baseTest } from '@playwright/test';
 
 import {
   adminCredentials,
@@ -123,7 +123,7 @@ export const pwChangeTest = createAuthenticatedTest(pwChangeCredentials);
 
 // Quick-actions test: authenticated as e2e_quickactions, an Admin on its own
 // site (see baseline.sql). Dedicated to the dashboard quick-actions suite so
-// its whole-site renew/accrue actions are isolated from the shared E2E site.
+// its whole-site renew actions are isolated from the shared E2E site.
 export const quickActionsTest = createAuthenticatedTest(
   quickActionsCredentials,
 );

@@ -1,10 +1,7 @@
 # POT E2E — Authoring Guide (day-to-day)
 
 How to add or update a Playwright E2E test for POT. Read this + `e2e/README.md` (architecture)
-before writing a test. Requirements live in PRD 012
-(`Docs/Future/PRD-012-playwright-e2e-testing-infrastructure.md`); the implemented design and
-design history are in ADR 012 (`Docs/Future/ADR-012-playwright-e2e-testing-infrastructure.md`);
-the agent rules that load automatically are in
+before writing a test. The agent rules that load automatically are in
 `.github/instructions/playwright-e2e.instructions.md`.
 
 ---
@@ -49,7 +46,7 @@ selectors. Full POT anchor catalog in the instruction file.
 timeout: 60_000 })` + `GET /api/<list>` with the accessToken, then assert the UI web-first
   (see `mobileCardGrids.test.ts`). `page.waitForResponse` resolves on headers and can be
   load-starved past the test timeout.
-- **After a slow POST** (renew/accrue/change-password): capture the response, assert
+- **After a slow POST** (renew/change-password): capture the response, assert
   `response.ok()`, `await response.finished()` (wait for the body — `waitForResponse` resolves
   on headers), THEN assert the UI signal (toast/dialog) with documented headroom
   `{ timeout: 30_000 }` (see `quickActions.test.ts`).

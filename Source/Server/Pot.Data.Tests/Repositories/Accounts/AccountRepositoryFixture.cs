@@ -319,6 +319,27 @@ public class AccountRepositoryFixture : PotFixtureBase
         }
 
         [Fact]
+        public async Task Should_Project_The_Accrual_Facts_For_Every_Account()
+        {
+            using var context = CreateTestContext();
+
+            var account1 = EntityFactory.CreateAccount(context.Site, "Account 1", 1000.0);
+            var included = EntityFactory.CreateExpense(account1, false, "Rent", 100.0, "2025-01-01", "2025-01-10", null, Frequency.Weeks, 1);
+            account1.Expenses.Add(included);
+
+            var account2 = EntityFactory.CreateAccount(context.Site, "Account 2", 2000.0);
+            var excluded = EntityFactory.CreateExpense(account2, true, "Ignored", 50.0, "2025-01-01", "2025-01-10", null, Frequency.Weeks, 1);
+            account2.Expenses.Add(excluded);
+
+            await context.AddAccountsAsync(account1, account2);
+
+            var result = await context.Repository.GetAllAccountsWithLinkedCountsAsync(Xunit.TestContext.Current.CancellationToken);
+
+            result.Single(item => item.Account.Description == "Account 1").AccrualExpenses.ShouldHaveSingleItem();
+            result.Single(item => item.Account.Description == "Account 2").AccrualExpenses.ShouldBeEmpty();
+        }
+
+        [Fact]
         public async Task Should_Return_Empty_Array_When_There_Are_No_Accounts_For_The_Current_Site()
         {
             using var context = CreateTestContext();

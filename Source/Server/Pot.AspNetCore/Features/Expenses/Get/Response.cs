@@ -45,6 +45,9 @@ internal sealed class Response : ResponseBase
     [Description("The amount accrued for this expense")]
     public double Accrued { get; init; }
 
+    [Description("The amount owed for occurrences of this expense that are already past due")]
+    public double Arrears { get; init; }
+
     [Description("The account this Expense is associated with")]
     public AccountModel? Account { get; init; }
 
@@ -72,6 +75,7 @@ internal sealed class Response : ResponseBase
         FrequencyCount = expense.FrequencyCount;
         Amount = expense.Amount;
         Accrued = expense.Accrued;
+        Arrears = expense.Arrears;
         Note = expense.Note;
 
         var account = expense.Account;

@@ -25,8 +25,8 @@ const pwChangeCredentials = {
 } as const;
 
 // Dedicated identity for the dashboard quick-actions suite. It is an Admin on
-// its OWN site (see baseline.sql) so the suite's whole-site renew/accrue
-// actions never touch the shared E2E site's data.
+// its OWN site (see baseline.sql) so the suite's whole-site renew actions never
+// touch the shared E2E site's data.
 const quickActionsCredentials = {
   username: 'e2e_quickactions',
   password: 'E2E_quickactions-password',

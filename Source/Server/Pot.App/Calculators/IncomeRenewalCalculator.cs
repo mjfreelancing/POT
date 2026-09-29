@@ -1,12 +1,25 @@
-﻿using AllOverIt.Assertion;
+using AllOverIt.Assertion;
+using Pot.App.Mappings;
 using Pot.Data.Entities;
 using Pot.Shared.Enumerations;
-using Pot.Shared.Extensions;
 
 namespace Pot.App.Calculators;
 
+/// <summary>
+/// Default implementation of <see cref="IIncomeRenewalCalculator"/>.
+/// </summary>
+// The renewal rules live in the pure IIncomeRenewalFold; this entity-facing calculator adapts the income graph to
+// it and writes the folded schedule back, because a schedule advance is a fact worth persisting.
 internal sealed class IncomeRenewalCalculator : IIncomeRenewalCalculator
 {
+    private readonly IIncomeRenewalFold _renewalFold;
+
+    public IncomeRenewalCalculator(IIncomeRenewalFold renewalFold)
+    {
+        _renewalFold = renewalFold.WhenNotNull();
+    }
+
+    /// <inheritdoc />
     // asOfDate is typically 'today' (except when calculating projections)
     public void Renew(IEnumerable<IncomeEntity> incomes, RenewalMode mode, DateOnly asOfDate)
     {
@@ -14,56 +27,13 @@ internal sealed class IncomeRenewalCalculator : IIncomeRenewalCalculator
 
         foreach (var income in incomes)
         {
-            // Frequency.OneTime incomes do not renew
-            if (income.ExcludeFromCalcs || income.Frequency == Frequency.OneTime)
-            {
-                continue;
-            }
+            var schedule = income.MapToScheduleInput();
 
-            var endDate = income.EndDate.GetValueOrDefault(DateOnly.MaxValue);
+            var renewed = _renewalFold.Renew(schedule, mode, asOfDate);
 
-            // If the income has already reached or passed its end date, don't renew
-            if (income.NextDue >= endDate)
-            {
-                continue;
-            }
-
-            if (mode == RenewalMode.Future)
-            {
-                // For future items, advance exactly ONCE to the next period
-                var days = income.Frequency.GetDaysToNext(income.NextDue, income.FrequencyCount);
-                var nextDue = income.NextDue.AddDays(days);
-
-                // Don't advance beyond the end date
-                if (nextDue <= endDate)
-                {
-                    income.NextDue = nextDue;
-                }
-            }
-            else
-            {
-                // For overdue mode, advance until caught up (existing logic)
-                var nextDue = income.NextDue;
-
-                // Do not process items due on the asOfDate - theoretically 'still due' and it would affect how projections
-                // are calculated because the income would continue to advance before the credit could be considered.
-                while (nextDue <= asOfDate)
-                {
-                    var days = income.Frequency.GetDaysToNext(nextDue, income.FrequencyCount);
-                    var calculatedNextDue = nextDue.AddDays(days);
-
-                    if (calculatedNextDue <= endDate)
-                    {
-                        income.NextDue = calculatedNextDue;
-                        nextDue = calculatedNextDue;
-                    }
-                    else
-                    {
-                        // Cannot advance further without exceeding end date, exit loop
-                        break;
-                    }
-                }
-            }
+            // Assigning an unchanged value is a no-op for a tracked entity, so a row the fold did not advance
+            // keeps the values it already had.
+            income.NextDue = renewed.NextDue;
         }
     }
 }

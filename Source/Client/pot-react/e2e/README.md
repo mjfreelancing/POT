@@ -6,12 +6,8 @@ PWA/theme/empty states, matrix & prodlike validation).
 **Last Updated**: 2026-09-02
 
 This is the central reference for how POT's Playwright E2E suite is architected and how to
-extend it. Requirements and decisions live in PRD 012
-(`Docs/Future/PRD-012-playwright-e2e-testing-infrastructure.md`); the implemented design,
-current state, and design history (what was tried and rejected) live in ADR 012
-(`Docs/Future/ADR-012-playwright-e2e-testing-infrastructure.md`). The **agent-facing rules**
-that load automatically when editing files under this directory live in
-`.github/instructions/playwright-e2e.instructions.md`.
+extend it. The **agent-facing rules** that load automatically when editing files under this
+directory live in `.github/instructions/playwright-e2e.instructions.md`.
 
 ---
 
@@ -44,7 +40,7 @@ config targets a **built client**. Both run the same 4 projects.
 
 Full matrix requires Docker Desktop + the .NET SDK. Each run does a heavy setup:
 Testcontainers Postgres (port `55432`) → migrations → `baseline.sql` seed → financial
-import (63 records) → renewal/accrual.
+import (63 records) → renewal.
 
 ---
 
@@ -55,7 +51,7 @@ Playwright (@1.59.1)
    ├─ webServer[0]: ASP.NET Core API  (dotnet run -c Release, http://127.0.0.1:5242)
    ├─ webServer[1]: Vite dev server   (http://127.0.0.1:5175, proxies /api -> 5242)
    └─ globalSetup: Testcontainers Postgres (host port 55432)
-        └─ migrations -> baseline.sql seed -> financial import -> renewal/accrual
+        └─ migrations -> baseline.sql seed -> financial import -> renewal
               └─ GET /_health/ready gate (waitForDatabaseReady) before any test runs
               └─ shared-stack pre-warm (warmUpSharedStack: mounts every lazy route
                  in a real browser so the first test never pays the cold start)
@@ -220,7 +216,7 @@ test.describe.serial('X (fixture-managed)', () => {
   (row id = `createRowIdGetter` = `String(row.rowId)`).
 - **Capture requests/responses BEFORE the action that fires them** — e.g. register
   `page.waitForResponse(...)` before clicking a submit/bulk-action button; assert toasts only
-  after the response completes (the accrue-expenses call is the slowest).
+  after the response completes.
 - **`PermissionGuard` HIDES** on missing perms (returns null); `WithPermission` DISABLES.
   Assert accordingly (e.g. viewer should not see the Quick Actions section at all).
 - **DataTable has no pagination** — filtered-out rows are removed from the DOM
@@ -231,7 +227,7 @@ test.describe.serial('X (fixture-managed)', () => {
   `E2E=1` (the Vite webServer sets `env: { E2E: '1' }`) — so the page can never be reloaded
   behind a test.
 - **URL state**: the `accountId` query param is the single render-time source of truth for
-  account filters (PRD 011) — assert URL + visible state after each filter change.
+  account filters — assert URL + visible state after each filter change.
 
 ---
 

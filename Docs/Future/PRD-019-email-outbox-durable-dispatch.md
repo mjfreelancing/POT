@@ -40,6 +40,8 @@ Diagnostic that bounds the scope: **`ExpiredOtpCleanupWorker` does not need this
 - `Pot.App/Features/Notifications/BudgetReminder/BudgetReminderService.cs` — returns early when reminders are disabled or the configured local hour does not match; otherwise builds `EmailBudgetReminderInfo` and calls `ISendEmailChannelWriter.SubmitAsync`.
 - Users are enumerated across all sites by `GetAllUsersService.GetAllEnabledAdminsAsync`. This relies on `UserEntity` having no global query filter (only `Account`, `AccountAccrual`, `Expense`, `Income` and `Setting` are filtered in `PotDbContext.SetupQueryFilters`).
 
+  > **Note (2026-09-27).** That filter list has since lost `AccountAccrual`: [PRD-023](PRD-023-dynamic-accrual-calculation.md) dropped the entity with the persisted accrual state, so `SetupQueryFilters` now filters `Account`, `Expense`, `Income` and `Setting` only. The point this bullet makes is unchanged — `UserEntity` has no global query filter.
+
 ### The transport
 
 - `Pot.EmailSender/SendEmailChannel.cs` — implements both reader and writer over one unbounded `Channel<EmailChannelConfig>`; registered as a singleton, with the writer resolved by casting the reader.

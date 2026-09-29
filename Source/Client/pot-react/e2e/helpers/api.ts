@@ -49,20 +49,12 @@ export type ExpenseViaApiPayload = {
   amount: number;
 };
 
-export type AccrualPolicy = 'Automatic' | 'None';
-
-/**
- * Creates an expense and returns its rowId.
- *
- * @param accrualPolicy default 'None' (matches bulk/filters); pass 'Automatic'
- *   when the test drives accrual (quick actions).
- */
+/** Creates an expense and returns its rowId. */
 export async function createExpenseViaApi(
   request: APIRequestContext,
   accessToken: string,
   accountRowId: string,
   payload: ExpenseViaApiPayload,
-  accrualPolicy: AccrualPolicy = 'None',
 ): Promise<{ rowId: string }> {
   const response = await request.post('/api/expenses', {
     headers: authHeaders(accessToken),
@@ -70,7 +62,7 @@ export async function createExpenseViaApi(
       description: payload.description,
       nextDue: payload.nextDue,
       accrualStart: null,
-      accrualPolicy,
+      accrualPolicy: 'None',
       endDate: null,
       frequency: 'Months',
       frequencyCount: 1,

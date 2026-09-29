@@ -1,10 +1,8 @@
-import { useQueryClient } from '@tanstack/react-query';
-import { BanknoteArrowDown, BanknoteArrowUp, Calculator } from 'lucide-react';
+import { BanknoteArrowDown, BanknoteArrowUp } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router';
 
-import { useApiAccrueAccountExpenses } from '@/api/hooks';
 import { StatusBadge } from '@/components/feedback';
-import type { AppColumnDef, BulkAction } from '@/components/table';
+import type { AppColumnDef } from '@/components/table';
 import {
   createActionsColumn,
   createMoneyValueColumn,
@@ -13,12 +11,9 @@ import {
   DataTableColumnHeader,
 } from '@/components/table';
 import { Card, CardContent } from '@/components/ui/card';
-import { useErrorContext } from '@/contexts';
 import type { Account } from '@/data';
-import { usePermissions } from '@/hooks';
 import useUserStore from '@/stores/useUserStore';
 
-import { accrueAllAccountExpenses } from '../utils/bulkActions';
 import persistLinkedAccountFilter from '../utils/persistLinkedAccountFilter';
 import AccountActions from './AccountActions';
 
@@ -29,20 +24,18 @@ type AccountsTableProps = {
 function AccountsTable({ accounts }: AccountsTableProps) {
   const { id: editingId } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const accrueExpensesMutation = useApiAccrueAccountExpenses();
-  const { setError } = useErrorContext();
   const userId = useUserStore(store => store.userInfo?.rowId);
-
-  const { hasPermission } = usePermissions();
-  const canManageExpenses = hasPermission('expense:manage');
 
   const columns: AppColumnDef<Account>[] = [
     {
       id: 'description',
       accessorKey: 'description',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Description" />
+        <DataTableColumnHeader
+          column={column}
+          title="Description"
+          hint="A description identifying the account. Badges link to the expenses and incomes recorded against the account."
+        />
       ),
       enableSorting: true,
       sortFn: 'text',
@@ -111,6 +104,7 @@ function AccountsTable({ accounts }: AccountsTableProps) {
     createMoneyValueColumn<Account>({
       accessorKey: 'balance',
       header: 'Balance',
+      hint: 'The current account balance.',
       options: {
         enableSorting: true,
         sortFn: 'basic',
@@ -119,22 +113,7 @@ function AccountsTable({ accounts }: AccountsTableProps) {
     createMoneyValueColumn<Account>({
       accessorKey: 'reserved',
       header: 'Reserved',
-      options: {
-        enableSorting: true,
-        sortFn: 'basic',
-      },
-    }),
-    createMoneyValueColumn<Account>({
-      accessorKey: 'totalExpenseAccrued',
-      header: 'Total Accrued',
-      options: {
-        enableSorting: true,
-        sortFn: 'basic',
-      },
-    }),
-    createMoneyValueColumn<Account>({
-      accessorKey: 'stableExpenseAccrual',
-      header: 'Daily Need',
+      hint: 'Funds you have set aside and do not want to spend.',
       options: {
         enableSorting: true,
         sortFn: 'basic',
@@ -143,6 +122,43 @@ function AccountsTable({ accounts }: AccountsTableProps) {
     createMoneyValueColumn<Account>({
       accessorKey: 'available',
       header: 'Available',
+      hint: 'What is left to spend: the balance less the reserved amount and your committed obligations.',
+      options: {
+        enableSorting: true,
+        sortFn: 'basic',
+      },
+    }),
+    createMoneyValueColumn<Account>({
+      accessorKey: 'stableExpenseAccrual',
+      header: 'Daily Need',
+      hint: 'The stable daily amount to set aside to keep up with your recurring expenses.',
+      options: {
+        enableSorting: true,
+        sortFn: 'basic',
+      },
+    }),
+    createMoneyValueColumn<Account>({
+      accessorKey: 'totalExpenseAccrued',
+      header: 'Accrued',
+      hint: 'The total amount set aside so far for the expense cycles currently in progress.',
+      options: {
+        enableSorting: true,
+        sortFn: 'basic',
+      },
+    }),
+    createMoneyValueColumn<Account>({
+      accessorKey: 'totalArrears',
+      header: 'Arrears',
+      hint: 'The total amounts for overdue expenses.',
+      options: {
+        enableSorting: true,
+        sortFn: 'basic',
+      },
+    }),
+    createMoneyValueColumn<Account>({
+      accessorKey: 'totalCommitted',
+      header: 'Committed',
+      hint: 'The total accrued amount plus arrears: what the balance is committed to covering.',
       options: {
         enableSorting: true,
         sortFn: 'basic',
@@ -153,33 +169,7 @@ function AccountsTable({ accounts }: AccountsTableProps) {
     )),
   ];
 
-  const bulkActions: BulkAction<Account>[] = [
-    {
-      label: 'Accrue Expenses',
-      icon: Calculator,
-      iconClassName: 'text-action-neutral',
-      isDisabled: !canManageExpenses,
-      onClick: async (selectedItems: Account[]) => {
-        const accountRowIds = selectedItems.map(item => item.rowId);
-
-        const result = await accrueAllAccountExpenses(
-          accountRowIds,
-          accrueExpensesMutation,
-          queryClient,
-        );
-
-        if (!result.success) {
-          setError(result.error);
-        }
-      },
-      clearSelectionOnComplete: true,
-    },
-  ];
-
-  // Enable multi-select only if user has permission for any bulk action
-  // (isDisabled is based on permissions within each bulk action)
-  const hasAnyBulkPermission = bulkActions.some(action => !action.isDisabled);
-
+  // Row selection is off as there are no bulk actions.
   return (
     <>
       <Card className="card-elevated flex flex-col flex-1 min-h-0">
@@ -187,8 +177,6 @@ function AccountsTable({ accounts }: AccountsTableProps) {
           <DataTable
             columns={columns}
             data={accounts}
-            enableRowSelection={hasAnyBulkPermission}
-            bulkActions={bulkActions}
             getRowId={createRowIdGetter<Account>()}
             highlightRowFilter={row =>
               row.original.rowId.toString() === editingId
@@ -202,3 +190,4 @@ function AccountsTable({ accounts }: AccountsTableProps) {
 
 export default AccountsTable;
 export type { AccountsTableProps };
+

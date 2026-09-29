@@ -1,10 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.DependencyInjection;
-using Pot.App.Concerns.Auth;
-using Pot.AspNetCore.Concerns.RateLimiting;
+﻿using Pot.AspNetCore.Concerns.RateLimiting;
+using Pot.AspNetCore.Integration.Tests.Host;
 using Pot.AspNetCore.Integration.Tests.Host.Extensions;
-using Pot.Data;
-using Pot.TestUtils;
 using Shouldly;
 using System.Globalization;
 using System.Net;
@@ -14,7 +10,7 @@ using System.Text.Json.Serialization;
 
 namespace Pot.AspNetCore.Integration.Tests.Security;
 
-public class HeadersAndRateLimitFixture : IntegrationFixtureBase
+public class HeadersAndRateLimitFixture : IntegrationAuthFixtureBase
 {
     private const string AccessControlAllowOrigin = "Access-Control-Allow-Origin";
 
@@ -28,14 +24,7 @@ public class HeadersAndRateLimitFixture : IntegrationFixtureBase
         public Dictionary<string, JsonElement> Extensions { get; set; } = [];
     }
 
-    private sealed class LoginResponse
-    {
-        public string? Status { get; set; }
-        public string? AccessToken { get; set; }
-    }
-
     private const string AllowedOrigin = "http://localhost:3000";
-    private const string LoginSuccessStatus = "Success";
 
     [Fact]
     public async Task Should_Return_TooManyRequests_When_Anonymous_RateLimit_Is_Exceeded()
@@ -69,12 +58,10 @@ public class HeadersAndRateLimitFixture : IntegrationFixtureBase
     [Fact]
     public async Task Should_Return_TooManyRequests_When_Authenticated_RateLimit_Is_Exceeded()
     {
-        var (username, password) = await CreateEnabledUserAsync();
-        var accessToken = await LoginAsync(username, password);
+        var user = await CreateEnabledUserAsync("ratelimit", "Rate Limit Test User");
 
-        using var client = CreateClient();
+        using var client = await CreateAuthenticatedClientAsync(user, "POT Rate Limit Test Agent/1.0");
         client.DefaultRequestHeaders.Add("Origin", AllowedOrigin);
-        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
 
         for (var index = 0; index < RateLimiterDefaults.AuthenticatedPermitLimit; index++)
         {
@@ -102,12 +89,10 @@ public class HeadersAndRateLimitFixture : IntegrationFixtureBase
     [Fact]
     public async Task Should_Not_Throttle_Authenticated_User_When_Anonymous_Limit_Would_Be_Exceeded()
     {
-        var (username, password) = await CreateEnabledUserAsync();
-        var accessToken = await LoginAsync(username, password);
+        var user = await CreateEnabledUserAsync("ratelimit", "Rate Limit Test User");
 
-        using var client = CreateClient();
+        using var client = await CreateAuthenticatedClientAsync(user, "POT Rate Limit Test Agent/1.0");
         client.DefaultRequestHeaders.Add("Origin", AllowedOrigin);
-        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
 
         // Send more requests than the anonymous limit allows to confirm authenticated partitioning is applied
         var requestCount = RateLimiterDefaults.AnonymousPermitLimit + 1;
@@ -131,52 +116,5 @@ public class HeadersAndRateLimitFixture : IntegrationFixtureBase
     private static bool HasExtension(ProblemDetailsResponse problemDetails, string key)
     {
         return problemDetails.Extensions.ContainsKey(key);
-    }
-
-    private async Task<(string Username, string Password)> CreateEnabledUserAsync()
-    {
-        using var scope = CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<PotDbContext>();
-        var passwordHasher = scope.ServiceProvider.GetRequiredService<IUserPasswordHasher>();
-
-        var username = $"ratelimit_{Guid.NewGuid():N}";
-        const string password = "Password123!";
-
-        var site = EntityFactory.CreateSite();
-        var user = EntityFactory.CreateUser(site, username, $"{username}@example.com", "Rate Limit Test User");
-
-        user.PasswordHash = passwordHasher.GetHash(user, password);
-
-        dbContext.Add(site);
-        dbContext.Add(user);
-
-        await dbContext.SaveChangesAsync();
-
-        return (username, password);
-    }
-
-    private async Task<string> LoginAsync(string username, string password)
-    {
-        using var client = CreateClient(new WebApplicationFactoryClientOptions
-        {
-            HandleCookies = false
-        });
-
-        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/login")
-        {
-            Content = JsonContent.Create(new { Username = username, Password = password })
-        };
-
-        request.Headers.Add("User-Agent", "POT Rate Limit Test Agent/1.0");
-
-        var response = await client.SendAsync(request);
-        var body = await response.Content.ReadFromJsonAsync<LoginResponse>();
-
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        body.ShouldNotBeNull();
-        body.Status.ShouldBe(LoginSuccessStatus);
-        body.AccessToken.ShouldNotBeNullOrWhiteSpace();
-
-        return body.AccessToken!;
     }
 }

@@ -6,7 +6,4 @@ public sealed class AccountData
     public required string Description { get; set; }
     public double Balance { get; set; }
     public double Reserved { get; set; }
-    public double TotalExpenseAccrued { get; set; }
-    public double DailyExpenseAccrual { get; set; }
-    public double StableExpenseAccrual { get; set; }
 }

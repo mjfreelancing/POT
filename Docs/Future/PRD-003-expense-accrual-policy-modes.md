@@ -33,7 +33,9 @@ Current model assumes accrual-driven allocation for all expenses and requires ex
 
 - Stage: Complete
 - Code changes: Complete
-- Last updated: 2026-04-06
+- Last updated: 2026-09-27
+
+**Supersession note (2026-09-27).** The accrual _policy_ semantics this PRD settled still stand and are still inputs to the engine: `Automatic` versus `None`, the first-cycle `AccrualStart` override with automatic progression after renewal, `None`-mode canonicalisation to a null `AccrualStart`, and the rule that `None` zeroes the daily and stable accrual contributions while the account balance still debits on the due date. What [PRD-023](PRD-023-dynamic-accrual-calculation.md) supersedes is the _storage_ of the accrued amount: there is no persisted accrual state left to recompute, so the "Accrue Account Expenses" command, the accrual half of `/api/accruals/status` and accrual-driven dirty tracking are all gone, and `Accrued` is computed on read from the schedule. Read the functional rule table and the confirmed decisions below as policy inputs to that calculation rather than as a description of where the value lives.
 
 Implementation reference:
 
@@ -64,6 +66,8 @@ Implementation reference:
 - Manual is treated as an optional start-date override within Automatic.
 
 ## Current State Summary (Verified)
+
+> **Snapshot note (2026-09-27).** This section records the state as verified when this PRD was written — before this PRD's own decisions and before [PRD-023](PRD-023-dynamic-accrual-calculation.md) were applied — so it is kept as written. Two entries are misleading if read as current: **item 2**, because `AccrueExpenseCalculator` became `Pot.App/Calculators/AccrualCalculator.cs` and the accrual arithmetic moved out of `Pot.Data/Extensions/ExpenseEntityExtensions.cs` into it; and **item 4**, whose "projections renew first, then accrue" is exactly the ordering defect PRD-023 fixes by measuring on the start-of-day cursor and renewing afterwards (§1.5, OD-15). Read the rest of the section against the decisions below and the status note above rather than against the code.
 
 1. Expense contracts require a non-null accrual start date.
 

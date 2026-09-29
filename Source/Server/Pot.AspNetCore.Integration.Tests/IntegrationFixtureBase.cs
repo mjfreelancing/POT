@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Pot.App.Concerns.Time;
 using Pot.AspNetCore.Integration.Tests.Host;
 using Pot.Data;
 using Shouldly;
@@ -30,6 +31,22 @@ public abstract class IntegrationFixtureBase : IAsyncLifetime
         return clientOptions is null
             ? _factory.CreateClient()
             : _factory.CreateClient(clientOptions);
+    }
+
+    /// <summary>
+    /// Returns the date the host is treating as the current site-local date.
+    /// </summary>
+    /// <remarks>
+    /// Read from the host's own <see cref="ITimeProvider" /> rather than assumed from the test runner's clock,
+    /// because the offset applied comes from the application context and need not match either UTC or the
+    /// machine's local time. A fixture that seeds dates relative to "today" has to agree with the server.
+    /// </remarks>
+    /// <returns>The site-local date the host calculates for <c>now</c>.</returns>
+    protected DateOnly GetSiteLocalDateToday()
+    {
+        using var scope = CreateScope();
+
+        return scope.ServiceProvider.GetRequiredService<ITimeProvider>().GetLocalDateNow();
     }
 
     async ValueTask IAsyncLifetime.InitializeAsync()

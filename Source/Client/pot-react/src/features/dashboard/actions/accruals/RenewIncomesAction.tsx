@@ -1,6 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { CheckCircle } from 'lucide-react';
-import { Coins } from 'lucide-react';
+import { CheckCircle, Coins } from 'lucide-react';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 
@@ -59,6 +58,7 @@ function RenewIncomesAction() {
 
   // This method will never be called if there is an existing error since hasData will be false
   async function handleBulkAction() {
+    // Renew before invalidating the projections and accruals status, so both pick up the new due dates.
     if (!(await performIncomeRenewals())) {
       return;
     }
@@ -88,7 +88,7 @@ function RenewIncomesAction() {
       onClick={hasData ? handleBulkAction : undefined}
       enabled={hasData && !isLoading}
       hint={[
-        'Renews all incomes that were due before today and updates their due dates based on the original recurrence pattern.',
+        'Renews all incomes that are overdue or due today and updates their due dates based on the original recurrence pattern.',
         '',
         "Incomes marked as 'excluded from calculations' will not be renewed.",
       ].join('\n')}

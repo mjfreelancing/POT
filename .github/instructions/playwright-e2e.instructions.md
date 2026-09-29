@@ -90,7 +90,7 @@ applyTo: "Source/Client/pot-react/e2e/**"
     - `Toggle Sidebar` (`src/components/ui/sidebar.tsx`)
     - `Navigate to Pay On Time homepage` (`src/components/nav/AppSidebarHeader.tsx`)
   - POT: Login uses labeled fields (`Username`, `Password`) and a `Login` submit button in `src/features/auth/LoginForm.tsx`; prefer `getByLabel` and role-based button clicks.
-  - POT: For account-filter scenarios (PRD 011), assert both URL query behavior and visible filter state after each click-driven navigation.
+  - POT: For account-filter scenarios, assert both URL query behavior and visible filter state after each click-driven navigation.
   - POT: Use the `selectRadixOption` helper in `e2e/tests/filters/filters.test.ts` for the `Filter by account` Radix `Select` — it drives the retrying keyboard/AT path (`data-highlighted` gate + focus + Enter + `toBeHidden`; see Core Rules → Click Reliability).
   - POT: When clicking controls that open sheets/dialogs (create/edit/invite/import/export), assert the sheet/dialog role and heading before proceeding.
   - POT: When click actions are permission-gated (`WithPermission`), assert enabled/disabled affordance before click and expected rejection path when disabled.
@@ -98,7 +98,7 @@ applyTo: "Source/Client/pot-react/e2e/**"
   - POT: Sheets/dialogs (shadcn/Radix): always-open CREATE sheets are `modal={false}` with NO `onOpenChange` (closed via form Cancel / back-nav, NOT Escape); MODAL dialogs (SignupDialog, UserRoleDialog, …) close on Escape + backdrop click unless they pass the custom `modal` prop to `DialogContent` (which prevents backdrop-close). `DialogContent` defaults `showCloseButton=false`. Useful anchors: `[data-slot="dialog-overlay"]`, `[data-slot="sidebar"]`, `[data-slot="sidebar-footer"]` (see `dialogs/modalDialogs.test.ts`, `theme/themeToggle.test.ts`).
   - POT: Data-readiness — prefer PREFETCHING read-only lists via the `accessToken` request context over `page.waitForResponse` for a list GET (`waitForResponse` resolves on headers and can be load-starved past the timeout; see `mobileCardGrids.test.ts`). When asserting a UI signal that appears AFTER a slow POST (e.g. a success toast), capture the response, assert `response.ok()`, `await response.finished()`, then assert with documented headroom `{ timeout: 30_000 }` (see `quickActions.test.ts`).
   - POT: PWA — dev serves NO manifest/SW (vite-plugin-pwa gates both behind `devOptions.enabled`; `registerServiceWorker()` short-circuits on `import.meta.env.DEV`); the BUILT client serves the manifest + registers the SW. The mode-aware `e2e/tests/pwa/pwaContract.test.ts` asserts whichever contract applies (runs under both the dev and prodlike configs).
-  - POT: Use API-backed expectation flow from PRD 012 R9:
+  - POT: Use the API-backed expectation flow:
     - Register `waitForResponse` before click/navigation that triggers fetch.
     - Validate response contract shape.
     - Assert UI values rendered from payload-derived expectations.
@@ -110,6 +110,6 @@ applyTo: "Source/Client/pot-react/e2e/**"
   - POT: Keep line reporter for non-interactive agent runs (`npm run e2e` currently uses `--reporter=line` in `package.json`).
   - POT: The `/api/auth/login` endpoint creates a transient session only; smoke tests that call it and immediately close the browser context qualify for the parallel-safe transient-session exception.
   - POT: Current Playwright config is in `Source/Client/pot-react/playwright.config.ts` with `testDir: './e2e'`; keep new tests under `Source/Client/pot-react/e2e`. Prodlike (`playwright.prod.config.ts`, built client) is an ON-DEMAND gate — run `npm run e2e:prodlike` when the client production build changes, not per-change.
-  - POT: Central architecture/conventions doc: `Source/Client/pot-react/e2e/README.md` (read it before adding tests). Requirements + decisions: `Docs/Future/PRD-012-playwright-e2e-testing-infrastructure.md` (PRD); implemented design + design history: `Docs/Future/ADR-012-playwright-e2e-testing-infrastructure.md` (ADR).
+  - POT: Central architecture/conventions doc: `Source/Client/pot-react/e2e/README.md` (read it before adding tests).
   - POT: Auth fixture (`e2e/fixtures/auth.ts`) exposes `test` (admin) / `viewerTest` (viewer) / `pwChangeTest` (e2e_pwchange, viewer). Each authenticated test logs in ONCE and receives BOTH `storageState` (browser context) and `accessToken` (the 15-min JWT, for API setup/cleanup). Reuse `accessToken` for API calls; do NOT log in per operation (PBKDF2 CPU under load) and do NOT share storage state across tests/workers (the refresh cookie rotates on every `/api/auth/refresh`).
   - POT: Current config values: `workers: process.env.CI ? 1 : 2`, `retries: process.env.CI ? 2 : 1`, `timeout: 60_000`, `expect.timeout: 10_000`, `video: 'on-first-retry'`, API webServer `dotnet run -c Release`. Do NOT raise `timeout` to chase flakes (it worsens shared-stack contention); retries are a safety net, not a fix.

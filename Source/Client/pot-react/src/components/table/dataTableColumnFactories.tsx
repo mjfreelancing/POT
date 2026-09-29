@@ -12,6 +12,7 @@ import {
   getStatusBadgeClass,
   getTableBadgeClass,
 } from '../../lib';
+import ColumnHeaderHint from './ColumnHeaderHint';
 import DataTableColumnHeader from './DataTableColumnHeader';
 import type { AppColumnDef, AppRow } from './tableFeatures';
 
@@ -19,7 +20,15 @@ import type { AppColumnDef, AppRow } from './tableFeatures';
 type BaseColumnParams<TData extends RowData> = {
   accessorKey: keyof TData & string;
   header: string;
+  /** Hint shown in a tooltip when the heading is hovered. */
+  hint?: string;
   options?: Partial<AppColumnDef<TData>>;
+};
+
+// The factories that take no other parameters only need the optional hint.
+type HintParams = {
+  /** Hint shown in a tooltip when the heading is hovered. */
+  hint?: string;
 };
 
 type MoneyColumnParams<TData extends RowData> = BaseColumnParams<TData>;
@@ -35,6 +44,8 @@ type FrequencyColumnParams<TData extends RowData> = {
   countKey: keyof TData & string;
   frequencyKey: keyof TData & string;
   header: string;
+  /** Hint shown in a tooltip when the heading is hovered. */
+  hint?: string;
   options?: Partial<AppColumnDef<TData>>;
 };
 
@@ -107,15 +118,21 @@ const frequencySingularMap: Record<Frequency, string> = {
 const createMoneyValueColumn = <TData extends RowData>(
   params: MoneyColumnParams<TData>,
 ): AppColumnDef<TData> => {
-  const { accessorKey, header, options = {} } = params;
+  const { accessorKey, header, hint, options = {} } = params;
   const { enableSorting = false, ...restOptions } = options;
 
   return {
     id: accessorKey,
     accessorKey,
     header: enableSorting
-      ? ({ column }) => <DataTableColumnHeader column={column} title={header} />
-      : () => <div className="uppercase">{header}</div>,
+      ? ({ column }) => (
+          <DataTableColumnHeader column={column} title={header} hint={hint} />
+        )
+      : () => (
+          <ColumnHeaderHint hint={hint}>
+            <div className="uppercase">{header}</div>
+          </ColumnHeaderHint>
+        ),
     cell: ({ row }) => {
       const formattedValue = formatCellMoneyValue(row, accessorKey);
 
@@ -129,15 +146,21 @@ const createMoneyValueColumn = <TData extends RowData>(
 const createDateColumn = <TData extends RowData>(
   params: DateColumnParams<TData>,
 ): AppColumnDef<TData> => {
-  const { accessorKey, header, getNullValue, options = {} } = params;
+  const { accessorKey, header, hint, getNullValue, options = {} } = params;
   const { enableSorting = false, ...restOptions } = options;
 
   return {
     id: accessorKey,
     accessorKey,
     header: enableSorting
-      ? ({ column }) => <DataTableColumnHeader column={column} title={header} />
-      : () => <div className="uppercase">{header}</div>,
+      ? ({ column }) => (
+          <DataTableColumnHeader column={column} title={header} hint={hint} />
+        )
+      : () => (
+          <ColumnHeaderHint hint={hint}>
+            <div className="uppercase">{header}</div>
+          </ColumnHeaderHint>
+        ),
     cell: ({ row }) => {
       const rawValue = row.getValue(accessorKey) as string | Date;
 
@@ -163,13 +186,17 @@ const createDateColumn = <TData extends RowData>(
   };
 };
 
-const createNextDueStatusColumn = <
-  TData extends RowData & NextDueStatusRow,
->(): AppColumnDef<TData> => ({
+const createNextDueStatusColumn = <TData extends RowData & NextDueStatusRow>(
+  params: HintParams = {},
+): AppColumnDef<TData> => ({
   id: 'nextDue',
   accessorKey: 'nextDue',
   header: ({ column }) => (
-    <DataTableColumnHeader column={column} title="Next Due" />
+    <DataTableColumnHeader
+      column={column}
+      title="Next Due"
+      hint={params.hint}
+    />
   ),
   enableSorting: true,
   sortFn: 'datetime',
@@ -225,10 +252,16 @@ const createNextDueStatusColumn = <
 
 const createRecurringEndDateColumn = <
   TData extends RowData & RecurringEndDateRow,
->(): AppColumnDef<TData> => ({
+>(
+  params: HintParams = {},
+): AppColumnDef<TData> => ({
   id: 'endDate',
   accessorKey: 'endDate',
-  header: 'End Date',
+  header: () => (
+    <ColumnHeaderHint hint={params.hint}>
+      <div className="uppercase">End Date</div>
+    </ColumnHeaderHint>
+  ),
   cell: ({ row }) => {
     const { endDate, frequency, excludeFromCalcs } = row.original;
     const isOneTime = frequency === 'OneTime';
@@ -257,9 +290,15 @@ const createRecurringEndDateColumn = <
 
 const createAccountDescriptionColumn = <
   TData extends RowData & AccountDescriptionRow,
->(): AppColumnDef<TData> => ({
+>(
+  params: HintParams = {},
+): AppColumnDef<TData> => ({
   id: 'accountDescription',
-  header: 'Account',
+  header: () => (
+    <ColumnHeaderHint hint={params.hint}>
+      <div className="uppercase">Account</div>
+    </ColumnHeaderHint>
+  ),
   cell: ({ row }) => {
     const description = row.original.account?.description;
 
@@ -288,14 +327,20 @@ const createActionsColumn = <TData extends RowData>(
 const createFrequencyColumn = <TData extends RowData>(
   params: FrequencyColumnParams<TData>,
 ): AppColumnDef<TData> => {
-  const { countKey, frequencyKey, header, options = {} } = params;
+  const { countKey, frequencyKey, header, hint, options = {} } = params;
   const { enableSorting = false, ...restOptions } = options;
 
   return {
     id: `${frequencyKey}-${countKey}`,
     header: enableSorting
-      ? ({ column }) => <DataTableColumnHeader column={column} title={header} />
-      : () => <div className="uppercase">{header}</div>,
+      ? ({ column }) => (
+          <DataTableColumnHeader column={column} title={header} hint={hint} />
+        )
+      : () => (
+          <ColumnHeaderHint hint={hint}>
+            <div className="uppercase">{header}</div>
+          </ColumnHeaderHint>
+        ),
     cell: ({ row }) => {
       const count = row.original[countKey] as number;
       const freq = row.original[frequencyKey] as Frequency;

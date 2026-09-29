@@ -11,6 +11,9 @@ using Pot.Data.Repositories.Expenses;
 
 namespace Pot.App.Features.Maintenance.Import.Expenses;
 
+/// <summary>
+/// Default implementation of <see cref="IExpensesImporter"/>.
+/// </summary>
 internal sealed class ExpensesImporter : IExpensesImporter
 {
     private readonly IPersistableAccountRepository _accountRepository;
@@ -30,6 +33,7 @@ internal sealed class ExpensesImporter : IExpensesImporter
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<int>> ImportAsync(IEnumerable<IExpenseCsvRow> csvRows, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
@@ -95,9 +99,6 @@ internal sealed class ExpensesImporter : IExpensesImporter
             Amount = csvRow.Amount,
             Note = csvRow.Note,
             AccountRowId = accountRowId
-
-            // Not imported - all calculations would need to be refreshed anyway
-            // Accrued = import.Accrued,
         };
 
         var createResult = await _createExpenseService
@@ -127,9 +128,6 @@ internal sealed class ExpensesImporter : IExpensesImporter
             Amount = csvRow.Amount,
             Note = csvRow.Note,
             AccountRowId = accountRowId
-
-            // Not imported - all calculations would need to be refreshed anyway
-            // Accrued = import.Accrued,
         };
 
         var updateResult = await _updateExpenseService

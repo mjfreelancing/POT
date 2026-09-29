@@ -321,6 +321,9 @@ contract), then globalSetup:
     (`runFinancialImportAndRenewal`): login as `e2e_admin` → import → accrue expenses →
     renew incomes (mode `Overdue`, as of the local date) → renew expenses. Throws if
     `e2e/seed/financial.export` is missing.
+
+    > **Note (2026-09-27).** The `accrue expenses` leg is gone. [PRD-023](PRD-023-dynamic-accrual-calculation.md) removed the accrual command surface because accrual is derived on read, so there is nothing to run after an import: the helper now goes login → import → renew incomes → renew expenses. The same correction applies to the two other places this ADR states the step — the `renewal/accrual` label in the §3 setup diagram and step 5 of §4 — where it now means renewal only. The step above is kept as it was written when this ADR was accepted.
+
 11. Pre-warms the shared stack (`warmUpSharedStack`): mounts every authenticated route in a
     real browser once, forcing Vite to transform lazy chunks and the API to serve first reads
     before the first test runs. Non-fatal on failure (tests would just pay the cold cost).

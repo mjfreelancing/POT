@@ -12,7 +12,7 @@ import {
 import { toIsoDate } from '../../helpers/dates';
 // Covers the filters: the SearchInput (with its
 // "Clear search input" button) and the AccountFilter ("Filter by account")
-// select, including the PRD 011 URL query-string contract — the `accountId`
+// select, including its URL query-string contract — the `accountId`
 // URL parameter is the single render-time source of truth (RULE 1), so
 // selecting an account writes `?accountId=<id>`, choosing "All Accounts" clears
 // it, deep links pre-filter, and invalid account ids fall back to unfiltered.

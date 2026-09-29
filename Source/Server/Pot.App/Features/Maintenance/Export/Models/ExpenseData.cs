@@ -14,7 +14,6 @@ public sealed class ExpenseData
     public required Frequency Frequency { get; set; }
     public required int FrequencyCount { get; set; }
     public required double Amount { get; set; }
-    public required double Accrued { get; set; }
     public string? Note { get; set; }
     public required Guid AccountRowId { get; set; }
 }

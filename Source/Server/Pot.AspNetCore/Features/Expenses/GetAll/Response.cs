@@ -46,13 +46,16 @@ internal sealed class Response : ResponseBase
     [Description("The amount accrued towards this expense")]
     public double Accrued { get; init; }
 
+    [Description("The amount owed for occurrences of this expense that are already past due")]
+    public double Arrears { get; init; }
+
     [Description("The account this expense is associated with")]
     public AccountModel? Account { get; init; }
 
     [Description("A note about the expense")]
     public string? Note { get; init; }
 
-    public static Ok<Response[]> Ok(List<Output> expenses)
+    public static Ok<Response[]> Ok(Output[] expenses)
     {
         var responses = expenses.SelectToArray(expense => new Response(expense));
 
@@ -75,6 +78,7 @@ internal sealed class Response : ResponseBase
         FrequencyCount = expense.FrequencyCount;
         Amount = expense.Amount;
         Accrued = expense.Accrued;
+        Arrears = expense.Arrears;
         Note = expense.Note;
 
         var account = expense.Account;

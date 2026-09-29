@@ -16,6 +16,10 @@
 
 [Content to be added]
 
+## Column Hints
+
+Hover any column heading to see a hint describing what that column shows.
+
 ## Step-by-Step Guide
 
 [Content to be added]

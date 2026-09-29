@@ -1,6 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { CheckCircle } from 'lucide-react';
-import { CreditCard } from 'lucide-react';
+import { CheckCircle, CreditCard } from 'lucide-react';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 
@@ -59,7 +58,7 @@ function RenewExpensesAction() {
 
   // This method will never be called if there is an existing error since hasData will be false
   async function handleBulkAction() {
-    // Need to renew Expenses and Incomes before accruing accounts
+    // Renew before invalidating the accruals status and projections, so both pick up the new due dates.
     if (!(await performExpenseRenewals())) {
       return;
     }
@@ -89,7 +88,7 @@ function RenewExpensesAction() {
       onClick={hasData ? handleBulkAction : undefined}
       enabled={hasData && !isLoading}
       hint={[
-        'Renews all expenses that were due before today, updates their due dates based on the original recurrence pattern, and marking the associated account accruals as dirty.',
+        'Renews all expenses that are overdue or due today and updates their due dates based on the original recurrence pattern.',
         '',
         "Expenses marked as 'excluded from calculations' will not be renewed.",
       ].join('\n')}

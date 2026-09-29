@@ -140,7 +140,7 @@ function runDatabaseMigrations(): Promise<void> {
 }
 
 async function runFinancialImportAndRenewal(): Promise<void> {
-  console.log('📦 Importing financial artifact and running renewal/accrual...');
+  console.log('📦 Importing financial artifact and running renewal...');
 
   // Step 1: Login to get an access token for subsequent API calls.
   const loginResponse = await fetch(`${apiBaseUrl}/api/auth/login`, {
@@ -197,44 +197,7 @@ async function runFinancialImportAndRenewal(): Promise<void> {
   const now = new Date();
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
-  // Step 3: Fetch all accounts and accrue expenses.
-  const accountsResponse = await fetch(`${apiBaseUrl}/api/accounts`, {
-    headers: authHeaders,
-  });
-
-  if (!accountsResponse.ok) {
-    const body = await accountsResponse.text();
-    throw new Error(
-      `Failed to fetch accounts after import: ${accountsResponse.status} ${body}`,
-    );
-  }
-
-  const accounts = (await accountsResponse.json()) as Array<{ rowId: string }>;
-  const accountRowIds = accounts.map(account => account.rowId);
-
-  console.log(`   Found ${accountRowIds.length} account(s)`);
-
-  if (accountRowIds.length > 0) {
-    const accrueResponse = await fetch(
-      `${apiBaseUrl}/api/accruals/accrue-expenses`,
-      {
-        method: 'POST',
-        headers: { ...authHeaders, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rowIds: accountRowIds }),
-      },
-    );
-
-    if (!accrueResponse.ok) {
-      const body = await accrueResponse.text();
-      throw new Error(
-        `Accrue expenses failed: ${accrueResponse.status} ${body}`,
-      );
-    }
-
-    console.log('   Accrued expenses for all accounts');
-  }
-
-  // Step 4: Fetch all incomes and run renewal.
+  // Step 3: Fetch all incomes and run renewal.
   const incomesResponse = await fetch(`${apiBaseUrl}/api/incomes`, {
     headers: authHeaders,
   });
@@ -273,7 +236,7 @@ async function runFinancialImportAndRenewal(): Promise<void> {
     console.log(`   Renewed ${incomeRowIds.length} income(s)`);
   }
 
-  // Step 5: Fetch all expenses and run renewal.
+  // Step 4: Fetch all expenses and run renewal.
   const expensesResponse = await fetch(`${apiBaseUrl}/api/expenses`, {
     headers: authHeaders,
   });
@@ -312,7 +275,7 @@ async function runFinancialImportAndRenewal(): Promise<void> {
     console.log(`   Renewed ${expenseRowIds.length} expense(s)`);
   }
 
-  console.log('✅ Financial import and renewal/accrual completed');
+  console.log('✅ Financial import and renewal completed');
 }
 
 async function waitForDatabaseReady(): Promise<void> {

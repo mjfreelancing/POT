@@ -1,23 +1,7 @@
-import type {
-  AccrualsStatus,
-  AccrualsStatusInput,
-  AccrueAccountExpensesInput,
-} from '@/data';
+import type { AccrualsStatus, AccrualsStatusInput } from '@/data';
 import type { FailResultBase, Result } from '@/lib';
 
-import { useGet, usePost } from './useApi';
-
-// Returning the mutation data as Result<void, FailResultBase> type to enable TypeScript's discriminated union type narrowing.
-const useApiAccrueAccountExpenses = () => {
-  const mutation = usePost<void, AccrueAccountExpensesInput>(
-    '/accruals/accrue-expenses',
-  );
-
-  return {
-    ...mutation,
-    data: mutation.data as Result<void, FailResultBase>,
-  };
-};
+import { useGet } from './useApi';
 
 const useApiAccrualsStatus = (input: AccrualsStatusInput) => {
   const hasAccounts = input.accountRowIds.length > 0;
@@ -47,4 +31,4 @@ const useApiAccrualsStatus = (input: AccrualsStatusInput) => {
   };
 };
 
-export { useApiAccrualsStatus, useApiAccrueAccountExpenses };
+export { useApiAccrualsStatus };

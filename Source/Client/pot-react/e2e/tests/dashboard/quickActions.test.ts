@@ -16,12 +16,12 @@ import {
 } from '../../helpers/api';
 import { toIsoDate } from '../../helpers/dates';
 
-// Covers the dashboard quick actions: the four
-// action cards on /dashboard — Renew Expenses, Renew Incomes, Accrue Expenses,
-// Renew & Accrue — are driven by the accruals-status endpoint and only enabled
-// when there is actionable data. Each card fires the matching API call and
-// shows a success toast. The whole Quick Actions section is PermissionGuard
-// gated (hidden for the read-only viewer).
+// Covers the dashboard quick actions: the two action cards on /dashboard
+// — Renew Expenses and Renew Incomes — are driven by the accruals-status
+// endpoint and only enabled when there is actionable data.
+// Each card fires the matching API call and shows a success toast. The whole
+// Quick Actions section is PermissionGuard gated (hidden for the read-only
+// viewer).
 //
 // Fixture-managed, serial suite: overdue expenses/incomes are created through
 // the API (deterministic dates) and removed in afterEach, so the suite is
@@ -33,8 +33,8 @@ import { toIsoDate } from '../../helpers/dates';
 // mobile layout is covered by mobileCardGrids.test.ts.
 //
 // Runs as e2e_quickactions (Admin on its OWN site, see baseline.sql) so the
-// whole-site renew/accrue actions never sweep other suites' rows on the shared
-// E2E site. It is CHROMIUM-ONLY in playwright.config.ts: chromium + edge
+// whole-site renew actions never sweep other suites' rows on the shared E2E
+// site. It is CHROMIUM-ONLY in playwright.config.ts: chromium + edge
 // running the same file against one DB would race each other's actions.
 
 const isMobileProject = (testInfo: import('@playwright/test').TestInfo) =>
@@ -126,7 +126,6 @@ test.describe.serial('Dashboard quick actions (fixture-managed)', () => {
           nextDue: overdueDate,
           amount: 40,
         },
-        'Automatic',
       );
       const overdueExpense2 = await createExpenseViaApi(
         request,
@@ -137,7 +136,6 @@ test.describe.serial('Dashboard quick actions (fixture-managed)', () => {
           nextDue: overdueDate,
           amount: 50,
         },
-        'Automatic',
       );
 
       createdExpenseRowIds.push(overdueExpense1.rowId, overdueExpense2.rowId);
@@ -301,208 +299,6 @@ test.describe.serial('Dashboard quick actions (fixture-managed)', () => {
       expect(income2After?.nextDue).toBeTruthy();
       expect(income1After!.nextDue > overdueDate).toBeTruthy();
       expect(income2After!.nextDue > overdueDate).toBeTruthy();
-    } finally {
-      await request.dispose();
-    }
-  });
-
-  test('accrue expenses quick action accrues dirty accounts', async ({
-    page,
-    playwright,
-    accessToken,
-  }, testInfo) => {
-    test.skip(
-      isMobileProject(testInfo),
-      'Quick actions are desktop-only; mobile layout is covered by mobileCardGrids.test.ts',
-    );
-
-    const now = new Date();
-    const overdueDate = toIsoDate(
-      new Date(now.getFullYear(), now.getMonth(), now.getDate() - 5),
-    );
-
-    const request = await createRequestContext(playwright);
-
-    try {
-      const accountRowId = await getOrCreateAccountRowId(request, accessToken);
-      const stamp = Date.now();
-
-      // Creating an expense marks the account accrual dirty (the seed already
-      // accrued all accounts), so the account is in accountAccrualsRequired.
-      const overdueExpense = await createExpenseViaApi(
-        request,
-        accessToken,
-        accountRowId,
-        {
-          description: `E2E QA Accrue ${stamp}`,
-          nextDue: overdueDate,
-          amount: 60,
-        },
-        'Automatic',
-      );
-
-      createdExpenseRowIds.push(overdueExpense.rowId);
-
-      await page.goto('/dashboard');
-      await waitForQuickActions(page);
-
-      const accrueResponsePromise = page.waitForResponse(
-        response =>
-          response.url().includes('/api/accruals/accrue-expenses') &&
-          response.request().method() === 'POST',
-      );
-
-      await page.getByRole('button', { name: 'Accrue Expenses' }).click();
-
-      const accrueResponse = await accrueResponsePromise;
-      // Surface real server errors instead of silently missing the toast, and
-      // wait for the response BODY so React has processed the result first.
-      expect(accrueResponse.ok()).toBeTruthy();
-      await accrueResponse.finished();
-      const accrueBody = accrueResponse.request().postDataJSON() as {
-        rowIds?: string[];
-      };
-
-      // Post-response toast: headroom for the slow accrue POST under load
-      // (slow-POST precedent).
-      await expect(
-        page.getByText('Account Accruals Complete', { exact: true }),
-      ).toBeVisible({ timeout: 30_000 });
-
-      expect(accrueBody.rowIds).toContain(accountRowId);
-
-      // ---- Post-condition: the account accrual is now clean.
-      const statusUrl = `/api/accruals/status?accountRowIds=${accountRowId}`;
-
-      await expect
-        .poll(async () => {
-          const statusResponse = await request.get(statusUrl, {
-            headers: authHeaders(accessToken),
-          });
-          expect(statusResponse.ok()).toBeTruthy();
-
-          const status = (await statusResponse.json()) as {
-            accountAccrualsRequired: string[];
-          };
-
-          return status.accountAccrualsRequired;
-        })
-        .not.toContain(accountRowId);
-    } finally {
-      await request.dispose();
-    }
-  });
-
-  test('renew & accrue quick action renews expenses + incomes and accrues accounts', async ({
-    page,
-    playwright,
-    accessToken,
-  }, testInfo) => {
-    test.skip(
-      isMobileProject(testInfo),
-      'Quick actions are desktop-only; mobile layout is covered by mobileCardGrids.test.ts',
-    );
-
-    const now = new Date();
-    const overdueDate = toIsoDate(
-      new Date(now.getFullYear(), now.getMonth(), now.getDate() - 5),
-    );
-
-    const request = await createRequestContext(playwright);
-
-    try {
-      const accountRowId = await getOrCreateAccountRowId(request, accessToken);
-      const stamp = Date.now();
-
-      const overdueExpense = await createExpenseViaApi(
-        request,
-        accessToken,
-        accountRowId,
-        {
-          description: `E2E QA R&A Expense ${stamp}`,
-          nextDue: overdueDate,
-          amount: 70,
-        },
-        'Automatic',
-      );
-      const overdueIncome = await createIncomeViaApi(
-        request,
-        accessToken,
-        accountRowId,
-        {
-          description: `E2E QA R&A Income ${stamp}`,
-          nextDue: overdueDate,
-          amount: 150,
-        },
-      );
-
-      createdExpenseRowIds.push(overdueExpense.rowId);
-      createdIncomeRowIds.push(overdueIncome.rowId);
-
-      await page.goto('/dashboard');
-      await waitForQuickActions(page);
-
-      const renewExpensesResponsePromise = page.waitForResponse(
-        response =>
-          response.url().includes('/api/expenses/renew') &&
-          response.request().method() === 'POST',
-      );
-      const renewIncomesResponsePromise = page.waitForResponse(
-        response =>
-          response.url().includes('/api/incomes/renew') &&
-          response.request().method() === 'POST',
-      );
-      const accrueResponsePromise = page.waitForResponse(
-        response =>
-          response.url().includes('/api/accruals/accrue-expenses') &&
-          response.request().method() === 'POST',
-      );
-
-      // The title is "Renew&nbsp;& Accrue" (non-breaking spaces) — match with a
-      // whitespace-tolerant regex.
-      await page.getByRole('button', { name: /Renew\s*&\s*Accrue/ }).click();
-
-      const renewExpensesResponse = await renewExpensesResponsePromise;
-      const renewIncomesResponse = await renewIncomesResponsePromise;
-      const accrueResponse = await accrueResponsePromise;
-      // Surface real server errors instead of silently missing the toast, and
-      // wait for the response BODIES so React has processed them first.
-      expect(renewExpensesResponse.ok()).toBeTruthy();
-      expect(renewIncomesResponse.ok()).toBeTruthy();
-      expect(accrueResponse.ok()).toBeTruthy();
-      await renewExpensesResponse.finished();
-      await renewIncomesResponse.finished();
-      await accrueResponse.finished();
-
-      const renewExpensesBody = renewExpensesResponse
-        .request()
-        .postDataJSON() as {
-        mode?: string;
-        rowIds?: string[];
-      };
-      const renewIncomesBody = renewIncomesResponse
-        .request()
-        .postDataJSON() as {
-        mode?: string;
-        rowIds?: string[];
-      };
-      const accrueBody = accrueResponse.request().postDataJSON() as {
-        rowIds?: string[];
-      };
-
-      // Post-response toast: headroom for the slow multi-POST action under load
-      // (slow-POST precedent).
-      await expect(
-        page.getByText('Renew / Accruals Complete', { exact: true }),
-      ).toBeVisible({ timeout: 30_000 });
-
-      expect(renewExpensesBody.mode).toBe('Overdue');
-      expect(renewExpensesBody.rowIds).toContain(overdueExpense.rowId);
-
-      expect(renewIncomesBody.mode).toBe('Overdue');
-      expect(renewIncomesBody.rowIds).toContain(overdueIncome.rowId);
-
-      expect(accrueBody.rowIds).toContain(accountRowId);
     } finally {
       await request.dispose();
     }

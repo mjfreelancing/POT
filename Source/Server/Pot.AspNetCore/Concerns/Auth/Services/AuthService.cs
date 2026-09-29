@@ -18,7 +18,7 @@ using System.Security.Cryptography;
 
 namespace Pot.AspNetCore.Concerns.Auth.Services;
 
-// AuthService flow summary (current implementation as of PRD 001/002 Step 1.2).
+// AuthService flow summary.
 //
 // Purpose:
 // - Orchestrate login, refresh, logout, and password-change behavior.

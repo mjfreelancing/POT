@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Pot.App.Calculators;
-using Pot.App.Concerns.Accruals;
 using Pot.App.Features.Expenses.Renew;
 using Pot.App.Features.Expenses.Renew.Models;
 using Pot.Data.Entities;
@@ -23,28 +22,13 @@ public class RenewExpensesServiceFixture : PotFixtureBase
 
     public class Constructor : RenewExpensesServiceFixture
     {
-        private readonly IAccrualDirtyStateManager _accrualDirtyStateManagerFake;
         private readonly IPersistableExpenseRepository _expenseRepositoryFake;
         private readonly IExpenseRenewalCalculator _renewalCalculatorFake;
 
         public Constructor()
         {
-            _accrualDirtyStateManagerFake = Substitute.For<IAccrualDirtyStateManager>();
             _expenseRepositoryFake = Substitute.For<IPersistableExpenseRepository>();
             _renewalCalculatorFake = Substitute.For<IExpenseRenewalCalculator>();
-        }
-
-        [Fact]
-        public void Should_Throw_When_AccrualDirtyStateManager_Is_Null()
-        {
-            var exception = Should.Throw<ArgumentNullException>(() =>
-            {
-                var logger = Substitute.For<ILogger<RenewExpensesService>>();
-
-                _ = new RenewExpensesService(null!, _expenseRepositoryFake, _renewalCalculatorFake, logger);
-            });
-
-            exception.ParamName.ShouldBe("accrualDirtyStateManager");
         }
 
         [Fact]
@@ -54,7 +38,7 @@ public class RenewExpensesServiceFixture : PotFixtureBase
             {
                 var logger = Substitute.For<ILogger<RenewExpensesService>>();
 
-                _ = new RenewExpensesService(_accrualDirtyStateManagerFake, null!, _renewalCalculatorFake, logger);
+                _ = new RenewExpensesService(null!, _renewalCalculatorFake, logger);
             });
 
             exception.ParamName.ShouldBe("expenseRepository");
@@ -67,7 +51,7 @@ public class RenewExpensesServiceFixture : PotFixtureBase
             {
                 var logger = Substitute.For<ILogger<RenewExpensesService>>();
 
-                _ = new RenewExpensesService(_accrualDirtyStateManagerFake, _expenseRepositoryFake, null!, logger);
+                _ = new RenewExpensesService(_expenseRepositoryFake, null!, logger);
             });
 
             exception.ParamName.ShouldBe("renewalCalculator");
@@ -78,7 +62,7 @@ public class RenewExpensesServiceFixture : PotFixtureBase
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
             {
-                _ = new RenewExpensesService(_accrualDirtyStateManagerFake, _expenseRepositoryFake, _renewalCalculatorFake, null!);
+                _ = new RenewExpensesService(_expenseRepositoryFake, _renewalCalculatorFake, null!);
             });
 
             exception.ParamName.ShouldBe("logger");
@@ -87,13 +71,11 @@ public class RenewExpensesServiceFixture : PotFixtureBase
 
     public class RenewAsync : RenewExpensesServiceFixture
     {
-        private readonly IAccrualDirtyStateManager _accrualDirtyStateManagerFake;
         private readonly IPersistableExpenseRepository _expenseRepositoryFake;
         private readonly IExpenseRenewalCalculator _renewalCalculatorFake;
 
         public RenewAsync()
         {
-            _accrualDirtyStateManagerFake = Substitute.For<IAccrualDirtyStateManager>();
             _expenseRepositoryFake = Substitute.For<IPersistableExpenseRepository>();
             _renewalCalculatorFake = Substitute.For<IExpenseRenewalCalculator>();
             _expenseRepositoryFake.WithTracking().Returns(new NoopScope());
@@ -147,7 +129,7 @@ public class RenewExpensesServiceFixture : PotFixtureBase
                 .GetExpensesAsync(Arg.Any<Guid[]>(), Arg.Any<CancellationToken>())
                 .Returns([existingExpense]);
 
-            var service = new RenewExpensesService(_accrualDirtyStateManagerFake, _expenseRepositoryFake, _renewalCalculatorFake, logger);
+            var service = new RenewExpensesService(_expenseRepositoryFake, _renewalCalculatorFake, logger);
 
             var input = new Input
             {
@@ -170,13 +152,12 @@ public class RenewExpensesServiceFixture : PotFixtureBase
         }
 
         [Fact]
-        public async Task Should_Renew_Expenses_And_Mark_Changed_Ones_Dirty()
+        public async Task Should_Renew_Expenses_And_Save_Changes()
         {
             var logger = Substitute.For<ILogger<RenewExpensesService>>();
 
             var changedExpense = CreateExpense(accountId: 6);
             var unchangedExpense = CreateExpense(accountId: 7);
-            IReadOnlyCollection<ExpenseEntity>? markedExpenses = null;
 
             _expenseRepositoryFake
                 .GetExpensesAsync(Arg.Any<Guid[]>(), Arg.Any<CancellationToken>())
@@ -186,15 +167,11 @@ public class RenewExpensesServiceFixture : PotFixtureBase
                 .When(calculator => calculator.Renew(Arg.Any<IEnumerable<ExpenseEntity>>(), Arg.Any<RenewalMode>(), Arg.Any<DateOnly>()))
                 .Do(_ => changedExpense.NextDue = changedExpense.NextDue.AddMonths(1));
 
-            _accrualDirtyStateManagerFake
-                .SetAccountsDirtyAsync(Arg.Do<IReadOnlyCollection<ExpenseEntity>>(expenses => markedExpenses = expenses), Arg.Any<CancellationToken>())
-                .Returns(Task.CompletedTask);
-
             _expenseRepositoryFake
                 .SaveAsync(Arg.Any<CancellationToken>())
                 .Returns(1);
 
-            var service = new RenewExpensesService(_accrualDirtyStateManagerFake, _expenseRepositoryFake, _renewalCalculatorFake, logger);
+            var service = new RenewExpensesService(_expenseRepositoryFake, _renewalCalculatorFake, logger);
 
             var input = new Input
             {
@@ -207,46 +184,11 @@ public class RenewExpensesServiceFixture : PotFixtureBase
 
             result.IsSuccess.ShouldBeTrue();
 
-            markedExpenses.ShouldNotBeNull();
-            markedExpenses.Select(item => item.RowId).ToArray().ShouldBe([changedExpense.RowId]);
+            _renewalCalculatorFake
+                .Received(1)
+                .Renew(Arg.Is<IEnumerable<ExpenseEntity>>(expenses => expenses.Count() == 2), RenewalMode.Overdue, input.AsOfDate);
 
             await _expenseRepositoryFake.Received(1).SaveAsync(Arg.Any<CancellationToken>());
-        }
-
-        [Fact]
-        public async Task Should_Still_Call_Mark_Dirty_With_Empty_Set_When_No_Expenses_Are_Changed()
-        {
-            var logger = Substitute.For<ILogger<RenewExpensesService>>();
-
-            var unchangedExpense = CreateExpense(accountId: 8);
-            IReadOnlyCollection<ExpenseEntity>? markedExpenses = null;
-
-            _expenseRepositoryFake
-                .GetExpensesAsync(Arg.Any<Guid[]>(), Arg.Any<CancellationToken>())
-                .Returns([unchangedExpense]);
-
-            _accrualDirtyStateManagerFake
-                .SetAccountsDirtyAsync(Arg.Do<IReadOnlyCollection<ExpenseEntity>>(expenses => markedExpenses = expenses), Arg.Any<CancellationToken>())
-                .Returns(Task.CompletedTask);
-
-            _expenseRepositoryFake
-                .SaveAsync(Arg.Any<CancellationToken>())
-                .Returns(1);
-
-            var service = new RenewExpensesService(_accrualDirtyStateManagerFake, _expenseRepositoryFake, _renewalCalculatorFake, logger);
-
-            var input = new Input
-            {
-                RowIds = [unchangedExpense.RowId],
-                AsOfDate = new DateOnly(2026, 4, 24),
-                Mode = RenewalMode.Future
-            };
-
-            var result = await service.RenewAsync(input, CancellationToken.None);
-
-            result.IsSuccess.ShouldBeTrue();
-            markedExpenses.ShouldNotBeNull();
-            markedExpenses.ShouldBeEmpty();
         }
     }
 

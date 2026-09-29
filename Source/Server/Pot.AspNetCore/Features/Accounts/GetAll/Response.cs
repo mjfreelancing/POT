@@ -21,8 +21,11 @@ internal sealed class Response : ResponseBase
     [Description("The total amount accrued to pay for future expenses")]
     public double TotalExpenseAccrued { get; init; }
 
-    [Description("The daily accrual required to meet all future expenses")]
-    public double DailyExpenseAccrual { get; init; }
+    [Description("The total amount owed for expense cycles that are already past due")]
+    public double TotalArrears { get; init; }
+
+    [Description("The total committed obligation, being the accrued cycles plus the past-due arrears")]
+    public double TotalCommitted { get; init; }
 
     [Description("The stable daily accrual required for planning based on recurring obligations and active one-time expenses")]
     public double StableExpenseAccrual { get; init; }
@@ -33,10 +36,10 @@ internal sealed class Response : ResponseBase
     [Description("The number of incomes recorded against this account")]
     public int LinkedIncomes { get; init; }
 
-    [Description("The available balance after consider the Reserved and TotalExpenseAccrued amounts")]
-    public double Available => Balance - Reserved - TotalExpenseAccrued;
+    [Description("The available balance after considering the Reserved and committed amounts")]
+    public double Available => Balance - Reserved - TotalCommitted;
 
-    public static Ok<Response[]> Ok(List<Output> accounts)
+    public static Ok<Response[]> Ok(Output[] accounts)
     {
         var responses = accounts.SelectToArray(account => new Response(account));
 
@@ -53,7 +56,8 @@ internal sealed class Response : ResponseBase
         Balance = account.Balance;
         Reserved = account.Reserved;
         TotalExpenseAccrued = account.TotalExpenseAccrued;
-        DailyExpenseAccrual = account.DailyExpenseAccrual;
+        TotalArrears = account.TotalArrears;
+        TotalCommitted = account.TotalCommitted;
         StableExpenseAccrual = account.StableExpenseAccrual;
         LinkedExpenses = account.LinkedExpenses;
         LinkedIncomes = account.LinkedIncomes;

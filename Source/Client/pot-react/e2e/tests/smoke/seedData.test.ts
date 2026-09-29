@@ -3,7 +3,7 @@ import { expect, test } from '../../fixtures/auth';
 test('dashboard renders seeded financial accounts from the API', async ({
   page,
 }) => {
-  // Register the response listener before navigating (PRD R7 pattern).
+  // Register the response listener before navigating.
   const accountsResponsePromise = page.waitForResponse(
     response =>
       response.url().includes('/api/accounts') &&

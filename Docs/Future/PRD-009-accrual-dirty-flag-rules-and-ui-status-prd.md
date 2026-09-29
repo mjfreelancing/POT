@@ -3,8 +3,11 @@
 - Feature ID: 009
 - Date created: 2026-04-18
 - Status: Implemented
+- Last updated: 2026-09-27
 - Priority: High
 - Audience: Server and client maintainers, reviewers, and future implementation agents
+
+**Supersession note (2026-09-27).** The date boundary conventions still stand and are still the rules the engine applies: ended means one-time with the strict boundary `EndDate < asOfDate`, equality means still active, and renewal eligibility stays separate from that rule. What [PRD-023](PRD-023-dynamic-accrual-calculation.md) supersedes is the dirty-state machinery itself — `AccountAccrualEntity`, `AccountAccrualRepository` and its `AccruedIsDirty` / `LastAccruedDate` columns, `IAccrualDirtyStateManager` and its dirty/clean responsibilities, `AccrueExpensesService` and `POST /api/accruals/accrue-expenses`, and the `AccountAccrualsRequired` member of `/api/accruals/status`, which now reports renewal requirements only. Accrual can no longer be stale, so there is nothing to flag dirty or to stamp after a recalculation: the "Clear/stamp on accrual success" and "Status read cutover" items in Completion Scope describe behaviour that no longer has a subject, and the answers to Q1–Q4 and Q6 no longer describe storage — only the boundary rules survived. Accrued values are computed on read.
 
 ## Objective
 

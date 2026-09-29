@@ -1,29 +1,45 @@
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Pot.App.Concerns.Auth;
 using Pot.App.Features.Maintenance.Metadata.Models;
-using Pot.Data;
-using Pot.Data.Entities;
-using Pot.Shared.Enumerations;
-using Pot.TestUtils;
+using Pot.AspNetCore.Integration.Tests.Host;
 using Shouldly;
+using System.IO.Compression;
 using System.Net;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
 namespace Pot.AspNetCore.Integration.Tests.Features.Maintenance.Export;
 
-public class ExportFixture : IntegrationFixtureBase
+public class ExportFixture : IntegrationAuthFixtureBase
 {
     private const string ExportPath = "/api/maintenance/export";
-    private const string LoginPath = "/api/auth/login";
-    private const string LoginSuccessStatus = "Success";
+    private const string ImportPath = "/api/maintenance/import";
+    private const string AccountsPath = "/api/accounts";
+    private const string ExpensesPath = "/api/expenses";
+    private const string RoundTripNote = "Round-trip note";
+    private const double SeededAmount = 89.95d;
 
-    private sealed class LoginResponse
+    private static readonly DateOnly SeededAccrualStart = new(2025, 1, 1);
+
+    private sealed class IdentifiedResponse
     {
-        public string? Status { get; set; }
-        public string? AccessToken { get; set; }
+        public Guid RowId { get; set; }
+    }
+
+    private sealed class ImportResponse
+    {
+        public int Imported { get; set; }
+    }
+
+    private sealed class ExpenseResponse
+    {
+        public Guid RowId { get; set; }
+        public DateOnly? AccrualStart { get; set; }
+        public double Amount { get; set; }
+        public string? Note { get; set; }
+        public AccountIdentifier? Account { get; set; }
+
+        public sealed class AccountIdentifier
+        {
+            public Guid RowId { get; set; }
+        }
     }
 
     // No token is sent, so this covers the authorization boundary without any data setup.
@@ -40,11 +56,9 @@ public class ExportFixture : IntegrationFixtureBase
     [Fact]
     public async Task Should_Return_A_Versioned_File_Name_When_Requesting_Export()
     {
-        var (username, password) = await CreateAdminUserAsync();
-        var accessToken = await LoginAsync(username, password);
+        var admin = await CreateAdminUserAsync("export", "Export User");
 
-        using var client = CreateClient();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        using var client = await CreateAuthenticatedClientAsync(admin, "POT Export Test Agent/1.0");
 
         var response = await client.GetAsync(ExportPath, TestContext.Current.CancellationToken);
 
@@ -65,62 +79,124 @@ public class ExportFixture : IntegrationFixtureBase
         content.ShouldNotBeEmpty();
     }
 
-    private async Task<(string Username, string Password)> CreateAdminUserAsync()
+    // accounts.csv and expenses.csv are read back by position, so the narrower column set is only
+    // proven by adding the exported package back. expenses.csv is the risky one: Accrued sat between
+    // Amount and Note, so removing it shifts Note and AccountRowId, and an old row model binding the
+    // old indices would move values between fields rather than fail.
+    [Fact]
+    public async Task Should_Export_The_Narrower_Header_Set_And_Accept_It_Back_On_Import()
     {
-        using var scope = CreateScope();
+        var admin = await CreateAdminUserAsync("export", "Export User");
 
-        var dbContext = scope.ServiceProvider.GetRequiredService<PotDbContext>();
-        var passwordHasher = scope.ServiceProvider.GetRequiredService<IUserPasswordHasher>();
-        var uniqueValue = Guid.NewGuid().ToString("N");
-        var site = EntityFactory.CreateSite(name: $"Export Site {uniqueValue}");
-        var username = $"export-{uniqueValue}";
-        const string password = "Password123!";
+        using var client = await CreateAuthenticatedClientAsync(admin, "POT Export Test Agent/1.0");
 
-        // The Admin role (and its permission set) is seeded by the AddRolesAndPermissions migration, so it
-        // must be attached rather than added - adding it through the user graph would insert a duplicate role.
-        var adminRole = await dbContext.Set<RoleEntity>()
-            .AsNoTracking()
-            .SingleAsync(role => role.Name == Role.Admin, TestContext.Current.CancellationToken);
+        var (accountRowId, expenseRowId) = await SeedAccountWithExpenseAsync(client);
 
-        var user = EntityFactory.CreateUser(site, username, $"{username}@example.com", "Export User");
+        var exportResponse = await client.GetAsync(ExportPath, TestContext.Current.CancellationToken);
 
-        user.PasswordHash = passwordHasher.GetHash(user, password);
+        exportResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
 
-        dbContext.Add(site);
-        dbContext.Add(user);
+        var package = await exportResponse.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken);
 
-        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+        AssertPackageHeader(package, "accounts", "RowId", "Description", "Balance", "Reserved");
 
-        dbContext.Attach(adminRole);
-        user.Roles.Add(adminRole);
+        AssertPackageHeader(package, "expenses", "RowId", "ExcludeFromCalcs", "Description", "AccrualStart", "NextDue",
+            "EndDate", "AccrualPolicy", "Frequency", "FrequencyCount", "Amount", "Note", "AccountRowId");
 
-        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+        using var importContent = new MultipartFormDataContent();
 
-        return (username, password);
+        importContent.Add(new ByteArrayContent(package), "File", "round-trip.export");
+
+        var importResponse = await client.PostAsync(ImportPath, importContent, TestContext.Current.CancellationToken);
+
+        importResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var importBody = await importResponse.Content.ReadFromJsonAsync<ImportResponse>(TestContext.Current.CancellationToken);
+
+        importBody.ShouldNotBeNull();
+        importBody!.Imported.ShouldBe(2, "the seeded account and its expense are both imported");
+
+        var expensesResponse = await client.GetAsync(ExpensesPath, TestContext.Current.CancellationToken);
+
+        expensesResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var expenses = await expensesResponse.Content.ReadFromJsonAsync<ExpenseResponse[]>(TestContext.Current.CancellationToken);
+
+        expenses.ShouldNotBeNull();
+
+        var roundTripped = expenses!.ShouldHaveSingleItem();
+
+        roundTripped.RowId.ShouldBe(expenseRowId);
+        roundTripped.Amount.ShouldBe(SeededAmount);
+        roundTripped.AccrualStart.ShouldBe(SeededAccrualStart);
+        roundTripped.Note.ShouldBe(RoundTripNote);
+        roundTripped.Account.ShouldNotBeNull();
+        roundTripped.Account!.RowId.ShouldBe(accountRowId);
     }
 
-    private async Task<string> LoginAsync(string username, string password)
+    // Returns the account and expense rowIds it created.
+    private static async Task<(Guid AccountRowId, Guid ExpenseRowId)> SeedAccountWithExpenseAsync(HttpClient client)
     {
-        using var client = CreateClient(new WebApplicationFactoryClientOptions
+        var accountRequest = new
         {
-            HandleCookies = false
-        });
-
-        using var request = new HttpRequestMessage(HttpMethod.Post, LoginPath)
-        {
-            Content = JsonContent.Create(new { Username = username, Password = password })
+            Description = $"Round-trip Account {Guid.NewGuid():N}",
+            Balance = 1000.0d,
+            Reserved = 100.0d
         };
 
-        request.Headers.Add("User-Agent", "POT Export Test Agent/1.0");
+        var accountResponse = await client.PostAsJsonAsync(AccountsPath, accountRequest, TestContext.Current.CancellationToken);
 
-        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
-        var body = await response.Content.ReadFromJsonAsync<LoginResponse>(TestContext.Current.CancellationToken);
+        accountResponse.StatusCode.ShouldBe(HttpStatusCode.Created);
 
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        body.ShouldNotBeNull();
-        body.Status.ShouldBe(LoginSuccessStatus);
-        body.AccessToken.ShouldNotBeNullOrWhiteSpace();
+        var account = await accountResponse.Content.ReadFromJsonAsync<IdentifiedResponse>(TestContext.Current.CancellationToken);
 
-        return body.AccessToken!;
+        account.ShouldNotBeNull();
+
+        var expenseRequest = new
+        {
+            Description = "Round-trip Expense",
+            AccrualStart = SeededAccrualStart.ToString("yyyy-MM-dd"),
+            NextDue = "2025-02-01",
+            EndDate = (string?)null,
+            AccrualPolicy = "Automatic",
+            Frequency = "Months",
+            FrequencyCount = 1,
+            Amount = SeededAmount,
+            Note = RoundTripNote,
+            AccountRowId = account!.RowId
+        };
+
+        var expenseResponse = await client.PostAsJsonAsync(ExpensesPath, expenseRequest, TestContext.Current.CancellationToken);
+
+        expenseResponse.StatusCode.ShouldBe(HttpStatusCode.Created);
+
+        var expense = await expenseResponse.Content.ReadFromJsonAsync<IdentifiedResponse>(TestContext.Current.CancellationToken);
+
+        expense.ShouldNotBeNull();
+
+        return (account.RowId, expense!.RowId);
     }
+
+    private static void AssertPackageHeader(byte[] package, string entryName, params string[] expectedColumns)
+    {
+        using var stream = new MemoryStream(package);
+        using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+
+        var entry = archive.GetEntry(entryName);
+
+        entry.ShouldNotBeNull($"the package contains a {entryName} entry");
+
+        using var reader = new StreamReader(entry!.Open());
+
+        var header = reader.ReadLine();
+
+        header.ShouldNotBeNullOrWhiteSpace();
+
+        header!.Split(',', StringSplitOptions.TrimEntries).ShouldBe(expectedColumns);
+
+        // The derived accrual values are no longer written. AccrualStart and AccrualPolicy are inputs
+        // and stay, so only the past-tense name is checked.
+        header.ShouldNotContain("Accrued", Case.Insensitive);
+    }
+
 }

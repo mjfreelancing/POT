@@ -10,7 +10,7 @@
 -- E2E test can rotate its own credentials without invalidating the shared admin.
 --
 -- NOTE: e2e_quickactions is a canonical seed user (Admin role) on its OWN site,
--- dedicated to the dashboard quick-actions suite so its whole-site renew/accrue
+-- dedicated to the dashboard quick-actions suite so its whole-site renew
 -- actions never touch the shared E2E site's data.
 --
 

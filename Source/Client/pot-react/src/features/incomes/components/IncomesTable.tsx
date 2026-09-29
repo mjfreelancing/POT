@@ -43,7 +43,11 @@ const columns: AppColumnDef<Income>[] = [
     id: 'description',
     accessorKey: 'description',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Description" />
+      <DataTableColumnHeader
+        column={column}
+        title="Description"
+        hint="A description identifying the income. A note icon appears when a note is attached."
+      />
     ),
     enableSorting: true,
     sortFn: 'text',
@@ -52,6 +56,7 @@ const columns: AppColumnDef<Income>[] = [
   createMoneyValueColumn<Income>({
     accessorKey: 'amount',
     header: 'Amount',
+    hint: 'The amount received each time this income falls due.',
     options: {
       enableSorting: true,
       sortFn: 'basic',
@@ -61,10 +66,17 @@ const columns: AppColumnDef<Income>[] = [
     countKey: 'frequencyCount',
     frequencyKey: 'frequency',
     header: 'Frequency',
+    hint: 'How often the income is received.',
   }),
-  createNextDueStatusColumn<Income>(),
-  createRecurringEndDateColumn<Income>(),
-  createAccountDescriptionColumn<Income>(),
+  createNextDueStatusColumn<Income>({
+    hint: 'When the payment is next expected, with a badge for incomes overdue, due today or due soon.',
+  }),
+  createRecurringEndDateColumn<Income>({
+    hint: 'When this income stops. One-time income never recurs.',
+  }),
+  createAccountDescriptionColumn<Income>({
+    hint: 'The account this income is paid into.',
+  }),
   createActionsColumn<Income>(income => <IncomeActions income={income} />),
 ];
 

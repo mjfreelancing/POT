@@ -48,12 +48,26 @@ Bar metrics show per-date event amounts and support opening details.
 
 Projection Accruals is the operational, date-sensitive accrual metric used by projection simulation. It is expected to vary as due dates approach and as periods renew.
 
+It is derived from the expense schedules for each day of the window, so it always reflects the current schedules, amounts and accrual policies.
+
 This is different from Dashboard Daily Need:
 
 - Projection Accruals: dynamic event-date metric for simulation behavior.
 - Daily Need: stable long-run funding guidance for daily planning.
 
 Do not interpret short-term movement in Projection Accruals as a change in your long-run Daily Need unless underlying obligations changed.
+
+### Available Balances Interpretation
+
+`Available Balances` is the obligation-aware line. Each day's value is the projected balance less the account's reserved amount and its committed obligations:
+
+- **Committed** is the accrued cycles in progress plus past-due arrears.
+- **Arrears** is the total for expense cycles whose due date has already passed without being settled — one billed amount per missed cycle.
+- Arrears is held for every day of the window, because the forecast makes no assumption about when you catch up.
+- Arrears lowers `Available Balances` only. It is not deducted from the `Account Balances` line, which continues to show the forecast balance.
+- A bill due today is the current bill: it counts as accrued and is **not** counted as arrears.
+
+Because the chart applies its own assumed payments inside the window, `Available Balances` can differ from the `Available` shown on the accounts page for the same account.
 
 ## Date Window And Period Logic
 

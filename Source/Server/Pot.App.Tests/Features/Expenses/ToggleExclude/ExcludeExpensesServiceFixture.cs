@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using NSubstitute;
-using Pot.App.Concerns.Accruals;
 using Pot.App.Features.Expenses.ToggleExclude;
 using Pot.App.Features.Expenses.ToggleExclude.Models;
 using Pot.Data.Entities;
@@ -22,26 +21,11 @@ public class ExcludeExpensesServiceFixture : PotFixtureBase
 
     public class Constructor : ExcludeExpensesServiceFixture
     {
-        private readonly IAccrualDirtyStateManager _accrualDirtyStateManagerFake;
         private readonly IPersistableExpenseRepository _expenseRepositoryFake;
 
         public Constructor()
         {
-            _accrualDirtyStateManagerFake = Substitute.For<IAccrualDirtyStateManager>();
             _expenseRepositoryFake = Substitute.For<IPersistableExpenseRepository>();
-        }
-
-        [Fact]
-        public void Should_Throw_When_AccrualDirtyStateManager_Is_Null()
-        {
-            var exception = Should.Throw<ArgumentNullException>(() =>
-            {
-                var logger = Substitute.For<ILogger<ExcludeExpensesService>>();
-
-                _ = new ExcludeExpensesService(null!, _expenseRepositoryFake, logger);
-            });
-
-            exception.ParamName.ShouldBe("accrualDirtyStateManager");
         }
 
         [Fact]
@@ -51,7 +35,7 @@ public class ExcludeExpensesServiceFixture : PotFixtureBase
             {
                 var logger = Substitute.For<ILogger<ExcludeExpensesService>>();
 
-                _ = new ExcludeExpensesService(_accrualDirtyStateManagerFake, null!, logger);
+                _ = new ExcludeExpensesService(null!, logger);
             });
 
             exception.ParamName.ShouldBe("expenseRepository");
@@ -62,7 +46,7 @@ public class ExcludeExpensesServiceFixture : PotFixtureBase
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
             {
-                _ = new ExcludeExpensesService(_accrualDirtyStateManagerFake, _expenseRepositoryFake, null!);
+                _ = new ExcludeExpensesService(_expenseRepositoryFake, null!);
             });
 
             exception.ParamName.ShouldBe("logger");
@@ -71,12 +55,10 @@ public class ExcludeExpensesServiceFixture : PotFixtureBase
 
     public class ToggleExclusionAsync : ExcludeExpensesServiceFixture
     {
-        private readonly IAccrualDirtyStateManager _accrualDirtyStateManagerFake;
         private readonly IPersistableExpenseRepository _expenseRepositoryFake;
 
         public ToggleExclusionAsync()
         {
-            _accrualDirtyStateManagerFake = Substitute.For<IAccrualDirtyStateManager>();
             _expenseRepositoryFake = Substitute.For<IPersistableExpenseRepository>();
             _expenseRepositoryFake.WithTracking().Returns(new NoopScope());
         }
@@ -127,7 +109,7 @@ public class ExcludeExpensesServiceFixture : PotFixtureBase
                 .GetExpensesAsync(Arg.Any<Guid[]>(), Arg.Any<CancellationToken>())
                 .Returns([existingExpense]);
 
-            var service = new ExcludeExpensesService(_accrualDirtyStateManagerFake, _expenseRepositoryFake, logger);
+            var service = new ExcludeExpensesService(_expenseRepositoryFake, logger);
 
             var input = new Input
             {
@@ -138,37 +120,28 @@ public class ExcludeExpensesServiceFixture : PotFixtureBase
 
             result.IsSuccess.ShouldBeFalse();
 
-            await _accrualDirtyStateManagerFake
-                .DidNotReceive()
-                .SetAccountsDirtyAsync(Arg.Any<IReadOnlyCollection<ExpenseEntity>>(), Arg.Any<CancellationToken>());
-
             await _expenseRepositoryFake
                 .DidNotReceive()
                 .SaveAsync(Arg.Any<CancellationToken>());
         }
 
         [Fact]
-        public async Task Should_Toggle_Exclusion_And_Mark_Dirty_When_All_Expenses_Exist()
+        public async Task Should_Toggle_Exclusion_When_All_Expenses_Exist()
         {
             var logger = Substitute.For<ILogger<ExcludeExpensesService>>();
 
             var firstExpense = CreateExpense(accountId: 10, excluded: false);
             var secondExpense = CreateExpense(accountId: 10, excluded: true);
-            IReadOnlyCollection<ExpenseEntity>? markedExpenses = null;
 
             _expenseRepositoryFake
                 .GetExpensesAsync(Arg.Any<Guid[]>(), Arg.Any<CancellationToken>())
                 .Returns([firstExpense, secondExpense]);
 
-            _accrualDirtyStateManagerFake
-                .SetAccountsDirtyAsync(Arg.Do<IReadOnlyCollection<ExpenseEntity>>(expenses => markedExpenses = expenses), Arg.Any<CancellationToken>())
-                .Returns(Task.CompletedTask);
-
             _expenseRepositoryFake
                 .SaveAsync(Arg.Any<CancellationToken>())
                 .Returns(1);
 
-            var service = new ExcludeExpensesService(_accrualDirtyStateManagerFake, _expenseRepositoryFake, logger);
+            var service = new ExcludeExpensesService(_expenseRepositoryFake, logger);
 
             var input = new Input
             {
@@ -181,9 +154,6 @@ public class ExcludeExpensesServiceFixture : PotFixtureBase
 
             firstExpense.ExcludeFromCalcs.ShouldBeTrue();
             secondExpense.ExcludeFromCalcs.ShouldBeFalse();
-
-            markedExpenses.ShouldNotBeNull();
-            markedExpenses.Count.ShouldBe(2);
 
             await _expenseRepositoryFake.Received(1).SaveAsync(Arg.Any<CancellationToken>());
         }

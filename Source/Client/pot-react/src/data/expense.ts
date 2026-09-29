@@ -26,6 +26,7 @@ const ExpenseSchema = BaseExpenseSchema.extend({
   excludeFromCalcs: z.boolean(),
   account: ExpenseAccountSchema,
   accrued: z.number(),
+  arrears: z.number(),
 });
 
 const CreateExpenseSchema = BaseExpenseSchema.extend({

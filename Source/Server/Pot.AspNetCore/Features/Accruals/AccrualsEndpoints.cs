@@ -6,5 +6,4 @@ internal static class AccrualsEndpoints
     public const string Tag = "Accruals Api";
 
     public const string Status = "/status";
-    public const string AccrueExpenses = "/accrue-expenses";
 }

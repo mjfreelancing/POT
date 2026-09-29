@@ -46,6 +46,7 @@ internal static class RouteGroupBuilderExtensions
             .WithDescription("Create a new income source")
             .ProducesProblem(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
@@ -63,6 +64,7 @@ internal static class RouteGroupBuilderExtensions
             .ProducesProblem(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
@@ -96,6 +98,7 @@ internal static class RouteGroupBuilderExtensions
             .ProducesProblem(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
@@ -112,6 +115,7 @@ internal static class RouteGroupBuilderExtensions
             .ProducesProblem(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;

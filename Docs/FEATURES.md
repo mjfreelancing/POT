@@ -6,7 +6,7 @@ This guide describes the main features available in POT (Pay On Time).
 
 Your financial command center providing an at-a-glance view of your financial health:
 
-- **Quick Actions** - One-click automation for common tasks (renew overdue expenses/incomes, accrue account expenses, and more)
+- **Quick Actions** - One-click automation for common tasks (renew overdue expenses and incomes)
 - **Account Overview** - Current balances across all your accounts plus stable **Daily Need** rollup
 - **Upcoming Expenses & Income** - Bills and payments due in the near future
 - **Period Filtering** - View expenses and income for 7, 14, or 30 day windows with dynamic metrics
@@ -45,8 +45,8 @@ Manage all your financial accounts in one place:
 - **Multiple Accounts** - Add all your bank accounts for credit cards, savings, and investments
 - **Current Balances** - Maintain account balances for accurate projections
 - **Quick Filtering** - Easily find and manage specific accounts
-- **Expense Accruals** - Selectively update expense accrual calculations for any account
-- **Accrual-Aware Availability** - Available funds account for reserved and accrued obligations
+- **Computed Accruals** - Accrual totals are derived from each expense's schedule whenever the accounts are read, so they always reflect the current schedules
+- **Obligation-Aware Availability** - Available funds account for your reserved buffer plus committed obligations: the accrued cycles in progress and any past-due arrears
 
 [View detailed Accounts guide →](USER-GUIDE/Accounts.md)
 

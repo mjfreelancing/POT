@@ -4,53 +4,65 @@ import { ArrowUpDown, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib';
 
+import ColumnHeaderHint from './ColumnHeaderHint';
 import type { AppColumn } from './tableFeatures';
 
 type DataTableColumnHeaderProps<TData extends RowData, TValue = unknown> = {
   column: AppColumn<TData, TValue>;
   title: string;
+  /** Optional hint shown in a tooltip when the heading is hovered. */
+  hint?: string;
   className?: string;
 } & React.HTMLAttributes<HTMLDivElement>;
 
 function DataTableColumnHeader<TData extends RowData, TValue = unknown>({
   column,
   title,
+  hint,
   className,
 }: DataTableColumnHeaderProps<TData, TValue>) {
   if (!column.getCanSort()) {
-    return <div className={cn('uppercase', className)}>{title}</div>;
+    return (
+      <div className={cn('uppercase', className)}>
+        <ColumnHeaderHint hint={hint}>
+          <span>{title}</span>
+        </ColumnHeaderHint>
+      </div>
+    );
   }
 
   return (
     <div className={cn('flex items-center gap-2', className)}>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="-ml-3 h-8 data-[state=open]:bg-accent"
-        onClick={() => {
-          const currentSort = column.getIsSorted();
+      <ColumnHeaderHint hint={hint}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="-ml-3 h-8 data-[state=open]:bg-accent"
+          onClick={() => {
+            const currentSort = column.getIsSorted();
 
-          if (currentSort === false) {
-            // Not sorted -> sort ascending
-            column.toggleSorting(false);
-          } else if (currentSort === 'asc') {
-            // Ascending -> sort descending
-            column.toggleSorting(true);
-          } else {
-            // Descending -> clear sorting (three-state sorting)
-            column.clearSorting();
-          }
-        }}
-      >
-        <span className="uppercase">{title}</span>
-        {column.getIsSorted() === 'desc' ? (
-          <ChevronDown className="ml-2 h-4 w-4" />
-        ) : column.getIsSorted() === 'asc' ? (
-          <ChevronUp className="ml-2 h-4 w-4" />
-        ) : (
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        )}
-      </Button>
+            if (currentSort === false) {
+              // Not sorted -> sort ascending
+              column.toggleSorting(false);
+            } else if (currentSort === 'asc') {
+              // Ascending -> sort descending
+              column.toggleSorting(true);
+            } else {
+              // Descending -> clear sorting (three-state sorting)
+              column.clearSorting();
+            }
+          }}
+        >
+          <span className="uppercase">{title}</span>
+          {column.getIsSorted() === 'desc' ? (
+            <ChevronDown className="ml-2 h-4 w-4" />
+          ) : column.getIsSorted() === 'asc' ? (
+            <ChevronUp className="ml-2 h-4 w-4" />
+          ) : (
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          )}
+        </Button>
+      </ColumnHeaderHint>
     </div>
   );
 }

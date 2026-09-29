@@ -6,6 +6,9 @@ using Pot.App.Features.Maintenance.Export.Models;
 
 namespace Pot.App.Features.Maintenance.Export.Incomes;
 
+/// <summary>
+/// Default implementation of <see cref="IIncomesExporter"/>.
+/// </summary>
 internal sealed class IncomesExporter : MemoryCsvExporterBase<IncomeData>, IIncomesExporter
 {
     private readonly IGetIncomesService _incomesService;
@@ -15,11 +18,14 @@ internal sealed class IncomesExporter : MemoryCsvExporterBase<IncomeData>, IInco
         _incomesService = incomesService.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<byte[]> ExportAllAsync(CancellationToken cancellationToken)
     {
         Configure();
 
-        var incomes = await _incomesService.GetAllIncomesAsync(cancellationToken);
+        var incomes = await _incomesService
+            .GetAllIncomesAsync(cancellationToken)
+            .ConfigureAwait(false);
 
         foreach (var income in incomes)
         {
@@ -37,12 +43,13 @@ internal sealed class IncomesExporter : MemoryCsvExporterBase<IncomeData>, IInco
                 AccountRowId = income.Account.RowId
             };
 
-            await AddDataAsync(incomeData, cancellationToken);
+            await AddDataAsync(incomeData, cancellationToken).ConfigureAwait(false);
         }
 
-        return await GetContentAsync(cancellationToken);
+        return await GetContentAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     protected override ICsvSerializer<IncomeData> CreateSerializer(IEnumerable<IncomeData>? configData = null)
     {
         var serializer = new CsvSerializer<IncomeData>();

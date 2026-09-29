@@ -22,7 +22,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
         public Renew()
         {
             _account = Create<AccountEntity>();
-            _calculator = new IncomeRenewalCalculator();
+            _calculator = new IncomeRenewalCalculator(new IncomeRenewalFold());
         }
 
         [Fact]
@@ -447,7 +447,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
         public Renew_Future()
         {
             _account = Create<AccountEntity>();
-            _calculator = new IncomeRenewalCalculator();
+            _calculator = new IncomeRenewalCalculator(new IncomeRenewalFold());
         }
 
         [Fact]
@@ -569,7 +569,7 @@ public class IncomeRenewalCalculatorFixture : PotFixtureBase
         public Renew_Overdue()
         {
             _account = Create<AccountEntity>();
-            _calculator = new IncomeRenewalCalculator();
+            _calculator = new IncomeRenewalCalculator(new IncomeRenewalFold());
         }
 
         [Fact]

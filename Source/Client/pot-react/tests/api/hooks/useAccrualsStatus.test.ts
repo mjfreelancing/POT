@@ -1,38 +1,17 @@
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import {
-  useApiAccrualsStatus,
-  useApiAccrueAccountExpenses,
-} from '@/api/hooks/useAccrualsStatus';
-import { useGet, usePost } from '@/api/hooks/useApi';
+import { useApiAccrualsStatus } from '@/api/hooks/useAccrualsStatus';
+import { useGet } from '@/api/hooks/useApi';
 import { SuccessResult } from '@/lib';
 
 vi.mock('@/api/hooks/useApi', () => ({
   useGet: vi.fn(),
-  usePost: vi.fn(),
 }));
 
 describe('useAccrualsStatus hook composition', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  test('useApiAccrueAccountExpenses composes accrue-expenses mutation endpoint', () => {
-    const mutationResult = {
-      mutate: vi.fn(),
-      isPending: false,
-      data: new SuccessResult(undefined),
-    };
-
-    vi.mocked(usePost).mockReturnValue(
-      mutationResult as unknown as ReturnType<typeof usePost>,
-    );
-
-    const { result } = renderHook(() => useApiAccrueAccountExpenses());
-
-    expect(usePost).toHaveBeenCalledWith('/accruals/accrue-expenses');
-    expect(result.current.data).toBe(mutationResult.data);
   });
 
   test('useApiAccrualsStatus composes status query endpoint, key, and options', () => {
@@ -42,7 +21,6 @@ describe('useAccrualsStatus hook composition', () => {
       data: new SuccessResult({
         expenseRenewalsRequired: [],
         incomeRenewalsRequired: [],
-        accountAccrualsRequired: [],
       }),
     };
 

@@ -28,6 +28,9 @@ return tzInfo.GetUtcOffset(DateTime.UtcNow);
 `IAppContext` is a singleton (`IPotSingletonDependency`) and `ITimeProvider` is also a singleton, so the entire application treats Sydney time as "local" time for every site and every user. As a result:
 
 1. **Accrual dates are wrong outside AEST/AEDT.** The canonical accrual start date and accrual recalculation derive from `GetLocalDateNow()` (`AccrueExpenseCalculator`, `AccrueExpensesService`, `CreateExpenseService`, `UpdateExpenseService`, `DeleteExpenseService`), so an expense created late in the day in another region is anchored to the wrong calendar day.
+
+   > **Note (2026-09-27).** The named call sites have moved since this was written. [PRD-023](PRD-023-dynamic-accrual-calculation.md) removed `AccrueExpenseCalculator` and `AccrueExpensesService` with the accrual command surface, `DeleteExpenseService` no longer resolves a local date, and the accrual reads now do: `GetAccountService`, `GetAllAccountsService`, `GetExpenseService` and `GetExpensesService` each pass `_timeProvider.GetLocalDateNow()` as the calculation's as-of date. The defect and the fix are unchanged — the site-local date has to come from every one of these call sites — and `ProjectionsService` and `Features/Accruals/Status/Handler` in the next item are unaffected.
+
 2. **"Today" is the Sydney date.** Projections and accrual-status responses report `Today = timeProvider.GetLocalDateNow()` (`ProjectionsService`, `Features/Projections/Get/Handler`, `Features/Accruals/Status/Handler`).
 3. **The reminder hour is per-site but the clock is not.** `EmailBudgetReminderSettings.LocalHourTrigger` is stored per site, yet the hour it is compared against comes from the shared, Sydney-based `ITimeProvider`. Two sites in different zones cannot both honour their configured reminder hour.
 4. **Export filenames are stamped with Sydney time** (`Features/Maintenance/Export/Handler`).

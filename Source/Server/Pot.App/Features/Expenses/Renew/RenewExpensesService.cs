@@ -3,29 +3,30 @@ using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
 using Pot.App.Calculators;
-using Pot.App.Concerns.Accruals;
 using Pot.App.Errors;
 using Pot.App.Features.Expenses.Renew.Models;
 using Pot.Data.Repositories.Expenses;
 
 namespace Pot.App.Features.Expenses.Renew;
 
+/// <summary>
+/// Default implementation of <see cref="IRenewExpensesService"/>.
+/// </summary>
 internal sealed class RenewExpensesService : IRenewExpensesService
 {
-    private readonly IAccrualDirtyStateManager _accrualDirtyStateManager;
     private readonly IPersistableExpenseRepository _expenseRepository;
     private readonly IExpenseRenewalCalculator _renewalCalculator;
     private readonly ILogger _logger;
 
-    public RenewExpensesService(IAccrualDirtyStateManager accrualDirtyStateManager, IPersistableExpenseRepository expenseRepository,
+    public RenewExpensesService(IPersistableExpenseRepository expenseRepository,
         IExpenseRenewalCalculator renewalCalculator, ILogger<RenewExpensesService> logger)
     {
-        _accrualDirtyStateManager = accrualDirtyStateManager.WhenNotNull();
         _expenseRepository = expenseRepository.WhenNotNull();
         _renewalCalculator = renewalCalculator.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<bool>> RenewAsync(Input input, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
@@ -48,17 +49,7 @@ internal sealed class RenewExpensesService : IRenewExpensesService
                 return EnrichedResult.Fail<bool>(expenseRenewError);
             }
 
-            var originalDueDates = expenses.ToDictionary(expense => expense.RowId, expense => expense.NextDue);
-
             _renewalCalculator.Renew(expenses, input.Mode, input.AsOfDate);
-
-            var renewedExpenses = expenses
-                .Where(expense => originalDueDates[expense.RowId] != expense.NextDue)
-                .ToArray();
-
-            await _accrualDirtyStateManager
-                .SetAccountsDirtyAsync(renewedExpenses, cancellationToken)
-                .ConfigureAwait(false);
 
             await _expenseRepository.SaveAsync(cancellationToken);
         }

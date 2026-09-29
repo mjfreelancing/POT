@@ -14,7 +14,6 @@ import { type DisplayError, EMPTY_STRING_ARRAY } from '@/lib';
 type AccrualsContextProps = {
   expenseRenewals: typeof EMPTY_STRING_ARRAY;
   incomeRenewals: typeof EMPTY_STRING_ARRAY;
-  accountAccruals: typeof EMPTY_STRING_ARRAY;
   isLoading: boolean;
   error: DisplayError | null;
   invalidate: () => void;
@@ -61,7 +60,7 @@ const AccrualsProvider: React.FC<{ children: React.ReactNode }> = ({
     refetch: refetchAccrualsStatus,
   } = useApiAccrualsStatus({ accountRowIds });
 
-  const { expenseRenewals, incomeRenewals, accountAccruals } = useMemo(
+  const { expenseRenewals, incomeRenewals } = useMemo(
     () => ({
       expenseRenewals: accrualsStatusData?.success
         ? accrualsStatusData.value.expenseRenewalsRequired
@@ -69,10 +68,6 @@ const AccrualsProvider: React.FC<{ children: React.ReactNode }> = ({
 
       incomeRenewals: accrualsStatusData?.success
         ? accrualsStatusData.value.incomeRenewalsRequired
-        : EMPTY_STRING_ARRAY,
-
-      accountAccruals: accrualsStatusData?.success
-        ? accrualsStatusData.value.accountAccrualsRequired
         : EMPTY_STRING_ARRAY,
     }),
     [accrualsStatusData],
@@ -127,7 +122,6 @@ const AccrualsProvider: React.FC<{ children: React.ReactNode }> = ({
       value={{
         expenseRenewals,
         incomeRenewals,
-        accountAccruals,
         isLoading,
         error,
         invalidate,

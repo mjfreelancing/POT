@@ -25,13 +25,8 @@
             },
             "url": {
               "raw": "{{pot-api}}/auth/login",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "auth",
-                "login"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["auth", "login"]
             }
           },
           "response": []
@@ -62,13 +57,8 @@
             },
             "url": {
               "raw": "{{pot-api}}/auth/logout",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "auth",
-                "logout"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["auth", "logout"]
             }
           },
           "response": []
@@ -99,13 +89,8 @@
             },
             "url": {
               "raw": "{{pot-api}}/auth/refresh",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "auth",
-                "refresh"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["auth", "refresh"]
             }
           },
           "response": []
@@ -136,14 +121,8 @@
             },
             "url": {
               "raw": "{{pot-api}}/auth/password-reset/send",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "auth",
-                "password-reset",
-                "send"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["auth", "password-reset", "send"]
             }
           },
           "response": []
@@ -174,14 +153,8 @@
             },
             "url": {
               "raw": "{{pot-api}}/auth/password-reset/verify",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "auth",
-                "password-reset",
-                "verify"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["auth", "password-reset", "verify"]
             }
           },
           "response": []
@@ -212,14 +185,8 @@
             },
             "url": {
               "raw": "{{pot-api}}/auth/signup/send",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "auth",
-                "signup",
-                "send"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["auth", "signup", "send"]
             }
           },
           "response": []
@@ -250,14 +217,8 @@
             },
             "url": {
               "raw": "{{pot-api}}/auth/signup/complete",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "auth",
-                "signup",
-                "complete"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["auth", "signup", "complete"]
             }
           },
           "response": []
@@ -274,12 +235,8 @@
             "header": [],
             "url": {
               "raw": "{{pot-api}}/accounts",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "accounts"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["accounts"]
             }
           },
           "response": []
@@ -291,13 +248,8 @@
             "header": [],
             "url": {
               "raw": "{{pot-api}}/accounts/136427db-810f-47b9-9e77-9ed091e68b1c",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "accounts",
-                "136427db-810f-47b9-9e77-9ed091e68b1c"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["accounts", "136427db-810f-47b9-9e77-9ed091e68b1c"]
             }
           },
           "response": []
@@ -318,12 +270,8 @@
             },
             "url": {
               "raw": "{{pot-api}}/accounts",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "accounts"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["accounts"]
             }
           },
           "response": []
@@ -344,13 +292,8 @@
             },
             "url": {
               "raw": "{{pot-api}}/accounts/45ee1818-0438-40c4-be81-1c82493613ab",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "accounts",
-                "45ee1818-0438-40c4-be81-1c82493613ab"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["accounts", "45ee1818-0438-40c4-be81-1c82493613ab"]
             }
           },
           "response": []
@@ -362,13 +305,8 @@
             "header": [],
             "url": {
               "raw": "{{pot-api}}/accounts/08c98d16-97e9-46b3-b139-fdaf2069b968",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "accounts",
-                "08c98d16-97e9-46b3-b139-fdaf2069b968"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["accounts", "08c98d16-97e9-46b3-b139-fdaf2069b968"]
             }
           },
           "response": []
@@ -391,9 +329,7 @@
             "type": "text/javascript",
             "packages": {},
             "requests": {},
-            "exec": [
-              ""
-            ]
+            "exec": [""]
           }
         },
         {
@@ -402,9 +338,7 @@
             "type": "text/javascript",
             "packages": {},
             "requests": {},
-            "exec": [
-              ""
-            ]
+            "exec": [""]
           }
         }
       ]
@@ -419,12 +353,8 @@
             "header": [],
             "url": {
               "raw": "{{pot-api}}/incomes",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "incomes"
-              ],
+              "host": ["{{pot-api}}"],
+              "path": ["incomes"],
               "query": [
                 {
                   "key": "Paging.Limit",
@@ -449,13 +379,8 @@
             "header": [],
             "url": {
               "raw": "{{pot-api}}/incomes/f266da55-630a-4ae8-922d-f0fb039874e0",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "incomes",
-                "f266da55-630a-4ae8-922d-f0fb039874e0"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["incomes", "f266da55-630a-4ae8-922d-f0fb039874e0"]
             }
           },
           "response": []
@@ -476,12 +401,8 @@
             },
             "url": {
               "raw": "{{pot-api}}/incomes",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "incomes"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["incomes"]
             }
           },
           "response": []
@@ -502,13 +423,8 @@
             },
             "url": {
               "raw": "{{pot-api}}/incomes/f266da55-630a-4ae8-922d-f0fb039874e0",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "incomes",
-                "f266da55-630a-4ae8-922d-f0fb039874e0"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["incomes", "f266da55-630a-4ae8-922d-f0fb039874e0"]
             }
           },
           "response": []
@@ -520,13 +436,8 @@
             "header": [],
             "url": {
               "raw": "{{pot-api}}/incomes/dc4258c7-78df-413e-a1fc-586637603f2c",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "incomes",
-                "dc4258c7-78df-413e-a1fc-586637603f2c"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["incomes", "dc4258c7-78df-413e-a1fc-586637603f2c"]
             }
           },
           "response": []
@@ -547,13 +458,8 @@
             },
             "url": {
               "raw": "{{pot-api}}/incomes/renew",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "incomes",
-                "renew"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["incomes", "renew"]
             }
           },
           "response": []
@@ -574,13 +480,8 @@
             },
             "url": {
               "raw": "{{pot-api}}/incomes/toggleExclude",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "incomes",
-                "toggleExclude"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["incomes", "toggleExclude"]
             }
           },
           "response": []
@@ -603,9 +504,7 @@
             "type": "text/javascript",
             "packages": {},
             "requests": {},
-            "exec": [
-              ""
-            ]
+            "exec": [""]
           }
         },
         {
@@ -614,9 +513,7 @@
             "type": "text/javascript",
             "packages": {},
             "requests": {},
-            "exec": [
-              ""
-            ]
+            "exec": [""]
           }
         }
       ]
@@ -643,12 +540,8 @@
             },
             "url": {
               "raw": "{{pot-api}}/expenses",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "expenses"
-              ],
+              "host": ["{{pot-api}}"],
+              "path": ["expenses"],
               "query": [
                 {
                   "key": "Paging.Limit",
@@ -672,13 +565,8 @@
             "header": [],
             "url": {
               "raw": "{{pot-api}}/expenses/7fc4db1e-b3b6-4195-8383-719f2af636d3",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "expenses",
-                "7fc4db1e-b3b6-4195-8383-719f2af636d3"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["expenses", "7fc4db1e-b3b6-4195-8383-719f2af636d3"]
             }
           },
           "response": []
@@ -699,12 +587,8 @@
             },
             "url": {
               "raw": "{{pot-api}}/expenses",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "expenses"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["expenses"]
             }
           },
           "response": []
@@ -725,13 +609,8 @@
             },
             "url": {
               "raw": "{{pot-api}}/expenses/d3a50ad2-972b-4871-b3e7-6321450f9aa3",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "expenses",
-                "d3a50ad2-972b-4871-b3e7-6321450f9aa3"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["expenses", "d3a50ad2-972b-4871-b3e7-6321450f9aa3"]
             }
           },
           "response": []
@@ -743,13 +622,8 @@
             "header": [],
             "url": {
               "raw": "{{pot-api}}/expenses/7a8d27bb-29a2-48b0-b5cf-691aaafacff8",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "expenses",
-                "7a8d27bb-29a2-48b0-b5cf-691aaafacff8"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["expenses", "7a8d27bb-29a2-48b0-b5cf-691aaafacff8"]
             }
           },
           "response": []
@@ -770,13 +644,8 @@
             },
             "url": {
               "raw": "{{pot-api}}/expenses/renew",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "expenses",
-                "renew"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["expenses", "renew"]
             }
           },
           "response": []
@@ -797,13 +666,8 @@
             },
             "url": {
               "raw": "{{pot-api}}/expenses/toggleExclude",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "expenses",
-                "toggleExclude"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["expenses", "toggleExclude"]
             }
           },
           "response": []
@@ -826,9 +690,7 @@
             "type": "text/javascript",
             "packages": {},
             "requests": {},
-            "exec": [
-              ""
-            ]
+            "exec": [""]
           }
         },
         {
@@ -837,9 +699,7 @@
             "type": "text/javascript",
             "packages": {},
             "requests": {},
-            "exec": [
-              ""
-            ]
+            "exec": [""]
           }
         }
       ]
@@ -854,12 +714,8 @@
             "header": [],
             "url": {
               "raw": "{{pot-api}}/projections?startDate=2025-08-07&endDate=2025-09-08",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "projections"
-              ],
+              "host": ["{{pot-api}}"],
+              "path": ["projections"],
               "query": [
                 {
                   "key": "startDate",
@@ -892,9 +748,7 @@
             "type": "text/javascript",
             "packages": {},
             "requests": {},
-            "exec": [
-              ""
-            ]
+            "exec": [""]
           }
         },
         {
@@ -903,9 +757,7 @@
             "type": "text/javascript",
             "packages": {},
             "requests": {},
-            "exec": [
-              ""
-            ]
+            "exec": [""]
           }
         }
       ]
@@ -932,13 +784,8 @@
             },
             "url": {
               "raw": "{{pot-api}}/maintenance/export",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "maintenance",
-                "export"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["maintenance", "export"]
             }
           },
           "response": []
@@ -971,13 +818,8 @@
             },
             "url": {
               "raw": "{{pot-api}}/maintenance/import",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "maintenance",
-                "import"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["maintenance", "import"]
             }
           },
           "response": []
@@ -1000,9 +842,7 @@
             "type": "text/javascript",
             "packages": {},
             "requests": {},
-            "exec": [
-              ""
-            ]
+            "exec": [""]
           }
         },
         {
@@ -1011,9 +851,7 @@
             "type": "text/javascript",
             "packages": {},
             "requests": {},
-            "exec": [
-              ""
-            ]
+            "exec": [""]
           }
         }
       ]
@@ -1028,12 +866,8 @@
             "header": [],
             "url": {
               "raw": "{{pot-api}}/users",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "users"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["users"]
             }
           },
           "response": []
@@ -1054,13 +888,8 @@
             },
             "url": {
               "raw": "{{pot-api}}/users/8826aa3a-914d-4d04-af05-fbed5b5b621f",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "users",
-                "8826aa3a-914d-4d04-af05-fbed5b5b621f"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["users", "8826aa3a-914d-4d04-af05-fbed5b5b621f"]
             }
           },
           "response": []
@@ -1083,9 +912,7 @@
             "type": "text/javascript",
             "packages": {},
             "requests": {},
-            "exec": [
-              ""
-            ]
+            "exec": [""]
           }
         },
         {
@@ -1094,9 +921,7 @@
             "type": "text/javascript",
             "packages": {},
             "requests": {},
-            "exec": [
-              ""
-            ]
+            "exec": [""]
           }
         }
       ]
@@ -1111,12 +936,8 @@
             "header": [],
             "url": {
               "raw": "{{pot-api}}/settings",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "settings"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["settings"]
             }
           },
           "response": []
@@ -1137,14 +958,8 @@
             },
             "url": {
               "raw": "{{pot-api}}/settings/EmailBudgetReminder/Enabled",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "settings",
-                "EmailBudgetReminder",
-                "Enabled"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["settings", "EmailBudgetReminder", "Enabled"]
             }
           },
           "response": []
@@ -1167,9 +982,7 @@
             "type": "text/javascript",
             "packages": {},
             "requests": {},
-            "exec": [
-              ""
-            ]
+            "exec": [""]
           }
         },
         {
@@ -1178,9 +991,7 @@
             "type": "text/javascript",
             "packages": {},
             "requests": {},
-            "exec": [
-              ""
-            ]
+            "exec": [""]
           }
         }
       ]
@@ -1195,13 +1006,8 @@
             "header": [],
             "url": {
               "raw": "{{pot-api}}/approvals/pending",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "approvals",
-                "pending"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["approvals", "pending"]
             }
           },
           "response": []
@@ -1222,9 +1028,7 @@
             },
             "url": {
               "raw": "{{pot-api}}/approvals/a2ba173b-4d9f-4305-9387-745eb39d2b34/status",
-              "host": [
-                "{{pot-api}}"
-              ],
+              "host": ["{{pot-api}}"],
               "path": [
                 "approvals",
                 "a2ba173b-4d9f-4305-9387-745eb39d2b34",
@@ -1252,9 +1056,7 @@
             "type": "text/javascript",
             "packages": {},
             "requests": {},
-            "exec": [
-              ""
-            ]
+            "exec": [""]
           }
         },
         {
@@ -1263,9 +1065,7 @@
             "type": "text/javascript",
             "packages": {},
             "requests": {},
-            "exec": [
-              ""
-            ]
+            "exec": [""]
           }
         }
       ]
@@ -1289,13 +1089,8 @@
             },
             "url": {
               "raw": "{{pot-api}}/sites/aab0645e-435b-42ec-9c95-6f2c3b0fd984",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "sites",
-                "aab0645e-435b-42ec-9c95-6f2c3b0fd984"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["sites", "aab0645e-435b-42ec-9c95-6f2c3b0fd984"]
             }
           },
           "response": []
@@ -1318,9 +1113,7 @@
             "type": "text/javascript",
             "packages": {},
             "requests": {},
-            "exec": [
-              ""
-            ]
+            "exec": [""]
           }
         },
         {
@@ -1329,9 +1122,7 @@
             "type": "text/javascript",
             "packages": {},
             "requests": {},
-            "exec": [
-              ""
-            ]
+            "exec": [""]
           }
         }
       ]
@@ -1358,12 +1149,8 @@
             },
             "url": {
               "raw": "{{pot-api}}/me",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "me"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["me"]
             }
           },
           "response": []
@@ -1384,13 +1171,8 @@
             },
             "url": {
               "raw": "{{pot-api}}/me/change-password",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "me",
-                "change-password"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["me", "change-password"]
             }
           },
           "response": []
@@ -1413,9 +1195,7 @@
             "type": "text/javascript",
             "packages": {},
             "requests": {},
-            "exec": [
-              ""
-            ]
+            "exec": [""]
           }
         },
         {
@@ -1424,9 +1204,7 @@
             "type": "text/javascript",
             "packages": {},
             "requests": {},
-            "exec": [
-              ""
-            ]
+            "exec": [""]
           }
         }
       ]
@@ -1435,46 +1213,14 @@
       "name": "Accruals",
       "item": [
         {
-          "name": "Accrue Expenses",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"rowIds\": [\r\n        \"f3c6a50d-b9a7-41c7-bc7e-2a6d7fdc228d\",\r\n        \"45ee1818-0438-40c4-be81-1c82493613ab\",\r\n        \"136427db-810f-47b9-9e77-9ed091e68b1c\"]\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{pot-api}}/accruals/accrue-expenses",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "accruals",
-                "accrue-expenses"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
           "name": "Accruals Status",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{pot-api}}/accruals/status?accountRowIds=f3c6a50d-b9a7-41c7-bc7e-2a6d7fdc228d,45ee1818-0438-40c4-be81-1c82493613ab,136427db-810f-47b9-9e77-9ed091e68b1c",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "accruals",
-                "status"
-              ],
+              "host": ["{{pot-api}}"],
+              "path": ["accruals", "status"],
               "query": [
                 {
                   "key": "accountRowIds",
@@ -1503,9 +1249,7 @@
             "type": "text/javascript",
             "packages": {},
             "requests": {},
-            "exec": [
-              ""
-            ]
+            "exec": [""]
           }
         },
         {
@@ -1514,9 +1258,7 @@
             "type": "text/javascript",
             "packages": {},
             "requests": {},
-            "exec": [
-              ""
-            ]
+            "exec": [""]
           }
         }
       ]
@@ -1531,12 +1273,8 @@
             "header": [],
             "url": {
               "raw": "{{pot-api}}/roles",
-              "host": [
-                "{{pot-api}}"
-              ],
-              "path": [
-                "roles"
-              ]
+              "host": ["{{pot-api}}"],
+              "path": ["roles"]
             }
           },
           "response": []
@@ -1553,12 +1291,8 @@
         "header": [],
         "url": {
           "raw": "{{pot}}/_health",
-          "host": [
-            "{{pot}}"
-          ],
-          "path": [
-            "_health"
-          ]
+          "host": ["{{pot}}"],
+          "path": ["_health"]
         }
       },
       "response": []
@@ -1581,9 +1315,7 @@
         "type": "text/javascript",
         "packages": {},
         "requests": {},
-        "exec": [
-          ""
-        ]
+        "exec": [""]
       }
     },
     {
@@ -1592,9 +1324,7 @@
         "type": "text/javascript",
         "packages": {},
         "requests": {},
-        "exec": [
-          ""
-        ]
+        "exec": [""]
       }
     }
   ]

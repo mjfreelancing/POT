@@ -131,6 +131,18 @@ Accrual policy is explicit per expense:
 - `Automatic` enables accrual contribution.
 - `None` disables accrual contribution while retaining due-date scheduling and balance debits.
 
+### Accrual is derived, not stored
+
+No accrual value is persisted. `Accrued` is computed on read from the persisted schedule — `NextDue`, `AccrualStart`, `Frequency`, `FrequencyCount`, `EndDate` and `Amount` — and every accrual-bearing read (`/api/accounts`, `/api/accounts/{id}`, `/api/expenses`, `/api/projections`) obtains its values from that one engine for the same as-of date, so the values read are always the current ones.
+
+Three account-level amounts are kept distinct:
+
+- `TotalExpenseAccrued` — the accrual of each cycle currently in progress, bounded by that cycle's `Amount`.
+- `TotalArrears` — one `Amount` per occurrence whose due date has passed un-settled. Arrears follows the schedule rather than the accrual policy, so an expense that does not accrue still carries it.
+- `TotalCommitted` — `TotalExpenseAccrued + TotalArrears`, the headline obligation, rendered as the accounts table's `Committed` column. The accounts read derives `Available = Balance − Reserved − TotalCommitted` from it.
+
+A bill due today is the current bill: it accrues in full and is **not** arrears.
+
 ## Cashflow Policy Foundations
 
 POT uses an obligation-first cashflow model.
@@ -166,14 +178,14 @@ At product level, the model is expected to support these outputs:
 
 1. Do not mix planned obligations with already-paid obligations in the same state model.
 2. Keep mandatory and optional spending concerns separate.
-3. Recompute daily metrics whenever balance, amount, due date, schedule, or policy changes.
+3. Derive daily metrics from the current balance, amount, due date, schedule and policy on every read; never persist a computed accrual.
 4. Use rolling forecast windows instead of static month snapshots.
 5. Make calculation assumptions explicit in user and developer documentation.
 
 ### Sinking Fund Semantics (High Level)
 
 1. Each obligation accrues toward a due-date target over an accrual cycle.
-2. Reserved and accrued amounts restrict spendable funds; they are not double-counting.
+2. Reserved and committed amounts restrict spendable funds; they are not double-counting.
 3. Payment events reduce both ledger balance and obligation reserve, then start the next cycle when applicable.
 
 ## Testing Architecture

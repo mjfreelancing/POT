@@ -22,7 +22,7 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
         public Renew()
         {
             _account = Create<AccountEntity>();
-            _calculator = new ExpenseRenewalCalculator();
+            _calculator = new ExpenseRenewalCalculator(new ExpenseRenewalFold());
         }
 
         [Fact]
@@ -407,20 +407,6 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
         }
 
         [Fact]
-        public void Should_Not_Modify_Accrued_Amount_During_Renewal()
-        {
-            var expense = EntityFactory.CreateExpense(_account, false, "Test Expense", 100, "2025-01-01", "2025-01-10", null, Frequency.Weeks, 1);
-            expense.Accrued = 50.0;
-
-            var asOfDate = new DateOnly(2025, 1, 20);
-
-            _calculator.Renew([expense], RenewalMode.Overdue, asOfDate);
-
-            // Accrued amount should not be modified by the renewal process
-            expense.Accrued.ShouldBe(50.0);
-        }
-
-        [Fact]
         public void Should_Renew_Expense_Due_On_AsOfDate_Minus_One()
         {
             var asOfDate = new DateOnly(2025, 1, 20);
@@ -689,7 +675,7 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
         public Renew_Future()
         {
             _account = Create<AccountEntity>();
-            _calculator = new ExpenseRenewalCalculator();
+            _calculator = new ExpenseRenewalCalculator(new ExpenseRenewalFold());
         }
 
         [Fact]
@@ -939,7 +925,7 @@ public class ExpenseRenewalCalculatorFixture : PotFixtureBase
         public Renew_Overdue()
         {
             _account = Create<AccountEntity>();
-            _calculator = new ExpenseRenewalCalculator();
+            _calculator = new ExpenseRenewalCalculator(new ExpenseRenewalFold());
         }
 
         [Fact]

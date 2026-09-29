@@ -1,13 +1,8 @@
 import { Zap } from 'lucide-react';
 
 import { PermissionGuard } from '@/features/auth/components';
-import RenewAccrueAllAction from '@/features/dashboard/actions/accruals/RenewAccrueAllAction';
 
-import {
-  AccrueAccountExpensesAction,
-  RenewExpensesAction,
-  RenewIncomesAction,
-} from '../actions/accruals';
+import { RenewExpensesAction, RenewIncomesAction } from '../actions/accruals';
 import { AccrualsProvider } from '../contexts/AccrualsContext';
 import CollapsibleSection from './CollapsibleSection';
 
@@ -24,6 +19,8 @@ function QuickActions({ isOpen, onOpenChange }: QuickActionsProps) {
       isOpen={isOpen}
       onOpenChange={onOpenChange}
     >
+      {/* Maintain 4 columns for desktop - allows for more actions to be added
+          while maintaining a consistent layout */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <AccrualsProvider>
           <PermissionGuard permissions={['expense:manage']} mode="all">
@@ -32,21 +29,6 @@ function QuickActions({ isOpen, onOpenChange }: QuickActionsProps) {
 
           <PermissionGuard permissions={['income:manage']} mode="all">
             <RenewIncomesAction />
-          </PermissionGuard>
-
-          <PermissionGuard
-            permissions={['expense:manage', 'account:manage']}
-            mode="all"
-          >
-            <AccrueAccountExpensesAction />
-          </PermissionGuard>
-
-          {/* expenses and incomes are renewed, and accounts are accrued */}
-          <PermissionGuard
-            permissions={['expense:manage', 'income:manage', 'account:manage']}
-            mode="all"
-          >
-            <RenewAccrueAllAction />
           </PermissionGuard>
         </AccrualsProvider>
       </div>

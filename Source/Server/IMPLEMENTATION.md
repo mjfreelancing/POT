@@ -7,7 +7,7 @@ This document provides detailed technical documentation for the POT (Personal Or
 ## Table of Contents
 
 - [Pot.App Project](#potapp-project)
-  - [AccrueExpenseCalculator](#accrueexpensecalculator)
+  - [AccrualCalculator](#accrualcalculator)
   - [ExpenseRenewalCalculator](#expenserenewalcalculator)
   - [IncomeRenewalCalculator](#incomerenewalcalculator)
   - [ProjectionsService](#projectionsservice)
@@ -20,15 +20,17 @@ This section documents the core application logic layer (`Pot.App`), including c
 
 ---
 
-## AccrueExpenseCalculator
+## AccrualCalculator
 
-**Location:** `Pot.App/Calculators/AccrueExpenseCalculator.cs`
+**Location:** `Pot.App/Calculators/AccrualCalculator.cs`
 
 ### Purpose
 
-Calculates expense accruals for financial projections by tracking how much of each expense has accumulated (but not yet been paid) from its accrual start date until the current date.
+Calculates expense accruals for an as-of date by measuring how much of each expense has accumulated (but not yet been paid) from its accrual start date, and how much of the schedule is already past due.
 
-The accrual system provides a realistic view of "available" funds by accounting for expenses that are gradually building up but haven't been paid yet. This prevents overspending by showing how much money is truly available after considering upcoming obligations.
+Nothing is persisted and no entity is mutated: the calculator takes the accrual-relevant facts plus the schedule cursor for each expense and returns an immutable `AccountAccrualView`. Every accrual-bearing read (`/api/accounts`, `/api/accounts/{id}`, `/api/expenses`, `/api/projections`) obtains its values from this one engine for the same as-of date, so the values read are always the current ones.
+
+The accrual system provides a realistic view of "available" funds by accounting for expenses that are gradually building up but haven't been paid yet, and by carrying the cycles already behind as arrears. This prevents overspending by showing how much money is truly available after considering upcoming and past-due obligations.
 
 ### Core Concepts
 
@@ -77,7 +79,7 @@ When a recurring expense is due, it immediately begins accruing for the next per
 1. The `ExpenseRenewalCalculator` advances `NextDue` to the next occurrence
 2. `AccrualStart` is set to the old `NextDue` (the date it was just paid)
 3. We calculate `dailyAccrual` for the new period: `Amount / daysToNextDue`
-4. This is added to `account.DailyExpenseAccrual` (used for Available calculations)
+4. That rate contributes to the account's `DailyExpenseAccrual` total (the dynamic projection metric), which the next read derives from the advanced cursor rather than from a stored value
 
 **Example:** Monthly rent of $1200 due Jan 31:
 
@@ -99,19 +101,24 @@ One-time expenses (`Frequency.OneTime`) do not renew:
 
 ### Account Totals
 
-The calculator maintains three account-level totals:
+The calculator returns five account-level amounts:
 
-1. **TotalExpenseAccrued:** Sum of all `expense.Accrued` values (what's accumulated so far)
-2. **DailyExpenseAccrual:** Sum of all `expense.DailyAccrual` values (total rate of accrual across all expenses)
-3. **StableExpenseAccrual:** Sum of stable per-expense daily contributions (long-run daily funding requirement)
+1. **TotalExpenseAccrued:** Sum of each expense's accrual for the cycle in progress (what has accumulated so far)
+2. **TotalArrears:** One `Amount` for every past-due, un-settled occurrence. This follows the schedule rather than the accrual policy, so an `AccrualPolicy.None` row or one with a null `AccrualStart` still carries it.
+3. **TotalCommitted:** `TotalExpenseAccrued + TotalArrears` - the headline obligation, rendered as the `Committed` column on the accounts table
+4. **DailyExpenseAccrual:** Sum of all daily accrual rates (total rate of accrual across all expenses; the dynamic projection metric)
+5. **StableExpenseAccrual:** Sum of stable per-expense daily contributions (long-run daily funding requirement)
 
-These totals are used in the Available calculation:
+The accounts read composes Available from the committed total:
 
 ```
-Available = Balance - Reserved - TotalExpenseAccrued + ExpensesPaid
+Available = Balance - Reserved - TotalCommitted
+          = Balance - Reserved - TotalExpenseAccrued - TotalArrears
 ```
 
-**Note:** `ExpensesPaid` is added back on payment days to prevent double-counting, since the expense is both subtracted from Balance (when "paid") AND counted in `TotalExpenseAccrued` (full amount due).
+The projection chart composes its own `Available` from the running forecast balance and adds that day's payments back; see [CRITICAL Formula - Available Funds](#critical-formula---available-funds).
+
+A bill due today is the current bill: it accrues in full and is **not** counted as arrears.
 
 ### StableExpenseAccrual
 
@@ -151,9 +158,11 @@ When documenting or presenting behavior, distinguish:
 Use the following terms consistently across code comments and docs:
 
 - `TotalExpenseAccrued`: accrued obligations.
+- `TotalArrears`: past-due obligations (one `Amount` per missed, un-settled cycle).
+- `TotalCommitted`: accrued plus past-due obligations; labelled `Committed` in the accounts table.
 - `DailyExpenseAccrual`: marginal accrual rate (dynamic operational metric).
 - `StableExpenseAccrual`: daily funding rate (stable planning metric).
-- `Available`: available balance (spendable amount after restrictions).
+- `Available`: available balance (spendable amount after the reserved and committed amounts).
 
 ### Rounding
 
@@ -171,9 +180,9 @@ Expenses are sorted by `NextDue` (ascending) before processing. While not critic
 
 ### Excluded Expenses
 
-Expenses with `ExcludeFromCalcs = true` are not processed for accrual. Their `Accrued` is set to 0 and `AccruedIsDirty` is set to false, but they don't contribute to account totals.
+Expenses with `ExcludeFromCalcs = true` are absent from the accounts and projection queries, so they contribute nothing to any account total. They still appear in the expense-read detail shape with `Accrued = 0` and `Arrears = 0`, because the expenses list renders a value for every row.
 
-Expenses with `AccrualPolicy.None` also do not contribute to account accrual totals.
+Expenses with `AccrualPolicy.None` contribute 0 to `TotalExpenseAccrued`, `DailyExpenseAccrual` and `StableExpenseAccrual`, but they still carry arrears when their schedule is behind.
 
 ---
 
@@ -210,8 +219,7 @@ For each expense (regardless of mode):
 1. Calculate days to next occurrence based on `Frequency` and `FrequencyCount`
 2. Add those days to `NextDue` to get the new due date
 3. Update `AccrualStart` to the old `NextDue` (expense starts accruing from when it was paid)
-4. Set `AccruedIsDirty = true` to signal that accruals need recalculation
-5. For Overdue mode: Repeat until `NextDue` is in the future (beyond `asOfDate`)
+4. For Overdue mode: Repeat until `NextDue` is in the future (beyond `asOfDate`)
 
 ### Frequency Calculation
 
@@ -261,8 +269,6 @@ This behavior is validated by comprehensive tests:
 
 - `ExpenseRenewalCalculatorFixture.Should_Handle_Month_End_Dates_Starting_Jan_31_With_Multiple_Renewals`
 - `ExpenseRenewalCalculatorFixture.Should_Handle_Month_End_31st_Renewing_Twice_Through_February`
-- `AccrueExpenseCalculatorFixture.Should_Handle_Accrual_When_Expense_Renewed_From_Jan_31_Through_February`
-- `AccrueExpenseCalculatorFixture.Should_Handle_Accrual_When_Expense_Renewed_From_Feb_28_To_Mar_28`
 
 **User Guidance:**
 Users should be aware that monthly expenses/income starting on the 29th-31st will shift to the 28th after February. The user will need to manually update the next due date when this occurs.
@@ -356,15 +362,14 @@ if (expense.ExcludeFromCalcs) continue;
 
 These expenses are excluded from projections and accruals, so they don't need renewal logic.
 
-### Accrued Dirty Flag
+### Accrual State After Renewal
 
 When an expense is renewed:
 
 1. `AccrualStart` is updated to the old `NextDue`
 2. `NextDue` is advanced to the next occurrence
-3. `AccruedIsDirty` is set to `true`
 
-The `AccruedIsDirty` flag signals that the expense's accrual calculations are out of date and need to be recalculated by the [`AccrueExpenseCalculator`](#accrueexpensecalculator). This flag is intentionally LEFT in its current state if it was already dirty, ensuring accruals are recalculated when needed.
+Nothing else is written for accrual purposes. Renewal moves the cursor the accrual calculation reads, so the next read reports the new cycle from the advanced schedule.
 
 ### Projection Usage
 
@@ -623,8 +628,8 @@ For each day in the projection period:
 
 1. **Identify due items:** Find expenses and income due on this date
 2. **Calculate totals:** Sum income received and expenses paid
-3. **Renew items:** Advance recurring expenses/income to their next due dates
-4. **Accrue expenses:** Calculate accumulated expenses and daily accrual rates
+3. **Accrue expenses:** Derive accumulated expenses, arrears and daily accrual rates from the start-of-day cursor
+4. **Renew items:** Advance recurring expenses/income to their next due dates
 5. **Update balance:** Apply income and expenses to account balance
 6. **Record projection:** Store date, balance, available, and transaction details
 
@@ -635,7 +640,7 @@ For each day in the projection period:
 The "Available" amount shows how much money is truly available for spending after accounting for upcoming obligations. The formula is:
 
 ```
-Available = Balance - Reserved - Accrued + ExpensesPaid
+Available = Balance - Reserved - Accrued - Arrears + ExpensesPaid
 ```
 
 #### Breaking Down Each Component
@@ -644,9 +649,11 @@ Available = Balance - Reserved - Accrued + ExpensesPaid
 
 - **Reserved:** Funds set aside and not available for spending (e.g., emergency fund, savings goals). This is a fixed amount per account.
 
-- **Accrued:** Total of all `expense.Accrued` values, representing how much of future expenses has accumulated but not yet been paid. This INCLUDES expenses due today (which have `Accrued = full Amount`).
+- **Accrued:** Total of all accrued values, representing how much of future expenses has accumulated but not yet been paid. This INCLUDES expenses due today (which accrue their full `Amount`).
 
-- **ExpensesPaid:** Total expenses paid TODAY. This is ADDED BACK to prevent double-counting.
+- **Arrears:** One `Amount` for every occurrence whose due date has passed un-settled. It is held on every day of the window rather than released like the cycle in progress, and it is not deducted from the forecast `Balance`, so it lowers `Available` only.
+
+- **ExpensesPaid:** Total expenses paid TODAY, counted only for the rows that contributed their full amount to `Accrued`. This is ADDED BACK to prevent double-counting.
 
 #### WHY Add Back ExpensesPaid?
 
@@ -768,9 +775,9 @@ The service orchestrates three calculators:
 
 1. **ExpenseRenewalCalculator:** Advances recurring expenses to next due dates using `RenewalMode.Overdue`
 2. **IncomeRenewalCalculator:** Advances recurring income to next due dates using `RenewalMode.Overdue`
-3. **AccrueExpenseCalculator:** Calculates expense accruals and updates account totals
+3. **AccrualCalculator:** Derives the day's accrued, arrears and committed figures for each account
 
-These are called in sequence for each projected day, with calculators operating on shared entity data (expenses/income are modified in place).
+These are called in sequence for each projected day. Renewal advances in-memory cursors and the accrual calculation reads them; no accrual value is written back to the database.
 
 **Note:** ProjectionsService always uses `Overdue` mode because it's simulating the passage of time day by day. The `Future` mode is used by the Renew services when users manually mark future items as paid/received early.
 

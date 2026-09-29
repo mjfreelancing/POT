@@ -37,8 +37,6 @@ public static class EntityFactory
             Description = description,
             Balance = balance,
             Reserved = reserved,
-            TotalExpenseAccrued = 0.0d,
-            DailyExpenseAccrual = 0.0d,
             Site = site,
             Expenses = [],
             Incomes = []
@@ -60,8 +58,7 @@ public static class EntityFactory
             EndDate = endDate is null ? null : DateOnly.ParseExact(endDate, "yyyy-MM-dd"),
             AccrualPolicy = accrualPolicy ?? (frequency == Frequency.OneTime ? AccrualPolicy.None : AccrualPolicy.Automatic),
             Frequency = frequency,
-            FrequencyCount = frequencyCount,
-            Accrued = 0.0d
+            FrequencyCount = frequencyCount
         };
 
         return expense;

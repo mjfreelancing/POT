@@ -46,7 +46,11 @@ const columns: AppColumnDef<Expense>[] = [
     id: 'description',
     accessorKey: 'description',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Description" />
+      <DataTableColumnHeader
+        column={column}
+        title="Description"
+        hint="A description identifying the expense. A note icon appears when a note is attached."
+      />
     ),
     enableSorting: true,
     sortFn: 'text',
@@ -55,6 +59,7 @@ const columns: AppColumnDef<Expense>[] = [
   createMoneyValueColumn<Expense>({
     accessorKey: 'amount',
     header: 'Amount',
+    hint: 'The amount charged each time this expense falls due.',
     options: {
       enableSorting: true,
       sortFn: 'basic',
@@ -64,16 +69,23 @@ const columns: AppColumnDef<Expense>[] = [
     countKey: 'frequencyCount',
     frequencyKey: 'frequency',
     header: 'Frequency',
+    hint: 'How often the expense falls due.',
   }),
-  createNextDueStatusColumn<Expense>(),
-  createRecurringEndDateColumn<Expense>(),
+  createNextDueStatusColumn<Expense>({
+    hint: 'When the payment is next due, with a badge for expenses overdue, due today or due soon.',
+  }),
+  createRecurringEndDateColumn<Expense>({
+    hint: 'When this expense stops. One-time expenses never recur.',
+  }),
   createDateColumn<Expense>({
     accessorKey: 'accrualStart',
     header: 'Accrual Start',
+    hint: 'The date this expense starts accruing towards its due date.',
   }),
   createMoneyValueColumn<Expense>({
     accessorKey: 'accrued',
     header: 'Accrued',
+    hint: 'The amount set aside so far for the cycle in progress.',
     options: {
       cell: ({ row }) => {
         if (row.original.accrualPolicy === AccrualPolicy.None) {
@@ -86,7 +98,21 @@ const columns: AppColumnDef<Expense>[] = [
       sortFn: 'basic',
     },
   }),
-  createAccountDescriptionColumn<Expense>(),
+
+  // Arrears follows the schedule rather than the accrual policy, so a past-due amount is shown even for an
+  // expense that does not accrue.
+  createMoneyValueColumn<Expense>({
+    accessorKey: 'arrears',
+    header: 'Arrears',
+    hint: 'Amounts for overdue expenses.',
+    options: {
+      enableSorting: true,
+      sortFn: 'basic',
+    },
+  }),
+  createAccountDescriptionColumn<Expense>({
+    hint: 'The account this expense is paid from.',
+  }),
   createActionsColumn<Expense>(expense => <ExpenseActions expense={expense} />),
 ];
 

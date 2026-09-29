@@ -3,6 +3,8 @@ using Pot.Data.Entities;
 using Pot.Data.Extensions;
 using Pot.Data.Repositories.Accounts.Dtos;
 using Pot.Data.Specifications;
+using Pot.Shared.Models;
+using System.Linq.Expressions;
 
 namespace Pot.Data.Repositories.Accounts;
 
@@ -54,7 +56,12 @@ internal sealed class AccountRepository : PersistableRepository, IPersistableAcc
             {
                 Account = item,
                 LinkedIncomes = item.Incomes.Count,
-                LinkedExpenses = item.Expenses.Count
+                LinkedExpenses = item.Expenses.Count,
+                AccrualExpenses = item.Expenses
+                    .AsQueryable()
+                    .Where(expense => !expense.ExcludeFromCalcs)
+                    .Select(AccrualExpenseProjection)
+                    .ToArray()
             })
             .SingleOrDefaultAsync(cancellationToken);
     }
@@ -66,8 +73,30 @@ internal sealed class AccountRepository : PersistableRepository, IPersistableAcc
             {
                 Account = item,
                 LinkedIncomes = item.Incomes.Count,
-                LinkedExpenses = item.Expenses.Count
+                LinkedExpenses = item.Expenses.Count,
+                AccrualExpenses = item.Expenses
+                    .AsQueryable()
+                    .Where(expense => !expense.ExcludeFromCalcs)
+                    .Select(AccrualExpenseProjection)
+                    .ToArray()
             })
             .ToArrayAsync(cancellationToken);
     }
+
+    // Part of a query expression: this must stay an expression tree so EF Core can translate it into SQL, and the
+    // nested collections call AsQueryable() so this overload binds. That is why it cannot be shared with the
+    // in-memory projection in Pot.App. Declared once because both account queries project the same accrual facts.
+    private static readonly Expression<Func<ExpenseEntity, ExpenseAccrualInput>> AccrualExpenseProjection =
+        expense => new ExpenseAccrualInput
+        {
+            RowId = expense.RowId,
+            ExcludeFromCalcs = expense.ExcludeFromCalcs,
+            AccrualStart = expense.AccrualStart,
+            NextDue = expense.NextDue,
+            EndDate = expense.EndDate,
+            AccrualPolicy = expense.AccrualPolicy,
+            Frequency = expense.Frequency,
+            FrequencyCount = expense.FrequencyCount,
+            Amount = expense.Amount
+        };
 }

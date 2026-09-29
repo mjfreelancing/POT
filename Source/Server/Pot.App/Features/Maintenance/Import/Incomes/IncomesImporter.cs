@@ -11,6 +11,9 @@ using Pot.Data.Repositories.Incomes;
 
 namespace Pot.App.Features.Maintenance.Import.Incomes;
 
+/// <summary>
+/// Default implementation of <see cref="IIncomesImporter"/>.
+/// </summary>
 internal sealed class IncomesImporter : IIncomesImporter
 {
     private readonly IPersistableAccountRepository _accountRepository;
@@ -30,6 +33,7 @@ internal sealed class IncomesImporter : IIncomesImporter
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<int>> ImportAsync(IEnumerable<IIncomeCsvRow> csvRows, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
