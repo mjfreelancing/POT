@@ -1,5 +1,14 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { AuthenticationError } from '@/api/errors/apiErrors';
+import {
+  createAuthErrorHandler,
+  createAuthRequestHandler,
+  setupAuthInterceptors,
+} from '@/api/interceptors/authInterceptor';
+import type { TokenProvider } from '@/api/types/auth';
+import { FailResult } from '@/lib';
+
 const axiosMock = vi.hoisted(() => {
   const requestUse = vi.fn();
   const responseUse = vi.fn();
@@ -37,6 +46,16 @@ type HeaderMap = {
   get: (name: string) => string | undefined;
 };
 
+type TestRequestConfig = {
+  url: string;
+  headers: HeaderMap;
+};
+
+type TestAxiosError = {
+  response?: { status: number };
+  config?: TestRequestConfig;
+};
+
 function createHeaders(): HeaderMap {
   const store = new Map<string, string>();
 
@@ -48,44 +67,31 @@ function createHeaders(): HeaderMap {
   };
 }
 
-function createConfig(url = '/api/accounts') {
+function createConfig(url = '/api/accounts'): TestRequestConfig {
   return {
     url,
     headers: createHeaders(),
   };
 }
 
-async function loadInterceptors(tokenProvider: {
-  getAccessToken: () => string | undefined;
-  refreshTokens: () => Promise<string>;
-  clearTokens: () => void;
-  setAccessToken: (token: string | undefined) => void;
-}) {
-  vi.resetModules();
+// The handler factories are typed against real axios config objects; these
+// lightweight stubs are structurally sufficient for the behaviour under test.
+function requestHandlerFor(tokenProvider: TokenProvider) {
+  return createAuthRequestHandler(tokenProvider) as unknown as (
+    config: TestRequestConfig,
+  ) => TestRequestConfig;
+}
 
-  const module = await import('@/api/interceptors/authInterceptor');
-
-  module.setupAuthInterceptors(tokenProvider);
-
-  const requestHandler = axiosMock.requestUse.mock.calls[0]?.[0] as (
-    config: ReturnType<typeof createConfig>,
-  ) => ReturnType<typeof createConfig>;
-  const responseErrorHandler = axiosMock.responseUse.mock
-    .calls[0]?.[1] as (error: {
-    response?: { status: number };
-    config?: ReturnType<typeof createConfig>;
-  }) => Promise<unknown>;
-
-  return {
-    requestHandler,
-    responseErrorHandler,
-  };
+function errorHandlerFor(tokenProvider: TokenProvider) {
+  return createAuthErrorHandler(tokenProvider) as unknown as (
+    error: TestAxiosError,
+  ) => Promise<unknown>;
 }
 
 function createTokenProvider(overrides?: {
   refreshTokens?: () => Promise<string>;
   getAccessToken?: () => string | undefined;
-}) {
+}): TokenProvider {
   return {
     getAccessToken: overrides?.getAccessToken ?? vi.fn(() => undefined),
     refreshTokens: overrides?.refreshTokens ?? vi.fn(async () => 'new-token'),
@@ -94,47 +100,46 @@ function createTokenProvider(overrides?: {
   };
 }
 
-describe('setupAuthInterceptors', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+beforeEach(() => {
+  vi.clearAllMocks();
+});
 
-  test('adds Authorization header when token exists', async () => {
+describe('createAuthRequestHandler', () => {
+  test('adds Authorization header when token exists', () => {
     const tokenProvider = createTokenProvider({
       getAccessToken: vi.fn(() => 'existing-token'),
     });
 
-    const { requestHandler } = await loadInterceptors(tokenProvider);
-
+    const requestHandler = requestHandlerFor(tokenProvider);
     const config = createConfig();
+
     requestHandler(config);
 
     expect(config.headers.get('Authorization')).toBe('Bearer existing-token');
   });
 
-  test('does not add Authorization header when token is missing', async () => {
+  test('does not add Authorization header when token is missing', () => {
     const tokenProvider = createTokenProvider({
       getAccessToken: vi.fn(() => undefined),
     });
 
-    const { requestHandler } = await loadInterceptors(tokenProvider);
-
+    const requestHandler = requestHandlerFor(tokenProvider);
     const config = createConfig();
+
     requestHandler(config);
 
     expect(config.headers.get('Authorization')).toBeUndefined();
   });
+});
 
+describe('createAuthErrorHandler', () => {
   test('rejects unchanged when error has no response or config', async () => {
     const tokenProvider = createTokenProvider();
 
-    const { responseErrorHandler } = await loadInterceptors(tokenProvider);
+    const responseErrorHandler = errorHandlerFor(tokenProvider);
     const error = {
       message: 'network error',
-    } as unknown as {
-      response?: { status: number };
-      config?: ReturnType<typeof createConfig>;
-    };
+    } as unknown as TestAxiosError;
 
     await expect(responseErrorHandler(error)).rejects.toBe(error);
   });
@@ -142,9 +147,9 @@ describe('setupAuthInterceptors', () => {
   test('rejects unchanged for non-401 responses', async () => {
     const tokenProvider = createTokenProvider();
 
-    const { responseErrorHandler } = await loadInterceptors(tokenProvider);
+    const responseErrorHandler = errorHandlerFor(tokenProvider);
     const config = createConfig();
-    const error = {
+    const error: TestAxiosError = {
       response: { status: 403 },
       config,
     };
@@ -155,9 +160,9 @@ describe('setupAuthInterceptors', () => {
   test('rejects unchanged for /auth endpoint 401 to avoid refresh loop', async () => {
     const tokenProvider = createTokenProvider();
 
-    const { responseErrorHandler } = await loadInterceptors(tokenProvider);
+    const responseErrorHandler = errorHandlerFor(tokenProvider);
     const config = createConfig('/auth/refresh');
-    const error = {
+    const error: TestAxiosError = {
       response: { status: 401 },
       config,
     };
@@ -174,9 +179,9 @@ describe('setupAuthInterceptors', () => {
     const retriedResponse = { data: { ok: true } };
     axiosMock.axiosFn.mockResolvedValueOnce(retriedResponse);
 
-    const { responseErrorHandler } = await loadInterceptors(tokenProvider);
+    const responseErrorHandler = errorHandlerFor(tokenProvider);
     const config = createConfig('/api/accounts');
-    const error = {
+    const error: TestAxiosError = {
       response: { status: 401 },
       config,
     };
@@ -202,7 +207,7 @@ describe('setupAuthInterceptors', () => {
       .mockResolvedValueOnce({ data: { first: true } })
       .mockResolvedValueOnce({ data: { second: true } });
 
-    const { responseErrorHandler } = await loadInterceptors(tokenProvider);
+    const responseErrorHandler = errorHandlerFor(tokenProvider);
 
     const firstConfig = createConfig('/api/accounts');
     const secondConfig = createConfig('/api/incomes');
@@ -250,7 +255,7 @@ describe('setupAuthInterceptors', () => {
       refreshTokens: vi.fn(() => refreshPromise),
     });
 
-    const { responseErrorHandler } = await loadInterceptors(tokenProvider);
+    const responseErrorHandler = errorHandlerFor(tokenProvider);
 
     const firstRequest = responseErrorHandler({
       response: { status: 401 },
@@ -294,13 +299,10 @@ describe('setupAuthInterceptors', () => {
       refreshTokens: vi.fn(),
     });
 
-    const { responseErrorHandler } = await loadInterceptors(tokenProvider);
+    const responseErrorHandler = errorHandlerFor(tokenProvider);
 
-    const { FailResult: RuntimeFailResult } = await import('@/lib');
-    const { AuthenticationError: RuntimeAuthenticationError } =
-      await import('@/api/errors/apiErrors');
-    const failResult = new RuntimeFailResult(
-      new RuntimeAuthenticationError('Refresh token expired'),
+    const failResult = new FailResult(
+      new AuthenticationError('Refresh token expired'),
     );
 
     vi.mocked(tokenProvider.refreshTokens).mockRejectedValue(failResult);
@@ -320,5 +322,27 @@ describe('setupAuthInterceptors', () => {
     });
 
     expect(tokenProvider.clearTokens).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('setupAuthInterceptors', () => {
+  test('registers a request and response interceptor and returns their ids', () => {
+    const tokenProvider = createTokenProvider();
+
+    axiosMock.requestUse.mockReturnValueOnce(11);
+    axiosMock.responseUse.mockReturnValueOnce(22);
+
+    const interceptors = setupAuthInterceptors(tokenProvider);
+
+    expect(axiosMock.requestUse).toHaveBeenCalledWith(expect.any(Function));
+    expect(axiosMock.responseUse).toHaveBeenCalledWith(
+      expect.any(Function),
+      expect.any(Function),
+    );
+
+    expect(interceptors).toEqual({
+      requestInterceptorId: 11,
+      responseInterceptorId: 22,
+    });
   });
 });

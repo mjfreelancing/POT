@@ -7,30 +7,16 @@ import { FailResult } from '@/lib';
 import { AuthenticationError } from '../errors/apiErrors';
 import type { TokenProvider } from '../types/auth';
 
-// Track token refresh state and queue
-let isRefreshing = false;
-let failedQueue: {
+type QueuedRequest = {
   resolve: (token: string) => void;
   reject: (error: unknown) => void;
-}[] = [];
-
-// Process queued requests with new token
-const processQueue = (token: string) => {
-  failedQueue.forEach(request => request.resolve(token));
-  failedQueue = [];
-};
-
-// Clear queue on refresh failure
-const clearQueue = (error: unknown) => {
-  failedQueue.forEach(request => request.reject(error));
-  failedQueue = [];
 };
 
 /**
  * Request interceptor to add the Authorization header with JWT token
  */
-const addAuthHeader =
-  (tokenProvider: TokenProvider) => (config: InternalAxiosRequestConfig) => {
+function createAuthRequestHandler(tokenProvider: TokenProvider) {
+  return (config: InternalAxiosRequestConfig) => {
     const token = tokenProvider.getAccessToken();
 
     if (token) {
@@ -39,6 +25,7 @@ const addAuthHeader =
 
     return config;
   };
+}
 
 /**
  * Handle 401 errors with token refresh.
@@ -55,11 +42,28 @@ const addAuthHeader =
  * NOTES:
  * - Only one refresh attempt happens at a time (isRefreshing flag)
  * - Concurrent 401s are queued and retried after refresh completes
+ * - Refresh state (in-flight flag and queue) is scoped to each handler instance
  * - Errors are normalized to FailResult<AuthenticationError> for consistent handling
  * - This catches cases where proactive refresh failed or didn't trigger in time
  */
-const handleAuthError =
-  (tokenProvider: TokenProvider) => async (error: AxiosError) => {
+function createAuthErrorHandler(tokenProvider: TokenProvider) {
+  // Track token refresh state and queue for this handler instance
+  let isRefreshing = false;
+  let failedQueue: QueuedRequest[] = [];
+
+  // Process queued requests with new token
+  const processQueue = (token: string) => {
+    failedQueue.forEach(request => request.resolve(token));
+    failedQueue = [];
+  };
+
+  // Clear queue on refresh failure
+  const clearQueue = (error: unknown) => {
+    failedQueue.forEach(request => request.reject(error));
+    failedQueue = [];
+  };
+
+  return async (error: AxiosError) => {
     const { response, config } = error;
 
     if (!response || !config) {
@@ -126,23 +130,28 @@ const handleAuthError =
     // Let other error handlers deal with non-401 errors
     return Promise.reject(error);
   };
+}
 
 /**
  * Setup auth interceptors. These must be set up before general interceptors to handle token refresh.
  */
-const setupAuthInterceptors = (tokenProvider: TokenProvider) => {
+function setupAuthInterceptors(tokenProvider: TokenProvider) {
   const requestInterceptorId = axios.interceptors.request.use(
-    addAuthHeader(tokenProvider),
+    createAuthRequestHandler(tokenProvider),
   );
   const responseInterceptorId = axios.interceptors.response.use(
     response => response,
-    handleAuthError(tokenProvider),
+    createAuthErrorHandler(tokenProvider),
   );
 
   return {
     requestInterceptorId,
     responseInterceptorId,
   };
-};
+}
 
-export { setupAuthInterceptors };
+export {
+  createAuthErrorHandler,
+  createAuthRequestHandler,
+  setupAuthInterceptors,
+};
