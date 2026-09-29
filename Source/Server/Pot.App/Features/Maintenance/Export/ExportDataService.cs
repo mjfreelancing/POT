@@ -12,6 +12,9 @@ using Pot.App.Features.Maintenance.Metadata.Serializer;
 
 namespace Pot.App.Features.Maintenance.Export;
 
+/// <summary>
+/// Default implementation of <see cref="IExportDataService"/>.
+/// </summary>
 internal sealed class ExportDataService : IExportDataService
 {
     private readonly IAccountsExporter _accountsExporter;
@@ -32,6 +35,7 @@ internal sealed class ExportDataService : IExportDataService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<byte[]> ExportAllAsync(CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

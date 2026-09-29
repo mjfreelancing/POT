@@ -13,6 +13,9 @@ using Pot.Shared.Extensions;
 
 namespace Pot.App.Features.Expenses.Create;
 
+/// <summary>
+/// Default implementation of <see cref="ICreateExpenseService"/>.
+/// </summary>
 internal sealed class CreateExpenseService : ICreateExpenseService
 {
     private readonly IPersistableAccountRepository _accountRepository;
@@ -29,6 +32,7 @@ internal sealed class CreateExpenseService : ICreateExpenseService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<Output>> CreateExpenseAsync(Input input, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

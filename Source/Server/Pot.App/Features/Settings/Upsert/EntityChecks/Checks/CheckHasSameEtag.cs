@@ -5,6 +5,10 @@ using Pot.App.Errors;
 
 namespace Pot.App.Features.Settings.Upsert.EntityChecks.Checks;
 
+/// <summary>
+/// Rejects a setting upsert when the eTag does not match the stored setting, or when an eTag is supplied for a
+/// setting that does not exist yet.
+/// </summary>
 internal sealed class CheckHasSameEtag : PreUpdateCheckBase
 {
     private readonly ILogger _logger;
@@ -14,6 +18,7 @@ internal sealed class CheckHasSameEtag : PreUpdateCheckBase
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public override async Task<ApiDetailError?> HandleAsync(InputState state, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

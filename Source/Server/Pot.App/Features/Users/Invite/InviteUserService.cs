@@ -18,6 +18,9 @@ using Pot.Shared.Enumerations;
 
 namespace Pot.App.Features.Users.Invite;
 
+/// <summary>
+/// Default implementation of <see cref="IInviteUserService"/>.
+/// </summary>
 internal sealed class InviteUserService : IInviteUserService
 {
     private const int InvitationPasswordLength = PasswordGenerator.DefaultLength;
@@ -43,6 +46,7 @@ internal sealed class InviteUserService : IInviteUserService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<bool>> InviteUserAsync(Input input, CancellationToken cancellationToken)
     {
         _logger.LogCall(this, new { input.Username, input.RoleIds });

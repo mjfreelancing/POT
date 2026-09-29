@@ -12,6 +12,9 @@ using Pot.Shared.Enumerations;
 
 namespace Pot.App.Features.Auth.PasswordReset.Request;
 
+/// <summary>
+/// Default implementation of <see cref="IRequestPasswordResetService"/>.
+/// </summary>
 internal sealed class RequestPasswordResetService : IRequestPasswordResetService
 {
     private readonly IUserRepository _userRepository;
@@ -28,6 +31,7 @@ internal sealed class RequestPasswordResetService : IRequestPasswordResetService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<string> RequestResetAsync(Input input, CancellationToken cancellationToken)
     {
         _logger.LogCall(this, new { input.Username, input.CorrelationId });

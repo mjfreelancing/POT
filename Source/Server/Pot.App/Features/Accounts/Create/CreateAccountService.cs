@@ -11,6 +11,9 @@ using Pot.Data.Repositories.Sites;
 
 namespace Pot.App.Features.Accounts.Create;
 
+/// <summary>
+/// Default implementation of <see cref="ICreateAccountService"/>.
+/// </summary>
 internal sealed class CreateAccountService : ICreateAccountService
 {
     private readonly IPersistableAccountRepository _accountRepository;
@@ -27,6 +30,7 @@ internal sealed class CreateAccountService : ICreateAccountService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<Output>> CreateAccountAsync(Input input, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

@@ -17,6 +17,9 @@ using Pot.Shared.Enumerations;
 
 namespace Pot.App.Features.Auth.Signup.Complete;
 
+/// <summary>
+/// Default implementation of <see cref="IVerifySignupService"/>.
+/// </summary>
 internal sealed class VerifySignupService : VerificationServiceBase, IVerifySignupService
 {
     private static readonly EnrichedResult<Output> InvalidOutput = EnrichedResult.Success(new Output
@@ -70,6 +73,7 @@ internal sealed class VerifySignupService : VerificationServiceBase, IVerifySign
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<Output>> VerifySignupAsync(Input input, CancellationToken cancellationToken)
     {
         _logger.LogCall(this, new { input.Username, input.ReferenceCode, input.VerificationCode });
@@ -122,21 +126,25 @@ internal sealed class VerifySignupService : VerificationServiceBase, IVerifySign
         return output;
     }
 
+    /// <inheritdoc />
     protected override EnrichedResult GetInvalidOutput()
     {
         return InvalidOutput;
     }
 
+    /// <inheritdoc />
     protected override EnrichedResult GetExpiredOutput()
     {
         return ExpiredOutput;
     }
 
+    /// <inheritdoc />
     protected override EnrichedResult GetTooManyAttemptsOutput()
     {
         return TooManyAttemptsOutput;
     }
 
+    /// <inheritdoc />
     protected override async Task<EnrichedResult> ProcessVerificationCodeMatchAsync(OneTimePasswordEntity mostRecentOtp,
         CancellationToken cancellationToken)
     {

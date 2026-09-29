@@ -12,6 +12,9 @@ using Pot.Shared.Enumerations;
 
 namespace Pot.App.Features.Auth.PasswordReset.Verify;
 
+/// <summary>
+/// Default implementation of <see cref="IVerifyPasswordResetService"/>.
+/// </summary>
 internal sealed class VerifyPasswordResetService : VerificationServiceBase, IVerifyPasswordResetService
 {
     private static readonly EnrichedResult<Output> InvalidOutput = EnrichedResult.Success(new Output
@@ -54,6 +57,7 @@ internal sealed class VerifyPasswordResetService : VerificationServiceBase, IVer
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<Output>> VerifyResetAsync(Input input, CancellationToken cancellationToken)
     {
         _logger.LogCall(this, new { input.Username, input.ReferenceCode, input.VerificationCode });
@@ -94,21 +98,25 @@ internal sealed class VerifyPasswordResetService : VerificationServiceBase, IVer
         return output;
     }
 
+    /// <inheritdoc />
     protected override EnrichedResult GetInvalidOutput()
     {
         return InvalidOutput;
     }
 
+    /// <inheritdoc />
     protected override EnrichedResult GetExpiredOutput()
     {
         return ExpiredOutput;
     }
 
+    /// <inheritdoc />
     protected override EnrichedResult GetTooManyAttemptsOutput()
     {
         return TooManyAttemptsOutput;
     }
 
+    /// <inheritdoc />
     protected override async Task<EnrichedResult> ProcessVerificationCodeMatchAsync(OneTimePasswordEntity mostRecentOtp,
         CancellationToken cancellationToken)
     {

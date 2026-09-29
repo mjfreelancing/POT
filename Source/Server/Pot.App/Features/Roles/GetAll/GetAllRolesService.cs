@@ -9,6 +9,9 @@ using Pot.Data.Repositories.Roles;
 
 namespace Pot.App.Features.Roles.GetAll;
 
+/// <summary>
+/// Default implementation of <see cref="IGetAllRolesService"/>.
+/// </summary>
 internal sealed class GetAllRolesService : IGetAllRolesService
 {
     private readonly IRoleRepository _roleRepository;
@@ -20,6 +23,7 @@ internal sealed class GetAllRolesService : IGetAllRolesService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<List<Output>> GetAllRolesAsync(CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

@@ -12,6 +12,9 @@ using Pot.Shared.Enumerations;
 
 namespace Pot.App.Features.Auth.Signup.Request;
 
+/// <summary>
+/// Default implementation of <see cref="IRequestSignupService"/>.
+/// </summary>
 internal sealed class RequestSignupService : IRequestSignupService
 {
     private readonly IUserRepository _userRepository;
@@ -28,6 +31,7 @@ internal sealed class RequestSignupService : IRequestSignupService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<Output>> RequestSignupAsync(Input input, CancellationToken cancellationToken)
     {
         _logger.LogCall(this, new { input.Username, input.CorrelationId });

@@ -8,6 +8,9 @@ using Pot.Data.Repositories.Users;
 
 namespace Pot.App.Features.Me;
 
+/// <summary>
+/// Default implementation of <see cref="IUserService"/>.
+/// </summary>
 internal sealed class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
@@ -19,6 +22,7 @@ internal sealed class UserService : IUserService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<Output?> GetUserInfoAsync(Guid userId, CancellationToken cancellationToken)
     {
         _logger.LogCall(this, new { userId });

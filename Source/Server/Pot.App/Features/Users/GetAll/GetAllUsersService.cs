@@ -9,6 +9,9 @@ using Pot.Shared.Enumerations;
 
 namespace Pot.App.Features.Users.GetAll;
 
+/// <summary>
+/// Default implementation of <see cref="IGetAllUsersService"/>.
+/// </summary>
 internal sealed class GetAllUsersService : IGetAllUsersService
 {
     private readonly IUserRepository _userRepository;
@@ -20,6 +23,7 @@ internal sealed class GetAllUsersService : IGetAllUsersService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<List<Output>> GetAllEnabledAdminsAsync(CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
@@ -33,6 +37,7 @@ internal sealed class GetAllUsersService : IGetAllUsersService
             .SelectToList(user => user.MapToOutput());
     }
 
+    /// <inheritdoc />
     public async Task<List<Output>> GetAllForCurrentSiteAsync(CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

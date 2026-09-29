@@ -12,6 +12,9 @@ using Pot.RazorComponents.Models;
 
 namespace Pot.App.Features.Notifications.BudgetReminder;
 
+/// <summary>
+/// Default implementation of <see cref="IBudgetReminderService"/>.
+/// </summary>
 internal sealed class BudgetReminderService : IBudgetReminderService
 {
     private readonly IAppContext _appContext;
@@ -37,6 +40,7 @@ internal sealed class BudgetReminderService : IBudgetReminderService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task SendRemindersAsync(CancellationToken cancellationToken)
     {
         var currentUtcDateTime = _timeProvider.GetUtcDateTimeNow();

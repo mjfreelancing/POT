@@ -10,6 +10,9 @@ using Pot.Data.Specifications;
 
 namespace Pot.App.Features.Incomes.Update.EntityChecks.Checks;
 
+/// <summary>
+/// Rejects an update when the income description already exists for another income in the same account.
+/// </summary>
 internal sealed class CheckDescriptionDoesNotExist : PreUpdateCheckBase
 {
 
@@ -22,6 +25,15 @@ internal sealed class CheckDescriptionDoesNotExist : PreUpdateCheckBase
         _logger = logger.WhenNotNull();
     }
 
+    /// <summary>
+    /// Fails the pipeline when another income in the same account already uses the supplied description.
+    /// </summary>
+    /// <param name="state">The state carried through the pre-update check pipeline.</param>
+    /// <param name="cancellationToken">The token used to cancel the operation.</param>
+    /// <returns>
+    /// An <see cref="ApiDetailError"/> when the description already exists; otherwise the result of the next check
+    /// in the chain.
+    /// </returns>
     public override async Task<ApiDetailError?> HandleAsync(InputState state, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

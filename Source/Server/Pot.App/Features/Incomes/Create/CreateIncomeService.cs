@@ -11,6 +11,9 @@ using Pot.Data.Repositories.Accounts;
 
 namespace Pot.App.Features.Incomes.Create;
 
+/// <summary>
+/// Default implementation of <see cref="ICreateIncomeService"/>.
+/// </summary>
 internal sealed class CreateIncomeService : ICreateIncomeService
 {
     private readonly IPersistableAccountRepository _accountRepository;
@@ -25,6 +28,7 @@ internal sealed class CreateIncomeService : ICreateIncomeService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<Output>> CreateIncomeAsync(Input input, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

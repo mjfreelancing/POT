@@ -3,6 +3,13 @@ using System.Text;
 
 namespace Pot.App.Features.Auth;
 
+/// <summary>
+/// Generates the temporary passwords issued alongside signup and password reset verification codes.
+/// </summary>
+/// <remarks>
+/// Passwords are produced with a cryptographically secure random number generator and always include at least one
+/// lowercase letter, uppercase letter, digit, and special character. Visually ambiguous characters are excluded.
+/// </remarks>
 public static class PasswordGenerator
 {
     public const int DefaultLength = 8;

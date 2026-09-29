@@ -9,6 +9,9 @@ using Pot.Data.Repositories.Incomes;
 
 namespace Pot.App.Features.Incomes.Renew;
 
+/// <summary>
+/// Default implementation of <see cref="IRenewIncomesService"/>.
+/// </summary>
 internal sealed class RenewExpensesService : IRenewIncomesService
 {
     private readonly IPersistableIncomeRepository _incomeRepository;
@@ -23,6 +26,7 @@ internal sealed class RenewExpensesService : IRenewIncomesService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<bool>> RenewAsync(Input input, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

@@ -17,6 +17,9 @@ using System.Diagnostics;
 
 namespace Pot.App.Features.Settings.Upsert;
 
+/// <summary>
+/// Default implementation of <see cref="IUpsertSettingService"/>.
+/// </summary>
 internal sealed class UpsertSettingService : IUpsertSettingService
 {
     // Registry of setting validators mapped by category.
@@ -42,6 +45,7 @@ internal sealed class UpsertSettingService : IUpsertSettingService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<Output>> UpsertSettingAsync(Input input, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

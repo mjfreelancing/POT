@@ -13,6 +13,9 @@ using Pot.Data.Repositories.Users;
 
 namespace Pot.App.Features.Users.Update;
 
+/// <summary>
+/// Default implementation of <see cref="IUpdateUserService"/>.
+/// </summary>
 internal sealed class UpdateUserService : IUpdateUserService
 {
     private readonly IPersistableUserRepository _userRepository;
@@ -27,6 +30,7 @@ internal sealed class UpdateUserService : IUpdateUserService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<Output>> UpdateUserAsync(Input input, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

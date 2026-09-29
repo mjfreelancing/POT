@@ -9,6 +9,9 @@ using Pot.Data.Entities;
 
 namespace Pot.App.Features.Approvals.UpdateStatus.EntityChecks;
 
+/// <summary>
+/// Default implementation of <see cref="IPreUpdateChecker"/>.
+/// </summary>
 internal sealed class PreUpdateChecker : ChainOfResponsibilityAsyncComposer<InputState, ApiDetailError>, IPreUpdateChecker
 {
     private readonly ILogger _logger;
@@ -19,6 +22,7 @@ internal sealed class PreUpdateChecker : ChainOfResponsibilityAsyncComposer<Inpu
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public Task<ApiDetailError?> CanSaveAsync(Input input, UserEntity user, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

@@ -6,6 +6,9 @@ using Pot.Data.Repositories.Incomes;
 
 namespace Pot.App.Features.Incomes.Delete;
 
+/// <summary>
+/// Default implementation of <see cref="IDeleteIncomeService"/>.
+/// </summary>
 internal sealed class DeleteIncomeService : IDeleteIncomeService
 {
     private readonly IPersistableIncomeRepository _incomeRepository;
@@ -17,6 +20,7 @@ internal sealed class DeleteIncomeService : IDeleteIncomeService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<bool>> DeleteIncomeAsync(Guid incomeId, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

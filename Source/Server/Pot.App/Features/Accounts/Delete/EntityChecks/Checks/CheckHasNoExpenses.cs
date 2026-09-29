@@ -7,6 +7,9 @@ using Pot.Data.Repositories.Accounts;
 
 namespace Pot.App.Features.Accounts.Delete.EntityChecks.Checks;
 
+/// <summary>
+/// Rejects a delete when the account still has linked expenses.
+/// </summary>
 internal sealed class CheckHasNoExpenses : PreDeleteCheckBase
 {
     private readonly IAccountRepository _accountRepository;
@@ -18,6 +21,12 @@ internal sealed class CheckHasNoExpenses : PreDeleteCheckBase
         _logger = logger.WhenNotNull();
     }
 
+    /// <summary>
+    /// Fails when the account has linked expenses, otherwise delegates to the next check in the chain.
+    /// </summary>
+    /// <param name="state">The state carrying the identifier of the account being validated.</param>
+    /// <param name="cancellationToken">The token used to cancel the operation.</param>
+    /// <returns>The failing validation error, or <see langword="null"/> when the rule is satisfied.</returns>
     public override async Task<ApiDetailError?> HandleAsync(InputState state, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

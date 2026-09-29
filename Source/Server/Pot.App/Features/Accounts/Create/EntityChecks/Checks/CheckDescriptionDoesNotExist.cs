@@ -9,6 +9,9 @@ using Pot.Data.Specifications;
 
 namespace Pot.App.Features.Accounts.Create.EntityChecks.Checks;
 
+/// <summary>
+/// Rejects a create when the account description already exists for the current site.
+/// </summary>
 internal sealed class CheckDescriptionDoesNotExist : PreCreateCheckBase
 {
     private readonly IAccountRepository _accountRepository;
@@ -20,6 +23,13 @@ internal sealed class CheckDescriptionDoesNotExist : PreCreateCheckBase
         _logger = logger.WhenNotNull();
     }
 
+    /// <summary>
+    /// Fails when another account in the current site already uses the same description, otherwise delegates to
+    /// the next check in the chain.
+    /// </summary>
+    /// <param name="state">The state carrying the account being validated.</param>
+    /// <param name="cancellationToken">The token used to cancel the operation.</param>
+    /// <returns>The failing validation error, or <see langword="null"/> when the rule is satisfied.</returns>
     public override async Task<ApiDetailError?> HandleAsync(InputState state, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

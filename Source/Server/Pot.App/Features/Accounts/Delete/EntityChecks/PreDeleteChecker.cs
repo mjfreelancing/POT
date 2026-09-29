@@ -7,6 +7,9 @@ using Pot.App.Features.Accounts.Delete.EntityChecks.Checks;
 
 namespace Pot.App.Features.Accounts.Delete.EntityChecks;
 
+/// <summary>
+/// Default implementation of <see cref="IPreDeleteChecker"/>.
+/// </summary>
 internal sealed class PreDeleteChecker : ChainOfResponsibilityAsyncComposer<InputState, ApiDetailError?>, IPreDeleteChecker
 {
     private readonly ILogger _logger;
@@ -17,6 +20,7 @@ internal sealed class PreDeleteChecker : ChainOfResponsibilityAsyncComposer<Inpu
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public Task<ApiDetailError?> CanDeleteAsync(Guid accountId, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

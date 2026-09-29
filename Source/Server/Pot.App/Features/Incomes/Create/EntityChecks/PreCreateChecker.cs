@@ -8,6 +8,9 @@ using Pot.Data.Entities;
 
 namespace Pot.App.Features.Incomes.Create.EntityChecks;
 
+/// <summary>
+/// Default implementation of <see cref="IPreCreateChecker"/>.
+/// </summary>
 internal sealed class PreCreateChecker : ChainOfResponsibilityAsyncComposer<InputState, ApiDetailError?>, IPreCreateChecker
 {
     private readonly ILogger _logger;
@@ -18,6 +21,7 @@ internal sealed class PreCreateChecker : ChainOfResponsibilityAsyncComposer<Inpu
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public Task<ApiDetailError?> CanSaveAsync(IncomeEntity incomeToCreate, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

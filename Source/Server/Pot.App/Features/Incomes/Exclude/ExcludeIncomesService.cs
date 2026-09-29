@@ -8,6 +8,9 @@ using Pot.Data.Repositories.Incomes;
 
 namespace Pot.App.Features.Incomes.Exclude;
 
+/// <summary>
+/// Default implementation of <see cref="IExcludeIncomesService"/>.
+/// </summary>
 internal sealed class ExcludeIncomesService : IExcludeIncomesService
 {
     private readonly IPersistableIncomeRepository _incomeRepository;
@@ -19,6 +22,7 @@ internal sealed class ExcludeIncomesService : IExcludeIncomesService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<bool>> ToggleExclusionAsync(Input input, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

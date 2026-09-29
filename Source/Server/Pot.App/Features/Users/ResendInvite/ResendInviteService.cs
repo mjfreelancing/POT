@@ -14,6 +14,9 @@ using Pot.RazorComponents.Models;
 
 namespace Pot.App.Features.Users.ResendInvite;
 
+/// <summary>
+/// Default implementation of <see cref="IResendInviteService"/>.
+/// </summary>
 internal sealed class ResendInviteService : IResendInviteService
 {
     private const int InvitationPasswordLength = PasswordGenerator.DefaultLength;
@@ -32,6 +35,7 @@ internal sealed class ResendInviteService : IResendInviteService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<bool>> ResendInviteAsync(Guid userRowId, CancellationToken cancellationToken)
     {
         _logger.LogCall(this, new { userRowId });

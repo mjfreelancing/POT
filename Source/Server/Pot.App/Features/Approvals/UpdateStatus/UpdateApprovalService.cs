@@ -16,6 +16,9 @@ using Pot.Shared.Enumerations;
 
 namespace Pot.App.Features.Approvals.UpdateStatus;
 
+/// <summary>
+/// Default implementation of <see cref="IUpdateApprovalService"/>.
+/// </summary>
 internal sealed class UpdateApprovalService : IUpdateApprovalService
 {
     private readonly IPersistableUserRepository _userRepository;
@@ -32,6 +35,7 @@ internal sealed class UpdateApprovalService : IUpdateApprovalService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<Output>> UpdateUserApprovalAsync(Input input, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

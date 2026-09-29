@@ -9,6 +9,9 @@ using System.IO.Compression;
 
 namespace Pot.App.Features.Maintenance.Import.Reader;
 
+/// <summary>
+/// Default implementation of <see cref="IImportStreamReader"/>.
+/// </summary>
 internal sealed class ImportStreamReader : IImportStreamReader
 {
     private readonly IMetadataSerializer _metadataSerializer;
@@ -18,6 +21,7 @@ internal sealed class ImportStreamReader : IImportStreamReader
     private Dictionary<string, ZipArchiveEntry>? _entries;
     private Lazy<string[]>? _entryNames;
 
+    /// <inheritdoc />
     public string[] EntryNames => _entryNames?.Value ?? [];
 
     public ImportStreamReader(IMetadataSerializer metadataSerializer, ILogger<ImportStreamReader> logger)
@@ -26,6 +30,7 @@ internal sealed class ImportStreamReader : IImportStreamReader
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public IDisposable Open(Stream stream)
     {
         Throw<UnreachableException>.WhenNotNull(_archive, "The import stream is already open");
@@ -39,6 +44,7 @@ internal sealed class ImportStreamReader : IImportStreamReader
         return _archive;
     }
 
+    /// <inheritdoc />
     public TMetadata GetMetadata<TMetadata>() where TMetadata : MetadataBase
     {
         _logger.LogCall(this);
@@ -47,6 +53,7 @@ internal sealed class ImportStreamReader : IImportStreamReader
         return _metadataSerializer.Deserialize<TMetadata>(stream);
     }
 
+    /// <inheritdoc />
     public int ReadMetadataVersion()
     {
         _logger.LogCall(this);
@@ -57,6 +64,7 @@ internal sealed class ImportStreamReader : IImportStreamReader
         return reader.ReadInt32();
     }
 
+    /// <inheritdoc />
     public ICsvRowEnumerator<IAccountCsvRow> GetAccounts()
     {
         _logger.LogCall(this);
@@ -65,6 +73,7 @@ internal sealed class ImportStreamReader : IImportStreamReader
         return new CsvRowEnumerator<AccountCsvRow, IAccountCsvRow>(dataStream);
     }
 
+    /// <inheritdoc />
     public ICsvRowEnumerator<IExpenseCsvRow> GetExpenses()
     {
         _logger.LogCall(this);
@@ -73,6 +82,7 @@ internal sealed class ImportStreamReader : IImportStreamReader
         return new CsvRowEnumerator<ExpenseCsvRow, IExpenseCsvRow>(dataStream);
     }
 
+    /// <inheritdoc />
     public ICsvRowEnumerator<IIncomeCsvRow> GetIncomes()
     {
         _logger.LogCall(this);

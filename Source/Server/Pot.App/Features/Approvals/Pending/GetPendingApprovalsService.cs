@@ -9,6 +9,9 @@ using Pot.Data.Repositories.Users;
 
 namespace Pot.App.Features.Approvals.Pending;
 
+/// <summary>
+/// Default implementation of <see cref="IGetPendingApprovalsService"/>.
+/// </summary>
 internal sealed class GetPendingApprovalsService : IGetPendingApprovalsService
 {
     private readonly IUserRepository _userRepository;
@@ -20,6 +23,7 @@ internal sealed class GetPendingApprovalsService : IGetPendingApprovalsService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<List<Output>> GetAllAsync(CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

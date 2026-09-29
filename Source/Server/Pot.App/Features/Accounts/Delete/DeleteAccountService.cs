@@ -9,6 +9,9 @@ using Pot.Data.Repositories.Accounts;
 
 namespace Pot.App.Features.Accounts.Delete;
 
+/// <summary>
+/// Default implementation of <see cref="IDeleteAccountService"/>.
+/// </summary>
 internal sealed class DeleteAccountService : IDeleteAccountService
 {
     private readonly IPersistableAccountRepository _accountRepository;
@@ -22,6 +25,7 @@ internal sealed class DeleteAccountService : IDeleteAccountService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<bool>> DeleteAccountAsync(Guid accountId, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

@@ -12,6 +12,9 @@ using Pot.Data.Repositories.Accounts;
 
 namespace Pot.App.Features.Accounts.Update;
 
+/// <summary>
+/// Default implementation of <see cref="IUpdateAccountService"/>.
+/// </summary>
 internal sealed class UpdateAccountService : IUpdateAccountService
 {
     private readonly IPersistableAccountRepository _accountRepository;
@@ -26,6 +29,7 @@ internal sealed class UpdateAccountService : IUpdateAccountService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<Output>> UpdateAccountAsync(Input input, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

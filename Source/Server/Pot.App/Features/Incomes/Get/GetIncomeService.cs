@@ -7,6 +7,9 @@ using Pot.Data.Repositories.Incomes;
 
 namespace Pot.App.Features.Incomes.Get;
 
+/// <summary>
+/// Default implementation of <see cref="IGetIncomeService"/>.
+/// </summary>
 internal sealed class GetIncomeService : IGetIncomeService
 {
     private readonly IPersistableIncomeRepository _incomeRepository;
@@ -18,6 +21,7 @@ internal sealed class GetIncomeService : IGetIncomeService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<Output?> GetIncomeAsync(Guid incomeId, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

@@ -13,6 +13,9 @@ using Pot.Data.Repositories.Incomes;
 
 namespace Pot.App.Features.Incomes.Update;
 
+/// <summary>
+/// Default implementation of <see cref="IUpdateIncomeService"/>.
+/// </summary>
 internal sealed class UpdateIncomeService : IUpdateIncomeService
 {
     private readonly IPersistableIncomeRepository _incomeRepository;
@@ -29,6 +32,7 @@ internal sealed class UpdateIncomeService : IUpdateIncomeService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<Output>> UpdateIncomeAsync(Input input, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

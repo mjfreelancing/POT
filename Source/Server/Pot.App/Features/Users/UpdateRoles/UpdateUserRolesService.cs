@@ -14,6 +14,9 @@ using Pot.Data.Repositories.Users;
 
 namespace Pot.App.Features.Users.UpdateRoles;
 
+/// <summary>
+/// Default implementation of <see cref="IUpdateUserRolesService"/>.
+/// </summary>
 internal sealed class UpdateUserRolesService : IUpdateUserRolesService
 {
     private readonly IPersistableUserRepository _userRepository;
@@ -32,6 +35,7 @@ internal sealed class UpdateUserRolesService : IUpdateUserRolesService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<Output>> UpdateUserRolesAsync(Input input, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

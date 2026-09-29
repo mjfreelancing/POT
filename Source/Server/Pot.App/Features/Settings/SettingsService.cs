@@ -8,6 +8,9 @@ using Pot.Shared.Enumerations;
 
 namespace Pot.App.Features.Settings;
 
+/// <summary>
+/// Default implementation of <see cref="ISettingsService"/>.
+/// </summary>
 internal sealed class SettingsService : ISettingsService
 {
     private readonly ISettingsRepository _settingsRepository;
@@ -19,6 +22,7 @@ internal sealed class SettingsService : ISettingsService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EmailBudgetReminderSettings> GetEmailBudgetReminderSettingsAsync(CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

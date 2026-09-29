@@ -14,6 +14,9 @@ using Pot.Data.Repositories.Sites;
 
 namespace Pot.App.Features.Sites.Update;
 
+/// <summary>
+/// Default implementation of <see cref="IUpdateSiteService"/>.
+/// </summary>
 internal sealed class UpdateSiteService : IUpdateSiteService
 {
     private readonly IPersistableSiteRepository _siteRepository;
@@ -28,6 +31,7 @@ internal sealed class UpdateSiteService : IUpdateSiteService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<Output>> UpdateSiteAsync(Input input, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

@@ -6,6 +6,9 @@ using System.Text;
 
 namespace Pot.App.Features.Maintenance.Metadata.Serializer;
 
+/// <summary>
+/// Default implementation of <see cref="IMetadataSerializer"/>.
+/// </summary>
 internal sealed class MetadataSerializer : IMetadataSerializer
 {
     private readonly IMetadataWriterFactory _metadataWriterFactory;
@@ -17,6 +20,7 @@ internal sealed class MetadataSerializer : IMetadataSerializer
         _metadataReaderFactory = metadataReaderFactory.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public byte[] Serialize<TMetadata>(TMetadata metadata) where TMetadata : MetadataBase
     {
         using var stream = new MemoryStream();
@@ -41,6 +45,7 @@ internal sealed class MetadataSerializer : IMetadataSerializer
         return stream.ToArray();
     }
 
+    /// <inheritdoc />
     public TMetadata Deserialize<TMetadata>(Stream zipStream) where TMetadata : MetadataBase
     {
         using var reader = new EnrichedBinaryReader(zipStream, Encoding.UTF8, true);

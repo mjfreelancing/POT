@@ -11,6 +11,9 @@ using Pot.Shared.Enumerations;
 
 namespace Pot.App.Features.Settings.GetAll;
 
+/// <summary>
+/// Default implementation of <see cref="IGetAllSettingsService"/>.
+/// </summary>
 internal sealed class GetAllSettingsService : IGetAllSettingsService
 {
     private static readonly Dictionary<SettingCategory, Func<Dictionary<string, SettingValueMetadata>>> DefaultSettingsRegistry = new()
@@ -27,6 +30,7 @@ internal sealed class GetAllSettingsService : IGetAllSettingsService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<Output>> GetAllSettingsAsync(CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

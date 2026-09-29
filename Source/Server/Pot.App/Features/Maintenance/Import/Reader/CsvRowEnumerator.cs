@@ -6,6 +6,9 @@ using System.Globalization;
 namespace Pot.App.Features.Maintenance.Import.Reader;
 
 // This helper is responsible for enumerating the CSV rows from a stream while managing the lifecycle of the reader objects.
+/// <summary>
+/// Default implementation of <see cref="ICsvRowEnumerator{TAs}"/>.
+/// </summary>
 internal sealed class CsvRowEnumerator<TType, TAs> : ICsvRowEnumerator<TAs> where TType : TAs
 {
     private bool _disposed;
@@ -19,6 +22,7 @@ internal sealed class CsvRowEnumerator<TType, TAs> : ICsvRowEnumerator<TAs> wher
         _streamReader = new(dataStream);
     }
 
+    /// <inheritdoc />
     public IEnumerator<TAs> GetEnumerator()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -36,6 +40,7 @@ internal sealed class CsvRowEnumerator<TType, TAs> : ICsvRowEnumerator<TAs> wher
         }
     }
 
+    /// <inheritdoc />
     public void Dispose()
     {
         if (!_disposed)
@@ -49,5 +54,6 @@ internal sealed class CsvRowEnumerator<TType, TAs> : ICsvRowEnumerator<TAs> wher
         }
     }
 
+    /// <inheritdoc />
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

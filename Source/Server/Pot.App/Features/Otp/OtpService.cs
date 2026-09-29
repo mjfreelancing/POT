@@ -11,6 +11,9 @@ using Pot.Shared.Enumerations;
 
 namespace Pot.App.Features.Otp;
 
+/// <summary>
+/// Default implementation of <see cref="IOtpService"/>.
+/// </summary>
 internal sealed class OtpService : IOtpService
 {
     private sealed record OtpDataContext(OneTimePasswordEntity OtpEntity, string TempPassword);
@@ -33,6 +36,7 @@ internal sealed class OtpService : IOtpService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<int> UpdateExpiredRequestsAsync(OtpReason? reason, CancellationToken cancellationToken)
     {
         _logger.LogCall(this, new { reason });
@@ -59,6 +63,7 @@ internal sealed class OtpService : IOtpService
         }
     }
 
+    /// <inheritdoc />
     public async Task<bool> HasReachedRateLimitAsync(OtpReason reason, string username, CancellationToken cancellationToken)
     {
         _logger.LogCall(this, new { reason, username });
@@ -73,12 +78,14 @@ internal sealed class OtpService : IOtpService
         return count >= RateLimitMaxCount;
     }
 
+    /// <inheritdoc />
     public Task<UserOtpData> AddOtpDataForUserAsync(OtpReason reason, string username, string email, string correlationId,
         CancellationToken cancellationToken)
     {
         return AddOtpDataForUserAsync(reason, null, username, email, correlationId, cancellationToken);
     }
 
+    /// <inheritdoc />
     public Task<UserOtpData> AddOtpDataForUserAsync(OtpReason reason, UserEntity user, string correlationId,
         CancellationToken cancellationToken)
     {

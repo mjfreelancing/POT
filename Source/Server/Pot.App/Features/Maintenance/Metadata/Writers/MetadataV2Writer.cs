@@ -1,11 +1,15 @@
-using AllOverIt.Serialization.Binary.Writers;
+﻿using AllOverIt.Serialization.Binary.Writers;
 using Pot.App.Features.Maintenance.Metadata.Models;
 using Pot.App.Features.Maintenance.Metadata.Serializer;
 
 namespace Pot.App.Features.Maintenance.Metadata.Writers;
 
+/// <summary>
+/// Writes maintenance package metadata in version 2 of the package format.
+/// </summary>
 internal sealed class MetadataV2Writer : EnrichedBinaryValueWriter<MetadataV2>
 {
+    /// <inheritdoc />
     public override void WriteValue(IEnrichedBinaryWriter writer, object value)
     {
         var metadata = (MetadataV2)value;

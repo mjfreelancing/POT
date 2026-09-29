@@ -12,6 +12,9 @@ using Pot.Data.Repositories.Users;
 
 namespace Pot.App.Features.Users.UpdateStatus;
 
+/// <summary>
+/// Default implementation of <see cref="IUpdateUserStatusService"/>.
+/// </summary>
 internal sealed class UpdateUserStatusService : IUpdateUserStatusService
 {
     private readonly IPersistableUserRepository _userRepository;
@@ -26,6 +29,7 @@ internal sealed class UpdateUserStatusService : IUpdateUserStatusService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<Output>> UpdateUserStatusAsync(Input input, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

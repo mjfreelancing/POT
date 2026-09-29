@@ -14,6 +14,13 @@ using Pot.Data;
 
 namespace Pot.App.Features.Maintenance.Import;
 
+/// <summary>
+/// Default implementation of <see cref="IImportDataService"/>.
+/// </summary>
+/// <remarks>
+/// The whole import runs inside a single transaction that is discarded if any stage fails. The package entry set and
+/// metadata version are validated before any data is written.
+/// </remarks>
 internal sealed class ImportDataService : IImportDataService
 {
     private readonly string[] _expectedEntryNames = ["metadata", "accounts", "incomes", "expenses"];
@@ -37,6 +44,7 @@ internal sealed class ImportDataService : IImportDataService
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public async Task<EnrichedResult<int>> ImportAsync(Stream zipStream, CancellationToken cancellationToken)
     {
         _ = zipStream.WhenNotNull();

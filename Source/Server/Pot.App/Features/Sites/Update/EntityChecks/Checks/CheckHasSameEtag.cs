@@ -5,6 +5,9 @@ using Pot.App.Errors;
 
 namespace Pot.App.Features.Sites.Update.EntityChecks.Checks;
 
+/// <summary>
+/// Rejects a site update when the supplied eTag does not match the stored site.
+/// </summary>
 internal sealed class CheckHasSameEtag : PreUpdateCheckBase
 {
     private readonly ILogger _logger;
@@ -14,6 +17,7 @@ internal sealed class CheckHasSameEtag : PreUpdateCheckBase
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public override async Task<ApiDetailError?> HandleAsync(InputState state, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

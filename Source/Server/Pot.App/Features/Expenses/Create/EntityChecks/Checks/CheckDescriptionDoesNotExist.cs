@@ -9,6 +9,9 @@ using Pot.Data.Specifications;
 
 namespace Pot.App.Features.Expenses.Create.EntityChecks.Checks;
 
+/// <summary>
+/// Rejects a create when the expense description already exists for another expense in the same account.
+/// </summary>
 internal sealed class CheckDescriptionDoesNotExist : PreCreateCheckBase
 {
     private readonly IExpenseRepository _expenseRepository;
@@ -20,6 +23,15 @@ internal sealed class CheckDescriptionDoesNotExist : PreCreateCheckBase
         _logger = logger.WhenNotNull();
     }
 
+    /// <summary>
+    /// Fails the pipeline when another expense in the same account already uses the supplied description.
+    /// </summary>
+    /// <param name="state">The state carried through the pre-create check pipeline.</param>
+    /// <param name="cancellationToken">The token used to cancel the operation.</param>
+    /// <returns>
+    /// An <see cref="ApiDetailError"/> when the description already exists; otherwise the result of the next check
+    /// in the chain.
+    /// </returns>
     public override async Task<ApiDetailError?> HandleAsync(InputState state, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);

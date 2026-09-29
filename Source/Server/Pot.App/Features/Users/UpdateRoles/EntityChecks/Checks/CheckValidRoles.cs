@@ -7,6 +7,9 @@ using Pot.Data.Repositories.Roles;
 
 namespace Pot.App.Features.Users.UpdateRoles.EntityChecks.Checks;
 
+/// <summary>
+/// Rejects a role change when one or more of the requested roles do not exist.
+/// </summary>
 internal sealed class CheckValidRoles : PreUpdateCheckBase
 {
     private readonly IRoleRepository _roleRepository;
@@ -18,6 +21,7 @@ internal sealed class CheckValidRoles : PreUpdateCheckBase
         _logger = logger.WhenNotNull();
     }
 
+    /// <inheritdoc />
     public override async Task<ApiDetailError?> HandleAsync(InputState state, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
