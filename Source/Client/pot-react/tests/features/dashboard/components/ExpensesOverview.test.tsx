@@ -2,7 +2,16 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { addDays } from 'date-fns';
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi,
+} from 'vitest';
 
 import { UnexpectedError } from '@/api/errors/apiErrors';
 import { useApiGetAllExpenses } from '@/api/hooks';
@@ -118,6 +127,48 @@ describe('ExpensesOverview', () => {
     vi.mocked(usePermissions).mockReturnValue(
       createPermissionsApi({ hasAll: true }),
     );
+  });
+
+  // The period window must be calendar-day based. It only differs from
+  // millisecond arithmetic when a DST transition falls inside the window, so this
+  // group pins the timezone to one that observes DST.
+  describe('period window across a DST transition', () => {
+    const originalTimeZone = process.env.TZ;
+
+    beforeAll(() => {
+      process.env.TZ = 'Australia/Sydney';
+    });
+
+    afterAll(() => {
+      process.env.TZ = originalTimeZone;
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    test('includes an expense due exactly 30 calendar days out across a fall-back', () => {
+      // 2026-04-05 is the Australian fall-back, so 2026-04-01 -> 2026-05-01 is
+      // exactly 30 calendar days but 30 days and one hour of elapsed time.
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 3, 1, 12, 0, 0));
+
+      const dueInExactlyThirtyDays = createExpense({
+        rowId: 'expense-boundary',
+        description: 'Due in exactly thirty days',
+        nextDue: '2026-05-01',
+      });
+
+      vi.mocked(useApiGetAllExpenses).mockReturnValue(
+        createExpensesQuery([dueInExactlyThirtyDays]),
+      );
+
+      renderOverview();
+
+      expect(
+        screen.getByText('Due in exactly thirty days'),
+      ).toBeInTheDocument();
+    });
   });
 
   test('renders the section heading and the next due filter', () => {

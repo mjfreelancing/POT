@@ -9,8 +9,8 @@ const moneyFormatter = new Intl.NumberFormat('en-AU', {
 });
 const formatMoney = (value: number) => moneyFormatter.format(value);
 
-// Mirrors the app's normalizeToLocalMidnight/getDaysDue date arithmetic so the
-// derived expectations match exactly (timezone-safe day differences).
+// Mirrors the app's normalizeToLocalMidnight date arithmetic so the derived
+// expectations match the rendered values exactly (timezone-safe day differences).
 const normalizeToLocalMidnight = (date: string | Date): number => {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   return new Date(
@@ -20,11 +20,24 @@ const normalizeToLocalMidnight = (date: string | Date): number => {
   ).getTime();
 };
 
-const localTodayEpoch = normalizeToLocalMidnight(new Date());
-
-const daysUntil = (isoDate: string): number =>
-  Math.floor(
-    (normalizeToLocalMidnight(isoDate) - localTodayEpoch) / 86_400_000,
+// Mirrors the dashboard's period filter (ExpensesOverview/IncomesOverview
+// filterExpenses/filterIncomes), which derives its window from getDaysDue: an
+// item is shown when its calendar-day count (negative when overdue) is <= the
+// selected period.
+//
+// The day count must be a ROUNDED calendar-day difference, not a floored
+// millisecond difference: Math.floor((due - today) / 86_400_000) under-counts by
+// one across a spring-forward (an N-day gap measures as N-1), which widened this
+// test's window by a calendar day and selected a boundary item the dashboard
+// correctly excludes. Because the raw /api/expenses response is unsorted, whether
+// that boundary item came first varied run-to-run — that was the flake.
+//
+// "Today" is resolved per call (not at module load) so the window cannot go
+// stale if a run straddles local midnight.
+const calendarDaysUntil = (isoDate: string): number =>
+  Math.round(
+    (normalizeToLocalMidnight(isoDate) - normalizeToLocalMidnight(new Date())) /
+      86_400_000,
   );
 
 type Account = {
@@ -44,7 +57,7 @@ type RecurringItem = {
 const dueWithinDays =
   (days: number) =>
   (item: RecurringItem): boolean =>
-    !item.excludeFromCalcs && daysUntil(item.nextDue) <= days;
+    !item.excludeFromCalcs && calendarDaysUntil(item.nextDue) <= days;
 
 test('dashboard renders seeded account rollups and upcoming items', async ({
   page,
@@ -127,7 +140,9 @@ test('dashboard renders seeded account rollups and upcoming items', async ({
   ).toBeVisible();
 
   // An upcoming (due within 30 days) expense renders with its amount.
-  // The dashboard's default period is 30 days.
+  // The dashboard's default period is 30 days, and dueWithinDays mirrors the
+  // dashboard's own filter, so ANY row it matches is guaranteed to be rendered
+  // (the raw /api/expenses response order is not relied upon).
   const dueWithin30 = dueWithinDays(30);
   const upcomingExpense = expenses.find(dueWithin30);
 

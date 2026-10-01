@@ -1,7 +1,16 @@
-import { describe, expect, test } from 'vitest';
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  test,
+  vi,
+} from 'vitest';
 
 import {
   compareDates,
+  getDaysDue,
   normalizeToEpoch,
   normalizeToLocalMidnight,
 } from '@/lib';
@@ -75,6 +84,60 @@ describe('Date Utils', () => {
       );
 
       expect(result).toBe(0);
+    });
+  });
+
+  describe('getDaysDue', () => {
+    // Pinned to a DST timezone: the contract under test is "number of CALENDAR
+    // days", which only diverges from millisecond arithmetic when the UTC offset
+    // changes inside the measured window (Australia springs forward on the first
+    // Sunday in October). Without a DST timezone the guard would be vacuous.
+    const originalTimeZone = process.env.TZ;
+
+    beforeAll(() => {
+      process.env.TZ = 'Australia/Sydney';
+    });
+
+    afterAll(() => {
+      process.env.TZ = originalTimeZone;
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    function givenTodayIs(year: number, monthIndex: number, day: number): void {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(year, monthIndex, day, 12, 0, 0));
+    }
+
+    test('counts calendar days across a spring-forward transition', () => {
+      // 2026-10-04 is the Australian spring-forward; 2026-10-05 is two calendar
+      // days after 2026-10-03 but only 47 wall-clock hours later.
+      givenTodayIs(2026, 9, 3);
+
+      expect(getDaysDue('2026-10-05')).toBe(2);
+    });
+
+    test('counts a due date exactly 30 calendar days out across a spring-forward', () => {
+      givenTodayIs(2026, 9, 1);
+
+      expect(getDaysDue('2026-10-31')).toBe(30);
+    });
+
+    test('counts calendar days across a fall-back transition', () => {
+      // 2026-04-05 is the Australian fall-back; 2026-05-01 is 30 calendar days
+      // after 2026-04-01 but 30 days and one hour of wall-clock time.
+      givenTodayIs(2026, 3, 1);
+
+      expect(getDaysDue('2026-05-01')).toBe(30);
+    });
+
+    test('returns zero for today and a negative count when overdue', () => {
+      givenTodayIs(2026, 9, 5);
+
+      expect(getDaysDue('2026-10-05')).toBe(0);
+      expect(getDaysDue('2026-10-01')).toBe(-4);
     });
   });
 });

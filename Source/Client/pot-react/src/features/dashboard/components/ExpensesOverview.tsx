@@ -14,7 +14,7 @@ import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import type { Expense } from '@/data';
 import { EMPTY_EXPENSE_ARRAY } from '@/data';
-import { localToday, normalizeToEpoch } from '@/lib';
+import { getDaysDue } from '@/lib';
 
 import type { PeriodDays } from '../hooks/useDashboardStorage';
 import useDashboardStorage from '../hooks/useDashboardStorage';
@@ -27,18 +27,11 @@ type ExpensesOverviewProps = {
 };
 
 function filterExpenses(days: number, expenses: Expense[]): Expense[] {
-  const todayEpoch = normalizeToEpoch(localToday());
-  const targetDateEpoch = todayEpoch + days * 24 * 60 * 60 * 1000;
-
-  return expenses.filter(expense => {
-    // Exclude expenses marked as excluded from calculations
-    if (expense.excludeFromCalcs) {
-      return false;
-    }
-
-    const dueDateEpoch = normalizeToEpoch(expense.nextDue);
-    return dueDateEpoch <= targetDateEpoch;
-  });
+  // Exclude expenses marked as excluded from calculations. Overdue expenses have
+  // a negative day count and so remain inside the window.
+  return expenses.filter(
+    expense => !expense.excludeFromCalcs && getDaysDue(expense.nextDue) <= days,
+  );
 }
 
 function ExpensesOverview({ isOpen, onOpenChange }: ExpensesOverviewProps) {

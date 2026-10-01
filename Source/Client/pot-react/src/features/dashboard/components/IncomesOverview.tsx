@@ -14,7 +14,7 @@ import { logger } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import type { Income } from '@/data';
 import { EMPTY_INCOME_ARRAY } from '@/data';
-import { localToday, normalizeToEpoch } from '@/lib';
+import { getDaysDue } from '@/lib';
 
 import type { PeriodDays } from '../hooks/useDashboardStorage';
 import useDashboardStorage from '../hooks/useDashboardStorage';
@@ -27,18 +27,11 @@ type IncomesOverviewProps = {
 };
 
 function filterIncomes(days: number, incomes: Income[]): Income[] {
-  const todayEpoch = normalizeToEpoch(localToday());
-  const targetDateEpoch = todayEpoch + days * 24 * 60 * 60 * 1000;
-
-  return incomes.filter(income => {
-    // Exclude incomes marked as excluded from calculations
-    if (income.excludeFromCalcs) {
-      return false;
-    }
-
-    const dueDateEpoch = normalizeToEpoch(income.nextDue);
-    return dueDateEpoch <= targetDateEpoch;
-  });
+  // Exclude incomes marked as excluded from calculations. Overdue incomes have a
+  // negative day count and so remain inside the window.
+  return incomes.filter(
+    income => !income.excludeFromCalcs && getDaysDue(income.nextDue) <= days,
+  );
 }
 
 function IncomesOverview({ isOpen, onOpenChange }: IncomesOverviewProps) {

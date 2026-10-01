@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { differenceInCalendarDays, format } from 'date-fns';
 
 /**
  * Returns a date at local midnight (00:00:00)
@@ -191,10 +191,14 @@ function formatDateTime(
  * getDaysDue(todayIsoFormat())  // Returns 0
  */
 function getDaysDue(nextDue: string): number {
-  const todayEpoch = normalizeToEpoch(localToday());
-  const dueDateEpoch = normalizeToEpoch(nextDue);
-  const diffMs = dueDateEpoch - todayEpoch;
-  return Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  // differenceInCalendarDays compares calendar days and compensates for the
+  // timezone offset, so it stays correct across a DST transition. Dividing the
+  // epoch difference by 86_400_000 does not: a spring-forward removes an hour,
+  // making an N-day gap measure as N-1 days.
+  return differenceInCalendarDays(
+    normalizeToLocalMidnight(nextDue),
+    localToday(),
+  );
 }
 
 export {

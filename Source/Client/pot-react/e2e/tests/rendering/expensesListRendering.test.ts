@@ -24,11 +24,14 @@ const normalizeToLocalMidnight = (date: string | Date): number => {
   ).getTime();
 };
 
-const localTodayEpoch = normalizeToLocalMidnight(new Date());
-
+// Rounded calendar-day difference, mirroring getDaysDue (which delegates to
+// date-fns differenceInCalendarDays). Flooring the millisecond difference
+// under-counts by a day across a spring-forward, which would desynchronise these
+// expectations from the app.
 const daysUntil = (isoDate: string): number =>
-  Math.floor(
-    (normalizeToLocalMidnight(isoDate) - localTodayEpoch) / 86_400_000,
+  Math.round(
+    (normalizeToLocalMidnight(isoDate) - normalizeToLocalMidnight(new Date())) /
+      86_400_000,
   );
 
 type Expense = {
