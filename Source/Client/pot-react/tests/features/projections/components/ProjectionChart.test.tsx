@@ -1,7 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, test, vi } from 'vitest';
 
-import { PROJECTION_METRICS } from '@/data/projection';
+import {
+  DEFAULT_PROJECTION_INCLUDE,
+  PROJECTION_METRICS,
+} from '@/data/projection';
 import ProjectionChart, {
   type ProjectionChartProps,
 } from '@/features/projections/components/ProjectionChart';
@@ -43,6 +46,8 @@ function renderChart(
     period: 1,
     selectedMetric: 'balance',
     hiddenSeries: [],
+    include: DEFAULT_PROJECTION_INCLUDE,
+    onIncludeChange: vi.fn(),
     onStartDateChange: vi.fn(),
     onPeriodChange: vi.fn(),
     onMetricChange: vi.fn(),

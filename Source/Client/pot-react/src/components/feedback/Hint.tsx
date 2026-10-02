@@ -7,7 +7,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-type ColumnHeaderHintProps = {
+type HintProps = {
   /** Hint shown on hover. When omitted the children are rendered untouched. */
   hint?: string;
   children: ReactNode;
@@ -15,7 +15,7 @@ type ColumnHeaderHintProps = {
 
 // Shows a column heading's hint on hover. The provider is local and carries no delay so a heading
 // behaves the same wherever a table is rendered and one hint does not hold up the next.
-function ColumnHeaderHint({ hint, children }: ColumnHeaderHintProps) {
+function Hint({ hint, children }: HintProps) {
   if (!hint) {
     return children;
   }
@@ -34,5 +34,5 @@ function ColumnHeaderHint({ hint, children }: ColumnHeaderHintProps) {
   );
 }
 
-export default ColumnHeaderHint;
-export type { ColumnHeaderHintProps };
+export default Hint;
+export type { HintProps };

@@ -1,6 +1,7 @@
 import type { RowData } from '@tanstack/react-table';
 import type { ReactNode } from 'react';
 
+import { Hint } from '@/components/feedback';
 import { Badge } from '@/components/ui/badge';
 
 import type { Frequency, MoneyValue } from '../../lib';
@@ -12,7 +13,6 @@ import {
   getStatusBadgeClass,
   getTableBadgeClass,
 } from '../../lib';
-import ColumnHeaderHint from './ColumnHeaderHint';
 import DataTableColumnHeader from './DataTableColumnHeader';
 import type { AppColumnDef, AppRow } from './tableFeatures';
 
@@ -129,9 +129,9 @@ const createMoneyValueColumn = <TData extends RowData>(
           <DataTableColumnHeader column={column} title={header} hint={hint} />
         )
       : () => (
-          <ColumnHeaderHint hint={hint}>
+          <Hint hint={hint}>
             <div className="uppercase">{header}</div>
-          </ColumnHeaderHint>
+          </Hint>
         ),
     cell: ({ row }) => {
       const formattedValue = formatCellMoneyValue(row, accessorKey);
@@ -157,9 +157,9 @@ const createDateColumn = <TData extends RowData>(
           <DataTableColumnHeader column={column} title={header} hint={hint} />
         )
       : () => (
-          <ColumnHeaderHint hint={hint}>
+          <Hint hint={hint}>
             <div className="uppercase">{header}</div>
-          </ColumnHeaderHint>
+          </Hint>
         ),
     cell: ({ row }) => {
       const rawValue = row.getValue(accessorKey) as string | Date;
@@ -258,9 +258,9 @@ const createRecurringEndDateColumn = <
   id: 'endDate',
   accessorKey: 'endDate',
   header: () => (
-    <ColumnHeaderHint hint={params.hint}>
+    <Hint hint={params.hint}>
       <div className="uppercase">End Date</div>
-    </ColumnHeaderHint>
+    </Hint>
   ),
   cell: ({ row }) => {
     const { endDate, frequency, excludeFromCalcs } = row.original;
@@ -295,9 +295,9 @@ const createAccountDescriptionColumn = <
 ): AppColumnDef<TData> => ({
   id: 'accountDescription',
   header: () => (
-    <ColumnHeaderHint hint={params.hint}>
+    <Hint hint={params.hint}>
       <div className="uppercase">Account</div>
-    </ColumnHeaderHint>
+    </Hint>
   ),
   cell: ({ row }) => {
     const description = row.original.account?.description;
@@ -337,9 +337,9 @@ const createFrequencyColumn = <TData extends RowData>(
           <DataTableColumnHeader column={column} title={header} hint={hint} />
         )
       : () => (
-          <ColumnHeaderHint hint={hint}>
+          <Hint hint={hint}>
             <div className="uppercase">{header}</div>
-          </ColumnHeaderHint>
+          </Hint>
         ),
     cell: ({ row }) => {
       const count = row.original[countKey] as number;

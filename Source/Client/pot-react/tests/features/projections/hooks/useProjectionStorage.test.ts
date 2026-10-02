@@ -3,6 +3,7 @@ import { createUser } from '@tests/shared/factories/userFactory';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import type { ProjectionMetric } from '@/data/projection';
+import { DEFAULT_PROJECTION_INCLUDE } from '@/data/projection';
 import useProjectionStorage, {
   projectionStorageDefaults,
 } from '@/features/projections/hooks/useProjectionStorage';
@@ -47,7 +48,7 @@ describe('useProjectionStorage', () => {
 
       expect(() => {
         result.current.setProjectionStorageData({
-          metric: 'available' as ProjectionMetric,
+          metric: 'dailyAccrual' as ProjectionMetric,
         });
         result.current.removeStorageStartDate();
       }).not.toThrow();
@@ -57,7 +58,7 @@ describe('useProjectionStorage', () => {
   describe('session seeding on first read', () => {
     test('seeds sessionStorage from localStorage when sessionStorage has no entry', () => {
       const persistedData = {
-        metric: 'available',
+        metric: 'dailyAccrual',
         period: 3,
         hiddenSeries: ['account-2'],
       };
@@ -68,17 +69,19 @@ describe('useProjectionStorage', () => {
       expect(result.current.getProjectionStorageData()).toEqual({
         startDate: undefined,
         ...persistedData,
+        include: DEFAULT_PROJECTION_INCLUDE,
       });
 
-      expect(JSON.parse(sessionStorage.getItem(SCOPED_KEY)!)).toEqual(
-        persistedData,
-      );
+      expect(JSON.parse(sessionStorage.getItem(SCOPED_KEY)!)).toEqual({
+        ...persistedData,
+        include: DEFAULT_PROJECTION_INCLUDE,
+      });
     });
 
     test('does not overwrite sessionStorage when it already has an entry', () => {
       const sessionData = { metric: 'balance', period: 12, hiddenSeries: [] };
       const persistedData = {
-        metric: 'available',
+        metric: 'dailyAccrual',
         period: 3,
         hiddenSeries: ['account-2'],
       };
@@ -91,6 +94,7 @@ describe('useProjectionStorage', () => {
       expect(result.current.getProjectionStorageData()).toEqual({
         startDate: undefined,
         ...sessionData,
+        include: DEFAULT_PROJECTION_INCLUDE,
       });
 
       expect(JSON.parse(sessionStorage.getItem(SCOPED_KEY)!)).toEqual(
@@ -113,7 +117,7 @@ describe('useProjectionStorage', () => {
     test('returns data from sessionStorage', () => {
       const sessionData = {
         startDate: '2026-05-01',
-        metric: 'available',
+        metric: 'dailyAccrual',
         period: 3,
         hiddenSeries: ['account-2'],
       };
@@ -122,7 +126,10 @@ describe('useProjectionStorage', () => {
 
       const { result } = renderHook(() => useProjectionStorage());
 
-      expect(result.current.getProjectionStorageData()).toEqual(sessionData);
+      expect(result.current.getProjectionStorageData()).toEqual({
+        ...sessionData,
+        include: DEFAULT_PROJECTION_INCLUDE,
+      });
     });
 
     test('returns defaults for fields absent from sessionStorage', () => {
@@ -136,16 +143,17 @@ describe('useProjectionStorage', () => {
     test('applies individual defaults for each missing field', () => {
       sessionStorage.setItem(
         SCOPED_KEY,
-        JSON.stringify({ metric: 'available' }),
+        JSON.stringify({ metric: 'dailyAccrual' }),
       );
 
       const { result } = renderHook(() => useProjectionStorage());
 
       expect(result.current.getProjectionStorageData()).toEqual({
-        metric: 'available',
+        metric: 'dailyAccrual',
         period: projectionStorageDefaults.period,
         hiddenSeries: projectionStorageDefaults.hiddenSeries,
         startDate: undefined,
+        include: DEFAULT_PROJECTION_INCLUDE,
       });
     });
   });
@@ -154,7 +162,7 @@ describe('useProjectionStorage', () => {
     test('writes to both sessionStorage and localStorage', () => {
       const data = {
         startDate: '2026-06-01',
-        metric: 'available' as ProjectionMetric,
+        metric: 'dailyAccrual' as ProjectionMetric,
         period: 12,
         hiddenSeries: ['account-1'],
       };
@@ -175,7 +183,7 @@ describe('useProjectionStorage', () => {
       };
       const tabBData = {
         startDate: '2026-06-01',
-        metric: 'available' as ProjectionMetric,
+        metric: 'dailyAccrual' as ProjectionMetric,
         period: 3,
         hiddenSeries: ['account-1'],
       };
@@ -195,7 +203,7 @@ describe('useProjectionStorage', () => {
     test('removes startDate from both sessionStorage and localStorage', () => {
       const data = {
         startDate: '2026-04-01',
-        metric: 'available',
+        metric: 'dailyAccrual',
         period: 3,
         hiddenSeries: ['account-2'],
       };
@@ -208,9 +216,10 @@ describe('useProjectionStorage', () => {
       result.current.removeStorageStartDate();
 
       const expectedWithoutStartDate = {
-        metric: 'available',
+        metric: 'dailyAccrual',
         period: 3,
         hiddenSeries: ['account-2'],
+        include: DEFAULT_PROJECTION_INCLUDE,
       };
 
       expect(JSON.parse(sessionStorage.getItem(SCOPED_KEY)!)).toEqual(
@@ -228,6 +237,127 @@ describe('useProjectionStorage', () => {
 
       expect(sessionStorage.getItem(SCOPED_KEY)).toBeNull();
       expect(localStorage.getItem(SCOPED_KEY)).toBeNull();
+    });
+  });
+
+  describe('validation', () => {
+    test('resolves an unknown stored metric to the default metric and switches', () => {
+      sessionStorage.setItem(
+        SCOPED_KEY,
+        JSON.stringify({ metric: 'available', period: 3, hiddenSeries: [] }),
+      );
+
+      const { result } = renderHook(() => useProjectionStorage());
+
+      expect(result.current.getProjectionStorageData()).toEqual({
+        startDate: undefined,
+        metric: projectionStorageDefaults.metric,
+        period: 3,
+        hiddenSeries: [],
+        include: DEFAULT_PROJECTION_INCLUDE,
+      });
+    });
+
+    test('seeds session storage with the validated record when local storage holds an unknown metric', () => {
+      localStorage.setItem(
+        SCOPED_KEY,
+        JSON.stringify({ metric: 'available', period: 3, hiddenSeries: [] }),
+      );
+
+      const { result } = renderHook(() => useProjectionStorage());
+
+      const expected = {
+        startDate: undefined,
+        metric: projectionStorageDefaults.metric,
+        period: 3,
+        hiddenSeries: [],
+        include: DEFAULT_PROJECTION_INCLUDE,
+      };
+
+      expect(result.current.getProjectionStorageData()).toEqual(expected);
+      expect(JSON.parse(sessionStorage.getItem(SCOPED_KEY)!)).toEqual(expected);
+    });
+
+    test('a write after an unknown stored metric leaves neither store holding it', () => {
+      const legacyData = {
+        metric: 'available',
+        period: 3,
+        hiddenSeries: [],
+      };
+      sessionStorage.setItem(SCOPED_KEY, JSON.stringify(legacyData));
+      localStorage.setItem(SCOPED_KEY, JSON.stringify(legacyData));
+
+      const { result } = renderHook(() => useProjectionStorage());
+
+      const validatedData = result.current.getProjectionStorageData();
+
+      result.current.setProjectionStorageData({ ...validatedData, period: 9 });
+
+      const expected = {
+        startDate: undefined,
+        metric: projectionStorageDefaults.metric,
+        period: 9,
+        hiddenSeries: [],
+        include: DEFAULT_PROJECTION_INCLUDE,
+      };
+
+      expect(JSON.parse(sessionStorage.getItem(SCOPED_KEY)!)).toEqual(expected);
+      expect(JSON.parse(localStorage.getItem(SCOPED_KEY)!)).toEqual(expected);
+      expect(sessionStorage.getItem(SCOPED_KEY)).not.toContain('available');
+      expect(localStorage.getItem(SCOPED_KEY)).not.toContain('available');
+    });
+
+    test('fills a missing include from the defaults', () => {
+      sessionStorage.setItem(
+        SCOPED_KEY,
+        JSON.stringify({ metric: 'balance', period: 6, hiddenSeries: [] }),
+      );
+
+      const { result } = renderHook(() => useProjectionStorage());
+
+      expect(result.current.getProjectionStorageData().include).toEqual(
+        DEFAULT_PROJECTION_INCLUDE,
+      );
+    });
+
+    test('falls back per member when an include member is not a boolean', () => {
+      sessionStorage.setItem(
+        SCOPED_KEY,
+        JSON.stringify({
+          metric: 'balance',
+          period: 6,
+          hiddenSeries: [],
+          include: { reserved: true, accruals: 'yes', arrears: false },
+        }),
+      );
+
+      const { result } = renderHook(() => useProjectionStorage());
+
+      expect(result.current.getProjectionStorageData().include).toEqual({
+        reserved: true,
+        accruals: DEFAULT_PROJECTION_INCLUDE.accruals,
+        arrears: false,
+      });
+    });
+
+    test('returns valid include members unchanged', () => {
+      const include = { reserved: true, accruals: false, arrears: true };
+
+      sessionStorage.setItem(
+        SCOPED_KEY,
+        JSON.stringify({
+          metric: 'balance',
+          period: 6,
+          hiddenSeries: [],
+          include,
+        }),
+      );
+
+      const { result } = renderHook(() => useProjectionStorage());
+
+      expect(result.current.getProjectionStorageData().include).toEqual(
+        include,
+      );
     });
   });
 });

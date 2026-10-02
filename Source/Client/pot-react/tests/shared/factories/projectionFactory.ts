@@ -1,5 +1,6 @@
 import type { Projection } from '@/data/projection';
 
+// Components are chosen so the global values are the sums of the account values.
 function createProjection(overrides: Partial<Projection> = {}): Projection {
   return {
     accounts: [
@@ -10,7 +11,9 @@ function createProjection(overrides: Partial<Projection> = {}): Projection {
           {
             date: '2026-04-01',
             balance: 120,
-            available: 90,
+            reserved: 10,
+            arrears: 5,
+            unpaidAccrual: 15,
             dailyAccrual: 10,
             incomeReceived: 0,
             expensesPaid: 30,
@@ -22,7 +25,9 @@ function createProjection(overrides: Partial<Projection> = {}): Projection {
           {
             date: '2026-04-02',
             balance: 150,
-            available: 110,
+            reserved: 10,
+            arrears: 5,
+            unpaidAccrual: 25,
             dailyAccrual: 12,
             incomeReceived: 50,
             expensesPaid: 0,
@@ -40,7 +45,9 @@ function createProjection(overrides: Partial<Projection> = {}): Projection {
           {
             date: '2026-04-01',
             balance: 80,
-            available: 70,
+            reserved: 5,
+            arrears: 0,
+            unpaidAccrual: 5,
             dailyAccrual: 5,
             incomeReceived: 0,
             expensesPaid: 10,
@@ -52,7 +59,9 @@ function createProjection(overrides: Partial<Projection> = {}): Projection {
           {
             date: '2026-04-02',
             balance: 90,
-            available: 80,
+            reserved: 5,
+            arrears: 0,
+            unpaidAccrual: 5,
             dailyAccrual: 6,
             incomeReceived: 0,
             expensesPaid: 0,
@@ -66,7 +75,9 @@ function createProjection(overrides: Partial<Projection> = {}): Projection {
       {
         date: '2026-04-01',
         balance: 200,
-        available: 160,
+        reserved: 15,
+        arrears: 5,
+        unpaidAccrual: 20,
         dailyAccrual: 15,
         incomeReceived: 0,
         expensesPaid: 40,
@@ -79,7 +90,9 @@ function createProjection(overrides: Partial<Projection> = {}): Projection {
       {
         date: '2026-04-02',
         balance: 240,
-        available: 190,
+        reserved: 15,
+        arrears: 5,
+        unpaidAccrual: 30,
         dailyAccrual: 18,
         incomeReceived: 50,
         expensesPaid: 0,

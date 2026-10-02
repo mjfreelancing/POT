@@ -5,10 +5,11 @@ using Pot.Shared.Enumerations;
 using Shouldly;
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace Pot.AspNetCore.Integration.Tests.Features.Projections;
 
-public class AvailableInvariantFixture : IntegrationAuthFixtureBase
+public class ProjectionComponentsFixture : IntegrationAuthFixtureBase
 {
     private const string ProjectionsPath = "/api/projections";
     private const double AccountBalance = 1000.0d;
@@ -31,14 +32,52 @@ public class AvailableInvariantFixture : IntegrationAuthFixtureBase
     {
         public DateOnly Date { get; set; }
         public double Balance { get; set; }
-        public double Available { get; set; }
+        public double Reserved { get; set; }
+        public double Arrears { get; set; }
+        public double UnpaidAccrual { get; set; }
+
+        // The value a consumer gets by netting the published components out of the balance.
+        public double Composed => Balance - Reserved - UnpaidAccrual - Arrears;
     }
 
-    // Today is a payment day, so the forecast has already paid the bill. Available has to be measured before the
-    // schedule advances, otherwise it credits the day for a payment that was never accrued and reads above the
-    // balance the same forecast produced.
     [Fact]
-    public async Task Should_Not_Report_Available_Above_Balance_On_A_Payment_Day()
+    public async Task Should_Publish_The_Components_And_Not_Available()
+    {
+        var admin = await CreateAdminUserAsync("projections", "Projections User");
+
+        using var client = await CreateAuthenticatedClientAsync(admin);
+
+        var today = GetSiteLocalDateToday();
+
+        await SeedPaymentDayAsync(client, today, AccrualPolicy.Automatic);
+
+        var path = BuildPath(today, today.AddDays(WindowDays - 1));
+        var response = await client.GetAsync(path, TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        using var document = JsonDocument.Parse(content);
+
+        var accountDates = document.RootElement.GetProperty("accounts")[0].GetProperty("dates").EnumerateArray();
+        var globalDates = document.RootElement.GetProperty("global").EnumerateArray();
+
+        foreach (var date in accountDates.Concat(globalDates))
+        {
+            date.TryGetProperty("balance", out _).ShouldBeTrue();
+            date.TryGetProperty("reserved", out _).ShouldBeTrue();
+            date.TryGetProperty("arrears", out _).ShouldBeTrue();
+            date.TryGetProperty("unpaidAccrual", out _).ShouldBeTrue();
+            date.TryGetProperty("available", out _).ShouldBeFalse();
+        }
+    }
+
+    // Today is a payment day, so the forecast has already paid the bill. The accrual measured before the schedule
+    // advances still counts it, so only the part its payment settles may be removed, otherwise the composed value
+    // credits the day for a payment that was never accrued and reads above the balance the same forecast produced.
+    [Fact]
+    public async Task Should_Compose_To_The_Balance_On_A_Payment_Day_For_An_Accruing_Bill()
     {
         var admin = await CreateAdminUserAsync("projections", "Projections User");
 
@@ -57,16 +96,14 @@ public class AvailableInvariantFixture : IntegrationAuthFixtureBase
 
         paymentDay.Date.ShouldBe(today);
         paymentDay.Balance.ShouldBe(AccountBalance - BillAmount);
-        paymentDay.Available.ShouldBe(AccountBalance - BillAmount);
-
-        AssertAvailableNeverExceedsBalance(account.Dates);
-        AssertAvailableNeverExceedsBalance(projection.Global);
+        paymentDay.UnpaidAccrual.ShouldBe(0.0d, 0.001d);
+        paymentDay.Composed.ShouldBe(AccountBalance - BillAmount, 0.001d);
     }
 
     // A bill that does not accrue is still paid on its due date, so the day must not be credited for an accrual
-    // it never made. The add-back exists to cancel a double count, not to hand back money.
+    // it never made. The settled amount exists to cancel a double count, not to hand back money.
     [Fact]
-    public async Task Should_Not_Count_A_Non_Accruing_Payment_Day_As_Available()
+    public async Task Should_Compose_To_The_Balance_On_A_Payment_Day_For_A_Non_Accruing_Bill()
     {
         var admin = await CreateAdminUserAsync("projections", "Projections User");
 
@@ -80,8 +117,8 @@ public class AvailableInvariantFixture : IntegrationAuthFixtureBase
         var paymentDay = projection.Accounts.ShouldHaveSingleItem().Dates[0];
 
         paymentDay.Balance.ShouldBe(AccountBalance - BillAmount);
-        paymentDay.Available.ShouldBe(AccountBalance - BillAmount);
-        paymentDay.Available.ShouldBeLessThanOrEqualTo(paymentDay.Balance);
+        paymentDay.UnpaidAccrual.ShouldBe(0.0d, 0.001d);
+        paymentDay.Composed.ShouldBe(AccountBalance - BillAmount, 0.001d);
     }
 
     // An overdraft is real, so it is reported rather than floored at zero.
@@ -104,14 +141,34 @@ public class AvailableInvariantFixture : IntegrationAuthFixtureBase
         var paymentDay = projection.Accounts.ShouldHaveSingleItem().Dates[0];
 
         paymentDay.Balance.ShouldBe(-BillAmount);
-        paymentDay.Available.ShouldBe(-BillAmount);
+        paymentDay.Composed.ShouldBe(-BillAmount, 0.001d);
     }
 
-    private static void AssertAvailableNeverExceedsBalance(IEnumerable<DateProjection> dates)
+    [Fact]
+    public async Task Should_Not_Publish_A_Negative_Component()
+    {
+        var admin = await CreateAdminUserAsync("projections", "Projections User");
+
+        using var client = await CreateAuthenticatedClientAsync(admin);
+
+        var today = GetSiteLocalDateToday();
+
+        await SeedPaymentDayAsync(client, today, AccrualPolicy.Automatic);
+
+        var projection = await GetProjectionAsync(client, today, today.AddDays(WindowDays - 1));
+        var account = projection.Accounts.ShouldHaveSingleItem();
+
+        AssertNoNegativeComponent(account.Dates);
+        AssertNoNegativeComponent(projection.Global);
+    }
+
+    private static void AssertNoNegativeComponent(IEnumerable<DateProjection> dates)
     {
         foreach (var date in dates)
         {
-            date.Available.ShouldBeLessThanOrEqualTo(date.Balance, "Available must never exceed Balance");
+            date.Reserved.ShouldBeGreaterThanOrEqualTo(0.0d, $"reserved on {date.Date:yyyy-MM-dd}");
+            date.Arrears.ShouldBeGreaterThanOrEqualTo(0.0d, $"arrears on {date.Date:yyyy-MM-dd}");
+            date.UnpaidAccrual.ShouldBeGreaterThanOrEqualTo(-1e-9, $"unpaid accrual on {date.Date:yyyy-MM-dd}");
         }
     }
 
@@ -126,9 +183,14 @@ public class AvailableInvariantFixture : IntegrationAuthFixtureBase
         await client.CreateExpenseAsync(expenseRequest);
     }
 
+    private static string BuildPath(DateOnly startDate, DateOnly endDate)
+    {
+        return $"{ProjectionsPath}?StartDate={startDate:yyyy-MM-dd}&EndDate={endDate:yyyy-MM-dd}";
+    }
+
     private static async Task<ProjectionResponse> GetProjectionAsync(HttpClient client, DateOnly startDate, DateOnly endDate)
     {
-        var path = $"{ProjectionsPath}?StartDate={startDate:yyyy-MM-dd}&EndDate={endDate:yyyy-MM-dd}";
+        var path = BuildPath(startDate, endDate);
 
         var response = await client.GetAsync(path, TestContext.Current.CancellationToken);
 

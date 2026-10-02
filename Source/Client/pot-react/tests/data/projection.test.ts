@@ -2,6 +2,7 @@ import { describe, expect, expectTypeOf, test } from 'vitest';
 
 import {
   compareProjectionAccountDescription,
+  DEFAULT_PROJECTION_INCLUDE,
   DEFAULT_PROJECTION_METRIC,
   DEFAULT_PROJECTION_PERIOD,
   PROJECTION_METRICS,
@@ -14,10 +15,17 @@ describe('projection contracts', () => {
     expect(DEFAULT_PROJECTION_PERIOD).toBe(6);
   });
 
+  test('includes arrears only by default', () => {
+    expect(DEFAULT_PROJECTION_INCLUDE).toEqual({
+      reserved: false,
+      accruals: false,
+      arrears: true,
+    });
+  });
+
   test('exposes expected metric config map', () => {
     expect(Object.keys(PROJECTION_METRICS)).toEqual([
       'balance',
-      'available',
       'dailyAccrual',
       'incomeReceived',
       'expensesPaid',

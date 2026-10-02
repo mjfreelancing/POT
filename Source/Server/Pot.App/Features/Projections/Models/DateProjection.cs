@@ -6,8 +6,9 @@
 /// <remarks>
 /// This is the published shape of a forecast day; the aggregates the day loop resolves internally are held in
 /// <see cref="DateProjectionValues" />. The window assumes income is received and expenses are paid on time, so
-/// <see cref="Balance" /> and <see cref="Available" /> are simulated forward from the account's persisted balance
-/// rather than read from it.
+/// <see cref="Balance" /> is simulated forward from the account's persisted balance rather than read from it.
+/// The standing obligations a consumer may net out of it are published as <see cref="Reserved" />,
+/// <see cref="UnpaidAccrual" /> and <see cref="Arrears" />.
 /// </remarks>
 public sealed class DateProjection
 {
@@ -21,15 +22,23 @@ public sealed class DateProjection
     /// </remarks>
     public required double Balance { get; init; }
 
-    /// <summary>The balance available once the account's standing obligations are deducted.</summary>
+    /// <summary>The amount the account has set aside as reserved.</summary>
+    public required double Reserved { get; init; }
+
+    /// <summary>The past-due obligation measured on the read date and held for every day of the window.</summary>
     /// <remarks>
-    /// This is <see cref="Balance" /> less the reserved amount, less the accrual of the cycles in progress and the
-    /// arrears carried from past-due cycles, plus the part of the day's accrual its own payments settle. Accrual is
-    /// measured before the day's payments are applied, so an occurrence falling due today is counted in full; the
-    /// add-back is limited to what the paid rows actually accrued, so a row that accrues nothing settles nothing.
     /// Arrears is pre-existing debt the forecast never assumes is repaid, so it is never released.
     /// </remarks>
-    public required double Available { get; init; }
+    public required double Arrears { get; init; }
+
+    /// <summary>The accrual of the cycles in progress, net of the part the day's own payments settle.</summary>
+    /// <remarks>
+    /// Accrual is measured before the day's payments are applied, so an occurrence falling due today is counted in
+    /// full, yet <see cref="Balance" /> already has that payment deducted. The part settled by the day's payments is
+    /// therefore removed, limited to what the paid rows actually accrued, so a row that accrues nothing settles
+    /// nothing.
+    /// </remarks>
+    public required double UnpaidAccrual { get; init; }
 
     /// <summary>The combined daily accrual rate for the account's cycles in progress on the day.</summary>
     public required double DailyAccrual { get; init; }

@@ -3,10 +3,24 @@ type ChartType = 'line' | 'bar';
 
 // Projection metric types for chart display
 type ProjectionMetric =
-  'balance' | 'available' | 'dailyAccrual' | 'incomeReceived' | 'expensesPaid';
+  'balance' | 'dailyAccrual' | 'incomeReceived' | 'expensesPaid';
 
 // Default projection metric to use
 const DEFAULT_PROJECTION_METRIC: ProjectionMetric = 'balance';
+
+// Which standing obligations are subtracted from the plotted balance
+type ProjectionInclude = {
+  reserved: boolean;
+  accruals: boolean;
+  arrears: boolean;
+};
+
+// Arrears is on by default so a first load plots the balance net of past-due debt
+const DEFAULT_PROJECTION_INCLUDE: ProjectionInclude = {
+  reserved: false,
+  accruals: false,
+  arrears: true,
+};
 
 type MetricConfig = {
   title: string;
@@ -18,12 +32,6 @@ const PROJECTION_METRICS: Record<ProjectionMetric, MetricConfig> = {
   balance: {
     title: 'Account Balances',
     filterLabel: 'Account Balances',
-    chartType: 'line',
-  },
-
-  available: {
-    title: 'Available Balances',
-    filterLabel: 'Available Balances',
     chartType: 'line',
   },
 
@@ -89,7 +97,9 @@ type ProjectionExpenseItemWithAccount = ProjectionExpenseItem & {
 type DateValues = {
   date: string; // ISO date string
   balance: number;
-  available: number;
+  reserved: number;
+  arrears: number;
+  unpaidAccrual: number;
   dailyAccrual: number;
   incomeReceived: number;
   expensesPaid: number;
@@ -121,6 +131,7 @@ const compareProjectionAccountDescription = (
 
 export {
   compareProjectionAccountDescription,
+  DEFAULT_PROJECTION_INCLUDE,
   DEFAULT_PROJECTION_METRIC,
   DEFAULT_PROJECTION_PERIOD,
   PROJECTION_METRICS,
@@ -136,6 +147,7 @@ export type {
   Projection,
   ProjectionExpenseItem,
   ProjectionExpenseItemWithAccount,
+  ProjectionInclude,
   ProjectionIncomeItem,
   ProjectionIncomeItemWithAccount,
   ProjectionMetric,

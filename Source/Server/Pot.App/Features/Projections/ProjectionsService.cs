@@ -257,14 +257,16 @@ internal sealed class ProjectionsService : IProjectionsService
             {
                 Date = item.Date,
                 Balance = balance,
+                Reserved = item.Reserved,
+                Arrears = item.Arrears,
 
                 // Expenses due TODAY are fully accrued. They are not actually considered paid until they are renewed.
-                // For the purposes of projections, we consider them paid today, so only the part of that payment the
-                // accrual already counted is added back to get the true available balance: the accrued amount already
-                // considers the expense total, and a row that accrues nothing (AccrualPolicy.None, or no accrual start)
-                // is not credited. Arrears is a standing obligation for past-due cycles, so it is subtracted and never
-                // released.
-                Available = balance - item.Reserved - item.Accrued - item.Arrears + item.AccrualSettledByPayments,
+                // For the purposes of projections, we consider them paid today, so the balance already has that payment
+                // deducted. Only the part of the accrual not covered by the day's payments is published, so a consumer
+                // netting it from the balance never deducts the same bill twice. A row that accrues nothing
+                // (AccrualPolicy.None, or no accrual start) settles nothing. Arrears is a standing obligation for
+                // past-due cycles, so it is published separately and never released.
+                UnpaidAccrual = item.Accrued - item.AccrualSettledByPayments,
 
                 DailyAccrual = item.DailyAccrual,
                 IncomeReceived = item.IncomeReceived,

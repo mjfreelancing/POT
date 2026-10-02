@@ -1,10 +1,10 @@
 import type { RowData } from '@tanstack/react-table';
 import { ArrowUpDown, ChevronDown, ChevronUp } from 'lucide-react';
 
+import { Hint } from '@/components/feedback';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib';
 
-import ColumnHeaderHint from './ColumnHeaderHint';
 import type { AppColumn } from './tableFeatures';
 
 type DataTableColumnHeaderProps<TData extends RowData, TValue = unknown> = {
@@ -24,16 +24,16 @@ function DataTableColumnHeader<TData extends RowData, TValue = unknown>({
   if (!column.getCanSort()) {
     return (
       <div className={cn('uppercase', className)}>
-        <ColumnHeaderHint hint={hint}>
+        <Hint hint={hint}>
           <span>{title}</span>
-        </ColumnHeaderHint>
+        </Hint>
       </div>
     );
   }
 
   return (
     <div className={cn('flex items-center gap-2', className)}>
-      <ColumnHeaderHint hint={hint}>
+      <Hint hint={hint}>
         <Button
           variant="ghost"
           size="sm"
@@ -62,7 +62,7 @@ function DataTableColumnHeader<TData extends RowData, TValue = unknown>({
             <ArrowUpDown className="ml-2 h-4 w-4" />
           )}
         </Button>
-      </ColumnHeaderHint>
+      </Hint>
     </div>
   );
 }

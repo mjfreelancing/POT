@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { UnexpectedError } from '@/api/errors/apiErrors';
 import { useApiGetProjection } from '@/api/hooks/useProjections';
-import type { ProjectionMetric } from '@/data/projection';
+import type { ProjectionInclude, ProjectionMetric } from '@/data/projection';
 import useProjectionStorage from '@/features/projections/hooks/useProjectionStorage';
 import ProjectionsPage from '@/features/projections/ProjectionsPage';
 import { FailResult, SuccessResult } from '@/lib';
@@ -30,31 +30,44 @@ vi.mock('@/features/projections/components', () => ({
     period,
     selectedMetric,
     hiddenSeries,
+    include,
     onPeriodChange,
     onMetricChange,
     onHiddenSeriesChange,
+    onIncludeChange,
     onStartDateChange,
   }: {
     period: number;
     selectedMetric: ProjectionMetric;
     hiddenSeries: string[];
+    include: ProjectionInclude;
     onPeriodChange: (period: number) => void;
     onMetricChange: (metric: ProjectionMetric) => void;
     onHiddenSeriesChange: (hiddenSeries: string[]) => void;
+    onIncludeChange: (include: ProjectionInclude) => void;
     onStartDateChange: (date: Date | undefined) => void;
   }) => (
     <div>
       <div>{`chart period:${period}`}</div>
       <div>{`chart metric:${selectedMetric}`}</div>
       <div>{`chart hidden:${hiddenSeries.join('|')}`}</div>
+      <div>{`chart include:${include.reserved}-${include.accruals}-${include.arrears}`}</div>
       <button type="button" onClick={() => onPeriodChange(9)}>
         Set period
       </button>
-      <button type="button" onClick={() => onMetricChange('available')}>
+      <button type="button" onClick={() => onMetricChange('dailyAccrual')}>
         Set metric
       </button>
       <button type="button" onClick={() => onHiddenSeriesChange(['account-1'])}>
         Set hidden series
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          onIncludeChange({ reserved: true, accruals: false, arrears: true })
+        }
+      >
+        Set include
       </button>
       <button type="button" onClick={() => onStartDateChange(new Date())}>
         Set start date to today
@@ -105,6 +118,34 @@ describe('ProjectionsPage', () => {
     expect(screen.getByText('chart hidden:')).toBeInTheDocument();
   });
 
+  test('passes the persisted include switches to the chart', () => {
+    getProjectionStorageDataMock.mockReturnValue({
+      period: 6,
+      metric: 'balance',
+      hiddenSeries: [],
+      include: { reserved: true, accruals: false, arrears: false },
+    });
+
+    render(<ProjectionsPage />);
+
+    expect(
+      screen.getByText('chart include:true-false-false'),
+    ).toBeInTheDocument();
+  });
+
+  test('persists include switch changes from the chart', async () => {
+    render(<ProjectionsPage />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Set include' }));
+
+    expect(setProjectionStorageDataMock).toHaveBeenCalledWith({
+      period: 6,
+      metric: 'balance',
+      hiddenSeries: [],
+      include: { reserved: true, accruals: false, arrears: true },
+    });
+  });
+
   test('persists period, metric, and hidden series changes from chart interactions', async () => {
     render(<ProjectionsPage />);
 
@@ -123,7 +164,7 @@ describe('ProjectionsPage', () => {
 
     expect(setProjectionStorageDataMock).toHaveBeenCalledWith({
       period: 6,
-      metric: 'available',
+      metric: 'dailyAccrual',
       hiddenSeries: [],
     });
 

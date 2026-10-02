@@ -22,6 +22,7 @@ import { ChartContainer, ChartTooltip } from '@/components/ui/chart';
 import type {
   Projection,
   ProjectionExpenseItem,
+  ProjectionInclude,
   ProjectionIncomeItem,
   ProjectionMetric,
 } from '@/data/projection';
@@ -42,6 +43,8 @@ type ProjectionChartProps = {
   period: number;
   selectedMetric: ProjectionMetric;
   hiddenSeries: string[];
+  include: ProjectionInclude;
+  onIncludeChange: (include: ProjectionInclude) => void;
   onStartDateChange: (date: Date | undefined) => void;
   onPeriodChange: (period: number) => void;
   onMetricChange: (metric: ProjectionMetric) => void;
@@ -60,6 +63,8 @@ function ProjectionChart({
   period,
   selectedMetric,
   hiddenSeries,
+  include,
+  onIncludeChange,
   onStartDateChange,
   onPeriodChange,
   onMetricChange,
@@ -74,7 +79,7 @@ function ProjectionChart({
     chartConfig,
     seriesKeys,
     hasData,
-  } = useProjectionChartData(data, selectedMetric);
+  } = useProjectionChartData(data, selectedMetric, include);
 
   // On short viewports (e.g. a phone rotated to landscape) the md "fill the
   // card" layout can collapse the chart area to zero height, leaving nothing to
@@ -466,6 +471,8 @@ function ProjectionChart({
         seriesVisibility={seriesVisibility}
         onToggleSeries={toggleSeries}
         chartConfig={chartConfig}
+        include={include}
+        onIncludeChange={onIncludeChange}
       />
       <CardContent className="flex-1 flex flex-col p-0">
         {hasData ? (

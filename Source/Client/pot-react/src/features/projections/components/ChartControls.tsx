@@ -13,7 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { ProjectionMetric } from '@/data/projection';
+import { Switch } from '@/components/ui/switch';
+import type { ProjectionInclude, ProjectionMetric } from '@/data/projection';
 import { PROJECTION_METRICS, PROJECTION_PERIODS } from '@/data/projection';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { localToday } from '@/lib';
@@ -29,7 +30,16 @@ type ChartControlsProps = {
   seriesVisibility: Record<string, boolean>;
   onToggleSeries: (seriesKey: string) => void;
   chartConfig: ChartConfig;
+  include: ProjectionInclude;
+  onIncludeChange: (include: ProjectionInclude) => void;
 };
+
+// Declaration order drives the accessible names and the touch caption wording.
+const INCLUDE_SWITCHES: { key: keyof ProjectionInclude; label: string }[] = [
+  { key: 'reserved', label: 'Reserved' },
+  { key: 'accruals', label: 'Accruals' },
+  { key: 'arrears', label: 'Arrears' },
+];
 
 function ChartControls({
   selectedMetric,
@@ -42,6 +52,8 @@ function ChartControls({
   seriesVisibility,
   onToggleSeries,
   chartConfig,
+  include,
+  onIncludeChange,
 }: ChartControlsProps) {
   const isMobile = useIsMobile();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -144,6 +156,17 @@ function ChartControls({
 
   const unselectedPeriodButtonHoverClass =
     'hover:bg-muted hover:text-black dark:hover:bg-slate-800 dark:hover:text-white';
+
+  // The touch caption names the active deductions in switch order, or just
+  // "Balance" when all three are off (A-11).
+  const activeIncludes = INCLUDE_SWITCHES.filter(item => include[item.key]).map(
+    item => item.label,
+  );
+
+  const includeCaption =
+    activeIncludes.length === 0
+      ? 'Balance'
+      : `Balance less: ${activeIncludes.join(', ')}`;
 
   return (
     <div className="px-6 py-4 border-b bg-muted/30">
@@ -332,6 +355,51 @@ function ChartControls({
           )}
         </div>
 
+        {/* Include switches. Rendered only while balance is the selected metric and
+            deliberately outside the mobile collapsible section so they stay visible
+            without expanding Filters (A-03). State lives in the persisted record, so
+            hiding the group never resets it. */}
+        {selectedMetric === 'balance' && (
+          <div className="space-y-1.5">
+            <div
+              className="flex flex-wrap items-center gap-x-4 gap-y-2"
+              role="group"
+              aria-labelledby="include-label"
+            >
+              <span
+                id="include-label"
+                className="text-sm font-medium text-muted-foreground"
+              >
+                Include:
+              </span>
+              {INCLUDE_SWITCHES.map(item => (
+                <div key={item.key} className="flex items-center gap-2">
+                  <Switch
+                    id={`include-${item.key}`}
+                    checked={include[item.key]}
+                    onCheckedChange={checked =>
+                      onIncludeChange({ ...include, [item.key]: checked })
+                    }
+                    aria-label={`Include ${item.label}`}
+                  />
+                  <label
+                    htmlFor={`include-${item.key}`}
+                    className="text-sm cursor-pointer select-none"
+                  >
+                    {item.label}
+                  </label>
+                </div>
+              ))}
+            </div>
+
+            {/* Touch viewports open no hover tooltips, so the basis is stated inline;
+                hidden at md and above, where the hint tooltips apply (A-11). */}
+            <p className="text-xs text-muted-foreground md:hidden">
+              {includeCaption}
+            </p>
+          </div>
+        )}
+
         {/* Mobile collapsible section: Date and Period controls */}
         {isMobile && isExpanded && (
           <div className="space-y-3">
@@ -462,7 +530,7 @@ function ChartControls({
               id="legend-label"
               className="text-sm font-medium text-muted-foreground"
             >
-              Show:
+              Series:
             </span>
             <div
               className="flex flex-wrap gap-2"

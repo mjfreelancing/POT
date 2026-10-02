@@ -1,4 +1,5 @@
 export * from './badge';
+export { default as Hint } from './Hint';
 export * from './message';
 export { default as LoadingMessage } from './message/LoadingMessage';
 export { default as NotePopover } from './popover/NotePopover';

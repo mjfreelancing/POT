@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { useApiGetProjection } from '@/api/hooks/useProjections';
-import type { ProjectionMetric } from '@/data/projection';
+import type { ProjectionInclude, ProjectionMetric } from '@/data/projection';
 import useProjectionStorage from '@/features/projections/hooks/useProjectionStorage';
 import ProjectionsPage from '@/features/projections/ProjectionsPage';
 import { SuccessResult } from '@/lib';
@@ -29,29 +29,42 @@ vi.mock('@/features/projections/components', () => ({
     period,
     selectedMetric,
     hiddenSeries,
+    include,
     onPeriodChange,
     onMetricChange,
     onHiddenSeriesChange,
+    onIncludeChange,
   }: {
     period: number;
     selectedMetric: ProjectionMetric;
     hiddenSeries: string[];
+    include: ProjectionInclude;
     onPeriodChange: (period: number) => void;
     onMetricChange: (metric: ProjectionMetric) => void;
     onHiddenSeriesChange: (hiddenSeries: string[]) => void;
+    onIncludeChange: (include: ProjectionInclude) => void;
   }) => (
     <div>
       <div>{`chart period:${period}`}</div>
       <div>{`chart metric:${selectedMetric}`}</div>
       <div>{`chart hidden:${hiddenSeries.join('|')}`}</div>
+      <div>{`chart include:${include.reserved}-${include.accruals}-${include.arrears}`}</div>
       <button type="button" onClick={() => onPeriodChange(9)}>
         Set period
       </button>
-      <button type="button" onClick={() => onMetricChange('available')}>
+      <button type="button" onClick={() => onMetricChange('dailyAccrual')}>
         Set metric
       </button>
       <button type="button" onClick={() => onHiddenSeriesChange(['account-1'])}>
         Set hidden series
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          onIncludeChange({ reserved: true, accruals: true, arrears: true })
+        }
+      >
+        Set include
       </button>
     </div>
   ),
@@ -99,12 +112,13 @@ describe('Core Flow Integration - Projection', () => {
     expect(screen.getByText('chart period:6')).toBeInTheDocument();
     expect(screen.getByText('chart metric:balance')).toBeInTheDocument();
 
-    // Step 3: Simulate user control actions on period, metric, and series visibility.
+    // Step 3: Simulate user control actions on period, metric, series visibility and the include switches.
     await userEvent.click(screen.getByRole('button', { name: 'Set period' }));
     await userEvent.click(screen.getByRole('button', { name: 'Set metric' }));
     await userEvent.click(
       screen.getByRole('button', { name: 'Set hidden series' }),
     );
+    await userEvent.click(screen.getByRole('button', { name: 'Set include' }));
 
     // Step 4: Verify each control interaction persists expected projection state.
     expect(setProjectionStorageDataMock).toHaveBeenCalledWith({
@@ -115,7 +129,7 @@ describe('Core Flow Integration - Projection', () => {
 
     expect(setProjectionStorageDataMock).toHaveBeenCalledWith({
       period: 6,
-      metric: 'available',
+      metric: 'dailyAccrual',
       hiddenSeries: [],
     });
 
@@ -123,6 +137,13 @@ describe('Core Flow Integration - Projection', () => {
       period: 6,
       metric: 'balance',
       hiddenSeries: ['account-1'],
+    });
+
+    expect(setProjectionStorageDataMock).toHaveBeenCalledWith({
+      period: 6,
+      metric: 'balance',
+      hiddenSeries: [],
+      include: { reserved: true, accruals: true, arrears: true },
     });
   });
 });

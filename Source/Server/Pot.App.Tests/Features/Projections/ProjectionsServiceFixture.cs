@@ -293,7 +293,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 accountProjection.Dates.ShouldAllSatisfy(date =>
                 {
                     date.Balance.ShouldBe(1000.0d);
-                    date.Available.ShouldBe(1000.0d);
+                    Available(date).ShouldBe(1000.0d);
                     date.DailyAccrual.ShouldBe(0.0d);
                     date.IncomeReceived.ShouldBe(0.0d);
                     date.ExpensesPaid.ShouldBe(0.0d);
@@ -2119,7 +2119,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     var expectedAvailable = 5000.0d - 1000.0d - accruedAmount + 0.0d; // +0 for expensesPaid
 
                     accountProjection.Dates[i].Balance.ShouldBe(5000.0d);
-                    accountProjection.Dates[i].Available.ShouldBe(expectedAvailable,
+                    Available(accountProjection.Dates[i]).ShouldBe(expectedAvailable,
                         $"day {dayNumber}: available = balance(5000) - reserved(1000) - accrued({accruedAmount:F2}) + expensesPaid(0) = {expectedAvailable:F2}");
                 }
 
@@ -2137,7 +2137,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 // accrual is the full amount and the settled accrual cancels it. Available = 4800 - 1000 -
                 // 200 + 200 = 3800, which is Balance - Reserved, so the day no longer overshoots the balance.
                 var nextBillDailyAccrual = 200.0d / 31.0d;
-                accountProjection.Dates[5].Available.ShouldBe(3800.0d,
+                Available(accountProjection.Dates[5]).ShouldBe(3800.0d,
                     "day 6: available = balance(4800) - reserved(1000) - accrued(200, the occurrence being settled) + accrualSettledByPayments(200) = 3800");
 
                 // Days 6-29 (Jan 21 - Feb 13): After expense, balance constant at 4800
@@ -2151,7 +2151,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     var expectedAvailable = 4800.0d - 1000.0d - accruedForNextPeriod + 0.0d; // +0 for expensesPaid
 
                     accountProjection.Dates[i].Balance.ShouldBe(4800.0d);
-                    accountProjection.Dates[i].Available.ShouldBe(expectedAvailable,
+                    Available(accountProjection.Dates[i]).ShouldBe(expectedAvailable,
                         $"day {dayNumber}: available = balance(4800) - reserved(1000) - accrued({accruedForNextPeriod:F2}) + expensesPaid(0) = {expectedAvailable:F2}");
                 }
             }
@@ -2281,11 +2281,11 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 // monthly bill 24 days into its 29-day cycle (82.76) and the quarterly bill 15 days into its
                 // 90-day cycle (16.67). Available = 1000 - 199.43 = 800.57, so the pre-window un-settled obligation
                 // is not carried in addition to the arrears (which would deduct 299.43).
-                accountProjection.Dates[0].Available.ShouldBe(800.57d, 0.01d);
+                Available(accountProjection.Dates[0]).ShouldBe(800.57d, 0.01d);
 
                 foreach (var projection in accountProjection.Dates)
                 {
-                    (projection.Balance - projection.Available).ShouldBeGreaterThanOrEqualTo(100.0d,
+                    (projection.Balance - Available(projection)).ShouldBeGreaterThanOrEqualTo(100.0d,
                         $"arrears is held on {projection.Date:yyyy-MM-dd}");
                 }
             }
@@ -2396,7 +2396,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     projection.Date.ShouldBe(_currentDate.AddDays(i));
                     projection.Balance.ShouldBe(5000.0d, $"day {dayNumber} balance should remain 5000");
                     projection.DailyAccrual.ShouldBe(rentDailyAccrual, $"day {dayNumber} should have daily accrual of {rentDailyAccrual}");
-                    projection.Available.ShouldBe(expectedAvailable, 0.01, $"day {dayNumber} available should be {expectedAvailable} (5000 - {totalAccrued} accrued for {daysAccrued} days)");
+                    Available(projection).ShouldBe(expectedAvailable, 0.01, $"day {dayNumber} available should be {expectedAvailable} (5000 - {totalAccrued} accrued for {daysAccrued} days)");
                     projection.IncomeReceived.ShouldBe(0.0d);
                     projection.ExpensesPaid.ShouldBe(0.0d);
                 }
@@ -2419,7 +2419,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 // On payment day the occurrence is measured before the renewal advances the schedule, so the accrual
                 // is the full amount and the settled accrual cancels it: Available = 4100 - 0 - 900 + 900 =
                 // 4100, so the day no longer overshoots the balance.
-                accountProjection.Dates[15].Available.ShouldBe(4100.0d,
+                Available(accountProjection.Dates[15]).ShouldBe(4100.0d,
                     "available on payment day = balance(4100) - reserved(0) - accrued(900, the occurrence being settled) + accrualSettledByPayments(900) = 4100");
 
                 // Days 16-28 (Jan 31 - Feb 12): Rent now accruing for next period (due Feb 28)
@@ -2451,7 +2451,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     projection.Date.ShouldBe(_currentDate.AddDays(i));
                     projection.Balance.ShouldBe(4100.0d, $"day {dayNumber} balance should remain 4100");
                     projection.DailyAccrual.ShouldBe(expectedDailyAccrual, 0.01, $"day {dayNumber} daily accrual should be {expectedDailyAccrual:F4}");
-                    projection.Available.ShouldBe(expectedAvailable, $"day {dayNumber} available should be {expectedAvailable:F2} (4100 - {accumulatedAccrual:F2} accrued)");
+                    Available(projection).ShouldBe(expectedAvailable, $"day {dayNumber} available should be {expectedAvailable:F2} (4100 - {accumulatedAccrual:F2} accrued)");
                     projection.IncomeReceived.ShouldBe(0.0d);
                     projection.ExpensesPaid.ShouldBe(0.0d);
                 }
@@ -2463,7 +2463,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 lastDay.Date.ShouldBe(new DateOnly(2025, 2, 13));
                 lastDay.Balance.ShouldBe(4100.0d);
-                lastDay.Available.ShouldBe(lastDayExpectedAvailable, $"available should be 4100 - {lastDayAccrued:F2} accrued");
+                Available(lastDay).ShouldBe(lastDayExpectedAvailable, $"available should be 4100 - {lastDayAccrued:F2} accrued");
                 lastDay.IncomeReceived.ShouldBe(0.0d);
                 lastDay.ExpensesPaid.ShouldBe(0.0d);
             }
@@ -2504,7 +2504,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 accountProjection.Dates[0].Date.ShouldBe(_currentDate);
                 accountProjection.Dates[0].ExpensesPaid.ShouldBe(100.0d);
                 accountProjection.Dates[0].Balance.ShouldBe(900.0d);
-                accountProjection.Dates[0].Available.ShouldBe(900.0d, "the add-back cancels the accrued amount");
+                Available(accountProjection.Dates[0]).ShouldBe(900.0d, "the add-back cancels the accrued amount");
 
                 // The occurrence renews after the day is measured, so no further payment falls inside the window.
                 ValidateNoActivityRange(accountProjection.Dates, 1, 29, expectedBalance: 900.0d);
@@ -2543,13 +2543,13 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 // so the balance is untouched.
                 accountProjection.Dates[0].Balance.ShouldBe(1000.0d);
                 accountProjection.Dates[0].ExpensesPaid.ShouldBe(0.0d);
-                accountProjection.Dates[0].Available.ShouldBe(896.77d, 0.01d);
+                Available(accountProjection.Dates[0]).ShouldBe(896.77d, 0.01d);
                 accountProjection.Dates[0].DailyAccrual.ShouldBe(3.2258d, 0.001d);
 
                 // Day 1: the current-cycle obligation measured on today is released by the fold, while the arrears
                 // stays held, so available keeps falling by the ramp alone.
                 accountProjection.Dates[1].Balance.ShouldBe(1000.0d);
-                accountProjection.Dates[1].Available.ShouldBe(893.55d, 0.01d);
+                Available(accountProjection.Dates[1]).ShouldBe(893.55d, 0.01d);
             }
 
             [Fact]
@@ -2585,7 +2585,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 paymentDay.Date.ShouldBe(new DateOnly(2025, 1, 20));
                 paymentDay.ExpensesPaid.ShouldBe(100.0d);
                 paymentDay.Balance.ShouldBe(900.0d);
-                paymentDay.Available.ShouldBe(paymentDay.Balance, "a non-accruing row is not credited back");
+                Available(paymentDay).ShouldBe(paymentDay.Balance, "a non-accruing row is not credited back");
 
                 ValidateNoActivityRange(accountProjection.Dates, 0, 4, expectedBalance: 1000.0d);
             }
@@ -2622,12 +2622,12 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 // 70: Available = 1000 - 70 - 210 = 720, which is Balance less TotalCommitted.
                 accountProjection.Dates[0].ExpensesPaid.ShouldBe(0.0d);
                 accountProjection.Dates[0].Balance.ShouldBe(1000.0d);
-                accountProjection.Dates[0].Available.ShouldBe(720.0d, 0.01d);
+                Available(accountProjection.Dates[0]).ShouldBe(720.0d, 0.01d);
 
                 // Held for the whole window: unlike the current-cycle obligation, the arrears never releases.
                 foreach (var projection in accountProjection.Dates)
                 {
-                    (projection.Balance - projection.Available).ShouldBeGreaterThanOrEqualTo(210.0d,
+                    (projection.Balance - Available(projection)).ShouldBeGreaterThanOrEqualTo(210.0d,
                         $"arrears is held on {projection.Date:yyyy-MM-dd}");
                 }
 
@@ -2671,6 +2671,361 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 expense.AccrualStart.ShouldBe(new DateOnly(2025, 1, 1));
                 income.NextDue.ShouldBe(new DateOnly(2025, 1, 10));
                 context.DbContext.ChangeTracker.HasChanges().ShouldBeFalse();
+            }
+        }
+
+        // Pins the Balance, the published components and the Available they compose to for two worked examples (a
+        // weekly 70 bill on an account of 1000 with 100 reserved, with and without a past-due one-time 50 bill).
+        public class WorkedExampleCharacterisation : GetFinancialProjectionsAsync
+        {
+            private const int DaysForecast = 8;
+
+            private static readonly double[] ScenarioABalance = [930.0d, 930.0d, 930.0d, 930.0d, 930.0d, 930.0d, 930.0d, 860.0d];
+            private static readonly double[] ScenarioAAvailable = [830.0d, 820.0d, 810.0d, 800.0d, 790.0d, 780.0d, 770.0d, 760.0d];
+            private static readonly double[] ScenarioAUnpaidAccrual = [0.0d, 10.0d, 20.0d, 30.0d, 40.0d, 50.0d, 60.0d, 0.0d];
+
+            private static readonly double[] ScenarioBAvailable = [780.0d, 770.0d, 760.0d, 750.0d, 740.0d, 730.0d, 720.0d, 710.0d];
+
+            [Fact]
+            public async Task Should_Publish_Scenario_A_Balance_And_Available()
+            {
+                var dates = await GetScenarioDatesAsync(withArrears: false);
+
+                AssertScenario(dates, ScenarioABalance, ScenarioAAvailable);
+            }
+
+            [Fact]
+            public async Task Should_Publish_Scenario_A_Components()
+            {
+                var dates = await GetScenarioDatesAsync(withArrears: false);
+
+                AssertComponents(dates, ScenarioABalance, expectedReserved: 100.0d, ScenarioAUnpaidAccrual, expectedArrears: 0.0d);
+            }
+
+            [Fact]
+            public async Task Should_Publish_Scenario_B_Balance_And_Available()
+            {
+                var dates = await GetScenarioDatesAsync(withArrears: true);
+
+                AssertScenario(dates, ScenarioABalance, ScenarioBAvailable);
+            }
+
+            [Fact]
+            public async Task Should_Publish_Scenario_B_Components()
+            {
+                var dates = await GetScenarioDatesAsync(withArrears: true);
+
+                AssertComponents(dates, ScenarioABalance, expectedReserved: 100.0d, ScenarioAUnpaidAccrual, expectedArrears: 50.0d);
+            }
+
+            // Scenario B assumes the past-due one-time bill adds nothing to the accrual, so it must lower Available by
+            // exactly its 50 on every day and leave Balance alone.
+            [Fact]
+            public async Task Should_Not_Accrue_A_Past_Due_One_Time_Bill_In_Scenario_B()
+            {
+                var scenarioA = await GetScenarioDatesAsync(withArrears: false);
+                var scenarioB = await GetScenarioDatesAsync(withArrears: true);
+
+                scenarioB.Count.ShouldBe(scenarioA.Count);
+
+                for (var index = 0; index < scenarioA.Count; index++)
+                {
+                    scenarioB[index].Balance.ShouldBe(scenarioA[index].Balance, 0.001d, $"balance on day {index}");
+
+                    (Available(scenarioA[index]) - Available(scenarioB[index])).ShouldBe(50.0d, 0.001d,
+                        $"available differs by exactly the arrears on day {index}");
+                }
+            }
+
+            private async Task<IReadOnlyList<DateProjection>> GetScenarioDatesAsync(bool withArrears)
+            {
+                using var context = CreateTestContext();
+
+                var account = EntityFactory.CreateAccount(context.Site, "Visa", 1000.0d, reserved: 100.0d);
+
+                // Weekly 70 bill due today (not renewed), accruing 10 a day, and due again on day 7.
+                var weeklyBill = EntityFactory.CreateExpense(account, false, "Weekly", 70.0d, "2025-01-15", "2025-01-15", null,
+                    Frequency.Weeks, 1);
+
+                account.Expenses.Add(weeklyBill);
+
+                if (withArrears)
+                {
+                    // Fell due yesterday and has not been settled.
+                    var pastDueBill = EntityFactory.CreateExpense(account, false, "Past due", 50.0d, "2025-01-01", "2025-01-14", null,
+                        Frequency.OneTime, 1);
+
+                    account.Expenses.Add(pastDueBill);
+                }
+
+                await context.AddAccountAsync(account);
+
+                var options = new ProjectionOptions
+                {
+                    StartDate = _currentDate,
+                    DaysForecast = DaysForecast
+                };
+
+                var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
+
+                result.IsSuccess.ShouldBeTrue();
+
+                var dates = result.Value!.Accounts.ShouldHaveSingleItem().Dates;
+
+                ValidateConsecutiveDates(dates, _currentDate, DaysForecast);
+
+                return dates;
+            }
+
+            private static void AssertScenario(IReadOnlyList<DateProjection> dates, double[] expectedBalance, double[] expectedAvailable)
+            {
+                for (var index = 0; index < dates.Count; index++)
+                {
+                    dates[index].Balance.ShouldBe(expectedBalance[index], 0.01d, $"balance on day {index}");
+                    Available(dates[index]).ShouldBe(expectedAvailable[index], 0.01d, $"available on day {index}");
+                }
+            }
+
+            private static void AssertComponents(IReadOnlyList<DateProjection> dates, double[] expectedBalance, double expectedReserved,
+                double[] expectedUnpaidAccrual, double expectedArrears)
+            {
+                for (var index = 0; index < dates.Count; index++)
+                {
+                    dates[index].Balance.ShouldBe(expectedBalance[index], 0.01d, $"balance on day {index}");
+                    dates[index].Reserved.ShouldBe(expectedReserved, 0.01d, $"reserved on day {index}");
+                    dates[index].UnpaidAccrual.ShouldBe(expectedUnpaidAccrual[index], 0.01d, $"unpaid accrual on day {index}");
+                    dates[index].Arrears.ShouldBe(expectedArrears, 0.01d, $"arrears on day {index}");
+                }
+            }
+        }
+
+        public class PublishedComponents : GetFinancialProjectionsAsync
+        {
+            [Fact]
+            public void Should_Not_Publish_Available()
+            {
+                typeof(DateProjection).GetProperty("Available").ShouldBeNull();
+            }
+
+            [Fact]
+            public async Task Should_Publish_Components_On_Every_Day_For_Accounts_And_Global()
+            {
+                using var context = CreateTestContext();
+
+                var account = EntityFactory.CreateAccount(context.Site, "Visa", 1000.0d, reserved: 100.0d);
+
+                // Weekly with the next occurrence due 2025-01-22: nothing is past due, so arrears is zero, and the
+                // cycle in progress starts accruing today, so there is something unpaid from the day after.
+                var expense = EntityFactory.CreateExpense(account, false, "Bill", 70.0d, "2025-01-15", "2025-01-22", null, Frequency.Weeks, 1);
+
+                account.Expenses.Add(expense);
+
+                await context.AddAccountAsync(account);
+
+                var options = new ProjectionOptions
+                {
+                    StartDate = _currentDate,
+                    DaysForecast = 14
+                };
+
+                var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
+
+                result.IsSuccess.ShouldBeTrue();
+
+                var accountDates = result.Value!.Accounts.ShouldHaveSingleItem().Dates;
+                var global = result.Value!.Global;
+
+                accountDates.Length.ShouldBe(14);
+                global.Length.ShouldBe(14);
+
+                foreach (var projection in accountDates.Concat(global))
+                {
+                    projection.Reserved.ShouldBe(100.0d, $"reserved on {projection.Date:yyyy-MM-dd}");
+                    projection.Arrears.ShouldBe(0.0d, $"arrears on {projection.Date:yyyy-MM-dd}");
+                }
+
+                // The due day itself is settled by its own assumed payment, so only the days before it are checked.
+                var unpaidDays = accountDates.Concat(global)
+                    .Where(projection => projection.Date > _currentDate && projection.Date < new DateOnly(2025, 1, 22));
+
+                foreach (var projection in unpaidDays)
+                {
+                    projection.UnpaidAccrual.ShouldBeGreaterThan(0.0d, $"unpaid accrual on {projection.Date:yyyy-MM-dd}");
+                }
+            }
+
+            [Fact]
+            public async Task Should_Exclude_The_Part_A_Due_Today_Payment_Settles_From_Unpaid_Accrual()
+            {
+                using var context = CreateTestContext();
+
+                var account = EntityFactory.CreateAccount(context.Site, "Visa", 1000.0d);
+
+                // Due today, so it is assumed paid and the balance already has it deducted.
+                var dueToday = EntityFactory.CreateExpense(account, false, "Due today", 100.0d, "2025-01-01", "2025-01-15", null,
+                    Frequency.Months, 1);
+
+                account.Expenses.Add(dueToday);
+
+                await context.AddAccountAsync(account);
+
+                var options = new ProjectionOptions
+                {
+                    StartDate = _currentDate,
+                    DaysForecast = 3
+                };
+
+                var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
+
+                result.IsSuccess.ShouldBeTrue();
+
+                var dates = result.Value!.Accounts.ShouldHaveSingleItem().Dates;
+
+                dates[0].Balance.ShouldBe(900.0d);
+                dates[0].UnpaidAccrual.ShouldBe(0.0d, 0.001d);
+
+                // The next cycle starts accruing the day after the payment.
+                dates[1].UnpaidAccrual.ShouldBeGreaterThan(0.0d);
+            }
+
+            [Fact]
+            public async Task Should_Not_Settle_Any_Accrual_For_A_Non_Accruing_Payment()
+            {
+                using var context = CreateTestContext();
+
+                var account = EntityFactory.CreateAccount(context.Site, "Visa", 1000.0d);
+
+                var dueToday = EntityFactory.CreateExpense(account, false, "Due today", 100.0d, "2025-01-01", "2025-01-15", null,
+                    Frequency.Months, 1, AccrualPolicy.None);
+
+                account.Expenses.Add(dueToday);
+
+                await context.AddAccountAsync(account);
+
+                var options = new ProjectionOptions
+                {
+                    StartDate = _currentDate,
+                    DaysForecast = 3
+                };
+
+                var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
+
+                result.IsSuccess.ShouldBeTrue();
+
+                var dates = result.Value!.Accounts.ShouldHaveSingleItem().Dates;
+
+                dates[0].Balance.ShouldBe(900.0d);
+
+                foreach (var projection in dates)
+                {
+                    projection.UnpaidAccrual.ShouldBe(0.0d, 0.001d, $"nothing accrues on {projection.Date:yyyy-MM-dd}");
+                }
+            }
+
+            [Fact]
+            public async Task Should_Publish_Global_Components_As_The_Sum_Of_The_Accounts()
+            {
+                using var context = CreateTestContext();
+
+                var account1 = EntityFactory.CreateAccount(context.Site, "Account 1", 1000.0d, reserved: 100.0d);
+                var account2 = EntityFactory.CreateAccount(context.Site, "Account 2", 2000.0d, reserved: 250.0d);
+
+                // Account 1 has a past-due bill and a weekly bill due today; account 2 has a monthly bill due today.
+                var pastDue = EntityFactory.CreateExpense(account1, false, "Past due", 50.0d, "2025-01-01", "2025-01-14", null,
+                    Frequency.OneTime, 1);
+
+                var weekly = EntityFactory.CreateExpense(account1, false, "Weekly", 70.0d, "2025-01-15", "2025-01-15", null,
+                    Frequency.Weeks, 1);
+
+                var dueToday = EntityFactory.CreateExpense(account2, false, "Due today", 100.0d, "2025-01-01", "2025-01-15", null,
+                    Frequency.Months, 1);
+
+                account1.Expenses.Add(pastDue);
+                account1.Expenses.Add(weekly);
+                account2.Expenses.Add(dueToday);
+
+                await context.AddAccountsAsync(account1, account2);
+
+                var options = new ProjectionOptions
+                {
+                    StartDate = _currentDate,
+                    DaysForecast = 10
+                };
+
+                var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
+
+                result.IsSuccess.ShouldBeTrue();
+
+                var accounts = result.Value!.Accounts;
+                var global = result.Value!.Global;
+
+                accounts.Length.ShouldBe(2);
+
+                for (var index = 0; index < global.Length; index++)
+                {
+                    var accountDates = accounts.Select(accountProjection => accountProjection.Dates[index]).ToArray();
+
+                    global[index].Reserved.ShouldBe(accountDates.Sum(projection => projection.Reserved), 0.001d, $"reserved on day {index}");
+                    global[index].Arrears.ShouldBe(accountDates.Sum(projection => projection.Arrears), 0.001d, $"arrears on day {index}");
+
+                    global[index].UnpaidAccrual.ShouldBe(accountDates.Sum(projection => projection.UnpaidAccrual), 0.001d,
+                        $"unpaid accrual on day {index}");
+                }
+
+                global[0].Reserved.ShouldBe(350.0d);
+                global[0].Arrears.ShouldBe(50.0d, 0.001d);
+            }
+
+            // Reserved and arrears are standing amounts and the accrual add-back only ever removes part of what was
+            // accrued, so no component can go negative. The tolerance covers floating point sums over different row
+            // subsets; production does not clamp, so a genuine unbounded add-back still fails here.
+            [Fact]
+            public async Task Should_Not_Publish_A_Negative_Component_On_Any_Day()
+            {
+                using var context = CreateTestContext();
+
+                var account1 = EntityFactory.CreateAccount(context.Site, "Account 1", 1000.0d, reserved: 100.0d);
+                var account2 = EntityFactory.CreateAccount(context.Site, "Account 2", 500.0d);
+
+                var pastDue = EntityFactory.CreateExpense(account1, false, "Past due", 50.0d, "2025-01-01", "2025-01-14", null,
+                    Frequency.OneTime, 1);
+
+                var weekly = EntityFactory.CreateExpense(account1, false, "Weekly", 70.0d, "2025-01-15", "2025-01-15", null,
+                    Frequency.Weeks, 1);
+
+                var monthly = EntityFactory.CreateExpense(account2, false, "Monthly", 300.0d, "2025-01-01", "2025-01-15", null,
+                    Frequency.Months, 1);
+
+                var nonAccruing = EntityFactory.CreateExpense(account2, false, "Non accruing", 40.0d, "2025-01-01", "2025-01-15", null,
+                    Frequency.Weeks, 1, AccrualPolicy.None);
+
+                account1.Expenses.Add(pastDue);
+                account1.Expenses.Add(weekly);
+                account2.Expenses.Add(monthly);
+                account2.Expenses.Add(nonAccruing);
+
+                await context.AddAccountsAsync(account1, account2);
+
+                var options = new ProjectionOptions
+                {
+                    StartDate = _currentDate,
+                    DaysForecast = 90
+                };
+
+                var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
+
+                result.IsSuccess.ShouldBeTrue();
+
+                var allProjections = result.Value!.Accounts
+                    .SelectMany(accountProjection => accountProjection.Dates)
+                    .Concat(result.Value.Global);
+
+                foreach (var projection in allProjections)
+                {
+                    projection.Reserved.ShouldBeGreaterThanOrEqualTo(0.0d, $"reserved on {projection.Date:yyyy-MM-dd}");
+                    projection.Arrears.ShouldBeGreaterThanOrEqualTo(0.0d, $"arrears on {projection.Date:yyyy-MM-dd}");
+                    projection.UnpaidAccrual.ShouldBeGreaterThanOrEqualTo(-1e-9, $"unpaid accrual on {projection.Date:yyyy-MM-dd}");
+                }
             }
         }
 
@@ -2755,7 +3110,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     global[i].Balance.ShouldBe(account1Projection.Dates[i].Balance + account2Projection.Dates[i].Balance, 0.01d,
                         $"day {dayNumber} global balance is the sum of the accounts");
 
-                    global[i].Available.ShouldBe(account1Projection.Dates[i].Available + account2Projection.Dates[i].Available, 0.01d,
+                    Available(global[i]).ShouldBe(Available(account1Projection.Dates[i]) + Available(account2Projection.Dates[i]), 0.01d,
                         $"day {dayNumber} global available is the sum of the accounts");
 
                     global[i].DailyAccrual.ShouldBe(account1Projection.Dates[i].DailyAccrual + account2Projection.Dates[i].DailyAccrual, 0.01d,
@@ -2763,6 +3118,13 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 }
             }
         }
+    }
+
+    // The published payload carries the components rather than a derived available figure, so the assertions that
+    // pin the available value compose it from the same members a consumer subtracts from the balance.
+    private static double Available(DateProjection projection)
+    {
+        return projection.Balance - projection.Reserved - projection.UnpaidAccrual - projection.Arrears;
     }
 
     // Helper method to create isolated test context with in-memory database
@@ -2831,7 +3193,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
             projection.Date.ShouldBe(expectedDate, $"projection at index {i} should have date {expectedDate}");
             projection.Balance.ShouldBe(0.0d, $"balance should be 0 for empty projection at {expectedDate}");
-            projection.Available.ShouldBe(0.0d, $"available should be 0 for empty projection at {expectedDate}");
+            Available(projection).ShouldBe(0.0d, $"available should be 0 for empty projection at {expectedDate}");
             projection.DailyAccrual.ShouldBe(0.0d, $"daily accrual should be 0 for empty projection at {expectedDate}");
             projection.IncomeReceived.ShouldBe(0.0d, $"income received should be 0 for empty projection at {expectedDate}");
             projection.ExpensesPaid.ShouldBe(0.0d, $"expenses paid should be 0 for empty projection at {expectedDate}");

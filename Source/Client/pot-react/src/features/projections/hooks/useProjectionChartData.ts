@@ -2,7 +2,13 @@ import { format, parseISO } from 'date-fns';
 import { useMemo } from 'react';
 
 import type { ChartConfig } from '@/components/ui/chart';
-import type { Projection, ProjectionMetric } from '@/data/projection';
+import type {
+  DateValues,
+  Projection,
+  ProjectionInclude,
+  ProjectionMetric,
+} from '@/data/projection';
+import { DEFAULT_PROJECTION_INCLUDE } from '@/data/projection';
 
 // Predefined colors for different accounts in the chart
 // These are used in a round-robin fashion if there are more accounts than colors
@@ -60,11 +66,33 @@ type UseProjectionChartDataResult = {
 };
 
 /**
+ * Resolves the value plotted for one series on one date. Only the balance metric
+ * is composed: each enabled switch subtracts its own published component. Every
+ * other metric reads its member directly.
+ */
+function resolveMetricValue(
+  values: DateValues,
+  metric: ProjectionMetric,
+  include: ProjectionInclude,
+): number {
+  if (metric !== 'balance') {
+    return values[metric];
+  }
+
+  const reserved = include.reserved ? values.reserved : 0;
+  const unpaidAccrual = include.accruals ? values.unpaidAccrual : 0;
+  const arrears = include.arrears ? values.arrears : 0;
+
+  return values.balance - reserved - unpaidAccrual - arrears;
+}
+
+/**
  * Transforms raw projection data into a format suitable for chart rendering
  * while preserving transaction details for tooltips and detail views.
  *
  * @param data - Raw projection data from the API containing account and global metrics
- * @param metric - Which financial metric to display (e.g., balance, available funds)
+ * @param metric - Which financial metric to display (e.g., balance, daily accrual)
+ * @param include - Which components are subtracted from the balance metric; ignored by other metrics
  * @returns Processed data structure ready for chart consumption
  *
  * The hook performs several key transformations:
@@ -76,8 +104,13 @@ type UseProjectionChartDataResult = {
 function useProjectionChartData(
   data: Projection,
   metric: ProjectionMetric = 'balance',
+  include: ProjectionInclude = DEFAULT_PROJECTION_INCLUDE,
 ): UseProjectionChartDataResult {
+  const { reserved, accruals, arrears } = include;
+
   return useMemo(() => {
+    const activeInclude: ProjectionInclude = { reserved, accruals, arrears };
+
     // Extract the timeline from global data (pre-sorted from API)
     // All accounts share the same date points, so we can use global as reference
     const sortedDates = data.global.map(db => db.date);
@@ -93,13 +126,17 @@ function useProjectionChartData(
       // Add individual account metrics for this date
       data.accounts.forEach(account => {
         const dateBalance = account.dates.find(db => db.date === date)!;
-        const value = dateBalance[metric];
+        const value = resolveMetricValue(dateBalance, metric, activeInclude);
         point[account.rowId] = value; // Dynamic key based on account ID
       });
 
       // Add the combined total for all accounts
       const globalBalance = data.global.find(db => db.date === date)!;
-      point['global'] = globalBalance[metric];
+      point['global'] = resolveMetricValue(
+        globalBalance,
+        metric,
+        activeInclude,
+      );
 
       // Process expense items - attach account information to each expense
       if (globalBalance.expenseItems) {
@@ -158,7 +195,8 @@ function useProjectionChartData(
     };
     seriesKeys.push('global');
 
-    // Determine if we have any non-zero data to display
+    // Determine if we have any non-zero data to display. This reads the plotted
+    // (composed) values, so a window that nets to zero shows the no-data state.
     const hasData =
       chartData.length > 0 &&
       seriesKeys.some(key =>
@@ -166,7 +204,7 @@ function useProjectionChartData(
       );
 
     return { chartData, chartConfig: config, seriesKeys, hasData };
-  }, [data, metric]);
+  }, [data, metric, reserved, accruals, arrears]);
 }
 
 export { useProjectionChartData };

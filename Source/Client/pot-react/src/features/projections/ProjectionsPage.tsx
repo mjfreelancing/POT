@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useApiGetProjection } from '@/api/hooks/useProjections';
 import { ErrorSheet, LoadingOverlay } from '@/components/feedback';
 import { logger } from '@/concerns';
-import type { ProjectionMetric } from '@/data/projection';
+import type { ProjectionInclude, ProjectionMetric } from '@/data/projection';
+import { DEFAULT_PROJECTION_INCLUDE } from '@/data/projection';
 import type { DisplayError } from '@/lib';
 import {
   dateIsoFormat,
@@ -87,6 +88,12 @@ function ProjectionsPage() {
     return data?.hiddenSeries || [];
   });
 
+  const [include, setInclude] = useState<ProjectionInclude>(() => {
+    const data = getProjectionStorageData();
+
+    return data?.include ?? DEFAULT_PROJECTION_INCLUDE;
+  });
+
   // State for details panel
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -142,6 +149,13 @@ function ProjectionsPage() {
 
     setHiddenSeries(hiddenSeriesKeys);
     updateStorage('hiddenSeries', hiddenSeriesKeys);
+  }
+
+  function handleIncludeChange(nextInclude: ProjectionInclude) {
+    logger.info('ProjectionsPage', 'Include switches changed', nextInclude);
+
+    setInclude(nextInclude);
+    updateStorage('include', nextInclude);
   }
 
   // Opens or closes the details panel for a specific date
@@ -241,6 +255,8 @@ function ProjectionsPage() {
             period={period}
             selectedMetric={metric}
             hiddenSeries={hiddenSeries}
+            include={include}
+            onIncludeChange={handleIncludeChange}
             onStartDateChange={handleStartDateChange}
             onPeriodChange={handlePeriodChange}
             onMetricChange={handleMetricChange}
