@@ -5,5 +5,3 @@ export {
   buildUserScopedKey,
   resolveStorageBackend,
 } from './storageKeyBuilder';
-export type { LegacyStorageKey } from './storageMigration';
-export { purgeLegacyStorageKeys } from './storageMigration';

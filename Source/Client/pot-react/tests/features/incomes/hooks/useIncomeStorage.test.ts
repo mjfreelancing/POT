@@ -49,25 +49,6 @@ describe('useIncomeStorage', () => {
     );
   });
 
-  test('purges legacy incomes key from localStorage when user is authenticated', () => {
-    localStorage.setItem(
-      'pot-incomes',
-      JSON.stringify({ filterDescription: 'legacy' }),
-    );
-
-    const getProperty = vi.fn();
-    const setProperty = vi.fn();
-
-    vi.mocked(useLocalStorageManager).mockReturnValue({
-      getProperty,
-      setProperty,
-    } as unknown as ReturnType<typeof useLocalStorageManager>);
-
-    renderHook(() => useIncomeStorage());
-
-    expect(localStorage.getItem('pot-incomes')).toBeNull();
-  });
-
   test('setIncomeData updates selected account and normalizes empty filter', () => {
     const getProperty = vi.fn();
     const setProperty = vi.fn();

@@ -1,8 +1,4 @@
-import {
-  buildEnvScopedKey,
-  buildUserScopedKey,
-  purgeLegacyStorageKeys,
-} from '@/concerns/storage';
+import { buildEnvScopedKey, buildUserScopedKey } from '@/concerns/storage';
 import type { ProjectionMetric } from '@/data/projection';
 import {
   DEFAULT_PROJECTION_METRIC,
@@ -46,11 +42,6 @@ function useProjectionStorage(onError?: StorageErrorHandler) {
   const scopedKey = userId
     ? buildUserScopedKey({ userId, feature: 'projections' })
     : buildEnvScopedKey('unauthenticated:projections');
-
-  // TEMPORARY: remove the legacy flat key now that the user is known and scoped keys are active.
-  if (userId) {
-    purgeLegacyStorageKeys([{ key: 'pot-projections', storage: localStorage }]);
-  }
 
   // sessionStorage: primary read/write target for tab-local state.
   const { getItem: getSession, setItem: setSession } =

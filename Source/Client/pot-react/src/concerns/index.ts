@@ -30,15 +30,10 @@ export { logger } from './logging';
 export { registerServiceWorker } from './pwa';
 
 // Storage concerns
-export type {
-  LegacyStorageKey,
-  StorageMode,
-  UserScopedKeyOptions,
-} from './storage';
+export type { StorageMode, UserScopedKeyOptions } from './storage';
 export {
   buildEnvScopedKey,
   buildUserScopedKey,
-  purgeLegacyStorageKeys,
   resolveStorageBackend,
   resolveStorageEnv,
 } from './storage';

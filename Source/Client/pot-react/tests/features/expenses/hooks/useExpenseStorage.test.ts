@@ -49,25 +49,6 @@ describe('useExpenseStorage', () => {
     );
   });
 
-  test('purges legacy expenses key from localStorage when user is authenticated', () => {
-    localStorage.setItem(
-      'pot-expenses',
-      JSON.stringify({ filterDescription: 'legacy' }),
-    );
-
-    const getProperty = vi.fn();
-    const setProperty = vi.fn();
-
-    vi.mocked(useLocalStorageManager).mockReturnValue({
-      getProperty,
-      setProperty,
-    } as unknown as ReturnType<typeof useLocalStorageManager>);
-
-    renderHook(() => useExpenseStorage());
-
-    expect(localStorage.getItem('pot-expenses')).toBeNull();
-  });
-
   test('setExpenseData updates selected account and normalizes empty filter', () => {
     const getProperty = vi.fn();
     const setProperty = vi.fn();

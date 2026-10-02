@@ -15,7 +15,6 @@ vi.mock('@/stores/useUserStore', () => ({
 // In the test environment MODE is 'test', so resolveStorageEnv() returns 'dev'.
 const USER_ID = 'user-1';
 const SCOPED_KEY = `pot:dev:user:${USER_ID}:projections`;
-const LEGACY_KEY = 'pot-projections';
 
 function mockUserStore(userId: string | undefined) {
   const user = userId ? createUser({ rowId: userId }) : null;
@@ -52,16 +51,6 @@ describe('useProjectionStorage', () => {
         });
         result.current.removeStorageStartDate();
       }).not.toThrow();
-    });
-  });
-
-  describe('legacy key cleanup', () => {
-    test('removes the legacy pot-projections key from localStorage on mount', () => {
-      localStorage.setItem(LEGACY_KEY, JSON.stringify({ period: 3 }));
-
-      renderHook(() => useProjectionStorage());
-
-      expect(localStorage.getItem(LEGACY_KEY)).toBeNull();
     });
   });
 

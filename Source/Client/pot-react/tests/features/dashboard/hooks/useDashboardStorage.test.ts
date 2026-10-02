@@ -54,25 +54,6 @@ describe('useDashboardStorage', () => {
     );
   });
 
-  test('purges legacy dashboard key when user is authenticated', () => {
-    localStorage.setItem(
-      'pot-dashboard',
-      JSON.stringify({ accountsOpen: false }),
-    );
-
-    const getProperty = vi.fn();
-    const setProperty = vi.fn();
-
-    vi.mocked(useLocalStorageManager).mockReturnValue({
-      getProperty,
-      setProperty,
-    } as unknown as ReturnType<typeof useLocalStorageManager>);
-
-    renderHook(() => useDashboardStorage());
-
-    expect(localStorage.getItem('pot-dashboard')).toBeNull();
-  });
-
   test('getDashboardData returns fallback values when storage properties are null', () => {
     const getProperty = vi.fn().mockReturnValue(null);
     const setProperty = vi.fn();

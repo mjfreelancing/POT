@@ -49,25 +49,6 @@ describe('useAccountStorage', () => {
     );
   });
 
-  test('purges legacy accounts key from localStorage when user is authenticated', () => {
-    localStorage.setItem(
-      'pot-accounts',
-      JSON.stringify({ filterDescription: 'legacy' }),
-    );
-
-    const getProperty = vi.fn();
-    const setProperty = vi.fn();
-
-    vi.mocked(useLocalStorageManager).mockReturnValue({
-      getProperty,
-      setProperty,
-    } as unknown as ReturnType<typeof useLocalStorageManager>);
-
-    renderHook(() => useAccountStorage());
-
-    expect(localStorage.getItem('pot-accounts')).toBeNull();
-  });
-
   test('setAccountData converts empty filter string to null', () => {
     const getProperty = vi.fn();
     const setProperty = vi.fn();

@@ -1,8 +1,4 @@
-import {
-  buildEnvScopedKey,
-  buildUserScopedKey,
-  purgeLegacyStorageKeys,
-} from '@/concerns/storage';
+import { buildEnvScopedKey, buildUserScopedKey } from '@/concerns/storage';
 import useLocalStorageManager from '@/hooks/useLocalStorageManager';
 import type { DisplayError } from '@/lib';
 import useUserStore from '@/stores/useUserStore';
@@ -27,11 +23,6 @@ function useAccountStorage(onError?: StorageErrorHandler) {
   const storageKey = userId
     ? buildUserScopedKey({ userId, feature: 'accounts' })
     : buildEnvScopedKey('unauthenticated:accounts');
-
-  // TEMPORARY: remove the legacy flat key now that the user is known and a scoped key is active.
-  if (userId) {
-    purgeLegacyStorageKeys([{ key: 'pot-accounts', storage: localStorage }]);
-  }
 
   const { getProperty, setProperty } =
     useLocalStorageManager<AccountStorageData>(

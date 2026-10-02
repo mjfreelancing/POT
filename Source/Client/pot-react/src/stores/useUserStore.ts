@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import { buildEnvScopedKey, purgeLegacyStorageKeys } from '@/concerns/storage';
+import { buildEnvScopedKey } from '@/concerns/storage';
 import type { User } from '@/data/user';
 
 type UserStore = {
@@ -9,9 +9,6 @@ type UserStore = {
   setUserInfo: (userInfo: User) => void;
   clearUserInfo: () => void;
 };
-
-// TEMPORARY: remove legacy pot-user key so stale data does not persist under the old key.
-purgeLegacyStorageKeys([{ key: 'pot-user', storage: localStorage }]);
 
 // Persist user info to localStorage to survive page refreshes.
 // This ensures permissions are available immediately on reload, preventing

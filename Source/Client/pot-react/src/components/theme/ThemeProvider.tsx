@@ -1,9 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 
-import { purgeLegacyStorageKeys } from '@/concerns/storage';
-
-const LEGACY_THEME_STORAGE_KEY = 'pot-ui-theme';
-
 type Theme = 'dark' | 'light' | 'system';
 
 type ThemeProviderProps = {
@@ -24,18 +20,12 @@ const initialState: ThemeProviderState = {
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
-// Reads the persisted theme for the given storage key, removing legacy keys so
-// stale data does not persist under old keys. Shared by the initial state and
-// the storage-key-change effect so both stay in sync.
+// Reads the persisted theme for the given storage key. Shared by the initial
+// state and the storage-key-change effect so both stay in sync.
 function readThemeFromStorage(
   storageKey: string | null | undefined,
   defaultTheme: Theme,
 ): Theme {
-  // TEMPORARY: remove legacy theme keys so stale data does not persist under old keys.
-  purgeLegacyStorageKeys([
-    { key: LEGACY_THEME_STORAGE_KEY, storage: localStorage },
-  ]);
-
   if (!storageKey) {
     return defaultTheme;
   }

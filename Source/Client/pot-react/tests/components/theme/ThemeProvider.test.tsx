@@ -36,20 +36,6 @@ describe('ThemeProvider', () => {
     );
   });
 
-  test('purges legacy pot-ui-theme key and reads from provided storageKey', () => {
-    localStorage.setItem('pot-ui-theme', 'dark');
-    localStorage.setItem('pot:dev:user:abc:theme', 'light');
-
-    render(
-      <ThemeProvider storageKey="pot:dev:user:abc:theme">
-        <ThemeProbe />
-      </ThemeProvider>,
-    );
-
-    expect(localStorage.getItem('pot-ui-theme')).toBeNull();
-    expect(screen.getByTestId('theme-value')).toHaveTextContent('light');
-  });
-
   test('supports a global pre-login theme key', () => {
     localStorage.setItem('pot:dev:theme', 'dark');
 
@@ -75,21 +61,6 @@ describe('ThemeProvider', () => {
 
     expect(localStorage.getItem('pot:dev:user:abc:theme')).toBe('dark');
     expect(screen.getByTestId('theme-value')).toHaveTextContent('dark');
-  });
-
-  test('does not purge the env-scoped global theme key', () => {
-    localStorage.setItem('pot-ui-theme', 'dark');
-    localStorage.setItem('pot:dev:theme', 'light');
-
-    render(
-      <ThemeProvider storageKey="pot:dev:theme">
-        <ThemeProbe />
-      </ThemeProvider>,
-    );
-
-    expect(localStorage.getItem('pot-ui-theme')).toBeNull();
-    expect(localStorage.getItem('pot:dev:theme')).toBe('light');
-    expect(screen.getByTestId('theme-value')).toHaveTextContent('light');
   });
 
   test('re-reads theme when storageKey changes without remounting', () => {

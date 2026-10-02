@@ -1,8 +1,4 @@
-import {
-  buildEnvScopedKey,
-  buildUserScopedKey,
-  purgeLegacyStorageKeys,
-} from '@/concerns/storage';
+import { buildEnvScopedKey, buildUserScopedKey } from '@/concerns/storage';
 import useLocalStorageManager from '@/hooks/useLocalStorageManager';
 import type { DisplayError } from '@/lib';
 import useUserStore from '@/stores/useUserStore';
@@ -48,11 +44,6 @@ function useDashboardStorage(onError?: StorageErrorHandler) {
   const storageKey = userId
     ? buildUserScopedKey({ userId, feature: 'dashboard' })
     : buildEnvScopedKey('unauthenticated:dashboard');
-
-  // TEMPORARY: remove the legacy flat key now that the user is known and a scoped key is active.
-  if (userId) {
-    purgeLegacyStorageKeys([{ key: 'pot-dashboard', storage: localStorage }]);
-  }
 
   const { getProperty, setProperty } =
     useLocalStorageManager<DashboardStorageData>(
