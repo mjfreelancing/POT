@@ -1,6 +1,6 @@
 # Claude Code configuration
 
-Instructions for Claude Code in this repository. (`.github/` holds the separate GitHub Copilot equivalents; they are not read by Claude Code and are not kept in sync with these files.)
+Instructions for Claude Code in this repository.
 
 ## Where guidance lives
 
@@ -22,7 +22,7 @@ Use `/memory` to see which instruction files are loaded in a session.
 ## Adding things
 
 - **A rule for one directory**: put a `CLAUDE.md` in that directory.
-- **A rule for a glob spanning directories**: add `.claude/rules/<topic>.md` with `paths:` frontmatter (`applyTo` is a Copilot field and is ignored).
+- **A rule for a glob spanning directories**: add `.claude/rules/<topic>.md` with `paths:` frontmatter.
 - **A multi-step workflow**: add `.claude/skills/<name>/SKILL.md` with `name` and a specific `description`. Set `disable-model-invocation: true` if it has side effects.
 - **Something that must always hold**: use `.claude/settings.json` permissions or a hook; `CLAUDE.md` text is advisory.
 - Keep each `CLAUDE.md` under about 200 lines and state rules concretely. Put personal overrides in `CLAUDE.local.md` (gitignored).

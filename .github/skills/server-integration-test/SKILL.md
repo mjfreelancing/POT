@@ -1,41 +1,17 @@
 ---
 name: server-integration-test
-description: Create or update hosted server API integration tests with contract-focused assertions. Use when tests must boot the application host and validate transport-boundary behavior through real HTTP requests.
-license: MIT
+description: Create or update hosted ASP.NET Core API integration tests that boot the app host and assert HTTP contract behavior (status codes, headers, ProblemDetails) through a real HttpClient.
 ---
 
 # Server Integration Test
 
-Create integration tests for server API boundary behavior.
+Use this when a test must boot the host, or exercise middleware, auth, routing or real `HttpClient` requests. If it does not, use the `dotnet-unit-test` skill instead.
 
-## Scope
+Conventions are in `.github/instructions/aspnetcore-integration-tests.instructions.md` and `.github/instructions/dotnet-tests.instructions.md`.
 
-- Target hosted API integration tests that verify behavior through real HTTP requests.
-- Use this skill when the test must boot the application host and validate transport-boundary behavior.
-
-## Unit vs Integration Decision
-
-- Use this skill when tests require the hosted server, middleware, or real `HttpClient` requests.
-- If the test does not require hosted API behavior, use the `dotnet_unit_test.prompt.md` prompt instead.
-- For general .NET integration tests that do not require booting the application host, use the `dotnet-integration-test` skill instead.
-
-## Workflow
-
-1. Place tests under the integration-test project or folder.
-2. Assert status code first, then critical contract fields, headers, and error shape as needed.
-3. Use reusable host fixtures for shared setup.
-4. Run targeted tests first, then broaden.
-
-## Execution
-
-Adjust the example path below to match your repository structure.
-
-- `dotnet test .\Source\Server\Pot.AspNetCore.Integration.Tests\Pot.AspNetCore.Integration.Tests.csproj --nologo --verbosity minimal` (from `Source/Server`)
-
-## Repository Notes
-
-- Keep repository-specific host fixture and path details in consuming copies.
-- Keep shared integration architecture rules in instruction files.
-  - POT: Integration tests live under `Source/Server/Pot.AspNetCore.Integration.Tests/**`.
-  - POT: Shared host fixtures are in `Source/Server/Pot.AspNetCore.Integration.Tests/Host/`.
-  - POT: For targeted reruns, use `dotnet test Pot.AspNetCore.Integration.Tests/Pot.AspNetCore.Integration.Tests.csproj --filter "FullyQualifiedName~<FixtureOrTestName>"` from `Source/Server`.
+1. Place tests under `Source/Server/Pot.AspNetCore.Integration.Tests/`, organized by feature.
+2. Reuse the host fixtures in `Host/` (`*WebApplicationFactory.cs`) and helpers in `Host/Extensions`.
+3. Assert status code first, then critical contract fields, headers and error shape.
+4. Run targeted first, from `Source/Server`:
+   `dotnet test Pot.AspNetCore.Integration.Tests/Pot.AspNetCore.Integration.Tests.csproj --filter "FullyQualifiedName~<FixtureOrTestName>"`
+5. Then broaden: `dotnet test Pot.AspNetCore.Integration.Tests/Pot.AspNetCore.Integration.Tests.csproj --nologo --verbosity minimal`.

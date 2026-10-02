@@ -1,34 +1,14 @@
 ---
+description: "Docker compose, ports, health and protected data rules"
 applyTo: "Source/Docker/**"
 ---
 
-# Docker Workflow Instructions
+# Docker
 
-## Core Rules
-
-### Lifecycle
-
-- Prefer explicit, repeatable command sequences.
-- Keep compose command usage explicit and repeatable.
-- Validate service health after lifecycle changes.
-
-### Safety
-
-- Treat runtime volume/data directories as protected unless explicitly requested.
-- Keep Dockerfile/compose edits minimal and focused on requested behavior.
-
-### Validation
-
-- Verify containers are running.
-- Verify configured API and client health endpoints respond.
-
-## Expansion Notes
-
-- Keep task names and compose file paths in project-specific overlays or token files.
-  - POT: Prefer VS Code tasks `docker-start-client-server` and `docker-stop-client-server` for full-stack lifecycle.
-  - POT: Primary compose file is `Source/Docker/docker-compose-client-server.yml`.
-  - POT: Direct compose commands should load `--env-file .env --env-file .env.development`.
-  - POT: Expected host ports are client `5175`, API `5241`, and Postgres `5444`.
-  - POT: Expected containers are `pot-react`, `pot-aspnet`, and `pot-postgres`.
-  - POT: API health endpoint is `http://localhost:5241/_health`; frontend health endpoint is `http://localhost:5175/health`.
-  - POT: Treat `Source/Docker/postgres-data/**` as protected runtime data and preserve existing `network`, `depends_on`, and `healthcheck` intent unless explicitly asked.
+- Prefer VS Code tasks `docker-start-client-server` / `docker-stop-client-server` over ad-hoc shell sequences.
+- Primary compose file: `Source/Docker/docker-compose-client-server.yml`. Direct compose commands must load `--env-file .env --env-file .env.development`.
+- Containers: `pot-react`, `pot-aspnet`, `pot-postgres`. Host ports: client `5175`, API `5241`, Postgres `5444`.
+- Health: API `http://localhost:5241/_health`, client `http://localhost:5175/health`.
+- After any lifecycle change, verify the containers are running and both health endpoints respond. On failure, report the root error and the smallest next corrective step.
+- Treat `Source/Docker/postgres-data/**` as protected runtime data: never modify it unless explicitly asked.
+- Keep Dockerfile/compose edits minimal and limited to the requested behavior; preserve existing `network`, `depends_on` and `healthcheck` intent unless asked otherwise.

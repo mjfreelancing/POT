@@ -1,41 +1,18 @@
 ---
 name: docker-workflow
-description: Run Docker lifecycle workflows including build, start, stop, status, and health checks using repository task and compose wrappers. Use when working with Docker containers, compose services, or container lifecycle tasks.
-license: MIT
+description: Build, start, stop, check status of, or health-check the POT Docker stack (client, API, Postgres) using the repository tasks and compose file.
+disable-model-invocation: true
 ---
 
 # Docker Workflow
 
-Handle Docker workflows using the safest, most repeatable repository path.
+Use the safest, most repeatable path. Rules for this area are in `.github/instructions/docker.instructions.md`.
 
-## Scope
+1. Prefer the VS Code tasks `docker-start-client-server` / `docker-stop-client-server` over ad-hoc shell sequences.
+2. When running compose directly, use `Source/Docker/docker-compose-client-server.yml` with `--env-file .env --env-file .env.development`.
+3. Never modify `Source/Docker/postgres-data/**` or any volume unless the user explicitly asks.
+4. Validate afterwards:
+   - containers `pot-react`, `pot-aspnet` and `pot-postgres` are running;
+   - `http://localhost:5241/_health` (API) and `http://localhost:5175/health` (client) respond.
 
-- Handle build, start, stop, status, and health-check workflows for the existing stack.
-
-## Workflow
-
-1. Prefer repository task or command wrappers over ad-hoc shell sequences.
-2. Validate health and status after lifecycle changes.
-
-## Commands and Rules
-
-- Prefer VS Code tasks or documented wrapper commands first.
-- Use the repository's compose file or orchestration manifests when direct commands are required.
-- Include required environment files or flags when repository docs specify them.
-- Never modify persisted data folders or volumes unless the user explicitly asks.
-
-## Validation
-
-- Confirm expected services or containers are running.
-- Confirm documented health or status endpoints respond when available.
-
-If a step fails, summarize the root error and provide the smallest next corrective step.
-
-## Repository Notes
-
-- Add repository-specific task names, compose paths, endpoints, and safety boundaries in consuming copies.
-- Keep service-specific safety rules aligned with any Docker instruction file used by the repository.
-  - POT: Prefer VS Code tasks `docker-start-client-server` and `docker-stop-client-server` for full-stack lifecycle.
-  - POT: Compose file is `Source/Docker/docker-compose-client-server.yml`; direct commands load `--env-file .env --env-file .env.development`.
-  - POT: Health endpoints are API `http://localhost:5241/_health` and client `http://localhost:5175/health`.
-  - POT: Treat `Source/Docker/postgres-data/**` as protected runtime data.
+If a step fails, summarize the root error and give the smallest next corrective step.

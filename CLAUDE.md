@@ -11,9 +11,11 @@ Layout: .NET server in `Source/Server` (`pot.sln`), React/Vite client in `Source
 - Search for existing code to reuse before writing new code.
 - Before creating or moving code into shared helpers/utils or a shared project/package (production or test), ask the user where it should go.
 - Preserve public API shape unless a change is explicitly requested or approved.
+- Never reference PRDs, ADRs, task lists, stage numbers or requirement IDs (e.g. `PRD-025`, `R6`, `A-08`, `Stage 2`) in code, tests, comments or test names. Describe the behaviour itself; those documents are temporary and the references go stale.
 - Never remove existing comments. If one looks out of date, ask before changing it (spelling fixes are fine).
 - Never generate EF Core migrations unless explicitly asked; after editing entities or schema-impacting models, tell the developer to run and review `add-migration`.
 - Never touch `Source/Docker/postgres-data/**`.
+- Never run a git command that changes the repository or working tree (including `git mv`, `git rm`, `git add`, `git stash`, `git checkout`, `git restore`, `git reset`, `git commit` and `git push`) without the user's explicit approval. Read-only commands (`git status`, `git diff`, `git log`, `git show`, `git blame`) are fine. The user reviews code changes and stages/commits themselves; make edits in the working tree only. Rename or delete files with ordinary file operations rather than their git equivalents, and ask first if a git write is genuinely needed.
 
 ## Code style (all languages)
 

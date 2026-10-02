@@ -33,6 +33,15 @@
   },
   "chat.tools.terminal.autoApprove": {
     "dotnet build": true,
-    "npm run type:check": true
+    "dotnet test": true,
+    "npm run test": true,
+    "npm run lint": true,
+    "npm run type:check": true,
+    "docker compose ps": true
+  },
+  "chat.tools.edits.autoApprove": {
+    "**/Source/Docker/postgres-data/**": false,
+    "**/Source/Client/pot-react/src/components/ui/**": false,
+    "**/.env*": false
   }
 }

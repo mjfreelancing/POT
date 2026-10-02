@@ -1,41 +1,19 @@
 ---
 name: code-coverage
-description: Run the repository code coverage workflow and summarize results. Use when asked to run coverage, generate coverage reports, or summarize coverage metrics and failures.
-license: MIT
+description: Run the server code coverage workflow, find uncovered lines and branches in changed code, and summarize results. Use when asked to run coverage, find coverage gaps, or after adding tests for a new feature.
 ---
 
 # Code Coverage
 
-Run code coverage using repository defaults.
+Use coverage to find gaps in the code that was added or changed, then close them with targeted tests.
 
-## Scope
+1. From `Source/Server`, run `.\code_coverage.ps1 -NoOpen` (it runs the whole solution, so it is slow; use targeted `dotnet test --filter` runs while iterating). `-NoOpen` stops it launching a browser.
+2. Confirm the run and report generation succeeded. If it fails, report the root cause before proposing fixes.
+3. Read `CoverageReport/Summary.txt` for line/branch coverage per assembly and class.
+4. For the classes touched by the feature, open `CoverageReport/Cobertura.xml` and list lines with `hits="0"` and branches with `condition-coverage` below 100%.
+5. Add targeted tests in the nearest test project (conventions: `.github/instructions/dotnet-tests.instructions.md`) for each gap, re-run, and confirm.
+6. Report: the artifact location, coverage for the changed classes, any remaining gaps with a reason, and any warnings or missing artifacts.
 
-- Run coverage for the requested repository area or the default application and test scope.
+Judge coverage of the changed code, not the overall percentage. Do not add assertion-free tests to raise a number or chase unrelated classes.
 
-## Workflow
-
-1. Prefer the repository's primary coverage entry point, such as a script, task, or documented wrapper command.
-2. Confirm coverage execution and report generation succeeded.
-3. Summarize key coverage results and any failures or warnings.
-4. If coverage fails, report the root cause before proposing fixes.
-
-## Execution
-
-Adjust the example commands below to match your repository structure.
-
-- Preferred repository script or task wrapper when one exists.
-- .NET example: `dotnet test .\Source\Server\MySolution.sln --collect:"XPlat Code Coverage"` (from `.\Source\Server`)
-- Node example: `npm run coverage` (from `.\Source\Client\my-app`)
-
-## Output Expectations
-
-- Report artifact location
-- Headline coverage summary or key metrics when available
-- Any warnings, failed modules, or missing artifacts
-
-## Repository Notes
-
-- Keep tool-specific coverage details in repository scripts and coverage configuration files.
-- Add repository-specific commands and output paths in consuming copies.
-  - POT: Coverage entry point is `Source/Server/code_coverage.ps1` (or the `server-run-test-coverage` task) run from `Source/Server`.
-  - POT: Report artifacts land in `Source/Server/CoverageReport/` (HTML) and `Source/Server/CoverageArtifacts/` (timestamped raw runs).
+Artifacts: `Source/Server/CoverageReport/` (regenerated each run) and timestamped raw runs in `Source/Server/CoverageArtifacts/`. The same script is available as the VS Code task `server-run-test-coverage`.

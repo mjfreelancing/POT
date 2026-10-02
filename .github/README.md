@@ -1,47 +1,39 @@
-# POT Copilot Assets
+# GitHub Copilot configuration (VS Code)
 
-This folder holds the Copilot assets for the POT repository: instruction files, prompts, skills, and environment scripts that shape how Copilot works in this repo.
+Instructions for GitHub Copilot in this repository.
 
-POT is projection-first: optimize for future cash-flow projections, not historical budgeting.
+## Where guidance lives
 
-## Entry point
+| Location | Loaded | Contents |
+| --- | --- | --- |
+| `.github/copilot-instructions.md` | Always | Working agreement, cross-language style, run commands, ports |
+| `.github/instructions/*.instructions.md` | When a file matching `applyTo` is in context | Area and language rules (table below) |
+| `.github/skills/<name>/SKILL.md` | On demand, or via `/<name>` | Workflows (tests, coverage, Docker, PRDs, docs) |
+| `.github/scripts/` | Run manually | `agent-env-tools` environment diagnostics |
 
-- `.github/copilot-instructions.md` — repository-level operating guide for Copilot (always loaded). Read it first; it lists every scoped instruction and the shared integration workflows (tasks, ports, proxy).
+## Scoped instructions
+
+| File | `applyTo` |
+| --- | --- |
+| `server.instructions.md` | `Source/Server/**` |
+| `allsoverit-patterns.instructions.md` | `Source/Server/**/*.cs` |
+| `dotnet-tests.instructions.md` | `Source/Server/*Tests/**/*.cs` |
+| `aspnetcore-integration-tests.instructions.md` | `Source/Server/Pot.AspNetCore.Integration.Tests/**` |
+| `client.instructions.md` | `Source/Client/pot-react/**` |
+| `client-tests.instructions.md` | `Source/Client/pot-react/tests/**` |
+| `e2e.instructions.md` | `Source/Client/pot-react/e2e/**` |
+| `docker.instructions.md` | `Source/Docker/**` |
 
 ## Required setting
 
-- `.vscode/settings.json` sets `github.copilot.chat.codeGeneration.useInstructionFiles: true`; without it Copilot may not reliably load the scoped instruction files.
+`.vscode/settings.json` sets `github.copilot.chat.codeGeneration.useInstructionFiles: true`; without it Copilot may not reliably load the scoped instruction files.
 
-## Folder contents
+## Guardrails
 
-| Folder          | Purpose                                                                                                               |
-| --------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `instructions/` | Always-on, path-scoped guidance loaded per file pattern. See `instructions/README.md` for the catalog.                |
-| `prompts/`      | Reusable task entry points for common testing/documentation work. See `prompts/README.md`.                            |
-| `skills/`       | On-demand multi-step workflows (slash commands) such as coverage, Docker lifecycle, and PRDs. See `skills/README.md`. |
-| `scripts/`      | Copyable utility packs, currently `agent-env-tools` (environment diagnostics). See `scripts/README.md`.               |
+Instruction text is advisory. `.vscode/settings.json` enforces the important guardrails: it sets `chat.tools.edits.autoApprove` so edits to protected paths (`Source/Docker/postgres-data/**`, `Source/Client/pot-react/src/components/ui/**`, `.env*`) always require manual approval, and `chat.tools.terminal.autoApprove` lists the commands that run without prompting.
 
-## Provenance and mirror workflow
+## Adding things
 
-These assets are adapted from [`copilot-ai-pack`](https://github.com/mjfreelancing/copilot-ai-pack), the source of truth for the reusable templates. They follow the mirror convention:
-
-- `Core Rules` and baseline prompt/skill content are template-owned. Keep them text-equivalent to the pack unless a baseline update is intentionally deferred.
-- POT-specific behavior lives only in `Expansion Notes` / `Repository Notes` (for example route anchors, selector anchors, project names, commands, and conventions).
-- When the pack changes, sync mirrors by copying updated baseline content and preserving only POT-specific additions.
-- `applyTo` front matter is template-owned; adapt the scope per consuming repo (already done for POT paths).
-
-## POT-specific highlights
-
-- Preferred full-stack startup: VS Code task `docker-start-client-server`; stop with `docker-stop-client-server`.
-- Docker compose reference: `Source/Docker/docker-compose-client-server.yml`.
-- Port map: client `5175`, API `5241`, Postgres host `5444`; dev proxy forwards `/api` to `http://localhost:5242`.
-- Server test execution from `Source/Server`; targeted integration runs use `dotnet test Pot.AspNetCore.Integration.Tests/Pot.AspNetCore.Integration.Tests.csproj --filter "FullyQualifiedName~<FixtureOrTestName>"`.
-
-## Maintainer notes
-
-When changing assets:
-
-- keep each asset intent clear and scoped
-- update the relevant folder `README.md` when files or guidance change
-- keep this README aligned with the actual folder structure
-- keep POT-only content in `Expansion Notes` / `Repository Notes` so future baseline syncs stay clean
+- **A rule for one area or glob**: add `.github/instructions/<topic>.instructions.md` with `description` and `applyTo` front matter. Avoid `applyTo: "**/*"`; always-on guidance belongs in `copilot-instructions.md`.
+- **A multi-step workflow**: add a skill (see `skills/README.md`).
+- Keep each file concise and state rules concretely.

@@ -1,179 +1,43 @@
 # Scripts: agent-env-tools
 
-## Purpose
+A PowerShell diagnostics script that reports which CLI tools are available, so an agent (or developer) knows what will work before running builds and tests instead of failing mid-task.
 
-This script exists primarily to ensure an AI agent session is as productive as possible from the start.
+It answers: are the required tools installed and resolvable, which optional tools are missing, is `python` real or only the Windows Store alias, and what should be installed next.
 
-When a Copilot agent begins work in a repository, it benefits from knowing which CLI tools are available before attempting to run builds, tests, or other commands. Running this script gives the agent a clear, structured picture of the environment so it can adapt its behavior rather than failing mid-task due to a missing tool.
+## What it checks
 
-Secondary benefit: developers can run the same script manually to confirm their machine is ready before starting a coding session.
+- Required: `git`, `dotnet`, `node`, `npm`. A missing required tool exits with code 1.
+- Optional: `docker`, `python`, `py`, `rg`, `pwsh`. Missing optional tools only produce guidance.
 
-The script answers:
+Statuses: `FOUND`, `MISSING (REQUIRED)`, `MISSING (OPTIONAL)`, `UNUSABLE (ALIAS)` (usually `python.exe` pointing at the Microsoft Store alias).
 
-- Are the required tools installed and resolvable?
-- Which optional tools are missing, and does that matter for the current work?
-- Is `python` real, or is Windows only finding the Store alias?
-- What should be installed next?
+## Running it
 
-## What this script checks
-
-Required tools:
-
-- `git`
-- `dotnet`
-- `node`
-- `npm`
-
-Optional tools:
-
-- `docker`
-- `python`
-- `py`
-- `rg`
-- `pwsh`
-
-If a required tool is missing, the script exits with a failure code so the problem is obvious.
-
-## Copy target
-
-This script is designed to be copied into a consuming repository. Copy this folder into the consuming repository at:
-
-- `.github\scripts\agent-env-tools\`
-
-After copying, the script path in that repository should be:
-
-- `.github\scripts\agent-env-tools\agent-env-tools.ps1`
-
-> **Note:** The `.github\scripts\...` paths in this README refer to the **consuming** repository after copying. If you are viewing this file in the `copilot-ai-pack` source repository, the script is at `scripts\agent-env-tools\agent-env-tools.ps1` and is not intended to be run here.
-
-## Running the script (in the consuming repository)
-
-### Agent use
-
-An agent can run this script at the start of a session to confirm the environment is ready. The agent should run it from the consuming repository root:
+Run from the repository root:
 
 ```powershell
 .\.github\scripts\agent-env-tools\agent-env-tools.ps1
 ```
 
-The script reports tool availability and exits. No changes are made to the machine unless the agent explicitly uses one of the install flags described below.
+| Mode | Flags | Effect |
+| --- | --- | --- |
+| Report only (default) | none | Reports status; changes nothing |
+| Offer installs | `-OfferInstall` | Prompts before each optional install (via `winget`) |
+| Preview installs | `-OfferInstall -DryRun` | Shows install commands without running them |
+| Auto install | `-AutoInstall` | Installs optional tools without prompting; explicit opt-in only |
 
-### Developer use
+Suggested order: report-only, then `-OfferInstall -DryRun`, then `-OfferInstall`, then report-only again to confirm.
 
-1. Copy this folder into `.github\scripts\agent-env-tools\` in the consuming repository.
-2. Open the consuming repository in VS Code.
-3. Open a PowerShell terminal in that repository.
-4. Make sure the terminal is at the repository root.
+## Interpreting results
 
-If you are not sure where you are, run:
-
-```powershell
-Get-Location
-```
-
-The current directory should be the repository root before you run the script. Then run:
-
-```powershell
-.\.github\scripts\agent-env-tools\agent-env-tools.ps1
-```
-
-This is the normal starting point. It only reports status. It does not install anything.
-
-## What you will see
-
-The script prints a table showing:
-
-- the tool name
-- whether it was found
-- where it resolved from
-- the detected version
-
-Possible statuses include:
-
-- `FOUND`
-- `MISSING (REQUIRED)`
-- `MISSING (OPTIONAL)`
-- `UNUSABLE (ALIAS)`
-
-`UNUSABLE (ALIAS)` is most relevant for `python` on Windows. It usually means Windows is pointing `python.exe` to the Store alias instead of a real Python installation.
-
-## Safe run modes
-
-All commands below assume the script has been copied to `.github\scripts\agent-env-tools\` in the consuming repository and are run from that repository's root.
-
-Report-only mode:
-
-```powershell
-.\.github\scripts\agent-env-tools\agent-env-tools.ps1
-```
-
-Prompt before optional installs:
-
-```powershell
-.\.github\scripts\agent-env-tools\agent-env-tools.ps1 -OfferInstall
-```
-
-Preview install commands without changing the machine:
-
-```powershell
-.\.github\scripts\agent-env-tools\agent-env-tools.ps1 -OfferInstall -DryRun
-```
-
-Install all optional tools automatically after you explicitly opt in:
-
-```powershell
-.\.github\scripts\agent-env-tools\agent-env-tools.ps1 -AutoInstall
-```
-
-## Recommended order for less CLI-experienced developers
-
-1. Start with report-only mode.
-2. Read the missing and optional tool results.
-3. If you want help installing optional tools, use `-OfferInstall -DryRun` first.
-4. If the preview looks correct, use `-OfferInstall`.
-5. Re-run report-only mode after installs to confirm the final state.
-
-## How to interpret the result
-
-If all required tools are found:
-
-- You can continue with normal coding, build, and test work.
-
-If one or more required tools are missing:
-
-- Stop and install those first.
-- Re-run the script before proceeding.
-
-If optional tools are missing:
-
-- You can usually continue working.
-- The README and script output explain why those tools are still useful.
-
-## Windows note for Python
-
-If `python` is reported as `UNUSABLE (ALIAS)`:
-
-1. Install Python.
-2. Open Windows App Execution Aliases settings.
-3. Disable the aliases for `python.exe` and `python3.exe` if they point to the Microsoft Store.
-4. Run the script again.
+- All required tools found: continue with normal build and test work.
+- A required tool missing: install it and re-run before proceeding.
+- Optional tools missing: you can usually continue.
+- `python` shows `UNUSABLE (ALIAS)`: install Python, then disable the `python.exe` / `python3.exe` aliases in Windows App Execution Aliases and re-run.
 
 ## Troubleshooting
 
-If PowerShell blocks the script, try running (from the consuming repository root):
+- Script blocked by execution policy: `powershell -ExecutionPolicy Bypass -File .\.github\scripts\agent-env-tools\agent-env-tools.ps1`.
+- `winget` unavailable: diagnostics still work; install missing tools manually.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\.github\scripts\agent-env-tools\agent-env-tools.ps1
-```
-
-If that works, the issue is your machine's script execution policy rather than the script itself.
-
-If `winget` is unavailable:
-
-- The diagnostic checks still work.
-- Optional auto-install flows will not run.
-- Install the missing tools manually and then re-run the script.
-
-## Maintainer note
-
-Keep usage guidance in this README. Keep behavior and safety rules in `agent-env-tools.ps1`.
+Keep usage guidance in this README and behavior/safety rules in `agent-env-tools.ps1`.
