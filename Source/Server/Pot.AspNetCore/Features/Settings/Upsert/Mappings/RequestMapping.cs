@@ -1,5 +1,4 @@
 ﻿using Pot.App.Features.Settings.Upsert.Models;
-using Pot.AspNetCore.Features.Settings.Upsert;
 using Pot.Shared.Enumerations;
 
 namespace Pot.AspNetCore.Features.Settings.Upsert.Mappings;

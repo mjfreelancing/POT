@@ -2,7 +2,6 @@
 using Pot.Shared.Extensions;
 using Pot.TestUtils;
 using Shouldly;
-using Xunit;
 
 namespace Pot.Shared.Tests.Extensions;
 

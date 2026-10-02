@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging.Abstractions;
+﻿using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Pot.App.Features.Accounts.GetAll;
 using Pot.App.Features.Accounts.GetAll.Models;
@@ -8,9 +8,7 @@ using Pot.App.Features.Maintenance.Export.Expenses;
 using Pot.App.Features.Maintenance.Import.Models;
 using Pot.App.Features.Maintenance.Import.Reader;
 using Pot.App.Features.Maintenance.Metadata.Models;
-using Pot.App.Features.Maintenance.Metadata.Readers;
 using Pot.App.Features.Maintenance.Metadata.Serializer;
-using Pot.App.Features.Maintenance.Metadata.Writers;
 using Pot.Shared.Enumerations;
 using Pot.TestUtils;
 using Shouldly;

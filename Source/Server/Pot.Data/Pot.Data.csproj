@@ -18,4 +18,8 @@
 		<InternalsVisibleTo Include="Pot.App.Tests" />
 		<InternalsVisibleTo Include="Pot.Data.Tests" />
 	</ItemGroup>
+
+	<PropertyGroup>
+		<NoWarn>$(NoWarn);IDE0005</NoWarn>
+	</PropertyGroup>
 </Project>

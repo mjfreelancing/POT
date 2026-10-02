@@ -9,7 +9,6 @@ using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
 using Pot.Data.Repositories.Expenses;
 using Pot.Shared.Enumerations;
-using Pot.Shared.Models;
 using Pot.TestUtils;
 using Shouldly;
 

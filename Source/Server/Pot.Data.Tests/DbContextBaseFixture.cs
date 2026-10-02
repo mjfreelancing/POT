@@ -1,6 +1,5 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using NSubstitute;
-using Pot.Data.Entities;
 using Pot.Shared;
 using Pot.TestUtils;
 using Shouldly;
