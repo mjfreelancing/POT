@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet test *)",
+      "Bash(dotnet build *)",
+      "Bash(npm run test *)",
+      "Bash(npm run test)",
+      "Bash(npm run lint)",
+      "Bash(npm run type:check)",
+      "Bash(docker compose ps *)"
+    ],
+    "deny": [
+      "Read(**/.env*)",
+      "Read(Source/Docker/postgres-data/**)",
+      "Edit(Source/Docker/postgres-data/**)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pwsh -NoProfile -File \"$CLAUDE_PROJECT_DIR/.claude/hooks/protect-paths.ps1\""
+          }
+        ]
+      }
+    ]
+  }
+}

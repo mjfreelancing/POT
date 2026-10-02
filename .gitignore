@@ -413,3 +413,6 @@ Source/Server/CoverageArtifacts
 .playwright-mcp
 Data/Azure
 Data/*Backup*/
+
+# Claude Code personal overrides
+CLAUDE.local.md
