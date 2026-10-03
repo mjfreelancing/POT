@@ -138,7 +138,7 @@ function ExpenseDetails({
                 <div className="px-3 py-3 space-y-2 text-sm text-muted-foreground">
                   <p>No expenses to display for this date</p>
                   <p className="text-xs">
-                    Check if any accounts are hidden in the chart
+                    Check if any accounts are hidden in the chart.
                   </p>
                 </div>
               ) : (

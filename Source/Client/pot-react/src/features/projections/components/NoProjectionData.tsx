@@ -20,7 +20,7 @@ type NoProjectionDataProps = {
  * available, or every series has been hidden.
  */
 function NoProjectionData({
-  title = 'No Data Available',
+  title = 'No data available',
   description = 'No projection data available to display',
 }: NoProjectionDataProps) {
   return (

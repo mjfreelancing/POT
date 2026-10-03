@@ -44,7 +44,7 @@ function DataTableContent<TData extends RowData, TValue = unknown>({
       ) : (
         <TableRow>
           <TableCell colSpan={tableColumns.length} className="h-24 text-center">
-            No results.
+            No results
           </TableCell>
         </TableRow>
       )}

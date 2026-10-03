@@ -61,7 +61,7 @@ describe('DataTable (real render)', () => {
     expect(getFirstColumnTexts()).toEqual(['Bravo', 'Alpha', 'Charlie']);
 
     rerender(<DataTable<TestRow, unknown> columns={columns} data={[]} />);
-    expect(screen.getByText('No results.')).toBeInTheDocument();
+    expect(screen.getByText('No results')).toBeInTheDocument();
   });
 
   test('sorts rows when a sortable header is clicked (asc then desc)', async () => {

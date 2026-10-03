@@ -90,7 +90,7 @@ describe('DataTableContent', () => {
       </table>,
     );
 
-    const noResultsCell = screen.getByText('No results.');
+    const noResultsCell = screen.getByText('No results');
 
     expect(noResultsCell).toBeInTheDocument();
     expect(noResultsCell.closest('td')).toHaveAttribute('colspan', '2');

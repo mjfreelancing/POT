@@ -187,8 +187,8 @@ The detail sheet appears only when metric is Income or Expenses and the user cli
   - Error sheet shown for either storage errors or API errors.
   - Storage and API errors are handled as separate states.
 - Empty chart data:
-  - No Data Available card is shown when there are no non-zero values for the selected metric in the returned projection dataset.
-  - When data exists but every toggle in the Accounts legend is off (including `Total (All Accounts)`), the plot is replaced by a `No Account Selected` message.
+  - No data available card is shown when there are no non-zero values for the selected metric in the returned projection dataset.
+  - When data exists but every toggle in the Accounts legend is off (including `Total (All Accounts)`), the plot is replaced by a `No account selected` message.
 
 ## Persistence Behavior
 

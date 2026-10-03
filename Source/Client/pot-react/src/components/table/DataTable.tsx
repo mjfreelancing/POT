@@ -234,7 +234,7 @@ function DataTable<TData extends RowData, TValue = unknown>({
                       colSpan={tableColumns.length}
                       className="h-24 text-center p-4"
                     >
-                      No results.
+                      No results
                     </td>
                   </tr>
                 )}

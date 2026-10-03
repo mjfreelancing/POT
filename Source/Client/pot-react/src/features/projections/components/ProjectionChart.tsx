@@ -594,7 +594,7 @@ function ProjectionChart({
       <CardContent className="flex-1 flex flex-col p-0">
         {hasData && !hasVisibleSeries ? (
           <NoProjectionData
-            title="No Account Selected"
+            title="No account selected"
             description="Select at least one account to display the chart."
           />
         ) : hasData ? (

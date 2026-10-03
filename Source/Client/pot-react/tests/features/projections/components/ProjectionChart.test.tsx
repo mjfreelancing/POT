@@ -115,7 +115,7 @@ describe('ProjectionChart', () => {
     });
 
     expect(screen.getByTestId('no-projection-data')).toHaveTextContent(
-      'No Account Selected',
+      'No account selected',
     );
     expect(document.querySelector('[data-slot="chart"]')).toBeNull();
   });
