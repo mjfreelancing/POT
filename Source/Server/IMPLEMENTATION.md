@@ -116,7 +116,7 @@ Available = Balance - Reserved - TotalCommitted
           = Balance - Reserved - TotalExpenseAccrued - TotalArrears
 ```
 
-The projection chart composes its own `Available` from the running forecast balance and adds that day's payments back; see [CRITICAL Formula - Available Funds](#critical-formula---available-funds).
+The projections read no longer publishes a derived `Available`; it returns the running forecast `balance` and the components the chart subtracts (`reserved`, `arrears` and `unpaidAccrual`, where `unpaidAccrual` is the day's accrual net of the payments its own rows settle), and the client composes `balance - reserved - unpaidAccrual - arrears`. See [CRITICAL Formula - Available Funds](#critical-formula---available-funds) for the derivation.
 
 A bill due today is the current bill: it accrues in full and is **not** counted as arrears.
 
@@ -631,7 +631,7 @@ For each day in the projection period:
 3. **Accrue expenses:** Derive accumulated expenses, arrears and daily accrual rates from the start-of-day cursor
 4. **Renew items:** Advance recurring expenses/income to their next due dates
 5. **Update balance:** Apply income and expenses to account balance
-6. **Record projection:** Store date, balance, available, and transaction details
+6. **Record projection:** Store date, balance, reserved, arrears, unpaidAccrual, and transaction details
 
 `DailyAccrual` in projection output is the dynamic operational metric. It is expected to vary during a cycle.
 
@@ -642,6 +642,8 @@ The "Available" amount shows how much money is truly available for spending afte
 ```
 Available = Balance - Reserved - Accrued - Arrears + ExpensesPaid
 ```
+
+> **Update (2026-10-03):** the projections read no longer publishes a derived `Available`. It publishes the running forecast `balance` and the components the client subtracts — `reserved`, `arrears` and `unpaidAccrual` (`Accrued` less the accrual the day's assumed payments settle) — and the chart composes `balance - reserved - unpaidAccrual - arrears`. The derivation below still explains why the settled part of the day's accrual is added back. The accounts read keeps its own `Available` (`Balance - Reserved - TotalCommitted`) and is unchanged.
 
 #### Breaking Down Each Component
 

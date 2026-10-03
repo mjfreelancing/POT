@@ -3,7 +3,7 @@
 ## Overview
 
 Projections shows date-based forecast values for each account and a combined Total (All Accounts) series.
-It supports both trend metrics (line charts) and event metrics (bar charts), with filters for metric, start date, period, and per-series visibility.
+It supports both trend metrics (line charts) and event metrics (bar charts), with filters for metric, start date, period, and per-series visibility, plus an Include control that subtracts standing obligations from the plotted balance.
 
 The page is read-only and designed for analysis.
 
@@ -21,22 +21,22 @@ The page is read-only and designed for analysis.
 - Filter controls:
   - View (metric)
   - From (start date)
-  - Period (preset month buttons plus Custom month input)
-  - Show (series visibility toggles)
+  - Period (a 1 to 12 month picker)
+  - Include (Reserved, Accruals and Arrears deductions; shown only for Account Balances)
+  - Accounts (series visibility toggles, with the combined total separate)
 - Chart area:
-  - Line chart for trend metrics
+  - Line chart for trend metrics, with the period's low and high marked
   - Bar chart for event metrics
 - Right-side detail sheet:
   - Opens only for bar metrics when a bar is clicked
 
 ## Metric Types And Chart Types
 
-The View selector supports five metrics.
+The View selector supports four metrics.
 
 | Metric label in View selector | Internal metric key | Chart type |
 | ----------------------------- | ------------------- | ---------- |
 | Account Balances              | balance             | Line       |
-| Available Balances            | available           | Line       |
 | Projection Accruals           | dailyAccrual        | Line       |
 | Income                        | incomeReceived      | Bar        |
 | Expenses                      | expensesPaid        | Bar        |
@@ -57,17 +57,21 @@ This is different from Dashboard Daily Need:
 
 Do not interpret short-term movement in Projection Accruals as a change in your long-run Daily Need unless underlying obligations changed.
 
-### Available Balances Interpretation
+### Account Balances And The Include Deductions
 
-`Available Balances` is the obligation-aware line. Each day's value is the projected balance less the account's reserved amount and its committed obligations:
+`Account Balances` plots each account's forecast balance: the entered balance plus the income assumed received and less the expenses assumed paid on each day.
 
-- **Committed** is the accrued cycles in progress plus past-due arrears.
-- **Arrears** is the total for expense cycles whose due date has already passed without being settled — one billed amount per missed cycle.
-- Arrears is held for every day of the window, because the forecast makes no assumption about when you catch up.
-- Arrears lowers `Available Balances` only. It is not deducted from the `Account Balances` line, which continues to show the forecast balance.
-- A bill due today is the current bill: it counts as accrued and is **not** counted as arrears.
+The `Include` control subtracts standing obligations from that line. It appears only while `Account Balances` is selected, and its label states the current basis (`Balance less: Arrears` with the defaults, or `Balance` when nothing is subtracted). Open it to toggle three deductions:
 
-Because the chart applies its own assumed payments inside the window, `Available Balances` can differ from the `Available` shown on the accounts page for the same account.
+- **Reserved** — the account's reserved amount (funds set aside, such as an emergency fund).
+- **Accruals** — what is being set aside for upcoming bills, net of the amounts the day's assumed payments already cover. A bill due today is the current bill: it is already deducted from the balance, so it is not subtracted a second time by this toggle.
+- **Arrears** — one billed amount for every past-due, un-settled occurrence. Arrears is held for every day of the window, because the forecast makes no assumption about when you catch up, and it is not deducted from the underlying balance line.
+
+Defaults: `Reserved` off, `Accruals` off, `Arrears` on, so a first load plots the balance net of past-due debt. The three toggles apply to every visible series — each account and the combined total alike.
+
+With all three off the line is the plain forecast balance. With all three on it is the balance less reserved, the net accrual and arrears, which is the most conservative reading. The individual combinations let you isolate one obligation at a time.
+
+Because the chart assumes the window's payments happen on their due dates, these figures can differ from the `Available` and `Committed` columns on the accounts page, which are measured on the entered balance without those assumptions.
 
 ## Date Window And Period Logic
 
@@ -99,25 +103,23 @@ The Period filter controls only what is rendered in the chart view.
 
 ### Period
 
-- Preset buttons: 1 mo, 2 mo, 3 mo, 6 mo, 9 mo, 12 mo.
-- Custom option:
-  - Select Custom to enter a month value manually.
-  - Allowed range is 1 to 12 months.
-  - Unit label is shown as `mo`.
-- The chart updates immediately when the custom value changes.
-- Controls the rendered time window from the selected start date.
+- One picker offering every whole month from 1 to 12 (`6 months`, `1 month`).
+- The control shows the current value; its accessible name is `Select chart period in months`.
+- 12 shows the whole fetched window and 1 trims it to the first month.
+- Controls the rendered time window from the selected start date; the chart updates immediately and does not refetch.
 
-### Show (series visibility)
+### Accounts (series visibility)
 
-- One toggle per account plus one for Total (All Accounts).
+- The group is labelled `Accounts` and holds one toggle per account.
+- `Total (All Accounts)` is a separate toggle beside the group, because it is a combined total rather than an account.
 - Hidden series are removed from chart rendering.
-- Y-axis domain is recalculated from visible series only.
+- The Y-axis domain, and the low/high read-out, are recalculated from visible series only.
 
 ## Mobile Layout
 
-- On mobile, date and period controls are inside a collapsible Filters section.
-- In the Period control, choosing Custom shows an inline month input in the same control block.
-- The legend row (Show toggles) is also shown only when that section is expanded.
+- On small screens the whole filter bar — View, From, Period, the Include control and the Accounts legend — collapses behind a single full-width `Options` / `Hide options` button.
+- From the medium breakpoint up the controls are always shown inline.
+- The `Include` control states the current basis in its own label, so the plotted basis is clear whether the disclosure is open or closed.
 
 ## Tooltip Behavior
 
@@ -168,6 +170,9 @@ The detail sheet appears only when metric is Income or Expenses and the user cli
 
 - Y-axis is symmetric around visible min and max with margin.
 - A zero reference line appears only when visible domain spans both negative and positive values.
+- The period's visible low and high are marked as two horizontal reference lines, each labelled with its value at the left of the plot. The low label sits below its line and the high label above its own.
+- The values are the lowest and highest across every visible series in the displayed period, so hiding a series can move them.
+- The read-out is shown for line metrics only, and is hidden when there is no data or every series is hidden.
 
 ## Bar Chart Axis Behavior
 
@@ -198,12 +203,13 @@ Persisted values:
 
 - metric
 - period
+- include (the Reserved, Accruals and Arrears toggles)
 - hiddenSeries
 - startDate when explicitly set to a non-today date
 
 Period persistence rules:
 
-- Both preset and custom period values are persisted as `period`.
+- The selected 1 to 12 month period is persisted as `period`.
 - On revisit, the previously selected period value is restored.
 
 Start date persistence rules:
@@ -217,15 +223,12 @@ Start date persistence rules:
 1. Open Projections page.
 2. Select a View metric.
 3. Set From date.
-4. Set Period:
-
-- choose a preset month button, or
-- choose Custom and enter months (1-12).
-
-5. Use Show toggles to hide or reveal account series.
-6. Hover chart points or bars to inspect values.
-7. For Income or Expenses metrics, click a bar to open date details.
-8. In the detail sheet:
+4. Set Period by choosing a month from 1 to 12.
+5. For Account Balances, open Include and choose which of Reserved, Accruals and Arrears to subtract.
+6. Use the Accounts toggles to hide or reveal account series (and the separate Total (All Accounts) toggle).
+7. Hover chart points or bars to inspect values.
+8. For Income or Expenses metrics, click a bar to open date details.
+9. In the detail sheet:
 
 - use totals to compare full scope versus filtered visibility
 - use item badge to understand subset versus full-day totals

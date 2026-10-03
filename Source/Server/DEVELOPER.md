@@ -5083,7 +5083,7 @@ This preserves due-date debit behavior while disabling pre-funding accrual behav
 - `TotalExpenseAccrued`: the accrual of the cycles in progress.
 - `TotalArrears`: one `Amount` per past-due, un-settled occurrence.
 - `TotalCommitted`: `TotalExpenseAccrued + TotalArrears`, rendered as the `Committed` column on the accounts table.
-- `Available = Balance - Reserved - TotalCommitted` on the accounts read. The projection chart composes its own `Available` from the running forecast balance.
+- `Available = Balance - Reserved - TotalCommitted` on the accounts read. The projections read publishes no derived `Available`: it returns the running forecast `balance` plus `reserved`, `arrears` and `unpaidAccrual`, and the chart composes the value it plots as `balance - reserved - unpaidAccrual - arrears`.
 
 A bill due today is the current bill: it accrues in full and is **not** counted as arrears.
 
