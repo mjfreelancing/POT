@@ -452,28 +452,30 @@ function ProjectionChart({
           'linear-gradient(to bottom, rgba(148, 163, 184, 0.01), rgba(148, 163, 184, 0.04))',
       }}
     >
-      <CardHeader>
-        <div className="flex items-start justify-between gap-6">
-          <div className="flex-1 space-y-1">
-            <CardTitle>{getChartTitle()}</CardTitle>
-            <CardDescription>{getDateRangeDescription()}</CardDescription>
+      <div className="flex flex-col">
+        <CardHeader>
+          <div className="flex items-start justify-between gap-6">
+            <div className="flex-1 space-y-1">
+              <CardTitle>{getChartTitle()}</CardTitle>
+              <CardDescription>{getDateRangeDescription()}</CardDescription>
+            </div>
           </div>
-        </div>
-      </CardHeader>
-      <ChartControls
-        selectedMetric={selectedMetric}
-        onMetricChange={onMetricChange}
-        startDate={startDate}
-        onStartDateChange={onStartDateChange}
-        period={period}
-        onPeriodChange={onPeriodChange}
-        seriesKeys={seriesKeys}
-        seriesVisibility={seriesVisibility}
-        onToggleSeries={toggleSeries}
-        chartConfig={chartConfig}
-        include={include}
-        onIncludeChange={onIncludeChange}
-      />
+        </CardHeader>
+        <ChartControls
+          selectedMetric={selectedMetric}
+          onMetricChange={onMetricChange}
+          startDate={startDate}
+          onStartDateChange={onStartDateChange}
+          period={period}
+          onPeriodChange={onPeriodChange}
+          seriesKeys={seriesKeys}
+          seriesVisibility={seriesVisibility}
+          onToggleSeries={toggleSeries}
+          chartConfig={chartConfig}
+          include={include}
+          onIncludeChange={onIncludeChange}
+        />
+      </div>
       <CardContent className="flex-1 flex flex-col p-0">
         {hasData ? (
           <div className={chartAreaClass}>

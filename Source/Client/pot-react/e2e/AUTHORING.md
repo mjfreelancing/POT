@@ -57,8 +57,9 @@ timeout: 60_000 })` + `GET /api/<list>` with the accessToken, then assert the UI
   could be a prefix/substring of siblings (calendar day "1" also matches 10-19/21).
 - Create/edit form "Description" collides with the page "Search … by description" — use
   `getByRole('textbox', { name: 'Description', exact: true })`.
-- Radix `Select`: use `selectRadixOption` (keyboard/AT path: `data-highlighted` gate + focus +
-  Enter + `toBeHidden`) — never `.click()` or `evaluate()` dispatch.
+- Radix `Select`: use `selectRadixOption` (`e2e/helpers/radix.ts`) — click the `combobox`
+  trigger, then the keyboard/AT path (`data-highlighted` gate + focus + Enter + `toBeHidden`).
+  Never `.click()` or `evaluate()` dispatch an option.
 - MODAL dialogs close on Escape/backdrop; always-open create sheets do NOT (form Cancel /
   back-nav only). `DialogContent` has no X by default (`showCloseButton=false`).
 - A table description cell often shares text with badges/popovers — use substring

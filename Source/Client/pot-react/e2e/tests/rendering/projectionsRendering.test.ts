@@ -1,8 +1,7 @@
 import { expect, test } from '../../fixtures/auth';
 
-// The projection chart's legend row is only visible on desktop; on mobile the
-// filters (including the legend) are collapsed behind a "Show filters" button
-// (covered by mobileCardGrids.test.ts).
+// The projection chart's full legend strip is desktop-oriented; the mobile
+// layout keeps the same controls but in a compact two-column stack.
 const isMobileProject = (testInfo: import('@playwright/test').TestInfo) =>
   testInfo.project.name.startsWith('mobile');
 
@@ -59,16 +58,23 @@ test('projections renders the chart and account legend from the API', async ({
   await expect(legendToggle).toBeVisible();
 });
 
-// A-03: the Include switch row never collapses, so it renders on any viewport
-// without the reader opening the mobile filters.
-test('projections include switches render on any viewport without opening filters', async ({
+// The Include switches live behind a compact trigger whose label states the
+// current basis; on phones the trigger itself sits inside the Options
+// disclosure.
+test('projections include switches are reachable on any viewport', async ({
   page,
-}) => {
+}, testInfo) => {
   await page.goto('/projections');
 
   await expect(
     page.getByText('Account Balances', { exact: true }).first(),
   ).toBeVisible();
+
+  if (isMobileProject(testInfo)) {
+    await page.getByRole('button', { name: 'Show options' }).click();
+  }
+
+  await page.getByRole('button', { name: /^Include:/ }).click();
 
   for (const name of INCLUDE_SWITCH_NAMES) {
     await expect(page.getByRole('switch', { name })).toBeVisible();
@@ -84,7 +90,7 @@ test('toggling each include switch moves the plotted total and restoring it retu
 }, testInfo) => {
   test.skip(
     isMobileProject(testInfo),
-    'Plotted-line comparison is desktop-only; the mobile switch visibility is covered above',
+    'Plotted-line comparison is desktop-only; the mobile switch reachability is covered above',
   );
 
   const projectionsResponsePromise = page.waitForResponse(
@@ -101,6 +107,9 @@ test('toggling each include switch moves the plotted total and restoring it retu
   await expect(
     page.getByText('Account Balances', { exact: true }).first(),
   ).toBeVisible();
+
+  // Open the compact Include trigger so the switches are mounted.
+  await page.getByRole('button', { name: /^Include:/ }).click();
 
   // The last rendered line is the combined total series, which sums the
   // accounts' reserved, unpaid accrual and arrears.

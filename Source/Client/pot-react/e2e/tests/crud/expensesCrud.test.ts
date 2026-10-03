@@ -1,8 +1,9 @@
 import { expect, test } from '../../fixtures/auth';
 import {
-  createE2eRequestContext as createRequestContext,
-  deleteExpenseViaApi,
+    createE2eRequestContext as createRequestContext,
+    deleteExpenseViaApi,
 } from '../../helpers/api';
+import { selectRadixOption } from '../../helpers/radix';
 
 // Covers the expenses CRUD flow:
 // create -> edit -> delete end-to-end against the real stack, including the
@@ -73,8 +74,9 @@ test.describe.serial('Expenses CRUD (fixture-managed)', () => {
     await page.getByLabel('Amount').fill(String(expense.amount));
 
     // Associated-account selection: open the Select and pick the first account.
+    // Nothing is selected yet, so no option is highlighted to gate on.
     await page.getByLabel('Associated Account').click();
-    await page.getByRole('option').first().click();
+    await selectRadixOption(page.getByRole('option').first());
 
     // Light date-picker exercise: open Next Due and accept the selected date.
     await page.getByLabel('Next Due').click();

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
 import type { ChartConfig } from '@/components/ui/chart';
 import type { ProjectionInclude } from '@/data/projection';
@@ -8,11 +8,6 @@ import { DEFAULT_PROJECTION_INCLUDE } from '@/data/projection';
 import ChartControls, {
   type ChartControlsProps,
 } from '@/features/projections/components/ChartControls';
-import { useIsMobile } from '@/hooks/use-mobile';
-
-vi.mock('@/hooks/use-mobile', () => ({
-  useIsMobile: vi.fn(),
-}));
 
 const chartConfig: ChartConfig = {
   'account-1': { label: 'Bills Account', color: '#8884d8' },
@@ -39,136 +34,55 @@ function createProps(
   };
 }
 
-const ALL_INCLUDES_OFF: ProjectionInclude = {
-  reserved: false,
-  accruals: false,
-  arrears: false,
-};
+function includeTrigger(): HTMLElement {
+  return screen.getByRole('button', { name: /^Include:/ });
+}
 
 describe('ChartControls', () => {
-  beforeEach(() => {
-    vi.mocked(useIsMobile).mockReturnValue(false);
-  });
+  test('collapses the facets and the legend behind an Options disclosure on small screens', async () => {
+    const user = userEvent.setup();
 
-  test('relabels the series toggle group from Show to Series', () => {
     render(<ChartControls {...createProps()} />);
 
-    expect(screen.getByText('Series:')).toBeInTheDocument();
-    expect(screen.queryByText('Show:')).not.toBeInTheDocument();
+    const wrapper = screen.getByRole('group', { name: 'View' }).parentElement!
+      .parentElement!;
+
+    expect(wrapper).toHaveClass('hidden', 'md:flex');
+    expect(wrapper).toContainElement(screen.getByText('Accounts'));
+
+    await user.click(screen.getByRole('button', { name: 'Show options' }));
+
+    expect(wrapper).not.toHaveClass('hidden');
+    expect(
+      screen.getByRole('button', { name: 'Hide options' }),
+    ).toBeInTheDocument();
   });
 
-  describe('include switches', () => {
-    test('renders the three switches with accessible names and the default state', () => {
+  describe('period', () => {
+    test('shows the selected period in a months dropdown', () => {
       render(<ChartControls {...createProps()} />);
 
-      expect(screen.getByText('Include:')).toBeInTheDocument();
       expect(
-        screen.getByRole('switch', { name: 'Include Reserved' }),
-      ).not.toBeChecked();
-      expect(
-        screen.getByRole('switch', { name: 'Include Accruals' }),
-      ).not.toBeChecked();
-      expect(
-        screen.getByRole('switch', { name: 'Include Arrears' }),
-      ).toBeChecked();
+        screen.getByRole('combobox', { name: 'Select chart period in months' }),
+      ).toHaveTextContent('6 months');
     });
 
-    test('hands the whole include record back when one switch is toggled', async () => {
-      const user = userEvent.setup();
-      const props = createProps();
-
-      render(<ChartControls {...props} />);
-
-      await user.click(
-        screen.getByRole('switch', { name: 'Include Reserved' }),
-      );
-
-      expect(props.onIncludeChange).toHaveBeenCalledWith({
-        reserved: true,
-        accruals: false,
-        arrears: true,
-      });
-    });
-
-    test.each(['dailyAccrual', 'incomeReceived', 'expensesPaid'] as const)(
-      'does not render the include group under the %s metric',
-      metric => {
-        render(<ChartControls {...createProps({ selectedMetric: metric })} />);
-
-        expect(screen.queryByText('Include:')).not.toBeInTheDocument();
-        expect(screen.queryByRole('switch')).not.toBeInTheDocument();
-      },
-    );
-
-    test('reapplies the controlled state after being hidden under another metric', () => {
-      const include: ProjectionInclude = {
-        reserved: true,
-        accruals: false,
-        arrears: true,
-      };
-
-      const { rerender } = render(
-        <ChartControls {...createProps({ include })} />,
-      );
+    test('speaks the singular for a one-month period', () => {
+      render(<ChartControls {...createProps({ period: 1 })} />);
 
       expect(
-        screen.getByRole('switch', { name: 'Include Reserved' }),
-      ).toBeChecked();
-
-      rerender(
-        <ChartControls
-          {...createProps({ include, selectedMetric: 'expensesPaid' })}
-        />,
-      );
-
-      expect(screen.queryByRole('switch')).not.toBeInTheDocument();
-
-      rerender(<ChartControls {...createProps({ include })} />);
-
-      expect(
-        screen.getByRole('switch', { name: 'Include Reserved' }),
-      ).toBeChecked();
-      expect(
-        screen.getByRole('switch', { name: 'Include Arrears' }),
-      ).toBeChecked();
-    });
-
-    test('shows the switches on mobile without expanding the filters', () => {
-      vi.mocked(useIsMobile).mockReturnValue(true);
-
-      render(<ChartControls {...createProps()} />);
-
-      // The filters stay collapsed behind the toggle...
-      expect(
-        screen.getByRole('button', { name: 'Show filters' }),
-      ).toBeInTheDocument();
-
-      // ...while the include switches are already visible.
-      expect(
-        screen.getByRole('switch', { name: 'Include Reserved' }),
-      ).toBeVisible();
-      expect(
-        screen.getByRole('switch', { name: 'Include Accruals' }),
-      ).toBeVisible();
-      expect(
-        screen.getByRole('switch', { name: 'Include Arrears' }),
-      ).toBeVisible();
+        screen.getByRole('combobox', { name: 'Select chart period in months' }),
+      ).toHaveTextContent('1 month');
     });
   });
 
-  describe('touch caption', () => {
-    test('names the default deduction and stays hidden at md and above', () => {
+  describe('include', () => {
+    test('states the default deduction on the trigger', () => {
       render(<ChartControls {...createProps()} />);
 
-      expect(screen.getByText('Balance less: Arrears')).toHaveClass(
-        'md:hidden',
+      expect(includeTrigger()).toHaveAccessibleName(
+        'Include: Balance less: Arrears',
       );
-    });
-
-    test('reads Balance when all three switches are off', () => {
-      render(<ChartControls {...createProps({ include: ALL_INCLUDES_OFF })} />);
-
-      expect(screen.getByText('Balance')).toHaveClass('md:hidden');
     });
 
     test('lists every active deduction in switch order', () => {
@@ -180,9 +94,134 @@ describe('ChartControls', () => {
 
       render(<ChartControls {...createProps({ include })} />);
 
+      expect(includeTrigger()).toHaveAccessibleName(
+        'Include: Balance less: Reserved, Accruals',
+      );
+    });
+
+    test('reads Balance when all three switches are off', () => {
+      const include: ProjectionInclude = {
+        reserved: false,
+        accruals: false,
+        arrears: false,
+      };
+
+      render(<ChartControls {...createProps({ include })} />);
+
+      expect(includeTrigger()).toHaveAccessibleName('Include: Balance');
+    });
+
+    test('is absent under the other metrics', () => {
+      render(
+        <ChartControls {...createProps({ selectedMetric: 'expensesPaid' })} />,
+      );
+
       expect(
-        screen.getByText('Balance less: Reserved, Accruals'),
+        screen.queryByRole('button', { name: /^Include:/ }),
+      ).not.toBeInTheDocument();
+    });
+
+    test('reveals the three switches with accessible names and the default state', async () => {
+      const user = userEvent.setup();
+
+      render(<ChartControls {...createProps()} />);
+
+      await user.click(includeTrigger());
+
+      expect(
+        screen.getByRole('switch', { name: 'Include Reserved' }),
+      ).not.toBeChecked();
+      expect(
+        screen.getByRole('switch', { name: 'Include Accruals' }),
+      ).not.toBeChecked();
+      expect(
+        screen.getByRole('switch', { name: 'Include Arrears' }),
+      ).toBeChecked();
+    });
+
+    test('reflects the controlled state when reopened', async () => {
+      const user = userEvent.setup();
+      const include: ProjectionInclude = {
+        reserved: true,
+        accruals: false,
+        arrears: false,
+      };
+
+      const { rerender } = render(
+        <ChartControls {...createProps({ include })} />,
+      );
+
+      await user.click(includeTrigger());
+
+      expect(
+        screen.getByRole('switch', { name: 'Include Reserved' }),
+      ).toBeChecked();
+      expect(
+        screen.getByRole('switch', { name: 'Include Arrears' }),
+      ).not.toBeChecked();
+
+      // Hidden under another metric, then shown again, the same state applies.
+      rerender(
+        <ChartControls
+          {...createProps({ include, selectedMetric: 'expensesPaid' })}
+        />,
+      );
+
+      expect(
+        screen.queryByRole('button', { name: /^Include:/ }),
+      ).not.toBeInTheDocument();
+    });
+
+    test('hands the whole include record back when one switch is toggled', async () => {
+      const user = userEvent.setup();
+      const props = createProps();
+
+      render(<ChartControls {...props} />);
+
+      await user.click(includeTrigger());
+      await user.click(
+        screen.getByRole('switch', { name: 'Include Reserved' }),
+      );
+
+      expect(props.onIncludeChange).toHaveBeenCalledWith({
+        reserved: true,
+        accruals: false,
+        arrears: true,
+      });
+    });
+  });
+
+  describe('accounts', () => {
+    test('renders the legend toggles with accessible names', () => {
+      render(<ChartControls {...createProps()} />);
+
+      expect(screen.getByText('Accounts')).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', {
+          name: 'Hide Bills Account series on chart',
+        }),
       ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', {
+          name: 'Hide Total (All Accounts) series on chart',
+        }),
+      ).toBeInTheDocument();
+    });
+
+    test('reports the hidden state for a hidden series', () => {
+      render(
+        <ChartControls
+          {...createProps({
+            seriesVisibility: { 'account-1': false, global: true },
+          })}
+        />,
+      );
+
+      expect(
+        screen.getByRole('button', {
+          name: 'Show Bills Account series on chart',
+        }),
+      ).toHaveAttribute('aria-pressed', 'false');
     });
   });
 });

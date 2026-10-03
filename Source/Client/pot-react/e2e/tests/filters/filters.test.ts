@@ -2,14 +2,16 @@ import type { APIRequestContext } from '@playwright/test';
 
 import { expect, test } from '../../fixtures/auth';
 import {
-  authHeaders,
-  createE2eRequestContext as createRequestContext,
-  createExpenseViaApi,
-  createIncomeViaApi,
-  deleteExpenseViaApi,
-  deleteIncomeViaApi,
+    authHeaders,
+    createE2eRequestContext as createRequestContext,
+    createExpenseViaApi,
+    createIncomeViaApi,
+    deleteExpenseViaApi,
+    deleteIncomeViaApi,
 } from '../../helpers/api';
 import { toIsoDate } from '../../helpers/dates';
+import { selectRadixOption } from '../../helpers/radix';
+
 // Covers the filters: the SearchInput (with its
 // "Clear search input" button) and the AccountFilter ("Filter by account")
 // select, including its URL query-string contract — the `accountId`
@@ -30,46 +32,6 @@ const isMobileProject = (testInfo: import('@playwright/test').TestInfo) =>
 // RowIds created during this serial suite, cleaned up in afterEach.
 const createdExpenseRowIds: string[] = [];
 const createdIncomeRowIds: string[] = [];
-
-// Selects a Radix Select option via the AT/keyboard activation path — no pointer
-// events (immune to Radix's pointerTypeRef mouse-selection contract, which .click()
-// and atomic pointerdown/pointerup dispatch both race on slow machines). This is
-// machine-speed-independent because it uses Playwright's RETRYING primitives and
-// gates on Radix's own settle signal:
-//   1. waits for Radix's open-time focus steering to settle — the currently
-//      SELECTED option receives `data-highlighted` (on the 1st open that is
-//      "All Accounts"; on later opens it is the previously-selected account);
-//   2. focuses the target and PROVES focus landed (`toBeFocused`), closing the
-//      window where Radix's async focusFirst() could steal focus;
-//   3. activates with `Enter` -> SelectItem onKeyDown -> handleSelect(), Radix's
-//      own unit-tested activation path.
-// A bare option.evaluate() synthetic-click dispatch was NOT enough: evaluate() has
-// no actionability retry, so if the option node is transient mid-positioning on a
-// loaded machine the click is silently dropped (the "dropdown stays open + URL
-// unchanged" failure). focus()/press() re-resolve and retry on instability.
-async function selectRadixOption(
-  option: import('@playwright/test').Locator,
-  selectedOption?: import('@playwright/test').Locator,
-): Promise<void> {
-  await expect(option).toBeAttached();
-  await expect(option).toBeVisible();
-
-  // Gate on Radix's open-time focus steering settling (the selected option is
-  // highlighted). Without this, Enter can land before the async focusFirst()
-  // completes and be delivered to the wrong node.
-  if (selectedOption) {
-    await expect(selectedOption).toHaveAttribute('data-highlighted', '');
-  }
-
-  // Focus the target, prove it, then activate via Enter.
-  await option.focus();
-  await expect(option).toBeFocused();
-  await option.press('Enter');
-
-  // Fail-fast: handleSelect also closes the dropdown. If it never ran, the
-  // option stays visible (dropdown still open).
-  await expect(option).toBeHidden({ timeout: 5_000 });
-}
 
 async function getAccountsViaApi(
   request: APIRequestContext,

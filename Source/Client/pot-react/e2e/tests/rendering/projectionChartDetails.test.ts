@@ -3,13 +3,14 @@ import { addDays, format } from 'date-fns';
 
 import { expect, test } from '../../fixtures/auth';
 import {
-  createAccountViaApi,
-  createE2eRequestContext as createRequestContext,
-  createExpenseViaApi,
-  deleteAccountViaApi,
-  deleteExpenseViaApi,
+    createAccountViaApi,
+    createE2eRequestContext as createRequestContext,
+    createExpenseViaApi,
+    deleteAccountViaApi,
+    deleteExpenseViaApi,
 } from '../../helpers/api';
 import { toIsoDate } from '../../helpers/dates';
+import { selectRadixOption } from '../../helpers/radix';
 
 // Covers the projection bar-chart detail interaction:
 // - clicking an account bar, the Total (All Accounts) bar, or the blank area of
@@ -203,11 +204,24 @@ async function openExpensesBarChart(page: import('@playwright/test').Page) {
     accounts: ProjectionAccount[];
   };
 
+  // The metric select holds the persisted default (Account Balances) on open.
   await page
     .getByRole('combobox', { name: 'Select chart metric to display' })
     .click();
-  await page.getByRole('option', { name: 'Expenses', exact: true }).click();
-  await page.getByRole('radio', { name: 'Set chart period to 1 mo' }).click();
+  await selectRadixOption(
+    page.getByRole('option', { name: 'Expenses', exact: true }),
+    page.getByRole('option', { name: 'Account Balances', exact: true }),
+  );
+
+  // The period is a single-choice 1..12 month dropdown; on this first open the
+  // highlighted option is the persisted default (6 months).
+  await page
+    .getByRole('combobox', { name: 'Select chart period in months' })
+    .click();
+  await selectRadixOption(
+    page.getByRole('option', { name: '1 month', exact: true }),
+    page.getByRole('option', { name: '6 months', exact: true }),
+  );
 
   return payload;
 }
@@ -346,9 +360,10 @@ test.describe.serial('Projection bar chart details (fixture-managed)', () => {
       await page
         .getByRole('combobox', { name: 'Select chart metric to display' })
         .click();
-      await page
-        .getByRole('option', { name: 'Account Balances', exact: true })
-        .click();
+      await selectRadixOption(
+        page.getByRole('option', { name: 'Account Balances', exact: true }),
+        page.getByRole('option', { name: 'Expenses', exact: true }),
+      );
       await expect(page.locator('.recharts-line').first()).toBeVisible();
       await page.waitForTimeout(600);
 

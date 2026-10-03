@@ -1,8 +1,9 @@
 import { expect, test } from '../../fixtures/auth';
 import {
-  createE2eRequestContext as createRequestContext,
-  deleteIncomeViaApi,
+    createE2eRequestContext as createRequestContext,
+    deleteIncomeViaApi,
 } from '../../helpers/api';
+import { selectRadixOption } from '../../helpers/radix';
 
 // Covers the incomes CRUD flow:
 // create -> edit -> delete end-to-end against the real stack.
@@ -70,8 +71,9 @@ test.describe.serial('Incomes CRUD (fixture-managed)', () => {
     await page.getByLabel('Amount').fill(String(income.amount));
 
     // Associated-account selection: open the Select and pick the first account.
+    // Nothing is selected yet, so no option is highlighted to gate on.
     await page.getByLabel('Associated Account').click();
-    await page.getByRole('option').first().click();
+    await selectRadixOption(page.getByRole('option').first());
 
     await page.getByRole('button', { name: 'Create' }).click();
 
