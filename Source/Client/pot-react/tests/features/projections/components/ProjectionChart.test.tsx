@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, test, vi } from 'vitest';
+import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest';
 
 import {
   DEFAULT_PROJECTION_INCLUDE,
@@ -37,6 +37,18 @@ vi.mock('@/features/projections/components/ExpenseDetails', () => ({
 vi.mock('@/features/projections/components/IncomeDetails', () => ({
   default: () => <div data-testid="income-details" />,
 }));
+
+// Recharts' ResponsiveContainer measures its container through ResizeObserver.
+// The shared test mock never reports a size, so the chart falls back to 0x0 and
+// renders no plot. Removing the global makes ResponsiveContainer keep its
+// initialDimension (320x200), so the real plot renders under jsdom.
+beforeAll(() => {
+  vi.stubGlobal('ResizeObserver', undefined);
+});
+
+afterAll(() => {
+  vi.unstubAllGlobals();
+});
 
 function renderChart(
   overrides: Partial<ProjectionChartProps> = {},
@@ -114,7 +126,7 @@ describe('ProjectionChart', () => {
     expect(screen.getByTestId('expense-details')).toBeInTheDocument();
   });
 
-  test('renders min/max chips at the visible low and high for the balance metric', () => {
+  test('renders min/max values at the visible low and high for the balance metric', () => {
     renderChart({ selectedMetric: 'balance' });
 
     // The default include subtracts arrears only, so the factory's two days
@@ -187,7 +199,7 @@ describe('ProjectionChart', () => {
     );
   });
 
-  test('renders one line and one chip when the low equals the high', () => {
+  test('renders one line and one value when the low equals the high', () => {
     const flatProjection = createProjection({
       accounts: [
         {

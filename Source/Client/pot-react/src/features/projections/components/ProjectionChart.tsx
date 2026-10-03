@@ -28,7 +28,7 @@ import type {
 } from '@/data/projection';
 import { PROJECTION_METRICS } from '@/data/projection';
 import { useIsShortViewport } from '@/hooks/use-short-viewport';
-import { formatMoneyValue, normalizeToLocalMidnight } from '@/lib';
+import { cn, formatMoneyValue, normalizeToLocalMidnight } from '@/lib';
 
 import { useProjectionChartData } from '../hooks/useProjectionChartData';
 import { formatTooltipDate, getStrokeWidth } from '../utils/chartHelpers';
@@ -36,6 +36,17 @@ import ChartControls from './ChartControls';
 import ExpenseDetails from './ExpenseDetails';
 import IncomeDetails from './IncomeDetails';
 import NoProjectionData from './NoProjectionData';
+
+// Recharts wraps each z-index layer in a focusable group whose bounding box is
+// the whole plot, so clicking an axis label paints a focus ring around the grid.
+// The shared ChartContainer suppresses outlines only for the `recharts-layer`
+// class, which the z-index wrapper does not carry, so it is suppressed here
+// instead. The tick labels are also moved into that z-index layer (so they are
+// not inside `.recharts-cartesian-axis`), which is why the unselectable rule
+// targets the tick text itself. Both are applied through the container's
+// className because the shared chart primitive must not be edited.
+const CHART_FOCUS_AND_SELECTION_RESET =
+  "[&_[class*='recharts-zIndex-layer']]:outline-hidden [&_.recharts-cartesian-axis-tick-value]:select-none";
 
 // The min/max read-out draws each extreme's value as plain text at the plot's
 // left edge, styled to match the Y-axis labels. A background-coloured halo
@@ -97,7 +108,7 @@ function renderExtremeValueLabel(
           x={labelX}
           y={labelY}
           dominantBaseline={placement === 'above' ? 'auto' : 'hanging'}
-          className="fill-muted-foreground stroke-background text-[12px] font-normal tabular-nums"
+          className="fill-muted-foreground stroke-background text-[12px] font-normal tabular-nums select-none"
           strokeWidth={EXTREME_LABEL_HALO_WIDTH}
           strokeLinejoin="round"
           strokeLinecap="round"
@@ -588,7 +599,10 @@ function ProjectionChart({
             )}
             <ChartContainer
               config={chartConfig}
-              className={chartContainerClass}
+              className={cn(
+                chartContainerClass,
+                CHART_FOCUS_AND_SELECTION_RESET,
+              )}
               style={{ minWidth: '600px' }}
               onClick={handleBarChartClick}
             >
