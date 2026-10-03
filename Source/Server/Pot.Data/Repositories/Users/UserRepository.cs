@@ -50,6 +50,7 @@ internal sealed class UserRepository : PersistableRepository, IPersistableUserRe
 
     public Task<UserEntity?> GetByUsernameOrDefaultAsync(string username, CancellationToken cancellationToken)
     {
+        // Cross-tenant (not restricted to the current site) since this is used for authentication
         return Users.SingleOrDefaultAsync(user => user.Username == username, cancellationToken);
     }
 
