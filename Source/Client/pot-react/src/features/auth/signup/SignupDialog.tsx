@@ -213,9 +213,9 @@ function SignupDialog({ open, onOpenChange, onError }: SignupDialogProps) {
   const getDialogDescription = () => {
     switch (state) {
       case 'user-input':
-        return 'Enter your username and email to get started';
+        return 'Enter your username and email to get started.';
       case 'otp-verification':
-        return 'Enter the verification code we sent you';
+        return 'Enter the verification code we sent you.';
       case 'success':
         return ''; // No description needed - green checkmark says it all
       default:

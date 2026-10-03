@@ -49,7 +49,9 @@ function PendingApprovalsTable({ users }: PendingApprovalsTableProps) {
         <CardContent className="px-4 flex-1 min-h-0 flex items-center justify-center">
           <div className="text-center text-muted-foreground">
             <p className="text-lg font-medium">No pending approvals</p>
-            <p className="text-sm mt-2">All user signups have been processed.</p>
+            <p className="text-sm mt-2">
+              All user signups have been processed.
+            </p>
           </div>
         </CardContent>
       </Card>

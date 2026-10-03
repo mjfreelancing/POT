@@ -80,7 +80,7 @@ baseTest(
         dialog.getByRole('heading', { name: 'Create Account', exact: true }),
       ).toBeVisible();
       await expect(
-        dialog.getByText('Enter your username and email to get started', {
+        dialog.getByText('Enter your username and email to get started.', {
           exact: true,
         }),
       ).toBeVisible();
