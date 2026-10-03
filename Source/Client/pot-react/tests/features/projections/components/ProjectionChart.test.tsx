@@ -8,6 +8,7 @@ import {
 import ProjectionChart, {
   type ProjectionChartProps,
 } from '@/features/projections/components/ProjectionChart';
+import { formatMoneyValue } from '@/lib';
 
 import { createProjection } from '../../../shared/factories/projectionFactory';
 
@@ -111,5 +112,127 @@ describe('ProjectionChart', () => {
     });
 
     expect(screen.getByTestId('expense-details')).toBeInTheDocument();
+  });
+
+  test('renders min/max chips at the visible low and high for the balance metric', () => {
+    renderChart({ selectedMetric: 'balance' });
+
+    // The default include subtracts arrears only, so the factory's two days
+    // compose to a visible low of 80 and a high of 235.
+    expect(screen.getByTestId('projection-extreme-low')).toHaveTextContent(
+      formatMoneyValue(80),
+    );
+    expect(screen.getByTestId('projection-extreme-high')).toHaveTextContent(
+      formatMoneyValue(235),
+    );
+    expect(screen.getByTestId('projection-extremes-summary')).toHaveTextContent(
+      `Projected period low ${formatMoneyValue(80)}, high ${formatMoneyValue(235)}`,
+    );
+  });
+
+  test('excludes hidden series from the read-out', () => {
+    renderChart({ selectedMetric: 'balance', hiddenSeries: ['global'] });
+
+    // Hiding the combined total leaves the account extremes: 80 and 145.
+    expect(screen.getByTestId('projection-extreme-low')).toHaveTextContent(
+      formatMoneyValue(80),
+    );
+    expect(screen.getByTestId('projection-extreme-high')).toHaveTextContent(
+      formatMoneyValue(145),
+    );
+  });
+
+  test('renders no read-out when every series is hidden', () => {
+    renderChart({
+      selectedMetric: 'balance',
+      hiddenSeries: ['account-1', 'account-2', 'global'],
+    });
+
+    expect(screen.queryByTestId('projection-extreme-high')).toBeNull();
+    expect(screen.queryByTestId('projection-extreme-low')).toBeNull();
+    expect(screen.queryByTestId('projection-extremes-summary')).toBeNull();
+  });
+
+  test('renders no read-out under a bar metric', () => {
+    renderChart({ selectedMetric: 'expensesPaid' });
+
+    expect(screen.queryByTestId('projection-extreme-high')).toBeNull();
+    expect(screen.queryByTestId('projection-extremes-summary')).toBeNull();
+  });
+
+  test('renders the read-out under Projection Accruals', () => {
+    renderChart({ selectedMetric: 'dailyAccrual' });
+
+    // Daily accrual values across the factory range from 5 to 18.
+    expect(screen.getByTestId('projection-extreme-low')).toHaveTextContent(
+      formatMoneyValue(5),
+    );
+    expect(screen.getByTestId('projection-extreme-high')).toHaveTextContent(
+      formatMoneyValue(18),
+    );
+  });
+
+  test('follows the include switches', () => {
+    renderChart({
+      selectedMetric: 'balance',
+      include: { reserved: true, accruals: false, arrears: false },
+    });
+
+    // Reserved only: the account low/high become 75 and 225.
+    expect(screen.getByTestId('projection-extreme-low')).toHaveTextContent(
+      formatMoneyValue(75),
+    );
+    expect(screen.getByTestId('projection-extreme-high')).toHaveTextContent(
+      formatMoneyValue(225),
+    );
+  });
+
+  test('renders one line and one chip when the low equals the high', () => {
+    const flatProjection = createProjection({
+      accounts: [
+        {
+          rowId: 'account-1',
+          description: 'Bills Account',
+          dates: [
+            {
+              date: '2026-04-01',
+              balance: 100,
+              reserved: 0,
+              arrears: 10,
+              unpaidAccrual: 0,
+              dailyAccrual: 0,
+              incomeReceived: 0,
+              expensesPaid: 0,
+              expenseItems: [],
+              incomeItems: [],
+            },
+          ],
+        },
+      ],
+      global: [
+        {
+          date: '2026-04-01',
+          balance: 100,
+          reserved: 0,
+          arrears: 10,
+          unpaidAccrual: 0,
+          dailyAccrual: 0,
+          incomeReceived: 0,
+          expensesPaid: 0,
+          expenseItems: [],
+          incomeItems: [],
+        },
+      ],
+    });
+
+    renderChart({ data: flatProjection, selectedMetric: 'balance' });
+
+    // The arrears-only default composes 100 - 10 = 90 on the single day for
+    // both the account and the combined total, so low and high are equal.
+    expect(screen.getByTestId('projection-extreme')).toHaveTextContent(
+      formatMoneyValue(90),
+    );
+    expect(screen.queryByTestId('projection-extreme-high')).toBeNull();
+    expect(screen.queryByTestId('projection-extreme-low')).toBeNull();
   });
 });

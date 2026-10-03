@@ -37,6 +37,79 @@ import ExpenseDetails from './ExpenseDetails';
 import IncomeDetails from './IncomeDetails';
 import NoProjectionData from './NoProjectionData';
 
+// The min/max read-out draws each extreme's value as plain text at the plot's
+// left edge, styled to match the Y-axis labels. A background-coloured halo
+// (paint-order: stroke) masks the grid and any series line behind the glyphs,
+// and the high value sits above its line while the low value sits below its
+// own, so the two can never collide however close the values are.
+const EXTREME_LABEL_OFFSET_X = 8;
+const EXTREME_LABEL_OFFSET_Y = 7;
+const EXTREME_LABEL_HALO_WIDTH = 3;
+
+type ExtremeLabelViewBox = {
+  x?: number;
+  y?: number;
+};
+
+/**
+ * Renders the value for a min/max reference line as plain text matching the
+ * axis labels. The value is hidden from assistive tech, which gets it from the
+ * chart's screen-reader summary instead.
+ *
+ * @param value - The extreme value the line marks
+ * @param placement - Whether the value sits above or below its line
+ * @param testId - Stable hook for tests to find the value
+ */
+function renderExtremeValueLabel(
+  value: number,
+  placement: 'above' | 'below',
+  testId: string,
+) {
+  return (labelProps: { viewBox?: ExtremeLabelViewBox }) => {
+    const viewBox = labelProps?.viewBox;
+
+    if (
+      viewBox == null ||
+      typeof viewBox.x !== 'number' ||
+      typeof viewBox.y !== 'number'
+    ) {
+      return <g />;
+    }
+
+    const label = formatMoneyValue(value);
+    // Integer coordinates keep the text on the pixel grid; fractional values
+    // render with soft, blurred edges.
+    const labelX = Math.round(viewBox.x + EXTREME_LABEL_OFFSET_X);
+    const rawLabelY =
+      placement === 'above'
+        ? viewBox.y - EXTREME_LABEL_OFFSET_Y
+        : viewBox.y + EXTREME_LABEL_OFFSET_Y;
+    const labelY = Math.round(rawLabelY);
+
+    return (
+      <g
+        aria-hidden="true"
+        data-testid={testId}
+        data-value={value}
+        pointerEvents="none"
+      >
+        <text
+          x={labelX}
+          y={labelY}
+          dominantBaseline={placement === 'above' ? 'auto' : 'hanging'}
+          className="fill-muted-foreground stroke-background text-[12px] font-normal tabular-nums"
+          strokeWidth={EXTREME_LABEL_HALO_WIDTH}
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          paintOrder="stroke"
+        >
+          {label}
+        </text>
+      </g>
+    );
+  };
+}
+
 type ProjectionChartProps = {
   data: Projection;
   startDate: Date;
@@ -252,6 +325,35 @@ function ProjectionChart({
   const { domain: visibleLineYDomain, showZeroReferenceLine } =
     getVisibleLineYStats(visibleValueRange);
   const visibleBarYDomain = getVisibleBarYDomain(visibleValueRange);
+
+  // The min/max read-out marks the visible aggregate's low and high. An
+  // undefined min/max means there is nothing to mark: an empty window, or every
+  // series hidden. Bar metrics do not show the read-out.
+  const isLineMetric = getChartType() === 'line';
+  const extremeLow = isLineMetric ? visibleValueRange.min : undefined;
+  const extremeHigh = isLineMetric ? visibleValueRange.max : undefined;
+
+  let extremesSummary: string | null = null;
+
+  if (extremeLow !== undefined && extremeHigh !== undefined) {
+    extremesSummary =
+      extremeLow === extremeHigh
+        ? `Projected period value ${formatMoneyValue(extremeLow)}`
+        : `Projected period low ${formatMoneyValue(extremeLow)}, high ${formatMoneyValue(extremeHigh)}`;
+  }
+
+  // Shared styling for the two min/max annotations. They are intentionally
+  // thinner and lighter than the `6 6` zero line and no heavier than the `3 3`
+  // grid, so they read as annotations rather than as another series. The grid
+  // is near-white/near-black in this theme, so the chip carries the meaning.
+  const extremeLineProps = {
+    stroke: '#94a3b8',
+    className: '!stroke-slate-400 dark:!stroke-slate-500',
+    strokeDasharray: '3 3',
+    strokeWidth: 1,
+    strokeOpacity: 0.45,
+    zIndex: 1200,
+  };
 
   // Detail sheets are rendered from a selected date. A bar-chart click anywhere
   // within a date column (including blank areas) opens the sheet for that day.
@@ -479,6 +581,11 @@ function ProjectionChart({
       <CardContent className="flex-1 flex flex-col p-0">
         {hasData ? (
           <div className={chartAreaClass}>
+            {extremesSummary !== null && (
+              <p className="sr-only" data-testid="projection-extremes-summary">
+                {extremesSummary}
+              </p>
+            )}
             <ChartContainer
               config={chartConfig}
               className={chartContainerClass}
@@ -553,6 +660,47 @@ function ProjectionChart({
                       strokeWidth={1.5}
                       ifOverflow="extendDomain"
                     />
+                  )}
+                  {/*
+                    Min/max read-out. Rendered last so the values paint above
+                    the series and the zero line. When the low equals the high
+                    only one line is drawn, with its value above it.
+                  */}
+                  {extremeLow !== undefined && extremeHigh !== undefined && (
+                    <>
+                      {extremeLow === extremeHigh ? (
+                        <ReferenceLine
+                          {...extremeLineProps}
+                          y={extremeHigh}
+                          label={renderExtremeValueLabel(
+                            extremeHigh,
+                            'above',
+                            'projection-extreme',
+                          )}
+                        />
+                      ) : (
+                        <>
+                          <ReferenceLine
+                            {...extremeLineProps}
+                            y={extremeHigh}
+                            label={renderExtremeValueLabel(
+                              extremeHigh,
+                              'above',
+                              'projection-extreme-high',
+                            )}
+                          />
+                          <ReferenceLine
+                            {...extremeLineProps}
+                            y={extremeLow}
+                            label={renderExtremeValueLabel(
+                              extremeLow,
+                              'below',
+                              'projection-extreme-low',
+                            )}
+                          />
+                        </>
+                      )}
+                    </>
                   )}
                 </LineChart>
               ) : (
