@@ -438,7 +438,7 @@ test.describe.serial('Projection bar chart details (fixture-managed)', () => {
       // --- Hide account B via the legend, then click the Total bar ----------
       await page
         .getByRole('button', {
-          name: `Hide ${setup.accountDescriptionB} series on chart`,
+          name: `Hide ${setup.accountDescriptionB} account on chart`,
         })
         .click();
       await page.waitForTimeout(400);

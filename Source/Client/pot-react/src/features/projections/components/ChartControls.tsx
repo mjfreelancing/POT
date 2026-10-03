@@ -99,7 +99,7 @@ function ChartControls({
             ? 'bg-background border-border hover:bg-muted shadow-sm'
             : 'bg-muted/50 border-muted-foreground/20 opacity-60 hover:opacity-80'
         }`}
-        aria-label={`${isVisible ? 'Hide' : 'Show'} ${config.label} series on chart`}
+        aria-label={`${isVisible ? 'Hide' : 'Show'} ${config.label} account on chart`}
         aria-pressed={isVisible}
         type="button"
       >

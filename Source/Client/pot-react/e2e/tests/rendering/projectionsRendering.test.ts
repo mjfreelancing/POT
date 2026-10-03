@@ -51,7 +51,7 @@ test('projections renders the chart and account legend from the API', async ({
   const firstAccountDescription = projection.accounts[0].description;
   const legendToggle = page.getByRole('button', {
     name: new RegExp(
-      `Hide ${escapeRegExp(firstAccountDescription)} series on chart`,
+      `Hide ${escapeRegExp(firstAccountDescription)} account on chart`,
     ),
   });
 

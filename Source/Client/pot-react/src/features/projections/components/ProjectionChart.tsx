@@ -216,6 +216,8 @@ function ProjectionChart({
     seriesVisibility[key] = !hiddenSeries.includes(key);
   });
 
+  const hasVisibleSeries = seriesKeys.some(key => seriesVisibility[key]);
+
   // Get dynamic title based on selected metric
   const getChartTitle = () => {
     return PROJECTION_METRICS[selectedMetric].title;
@@ -590,7 +592,12 @@ function ProjectionChart({
         />
       </div>
       <CardContent className="flex-1 flex flex-col p-0">
-        {hasData ? (
+        {hasData && !hasVisibleSeries ? (
+          <NoProjectionData
+            title="No Account Selected"
+            description="Select at least one account to display the chart."
+          />
+        ) : hasData ? (
           <div className={chartAreaClass}>
             {extremesSummary !== null && (
               <p className="sr-only" data-testid="projection-extremes-summary">

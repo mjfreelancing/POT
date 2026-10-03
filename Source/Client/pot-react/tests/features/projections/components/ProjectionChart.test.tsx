@@ -27,7 +27,9 @@ vi.mock('@/features/projections/components/ChartControls', () => ({
 }));
 
 vi.mock('@/features/projections/components/NoProjectionData', () => ({
-  default: () => <div data-testid="no-projection-data" />,
+  default: ({ title }: { title?: string }) => (
+    <div data-testid="no-projection-data">{title ?? 'no-data'}</div>
+  ),
 }));
 
 vi.mock('@/features/projections/components/ExpenseDetails', () => ({
@@ -103,6 +105,18 @@ describe('ProjectionChart', () => {
     });
 
     expect(screen.getByTestId('no-projection-data')).toBeInTheDocument();
+    expect(document.querySelector('[data-slot="chart"]')).toBeNull();
+  });
+
+  test('shows a no-series message when every series is hidden', () => {
+    renderChart({
+      selectedMetric: 'balance',
+      hiddenSeries: ['account-1', 'account-2', 'global'],
+    });
+
+    expect(screen.getByTestId('no-projection-data')).toHaveTextContent(
+      'No Account Selected',
+    );
     expect(document.querySelector('[data-slot="chart"]')).toBeNull();
   });
 

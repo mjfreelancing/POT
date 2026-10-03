@@ -198,12 +198,12 @@ describe('ChartControls', () => {
       expect(screen.getByText('Accounts')).toBeInTheDocument();
       expect(
         screen.getByRole('button', {
-          name: 'Hide Bills Account series on chart',
+          name: 'Hide Bills Account account on chart',
         }),
       ).toBeInTheDocument();
       expect(
         screen.getByRole('button', {
-          name: 'Hide Total (All Accounts) series on chart',
+          name: 'Hide Total (All Accounts) account on chart',
         }),
       ).toBeInTheDocument();
     });
@@ -219,7 +219,7 @@ describe('ChartControls', () => {
 
       expect(
         screen.getByRole('button', {
-          name: 'Show Bills Account series on chart',
+          name: 'Show Bills Account account on chart',
         }),
       ).toHaveAttribute('aria-pressed', 'false');
     });
