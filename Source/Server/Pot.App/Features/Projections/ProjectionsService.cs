@@ -54,25 +54,12 @@ internal sealed class ProjectionsService : IProjectionsService
 
         var accountDaily = accounts.ToDictionary(account => account.RowId, account => new List<DateProjectionValues>(options.DaysForecast));
 
-        var globalDailyProjections = new List<DateProjectionValues>(options.DaysForecast);
-
         var totalDays = options.DaysForecast + preStartDays;
 
         for (int day = 0; day < totalDays; day++)
         {
             var date = localDate.AddDays(day);
             var isToday = day == 0;
-
-            var globalStarting = 0.0d;
-            var globalIncome = 0.0d;
-            var globalExpenses = 0.0d;
-            var globalAccrualSettledByPayments = 0.0d;
-            var globalDailyAccrual = 0.0d;
-            var globalAccrued = 0.0d;
-            var globalArrears = 0.0d;
-            var globalReserved = 0.0d;
-            var globalExpenseItems = new List<ProjectionExpenseModel>();
-            var globalIncomeItems = new List<ProjectionIncomeModel>();
 
             foreach (var account in accounts)
             {
@@ -83,35 +70,6 @@ internal sealed class ProjectionsService : IProjectionsService
                     var dailyList = accountDaily[account.RowId];
                     dailyList.Add(dateValues);
                 }
-
-                globalStarting += dateValues.StartingBalance;
-                globalIncome += dateValues.IncomeReceived;
-                globalExpenses += dateValues.ExpensesPaid;
-                globalAccrualSettledByPayments += dateValues.AccrualSettledByPayments;
-                globalDailyAccrual += dateValues.DailyAccrual;
-                globalAccrued += dateValues.Accrued;
-                globalArrears += dateValues.Arrears;
-                globalReserved += dateValues.Reserved;
-                globalExpenseItems.AddRange(dateValues.ExpenseItems);
-                globalIncomeItems.AddRange(dateValues.IncomeItems);
-            }
-
-            if (date >= options.StartDate)
-            {
-                globalDailyProjections.Add(new DateProjectionValues
-                {
-                    Date = date,
-                    StartingBalance = globalStarting,
-                    IncomeReceived = globalIncome,
-                    ExpensesPaid = globalExpenses,
-                    AccrualSettledByPayments = globalAccrualSettledByPayments,
-                    DailyAccrual = globalDailyAccrual,
-                    Accrued = globalAccrued,
-                    Arrears = globalArrears,
-                    Reserved = globalReserved,
-                    ExpenseItems = [.. globalExpenseItems],
-                    IncomeItems = [.. globalIncomeItems]
-                });
             }
         }
 
@@ -131,8 +89,7 @@ internal sealed class ProjectionsService : IProjectionsService
 
         var output = new Output
         {
-            Accounts = [.. accountDailyFinancialProjections],
-            Global = MapToDateBalanceAvailable(globalDailyProjections)
+            Accounts = [.. accountDailyFinancialProjections]
         };
 
         return EnrichedResult.Success(output);

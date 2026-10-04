@@ -7,7 +7,6 @@ namespace Pot.AspNetCore.Features.Projections.Get;
 internal sealed class Response
 {
     public AccountDailyFinancialProjection[] Accounts { get; init; }
-    public DateProjection[] Global { get; init; }
 
     public static Ok<Response> Ok(Output projections)
     {
@@ -19,6 +18,5 @@ internal sealed class Response
         _ = projections.WhenNotNull();
 
         Accounts = projections.Accounts;
-        Global = projections.Global;
     }
 }

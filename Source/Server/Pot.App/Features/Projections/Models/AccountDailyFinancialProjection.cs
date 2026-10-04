@@ -4,8 +4,7 @@
 /// The projected values for a single account across the forecast window.
 /// </summary>
 /// <remarks>
-/// Each account contributes one of these to <see cref="Output.Accounts" />, alongside the combined series held in
-/// <see cref="Output.Global" />.
+/// Each account contributes one of these to <see cref="Output.Accounts" />.
 /// </remarks>
 public sealed class AccountDailyFinancialProjection
 {

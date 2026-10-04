@@ -1,4 +1,4 @@
-using Pot.AspNetCore.Integration.Tests.Host;
+﻿using Pot.AspNetCore.Integration.Tests.Host;
 using Pot.AspNetCore.Integration.Tests.Host.Extensions;
 using Pot.AspNetCore.Integration.Tests.Host.Models;
 using Pot.Shared.Enumerations;
@@ -20,7 +20,6 @@ public class ProjectionComponentsFixture : IntegrationAuthFixtureBase
     private sealed class ProjectionResponse
     {
         public AccountProjection[] Accounts { get; set; } = [];
-        public DateProjection[] Global { get; set; } = [];
     }
 
     private sealed class AccountProjection
@@ -61,9 +60,8 @@ public class ProjectionComponentsFixture : IntegrationAuthFixtureBase
         using var document = JsonDocument.Parse(content);
 
         var accountDates = document.RootElement.GetProperty("accounts")[0].GetProperty("dates").EnumerateArray();
-        var globalDates = document.RootElement.GetProperty("global").EnumerateArray();
 
-        foreach (var date in accountDates.Concat(globalDates))
+        foreach (var date in accountDates)
         {
             date.TryGetProperty("balance", out _).ShouldBeTrue();
             date.TryGetProperty("reserved", out _).ShouldBeTrue();
@@ -159,7 +157,6 @@ public class ProjectionComponentsFixture : IntegrationAuthFixtureBase
         var account = projection.Accounts.ShouldHaveSingleItem();
 
         AssertNoNegativeComponent(account.Dates);
-        AssertNoNegativeComponent(projection.Global);
     }
 
     private static void AssertNoNegativeComponent(IEnumerable<DateProjection> dates)

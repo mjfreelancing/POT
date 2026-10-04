@@ -260,9 +260,6 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 result.IsSuccess.ShouldBeTrue();
                 result.Value!.Accounts.ShouldBeEmpty();
-
-                // Validate that all 30 global projection dates are properly initialized with zero values
-                ValidateEmptyGlobalProjection(result.Value.Global, _currentDate, 30);
             }
 
             [Fact]
@@ -1169,31 +1166,6 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 // Savings: Days 60-89 (Mar 16 - Apr 14): After third investment
                 ValidateNoActivityRange(savingsProjection.Dates, 60, 89, expectedBalance: 8500.0d);
-
-                // Verify global aggregation for all 90 days
-                var globalProjections = result.Value.Global;
-                ValidateConsecutiveDates(globalProjections, _currentDate, 90);
-
-                // Global: Day 0 (Jan 15): Investment paid on start date
-                globalProjections[0].Balance.ShouldBe(11500.0d); // 2000 + 10000 - 500
-
-                // Global: Day 16 (Jan 31): First rent paid
-                globalProjections[16].Balance.ShouldBe(10500.0d); // 11500 - 1000
-
-                // Global: Day 31 (Feb 15): Second investment paid
-                globalProjections[31].Balance.ShouldBe(10000.0d); // 10500 - 500
-
-                // Global: Day 44 (Feb 28): Second rent paid
-                globalProjections[44].Balance.ShouldBe(9000.0d); // 10000 - 1000
-
-                // Global: Day 59 (Mar 15): Third investment paid
-                globalProjections[59].Balance.ShouldBe(8500.0d); // 9000 - 500
-
-                // Global: Day 72 (Mar 28): Third rent paid
-                globalProjections[72].Balance.ShouldBe(7500.0d); // 8500 - 1000
-
-                // Global: Day 89 (Apr 14): Final balance
-                globalProjections[89].Balance.ShouldBe(7500.0d); // No changes after Mar 28
             }
         }
 
@@ -2808,7 +2780,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
             }
 
             [Fact]
-            public async Task Should_Publish_Components_On_Every_Day_For_Accounts_And_Global()
+            public async Task Should_Publish_Components_On_Every_Day_For_Accounts()
             {
                 using var context = CreateTestContext();
 
@@ -2833,19 +2805,17 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.ShouldBeTrue();
 
                 var accountDates = result.Value!.Accounts.ShouldHaveSingleItem().Dates;
-                var global = result.Value!.Global;
 
                 accountDates.Length.ShouldBe(14);
-                global.Length.ShouldBe(14);
 
-                foreach (var projection in accountDates.Concat(global))
+                foreach (var projection in accountDates)
                 {
                     projection.Reserved.ShouldBe(100.0d, $"reserved on {projection.Date:yyyy-MM-dd}");
                     projection.Arrears.ShouldBe(0.0d, $"arrears on {projection.Date:yyyy-MM-dd}");
                 }
 
                 // The due day itself is settled by its own assumed payment, so only the days before it are checked.
-                var unpaidDays = accountDates.Concat(global)
+                var unpaidDays = accountDates
                     .Where(projection => projection.Date > _currentDate && projection.Date < new DateOnly(2025, 1, 22));
 
                 foreach (var projection in unpaidDays)
@@ -2922,60 +2892,6 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 }
             }
 
-            [Fact]
-            public async Task Should_Publish_Global_Components_As_The_Sum_Of_The_Accounts()
-            {
-                using var context = CreateTestContext();
-
-                var account1 = EntityFactory.CreateAccount(context.Site, "Account 1", 1000.0d, reserved: 100.0d);
-                var account2 = EntityFactory.CreateAccount(context.Site, "Account 2", 2000.0d, reserved: 250.0d);
-
-                // Account 1 has a past-due bill and a weekly bill due today; account 2 has a monthly bill due today.
-                var pastDue = EntityFactory.CreateExpense(account1, false, "Past due", 50.0d, "2025-01-01", "2025-01-14", null,
-                    Frequency.OneTime, 1);
-
-                var weekly = EntityFactory.CreateExpense(account1, false, "Weekly", 70.0d, "2025-01-15", "2025-01-15", null,
-                    Frequency.Weeks, 1);
-
-                var dueToday = EntityFactory.CreateExpense(account2, false, "Due today", 100.0d, "2025-01-01", "2025-01-15", null,
-                    Frequency.Months, 1);
-
-                account1.Expenses.Add(pastDue);
-                account1.Expenses.Add(weekly);
-                account2.Expenses.Add(dueToday);
-
-                await context.AddAccountsAsync(account1, account2);
-
-                var options = new ProjectionOptions
-                {
-                    StartDate = _currentDate,
-                    DaysForecast = 10
-                };
-
-                var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
-
-                result.IsSuccess.ShouldBeTrue();
-
-                var accounts = result.Value!.Accounts;
-                var global = result.Value!.Global;
-
-                accounts.Length.ShouldBe(2);
-
-                for (var index = 0; index < global.Length; index++)
-                {
-                    var accountDates = accounts.Select(accountProjection => accountProjection.Dates[index]).ToArray();
-
-                    global[index].Reserved.ShouldBe(accountDates.Sum(projection => projection.Reserved), 0.001d, $"reserved on day {index}");
-                    global[index].Arrears.ShouldBe(accountDates.Sum(projection => projection.Arrears), 0.001d, $"arrears on day {index}");
-
-                    global[index].UnpaidAccrual.ShouldBe(accountDates.Sum(projection => projection.UnpaidAccrual), 0.001d,
-                        $"unpaid accrual on day {index}");
-                }
-
-                global[0].Reserved.ShouldBe(350.0d);
-                global[0].Arrears.ShouldBe(50.0d, 0.001d);
-            }
-
             // Reserved and arrears are standing amounts and the accrual add-back only ever removes part of what was
             // accrued, so no component can go negative. The tolerance covers floating point sums over different row
             // subsets; production does not clamp, so a genuine unbounded add-back still fails here.
@@ -3017,8 +2933,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 result.IsSuccess.ShouldBeTrue();
 
                 var allProjections = result.Value!.Accounts
-                    .SelectMany(accountProjection => accountProjection.Dates)
-                    .Concat(result.Value.Global);
+                    .SelectMany(accountProjection => accountProjection.Dates);
 
                 foreach (var projection in allProjections)
                 {
@@ -3029,10 +2944,10 @@ public class ProjectionsServiceFixture : PotFixtureBase
             }
         }
 
-        public class GlobalAggregation : GetFinancialProjectionsAsync
+        public class MultiAccountProjections : GetFinancialProjectionsAsync
         {
             [Fact]
-            public async Task Should_Aggregate_Global_Projections_Correctly()
+            public async Task Should_Project_Multiple_Accounts_With_Incomes_And_Expenses()
             {
                 using var context = CreateTestContext();
 
@@ -3063,59 +2978,41 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 result.IsSuccess.ShouldBeTrue();
 
-                var global = result.Value!.Global;
                 var account1Projection = result.Value!.Accounts[0];
                 var account2Projection = result.Value!.Accounts[1];
 
-                // Validate all accounts and global have 30 consecutive dates (Jan 15 - Feb 13)
+                // Both accounts publish 30 consecutive dates (Jan 15 - Feb 13).
                 ValidateConsecutiveDates(account1Projection.Dates, _currentDate, 30);
                 ValidateConsecutiveDates(account2Projection.Dates, _currentDate, 30);
-                ValidateConsecutiveDates(global, _currentDate, 30);
 
-                // Day 0 (Jan 15): Combined starting balances
-                global[0].Balance.ShouldBe(3000.0d); // 1000 + 2000
+                // The combined trajectory a consumer composes is the sum of the accounts' per-day balances.
+                var combinedBalances = account1Projection.Dates
+                    .Select((projection, index) => projection.Balance + account2Projection.Dates[index].Balance)
+                    .ToArray();
 
-                // Days 1-4 (Jan 16 - Jan 19): Before first transaction
-                ValidateNoActivityRange(global, 1, 4, expectedBalance: 3000.0d);
+                // Day 0 (Jan 15): combined starting balances.
+                combinedBalances[0].ShouldBe(3000.0d); // 1000 + 2000
 
-                // Day 5 (Jan 20): Income1 and expense1
-                ValidateEventDay(
-                    global[5],
-                    expectedDate: new DateOnly(2025, 1, 20),
-                    expectedBalance: 3400.0d, // 3000 + 500 - 100
-                    expectedIncomeReceived: 500.0d,
-                    expectedExpensesPaid: 100.0d);
+                // Days 1-4 (Jan 16 - Jan 19): before the first transaction.
+                combinedBalances[1..5].ShouldAllBe(balance => balance == 3000.0d);
 
-                // Days 6-9 (Jan 21 - Jan 24): After first transaction, before second
-                ValidateNoActivityRange(global, 6, 9, expectedBalance: 3400.0d);
+                // Day 5 (Jan 20): income1 and expense1 land on account 1.
+                account1Projection.Dates[5].IncomeReceived.ShouldBe(500.0d);
+                account1Projection.Dates[5].ExpensesPaid.ShouldBe(100.0d);
 
-                // Day 10 (Jan 25): Income2 and expense2
-                ValidateEventDay(
-                    global[10],
-                    expectedDate: new DateOnly(2025, 1, 25),
-                    expectedBalance: 3500.0d, // 3400 + 300 - 200
-                    expectedIncomeReceived: 300.0d,
-                    expectedExpensesPaid: 200.0d);
+                combinedBalances[5].ShouldBe(3400.0d); // 3000 + 500 - 100
 
-                // Days 11-29 (Jan 26 - Feb 13): After all transactions
-                ValidateNoActivityRange(global, 11, 29, expectedBalance: 3500.0d);
+                // Days 6-9 (Jan 21 - Jan 24): after the first transaction, before the second.
+                combinedBalances[6..10].ShouldAllBe(balance => balance == 3400.0d);
 
-                // Every term is additive, so the global line is the sum of the accounts' lines. Available is the one
-                // that matters most here: the settled accrual and the held arrears have to reach the rollup as well
-                // as the per-account rows, and nothing else in this fixture asserts the global Available.
-                for (int i = 0; i < global.Length; i++)
-                {
-                    var dayNumber = i + 1;
+                // Day 10 (Jan 25): income2 and expense2 land on account 2.
+                account2Projection.Dates[10].IncomeReceived.ShouldBe(300.0d);
+                account2Projection.Dates[10].ExpensesPaid.ShouldBe(200.0d);
 
-                    global[i].Balance.ShouldBe(account1Projection.Dates[i].Balance + account2Projection.Dates[i].Balance, 0.01d,
-                        $"day {dayNumber} global balance is the sum of the accounts");
+                combinedBalances[10].ShouldBe(3500.0d); // 3400 + 300 - 200
 
-                    Available(global[i]).ShouldBe(Available(account1Projection.Dates[i]) + Available(account2Projection.Dates[i]), 0.01d,
-                        $"day {dayNumber} global available is the sum of the accounts");
-
-                    global[i].DailyAccrual.ShouldBe(account1Projection.Dates[i].DailyAccrual + account2Projection.Dates[i].DailyAccrual, 0.01d,
-                        $"day {dayNumber} global daily accrual is the sum of the accounts");
-                }
+                // Days 11-29 (Jan 26 - Feb 13): after all transactions.
+                combinedBalances[11..30].ShouldAllBe(balance => balance == 3500.0d);
             }
         }
     }
@@ -3178,27 +3075,6 @@ public class ProjectionsServiceFixture : PotFixtureBase
         {
             projections[i].Date.ShouldBe(startDate.AddDays(i),
                 $"date at index {i} should be {startDate.AddDays(i)}");
-        }
-    }
-
-    // Helper method to validate empty global projection (no accounts)
-    private static void ValidateEmptyGlobalProjection(IReadOnlyList<DateProjection> globalProjections, DateOnly startDate, int expectedCount)
-    {
-        globalProjections.Count.ShouldBe(expectedCount);
-
-        for (int i = 0; i < globalProjections.Count; i++)
-        {
-            var projection = globalProjections[i];
-            var expectedDate = startDate.AddDays(i);
-
-            projection.Date.ShouldBe(expectedDate, $"projection at index {i} should have date {expectedDate}");
-            projection.Balance.ShouldBe(0.0d, $"balance should be 0 for empty projection at {expectedDate}");
-            Available(projection).ShouldBe(0.0d, $"available should be 0 for empty projection at {expectedDate}");
-            projection.DailyAccrual.ShouldBe(0.0d, $"daily accrual should be 0 for empty projection at {expectedDate}");
-            projection.IncomeReceived.ShouldBe(0.0d, $"income received should be 0 for empty projection at {expectedDate}");
-            projection.ExpensesPaid.ShouldBe(0.0d, $"expenses paid should be 0 for empty projection at {expectedDate}");
-            projection.ExpenseItems.ShouldBeEmpty($"expense items should be empty for empty projection at {expectedDate}");
-            projection.IncomeItems.ShouldBeEmpty($"income items should be empty for empty projection at {expectedDate}");
         }
     }
 
