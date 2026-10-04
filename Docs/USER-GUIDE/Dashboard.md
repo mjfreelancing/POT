@@ -19,16 +19,16 @@ It also surfaces a stable Daily Need value, which answers: how much should I set
 - Upcoming expenses and income windows (7, 14, 30 days)
 - Visual due-state indicators (overdue, due soon)
 
-### Daily Need vs Projection Accruals
+### Daily Need vs Operational Accruals
 
 - Daily Need is a stable planning metric shown on the dashboard. It uses long-run period averages and is intended for day-to-day set-aside decisions.
-- Projection Accruals is a dynamic operational metric shown in Projections. It reflects event-date behavior and can move around due dates.
-- Use Daily Need for routine funding cadence. Use Projection Accruals for event-date analysis.
+- Operational Accruals is the dynamic metric shown in Projections. It reflects event-date behavior and can move around due dates.
+- Use Daily Need for routine funding cadence. Use Operational Accruals for event-date analysis.
 
 ### Quick Glossary
 
 - Daily Need: stable daily funding target across active obligations.
-- Projection Accruals: dynamic simulation metric that changes with due-date timing.
+- Operational Accruals: dynamic simulation metric that changes with due-date timing.
 - Accrued obligations: amount already set aside for the expense cycles in progress.
 - Arrears: amount owed for expense cycles whose due date has already passed without being settled.
 - Committed: accrued obligations plus arrears — what the account's balance is committed to cover.
@@ -62,7 +62,7 @@ It also surfaces a stable Daily Need value, which answers: how much should I set
 
 - Treat Daily Need as your default daily transfer/set-aside target.
 - `Available` reflects the current schedules, so it updates as soon as an account or an expense changes.
-- If Projection Accruals changes around due dates, that is expected event-date behavior.
+- If Operational Accruals changes around due dates, that is expected event-date behavior.
 
 ---
 

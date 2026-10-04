@@ -37,25 +37,25 @@ The View selector supports four metrics.
 | Metric label in View selector | Internal metric key | Chart type |
 | ----------------------------- | ------------------- | ---------- |
 | Account Balances              | balance             | Line       |
-| Projection Accruals           | dailyAccrual        | Line       |
+| Operational Accruals          | dailyAccrual        | Line       |
 | Income                        | incomeReceived      | Bar        |
 | Expenses                      | expensesPaid        | Bar        |
 
 Line metrics show trends over time.
 Bar metrics show per-date event amounts and support opening details.
 
-### Projection Accruals Interpretation
+### Operational Accruals Interpretation
 
-Projection Accruals is the operational, date-sensitive accrual metric used by projection simulation. It is expected to vary as due dates approach and as periods renew.
+Operational Accruals is the date-sensitive accrual metric used by projection simulation. It is expected to vary as due dates approach and as periods renew.
 
 It is derived from the expense schedules for each day of the window, so it always reflects the current schedules, amounts and accrual policies.
 
 This is different from Dashboard Daily Need:
 
-- Projection Accruals: dynamic event-date metric for simulation behavior.
+- Operational Accruals: dynamic event-date metric for simulation behavior.
 - Daily Need: stable long-run funding guidance for daily planning.
 
-Do not interpret short-term movement in Projection Accruals as a change in your long-run Daily Need unless underlying obligations changed.
+Do not interpret short-term movement in Operational Accruals as a change in your long-run Daily Need unless underlying obligations changed.
 
 ### Account Balances And The Include Deductions
 

@@ -65,7 +65,7 @@ This document outlines the structure and content requirements for each user guid
   - Available calculation (Balance - Reserved - Committed, where Committed is accrued plus arrears)
   - Accrued, Arrears and Committed (what each includes and why it matters)
   - Daily Need (stable daily funding target)
-  - Difference between Daily Need (stable) and Projection Accruals (dynamic)
+  - Difference between Daily Need (stable) and Operational Accruals (dynamic)
 - Column Hints
   - Hovering a column heading reveals a hint describing what that column shows
 - Step-by-Step Guide
@@ -324,7 +324,7 @@ This document outlines the structure and content requirements for each user guid
   - Purpose: identify cash flow issues before they happen
   - How projections are calculated
   - Relationship to accounts/expenses/income
-  - Projection Accruals are dynamic operational values
+  - Operational Accruals are dynamic, date-sensitive values
   - Dashboard Daily Need is a separate stable planning value
 - Available to: All users (all roles can view projections)
 - Key Concepts

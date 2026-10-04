@@ -186,7 +186,7 @@ describe('ProjectionChart', () => {
     expect(screen.queryByTestId('projection-extremes-summary')).toBeNull();
   });
 
-  test('renders the read-out under Projection Accruals', () => {
+  test('renders the read-out under Operational Accruals', () => {
     renderChart({ selectedMetric: 'dailyAccrual' });
 
     // Daily accrual values across the factory range from 5 to 18.
