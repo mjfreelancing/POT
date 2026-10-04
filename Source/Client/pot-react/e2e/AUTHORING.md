@@ -70,10 +70,12 @@ timeout: 60_000 })` + `GET /api/<list>` with the accessToken, then assert the UI
 ## Run commands (from `Source/Client/pot-react`)
 
 ```bash
+npm run e2e:preflight                         # environment check before a run (read-only)
 npm run e2e:chromium                          # fastest loop (one project)
 npx playwright test <path> --project=chromium # targeted file
 npm run e2e:mobile                            # mobile projects
 npm run e2e:all:dev                           # full 4-project matrix (the gate)
+npm run e2e:all:dev:log                       # as e2e:all:dev, capturing console + port timeline
 npm run e2e:prodlike                          # built-client subset (on-demand)
 ```
 

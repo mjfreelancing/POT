@@ -10,7 +10,9 @@ export default defineConfig({
   // Postgres, one preview server) plus the built client's per-context service-
   // worker install can't fit unlimited browsers.
   workers: process.env.CI ? 1 : 2,
-  reporter: 'html',
+  // See playwright.config.ts: console progress plus a written-but-never-served
+  // HTML report, so a failing prodlike run cannot block on the report prompt.
+  reporter: [['line'], ['html', { open: 'never' }]],
   globalSetup: './playwright.globalSetup.ts',
   use: {
     baseURL: 'http://127.0.0.1:5175',

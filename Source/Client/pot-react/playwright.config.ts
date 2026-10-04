@@ -29,7 +29,13 @@ export default defineConfig({
   // is the tightest bound that reliably fits the shared stack; the local matrix
   // takes ~6-7 min as a result. CI pins to 1 (no contention, retries on top).
   workers: process.env.CI ? 1 : 2,
-  reporter: 'html',
+  // `line` keeps console progress; the HTML report is still written to
+  // `playwright-report/` but is never opened or served (`open: 'never'`), so a
+  // failing run cannot block on the "Serving HTML report … Press Ctrl+C to
+  // quit." prompt. That prompt keeps the process resident and collides with the
+  // next run's ports, which is how a non-interactive run poisons a later one.
+  // View the last report on demand with `npm run e2e:report`.
+  reporter: [['line'], ['html', { open: 'never' }]],
   // Per-test timeout. The Playwright default (30s) is too tight for this
   // shared-stack matrix: each test does a fresh login (bcrypt verify) and the
   // fixture-managed CRUD suites run a long create -> edit -> delete lifecycle.
