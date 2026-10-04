@@ -5,7 +5,7 @@ applyTo: "Source/Client/pot-react/tests/**"
 
 # Client tests (Vitest + jsdom)
 
-Run from `Source/Client/pot-react`: `npm run test` (`npm run test:ui` for interactive mode). Config: `vitest.config.ts`. Shared setup: `tests/setup.ts`; keep global side effects there minimal and make global setup changes only there.
+Client tests must be run from `Source/Client/pot-react`: `npm run test` (`npm run test:ui` for interactive mode). Running from the repository root does not resolve the client project. Config: `vitest.config.ts`. Shared setup: `tests/setup.ts`; keep global side effects there minimal and make global setup changes only there.
 
 ## Design
 

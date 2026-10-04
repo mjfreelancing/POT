@@ -16,6 +16,8 @@ Start with the smallest relevant scope, then broaden. Scope from the user input 
 | Server integration | `dotnet test Pot.AspNetCore.Integration.Tests/Pot.AspNetCore.Integration.Tests.csproj --nologo --verbosity minimal` (`Source/Server`) |
 | Client | `npm run test` (`Source/Client/pot-react`) |
 
+> Client tests must be run from `Source/Client/pot-react`. Running `npm run test` or `npx vitest` from the repository root does not resolve the client project (it prompts to install Vitest instead).
+
 Rules:
 
 1. If tests fail, summarize the failing tests and root messages before proposing or applying fixes.

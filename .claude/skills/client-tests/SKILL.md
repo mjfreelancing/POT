@@ -10,4 +10,4 @@ Conventions: `Source/Client/pot-react/tests/CLAUDE.md`.
 
 1. Place tests under `Source/Client/pot-react/tests/**`, mirroring the `src` structure.
 2. Keep tests deterministic; assert user-observable behavior over implementation details.
-3. Run narrow first, then broaden, from `Source/Client/pot-react`: `npm run test` (or `npm run test:ui` for interactive mode).
+3. Run narrow first, then broaden. Client tests must be run from `Source/Client/pot-react`: `npm run test` (or `npm run test:ui` for interactive mode). Running from the repository root does not resolve the client project.

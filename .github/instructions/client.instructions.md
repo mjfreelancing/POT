@@ -5,7 +5,7 @@ applyTo: "Source/Client/pot-react/**"
 
 # Client (React + TypeScript)
 
-Run client commands from `Source/Client/pot-react`: `npm run test`, `npm run lint`, `npm run type:check`, `npm run build`. Test rules: `.github/instructions/client-tests.instructions.md`. E2E rules: `.github/instructions/e2e.instructions.md`.
+Client commands must be run from `Source/Client/pot-react`: `npm run test`, `npm run lint`, `npm run type:check`, `npm run build`; running them from the repository root does not resolve the client project. Test rules: `.github/instructions/client-tests.instructions.md`. E2E rules: `.github/instructions/e2e.instructions.md`.
 
 ## Architecture
 

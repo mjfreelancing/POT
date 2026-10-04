@@ -2915,6 +2915,8 @@ If these are not true, stay with manual mocks.
 
 ## Available Commands
 
+Run all commands from `Source/Client/pot-react`.
+
 ### Development
 
 | Command           | Description                                                                     |

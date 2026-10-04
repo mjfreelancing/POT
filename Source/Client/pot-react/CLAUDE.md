@@ -1,6 +1,6 @@
 # Client (React + TypeScript)
 
-Run client commands from `Source/Client/pot-react`: `npm run test`, `npm run lint`, `npm run type:check`, `npm run build`. Test rules: `tests/CLAUDE.md`. E2E rules: `e2e/CLAUDE.md`.
+Client commands must be run from `Source/Client/pot-react`: `npm run test`, `npm run lint`, `npm run type:check`, `npm run build`; running them from the repository root does not resolve the client project. Test rules: `tests/CLAUDE.md`. E2E rules: `e2e/CLAUDE.md`.
 
 ## Architecture
 
