@@ -17,16 +17,18 @@ All scripts run from `Source/Client/pot-react`. Exact definitions are in `packag
 — the list below mirrors them (do not guess from memory):
 
 ```bash
-npm run e2e                 # alias of `npm run e2e:chromium` (chromium project, line reporter)
-npm run e2e:dev             # ALL 4 projects via playwright.config.ts, line reporter
+npm run e2e:preflight       # check ports/processes/containers before a run (read-only)
+npm run e2e                 # alias of `npm run e2e:chromium` (chromium project)
+npm run e2e:dev             # ALL 4 projects via playwright.config.ts
 npm run e2e:all             # alias of `npm run e2e:all:dev`
-npm run e2e:all:dev         # full 4-project matrix (chromium, edge, mobile-chrome, mobile-safari), line+html reporter
-npm run e2e:prodlike        # all 4 projects via playwright.prod.config.ts (built client), line reporter
-npm run e2e:all:prodlike    # full matrix via the prodlike (built-client) config, line+html reporter
-npm run e2e:chromium        # chromium project only, line reporter
-npm run e2e:edge            # edge (msedge channel) project only, line reporter
-npm run e2e:mobile          # mobile-chrome + mobile-safari projects only, line reporter
-npm run e2e:smoke           # e2e/tests/smoke only, line reporter
+npm run e2e:all:dev         # full 4-project matrix (chromium, edge, mobile-chrome, mobile-safari)
+npm run e2e:all:dev:log     # as e2e:all:dev, plus console output + port timeline in e2e/logs
+npm run e2e:prodlike        # all 4 projects via playwright.prod.config.ts (built client)
+npm run e2e:all:prodlike    # full matrix via the prodlike (built-client) config
+npm run e2e:chromium        # chromium project only
+npm run e2e:edge            # edge (msedge channel) project only
+npm run e2e:mobile          # mobile-chrome + mobile-safari projects only
+npm run e2e:smoke           # e2e/tests/smoke only
 npm run e2e:smoke:headed    # smoke tests, visible browser
 npm run e2e:headed          # visible browser (debugging)
 npm run e2e:debug           # step-through debug mode
@@ -34,6 +36,12 @@ npm run e2e:ui              # Playwright UI mode
 npm run e2e:report          # open the last HTML report (playwright show-report)
 npm run e2e:install         # install Playwright browsers (chromium, webkit)
 ```
+
+Every script takes its reporters from the config (`[['line'], ['html', { open: 'never' }]]`):
+`line` drives the console and the HTML report is written to `playwright-report/` but never
+served, so a failing run cannot block on the "Serving HTML report … Press Ctrl+C to quit."
+prompt. No script passes `--reporter` — a CLI flag **replaces** the config's `reporter` array
+outright, which silently drops the HTML report.
 
 The default config (`playwright.config.ts`) targets the **Vite dev server**; the prodlike
 config targets a **built client**. Both run the same 4 projects.
@@ -258,6 +266,23 @@ when the client production build changes.
 
 ## Troubleshooting
 
+- **Every test fails with `net::ERR_CONNECTION_REFUSED` at `http://127.0.0.1:5175/...`** (or
+  WebKit's `Could not connect to server`): nothing was listening on the client port for the
+  duration of the run, while the API stayed up. Start from `npm run e2e:preflight` to confirm
+  the ports/processes/containers are clear, then re-run as `npm run e2e:all:dev:log` so the
+  next failure keeps its evidence:
+  - `e2e/logs/e2e-<timestamp>.log` — console output, including the `[WebServer]` lines
+    Playwright forwards from the Vite dev server.
+  - `e2e/logs/e2e-ports-<timestamp>.log` — client/API/Postgres/report port state, free memory
+    and the container count sampled every 10 s. A `client=False` reading from early on (or a
+    `client=True` that turns `False`) is the moment the Vite server was not serving.
+
+  The HTML report contains **no** webServer output, and `test-results/` + `playwright-report/`
+  are cleared by the next run — which is why the logged run exists.
+
+- **`Error: http://localhost:5175 is already used` / `…5242 is already used`**: an occupant
+  existed at startup, so Playwright aborted before any test ran (`reuseExistingServer: false`).
+  The preflight script names the owning process and prints the command that clears it.
 - **Port 55432 stuck in TIME_WAIT / stale container**: the global teardown leaves the
   Testcontainers container to Ryuk; globalSetup detects and removes a stale container before
   starting a new one.

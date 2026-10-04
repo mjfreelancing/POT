@@ -7,6 +7,8 @@ applyTo: "Source/Client/pot-react/**"
 
 Client commands must be run from `Source/Client/pot-react`: `npm run test`, `npm run lint`, `npm run type:check`, `npm run build`; running them from the repository root does not resolve the client project. Test rules: `.github/instructions/client-tests.instructions.md`. E2E rules: `.github/instructions/e2e.instructions.md`.
 
+Playwright reporters are config-owned (`playwright.config.ts`, `playwright.prod.config.ts`). Do not add `--reporter` flags to the `e2e:*` scripts: a CLI flag replaces the config's `reporter` array outright, dropping the non-blocking HTML report.
+
 ## Architecture
 
 - Organize by feature modules (`src/features/*`), shared concerns (`src/concerns/*`) and reusable helpers (`src/lib/*`).

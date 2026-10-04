@@ -5,7 +5,7 @@ Architecture, fixtures and conventions are documented in the files below. Read t
 @README.md
 @AUTHORING.md
 
-Config: `playwright.config.ts` (`testDir: './e2e'`; keep new tests under `e2e/`). Run `npm run e2e` from `Source/Client/pot-react` (line reporter, suited to non-interactive runs). Prodlike (`playwright.prod.config.ts`, built client) is an on-demand gate: run `npm run e2e:prodlike` when the client production build changes, not per change.
+Config: `playwright.config.ts` (`testDir: './e2e'`; keep new tests under `e2e/`). Run `npm run e2e` from `Source/Client/pot-react` (the config's non-blocking reporters, suited to non-interactive runs). Prodlike (`playwright.prod.config.ts`, built client) is an on-demand gate: run `npm run e2e:prodlike` when the client production build changes, not per change.
 
 ## Locators and clicks
 
@@ -36,6 +36,14 @@ Classify every test before writing it.
 - `e2e/fixtures/auth.ts` exposes `test` (admin), `viewerTest` (viewer), `pwChangeTest` (`e2e_pwchange`, viewer). Each authenticated test logs in ONCE and receives both `storageState` and `accessToken` (15-min JWT for API setup/cleanup). Do not log in per operation (PBKDF2 CPU under load) and do not share storage state across tests/workers (the refresh cookie rotates on every `/api/auth/refresh`).
 - Config: `workers: process.env.CI ? 1 : 2`, `retries: process.env.CI ? 2 : 1`, `timeout: 60_000`, `expect.timeout: 10_000`, `video: 'on-first-retry'`, API webServer `dotnet run -c Release`. Do not raise `timeout` to chase flakes (it worsens shared-stack contention); retries are a safety net, not a fix.
 - PWA: dev serves no manifest/SW (`vite-plugin-pwa` gates both behind `devOptions.enabled`; `registerServiceWorker()` short-circuits on `import.meta.env.DEV`); the built client serves the manifest and registers the SW. `e2e/tests/pwa/pwaContract.test.ts` asserts whichever contract applies.
+
+## Reporting and process lifecycle
+
+- Reporters are configured in `playwright.config.ts` and `playwright.prod.config.ts`: `reporter: [['line'], ['html', { open: 'never' }]]`. `line` keeps console progress; `html` still writes `playwright-report/`, but `open: 'never'` means Playwright never serves it, so a failing run prints `To open last HTML report run: npx playwright show-report` and exits. Open it on demand with `npm run e2e:report`.
+- Never pass `--reporter` from an npm script. A CLI flag REPLACES the whole config `reporter` array, so `--reporter=line` silently drops the HTML report and `--reporter=line,html` re-introduces the blocking one. Let the config govern.
+- Why: when the HTML report is served, a failing or interrupted run stays resident on port 9323 ("Serving HTML report at http://localhost:9323. Press Ctrl+C to quit."). The next run then collides - symptom: a run that finishes in seconds with EVERY failure `net::ERR_CONNECTION_REFUSED` at `127.0.0.1:5175`.
+- Both webServers use `reuseExistingServer: false` (API 5242, Vite 5175), so never run two stacks at once. A run that is hard-killed (agent timeout, closed terminal, `Stop-Process`) leaves the `dotnet run` API grandchild alive and the next run dies with `Error: http://localhost:5242 is already used` before any test starts; a clean completed run's teardown does stop it.
+- Diagnosing a failure: run `npm run e2e:preflight` first (read-only; reports any occupant of the E2E ports with the owning process, stray Vite/Playwright test processes, conflicting containers and Docker availability, and exits 1 when something would block a run). When you want the evidence kept, run `npm run e2e:all:dev:log` instead of `e2e:all:dev`: it mirrors the run to the console and writes `e2e/logs/e2e-<timestamp>.log` (console output, including the `[WebServer]` lines Playwright forwards from Vite) plus `e2e-ports-<timestamp>.log` (client/API/Postgres/report ports, free memory and container count every 10s, never overwritten). The HTML report holds no webServer output and `test-results/`/`playwright-report/` are cleared by the next run, so those two files are the only record of a run that failed to connect.
 
 ## App anchors
 
