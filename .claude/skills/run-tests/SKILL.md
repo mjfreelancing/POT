@@ -8,13 +8,13 @@ argument-hint: "[server|client|all] [project or filter]"
 
 Start with the smallest relevant scope, then broaden. Scope from `$ARGUMENTS` if given; otherwise run the full suite for the affected side.
 
-| Scope | Command (run from) |
-| --- | --- |
-| Full server | `dotnet test pot.sln -c Debug --nologo --verbosity minimal` (`Source/Server`) |
-| One server project | `dotnet test <Project>/<Project>.csproj -c Debug --nologo --verbosity minimal` (`Source/Server`) |
-| Targeted server | add `--filter "FullyQualifiedName~<FixtureOrTestName>"` |
+| Scope              | Command (run from)                                                                                                                    |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Full server        | `dotnet test pot.sln -c Debug --nologo --verbosity minimal` (`Source/Server`)                                                         |
+| One server project | `dotnet test <Project>/<Project>.csproj -c Debug --nologo --verbosity minimal` (`Source/Server`)                                      |
+| Targeted server    | add `--filter "FullyQualifiedName~<FixtureOrTestName>"`                                                                               |
 | Server integration | `dotnet test Pot.AspNetCore.Integration.Tests/Pot.AspNetCore.Integration.Tests.csproj --nologo --verbosity minimal` (`Source/Server`) |
-| Client | `npm run test` (`Source/Client/pot-react`) |
+| Client             | `npm run test` (`Source/Client/pot-react`)                                                                                            |
 
 > Client tests must be run from `Source/Client/pot-react`. Running `npm run test` or `npx vitest` from the repository root does not resolve the client project (it prompts to install Vitest instead).
 
