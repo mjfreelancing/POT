@@ -54,6 +54,9 @@ const PROJECTION_METRICS: Record<ProjectionMetric, MetricConfig> = {
   },
 } as const;
 
+// The combined series key; every other key is a real account.
+const TOTAL_SERIES_KEY = 'total';
+
 // Period options for projections
 type PeriodOption = {
   label: string;
@@ -115,7 +118,6 @@ type AccountDailyValues = {
 
 type Projection = {
   accounts: AccountDailyValues[]; // Array of accounts with their daily balances
-  global: DateValues[]; // Global daily balances
 };
 
 // Default ordering key for projection accounts. Applied by useApiGetProjection so the
@@ -136,6 +138,7 @@ export {
   DEFAULT_PROJECTION_PERIOD,
   PROJECTION_METRICS,
   PROJECTION_PERIODS,
+  TOTAL_SERIES_KEY,
 };
 
 export type {

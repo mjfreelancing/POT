@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import type { ProjectionInclude, ProjectionMetric } from '@/data/projection';
-import { PROJECTION_METRICS } from '@/data/projection';
+import { PROJECTION_METRICS, TOTAL_SERIES_KEY } from '@/data/projection';
 import { cn, localToday } from '@/lib';
 
 type ChartControlsProps = {
@@ -36,9 +36,6 @@ type ChartControlsProps = {
   include: ProjectionInclude;
   onIncludeChange: (include: ProjectionInclude) => void;
 };
-
-// The combined series key; every other key is a real account.
-const TOTAL_SERIES_KEY = 'global';
 
 // The page always fetches a 12-month window, so the period is simply how many of
 // those months to show: the complete domain is 1..12.

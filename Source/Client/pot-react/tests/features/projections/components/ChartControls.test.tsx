@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, test, vi } from 'vitest';
 
@@ -11,7 +11,7 @@ import ChartControls, {
 
 const chartConfig: ChartConfig = {
   'account-1': { label: 'Bills Account', color: '#8884d8' },
-  global: { label: 'Total (All Accounts)', color: '#2563eb' },
+  total: { label: 'Total (Selected Accounts)', color: '#2563eb' },
 };
 
 function createProps(
@@ -24,8 +24,8 @@ function createProps(
     onStartDateChange: vi.fn(),
     period: 6,
     onPeriodChange: vi.fn(),
-    seriesKeys: ['account-1', 'global'],
-    seriesVisibility: { 'account-1': true, global: true },
+    seriesKeys: ['account-1', 'total'],
+    seriesVisibility: { 'account-1': true, total: true },
     onToggleSeries: vi.fn(),
     chartConfig,
     include: DEFAULT_PROJECTION_INCLUDE,
@@ -203,16 +203,61 @@ describe('ChartControls', () => {
       ).toBeInTheDocument();
       expect(
         screen.getByRole('button', {
-          name: 'Hide Total (All Accounts) account on chart',
+          name: 'Hide Total (Selected Accounts) account on chart',
         }),
       ).toBeInTheDocument();
+    });
+
+    test('keeps the total toggle outside the Accounts group', () => {
+      render(<ChartControls {...createProps()} />);
+
+      const accountsGroup = screen.getByRole('group', { name: 'Accounts' });
+
+      expect(
+        within(accountsGroup).getByRole('button', {
+          name: 'Hide Bills Account account on chart',
+        }),
+      ).toBeInTheDocument();
+
+      expect(
+        within(accountsGroup).queryByRole('button', {
+          name: /Total \(Selected Accounts\)/,
+        }),
+      ).toBeNull();
+
+      expect(
+        screen.getByRole('button', {
+          name: 'Hide Total (Selected Accounts) account on chart',
+        }),
+      ).toBeInTheDocument();
+    });
+
+    test('hands the toggled series key back to the caller', async () => {
+      const user = userEvent.setup();
+      const props = createProps();
+
+      render(<ChartControls {...props} />);
+
+      await user.click(
+        screen.getByRole('button', {
+          name: 'Hide Bills Account account on chart',
+        }),
+      );
+      await user.click(
+        screen.getByRole('button', {
+          name: 'Hide Total (Selected Accounts) account on chart',
+        }),
+      );
+
+      expect(props.onToggleSeries).toHaveBeenNthCalledWith(1, 'account-1');
+      expect(props.onToggleSeries).toHaveBeenNthCalledWith(2, 'total');
     });
 
     test('reports the hidden state for a hidden series', () => {
       render(
         <ChartControls
           {...createProps({
-            seriesVisibility: { 'account-1': false, global: true },
+            seriesVisibility: { 'account-1': false, total: true },
           })}
         />,
       );

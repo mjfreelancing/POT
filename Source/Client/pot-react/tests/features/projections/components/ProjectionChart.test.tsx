@@ -100,7 +100,6 @@ describe('ProjectionChart', () => {
     renderChart({
       data: createProjection({
         accounts: [],
-        global: [],
       }),
     });
 
@@ -111,7 +110,19 @@ describe('ProjectionChart', () => {
   test('shows a no-series message when every series is hidden', () => {
     renderChart({
       selectedMetric: 'balance',
-      hiddenSeries: ['account-1', 'account-2', 'global'],
+      hiddenSeries: ['account-1', 'account-2', 'total'],
+    });
+
+    expect(screen.getByTestId('no-projection-data')).toHaveTextContent(
+      'No account selected',
+    );
+    expect(document.querySelector('[data-slot="chart"]')).toBeNull();
+  });
+
+  test('shows the no-account message when every account is hidden but the total is visible', () => {
+    renderChart({
+      selectedMetric: 'balance',
+      hiddenSeries: ['account-1', 'account-2'],
     });
 
     expect(screen.getByTestId('no-projection-data')).toHaveTextContent(
@@ -157,7 +168,7 @@ describe('ProjectionChart', () => {
   });
 
   test('excludes hidden series from the read-out', () => {
-    renderChart({ selectedMetric: 'balance', hiddenSeries: ['global'] });
+    renderChart({ selectedMetric: 'balance', hiddenSeries: ['total'] });
 
     // Hiding the combined total leaves the account extremes: 80 and 145.
     expect(screen.getByTestId('projection-extreme-low')).toHaveTextContent(
@@ -171,7 +182,7 @@ describe('ProjectionChart', () => {
   test('renders no read-out when every series is hidden', () => {
     renderChart({
       selectedMetric: 'balance',
-      hiddenSeries: ['account-1', 'account-2', 'global'],
+      hiddenSeries: ['account-1', 'account-2', 'total'],
     });
 
     expect(screen.queryByTestId('projection-extreme-high')).toBeNull();
@@ -233,20 +244,6 @@ describe('ProjectionChart', () => {
               incomeItems: [],
             },
           ],
-        },
-      ],
-      global: [
-        {
-          date: '2026-04-01',
-          balance: 100,
-          reserved: 0,
-          arrears: 10,
-          unpaidAccrual: 0,
-          dailyAccrual: 0,
-          incomeReceived: 0,
-          expensesPaid: 0,
-          expenseItems: [],
-          incomeItems: [],
         },
       ],
     });

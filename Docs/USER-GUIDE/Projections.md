@@ -2,7 +2,7 @@
 
 ## Overview
 
-Projections shows date-based forecast values for each account and a combined Total (All Accounts) series.
+Projections shows date-based forecast values for each account and a combined Total (Selected Accounts) series, which sums the accounts currently shown in the legend.
 It supports both trend metrics (line charts) and event metrics (bar charts), with filters for metric, start date, period, and per-series visibility, plus an Include control that subtracts standing obligations from the plotted balance.
 
 The page is read-only and designed for analysis.
@@ -111,8 +111,9 @@ The Period filter controls only what is rendered in the chart view.
 ### Accounts (series visibility)
 
 - The group is labelled `Accounts` and holds one toggle per account.
-- `Total (All Accounts)` is a separate toggle beside the group, because it is a combined total rather than an account.
+- `Total (Selected Accounts)` is a separate toggle beside the group, because it is a combined total rather than an account, and its visibility is independent of the account toggles.
 - Hidden series are removed from chart rendering.
+- The combined total is the sum of the accounts currently shown in the legend: hiding an account removes its contribution, and showing it adds it back. With no account hidden, the total equals the sum of every account.
 - The Y-axis domain, and the low/high read-out, are recalculated from visible series only.
 
 ## Mobile Layout
@@ -131,8 +132,8 @@ The Period filter controls only what is rendered in the chart view.
 ### Bar metrics
 
 - Hovering an individual account bar shows that bar's account value for the date.
-- Hovering the Total (All Accounts) bar shows all account values for that date in the tooltip legend.
-- In Total (All Accounts) hover mode, hidden accounts are still included in the tooltip legend.
+- Hovering the Total (Selected Accounts) bar shows the selected accounts' values for that date in the tooltip legend, alongside the total.
+- Hidden accounts are not included in the tooltip, because they are not part of the total.
 
 ## Bar Click And Details Behavior
 
@@ -140,16 +141,15 @@ The detail sheet appears only when metric is Income or Expenses and the user cli
 
 ### Click individual account bar
 
-- Sheet date is set to clicked bar date.
-- Items are scoped to clicked account only.
+- Sheet date is set to the clicked bar's date.
+- Items cover every account currently shown in the legend; hidden accounts are excluded.
 - Item count badge uses full-date denominator from all accounts for that date.
   - Example: 2 of 5 items
 
-### Click Total (All Accounts) bar
+### Click Total (Selected Accounts) bar
 
-- Sheet date is set to clicked bar date.
-- Items include all accounts for that date.
-- Hidden or filtered-out accounts are still included in the details panel in this mode.
+- Sheet date is set to the clicked bar's date.
+- Items cover every account currently shown in the legend; hidden accounts are excluded.
 
 ### Detail totals and counts
 
@@ -172,7 +172,7 @@ The detail sheet appears only when metric is Income or Expenses and the user cli
 - A zero reference line appears only when visible domain spans both negative and positive values.
 - The period's visible low and high are marked as two horizontal reference lines, each labelled with its value at the left of the plot. The low label sits below its line and the high label above its own.
 - The values are the lowest and highest across every visible series in the displayed period, so hiding a series can move them.
-- The read-out is shown for line metrics only, and is hidden when there is no data or every series is hidden.
+- The read-out is shown for line metrics only, and is hidden when there is no data or every account is hidden.
 
 ## Bar Chart Axis Behavior
 
@@ -188,7 +188,7 @@ The detail sheet appears only when metric is Income or Expenses and the user cli
   - Storage and API errors are handled as separate states.
 - Empty chart data:
   - No data available card is shown when there are no non-zero values for the selected metric in the returned projection dataset.
-  - When data exists but every toggle in the Accounts legend is off (including `Total (All Accounts)`), the plot is replaced by a `No account selected` message.
+  - When data exists but every account toggle is off, the plot is replaced by a `No account selected` message. The total is a sum of the accounts, so it is not drawn on its own.
 
 ## Persistence Behavior
 
@@ -226,7 +226,7 @@ Start date persistence rules:
 3. Set From date.
 4. Set Period by choosing a month from 1 to 12.
 5. For Account Balances, open Include and choose which of Reserved, Accruals and Arrears to subtract.
-6. Use the Accounts toggles to hide or reveal account series (and the separate Total (All Accounts) toggle).
+6. Use the Accounts toggles to hide or reveal account series (and the separate Total (Selected Accounts) toggle); the total always reflects the accounts currently shown.
 7. Hover chart points or bars to inspect values.
 8. For Income or Expenses metrics, click a bar to open date details.
 9. In the detail sheet:

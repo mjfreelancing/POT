@@ -23,7 +23,6 @@ describe('useProjections hook composition', () => {
       isSuccess: true,
       data: new SuccessResult({
         accounts: [],
-        global: [],
       }),
     };
 
@@ -45,7 +44,6 @@ describe('useProjections hook composition', () => {
     if (result.current.data?.success) {
       expect(result.current.data.value).toEqual({
         accounts: [],
-        global: [],
       });
     }
   });

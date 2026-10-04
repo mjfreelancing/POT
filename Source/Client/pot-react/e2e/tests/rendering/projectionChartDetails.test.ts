@@ -13,7 +13,7 @@ import { toIsoDate } from '../../helpers/dates';
 import { selectRadixOption } from '../../helpers/radix';
 
 // Covers the projection bar-chart detail interaction:
-// - clicking an account bar, the Total (All Accounts) bar, or the blank area of
+// - clicking an account bar, the Total (Selected Accounts) bar, or the blank area of
 //   a day column opens the right-hand detail sheet for that day across ALL
 //   legend-visible accounts (not just the clicked account), and
 // - accounts hidden via the legend ("Show" toggles) are excluded from the sheet,
@@ -316,7 +316,7 @@ test.describe.serial('Projection bar chart details (fixture-managed)', () => {
       await page.getByRole('button', { name: 'Close expense details' }).click();
       await expect(dialog).toBeHidden();
 
-      // --- Click the Total (All Accounts) bar in the same column ------------
+      // --- Click the Total (Selected Accounts) bar in the same column ------------
       // The total series is the last rendered bar series.
       const totalSeriesIndex =
         (await page.locator('.recharts-bar').count()) - 1;

@@ -1,6 +1,7 @@
 import { format, parseISO } from 'date-fns';
 
 import { logger } from '@/concerns';
+import { TOTAL_SERIES_KEY } from '@/data/projection';
 
 import type { ChartDataPoint } from '../hooks/useProjectionChartData';
 
@@ -58,7 +59,7 @@ function formatTooltipDate(value: string): string {
  * @returns Stroke width number
  */
 function getStrokeWidth(seriesKey: string): number {
-  return seriesKey === 'global' ? 2 : 1.5;
+  return seriesKey === TOTAL_SERIES_KEY ? 2 : 1.5;
 }
 
 export { formatTooltipDate, formatXAxisLabel, getStrokeWidth };

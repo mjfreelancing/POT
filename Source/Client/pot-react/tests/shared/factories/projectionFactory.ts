@@ -1,6 +1,6 @@
 import type { Projection } from '@/data/projection';
 
-// Components are chosen so the global values are the sums of the account values.
+// Account values are chosen so a selected-accounts total can be composed from them.
 function createProjection(overrides: Partial<Projection> = {}): Projection {
   return {
     accounts: [
@@ -69,35 +69,6 @@ function createProjection(overrides: Partial<Projection> = {}): Projection {
             incomeItems: [],
           },
         ],
-      },
-    ],
-    global: [
-      {
-        date: '2026-04-01',
-        balance: 200,
-        reserved: 15,
-        arrears: 5,
-        unpaidAccrual: 20,
-        dailyAccrual: 15,
-        incomeReceived: 0,
-        expensesPaid: 40,
-        expenseItems: [
-          { rowId: 'expense-1', description: 'Rent', amount: 30 },
-          { rowId: 'expense-2', description: 'Coffee', amount: 10 },
-        ],
-        incomeItems: [],
-      },
-      {
-        date: '2026-04-02',
-        balance: 240,
-        reserved: 15,
-        arrears: 5,
-        unpaidAccrual: 30,
-        dailyAccrual: 18,
-        incomeReceived: 50,
-        expensesPaid: 0,
-        expenseItems: [],
-        incomeItems: [{ rowId: 'income-1', description: 'Salary', amount: 50 }],
       },
     ],
     ...overrides,

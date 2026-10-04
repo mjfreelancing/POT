@@ -334,7 +334,7 @@ This document outlines the structure and content requirements for each user guid
     - Available (balance minus reserved minus committed obligations, where committed is accrued plus arrears)
     - Expenses Paid (cumulative expense payments)
     - Incomes Received (cumulative income receipts)
-  - Account-level vs All Accounts view
+  - Account-level series and the combined Total (Selected Accounts) view
   - Daily vs monthly granularity
   - Expense accrual and past-due arrears impact
   - How renewals affect projections

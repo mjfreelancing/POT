@@ -739,16 +739,11 @@ account.Balance += incomeReceived - expensesPaid
 
 This modified balance is used as the starting balance for the next day's projection.
 
-### Global Aggregation
+### Combined Total
 
-In addition to per-account projections, the service calculates a global (all-accounts) view:
+The service publishes only the per-account projections; it no longer computes a global (all-accounts) series.
 
-- **Global.Balance:** Sum of all account balances
-- **Global.IncomeReceived:** Sum of all income across accounts
-- **Global.ExpensesPaid:** Sum of all expenses across accounts
-- **Global.Accrued:** Sum of all accrued expenses
-- **Global.DailyAccrual:** Sum of all daily accrual rates
-- **Global.Reserved:** Sum of all reserved funds
+> **Update (2026-10-04):** the chart's combined series is now `Total (Selected Accounts)`. The client composes it by summing the accounts currently shown in the legend, for the selected metric, so the response carries no `global` member.
 
 ### Why Projection DailyAccrual Varies
 
@@ -759,8 +754,6 @@ Variation is expected in the current implementation:
 3. Mixed frequencies and staggered due dates produce a moving aggregate.
 
 Use this metric for operational simulation interpretation, not as a stable daily set-aside target.
-
-This provides a household-level or business-level financial view.
 
 ### Transaction Details
 

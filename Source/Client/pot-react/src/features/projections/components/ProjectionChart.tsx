@@ -26,7 +26,7 @@ import type {
   ProjectionIncomeItem,
   ProjectionMetric,
 } from '@/data/projection';
-import { PROJECTION_METRICS } from '@/data/projection';
+import { PROJECTION_METRICS, TOTAL_SERIES_KEY } from '@/data/projection';
 import { useIsShortViewport } from '@/hooks/use-short-viewport';
 import { cn, formatMoneyValue, normalizeToLocalMidnight } from '@/lib';
 
@@ -163,7 +163,7 @@ function ProjectionChart({
     chartConfig,
     seriesKeys,
     hasData,
-  } = useProjectionChartData(data, selectedMetric, include);
+  } = useProjectionChartData(data, selectedMetric, include, hiddenSeries);
 
   // On short viewports (e.g. a phone rotated to landscape) the md "fill the
   // card" layout can collapse the chart area to zero height, leaving nothing to
@@ -216,7 +216,11 @@ function ProjectionChart({
     seriesVisibility[key] = !hiddenSeries.includes(key);
   });
 
-  const hasVisibleSeries = seriesKeys.some(key => seriesVisibility[key]);
+  // At least one account must be shown: the total is the sum of the accounts, so it
+  // cannot be drawn on its own. This keeps the empty state when every account is hidden.
+  const hasVisibleAccount = seriesKeys.some(
+    key => key !== TOTAL_SERIES_KEY && seriesVisibility[key],
+  );
 
   // Get dynamic title based on selected metric
   const getChartTitle = () => {
@@ -504,8 +508,8 @@ function ProjectionChart({
           ? label
           : null;
 
-    // Total bar hover should always reveal all account values for that day,
-    // even when some account series are currently hidden in the chart legend.
+    // Hovering the total bar reveals the accounts currently shown in the
+    // legend, because the total is the sum of those accounts only.
     if (!tooltipDateValue) {
       return null;
     }
@@ -513,9 +517,10 @@ function ProjectionChart({
     const tooltipEntries =
       isBarChart &&
       payload.length === 1 &&
-      hoveredSeriesKey === 'global' &&
+      hoveredSeriesKey === TOTAL_SERIES_KEY &&
       hoveredPoint
         ? seriesKeys
+            .filter(key => seriesVisibility[key])
             .map(key => ({
               color: chartConfig[key]?.color,
               dataKey: key,
@@ -592,7 +597,7 @@ function ProjectionChart({
         />
       </div>
       <CardContent className="flex-1 flex flex-col p-0">
-        {hasData && !hasVisibleSeries ? (
+        {hasData && !hasVisibleAccount ? (
           <NoProjectionData
             title="No account selected"
             description="Select at least one account to display the chart."

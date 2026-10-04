@@ -8,7 +8,10 @@ import type {
   ProjectionInclude,
   ProjectionMetric,
 } from '@/data/projection';
-import { DEFAULT_PROJECTION_INCLUDE } from '@/data/projection';
+import {
+  DEFAULT_PROJECTION_INCLUDE,
+  TOTAL_SERIES_KEY,
+} from '@/data/projection';
 
 // Predefined colors for different accounts in the chart
 // These are used in a round-robin fashion if there are more accounts than colors
@@ -20,8 +23,8 @@ const ACCOUNT_COLORS = [
   '#8dd1e1', // Light Blue
 ] as const;
 
-// Color used for the combined total of all accounts
-const GLOBAL_SERIES_COLOR = '#2563eb'; // Blue
+// Color used for the combined total of the selected accounts
+const TOTAL_SERIES_COLOR = '#2563eb'; // Blue
 
 import type {
   ProjectionExpenseItemWithAccount,
@@ -33,7 +36,7 @@ import type {
  * Each point contains:
  * - date information (ISO string and formatted display)
  * - optional expense and income items for that date
- * - dynamic keys for each account's balance and the global balance
+ * - dynamic keys for each account's balance and the combined total
  *
  * The [key: string] allows us to dynamically add account balances
  * where the key is the account ID and the value is the balance amount
@@ -55,7 +58,7 @@ type ChartDataPoint = {
  * The complete result returned by the useProjectionChartData hook
  * @property chartData - Array of data points ready for chart rendering
  * @property chartConfig - Visual configuration for each series (colors, labels)
- * @property seriesKeys - Array of keys to render (account IDs + 'global')
+ * @property seriesKeys - Array of keys to render (account IDs + the combined total)
  * @property hasData - Whether there's any non-zero data to display
  */
 type UseProjectionChartDataResult = {
@@ -90,9 +93,10 @@ function resolveMetricValue(
  * Transforms raw projection data into a format suitable for chart rendering
  * while preserving transaction details for tooltips and detail views.
  *
- * @param data - Raw projection data from the API containing account and global metrics
+ * @param data - Raw projection data from the API containing per-account metrics
  * @param metric - Which financial metric to display (e.g., balance, daily accrual)
  * @param include - Which components are subtracted from the balance metric; ignored by other metrics
+ * @param hiddenSeries - Series keys hidden in the legend; the combined total sums the rest
  * @returns Processed data structure ready for chart consumption
  *
  * The hook performs several key transformations:
@@ -105,15 +109,24 @@ function useProjectionChartData(
   data: Projection,
   metric: ProjectionMetric = 'balance',
   include: ProjectionInclude = DEFAULT_PROJECTION_INCLUDE,
+  hiddenSeries: string[] = [],
 ): UseProjectionChartDataResult {
   const { reserved, accruals, arrears } = include;
 
   return useMemo(() => {
     const activeInclude: ProjectionInclude = { reserved, accruals, arrears };
 
-    // Extract the timeline from global data (pre-sorted from API)
-    // All accounts share the same date points, so we can use global as reference
-    const sortedDates = data.global.map(db => db.date);
+    // The timeline comes from the first account's dates; every account publishes
+    // the same date points. A payload with no accounts keeps the no-data state.
+    const firstAccount = data.accounts[0];
+    const sortedDates = firstAccount
+      ? firstAccount.dates.map(db => db.date)
+      : [];
+
+    // Only the accounts currently shown in the legend contribute to the total.
+    const visibleAccounts = data.accounts.filter(
+      account => !hiddenSeries.includes(account.rowId),
+    );
 
     // Transform the raw data into chart points
     const chartData: ChartDataPoint[] = sortedDates.map(date => {
@@ -130,43 +143,33 @@ function useProjectionChartData(
         point[account.rowId] = value; // Dynamic key based on account ID
       });
 
-      // Add the combined total for all accounts
-      const globalBalance = data.global.find(db => db.date === date)!;
-      point['global'] = resolveMetricValue(
-        globalBalance,
-        metric,
-        activeInclude,
-      );
+      // Add the combined total of the accounts shown in the legend
+      point[TOTAL_SERIES_KEY] = visibleAccounts.reduce((total, account) => {
+        const dateBalance = account.dates.find(db => db.date === date)!;
+        return total + resolveMetricValue(dateBalance, metric, activeInclude);
+      }, 0);
 
       // Process expense items - attach account information to each expense
-      if (globalBalance.expenseItems) {
-        const expenseItems = data.accounts.flatMap(account => {
-          const accountDateData = account.dates.find(d => d.date === date);
+      point.expenseItems = data.accounts.flatMap(account => {
+        const accountDateData = account.dates.find(d => d.date === date);
 
-          // Map each expense to include its account ID for UI display
-          return (accountDateData?.expenseItems || []).map(item => ({
-            ...item,
-            accountRowId: account.rowId,
-          }));
-        });
-
-        point.expenseItems = expenseItems;
-      }
+        // Map each expense to include its account ID for UI display
+        return (accountDateData?.expenseItems || []).map(item => ({
+          ...item,
+          accountRowId: account.rowId,
+        }));
+      });
 
       // Process income items - same pattern as expenses
-      if (globalBalance.incomeItems) {
-        const incomeItems = data.accounts.flatMap(account => {
-          const accountDateData = account.dates.find(d => d.date === date);
+      point.incomeItems = data.accounts.flatMap(account => {
+        const accountDateData = account.dates.find(d => d.date === date);
 
-          // Map each income to include its account ID for UI display
-          return (accountDateData?.incomeItems || []).map(item => ({
-            ...item,
-            accountRowId: account.rowId,
-          }));
-        });
-
-        point.incomeItems = incomeItems;
-      }
+        // Map each income to include its account ID for UI display
+        return (accountDateData?.incomeItems || []).map(item => ({
+          ...item,
+          accountRowId: account.rowId,
+        }));
+      });
 
       return point;
     });
@@ -188,12 +191,12 @@ function useProjectionChartData(
       seriesKeys.push(account.rowId);
     });
 
-    // Add configuration for the combined total series
-    config['global'] = {
-      label: 'Total (All Accounts)',
-      color: GLOBAL_SERIES_COLOR,
+    // Add configuration for the combined total of the selected accounts
+    config[TOTAL_SERIES_KEY] = {
+      label: 'Total (Selected Accounts)',
+      color: TOTAL_SERIES_COLOR,
     };
-    seriesKeys.push('global');
+    seriesKeys.push(TOTAL_SERIES_KEY);
 
     // Determine if we have any non-zero data to display. This reads the plotted
     // (composed) values, so a window that nets to zero shows the no-data state.
@@ -204,7 +207,7 @@ function useProjectionChartData(
       );
 
     return { chartData, chartConfig: config, seriesKeys, hasData };
-  }, [data, metric, reserved, accruals, arrears]);
+  }, [data, metric, reserved, accruals, arrears, hiddenSeries]);
 }
 
 export { useProjectionChartData };

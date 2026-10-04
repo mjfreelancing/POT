@@ -5,6 +5,7 @@ import type {
   DateValues,
   Projection,
   ProjectionInclude,
+  ProjectionMetric,
 } from '@/data/projection';
 import { useProjectionChartData } from '@/features/projections/hooks/useProjectionChartData';
 
@@ -58,21 +59,6 @@ function createScenarioDates(arrears: number): DateValues[] {
   }));
 }
 
-function sumDateValues(first: DateValues[], second: DateValues[]): DateValues[] {
-  return first.map((item, index) => {
-    const other = second[index]!;
-
-    return {
-      ...item,
-      balance: item.balance + other.balance,
-      reserved: item.reserved + other.reserved,
-      arrears: item.arrears + other.arrears,
-      unpaidAccrual: item.unpaidAccrual + other.unpaidAccrual,
-      dailyAccrual: item.dailyAccrual + other.dailyAccrual,
-    };
-  });
-}
-
 function createScenarioProjection(): Projection {
   const scenarioA = createScenarioDates(0);
   const scenarioB = createScenarioDates(SCENARIO_B_ARREARS);
@@ -82,7 +68,6 @@ function createScenarioProjection(): Projection {
       { rowId: 'scenario-a', description: 'Scenario A', dates: scenarioA },
       { rowId: 'scenario-b', description: 'Scenario B', dates: scenarioB },
     ],
-    global: sumDateValues(scenarioA, scenarioB),
   };
 }
 
@@ -157,7 +142,7 @@ describe('useProjectionChartData', () => {
     expect(result.current.seriesKeys).toEqual([
       'account-1',
       'account-2',
-      'global',
+      'total',
     ]);
 
     expect(result.current.chartConfig).toEqual({
@@ -169,8 +154,8 @@ describe('useProjectionChartData', () => {
         label: 'Spending Account',
         color: '#82ca9d',
       },
-      global: {
-        label: 'Total (All Accounts)',
+      total: {
+        label: 'Total (Selected Accounts)',
         color: '#2563eb',
       },
     });
@@ -181,7 +166,7 @@ describe('useProjectionChartData', () => {
       formattedDate: 'Apr 01',
       'account-1': 120,
       'account-2': 80,
-      global: 200,
+      total: 200,
     });
 
     expect(result.current.hasData).toBe(true);
@@ -228,10 +213,6 @@ describe('useProjectionChartData', () => {
         dailyAccrual: 0,
       })),
     }));
-    projectionData.global = projectionData.global.map(dateValue => ({
-      ...dateValue,
-      dailyAccrual: 0,
-    }));
 
     const { result } = renderHook(() =>
       useProjectionChartData(projectionData, 'dailyAccrual'),
@@ -242,7 +223,7 @@ describe('useProjectionChartData', () => {
 
   describe('balance composition', () => {
     // The first date of the shared fixture: balance 120, reserved 10, arrears 5,
-    // unpaid accrual 15 for account-1; the global series sums both accounts.
+    // unpaid accrual 15 for account-1; the combined total sums both accounts.
     function plotBalance(include?: ProjectionInclude) {
       const projectionData = createProjection();
 
@@ -258,7 +239,7 @@ describe('useProjectionChartData', () => {
 
       expect(point['account-1']).toBe(115);
       expect(point['account-2']).toBe(80);
-      expect(point.global).toBe(195);
+      expect(point.total).toBe(195);
     });
 
     test('plots the unadjusted balance when every switch is off', () => {
@@ -266,7 +247,7 @@ describe('useProjectionChartData', () => {
 
       expect(point['account-1']).toBe(120);
       expect(point['account-2']).toBe(80);
-      expect(point.global).toBe(200);
+      expect(point.total).toBe(200);
     });
 
     test('reserved subtracts only the reserved component', () => {
@@ -275,7 +256,7 @@ describe('useProjectionChartData', () => {
 
       expect(point['account-1']).toBe(110);
       expect(point['account-2']).toBe(75);
-      expect(point.global).toBe(185);
+      expect(point.total).toBe(185);
     });
 
     test('accruals subtracts only the unpaid accrual component', () => {
@@ -284,7 +265,7 @@ describe('useProjectionChartData', () => {
 
       expect(point['account-1']).toBe(105);
       expect(point['account-2']).toBe(75);
-      expect(point.global).toBe(180);
+      expect(point.total).toBe(180);
     });
 
     test('arrears subtracts only the arrears component', () => {
@@ -293,7 +274,7 @@ describe('useProjectionChartData', () => {
 
       expect(point['account-1']).toBe(115);
       expect(point['account-2']).toBe(80);
-      expect(point.global).toBe(195);
+      expect(point.total).toBe(195);
     });
 
     test('plots the retired available figure when every switch is on', () => {
@@ -301,10 +282,10 @@ describe('useProjectionChartData', () => {
 
       expect(point['account-1']).toBe(90);
       expect(point['account-2']).toBe(70);
-      expect(point.global).toBe(160);
+      expect(point.total).toBe(160);
     });
 
-    test('plots the global series as the sum of the account series for every combination', () => {
+    test('plots the combined total as the sum of the account series for every combination', () => {
       const projectionData = createProjection();
 
       SCENARIO_CASES.forEach(({ include }) => {
@@ -316,7 +297,7 @@ describe('useProjectionChartData', () => {
           const accountSum =
             (point['account-1'] as number) + (point['account-2'] as number);
 
-          expect(point.global).toBe(accountSum);
+          expect(point.total).toBe(accountSum);
         });
       });
     });
@@ -331,7 +312,7 @@ describe('useProjectionChartData', () => {
       expect(result.current.chartData[0]).toMatchObject({
         'account-1': 10,
         'account-2': 5,
-        global: 15,
+        total: 15,
       });
     });
 
@@ -346,7 +327,6 @@ describe('useProjectionChartData', () => {
         ...account,
         dates: account.dates.map(netToZero),
       }));
-      projectionData.global = projectionData.global.map(netToZero);
 
       const { result: allOn } = renderHook(() =>
         useProjectionChartData(projectionData, 'balance', INCLUDE_ALL),
@@ -377,17 +357,15 @@ describe('useProjectionChartData', () => {
         const plottedB = result.current.chartData.map(
           point => point['scenario-b'],
         );
-        const plottedGlobal = result.current.chartData.map(
-          point => point.global,
-        );
+        const plottedTotal = result.current.chartData.map(point => point.total);
 
-        const expectedGlobal = scenarioA.map(
+        const expectedTotal = scenarioA.map(
           (value, index) => value + scenarioB[index]!,
         );
 
         expect(plottedA).toEqual(scenarioA);
         expect(plottedB).toEqual(scenarioB);
-        expect(plottedGlobal).toEqual(expectedGlobal);
+        expect(plottedTotal).toEqual(expectedTotal);
       },
     );
 
@@ -410,6 +388,117 @@ describe('useProjectionChartData', () => {
       expect(plotted[0]).toBe(930);
       expect(plotted[7]).toBe(860);
       expect(steps).toEqual([10, 10, 10, 10, 10, 10, 10]);
+    });
+  });
+
+  describe('selected accounts total', () => {
+    test('sums every account for each metric when nothing is hidden', () => {
+      const projectionData = createProjection();
+
+      const metrics: ProjectionMetric[] = [
+        'balance',
+        'dailyAccrual',
+        'incomeReceived',
+        'expensesPaid',
+      ];
+
+      metrics.forEach(metric => {
+        const { result } = renderHook(() =>
+          useProjectionChartData(projectionData, metric, INCLUDE_NONE),
+        );
+
+        result.current.chartData.forEach(point => {
+          const accountSum =
+            (point['account-1'] as number) + (point['account-2'] as number);
+
+          expect(point.total).toBe(accountSum);
+        });
+      });
+    });
+
+    test('removes a hidden account from the total and restores it when shown', () => {
+      const projectionData = createProjection();
+
+      const { result, rerender } = renderHook(
+        ({ hiddenSeries }: { hiddenSeries: string[] }) =>
+          useProjectionChartData(
+            projectionData,
+            'balance',
+            INCLUDE_NONE,
+            hiddenSeries,
+          ),
+        { initialProps: { hiddenSeries: [] as string[] } },
+      );
+
+      expect(result.current.chartData[0]!.total).toBe(200); // 120 + 80
+
+      rerender({ hiddenSeries: ['account-2'] });
+
+      expect(result.current.chartData[0]!.total).toBe(120);
+
+      rerender({ hiddenSeries: [] });
+
+      expect(result.current.chartData[0]!.total).toBe(200);
+    });
+
+    test('treats the total as zero when every account is hidden', () => {
+      const projectionData = createProjection();
+
+      const { result } = renderHook(() =>
+        useProjectionChartData(projectionData, 'balance', INCLUDE_NONE, [
+          'account-1',
+          'account-2',
+        ]),
+      );
+
+      expect(result.current.chartData[0]!.total).toBe(0);
+
+      // The accounts' own series are still present for when they are shown again.
+      expect(result.current.chartData[0]!['account-1']).toBe(120);
+    });
+
+    test('applies the include switches per visible account', () => {
+      const projectionData = createProjection();
+      const include: ProjectionInclude = {
+        reserved: true,
+        accruals: true,
+        arrears: true,
+      };
+
+      const { result } = renderHook(() =>
+        useProjectionChartData(projectionData, 'balance', include, [
+          'account-2',
+        ]),
+      );
+
+      // Account 1 alone: 120 - 10 - 15 - 5 = 90.
+      expect(result.current.chartData[0]!.total).toBe(90);
+    });
+  });
+
+  describe('timeline', () => {
+    test('derives the dates from the first account', () => {
+      const projectionData = createProjection();
+
+      const { result } = renderHook(() =>
+        useProjectionChartData(projectionData, 'balance'),
+      );
+
+      expect(result.current.chartData.map(point => point.date)).toEqual([
+        '2026-04-01',
+        '2026-04-02',
+      ]);
+    });
+
+    test('yields no data when there are no accounts', () => {
+      const projectionData = createProjection({ accounts: [] });
+
+      const { result } = renderHook(() =>
+        useProjectionChartData(projectionData, 'balance'),
+      );
+
+      expect(result.current.chartData).toEqual([]);
+      expect(result.current.hasData).toBe(false);
     });
   });
 });
