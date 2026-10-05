@@ -20,6 +20,8 @@ Use this skill only for PRDs under `Docs/Future/`. For general multi-stage work,
 - **Never stage or commit.** No `git add`, `git commit`, `git stash`, `git restore`, or any write git command. Make working-tree edits only; the human stages and commits each stage.
 - **One stage at a time.** After a stage is implemented and validated, stop and summarize. Do not begin the next stage until the human explicitly approves it ("approved", "continue", "go").
 - **Two pause points up front:** wait for approval of the staged plan before implementing anything, then wait after every stage.
+- **Block unless approved.** Start only when the PRD `Status` is `Planned` (approved and ready) or `In Progress` (resuming). When it is anything else — `Proposed`, `Planning`, `Proposed (discovery draft)` or `Complete` — **block**: do not write the plan or touch code, report the status and what is required, and stop.
+- **The PRD stays editable during delivery.** While its `Status` is `Planned` or `In Progress`, the human may review and edit the PRD. Re-read it at the start of each stage and reconcile the TASKS plan if it changed; do not treat the PRD as frozen.
 - **Track progress in the plan.** Tick each sub-task's checkbox (`- [x]`) as it is implemented and keep each stage's `Progress: n/total complete` line accurate. Reference work by task number (e.g. `2.3`) in summaries and questions.
 - **Never generate EF Core migrations.** If a stage changes schema, tell the developer to run and review `add-migration`.
 - **Stay inside PRD scope.** Do not refactor unrelated code or change public API shape beyond what the PRD specifies; ask if scope is unclear.
@@ -30,7 +32,7 @@ Use this skill only for PRDs under `Docs/Future/`. For general multi-stage work,
 
 ### 1. Create the staged plan
 
-1. Read the PRD in full. If it is not approved (Status not `Planned` or `In Progress`), stop and ask.
+1. Read the PRD in full. Start only when its `Status` is `Planned` (approved and ready) or `In Progress` (resuming). If it is `Proposed`, `Planning`, `Proposed (discovery draft)` or `Complete`, **block** — do not write the plan or touch code; report the status and what is required, then stop.
 2. Split the work into testable increments. Each stage must:
    - deliver one coherent, contract- or user-visible behaviour;
    - be independently testable and leave the affected build green;
