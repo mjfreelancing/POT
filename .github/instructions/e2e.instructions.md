@@ -10,7 +10,7 @@ Architecture, fixtures and conventions are documented in the files below. Read t
 - [e2e README](../../Source/Client/pot-react/e2e/README.md)
 - [e2e AUTHORING](../../Source/Client/pot-react/e2e/AUTHORING.md)
 
-Config: `playwright.config.ts` (`testDir: './e2e'`; keep new tests under `e2e/`). Run `npm run e2e` from `Source/Client/pot-react` (the config's non-blocking reporters, suited to non-interactive runs). Prodlike (`playwright.prod.config.ts`, built client) is an on-demand gate: run `npm run e2e:prodlike` when the client production build changes, not per change.
+Config: `playwright.config.ts` (`testDir: './e2e'`; keep new tests under `e2e/`). Run `npm run e2e` from `Source/Client/pot-react` (the config's non-blocking reporters, suited to non-interactive runs). Prodlike (`playwright.prod.config.ts`, built client) is not run per change. It is the completion gate for client-affecting work: run the full matrix with `npm run e2e:all:prodlike` when such a PRD completes, and `npm run e2e:prodlike` on demand when the client production build changes.
 
 ## Locators and clicks
 
