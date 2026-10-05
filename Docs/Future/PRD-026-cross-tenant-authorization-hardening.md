@@ -214,9 +214,18 @@ if (user is null)
 {
     return EnrichedResult.Fail<bool>(ApiDetailErrorFactory.CreateEntityNotFoundError(userRowId, "User not found"));
 }
+
+// An invitation can only be re-sent while the invitation is still outstanding.
+if (user.Status != UserStatus.Pending)
+{
+    return EnrichedResult.Fail<bool>(ApiDetailErrorFactory.CreateUnprocessableEntityError(
+        nameof(user.Status),
+        user.Status.Name,
+        "Only a user with a pending invitation can be re-invited."));
+}
 ```
 
-**After:** a foreign id is refused as not-found and the stored password hash is unchanged. Whether this route should also require a concurrency token, or accept only users in a `Pending` status, is an open question (§10).
+**After:** a foreign id is refused as not-found and the stored password hash is unchanged; a same-site target that is not `Pending` is refused as unprocessable (`422`) and its password hash is unchanged. No concurrency token is added — the operation is idempotent in intent — and the client already offers the action only for a `Pending` row, so no client change is required.
 
 ### I5 — `PUT /api/sites/{id}` is cross-tenant
 
@@ -398,7 +407,7 @@ A `RequireAuthenticatedUser` fallback policy makes an unannotated endpoint authe
 
 ### 4.4 Protected identities
 
-`PUT /api/users/{id}/status` refuses (`422`) any change that would set a configured platform administrator's status to anything other than `Enabled`, and any change that would leave a site with no enabled `Admin`. `PUT /api/users/{id}/roles` refuses any change that removes `Admin` from that site's last enabled `Admin`. The population counted is enabled `Admin`-role holders in the target's site, shared with PRD-022 so the two cannot disagree. These checks run only after the target has passed the site-scoped lookup, so a foreign id is still a not-found rather than an unprocessable entity.
+`PUT /api/users/{id}/status` refuses (`422`) any change that would set a configured platform administrator's status to anything other than `Enabled`, and any change that would leave a site with no enabled `Admin`. `PUT /api/users/{id}/roles` refuses any change that removes `Admin` from that site's last enabled `Admin`. The population counted is enabled `Admin`-role holders in the target's site, shared with PRD-022 so the two cannot disagree. These checks run only after the target has passed the site-scoped lookup, so a foreign id is still a not-found rather than an unprocessable entity. A configured platform administrator's **site roles are not frozen**: `platform:manage` is granted from deployment configuration and is unaffected by roles, so the last-enabled-`Admin` rule protects a tenant's administrability without restricting who may hold a role.
 
 ### 4.5 Cross-tenant inventory
 
@@ -442,7 +451,7 @@ The repository surface in §4.1 delivers the same guarantee — the unsafe query
 | `PUT /api/users/{id}`                | `AuthenticatedUser`; caller must be the target **or** hold `user:manage` | `GetForCurrentSiteAsync`                                                          | `401` anonymous; `404` for any target the caller cannot act on |
 | `PUT /api/users/{id}/roles`          | `user:manage`                                                            | `GetForCurrentSiteAsync` + last-enabled-`Admin` check                             | `401` / `404` / `422`                                          |
 | `PUT /api/users/{id}/status`         | `user:manage`                                                            | `GetForCurrentSiteAsync` + platform-administrator and last-enabled-`Admin` checks | `401` / `404` / `422`                                          |
-| `POST /api/users/{id}/resend-invite` | `user:manage`                                                            | `GetForCurrentSiteAsync`                                                          | `401` / `404`                                                  |
+| `POST /api/users/{id}/resend-invite` | `user:manage`                                                            | `GetForCurrentSiteAsync` + target must be `Pending`                               | `401` / `404` / `422`                                          |
 | `PUT /api/sites/{id}`                | `site:manage`                                                            | supplied id must equal `GetCurrentSite()`                                         | `401` / `404`                                                  |
 
 `platform:manage` carries no authority on these routes: a platform administrator acting on another tenant uses the dedicated routes in PRD-027. Within the caller's own site, `platform:manage` is not required and confers nothing extra.
@@ -462,12 +471,12 @@ PRD-022 owns the delete routes and the deletion sweeps; PRD-027 owns the cross-t
 
 ## 7. Tests
 
-The acceptance suite is `Pot.AspNetCore.Integration.Tests/Security/CrossTenantAuthorizationFixture.cs`, rewritten to the §5 contract. It covers every issue above, including the anonymous cases expecting `401` rather than `404`, the self-edit and own-site controls, a status change for an unknown user expecting the same `404` as a foreign target, and the two protected-identity refusals. It fails until the implementation lands — 10 of its 13 cases are red today and 3 pass (the controls).
+The acceptance suite is `Pot.AspNetCore.Integration.Tests/Security/CrossTenantAuthorizationFixture.cs`, rewritten to the §5 contract. It covers every issue above, including the anonymous cases expecting `401` rather than `404`, the self-edit and own-site controls, a status change for an unknown user expecting the same `404` as a foreign target, the two protected-identity refusals, and a resend for a user who is not `Pending` expecting `422`. It fails until the implementation lands — 11 of its 14 cases are red today and 3 pass (the controls).
 
 Supporting coverage:
 
 - **Repository** (`Pot.Data.Tests`): a same-site id returns the user; a foreign-site id returns null; `GetEnabledAdminsForCurrentSiteAsync` counts enabled `Admin`-role holders only, ignores another site's `Admin`, and ignores a `Viewer`.
-- **Application** (`Pot.App.Tests`): each of the five services refuses a foreign target with the not-found error and performs no write; a same-site target succeeds; the new entity checks refuse the protected-identity cases and allow a second enabled `Admin`.
+- **Application** (`Pot.App.Tests`): each of the five services refuses a foreign target with the not-found error and performs no write; a same-site target succeeds; the resend path refuses a target that is not `Pending`; the new entity checks refuse the protected-identity cases and allow a second enabled `Admin`.
 - **Integration** — authorization regression: every mapped endpoint carries a requirement or is on the anonymous allow-list; user- and site-targeting routes carry their expected requirement.
 - **Integration** — permission regression: `platform:manage` still reaches the Approvals endpoints, and a `user:manage` caller without it does not.
 - **Integration** — refusal logging: a cross-tenant rejection is logged at warning with the caller's `RowId`, site and the requested id.
@@ -501,7 +510,7 @@ Automated coverage cannot reach every affected journey: the E2E seed is a single
 | M16 | Approvals              | As a platform administrator, approve and reject a pending signup                                | Both still work (`platform:manage` is unaffected)                                                                       |
 | M17 | Session                | After signing out, navigate directly to `/users` and `/dashboard`                               | Redirected to `/login`                                                                                                  |
 
-M13 and M14 cannot be driven from the client for both halves of the rule — the UI hides self-actions — so they are expected to be exercised with the action menu on a second administrator's row, or via the API, and the _presentation_ verified in the UI. A cross-tenant refusal has no UI path at all: it is covered by the server acceptance suite.
+M13 and M14 cannot be driven from the client for both halves of the rule — the UI hides self-actions — so they are expected to be exercised with the action menu on a second administrator's row, or via the API, and the *presentation* verified in the UI. A cross-tenant refusal has no UI path at all: it is covered by the server acceptance suite. The `resend-invite` status rule (D1) is the same — the action is offered only for a `Pending` row — so its refusal has no client path and is covered by the acceptance suite.
 
 ## 9. E2E regression coverage
 
@@ -525,11 +534,13 @@ The two new specs are desktop-only (the mobile projects use a card grid with a d
 
 Run commands (from `Source/Client/pot-react`): `npm run e2e:preflight` before a run, `npx playwright test <path> --project=chromium` for a targeted loop, and `npm run e2e:all:dev` for the full four-project matrix that gates the feature.
 
-## 10. Open questions
+## 10. Decisions
 
-1. **Should `resend-invite` gain a concurrency token, and should it accept only `Pending` users?** Today it takes no body, requires no etag, and accepts any user. Site binding fixes the cross-tenant defect; whether a same-site administrator should be able to force-reset an enabled user's credentials is a separate behaviour decision. Recommendation: restrict to `Pending`, and do not add an etag (the operation is idempotent in intent).
-2. **Is a configured platform administrator's site role frozen, or only their status?** Recommendation: status only. `platform:manage` comes from configuration and is unaffected by roles, and the last-enabled-`Admin` rule already protects a tenant's administrability.
-3. **Which population counts toward "last enabled `Admin`"?** Recommendation: enabled `Admin`-role holders only — a disabled or pending `Admin` cannot administer the site or re-enable anyone. This must match PRD-022 and PRD-027.
+| #   | Question                                                                                    | Decision                                                                                                                                                                                    |
+| --- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Should `resend-invite` gain a concurrency token, and should it accept only `Pending` users? | **Restrict to `Pending`; no concurrency token.** The operation is idempotent in intent, and the client already offers the action only for a `Pending` row, so no client change is required. |
+| D2  | Is a configured platform administrator's site role frozen, or only their status?            | **Status only.** `platform:manage` is granted from deployment configuration and is unaffected by roles, and the last-enabled-`Admin` rule already protects a tenant's administrability.     |
+| D3  | Which population counts toward "last enabled `Admin`"?                                      | **Enabled `Admin`-role holders only** — a disabled or pending `Admin` cannot administer the site or re-enable anyone. Shared with PRD-022 and PRD-027 so the three cannot disagree.         |
 
 ## 11. Scope
 
