@@ -1,4 +1,5 @@
 import type { APIRequestContext } from '@playwright/test';
+
 import { expect, test } from '../../fixtures/auth';
 import { authHeaders, createE2eRequestContext } from '../../helpers/api';
 

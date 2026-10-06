@@ -401,6 +401,13 @@ This is the load-bearing part of the design: it makes the hazardous lookup unrep
 
 A target the caller cannot act on is reported as **`404`, identical to an id that does not exist** — never `403`. A `403` confirms the row exists in another tenant and turns the endpoint into a membership oracle. Because the site-scoped lookup returns `null` for both cases, the contract is a property of the data access rather than a rule each handler must remember. Cross-tenant refusals are logged at warning level with the caller's `RowId`, the caller's site and the requested id, so probing is visible.
 
+**Why the two refusal families use different statuses.** The client already handles `404`: the response interceptor maps it to a `NotFoundError`, wraps it in a `FailResult`, and the calling feature renders it through its normal error surface (`ErrorSheet` or toast) — there is no `404`-specific control flow anywhere in the client. What differs is the message. The client's `getNotFoundMessage` ignores the response body and returns a fixed _"The requested resource was not found"_ (pinned by a unit test in `tests/api/interceptors/axiosInterceptors.test.ts`), whereas `getValidationMessage` surfaces the server's `errorMessage` entries (and `getConflictMessage` special-cases an `etag` `propertyName` for the stale-write case). A `404` therefore cannot carry copy to the user and a `422` can — which is precisely the split this feature needs, and the reason the server reserves `422` for refusals whose wording the user must act on:
+
+- a **cross-tenant refusal** must say nothing about whether the row exists, so `404` and its generic message are the correct outcome, not a limitation;
+- the **protected-identity refusals** must explain themselves ("This is the site's only enabled administrator…"), so they are `422`.
+
+When PRD-022 and PRD-027 add their own refusals, the rule is: a refusal the user is expected to act on is `422`; a refusal that must not disclose a row's existence is `404`.
+
 ### 4.3 Fail-closed authorization
 
 A `RequireAuthenticatedUser` fallback policy makes an unannotated endpoint authenticated-only, and intentionally anonymous routes are marked `AllowAnonymous()`. An integration test enumerates the host's `EndpointDataSource` and asserts that every mapped endpoint either carries an authorization requirement or appears on an explicit anonymous allow-list, and that every user- and site-targeting route carries its expected requirement. A forgotten annotation becomes a failing test rather than a shipped vulnerability.
@@ -510,7 +517,7 @@ Automated coverage cannot reach every affected journey: the E2E seed is a single
 | M16 | Approvals              | As a platform administrator, approve and reject a pending signup                                | Both still work (`platform:manage` is unaffected)                                                                       |
 | M17 | Session                | After signing out, navigate directly to `/users` and `/dashboard`                               | Redirected to `/login`                                                                                                  |
 
-M13 and M14 cannot be driven from the client for both halves of the rule — the UI hides self-actions — so they are expected to be exercised with the action menu on a second administrator's row, or via the API, and the *presentation* verified in the UI. A cross-tenant refusal has no UI path at all: it is covered by the server acceptance suite. The `resend-invite` status rule (D1) is the same — the action is offered only for a `Pending` row — so its refusal has no client path and is covered by the acceptance suite.
+M13 and M14 cannot be driven from the client for both halves of the rule — the UI hides self-actions — so they are expected to be exercised with the action menu on a second administrator's row, or via the API, and the _presentation_ verified in the UI. A cross-tenant refusal has no UI path at all: it is covered by the server acceptance suite. The `resend-invite` status rule (D1) is the same — the action is offered only for a `Pending` row — so its refusal has no client path and is covered by the acceptance suite.
 
 ## 9. E2E regression coverage
 

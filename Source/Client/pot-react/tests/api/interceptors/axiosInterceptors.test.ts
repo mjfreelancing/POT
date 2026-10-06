@@ -35,19 +35,27 @@ vi.mock('@/api/authClient', () => ({
 // Import the error handler function from the interceptors module for direct testing
 import { responseErrorHandler } from '../../../src/api/interceptors/axiosInterceptors';
 
-const expectRejectedFailResultErrorType = async <TError extends FailResultBase>(
+const rejectToFailResult = async <TError extends FailResultBase>(
   rejectionPromise: Promise<unknown>,
-  expectedErrorType: new (...args: never[]) => TError,
-) => {
+): Promise<FailResult<TError>> => {
   await expect(rejectionPromise).rejects.toBeInstanceOf(FailResult);
 
   const rejectedValue = await rejectionPromise.catch(
     rejectedError => rejectedError,
   );
 
-  const failResult = rejectedValue as FailResult<TError>;
+  return rejectedValue as FailResult<TError>;
+};
+
+const expectRejectedFailResultErrorType = async <TError extends FailResultBase>(
+  rejectionPromise: Promise<unknown>,
+  expectedErrorType: new (...args: never[]) => TError,
+): Promise<FailResult<TError>> => {
+  const failResult = await rejectToFailResult<TError>(rejectionPromise);
 
   expect(failResult.error).toBeInstanceOf(expectedErrorType);
+
+  return failResult;
 };
 
 describe('Axios Interceptors', () => {
@@ -143,6 +151,37 @@ describe('Axios Interceptors', () => {
       const rejectionPromise = responseErrorHandler(axiosError);
 
       await expectRejectedFailResultErrorType(rejectionPromise, NotFoundError);
+    });
+
+    it('should not surface the response body in a 404 message', async () => {
+      const apiErrorResponse: ApiErrorResponse = {
+        title: 'Not Found',
+        detail: 'Resource 42 was not found',
+        status: 404,
+      };
+
+      const axiosError = new AxiosError('Not Found');
+
+      axiosError.response = {
+        status: 404,
+        data: apiErrorResponse,
+        headers: {},
+        config: {
+          headers: new AxiosHeaders({ 'X-Correlation-ID': 'test-id' }),
+        } as InternalAxiosRequestConfig,
+        statusText: 'Not Found',
+      };
+
+      const failResult = await rejectToFailResult<NotFoundError>(
+        responseErrorHandler(axiosError),
+      );
+
+      // Deliberate: a 404 must never disclose whether (or whose) row exists, so the client shows one
+      // fixed message and discards the server's own detail. The cross-tenant refusals depend on that
+      // silence. Do not feed apiError.detail (or errors[].errorMessage) into the 404 message.
+      expect(failResult.error.description).toBe(
+        'The requested resource was not found',
+      );
     });
 
     it('should convert 401 responses to AuthenticationError', async () => {
