@@ -127,6 +127,8 @@ var userToUpdate = await _userRepository
     .ConfigureAwait(false);
 ```
 
+**Implementation note.** This self-or-`user:manage` check is expected on this route only. If a second route comes to need it, it must move to a shared helper or extension rather than being copied — for example a named authorization policy evaluated as `AuthorizeAsync(user, id, "SelfOrUserManage")`, or an endpoint extension method. Whichever shape is used, the refusal stays **not-found**, so no route discloses whether a row exists elsewhere. The site-scoped target lookup is already shared through `GetForCurrentSiteAsync`, so this rule is the only part of the design that risks duplication.
+
 **After:** anonymous `401`; self `200`; another user without `user:manage` → `404`; another user in the caller's own site with `user:manage` → `200`; any other site → `404`.
 
 ### I2 — `PUT /api/users/{id}/roles` is cross-tenant
@@ -451,6 +453,32 @@ A site-scoped filter on `User` and `Site` was considered and rejected as the pri
 
 The repository surface in §4.1 delivers the same guarantee — the unsafe query cannot be written — without those interactions. Adding filters on top remains possible later; it is not required for this feature and is out of scope.
 
+To be explicit: the existing filters on `Account`, `Expense`, `Income` and `Setting` are **not** removed or replaced. They cover entities this design does not touch, and §4.1 changes only how `User` and `Site` are reached — the two entity types a filter cannot safely cover. The two mechanisms are complementary: the filters remain the isolation guarantee for the four filtered entities and the repository surface supplies the equivalent guarantee for the other two.
+
+### 4.8 Documentation
+
+The security story must be written down for two audiences, and neither should have to read the code to learn what is protected. Each document carries a single section, titled **Security**, that collates every protection the product offers as one list. There are no sub-headings separating new from existing work, no phase or "this change" language, and no references to planning documents: the reader is told how the product is protected, not how it came to be that way. This is part of the feature, not a follow-up.
+
+**Developer documentation** — the `Security` section in `Source/Server/DEVELOPER.md`, with the authentication-specific mechanisms in `Docs/AUTHENTICATION.md`. It describes **mechanisms, not code** (no snippets):
+
+- the isolation model, which has two parts that sit side by side rather than one replacing the other. `Account`, `Expense`, `Income` and `Setting` are tenant-isolated by a global query filter, which stays in place and keeps doing exactly what it did before; it is not widened, narrowed or bypassed by this work. `User` and `Site` are deliberately not filtered, because a `User` filter would be self-referential and because permission resolution and token validation both run before a site is known. For those two, isolation comes from the repository surface instead: they are reachable only through site-scoped methods, so a query that omits the site is no longer expressible rather than merely discouraged. The filters are kept because they are the right mechanism for the four entities they already cover, and the repository surface exists because that mechanism cannot be extended to the other two — neither is a stand-in for the other;
+- the refusal contract: a target the caller cannot act on answers `404`, identical to a row that does not exist, and never a distinguishable `403`, so a refusal cannot be used to probe for existence;
+- authorization: `resource:action` permissions resolved on every request from the caller's roles plus the configured platform grant, with a fail-closed `RequireAuthenticatedUser` fallback and the intentionally anonymous routes held as an explicit, reviewable list;
+- the protected identities: a configured platform administrator cannot be disabled, and a site's last enabled `Admin` cannot be disabled or demoted, so neither platform nor tenant administration can be locked out;
+- the token policy (§4.6): the access token carries no site or permission claims; tenancy, permissions and account status are resolved on every request;
+- credential handling: salted one-way password hashes; single-use invitation, sign-up and password-reset codes with an expiry and an attempt limit; `TokenVersion` revocation on password change and logout; a disabled account rejected when its token is validated;
+- abuse throttling: rate limiting partitioned by anonymous client and by signed-in user, answering `429` with a `Retry-After` header and the wait time in the ProblemDetails;
+- the deliberate cross-tenant surfaces: Approvals and the platform routes, both behind the platform grant and using `IgnoreQueryFilters()` on purpose;
+- the complete cross-tenant inventory (§4.5), named as such at the call site;
+- a short checklist for a new id-taking endpoint: declare its authorization requirement, resolve the target through a site-scoped lookup, refuse as not-found, and log the refusal.
+
+**User documentation** — a short, plain-language `Security` page in `Docs/USER-GUIDE/`, following the existing guide style and linked from the guide index (`Docs/USER-GUIDE/README.md`), written to give a customer confidence rather than to enumerate internals. One list of protections, no staging language:
+
+- **Isolation.** Each site's users, accounts, expenses, income and settings are separate. A user of one site cannot read or change another site's data, and a request for a row outside their own site is indistinguishable from one that does not exist. No other site can rename your site, change your users' roles or status, or reset their credentials.
+- **Availability.** Your site cannot be left without an administrator: the last enabled administrator cannot be disabled or demoted. Nobody outside your site can disable your users at all, and platform-level administration is limited to the configured platform administrators.
+- **Accounts and sessions.** Passwords are stored only as salted one-way hashes. Changing a password ends every other signed-in session. A disabled account cannot sign in. Invitations, sign-ups and password resets use single-use codes with an expiry and a limited number of attempts. Repeated requests are throttled, and a throttled caller is asked to wait before trying again.
+- **Limits of the list.** The page describes mechanisms that are implemented when it is written. Account lock-out after repeated failed sign-ins is not implemented, so the page must not promise it, and the same applies to any control that only exists as a proposal.
+
 ## 5. Route contract
 
 | Route                                | Authorization                                                            | Target resolution                                                                 | Refusal                                                        |
@@ -551,19 +579,20 @@ Run commands (from `Source/Client/pot-react`): `npm run e2e:preflight` before a 
 
 ## 11. Scope
 
-**In scope:** the repository surface for user and site access; the five routes in §5; the protected-identity checks; the fallback authorization policy and its regression test; the cross-tenant inventory, naming and `DEVELOPER.md` correction; the acceptance suite.
+**In scope:** the repository surface for user and site access; the five routes in §5; the protected-identity checks; the fallback authorization policy and its regression test; the cross-tenant inventory, naming and `DEVELOPER.md` correction; the acceptance suite; the developer and user security documentation in §4.8.
 
 **Out of scope:** the delete routes and deletion sweeps (PRD-022); the cross-tenant platform routes (PRD-027); authentication, session and refresh-token architecture; the intentional Approvals surface; the reminder worker's platform-wide enumeration; client changes (`SiteDetailsForm` already sends the current site's id, and no client flow targets another site); rate limiting; global query filters on `User` and `Site` (§4.7); an audit store.
 
 ## 12. Acceptance criteria
 
-1. All 13 acceptance cases pass, and the suite is unmodified apart from additions.
+1. All 14 acceptance cases pass, and the suite is unmodified apart from additions.
 2. `IUserRepository` and `ISiteRepository` expose no `IQueryable` for `UserEntity` or `SiteEntity`.
 3. The endpoint-metadata regression test fails if a route is added without an authorization requirement.
 4. The five routes return the statuses in §5, and no refusal path writes a row.
 5. The protected-identity refusals return `422` and leave the target unchanged.
 6. The cross-tenant inventory in §4.5 is complete and each entry is named as cross-tenant at the call site.
 7. `dotnet test pot.sln` is green, and `DEVELOPER.md` matches the implemented isolation model.
+8. The developer security section and the user-facing security overview in §4.8 are written, and every mechanism they claim is implemented and true at the time of writing.
 
 ## 13. Related documents
 
@@ -571,4 +600,5 @@ Run commands (from `Source/Client/pot-react`): `npm run e2e:preflight` before a 
 - Prerequisite for: [Platform Administration PRD](PRD-027-platform-administration.md) — blocked pending this document.
 - Authentication reference (platform administrators and permissions): `Docs/AUTHENTICATION.md`
 - Server conventions (multi-tenancy, query filters): `Source/Server/DEVELOPER.md`
+- User guide index (the security overview links from here): `Docs/USER-GUIDE/README.md`
 - Future index: [Docs/Future/README.md](README.md)
