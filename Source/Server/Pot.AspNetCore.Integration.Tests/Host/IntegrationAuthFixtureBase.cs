@@ -156,6 +156,59 @@ public abstract class IntegrationAuthFixtureBase : IntegrationFixtureBase
             .Split('=', 2)[1];
     }
 
+    /// <summary>
+    /// Seeds an enabled user into an existing site, so a fixture can place a caller and a target in the same site.
+    /// </summary>
+    /// <param name="siteRowId">The site to place the user in.</param>
+    /// <param name="purpose">A short label, unique within its fixture, used to build the username.</param>
+    /// <param name="displayName">The user's display name.</param>
+    /// <param name="role">The role to grant the user, if any.</param>
+    /// <param name="status">The user's status; enabled when not supplied.</param>
+    /// <returns>The seeded user and their login credentials.</returns>
+    protected async Task<SeededUser> CreateUserInSiteAsync(Guid siteRowId, string purpose, string displayName, Role? role = null, UserStatus? status = null)
+    {
+        using var scope = CreateScope();
+
+        var dbContext = scope.ServiceProvider.GetRequiredService<PotDbContext>();
+        var passwordHasher = scope.ServiceProvider.GetRequiredService<IUserPasswordHasher>();
+        var uniqueValue = Guid.NewGuid().ToString("N");
+
+        // Tracked, so adding the user inserts only the user rather than a second copy of the site.
+        var site = await dbContext.Set<SiteEntity>()
+            .AsTracking()
+            .SingleAsync(entity => entity.RowId == siteRowId, TestContext.Current.CancellationToken);
+
+        var username = $"{purpose}-{uniqueValue}";
+        var user = EntityFactory.CreateUser(site, username, $"{username}@example.com", displayName);
+
+        user.PasswordHash = passwordHasher.GetHash(user, SeededPassword);
+
+        if (status is not null)
+        {
+            user.Status = status;
+        }
+
+        dbContext.Add(user);
+
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        if (role is not null)
+        {
+            // The roles and their permission sets are seeded by the AddRolesAndPermissions migration, so the role
+            // is attached rather than added - adding it through the user graph would insert a duplicate role.
+            var roleEntity = await dbContext.Set<RoleEntity>()
+                .AsNoTracking()
+                .SingleAsync(entity => entity.Name == role, TestContext.Current.CancellationToken);
+
+            dbContext.Attach(roleEntity);
+            user.Roles.Add(roleEntity);
+
+            await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+        }
+
+        return new SeededUser(user.RowId, username, SeededPassword);
+    }
+
     private async Task<SeededUser> SeedUserAsync(string purpose, string displayName, bool assignAdminRole)
     {
         using var scope = CreateScope();

@@ -38,26 +38,34 @@ The result is a defect class rather than five isolated mistakes: **any request-r
 
 ### 2.3 Evidence
 
-`Pot.AspNetCore.Integration.Tests/Security/CrossTenantAuthorizationFixture.cs` exercises the routes over HTTP against the real host. Each seeded user is placed in its own site, so a seeded pair is a caller in one site and a target in another. The suite reads the target's etag from the test database (sign-in records itself on the user row and changes its etag), so each case exercises authorization rather than the concurrency check.
+`Pot.AspNetCore.Integration.Tests/Security/CrossTenantAuthorizationFixture.cs` exercises the routes over HTTP against the real host. Each seeded user is placed in its own site unless a case deliberately places two in one, so a seeded pair is normally a caller in one site and a target in another. The suite reads the target's etag from the test database (sign-in records itself on the user row and changes its etag), so each case exercises authorization rather than the concurrency check.
 
-Current results — 3 pass, 11 fail:
+Current results, before any of the hardening lands — 17 of the suite's 25 cases fail. The table lists the failing cases that a status code shows, plus the three controls; the suite's other five cases are guards against over-refusal and pass today.
 
-| Case                                                                     | Observed                | Required                                         |
-| ------------------------------------------------------------------------ | ----------------------- | ------------------------------------------------ |
-| Anonymous update of a user's details                                     | `200` — details changed | `401`                                            |
-| Anonymous update of an unknown user's details                            | `404`                   | `401` (authorization precedes target resolution) |
-| Update of another site's user details, as an admin                       | `200` — details changed | `404`                                            |
-| Update of another site's user details, as a caller without `user:manage` | `200` — details changed | `404`                                            |
-| Change of another site's user status                                     | `200` — user disabled   | `404`                                            |
-| Grant of a role to another site's user                                   | `200` — `Admin` granted | `404`                                            |
-| Resend invite for another site's user                                    | `200` — password reset  | `404`                                            |
-| Update of another site                                                   | `200` — site renamed    | `404`                                            |
-| Disable the site's last enabled `Admin`                                  | `200` — admin disabled  | `422`                                            |
-| Remove `Admin` from the site's last enabled `Admin`                      | `200` — role removed    | `422`                                            |
-| Resend an invitation for a user who is not `Pending`                     | `200` — invite resent   | `422`                                            |
-| A user updates their own details                                         | `200`                   | `200` (control)                                  |
-| An admin updates their own site                                          | `200`                   | `200` (control)                                  |
-| Change the status of a user that does not exist                          | `404`                   | `404` (control)                                  |
+| Case                                                                           | Observed                | Required                                         |
+| ------------------------------------------------------------------------------ | ----------------------- | ------------------------------------------------ |
+| Anonymous update of a user's details                                           | `200` — details changed | `401`                                            |
+| Anonymous update of an unknown user's details                                  | `404`                   | `401` (authorization precedes target resolution) |
+| Update of another site's user details, as an admin                             | `200` — details changed | `404`                                            |
+| Update of another site's user details, as a caller without `user:manage`       | `200` — details changed | `404`                                            |
+| Change of a colleague's details in the caller's own site without `user:manage` | `200` — details changed | `404`                                            |
+| Change of another site's user status                                           | `200` — user disabled   | `404`                                            |
+| Change of another site's user status with an out-of-date etag                  | `409` — conflict        | `404`                                            |
+| Grant of a role to another site's user                                         | `200` — `Admin` granted | `404`                                            |
+| Resend invite for another site's user                                          | `200` — password reset  | `404`                                            |
+| Update of another site                                                         | `200` — site renamed    | `404`                                            |
+| Disable the site's last enabled `Admin`                                        | `200` — admin disabled  | `422`                                            |
+| Remove `Admin` from the site's last enabled `Admin`                            | `200` — role removed    | `422`                                            |
+| Disable a configured platform administrator                                    | `200` — admin disabled  | `422`                                            |
+| Remove `Admin` from the site's only `Admin` when a `Viewer` also exists        | `200` — role removed    | `422`                                            |
+| Resend an invitation for a user who is not `Pending`                           | `200` — invite resent   | `422`                                            |
+| A user updates their own details                                               | `200`                   | `200` (control)                                  |
+| An admin updates their own site                                                | `200`                   | `200` (control)                                  |
+| Change the status of a user that does not exist                                | `404`                   | `404` (control)                                  |
+
+Two further failing cases carry no status of their own: a foreign target and a missing target are _distinguishable_ today (`200` against `404`), and a cross-tenant refusal leaves nothing in the log.
+
+The concurrency ordering is worth calling out on its own. A foreign target is refused with `409` rather than `404` when the etag is out of date, because the concurrency check runs **before** any tenancy binding — so the response confirms both that the row exists and that the caller's etag for it is stale, to a caller with no claim to the row at all.
 
 The three controls are the behaviour that must survive the hardening.
 
@@ -512,7 +520,7 @@ PRD-022 owns the delete routes and the deletion sweeps; PRD-027 owns the cross-t
 
 ## 7. Tests
 
-The acceptance suite is `Pot.AspNetCore.Integration.Tests/Security/CrossTenantAuthorizationFixture.cs`, rewritten to the §5 contract. It covers every issue above, including the anonymous cases expecting `401` rather than `404`, the self-edit and own-site controls, a status change for an unknown user expecting the same `404` as a foreign target, the two protected-identity refusals, and a resend for a user who is not `Pending` expecting `422`. It fails until the implementation lands — 11 of its 14 cases are red today and 3 pass (the controls).
+The acceptance suite is `Pot.AspNetCore.Integration.Tests/Security/CrossTenantAuthorizationFixture.cs`, rewritten to the §5 contract. It covers every issue above, including the anonymous cases expecting `401` rather than `404`, the self-edit and own-site controls, a status change for an unknown user expecting the same `404` as a foreign target, the two protected-identity refusals, and a resend for a user who is not `Pending` expecting `422`. It fails until the implementation lands — 17 of its 25 cases are red today; the eight that pass are the three controls and five guards against over-refusal.
 
 Supporting coverage:
 
@@ -591,7 +599,7 @@ Run commands (from `Source/Client/pot-react`): `npm run e2e:preflight` before a 
 
 ## 12. Acceptance criteria
 
-1. All 14 acceptance cases in §7 pass, and the suite is not weakened to make them pass — cases may be added, none removed or relaxed.
+1. All 25 acceptance cases in §7 pass, and the suite is not weakened to make them pass — cases may be added, none removed or relaxed.
 2. `IUserRepository` and `ISiteRepository` expose no `IQueryable` for `UserEntity` or `SiteEntity`.
 3. The endpoint-metadata regression test fails if a route is added without an authorization requirement.
 4. The five routes return the statuses in §5, and no refusal path writes a row.
