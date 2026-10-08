@@ -1,8 +1,8 @@
 # Cross-Tenant Authorization Hardening PRD
 
-**Status:** Planning (design complete; awaiting review before Planned)
+**Status:** In Progress
 **Priority:** High
-**Last Updated:** 2026-10-05
+**Last Updated:** 2026-10-06
 **Feature ID:** 026
 **Scope:** Make tenant isolation enforceable rather than conventional. POT is multi-tenant, but isolation is enforced in only two places — site-scoped global query filters on four entity types, and `resource:action` permissions — and neither binds a _target row_ to the caller's tenant. Any endpoint that resolves a user or a site by the id supplied by the caller therefore reaches every tenant. This document specifies: a repository surface on which a tenant-unbound user or site lookup cannot be written; a single refusal contract (a target outside the caller's site is reported exactly as a non-existent one); fail-closed authorization so a route cannot be anonymous by accident; the two protected identities the user-mutation routes must not be able to destroy (a configured platform administrator, and a site's last enabled `Admin`); and the cross-tenant operations that are deliberately allowed, named and documented. It is the prerequisite for the user and site deletion feature (PRD-022) and for platform administration (PRD-027), and it defines the shared primitives both reuse.
 
@@ -21,7 +21,7 @@ The hardening must be structural, not per-route. Adding a site predicate to the 
 | Site-scoped global query filters | `PotDbContext.SetupQueryFilters` — `Account`, `Expense`, `Income`, `Setting` only | Partly: filters those four entity types; `User` and `Site` have no filter at all                                                      |
 | Permission policies              | `RequireAuthorization("<resource>:<action>")` per route                           | **No**: a permission says what a caller may do, never which tenant's row they may do it to                                            |
 | Current-site resolution          | `SiteRepository.GetCurrentSite()`, `UserRepository.GetCurrentUser(true)`          | Yes, but only used to _attach_ data to the caller's site (for example when inviting a user); never to bind an id supplied by a caller |
-| Current-caller identity          | `UserContextMiddleware` sets `ICurrentUserContext.UserRowId` from the JWT `sub`   | Available, but not consulted by any user- or site-targeting service                                                                   |
+| Current-caller identity          | `UserContextMiddleware` sets `ICurrentUserContext.UserRowId` from the JWT `sub`   | Available, and consulted when attaching data to the caller's site, but never used to bind an id supplied by a caller                  |
 
 There is no global fallback authorization policy. `AddPotAuth` registers the `AuthenticatedUser` policy only, and the pipeline calls `UseAuthentication()` / `UseAuthorization()` with no default requirement, so an endpoint that omits `RequireAuthorization(...)` has no authorization requirement whatsoever.
 
@@ -34,13 +34,13 @@ Two independent properties combine:
 
 `PermissionService` resolves permissions per request from the database plus the configured platform-administrator list, and never consults the caller's site, so `user:manage` in site A satisfies `RequireAuthorization("user:manage")` for a target in site B.
 
-The result is a class of defect, not a set of five bugs: **any request-reachable endpoint that resolves a `UserEntity` or `SiteEntity` by an id from the request is cross-tenant unless it adds a site predicate by hand.**
+The result is a defect class rather than five isolated mistakes: **any request-reachable endpoint that resolves a `UserEntity` or `SiteEntity` by an id from the request is cross-tenant unless it adds a site predicate by hand.** The five routes in §3 are the ones reachable today; the mechanism is what makes the next one repeat them.
 
 ### 2.3 Evidence
 
 `Pot.AspNetCore.Integration.Tests/Security/CrossTenantAuthorizationFixture.cs` exercises the routes over HTTP against the real host. Each seeded user is placed in its own site, so a seeded pair is a caller in one site and a target in another. The suite reads the target's etag from the test database (sign-in records itself on the user row and changes its etag), so each case exercises authorization rather than the concurrency check.
 
-Current results — 3 pass, 10 fail:
+Current results — 3 pass, 11 fail:
 
 | Case                                                                     | Observed                | Required                                         |
 | ------------------------------------------------------------------------ | ----------------------- | ------------------------------------------------ |
@@ -54,6 +54,7 @@ Current results — 3 pass, 10 fail:
 | Update of another site                                                   | `200` — site renamed    | `404`                                            |
 | Disable the site's last enabled `Admin`                                  | `200` — admin disabled  | `422`                                            |
 | Remove `Admin` from the site's last enabled `Admin`                      | `200` — role removed    | `422`                                            |
+| Resend an invitation for a user who is not `Pending`                     | `200` — invite resent   | `422`                                            |
 | A user updates their own details                                         | `200`                   | `200` (control)                                  |
 | An admin updates their own site                                          | `200`                   | `200` (control)                                  |
 | Change the status of a user that does not exist                          | `404`                   | `404` (control)                                  |
@@ -327,9 +328,9 @@ The configured platform-administrator ids are supplied by the status handler thr
 
 **After:** both refusals return `422` with actionable copy, and the target row is unchanged. Evaluation order: platform administrator first, then last enabled `Admin`; the first failure wins.
 
-### I7 — The defect class, not just the five routes
+### I7 — The mechanism behind the five routes
 
-**Use case.** `UserRepository.Users` and `SiteRepository.Sites` are public `IQueryable`s. That is the mechanism every affected service used, and it is available to every future service. The same applies to the authorization default: because no fallback policy exists, a route that simply forgets `.RequireAuthorization(...)` ships as anonymous.
+**Use case.** `UserRepository.Users` and `SiteRepository.Sites` are public `IQueryable`s. That is the mechanism every affected service used, and it remains available to every future service. The five routes in §3 are the only request-reachable endpoints that misuse it today, so this issue is about the mechanism rather than about a sixth route: while the mechanism exists, the next id-taking endpoint repeats the defect by default. The same applies to the authorization default: because no fallback policy exists, a route that simply forgets `.RequireAuthorization(...)` ships as anonymous.
 
 **Current**
 
@@ -364,8 +365,9 @@ public interface IUserRepository : IRepositoryBase
     Task<List<GetAllUserInfo>> GetAllForCurrentSiteAsync(CancellationToken cancellationToken);
     Task<List<GetAllUserInfo>> GetEnabledAdminsForCurrentSiteAsync(CancellationToken cancellationToken);
 
-    // Deliberately cross-tenant: sign-in resolves a username before a site is known. Named to read as such.
-    Task<UserEntity?> GetByUsernameForAuthenticationAsync(string username, CancellationToken cancellationToken);
+    // Deliberately cross-tenant: a username is resolved before a site is known (sign-in), while the caller
+    // is not signed in (password reset, signup), or across sites by design (invitation). Named to read as such.
+    Task<UserEntity?> GetByUsernameAsync(string username, CancellationToken cancellationToken);
     Task<UserSecurityState?> GetSecurityStateAsync(Guid userRowId, CancellationToken cancellationToken);
     Task<List<GetAllUserInfo>> GetEnabledUsersForAllSitesAsync(CancellationToken cancellationToken);
 }
@@ -384,7 +386,7 @@ public interface IUserRepository : IRepositoryBase
 
 Every intentionally anonymous route is then marked `AllowAnonymous()` explicitly, which turns the set of anonymous routes into a reviewable list.
 
-**After:** a tenant-unbound user or site lookup no longer compiles, and a forgotten annotation produces a `401` instead of an open endpoint.
+**After:** a lookup through the repository can no longer be tenant-unbound, and a forgotten annotation produces a `401` instead of an open endpoint. The mechanism that made the five routes wrong is no longer available to the next one.
 
 ## 4. Design
 
@@ -395,9 +397,9 @@ Every intentionally anonymous route is then marked `AllowAnonymous()` explicitly
 - **Site-scoped** (the default): `GetForCurrentSiteAsync`, `GetCurrentUser`, `GetAllForCurrentSiteAsync`, `GetEnabledAdminsForCurrentSiteAsync`, `GetCurrentSite`.
 - **Cross-tenant** (explicit, documented, and few): the named methods in §4.5.
 
-`ISiteRepository.Sites` is removed entirely; the site update route compares the supplied id with `GetCurrentSite()`.
+`ISiteRepository.Sites` is removed entirely; the site update route compares the supplied id with `GetCurrentSite()`. `IUserRepository.AuthSessions` is removed as well — it is a second unfiltered queryable, and only test code reads it.
 
-This is the load-bearing part of the design: it makes the hazardous lookup unrepresentable rather than merely discouraged, and it is what a global query filter would otherwise have provided, without touching the authentication pipeline.
+Within the repository layer the hazardous lookup is no longer writable, and this is what a global query filter would otherwise have provided, without touching the authentication pipeline. The guarantee is bounded by that layer: `PotDbContext` is public and exposes `DbSet<UserEntity> Users`, and permission resolution reads it directly (`RoleRepository`), so code that bypasses the repositories can still issue an unfiltered query. Closing that would mean changing `PotDbContext` and the authentication pipeline, which is out of scope; the boundary is therefore "no unsafe lookup through the repository layer", and §4.5 is what keeps the remaining direct reads enumerated and reviewable.
 
 ### 4.2 Refusal contract
 
@@ -422,17 +424,21 @@ A `RequireAuthenticatedUser` fallback policy makes an unannotated endpoint authe
 
 Every read across sites is deliberate, named as such, and listed here. This is the complete set; anything not on the list must not exist.
 
-| Call site                                                            | Why it is cross-tenant                                                               | Method                                                                                   |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| `AuthService.LoginAsync`                                             | Sign-in resolves a username before a site is known                                   | `GetByUsernameForAuthenticationAsync`                                                    |
-| `AuthService.ChangePasswordAsync`, `Me/UserService.GetUserInfoAsync` | Resolve the authenticated caller from the token's `sub`                              | `GetForCurrentSiteAsync` via `ICurrentUserContext` where a site exists; `GetCurrentUser` |
-| `JwtBearerEventsSetup.OnTokenValidated`                              | Token-version and status check runs before any user context exists                   | `GetSecurityStateAsync`                                                                  |
-| `RoleRepository.GetRolesForUserAsync`                                | Permission resolution runs during `UseAuthorization`, before `UserContextMiddleware` | named method with an XML `<remarks>` recording the invariant                             |
-| `BudgetReminderEmailWorker` → `GetAllEnabledAdminsAsync`             | Enumerates every site's enabled administrators, then re-scopes per user              | `GetEnabledUsersForAllSitesAsync`                                                        |
-| `VerifySignupService` approval notification                          | Signup completes anonymously; looks up the configured platform administrators by id  | `GetByIdsForPlatformNotificationAsync`                                                   |
-| `Approvals/{Pending,UpdateStatus}`                                   | The deliberate platform-administrator surface behind `platform:manage`               | named methods documented as cross-tenant                                                 |
+| Call site                                                            | Why it is cross-tenant                                                                 | Method                                                                                   |
+| -------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `AuthService.LoginAsync`                                             | Sign-in resolves a username before a site is known                                     | `GetByUsernameAsync`                                                                     |
+| `RequestPasswordResetService`, `VerifyPasswordResetService`          | A signed-out caller resolves a user by username in order to reset a password           | `GetByUsernameAsync`                                                                     |
+| `RequestSignupService`, `VerifySignupService`                        | A signed-out caller checks that a username is free before creating the site            | `GetByUsernameAsync`                                                                     |
+| `InviteUserService`                                                  | An invitation checks that a username is free; usernames are unique across every site   | `GetByUsernameAsync`                                                                     |
+| `VerifySignupService` approval notification (requester email)        | Signup completes anonymously and resolves the pending user's email address by username | `GetByUsernameAsync`                                                                     |
+| `AuthService.ChangePasswordAsync`, `Me/UserService.GetUserInfoAsync` | Resolve the authenticated caller from the token's `sub`                                | `GetForCurrentSiteAsync` via `ICurrentUserContext` where a site exists; `GetCurrentUser` |
+| `JwtBearerEventsSetup.OnTokenValidated`                              | Token-version and status check runs before any user context exists                     | `GetSecurityStateAsync`                                                                  |
+| `RoleRepository.GetRolesForUserAsync`                                | Permission resolution runs during `UseAuthorization`, before `UserContextMiddleware`   | named method with an XML `<remarks>` recording the invariant                             |
+| `BudgetReminderEmailWorker` → `GetAllEnabledAdminsAsync`             | Enumerates every site's enabled administrators, then re-scopes per user                | `GetEnabledUsersForAllSitesAsync`                                                        |
+| `VerifySignupService` approval notification                          | Signup completes anonymously; looks up the configured platform administrators by id    | `GetByIdsForPlatformNotificationAsync`                                                   |
+| `Approvals/{Pending,UpdateStatus}`                                   | The deliberate platform-administrator surface behind `platform:manage`                 | named methods documented as cross-tenant                                                 |
 
-`Source/Server/DEVELOPER.md` is corrected to match: query filters cover `Account`, `Expense`, `Income` and `Setting` only; `User` and `Site` targets must be bound explicitly; cross-tenant reads are the named exceptions above.
+`Source/Server/DEVELOPER.md` already names the four filtered entities and already records that `UserEntity` has no site query filter; what is corrected is the general summary elsewhere in the document, which reads as though tenancy were a property of the caller, and the statement of how `User` and `Site` targets must be bound. Cross-tenant reads are the named exceptions above.
 
 ### 4.6 Token and claim policy
 
@@ -451,7 +457,7 @@ A site-scoped filter on `User` and `Site` was considered and rejected as the pri
 - `PotDbContext.GetCurrentUserSiteId()` itself reads `Set<UserEntity>()`, so a `User` filter is self-referential.
 - Authentication by username, the reminder worker and Approvals are cross-tenant by design and would each need an `IgnoreQueryFilters()` opt-out.
 
-The repository surface in §4.1 delivers the same guarantee — the unsafe query cannot be written — without those interactions. Adding filters on top remains possible later; it is not required for this feature and is out of scope.
+The repository surface in §4.1 delivers the same guarantee for callers that go through it — the unsafe query cannot be written there — without those interactions. Adding filters on top remains possible later; it is not required for this feature and is out of scope.
 
 To be explicit: the existing filters on `Account`, `Expense`, `Income` and `Setting` are **not** removed or replaced. They cover entities this design does not touch, and §4.1 changes only how `User` and `Site` are reached — the two entity types a filter cannot safely cover. The two mechanisms are complementary: the filters remain the isolation guarantee for the four filtered entities and the repository surface supplies the equivalent guarantee for the other two.
 
@@ -523,7 +529,7 @@ Two cases need test-host support before they can be written, and are added with 
 
 ## 8. Manual verification (UI)
 
-Automated coverage cannot reach every affected journey: the E2E seed is a single site, so no browser test can observe a cross-tenant refusal, and the client has no surface for the protected-identity refusals. The journeys below are exercised by hand in the running app before this feature is considered done. Each is a path whose **server contract changes**, so the point is to confirm the client still behaves — and, where a request is now expected to be refused, that it fails visibly rather than silently.
+Automated coverage cannot reach every affected journey: the E2E journeys all run as users of the same site and never send another site's id, so no browser test can observe a cross-tenant refusal, and the client has no surface for the protected-identity refusals. The journeys below are exercised by hand in the running app before this feature is considered done. Each is a path whose **server contract changes**, so the point is to confirm the client still behaves — and, where a request is now expected to be refused, that it fails visibly rather than silently.
 
 | #   | Area                   | Journey                                                                                         | Confirm                                                                                                                 |
 | --- | ---------------------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
@@ -563,7 +569,7 @@ Existing coverage that must stay green:
 | `approvals/approvals.test.ts`                                                   | The `platform:manage` approvals surface                                                                                       |
 | `auth/permissionGating.test.ts`                                                 | Permission-gated affordances for a Viewer                                                                                     |
 
-The two new specs are desktop-only (the mobile projects use a card grid with a different action surface, covered by `mobile/mobileCardGrids.test.ts`) and are `serial` because they mutate state. Neither can assert a cross-tenant refusal: the E2E environment seeds one site, so every id the client can send belongs to the caller. That case lives in the server acceptance suite, and this split is deliberate — HTTP-level contract tests for the server, user-journey tests for the client.
+The two new specs are desktop-only (the mobile projects use a card grid with a different action surface, covered by `mobile/mobileCardGrids.test.ts`) and are `serial` because they mutate state. Neither can assert a cross-tenant refusal: the E2E specs sign in as users of one site and no client flow sends another site's id, so every id the client can send belongs to the caller. That case lives in the server acceptance suite, and this split is deliberate — HTTP-level contract tests for the server, user-journey tests for the client.
 
 **Email delivery is not asserted.** The invitation and approval endpoints reachable from these journeys only _queue_ an email: submission writes to an unbounded channel and returns, and the dispatch loop catches send failures, so the endpoint succeeds with no SMTP server present. The E2E harness launches the API with no SMTP settings (the config section binds an empty host and port 0), and the existing invite and signup specs already rely on this — the requests succeed and the send is logged and discarded. The specs therefore assert the HTTP contract and the client outcome; actual delivery belongs to manual verification (M3, M9).
 
@@ -585,7 +591,7 @@ Run commands (from `Source/Client/pot-react`): `npm run e2e:preflight` before a 
 
 ## 12. Acceptance criteria
 
-1. All 14 acceptance cases pass, and the suite is unmodified apart from additions.
+1. All 14 acceptance cases in §7 pass, and the suite is not weakened to make them pass — cases may be added, none removed or relaxed.
 2. `IUserRepository` and `ISiteRepository` expose no `IQueryable` for `UserEntity` or `SiteEntity`.
 3. The endpoint-metadata regression test fails if a route is added without an authorization requirement.
 4. The five routes return the statuses in §5, and no refusal path writes a row.
