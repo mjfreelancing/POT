@@ -8,6 +8,7 @@ Comprehensive guide for developers working on the POT ASP.NET Core backend. This
   - [Project Structure](#project-structure)
   - [Key Architectural Principles](#key-architectural-principles)
   - [Design Conventions](#design-conventions)
+- [Security](#security)
 - [Feature Implementation Recipe](#feature-implementation-recipe)
   - [Step-by-Step Guide](#step-by-step-guide)
   - [Example Walkthrough](#example-walkthrough)
@@ -152,7 +153,7 @@ Source/Server/
 - **Endpoint-level permission checks** using `resource:action` pattern (e.g., `account:view`, `expense:manage`)
 - **Rate limiting** with differentiated limits (authenticated: 50/30s, anonymous: 15/10s)
 - **CORS** configured for trusted origins only
-- **Multi-tenancy isolation** via query filters - users can only see their Site's data
+- **Multi-tenancy isolation** - query filters isolate `Account`, `Expense`, `Income` and `Setting`; `User` and `Site` are isolated by the repository surface instead (see [Security](#security))
 
 **2. Layered Clean Architecture**
 
@@ -180,9 +181,9 @@ Source/Server/
 
 **6. Multi-Tenancy by Default**
 
-- **Site-based query filters** automatically isolate tenant data
-- Requires explicit `IgnoreQueryFilters()` for cross-site operations
-- Prevents accidental data leakage between tenants
+- **Site-based query filters** automatically isolate `Account`, `Expense`, `Income` and `Setting`
+- **`User` and `Site` are not filtered** - a `User` filter would be self-referential, and permission resolution and token validation run before a site is known. They are reachable only through named, site-scoped repository methods, so a query that omits the site is not expressible
+- The two mechanisms sit side by side; neither replaces the other (see [Security](#security))
 
 **7. Health Checks**
 
@@ -224,6 +225,22 @@ Source/Server/
 - Business rule violations return `EnrichedResult.Fail<T>(error)` from services
 - Services log errors before returning failure results
 - API handlers convert errors to Problem Details via `ToProblemDetails()` extension
+
+---
+
+## Security
+
+How the product is protected. Every item is a mechanism that is implemented, not a proposal.
+
+- **Isolation has two parts, and they sit side by side.** `Account`, `Expense`, `Income` and `Setting` are isolated by a global query filter that resolves the caller's site once per request. `User` and `Site` deliberately are not filtered: a `User` filter would be self-referential, and permission resolution and token validation both run before a site is known. Those two are isolated by the repository surface instead - the interfaces expose no `IQueryable` for either, so they are reachable only through named, site-scoped methods and a lookup that omits the site is not expressible rather than merely discouraged. Neither mechanism stands in for the other: the filters are the right tool for the four entities they cover, and the repository surface exists because that tool cannot be extended to the other two. The mechanics are in [Multi-Tenancy & Query Filters](#multi-tenancy--query-filters).
+- **The target decides tenancy, not the caller.** A caller's own site proves nothing about the row a request names, so every id-taking route resolves its target through a site-scoped lookup. A target in another site and a target that does not exist answer `404` with the same body, never a distinguishable `403`, so a refusal cannot be used to discover that a row exists elsewhere. Cross-tenant refusals are logged at warning, naming the caller and the requested id.
+- **Authorization is resolved per request.** Permissions use the `resource:action` pattern and are computed from the caller's roles plus the deployment-configured platform grant, from the database, on every request. A fail-closed `RequireAuthenticatedUser` fallback policy makes an endpoint that declares no requirement of its own authenticated-only, and the routes that must stay reachable before a session exists are marked `AllowAnonymous()` explicitly, so the anonymous set is a short reviewable list rather than a default that grows by accident. A regression test enumerates the host's endpoints and fails if a route is neither.
+- **The access token carries no derived state.** It holds `jti`, `sub` and `tokenVersion` and nothing else. Tenancy, permissions and account status are read from the database on every request, because a JWT payload is readable by anyone holding the token and a claim goes stale while the token stays valid.
+- **Two identities are protected from lock-out.** A configured platform administrator cannot be disabled, and a site's last enabled `Admin` cannot be disabled or demoted, so neither platform nor tenant administration can be left without an administrator. Both refusals answer `422` with copy the user can act on, and the target is left unchanged.
+- **Credentials.** Passwords are stored only as salted one-way hashes. Invitations, sign-ups and password resets use single-use codes with an expiry and an attempt limit. Changing a password or signing out increments the token version, which invalidates every access token already issued, and a disabled account is rejected when its token is validated.
+- **Abuse throttling.** Rate limiting is partitioned by anonymous client and by signed-in user, and answers `429` with a `Retry-After` header and the wait time in the problem details.
+- **The deliberate cross-tenant surfaces.** Approvals and the platform routes run behind the platform grant and read across sites on purpose. Every read that crosses a site boundary is deliberate, is served by a repository method named for it, and records at its call site why it is allowed: a username resolved before a site is known, a caller who is signed out, a token validated before any user context exists, or the platform surface acting on every site. There is no unnamed cross-tenant read.
+- **Checklist for a new endpoint that takes an id.** Declare its authorization requirement. Resolve the target through a site-scoped repository method. Refuse as not-found when the caller cannot act on the target. Log the refusal at warning. If the read genuinely has to cross sites, name the method for it and say why at the call site.
 
 ---
 
@@ -1810,7 +1827,7 @@ internal sealed class CreateAccountService : ICreateAccountService
 1. **Constructor Dependency Injection**: All dependencies validated with `.WhenNotNull()`
 2. **Entry Logging**: `_logger.LogCall(this)` logs method entry with class name
 3. **Tracking Scope**: `using (_repository.WithTracking())` enables change tracking for writes
-4. **Multi-Tenancy**: Always get current user's site for data isolation
+4. **Multi-Tenancy**: Resolve an id-taking target through a site-scoped repository method, so a target outside the caller's site reads as not-found rather than merely being refused
 5. **Entity Checks**: Validate business rules before persistence
 6. **Error Handling**: Return `EnrichedResult.Fail<T>()` for business rule violations
 7. **ConfigureAwait(false)**: Prevents deadlocks in async operations
@@ -3016,6 +3033,10 @@ public static WebApplicationBuilder AddPotAuth(this WebApplicationBuilder builde
         {
             // Required for /me endpoint (authenticated, no specific permissions)
             options.AddPolicy("AuthenticatedUser", policy => policy.RequireAuthenticatedUser());
+
+            // Fail closed: an endpoint that declares no requirement of its own is authenticated-only rather
+            // than reachable anonymously.
+            options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
         })
         .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
@@ -3032,6 +3053,8 @@ public static WebApplicationBuilder AddPotAuth(this WebApplicationBuilder builde
     return builder;
 }
 ```
+
+Routes that must stay reachable while signed out - sign-in, sign-out, token refresh, signup, password reset and the two health checks - opt out with `.AllowAnonymous()`, which keeps the anonymous set an explicit list. See [Security](#security).
 
 **JWT Configuration (`appsettings.json`):**
 
@@ -4455,7 +4478,7 @@ public abstract class EntityBase
 
 ### Site-Based Filtering
 
-POT implements **multi-tenancy** using global query filters that automatically filter entities by the current user's Site.
+POT isolates tenants with two mechanisms that sit side by side. Four entities are filtered automatically by the caller's Site; `User` and `Site` deliberately are not, and are isolated by the repository surface instead. See [Security](#security) for the model as a whole.
 
 **Location:** `Pot.Data/PotDbContext.cs`
 
@@ -4483,7 +4506,7 @@ private void SetupQueryFilters(ModelBuilder modelBuilder)
         .HasQueryFilter(setting => setting.Site.Id == GetCurrentUserSiteId());
 }
 
-private int GetCurrentUserSiteId()
+internal int GetCurrentUserSiteId()
 {
     _currentUserSiteId ??= Set<UserEntity>()
         .Include(user => user.Site)
@@ -4496,9 +4519,9 @@ private int GetCurrentUserSiteId()
 
 **How It Works:**
 
-- Every query automatically filters results to the current user's Site
-- Users can only see data belonging to their Site
-- Prevents accidental cross-site data access
+- Every query over one of those four entities is filtered to the current user's Site
+- The site is resolved once per context and shared with the site-scoped repository reads, so the two cannot disagree and the lookup costs one query per request rather than one per call
+- `UserEntity` and `SiteEntity` have no filter. Isolating them is the repository surface's job: the interfaces expose no `IQueryable` for either, so a lookup that omits the site cannot be written
 - Applied automatically by EF Core
 
 **Example:**
@@ -4515,58 +4538,43 @@ var accounts = await _dbContext.Accounts
 
 ### Bypassing Query Filters
 
-**Use Case:** When global uniqueness checks or cross-site operations are needed.
+**Use Case:** a read that genuinely has to cross sites. `IgnoreQueryFilters()` applies to the four filtered entities; `UserEntity` has no site filter, so calling it there is defensive rather than a bypass.
+
+The only current use is the approval surface, which acts on every site behind the platform grant:
 
 ```csharp
-// Check if account number exists globally (across all sites)
-var exists = await Accounts
-    .IgnoreQueryFilters()
-    .AnyAsync(a => a.Bsb == bsb && a.Number == number);
-```
-
-**Example Use Cases:**
-
-1. **Global Uniqueness:** Account BSB/Number must be unique across all sites
-
-```csharp
-// Pot.Data/Repositories/Accounts/AccountRepository.cs
-public Task<bool> AccountExistsAsync(string bsb, string number, CancellationToken cancellationToken)
+// Pot.Data/Repositories/Users/UserRepository.cs
+public Task<List<UserEntity>> GetPendingApprovalsAsync(CancellationToken cancellationToken)
 {
-    // Account numbers are globally unique
-    return Accounts
+    // Cross-tenant: the approval surface acts on every site.
+    return Set<UserEntity>()
         .IgnoreQueryFilters()
-        .AnyAsync(AccountSpecifications.IsSameBsbNumber(bsb, number).Expression, cancellationToken);
+        .Where(user => user.Status == UserStatus.Approval)
+        .OrderBy(user => user.Username)
+        .ToListAsync(cancellationToken);
 }
 ```
 
-2. **Cross-Site Admin Operations:** Platform admins viewing pending user approvals
-
-Note: `UserEntity` has no site query filter, so `IgnoreQueryFilters()` here is defensive rather than a bypass.
-
-```csharp
-// Pot.App/Features/Approvals/Pending/GetPendingApprovalsService.cs
-var users = await _userRepository.Users
-    .IgnoreQueryFilters()
-    .Where(user => user.Status == UserStatus.Approval)
-    .ToListAsync(cancellationToken);
-```
+Every such read is served by a repository method whose name says it crosses sites, and the call site records why.
 
 ### Using Query Filters
 
 1. **Use `IgnoreQueryFilters()`** only when needed
 
    ```csharp
-   // For global uniqueness checks
-   var exists = await Accounts
+   // The approval surface reads across sites on purpose, behind the platform grant
+   var approvals = Set<UserEntity>()
        .IgnoreQueryFilters()
-       .AnyAsync(a => a.Bsb == bsb && a.Number == number);
+       .Where(user => user.Status == UserStatus.Approval);
    ```
 
 2. **Document why filters are bypassed**
 
    ```csharp
-   // Account numbers are globally unique across all sites
-   return Accounts.IgnoreQueryFilters().AnyAsync(/*...*/);
+   // Cross-tenant: the approval surface acts on every site.
+   return Set<UserEntity>()
+       .IgnoreQueryFilters()
+       .AnyAsync(user => user.Status == UserStatus.Approval);
    ```
 
 ---
