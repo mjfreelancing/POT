@@ -1,8 +1,8 @@
 # Cross-Tenant Authorization Hardening PRD
 
-**Status:** In Progress
+**Status:** Complete
 **Priority:** High
-**Last Updated:** 2026-10-06
+**Last Updated:** 2026-10-14
 **Feature ID:** 026
 **Scope:** Make tenant isolation enforceable rather than conventional. POT is multi-tenant, but isolation is enforced in only two places — site-scoped global query filters on four entity types, and `resource:action` permissions — and neither binds a _target row_ to the caller's tenant. Any endpoint that resolves a user or a site by the id supplied by the caller therefore reaches every tenant. This document specifies: a repository surface on which a tenant-unbound user or site lookup cannot be written; a single refusal contract (a target outside the caller's site is reported exactly as a non-existent one); fail-closed authorization so a route cannot be anonymous by accident; the two protected identities the user-mutation routes must not be able to destroy (a configured platform administrator, and a site's last enabled `Admin`); and the cross-tenant operations that are deliberately allowed, named and documented. It is the prerequisite for the user and site deletion feature (PRD-022) and for platform administration (PRD-027), and it defines the shared primitives both reuse.
 
@@ -40,7 +40,7 @@ The result is a defect class rather than five isolated mistakes: **any request-r
 
 `Pot.AspNetCore.Integration.Tests/Security/CrossTenantAuthorizationFixture.cs` exercises the routes over HTTP against the real host. Each seeded user is placed in its own site unless a case deliberately places two in one, so a seeded pair is normally a caller in one site and a target in another. The suite reads the target's etag from the test database (sign-in records itself on the user row and changes its etag), so each case exercises authorization rather than the concurrency check.
 
-Current results, before any of the hardening lands — 17 of the suite's 25 cases fail. The table lists the failing cases that a status code shows, plus the three controls; the suite's other five cases are guards against over-refusal and pass today.
+Results measured before the hardening began — 17 of the suite's 25 cases failed. The table lists the failing cases that a status code shows, plus the three controls; the suite's other five cases are guards against over-refusal and passed then too. The repository surface landed separately and reduced this to seven.
 
 | Case                                                                           | Observed                | Required                                         |
 | ------------------------------------------------------------------------------ | ----------------------- | ------------------------------------------------ |

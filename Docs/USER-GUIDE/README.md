@@ -34,6 +34,12 @@ For platform administrators only:
 
 10. **[Platform Admin](PlatformAdmin.md)** - Approve new users and platform-level tasks (requires `platform:manage` permission)
 
+## Security
+
+How your data and your site are protected:
+
+11. **[Security](Security.md)** - Isolation between sites, keeping your site administrable, and how accounts and sessions are protected
+
 ---
 
 ## New User Quick Start

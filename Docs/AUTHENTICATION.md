@@ -17,7 +17,7 @@ Comprehensive guide to POT's authentication system, user signup workflow, and se
 - [Session-Based Authentication](#session-based-authentication)
 - [Permissions System](#permissions-system)
 - [Platform Admin Configuration](#platform-admin-configuration)
-- [Security Features](#security-features)
+- [Security](#security)
 
 ---
 
@@ -2128,114 +2128,19 @@ When platform admin authenticates, log entry appears:
 
 ---
 
-## Security Features
+## Security
 
-### Password Requirements
+The authentication system provides the following protection features:
 
-**Minimum Requirements:**
-
-- Minimum length (configurable, typically 8 characters)
-- Must contain uppercase letter
-- Must contain lowercase letter
-- Must contain number
-- Must contain special character
-
-**Password Hashing:**
-
-- BCrypt hashing algorithm
-- Salted and hashed passwords
-- Never stored in plain text
-- Computationally expensive to crack
-
-### Email Verification
-
-**Purpose:**
-
-- Verify email ownership
-- Prevent fake accounts
-- Ensure user can receive notifications
-
-**Security:**
-
-- Time-limited codes (15 minutes)
-- Single-use codes
-- Rate limiting
-- Automatic cleanup
-
-### Account Approval
-
-**Purpose:**
-
-- Manual review of new signups
-- Prevent spam accounts
-- Control user base growth
-
-**Security:**
-
-- Platform admin-only access
-- Username locking on rejection
-- Audit trail of approvals/rejections
-
-### Session Management
-
-**Features:**
-
-- Token-based authentication (no server-side sessions)
-- Automatic token expiration
-- Refresh token rotation on each refresh
-- Logout clears HTTP-only refresh token cookie and invalidates database refresh token
-
-**Inactivity Timeout:**
-
-- Access tokens expire after 15 minutes
-- Refresh tokens expire after 30 days
-- User must log in again after token expiration
-
-### CORS Configuration
-
-**Purpose:**
-
-- Prevent unauthorized domains from accessing API
-- Allow only trusted origins
-
-**Configuration:**
-
-```csharp
-app.UseCors(policy => policy
-    .WithOrigins("http://localhost:5175") // Frontend URL
-    .AllowAnyMethod()
-    .AllowAnyHeader()
-    .WithExposedHeaders("content-disposition")); // For file downloads
-```
-
-### Correlation IDs
-
-**Purpose:**
-
-- Trace authentication requests across system
-- Debug authentication issues
-- Audit security events
-
-**Usage:**
-
-- Generated for each auth request
-- Included in logs
-- Helps correlate frontend and backend events
-
-### Rate Limiting
-
-**Applied To:**
-
-- Login attempts
-- Email verification attempts
-- Password reset requests
-- API requests
-
-**Protection Against:**
-
-- Brute force attacks
-- Spam
-- Resource exhaustion
+- **Passwords** must meet a configurable minimum length (typically 8 characters) and contain an uppercase letter, a lowercase letter, a number and a special character. They are stored only as salted hashes produced by BCrypt - never in plain text - and the hashing is deliberately computationally expensive.
+- **Email verification** confirms ownership of the address, prevents fake accounts and proves the user can receive notifications. Codes are single use, expire after 15 minutes, are rate limited and are cleaned up automatically.
+- **Account approval** puts every new signup in front of a platform administrator before it can sign in, which keeps spam accounts out and growth under control. Only `platform:manage` can approve or reject, rejecting locks the username against reuse, and approvals and rejections are recorded.
+- **Sessions** are token based with no server-side session store. Access tokens expire after 15 minutes and refresh tokens after 30 days, after which the user signs in again. Each refresh rotates the refresh token, and signing out clears the HTTP-only refresh cookie and invalidates the stored refresh token.
+- **Authorization is fail closed.** Permissions are resolved on every request from the caller's roles plus the deployment-configured platform grant. An endpoint that declares no requirement of its own requires authentication, and the routes that must stay reachable while signed out - sign-in, sign-out, token refresh, signup, password reset and the health checks - are marked `AllowAnonymous()` explicitly.
+- **The access token carries no derived state**: `jti`, `sub` and `tokenVersion` only. Tenancy, permissions and account status are read from the database on every request, so revoking access does not wait for a token to expire.
+- **Cross-origin requests** are accepted only from the origins configured for the environment, and only the headers the client needs are exposed.
+- **Correlation IDs** are generated for each request, carried in the logs and returned to the caller, so a reported problem can be traced from the frontend to the backend.
+- **Rate limiting** covers sign-in, email verification, password reset and general API traffic, partitioned by anonymous client and by signed-in user. It defends against brute force, spam and resource exhaustion, and a throttled caller is told how long to wait before trying again.
 
 ---
 
