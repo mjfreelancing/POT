@@ -28,15 +28,15 @@
 # 2. Read CoverageReport/Summary.txt and find the classes touched by the feature.
 # 3. In CoverageReport/Cobertura.xml, look up those classes (<class filename="...">) and list
 #    lines with hits="0" and branches with condition-coverage below 100%.
-# 4. Add targeted tests in the nearest test project (see .claude/rules/dotnet-tests.md) for
-#    each gap, then re-run to confirm. Report any gap deliberately left uncovered, with a reason.
+# 4. Add targeted tests in the nearest test project (see the `.github/instructions`
+#    dotnet-tests rules) for each gap, then re-run to confirm. Report any gap deliberately
+#    left uncovered, with a reason.
 # - Judge coverage of the code that changed, not the overall percentage: do not chase unrelated
 #   classes, and do not add tests with no assertions just to raise a number.
 #
 # Where this script is used from:
 # - Run manually from `Source/Server` during local development.
-# - Referenced by `.claude/rules/dotnet-tests.md`.
-# - Referenced by `.claude/skills/code-coverage/SKILL.md`.
+# - Referenced by `.github/copilot-instructions.md`.
 # - Also available as the VS Code task `server-run-test-coverage`.
 #
 # Prerequisites:
