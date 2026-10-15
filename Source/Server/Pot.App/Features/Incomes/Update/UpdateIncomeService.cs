@@ -27,7 +27,7 @@ internal sealed class UpdateIncomeService : IUpdateIncomeService
         IPreUpdateChecker preUpdateChecker, ILogger<UpdateIncomeService> logger)
     {
         _incomeRepository = incomeRepository.WhenNotNull();
-        _accountRepository = accountRepository.WhenNotNull(); ;
+        _accountRepository = accountRepository.WhenNotNull();
         _preUpdateChecker = preUpdateChecker.WhenNotNull();
         _logger = logger.WhenNotNull();
     }

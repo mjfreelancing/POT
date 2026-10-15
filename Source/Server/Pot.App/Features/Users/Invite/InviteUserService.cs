@@ -38,7 +38,7 @@ internal sealed class InviteUserService : IInviteUserService
         ILogger<InviteUserService> logger)
     {
         _userRepository = userRepository.WhenNotNull();
-        _siteRepository = siteRepository.WhenNotNull(); ;
+        _siteRepository = siteRepository.WhenNotNull();
         _roleRepository = roleRepository.WhenNotNull();
         _preUpdateChecker = preUpdateChecker.WhenNotNull();
         _passwordHasher = passwordHasher.WhenNotNull();

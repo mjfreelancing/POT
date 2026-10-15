@@ -236,7 +236,7 @@ internal static class WebApplicationBuilderExtensions
                 options.TimestampFormat = "HH:mm:ss";
                 options.UseUtcTimestamp = true;
                 options.SingleLine = true;
-            }); ;
+            });
 
         //loggingBuilder.AddJsonConsole(options =>
         //{

@@ -28,7 +28,7 @@ internal sealed class UpdateApprovalService : IUpdateApprovalService
     public UpdateApprovalService(IPersistableUserRepository userRepository, ISendEmailChannelWriter sendEmailChannelWriter,
         IPreUpdateChecker preUpdateChecker, ILogger<UpdateApprovalService> logger)
     {
-        _userRepository = userRepository.WhenNotNull(); ;
+        _userRepository = userRepository.WhenNotNull();
         _sendEmailChannelWriter = sendEmailChannelWriter.WhenNotNull();
         _preUpdateChecker = preUpdateChecker.WhenNotNull();
         _logger = logger.WhenNotNull();

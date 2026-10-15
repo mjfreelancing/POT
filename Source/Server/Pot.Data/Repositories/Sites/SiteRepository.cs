@@ -11,7 +11,7 @@ internal sealed class SiteRepository : PersistableRepository, IPersistableSiteRe
     public SiteRepository(PotDbContext dbContext, IUserRepository userRepository)
         : base(dbContext)
     {
-        _userRepository = userRepository.WhenNotNull(); ;
+        _userRepository = userRepository.WhenNotNull();
     }
 
     public SiteEntity GetCurrentSite()
