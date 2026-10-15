@@ -82,6 +82,28 @@ public class DatabaseConfigurationExtensionsFixture : PotFixtureBase
 
             exception.Message.ShouldContain("Host");
         }
+
+        [Fact]
+        public void Should_Validate_The_Database_Configuration_On_Startup()
+        {
+            var services = new ServiceCollection();
+
+            services.AddSingleton<IConfiguration>(BuildConfiguration(new Dictionary<string, string?>
+            {
+                ["Database:Name"] = "Pot",
+                ["Database:Username"] = "postgres",
+                ["Database:Password"] = "secret"
+            }));
+
+            services.AddDatabaseConfiguration();
+
+            using var provider = services.BuildServiceProvider();
+            var startupValidator = provider.GetRequiredService<IStartupValidator>();
+
+            var exception = Should.Throw<OptionsValidationException>(() => startupValidator.Validate());
+
+            exception.Message.ShouldContain("Host");
+        }
     }
 
     private static IConfiguration BuildConfiguration(Dictionary<string, string?> values)

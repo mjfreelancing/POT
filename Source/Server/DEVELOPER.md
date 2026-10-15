@@ -4854,6 +4854,8 @@ The frontend export feature needs to extract filenames from the `Content-Disposi
 
 **Important:** The ASP.NET Core CORS policy cannot use `AllowAnyOrigin()` with `AllowCredentials()` - must specify explicit origins.
 
+**Startup validation:** The API validates its JWT, authentication-cookie, platform-admin, CORS, SMTP, and database options during startup in every environment. Each environment must provide values that pass its registered validators; invalid configuration prevents the API from starting. Platform-admin user IDs may be omitted, and authentication-cookie settings have defaults.
+
 ---
 
 ## Dependency Injection

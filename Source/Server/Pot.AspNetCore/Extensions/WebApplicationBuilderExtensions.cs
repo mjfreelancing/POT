@@ -64,25 +64,53 @@ internal static class WebApplicationBuilderExtensions
     {
         var services = builder.Services;
 
-        services
-            // Binds configuration from the "Jwt" section onto a JwtOptions instance, which is later injected into JwtBearerOptionsSetup.
-            .ConfigureOptions<JwtOptionsSetup>()
+        ConfigureJwtOptions(services);
+        ConfigureAuthenticationOptions(services);
+        ConfigurePlatformAdminOptions(services);
+        ConfigureAuthorization(services);
 
-            // Sets up Jwt Bearer validation options - alternative approach to setting with AddJwtBearer().
+        services
+            .AddOtpCleanup()
+            .AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>()
+            .AddSingleton<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+
+        return builder;
+    }
+
+    private static void ConfigureJwtOptions(IServiceCollection services)
+    {
+        // Binds configuration from the "Jwt" section onto a JwtOptions instance, which is later injected into JwtBearerOptionsSetup.
+        services.ConfigureOptions<JwtOptionsSetup>();
+        services.AddOptions<JwtOptions>().ValidateOnStart();
+
+        services
+            // Sets up Jwt ****** options - alternative approach to setting with AddJwtBearer().
             .ConfigureOptions<JwtBearerOptionsSetup>()
             .AddSingletonFromOptions<JwtOptions>()                  // Allow for injection of JwtOptions instead of IOptions<JwtOptions>
 
-            // Configures JWT Bearer authentication event handlers to validate tokens against database state
-            .ConfigureOptions<JwtBearerEventsSetup>()
+            // Configures JWT ****** event handlers to validate tokens against database state
+            .ConfigureOptions<JwtBearerEventsSetup>();
+    }
 
-            // Bind AuthenticationOptions for features such as refresh token cookies.
-            .ConfigureOptions<AuthenticationOptionsSetup>()
-            .AddSingletonFromOptions<AuthenticationOptions>()       // Allow for injection of AuthenticationOptions instead of IOptions<AuthenticationOptions>
+    private static void ConfigureAuthenticationOptions(IServiceCollection services)
+    {
+        // Bind AuthenticationOptions for features such as refresh token cookies.
+        services.ConfigureOptions<AuthenticationOptionsSetup>();
+        services.AddOptions<AuthenticationOptions>().ValidateOnStart();
+        services.AddSingletonFromOptions<AuthenticationOptions>();   // Allow for injection of AuthenticationOptions instead of IOptions<AuthenticationOptions>
+    }
 
-            // Binds configuration from the "PlatformAdmin" section onto a PlatformAdminOptions instance.
-            .ConfigureOptions<PlatformAdminOptionsSetup>()
-            .AddSingletonFromOptions<PlatformAdminOptions>()        // Allow for injection of PlatformAdminOptions instead of IOptions<PlatformAdminOptions>
+    private static void ConfigurePlatformAdminOptions(IServiceCollection services)
+    {
+        // Binds configuration from the "PlatformAdmin" section onto a PlatformAdminOptions instance.
+        services.ConfigureOptions<PlatformAdminOptionsSetup>();
+        services.AddOptions<PlatformAdminOptions>().ValidateOnStart();
+        services.AddSingletonFromOptions<PlatformAdminOptions>();    // Allow for injection of PlatformAdminOptions instead of IOptions<PlatformAdminOptions>
+    }
 
+    private static void ConfigureAuthorization(IServiceCollection services)
+    {
+        services
             .AddAuthorization(options =>
             {
                 // Required for /me endpoint where the user needs to be authenticated, but no specific permissions are required.
@@ -100,21 +128,19 @@ internal static class WebApplicationBuilderExtensions
                 // to ClaimTypes.NameIdentifier (http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier).
                 options.MapInboundClaims = false;
             });
-
-        services
-            .AddOtpCleanup()
-            .AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>()
-            .AddSingleton<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
-
-        return builder;
     }
 
     public static WebApplicationBuilder AddPotCors(this WebApplicationBuilder builder)
     {
         builder.Services
             // Binds configuration from the "Cors" section onto a CorsConfiguration instance.
-            .ConfigureOptions<CorsConfigurationSetup>()
+            .ConfigureOptions<CorsConfigurationSetup>();
 
+        builder.Services
+            .AddOptions<CorsConfiguration>()
+            .ValidateOnStart();
+
+        builder.Services
             // Allow for injection of CorsConfiguration instead of IOptions<CorsConfiguration>
             .AddSingletonFromOptions<CorsConfiguration>()
 
@@ -317,8 +343,13 @@ internal static class WebApplicationBuilderExtensions
     {
         builder.Services
             // Binds configuration from the "Smtp" section onto a SmtpConfiguration instance.
-            .ConfigureOptions<SmtpConfigurationSetup>()
+            .ConfigureOptions<SmtpConfigurationSetup>();
 
+        builder.Services
+            .AddOptions<SmtpConfiguration>()
+            .ValidateOnStart();
+
+        builder.Services
             // Allow for injection of SmtpConfiguration instead of IOptions<SmtpConfiguration>
             .AddSingletonFromOptions<SmtpConfiguration>()
 
