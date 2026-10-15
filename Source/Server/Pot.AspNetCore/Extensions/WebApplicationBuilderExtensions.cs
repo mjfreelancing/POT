@@ -115,7 +115,7 @@ internal static class WebApplicationBuilderExtensions
             // Binds configuration from the "Cors" section onto a CorsConfiguration instance.
             .ConfigureOptions<CorsConfigurationSetup>()
 
-            // Allow for injection of CorsConfiguration instead of IOptions<CorsConfigurationSetup>
+            // Allow for injection of CorsConfiguration instead of IOptions<CorsConfiguration>
             .AddSingletonFromOptions<CorsConfiguration>()
 
             // Sets up CORS policy options - applies the default policy configuration

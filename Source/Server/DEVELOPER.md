@@ -3337,15 +3337,15 @@ public sealed class CorsOptionsSetup : IConfigureOptions<CorsOptions>
 
     public CorsOptionsSetup(CorsConfiguration corsConfiguration)
     {
-        _corsConfiguration = corsConfiguration.WhenNotNull();
+        _corsConfiguration = corsConfiguration;
     }
 
     public void Configure(CorsOptions options)
     {
+        var allowedOrigins = _corsConfiguration.GetAllowedOrigins().ToArray();
+
         options.AddDefaultPolicy(policy =>
         {
-            var allowedOrigins = _corsConfiguration.GetAllowedOrigins().ToArray();
-
             policy
                 .WithOrigins(allowedOrigins)
                 .AllowAnyMethod()
