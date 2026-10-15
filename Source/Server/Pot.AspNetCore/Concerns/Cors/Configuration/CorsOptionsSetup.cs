@@ -26,7 +26,9 @@ public sealed class CorsOptionsSetup : IConfigureOptions<CorsOptions>
                 .AllowAnyMethod()
                 .AllowAnyHeader()
 
-                // Required when using authentication (note, WithOrigins() cannot use * with AllowCredentials)
+                // Required for the refresh-token cookie. This allows browser-managed credentials such as cookies;
+                // bearer-token Authorization headers are allowed by AllowAnyHeader() above. Origins must be
+                // explicit: a wildcard origin with AllowCredentials() causes policy construction to fail.
                 .AllowCredentials()
 
                 // Exposing 'content-disposition' allows the client to handle the file download correctly (get the filename)
