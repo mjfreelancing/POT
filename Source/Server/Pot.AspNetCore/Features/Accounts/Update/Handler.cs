@@ -1,9 +1,8 @@
-﻿using AllOverIt.Logging.Extensions;
+using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.App.Features.Accounts.Update;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Extensions;
-using Pot.AspNetCore.Features.Accounts.Update.Mappings;
 using System.ComponentModel;
 
 namespace Pot.AspNetCore.Features.Accounts.Update;

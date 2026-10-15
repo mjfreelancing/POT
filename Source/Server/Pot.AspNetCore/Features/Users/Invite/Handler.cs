@@ -1,9 +1,8 @@
-﻿using AllOverIt.Logging.Extensions;
+using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.App.Features.Users.Invite;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Extensions;
-using Pot.AspNetCore.Features.Users.Invite.Mappings;
 
 namespace Pot.AspNetCore.Features.Users.Invite;
 

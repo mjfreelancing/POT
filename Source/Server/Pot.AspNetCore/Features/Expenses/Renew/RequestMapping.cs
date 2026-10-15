@@ -1,6 +1,6 @@
-﻿using Pot.App.Features.Expenses.Renew.Models;
+using Pot.App.Features.Expenses.Renew.Models;
 
-namespace Pot.AspNetCore.Features.Expenses.Renew.Mappings;
+namespace Pot.AspNetCore.Features.Expenses.Renew;
 
 internal static class RequestMapping
 {

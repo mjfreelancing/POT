@@ -1,8 +1,7 @@
-﻿using AllOverIt.Logging.Extensions;
+using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.App.Features.Approvals.UpdateStatus;
 using Pot.AspNetCore.Extensions;
-using Pot.AspNetCore.Features.Approvals.UpdateStatus.Mappings;
 using System.ComponentModel;
 
 namespace Pot.AspNetCore.Features.Approvals.UpdateStatus;

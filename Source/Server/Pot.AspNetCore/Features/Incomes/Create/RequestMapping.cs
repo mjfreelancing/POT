@@ -1,21 +1,16 @@
-﻿using Pot.App.Features.Expenses.Update.Models;
+using Pot.App.Features.Incomes.Create.Models;
 
-namespace Pot.AspNetCore.Features.Expenses.Update.Mappings;
+namespace Pot.AspNetCore.Features.Incomes.Create;
 
 internal static class RequestMapping
 {
-    public static Input MapToInput(this Request request, Guid expenseId)
+    public static Input MapToInput(this Request request)
     {
         return new Input
         {
-            RowId = expenseId,
-            Etag = request.Etag,
-            ExcludeFromCalcs = request.ExcludeFromCalcs!.Value, // Will have been validated
             Description = request.Description,
-            AccrualStart = request.AccrualStart,
             NextDue = request.NextDue,
             EndDate = request.EndDate,
-            AccrualPolicy = request.AccrualPolicy,
             Frequency = request.Frequency,
             FrequencyCount = request.FrequencyCount,
             Amount = request.Amount,

@@ -1,6 +1,6 @@
-﻿using Pot.App.Features.Sites.Update.Models;
+using Pot.App.Features.Approvals.UpdateStatus.Models;
 
-namespace Pot.AspNetCore.Features.Sites.Update.Mappings;
+namespace Pot.AspNetCore.Features.Approvals.UpdateStatus;
 
 internal static class RequestMapping
 {
@@ -10,8 +10,7 @@ internal static class RequestMapping
         {
             RowId = userId,
             Etag = request.Etag,
-            Name = request.Name,
-            Description = request.Description
+            Status = request.Status
         };
     }
 }

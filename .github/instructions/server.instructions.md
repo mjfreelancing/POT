@@ -33,6 +33,7 @@ Run server commands from `Source/Server`. `.editorconfig` is the source of truth
 - No primary constructors; use explicit constructors. Prefer constructor injection; avoid static dependencies.
 - No sync-over-async (`.Result`, `.Wait()`, `.GetAwaiter().GetResult()`); keep `CancellationToken` propagation intact.
 - Extension methods go in an `Extensions` folder; name the file/class `<ExtendedType>Extensions`.
+- Feature-specific request mapping extension methods stay beside their handler in a `RequestMapping` file/class and the feature namespace. The `<ExtendedType>Extensions` naming convention applies to reusable extension helpers, not these per-feature mappings.
 - Guard clauses use AllOverIt (`_ = arg.WhenNotNull();`), not `ArgumentNullException.ThrowIfNull(arg)`.
 - Parameter formatting: parameters start on the same line as the method name and wrap only when the signature exceeds 140 characters. Wrap after a comma, several parameters per continuation line, never one per line and never at the opening parenthesis.
 

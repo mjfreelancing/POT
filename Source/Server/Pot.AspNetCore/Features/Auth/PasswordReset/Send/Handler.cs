@@ -1,10 +1,9 @@
-﻿using AllOverIt.Logging.Extensions;
+using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.App.Errors;
 using Pot.App.Features.Auth.PasswordReset.Request;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Extensions;
-using Pot.AspNetCore.Features.Auth.PasswordReset.Send.Mappings;
 
 namespace Pot.AspNetCore.Features.Auth.PasswordReset.Send;
 

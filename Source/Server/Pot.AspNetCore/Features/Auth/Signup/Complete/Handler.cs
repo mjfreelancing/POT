@@ -1,11 +1,10 @@
-﻿using AllOverIt.Logging.Extensions;
+using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.App.Errors;
 using Pot.App.Features.Auth.Signup.Complete;
 using Pot.AspNetCore.Concerns.Auth.Configuration;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Extensions;
-using Pot.AspNetCore.Features.Auth.Signup.Complete.Mappings;
 
 namespace Pot.AspNetCore.Features.Auth.Signup.Complete;
 

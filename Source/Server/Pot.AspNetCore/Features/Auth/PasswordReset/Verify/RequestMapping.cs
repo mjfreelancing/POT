@@ -1,6 +1,6 @@
-﻿using Pot.App.Features.Auth.PasswordReset.Verify.Models;
+using Pot.App.Features.Auth.PasswordReset.Verify.Models;
 
-namespace Pot.AspNetCore.Features.Auth.PasswordReset.Verify.Mappings;
+namespace Pot.AspNetCore.Features.Auth.PasswordReset.Verify;
 
 internal static class RequestMapping
 {

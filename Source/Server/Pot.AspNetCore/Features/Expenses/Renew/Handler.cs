@@ -1,9 +1,8 @@
-﻿using AllOverIt.Logging.Extensions;
+using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.App.Features.Expenses.Renew;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Extensions;
-using Pot.AspNetCore.Features.Expenses.Renew.Mappings;
 
 namespace Pot.AspNetCore.Features.Expenses.Renew;
 

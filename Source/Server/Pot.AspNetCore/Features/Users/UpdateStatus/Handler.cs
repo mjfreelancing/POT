@@ -1,9 +1,8 @@
-﻿using AllOverIt.Logging.Extensions;
+using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.App.Features.Users.UpdateStatus;
 using Pot.AspNetCore.Concerns.Auth.Configuration;
 using Pot.AspNetCore.Extensions;
-using Pot.AspNetCore.Features.Users.UpdateStatus.Mappings;
 using System.ComponentModel;
 
 namespace Pot.AspNetCore.Features.Users.UpdateStatus;

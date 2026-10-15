@@ -1,6 +1,6 @@
-﻿using Pot.App.Features.Accruals.Status.Models;
+using Pot.App.Features.Accruals.Status.Models;
 
-namespace Pot.AspNetCore.Features.Accruals.Status.Mappings;
+namespace Pot.AspNetCore.Features.Accruals.Status;
 
 internal static class RequestMapping
 {

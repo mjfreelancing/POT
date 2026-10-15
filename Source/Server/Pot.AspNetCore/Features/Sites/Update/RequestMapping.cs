@@ -1,6 +1,6 @@
-﻿using Pot.App.Features.Users.UpdateRoles.Models;
+using Pot.App.Features.Sites.Update.Models;
 
-namespace Pot.AspNetCore.Features.Users.UpdateRoles.Mappings;
+namespace Pot.AspNetCore.Features.Sites.Update;
 
 internal static class RequestMapping
 {
@@ -10,7 +10,8 @@ internal static class RequestMapping
         {
             RowId = userId,
             Etag = request.Etag,
-            RoleIds = request.RoleIds
+            Name = request.Name,
+            Description = request.Description
         };
     }
 }

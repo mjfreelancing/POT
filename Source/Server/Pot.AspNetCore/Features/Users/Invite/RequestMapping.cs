@@ -1,6 +1,6 @@
-﻿using Pot.App.Features.Users.Invite.Models;
+using Pot.App.Features.Users.Invite.Models;
 
-namespace Pot.AspNetCore.Features.Users.Invite.Mappings;
+namespace Pot.AspNetCore.Features.Users.Invite;
 
 internal static class RequestMapping
 {

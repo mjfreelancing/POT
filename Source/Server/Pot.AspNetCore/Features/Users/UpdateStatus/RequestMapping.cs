@@ -1,6 +1,6 @@
-﻿using Pot.App.Features.Users.UpdateStatus.Models;
+using Pot.App.Features.Users.UpdateStatus.Models;
 
-namespace Pot.AspNetCore.Features.Users.UpdateStatus.Mappings;
+namespace Pot.AspNetCore.Features.Users.UpdateStatus;
 
 internal static class RequestMapping
 {

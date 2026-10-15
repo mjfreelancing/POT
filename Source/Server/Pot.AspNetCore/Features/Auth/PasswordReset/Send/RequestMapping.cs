@@ -1,6 +1,6 @@
-﻿using Pot.App.Features.Auth.Signup.Request.Models;
+using Pot.App.Features.Auth.PasswordReset.Request.Models;
 
-namespace Pot.AspNetCore.Features.Auth.Signup.Send.Mappings;
+namespace Pot.AspNetCore.Features.Auth.PasswordReset.Send;
 
 internal static class RequestMapping
 {
@@ -9,7 +9,6 @@ internal static class RequestMapping
         return new Input
         {
             Username = request.Username.Trim(),
-            Email = request.Email.Trim(),
             CorrelationId = correlationId
         };
     }

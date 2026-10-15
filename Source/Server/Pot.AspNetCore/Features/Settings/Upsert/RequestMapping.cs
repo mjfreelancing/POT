@@ -1,7 +1,7 @@
-﻿using Pot.App.Features.Settings.Upsert.Models;
+using Pot.App.Features.Settings.Upsert.Models;
 using Pot.Shared.Enumerations;
 
-namespace Pot.AspNetCore.Features.Settings.Upsert.Mappings;
+namespace Pot.AspNetCore.Features.Settings.Upsert;
 
 internal static class RequestMapping
 {

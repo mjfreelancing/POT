@@ -1,6 +1,6 @@
-﻿using Pot.App.Features.Expenses.ToggleExclude.Models;
+using Pot.App.Features.Incomes.ToggleExclude.Models;
 
-namespace Pot.AspNetCore.Features.Expenses.ToggleExclude.Mappings;
+namespace Pot.AspNetCore.Features.Incomes.ToggleExclude;
 
 internal static class RequestMapping
 {

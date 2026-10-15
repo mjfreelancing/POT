@@ -1,6 +1,6 @@
-﻿using Pot.App.Features.Expenses.Create.Models;
+using Pot.App.Features.Expenses.Create.Models;
 
-namespace Pot.AspNetCore.Features.Expenses.Create.Mappings;
+namespace Pot.AspNetCore.Features.Expenses.Create;
 
 internal static class RequestMapping
 {

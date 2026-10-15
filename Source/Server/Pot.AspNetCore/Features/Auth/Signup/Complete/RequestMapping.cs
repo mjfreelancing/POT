@@ -1,6 +1,6 @@
-﻿using Pot.App.Features.Auth.Signup.Complete.Models;
+using Pot.App.Features.Auth.Signup.Complete.Models;
 
-namespace Pot.AspNetCore.Features.Auth.Signup.Complete.Mappings;
+namespace Pot.AspNetCore.Features.Auth.Signup.Complete;
 
 internal static class RequestMapping
 {
