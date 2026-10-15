@@ -1,13 +1,13 @@
 ﻿using AllOverIt.Patterns.Result;
-using Pot.App.Features.Incomes.Exclude.Models;
+using Pot.App.Features.Incomes.ToggleExclude.Models;
 using Pot.Shared.DependencyInjection;
 
-namespace Pot.App.Features.Incomes.Exclude;
+namespace Pot.App.Features.Incomes.ToggleExclude;
 
 /// <summary>
 /// Toggles whether one or more incomes are excluded from projections.
 /// </summary>
-public interface IExcludeIncomesService : IPotScopedDependency
+public interface IToggleExcludeIncomesService : IPotScopedDependency
 {
     /// <summary>
     /// Toggles the exclusion state of the incomes identified by the input.
@@ -18,5 +18,5 @@ public interface IExcludeIncomesService : IPotScopedDependency
     /// An <c>EnrichedResult&lt;bool&gt;</c> containing <see langword="true"/> when the exclusion states were
     /// toggled, or a failure when one or more of the supplied incomes do not exist.
     /// </returns>
-    Task<EnrichedResult<bool>> ToggleExclusionAsync(Input input, CancellationToken cancellationToken);
+    Task<EnrichedResult<bool>> ToggleExcludeAsync(Input input, CancellationToken cancellationToken);
 }

@@ -1,4 +1,4 @@
-﻿using Pot.App.Features.Incomes.Exclude.Models;
+using Pot.App.Features.Incomes.ToggleExclude.Models;
 
 namespace Pot.AspNetCore.Features.Incomes.ToggleExclude.Mappings;
 

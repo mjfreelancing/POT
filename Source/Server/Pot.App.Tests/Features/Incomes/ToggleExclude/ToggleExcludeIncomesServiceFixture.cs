@@ -1,16 +1,16 @@
 using Microsoft.Extensions.Logging;
 using NSubstitute;
-using Pot.App.Features.Incomes.Exclude;
-using Pot.App.Features.Incomes.Exclude.Models;
+using Pot.App.Features.Incomes.ToggleExclude;
+using Pot.App.Features.Incomes.ToggleExclude.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Incomes;
 using Pot.Shared.Enumerations;
 using Pot.TestUtils;
 using Shouldly;
 
-namespace Pot.App.Tests.Features.Incomes.Exclude;
+namespace Pot.App.Tests.Features.Incomes.ToggleExclude;
 
-public class ExcludeIncomesServiceFixture : PotFixtureBase
+public class ToggleExcludeIncomesServiceFixture : PotFixtureBase
 {
     private sealed class NoopScope : IDisposable
     {
@@ -21,7 +21,7 @@ public class ExcludeIncomesServiceFixture : PotFixtureBase
 
     private readonly IPersistableIncomeRepository _incomeRepositoryFake = Substitute.For<IPersistableIncomeRepository>();
 
-    public ExcludeIncomesServiceFixture()
+    public ToggleExcludeIncomesServiceFixture()
     {
         _incomeRepositoryFake.WithTracking().Returns(new NoopScope());
     }
@@ -39,7 +39,7 @@ public class ExcludeIncomesServiceFixture : PotFixtureBase
         var service = CreateService();
         var input = new Input { RowIds = [existingIncome.RowId, missingRowId] };
 
-        var result = await service.ToggleExclusionAsync(input, TestContext.Current.CancellationToken);
+        var result = await service.ToggleExcludeAsync(input, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeFalse();
         existingIncome.ExcludeFromCalcs.ShouldBeFalse();
@@ -65,7 +65,7 @@ public class ExcludeIncomesServiceFixture : PotFixtureBase
         var service = CreateService();
         var input = new Input { RowIds = rowIds };
 
-        var result = await service.ToggleExclusionAsync(input, TestContext.Current.CancellationToken);
+        var result = await service.ToggleExcludeAsync(input, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
         firstIncome.ExcludeFromCalcs.ShouldBeTrue();
@@ -74,9 +74,9 @@ public class ExcludeIncomesServiceFixture : PotFixtureBase
         await _incomeRepositoryFake.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }
 
-    private ExcludeIncomesService CreateService()
+    private ToggleExcludeIncomesService CreateService()
     {
-        return new ExcludeIncomesService(_incomeRepositoryFake, Substitute.For<ILogger<ExcludeIncomesService>>());
+        return new ToggleExcludeIncomesService(_incomeRepositoryFake, Substitute.For<ILogger<ToggleExcludeIncomesService>>());
     }
 
     private static IncomeEntity CreateIncome(string description, bool excluded)

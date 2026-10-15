@@ -7,7 +7,7 @@ namespace Pot.App.Features.Expenses.ToggleExclude;
 /// <summary>
 /// Toggles whether one or more expenses are excluded from projections.
 /// </summary>
-public interface IExcludeExpensesService : IPotScopedDependency
+public interface IToggleExcludeExpensesService : IPotScopedDependency
 {
     /// <summary>
     /// Toggles the exclusion state of the expenses identified by the input.
@@ -18,5 +18,5 @@ public interface IExcludeExpensesService : IPotScopedDependency
     /// An <c>EnrichedResult&lt;bool&gt;</c> containing <see langword="true"/> when the exclusion states were
     /// toggled, or a failure when one or more of the supplied expenses do not exist.
     /// </returns>
-    Task<EnrichedResult<bool>> ToggleExclusionAsync(Input input, CancellationToken cancellationToken);
+    Task<EnrichedResult<bool>> ToggleExcludeAsync(Input input, CancellationToken cancellationToken);
 }

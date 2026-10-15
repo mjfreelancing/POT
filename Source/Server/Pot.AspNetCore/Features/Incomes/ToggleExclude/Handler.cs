@@ -1,6 +1,6 @@
 ﻿using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Pot.App.Features.Incomes.Exclude;
+using Pot.App.Features.Incomes.ToggleExclude;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Extensions;
 using Pot.AspNetCore.Features.Incomes.ToggleExclude.Mappings;
@@ -9,7 +9,7 @@ namespace Pot.AspNetCore.Features.Incomes.ToggleExclude;
 
 internal sealed class Handler
 {
-    public static async Task<Results<Ok, ProblemHttpResult>> Invoke(Request request, IExcludeIncomesService expenseService,
+    public static async Task<Results<Ok, ProblemHttpResult>> Invoke(Request request, IToggleExcludeIncomesService incomeService,
         IProblemDetailsInspector problemDetailsInspector, ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);
@@ -25,7 +25,7 @@ internal sealed class Handler
 
         var input = request.MapToInput();
 
-        var excludeResult = await expenseService.ToggleExclusionAsync(input, cancellationToken);
+        var excludeResult = await incomeService.ToggleExcludeAsync(input, cancellationToken);
 
         return excludeResult.IsSuccess
             ? TypedResults.Ok()

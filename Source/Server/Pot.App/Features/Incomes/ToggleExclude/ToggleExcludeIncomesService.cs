@@ -3,27 +3,27 @@ using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
 using Pot.App.Errors;
-using Pot.App.Features.Incomes.Exclude.Models;
+using Pot.App.Features.Incomes.ToggleExclude.Models;
 using Pot.Data.Repositories.Incomes;
 
-namespace Pot.App.Features.Incomes.Exclude;
+namespace Pot.App.Features.Incomes.ToggleExclude;
 
 /// <summary>
-/// Default implementation of <see cref="IExcludeIncomesService"/>.
+/// Default implementation of <see cref="IToggleExcludeIncomesService"/>.
 /// </summary>
-internal sealed class ExcludeIncomesService : IExcludeIncomesService
+internal sealed class ToggleExcludeIncomesService : IToggleExcludeIncomesService
 {
     private readonly IPersistableIncomeRepository _incomeRepository;
     private readonly ILogger _logger;
 
-    public ExcludeIncomesService(IPersistableIncomeRepository incomeRepository, ILogger<ExcludeIncomesService> logger)
+    public ToggleExcludeIncomesService(IPersistableIncomeRepository incomeRepository, ILogger<ToggleExcludeIncomesService> logger)
     {
         _incomeRepository = incomeRepository.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
     /// <inheritdoc />
-    public async Task<EnrichedResult<bool>> ToggleExclusionAsync(Input input, CancellationToken cancellationToken)
+    public async Task<EnrichedResult<bool>> ToggleExcludeAsync(Input input, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 

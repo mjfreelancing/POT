@@ -10,7 +10,7 @@ using Shouldly;
 
 namespace Pot.App.Tests.Features.Expenses.ToggleExclude;
 
-public class ExcludeExpensesServiceFixture : PotFixtureBase
+public class ToggleExcludeExpensesServiceFixture : PotFixtureBase
 {
     private sealed class NoopScope : IDisposable
     {
@@ -19,7 +19,7 @@ public class ExcludeExpensesServiceFixture : PotFixtureBase
         }
     }
 
-    public class Constructor : ExcludeExpensesServiceFixture
+    public class Constructor : ToggleExcludeExpensesServiceFixture
     {
         private readonly IPersistableExpenseRepository _expenseRepositoryFake;
 
@@ -33,9 +33,9 @@ public class ExcludeExpensesServiceFixture : PotFixtureBase
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
             {
-                var logger = Substitute.For<ILogger<ExcludeExpensesService>>();
+                var logger = Substitute.For<ILogger<ToggleExcludeExpensesService>>();
 
-                _ = new ExcludeExpensesService(null!, logger);
+                _ = new ToggleExcludeExpensesService(null!, logger);
             });
 
             exception.ParamName.ShouldBe("expenseRepository");
@@ -46,18 +46,18 @@ public class ExcludeExpensesServiceFixture : PotFixtureBase
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
             {
-                _ = new ExcludeExpensesService(_expenseRepositoryFake, null!);
+                _ = new ToggleExcludeExpensesService(_expenseRepositoryFake, null!);
             });
 
             exception.ParamName.ShouldBe("logger");
         }
     }
 
-    public class ToggleExclusionAsync : ExcludeExpensesServiceFixture
+    public class ToggleExcludeAsync : ToggleExcludeExpensesServiceFixture
     {
         private readonly IPersistableExpenseRepository _expenseRepositoryFake;
 
-        public ToggleExclusionAsync()
+        public ToggleExcludeAsync()
         {
             _expenseRepositoryFake = Substitute.For<IPersistableExpenseRepository>();
             _expenseRepositoryFake.WithTracking().Returns(new NoopScope());
@@ -68,7 +68,7 @@ public class ExcludeExpensesServiceFixture : PotFixtureBase
         [Fact]
         public async Task Should_LogCall_When_Toggling_Expense_Exclusion()
         {
-            var logger = Substitute.For<ILogger<ExcludeExpensesService>>();
+            var logger = Substitute.For<ILogger<ToggleExcludeExpensesService>>();
 
             _expenseRepositoryFake
                 .GetExpensesAsync(Arg.Any<Guid[]>(), Arg.Any<CancellationToken>())
@@ -82,7 +82,7 @@ public class ExcludeExpensesServiceFixture : PotFixtureBase
                 .SaveAsync(Arg.Any<CancellationToken>())
                 .Returns(1);
 
-            var service = new ExcludeExpensesService(_accrualDirtyStateManagerFake, _expenseRepositoryFake, logger);
+            var service = new ToggleExcludeExpensesService(_accrualDirtyStateManagerFake, _expenseRepositoryFake, logger);
             var input = new Input
             {
                 RowIds = []
@@ -90,17 +90,17 @@ public class ExcludeExpensesServiceFixture : PotFixtureBase
 
             var context = await logger.CaptureLogCallsAsync(async () =>
             {
-                _ = await service.ToggleExclusionAsync(input, CancellationToken.None);
+                _ = await service.ToggleExcludeAsync(input, CancellationToken.None);
             });
 
-            _ = context.ShouldLogCall<ExcludeExpensesService>(nameof(ExcludeExpensesService.ToggleExclusionAsync));
+            _ = context.ShouldLogCall<ToggleExcludeExpensesService>(nameof(ToggleExcludeExpensesService.ToggleExcludeAsync));
         }
         */
 
         [Fact]
         public async Task Should_Fail_When_One_Or_More_Expenses_Do_Not_Exist()
         {
-            var logger = Substitute.For<ILogger<ExcludeExpensesService>>();
+            var logger = Substitute.For<ILogger<ToggleExcludeExpensesService>>();
 
             var existingExpense = CreateExpense(accountId: 9, excluded: false);
             var missingRowId = Guid.NewGuid();
@@ -109,14 +109,14 @@ public class ExcludeExpensesServiceFixture : PotFixtureBase
                 .GetExpensesAsync(Arg.Any<Guid[]>(), Arg.Any<CancellationToken>())
                 .Returns([existingExpense]);
 
-            var service = new ExcludeExpensesService(_expenseRepositoryFake, logger);
+            var service = new ToggleExcludeExpensesService(_expenseRepositoryFake, logger);
 
             var input = new Input
             {
                 RowIds = [existingExpense.RowId, missingRowId]
             };
 
-            var result = await service.ToggleExclusionAsync(input, CancellationToken.None);
+            var result = await service.ToggleExcludeAsync(input, CancellationToken.None);
 
             result.IsSuccess.ShouldBeFalse();
 
@@ -128,7 +128,7 @@ public class ExcludeExpensesServiceFixture : PotFixtureBase
         [Fact]
         public async Task Should_Toggle_Exclusion_When_All_Expenses_Exist()
         {
-            var logger = Substitute.For<ILogger<ExcludeExpensesService>>();
+            var logger = Substitute.For<ILogger<ToggleExcludeExpensesService>>();
 
             var firstExpense = CreateExpense(accountId: 10, excluded: false);
             var secondExpense = CreateExpense(accountId: 10, excluded: true);
@@ -141,14 +141,14 @@ public class ExcludeExpensesServiceFixture : PotFixtureBase
                 .SaveAsync(Arg.Any<CancellationToken>())
                 .Returns(1);
 
-            var service = new ExcludeExpensesService(_expenseRepositoryFake, logger);
+            var service = new ToggleExcludeExpensesService(_expenseRepositoryFake, logger);
 
             var input = new Input
             {
                 RowIds = [firstExpense.RowId, secondExpense.RowId]
             };
 
-            var result = await service.ToggleExclusionAsync(input, CancellationToken.None);
+            var result = await service.ToggleExcludeAsync(input, CancellationToken.None);
 
             result.IsSuccess.ShouldBeTrue();
 

@@ -9,21 +9,21 @@ using Pot.Data.Repositories.Expenses;
 namespace Pot.App.Features.Expenses.ToggleExclude;
 
 /// <summary>
-/// Default implementation of <see cref="IExcludeExpensesService"/>.
+/// Default implementation of <see cref="IToggleExcludeExpensesService"/>.
 /// </summary>
-internal sealed class ExcludeExpensesService : IExcludeExpensesService
+internal sealed class ToggleExcludeExpensesService : IToggleExcludeExpensesService
 {
     private readonly IPersistableExpenseRepository _expenseRepository;
     private readonly ILogger _logger;
 
-    public ExcludeExpensesService(IPersistableExpenseRepository expenseRepository, ILogger<ExcludeExpensesService> logger)
+    public ToggleExcludeExpensesService(IPersistableExpenseRepository expenseRepository, ILogger<ToggleExcludeExpensesService> logger)
     {
         _expenseRepository = expenseRepository.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
     /// <inheritdoc />
-    public async Task<EnrichedResult<bool>> ToggleExclusionAsync(Input input, CancellationToken cancellationToken)
+    public async Task<EnrichedResult<bool>> ToggleExcludeAsync(Input input, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
