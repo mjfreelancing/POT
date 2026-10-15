@@ -95,7 +95,7 @@ public class ExportImportRoundTripFixture : PotFixtureBase
             }
         };
 
-        var expensesService = Substitute.For<IGetExpensesService>();
+        var expensesService = Substitute.For<IGetAllExpensesService>();
         expensesService
             .GetAllExpensesAsync(Arg.Any<CancellationToken>())
             .Returns([expense]);

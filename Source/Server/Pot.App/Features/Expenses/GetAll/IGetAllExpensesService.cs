@@ -6,7 +6,7 @@ namespace Pot.App.Features.Expenses.GetAll;
 /// <summary>
 /// Retrieves all expenses for the current site.
 /// </summary>
-public interface IGetExpensesService : IPotScopedDependency
+public interface IGetAllExpensesService : IPotScopedDependency
 {
     /// <summary>
     /// Gets all expenses for the current site.

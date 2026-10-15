@@ -11,14 +11,14 @@ using Shouldly;
 
 namespace Pot.App.Tests.Features.Expenses.GetAll;
 
-public class GetExpensesServiceFixture : PotFixtureBase
+public class GetAllExpensesServiceFixture : PotFixtureBase
 {
     private static readonly DateOnly Today = new(2025, 1, 15);
 
     private readonly IExpenseRepository _expenseRepository = Substitute.For<IExpenseRepository>();
     private readonly ITimeProvider _timeProvider = Substitute.For<ITimeProvider>();
 
-    public GetExpensesServiceFixture()
+    public GetAllExpensesServiceFixture()
     {
         _timeProvider.GetLocalDateNow().Returns(Today);
     }
@@ -92,10 +92,10 @@ public class GetExpensesServiceFixture : PotFixtureBase
         outputs.ShouldBeEmpty();
     }
 
-    private GetExpensesService CreateService()
+    private GetAllExpensesService CreateService()
     {
-        return new GetExpensesService(_expenseRepository, new AccrualCalculator(), _timeProvider,
-            Substitute.For<ILogger<GetExpensesService>>());
+        return new GetAllExpensesService(_expenseRepository, new AccrualCalculator(), _timeProvider,
+            Substitute.For<ILogger<GetAllExpensesService>>());
     }
 
     private static AccountEntity CreateAccount(int accountId, string description)

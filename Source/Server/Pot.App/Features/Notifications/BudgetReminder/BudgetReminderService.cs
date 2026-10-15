@@ -20,14 +20,14 @@ internal sealed class BudgetReminderService : IBudgetReminderService
     private readonly IAppContext _appContext;
     private readonly ISettingsService _settingsService;
     private readonly IUserRepository _userRepository;
-    private readonly IGetIncomesService _incomesService;
-    private readonly IGetExpensesService _expensesService;
+    private readonly IGetAllIncomesService _incomesService;
+    private readonly IGetAllExpensesService _expensesService;
     private readonly ISendEmailChannelWriter _sendEmailChannelWriter;
     private readonly ITimeProvider _timeProvider;
     private readonly ILogger<BudgetReminderService> _logger;
 
     public BudgetReminderService(IAppContext appContext, ISettingsService settingsService,
-        IUserRepository userRepository, IGetIncomesService getIncomesService, IGetExpensesService getExpensesService,
+        IUserRepository userRepository, IGetAllIncomesService getIncomesService, IGetAllExpensesService getExpensesService,
         ISendEmailChannelWriter sendEmailChannelWriter, ITimeProvider timeProvider, ILogger<BudgetReminderService> logger)
     {
         _appContext = appContext.WhenNotNull();

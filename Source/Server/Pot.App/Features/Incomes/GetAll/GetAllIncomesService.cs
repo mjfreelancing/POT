@@ -9,14 +9,14 @@ using Pot.Data.Repositories.Incomes;
 namespace Pot.App.Features.Incomes.GetAll;
 
 /// <summary>
-/// Default implementation of <see cref="IGetIncomesService"/>.
+/// Default implementation of <see cref="IGetAllIncomesService"/>.
 /// </summary>
-internal sealed class GetIncomesService : IGetIncomesService
+internal sealed class GetAllIncomesService : IGetAllIncomesService
 {
     private readonly IIncomeRepository _incomeRepository;
     private readonly ILogger _logger;
 
-    public GetIncomesService(IIncomeRepository incomeRepository, ILogger<GetIncomesService> logger)
+    public GetAllIncomesService(IIncomeRepository incomeRepository, ILogger<GetAllIncomesService> logger)
     {
         _incomeRepository = incomeRepository.WhenNotNull();
         _logger = logger.WhenNotNull();

@@ -14,17 +14,17 @@ using Pot.Shared.Models;
 namespace Pot.App.Features.Expenses.GetAll;
 
 /// <summary>
-/// Default implementation of <see cref="IGetExpensesService"/>.
+/// Default implementation of <see cref="IGetAllExpensesService"/>.
 /// </summary>
-internal sealed class GetExpensesService : IGetExpensesService
+internal sealed class GetAllExpensesService : IGetAllExpensesService
 {
     private readonly IExpenseRepository _expenseRepository;
     private readonly IAccrualCalculator _accrualCalculator;
     private readonly ITimeProvider _timeProvider;
     private readonly ILogger _logger;
 
-    public GetExpensesService(IExpenseRepository expenseRepository, IAccrualCalculator accrualCalculator,
-        ITimeProvider timeProvider, ILogger<GetExpensesService> logger)
+    public GetAllExpensesService(IExpenseRepository expenseRepository, IAccrualCalculator accrualCalculator,
+        ITimeProvider timeProvider, ILogger<GetAllExpensesService> logger)
     {
         _expenseRepository = expenseRepository.WhenNotNull();
         _accrualCalculator = accrualCalculator.WhenNotNull();

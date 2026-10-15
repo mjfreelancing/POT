@@ -11,9 +11,9 @@ namespace Pot.App.Features.Maintenance.Export.Incomes;
 /// </summary>
 internal sealed class IncomesExporter : MemoryCsvExporterBase<IncomeData>, IIncomesExporter
 {
-    private readonly IGetIncomesService _incomesService;
+    private readonly IGetAllIncomesService _incomesService;
 
-    public IncomesExporter(IGetIncomesService incomesService)
+    public IncomesExporter(IGetAllIncomesService incomesService)
     {
         _incomesService = incomesService.WhenNotNull();
     }

@@ -9,7 +9,7 @@ using Shouldly;
 
 namespace Pot.App.Tests.Features.Incomes.GetAll;
 
-public class GetIncomesServiceFixture : PotFixtureBase
+public class GetAllIncomesServiceFixture : PotFixtureBase
 {
     private readonly IIncomeRepository _incomeRepositoryFake = Substitute.For<IIncomeRepository>();
 
@@ -49,9 +49,9 @@ public class GetIncomesServiceFixture : PotFixtureBase
         outputs.ShouldBeEmpty();
     }
 
-    private GetIncomesService CreateService()
+    private GetAllIncomesService CreateService()
     {
-        return new GetIncomesService(_incomeRepositoryFake, Substitute.For<ILogger<GetIncomesService>>());
+        return new GetAllIncomesService(_incomeRepositoryFake, Substitute.For<ILogger<GetAllIncomesService>>());
     }
 
     private static void AssertMappedIncome(Pot.App.Features.Incomes.GetAll.Models.Output output, IncomeEntity income, AccountEntity account)

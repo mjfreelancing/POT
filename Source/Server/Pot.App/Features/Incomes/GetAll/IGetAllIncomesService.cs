@@ -6,7 +6,7 @@ namespace Pot.App.Features.Incomes.GetAll;
 /// <summary>
 /// Retrieves all incomes for the current site.
 /// </summary>
-public interface IGetIncomesService : IPotScopedDependency
+public interface IGetAllIncomesService : IPotScopedDependency
 {
     /// <summary>
     /// Gets all incomes for the current site.

@@ -11,9 +11,9 @@ namespace Pot.App.Features.Maintenance.Export.Expenses;
 /// </summary>
 internal sealed class ExpensesExporter : MemoryCsvExporterBase<ExpenseData>, IExpensesExporter
 {
-    private readonly IGetExpensesService _expensesService;
+    private readonly IGetAllExpensesService _expensesService;
 
-    public ExpensesExporter(IGetExpensesService expensesService)
+    public ExpensesExporter(IGetAllExpensesService expensesService)
     {
         _expensesService = expensesService.WhenNotNull();
     }
