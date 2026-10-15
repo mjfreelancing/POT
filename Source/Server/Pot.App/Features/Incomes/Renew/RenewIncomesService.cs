@@ -12,14 +12,14 @@ namespace Pot.App.Features.Incomes.Renew;
 /// <summary>
 /// Default implementation of <see cref="IRenewIncomesService"/>.
 /// </summary>
-internal sealed class RenewExpensesService : IRenewIncomesService
+internal sealed class RenewIncomesService : IRenewIncomesService
 {
     private readonly IPersistableIncomeRepository _incomeRepository;
     private readonly IIncomeRenewalCalculator _renewalCalculator;
     private readonly ILogger _logger;
 
-    public RenewExpensesService(IPersistableIncomeRepository incomeRepository, IIncomeRenewalCalculator renewalCalculator,
-        ILogger<RenewExpensesService> logger)
+    public RenewIncomesService(IPersistableIncomeRepository incomeRepository, IIncomeRenewalCalculator renewalCalculator,
+        ILogger<RenewIncomesService> logger)
     {
         _incomeRepository = incomeRepository.WhenNotNull();
         _renewalCalculator = renewalCalculator.WhenNotNull();
