@@ -40,8 +40,9 @@ internal sealed class RequestPasswordResetService : IRequestPasswordResetService
         {
             // Tracking is required otherwise the user cannot be attached to the OneTimePasswordEntity when
             // it is created since EF will assume it is a new entity rather than an existing one.
+            // Cross-tenant by design: a signed-out caller resolves a username in order to reset a password.
             var user = await _userRepository
-                .GetByUsernameOrDefaultAsync(input.Username, cancellationToken)
+                .GetByUsernameAsync(input.Username, cancellationToken)
                 .ConfigureAwait(false);
 
             if (user?.Email is null)

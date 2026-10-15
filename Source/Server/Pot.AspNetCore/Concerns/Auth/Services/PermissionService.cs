@@ -24,6 +24,8 @@ internal sealed class PermissionService : IPermissionService
         _logger.LogCall(this, new { userId });
 
         // Get normal database permissions for the user
+        // Cross-tenant by design: permission resolution runs during UseAuthorization, before the user context
+        // middleware has established which site the caller is acting in.
         var roles = await _roleRepository
             .GetRolesForUserAsync(userId, true, cancellationToken)
             .ConfigureAwait(false);
@@ -44,7 +46,7 @@ internal sealed class PermissionService : IPermissionService
                 userId);
 
             // Add platform-level permission on top of existing permissions
-            permissions.Add("platform:manage");
+            permissions.Add(AuthorizationPolicies.PlatformManage);
         }
 
         return permissions;

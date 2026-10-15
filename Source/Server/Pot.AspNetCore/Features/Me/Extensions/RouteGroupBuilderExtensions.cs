@@ -1,4 +1,6 @@
-﻿namespace Pot.AspNetCore.Features.Me.Extensions;
+﻿using Pot.AspNetCore.Concerns.Auth;
+
+namespace Pot.AspNetCore.Features.Me.Extensions;
 
 internal static class RouteGroupBuilderExtensions
 {
@@ -6,7 +8,7 @@ internal static class RouteGroupBuilderExtensions
     {
         routeGroupBuilder
             .MapGet(MeEndpoints.Me, Get.Handler.Invoke)
-            .RequireAuthorization("AuthenticatedUser")
+            .RequireAuthorization(AuthorizationPolicies.AuthenticatedUser)
             .WithName(nameof(GetMe))
             .WithSummary("Get User Info")
             .WithDescription("Get the current user's information and permissions")
@@ -21,7 +23,7 @@ internal static class RouteGroupBuilderExtensions
     {
         routeGroupBuilder
             .MapPut(MeEndpoints.ChangePassword, Me.ChangePassword.Handler.Invoke)
-            .RequireAuthorization("AuthenticatedUser")
+            .RequireAuthorization(AuthorizationPolicies.AuthenticatedUser)
             .WithName(nameof(ChangePassword))
             .WithSummary("Change Password")
             .WithDescription("Change the user password")

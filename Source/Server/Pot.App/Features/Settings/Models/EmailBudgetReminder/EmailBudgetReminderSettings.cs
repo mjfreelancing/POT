@@ -38,7 +38,7 @@ namespace Pot.App.Features.Settings.Models.EmailBudgetReminder;
 // VALIDATION CALL CHAIN:
 //
 // When a setting value is validated, the call flows through:
-//   UpdateSettingService.ValidateSettingValue(category, key, value)
+//   UpsertSettingService.ValidateSettingValue(category, key, value)
 //     └─> SettingValueValidators[category] lookup
 //         └─> ValidateSettingValue<EmailBudgetReminderSettings>(key, value)  [generic method]
 //             └─> EmailBudgetReminderSettings.ValidateValue(key, value)  [static interface method]

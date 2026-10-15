@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Pot.App.Calculators;
 using Pot.App.Concerns.Time;
@@ -95,7 +95,7 @@ public class GetExpensesServiceFixture : PotFixtureBase
     private GetExpensesService CreateService()
     {
         return new GetExpensesService(_expenseRepository, new AccrualCalculator(), _timeProvider,
-            NullLogger<GetExpensesService>.Instance);
+            Substitute.For<ILogger<GetExpensesService>>());
     }
 
     private static AccountEntity CreateAccount(int accountId, string description)

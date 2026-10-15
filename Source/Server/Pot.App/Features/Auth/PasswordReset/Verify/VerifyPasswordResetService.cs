@@ -66,8 +66,9 @@ internal sealed class VerifyPasswordResetService : VerificationServiceBase, IVer
         using var otpTracking = _otpRepository.WithTracking();
 
         // Check the username exists and get their email
+        // Cross-tenant by design: a signed-out caller resolves a username in order to reset a password.
         var user = await _userRepository
-            .GetByUsernameOrDefaultAsync(input.Username, cancellationToken)
+            .GetByUsernameAsync(input.Username, cancellationToken)
             .ConfigureAwait(false);
 
         if (user?.Email is null)

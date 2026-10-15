@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Sites;
@@ -46,20 +47,6 @@ public class SiteRepositoryFixture : PotFixtureBase
         }
     }
 
-    public class Sites : SiteRepositoryFixture
-    {
-        [Fact]
-        public async Task Should_Return_The_Sites()
-        {
-            using var context = CreateTestContext();
-
-            var result = await context.Repository.Sites.ToListAsync(Xunit.TestContext.Current.CancellationToken);
-
-            result.Count.ShouldBe(1);
-            result[0].RowId.ShouldBe(context.Site.RowId);
-        }
-    }
-
     private static TestContext CreateTestContext()
     {
         var dbOptions = new DbContextOptionsBuilder<PotDbContext>()
@@ -78,7 +65,7 @@ public class SiteRepositoryFixture : PotFixtureBase
         dbContext.Add(user);
         dbContext.SaveChanges();
 
-        var userRepository = new UserRepository(dbContext, currentUserContext);
+        var userRepository = new UserRepository(dbContext, currentUserContext, Substitute.For<ILogger<UserRepository>>());
         var repository = new SiteRepository(dbContext, userRepository);
 
         return new TestContext(dbContext, repository, site, user);

@@ -39,12 +39,27 @@ public class RenewFixture : IntegrationAuthFixtureBase
     }
 
     [Fact]
-    public async Task Should_Return_MethodNotAllowed_When_Getting_The_Renew_Endpoint()
+    public async Task Should_Return_Unauthorized_When_Getting_The_Renew_Endpoint_Anonymously()
     {
         using var client = CreateClient();
 
         var response = await client.GetAsync(RenewPath, TestContext.Current.CancellationToken);
 
+        // The fail-closed fallback policy answers before routing can report the method mismatch, so an
+        // anonymous caller sees 401 rather than 405.
+        await response.ShouldHaveStatusAsync(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Should_Return_MethodNotAllowed_When_Getting_The_Renew_Endpoint_With_Authentication()
+    {
+        var admin = await CreateAdminUserAsync("renew", "Renew User");
+
+        using var client = await CreateAuthenticatedClientAsync(admin);
+
+        var response = await client.GetAsync(RenewPath, TestContext.Current.CancellationToken);
+
+        // A valid token satisfies the fallback policy, so routing reports the method mismatch itself.
         await response.ShouldHaveStatusAsync(HttpStatusCode.MethodNotAllowed);
     }
 

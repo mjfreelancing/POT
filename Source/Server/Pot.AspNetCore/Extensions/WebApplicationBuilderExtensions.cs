@@ -86,7 +86,12 @@ internal static class WebApplicationBuilderExtensions
             .AddAuthorization(options =>
             {
                 // Required for /me endpoint where the user needs to be authenticated, but no specific permissions are required.
-                options.AddPolicy("AuthenticatedUser", policy => policy.RequireAuthenticatedUser());
+                options.AddPolicy(AuthorizationPolicies.AuthenticatedUser, policy => policy.RequireAuthenticatedUser());
+
+                // Fail closed: an endpoint that declares no requirement of its own is authenticated-only rather
+                // than reachable anonymously, so a forgotten .RequireAuthorization(...) cannot ship an open route.
+                // Endpoints that must stay reachable before a session exists opt out with .AllowAnonymous().
+                options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
             })
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>

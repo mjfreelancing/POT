@@ -1,4 +1,5 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Roles;
@@ -12,6 +13,16 @@ namespace Pot.Data.Tests.Repositories.Users;
 
 public class UserRepositoryFixture
 {
+    // One substitute per instance is enough: xUnit constructs a new fixture for every test method, so the
+    // received-call list cannot leak between tests. It does mean a test that asserts on log output must not
+    // also exercise TestContext.Repository, because those calls would land in the same list.
+    private readonly ILogger<UserRepository> _logger;
+
+    public UserRepositoryFixture()
+    {
+        _logger = Substitute.For<ILogger<UserRepository>>();
+    }
+
     // PotDbContext defaults to QueryTrackingBehavior.NoTrackingWithIdentityResolution, so reading a role
     // produces a detached instance unless a WithTracking() scope is open. Adding a user that references a
     // detached role walks the graph, marks the existing role as inserted, and PostgreSQL rejects it with a
@@ -127,7 +138,7 @@ public class UserRepositoryFixture
         }
     }
 
-    public class GetEnabledUsersAsync : UserRepositoryFixture
+    public class GetEnabledUsersForAllSitesAsync : UserRepositoryFixture
     {
         [Fact]
         public async Task Should_Return_Only_Enabled_Users()
@@ -142,7 +153,7 @@ public class UserRepositoryFixture
 
             await context.AddUsersAsync(enabledUser, disabledUser, pendingUser);
 
-            var result = await context.Repository.GetEnabledUsersAsync(Xunit.TestContext.Current.CancellationToken);
+            var result = await context.Repository.GetEnabledUsersForAllSitesAsync(Xunit.TestContext.Current.CancellationToken);
 
             result.Count.ShouldBe(2);
             result.ShouldContain(user => user.Username == context.User.Username);
@@ -156,7 +167,7 @@ public class UserRepositoryFixture
         {
             using var context = CreateTestContext();
 
-            var result = await context.Repository.GetEnabledUsersAsync(Xunit.TestContext.Current.CancellationToken);
+            var result = await context.Repository.GetEnabledUsersForAllSitesAsync(Xunit.TestContext.Current.CancellationToken);
 
             var currentUser = result.Single(user => user.RowId == context.User.RowId);
 
@@ -190,14 +201,14 @@ public class UserRepositoryFixture
         }
     }
 
-    public class GetByUsernameOrDefaultAsync : UserRepositoryFixture
+    public class GetByUsernameAsync : UserRepositoryFixture
     {
         [Fact]
         public async Task Should_Return_The_User_When_The_Username_Exists()
         {
             using var context = CreateTestContext();
 
-            var result = await context.Repository.GetByUsernameOrDefaultAsync(context.User.Username, Xunit.TestContext.Current.CancellationToken);
+            var result = await context.Repository.GetByUsernameAsync(context.User.Username, Xunit.TestContext.Current.CancellationToken);
 
             result.ShouldNotBeNull();
             result.RowId.ShouldBe(context.User.RowId);
@@ -208,35 +219,309 @@ public class UserRepositoryFixture
         {
             using var context = CreateTestContext();
 
-            var result = await context.Repository.GetByUsernameOrDefaultAsync("missing-user", Xunit.TestContext.Current.CancellationToken);
+            var result = await context.Repository.GetByUsernameAsync("missing-user", Xunit.TestContext.Current.CancellationToken);
 
             result.ShouldBeNull();
         }
     }
 
-    public class AuthSessions : UserRepositoryFixture
+    public class GetForCurrentSiteAsync : UserRepositoryFixture
     {
         [Fact]
-        public async Task Should_Return_The_Auth_Sessions()
+        public async Task Should_Return_A_User_In_The_Current_Site()
         {
             using var context = CreateTestContext();
 
-            var session = new AuthSessionEntity
+            var sameSiteUser = EntityFactory.CreateUser(context.Site, "same-site-user");
+
+            await context.AddUsersAsync(sameSiteUser);
+
+            var result = await context.Repository.GetForCurrentSiteAsync(sameSiteUser.RowId, Xunit.TestContext.Current.CancellationToken);
+
+            result.ShouldNotBeNull();
+            result.RowId.ShouldBe(sameSiteUser.RowId);
+        }
+
+        [Fact]
+        public async Task Should_Return_Null_For_A_User_In_Another_Site()
+        {
+            using var context = CreateTestContext();
+
+            var otherSiteUser = EntityFactory.CreateUser(context.OtherSite, "other-site-user");
+
+            await context.AddUsersAsync(otherSiteUser);
+
+            var result = await context.Repository.GetForCurrentSiteAsync(otherSiteUser.RowId, Xunit.TestContext.Current.CancellationToken);
+
+            result.ShouldBeNull();
+        }
+
+        [Fact]
+        public async Task Should_Return_Null_For_A_User_That_Does_Not_Exist()
+        {
+            using var context = CreateTestContext();
+
+            var result = await context.Repository.GetForCurrentSiteAsync(Guid.NewGuid(), Xunit.TestContext.Current.CancellationToken);
+
+            result.ShouldBeNull();
+        }
+    }
+
+    public class GetEnabledAdminsForCurrentSiteAsync : UserRepositoryFixture
+    {
+        [Fact]
+        public async Task Should_Return_Only_Enabled_Administrators_In_The_Current_Site()
+        {
+            using var context = CreateTestContext();
+
+            var disabledAdmin = EntityFactory.CreateUser(context.Site, "disabled-admin");
+            disabledAdmin.Status = UserStatus.Disabled;
+            disabledAdmin.Roles.Add(context.AdminRole);
+
+            var viewerRole = new RoleEntity
             {
                 RowId = Guid.NewGuid(),
-                User = context.User,
-                RefreshTokenHash = $"hash-{Guid.NewGuid():N}",
-                CreatedUtc = DateTime.UtcNow,
-                ExpiresUtc = DateTime.UtcNow.AddDays(1)
+                Name = Role.Viewer
             };
 
-            context.DbContext.Add(session);
-            await context.DbContext.SaveChangesAsync(Xunit.TestContext.Current.CancellationToken);
+            var viewer = EntityFactory.CreateUser(context.Site, "viewer");
+            viewer.Roles.Add(viewerRole);
 
-            var result = await context.Repository.AuthSessions.ToListAsync(Xunit.TestContext.Current.CancellationToken);
+            var otherSiteAdmin = EntityFactory.CreateUser(context.OtherSite, "other-site-admin");
+            otherSiteAdmin.Roles.Add(context.AdminRole);
+
+            await context.AddUsersAsync(disabledAdmin, viewer, otherSiteAdmin);
+
+            var result = await context.Repository.GetEnabledAdminsForCurrentSiteAsync(Xunit.TestContext.Current.CancellationToken);
+
+            // The seeded caller is the current site's only enabled administrator: a disabled administrator,
+            // a viewer, and another site's administrator all have to be excluded.
+            result.Count.ShouldBe(1);
+            result[0].RowId.ShouldBe(context.User.RowId);
+        }
+    }
+
+    public class CrossTenantRefusalLogging : UserRepositoryFixture
+    {
+        [Fact]
+        public async Task Should_Log_A_Warning_When_The_Row_Exists_In_Another_Site()
+        {
+            using var context = CreateTestContext();
+
+            var otherSiteUser = EntityFactory.CreateUser(context.OtherSite, "other-site-user");
+
+            await context.AddUsersAsync(otherSiteUser);
+
+            var repository = CreateUserRepository(context.DbContext, context.User);
+
+            var result = await repository.GetForCurrentSiteAsync(otherSiteUser.RowId, Xunit.TestContext.Current.CancellationToken);
+
+            result.ShouldBeNull();
+
+            var warning = GetWarningMessages().ShouldContainSingle(
+                message => message.Contains(otherSiteUser.RowId.ToString(), StringComparison.OrdinalIgnoreCase));
+
+            // The record has to name the caller as well as the requested row, or it cannot be acted on.
+            warning.ShouldContain(context.User.RowId.ToString(), Case.Insensitive);
+        }
+
+        [Fact]
+        public async Task Should_Not_Log_When_The_Row_Does_Not_Exist_At_All()
+        {
+            using var context = CreateTestContext();
+
+            var repository = CreateUserRepository(context.DbContext, context.User);
+
+            var result = await repository.GetForCurrentSiteAsync(Guid.NewGuid(), Xunit.TestContext.Current.CancellationToken);
+
+            result.ShouldBeNull();
+
+            GetWarningMessages().ShouldBeEmpty();
+        }
+
+        [Fact]
+        public async Task Should_Not_Log_When_The_Row_Belongs_To_The_Callers_Site()
+        {
+            using var context = CreateTestContext();
+
+            var sameSiteUser = EntityFactory.CreateUser(context.Site, "same-site-user");
+
+            await context.AddUsersAsync(sameSiteUser);
+
+            var repository = CreateUserRepository(context.DbContext, context.User);
+
+            var result = await repository.GetForCurrentSiteAsync(sameSiteUser.RowId, Xunit.TestContext.Current.CancellationToken);
+
+            result.ShouldNotBeNull();
+
+            GetWarningMessages().ShouldBeEmpty();
+        }
+
+        private List<string> GetWarningMessages()
+        {
+            var warnings = new List<string>();
+
+            foreach (var call in _logger.ReceivedCalls())
+            {
+                var arguments = call.GetArguments();
+
+                if (arguments.Length == 5 && arguments[0] is LogLevel level && level == LogLevel.Warning)
+                {
+                    warnings.Add(arguments[2]?.ToString() ?? string.Empty);
+                }
+            }
+
+            return warnings;
+        }
+    }
+
+    public class CrossTenantReads : UserRepositoryFixture
+    {
+        [Fact]
+        public async Task Should_Return_Approvals_From_Another_Site()
+        {
+            using var context = CreateTestContext();
+
+            var otherSiteApproval = EntityFactory.CreateUser(context.OtherSite, "other-site-approval");
+            otherSiteApproval.Status = UserStatus.Approval;
+
+            await context.AddUsersAsync(otherSiteApproval);
+
+            var result = await context.Repository.GetPendingApprovalsAsync(Xunit.TestContext.Current.CancellationToken);
+
+            result.Select(user => user.RowId).ShouldContain(otherSiteApproval.RowId);
+        }
+
+        [Fact]
+        public async Task Should_Not_Return_Users_That_Are_Not_Awaiting_Approval()
+        {
+            using var context = CreateTestContext();
+
+            // The seeded caller is enabled, so it is not part of the approval population.
+            var result = await context.Repository.GetPendingApprovalsAsync(Xunit.TestContext.Current.CancellationToken);
+
+            result.ShouldNotContain(user => user.RowId == context.User.RowId);
+        }
+
+        [Fact]
+        public async Task Should_Return_A_User_By_Id_From_Another_Site()
+        {
+            using var context = CreateTestContext();
+
+            var otherSiteUser = EntityFactory.CreateUser(context.OtherSite, "other-site-user");
+
+            await context.AddUsersAsync(otherSiteUser);
+
+            var result = await context.Repository.GetByIdForApprovalAsync(otherSiteUser.RowId, Xunit.TestContext.Current.CancellationToken);
+
+            result.ShouldNotBeNull();
+            result.RowId.ShouldBe(otherSiteUser.RowId);
+        }
+
+        [Fact]
+        public async Task Should_Return_Only_The_Requested_Notification_Recipients()
+        {
+            using var context = CreateTestContext();
+
+            var otherSiteUser = EntityFactory.CreateUser(context.OtherSite, "other-site-recipient");
+            var unrelatedUser = EntityFactory.CreateUser(context.Site, "unrelated-recipient");
+
+            await context.AddUsersAsync(otherSiteUser, unrelatedUser);
+
+            var result = await context.Repository
+                .GetByIdsForPlatformNotificationAsync([otherSiteUser.RowId], Xunit.TestContext.Current.CancellationToken);
 
             result.Count.ShouldBe(1);
-            result[0].RowId.ShouldBe(session.RowId);
+            result[0].RowId.ShouldBe(otherSiteUser.RowId);
+        }
+    }
+
+    public class WithoutACurrentUser : UserRepositoryFixture
+    {
+        [Fact]
+        public async Task Should_Refuse_A_Site_Scoped_Lookup_Rather_Than_Throw()
+        {
+            using var context = CreateContextWithoutACurrentUser();
+
+            var result = await context.Repository
+                .GetForCurrentSiteAsync(context.SeededUserId, Xunit.TestContext.Current.CancellationToken);
+
+            result.ShouldBeNull();
+        }
+
+        [Fact]
+        public async Task Should_Return_No_Users_In_The_Current_Site()
+        {
+            using var context = CreateContextWithoutACurrentUser();
+
+            var result = await context.Repository.GetAllForCurrentSiteAsync(Xunit.TestContext.Current.CancellationToken);
+
+            result.ShouldBeEmpty();
+        }
+
+        [Fact]
+        public async Task Should_Return_No_Administrators_In_The_Current_Site()
+        {
+            using var context = CreateContextWithoutACurrentUser();
+
+            var result = await context.Repository.GetEnabledAdminsForCurrentSiteAsync(Xunit.TestContext.Current.CancellationToken);
+
+            result.ShouldBeEmpty();
+        }
+
+        private sealed class NoUserContext : IDisposable
+        {
+            public PotDbContext DbContext { get; }
+            public UserRepository Repository { get; }
+            public Guid SeededUserId { get; }
+
+            public NoUserContext(PotDbContext dbContext, UserRepository repository, Guid seededUserId)
+            {
+                DbContext = dbContext;
+                Repository = repository;
+                SeededUserId = seededUserId;
+            }
+
+            public void Dispose()
+            {
+                DbContext.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Seeds a row that could be reached if a site were resolved, and a context that reports no user at all.
+        /// The migration worker reports an empty identifier, so the site-scoped reads have to refuse rather than
+        /// throw.
+        /// </summary>
+        private NoUserContext CreateContextWithoutACurrentUser()
+        {
+            var dbOptions = new DbContextOptionsBuilder<PotDbContext>()
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .Options;
+
+            var site = EntityFactory.CreateSite();
+            var adminRole = new RoleEntity
+            {
+                RowId = Guid.NewGuid(),
+                Name = Role.Admin
+            };
+
+            var user = EntityFactory.CreateUser(site, "seeded-without-a-context");
+            user.Roles.Add(adminRole);
+
+            var currentUserContext = Substitute.For<ICurrentUserContext>();
+            currentUserContext.UserRowId.Returns(Guid.Empty);
+
+            var dbContext = new PotDbContext(dbOptions, currentUserContext);
+
+            dbContext.Add(site);
+            dbContext.Add(adminRole);
+            dbContext.Add(user);
+            dbContext.SaveChanges();
+
+            var repository = new UserRepository(dbContext, currentUserContext, _logger);
+
+            return new NoUserContext(dbContext, repository, user.RowId);
         }
     }
 
@@ -275,7 +560,7 @@ public class UserRepositoryFixture
         }
     }
 
-    private static TestContext CreateTestContext()
+    private TestContext CreateTestContext()
     {
         var dbOptions = new DbContextOptionsBuilder<PotDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
@@ -304,7 +589,7 @@ public class UserRepositoryFixture
         dbContext.Add(adminRole);
         dbContext.SaveChanges();
 
-        var repository = new UserRepository(dbContext, currentUserContext);
+        var repository = new UserRepository(dbContext, currentUserContext, _logger);
 
         return new TestContext(dbContext, repository, site, otherSite, user, adminRole);
     }
@@ -342,12 +627,12 @@ public class UserRepositoryFixture
         return dbContext;
     }
 
-    private static UserRepository CreateUserRepository(PotDbContext dbContext, UserEntity user)
+    private UserRepository CreateUserRepository(PotDbContext dbContext, UserEntity user)
     {
         var currentUserContext = Substitute.For<ICurrentUserContext>();
 
         currentUserContext.UserRowId.Returns(user.RowId);
 
-        return new UserRepository(dbContext, currentUserContext);
+        return new UserRepository(dbContext, currentUserContext, _logger);
     }
 }

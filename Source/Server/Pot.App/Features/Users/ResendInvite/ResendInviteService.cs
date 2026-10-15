@@ -1,7 +1,6 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pot.App.Concerns.Auth;
 using Pot.App.Errors;
@@ -11,6 +10,7 @@ using Pot.Data.Entities;
 using Pot.Data.Repositories.Users;
 using Pot.EmailSender;
 using Pot.RazorComponents.Models;
+using Pot.Shared.Enumerations;
 
 namespace Pot.App.Features.Users.ResendInvite;
 
@@ -43,8 +43,8 @@ internal sealed class ResendInviteService : IResendInviteService
         using (_userRepository.WithTracking())
         {
             // check if the username is already taken
-            var user = await _userRepository.Users
-                .SingleOrDefaultAsync(user => user.RowId == userRowId, cancellationToken)
+            var user = await _userRepository
+                .GetForCurrentSiteAsync(userRowId, cancellationToken)
                 .ConfigureAwait(false);
 
             if (user is null)
@@ -54,6 +54,20 @@ internal sealed class ResendInviteService : IResendInviteService
                 _logger.LogApiError(userError);
 
                 return EnrichedResult.Fail<bool>(userError);
+            }
+
+            // Only an outstanding invitation can be re-sent; an active user is held back so the caller is not
+            // left depending on a password nobody sent them.
+            if (user.Status != UserStatus.Pending)
+            {
+                var statusError = ApiDetailErrorFactory.CreateUnprocessableEntityError(
+                    nameof(user.Status),
+                    user.Status.Name,
+                    "An invitation can only be re-sent while it is still outstanding.");
+
+                _logger.LogApiError(statusError);
+
+                return EnrichedResult.Fail<bool>(statusError);
             }
 
             // Need to reset the password because we don't know the previous one (as it was sent via email)

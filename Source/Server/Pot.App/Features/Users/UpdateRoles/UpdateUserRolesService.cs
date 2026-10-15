@@ -47,9 +47,8 @@ internal sealed class UpdateUserRolesService : IUpdateUserRolesService
 
             var userId = input.RowId;
 
-            var userToUpdate = await _userRepository.Users
-                .Include(user => user.Roles)
-                .SingleOrDefaultAsync(user => user.RowId == input.RowId, cancellationToken)
+            var userToUpdate = await _userRepository
+                .GetForCurrentSiteWithRolesAsync(input.RowId, cancellationToken)
                 .ConfigureAwait(false);
 
             if (userToUpdate is null)

@@ -10,8 +10,8 @@ public interface IRepositoryBase : IPotScopedDependency
     IDisposable WithTracking();
 
     EntityEntry GetEntry<TEntity>(TEntity entity) where TEntity : EntityBase;
-    ValueTask<TEntity?> GetByPrimaryKeyAsync<TEntity, TKey>(TKey id, CancellationToken cancellationToken) where TEntity : EntityBase;
-    ValueTask<TEntity?> GetByPrimaryKeyAsync<TEntity>(object?[]? values, CancellationToken cancellationToken) where TEntity : EntityBase;
 
-    IQueryable<TEntity> Set<TEntity>() where TEntity : EntityBase;
+    // Deliberately no Set<TEntity>() here: a queryable on the interface would let any caller write a lookup with
+    // no site predicate, which is what the site-scoped repository methods exist to prevent. It stays on
+    // RepositoryBase for repository implementations to use.
 }

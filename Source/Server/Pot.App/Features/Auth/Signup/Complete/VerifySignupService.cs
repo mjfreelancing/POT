@@ -2,7 +2,6 @@
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using EntityFramework.Exceptions.Common;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pot.App.Concerns.Time;
 using Pot.App.Features.Auth.Signup.Complete.Models;
@@ -149,8 +148,9 @@ internal sealed class VerifySignupService : VerificationServiceBase, IVerifySign
         CancellationToken cancellationToken)
     {
         // Check the username does not exist
+        // Cross-tenant by design: a signed-out caller checks that a username is free before a site exists.
         var user = await _userRepository
-            .GetByUsernameOrDefaultAsync(mostRecentOtp.Username, cancellationToken)
+            .GetByUsernameAsync(mostRecentOtp.Username, cancellationToken)
             .ConfigureAwait(false);
 
         if (user is not null)
@@ -197,28 +197,56 @@ internal sealed class VerifySignupService : VerificationServiceBase, IVerifySign
 
     private async Task SendApprovalsToPlatformAdminsAsync(string username, Guid[] platformAdminRowIds, CancellationToken cancellationToken)
     {
-        var userEmail = await _userRepository.Users
-            .Where(user => user.Username == username)
-            .Select(user => user.Email)
-            .SingleAsync(cancellationToken)
+        // Cross-tenant by design: signup completes anonymously, so the requester is resolved by username.
+        var requester = await _userRepository
+            .GetByUsernameAsync(username, cancellationToken)
             .ConfigureAwait(false);
 
-        var platformAdmins = await _userRepository.Users
-            .Where(user => platformAdminRowIds.Contains(user.RowId))
-            .Select(user => new { user.DisplayName, user.Email })
-            .ToListAsync(cancellationToken);
+        var userEmail = requester.WhenNotNull().Email;
+
+        // A signup that notifies nobody still completes, so a notification with no recipients would otherwise be
+        // invisible: the recipients are deployment configuration, and neither a missing entry nor one naming a
+        // user who no longer exists is detected anywhere else. Both ways of reaching nobody are reported.
+        if (platformAdminRowIds.Length == 0)
+        {
+            _logger.LogWarning(
+                "No platform administrators are configured, so nobody was notified that '{Username}' signed up and needs approval. The signup cannot be approved until one is configured.",
+                username);
+
+            return;
+        }
+
+        // Cross-tenant by design: the recipients are the configured platform administrators, in any site.
+        var platformAdmins = await _userRepository
+            .GetByIdsForPlatformNotificationAsync(platformAdminRowIds, cancellationToken)
+            .ConfigureAwait(false);
+
+        var unresolvedRowIds = platformAdminRowIds
+            .Except(platformAdmins.Select(platformAdmin => platformAdmin.RowId))
+            .ToArray();
+
+        if (unresolvedRowIds.Length > 0)
+        {
+            _logger.LogWarning(
+                "Notified {ResolvedCount} of {ConfiguredCount} configured platform administrators that '{Username}' signed up and needs approval. These configured ids do not resolve to a user: {UnresolvedRowIds}",
+                platformAdmins.Count,
+                platformAdminRowIds.Length,
+                username,
+                string.Join(", ", unresolvedRowIds));
+        }
 
         foreach (var platformAdmin in platformAdmins)
         {
-            await _sendEmailChannelWriter.SubmitAsync(EmailType.PendingApproval, new EmailPendingApprovalInfo
+            var approvalInfo = new EmailPendingApprovalInfo
             {
                 // The platform admin is approving this user - use their display name
                 Username = platformAdmin.DisplayName,
                 Email = platformAdmin.Email,
-
                 UserUsername = username,
                 UserEmail = userEmail
-            }, cancellationToken);
+            };
+
+            await _sendEmailChannelWriter.SubmitAsync(EmailType.PendingApproval, approvalInfo, cancellationToken);
         }
     }
 }

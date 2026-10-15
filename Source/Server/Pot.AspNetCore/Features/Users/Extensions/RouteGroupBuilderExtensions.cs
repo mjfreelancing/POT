@@ -1,4 +1,6 @@
-﻿namespace Pot.AspNetCore.Features.Users.Extensions;
+﻿using Pot.AspNetCore.Concerns.Auth;
+
+namespace Pot.AspNetCore.Features.Users.Extensions;
 
 internal static class RouteGroupBuilderExtensions
 {
@@ -19,14 +21,16 @@ internal static class RouteGroupBuilderExtensions
 
     public static RouteGroupBuilder UpdateUser(this RouteGroupBuilder routeGroupBuilder)
     {
-        // There's no RequireAuthorization here since the user needs to be able to change their own display / email details
+        // Any signed-in user may edit their own details; editing anyone else needs user:manage. The route is
+        // never anonymous, and a target outside the caller's site is refused as not-found.
         routeGroupBuilder
             .MapPut(UsersEndpoints.Update, Update.Handler.Invoke)
-            //.RequireAuthorization("user:manage")
+            .RequireAuthorization(AuthorizationPolicies.AuthenticatedUser)
             .WithName(nameof(UpdateUser))
             .WithSummary("Update user details")
             .WithDescription("Updates existing user details")
             .ProducesProblem(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
+﻿using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Pot.App.Features.Accounts.GetAll;
 using Pot.App.Features.Accounts.GetAll.Models;
@@ -137,7 +137,7 @@ public class ExportImportRoundTripFixture : PotFixtureBase
 
         zipStream.Position = 0;
 
-        var reader = new ImportStreamReader(serializer, NullLogger<ImportStreamReader>.Instance);
+        var reader = new ImportStreamReader(serializer, Substitute.For<ILogger<ImportStreamReader>>());
 
         using (reader.Open(zipStream))
         {

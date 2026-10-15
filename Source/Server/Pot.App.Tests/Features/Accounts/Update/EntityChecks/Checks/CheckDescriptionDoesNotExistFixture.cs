@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Pot.App.Errors;
 using Pot.App.Features.Accounts.Update.EntityChecks;
@@ -132,7 +132,7 @@ public class CheckDescriptionDoesNotExistFixture : PotFixtureBase
         dbContext.SaveChanges();
 
         var repository = new AccountRepository(dbContext);
-        var check = new CheckDescriptionDoesNotExist(repository, NullLogger<CheckDescriptionDoesNotExist>.Instance);
+        var check = new CheckDescriptionDoesNotExist(repository, Substitute.For<ILogger<CheckDescriptionDoesNotExist>>());
 
         otherSite = otherSiteEntity;
 

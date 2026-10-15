@@ -48,6 +48,8 @@ internal sealed class BudgetReminderService : IBudgetReminderService
         var currentLocalDate = DateOnly.FromDateTime(currentLocalDateTime.Date);
         var currentLocalHour = currentLocalDateTime.Hour;
 
+        // Cross-tenant by design: the reminder worker scopes the user context per recipient before calling, so
+        // this resolves that recipient rather than a signed-in caller.
         var user = _userRepository.GetCurrentUser(true);
 
         var reminderSettings = await _settingsService

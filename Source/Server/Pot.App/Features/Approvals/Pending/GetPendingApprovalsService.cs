@@ -1,7 +1,6 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Extensions;
 using AllOverIt.Logging.Extensions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pot.App.Features.Approvals.Pending.Mappings;
 using Pot.App.Features.Approvals.Pending.Models;
@@ -28,11 +27,10 @@ internal sealed class GetPendingApprovalsService : IGetPendingApprovalsService
     {
         _logger.LogCall(this);
 
-        var users = await _userRepository.Users
-             .IgnoreQueryFilters()
-             .Where(user => user.Status == Shared.Enumerations.UserStatus.Approval)
-             .OrderBy(user => user.Username)
-             .ToListAsync(cancellationToken);
+        // Cross-tenant by design: the platform-administrator approval surface acts on every site.
+        var users = await _userRepository
+            .GetPendingApprovalsAsync(cancellationToken)
+            .ConfigureAwait(false);
 
         return users.SelectToList(user => user.MapToOutput());
     }

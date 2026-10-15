@@ -23,9 +23,11 @@ internal static class WebApplicationExtensions
         if (app.Environment.IsDevelopment())
         {
             // To require authorization, see : https://learn.microsoft.com/en-us/aspnet/core/fundamentals/openapi/aspnetcore-openapi
-            app.MapOpenApi();
+            // Both are anonymous: the fail-closed fallback policy would otherwise demand a bearer token that the
+            // browser cannot present, and the documentation page would stop loading. This branch is Development only.
+            app.MapOpenApi().AllowAnonymous();
 
-            app.MapScalarApiReference();
+            app.MapScalarApiReference().AllowAnonymous();
         }
 
         return app;

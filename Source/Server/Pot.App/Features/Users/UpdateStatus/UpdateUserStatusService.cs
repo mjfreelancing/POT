@@ -1,7 +1,6 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pot.App.Errors;
 using Pot.App.Extensions;
@@ -38,8 +37,8 @@ internal sealed class UpdateUserStatusService : IUpdateUserStatusService
         {
             var userId = input.RowId;
 
-            var userToUpdate = await _userRepository.Users
-                .SingleOrDefaultAsync(user => user.RowId == input.RowId, cancellationToken)
+            var userToUpdate = await _userRepository
+                .GetForCurrentSiteAsync(input.RowId, cancellationToken)
                 .ConfigureAwait(false);
 
             if (userToUpdate is null)

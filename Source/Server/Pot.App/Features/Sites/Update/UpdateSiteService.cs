@@ -2,7 +2,6 @@
 using AllOverIt.Extensions;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pot.App.Errors;
 using Pot.App.Extensions;
@@ -40,12 +39,21 @@ internal sealed class UpdateSiteService : IUpdateSiteService
         {
             var siteId = input.RowId;
 
-            var siteToUpdate = await _siteRepository.Sites
-                .SingleOrDefaultAsync(user => user.RowId == input.RowId, cancellationToken)
-                .ConfigureAwait(false);
+            // A site is resolved from the caller's context only: supplying another site's id is
+            // indistinguishable from supplying one that does not exist.
+            var currentSite = _siteRepository.GetCurrentSite();
+
+            var siteToUpdate = currentSite.RowId == siteId
+                ? currentSite
+                : null;
 
             if (siteToUpdate is null)
             {
+                _logger.LogWarning(
+                    "Refused an update of site {RequestedSiteRowId}: the caller belongs to site {CallerSiteRowId}",
+                    siteId,
+                    currentSite.RowId);
+
                 var siteNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(siteId, "The site does not exist");
 
                 _logger.LogApiError(siteNotFoundError);

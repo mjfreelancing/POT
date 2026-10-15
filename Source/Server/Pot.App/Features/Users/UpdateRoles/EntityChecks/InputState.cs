@@ -1,4 +1,5 @@
 ﻿using Pot.App.Features.Users.UpdateRoles.Models;
+using Pot.Data.Entities;
 
 namespace Pot.App.Features.Users.UpdateRoles.EntityChecks;
 
@@ -11,6 +12,12 @@ internal sealed class InputState
     /// Gets the requested role change.
     /// </summary>
     public required Input Input { get; init; }
+
+    /// <summary>
+    /// Gets the stored user whose roles are changing, with its current roles loaded. It belongs to the caller's
+    /// site, because the checks run only for a row the site-scoped lookup returned.
+    /// </summary>
+    public required UserEntity Target { get; init; }
 
     // Even though it's the roles being updated, we're using the user's etag for concurrency checks
     /// <summary>

@@ -17,9 +17,8 @@
 	<ItemGroup>
 		<InternalsVisibleTo Include="Pot.App.Tests" />
 		<InternalsVisibleTo Include="Pot.Data.Tests" />
-	</ItemGroup>
 
-	<PropertyGroup>
-		<NoWarn>$(NoWarn);IDE0005</NoWarn>
-	</PropertyGroup>
+		<!--Required for mocking ILogger<T> where T is internal-->
+		<InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+	</ItemGroup>
 </Project>

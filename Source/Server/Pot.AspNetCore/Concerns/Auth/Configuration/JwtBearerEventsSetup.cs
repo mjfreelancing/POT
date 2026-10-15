@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Pot.Data.Repositories.Users;
 using System.IdentityModel.Tokens.Jwt;
@@ -68,10 +67,11 @@ internal sealed class JwtBearerEventsSetup : IConfigureNamedOptions<JwtBearerOpt
                 var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
                 // Check current token version in database
-                var currentVersion = await userRepository.Users
-                    .Where(user => user.RowId == userId)
-                    .Select(user => new { user.TokenVersion, user.Status })
-                    .SingleOrDefaultAsync(context.HttpContext.RequestAborted);
+                // Cross-tenant by design: the token is validated before any user context exists, so its
+                // subject is the only thing known.
+                var currentVersion = await userRepository
+                    .GetSecurityStateAsync(userId, context.HttpContext.RequestAborted)
+                    .ConfigureAwait(false);
 
                 if (currentVersion == null)
                 {

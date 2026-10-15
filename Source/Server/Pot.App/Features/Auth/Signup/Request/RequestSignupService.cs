@@ -39,8 +39,9 @@ internal sealed class RequestSignupService : IRequestSignupService
         // Check if the username is unique - will deal with the unique site name when signup is completed.
         // There's also a slim chance that the username could be taken between this check and the signup
         // completion that will need to be dealt with (user will have to start again).
+        // Cross-tenant by design: a signed-out caller checks that a username is free before a site exists.
         var user = await _userRepository
-            .GetByUsernameOrDefaultAsync(input.Username, cancellationToken)
+            .GetByUsernameAsync(input.Username, cancellationToken)
             .ConfigureAwait(false);
 
         if (user is not null)

@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Pot.App.Calculators;
 using Pot.App.Concerns.Time;
@@ -106,7 +106,7 @@ public class GetAllAccountsServiceFixture : PotFixtureBase
     private GetAllAccountsService CreateService()
     {
         return new GetAllAccountsService(_accountRepository, new AccrualCalculator(), _timeProvider,
-            NullLogger<GetAllAccountsService>.Instance);
+            Substitute.For<ILogger<GetAllAccountsService>>());
     }
 
     /// <summary>Builds the account read model with the accrual facts projected exactly as the query does.</summary>

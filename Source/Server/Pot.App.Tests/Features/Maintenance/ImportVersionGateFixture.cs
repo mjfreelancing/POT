@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
+﻿using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Pot.App.Errors;
 using Pot.App.Features.Maintenance.Import;
@@ -41,7 +41,7 @@ public class ImportVersionGateFixture : PotFixtureBase
             incomesImporter,
             expensesImporter,
             Substitute.For<IPotTransactionFactory>(),
-            NullLogger<ImportDataService>.Instance);
+            Substitute.For<ILogger<ImportDataService>>());
 
         var result = await service.ImportAsync(new MemoryStream(), CancellationToken.None);
 

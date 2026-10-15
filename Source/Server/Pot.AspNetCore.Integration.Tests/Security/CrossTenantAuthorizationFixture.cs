@@ -10,6 +10,7 @@ using Shouldly;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.RegularExpressions;
 
 namespace Pot.AspNetCore.Integration.Tests.Security;
 
@@ -29,6 +30,17 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
     private const string UpdatedDisplayName = "Cross Tenant Update";
     private const string UpdatedEmail = "cross-tenant@example.com";
     private const string UpdatedSiteName = "Cross Tenant Site";
+
+    private sealed class ValidationProblem
+    {
+        public ValidationError[] Errors { get; set; } = [];
+    }
+
+    private sealed class ValidationError
+    {
+        public string? PropertyName { get; set; }
+        public string? ErrorMessage { get; set; }
+    }
 
     [Fact]
     public async Task Should_Reject_An_Anonymous_Update_Of_A_Users_Details()
@@ -367,9 +379,16 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
         foreignResponse.StatusCode.ShouldBe(HttpStatusCode.NotFound);
         foreignResponse.Content.Headers.ContentType.ShouldBe(missingResponse.Content.Headers.ContentType);
 
-        var foreignBody = await foreignResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        // Each refusal echoes the id the caller supplied, which the caller already knows, and a problem
+        // response also carries a per-request identifier. Both are normalised out so the comparison is about
+        // the refusal itself: anything left that differs would tell a caller which of the two it was.
+        var foreignBody = NormaliseOpaqueIdentifiers(await foreignResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
+        var missingBody = NormaliseOpaqueIdentifiers(await missingResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
 
-        foreignBody.ShouldNotContain(target.UserRowId.ToString(), Case.Insensitive);
+        foreignBody.ShouldBe(
+            missingBody,
+            "a foreign target and a missing target must be reported identically");
+
         foreignBody.ShouldNotContain(targetBefore.DisplayName, Case.Insensitive);
         foreignBody.ShouldNotContain(targetBefore.Email, Case.Insensitive);
     }
@@ -458,6 +477,41 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
         response.StatusCode.ShouldBe(
             HttpStatusCode.UnprocessableEntity,
             "a configured platform administrator must not be disabled");
+
+        var callerAfter = await GetUserAsync(caller.UserRowId);
+        callerAfter.Status.Name.ShouldBe(callerBefore.Status.Name);
+    }
+
+    [Fact]
+    public async Task Should_Report_The_Platform_Administrator_Refusal_When_Both_Protected_Identity_Rules_Apply()
+    {
+        // The caller is the site's only enabled administrator and is also a configured platform administrator,
+        // so both rules refuse this change. The platform-administrator refusal is the one that has to be
+        // reported: unlike the last-enabled-Admin rule, it has no in-app remedy.
+        var caller = await CreateAdminUserAsync("both-rules", "Both Rules");
+
+        var tokens = await LoginAsync(caller);
+
+        using var factory = new PlatformAdminApiWebApplicationFactory(DbHost, DbPort, caller.UserRowId);
+        using var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokens.AccessToken);
+
+        var callerBefore = await GetUserAsync(caller.UserRowId);
+
+        using var content = JsonContent.Create(new { Etag = callerBefore.Etag, Status = nameof(UserStatus.Disabled) });
+        using var response = await client.PutAsync(
+            $"/api/users/{caller.UserRowId}/status",
+            content,
+            TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(
+            HttpStatusCode.UnprocessableEntity,
+            "a site's only enabled administrator must not be disabled");
+
+        var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
+
+        problem!.Errors.Length.ShouldBe(1);
+        problem.Errors[0].ErrorMessage.ShouldBe("A platform administrator cannot be disabled.");
 
         var callerAfter = await GetUserAsync(caller.UserRowId);
         callerAfter.Status.Name.ShouldBe(callerBefore.Status.Name);
@@ -601,6 +655,23 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
             HttpStatusCode.OK,
             "a user:manage holder may re-send an invitation in their own site");
     }
+
+    private static string NormaliseOpaqueIdentifiers(string body)
+    {
+        var withoutGuids = OpaqueIdentifierPattern.Replace(body, "{identifier}");
+
+        return PerRequestIdentifierPattern.Replace(withoutGuids, "$1{identifier}");
+    }
+
+    private static readonly Regex OpaqueIdentifierPattern = new(
+        "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+        RegexOptions.IgnoreCase);
+
+    // A trace id and a correlation id are generated per request, so their values say nothing about the target;
+    // every other member of the two bodies has to match.
+    private static readonly Regex PerRequestIdentifierPattern = new(
+        "(\"(?:traceId|correlationId)\":\")[^\"]*",
+        RegexOptions.IgnoreCase);
 
     private static HttpRequestMessage CreateUserDetailsRequest(Guid userRowId, long etag)
     {

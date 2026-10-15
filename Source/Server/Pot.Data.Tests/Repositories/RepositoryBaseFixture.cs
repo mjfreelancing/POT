@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
@@ -112,41 +112,6 @@ public class RepositoryBaseFixture : PotFixtureBase
 
             entry.Entity.ShouldBe(context.Account);
             entry.State.ShouldBe(EntityState.Detached);
-        }
-    }
-
-    public class GetByPrimaryKeyAsync : RepositoryBaseFixture
-    {
-        [Fact]
-        public async Task Should_Return_The_Entity_When_The_Primary_Key_Exists()
-        {
-            using var context = CreateTestContext();
-
-            var result = await context.Repository.GetByPrimaryKeyAsync<AccountEntity, int>(context.Account.Id, Xunit.TestContext.Current.CancellationToken);
-
-            result.ShouldNotBeNull();
-            result.RowId.ShouldBe(context.Account.RowId);
-        }
-
-        [Fact]
-        public async Task Should_Return_Null_When_The_Primary_Key_Does_Not_Exist()
-        {
-            using var context = CreateTestContext();
-
-            var result = await context.Repository.GetByPrimaryKeyAsync<AccountEntity, int>(int.MaxValue, Xunit.TestContext.Current.CancellationToken);
-
-            result.ShouldBeNull();
-        }
-
-        [Fact]
-        public async Task Should_Return_The_Entity_When_The_Primary_Key_Values_Exist()
-        {
-            using var context = CreateTestContext();
-
-            var result = await context.Repository.GetByPrimaryKeyAsync<AccountEntity>([context.Account.Id], Xunit.TestContext.Current.CancellationToken);
-
-            result.ShouldNotBeNull();
-            result.RowId.ShouldBe(context.Account.RowId);
         }
     }
 

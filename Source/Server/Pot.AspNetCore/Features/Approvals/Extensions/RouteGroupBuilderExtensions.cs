@@ -1,4 +1,6 @@
-﻿namespace Pot.AspNetCore.Features.Approvals.Extensions;
+﻿using Pot.AspNetCore.Concerns.Auth;
+
+namespace Pot.AspNetCore.Features.Approvals.Extensions;
 
 internal static class RouteGroupBuilderExtensions
 {
@@ -6,7 +8,7 @@ internal static class RouteGroupBuilderExtensions
     {
         routeGroupBuilder
             .MapGet(ApprovalsEndpoints.PendingApprovals, Pending.Handler.Invoke)
-            .RequireAuthorization("platform:manage")
+            .RequireAuthorization(AuthorizationPolicies.PlatformManage)
             .WithName(nameof(GetPendingApprovals))
             .WithSummary("Get all pending approvals")
             .WithDescription("Get all pending approvals")
@@ -21,7 +23,7 @@ internal static class RouteGroupBuilderExtensions
     {
         routeGroupBuilder
             .MapPut(ApprovalsEndpoints.UpdateStatus, UpdateStatus.Handler.Invoke)
-            .RequireAuthorization("platform:manage")
+            .RequireAuthorization(AuthorizationPolicies.PlatformManage)
             .WithName(nameof(UpdateUserApproval))
             .WithSummary("Update a user pending approval")
             .WithDescription("Update a user pending approval")

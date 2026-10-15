@@ -73,15 +73,13 @@ public sealed partial class EmailBudgetReminderSettings
     /// </summary>
     /// <param name="keyName">The setting key name (e.g., "Enabled", "ReminderDays", "LocalHourTrigger")</param>
     /// <param name="value">The string value to validate</param>
-    /// <returns><see cref="ApiDetailError"/> if the value is invalid for the specified key, <see langword="null"/> otherwise</returns>    /// 
+    /// <returns><see cref="ApiDetailError"/> if the value is invalid for the specified key, <see langword="null"/> otherwise</returns>
     /// <exception cref="UnreachableException">Thrown when keyName is not a recognized setting key for this category</exception>
     /// <remarks>
-    /// This method is called during:
-    /// - API requests (UpdateSettingService) to validate user-provided values before database persistence
-    /// - Application startup to validate that default setting values are correctly defined
+    /// This method is called during API requests (UpsertSettingService) to validate user-provided values before database persistence
     /// 
     /// The validation is invoked through the following call chain:
-    /// UpdateSettingService → SettingValueValidators[category] → ValidateSettingValue&lt;T&gt; → this method
+    /// UpsertSettingService → SettingValueValidators[category] → ValidateSettingValue&lt;T&gt; → this method
     /// </remarks>
     public static ApiDetailError? ValidateValue(string keyName, string value)
     {

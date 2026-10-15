@@ -14,11 +14,9 @@ internal abstract class RepositoryBase : IRepositoryBase
         _dbContext = dbContext.WhenNotNull();
     }
 
-    public IDisposable WithTracking() => _dbContext.WithAutoTracking();
-
-    public IQueryable<TEntity> Set<TEntity>() where TEntity : EntityBase
+    public IDisposable WithTracking()
     {
-        return _dbContext.Set<TEntity>();
+        return _dbContext.WithAutoTracking();
     }
 
     public EntityEntry GetEntry<TEntity>(TEntity entity) where TEntity : EntityBase
@@ -26,13 +24,18 @@ internal abstract class RepositoryBase : IRepositoryBase
         return _dbContext.Entry(entity);
     }
 
-    public ValueTask<TEntity?> GetByPrimaryKeyAsync<TEntity, TKey>(TKey id, CancellationToken cancellationToken) where TEntity : EntityBase
+    /// <summary>
+    /// A queryable for an entity type, for use inside a repository implementation.
+    /// </summary>
+    /// <remarks>
+    /// Kept off <see cref="IRepositoryBase" /> on purpose: a queryable on the interface would let any caller write
+    /// a lookup with no site predicate, which is what the site-scoped repository methods exist to prevent. A
+    /// caller outside this assembly resolves through an intent-named method instead.
+    /// </remarks>
+    /// <typeparam name="TEntity">The entity type.</typeparam>
+    /// <returns>A queryable for the entity type.</returns>
+    public IQueryable<TEntity> Set<TEntity>() where TEntity : EntityBase
     {
-        return GetByPrimaryKeyAsync<TEntity>([id], cancellationToken);
-    }
-
-    public ValueTask<TEntity?> GetByPrimaryKeyAsync<TEntity>(object?[]? values, CancellationToken cancellationToken) where TEntity : EntityBase
-    {
-        return _dbContext.Set<TEntity>().FindAsync(values, cancellationToken);
+        return _dbContext.Set<TEntity>();
     }
 }

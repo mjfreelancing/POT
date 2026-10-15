@@ -53,18 +53,20 @@ public class Program
 
         // Liveness: always Healthy while the app is running — no checks are executed.
         // Used by production monitoring (called every 10 s) so no DB query is incurred.
+        // Anonymous: polled by infrastructure that holds no credentials.
         app.MapHealthChecks("/_health", new HealthCheckOptions
         {
             Predicate = _ => false,
-        });
+        }).AllowAnonymous();
 
         // Readiness: runs checks tagged "ready" to confirm the schema is fully migrated.
         // Used by E2E tests to gate on DB and schema availability.
         // Background workers gate using IHealthCheckService directly (by name), not via this endpoint.
+        // Anonymous: polled by infrastructure and by the E2E gate before a session can exist.
         app.MapHealthChecks("/_health/ready", new HealthCheckOptions
         {
             Predicate = registration => registration.Tags.Contains("ready"),
-        });
+        }).AllowAnonymous();
 
         // REQUIRED ORDER:
         // 1. UseCors() must run before authentication/authorization so CORS headers are included on all responses (including failures).

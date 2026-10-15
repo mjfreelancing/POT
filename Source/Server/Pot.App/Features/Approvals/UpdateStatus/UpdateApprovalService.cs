@@ -1,7 +1,6 @@
 ﻿using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pot.App.Errors;
 using Pot.App.Extensions;
@@ -44,9 +43,9 @@ internal sealed class UpdateApprovalService : IUpdateApprovalService
         {
             var userId = input.RowId;
 
-            var userToUpdate = await _userRepository.Users
-                .IgnoreQueryFilters()
-                .SingleOrDefaultAsync(user => user.RowId == input.RowId, cancellationToken)
+            // Cross-tenant by design: a platform administrator approves a signup in any site.
+            var userToUpdate = await _userRepository
+                .GetByIdForApprovalAsync(input.RowId, cancellationToken)
                 .ConfigureAwait(false);
 
             if (userToUpdate is null)

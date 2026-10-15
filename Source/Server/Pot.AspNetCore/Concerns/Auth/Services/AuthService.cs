@@ -4,15 +4,14 @@ using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using AllOverIt.Patterns.Specification;
 using AllOverIt.Patterns.Specification.Extensions;
-using Microsoft.EntityFrameworkCore;
 using Pot.App.Concerns.Auth;
 using Pot.App.Concerns.Time;
 using Pot.App.Errors;
+using Pot.App.Extensions;
 using Pot.AspNetCore.Concerns.Auth.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Users;
 using Pot.Shared.Enumerations;
-using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 
@@ -46,6 +45,7 @@ namespace Pot.AspNetCore.Concerns.Auth.Services;
 //   2) Resolve the active AuthSession for this specific refresh token.
 //   3) Revoke only that session row; TokenVersion is NOT incremented so other devices are unaffected.
 // - ChangePasswordAsync:
+//   Resolve the user for the caller's site (a missing or foreign row fails the result).
 //   1) Validate current password.
 //   2) Persist new password hash.
 //   3) Revoke all sessions for this user.
@@ -136,8 +136,9 @@ internal sealed class AuthService : IAuthService
         using (_userRepository.WithTracking())
         {
             // 1) Resolve the user and validate credentials/state.
-            var user = await _userRepository.Users
-                .SingleOrDefaultAsync(user => user.Username == username, cancellationToken)
+            // Cross-tenant by design: sign-in resolves a username before a site is known.
+            var user = await _userRepository
+                .GetByUsernameAsync(username, cancellationToken)
                 .ConfigureAwait(false);
 
             if (user is null)
@@ -285,11 +286,18 @@ internal sealed class AuthService : IAuthService
         using (_userRepository.WithTracking())
         {
             // 1) Load user and verify current password.
-            var user = await _userRepository.Users
-                .SingleOrDefaultAsync(user => user.RowId == userId, cancellationToken)
+            var user = await _userRepository
+                .GetForCurrentSiteAsync(userId, cancellationToken)
                 .ConfigureAwait(false);
 
-            Throw<UnreachableException>.WhenNull(user, "The user should exist");
+            if (user is null)
+            {
+                var userNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(userId, "The user does not exist");
+
+                _logger.LogApiError(userNotFoundError);
+
+                return EnrichedResult.Fail<bool>(userNotFoundError);
+            }
 
             var isValidHash = _passwordHasher.IsValidPasswordHash(user, currentPassword, user.PasswordHash);
 

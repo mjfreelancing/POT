@@ -65,8 +65,10 @@ internal sealed class InviteUserService : IInviteUserService
         using (_userRepository.WithTracking())
         {
             // check if the username is already taken
+            // Cross-tenant by design: usernames are unique across every site, so the free name is checked
+            // without a site scope.
             var user = await _userRepository
-                .GetByUsernameOrDefaultAsync(input.Username, cancellationToken)
+                .GetByUsernameAsync(input.Username, cancellationToken)
                 .ConfigureAwait(false);
 
             if (user is not null)

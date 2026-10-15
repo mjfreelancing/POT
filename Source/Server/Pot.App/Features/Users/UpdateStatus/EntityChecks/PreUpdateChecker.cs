@@ -30,7 +30,9 @@ internal sealed class PreUpdateChecker : ChainOfResponsibilityAsyncComposer<Inpu
         var state = new InputState
         {
             Input = input,
-            UserEtag = userToUpdate.Etag
+            Target = userToUpdate,
+            UserEtag = userToUpdate.Etag,
+            PlatformAdminRowIds = input.PlatformAdminRowIds
         };
 
         return HandleAsync(state, cancellationToken);

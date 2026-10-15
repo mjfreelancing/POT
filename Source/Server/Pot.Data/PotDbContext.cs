@@ -76,7 +76,15 @@ public sealed class PotDbContext : DbContextBase
             .HasQueryFilter(setting => setting.Site.Id == GetCurrentUserSiteId());
     }
 
-    private int GetCurrentUserSiteId()
+    /// <summary>
+    /// The current user's site, resolved once per context.
+    /// </summary>
+    /// <remarks>
+    /// Shared by the entity query filters and by the site-scoped repository reads, so the two cannot disagree
+    /// about which site the caller belongs to, and the site costs one query per request rather than one per call.
+    /// </remarks>
+    /// <returns>The current user's site identifier.</returns>
+    internal int GetCurrentUserSiteId()
     {
         _currentUserSiteId ??= Set<UserEntity>()
             .Include(user => user.Site)

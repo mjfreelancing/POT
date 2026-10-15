@@ -47,13 +47,15 @@ public class LogoutFixture : IntegrationAuthFixtureBase
     */
 
     [Fact]
-    public async Task Should_Return_MethodNotAllowed_When_Getting_Logout_Endpoint()
+    public async Task Should_Return_Unauthorized_When_Getting_The_Logout_Endpoint_Anonymously()
     {
         using var client = CreateClient();
 
         var actual = await client.GetAsync("/api/auth/logout", TestContext.Current.CancellationToken);
 
-        actual.StatusCode.ShouldBe(HttpStatusCode.MethodNotAllowed);
+        // The fail-closed fallback policy answers before routing can report the method mismatch, so an
+        // anonymous caller sees 401 rather than 405.
+        actual.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact]

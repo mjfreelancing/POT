@@ -31,13 +31,15 @@ public class StatusFixture : IntegrationAuthFixtureBase
     }
 
     [Fact]
-    public async Task Should_Return_MethodNotAllowed_When_Posting_Status()
+    public async Task Should_Return_Unauthorized_When_Posting_Status_Anonymously()
     {
         using var client = CreateClient();
 
         var response = await client.PostAsync($"{StatusPath}?AccountRowIds={Guid.NewGuid()}", null, TestContext.Current.CancellationToken);
 
-        response.StatusCode.ShouldBe(HttpStatusCode.MethodNotAllowed);
+        // The fail-closed fallback policy answers before routing can report the method mismatch, so an
+        // anonymous caller sees 401 rather than 405.
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact]

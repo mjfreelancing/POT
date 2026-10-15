@@ -8,8 +8,6 @@ internal sealed class SiteRepository : PersistableRepository, IPersistableSiteRe
 {
     private readonly IUserRepository _userRepository;
 
-    public IQueryable<SiteEntity> Sites => Set<SiteEntity>();
-
     public SiteRepository(PotDbContext dbContext, IUserRepository userRepository)
         : base(dbContext)
     {
