@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<ItemGroup>
-		<PackageReference Include="AllOverIt.Cryptography" Version="9.4.0" />
-		<PackageReference Include="AllOverIt.Csv" Version="9.4.0" />
-		<PackageReference Include="AllOverIt.Logging" Version="9.4.0" />
-		<PackageReference Include="AllOverIt.Serialization.Binary" Version="9.4.0" />
-		<PackageReference Include="AllOverIt.Validation" Version="9.4.0" />
-		<PackageReference Include="TimeZoneConverter" Version="7.2.0" />
+		<PackageReference Include="AllOverIt.Cryptography" />
+		<PackageReference Include="AllOverIt.Csv" />
+		<PackageReference Include="AllOverIt.Logging" />
+		<PackageReference Include="AllOverIt.Serialization.Binary" />
+		<PackageReference Include="AllOverIt.Validation" />
+		<PackageReference Include="TimeZoneConverter" />
 	</ItemGroup>
 
 	<ItemGroup>

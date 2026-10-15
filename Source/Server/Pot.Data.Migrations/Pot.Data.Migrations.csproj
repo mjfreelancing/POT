@@ -13,16 +13,16 @@
 	</ItemGroup>
 	
 	<ItemGroup>
-		<PackageReference Include="AllOverIt.EntityFrameworkCore.Diagrams" Version="9.4.0" />
-		<PackageReference Include="AllOverIt.Logging" Version="9.4.0" />
-		<PackageReference Include="AllOverIt.EntityFrameworkCore" Version="9.4.0" />
-		<PackageReference Include="AllOverIt.GenericHost" Version="9.4.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
+		<PackageReference Include="AllOverIt.EntityFrameworkCore.Diagrams" />
+		<PackageReference Include="AllOverIt.Logging" />
+		<PackageReference Include="AllOverIt.EntityFrameworkCore" />
+		<PackageReference Include="AllOverIt.GenericHost" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Polly" Version="8.8.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.12">
+		<PackageReference Include="Polly" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
