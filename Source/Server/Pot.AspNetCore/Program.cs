@@ -24,8 +24,6 @@ public class Program
 
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddCors();
-
         builder
             .AddPotHealthChecks()
             .AddExceptionHandlers()
