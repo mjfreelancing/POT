@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.App.Features.Settings.Upsert.Models;
 using Pot.AspNetCore.Models;
 

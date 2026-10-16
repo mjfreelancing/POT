@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
 namespace Pot.AspNetCore.Features.Auth.PasswordReset.Send;
 

@@ -1,4 +1,4 @@
-﻿using AllOverIt.Zip;
+using AllOverIt.Zip;
 using Pot.App.Concerns.Zip;
 using Pot.TestUtils;
 using Shouldly;

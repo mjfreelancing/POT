@@ -1,4 +1,4 @@
-﻿using AllOverIt.Patterns.Result;
+using AllOverIt.Patterns.Result;
 
 namespace Pot.App.Errors;
 

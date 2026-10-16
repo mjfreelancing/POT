@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Features.Auth.PasswordReset.Request.Models;
+namespace Pot.App.Features.Auth.PasswordReset.Request.Models;
 
 public sealed class Input
 {

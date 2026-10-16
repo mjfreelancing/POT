@@ -1,4 +1,4 @@
-﻿using Pot.App.Calculators;
+using Pot.App.Calculators;
 using Pot.Data.Entities;
 using Pot.Shared.Enumerations;
 using Pot.TestUtils;

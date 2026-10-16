@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Features.Accounts;
+namespace Pot.AspNetCore.Features.Accounts;
 
 internal static class AccountsEndpoints
 {

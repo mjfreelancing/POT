@@ -1,4 +1,4 @@
-﻿using CsvHelper;
+using CsvHelper;
 using CsvHelper.Configuration;
 using NSubstitute;
 using Pot.App.Concerns.Csv;

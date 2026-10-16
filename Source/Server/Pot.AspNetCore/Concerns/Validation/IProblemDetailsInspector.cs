@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Concerns.Validation;
+namespace Pot.AspNetCore.Concerns.Validation;
 
 /// <summary>Inspects validation results and represents failures as problem details.</summary>
 public interface IProblemDetailsInspector

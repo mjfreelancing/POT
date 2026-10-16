@@ -1,4 +1,4 @@
-﻿using Pot.App.Features.Settings.Upsert.Models;
+using Pot.App.Features.Settings.Upsert.Models;
 using Pot.Data.Entities;
 
 namespace Pot.App.Features.Settings.Upsert.EntityChecks;

@@ -1,4 +1,4 @@
-﻿using AllOverIt.Assertion;
+using AllOverIt.Assertion;
 using AllOverIt.Validation;
 using FluentValidation.Results;
 using Pot.AspNetCore.Concerns.ProblemDetails;

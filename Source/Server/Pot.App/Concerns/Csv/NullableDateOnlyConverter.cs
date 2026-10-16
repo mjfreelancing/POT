@@ -1,4 +1,4 @@
-﻿using AllOverIt.Extensions;
+using AllOverIt.Extensions;
 using CsvHelper;
 using CsvHelper.Configuration;
 using CsvHelper.TypeConversion;

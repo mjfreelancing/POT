@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Features.Auth.Signup.Request.Models;
+namespace Pot.App.Features.Auth.Signup.Request.Models;
 
 public sealed class Input
 {

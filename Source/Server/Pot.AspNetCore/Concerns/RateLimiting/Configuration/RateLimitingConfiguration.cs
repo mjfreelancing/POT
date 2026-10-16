@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Concerns.RateLimiting.Configuration;
+namespace Pot.AspNetCore.Concerns.RateLimiting.Configuration;
 
 /// <summary>
 /// Holds rate limiting configuration for all request types. Bound from the <c>RateLimiting</c>

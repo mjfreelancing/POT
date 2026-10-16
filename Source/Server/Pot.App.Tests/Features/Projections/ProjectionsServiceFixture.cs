@@ -1,4 +1,4 @@
-﻿using AllOverIt.Extensions;
+using AllOverIt.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

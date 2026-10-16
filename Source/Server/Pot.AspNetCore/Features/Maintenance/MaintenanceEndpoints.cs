@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Features.Maintenance;
+namespace Pot.AspNetCore.Features.Maintenance;
 
 internal static class MaintenanceEndpoints
 {

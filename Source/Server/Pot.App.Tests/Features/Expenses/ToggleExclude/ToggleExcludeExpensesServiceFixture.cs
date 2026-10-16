@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Pot.App.Features.Expenses.ToggleExclude;
 using Pot.App.Features.Expenses.ToggleExclude.Models;

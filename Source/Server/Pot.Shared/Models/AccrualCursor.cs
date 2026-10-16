@@ -1,4 +1,4 @@
-﻿namespace Pot.Shared.Models;
+namespace Pot.Shared.Models;
 
 /// <summary>
 /// The schedule position an expense is measured against.

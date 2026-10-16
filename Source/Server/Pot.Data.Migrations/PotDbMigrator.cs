@@ -1,4 +1,4 @@
-﻿using AllOverIt.EntityFrameworkCore.Migrator;
+using AllOverIt.EntityFrameworkCore.Migrator;
 using Microsoft.EntityFrameworkCore;
 
 namespace Pot.Data.Migrations;

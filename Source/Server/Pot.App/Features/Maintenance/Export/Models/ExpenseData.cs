@@ -1,4 +1,4 @@
-﻿using Pot.Shared.Enumerations;
+using Pot.Shared.Enumerations;
 
 namespace Pot.App.Features.Maintenance.Export.Models;
 

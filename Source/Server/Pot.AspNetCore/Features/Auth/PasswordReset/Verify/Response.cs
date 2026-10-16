@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.App.Features.Auth.PasswordReset.Verify.Models;
 
 namespace Pot.AspNetCore.Features.Auth.PasswordReset.Verify;

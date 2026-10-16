@@ -1,4 +1,4 @@
-﻿using Pot.App.Features.Expenses.Get.Models;
+using Pot.App.Features.Expenses.Get.Models;
 using Pot.Data.Entities;
 using Pot.Shared.Models;
 

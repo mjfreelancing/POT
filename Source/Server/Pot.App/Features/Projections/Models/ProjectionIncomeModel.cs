@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Features.Projections.Models;
+namespace Pot.App.Features.Projections.Models;
 
 /// <summary>
 /// An income falling due on a forecast day.

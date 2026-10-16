@@ -1,4 +1,4 @@
-﻿using Pot.Data.Entities;
+using Pot.Data.Entities;
 using Pot.Data.Repositories.Users.Dtos;
 
 namespace Pot.Data.Repositories.Users;

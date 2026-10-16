@@ -1,4 +1,4 @@
-﻿using AllOverIt.Assertion;
+using AllOverIt.Assertion;
 using AllOverIt.Extensions;
 using System.Diagnostics.CodeAnalysis;
 

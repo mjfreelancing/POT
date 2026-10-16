@@ -1,4 +1,4 @@
-﻿using Pot.App.Errors;
+using Pot.App.Errors;
 using Pot.App.Features.Users.Update.Models;
 using Pot.Data.Entities;
 using Pot.Shared.DependencyInjection;

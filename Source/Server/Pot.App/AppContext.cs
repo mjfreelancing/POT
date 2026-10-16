@@ -1,4 +1,4 @@
-﻿using TimeZoneConverter;
+using TimeZoneConverter;
 
 namespace Pot.App;
 

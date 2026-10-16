@@ -1,4 +1,4 @@
-﻿using AllOverIt.Extensions;
+using AllOverIt.Extensions;
 using AllOverIt.Logging.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;

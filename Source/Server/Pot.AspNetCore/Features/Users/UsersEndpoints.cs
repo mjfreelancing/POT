@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Features.Users;
+namespace Pot.AspNetCore.Features.Users;
 
 internal static class UsersEndpoints
 {

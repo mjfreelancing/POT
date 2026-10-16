@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Features.Users.UpdateRoles.Models;
+namespace Pot.App.Features.Users.UpdateRoles.Models;
 
 public sealed class Input
 {

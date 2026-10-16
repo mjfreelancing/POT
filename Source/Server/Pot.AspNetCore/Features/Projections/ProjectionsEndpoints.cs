@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Features.Projections;
+namespace Pot.AspNetCore.Features.Projections;
 
 internal static class ProjectionsEndpoints
 {

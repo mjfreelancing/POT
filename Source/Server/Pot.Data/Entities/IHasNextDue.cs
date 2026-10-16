@@ -1,4 +1,4 @@
-﻿namespace Pot.Data.Entities;
+namespace Pot.Data.Entities;
 
 public interface IHasNextDue
 {

@@ -1,4 +1,4 @@
-﻿namespace Pot.Data.Repositories.Users.Dtos;
+namespace Pot.Data.Repositories.Users.Dtos;
 
 public sealed class GetAllUserInfo
 {

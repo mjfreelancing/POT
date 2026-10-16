@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using Pot.Shared;
 using Pot.TestUtils;

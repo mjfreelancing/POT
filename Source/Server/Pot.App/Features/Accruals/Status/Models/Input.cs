@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Features.Accruals.Status.Models;
+namespace Pot.App.Features.Accruals.Status.Models;
 
 public sealed class Input
 {

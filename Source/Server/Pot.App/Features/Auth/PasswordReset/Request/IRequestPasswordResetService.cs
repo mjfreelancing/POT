@@ -1,4 +1,4 @@
-﻿using Pot.App.Features.Auth.PasswordReset.Request.Models;
+using Pot.App.Features.Auth.PasswordReset.Request.Models;
 using Pot.Shared.DependencyInjection;
 
 namespace Pot.App.Features.Auth.PasswordReset.Request;

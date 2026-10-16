@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Features.Roles;
+namespace Pot.AspNetCore.Features.Roles;
 
 internal static class RolesEndpoints
 {

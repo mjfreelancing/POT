@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Features.Accruals;
+namespace Pot.AspNetCore.Features.Accruals;
 
 internal static class AccrualsEndpoints
 {

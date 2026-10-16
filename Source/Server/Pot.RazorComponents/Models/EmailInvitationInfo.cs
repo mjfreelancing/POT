@@ -1,4 +1,4 @@
-﻿namespace Pot.RazorComponents.Models;
+namespace Pot.RazorComponents.Models;
 
 public sealed class EmailInvitationInfo : EmailConfigBase
 {

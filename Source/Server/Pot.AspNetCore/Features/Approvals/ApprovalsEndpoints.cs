@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Features.Approvals;
+namespace Pot.AspNetCore.Features.Approvals;
 
 internal static class ApprovalsEndpoints
 {

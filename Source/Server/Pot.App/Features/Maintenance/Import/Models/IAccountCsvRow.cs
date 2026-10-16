@@ -1,4 +1,4 @@
-﻿
+
 namespace Pot.App.Features.Maintenance.Import.Models;
 
 /// <summary>

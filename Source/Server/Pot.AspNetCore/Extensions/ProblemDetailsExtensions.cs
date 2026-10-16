@@ -1,4 +1,4 @@
-﻿using Pot.AspNetCore.Concerns.ProblemDetails;
+using Pot.AspNetCore.Concerns.ProblemDetails;
 
 namespace Pot.AspNetCore.Extensions;
 

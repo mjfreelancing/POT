@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Time.Testing;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using Pot.App.Concerns.Time;
 using Pot.App.Concerns.Time.Extensions;

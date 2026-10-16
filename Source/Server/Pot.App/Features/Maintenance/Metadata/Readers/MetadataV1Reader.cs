@@ -1,4 +1,4 @@
-﻿using AllOverIt.Serialization.Binary.Readers;
+using AllOverIt.Serialization.Binary.Readers;
 using Pot.App.Features.Maintenance.Metadata.Models;
 using Pot.App.Features.Maintenance.Metadata.Serializer;
 

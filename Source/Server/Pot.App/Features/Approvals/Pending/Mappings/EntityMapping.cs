@@ -1,4 +1,4 @@
-﻿using Pot.App.Features.Approvals.Pending.Models;
+using Pot.App.Features.Approvals.Pending.Models;
 using Pot.Data.Entities;
 
 namespace Pot.App.Features.Approvals.Pending.Mappings;

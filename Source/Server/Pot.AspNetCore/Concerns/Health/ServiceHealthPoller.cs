@@ -1,4 +1,4 @@
-﻿using AllOverIt.Assertion;
+using AllOverIt.Assertion;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Pot.AspNetCore.Concerns.Health;

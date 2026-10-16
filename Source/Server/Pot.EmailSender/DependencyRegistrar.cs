@@ -1,4 +1,4 @@
-﻿using AllOverIt.DependencyInjection;
+using AllOverIt.DependencyInjection;
 
 namespace Pot.EmailSender;
 

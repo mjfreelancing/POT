@@ -1,4 +1,4 @@
-﻿using AllOverIt.Assertion;
+using AllOverIt.Assertion;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.App.Features.Accounts.Get.Models;
 using Pot.AspNetCore.Models;

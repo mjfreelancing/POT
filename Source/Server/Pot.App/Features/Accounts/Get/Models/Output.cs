@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Features.Accounts.Get.Models;
+namespace Pot.App.Features.Accounts.Get.Models;
 
 public sealed class Output
 {

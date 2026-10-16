@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Concerns.Auth;
+namespace Pot.AspNetCore.Concerns.Auth;
 
 internal static class PotClaimTypes
 {

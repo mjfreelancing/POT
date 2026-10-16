@@ -1,4 +1,4 @@
-﻿namespace Pot.EmailSender;
+namespace Pot.EmailSender;
 
 public interface ISendEmailChannelReader
 {

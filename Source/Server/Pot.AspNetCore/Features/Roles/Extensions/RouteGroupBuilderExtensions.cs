@@ -1,4 +1,4 @@
-﻿
+
 namespace Pot.AspNetCore.Features.Roles.Extensions;
 
 internal static class RouteGroupBuilderExtensions

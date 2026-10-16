@@ -1,4 +1,4 @@
-﻿using AllOverIt.Patterns.Specification;
+using AllOverIt.Patterns.Specification;
 using Pot.Data.Entities;
 
 namespace Pot.Data.Specifications;

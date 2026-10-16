@@ -1,4 +1,4 @@
-﻿using AllOverIt.Validation.Extensions;
+using AllOverIt.Validation.Extensions;
 using FluentValidation.Results;
 using Pot.App.Errors;
 using Pot.AspNetCore.Concerns.Validation;

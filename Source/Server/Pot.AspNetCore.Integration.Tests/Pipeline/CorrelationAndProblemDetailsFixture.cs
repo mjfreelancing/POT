@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Shouldly;
 using System.Net;
 using System.Net.Http.Json;

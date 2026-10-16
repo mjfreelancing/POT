@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Concerns.Cors.Configuration;
+namespace Pot.AspNetCore.Concerns.Cors.Configuration;
 
 /// <summary>Provides the configured origins allowed by the cross-origin resource sharing policy.</summary>
 public sealed class CorsConfiguration

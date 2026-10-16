@@ -1,4 +1,4 @@
-﻿using AllOverIt.Patterns.Enumeration;
+using AllOverIt.Patterns.Enumeration;
 using System.Runtime.CompilerServices;
 
 namespace Pot.App.Features.Auth.Signup.Complete.Models;

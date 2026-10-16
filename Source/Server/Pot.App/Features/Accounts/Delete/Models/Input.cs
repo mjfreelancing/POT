@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Features.Accounts.Delete.Models;
+namespace Pot.App.Features.Accounts.Delete.Models;
 
 public sealed class Input
 {

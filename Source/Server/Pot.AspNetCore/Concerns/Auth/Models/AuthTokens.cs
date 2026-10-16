@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Concerns.Auth.Models;
+namespace Pot.AspNetCore.Concerns.Auth.Models;
 
 /// <summary>Contains the access and refresh tokens issued during authentication.</summary>
 /// <param name="AccessToken">The signed access token.</param>

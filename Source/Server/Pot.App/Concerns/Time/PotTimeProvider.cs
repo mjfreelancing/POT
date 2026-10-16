@@ -1,4 +1,4 @@
-﻿using AllOverIt.Assertion;
+using AllOverIt.Assertion;
 
 namespace Pot.App.Concerns.Time;
 

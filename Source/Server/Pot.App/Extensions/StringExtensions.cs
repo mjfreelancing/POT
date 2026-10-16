@@ -1,4 +1,4 @@
-﻿using AllOverIt.Extensions;
+using AllOverIt.Extensions;
 
 namespace Pot.App.Extensions;
 

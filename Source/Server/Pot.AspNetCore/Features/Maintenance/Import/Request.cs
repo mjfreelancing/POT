@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel;
 
 namespace Pot.AspNetCore.Features.Maintenance.Import;

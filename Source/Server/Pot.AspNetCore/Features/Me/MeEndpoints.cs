@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Features.Me;
+namespace Pot.AspNetCore.Features.Me;
 
 internal static class MeEndpoints
 {

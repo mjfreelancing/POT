@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Features.Settings.Models;
+namespace Pot.App.Features.Settings.Models;
 
 /// <summary>
 /// Metadata for a single setting key, defining its default value, description, and type conversion logic.

@@ -1,4 +1,4 @@
-﻿using Pot.App.Features.Me.Models;
+using Pot.App.Features.Me.Models;
 using Pot.Data.Entities;
 
 namespace Pot.App.Features.Me.Mappings;

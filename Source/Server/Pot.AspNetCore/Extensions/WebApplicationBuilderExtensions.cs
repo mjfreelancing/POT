@@ -1,4 +1,4 @@
-﻿using AllOverIt.DependencyInjection.Extensions;
+using AllOverIt.DependencyInjection.Extensions;
 using AllOverIt.Serialization.Json.SystemText.Converters;
 using AllOverIt.Validation;
 using AllOverIt.Validation.Extensions;

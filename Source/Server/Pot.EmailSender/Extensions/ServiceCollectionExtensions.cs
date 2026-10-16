@@ -1,4 +1,4 @@
-﻿using AllOverIt.DependencyInjection.Extensions;
+using AllOverIt.DependencyInjection.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Pot.RazorComponents.Extensions;
 using Pot.Shared.DependencyInjection;

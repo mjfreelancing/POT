@@ -1,4 +1,4 @@
-﻿using AllOverIt.Assertion;
+using AllOverIt.Assertion;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Pot.AspNetCore.Features.Auth.PasswordReset.Send;

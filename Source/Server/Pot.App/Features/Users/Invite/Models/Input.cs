@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Features.Users.Invite.Models;
+namespace Pot.App.Features.Users.Invite.Models;
 
 public sealed class Input
 {

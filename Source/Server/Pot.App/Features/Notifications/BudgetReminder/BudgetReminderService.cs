@@ -1,4 +1,4 @@
-﻿using AllOverIt.Assertion;
+using AllOverIt.Assertion;
 using AllOverIt.Extensions;
 using Microsoft.Extensions.Logging;
 using Pot.App.Concerns.Time;

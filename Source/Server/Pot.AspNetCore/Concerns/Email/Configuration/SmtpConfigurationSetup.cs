@@ -1,4 +1,4 @@
-﻿using AllOverIt.Extensions;
+using AllOverIt.Extensions;
 using Microsoft.Extensions.Options;
 using Pot.EmailSender.Configuration;
 

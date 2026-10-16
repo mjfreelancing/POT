@@ -1,4 +1,4 @@
-﻿using AllOverIt.Assertion;
+using AllOverIt.Assertion;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Diagnostics.Enrichment;
 

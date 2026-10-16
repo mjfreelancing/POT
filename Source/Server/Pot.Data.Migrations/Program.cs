@@ -1,4 +1,4 @@
-﻿using AllOverIt.EntityFrameworkCore.Migrator;
+using AllOverIt.EntityFrameworkCore.Migrator;
 using AllOverIt.GenericHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

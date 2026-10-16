@@ -1,4 +1,4 @@
-﻿using AllOverIt.Patterns.ChainOfResponsibility;
+using AllOverIt.Patterns.ChainOfResponsibility;
 using Pot.App.Errors;
 using Pot.Shared.DependencyInjection;
 

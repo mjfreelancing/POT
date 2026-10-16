@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Pot.Data.Annotations;
 using System.ComponentModel.DataAnnotations;
 

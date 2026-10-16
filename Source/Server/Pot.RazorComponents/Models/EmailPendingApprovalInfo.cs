@@ -1,4 +1,4 @@
-﻿namespace Pot.RazorComponents.Models;
+namespace Pot.RazorComponents.Models;
 
 // Sent to a platform administrator to approve a new user signup
 public sealed class EmailPendingApprovalInfo : EmailConfigBase

@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Errors;
+namespace Pot.App.Errors;
 
 public class ApiBasicError : ApiErrorBase
 {

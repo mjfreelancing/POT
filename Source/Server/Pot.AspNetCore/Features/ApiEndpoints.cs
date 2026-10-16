@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Features;
+namespace Pot.AspNetCore.Features;
 
 internal static class ApiEndpoints
 {

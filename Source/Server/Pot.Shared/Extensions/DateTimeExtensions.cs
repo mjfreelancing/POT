@@ -1,4 +1,4 @@
-﻿namespace Pot.Shared.Extensions;
+namespace Pot.Shared.Extensions;
 
 /// <summary>
 /// Extension methods for <see cref="DateTime"/>.

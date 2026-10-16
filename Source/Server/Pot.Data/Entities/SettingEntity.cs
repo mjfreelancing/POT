@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Pot.Shared.Enumerations;
 
 namespace Pot.Data.Entities;

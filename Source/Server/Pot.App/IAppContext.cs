@@ -1,4 +1,4 @@
-﻿using Pot.Shared.DependencyInjection;
+using Pot.Shared.DependencyInjection;
 
 namespace Pot.App;
 

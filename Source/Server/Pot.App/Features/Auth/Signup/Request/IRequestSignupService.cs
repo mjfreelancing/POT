@@ -1,4 +1,4 @@
-﻿using AllOverIt.Patterns.Result;
+using AllOverIt.Patterns.Result;
 using Pot.App.Features.Auth.Signup.Request.Models;
 using Pot.Shared.DependencyInjection;
 

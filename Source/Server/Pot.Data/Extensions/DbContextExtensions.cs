@@ -1,4 +1,4 @@
-﻿using AllOverIt.Patterns.ResourceInitialization;
+using AllOverIt.Patterns.ResourceInitialization;
 using Microsoft.EntityFrameworkCore;
 using System.Runtime.CompilerServices;
 

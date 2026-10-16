@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Pot.Data.Entities;
 
 namespace Pot.Data.Repositories.Projections;

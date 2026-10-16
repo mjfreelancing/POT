@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Features.Auth.PasswordReset.Verify.Models;
+namespace Pot.App.Features.Auth.PasswordReset.Verify.Models;
 
 public sealed class Output
 {

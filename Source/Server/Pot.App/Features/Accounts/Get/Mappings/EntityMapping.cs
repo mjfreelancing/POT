@@ -1,4 +1,4 @@
-﻿using Pot.App.Features.Accounts.Get.Models;
+using Pot.App.Features.Accounts.Get.Models;
 using Pot.Data.Repositories.Accounts.Dtos;
 using Pot.Shared.Models;
 

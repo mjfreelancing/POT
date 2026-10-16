@@ -1,4 +1,4 @@
-﻿using AllOverIt.Validation;
+using AllOverIt.Validation;
 
 namespace Pot.AspNetCore.Concerns.Validation;
 

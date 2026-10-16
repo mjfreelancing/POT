@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Features.Auth.Signup.Complete.Models;
+namespace Pot.App.Features.Auth.Signup.Complete.Models;
 
 public sealed class Output
 {

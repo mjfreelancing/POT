@@ -1,4 +1,4 @@
-﻿using Pot.AspNetCore.Concerns.RateLimiting;
+using Pot.AspNetCore.Concerns.RateLimiting;
 using Pot.AspNetCore.Extensions;
 
 namespace Pot.AspNetCore.Features.Roles.Extensions;

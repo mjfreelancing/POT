@@ -1,4 +1,4 @@
-﻿using Pot.App.Features.Accounts.Create.Models;
+using Pot.App.Features.Accounts.Create.Models;
 using Pot.Data.Entities;
 
 namespace Pot.App.Features.Accounts.Create.Mappings;

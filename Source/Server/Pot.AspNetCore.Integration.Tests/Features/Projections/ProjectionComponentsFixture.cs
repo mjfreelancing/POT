@@ -1,4 +1,4 @@
-﻿using Pot.AspNetCore.Integration.Tests.Host;
+using Pot.AspNetCore.Integration.Tests.Host;
 using Pot.AspNetCore.Integration.Tests.Host.Extensions;
 using Pot.AspNetCore.Integration.Tests.Host.Models;
 using Pot.Shared.Enumerations;

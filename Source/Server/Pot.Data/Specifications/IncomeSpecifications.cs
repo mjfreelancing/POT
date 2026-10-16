@@ -1,4 +1,4 @@
-﻿using AllOverIt.Patterns.Specification;
+using AllOverIt.Patterns.Specification;
 using Pot.Data.Entities;
 using Pot.Shared.Enumerations;
 

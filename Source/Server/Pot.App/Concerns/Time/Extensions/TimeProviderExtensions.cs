@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Concerns.Time.Extensions;
+namespace Pot.App.Concerns.Time.Extensions;
 
 public static class TimeProviderExtensions
 {

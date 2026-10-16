@@ -1,4 +1,4 @@
-﻿namespace Pot.Data.Configuration;
+namespace Pot.Data.Configuration;
 
 public sealed class DatabaseConfiguration
 {

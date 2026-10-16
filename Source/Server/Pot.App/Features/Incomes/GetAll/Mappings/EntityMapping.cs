@@ -1,4 +1,4 @@
-﻿using Pot.App.Features.Incomes.GetAll.Models;
+using Pot.App.Features.Incomes.GetAll.Models;
 using Pot.Data.Entities;
 
 namespace Pot.App.Features.Incomes.GetAll.Mappings;

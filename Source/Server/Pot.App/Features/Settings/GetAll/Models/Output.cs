@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Features.Settings.GetAll.Models;
+namespace Pot.App.Features.Settings.GetAll.Models;
 
 public sealed record Output
 {

@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Features.Auth;
+namespace Pot.AspNetCore.Features.Auth;
 
 internal static class AuthEndpoints
 {

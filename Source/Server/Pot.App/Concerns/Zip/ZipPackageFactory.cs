@@ -1,4 +1,4 @@
-﻿using AllOverIt.Zip;
+using AllOverIt.Zip;
 
 namespace Pot.App.Concerns.Zip;
 

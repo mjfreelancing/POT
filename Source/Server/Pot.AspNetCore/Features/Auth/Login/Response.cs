@@ -1,4 +1,4 @@
-﻿using AllOverIt.Patterns.Enumeration;
+using AllOverIt.Patterns.Enumeration;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Pot.AspNetCore.Features.Auth.Login;

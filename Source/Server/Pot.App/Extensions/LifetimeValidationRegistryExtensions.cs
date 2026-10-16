@@ -1,4 +1,4 @@
-﻿using AllOverIt.Validation;
+using AllOverIt.Validation;
 using AllOverIt.Validation.Extensions;
 using Pot.App.Concerns.Validation;
 

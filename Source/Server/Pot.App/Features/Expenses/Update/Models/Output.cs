@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Features.Expenses.Update.Models;
+namespace Pot.App.Features.Expenses.Update.Models;
 
 public sealed class Output
 {

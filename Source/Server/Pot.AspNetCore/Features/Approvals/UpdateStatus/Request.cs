@@ -1,4 +1,4 @@
-﻿using Pot.Shared.Enumerations;
+using Pot.Shared.Enumerations;
 using System.ComponentModel;
 
 namespace Pot.AspNetCore.Features.Approvals.UpdateStatus;

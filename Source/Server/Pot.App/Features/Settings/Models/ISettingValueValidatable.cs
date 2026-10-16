@@ -1,4 +1,4 @@
-﻿using Pot.App.Errors;
+using Pot.App.Errors;
 
 namespace Pot.App.Features.Settings.Models;
 

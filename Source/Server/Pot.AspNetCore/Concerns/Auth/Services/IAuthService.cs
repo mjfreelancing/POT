@@ -1,4 +1,4 @@
-﻿using AllOverIt.Patterns.Result;
+using AllOverIt.Patterns.Result;
 using Pot.AspNetCore.Concerns.Auth.Models;
 using Pot.Shared.DependencyInjection;
 

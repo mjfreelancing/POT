@@ -1,4 +1,4 @@
-﻿using AllOverIt.Assertion;
+using AllOverIt.Assertion;
 using AllOverIt.EntityFrameworkCore.Diagrams;
 using AllOverIt.EntityFrameworkCore.Diagrams.D2;
 using AllOverIt.EntityFrameworkCore.Diagrams.D2.Extensions;

@@ -1,4 +1,4 @@
-﻿using AllOverIt.Extensions;
+using AllOverIt.Extensions;
 using Pot.App.Calculators;
 using Pot.App.Mappings;
 using Pot.Data.Entities;

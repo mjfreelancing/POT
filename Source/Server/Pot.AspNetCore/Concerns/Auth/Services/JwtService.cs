@@ -1,4 +1,4 @@
-﻿using AllOverIt.Assertion;
+using AllOverIt.Assertion;
 using Microsoft.IdentityModel.Tokens;
 using Pot.App.Concerns.Time;
 using Pot.AspNetCore.Concerns.Auth.Models;

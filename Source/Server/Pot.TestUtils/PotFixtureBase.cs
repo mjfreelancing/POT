@@ -1,4 +1,4 @@
-﻿using AllOverIt.Fixture;
+using AllOverIt.Fixture;
 using AutoFixture;
 using AutoFixture.AutoNSubstitute;
 using Pot.Shared.Enumerations;

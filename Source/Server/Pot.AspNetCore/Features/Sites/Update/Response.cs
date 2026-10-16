@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.App.Features.Sites.Update.Models;
 using Pot.AspNetCore.Models;
 

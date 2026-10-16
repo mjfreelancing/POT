@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Pot.App.Errors;
 
 namespace Pot.App.Extensions;

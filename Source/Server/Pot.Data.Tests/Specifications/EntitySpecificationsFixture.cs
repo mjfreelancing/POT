@@ -1,4 +1,4 @@
-﻿using Pot.Data.Entities;
+using Pot.Data.Entities;
 using Pot.Data.Specifications;
 using Pot.TestUtils;
 using Shouldly;

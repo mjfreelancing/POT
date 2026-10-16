@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Concerns.RateLimiting;
+namespace Pot.AspNetCore.Concerns.RateLimiting;
 
 /// <summary>
 /// Production default values for the rate limiter. These are the source of truth for all

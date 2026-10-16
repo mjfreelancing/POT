@@ -1,4 +1,4 @@
-﻿using Pot.App.Features.Users.Invite.Models;
+using Pot.App.Features.Users.Invite.Models;
 
 namespace Pot.App.Features.Users.Invite.EntityChecks;
 

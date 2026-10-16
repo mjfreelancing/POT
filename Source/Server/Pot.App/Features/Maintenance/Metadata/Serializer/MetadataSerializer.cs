@@ -1,4 +1,4 @@
-﻿using AllOverIt.Assertion;
+using AllOverIt.Assertion;
 using AllOverIt.Serialization.Binary.Readers;
 using AllOverIt.Serialization.Binary.Writers;
 using Pot.App.Features.Maintenance.Metadata.Models;

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Http.HttpResults;
 using System.ComponentModel;
 
 namespace Pot.AspNetCore.Features.Maintenance.Import;

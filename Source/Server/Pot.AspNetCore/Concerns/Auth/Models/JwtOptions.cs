@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Concerns.Auth.Models;
+namespace Pot.AspNetCore.Concerns.Auth.Models;
 
 /// <summary>Provides the issuer, audience and signing key used for JWT access tokens.</summary>
 public sealed class JwtOptions

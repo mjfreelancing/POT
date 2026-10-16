@@ -1,4 +1,4 @@
-﻿using Pot.Shared;
+using Pot.Shared;
 
 namespace Pot.Data.Migrations;
 

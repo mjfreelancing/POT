@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Features.Approvals.Pending.Models;
+namespace Pot.App.Features.Approvals.Pending.Models;
 
 public sealed class Output
 {

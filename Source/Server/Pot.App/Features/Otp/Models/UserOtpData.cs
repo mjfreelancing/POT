@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Features.Otp.Models;
+namespace Pot.App.Features.Otp.Models;
 
 public sealed class UserOtpData
 {

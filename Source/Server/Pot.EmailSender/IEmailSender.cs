@@ -1,4 +1,4 @@
-﻿using Pot.RazorComponents.Models;
+using Pot.RazorComponents.Models;
 using Pot.Shared.DependencyInjection;
 
 namespace Pot.EmailSender;

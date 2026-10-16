@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Features.Accounts.Extensions;
+namespace Pot.AspNetCore.Features.Accounts.Extensions;
 
 internal static class RouteGroupBuilderExtensions
 {

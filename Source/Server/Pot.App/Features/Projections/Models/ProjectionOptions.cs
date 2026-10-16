@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Features.Projections.Models;
+namespace Pot.App.Features.Projections.Models;
 
 /// <summary>
 /// The window a financial projection is calculated over.

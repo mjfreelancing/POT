@@ -1,4 +1,4 @@
-﻿using AllOverIt.Assertion;
+using AllOverIt.Assertion;
 using AllOverIt.Expressions;
 using AllOverIt.Logging.Extensions;
 using Microsoft.EntityFrameworkCore;

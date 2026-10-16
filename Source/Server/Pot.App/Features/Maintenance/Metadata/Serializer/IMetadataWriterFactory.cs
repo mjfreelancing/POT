@@ -1,4 +1,4 @@
-﻿using AllOverIt.Serialization.Binary.Writers;
+using AllOverIt.Serialization.Binary.Writers;
 using Pot.Shared.DependencyInjection;
 
 namespace Pot.App.Features.Maintenance.Metadata.Serializer;

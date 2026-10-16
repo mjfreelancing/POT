@@ -1,4 +1,4 @@
-﻿using CsvHelper.Configuration.Attributes;
+using CsvHelper.Configuration.Attributes;
 using CsvHelper.TypeConversion;
 using Pot.App.Concerns.Csv;
 using Pot.Shared.Enumerations;

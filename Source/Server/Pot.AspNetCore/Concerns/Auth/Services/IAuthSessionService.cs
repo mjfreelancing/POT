@@ -1,4 +1,4 @@
-﻿using Pot.AspNetCore.Concerns.Auth.Models;
+using Pot.AspNetCore.Concerns.Auth.Models;
 using Pot.Data.Entities;
 using Pot.Shared.DependencyInjection;
 

@@ -1,4 +1,4 @@
-﻿using Pot.App.Features.Users.UpdateRoles.Models;
+using Pot.App.Features.Users.UpdateRoles.Models;
 using Pot.Data.Entities;
 
 namespace Pot.App.Features.Users.UpdateRoles.Mappings;

@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Features.Maintenance.Import.Reader;
+namespace Pot.App.Features.Maintenance.Import.Reader;
 
 /// <summary>
 /// Enumerates the CSV rows of a package entry as a forward-only sequence of the requested row type.

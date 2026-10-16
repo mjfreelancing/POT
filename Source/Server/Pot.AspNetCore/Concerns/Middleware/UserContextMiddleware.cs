@@ -1,4 +1,4 @@
-﻿using AllOverIt.Extensions;
+using AllOverIt.Extensions;
 using Pot.Shared;
 using System.IdentityModel.Tokens.Jwt;
 

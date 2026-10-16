@@ -1,4 +1,4 @@
-﻿using Pot.App.Features.Roles.GetAll.Models;
+using Pot.App.Features.Roles.GetAll.Models;
 using Pot.Data.Entities;
 
 namespace Pot.App.Features.Roles.GetAll.Mappings;

@@ -1,4 +1,4 @@
-﻿using AllOverIt.Assertion;
+using AllOverIt.Assertion;
 using AllOverIt.EntityFrameworkCore.Migrator;
 using AllOverIt.EntityFrameworkCore.Migrator.Events;
 using AllOverIt.GenericHost;

@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Extensions;
+namespace Pot.App.Extensions;
 
 internal static class DictionaryExtensions
 {

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Pot.AspNetCore.Features.Auth.Refresh;
 

@@ -1,4 +1,4 @@
-﻿using Pot.App.Features.Users.Update.Models;
+using Pot.App.Features.Users.Update.Models;
 
 namespace Pot.App.Features.Users.Update.EntityChecks;
 

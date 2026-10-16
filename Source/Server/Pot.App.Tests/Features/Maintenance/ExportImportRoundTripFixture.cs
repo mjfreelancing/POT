@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Pot.App.Features.Accounts.GetAll;
 using Pot.App.Features.Accounts.GetAll.Models;

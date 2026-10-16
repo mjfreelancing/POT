@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Features.Projections.Models;
+namespace Pot.App.Features.Projections.Models;
 
 /// <summary>
 /// The projected values for a single account, or for the combined accounts, on a single forecast date.

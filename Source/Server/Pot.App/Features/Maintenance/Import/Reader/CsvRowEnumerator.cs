@@ -1,4 +1,4 @@
-﻿using AllOverIt.Assertion;
+using AllOverIt.Assertion;
 using CsvHelper;
 using System.Collections;
 using System.Globalization;

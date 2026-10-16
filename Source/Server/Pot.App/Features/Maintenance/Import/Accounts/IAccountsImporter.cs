@@ -1,4 +1,4 @@
-﻿using AllOverIt.Patterns.Result;
+using AllOverIt.Patterns.Result;
 using Pot.App.Features.Maintenance.Import.Models;
 using Pot.Shared.DependencyInjection;
 

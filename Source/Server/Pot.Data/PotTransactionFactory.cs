@@ -1,4 +1,4 @@
-﻿using AllOverIt.Assertion;
+using AllOverIt.Assertion;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Pot.Data;

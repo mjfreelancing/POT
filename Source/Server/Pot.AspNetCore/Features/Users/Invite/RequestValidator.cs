@@ -1,4 +1,4 @@
-﻿using AllOverIt.Validation.Extensions;
+using AllOverIt.Validation.Extensions;
 using Pot.AspNetCore.Concerns.Validation;
 
 namespace Pot.AspNetCore.Features.Users.Invite;

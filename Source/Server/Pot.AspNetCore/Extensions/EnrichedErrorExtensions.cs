@@ -1,4 +1,4 @@
-﻿using AllOverIt.Extensions;
+using AllOverIt.Extensions;
 using AllOverIt.Patterns.Result;
 using Pot.App.Errors;
 using Pot.App.Extensions;

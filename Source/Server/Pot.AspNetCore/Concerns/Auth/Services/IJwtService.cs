@@ -1,4 +1,4 @@
-﻿using Pot.Data.Entities;
+using Pot.Data.Entities;
 using Pot.Shared.DependencyInjection;
 using System.Security.Claims;
 

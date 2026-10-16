@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Features.Maintenance.Metadata.Models;
+namespace Pot.App.Features.Maintenance.Metadata.Models;
 
 /// <summary>
 /// Metadata versions for maintenance import/export packages.

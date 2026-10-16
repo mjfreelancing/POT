@@ -1,4 +1,4 @@
-﻿using AllOverIt.DependencyInjection.Extensions;
+using AllOverIt.DependencyInjection.Extensions;
 using AllOverIt.Validation;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;

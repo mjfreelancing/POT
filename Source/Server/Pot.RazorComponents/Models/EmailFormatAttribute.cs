@@ -1,4 +1,4 @@
-﻿namespace Pot.RazorComponents.Models;
+namespace Pot.RazorComponents.Models;
 
 [AttributeUsage(AttributeTargets.Property)]
 public sealed class EmailFormatAttribute : Attribute

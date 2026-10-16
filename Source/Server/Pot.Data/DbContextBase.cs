@@ -1,4 +1,4 @@
-﻿using AllOverIt.EntityFrameworkCore.Extensions;
+using AllOverIt.EntityFrameworkCore.Extensions;
 using AllOverIt.Extensions;
 using EntityFramework.Exceptions.PostgreSQL;
 using Microsoft.EntityFrameworkCore;

@@ -1,4 +1,4 @@
-﻿
+
 namespace Pot.AspNetCore.Features.Projections.Extensions;
 
 internal static class RouteGroupBuilderExtensions

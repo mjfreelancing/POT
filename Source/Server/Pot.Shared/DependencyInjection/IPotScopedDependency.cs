@@ -1,3 +1,3 @@
-﻿namespace Pot.Shared.DependencyInjection;
+namespace Pot.Shared.DependencyInjection;
 
 public interface IPotScopedDependency;

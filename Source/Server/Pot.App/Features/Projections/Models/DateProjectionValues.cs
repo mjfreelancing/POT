@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Features.Projections.Models;
+namespace Pot.App.Features.Projections.Models;
 
 /// <summary>
 /// The per-account values the projection day loop resolves for a single date.

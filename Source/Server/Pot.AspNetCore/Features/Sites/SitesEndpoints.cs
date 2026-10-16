@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Features.Sites;
+namespace Pot.AspNetCore.Features.Sites;
 
 internal static class SitesEndpoints
 {

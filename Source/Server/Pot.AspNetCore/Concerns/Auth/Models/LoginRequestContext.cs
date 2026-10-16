@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Concerns.Auth.Models;
+namespace Pot.AspNetCore.Concerns.Auth.Models;
 
 /// <summary>Contains request metadata recorded when a user signs in.</summary>
 /// <param name="UserAgent">The user-agent value from the request, when available.</param>

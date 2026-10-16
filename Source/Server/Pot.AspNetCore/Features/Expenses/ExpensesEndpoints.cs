@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Features.Expenses;
+namespace Pot.AspNetCore.Features.Expenses;
 
 internal static class ExpensesEndpoints
 {

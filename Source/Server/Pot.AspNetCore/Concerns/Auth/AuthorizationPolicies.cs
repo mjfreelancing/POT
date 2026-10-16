@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Concerns.Auth;
+namespace Pot.AspNetCore.Concerns.Auth;
 
 /// <summary>
 /// Names of the authorization policies that are declared explicitly by the host, for endpoints that do not

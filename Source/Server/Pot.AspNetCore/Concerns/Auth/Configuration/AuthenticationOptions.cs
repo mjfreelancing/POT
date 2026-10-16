@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Concerns.Auth.Configuration;
+namespace Pot.AspNetCore.Concerns.Auth.Configuration;
 
 // Configuration options for authentication features including cookie settings.
 // Bound from appsettings.json Authentication section.

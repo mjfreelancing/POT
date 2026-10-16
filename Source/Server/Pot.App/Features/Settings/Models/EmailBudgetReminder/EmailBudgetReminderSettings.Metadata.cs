@@ -1,4 +1,4 @@
-﻿using Pot.App.Extensions;
+using Pot.App.Extensions;
 using Pot.Shared.Enumerations;
 
 namespace Pot.App.Features.Settings.Models.EmailBudgetReminder;

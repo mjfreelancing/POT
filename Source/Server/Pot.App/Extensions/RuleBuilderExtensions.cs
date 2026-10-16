@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Pot.App.Errors;
 
 namespace Pot.App.Extensions;

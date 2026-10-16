@@ -1,4 +1,4 @@
-﻿using Pot.Data.Entities;
+using Pot.Data.Entities;
 
 namespace Pot.App.Features.Incomes.Create.EntityChecks;
 

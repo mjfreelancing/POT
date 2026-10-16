@@ -1,4 +1,4 @@
-﻿using Pot.App.Features.Users.GetAll.Models;
+using Pot.App.Features.Users.GetAll.Models;
 using Pot.Data.Repositories.Users.Dtos;
 
 namespace Pot.App.Features.Users.GetAll.Mappings;

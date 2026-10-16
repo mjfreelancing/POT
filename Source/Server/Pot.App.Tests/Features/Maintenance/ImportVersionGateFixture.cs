@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Pot.App.Errors;
 using Pot.App.Features.Maintenance.Import;

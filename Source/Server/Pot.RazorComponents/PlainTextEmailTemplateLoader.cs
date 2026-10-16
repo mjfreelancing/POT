@@ -1,4 +1,4 @@
-﻿namespace Pot.RazorComponents;
+namespace Pot.RazorComponents;
 
 public static class PlainTextEmailTemplateLoader
 {

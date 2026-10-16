@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Features.Accruals.Extensions;
+namespace Pot.AspNetCore.Features.Accruals.Extensions;
 
 internal static class RouteGroupBuilderExtensions
 {

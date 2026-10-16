@@ -1,4 +1,4 @@
-﻿using Pot.AspNetCore.Concerns.RateLimiting;
+using Pot.AspNetCore.Concerns.RateLimiting;
 using Pot.AspNetCore.Integration.Tests.Host;
 using Pot.AspNetCore.Integration.Tests.Host.Extensions;
 using Shouldly;

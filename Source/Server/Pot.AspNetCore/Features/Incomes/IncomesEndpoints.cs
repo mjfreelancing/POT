@@ -1,4 +1,4 @@
-﻿namespace Pot.AspNetCore.Features.Incomes;
+namespace Pot.AspNetCore.Features.Incomes;
 
 internal static class IncomesEndpoints
 {

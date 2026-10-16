@@ -1,4 +1,4 @@
-﻿namespace Pot.App.Features.Approvals.UpdateStatus.Models;
+namespace Pot.App.Features.Approvals.UpdateStatus.Models;
 
 public sealed class Output
 {

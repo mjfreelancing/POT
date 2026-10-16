@@ -1,4 +1,4 @@
-﻿using Pot.Shared.Enumerations;
+using Pot.Shared.Enumerations;
 using Pot.Shared.Extensions;
 using Pot.TestUtils;
 using Shouldly;

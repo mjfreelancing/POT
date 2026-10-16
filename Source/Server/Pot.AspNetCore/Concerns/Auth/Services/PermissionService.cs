@@ -1,4 +1,4 @@
-﻿using AllOverIt.Assertion;
+using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using Pot.AspNetCore.Concerns.Auth.Configuration;
 using Pot.Data.Repositories.Roles;
