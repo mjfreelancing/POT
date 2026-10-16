@@ -1,4 +1,4 @@
-﻿using Pot.AspNetCore.Concerns.Auth;
+using Pot.AspNetCore.Concerns.Auth;
 
 namespace Pot.AspNetCore.Features.Users.Extensions;
 
@@ -13,8 +13,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Get all users")
             .WithDescription("Get all users")
             .Produces<GetAll.Response[]>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         return routeGroupBuilder;
     }
@@ -32,8 +31,7 @@ internal static class RouteGroupBuilderExtensions
             .Produces<Update.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status409Conflict)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status409Conflict);
 
         return routeGroupBuilder;
     }
@@ -49,8 +47,7 @@ internal static class RouteGroupBuilderExtensions
             .Produces<UpdateStatus.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status409Conflict)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status409Conflict);
 
         return routeGroupBuilder;
     }
@@ -66,8 +63,7 @@ internal static class RouteGroupBuilderExtensions
             .Produces<UpdateRoles.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status409Conflict)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status409Conflict);
 
         return routeGroupBuilder;
     }
@@ -82,8 +78,7 @@ internal static class RouteGroupBuilderExtensions
             .WithDescription("Invite a new user to the same site as the caller")
             .Produces(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         return routeGroupBuilder;
     }
@@ -98,8 +93,7 @@ internal static class RouteGroupBuilderExtensions
             .WithDescription("Resends a user invitation")
             .Produces(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         return routeGroupBuilder;
     }

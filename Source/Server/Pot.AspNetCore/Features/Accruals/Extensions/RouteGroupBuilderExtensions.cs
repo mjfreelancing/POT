@@ -12,8 +12,7 @@ internal static class RouteGroupBuilderExtensions
             .WithDescription("Get accruals status for all accounts")
             .Produces<Status.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         return routeGroupBuilder;
     }

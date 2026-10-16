@@ -1,4 +1,4 @@
-﻿using Pot.AspNetCore.Features.Expenses.ToggleExclude;
+using Pot.AspNetCore.Features.Expenses.ToggleExclude;
 
 namespace Pot.AspNetCore.Features.Expenses.Extensions;
 
@@ -15,8 +15,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Get all expenses")
             .WithDescription("Get all expense details")
             .Produces<GetAll.Response[]>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         return routeGroupBuilder;
     }
@@ -31,8 +30,7 @@ internal static class RouteGroupBuilderExtensions
             .WithDescription("Get details for an existing expense")
             .Produces<Get.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         return routeGroupBuilder;
     }
@@ -47,8 +45,7 @@ internal static class RouteGroupBuilderExtensions
             .WithDescription("Create new expense details")
             .Produces<Create.Response>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status409Conflict)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status409Conflict);
 
         return routeGroupBuilder;
     }
@@ -64,8 +61,7 @@ internal static class RouteGroupBuilderExtensions
             .Produces<Update.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status409Conflict)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status409Conflict);
 
         return routeGroupBuilder;
     }
@@ -80,8 +76,7 @@ internal static class RouteGroupBuilderExtensions
             .WithDescription("Deletes an existing expense")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         return routeGroupBuilder;
     }
@@ -96,8 +91,7 @@ internal static class RouteGroupBuilderExtensions
             .WithDescription("Renews selected expenses")
             .Produces(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         return routeGroupBuilder;
     }
@@ -112,8 +106,7 @@ internal static class RouteGroupBuilderExtensions
             .WithDescription("Toggles the 'exclude from calculations' status of selected expenses")
             .Produces(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         return routeGroupBuilder;
     }

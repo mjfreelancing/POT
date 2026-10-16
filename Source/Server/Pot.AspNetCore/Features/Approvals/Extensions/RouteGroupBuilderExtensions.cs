@@ -1,4 +1,4 @@
-﻿using Pot.AspNetCore.Concerns.Auth;
+using Pot.AspNetCore.Concerns.Auth;
 
 namespace Pot.AspNetCore.Features.Approvals.Extensions;
 
@@ -13,8 +13,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Get all pending approvals")
             .WithDescription("Get all pending approvals")
             .Produces<Pending.Response[]>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         return routeGroupBuilder;
     }
@@ -30,8 +29,7 @@ internal static class RouteGroupBuilderExtensions
             .Produces<UpdateStatus.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status409Conflict)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status409Conflict);
 
         return routeGroupBuilder;
     }

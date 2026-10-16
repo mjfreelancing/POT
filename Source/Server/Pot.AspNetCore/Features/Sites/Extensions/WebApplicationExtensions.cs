@@ -1,4 +1,5 @@
 ﻿using Pot.AspNetCore.Concerns.RateLimiting;
+using Pot.AspNetCore.Extensions;
 
 namespace Pot.AspNetCore.Features.Sites.Extensions;
 
@@ -14,7 +15,7 @@ internal static class WebApplicationExtensions
                 .MapGroup(SitesEndpoints.Group)
                 .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .WithTags(SitesEndpoints.Tag)
-                .ProducesProblem(StatusCodes.Status400BadRequest)
+                .ProducesStandardProblems()
                 .UpdateSite();
         }
 

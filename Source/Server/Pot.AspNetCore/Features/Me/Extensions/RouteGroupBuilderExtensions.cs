@@ -1,4 +1,4 @@
-﻿using Pot.AspNetCore.Concerns.Auth;
+using Pot.AspNetCore.Concerns.Auth;
 
 namespace Pot.AspNetCore.Features.Me.Extensions;
 
@@ -13,8 +13,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Get User Info")
             .WithDescription("Get the current user's information and permissions")
             .Produces<Get.Response>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         return routeGroupBuilder;
     }
@@ -28,8 +27,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Change Password")
             .WithDescription("Change the user password")
             .Produces(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         return routeGroupBuilder;
     }

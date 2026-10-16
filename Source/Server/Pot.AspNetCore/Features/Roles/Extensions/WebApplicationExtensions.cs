@@ -1,4 +1,5 @@
 ﻿using Pot.AspNetCore.Concerns.RateLimiting;
+using Pot.AspNetCore.Extensions;
 
 namespace Pot.AspNetCore.Features.Roles.Extensions;
 
@@ -13,7 +14,7 @@ internal static class WebApplicationExtensions
             app.MapGroup(RolesEndpoints.Group)
                 .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .WithTags(RolesEndpoints.Tag)
-                .ProducesProblem(StatusCodes.Status400BadRequest)
+                .ProducesStandardProblems()
                 .GetAllRoles();
         }
 

@@ -1,4 +1,5 @@
-﻿namespace Pot.AspNetCore.Features.Projections.Extensions;
+﻿
+namespace Pot.AspNetCore.Features.Projections.Extensions;
 
 internal static class RouteGroupBuilderExtensions
 {
@@ -13,8 +14,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Get projections")
             .WithDescription("Get projected financial position")
             .Produces<Get.Response>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         return routeGroupBuilder;
     }

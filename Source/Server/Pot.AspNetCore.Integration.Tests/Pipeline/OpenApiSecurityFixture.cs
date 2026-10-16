@@ -9,7 +9,7 @@ namespace Pot.AspNetCore.Integration.Tests.Pipeline;
 public class OpenApiSecurityFixture : IntegrationFixtureBase
 {
     [Fact]
-    public async Task Should_Describe_BadRequest_ProblemDetails_For_Api_Operations()
+    public async Task Should_Describe_Standard_ProblemDetails_For_Api_Operations()
     {
         using var client = CreateClient();
 
@@ -26,14 +26,19 @@ public class OpenApiSecurityFixture : IntegrationFixtureBase
         var loginOperation = openApiDocument!.RootElement.GetProperty("paths")
             .GetProperty("/api/auth/login")
             .GetProperty("post");
-        var badRequestResponse = loginOperation.GetProperty("responses").GetProperty("400");
-        var problemDetailsContent = badRequestResponse.GetProperty("content")
-            .GetProperty("application/problem+json");
 
-        problemDetailsContent.GetProperty("schema")
-            .GetProperty("$ref")
-            .GetString()
-            .ShouldBe("#/components/schemas/ProblemDetails");
+        foreach (var statusCode in new[] { "400", "500" })
+        {
+            var problemDetailsContent = loginOperation.GetProperty("responses")
+                .GetProperty(statusCode)
+                .GetProperty("content")
+                .GetProperty("application/problem+json");
+
+            problemDetailsContent.GetProperty("schema")
+                .GetProperty("$ref")
+                .GetString()
+                .ShouldBe("#/components/schemas/ProblemDetails");
+        }
     }
 
     [Fact]

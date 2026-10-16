@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Pot.AspNetCore.Features.Maintenance.Extensions;
 
@@ -15,8 +15,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Export data")
             .WithDescription("Export Accounts, Incomes, and Expense data")
             .Produces(StatusCodes.Status200OK, contentType: "application/octet-stream")
-            .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         return routeGroupBuilder;
     }
@@ -33,8 +32,7 @@ internal static class RouteGroupBuilderExtensions
             .DisableAntiforgery()
             .Produces<Import.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status413RequestEntityTooLarge)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status413RequestEntityTooLarge);
 
         return routeGroupBuilder;
     }

@@ -10,13 +10,24 @@ namespace Pot.AspNetCore.Integration.Tests.Pipeline;
 public class EndpointResponseMetadataFixture : IntegrationFixtureBase
 {
     [Fact]
-    public void Should_Declare_BadRequest_ProblemDetails_For_Every_Api_Endpoint()
+    public void Should_Declare_Standard_ProblemDetails_For_Every_Api_Endpoint()
     {
         using var scope = CreateScope();
 
         var apiEndpoints = GetApiEndpoints(scope.ServiceProvider.GetRequiredService<EndpointDataSource>());
 
         apiEndpoints.ShouldNotBeEmpty();
+
+        var endpointsMissingInternalServerError = apiEndpoints
+            .Where(endpoint => endpoint.Metadata.GetOrderedMetadata<IProducesResponseTypeMetadata>()
+                .All(response => response.StatusCode != StatusCodes.Status500InternalServerError
+                    || response.Type != typeof(ProblemDetails)
+                    || !response.ContentTypes.Contains("application/problem+json", StringComparer.OrdinalIgnoreCase)))
+            .Select(endpoint => endpoint.RoutePattern.RawText)
+            .ToList();
+
+        endpointsMissingInternalServerError.ShouldBeEmpty(
+            "every API endpoint documents the shared ProblemDetails 500 response");
 
         var endpointsMissingBadRequest = apiEndpoints
             .Where(endpoint => endpoint.Metadata.GetOrderedMetadata<IProducesResponseTypeMetadata>()

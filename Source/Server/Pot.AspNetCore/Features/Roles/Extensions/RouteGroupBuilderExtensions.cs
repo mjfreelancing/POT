@@ -1,4 +1,5 @@
-﻿namespace Pot.AspNetCore.Features.Roles.Extensions;
+﻿
+namespace Pot.AspNetCore.Features.Roles.Extensions;
 
 internal static class RouteGroupBuilderExtensions
 {
@@ -11,8 +12,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Get all roles")
             .WithDescription("Get all roles")
             .Produces<GetAll.Response[]>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         return routeGroupBuilder;
     }

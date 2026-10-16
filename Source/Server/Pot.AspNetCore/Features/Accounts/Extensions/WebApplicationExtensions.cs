@@ -1,4 +1,5 @@
 ﻿using Pot.AspNetCore.Concerns.RateLimiting;
+using Pot.AspNetCore.Extensions;
 
 namespace Pot.AspNetCore.Features.Accounts.Extensions;
 
@@ -12,7 +13,7 @@ internal static class WebApplicationExtensions
 
             app.MapGroup(AccountsEndpoints.Group)
                 .WithTags(AccountsEndpoints.Tag)
-                .ProducesProblem(StatusCodes.Status400BadRequest)
+                .ProducesStandardProblems()
                 .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .GetAllAccounts()
                 .GetAccount()

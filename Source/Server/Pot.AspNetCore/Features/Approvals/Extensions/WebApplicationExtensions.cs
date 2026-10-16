@@ -1,4 +1,5 @@
 ﻿using Pot.AspNetCore.Concerns.RateLimiting;
+using Pot.AspNetCore.Extensions;
 
 namespace Pot.AspNetCore.Features.Approvals.Extensions;
 
@@ -13,7 +14,7 @@ internal static class WebApplicationExtensions
             var group = app
                 .MapGroup(ApprovalsEndpoints.Group)
                 .WithTags(ApprovalsEndpoints.Tag)
-                .ProducesProblem(StatusCodes.Status400BadRequest)
+                .ProducesStandardProblems()
                 .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .GetPendingApprovals()
                 .UpdateUserApproval();

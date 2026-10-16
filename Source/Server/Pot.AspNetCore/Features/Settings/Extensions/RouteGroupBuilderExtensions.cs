@@ -1,4 +1,4 @@
-﻿using Pot.AspNetCore.Features.Settings.Upsert;
+using Pot.AspNetCore.Features.Settings.Upsert;
 
 namespace Pot.AspNetCore.Features.Settings.Extensions;
 
@@ -13,8 +13,7 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Get all site settings")
             .WithDescription("Retrieve all settings for the current site as a flat list")
             .Produces<GetAll.Response>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         return routeGroupBuilder;
     }
@@ -29,8 +28,7 @@ internal static class RouteGroupBuilderExtensions
             .WithDescription("Create or update a single setting for the current site")
             .Produces<Upsert.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status409Conflict)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status409Conflict);
 
         return routeGroupBuilder;
     }

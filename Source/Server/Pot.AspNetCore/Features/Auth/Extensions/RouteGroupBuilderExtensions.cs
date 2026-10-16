@@ -11,8 +11,7 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(LoginUser))
             .WithSummary("Login")
             .WithDescription("Login the user")
-            .Produces<Login.Response>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .Produces<Login.Response>(StatusCodes.Status200OK);
 
         return routeGroupBuilder;
     }
@@ -26,8 +25,7 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(LogoutUser))
             .WithSummary("Logout")
             .WithDescription("Logout the user")
-            .Produces(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .Produces(StatusCodes.Status200OK);
 
         return routeGroupBuilder;
     }
@@ -41,8 +39,7 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(RefreshToken))
             .WithSummary("Refresh Access Token")
             .WithDescription("Refresh the user access token")
-            .Produces<Refresh.Response>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .Produces<Refresh.Response>(StatusCodes.Status200OK);
 
         return routeGroupBuilder;
     }
@@ -56,8 +53,7 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(PasswordResetSend))
             .WithSummary("Request a password reset")
             .WithDescription("Request a password reset")
-            .Produces<PasswordReset.Send.Response>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .Produces<PasswordReset.Send.Response>(StatusCodes.Status200OK);
 
         return routeGroupBuilder;
     }
@@ -71,8 +67,7 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(PasswordResetVerify))
             .WithSummary("Verify a password reset")
             .WithDescription("Verify a password reset")
-            .Produces<PasswordReset.Verify.Response>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .Produces<PasswordReset.Verify.Response>(StatusCodes.Status200OK);
 
         return routeGroupBuilder;
     }
@@ -86,8 +81,7 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(SignupSend))
             .WithSummary("Request to signup")
             .WithDescription("Request to signup")
-            .Produces<Signup.Send.Response>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .Produces<Signup.Send.Response>(StatusCodes.Status200OK);
 
         return routeGroupBuilder;
     }
@@ -101,8 +95,7 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(SignupComplete))
             .WithSummary("Complete a signup request")
             .WithDescription("Complete a signup request")
-            .Produces<Signup.Complete.Response>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .Produces<Signup.Complete.Response>(StatusCodes.Status200OK);
 
         return routeGroupBuilder;
     }

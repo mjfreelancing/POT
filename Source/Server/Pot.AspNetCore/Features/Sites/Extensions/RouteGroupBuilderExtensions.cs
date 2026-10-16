@@ -1,4 +1,5 @@
-﻿namespace Pot.AspNetCore.Features.Sites.Extensions;
+﻿
+namespace Pot.AspNetCore.Features.Sites.Extensions;
 
 internal static class RouteGroupBuilderExtensions
 {
@@ -13,8 +14,7 @@ internal static class RouteGroupBuilderExtensions
             .Produces<Update.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status409Conflict)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status409Conflict);
 
         return routeGroupBuilder;
     }
