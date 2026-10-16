@@ -13,6 +13,7 @@ internal static class WebApplicationExtensions
             var group = app
                 .MapGroup(AuthEndpoints.Group)
                 .WithTags(AuthEndpoints.Tag)
+                .ProducesProblem(StatusCodes.Status400BadRequest)
                 .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .LoginUser()
                 .LogoutUser()

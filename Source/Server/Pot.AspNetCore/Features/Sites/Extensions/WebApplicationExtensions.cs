@@ -14,6 +14,7 @@ internal static class WebApplicationExtensions
                 .MapGroup(SitesEndpoints.Group)
                 .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .WithTags(SitesEndpoints.Tag)
+                .ProducesProblem(StatusCodes.Status400BadRequest)
                 .UpdateSite();
         }
 

@@ -13,6 +13,7 @@ internal static class WebApplicationExtensions
             var group = app
                 .MapGroup(ProjectionsEndpoints.Group)
                 .WithTags(ProjectionsEndpoints.Tag)
+                .ProducesProblem(StatusCodes.Status400BadRequest)
                 .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .GetProjections();
         }

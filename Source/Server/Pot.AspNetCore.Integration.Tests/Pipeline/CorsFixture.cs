@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Pot.AspNetCore.Integration.Tests.Host;
 using Pot.AspNetCore.Integration.Tests.Host.Extensions;
 using Shouldly;
+using System.Net;
 using System.Net.Http.Json;
 
 namespace Pot.AspNetCore.Integration.Tests.Pipeline;
@@ -114,7 +115,7 @@ public class CorsFixture : IntegrationFixtureBase
         var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
         var allowOriginValues = response.ShouldHaveHeaderValues(AccessControlAllowOrigin);
 
-        ((int)response.StatusCode).ShouldBe(422);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         allowOriginValues.Single().ShouldBe(AllowedOrigin);
         response.ShouldContainHeader(AccessControlAllowCredentials);
     }
@@ -133,7 +134,7 @@ public class CorsFixture : IntegrationFixtureBase
 
         var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
 
-        ((int)response.StatusCode).ShouldBe(422);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         response.ShouldNotContainHeader(AccessControlAllowOrigin);
     }
 }

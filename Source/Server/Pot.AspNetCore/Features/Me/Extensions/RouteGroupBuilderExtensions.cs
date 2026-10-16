@@ -12,7 +12,7 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(GetMe))
             .WithSummary("Get User Info")
             .WithDescription("Get the current user's information and permissions")
-            .ProducesProblem(StatusCodes.Status200OK)
+            .Produces<Get.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
@@ -27,7 +27,7 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(ChangePassword))
             .WithSummary("Change Password")
             .WithDescription("Change the user password")
-            .ProducesProblem(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 

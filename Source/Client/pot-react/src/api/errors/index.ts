@@ -3,6 +3,7 @@
 // Error response message generators
 export {
   getAuthenticationMessage,
+  getBadRequestMessage,
   getConflictMessage,
   getErrorTitle,
   getForbiddenMessage,
@@ -10,13 +11,13 @@ export {
   getNotFoundMessage,
   getRateLimitedMessage,
   getServerErrorMessage,
-  getValidationMessage,
 } from './apiErrorResponse';
 
 // Error types and classes
 export type { ApiError } from './apiErrors';
 export {
   AuthenticationError,
+  BadRequestError,
   ConflictError,
   ForbiddenError,
   MethodNotAllowedError,
@@ -25,7 +26,6 @@ export {
   RateLimitedError,
   ServerError,
   UnexpectedError,
-  ValidationError,
 } from './apiErrors';
 
 // Response types

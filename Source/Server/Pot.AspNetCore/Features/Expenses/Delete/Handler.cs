@@ -8,7 +8,7 @@ namespace Pot.AspNetCore.Features.Expenses.Delete;
 
 internal sealed class Handler
 {
-    public static async Task<Results<Ok, ProblemHttpResult>> Invoke([Description("The Expense Id")] Guid id,
+    public static async Task<Results<NoContent, ProblemHttpResult>> Invoke([Description("The Expense Id")] Guid id,
         IDeleteExpenseService expenseService, ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);
@@ -16,7 +16,7 @@ internal sealed class Handler
         var result = await expenseService.DeleteExpenseAsync(id, cancellationToken);
 
         return result.IsSuccess
-            ? TypedResults.Ok()
+            ? TypedResults.NoContent()
             : TypedResults.Problem(result.Error!.ToProblemDetails());
     }
 }

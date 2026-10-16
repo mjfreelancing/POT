@@ -13,6 +13,7 @@ internal static class WebApplicationExtensions
             app.MapGroup(RolesEndpoints.Group)
                 .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .WithTags(RolesEndpoints.Tag)
+                .ProducesProblem(StatusCodes.Status400BadRequest)
                 .GetAllRoles();
         }
 

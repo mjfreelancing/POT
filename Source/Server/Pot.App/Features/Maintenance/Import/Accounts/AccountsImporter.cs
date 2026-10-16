@@ -51,7 +51,7 @@ internal sealed class AccountsImporter : IAccountsImporter
             }
 
             // Could throw UniqueConstraintException (or a related database exception),
-            // resulting in a custom 422 ProblemDetails response.
+            // resulting in a custom 400 ProblemDetails response.
             await _accountRepository
                 .SaveAsync(cancellationToken)
                 .ConfigureAwait(false);

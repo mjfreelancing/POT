@@ -46,6 +46,9 @@ public class Program
 
         app.UseExceptionHandler();
 
+        // Write ProblemDetails for error responses that otherwise have no body.
+        app.UseStatusCodePages();
+
         // Not required since we are behind a reverse proxy in Azure that handles HTTPS
         // app.UseHttpsRedirection();
 

@@ -187,7 +187,7 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
             TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(
-            HttpStatusCode.UnprocessableEntity,
+            HttpStatusCode.BadRequest,
             "an invitation can only be re-sent while it is still outstanding");
 
         var callerAfter = await GetUserAsync(caller.UserRowId);
@@ -301,7 +301,7 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
             TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(
-            HttpStatusCode.UnprocessableEntity,
+            HttpStatusCode.BadRequest,
             "a site must never be left without an enabled administrator");
 
         var callerAfter = await GetUserAsync(caller.UserRowId);
@@ -325,7 +325,7 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
             TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(
-            HttpStatusCode.UnprocessableEntity,
+            HttpStatusCode.BadRequest,
             "a site must never be left without an enabled administrator");
 
         var adminRoleRowId = await GetRoleRowIdAsync(Role.Admin);
@@ -475,7 +475,7 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
             TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(
-            HttpStatusCode.UnprocessableEntity,
+            HttpStatusCode.BadRequest,
             "a configured platform administrator must not be disabled");
 
         var callerAfter = await GetUserAsync(caller.UserRowId);
@@ -505,7 +505,7 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
             TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(
-            HttpStatusCode.UnprocessableEntity,
+            HttpStatusCode.BadRequest,
             "a site's only enabled administrator must not be disabled");
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
@@ -557,7 +557,7 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
             TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(
-            HttpStatusCode.UnprocessableEntity,
+            HttpStatusCode.BadRequest,
             "a Viewer cannot administer the site, so the site would be left without an administrator");
 
         var adminRoleRowId = await GetRoleRowIdAsync(Role.Admin);

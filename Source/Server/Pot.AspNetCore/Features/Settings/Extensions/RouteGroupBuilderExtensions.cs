@@ -12,7 +12,7 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(GetAllSettings))
             .WithSummary("Get all site settings")
             .WithDescription("Retrieve all settings for the current site as a flat list")
-            .ProducesProblem(StatusCodes.Status200OK)
+            .Produces<GetAll.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
@@ -27,10 +27,9 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(UpdateSettings))
             .WithSummary("Update a setting")
             .WithDescription("Create or update a single setting for the current site")
-            .ProducesProblem(StatusCodes.Status200OK)
+            .Produces<Upsert.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status409Conflict)
-            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;

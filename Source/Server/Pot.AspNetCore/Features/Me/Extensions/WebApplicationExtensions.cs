@@ -13,6 +13,7 @@ internal static class WebApplicationExtensions
             var group = app
                 .MapGroup(MeEndpoints.Group)
                 .WithTags(MeEndpoints.Tag)
+                .ProducesProblem(StatusCodes.Status400BadRequest)
                 .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .GetMe()
                 .ChangePassword();

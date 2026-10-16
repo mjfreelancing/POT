@@ -10,7 +10,7 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(GetStatus))
             .WithSummary("Accruals status")
             .WithDescription("Get accruals status for all accounts")
-            .ProducesProblem(StatusCodes.Status200OK)
+            .Produces<Status.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status500InternalServerError);

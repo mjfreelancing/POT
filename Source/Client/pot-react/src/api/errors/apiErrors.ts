@@ -8,8 +8,8 @@ const ErrorType = {
 } as const;
 
 const ErrorCode = {
+  BadRequest: 'Bad Request Error',
   Authentication: 'Authentication Error',
-  Validation: 'Validation Error',
   NotFound: 'Not Found',
   MethodNotAllowed: 'Method Not Allowed',
   Conflict: 'Conflict Error',
@@ -38,9 +38,9 @@ class AuthenticationError extends ApiError {
   }
 }
 
-class ValidationError extends ApiError {
+class BadRequestError extends ApiError {
   constructor(description: string) {
-    super(ErrorCode.Validation, description);
+    super(ErrorCode.BadRequest, description);
   }
 }
 
@@ -97,6 +97,7 @@ export type { ErrorCode, ErrorType };
 export {
   ApiError,
   AuthenticationError,
+  BadRequestError,
   ConflictError,
   ForbiddenError,
   MethodNotAllowedError,
@@ -105,5 +106,4 @@ export {
   RateLimitedError,
   ServerError,
   UnexpectedError,
-  ValidationError,
 };

@@ -2,6 +2,7 @@
 using Shouldly;
 using System.Net;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -69,11 +70,14 @@ public class CorrelationAndProblemDetailsFixture : IntegrationFixtureBase
         request.Headers.Add(CorrelationIdHeader, correlationId);
 
         var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
+
         var problemDetails = await ReadProblemDetailsAsync(response);
 
-        response.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
+        problemDetails.Status.ShouldBe(StatusCodes.Status400BadRequest);
         problemDetails.Detail.ShouldBe("One or more validation errors occurred.");
-        problemDetails.Status.ShouldBe(StatusCodes.Status422UnprocessableEntity);
         GetExtensionString(problemDetails, "correlationId").ShouldBe(correlationId);
         GetExtensionString(problemDetails, "instance").ShouldBe("POST /api/auth/login");
         HasExtension(problemDetails, "errors").ShouldBeTrue();
@@ -90,16 +94,47 @@ public class CorrelationAndProblemDetailsFixture : IntegrationFixtureBase
         };
 
         var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
+
         var problemDetails = await ReadProblemDetailsAsync(response);
 
-        response.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
+        problemDetails.Status.ShouldBe(StatusCodes.Status400BadRequest);
         GetExtensionString(problemDetails, "correlationId").ShouldNotBeNullOrWhiteSpace();
         GetExtensionString(problemDetails, "instance").ShouldBe("POST /api/auth/login");
     }
 
+    [Fact]
+    public async Task Should_Return_ProblemDetails_When_Request_Json_Is_Malformed()
+    {
+        using var client = CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/login")
+        {
+            Content = new StringContent("{", Encoding.UTF8, "application/json")
+        };
+
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
+
+        var problemDetails = await ReadProblemDetailsAsync(response);
+
+        problemDetails.Status.ShouldBe(StatusCodes.Status400BadRequest);
+        GetExtensionString(problemDetails, "correlationId").ShouldNotBeNullOrWhiteSpace();
+    }
+
     private static async Task<ProblemDetailsResponse> ReadProblemDetailsAsync(HttpResponseMessage response)
     {
-        var problemDetails = await response.Content.ReadFromJsonAsync<ProblemDetailsResponse>();
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        content.ShouldNotBeNullOrWhiteSpace("the response should contain a ProblemDetails body");
+
+        var problemDetails = JsonSerializer.Deserialize<ProblemDetailsResponse>(
+            content,
+            new JsonSerializerOptions(JsonSerializerDefaults.Web));
 
         problemDetails.ShouldNotBeNull();
 

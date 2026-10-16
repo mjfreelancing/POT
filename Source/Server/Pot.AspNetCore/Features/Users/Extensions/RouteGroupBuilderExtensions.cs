@@ -12,7 +12,7 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(GetAllUsers))
             .WithSummary("Get all users")
             .WithDescription("Get all users")
-            .ProducesProblem(StatusCodes.Status200OK)
+            .Produces<GetAll.Response[]>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
@@ -29,11 +29,10 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(UpdateUser))
             .WithSummary("Update user details")
             .WithDescription("Updates existing user details")
-            .ProducesProblem(StatusCodes.Status200OK)
+            .Produces<Update.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
-            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
@@ -47,11 +46,10 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(UpdateUserStatus))
             .WithSummary("Update user status")
             .WithDescription("Updates user status")
-            .ProducesProblem(StatusCodes.Status200OK)
+            .Produces<UpdateStatus.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
-            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
@@ -65,11 +63,10 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(UpdateUserRoles))
             .WithSummary("Update user roles")
             .WithDescription("Updates user roles")
-            .ProducesProblem(StatusCodes.Status200OK)
+            .Produces<UpdateRoles.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
-            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
@@ -83,10 +80,9 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(InviteUser))
             .WithSummary("Invite a new user")
             .WithDescription("Invite a new user to the same site as the caller")
-            .ProducesProblem(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
@@ -100,10 +96,9 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(ResendInviteUser))
             .WithSummary("Resends a user invitation")
             .WithDescription("Resends a user invitation")
-            .ProducesProblem(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;

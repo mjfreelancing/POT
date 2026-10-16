@@ -14,7 +14,7 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(GetAllExpenses))
             .WithSummary("Get all expenses")
             .WithDescription("Get all expense details")
-            .ProducesProblem(StatusCodes.Status200OK)
+            .Produces<GetAll.Response[]>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
@@ -29,10 +29,9 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(GetExpense))
             .WithSummary("Get expense")
             .WithDescription("Get details for an existing expense")
-            .ProducesProblem(StatusCodes.Status200OK)
+            .Produces<Get.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
@@ -46,10 +45,9 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(CreateExpense))
             .WithSummary("Create expense")
             .WithDescription("Create new expense details")
-            .ProducesProblem(StatusCodes.Status201Created)
+            .Produces<Create.Response>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status409Conflict)
-            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
@@ -63,11 +61,10 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(UpdateExpense))
             .WithSummary("Update expense")
             .WithDescription("Updates existing expense details")
-            .ProducesProblem(StatusCodes.Status200OK)
+            .Produces<Update.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
-            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
@@ -81,7 +78,7 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(DeleteExpense))
             .WithSummary("Delete expense")
             .WithDescription("Deletes an existing expense")
-            .ProducesProblem(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
@@ -97,10 +94,9 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(RenewExpenses))
             .WithSummary("Renew expenses")
             .WithDescription("Renews selected expenses")
-            .ProducesProblem(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;
@@ -114,10 +110,9 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(ToggleExcludeExpenses))
             .WithSummary("Toggle exclude expenses")
             .WithDescription("Toggles the 'exclude from calculations' status of selected expenses")
-            .ProducesProblem(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return routeGroupBuilder;

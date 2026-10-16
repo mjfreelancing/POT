@@ -14,7 +14,7 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(Export))
             .WithSummary("Export data")
             .WithDescription("Export Accounts, Incomes, and Expense data")
-            .ProducesProblem(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status200OK, contentType: "application/octet-stream")
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
@@ -31,7 +31,7 @@ internal static class RouteGroupBuilderExtensions
             .WithDescription("Import Accounts, Incomes, and Expense data")
             .WithMetadata(new RequestSizeLimitAttribute(MaxImportPayloadBytes)) // Will raise 413 Payload Too Large if the file exceeds this limit
             .DisableAntiforgery()
-            .ProducesProblem(StatusCodes.Status200OK)
+            .Produces<Import.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status413RequestEntityTooLarge)
             .ProducesProblem(StatusCodes.Status500InternalServerError);

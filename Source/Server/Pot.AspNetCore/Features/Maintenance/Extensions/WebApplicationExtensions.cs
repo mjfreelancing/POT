@@ -13,6 +13,7 @@ internal static class WebApplicationExtensions
             var group = app
                 .MapGroup(MaintenanceEndpoints.Group)
                 .WithTags(MaintenanceEndpoints.Tag)
+                .ProducesProblem(StatusCodes.Status400BadRequest)
                 .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .ExportData()
                 .ImportData();

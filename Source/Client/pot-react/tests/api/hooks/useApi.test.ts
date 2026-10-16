@@ -4,11 +4,11 @@ import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  BadRequestError,
   ConflictError,
   NetworkError,
   NotFoundError,
   UnexpectedError,
-  ValidationError,
 } from '@/api/errors/apiErrors';
 import {
   useDelete,
@@ -181,10 +181,10 @@ describe('useApi hooks', () => {
       expectFailResult(result.current.data!, ConflictError);
     });
 
-    it('should handle 422 validation errors', async () => {
-      // Create a FailResult with a ValidationError
+    it('should surface validation errors to the API result', async () => {
+      // The interceptor converts validation responses into this FailResult.
       vi.mocked(axios.get).mockRejectedValueOnce(
-        new FailResult(new ValidationError('Validation failed')),
+        new FailResult(new BadRequestError('Validation failed')),
       );
 
       const { result } = renderUseGetHook<unknown>('/test', ['test']);
@@ -192,7 +192,7 @@ describe('useApi hooks', () => {
       await waitFor(() => expect(result.current.data).toBeDefined());
 
       expect(axios.get).toHaveBeenCalledWith('/test', expect.anything());
-      expectFailResult(result.current.data!, ValidationError);
+      expectFailResult(result.current.data!, BadRequestError);
     });
 
     it('should handle 500 unexpected errors', async () => {
@@ -394,7 +394,7 @@ describe('useApi hooks', () => {
     it('should handle validation errors', async () => {
       // Mock axios.post to reject with a validation error
       vi.mocked(axios.post).mockRejectedValueOnce(
-        new FailResult(new ValidationError('Invalid data')),
+        new FailResult(new BadRequestError('Invalid data')),
       );
 
       const { result } = renderUsePostHook<unknown, { name: string }>('/test');
@@ -403,7 +403,7 @@ describe('useApi hooks', () => {
 
       await waitFor(() => expect(result.current.data).toBeDefined());
 
-      expectFailResult(result.current.data!, ValidationError);
+      expectFailResult(result.current.data!, BadRequestError);
     });
 
     it('should handle not found errors', async () => {
@@ -552,7 +552,7 @@ describe('useApi hooks', () => {
 
     it('should handle validation errors', async () => {
       vi.mocked(axios.put).mockRejectedValueOnce(
-        new FailResult(new ValidationError('Invalid data')),
+        new FailResult(new BadRequestError('Invalid data')),
       );
 
       const { result } = renderUsePutHook<
@@ -568,7 +568,7 @@ describe('useApi hooks', () => {
         { id: 1, name: 'Updated Item' },
         expect.anything(),
       );
-      expectFailResult(result.current.data!, ValidationError);
+      expectFailResult(result.current.data!, BadRequestError);
     });
 
     it('should handle unexpected errors', async () => {
@@ -660,7 +660,7 @@ describe('useApi hooks', () => {
     it('should handle validation errors', async () => {
       // This is less common for DELETE but included for completeness
       vi.mocked(axios.delete).mockRejectedValueOnce(
-        new FailResult(new ValidationError('Invalid request for delete')),
+        new FailResult(new BadRequestError('Invalid request for delete')),
       );
 
       const { result } = renderUseDeleteHook<unknown>('/test/1');
@@ -669,7 +669,7 @@ describe('useApi hooks', () => {
 
       await waitFor(() => expect(result.current.data).toBeDefined());
       expect(axios.delete).toHaveBeenCalledWith('/test/1', expect.anything());
-      expectFailResult(result.current.data!, ValidationError);
+      expectFailResult(result.current.data!, BadRequestError);
     });
 
     it('should handle unexpected errors', async () => {
@@ -803,7 +803,7 @@ describe('useApi hooks', () => {
 
     it('should handle errors from post-with-id requests', async () => {
       vi.mocked(axios.post).mockRejectedValueOnce(
-        new FailResult(new ValidationError('Invalid request')),
+        new FailResult(new BadRequestError('Invalid request')),
       );
 
       const { result } = renderUsePostWithIdHook<unknown, { enabled: boolean }>(
@@ -819,7 +819,7 @@ describe('useApi hooks', () => {
         { enabled: true },
         expect.anything(),
       );
-      expectFailResult(result.current.data!, ValidationError);
+      expectFailResult(result.current.data!, BadRequestError);
     });
   });
 

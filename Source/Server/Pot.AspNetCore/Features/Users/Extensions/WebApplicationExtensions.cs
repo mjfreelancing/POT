@@ -13,6 +13,7 @@ internal static class WebApplicationExtensions
             var group = app
                 .MapGroup(UsersEndpoints.Group)
                 .WithTags(UsersEndpoints.Tag)
+                .ProducesProblem(StatusCodes.Status400BadRequest)
                 .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .GetAllUsers()
                 .UpdateUser()

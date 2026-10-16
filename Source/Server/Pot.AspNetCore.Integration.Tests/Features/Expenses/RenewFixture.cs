@@ -65,7 +65,7 @@ public class RenewFixture : IntegrationAuthFixtureBase
 
     // An empty selection is rejected rather than treated as a no-op, because it can only be a caller mistake.
     [Fact]
-    public async Task Should_Return_UnprocessableEntity_When_No_Expenses_Are_Selected()
+    public async Task Should_Return_BadRequest_When_No_Expenses_Are_Selected()
     {
         var admin = await CreateAdminUserAsync("renew", "Renew User");
 
@@ -73,7 +73,7 @@ public class RenewFixture : IntegrationAuthFixtureBase
 
         var response = await client.RenewExpensesAsync([], GetSiteLocalDateToday(), RenewalMode.Overdue);
 
-        await response.ShouldHaveStatusAsync(HttpStatusCode.UnprocessableEntity);
+        await response.ShouldHaveStatusAsync(HttpStatusCode.BadRequest);
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
 
@@ -83,7 +83,7 @@ public class RenewFixture : IntegrationAuthFixtureBase
 
     // A selection the database cannot resolve is reported as a failure rather than a silent success.
     [Fact]
-    public async Task Should_Return_UnprocessableEntity_When_An_Expense_Does_Not_Exist()
+    public async Task Should_Return_BadRequest_When_An_Expense_Does_Not_Exist()
     {
         var admin = await CreateAdminUserAsync("renew", "Renew User");
 
@@ -91,7 +91,7 @@ public class RenewFixture : IntegrationAuthFixtureBase
 
         var response = await client.RenewExpensesAsync([Guid.NewGuid()], GetSiteLocalDateToday(), RenewalMode.Overdue);
 
-        await response.ShouldHaveStatusAsync(HttpStatusCode.UnprocessableEntity);
+        await response.ShouldHaveStatusAsync(HttpStatusCode.BadRequest);
     }
 
     // The overdue mode catches the schedule up to the first occurrence at or after the as-of date, which is what

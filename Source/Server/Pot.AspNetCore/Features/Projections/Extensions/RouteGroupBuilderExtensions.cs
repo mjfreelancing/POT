@@ -12,7 +12,7 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(GetProjections))
             .WithSummary("Get projections")
             .WithDescription("Get projected financial position")
-            .ProducesProblem(StatusCodes.Status200OK)
+            .Produces<Get.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 

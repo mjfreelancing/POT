@@ -7,7 +7,7 @@ using System.Net;
 
 namespace Pot.AspNetCore.Integration.Tests.Features.Incomes;
 
-public class IncomeRenewAndExcludeFixture : IntegrationAuthFixtureBase
+public class RenewFixture : IntegrationAuthFixtureBase
 {
     private const double AccountBalance = 1000.0d;
     private const double IncomeAmount = 250.0d;
@@ -53,7 +53,7 @@ public class IncomeRenewAndExcludeFixture : IntegrationAuthFixtureBase
     }
 
     [Fact]
-    public async Task Should_Return_UnprocessableEntity_When_Renewing_With_No_Incomes_Selected()
+    public async Task Should_Return_BadRequest_When_Renewing_With_No_Incomes_Selected()
     {
         var admin = await CreateAdminUserAsync("incomes", "Incomes User");
 
@@ -61,46 +61,7 @@ public class IncomeRenewAndExcludeFixture : IntegrationAuthFixtureBase
 
         var response = await client.RenewIncomesAsync([], GetSiteLocalDateToday(), RenewalMode.Overdue);
 
-        await response.ShouldHaveStatusAsync(HttpStatusCode.UnprocessableEntity);
-    }
-
-    [Fact]
-    public async Task Should_Toggle_Exclude_On_An_Income()
-    {
-        var admin = await CreateAdminUserAsync("incomes", "Incomes User");
-
-        using var client = await CreateAuthenticatedClientAsync(admin);
-
-        var today = GetSiteLocalDateToday();
-        var incomeRowId = await CreateIncomeAsync(client, today, today.AddDays(CycleDays));
-
-        var response = await client.ToggleExcludeIncomesAsync([incomeRowId]);
-
-        await response.ShouldHaveStatusAsync(HttpStatusCode.OK);
-
-        var toggled = await client.GetIncomeAsync(incomeRowId);
-
-        toggled.ExcludeFromCalcs.ShouldBeTrue("the toggle flips the flag it was created with");
-
-        var secondResponse = await client.ToggleExcludeIncomesAsync([incomeRowId]);
-
-        await secondResponse.ShouldHaveStatusAsync(HttpStatusCode.OK);
-
-        var toggledBack = await client.GetIncomeAsync(incomeRowId);
-
-        toggledBack.ExcludeFromCalcs.ShouldBeFalse("a second toggle flips it back");
-    }
-
-    [Fact]
-    public async Task Should_Return_UnprocessableEntity_When_Toggling_With_No_Incomes_Selected()
-    {
-        var admin = await CreateAdminUserAsync("incomes", "Incomes User");
-
-        using var client = await CreateAuthenticatedClientAsync(admin);
-
-        var response = await client.ToggleExcludeIncomesAsync([]);
-
-        await response.ShouldHaveStatusAsync(HttpStatusCode.UnprocessableEntity);
+        await response.ShouldHaveStatusAsync(HttpStatusCode.BadRequest);
     }
 
     private static async Task<Guid> CreateIncomeAsync(HttpClient client, DateOnly today, DateOnly nextDue)

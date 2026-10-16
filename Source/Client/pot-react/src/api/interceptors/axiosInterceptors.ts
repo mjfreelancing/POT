@@ -4,7 +4,7 @@
  * Key Implementation Notes:
  * 1. Error Flow:
  *    - HTTP errors first hit the responseErrorHandler
- *    - They are transformed into domain-specific errors (ForbiddenError, ValidationError, etc.)
+ *    - They are transformed into domain-specific errors (BadRequestError, ForbiddenError, etc.)
  *    - These are wrapped in a FailResult and rejected
  *    - Due to Axios Promise chains, the error handler may be called twice:
  *      a) First with the HTTP error
@@ -24,7 +24,7 @@
  *    - Check instanceof FailResult for our domain errors
  *
  * 4. Common Issues:
- *    - "Unexpected Error" means an unhandled HTTP status code (not 401-429, 500-504)
+ *    - "Unexpected Error" means an HTTP status code not explicitly handled by the switch
  *    - "Server Error" means 500/502/503/504:
  *      - Empty apiError (proxy/nginx responding but server not running): "Unable to connect to the server."
  *      - Populated apiError (server returned actual error): Shows server's error detail/title
@@ -51,9 +51,11 @@ import { addCorrelationId, getNetworkError } from '../apiHelpers';
 import type { ApiError, ApiErrorResponse } from '../errors';
 import {
   AuthenticationError,
+  BadRequestError,
   ConflictError,
   ForbiddenError,
   getAuthenticationMessage,
+  getBadRequestMessage,
   getConflictMessage,
   getErrorTitle,
   getForbiddenMessage,
@@ -61,13 +63,11 @@ import {
   getNotFoundMessage,
   getRateLimitedMessage,
   getServerErrorMessage,
-  getValidationMessage,
   MethodNotAllowedError,
   NotFoundError,
   RateLimitedError,
   ServerError,
   UnexpectedError,
-  ValidationError,
 } from '../errors';
 
 const responseSuccessHandler = (response: AxiosResponse): AxiosResponse => {
@@ -136,6 +136,10 @@ const responseErrorHandler = async (error: AxiosError) => {
     let errorResult: ApiError;
 
     switch (status) {
+      case 400:
+        errorResult = new BadRequestError(getBadRequestMessage(apiError));
+        break;
+
       case 401:
         errorResult = new AuthenticationError(
           getAuthenticationMessage(apiError),
@@ -158,10 +162,6 @@ const responseErrorHandler = async (error: AxiosError) => {
 
       case 409:
         errorResult = new ConflictError(getConflictMessage(apiError));
-        break;
-
-      case 422:
-        errorResult = new ValidationError(getValidationMessage(apiError));
         break;
 
       case 429:

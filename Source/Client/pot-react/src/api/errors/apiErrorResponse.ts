@@ -52,12 +52,12 @@ const getConflictMessage = (error: ApiErrorResponse): string => {
   return error.detail ?? 'A conflict error occurred';
 };
 
-const getValidationMessage = (error: ApiErrorResponse): string => {
+const getBadRequestMessage = (error: ApiErrorResponse): string => {
   if (error.errors && error.errors.length > 0) {
     return error.errors.map(err => err.errorMessage).join('\n');
   }
 
-  return error.detail ?? 'A validation error occurred';
+  return error.detail ?? error.title ?? 'The request was not valid.';
 };
 
 const getServerErrorMessage = (error: ApiErrorResponse): string => {
@@ -90,6 +90,7 @@ const getErrorTitle = (error: ApiErrorResponse): string => {
 
 export {
   getAuthenticationMessage,
+  getBadRequestMessage,
   getConflictMessage,
   getErrorTitle,
   getForbiddenMessage,
@@ -97,6 +98,5 @@ export {
   getNotFoundMessage,
   getRateLimitedMessage,
   getServerErrorMessage,
-  getValidationMessage,
 };
 export type { ApiErrorDetail, ApiErrorResponse };

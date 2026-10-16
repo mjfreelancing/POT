@@ -6,6 +6,7 @@ import { addCorrelationId } from '@/api/apiHelpers';
 import type { ApiErrorResponse } from '@/api/errors/apiErrorResponse';
 import {
   AuthenticationError,
+  BadRequestError,
   ConflictError,
   ForbiddenError,
   MethodNotAllowedError,
@@ -13,7 +14,7 @@ import {
   NotFoundError,
   RateLimitedError,
   ServerError,
-  ValidationError,
+  UnexpectedError,
 } from '@/api/errors/apiErrors';
 import type { FailResultBase } from '@/lib';
 import { FailResult } from '@/lib';
@@ -294,11 +295,11 @@ describe('Axios Interceptors', () => {
       await expectRejectedFailResultErrorType(rejectionPromise, ConflictError);
     });
 
-    it('should convert 422 responses to ValidationError', async () => {
+    it('should convert 400 responses to BadRequestError', async () => {
       const apiErrorResponse: ApiErrorResponse = {
         title: 'Validation Error',
         detail: 'Validation failed',
-        status: 422,
+        status: 400,
         errors: [
           {
             propertyName: 'email',
@@ -310,6 +311,33 @@ describe('Axios Interceptors', () => {
       };
 
       const axiosError = new AxiosError('Validation Error');
+
+      axiosError.response = {
+        status: 400,
+        data: apiErrorResponse,
+        headers: {},
+        config: {
+          headers: new AxiosHeaders({ 'X-Correlation-ID': 'test-id' }),
+        } as InternalAxiosRequestConfig,
+        statusText: 'Bad Request',
+      };
+
+      const rejectionPromise = responseErrorHandler(axiosError);
+
+      await expectRejectedFailResultErrorType(
+        rejectionPromise,
+        BadRequestError,
+      );
+    });
+
+    it('should not treat 422 responses as validation errors', async () => {
+      const apiErrorResponse: ApiErrorResponse = {
+        title: 'Unprocessable Entity',
+        detail: 'Validation failed',
+        status: 422,
+      };
+
+      const axiosError = new AxiosError('Unprocessable Entity');
 
       axiosError.response = {
         status: 422,
@@ -325,7 +353,7 @@ describe('Axios Interceptors', () => {
 
       await expectRejectedFailResultErrorType(
         rejectionPromise,
-        ValidationError,
+        UnexpectedError,
       );
     });
 

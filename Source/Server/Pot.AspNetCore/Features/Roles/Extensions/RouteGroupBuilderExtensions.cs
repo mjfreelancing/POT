@@ -10,7 +10,7 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(GetAllRoles))
             .WithSummary("Get all roles")
             .WithDescription("Get all roles")
-            .ProducesProblem(StatusCodes.Status200OK)
+            .Produces<GetAll.Response[]>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 

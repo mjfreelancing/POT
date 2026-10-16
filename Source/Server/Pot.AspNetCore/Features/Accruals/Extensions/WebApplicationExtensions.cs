@@ -12,6 +12,7 @@ internal static class WebApplicationExtensions
 
             app.MapGroup(AccrualsEndpoints.Group)
                 .WithTags(AccrualsEndpoints.Tag)
+                .ProducesProblem(StatusCodes.Status400BadRequest)
                 .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .GetStatus();
         }

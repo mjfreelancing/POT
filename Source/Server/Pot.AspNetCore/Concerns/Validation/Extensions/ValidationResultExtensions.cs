@@ -14,7 +14,7 @@ internal static class ValidationResultExtensions
         return new Microsoft.AspNetCore.Mvc.ProblemDetails
         {
             Detail = "One or more validation errors occurred.",
-            Status = StatusCodes.Status422UnprocessableEntity,
+            Status = StatusCodes.Status400BadRequest,
             Extensions = new Dictionary<string, object?>
             {
                 { "errors", errorDetails.SelectToArray(error => error.GetErrorDetails()) }
@@ -22,4 +22,3 @@ internal static class ValidationResultExtensions
         };
     }
 }
-

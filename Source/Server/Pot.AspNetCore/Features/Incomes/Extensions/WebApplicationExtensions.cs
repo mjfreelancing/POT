@@ -12,6 +12,7 @@ internal static class WebApplicationExtensions
 
             app.MapGroup(IncomesEndpoints.Group)
                 .WithTags(IncomesEndpoints.Tag)
+                .ProducesProblem(StatusCodes.Status400BadRequest)
                 .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .GetAllIncomes()
                 .GetIncome()

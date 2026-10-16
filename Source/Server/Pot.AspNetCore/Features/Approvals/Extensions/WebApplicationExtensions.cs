@@ -13,6 +13,7 @@ internal static class WebApplicationExtensions
             var group = app
                 .MapGroup(ApprovalsEndpoints.Group)
                 .WithTags(ApprovalsEndpoints.Tag)
+                .ProducesProblem(StatusCodes.Status400BadRequest)
                 .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .GetPendingApprovals()
                 .UpdateUserApproval();

@@ -9,9 +9,25 @@ namespace Pot.AspNetCore.Integration.Tests.Host.Models;
 public sealed class ExpenseResponse
 {
     /// <summary>
+    /// The account the expense belongs to.
+    /// </summary>
+    public sealed class AccountModel
+    {
+        /// <summary>
+        /// The account identifier.
+        /// </summary>
+        public Guid RowId { get; set; }
+    }
+
+    /// <summary>
     /// The expense identifier.
     /// </summary>
     public Guid RowId { get; set; }
+
+    /// <summary>
+    /// A description of the expense.
+    /// </summary>
+    public string? Description { get; set; }
 
     /// <summary>
     /// The entity tag an update must match.
@@ -22,6 +38,16 @@ public sealed class ExpenseResponse
     /// The expense amount.
     /// </summary>
     public double Amount { get; set; }
+
+    /// <summary>
+    /// Whether the expense is excluded from calculations.
+    /// </summary>
+    public bool ExcludeFromCalcs { get; set; }
+
+    /// <summary>
+    /// The account the expense belongs to.
+    /// </summary>
+    public AccountModel? Account { get; set; }
 
     /// <summary>
     /// When the expense is next due.

@@ -12,6 +12,7 @@ internal static class WebApplicationExtensions
 
             app.MapGroup(AccountsEndpoints.Group)
                 .WithTags(AccountsEndpoints.Tag)
+                .ProducesProblem(StatusCodes.Status400BadRequest)
                 .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .GetAllAccounts()
                 .GetAccount()

@@ -12,6 +12,7 @@ internal static class WebApplicationExtensions
 
             app.MapGroup(SettingsEndpoints.Group)
                .WithTags(SettingsEndpoints.Tag)
+               .ProducesProblem(StatusCodes.Status400BadRequest)
                .RequireRateLimiting(RateLimiterPolicy.Chained)
                .GetAllSettings()
                .UpdateSettings();
