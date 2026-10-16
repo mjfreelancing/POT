@@ -12,7 +12,7 @@ namespace Pot.AspNetCore.Integration.Tests;
 public abstract class IntegrationFixtureBase : IAsyncLifetime
 {
     private PostgreSqlContainer? _container;
-    private ProductionApiWebApplicationFactory? _factory;
+    private ApiWebApplicationFactory? _factory;
 
     protected string DbHost { get; private set; }
     protected int DbPort { get; private set; }
@@ -49,6 +49,17 @@ public abstract class IntegrationFixtureBase : IAsyncLifetime
         return scope.ServiceProvider.GetRequiredService<ITimeProvider>().GetLocalDateNow();
     }
 
+    /// <summary>
+    /// Creates the host factory used by the fixture.
+    /// </summary>
+    /// <param name="dbHost">The isolated database hostname.</param>
+    /// <param name="dbPort">The isolated database port.</param>
+    /// <returns>A host factory configured for the fixture.</returns>
+    protected virtual ApiWebApplicationFactory CreateApiWebApplicationFactory(string dbHost, int dbPort)
+    {
+        return new ProductionApiWebApplicationFactory(dbHost, dbPort);
+    }
+
     async ValueTask IAsyncLifetime.InitializeAsync()
     {
         // Step 1: Create a fresh isolated Postgres container for this fixture
@@ -66,7 +77,7 @@ public abstract class IntegrationFixtureBase : IAsyncLifetime
 
         // Step 3: Create the factory with ACTUAL container connection details
         // This ensures ConfigureWebHost() receives real values, not fallbacks
-        _factory = new ProductionApiWebApplicationFactory(DbHost, DbPort);
+        _factory = CreateApiWebApplicationFactory(DbHost, DbPort);
 
         // Step 4: Apply EF Core migrations to the fresh isolated database
         using var scope = _factory.Services.CreateScope();

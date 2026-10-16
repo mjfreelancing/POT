@@ -6,6 +6,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi;
 using Pot.App.Concerns.Validation;
 using Pot.App.Extensions;
 using Pot.AspNetCore.Concerns.Auth;
@@ -32,6 +33,7 @@ namespace Pot.AspNetCore.Extensions;
 
 internal static class WebApplicationBuilderExtensions
 {
+    private const string BearerSecuritySchemeName = "Bearer";
     private static readonly Type ScopedLifetimeValidatorType = typeof(IScopedLifetimeValidator);
 
     public static WebApplicationBuilder AddPotHealthChecks(this WebApplicationBuilder builder)
@@ -194,7 +196,44 @@ internal static class WebApplicationBuilderExtensions
     {
         // Refer to this link if multiple versions are required and different pages should be shown:
         // https://learn.microsoft.com/en-us/aspnet/core/fundamentals/openapi/aspnetcore-openapi
-        builder.Services.AddOpenApi("v1", options => { });
+        builder.Services.AddOpenApi("v1", options =>
+        {
+            // Describe JWT bearer authentication in the document so API tooling knows how clients authenticate.
+            // This documents the existing auth scheme; it does not enable or enforce authentication at runtime.
+            options.AddDocumentTransformer((document, _, _) =>
+            {
+                document.Components ??= new OpenApiComponents();
+                document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+                document.Components.SecuritySchemes[BearerSecuritySchemeName] = new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT"
+                };
+
+                return Task.CompletedTask;
+            });
+
+            // Mark protected operations as requiring the bearer scheme, but leave explicitly anonymous
+            // operations (such as sign-in and registration) usable without a token in API tooling.
+            options.AddOperationTransformer((operation, context, _) =>
+            {
+                var allowsAnonymous = context.Description.ActionDescriptor.EndpointMetadata
+                    .OfType<AllowAnonymousAttribute>()
+                    .Any();
+
+                if (!allowsAnonymous)
+                {
+                    operation.Security ??= [];
+                    operation.Security.Add(new OpenApiSecurityRequirement
+                    {
+                        [new OpenApiSecuritySchemeReference(BearerSecuritySchemeName, context.Document)] = []
+                    });
+                }
+
+                return Task.CompletedTask;
+            });
+        });
 
         return builder;
     }
