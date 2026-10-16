@@ -14,6 +14,8 @@ public class CorrelationAndProblemDetailsFixture : IntegrationFixtureBase
     {
         public string? Detail { get; set; }
 
+        public string? Instance { get; set; }
+
         public int? Status { get; set; }
 
         [JsonExtensionData]
@@ -37,7 +39,8 @@ public class CorrelationAndProblemDetailsFixture : IntegrationFixtureBase
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         problemDetails.Detail.ShouldBe("CorrelationId exceeds max length of 128 chars");
         problemDetails.Status.ShouldBe(StatusCodes.Status400BadRequest);
-        GetExtensionString(problemDetails, "instance").ShouldBe("POST /api/auth/logout");
+        problemDetails.Instance.ShouldBe("/api/auth/logout");
+        HasExtension(problemDetails, "instance").ShouldBeFalse();
         GetExtensionString(problemDetails, "correlationId").ShouldNotBeNullOrWhiteSpace();
     }
 
@@ -79,7 +82,8 @@ public class CorrelationAndProblemDetailsFixture : IntegrationFixtureBase
         problemDetails.Status.ShouldBe(StatusCodes.Status400BadRequest);
         problemDetails.Detail.ShouldBe("One or more validation errors occurred.");
         GetExtensionString(problemDetails, "correlationId").ShouldBe(correlationId);
-        GetExtensionString(problemDetails, "instance").ShouldBe("POST /api/auth/login");
+        problemDetails.Instance.ShouldBe("/api/auth/login");
+        HasExtension(problemDetails, "instance").ShouldBeFalse();
         HasExtension(problemDetails, "errors").ShouldBeTrue();
     }
 
@@ -102,7 +106,8 @@ public class CorrelationAndProblemDetailsFixture : IntegrationFixtureBase
 
         problemDetails.Status.ShouldBe(StatusCodes.Status400BadRequest);
         GetExtensionString(problemDetails, "correlationId").ShouldNotBeNullOrWhiteSpace();
-        GetExtensionString(problemDetails, "instance").ShouldBe("POST /api/auth/login");
+        problemDetails.Instance.ShouldBe("/api/auth/login");
+        HasExtension(problemDetails, "instance").ShouldBeFalse();
     }
 
     [Fact]

@@ -320,7 +320,7 @@ internal static class WebApplicationBuilderExtensions
             options.CustomizeProblemDetails = ctx =>
             {
                 ctx.ProblemDetails.Extensions.Add("correlationId", ctx.HttpContext.TraceIdentifier);
-                ctx.ProblemDetails.Extensions.Add("instance", $"{ctx.HttpContext.Request.Method} {ctx.HttpContext.Request.Path}");
+                ctx.ProblemDetails.Instance = ctx.HttpContext.Request.Path.ToString();
             });
 
         return builder;
