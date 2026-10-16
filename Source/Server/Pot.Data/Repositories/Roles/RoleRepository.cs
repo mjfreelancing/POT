@@ -18,7 +18,7 @@ internal sealed class RoleRepository : RepositoryBase, IRoleRepository
         return Roles.SingleAsync(entity => entity.Name == role, cancellationToken);
     }
 
-    public Task<List<RoleEntity>> GetRolesAsync(Guid[] roleIds, CancellationToken cancellationToken)
+    public Task<List<RoleEntity>> GetRolesAsync(IReadOnlyList<Guid> roleIds, CancellationToken cancellationToken)
     {
         return _dbContext.Roles
             .Where(role => roleIds.Contains(role.RowId))

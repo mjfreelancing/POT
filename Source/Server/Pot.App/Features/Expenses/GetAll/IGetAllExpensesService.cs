@@ -13,5 +13,5 @@ public interface IGetAllExpensesService : IPotScopedDependency
     /// </summary>
     /// <param name="cancellationToken">The token used to cancel the operation.</param>
     /// <returns>The expenses for the current site, each with its accrual detail.</returns>
-    Task<Output[]> GetAllExpensesAsync(CancellationToken cancellationToken);
+    Task<IReadOnlyList<Output>> GetAllExpensesAsync(CancellationToken cancellationToken);
 }

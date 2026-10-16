@@ -4,7 +4,7 @@ namespace Pot.AspNetCore.Features.Auth.Signup.Complete;
 
 internal static class RequestMapping
 {
-    public static Input MapToInput(this Request request, Guid[] platformAdminRowIds)
+    public static Input MapToInput(this Request request, IReadOnlyList<Guid> platformAdminRowIds)
     {
         return new Input
         {

@@ -33,7 +33,7 @@ public class ToggleExcludeIncomesServiceFixture : PotFixtureBase
         var missingRowId = Guid.NewGuid();
 
         _incomeRepositoryFake
-            .GetIncomesAsync(Arg.Any<Guid[]>(), Arg.Any<CancellationToken>())
+            .GetIncomesAsync(Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<CancellationToken>())
             .Returns([existingIncome]);
 
         var service = CreateService();
@@ -56,7 +56,7 @@ public class ToggleExcludeIncomesServiceFixture : PotFixtureBase
         var rowIds = new[] { firstIncome.RowId, secondIncome.RowId };
 
         _incomeRepositoryFake
-            .GetIncomesAsync(Arg.Any<Guid[]>(), Arg.Any<CancellationToken>())
+            .GetIncomesAsync(Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<CancellationToken>())
             .Returns([firstIncome, secondIncome]);
         _incomeRepositoryFake
             .SaveAsync(Arg.Any<CancellationToken>())

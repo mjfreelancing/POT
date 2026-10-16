@@ -8,7 +8,7 @@ public interface IExpenseRepository : IRepositoryBase
 
     Task<List<ExpenseEntity>> GetAllExpensesAsync(CancellationToken cancellationToken);
     Task<ExpenseEntity?> GetExpenseOrDefaultAsync(Guid rowId, CancellationToken cancellationToken);
-    Task<List<ExpenseEntity>> GetExpensesAsync(Guid[] rowIds, CancellationToken cancellationToken);
+    Task<List<ExpenseEntity>> GetExpensesAsync(IReadOnlyList<Guid> rowIds, CancellationToken cancellationToken);
     Task<List<ExpenseEntity>> GetExpensesForAccountAsync(Guid accountRowId, CancellationToken cancellationToken);
-    Task<Guid[]> GetRequiredRenewalsAsync(Guid[] accountRowIds, DateOnly asOfDate, CancellationToken cancellationToken);
+    Task<IReadOnlyList<Guid>> GetRequiredRenewalsAsync(IReadOnlyList<Guid> accountRowIds, DateOnly asOfDate, CancellationToken cancellationToken);
 }

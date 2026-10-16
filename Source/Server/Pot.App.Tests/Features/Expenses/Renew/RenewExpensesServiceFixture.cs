@@ -89,7 +89,7 @@ public class RenewExpensesServiceFixture : PotFixtureBase
             var logger = Substitute.For<ILogger<RenewExpensesService>>();
 
             _expenseRepositoryFake
-                .GetExpensesAsync(Arg.Any<Guid[]>(), Arg.Any<CancellationToken>())
+                .GetExpensesAsync(Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<CancellationToken>())
                 .Returns(new List<ExpenseEntity>());
 
             _accrualDirtyStateManagerFake
@@ -126,7 +126,7 @@ public class RenewExpensesServiceFixture : PotFixtureBase
             var missingRowId = Guid.NewGuid();
 
             _expenseRepositoryFake
-                .GetExpensesAsync(Arg.Any<Guid[]>(), Arg.Any<CancellationToken>())
+                .GetExpensesAsync(Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<CancellationToken>())
                 .Returns([existingExpense]);
 
             var service = new RenewExpensesService(_expenseRepositoryFake, _renewalCalculatorFake, logger);
@@ -160,7 +160,7 @@ public class RenewExpensesServiceFixture : PotFixtureBase
             var unchangedExpense = CreateExpense(accountId: 7);
 
             _expenseRepositoryFake
-                .GetExpensesAsync(Arg.Any<Guid[]>(), Arg.Any<CancellationToken>())
+                .GetExpensesAsync(Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<CancellationToken>())
                 .Returns([changedExpense, unchangedExpense]);
 
             _renewalCalculatorFake

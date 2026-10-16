@@ -71,7 +71,7 @@ public class ToggleExcludeExpensesServiceFixture : PotFixtureBase
             var logger = Substitute.For<ILogger<ToggleExcludeExpensesService>>();
 
             _expenseRepositoryFake
-                .GetExpensesAsync(Arg.Any<Guid[]>(), Arg.Any<CancellationToken>())
+                .GetExpensesAsync(Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<CancellationToken>())
                 .Returns(new List<ExpenseEntity>());
 
             _accrualDirtyStateManagerFake
@@ -106,7 +106,7 @@ public class ToggleExcludeExpensesServiceFixture : PotFixtureBase
             var missingRowId = Guid.NewGuid();
 
             _expenseRepositoryFake
-                .GetExpensesAsync(Arg.Any<Guid[]>(), Arg.Any<CancellationToken>())
+                .GetExpensesAsync(Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<CancellationToken>())
                 .Returns([existingExpense]);
 
             var service = new ToggleExcludeExpensesService(_expenseRepositoryFake, logger);
@@ -134,7 +134,7 @@ public class ToggleExcludeExpensesServiceFixture : PotFixtureBase
             var secondExpense = CreateExpense(accountId: 10, excluded: true);
 
             _expenseRepositoryFake
-                .GetExpensesAsync(Arg.Any<Guid[]>(), Arg.Any<CancellationToken>())
+                .GetExpensesAsync(Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<CancellationToken>())
                 .Returns([firstExpense, secondExpense]);
 
             _expenseRepositoryFake

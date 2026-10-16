@@ -15,5 +15,5 @@ public sealed class Request
 
     /// <summary>The user roles</summary>
     [Description("The user roles")]
-    public required Guid[] RoleIds { get; set; }
+    public required IReadOnlyList<Guid> RoleIds { get; set; }
 }

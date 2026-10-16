@@ -27,5 +27,5 @@ internal sealed class InputState
     /// <summary>
     /// Gets the configured platform administrator ids.
     /// </summary>
-    public required Guid[] PlatformAdminRowIds { get; init; }
+    public required IReadOnlyList<Guid> PlatformAdminRowIds { get; init; }
 }

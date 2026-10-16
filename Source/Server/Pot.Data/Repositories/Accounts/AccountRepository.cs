@@ -66,9 +66,9 @@ internal sealed class AccountRepository : PersistableRepository, IPersistableAcc
             .SingleOrDefaultAsync(cancellationToken);
     }
 
-    public Task<AccountWithLinkedCounts[]> GetAllAccountsWithLinkedCountsAsync(CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<AccountWithLinkedCounts>> GetAllAccountsWithLinkedCountsAsync(CancellationToken cancellationToken)
     {
-        return Accounts
+        return await Accounts
             .Select(item => new AccountWithLinkedCounts
             {
                 Account = item,

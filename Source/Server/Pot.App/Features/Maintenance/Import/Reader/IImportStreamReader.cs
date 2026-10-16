@@ -17,9 +17,9 @@ public interface IImportStreamReader : IPotScopedDependency
     /// Gets the names of the entries in the opened package.
     /// </summary>
     /// <value>
-    /// The entry names, or an empty array when no package has been opened.
+    /// The entry names, or an empty list when no package has been opened.
     /// </value>
-    string[] EntryNames { get; }
+    IReadOnlyList<string> EntryNames { get; }
 
     /// <summary>
     /// Opens the package over the supplied stream.

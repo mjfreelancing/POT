@@ -7,5 +7,5 @@ public sealed class Request
 {
     /// <summary>The Expense Ids.</summary>
     [Description("The Expense Ids.")]
-    public Guid[] RowIds { get; init; } = [];
+    public IReadOnlyList<Guid> RowIds { get; init; } = [];
 }

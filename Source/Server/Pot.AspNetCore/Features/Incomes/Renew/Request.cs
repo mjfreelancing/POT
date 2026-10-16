@@ -8,7 +8,7 @@ public sealed class Request
 {
     /// <summary>The Income Ids</summary>
     [Description("The Income Ids")]
-    public Guid[] RowIds { get; init; } = [];
+    public IReadOnlyList<Guid> RowIds { get; init; } = [];
 
     /// <summary>The reference date for the renewal operation (typically today's date)</summary>
     [Description("The reference date for the renewal operation (typically today's date)")]

@@ -21,7 +21,7 @@ internal sealed class IncomeRepository : PersistableRepository, IPersistableInco
             .ToListAsync(cancellationToken);
     }
 
-    public Task<List<IncomeEntity>> GetIncomesAsync(Guid[] rowIds, CancellationToken cancellationToken)
+    public Task<List<IncomeEntity>> GetIncomesAsync(IReadOnlyList<Guid> rowIds, CancellationToken cancellationToken)
     {
         return Incomes
             .Include(income => income.Account)
@@ -36,12 +36,13 @@ internal sealed class IncomeRepository : PersistableRepository, IPersistableInco
             .SingleOrDefaultAsync(incomeId, cancellationToken);
     }
 
-    public Task<Guid[]> GetRequiredRenewalsAsync(Guid[] accountRowIds, DateOnly asOfDate, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<Guid>> GetRequiredRenewalsAsync(
+        IReadOnlyList<Guid> accountRowIds, DateOnly asOfDate, CancellationToken cancellationToken)
     {
         var isInAccountSet = IncomeSpecifications.IsInAccountSet(accountRowIds).Expression;
         var requiresRenewal = IncomeSpecifications.RequiresRenewal(asOfDate).Expression;
 
-        return Incomes
+        return await Incomes
             .Where(isInAccountSet)
             .Where(requiresRenewal)
             .Select(income => income.RowId)

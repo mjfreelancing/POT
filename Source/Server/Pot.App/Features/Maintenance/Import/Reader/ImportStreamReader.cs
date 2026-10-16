@@ -22,7 +22,7 @@ internal sealed class ImportStreamReader : IImportStreamReader
     private Lazy<string[]>? _entryNames;
 
     /// <inheritdoc />
-    public string[] EntryNames => _entryNames?.Value ?? [];
+    public IReadOnlyList<string> EntryNames => _entryNames?.Value ?? [];
 
     public ImportStreamReader(IMetadataSerializer metadataSerializer, ILogger<ImportStreamReader> logger)
     {

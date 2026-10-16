@@ -4,7 +4,7 @@ namespace Pot.AspNetCore.Features.Users.UpdateStatus;
 
 internal static class RequestMapping
 {
-    public static Input MapToInput(this Request request, Guid userId, Guid[] platformAdminRowIds)
+    public static Input MapToInput(this Request request, Guid userId, IReadOnlyList<Guid> platformAdminRowIds)
     {
         return new Input
         {

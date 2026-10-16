@@ -33,7 +33,7 @@ internal sealed class GetAllExpensesService : IGetAllExpensesService
     }
 
     /// <inheritdoc />
-    public async Task<Output[]> GetAllExpensesAsync(CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<Output>> GetAllExpensesAsync(CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 

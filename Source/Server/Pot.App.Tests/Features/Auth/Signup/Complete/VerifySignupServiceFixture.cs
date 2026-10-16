@@ -146,7 +146,7 @@ public class VerifySignupServiceFixture : PotFixtureBase
     private void ArrangeConfiguredAdministrators(params UserEntity[] administrators)
     {
         _userRepositoryFake
-            .GetByIdsForPlatformNotificationAsync(Arg.Any<Guid[]>(), Arg.Any<CancellationToken>())
+            .GetByIdsForPlatformNotificationAsync(Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<CancellationToken>())
             .Returns([.. administrators]);
     }
 

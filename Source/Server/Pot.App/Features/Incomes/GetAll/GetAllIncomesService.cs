@@ -23,7 +23,7 @@ internal sealed class GetAllIncomesService : IGetAllIncomesService
     }
 
     /// <inheritdoc />
-    public async Task<Output[]> GetAllIncomesAsync(CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<Output>> GetAllIncomesAsync(CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 

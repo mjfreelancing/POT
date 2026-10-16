@@ -30,7 +30,7 @@ internal sealed class ExpenseRepository : PersistableRepository, IPersistableExp
             .SingleOrDefaultAsync(rowId, cancellationToken);
     }
 
-    public Task<List<ExpenseEntity>> GetExpensesAsync(Guid[] rowIds, CancellationToken cancellationToken)
+    public Task<List<ExpenseEntity>> GetExpensesAsync(IReadOnlyList<Guid> rowIds, CancellationToken cancellationToken)
     {
         return Expenses
             .Include(expense => expense.Account)
@@ -48,12 +48,13 @@ internal sealed class ExpenseRepository : PersistableRepository, IPersistableExp
             .ToListAsync(cancellationToken);
     }
 
-    public Task<Guid[]> GetRequiredRenewalsAsync(Guid[] accountRowIds, DateOnly asOfDate, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<Guid>> GetRequiredRenewalsAsync(
+        IReadOnlyList<Guid> accountRowIds, DateOnly asOfDate, CancellationToken cancellationToken)
     {
         var isInAccountSet = ExpenseSpecifications.IsInAccountSet(accountRowIds).Expression;
         var requiresRenewal = ExpenseSpecifications.RequiresRenewal(asOfDate).Expression;
 
-        return Expenses
+        return await Expenses
             .Where(isInAccountSet)
             .Where(requiresRenewal)
             .Select(expense => expense.RowId)

@@ -25,7 +25,7 @@ internal sealed class Response : ResponseBase
     public string Email { get; init; }
 
     [Description("The user's permissions")]
-    public string[] Permissions { get; init; }
+    public IReadOnlyList<string> Permissions { get; init; }
 
     public SiteModel Site { get; init; }
 

@@ -36,7 +36,7 @@ internal sealed class GetAllAccountsService : IGetAllAccountsService
     }
 
     /// <inheritdoc />
-    public async Task<Output[]> GetAllAccountsAsync(CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<Output>> GetAllAccountsAsync(CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 

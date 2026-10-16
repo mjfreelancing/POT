@@ -7,7 +7,7 @@ public interface IIncomeRepository : IRepositoryBase
     IQueryable<IncomeEntity> Incomes { get; }
 
     Task<List<IncomeEntity>> GetAllIncomesAsync(CancellationToken cancellationToken);
-    Task<List<IncomeEntity>> GetIncomesAsync(Guid[] rowIds, CancellationToken cancellationToken);
+    Task<List<IncomeEntity>> GetIncomesAsync(IReadOnlyList<Guid> rowIds, CancellationToken cancellationToken);
     Task<IncomeEntity?> GetIncomeOrDefaultAsync(Guid incomeId, CancellationToken cancellationToken);
-    Task<Guid[]> GetRequiredRenewalsAsync(Guid[] accountRowIds, DateOnly asOfDate, CancellationToken cancellationToken);
+    Task<IReadOnlyList<Guid>> GetRequiredRenewalsAsync(IReadOnlyList<Guid> accountRowIds, DateOnly asOfDate, CancellationToken cancellationToken);
 }

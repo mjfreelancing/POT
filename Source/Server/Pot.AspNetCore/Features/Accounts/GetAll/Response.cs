@@ -39,7 +39,7 @@ internal sealed class Response : ResponseBase
     [Description("The available balance after considering the Reserved and committed amounts")]
     public double Available => Balance - Reserved - TotalCommitted;
 
-    public static Ok<Response[]> Ok(Output[] accounts)
+    public static Ok<Response[]> Ok(IReadOnlyList<Output> accounts)
     {
         var responses = accounts.SelectToArray(account => new Response(account));
 

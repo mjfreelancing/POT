@@ -55,7 +55,7 @@ internal sealed class Response : ResponseBase
     [Description("A note about the expense")]
     public string? Note { get; init; }
 
-    public static Ok<Response[]> Ok(Output[] expenses)
+    public static Ok<Response[]> Ok(IReadOnlyList<Output> expenses)
     {
         var responses = expenses.SelectToArray(expense => new Response(expense));
 

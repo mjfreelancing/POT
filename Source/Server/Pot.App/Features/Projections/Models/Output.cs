@@ -10,5 +10,5 @@ namespace Pot.App.Features.Projections.Models;
 public sealed class Output
 {
     /// <summary>The projected values for each account, in the order the accounts were read.</summary>
-    public required AccountDailyFinancialProjection[] Accounts { get; init; }
+    public required IReadOnlyList<AccountDailyFinancialProjection> Accounts { get; init; }
 }

@@ -16,7 +16,7 @@ public sealed class PlatformAdminOptions
 
     // Gets the list of platform admin user IDs as a HashSet for efficient lookup.
     /// <summary>Gets the configured platform administrator user identifiers.</summary>
-    public Guid[] GetUserRowIds()
+    public IReadOnlyList<Guid> GetUserRowIds()
     {
         if (UserIds.IsNotNullOrEmpty())
         {

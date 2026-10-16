@@ -28,5 +28,5 @@ internal sealed class InputState
     /// <summary>
     /// Gets the role identifiers to assign to the user.
     /// </summary>
-    public required Guid[] RoleIds { get; init; }
+    public required IReadOnlyList<Guid> RoleIds { get; init; }
 }

@@ -200,7 +200,8 @@ internal sealed class UserRepository : PersistableRepository, IPersistableUserRe
             .SingleOrDefaultAsync(user => user.RowId == rowId, cancellationToken);
     }
 
-    public Task<List<UserEntity>> GetByIdsForPlatformNotificationAsync(Guid[] rowIds, CancellationToken cancellationToken)
+    public Task<List<UserEntity>> GetByIdsForPlatformNotificationAsync(
+        IReadOnlyList<Guid> rowIds, CancellationToken cancellationToken)
     {
         // Cross-tenant: signup completes anonymously, so the recipients are the configured administrators.
         return Set<UserEntity>()

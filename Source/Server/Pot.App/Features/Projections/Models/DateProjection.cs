@@ -50,8 +50,8 @@ public sealed class DateProjection
     public required double ExpensesPaid { get; init; }
 
     /// <summary>The expenses due on the day, empty when the day has none.</summary>
-    public required ProjectionExpenseModel[] ExpenseItems { get; init; }
+    public required IReadOnlyList<ProjectionExpenseModel> ExpenseItems { get; init; }
 
     /// <summary>The income due on the day, empty when the day has none.</summary>
-    public required ProjectionIncomeModel[] IncomeItems { get; init; }
+    public required IReadOnlyList<ProjectionIncomeModel> IncomeItems { get; init; }
 }

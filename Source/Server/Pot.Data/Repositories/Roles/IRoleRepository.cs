@@ -8,7 +8,7 @@ public interface IRoleRepository : IRepositoryBase
     IQueryable<RoleEntity> Roles { get; }
 
     Task<RoleEntity> GetByNameAsync(Role role, CancellationToken cancellationToken);
-    Task<List<RoleEntity>> GetRolesAsync(Guid[] roleIds, CancellationToken cancellationToken);
+    Task<List<RoleEntity>> GetRolesAsync(IReadOnlyList<Guid> roleIds, CancellationToken cancellationToken);
 
     /// <summary>
     /// Resolves the roles granted to a user, and optionally each role's permissions.

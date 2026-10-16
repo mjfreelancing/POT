@@ -15,5 +15,5 @@ public sealed class AccountDailyFinancialProjection
     public required string Description { get; init; }
 
     /// <summary>The projected values for each day of the window, in date order.</summary>
-    public required DateProjection[] Dates { get; init; }
+    public required IReadOnlyList<DateProjection> Dates { get; init; }
 }

@@ -29,7 +29,7 @@ internal sealed class Response
     }
 
     [Description("List of all settings")]
-    public required SettingItem[] Settings { get; init; }
+    public required IReadOnlyList<SettingItem> Settings { get; init; }
 
     public static Ok<Response> Ok(Output output)
     {

@@ -99,10 +99,10 @@ internal sealed class AccountProjectionState
     public double Arrears { get; private set; }
 
     /// <summary>The expense rows, in the order the account's expenses were read.</summary>
-    public ExpenseProjectionRow[] ExpenseRows => _expenseRows;
+    public IReadOnlyList<ExpenseProjectionRow> ExpenseRows => _expenseRows;
 
     /// <summary>The income rows, in the order the account's income was read.</summary>
-    public IncomeProjectionRow[] IncomeRows => _incomeRows;
+    public IReadOnlyList<IncomeProjectionRow> IncomeRows => _incomeRows;
 
     /// <summary>
     /// Creates the state for an account, seeding the running balance from the account's balance and projecting a row

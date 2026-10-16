@@ -12,7 +12,7 @@ public static class IncomeSpecifications
         return LinqSpecification<IncomeEntity>.Create(income => income.Account.Id == accountId && income.Description == description);
     }
 
-    public static ILinqSpecification<IncomeEntity> IsInAccountSet(Guid[] accountRowIds)
+    public static ILinqSpecification<IncomeEntity> IsInAccountSet(IReadOnlyList<Guid> accountRowIds)
     {
         return LinqSpecification<IncomeEntity>.Create(income => accountRowIds.Contains(income.Account.RowId));
     }

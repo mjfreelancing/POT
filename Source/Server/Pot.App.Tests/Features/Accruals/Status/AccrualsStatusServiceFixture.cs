@@ -60,7 +60,7 @@ public class AccrualsStatusServiceFixture
         var service = new AccrualsStatusService(_accountAccrualRepositoryFake, _expenseRepositoryFake, _incomeRepositoryFake, logger);
 
         _expenseRepositoryFake
-            .GetRequiredRenewalsAsync(Arg.Any<Guid[]>(), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
+            .GetRequiredRenewalsAsync(Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
             .Returns(Array.Empty<Guid>());
 
         _accountAccrualRepositoryFake
@@ -68,7 +68,7 @@ public class AccrualsStatusServiceFixture
             .Returns(Array.Empty<Guid>());
 
         _incomeRepositoryFake
-            .GetRequiredRenewalsAsync(Arg.Any<Guid[]>(), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
+            .GetRequiredRenewalsAsync(Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
             .Returns(Array.Empty<Guid>());
 
         var input = new Input

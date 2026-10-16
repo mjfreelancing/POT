@@ -12,12 +12,12 @@ internal sealed class Response
     /// <summary>
     /// The expense renewals required for the requested accounts.
     /// </summary>
-    public required Guid[] ExpenseRenewalsRequired { get; init; }
+    public required IReadOnlyList<Guid> ExpenseRenewalsRequired { get; init; }
 
     /// <summary>
     /// The income renewals required for the requested accounts.
     /// </summary>
-    public required Guid[] IncomeRenewalsRequired { get; init; }
+    public required IReadOnlyList<Guid> IncomeRenewalsRequired { get; init; }
 
     /// <summary>
     /// Creates an HTTP 200 response from the accrual status output.

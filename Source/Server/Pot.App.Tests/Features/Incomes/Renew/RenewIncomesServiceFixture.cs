@@ -81,7 +81,7 @@ public class RenewIncomesServiceFixture : PotFixtureBase
             var missingRowId = Guid.NewGuid();
 
             _incomeRepositoryFake
-                .GetIncomesAsync(Arg.Any<Guid[]>(), Arg.Any<CancellationToken>())
+                .GetIncomesAsync(Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<CancellationToken>())
                 .Returns([existingIncome]);
 
             var service = new RenewIncomesService(_incomeRepositoryFake, _renewalCalculatorFake, logger);
@@ -108,7 +108,7 @@ public class RenewIncomesServiceFixture : PotFixtureBase
             var secondIncome = CreateIncome("Second Income");
 
             _incomeRepositoryFake
-                .GetIncomesAsync(Arg.Any<Guid[]>(), Arg.Any<CancellationToken>())
+                .GetIncomesAsync(Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<CancellationToken>())
                 .Returns([firstIncome, secondIncome]);
 
             var service = new RenewIncomesService(_incomeRepositoryFake, _renewalCalculatorFake, logger);

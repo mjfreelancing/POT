@@ -22,7 +22,7 @@ internal sealed class Response : ResponseBase
     public string Status { get; init; }
 
     [Description("The user's assigned roles")]
-    public string[] Roles { get; init; }
+    public IReadOnlyList<string> Roles { get; init; }
 
     [Description("The user's last logged in timestamp (UTC)")]
     public DateTime? LastLoggedInUtc { get; init; }

@@ -174,6 +174,36 @@ public class OpenApiSecurityFixture : IntegrationFixtureBase
     }
 
     [Fact]
+    public async Task Should_Describe_ReadOnly_Collection_Contracts_As_OpenApi_Arrays()
+    {
+        using var client = CreateClient();
+
+        var response = await client.GetAsync("/openapi/v1.json", TestContext.Current.CancellationToken);
+        var responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, responseContent);
+
+        using var openApiDocument = await response.Content.ReadFromJsonAsync<JsonDocument>(
+            TestContext.Current.CancellationToken);
+
+        openApiDocument.ShouldNotBeNull();
+
+        var schemas = openApiDocument!.RootElement.GetProperty("components").GetProperty("schemas");
+        var updateRolesRequest = schemas.GetProperty("Users_UpdateRoles_Request");
+        var accrualStatusResponse = schemas.GetProperty("Accruals_Status_Response");
+        var projectionResponse = schemas.GetProperty("Projections_Get_Response");
+
+        updateRolesRequest.GetProperty("properties").GetProperty("roleIds")
+            .GetProperty("type").GetString().ShouldBe("array");
+        accrualStatusResponse.GetProperty("properties").GetProperty("expenseRenewalsRequired")
+            .GetProperty("type").GetString().ShouldBe("array");
+        accrualStatusResponse.GetProperty("properties").GetProperty("incomeRenewalsRequired")
+            .GetProperty("type").GetString().ShouldBe("array");
+        projectionResponse.GetProperty("properties").GetProperty("accounts")
+            .GetProperty("type").GetString().ShouldBe("array");
+    }
+
+    [Fact]
     public async Task Should_Declare_Bearer_Security_For_Protected_Api_Operations_Only()
     {
         using var client = CreateClient();

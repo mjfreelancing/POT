@@ -7,7 +7,7 @@ public sealed class Request
 {
     /// <summary>The Account Ids</summary>
     [Description("The Account Ids")]
-    public Guid[] AccountRowIds { get; init; } = [];
+    public IReadOnlyList<Guid> AccountRowIds { get; init; } = [];
 
     // Binds to query string parameters such as ?AccountRowIds=val1,val2,val3
     // Whitespace around the commas is stripped

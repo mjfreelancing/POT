@@ -26,7 +26,7 @@ internal sealed class CheckValidRoles : PreUpdateCheckBase
     {
         _logger.LogCall(this);
 
-        if (state.RoleIds.Length > 0)
+        if (state.RoleIds.Count > 0)
         {
             var foundRoles = await _roleRepository.Roles
                 .Where(role => state.RoleIds.Contains(role.RowId))
@@ -45,4 +45,3 @@ internal sealed class CheckValidRoles : PreUpdateCheckBase
         return await base.HandleAsync(state, cancellationToken);
     }
 }
-

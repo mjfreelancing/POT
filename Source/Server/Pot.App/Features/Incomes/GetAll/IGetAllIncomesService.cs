@@ -13,5 +13,5 @@ public interface IGetAllIncomesService : IPotScopedDependency
     /// </summary>
     /// <param name="cancellationToken">The token used to cancel the operation.</param>
     /// <returns>The incomes for the current site.</returns>
-    Task<Output[]> GetAllIncomesAsync(CancellationToken cancellationToken);
+    Task<IReadOnlyList<Output>> GetAllIncomesAsync(CancellationToken cancellationToken);
 }

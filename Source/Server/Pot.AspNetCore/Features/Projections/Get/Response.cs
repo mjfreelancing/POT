@@ -6,7 +6,7 @@ namespace Pot.AspNetCore.Features.Projections.Get;
 
 internal sealed class Response
 {
-    public AccountDailyFinancialProjection[] Accounts { get; init; }
+    public IReadOnlyList<AccountDailyFinancialProjection> Accounts { get; init; }
 
     public static Ok<Response> Ok(Output projections)
     {

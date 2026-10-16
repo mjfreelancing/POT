@@ -15,5 +15,5 @@ internal sealed class InputState
     /// <summary>
     /// Gets the role identifiers requested for the invited user.
     /// </summary>
-    public required Guid[] RoleIds { get; init; }
+    public required IReadOnlyList<Guid> RoleIds { get; init; }
 }

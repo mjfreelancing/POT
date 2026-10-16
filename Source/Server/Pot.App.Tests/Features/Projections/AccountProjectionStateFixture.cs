@@ -19,8 +19,8 @@ public class AccountProjectionStateFixture : PotFixtureBase
 
         var state = new AccountProjectionState(account);
 
-        state.ExpenseRows.Length.ShouldBe(1);
-        state.IncomeRows.Length.ShouldBe(1);
+        state.ExpenseRows.Count.ShouldBe(1);
+        state.IncomeRows.Count.ShouldBe(1);
 
         var expenseRow = state.ExpenseRows[0];
 

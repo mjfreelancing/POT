@@ -59,8 +59,8 @@ internal sealed class DateProjectionValues
     public required double Reserved { get; set; }
 
     /// <summary>The expenses due on the day.</summary>
-    public required ProjectionExpenseModel[] ExpenseItems { get; init; }
+    public required IReadOnlyList<ProjectionExpenseModel> ExpenseItems { get; init; }
 
     /// <summary>The incomes due on the day.</summary>
-    public required ProjectionIncomeModel[] IncomeItems { get; init; }
+    public required IReadOnlyList<ProjectionIncomeModel> IncomeItems { get; init; }
 }

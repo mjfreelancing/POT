@@ -10,5 +10,5 @@ public sealed class Input
 
     // The configured platform administrators, taken from deployment configuration rather than the database, so
     // the checks that protect them do not need to resolve the configuration themselves.
-    public required Guid[] PlatformAdminRowIds { get; init; }
+    public required IReadOnlyList<Guid> PlatformAdminRowIds { get; init; }
 }

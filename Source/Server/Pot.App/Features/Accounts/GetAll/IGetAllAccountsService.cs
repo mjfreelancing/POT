@@ -17,5 +17,5 @@ public interface IGetAllAccountsService : IPotScopedDependency
     /// </summary>
     /// <param name="cancellationToken">The token used to cancel the operation.</param>
     /// <returns>The account projections, ordered by the repository's established account ordering.</returns>
-    Task<Output[]> GetAllAccountsAsync(CancellationToken cancellationToken);
+    Task<IReadOnlyList<Output>> GetAllAccountsAsync(CancellationToken cancellationToken);
 }

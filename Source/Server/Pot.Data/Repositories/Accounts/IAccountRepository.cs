@@ -13,5 +13,5 @@ public interface IAccountRepository : IRepositoryBase
     Task<AccountEntity> GetAccountAsync(Guid rowId, CancellationToken cancellationToken);
     Task<AccountEntity?> GetAccountOrDefaultAsync(Guid rowId, CancellationToken cancellationToken);
     Task<AccountWithLinkedCounts?> GetAccountWithLinkedCountsOrDefaultAsync(Guid rowId, CancellationToken cancellationToken);
-    Task<AccountWithLinkedCounts[]> GetAllAccountsWithLinkedCountsAsync(CancellationToken cancellationToken);
+    Task<IReadOnlyList<AccountWithLinkedCounts>> GetAllAccountsWithLinkedCountsAsync(CancellationToken cancellationToken);
 }

@@ -189,7 +189,7 @@ internal sealed class VerifySignupService : VerificationServiceBase, IVerifySign
         return $"{username}'s Site";
     }
 
-    private async Task SendApprovalsToPlatformAdminsAsync(string username, Guid[] platformAdminRowIds, CancellationToken cancellationToken)
+    private async Task SendApprovalsToPlatformAdminsAsync(string username, IReadOnlyList<Guid> platformAdminRowIds, CancellationToken cancellationToken)
     {
         // Cross-tenant by design: signup completes anonymously, so the requester is resolved by username.
         var requester = await _userRepository.GetByUsernameAsync(username, cancellationToken);
@@ -199,7 +199,7 @@ internal sealed class VerifySignupService : VerificationServiceBase, IVerifySign
         // A signup that notifies nobody still completes, so a notification with no recipients would otherwise be
         // invisible: the recipients are deployment configuration, and neither a missing entry nor one naming a
         // user who no longer exists is detected anywhere else. Both ways of reaching nobody are reported.
-        if (platformAdminRowIds.Length == 0)
+        if (platformAdminRowIds.Count == 0)
         {
             _logger.LogWarning(
                 "No platform administrators are configured, so nobody was notified that '{Username}' signed up and needs approval. The signup cannot be approved until one is configured.",
@@ -220,7 +220,7 @@ internal sealed class VerifySignupService : VerificationServiceBase, IVerifySign
             _logger.LogWarning(
                 "Notified {ResolvedCount} of {ConfiguredCount} configured platform administrators that '{Username}' signed up and needs approval. These configured ids do not resolve to a user: {UnresolvedRowIds}",
                 platformAdmins.Count,
-                platformAdminRowIds.Length,
+                platformAdminRowIds.Count,
                 username,
                 string.Join(", ", unresolvedRowIds));
         }

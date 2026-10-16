@@ -34,7 +34,8 @@ public class IncomeRepositoryFixture : PotFixtureBase
             return DbContext.SaveChangesAsync();
         }
 
-        public Task<Guid[]> GetRequiredRenewalsAsync(Guid[] accountRowIds, DateOnly asOfDate, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<Guid>> GetRequiredRenewalsAsync(
+            IReadOnlyList<Guid> accountRowIds, DateOnly asOfDate, CancellationToken cancellationToken = default)
         {
             return Repository.GetRequiredRenewalsAsync(accountRowIds, asOfDate, cancellationToken);
         }
@@ -44,7 +45,7 @@ public class IncomeRepositoryFixture : PotFixtureBase
             return Repository.GetAllIncomesAsync(cancellationToken);
         }
 
-        public Task<List<IncomeEntity>> GetIncomesAsync(Guid[] rowIds, CancellationToken cancellationToken = default)
+        public Task<List<IncomeEntity>> GetIncomesAsync(IReadOnlyList<Guid> rowIds, CancellationToken cancellationToken = default)
         {
             return Repository.GetIncomesAsync(rowIds, cancellationToken);
         }
@@ -175,7 +176,7 @@ public class IncomeRepositoryFixture : PotFixtureBase
 
             var result = await context.GetRequiredRenewalsAsync([account.RowId], asOfDate, Xunit.TestContext.Current.CancellationToken);
 
-            result.Length.ShouldBe(2);
+            result.Count.ShouldBe(2);
             result.ShouldContain(eligibleNoEndDate.RowId);
             result.ShouldContain(eligibleEndsAfter.RowId);
 
@@ -201,7 +202,7 @@ public class IncomeRepositoryFixture : PotFixtureBase
 
             var result = await context.GetRequiredRenewalsAsync([account.RowId], asOfDate, Xunit.TestContext.Current.CancellationToken);
 
-            result.Length.ShouldBe(1);
+            result.Count.ShouldBe(1);
             result.ShouldContain(dueOnAsOfDate.RowId);
         }
     }

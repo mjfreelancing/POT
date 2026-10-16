@@ -279,7 +279,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 var result = await context.GetFinancialProjectionsAsync(options, CancellationToken.None);
 
                 result.IsSuccess.ShouldBeTrue();
-                result.Value!.Accounts.Length.ShouldBe(1);
+                result.Value!.Accounts.Count.ShouldBe(1);
 
                 var accountProjection = result.Value!.Accounts[0];
 
@@ -1087,7 +1087,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 result.IsSuccess.ShouldBeTrue();
 
-                result.Value!.Accounts.Length.ShouldBe(2);
+                result.Value!.Accounts.Count.ShouldBe(2);
 
                 var checkingProjection = result.Value!.Accounts.First(account => account.Description == "Visa");
                 var savingsProjection = result.Value!.Accounts.First(account => account.Description == "Savings");
@@ -1515,7 +1515,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 result.IsSuccess.ShouldBeTrue();
 
-                result.Value!.Accounts.Length.ShouldBe(3);
+                result.Value!.Accounts.Count.ShouldBe(3);
 
                 var visaProjection = result.Value!.Accounts.Single(account => account.Description == "Visa");
                 var savingsProjection = result.Value!.Accounts.Single(account => account.Description == "Savings");
@@ -2806,7 +2806,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
 
                 var accountDates = result.Value!.Accounts.ShouldHaveSingleItem().Dates;
 
-                accountDates.Length.ShouldBe(14);
+                accountDates.Count.ShouldBe(14);
 
                 foreach (var projection in accountDates)
                 {

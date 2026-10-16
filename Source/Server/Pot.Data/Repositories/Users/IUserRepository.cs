@@ -136,5 +136,5 @@ public interface IUserRepository : IRepositoryBase
     /// <param name="rowIds">The nominated administrator ids.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The users that still exist.</returns>
-    Task<List<UserEntity>> GetByIdsForPlatformNotificationAsync(Guid[] rowIds, CancellationToken cancellationToken);
+    Task<List<UserEntity>> GetByIdsForPlatformNotificationAsync(IReadOnlyList<Guid> rowIds, CancellationToken cancellationToken);
 }
