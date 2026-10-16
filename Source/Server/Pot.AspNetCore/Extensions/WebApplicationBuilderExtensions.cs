@@ -225,36 +225,39 @@ internal static class WebApplicationBuilderExtensions
 
         loggingBuilder
             .ClearProviders()
-            .EnableEnrichment(/*options => { }*/)
-            .AddConsole(options =>
-            {
-                options.FormatterName = PotConsoleFormatter.FormatterName;
-            })
-            .AddConsoleFormatter<PotConsoleFormatter, PotConsoleFormatterOptions>(options =>
+            .EnableEnrichment(/*options => { }*/);
+
+        if (builder.Environment.IsDevelopment())
+        {
+            loggingBuilder
+                .AddConsole(options =>
+                {
+                    options.FormatterName = PotConsoleFormatter.FormatterName;
+                })
+                .AddConsoleFormatter<PotConsoleFormatter, PotConsoleFormatterOptions>(options =>
+                {
+                    options.IncludeScopes = false;
+                    options.TimestampFormat = "HH:mm:ss";
+                    options.UseUtcTimestamp = true;
+                    options.SingleLine = true;
+                });
+        }
+        else
+        {
+            // Container Apps stores console output in Log_s. JSON lets Log Analytics filter by
+            // fields such as level and category instead of searching rendered message text:
+            // ContainerAppConsoleLogs_CL
+            // | where ContainerAppName_s == "pot-api"
+            // | extend Event = parse_json(Log_s)
+            // | where tostring(Event.LogLevel) == "Error"
+            // | project TimeGenerated, tostring(Event.Category), tostring(Event.Message), Log_s
+            loggingBuilder.AddJsonConsole(options =>
             {
                 options.IncludeScopes = false;
-                options.TimestampFormat = "HH:mm:ss";
+                options.TimestampFormat = "O";
                 options.UseUtcTimestamp = true;
-                options.SingleLine = true;
             });
-
-        //loggingBuilder.AddJsonConsole(options =>
-        //{
-        //    options.IncludeScopes = false;
-        //    options.TimestampFormat = "HH:mm:ss";
-        //    options.JsonWriterOptions = new JsonWriterOptions
-        //    {
-        //        Indented = true
-        //    };
-        //});
-
-        //loggingBuilder.AddSimpleConsole(options =>
-        //{
-        //    options.IncludeScopes = true;
-        //    options.SingleLine = true;
-        //    options.TimestampFormat = "HH:mm:ss ";
-        //    options.UseUtcTimestamp = true;
-        //});
+        }
 
         return builder;
     }
