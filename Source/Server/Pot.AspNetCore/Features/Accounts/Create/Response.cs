@@ -5,8 +5,11 @@ using Pot.AspNetCore.Models;
 
 namespace Pot.AspNetCore.Features.Accounts.Create;
 
+/// <summary>Describes the result of creating an account.</summary>
 public sealed class Response : ResponseBase
 {
+    /// <summary>Creates a resource response with a route to the newly created resource.</summary>
+    /// <param name="account">The created account data used to construct the response.</param>
     public static CreatedAtRoute<Response> Created(Output account)
     {
         var response = new Response(account);

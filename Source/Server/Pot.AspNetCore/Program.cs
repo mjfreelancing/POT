@@ -16,8 +16,11 @@ using Pot.AspNetCore.Features.Users.Extensions;
 
 namespace Pot.AspNetCore;
 
+/// <summary>Provides the API application entry point.</summary>
 public class Program
 {
+    /// <summary>Builds and runs the API application.</summary>
+    /// <param name="args">The command-line arguments passed to the application.</param>
     public static async Task Main(string[] args)
     {
         // ASPNETCORE_ENVIRONMENT => Environment name

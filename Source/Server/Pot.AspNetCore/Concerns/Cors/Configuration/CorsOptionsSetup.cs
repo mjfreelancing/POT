@@ -4,15 +4,20 @@ using Microsoft.Extensions.Options;
 namespace Pot.AspNetCore.Concerns.Cors.Configuration;
 
 // Specifically used to configure CorsOptions after CorsConfiguration has been set up
+/// <summary>Applies the configured origins to cross-origin resource sharing options.</summary>
 public sealed class CorsOptionsSetup : IConfigureOptions<CorsOptions>
 {
     private readonly CorsConfiguration _corsConfiguration;
 
+    /// <summary>Creates an options configurator for cross-origin resource sharing.</summary>
+    /// <param name="corsConfiguration">The configured cross-origin resource sharing settings.</param>
     public CorsOptionsSetup(CorsConfiguration corsConfiguration)
     {
         _corsConfiguration = corsConfiguration;
     }
 
+    /// <summary>Applies configured values to the supplied options instance.</summary>
+    /// <param name="options">The options instance to configure or validate.</param>
     public void Configure(CorsOptions options)
     {
         var allowedOrigins = _corsConfiguration.GetAllowedOrigins().ToArray();

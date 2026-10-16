@@ -2,6 +2,7 @@
 
 namespace Pot.AspNetCore.Utils;
 
+/// <summary>Provides request-model binding support for minimal API endpoints.</summary>
 public static class RequestParameterBindingHelper
 {
     /// <summary>Creates a new <typeparamref name="TRequest"/> and sets the property values from the HttpContext query string.

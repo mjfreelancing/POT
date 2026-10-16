@@ -2,13 +2,16 @@
 
 namespace Pot.AspNetCore.Features.Accruals.Status;
 
+/// <summary>Carries the values needed to query the status of an accrual.</summary>
 public sealed class Request
 {
+    /// <summary>The Account Ids</summary>
     [Description("The Account Ids")]
     public Guid[] AccountRowIds { get; init; } = [];
 
     // Binds to query string parameters such as ?AccountRowIds=val1,val2,val3
     // Whitespace around the commas is stripped
+    /// <summary>Binds a request model from the current HTTP context.</summary>
     public static ValueTask<Request?> BindAsync(HttpContext context/*, ParameterInfo _*/)
     {
         var rowids = context.Request.Query

@@ -1,8 +1,9 @@
-using FluentValidation;
+﻿using FluentValidation;
 using System.Text.RegularExpressions;
 
 namespace Pot.AspNetCore.Concerns.Validation.Validators;
 
+/// <summary>Validates passwords against the application's password-strength rules.</summary>
 public sealed partial class StrongPasswordValidator : AbstractValidator<string>
 {
     [GeneratedRegex(@"[A-Z]")]
@@ -22,6 +23,7 @@ public sealed partial class StrongPasswordValidator : AbstractValidator<string>
     private static bool HasDigit(string password) => DigitRegex().IsMatch(password);
     private static bool HasSpecialCharacter(string password) => SpecialCharacterRegex().IsMatch(password);
 
+    /// <summary>Creates validation rules for passwords used by the application.</summary>
     public StrongPasswordValidator()
     {
         RuleFor(password => password)

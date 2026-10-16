@@ -42,6 +42,44 @@ public class OpenApiSecurityFixture : IntegrationFixtureBase
     }
 
     [Fact]
+    public async Task Should_Include_Xml_Comments_In_OpenApi_Schema_Descriptions()
+    {
+        using var client = CreateClient();
+
+        var response = await client.GetAsync("/openapi/v1.json", TestContext.Current.CancellationToken);
+        var responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, responseContent);
+
+        using var openApiDocument = await response.Content.ReadFromJsonAsync<JsonDocument>(
+            TestContext.Current.CancellationToken);
+
+        openApiDocument.ShouldNotBeNull();
+
+        var root = openApiDocument!.RootElement;
+        var requestSchemaReference = root.GetProperty("paths")
+            .GetProperty("/api/auth/login")
+            .GetProperty("post")
+            .GetProperty("requestBody")
+            .GetProperty("content")
+            .GetProperty("application/json")
+            .GetProperty("schema")
+            .GetProperty("$ref")
+            .GetString();
+
+        requestSchemaReference.ShouldNotBeNull();
+
+        var requestSchemaName = requestSchemaReference!.Split('/').Last();
+        var requestSchema = root.GetProperty("components")
+            .GetProperty("schemas")
+            .GetProperty(requestSchemaName);
+
+        requestSchema.GetProperty("description")
+            .GetString()
+            .ShouldBe("Carries the credentials and request context needed to sign in a user.");
+    }
+
+    [Fact]
     public async Task Should_Declare_Bearer_Security_For_Protected_Api_Operations_Only()
     {
         using var client = CreateClient();
