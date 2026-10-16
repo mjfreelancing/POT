@@ -5,6 +5,7 @@ using AllOverIt.Validation.Extensions;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.OpenApi;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Pot.App.Concerns.Validation;
@@ -198,6 +199,24 @@ internal static class WebApplicationBuilderExtensions
         // https://learn.microsoft.com/en-us/aspnet/core/fundamentals/openapi/aspnetcore-openapi
         builder.Services.AddOpenApi("v1", options =>
         {
+            // Feature slices reuse simple CLR names such as Request and Response.
+            options.CreateSchemaReferenceId = jsonTypeInfo =>
+            {
+                const string featureNamespacePrefix = "Pot.AspNetCore.Features.";
+
+                var type = jsonTypeInfo.Type;
+                var namespaceName = type.Namespace;
+
+                if (namespaceName is null || !namespaceName.StartsWith(featureNamespacePrefix, StringComparison.Ordinal))
+                {
+                    return OpenApiOptions.CreateDefaultSchemaReferenceId(jsonTypeInfo);
+                }
+
+                var featureName = namespaceName[featureNamespacePrefix.Length..].Replace('.', '_');
+
+                return string.IsNullOrEmpty(featureName) ? type.Name : $"{featureName}_{type.Name}";
+            };
+
             // Describe JWT bearer authentication in the document so API tooling knows how clients authenticate.
             // This documents the existing auth scheme; it does not enable or enforce authentication at runtime.
             options.AddDocumentTransformer((document, _, _) =>
