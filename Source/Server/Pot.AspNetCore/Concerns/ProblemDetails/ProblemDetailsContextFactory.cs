@@ -22,7 +22,7 @@ internal static class ProblemDetailsContextFactory
 
         var errors = errorDetails.Select(error => error.GetErrorDetails());
 
-        context.ProblemDetails.Extensions.Add("errors", errors);
+        context.ProblemDetails.Extensions["errors"] = errors;
 
         return context;
     }
