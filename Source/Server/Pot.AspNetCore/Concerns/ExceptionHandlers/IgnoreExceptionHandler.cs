@@ -5,17 +5,23 @@ namespace Pot.AspNetCore.Concerns.ExceptionHandlers;
 // Note: Exception handlers are registered as a Singleton.
 internal sealed class IgnoreExceptionHandler : IExceptionHandler
 {
-    private static readonly Type[] IgnoredExceptionTypes = [typeof(OperationCanceledException), typeof(TaskCanceledException)];
+    // 499 is a non-standard status used to record that the client closed the request.
+    private const int ClientClosedRequestStatusCode = 499;
 
     public ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
-        var ignoreException = IgnoredExceptionTypes.Contains(exception.GetType());
-
-        if (ignoreException)
+        // Cancellation can also come from server-side work; only treat it as a client disconnect when the request token was cancelled.
+        if (exception is not OperationCanceledException || !httpContext.RequestAborted.IsCancellationRequested)
         {
-            httpContext.Response.StatusCode = StatusCodes.Status200OK;
+            return ValueTask.FromResult(false);
         }
 
-        return ValueTask.FromResult(ignoreException);
+        // The status cannot be changed after response headers have been sent.
+        if (!httpContext.Response.HasStarted)
+        {
+            httpContext.Response.StatusCode = ClientClosedRequestStatusCode;
+        }
+
+        return ValueTask.FromResult(true);
     }
 }
