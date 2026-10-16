@@ -47,9 +47,7 @@ internal sealed class UpdateUserRolesService : IUpdateUserRolesService
 
             var userId = input.RowId;
 
-            var userToUpdate = await _userRepository
-                .GetForCurrentSiteWithRolesAsync(input.RowId, cancellationToken)
-                .ConfigureAwait(false);
+            var userToUpdate = await _userRepository.GetForCurrentSiteWithRolesAsync(input.RowId, cancellationToken);
 
             if (userToUpdate is null)
             {
@@ -60,9 +58,7 @@ internal sealed class UpdateUserRolesService : IUpdateUserRolesService
                 return EnrichedResult.Fail<Output>(userNotFoundError);
             }
 
-            var apiError = await _preUpdateChecker
-                .CanSaveAsync(input, userToUpdate, cancellationToken)
-                .ConfigureAwait(false);
+            var apiError = await _preUpdateChecker.CanSaveAsync(input, userToUpdate, cancellationToken);
 
             if (apiError is not null)
             {
@@ -71,9 +67,7 @@ internal sealed class UpdateUserRolesService : IUpdateUserRolesService
                 return EnrichedResult.Fail<Output>(apiError);
             }
 
-            var roles = await _roleRepository
-                .GetRolesAsync(input.RoleIds, cancellationToken)
-                .ConfigureAwait(false);
+            var roles = await _roleRepository.GetRolesAsync(input.RoleIds, cancellationToken);
 
             userToUpdate.Roles = roles;
 
@@ -83,7 +77,7 @@ internal sealed class UpdateUserRolesService : IUpdateUserRolesService
 
             _ = await _userRepository.SaveAsync(cancellationToken);
 
-            await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+            await transaction.CommitAsync(cancellationToken);
 
             var output = userToUpdate.MapToOutput();
 

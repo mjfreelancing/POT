@@ -35,9 +35,7 @@ internal sealed class RoleRepository : RepositoryBase, IRoleRepository
 
         var rolesQuery = userQuery.Select(user => user.Roles);
 
-        var roles = await rolesQuery
-            .ToArrayAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var roles = await rolesQuery.ToArrayAsync(cancellationToken);
 
         return [.. roles.SelectMany(role => role)];
     }

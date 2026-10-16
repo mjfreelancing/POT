@@ -137,9 +137,7 @@ internal sealed class AuthService : IAuthService
         {
             // 1) Resolve the user and validate credentials/state.
             // Cross-tenant by design: sign-in resolves a username before a site is known.
-            var user = await _userRepository
-                .GetByUsernameAsync(username, cancellationToken)
-                .ConfigureAwait(false);
+            var user = await _userRepository.GetByUsernameAsync(username, cancellationToken);
 
             if (user is null)
             {
@@ -178,9 +176,7 @@ internal sealed class AuthService : IAuthService
             // 4) Update login audit field and commit atomically with session creation.
             user.LastLoggedInUtc = nowUtc;
 
-            await _userRepository
-                .SaveAsync(cancellationToken)
-                .ConfigureAwait(false);
+            await _userRepository.SaveAsync(cancellationToken);
 
             return EnrichedResult.Success<AuthTokens?>(authTokens);
         }
@@ -202,9 +198,7 @@ internal sealed class AuthService : IAuthService
 
             // 1) Resolve the active session for this refresh token only. Must be inside WithTracking so
             //    the entity is change-tracked and the revocation mutation is detected by SaveChangesAsync.
-            var authSession = await _authSessionService
-                .ResolveActiveSessionByRefreshTokenAsync(refreshToken!, nowUtc, cancellationToken)
-                .ConfigureAwait(false);
+            var authSession = await _authSessionService.ResolveActiveSessionByRefreshTokenAsync(refreshToken!, nowUtc, cancellationToken);
 
             // Session not found (already revoked, expired, or token mismatch) - treat as a no-op.
             if (authSession is null)
@@ -215,9 +209,7 @@ internal sealed class AuthService : IAuthService
             // 2) Revoke only this session row. TokenVersion is NOT incremented: other devices remain unaffected.
             _authSessionService.RevokeCurrentSession(authSession, nowUtc);
 
-            await _userRepository
-                .SaveAsync(cancellationToken)
-                .ConfigureAwait(false);
+            await _userRepository.SaveAsync(cancellationToken);
         }
 
         return EnrichedResult.Success(true);
@@ -249,9 +241,7 @@ internal sealed class AuthService : IAuthService
             var nowUtc = _timeProvider.GetUtcDateTimeNow();
 
             // 1) Resolve active session by refresh-token hash (DB stores only hashes, not raw token values).
-            var authSession = await _authSessionService
-                .ResolveActiveSessionByRefreshTokenAsync(refreshToken, nowUtc, cancellationToken)
-                .ConfigureAwait(false);
+            var authSession = await _authSessionService.ResolveActiveSessionByRefreshTokenAsync(refreshToken, nowUtc, cancellationToken);
 
             if (authSession is null)
             {
@@ -271,9 +261,7 @@ internal sealed class AuthService : IAuthService
             // 3) Persist new refresh-token hash/expiry and last-seen metadata for this same session row.
             _authSessionService.RotateRefreshToken(authSession, authTokens.RefreshToken, authTokens.RefreshTokenExpiryUtc, nowUtc);
 
-            await _userRepository
-                .SaveAsync(cancellationToken)
-                .ConfigureAwait(false);
+            await _userRepository.SaveAsync(cancellationToken);
 
             return EnrichedResult.Success<AuthTokens?>(authTokens);
         }
@@ -286,9 +274,7 @@ internal sealed class AuthService : IAuthService
         using (_userRepository.WithTracking())
         {
             // 1) Load user and verify current password.
-            var user = await _userRepository
-                .GetForCurrentSiteAsync(userId, cancellationToken)
-                .ConfigureAwait(false);
+            var user = await _userRepository.GetForCurrentSiteAsync(userId, cancellationToken);
 
             if (user is null)
             {
@@ -313,16 +299,12 @@ internal sealed class AuthService : IAuthService
             var nowUtc = _timeProvider.GetUtcDateTimeNow();
 
             // 3) Revoke all sessions for this user.
-            _ = await _authSessionService
-                .RevokeAllSessionsForUserAsync(user.Id, nowUtc, cancellationToken)
-                .ConfigureAwait(false);
+            _ = await _authSessionService.RevokeAllSessionsForUserAsync(user.Id, nowUtc, cancellationToken);
 
             // 4) Invalidate all existing access tokens.
             user.TokenVersion++;
 
-            await _userRepository
-                .SaveAsync(cancellationToken)
-                .ConfigureAwait(false);
+            await _userRepository.SaveAsync(cancellationToken);
         }
 
         return EnrichedResult.Success(true);

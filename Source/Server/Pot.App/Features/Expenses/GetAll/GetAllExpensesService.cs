@@ -37,9 +37,7 @@ internal sealed class GetAllExpensesService : IGetAllExpensesService
     {
         _logger.LogCall(this);
 
-        var expenses = await _expenseRepository
-            .GetAllExpensesAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var expenses = await _expenseRepository.GetAllExpensesAsync(cancellationToken);
 
         var accruals = CalculateAccruals(expenses);
 

@@ -49,8 +49,7 @@ internal sealed class AuthSessionService : IAuthSessionService
         var refreshTokenHash = HashRefreshToken(refreshToken);
 
         var authSession = await _authSessionRepository
-            .GetByRefreshTokenHashOrDefaultAsync(refreshTokenHash, includeUser: true, cancellationToken)
-            .ConfigureAwait(false);
+            .GetByRefreshTokenHashOrDefaultAsync(refreshTokenHash, includeUser: true, cancellationToken);
 
         if (authSession is null)
         {
@@ -86,9 +85,7 @@ internal sealed class AuthSessionService : IAuthSessionService
     {
         _logger.LogCall(this, new { userId });
 
-        var authSessions = await _authSessionRepository
-            .GetUnrevokedByUserIdAsync(userId, cancellationToken)
-            .ConfigureAwait(false);
+        var authSessions = await _authSessionRepository.GetUnrevokedByUserIdAsync(userId, cancellationToken);
 
         foreach (var authSession in authSessions)
         {

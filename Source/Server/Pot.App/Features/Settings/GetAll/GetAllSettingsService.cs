@@ -35,9 +35,7 @@ internal sealed class GetAllSettingsService : IGetAllSettingsService
     {
         _logger.LogCall(this);
 
-        var allSettings = await _settingsRepository
-            .GetAllSettingsAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var allSettings = await _settingsRepository.GetAllSettingsAsync(cancellationToken);
 
         var settingsByCategory = allSettings
             .GroupBy(setting => setting.Category)

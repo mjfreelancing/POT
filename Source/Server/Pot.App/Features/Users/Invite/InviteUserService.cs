@@ -51,9 +51,7 @@ internal sealed class InviteUserService : IInviteUserService
     {
         _logger.LogCall(this, new { input.Username, input.RoleIds });
 
-        var apiError = await _preUpdateChecker
-            .CanSaveAsync(input, cancellationToken)
-            .ConfigureAwait(false);
+        var apiError = await _preUpdateChecker.CanSaveAsync(input, cancellationToken);
 
         if (apiError is not null)
         {
@@ -67,9 +65,7 @@ internal sealed class InviteUserService : IInviteUserService
             // check if the username is already taken
             // Cross-tenant by design: usernames are unique across every site, so the free name is checked
             // without a site scope.
-            var user = await _userRepository
-                .GetByUsernameAsync(input.Username, cancellationToken)
-                .ConfigureAwait(false);
+            var user = await _userRepository.GetByUsernameAsync(input.Username, cancellationToken);
 
             if (user is not null)
             {
@@ -84,7 +80,7 @@ internal sealed class InviteUserService : IInviteUserService
             }
 
             var currentSite = _siteRepository.GetCurrentSite();
-            var roles = await _roleRepository.GetRolesAsync(input.RoleIds, cancellationToken).ConfigureAwait(false);
+            var roles = await _roleRepository.GetRolesAsync(input.RoleIds, cancellationToken);
             var tempPassword = PasswordGenerator.Create(InvitationPasswordLength);
             var tempPasswordHash = _passwordHasher.GetHash(user, tempPassword);
 
@@ -99,11 +95,9 @@ internal sealed class InviteUserService : IInviteUserService
                 Site = currentSite
             };
 
-            await _userRepository
-                .AddAndSaveAsync(user, cancellationToken)
-                .ConfigureAwait(false);
+            await _userRepository.AddAndSaveAsync(user, cancellationToken);
 
-            await SendInvitationEmail(user, tempPassword, cancellationToken).ConfigureAwait(false);
+            await SendInvitationEmail(user, tempPassword, cancellationToken);
 
             return EnrichedResult.Success(true);
         }

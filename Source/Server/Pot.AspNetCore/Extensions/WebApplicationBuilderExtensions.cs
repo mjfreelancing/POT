@@ -48,9 +48,7 @@ internal static class WebApplicationBuilderExtensions
                 {
                     try
                     {
-                        var migrations = await context.Database
-                            .GetAppliedMigrationsAsync(cancellationToken)
-                            .ConfigureAwait(false);
+                        var migrations = await context.Database.GetAppliedMigrationsAsync(cancellationToken);
 
                         return migrations.Any();
                     }

@@ -52,16 +52,12 @@ internal sealed class UpsertSettingService : IUpsertSettingService
 
         using (_settingsRepository.WithTracking())
         {
-            var settingToUpdate = await _settingsRepository
-                .GetSettingAsync(input.Category, input.Key, cancellationToken)
-                .ConfigureAwait(false);
+            var settingToUpdate = await _settingsRepository.GetSettingAsync(input.Category, input.Key, cancellationToken);
 
             // This includes checking for when:
             // - A setting was not found but the user provided an etag
             // - A setting was found but the input etag (which can be null)) doesn't match the setting's
-            var apiError = await _preUpdateChecker
-                .CanSaveAsync(input, settingToUpdate, cancellationToken)
-                .ConfigureAwait(false);
+            var apiError = await _preUpdateChecker.CanSaveAsync(input, settingToUpdate, cancellationToken);
 
             if (apiError is not null)
             {
@@ -114,9 +110,7 @@ internal sealed class UpsertSettingService : IUpsertSettingService
                 settingToUpdate.Value = input.Value;
             }
 
-            await _settingsRepository
-                .SaveAsync(cancellationToken)
-                .ConfigureAwait(false);
+            await _settingsRepository.SaveAsync(cancellationToken);
 
             var output = settingToUpdate.MapToOutput();
 

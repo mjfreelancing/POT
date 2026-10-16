@@ -696,9 +696,7 @@ internal sealed class CheckAccountNumberDoesNotExist : PreCreateCheckBase
 
         var account = state.AccountToCreate;
 
-        var accountExists = await _accountRepository
-            .AccountExistsAsync(account.Bsb, account.Number, cancellationToken)
-            .ConfigureAwait(false);
+        var accountExists = await _accountRepository.AccountExistsAsync(account.Bsb, account.Number, cancellationToken);
 
         if (accountExists)
         {
@@ -811,9 +809,7 @@ internal sealed class CreateAccountService : ICreateAccountService
             }
 
             // Save to database
-            await _accountRepository
-                .AddAndSaveAsync(accountToCreate, cancellationToken)
-                .ConfigureAwait(false);
+            await _accountRepository.AddAndSaveAsync(accountToCreate, cancellationToken);
 
             // Map entity to output
             var createdAccount = accountToCreate.MapToOutput();
@@ -1809,9 +1805,7 @@ internal sealed class CreateAccountService : ICreateAccountService
             }
 
             // Step 5: Save to database
-            await _accountRepository
-                .AddAndSaveAsync(accountToCreate, cancellationToken)
-                .ConfigureAwait(false);
+            await _accountRepository.AddAndSaveAsync(accountToCreate, cancellationToken);
 
             // Step 6: Map entity to output and return success
             var createdAccount = accountToCreate.MapToOutput();
@@ -1830,8 +1824,9 @@ internal sealed class CreateAccountService : ICreateAccountService
 4. **Multi-Tenancy**: Resolve an id-taking target through a site-scoped repository method, so a target outside the caller's site reads as not-found rather than merely being refused
 5. **Entity Checks**: Validate business rules before persistence
 6. **Error Handling**: Return `EnrichedResult.Fail<T>()` for business rule violations
-7. **ConfigureAwait(false)**: Prevents deadlocks in async operations
-8. **Success Result**: Return `EnrichedResult.Success<T>()` with mapped output
+7. **Success Result**: Return `EnrichedResult.Success<T>()` with mapped output
+
+The ASP.NET Core server does not install a synchronization context, so POT server code should not use `ConfigureAwait(false)`; keep awaits direct.
 
 **Service Operation Patterns:**
 
@@ -2113,9 +2108,7 @@ internal sealed class CheckAccountNumberDoesNotExist : PreCreateCheckBase
 
         var account = state.AccountToCreate;
 
-        var accountExists = await _accountRepository
-            .AccountExistsAsync(account.Bsb, account.Number, cancellationToken)
-            .ConfigureAwait(false);
+        var accountExists = await _accountRepository.AccountExistsAsync(account.Bsb, account.Number, cancellationToken);
 
         if (accountExists)
         {
@@ -2137,7 +2130,7 @@ internal sealed class CheckAccountNumberDoesNotExist : PreCreateCheckBase
 - Return `ApiDetailError` for violations
 - Return `null` and call `base.HandleAsync()` to continue chain
 - Log entry point for observability
-- Use `ConfigureAwait(false)` for async operations
+- Do not use `ConfigureAwait(false)` for async operations
 - Keep checks focused and testable
 
 ### Result Pattern
@@ -3113,9 +3106,7 @@ protected override async Task HandleRequirementAsync(
 
     var permissionService = scope.ServiceProvider.GetRequiredService<IPermissionService>();
 
-    var permissions = await permissionService
-        .GetPermissionsAsync(parsedUserRowId, CancellationToken.None)
-        .ConfigureAwait(false);
+    var permissions = await permissionService.GetPermissionsAsync(parsedUserRowId, CancellationToken.None);
 
     if (permissions.Contains(requirement.Permission))
     {

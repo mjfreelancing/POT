@@ -67,9 +67,7 @@ internal sealed class VerifyPasswordResetService : VerificationServiceBase, IVer
 
         // Check the username exists and get their email
         // Cross-tenant by design: a signed-out caller resolves a username in order to reset a password.
-        var user = await _userRepository
-            .GetByUsernameAsync(input.Username, cancellationToken)
-            .ConfigureAwait(false);
+        var user = await _userRepository.GetByUsernameAsync(input.Username, cancellationToken);
 
         if (user?.Email is null)
         {
@@ -85,15 +83,13 @@ internal sealed class VerifyPasswordResetService : VerificationServiceBase, IVer
             {
                 user.PasswordHash = otp.TempPasswordHash!;
             },
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken);
 
         var output = (EnrichedResult<Output>)verificationOutput;
 
         if (output.IsSuccess)
         {
-            await _otpRepository
-                .SaveAsync(cancellationToken)
-                .ConfigureAwait(false);
+            await _otpRepository.SaveAsync(cancellationToken);
         }
 
         return output;

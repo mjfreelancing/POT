@@ -40,7 +40,7 @@ internal sealed class AccountsImporter : IAccountsImporter
             // Not validating the rows since the CSV file is expected to be valid (the data was previously exported).
             foreach (var csvRow in csvRows)
             {
-                var result = await CreateOrUpdateAccountAsync(csvRow, cancellationToken).ConfigureAwait(false);
+                var result = await CreateOrUpdateAccountAsync(csvRow, cancellationToken);
 
                 if (!result.IsSuccess)
                 {
@@ -52,9 +52,7 @@ internal sealed class AccountsImporter : IAccountsImporter
 
             // Could throw UniqueConstraintException (or a related database exception),
             // resulting in a custom 400 ProblemDetails response.
-            await _accountRepository
-                .SaveAsync(cancellationToken)
-                .ConfigureAwait(false);
+            await _accountRepository.SaveAsync(cancellationToken);
         }
 
         return EnrichedResult.Success(count);
@@ -64,13 +62,11 @@ internal sealed class AccountsImporter : IAccountsImporter
     {
         var csvAccountId = csvRow.RowId;
 
-        var accountEntity = await _accountRepository
-            .GetAccountOrDefaultAsync(csvAccountId, cancellationToken)
-            .ConfigureAwait(false);
+        var accountEntity = await _accountRepository.GetAccountOrDefaultAsync(csvAccountId, cancellationToken);
 
         return accountEntity is null
-            ? await CreateAccountAsync(csvRow, cancellationToken).ConfigureAwait(false)
-            : await UpdateAccountAsync(accountEntity.Etag, csvRow, cancellationToken).ConfigureAwait(false);
+            ? await CreateAccountAsync(csvRow, cancellationToken)
+            : await UpdateAccountAsync(accountEntity.Etag, csvRow, cancellationToken);
     }
 
     private async Task<EnrichedResult<int>> CreateAccountAsync(IAccountCsvRow csvRow, CancellationToken cancellationToken)
@@ -83,9 +79,7 @@ internal sealed class AccountsImporter : IAccountsImporter
             Reserved = csvRow.Reserved
         };
 
-        var createResult = await _createAccountService
-            .CreateAccountAsync(input, cancellationToken)
-            .ConfigureAwait(false);
+        var createResult = await _createAccountService.CreateAccountAsync(input, cancellationToken);
 
         return createResult.IsSuccess
             ? EnrichedResult.Success<int>()
@@ -103,9 +97,7 @@ internal sealed class AccountsImporter : IAccountsImporter
             Reserved = csvRow.Reserved
         };
 
-        var updateResult = await _updateAccountService
-            .UpdateAccountAsync(input, cancellationToken)
-            .ConfigureAwait(false);
+        var updateResult = await _updateAccountService.UpdateAccountAsync(input, cancellationToken);
 
         return updateResult.IsSuccess
             ? EnrichedResult.Success<int>()

@@ -26,9 +26,7 @@ internal sealed class UserService : IUserService
     {
         _logger.LogCall(this, new { userId });
 
-        var user = await _userRepository
-            .GetProfileForCurrentSiteAsync(userId, cancellationToken)
-            .ConfigureAwait(false);
+        var user = await _userRepository.GetProfileForCurrentSiteAsync(userId, cancellationToken);
 
         return user?.MapToOutput();
     }

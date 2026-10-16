@@ -38,9 +38,7 @@ internal sealed class UpdateAccountService : IUpdateAccountService
         {
             var accountId = input.RowId;
 
-            var accountToUpdate = await _accountRepository
-                .GetAccountOrDefaultAsync(accountId, cancellationToken)
-                .ConfigureAwait(false);
+            var accountToUpdate = await _accountRepository.GetAccountOrDefaultAsync(accountId, cancellationToken);
 
             if (accountToUpdate is null)
             {
@@ -51,9 +49,7 @@ internal sealed class UpdateAccountService : IUpdateAccountService
                 return EnrichedResult.Fail<Output>(accountNotFoundError);
             }
 
-            var apiError = await _preUpdateChecker
-                .CanSaveAsync(input, accountToUpdate, cancellationToken)
-                .ConfigureAwait(false);
+            var apiError = await _preUpdateChecker.CanSaveAsync(input, accountToUpdate, cancellationToken);
 
             if (apiError is not null)
             {

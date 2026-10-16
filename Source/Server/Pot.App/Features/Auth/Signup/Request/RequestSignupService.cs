@@ -40,9 +40,7 @@ internal sealed class RequestSignupService : IRequestSignupService
         // There's also a slim chance that the username could be taken between this check and the signup
         // completion that will need to be dealt with (user will have to start again).
         // Cross-tenant by design: a signed-out caller checks that a username is free before a site exists.
-        var user = await _userRepository
-            .GetByUsernameAsync(input.Username, cancellationToken)
-            .ConfigureAwait(false);
+        var user = await _userRepository.GetByUsernameAsync(input.Username, cancellationToken);
 
         if (user is not null)
         {
@@ -62,10 +60,9 @@ internal sealed class RequestSignupService : IRequestSignupService
         {
             // This will also invalidate any previous OTPs for this user and reason
             var otpData = await _otpService
-                .AddOtpDataForUserAsync(OtpReason.Signup, input.Username, input.Email, input.CorrelationId, cancellationToken)
-                .ConfigureAwait(false);
+                .AddOtpDataForUserAsync(OtpReason.Signup, input.Username, input.Email, input.CorrelationId, cancellationToken);
 
-            await SendSignupEmail(input, otpData, cancellationToken).ConfigureAwait(false);
+            await SendSignupEmail(input, otpData, cancellationToken);
 
             var output = new Output
             {

@@ -44,9 +44,7 @@ internal sealed class UpdateApprovalService : IUpdateApprovalService
             var userId = input.RowId;
 
             // Cross-tenant by design: a platform administrator approves a signup in any site.
-            var userToUpdate = await _userRepository
-                .GetByIdForApprovalAsync(input.RowId, cancellationToken)
-                .ConfigureAwait(false);
+            var userToUpdate = await _userRepository.GetByIdForApprovalAsync(input.RowId, cancellationToken);
 
             if (userToUpdate is null)
             {
@@ -57,9 +55,7 @@ internal sealed class UpdateApprovalService : IUpdateApprovalService
                 return EnrichedResult.Fail<Output>(userNotFoundError);
             }
 
-            var apiError = await _preUpdateChecker
-                .CanSaveAsync(input, userToUpdate, cancellationToken)
-                .ConfigureAwait(false);
+            var apiError = await _preUpdateChecker.CanSaveAsync(input, userToUpdate, cancellationToken);
 
             if (apiError is not null)
             {
@@ -72,11 +68,9 @@ internal sealed class UpdateApprovalService : IUpdateApprovalService
                 ? UserStatus.Enabled
                 : UserStatus.Disabled;
 
-            _ = await _userRepository
-                .SaveAsync(cancellationToken)
-                .ConfigureAwait(false);
+            _ = await _userRepository.SaveAsync(cancellationToken);
 
-            await SendApprovalStatusEmail(userToUpdate, input.Status, cancellationToken).ConfigureAwait(false);
+            await SendApprovalStatusEmail(userToUpdate, input.Status, cancellationToken);
 
             var output = userToUpdate.MapToOutput();
 

@@ -33,9 +33,7 @@ internal sealed class CheckHasNoIncomes : PreDeleteCheckBase
 
         var accountId = state.AccountId;
 
-        var hasIncomes = await _accountRepository
-            .HasIncomesAsync(accountId, cancellationToken)
-            .ConfigureAwait(false);
+        var hasIncomes = await _accountRepository.HasIncomesAsync(accountId, cancellationToken);
 
         if (hasIncomes)
         {

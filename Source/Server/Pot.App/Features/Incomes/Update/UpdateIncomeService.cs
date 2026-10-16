@@ -41,9 +41,7 @@ internal sealed class UpdateIncomeService : IUpdateIncomeService
         {
             var incomeId = input.RowId;
 
-            var incomeToUpdate = await _incomeRepository
-                .GetIncomeOrDefaultAsync(incomeId, cancellationToken)
-                .ConfigureAwait(false);
+            var incomeToUpdate = await _incomeRepository.GetIncomeOrDefaultAsync(incomeId, cancellationToken);
 
             if (incomeToUpdate is null)
             {
@@ -54,9 +52,7 @@ internal sealed class UpdateIncomeService : IUpdateIncomeService
                 return EnrichedResult.Fail<Output>(incomeNotFoundError);
             }
 
-            var incomeAccount = await _accountRepository
-                .GetAccountOrDefaultAsync(input.AccountRowId, cancellationToken)
-                .ConfigureAwait(false);
+            var incomeAccount = await _accountRepository.GetAccountOrDefaultAsync(input.AccountRowId, cancellationToken);
 
             if (incomeAccount is null)
             {
@@ -67,9 +63,7 @@ internal sealed class UpdateIncomeService : IUpdateIncomeService
                 return EnrichedResult.Fail<Output>(incomeAccountNotFoundError);
             }
 
-            var apiError = await _preUpdateChecker
-                .CanSaveAsync(input, incomeAccount, incomeToUpdate, cancellationToken)
-                .ConfigureAwait(false);
+            var apiError = await _preUpdateChecker.CanSaveAsync(input, incomeAccount, incomeToUpdate, cancellationToken);
 
             if (apiError is not null)
             {

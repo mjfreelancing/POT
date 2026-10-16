@@ -44,10 +44,10 @@ internal sealed class ExportDataService : IExportDataService
 
         // TODO: The import currently assigns the site associated with the user performing the import. Need to update the export/import to consider how this should all now work.
 
-        await AddToZipAsync(zipPackage, "metadata", (token) => ExportMetadataAsync(), cancellationToken).ConfigureAwait(false);
-        await AddToZipAsync(zipPackage, "accounts", _accountsExporter.ExportAllAsync, cancellationToken).ConfigureAwait(false);
-        await AddToZipAsync(zipPackage, "incomes", _incomesExporter.ExportAllAsync, cancellationToken).ConfigureAwait(false);
-        await AddToZipAsync(zipPackage, "expenses", _expensesExporter.ExportAllAsync, cancellationToken).ConfigureAwait(false);
+        await AddToZipAsync(zipPackage, "metadata", (token) => ExportMetadataAsync(), cancellationToken);
+        await AddToZipAsync(zipPackage, "accounts", _accountsExporter.ExportAllAsync, cancellationToken);
+        await AddToZipAsync(zipPackage, "incomes", _incomesExporter.ExportAllAsync, cancellationToken);
+        await AddToZipAsync(zipPackage, "expenses", _expensesExporter.ExportAllAsync, cancellationToken);
 
         zipPackage.Complete();
 
@@ -57,11 +57,9 @@ internal sealed class ExportDataService : IExportDataService
     private static async Task AddToZipAsync(IZipPackage zipPackage, string entryName, Func<CancellationToken, Task<byte[]>> contentResolver,
         CancellationToken cancellationToken)
     {
-        var content = await contentResolver.Invoke(cancellationToken).ConfigureAwait(false);
+        var content = await contentResolver.Invoke(cancellationToken);
 
-        await zipPackage
-            .AddEntryAsync(entryName, content, cancellationToken)
-            .ConfigureAwait(false);
+        await zipPackage.AddEntryAsync(entryName, content, cancellationToken);
     }
 
     private Task<byte[]> ExportMetadataAsync()

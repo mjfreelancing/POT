@@ -46,9 +46,7 @@ internal sealed class UpdateExpenseService : IUpdateExpenseService
         {
             var expenseId = input.RowId;
 
-            var expenseToUpdate = await _expenseRepository
-                .GetExpenseOrDefaultAsync(expenseId, cancellationToken)
-                .ConfigureAwait(false);
+            var expenseToUpdate = await _expenseRepository.GetExpenseOrDefaultAsync(expenseId, cancellationToken);
 
             if (expenseToUpdate is null)
             {
@@ -59,9 +57,7 @@ internal sealed class UpdateExpenseService : IUpdateExpenseService
                 return EnrichedResult.Fail<Output>(expenseNotFoundError);
             }
 
-            var expenseAccount = await _accountRepository
-                .GetAccountOrDefaultAsync(input.AccountRowId, cancellationToken)
-                .ConfigureAwait(false);
+            var expenseAccount = await _accountRepository.GetAccountOrDefaultAsync(input.AccountRowId, cancellationToken);
 
             if (expenseAccount is null)
             {
@@ -72,9 +68,7 @@ internal sealed class UpdateExpenseService : IUpdateExpenseService
                 return EnrichedResult.Fail<Output>(expenseAccountNotFoundError);
             }
 
-            var apiError = await _preUpdateChecker
-                .CanSaveAsync(input, expenseAccount, expenseToUpdate, cancellationToken)
-                .ConfigureAwait(false);
+            var apiError = await _preUpdateChecker.CanSaveAsync(input, expenseAccount, expenseToUpdate, cancellationToken);
 
             if (apiError is not null)
             {

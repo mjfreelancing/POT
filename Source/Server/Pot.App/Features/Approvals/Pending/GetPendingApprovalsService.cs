@@ -28,9 +28,7 @@ internal sealed class GetPendingApprovalsService : IGetPendingApprovalsService
         _logger.LogCall(this);
 
         // Cross-tenant by design: the platform-administrator approval surface acts on every site.
-        var users = await _userRepository
-            .GetPendingApprovalsAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var users = await _userRepository.GetPendingApprovalsAsync(cancellationToken);
 
         return users.SelectToList(user => user.MapToOutput());
     }

@@ -33,9 +33,7 @@ internal sealed class CheckHasNoExpenses : PreDeleteCheckBase
 
         var accountId = state.AccountId;
 
-        var hasExpenses = await _accountRepository
-            .HasExpensesAsync(accountId, cancellationToken)
-            .ConfigureAwait(false);
+        var hasExpenses = await _accountRepository.HasExpensesAsync(accountId, cancellationToken);
 
         if (hasExpenses)
         {

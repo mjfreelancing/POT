@@ -28,9 +28,7 @@ internal sealed class SettingsService : ISettingsService
         _logger.LogCall(this);
 
         // This is auto-filtered to the user's site
-        var settings = await _settingsRepository
-            .GetSettingsForCategoryAsync(SettingCategory.EmailBudgetReminder, cancellationToken)
-            .ConfigureAwait(false);
+        var settings = await _settingsRepository.GetSettingsForCategoryAsync(SettingCategory.EmailBudgetReminder, cancellationToken);
 
         var keyedSettings = settings.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 

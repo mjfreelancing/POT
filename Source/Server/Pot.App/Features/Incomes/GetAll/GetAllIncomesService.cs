@@ -27,9 +27,7 @@ internal sealed class GetAllIncomesService : IGetAllIncomesService
     {
         _logger.LogCall(this);
 
-        var incomes = await _incomeRepository
-            .GetAllIncomesAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var incomes = await _incomeRepository.GetAllIncomesAsync(cancellationToken);
 
         return incomes.SelectToArray(income => income.MapToOutput());
     }

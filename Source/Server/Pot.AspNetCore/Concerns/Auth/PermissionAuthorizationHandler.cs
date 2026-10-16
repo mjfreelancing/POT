@@ -29,9 +29,7 @@ internal sealed class PermissionAuthorizationHandler : AuthorizationHandler<Perm
 
         var permissionService = scope.ServiceProvider.GetRequiredService<IPermissionService>();
 
-        var permissions = await permissionService
-            .GetPermissionsAsync(parsedUserRowId, CancellationToken.None)
-            .ConfigureAwait(false);
+        var permissions = await permissionService.GetPermissionsAsync(parsedUserRowId, CancellationToken.None);
 
         if (permissions.Contains(requirement.Permission))
         {

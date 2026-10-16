@@ -44,9 +44,7 @@ internal sealed class CheckDescriptionDoesNotExist : PreUpdateCheckBase
             .IsSameDescription(state.ExpenseAccount.Id, input.Description).Expression
             .And(entity => entity.Id != state.ExpenseToUpdate.Id);
 
-        var descriptionExists = await _expenseRepository.Expenses
-            .AnyAsync(predicate, cancellationToken)
-            .ConfigureAwait(false);
+        var descriptionExists = await _expenseRepository.Expenses.AnyAsync(predicate, cancellationToken);
 
         if (descriptionExists)
         {

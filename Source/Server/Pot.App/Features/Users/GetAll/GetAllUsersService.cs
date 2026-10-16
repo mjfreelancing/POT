@@ -29,9 +29,7 @@ internal sealed class GetAllUsersService : IGetAllUsersService
         _logger.LogCall(this);
 
         // Cross-tenant by design: the reminder workers enumerate every site's administrators, then re-scope per user.
-        var users = await _userRepository
-            .GetEnabledUsersForAllSitesAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var users = await _userRepository.GetEnabledUsersForAllSitesAsync(cancellationToken);
 
         return users
             .Where(user => user.Roles.Contains(Role.Admin.Name))
@@ -43,9 +41,7 @@ internal sealed class GetAllUsersService : IGetAllUsersService
     {
         _logger.LogCall(this);
 
-        var userInfos = await _userRepository
-            .GetAllForCurrentSiteAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var userInfos = await _userRepository.GetAllForCurrentSiteAsync(cancellationToken);
 
         return userInfos.SelectToList(userInfo => userInfo.MapToOutput());
     }

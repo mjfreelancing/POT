@@ -26,9 +26,7 @@ internal sealed class PermissionService : IPermissionService
         // Get normal database permissions for the user
         // Cross-tenant by design: permission resolution runs during UseAuthorization, before the user context
         // middleware has established which site the caller is acting in.
-        var roles = await _roleRepository
-            .GetRolesForUserAsync(userId, true, cancellationToken)
-            .ConfigureAwait(false);
+        var roles = await _roleRepository.GetRolesForUserAsync(userId, true, cancellationToken);
 
         var permissions = roles
             .SelectMany(role => role.Permissions)

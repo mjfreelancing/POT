@@ -35,20 +35,17 @@ internal sealed class UserRepository : PersistableRepository, IPersistableUserRe
 
     public async Task<UserEntity?> GetForCurrentSiteAsync(Guid rowId, CancellationToken cancellationToken)
     {
-        return await FindForCurrentSiteAsync(rowId, includeRoles: false, includeSite: false, cancellationToken)
-            .ConfigureAwait(false);
+        return await FindForCurrentSiteAsync(rowId, includeRoles: false, includeSite: false, cancellationToken);
     }
 
     public async Task<UserEntity?> GetForCurrentSiteWithRolesAsync(Guid rowId, CancellationToken cancellationToken)
     {
-        return await FindForCurrentSiteAsync(rowId, includeRoles: true, includeSite: false, cancellationToken)
-            .ConfigureAwait(false);
+        return await FindForCurrentSiteAsync(rowId, includeRoles: true, includeSite: false, cancellationToken);
     }
 
     public async Task<UserEntity?> GetProfileForCurrentSiteAsync(Guid rowId, CancellationToken cancellationToken)
     {
-        return await FindForCurrentSiteAsync(rowId, includeRoles: false, includeSite: true, cancellationToken)
-            .ConfigureAwait(false);
+        return await FindForCurrentSiteAsync(rowId, includeRoles: false, includeSite: true, cancellationToken);
     }
 
     /// <summary>
@@ -86,16 +83,14 @@ internal sealed class UserRepository : PersistableRepository, IPersistableUserRe
             query = query.Include(user => user.Site);
         }
 
-        var user = await query
-            .SingleOrDefaultAsync(user => user.RowId == rowId && user.Site.Id == siteId, cancellationToken)
-            .ConfigureAwait(false);
+        var user = await query.SingleOrDefaultAsync(user => user.RowId == rowId && user.Site.Id == siteId, cancellationToken);
 
         if (user is not null)
         {
             return user;
         }
 
-        await LogCrossTenantRefusalAsync(rowId, siteId, cancellationToken).ConfigureAwait(false);
+        await LogCrossTenantRefusalAsync(rowId, siteId, cancellationToken);
 
         return null;
     }
@@ -113,8 +108,7 @@ internal sealed class UserRepository : PersistableRepository, IPersistableUserRe
     private async Task LogCrossTenantRefusalAsync(Guid rowId, int callerSiteId, CancellationToken cancellationToken)
     {
         var existsInAnotherSite = await Set<UserEntity>()
-            .AnyAsync(user => user.RowId == rowId && user.Site.Id != callerSiteId, cancellationToken)
-            .ConfigureAwait(false);
+            .AnyAsync(user => user.RowId == rowId && user.Site.Id != callerSiteId, cancellationToken);
 
         if (!existsInAnotherSite)
         {
@@ -140,7 +134,7 @@ internal sealed class UserRepository : PersistableRepository, IPersistableUserRe
         var siteId = currentSiteId.Value;
         var userQuery = Set<UserEntity>().Where(user => user.Site.Id == siteId);
 
-        return await GetUsersAsync(userQuery, cancellationToken).ConfigureAwait(false);
+        return await GetUsersAsync(userQuery, cancellationToken);
     }
 
     public async Task<List<GetAllUserInfo>> GetEnabledAdminsForCurrentSiteAsync(CancellationToken cancellationToken)
@@ -159,7 +153,7 @@ internal sealed class UserRepository : PersistableRepository, IPersistableUserRe
             .Where(user => user.Status == UserStatus.Enabled)
             .Where(user => user.Roles.Any(role => role.Name == Role.Admin));
 
-        return await GetUsersAsync(userQuery, cancellationToken).ConfigureAwait(false);
+        return await GetUsersAsync(userQuery, cancellationToken);
     }
 
     public Task<UserEntity?> GetByUsernameAsync(string username, CancellationToken cancellationToken)

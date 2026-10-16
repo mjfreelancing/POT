@@ -46,9 +46,7 @@ internal sealed class OtpService : IOtpService
             var currentUtc = _timeProvider.GetUtcDateTimeNow();
 
             // All types are expired if reason is null
-            var pendingOtps = await _otpRepository
-                .GetPendingExpiredAsync(reason, currentUtc, cancellationToken)
-                .ConfigureAwait(false);
+            var pendingOtps = await _otpRepository.GetPendingExpiredAsync(reason, currentUtc, cancellationToken);
 
             foreach (var otp in pendingOtps)
             {
@@ -71,9 +69,7 @@ internal sealed class OtpService : IOtpService
         var currentUtc = _timeProvider.GetUtcDateTimeNow();
         var rateLimitedDateTime = currentUtc.AddMinutes(-RateLimitMinutes);
 
-        var count = await _otpRepository
-            .CountFailedRequestsForUsernameAsync(reason, username, rateLimitedDateTime, cancellationToken)
-            .ConfigureAwait(false);
+        var count = await _otpRepository.CountFailedRequestsForUsernameAsync(reason, username, rateLimitedDateTime, cancellationToken);
 
         return count >= RateLimitMaxCount;
     }
@@ -96,19 +92,17 @@ internal sealed class OtpService : IOtpService
         string correlationId, CancellationToken cancellationToken)
     {
         // Pro-actively expire old requests in case the background job hasn't run recently
-        await UpdateExpiredRequestsAsync(reason, cancellationToken).ConfigureAwait(false);
+        await UpdateExpiredRequestsAsync(reason, cancellationToken);
 
         using (_otpRepository.WithTracking())
         {
             // Invalidate any existing active OTPs for this username (cannot use user entity as it may be null for sign up requests)
-            await InvalidateActiveOtpsAsync(reason, username, cancellationToken).ConfigureAwait(false);
+            await InvalidateActiveOtpsAsync(reason, username, cancellationToken);
 
             // destructure OtpDataContext
             var (otpEntity, tempPassword) = AddOtpData(reason, user, username, email, correlationId);
 
-            await _otpRepository
-                .SaveAsync(cancellationToken)
-                .ConfigureAwait(false);
+            await _otpRepository.SaveAsync(cancellationToken);
 
             return new UserOtpData
             {
@@ -125,9 +119,7 @@ internal sealed class OtpService : IOtpService
     {
         _logger.LogDebug("Invalidating active OTPs for username '{Username}'", username);
 
-        var activeOtps = await _otpRepository
-            .GetActiveRequestsForUsernameAsync(reason, username, cancellationToken)
-            .ConfigureAwait(false);
+        var activeOtps = await _otpRepository.GetActiveRequestsForUsernameAsync(reason, username, cancellationToken);
 
         foreach (var activeOtp in activeOtps)
         {

@@ -23,9 +23,7 @@ internal sealed class AccountsExporter : MemoryCsvExporterBase<AccountData>, IAc
     {
         Configure();
 
-        var accounts = await _expensesService
-            .GetAllAccountsAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var accounts = await _expensesService.GetAllAccountsAsync(cancellationToken);
 
         foreach (var account in accounts)
         {
@@ -37,10 +35,10 @@ internal sealed class AccountsExporter : MemoryCsvExporterBase<AccountData>, IAc
                 Reserved = account.Reserved
             };
 
-            await AddDataAsync(accountData, cancellationToken).ConfigureAwait(false);
+            await AddDataAsync(accountData, cancellationToken);
         }
 
-        return await GetContentAsync(cancellationToken).ConfigureAwait(false);
+        return await GetContentAsync(cancellationToken);
     }
 
     /// <inheritdoc />

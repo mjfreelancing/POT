@@ -43,9 +43,7 @@ internal sealed class ResendInviteService : IResendInviteService
         using (_userRepository.WithTracking())
         {
             // check if the username is already taken
-            var user = await _userRepository
-                .GetForCurrentSiteAsync(userRowId, cancellationToken)
-                .ConfigureAwait(false);
+            var user = await _userRepository.GetForCurrentSiteAsync(userRowId, cancellationToken);
 
             if (user is null)
             {
@@ -76,11 +74,9 @@ internal sealed class ResendInviteService : IResendInviteService
 
             user.PasswordHash = tempPasswordHash;
 
-            await SendInvitationEmail(user, tempPassword, cancellationToken).ConfigureAwait(false);
+            await SendInvitationEmail(user, tempPassword, cancellationToken);
 
-            await _userRepository
-                .SaveAsync(cancellationToken)
-                .ConfigureAwait(false);
+            await _userRepository.SaveAsync(cancellationToken);
 
             return EnrichedResult.Success(true);
         }

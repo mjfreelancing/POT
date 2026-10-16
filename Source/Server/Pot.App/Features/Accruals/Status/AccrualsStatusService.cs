@@ -32,12 +32,10 @@ internal sealed class AccrualsStatusService : IAccrualsStatusService
 
         // Can't perform these in parallel without using a DbContextFactory to create separate DbContexts - TODO
         var expenseRenewalsRequired = await _expenseRepository
-            .GetRequiredRenewalsAsync(input.AccountRowIds, input.AsOfDate, cancellationToken)
-            .ConfigureAwait(false);
+            .GetRequiredRenewalsAsync(input.AccountRowIds, input.AsOfDate, cancellationToken);
 
         var incomeRenewalsRequired = await _incomeRepository
-            .GetRequiredRenewalsAsync(input.AccountRowIds, input.AsOfDate, cancellationToken)
-            .ConfigureAwait(false);
+            .GetRequiredRenewalsAsync(input.AccountRowIds, input.AsOfDate, cancellationToken);
 
         var output = new Output
         {

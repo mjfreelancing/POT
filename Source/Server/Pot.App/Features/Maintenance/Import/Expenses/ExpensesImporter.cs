@@ -49,21 +49,17 @@ internal sealed class ExpensesImporter : IExpensesImporter
                 if (!accounts.TryGetValue(csvRow.AccountRowId, out var account))
                 {
                     // Not validating the rows since the CSV file is expected to be valid (the data was previously exported).
-                    account = await _accountRepository
-                        .GetAccountAsync(csvRow.AccountRowId, cancellationToken)
-                        .ConfigureAwait(false);
+                    account = await _accountRepository.GetAccountAsync(csvRow.AccountRowId, cancellationToken);
 
                     accounts.Add(csvRow.AccountRowId, account);
                 }
 
-                await CreateOrUpdateExpenseAsync(account, csvRow, cancellationToken).ConfigureAwait(false);
+                await CreateOrUpdateExpenseAsync(account, csvRow, cancellationToken);
 
                 count++;
             }
 
-            await _accountRepository
-                .SaveAsync(cancellationToken)
-                .ConfigureAwait(false);
+            await _accountRepository.SaveAsync(cancellationToken);
         }
 
         return EnrichedResult.Success(count);
@@ -73,13 +69,11 @@ internal sealed class ExpensesImporter : IExpensesImporter
     {
         var csvExpenseId = csvRow.RowId;
 
-        var expenseEntity = await _expenseRepository
-            .GetExpenseOrDefaultAsync(csvExpenseId, cancellationToken)
-            .ConfigureAwait(false);
+        var expenseEntity = await _expenseRepository.GetExpenseOrDefaultAsync(csvExpenseId, cancellationToken);
 
         return expenseEntity is null
-            ? await CreateExpenseAsync(account.RowId, csvRow, cancellationToken).ConfigureAwait(false)
-            : await UpdateExpenseAsync(account.RowId, expenseEntity.Etag, csvRow, cancellationToken).ConfigureAwait(false);
+            ? await CreateExpenseAsync(account.RowId, csvRow, cancellationToken)
+            : await UpdateExpenseAsync(account.RowId, expenseEntity.Etag, csvRow, cancellationToken);
     }
 
     private async Task<EnrichedResult<int>> CreateExpenseAsync(Guid accountRowId, IExpenseCsvRow csvRow,
@@ -101,9 +95,7 @@ internal sealed class ExpensesImporter : IExpensesImporter
             AccountRowId = accountRowId
         };
 
-        var createResult = await _createExpenseService
-            .CreateExpenseAsync(input, cancellationToken)
-            .ConfigureAwait(false);
+        var createResult = await _createExpenseService.CreateExpenseAsync(input, cancellationToken);
 
         return createResult.IsSuccess
             ? EnrichedResult.Success<int>()
@@ -130,9 +122,7 @@ internal sealed class ExpensesImporter : IExpensesImporter
             AccountRowId = accountRowId
         };
 
-        var updateResult = await _updateExpenseService
-            .UpdateExpenseAsync(input, cancellationToken)
-            .ConfigureAwait(false);
+        var updateResult = await _updateExpenseService.UpdateExpenseAsync(input, cancellationToken);
 
         return updateResult.IsSuccess
             ? EnrichedResult.Success<int>()

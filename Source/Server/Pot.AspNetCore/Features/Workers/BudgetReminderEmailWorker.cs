@@ -30,9 +30,7 @@ internal sealed class BudgetReminderEmailWorker : BackgroundWorker
     {
         // Waits for the database to become ready; cancellation while waiting (host shutdown)
         // surfaces as an OperationCanceledException, which the host treats as a normal stop.
-        await _serviceHealthPoller
-            .WaitForHealthyAsync(DatabaseHealthPollerOptions, stoppingToken)
-            .ConfigureAwait(false);
+        await _serviceHealthPoller.WaitForHealthyAsync(DatabaseHealthPollerOptions, stoppingToken);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -49,9 +47,7 @@ internal sealed class BudgetReminderEmailWorker : BackgroundWorker
                 {
                     var allUsersService = serviceProvider.GetRequiredService<IGetAllUsersService>();
 
-                    var allUsers = await allUsersService
-                        .GetAllEnabledAdminsAsync(stoppingToken)
-                        .ConfigureAwait(false);
+                    var allUsers = await allUsersService.GetAllEnabledAdminsAsync(stoppingToken);
 
                     foreach (var user in allUsers)
                     {
@@ -66,9 +62,7 @@ internal sealed class BudgetReminderEmailWorker : BackgroundWorker
 
                             var reminderService = userServiceProvider.GetRequiredService<IBudgetReminderService>();
 
-                            await reminderService
-                                .SendRemindersAsync(stoppingToken)
-                                .ConfigureAwait(false);
+                            await reminderService.SendRemindersAsync(stoppingToken);
                         }
                         catch (OperationCanceledException)
                         {

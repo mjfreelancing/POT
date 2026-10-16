@@ -24,9 +24,7 @@ internal sealed class HttpUserService : IHttpUserService
             return null;
         }
 
-        return await _userService
-            .GetUserInfoAsync(userId.Value, cancellationToken)
-            .ConfigureAwait(false);
+        return await _userService.GetUserInfoAsync(userId.Value, cancellationToken);
     }
 
     private static Guid? GetMeId(HttpContext httpContext)

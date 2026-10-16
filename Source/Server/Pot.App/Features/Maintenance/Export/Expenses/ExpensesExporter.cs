@@ -23,9 +23,7 @@ internal sealed class ExpensesExporter : MemoryCsvExporterBase<ExpenseData>, IEx
     {
         Configure();
 
-        var expenses = await _expensesService
-            .GetAllExpensesAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var expenses = await _expensesService.GetAllExpensesAsync(cancellationToken);
 
         foreach (var expense in expenses)
         {
@@ -45,10 +43,10 @@ internal sealed class ExpensesExporter : MemoryCsvExporterBase<ExpenseData>, IEx
                 AccountRowId = expense.Account.RowId
             };
 
-            await AddDataAsync(expenseData, cancellationToken).ConfigureAwait(false);
+            await AddDataAsync(expenseData, cancellationToken);
         }
 
-        return await GetContentAsync(cancellationToken).ConfigureAwait(false);
+        return await GetContentAsync(cancellationToken);
     }
 
     /// <inheritdoc />

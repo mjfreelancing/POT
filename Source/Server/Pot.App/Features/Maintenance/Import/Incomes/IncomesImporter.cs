@@ -49,21 +49,17 @@ internal sealed class IncomesImporter : IIncomesImporter
                 if (!accounts.TryGetValue(csvRow.AccountRowId, out var account))
                 {
                     // Not validating the rows since the CSV file is expected to be valid (the data was previously exported).
-                    account = await _accountRepository
-                        .GetAccountAsync(csvRow.AccountRowId, cancellationToken)
-                        .ConfigureAwait(false);
+                    account = await _accountRepository.GetAccountAsync(csvRow.AccountRowId, cancellationToken);
 
                     accounts.Add(csvRow.AccountRowId, account);
                 }
 
-                await CreateOrUpdateIncomeAsync(account, csvRow, cancellationToken).ConfigureAwait(false);
+                await CreateOrUpdateIncomeAsync(account, csvRow, cancellationToken);
 
                 count++;
             }
 
-            await _accountRepository
-                .SaveAsync(cancellationToken)
-                .ConfigureAwait(false);
+            await _accountRepository.SaveAsync(cancellationToken);
         }
 
         return EnrichedResult.Success(count);
@@ -73,13 +69,11 @@ internal sealed class IncomesImporter : IIncomesImporter
     {
         var csvIncomeId = csvRow.RowId;
 
-        var incomeEntity = await _incomeRepository
-            .GetIncomeOrDefaultAsync(csvIncomeId, cancellationToken)
-            .ConfigureAwait(false);
+        var incomeEntity = await _incomeRepository.GetIncomeOrDefaultAsync(csvIncomeId, cancellationToken);
 
         return incomeEntity is null
-            ? await CreateIncomeAsync(account.RowId, csvRow, cancellationToken).ConfigureAwait(false)
-            : await UpdateIncomeAsync(account.RowId, incomeEntity.Etag, csvRow, cancellationToken).ConfigureAwait(false);
+            ? await CreateIncomeAsync(account.RowId, csvRow, cancellationToken)
+            : await UpdateIncomeAsync(account.RowId, incomeEntity.Etag, csvRow, cancellationToken);
     }
 
     private async Task<EnrichedResult<int>> CreateIncomeAsync(Guid accountRowId, IIncomeCsvRow csvRow,
@@ -98,9 +92,7 @@ internal sealed class IncomesImporter : IIncomesImporter
             AccountRowId = accountRowId
         };
 
-        var createResult = await _createIncomeService
-            .CreateIncomeAsync(input, cancellationToken)
-            .ConfigureAwait(false);
+        var createResult = await _createIncomeService.CreateIncomeAsync(input, cancellationToken);
 
         return createResult.IsSuccess
             ? EnrichedResult.Success<int>()
@@ -125,9 +117,7 @@ internal sealed class IncomesImporter : IIncomesImporter
             AccountRowId = accountRowId
         };
 
-        var updateResult = await _updateIncomeService
-            .UpdateIncomeAsync(input, cancellationToken)
-            .ConfigureAwait(false);
+        var updateResult = await _updateIncomeService.UpdateIncomeAsync(input, cancellationToken);
 
         return updateResult.IsSuccess
             ? EnrichedResult.Success<int>()

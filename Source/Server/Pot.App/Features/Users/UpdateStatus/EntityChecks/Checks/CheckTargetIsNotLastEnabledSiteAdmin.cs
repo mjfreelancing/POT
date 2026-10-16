@@ -38,7 +38,7 @@ internal sealed class CheckTargetIsNotLastEnabledSiteAdmin : PreUpdateCheckBase
         // The platform-admin rule takes precedence, and the order the checks run in is decided by registration
         // rather than declared, so this one defers to it explicitly instead of relying on that order. A disabled
         // platform administrator has no in-app remedy, which is why its refusal is the one reported.
-        if (isDisabling && !isPlatformAdmin && await IsOnlyEnabledSiteAdminAsync(state, cancellationToken).ConfigureAwait(false))
+        if (isDisabling && !isPlatformAdmin && await IsOnlyEnabledSiteAdminAsync(state, cancellationToken))
         {
             var error = ApiDetailErrorFactory.CreateUnprocessableEntityError(
                 nameof(Input.Status),
@@ -53,9 +53,7 @@ internal sealed class CheckTargetIsNotLastEnabledSiteAdmin : PreUpdateCheckBase
 
     private async Task<bool> IsOnlyEnabledSiteAdminAsync(InputState state, CancellationToken cancellationToken)
     {
-        var enabledAdmins = await _userRepository
-            .GetEnabledAdminsForCurrentSiteAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var enabledAdmins = await _userRepository.GetEnabledAdminsForCurrentSiteAsync(cancellationToken);
 
         // Exactly one enabled administrator, and it is the row being changed. A target that is not in the
         // population, or a population larger than one, leaves the site administrable.

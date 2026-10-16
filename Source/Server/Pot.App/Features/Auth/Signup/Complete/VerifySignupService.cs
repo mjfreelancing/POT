@@ -85,7 +85,7 @@ internal sealed class VerifySignupService : VerificationServiceBase, IVerifySign
             input.ReferenceCode,
             input.VerificationCode,
             otp => { },
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken);
 
         var output = (EnrichedResult<Output>)verificationOutput;
 
@@ -94,12 +94,10 @@ internal sealed class VerifySignupService : VerificationServiceBase, IVerifySign
             try
             {
                 // This could fail if the username has been taken while verifying this signup request
-                await _otpRepository
-                    .SaveAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                await _otpRepository.SaveAsync(cancellationToken);
 
                 // There is a chance this could fail
-                await SendApprovalsToPlatformAdminsAsync(input.Username, input.PlatformAdminRowIds, cancellationToken).ConfigureAwait(false);
+                await SendApprovalsToPlatformAdminsAsync(input.Username, input.PlatformAdminRowIds, cancellationToken);
             }
             catch (UniqueConstraintException ex)
             {
@@ -149,9 +147,7 @@ internal sealed class VerifySignupService : VerificationServiceBase, IVerifySign
     {
         // Check the username does not exist
         // Cross-tenant by design: a signed-out caller checks that a username is free before a site exists.
-        var user = await _userRepository
-            .GetByUsernameAsync(mostRecentOtp.Username, cancellationToken)
-            .ConfigureAwait(false);
+        var user = await _userRepository.GetByUsernameAsync(mostRecentOtp.Username, cancellationToken);
 
         if (user is not null)
         {
@@ -165,9 +161,7 @@ internal sealed class VerifySignupService : VerificationServiceBase, IVerifySign
         };
 
         // Need to make this easier !!!!
-        var role = await _roleRepository
-            .GetByNameAsync(Role.Admin, cancellationToken)
-            .ConfigureAwait(false);
+        var role = await _roleRepository.GetByNameAsync(Role.Admin, cancellationToken);
 
         // Create a new user entity since the username is available - but handle conflict when saved in case it was 'just' taken.
         // Start off as Approval so a platform admin can approve before allowing login
@@ -198,9 +192,7 @@ internal sealed class VerifySignupService : VerificationServiceBase, IVerifySign
     private async Task SendApprovalsToPlatformAdminsAsync(string username, Guid[] platformAdminRowIds, CancellationToken cancellationToken)
     {
         // Cross-tenant by design: signup completes anonymously, so the requester is resolved by username.
-        var requester = await _userRepository
-            .GetByUsernameAsync(username, cancellationToken)
-            .ConfigureAwait(false);
+        var requester = await _userRepository.GetByUsernameAsync(username, cancellationToken);
 
         var userEmail = requester.WhenNotNull().Email;
 
@@ -217,9 +209,7 @@ internal sealed class VerifySignupService : VerificationServiceBase, IVerifySign
         }
 
         // Cross-tenant by design: the recipients are the configured platform administrators, in any site.
-        var platformAdmins = await _userRepository
-            .GetByIdsForPlatformNotificationAsync(platformAdminRowIds, cancellationToken)
-            .ConfigureAwait(false);
+        var platformAdmins = await _userRepository.GetByIdsForPlatformNotificationAsync(platformAdminRowIds, cancellationToken);
 
         var unresolvedRowIds = platformAdminRowIds
             .Except(platformAdmins.Select(platformAdmin => platformAdmin.RowId))

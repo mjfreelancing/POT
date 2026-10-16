@@ -33,9 +33,7 @@ internal sealed class CreateIncomeService : ICreateIncomeService
     {
         _logger.LogCall(this);
 
-        var incomeAccount = await _accountRepository
-            .GetAccountOrDefaultAsync(input.AccountRowId, cancellationToken)
-            .ConfigureAwait(false);
+        var incomeAccount = await _accountRepository.GetAccountOrDefaultAsync(input.AccountRowId, cancellationToken);
 
         if (incomeAccount is null)
         {
@@ -72,9 +70,7 @@ internal sealed class CreateIncomeService : ICreateIncomeService
 
         incomeAccount.Incomes.Add(incomeToCreate);
 
-        await _accountRepository
-            .UpdateAndSaveAsync(incomeAccount, cancellationToken)
-            .ConfigureAwait(false);
+        await _accountRepository.UpdateAndSaveAsync(incomeAccount, cancellationToken);
 
         var createdIncome = incomeToCreate.MapToOutput();
 

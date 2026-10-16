@@ -82,14 +82,11 @@ internal abstract class VerificationServiceBase
         Action<OneTimePasswordEntity> onStatusUsed, CancellationToken cancellationToken)
     {
         // Pro-actively expire old requests in case the background job hasn't run recently
-        await _otpService
-            .UpdateExpiredRequestsAsync(_verifyReason, cancellationToken)
-            .ConfigureAwait(false);
+        await _otpService.UpdateExpiredRequestsAsync(_verifyReason, cancellationToken);
 
         // Most likely will only be one, but there is a rare chance of duplicates
         var otpEntities = await _otpRepository
-            .GetRequestsForUsernameAndRefCodeAsync(_verifyReason, username, referenceCode, cancellationToken)
-            .ConfigureAwait(false);
+            .GetRequestsForUsernameAndRefCodeAsync(_verifyReason, username, referenceCode, cancellationToken);
 
         if (otpEntities.Count == 0)
         {
@@ -121,7 +118,7 @@ internal abstract class VerificationServiceBase
         // Requests for a new OTP will always create a new record so bad actors think all is good and to keep the
         // client-side logic simple. So, if the verification code was invalid we always check rate limiting
         // before further processing the verification.
-        var isRateLimited = await IsUserRateLimitedAsync(mostRecentOtp.Username, cancellationToken).ConfigureAwait(false);
+        var isRateLimited = await IsUserRateLimitedAsync(mostRecentOtp.Username, cancellationToken);
 
         if (isRateLimited)
         {
@@ -144,9 +141,7 @@ internal abstract class VerificationServiceBase
     {
         _logger.LogDebug("Checking if the user '{Username}' is rate limited", username);
 
-        var isRateLimited = await _otpService
-            .HasReachedRateLimitAsync(_verifyReason, username, cancellationToken)
-            .ConfigureAwait(false);
+        var isRateLimited = await _otpService.HasReachedRateLimitAsync(_verifyReason, username, cancellationToken);
 
         if (isRateLimited)
         {

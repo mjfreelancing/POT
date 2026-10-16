@@ -38,9 +38,7 @@ internal sealed class UpdateUserService : IUpdateUserService
         {
             var userId = input.RowId;
 
-            var userToUpdate = await _userRepository
-                .GetForCurrentSiteAsync(input.RowId, cancellationToken)
-                .ConfigureAwait(false);
+            var userToUpdate = await _userRepository.GetForCurrentSiteAsync(input.RowId, cancellationToken);
 
             if (userToUpdate is null)
             {
@@ -51,9 +49,7 @@ internal sealed class UpdateUserService : IUpdateUserService
                 return EnrichedResult.Fail<Output>(userNotFoundError);
             }
 
-            var apiError = await _preUpdateChecker
-                .CanSaveAsync(input, userToUpdate, cancellationToken)
-                .ConfigureAwait(false);
+            var apiError = await _preUpdateChecker.CanSaveAsync(input, userToUpdate, cancellationToken);
 
             if (apiError is not null)
             {

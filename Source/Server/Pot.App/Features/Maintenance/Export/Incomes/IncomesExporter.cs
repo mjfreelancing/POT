@@ -23,9 +23,7 @@ internal sealed class IncomesExporter : MemoryCsvExporterBase<IncomeData>, IInco
     {
         Configure();
 
-        var incomes = await _incomesService
-            .GetAllIncomesAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var incomes = await _incomesService.GetAllIncomesAsync(cancellationToken);
 
         foreach (var income in incomes)
         {
@@ -43,10 +41,10 @@ internal sealed class IncomesExporter : MemoryCsvExporterBase<IncomeData>, IInco
                 AccountRowId = income.Account.RowId
             };
 
-            await AddDataAsync(incomeData, cancellationToken).ConfigureAwait(false);
+            await AddDataAsync(incomeData, cancellationToken);
         }
 
-        return await GetContentAsync(cancellationToken).ConfigureAwait(false);
+        return await GetContentAsync(cancellationToken);
     }
 
     /// <inheritdoc />

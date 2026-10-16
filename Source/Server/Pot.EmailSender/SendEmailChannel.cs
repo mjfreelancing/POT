@@ -59,7 +59,7 @@ internal sealed class SendEmailChannel : ISendEmailChannelReader, ISendEmailChan
 
                 var emailSender = scope.ServiceProvider.GetRequiredService<IEmailSender>();
 
-                await SendEmailAsync(emailSender, channelConfig, cancellationToken).ConfigureAwait(false);
+                await SendEmailAsync(emailSender, channelConfig, cancellationToken);
             }
             catch (OperationCanceledException)
             {

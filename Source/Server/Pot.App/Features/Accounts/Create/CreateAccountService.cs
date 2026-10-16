@@ -60,9 +60,7 @@ internal sealed class CreateAccountService : ICreateAccountService
                 return EnrichedResult.Fail<Output>(apiError);
             }
 
-            await _accountRepository
-                .AddAndSaveAsync(accountToCreate, cancellationToken)
-                .ConfigureAwait(false);
+            await _accountRepository.AddAndSaveAsync(accountToCreate, cancellationToken);
 
             var createdAccount = accountToCreate.MapToOutput();
 

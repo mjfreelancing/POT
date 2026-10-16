@@ -40,9 +40,7 @@ internal sealed class CheckDescriptionDoesNotExist : PreCreateCheckBase
 
         var predicate = ExpenseSpecifications.IsSameDescription(state.ExpenseToCreate.Account.Id, expenseToCreate.Description).Expression;
 
-        var descriptionExists = await _expenseRepository.Expenses
-            .AnyAsync(predicate, cancellationToken)
-            .ConfigureAwait(false);
+        var descriptionExists = await _expenseRepository.Expenses.AnyAsync(predicate, cancellationToken);
 
         if (descriptionExists)
         {

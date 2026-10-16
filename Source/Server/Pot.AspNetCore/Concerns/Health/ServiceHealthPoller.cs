@@ -22,9 +22,7 @@ internal sealed class ServiceHealthPoller : IServiceHealthPoller
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            var report = await _healthCheckService
-                .CheckHealthAsync(registration => registration.Name == options.Name, cancellationToken)
-                .ConfigureAwait(false);
+            var report = await _healthCheckService.CheckHealthAsync(registration => registration.Name == options.Name, cancellationToken);
 
             if (report.Status == HealthStatus.Healthy)
             {
@@ -33,7 +31,7 @@ internal sealed class ServiceHealthPoller : IServiceHealthPoller
 
             _logger.LogWarning("Service '{HealthCheckName}' is not yet ready. Waiting before retrying...", options.Name);
 
-            await Task.Delay(options.PollingInterval, cancellationToken).ConfigureAwait(false);
+            await Task.Delay(options.PollingInterval, cancellationToken);
         }
     }
 }

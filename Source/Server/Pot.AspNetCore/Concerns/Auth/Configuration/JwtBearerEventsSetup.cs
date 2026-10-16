@@ -69,9 +69,7 @@ internal sealed class JwtBearerEventsSetup : IConfigureNamedOptions<JwtBearerOpt
                 // Check current token version in database
                 // Cross-tenant by design: the token is validated before any user context exists, so its
                 // subject is the only thing known.
-                var currentVersion = await userRepository
-                    .GetSecurityStateAsync(userId, context.HttpContext.RequestAborted)
-                    .ConfigureAwait(false);
+                var currentVersion = await userRepository.GetSecurityStateAsync(userId, context.HttpContext.RequestAborted);
 
                 if (currentVersion == null)
                 {

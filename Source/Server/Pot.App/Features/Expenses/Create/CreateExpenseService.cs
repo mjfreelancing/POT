@@ -37,9 +37,7 @@ internal sealed class CreateExpenseService : ICreateExpenseService
     {
         _logger.LogCall(this);
 
-        var expenseAccount = await _accountRepository
-            .GetAccountOrDefaultAsync(input.AccountRowId, cancellationToken)
-            .ConfigureAwait(false);
+        var expenseAccount = await _accountRepository.GetAccountOrDefaultAsync(input.AccountRowId, cancellationToken);
 
         if (expenseAccount is null)
         {
@@ -78,9 +76,7 @@ internal sealed class CreateExpenseService : ICreateExpenseService
 
         expenseAccount.Expenses.Add(expenseToCreate);
 
-        await _accountRepository
-            .UpdateAndSaveAsync(expenseAccount, cancellationToken)
-            .ConfigureAwait(false);
+        await _accountRepository.UpdateAndSaveAsync(expenseAccount, cancellationToken);
 
         var createdExpense = expenseToCreate.MapToOutput();
 

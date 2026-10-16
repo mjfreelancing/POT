@@ -61,9 +61,7 @@ internal sealed class UpdateSiteService : IUpdateSiteService
                 return EnrichedResult.Fail<Output>(siteNotFoundError);
             }
 
-            var apiError = await _preUpdateChecker
-                .CanSaveAsync(input, siteToUpdate, cancellationToken)
-                .ConfigureAwait(false);
+            var apiError = await _preUpdateChecker.CanSaveAsync(input, siteToUpdate, cancellationToken);
 
             if (apiError is not null)
             {

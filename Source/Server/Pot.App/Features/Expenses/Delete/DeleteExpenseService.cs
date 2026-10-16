@@ -29,9 +29,7 @@ internal sealed class DeleteExpenseService : IDeleteExpenseService
 
         using (_expenseRepository.WithTracking())
         {
-            var expense = await _expenseRepository
-                .GetExpenseOrDefaultAsync(expenseId, cancellationToken)
-                .ConfigureAwait(false);
+            var expense = await _expenseRepository.GetExpenseOrDefaultAsync(expenseId, cancellationToken);
 
             if (expense is null)
             {
@@ -44,9 +42,7 @@ internal sealed class DeleteExpenseService : IDeleteExpenseService
 
             _expenseRepository.Delete(expense);
 
-            await _expenseRepository
-                .SaveAsync(cancellationToken)
-                .ConfigureAwait(false);
+            await _expenseRepository.SaveAsync(cancellationToken);
         }
 
         return EnrichedResult.Success(true);

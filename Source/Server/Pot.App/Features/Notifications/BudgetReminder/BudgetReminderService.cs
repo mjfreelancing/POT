@@ -52,9 +52,7 @@ internal sealed class BudgetReminderService : IBudgetReminderService
         // this resolves that recipient rather than a signed-in caller.
         var user = _userRepository.GetCurrentUser(true);
 
-        var reminderSettings = await _settingsService
-            .GetEmailBudgetReminderSettingsAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var reminderSettings = await _settingsService.GetEmailBudgetReminderSettingsAsync(cancellationToken);
 
         if (!reminderSettings.Enabled)
         {
@@ -72,9 +70,9 @@ internal sealed class BudgetReminderService : IBudgetReminderService
             return;
         }
 
-        var includedIncomes = await GetIncomesReminder(currentLocalDate, reminderSettings.ReminderDays, cancellationToken).ConfigureAwait(false);
+        var includedIncomes = await GetIncomesReminder(currentLocalDate, reminderSettings.ReminderDays, cancellationToken);
 
-        var includedExpenses = await GetExpensesReminder(currentLocalDate, reminderSettings.ReminderDays, cancellationToken).ConfigureAwait(false);
+        var includedExpenses = await GetExpensesReminder(currentLocalDate, reminderSettings.ReminderDays, cancellationToken);
 
         var reminderInfo = new EmailBudgetReminderInfo
         {
@@ -106,16 +104,12 @@ internal sealed class BudgetReminderService : IBudgetReminderService
             })
         };
 
-        await _sendEmailChannelWriter
-            .SubmitAsync(EmailType.BudgetReminder, reminderInfo, cancellationToken)
-            .ConfigureAwait(false);
+        await _sendEmailChannelWriter.SubmitAsync(EmailType.BudgetReminder, reminderInfo, cancellationToken);
     }
 
     private async Task<List<Expenses.GetAll.Models.Output>> GetExpensesReminder(DateOnly currentLocalDate, int reminderDays, CancellationToken cancellationToken)
     {
-        var allExpenses = await _expensesService
-            .GetAllExpensesAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var allExpenses = await _expensesService.GetAllExpensesAsync(cancellationToken);
 
         return [.. allExpenses
             .Where(expense => !expense.ExcludeFromCalcs)
@@ -125,9 +119,7 @@ internal sealed class BudgetReminderService : IBudgetReminderService
 
     private async Task<List<Incomes.GetAll.Models.Output>> GetIncomesReminder(DateOnly currentLocalDate, int reminderDays, CancellationToken cancellationToken)
     {
-        var allIncomes = await _incomesService
-            .GetAllIncomesAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var allIncomes = await _incomesService.GetAllIncomesAsync(cancellationToken);
 
         return [.. allIncomes
             .Where(income => !income.ExcludeFromCalcs)

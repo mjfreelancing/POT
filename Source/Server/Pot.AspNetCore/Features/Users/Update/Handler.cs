@@ -23,7 +23,7 @@ internal sealed class Handler
 
         // A caller may edit their own details; editing anyone else needs user:manage. Anything the caller
         // cannot act on is refused as not-found, so the response cannot be used to probe for other users.
-        if (!IsSelf(user, id) && !await IsAuthorizedToManageUsersAsync(authorizationService, user).ConfigureAwait(false))
+        if (!IsSelf(user, id) && !await IsAuthorizedToManageUsersAsync(authorizationService, user))
         {
             logger.LogWarning("Refused an update of user {RequestedRowId}: the caller may only edit their own details", id);
 
@@ -41,7 +41,7 @@ internal sealed class Handler
 
         var userInput = request.MapToInput(id);
 
-        var result = await userService.UpdateUserAsync(userInput, cancellationToken).ConfigureAwait(false);
+        var result = await userService.UpdateUserAsync(userInput, cancellationToken);
 
         return result.IsSuccess
             ? Response.Ok(result.Value!)
@@ -57,9 +57,7 @@ internal sealed class Handler
 
     private static async Task<bool> IsAuthorizedToManageUsersAsync(IAuthorizationService authorizationService, ClaimsPrincipal user)
     {
-        var authorization = await authorizationService
-            .AuthorizeAsync(user, ManageUsersPolicy)
-            .ConfigureAwait(false);
+        var authorization = await authorizationService.AuthorizeAsync(user, ManageUsersPolicy);
 
         return authorization.Succeeded;
     }

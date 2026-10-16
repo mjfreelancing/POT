@@ -31,7 +31,7 @@ internal sealed class CheckRemovingAdminLeavesAnAdministrator : PreUpdateCheckBa
     {
         _logger.LogCall(this);
 
-        if (RemovesAdmin(state) && await IsOnlyEnabledSiteAdminAsync(state, cancellationToken).ConfigureAwait(false))
+        if (RemovesAdmin(state) && await IsOnlyEnabledSiteAdminAsync(state, cancellationToken))
         {
             var roleIdsText = string.Join(", ", state.Input.RoleIds);
 
@@ -48,9 +48,7 @@ internal sealed class CheckRemovingAdminLeavesAnAdministrator : PreUpdateCheckBa
 
     private async Task<bool> IsOnlyEnabledSiteAdminAsync(InputState state, CancellationToken cancellationToken)
     {
-        var enabledAdmins = await _userRepository
-            .GetEnabledAdminsForCurrentSiteAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var enabledAdmins = await _userRepository.GetEnabledAdminsForCurrentSiteAsync(cancellationToken);
 
         // Exactly one enabled administrator, and it is the row being changed. A target that is not in the
         // population, or a population larger than one, leaves the site administrable.
