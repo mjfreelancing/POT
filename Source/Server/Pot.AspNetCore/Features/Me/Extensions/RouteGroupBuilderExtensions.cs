@@ -18,6 +18,21 @@ internal static class RouteGroupBuilderExtensions
         return routeGroupBuilder;
     }
 
+    public static RouteGroupBuilder DeleteMe(this RouteGroupBuilder routeGroupBuilder)
+    {
+        routeGroupBuilder
+            .MapDelete(MeEndpoints.Delete, Me.Delete.Handler.Invoke)
+            .RequireAuthorization(AuthorizationPolicies.AuthenticatedUser)
+            .WithName(nameof(DeleteMe))
+            .WithSummary("Delete my account")
+            .WithDescription("Deletes the signed-in user's account")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
+
+        return routeGroupBuilder;
+    }
+
     public static RouteGroupBuilder ChangePassword(this RouteGroupBuilder routeGroupBuilder)
     {
         routeGroupBuilder

@@ -6,5 +6,6 @@ internal static class MeEndpoints
     public const string Tag = "Me Api";
 
     public const string Me = "/";
+    public const string Delete = "/";
     public const string ChangePassword = "/change-password";
 }

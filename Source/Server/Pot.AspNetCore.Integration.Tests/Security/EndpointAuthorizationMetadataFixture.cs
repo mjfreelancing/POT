@@ -78,6 +78,7 @@ public class EndpointAuthorizationMetadataFixture : IntegrationFixtureBase
     [Theory]
     [InlineData("PUT", "/api/users/{id}", AuthenticatedUserPolicy)]
     [InlineData("DELETE", "/api/users/{id}", "user:manage")]
+    [InlineData("DELETE", "/api/me", AuthenticatedUserPolicy)]
     [InlineData("PUT", "/api/users/{id}/roles", "user:manage")]
     [InlineData("PUT", "/api/users/{id}/status", "user:manage")]
     [InlineData("POST", "/api/users/{id}/resend-invite", "user:manage")]

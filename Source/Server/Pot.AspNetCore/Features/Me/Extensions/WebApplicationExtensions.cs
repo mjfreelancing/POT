@@ -17,6 +17,7 @@ internal static class WebApplicationExtensions
                 .ProducesStandardProblems()
                 .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .GetMe()
+                .DeleteMe()
                 .ChangePassword();
         }
 
