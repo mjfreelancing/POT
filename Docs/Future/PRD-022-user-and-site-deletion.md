@@ -115,6 +115,7 @@ A platform administrator has no additional authority in this feature. Every acti
 - A backup, export or summary step before deleting a site.
 - Password re-entry limits specific to these actions.
 - Notifying users of a site when another user is removed, beyond the recipients listed in C13.
+- **Proactive UI indication of refusal reasons.** It would be preferred if the Users list and the settings blocks showed up front that a user or site cannot be removed, or that an account cannot be disabled, based on the platform administrator and last-administrator rules. This is not required here: the server refuses the action and returns an actionable message, which is sufficient for now. A pre-emptive indicator is separate future work.
 
 The items above that name PRD-027 are specified and delivered there. The rest are separate future work, outside both this document and PRD-027.
 
@@ -125,6 +126,7 @@ The items above that name PRD-027 are specified and delivered there. The rest ar
 - **Stale configuration.** A configured platform administrator identifier that does not belong to an enabled user is ignored when counting live platform administrators (see Terms). Configuration hygiene is an operator responsibility.
 - **Orphaned site.** When the only enabled administrator of a site is also the last live platform administrator, that site cannot be deleted until the administrator is removed from deployment configuration and redeployed (E3, R9). Removing the configuration entry restores the administrator's ability to delete the site. Where the administrator is unavailable, the site can only be resolved by the platform administration feature specified by PRD-027, which can add a user to the site or delete it on the operator's behalf.
 - **Relaxed platform protection.** R7 allows a platform administrator to be disabled or removed when another live platform administrator exists. This replaces the current behaviour, where a configured platform administrator can never be disabled.
+- **Refusals are discovered on submission.** The client does not predict whether an action will be refused. A user who cannot be removed, or a site that cannot be deleted, is only learned when the server refuses the request, and the caller then reads the message. The refusal is authoritative and actionable, so the experience is correct but reactive; a pre-emptive indicator is recorded in Out of Scope.
 
 ## Assumptions
 
