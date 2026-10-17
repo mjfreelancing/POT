@@ -9,5 +9,6 @@ public enum EmailType
     ApprovalAccepted,
     ApprovalRejected,
     BudgetReminder,
-    UserDeleted
+    UserDeleted,
+    SiteDeleted
 }

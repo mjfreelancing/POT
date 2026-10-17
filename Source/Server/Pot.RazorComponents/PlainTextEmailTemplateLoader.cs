@@ -10,6 +10,7 @@ public static class PlainTextEmailTemplateLoader
     public static readonly string ApprovalRejected = "Emails.ApprovalRejected.ApprovalRejectedEmail.text";
     public static readonly string BudgetReminder = "Emails.BudgetReminder.BudgetReminderEmail.text";
     public static readonly string UserDeleted = "Emails.UserDeleted.UserDeletedEmail.text";
+    public static readonly string SiteDeleted = "Emails.SiteDeleted.SiteDeletedEmail.text";
 
     public static string Populate(string templateName, IDictionary<string, object?> replacements)
     {

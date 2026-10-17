@@ -83,6 +83,7 @@ public class EndpointAuthorizationMetadataFixture : IntegrationFixtureBase
     [InlineData("PUT", "/api/users/{id}/status", "user:manage")]
     [InlineData("POST", "/api/users/{id}/resend-invite", "user:manage")]
     [InlineData("PUT", "/api/sites/{id}", "site:manage")]
+    [InlineData("DELETE", "/api/sites/current", "site:manage")]
     public void Should_Declare_The_Expected_Requirement_On_Each_Target_Route(string method, string route, string expectedPolicy)
     {
         var endpoint = GetEndpoints()

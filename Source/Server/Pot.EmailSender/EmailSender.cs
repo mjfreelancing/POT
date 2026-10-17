@@ -14,6 +14,7 @@ using Pot.RazorComponents.Emails.ChangePassword;
 using Pot.RazorComponents.Emails.Invitation;
 using Pot.RazorComponents.Emails.PendingApproval;
 using Pot.RazorComponents.Emails.Signup;
+using Pot.RazorComponents.Emails.SiteDeleted;
 using Pot.RazorComponents.Emails.UserDeleted;
 using Pot.RazorComponents.Models;
 using System.Reflection;
@@ -30,6 +31,7 @@ internal sealed class EmailSender : IEmailSender
     private const string ApprovalRejectedSubject = "POT - Approval Denied";
     private const string BudgetReminderSubject = "POT - Budget Reminder";
     private const string UserDeletedSubject = "POT - User Deleted";
+    private const string SiteDeletedSubject = "POT - Site Deleted";
     
     private readonly IRazorComponentRenderer _razorRenderer;
     private readonly SmtpConfiguration _smtpConfiguration;
@@ -96,6 +98,13 @@ internal sealed class EmailSender : IEmailSender
         _logger.LogCall(this, new { config.Username, config.DeletedUsername, config.SiteName, config.DeletedByLabel });
 
         return SendEmailAsync<UserDeletedEmail>(config, UserDeletedSubject, PlainTextEmailTemplateLoader.UserDeleted, cancellationToken);
+    }
+
+    public Task SendSiteDeletedEmailAsync(EmailSiteDeletedInfo config, CancellationToken cancellationToken)
+    {
+        _logger.LogCall(this, new { config.Username, config.DeletedSiteName, config.DeletedByUsername });
+
+        return SendEmailAsync<SiteDeletedEmail>(config, SiteDeletedSubject, PlainTextEmailTemplateLoader.SiteDeleted, cancellationToken);
     }
 
     private async Task SendEmailAsync<TEmailComponent>(EmailConfigBase config, string subject, string plainTextTemplateName,

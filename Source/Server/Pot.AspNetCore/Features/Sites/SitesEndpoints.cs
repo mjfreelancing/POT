@@ -6,4 +6,5 @@ internal static class SitesEndpoints
     public const string Tag = "Sites Api";
 
     public const string Update = "/{id:guid}";
+    public const string Delete = "/current";
 }

@@ -17,6 +17,9 @@ namespace Pot.App.Features.Users.Delete.EntityChecks.Checks;
 /// </remarks>
 internal sealed class CheckTargetIsNotPlatformAdmin : UserDeleteCheckBase
 {
+    private const string RefusalMessage =
+        "This is the last enabled platform administrator. Another platform administrator must be configured first.";
+
     private readonly IUserRepository _userRepository;
     private readonly ILogger _logger;
 
@@ -46,7 +49,7 @@ internal sealed class CheckTargetIsNotPlatformAdmin : UserDeleteCheckBase
             return ApiDetailErrorFactory.CreateBadRequestError(
                 nameof(Input.RowId),
                 state.Target.RowId,
-                "This is the last enabled platform administrator. Another platform administrator must be configured first.");
+                RefusalMessage);
         }
 
         return await base.HandleAsync(state, cancellationToken);

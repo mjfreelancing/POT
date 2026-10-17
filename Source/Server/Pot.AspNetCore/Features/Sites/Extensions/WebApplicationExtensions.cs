@@ -16,7 +16,8 @@ internal static class WebApplicationExtensions
                 .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .WithTags(SitesEndpoints.Tag)
                 .ProducesStandardProblems()
-                .UpdateSite();
+                .UpdateSite()
+                .DeleteSite();
         }
 
         return app;

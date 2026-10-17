@@ -18,4 +18,20 @@ internal static class RouteGroupBuilderExtensions
 
         return routeGroupBuilder;
     }
+
+    public static RouteGroupBuilder DeleteSite(this RouteGroupBuilder routeGroupBuilder)
+    {
+        routeGroupBuilder
+            .MapDelete(SitesEndpoints.Delete, Delete.Handler.Invoke)
+            .RequireAuthorization("site:manage")
+            .WithName(nameof(DeleteSite))
+            .WithSummary("Delete the current site")
+            .WithDescription("Deletes the caller's site")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
+
+        return routeGroupBuilder;
+    }
 }
