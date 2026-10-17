@@ -77,6 +77,11 @@ public abstract class ApiWebApplicationFactory : WebApplicationFactory<Program>
     public const string TestUsername = "postgres";
     public const string TestPassword = "postgres";
 
+    // Surfaced so a fixture can sign a token the host will accept, to exercise claim validation.
+    public const string TestJwtIssuer = "pot-integration-tests";
+    public const string TestJwtAudience = "pot-integration-tests";
+    public const string TestJwtSecretKey = "pot-integration-tests-secret-key-must-be-at-least-64-characters-long-for-hs512";
+
     /// <summary>
     /// Database hostname (set by constructor, passed from container at initialization time).
     /// </summary>
@@ -112,9 +117,9 @@ public abstract class ApiWebApplicationFactory : WebApplicationFactory<Program>
                 ["Database:Password"] = TestPassword,
                 ["Database:Port"] = _dbPort.ToString(),
                 ["Database:SSLMode"] = "Disable",
-                ["Jwt:Issuer"] = "pot-integration-tests",
-                ["Jwt:Audience"] = "pot-integration-tests",
-                ["Jwt:SecretKey"] = "pot-integration-tests-secret-key-must-be-at-least-64-characters-long-for-hs512",
+                ["Jwt:Issuer"] = TestJwtIssuer,
+                ["Jwt:Audience"] = TestJwtAudience,
+                ["Jwt:SecretKey"] = TestJwtSecretKey,
                 ["Smtp:Host"] = "localhost",
                 ["Smtp:Port"] = "2525",
                 ["Smtp:RequireTls"] = "false",

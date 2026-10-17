@@ -65,14 +65,38 @@ public class AuthSessionServiceFixture : PotFixtureBase
             var nowUtc = new DateTime(2026, 1, 15, 10, 0, 0, DateTimeKind.Utc);
             var expiryUtc = nowUtc.AddDays(30);
             var refreshToken = Create<string>();
+            var sessionRowId = Guid.NewGuid();
 
-            var authSession = service.CreateSession(user, refreshToken, expiryUtc, nowUtc, NoLoginRequestContext);
+            var authSession = service.CreateSession(user, refreshToken, expiryUtc, nowUtc, NoLoginRequestContext, sessionRowId);
 
+            authSession.RowId.ShouldBe(sessionRowId);
             authSession.UserId.ShouldBe(user.Id);
             authSession.User.ShouldBe(user);
             authSession.CreatedUtc.ShouldBe(nowUtc);
             authSession.ExpiresUtc.ShouldBe(expiryUtc);
             authSession.LastSeenUtc.ShouldBe(nowUtc);
+        }
+
+        [Fact]
+        public void Should_Only_Stage_The_Session_Without_Saving_It()
+        {
+            var logger = Substitute.For<ILogger<AuthSessionService>>();
+            var service = new AuthSessionService(_authSessionRepositoryFake, logger);
+
+            var user = CreateUserWithId(userId: 11);
+            var nowUtc = new DateTime(2026, 1, 15, 10, 0, 0, DateTimeKind.Utc);
+            var refreshToken = Create<string>();
+
+            _ = service.CreateSession(user, refreshToken, nowUtc.AddDays(30), nowUtc, NoLoginRequestContext, Guid.NewGuid());
+
+            _authSessionRepositoryFake
+                .Received(1)
+                .Add(Arg.Any<AuthSessionEntity>());
+
+            // The caller commits this row with its own changes in a single SaveChanges, which is what keeps the
+            // login's session insert and audit update atomic. Saving here would split them.
+            _authSessionRepositoryFake.DidNotReceive().Save();
+            _authSessionRepositoryFake.DidNotReceive().SaveAsync(Arg.Any<CancellationToken>());
         }
 
         [Fact]
@@ -85,7 +109,7 @@ public class AuthSessionServiceFixture : PotFixtureBase
             var nowUtc = DateTime.UtcNow;
             var refreshToken = Create<string>();
 
-            var authSession = service.CreateSession(user, refreshToken, nowUtc.AddDays(7), nowUtc, NoLoginRequestContext);
+            var authSession = service.CreateSession(user, refreshToken, nowUtc.AddDays(7), nowUtc, NoLoginRequestContext, Guid.NewGuid());
 
             authSession.RefreshTokenHash.ShouldNotBe(refreshToken);
             authSession.RefreshTokenHash.ShouldNotBeNullOrWhiteSpace();
@@ -101,8 +125,8 @@ public class AuthSessionServiceFixture : PotFixtureBase
             var nowUtc = DateTime.UtcNow;
             var refreshToken = Create<string>();
 
-            var firstSession = service.CreateSession(user, refreshToken, nowUtc.AddDays(7), nowUtc, NoLoginRequestContext);
-            var secondSession = service.CreateSession(user, refreshToken, nowUtc.AddDays(7), nowUtc, NoLoginRequestContext);
+            var firstSession = service.CreateSession(user, refreshToken, nowUtc.AddDays(7), nowUtc, NoLoginRequestContext, Guid.NewGuid());
+            var secondSession = service.CreateSession(user, refreshToken, nowUtc.AddDays(7), nowUtc, NoLoginRequestContext, Guid.NewGuid());
 
             firstSession.RefreshTokenHash.ShouldBe(secondSession.RefreshTokenHash);
         }
@@ -116,7 +140,7 @@ public class AuthSessionServiceFixture : PotFixtureBase
             var user = CreateUserWithId(userId: 9);
             var nowUtc = DateTime.UtcNow;
 
-            var authSession = service.CreateSession(user, Create<string>(), nowUtc.AddDays(7), nowUtc, NoLoginRequestContext);
+            var authSession = service.CreateSession(user, Create<string>(), nowUtc.AddDays(7), nowUtc, NoLoginRequestContext, Guid.NewGuid());
 
             _authSessionRepositoryFake.Received(1).Add(authSession);
         }
@@ -131,7 +155,7 @@ public class AuthSessionServiceFixture : PotFixtureBase
             var nowUtc = DateTime.UtcNow;
 
             var authSession = service.CreateSession(user, Create<string>(), nowUtc.AddDays(7), nowUtc,
-                new LoginRequestContext(UserAgent: "Mozilla/5.0 POT Test", IpAddress: "203.0.113.10"));
+                new LoginRequestContext(UserAgent: "Mozilla/5.0 POT Test", IpAddress: "203.0.113.10"), Guid.NewGuid());
 
             authSession.UserAgent.ShouldBe("Mozilla/5.0 POT Test");
             authSession.IpAddress.ShouldBe("203.0.113.10");
@@ -150,7 +174,7 @@ public class AuthSessionServiceFixture : PotFixtureBase
 
             var context = logger.CaptureLogCalls(() =>
             {
-                _ = service.CreateSession(user, Create<string>(), nowUtc.AddDays(7), nowUtc);
+                _ = service.CreateSession(user, Create<string>(), nowUtc.AddDays(7), nowUtc, NoLoginRequestContext, Guid.NewGuid());
             });
 
             _ = context

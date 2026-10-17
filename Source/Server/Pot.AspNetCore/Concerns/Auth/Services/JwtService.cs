@@ -22,13 +22,14 @@ internal sealed class JwtService : IJwtService
         _timeProvider = timeProvider.WhenNotNull();
     }
 
-    public string CreateAccessToken(UserEntity user)
+    public string CreateAccessToken(UserEntity user, Guid sessionRowId)
     {
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(JwtRegisteredClaimNames.Sub, user.RowId.ToString()),
-            new(PotClaimTypes.TokenVersion, user.TokenVersion.ToString())
+            new(PotClaimTypes.TokenVersion, user.TokenVersion.ToString()),
+            new(PotClaimTypes.SessionId, sessionRowId.ToString())
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SecretKey));

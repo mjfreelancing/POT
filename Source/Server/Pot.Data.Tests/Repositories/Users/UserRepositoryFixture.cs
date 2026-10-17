@@ -594,6 +594,117 @@ public class UserRepositoryFixture
         return new TestContext(dbContext, repository, site, otherSite, user, adminRole);
     }
 
+    public class GetSecurityState : UserRepositoryFixture
+    {
+        [Fact]
+        public async Task Should_Report_The_Expiry_And_No_Revocation_When_The_Session_Is_Active()
+        {
+            var cancellationToken = Xunit.TestContext.Current.CancellationToken;
+
+            using var dbContext = CreateSeededContext();
+
+            var user = dbContext.Users.Single();
+            var session = CreateAuthSession(user, expiresUtc: DateTime.UtcNow.AddDays(1));
+
+            dbContext.AuthSessions.Add(session);
+            await dbContext.SaveChangesAsync(cancellationToken);
+
+            var repository = CreateUserRepository(dbContext, user);
+
+            var securityState = await repository.GetSecurityStateAsync(user.RowId, session.RowId, cancellationToken);
+
+            securityState.ShouldNotBeNull();
+            securityState.TokenVersion.ShouldBe(user.TokenVersion);
+            securityState.SessionExpiresUtc.ShouldBe(session.ExpiresUtc);
+            securityState.SessionRevokedUtc.ShouldBeNull();
+        }
+
+        [Fact]
+        public async Task Should_Report_The_Revoked_Time_When_The_Session_Was_Revoked()
+        {
+            var cancellationToken = Xunit.TestContext.Current.CancellationToken;
+
+            using var dbContext = CreateSeededContext();
+
+            var user = dbContext.Users.Single();
+            var revokedUtc = DateTime.UtcNow.AddMinutes(-5);
+            var session = CreateAuthSession(user, expiresUtc: DateTime.UtcNow.AddDays(1), revokedUtc);
+
+            dbContext.AuthSessions.Add(session);
+            await dbContext.SaveChangesAsync(cancellationToken);
+
+            var repository = CreateUserRepository(dbContext, user);
+
+            var securityState = await repository.GetSecurityStateAsync(user.RowId, session.RowId, cancellationToken);
+
+            securityState.ShouldNotBeNull();
+            securityState.SessionExpiresUtc.ShouldBe(session.ExpiresUtc);
+            securityState.SessionRevokedUtc.ShouldBe(revokedUtc);
+        }
+
+        [Fact]
+        public async Task Should_Report_No_Session_Expiry_When_The_Session_Does_Not_Exist()
+        {
+            var cancellationToken = Xunit.TestContext.Current.CancellationToken;
+
+            using var dbContext = CreateSeededContext();
+
+            var user = dbContext.Users.Single();
+            var repository = CreateUserRepository(dbContext, user);
+
+            var securityState = await repository.GetSecurityStateAsync(user.RowId, Guid.NewGuid(), cancellationToken);
+
+            securityState.ShouldNotBeNull();
+
+            // A null expiry is how the token pipeline recognises a session that no longer exists, so the
+            // projection must not fall back to default(DateTime).
+            securityState.SessionExpiresUtc.ShouldBeNull();
+            securityState.SessionRevokedUtc.ShouldBeNull();
+        }
+
+        [Fact]
+        public async Task Should_Not_Report_Another_Users_Session_When_The_Token_Names_It()
+        {
+            var cancellationToken = Xunit.TestContext.Current.CancellationToken;
+
+            using var dbContext = CreateSeededContext();
+
+            var user = dbContext.Users.Single();
+            var otherUser = EntityFactory.CreateUser(user.Site, $"other-{Guid.NewGuid():N}");
+            var otherUsersSession = CreateAuthSession(otherUser, expiresUtc: DateTime.UtcNow.AddDays(1));
+
+            dbContext.Users.Add(otherUser);
+            dbContext.AuthSessions.Add(otherUsersSession);
+            await dbContext.SaveChangesAsync(cancellationToken);
+
+            var repository = CreateUserRepository(dbContext, user);
+
+            var securityState = await repository.GetSecurityStateAsync(user.RowId, otherUsersSession.RowId, cancellationToken);
+
+            securityState.ShouldNotBeNull();
+
+            // The session lookup is scoped to the subject's own sessions, so another user's session is
+            // indistinguishable from one that does not exist.
+            securityState.SessionExpiresUtc.ShouldBeNull();
+            securityState.SessionRevokedUtc.ShouldBeNull();
+        }
+
+        private static AuthSessionEntity CreateAuthSession(UserEntity user, DateTime expiresUtc, DateTime? revokedUtc = null)
+        {
+            var session = new AuthSessionEntity
+            {
+                RowId = Guid.NewGuid(),
+                UserId = user.Id,
+                RefreshTokenHash = Guid.NewGuid().ToString("N"),
+                CreatedUtc = DateTime.UtcNow.AddDays(-1),
+                ExpiresUtc = expiresUtc,
+                RevokedUtc = revokedUtc
+            };
+
+            return session;
+        }
+    }
+
     private static PotDbContext CreateSeededContext()
     {
         var dbOptions = new DbContextOptionsBuilder<PotDbContext>()

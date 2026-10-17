@@ -90,9 +90,10 @@ public interface IUserRepository : IRepositoryBase
     /// subject is the only thing known.
     /// </remarks>
     /// <param name="userRowId">The user the token claims to belong to.</param>
+    /// <param name="sessionRowId">The session the token names, read so a revoked session invalidates the token.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The token-validation state, or <see langword="null" /> when the user no longer exists.</returns>
-    Task<UserSecurityState?> GetSecurityStateAsync(Guid userRowId, CancellationToken cancellationToken);
+    Task<UserSecurityState?> GetSecurityStateAsync(Guid userRowId, Guid sessionRowId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Lists every site's enabled users.

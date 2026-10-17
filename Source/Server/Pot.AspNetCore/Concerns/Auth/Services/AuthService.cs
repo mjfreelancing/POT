@@ -32,8 +32,8 @@ namespace Pot.AspNetCore.Concerns.Auth.Services;
 // Method flow map:
 // - LoginAsync:
 //   1) Validate username/password and account status.
-//   2) Issue new access/refresh tokens.
-//   3) Create AuthSession with refresh-token hash, expiry, and request metadata.
+//   2) Choose the session identifier up front and issue new access/refresh tokens bound to it.
+//   3) Create AuthSession with that RowId, refresh-token hash, expiry, and request metadata.
 //   4) Save session + user login metadata.
 // - RefreshAsync:
 //   1) Optionally parse expired access token subject for consistency check.
@@ -63,9 +63,10 @@ namespace Pot.AspNetCore.Concerns.Auth.Services;
 //   Every issued JWT embeds the TokenVersion at the time of issuance. The authentication
 //   middleware validates the claim on every request; if the token version in the JWT is
 //   lower than the current User.TokenVersion the request is rejected immediately.
-// - This provides synchronous, global revocation without a per-request session DB lookup.
-// - Per-session revocation (RevokedUtc on AuthSession) only prevents future refresh calls;
-//   it cannot cancel a live access token already held by a client. TokenVersion does.
+// - Validation happens in the same per-request database read that resolves the token's session, so both checks share one round trip.
+// - Per-session revocation (RevokedUtc on AuthSession) stops future refresh calls and, because every access
+//   token carries the session id it was issued for, also cancels that session's live access token.
+// - TokenVersion remains the coarse control for events that must affect every device at once.
 // - TokenVersion is therefore incremented only on global-revoke paths:
 //     * ChangePasswordAsync  — credentials compromised, all devices must re-authenticate.
 //     * Any future logout-all operation.
@@ -165,15 +166,23 @@ internal sealed class AuthService : IAuthService
                 return EnrichedResult.Success<AuthTokens?>(null);
             }
 
-            // 2) Issue a new access token + refresh token pair for this login.
-            var authTokens = CreateUserAuthTokens(user);
+            // 2) Choose the session identifier up front, rather than letting the RowId value generator supply it,
+            //    so the access token can carry it before the session row exists. An explicit RowId is respected.
+            var sessionRowId = Guid.NewGuid();
+
+            // 3) Issue a new access token + refresh token pair for this login, bound to that session.
+            var authTokens = CreateUserAuthTokens(user, sessionRowId);
 
             var nowUtc = _timeProvider.GetUtcDateTimeNow();
 
-            // 3) Persist a dedicated AuthSession for this login so refresh lifecycle is per-session.
-            _authSessionService.CreateSession(user, authTokens.RefreshToken, authTokens.RefreshTokenExpiryUtc, nowUtc, context);
+            // 4) Stage a dedicated AuthSession for this login so refresh lifecycle is per-session. CreateSession
+            //    only adds the row, so the single SaveAsync below commits it together with the login audit field.
+            //    One SaveChanges is atomic on its own, which is why no explicit transaction is opened here: one
+            //    would only become necessary if a second save were introduced in this method or inside
+            //    CreateSession.
+            _authSessionService.CreateSession(user, authTokens.RefreshToken, authTokens.RefreshTokenExpiryUtc, nowUtc, context, sessionRowId);
 
-            // 4) Update login audit field and commit atomically with session creation.
+            // 5) Update login audit field and commit atomically with session creation.
             user.LastLoggedInUtc = nowUtc;
 
             await _userRepository.SaveAsync(cancellationToken);
@@ -256,7 +265,7 @@ internal sealed class AuthService : IAuthService
             }
 
             // 2) Rotate tokens on every successful refresh.
-            var authTokens = CreateUserAuthTokens(authSession.User);
+            var authTokens = CreateUserAuthTokens(authSession.User, authSession.RowId);
 
             // 3) Persist new refresh-token hash/expiry and last-seen metadata for this same session row.
             _authSessionService.RotateRefreshToken(authSession, authTokens.RefreshToken, authTokens.RefreshTokenExpiryUtc, nowUtc);
@@ -310,9 +319,9 @@ internal sealed class AuthService : IAuthService
         return EnrichedResult.Success(true);
     }
 
-    private AuthTokens CreateUserAuthTokens(UserEntity user)
+    private AuthTokens CreateUserAuthTokens(UserEntity user, Guid sessionRowId)
     {
-        var accessToken = _jwtService.CreateAccessToken(user);
+        var accessToken = _jwtService.CreateAccessToken(user, sessionRowId);
         var refreshToken = GenerateRefreshToken();
 
         // Expire the refresh token at midnight in the user's local time zone to minimise risk of expiring mid-session

@@ -1,3 +1,4 @@
+using AllOverIt.Extensions;
 using Pot.AspNetCore.Concerns.Auth.Configuration;
 
 namespace Pot.AspNetCore.Features.Auth;
@@ -16,7 +17,7 @@ internal static class RefreshTokenHelper
             Secure = cookieConfig.SecureOnly,   // Only sent over HTTPS in production
             SameSite = SameSiteMode.Lax,        // CSRF protection, allows cookie on page refresh
             MaxAge = TimeSpan.FromDays(cookieConfig.MaxAgeDays),
-            Domain = cookieConfig.Domain,       // Set for cross-subdomain support (e.g., ".payontime.com.au")
+            Domain = GetCookieDomain(cookieConfig),
             Path = "/",
             IsEssential = true
         };
@@ -35,6 +36,9 @@ internal static class RefreshTokenHelper
             Secure = cookieConfig.SecureOnly,
             SameSite = SameSiteMode.Lax,
             MaxAge = TimeSpan.Zero,
+            // Clearing must use the same domain that was set, otherwise the browser removes a host-only
+            // cookie and the domain-scoped cookie survives until it expires.
+            Domain = GetCookieDomain(cookieConfig),
             Path = "/",
             Expires = DateTimeOffset.UtcNow.AddDays(-1)
         };
@@ -49,5 +53,12 @@ internal static class RefreshTokenHelper
 
         // Returns null for missing entries rather than throwing an Exception
         return httpContext.Request.Cookies[cookieConfig.Name];
+    }
+
+    // Set for cross-subdomain support (e.g., ".payontime.com.au"). A blank value is treated as unset
+    // because an empty domain attribute is invalid and cookie stores reject the whole cookie.
+    private static string? GetCookieDomain(AuthenticationOptions.CookieOptions cookieConfig)
+    {
+        return cookieConfig.Domain.IsNullOrEmpty() ? null : cookieConfig.Domain;
     }
 }

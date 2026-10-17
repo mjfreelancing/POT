@@ -1,0 +1,453 @@
+﻿// POT API request examples
+
+// Local URLs: use http://localhost:5242 for the non-Docker API, or http://localhost:5241 when
+// running the Docker stack. The Development OpenAPI document is available at /openapi/v1.json.
+// Health checks are anonymous and are useful for checking that the API is running:
+//   GET /_health        - liveness
+//   GET /_health/ready  - readiness, including the database
+
+// Authentication:
+// - The seven /api/auth requests below are AllowAnonymous: login, logout, refresh, password-reset
+//   send/verify, and signup send/complete. All other /api routes require a valid bearer access
+//   token; a fallback policy protects routes even if they do not declare a more specific policy.
+// - This file uses Visual Studio's HTTP environment files, not VS Code REST Client variables.
+//   Choose Development or Docker in the HTTP environment selector. Put personal credentials in
+//   http-client.env.json.user beside http-client.env.json; the *.user pattern is ignored by Git.
+//   Do not put real credentials in the shared http-client.env.json or commit them.
+// - Send Login first. It returns an accessToken in the response body and sets the HTTP-only
+//   pot_refresh_token cookie. The runner keeps that cookie in its own store and replays it on later
+//   requests to the same host; a Cookie header written in this file is not sent, so Refresh and
+//   Logout rely on Login and Refresh having run first in the same session.
+// - Run Login before sending protected requests. The named login response supplies the bearer
+//   accessToken to those requests, and the runner's cookie store supplies the refresh cookie. The
+//   session-changing examples are last in this file because they end the session: Refresh rotates the
+//   cookie and its refresh token is single-use, Logout revokes the session the presented token
+//   belongs to (so later requests with that access token get 401), and Change password revokes every
+//   session. Repeat Login before running them again.
+// - Refresh and Logout need a cookie the runner can store and resend: it will not send a cookie
+//   marked Secure over http, so select the Development environment (SecureOnly=false) for those two
+//   requests. Configuration with Production settings, including the Docker stack, marks the cookie
+//   Secure and those requests can only be exercised by a browser client.
+// - Logout is AllowAnonymous at the route level, but also send the bearer token so the server can
+//   identify the user, revoke the session, and clear the stored cookie. Only the current session is
+//   revoked: another device keeps its access token, while the token issued for the revoked session
+//   stops being accepted by /me.
+// - Permission-protected operations additionally require the named permission. The API user needs:
+//     account:view / account:manage       account reads / writes
+//     expense:view / expense:manage       expense reads / writes
+//     income:view / income:manage         income reads / writes
+//     user:view / user:manage             user and role reads / user administration
+//     site:view / site:manage             settings reads / site and settings writes
+//     maintenance:export / maintenance:import
+//     platform:manage                    approvals
+//   Projections require account:view. Accrual status requires account:view, expense:view, and
+//   income:view. Me endpoints require an authenticated user but no additional permission.
+//   Updating a user requires authentication; editing another user also requires user:manage.
+// - Fill in your values in http-client.env.json.user before sending; the placeholders in the shared
+//   file are not real RowIds. Update requests that include Etag need the current Etag from the
+//   corresponding GET response. Replace example dates, values, OTP codes and file paths with valid
+//   data. The frequency, accrual-policy, renewal-mode, user-status, and approval-status values shown
+//   below are the API's accepted enum names.
+// - POST/PUT/DELETE/import requests can change or remove data. Review the request and target IDs
+//   before sending; do not run destructive examples against data you need to keep.
+
+// Endpoint coverage follows the current route registrations in Program.cs. The Scalar UI is a
+// browser page rather than an HTTP operation, so it is not represented as a request here.
+
+// Values come from the environment files, not from @ declarations:
+//   http-client.env.json        checked in; shared values plus a placeholder for each personal value
+//   http-client.env.json.user   ignored by Git; your own values, which override the shared file
+// The values live there rather than in this file because other .http files use the same RowIds and
+// because environment files are plain JSON with no comment support, so this list is their
+// documentation. Keys:
+//   ApiHost, ApiUrl     API host and the /api base of the selected environment (shared file)
+//   Username, Password  an enabled, approved account to sign in with
+//   AccountId           SELECT "RowId" FROM "Account"
+//   ExpenseId           SELECT "RowId" FROM "Expense"
+//   IncomeId            SELECT "RowId" FROM "Income"
+//   UserId              SELECT "RowId" FROM "User" WHERE "Username" = 'your_username'
+//   SiteId              SELECT "RowId" FROM "Site"
+//   ApprovalUserId      SELECT "RowId" FROM "User" WHERE "Status" = 'Approval'
+//   RoleId              SELECT "RowId" FROM "Role"
+//   SettingKey          SELECT "Key" FROM "Setting" WHERE "Category" = 'EmailBudgetReminder'
+// The settings requests use the EmailBudgetReminder category directly: it is an API enum name rather
+// than a per-developer value.
+// Note: keep every comment line non-empty. A comment line holding only the marker makes Visual Studio
+// mis-read the next request, reporting HTTP0004 and HTTP0005 on its "### title" line and HTTP0006 on
+// the request line, and that request loses its "Send request" link. Separate paragraphs with a blank
+// line instead.
+
+### Liveness health check (anonymous)
+GET {{ApiHost}}/_health
+
+### Readiness health check (anonymous)
+GET {{ApiHost}}/_health/ready
+
+### OpenAPI document (Development only; anonymous)
+GET {{ApiHost}}/openapi/v1.json
+
+### Login (anonymous; returns the access token and refresh cookie)
+# @name login
+POST {{ApiUrl}}/auth/login
+Content-Type: application/json
+User-Agent: POT Visual Studio HTTP file
+
+{
+  "username": "{{Username}}",
+  "password": "{{Password}}"
+}
+
+### Get current user and permissions (authenticated)
+GET {{ApiUrl}}/me/
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### Request password-reset email (anonymous)
+POST {{ApiUrl}}/auth/password-reset/send
+Content-Type: application/json
+
+{
+  "username": "{{Username}}"
+}
+
+### Verify password-reset code (anonymous)
+POST {{ApiUrl}}/auth/password-reset/verify
+Content-Type: application/json
+
+{
+  "username": "{{Username}}",
+  "referenceCode": "replace-with-reference-code",
+  "verificationCode": "replace-with-verification-code"
+}
+
+### Request signup verification (anonymous)
+POST {{ApiUrl}}/auth/signup/send
+Content-Type: application/json
+
+{
+  "username": "new-user",
+  "email": "new-user@example.com"
+}
+
+### Complete signup (anonymous)
+POST {{ApiUrl}}/auth/signup/complete
+Content-Type: application/json
+
+{
+  "username": "new-user",
+  "referenceCode": "replace-with-reference-code",
+  "verificationCode": "replace-with-verification-code"
+}
+
+### Get accounts (account:view)
+GET {{ApiUrl}}/accounts
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### Get an account (account:view)
+GET {{ApiUrl}}/accounts/{{AccountId}}
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### Create an account (account:manage)
+POST {{ApiUrl}}/accounts
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "description": "HTTP example account",
+  "balance": 1000,
+  "reserved": 0
+}
+
+### Update an account (account:manage; use current Etag)
+PUT {{ApiUrl}}/accounts/{{AccountId}}
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "etag": 1,
+  "description": "Updated HTTP example account",
+  "balance": 1000,
+  "reserved": 0
+}
+
+### Delete an account (account:manage; destructive)
+DELETE {{ApiUrl}}/accounts/{{AccountId}}
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### Get expenses (expense:view)
+GET {{ApiUrl}}/expenses
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### Get an expense (expense:view)
+GET {{ApiUrl}}/expenses/{{ExpenseId}}
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### Create an expense (expense:manage)
+POST {{ApiUrl}}/expenses
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "description": "HTTP example expense",
+  "accrualStart": "2026-10-17",
+  "nextDue": "2026-11-17",
+  "endDate": null,
+  "accrualPolicy": "Automatic",
+  "frequency": "Months",
+  "frequencyCount": 1,
+  "amount": 100,
+  "accountRowId": "{{AccountId}}",
+  "note": "Example created from the REST Client file"
+}
+
+### Update an expense (expense:manage; use current Etag)
+PUT {{ApiUrl}}/expenses/{{ExpenseId}}
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "etag": 1,
+  "excludeFromCalcs": false,
+  "description": "Updated HTTP example expense",
+  "accrualStart": "2026-10-17",
+  "nextDue": "2026-11-17",
+  "endDate": null,
+  "accrualPolicy": "Automatic",
+  "frequency": "Months",
+  "frequencyCount": 1,
+  "amount": 100,
+  "accountRowId": "{{AccountId}}",
+  "note": "Updated example"
+}
+
+### Renew expenses (expense:manage)
+POST {{ApiUrl}}/expenses/renew
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "rowIds": ["{{ExpenseId}}"],
+  "asOfDate": "2026-10-17",
+  "mode": "Overdue"
+}
+
+### Toggle expense calculation exclusion (expense:manage)
+POST {{ApiUrl}}/expenses/toggleExclude
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "rowIds": ["{{ExpenseId}}"]
+}
+
+### Delete an expense (expense:manage; destructive)
+DELETE {{ApiUrl}}/expenses/{{ExpenseId}}
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### Get incomes (income:view)
+GET {{ApiUrl}}/incomes
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### Get an income (income:view)
+GET {{ApiUrl}}/incomes/{{IncomeId}}
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### Create an income (income:manage)
+POST {{ApiUrl}}/incomes
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "description": "HTTP example income",
+  "nextDue": "2026-10-24",
+  "endDate": null,
+  "frequency": "Weeks",
+  "frequencyCount": 1,
+  "amount": 500,
+  "accountRowId": "{{AccountId}}",
+  "note": "Example created from the REST Client file"
+}
+
+### Update an income (income:manage; use current Etag)
+PUT {{ApiUrl}}/incomes/{{IncomeId}}
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "etag": 1,
+  "excludeFromCalcs": false,
+  "description": "Updated HTTP example income",
+  "nextDue": "2026-10-24",
+  "endDate": null,
+  "frequency": "Weeks",
+  "frequencyCount": 1,
+  "amount": 500,
+  "accountRowId": "{{AccountId}}",
+  "note": "Updated example"
+}
+
+### Renew incomes (income:manage)
+POST {{ApiUrl}}/incomes/renew
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "rowIds": ["{{IncomeId}}"],
+  "asOfDate": "2026-10-17",
+  "mode": "Overdue"
+}
+
+### Toggle income calculation exclusion (income:manage)
+POST {{ApiUrl}}/incomes/toggleExclude
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "rowIds": ["{{IncomeId}}"]
+}
+
+### Delete an income (income:manage; destructive)
+DELETE {{ApiUrl}}/incomes/{{IncomeId}}
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### Get users (user:view)
+GET {{ApiUrl}}/users
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### Update a user (authenticated; user:manage required when editing another user)
+PUT {{ApiUrl}}/users/{{UserId}}
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "etag": 1,
+  "displayName": "Updated HTTP example user",
+  "email": "user@example.com"
+}
+
+### Update user status (user:manage)
+PUT {{ApiUrl}}/users/{{UserId}}/status
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "etag": 1,
+  "status": "Enabled"
+}
+
+### Update user roles (user:manage)
+PUT {{ApiUrl}}/users/{{UserId}}/roles
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "etag": 1,
+  "roleIds": ["{{RoleId}}"]
+}
+
+### Invite a user (user:manage)
+POST {{ApiUrl}}/users/invite
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "username": "invited-user",
+  "email": "invited-user@example.com",
+  "roleIds": ["{{RoleId}}"]
+}
+
+### Resend a user invitation (user:manage)
+POST {{ApiUrl}}/users/{{UserId}}/resend-invite
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### Get roles (user:view)
+GET {{ApiUrl}}/roles
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### Update site details (site:manage; use current Etag)
+PUT {{ApiUrl}}/sites/{{SiteId}}
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "etag": 1,
+  "name": "Updated HTTP example site",
+  "description": "Updated by the REST Client example"
+}
+
+### Get settings (site:view)
+GET {{ApiUrl}}/settings
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### Create or update a setting (site:manage; use null Etag to create)
+PUT {{ApiUrl}}/settings/EmailBudgetReminder/{{SettingKey}}
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "value": "true",
+  "etag": null
+}
+
+### Get financial projections (account:view)
+GET {{ApiUrl}}/projections?startDate=2026-10-17&endDate=2027-10-17
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### Get accrual status (account:view, expense:view, income:view)
+GET {{ApiUrl}}/accruals/status?AccountRowIds={{AccountId}}
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### Get pending approvals (platform:manage)
+GET {{ApiUrl}}/approvals/pending
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### Update a pending approval (platform:manage; use current Etag)
+PUT {{ApiUrl}}/approvals/{{ApprovalUserId}}/status
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "etag": 1,
+  "status": "Approved"
+}
+
+### Export data (maintenance:export)
+GET {{ApiUrl}}/maintenance/export
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### Import data from a ZIP file (maintenance:import; changes data)
+POST {{ApiUrl}}/maintenance/import
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: multipart/form-data; boundary=----PotRestClientBoundary
+
+------PotRestClientBoundary
+Content-Disposition: form-data; name="File"; filename="pot-export.zip"
+Content-Type: application/zip
+
+< ./path/to/pot-export.zip
+------PotRestClientBoundary--
+
+### Refresh access token (anonymous route; run Login immediately before this request)
+# @name refresh
+POST {{ApiUrl}}/auth/refresh
+
+### Check the refreshed access token
+GET {{ApiUrl}}/me/
+Authorization: Bearer {{refresh.response.body.$.accessToken}}
+
+### Logout after refresh (anonymous route; requires a successful Refresh immediately before this request)
+POST {{ApiUrl}}/auth/logout
+Authorization: Bearer {{refresh.response.body.$.accessToken}}
+
+### Logout (anonymous route; ends the login session)
+POST {{ApiUrl}}/auth/logout
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### Change current user's password (authenticated; revokes every session)
+PUT {{ApiUrl}}/me/change-password
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "currentPassword": "replace-with-current-password",
+  "newPassword": "replace-with-new-password"
+}

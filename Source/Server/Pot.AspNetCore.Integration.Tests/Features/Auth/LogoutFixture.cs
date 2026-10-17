@@ -112,6 +112,39 @@ public class LogoutFixture : IntegrationAuthFixtureBase
     }
 
     [Fact]
+    public async Task Should_Reject_Access_Token_After_Logout()
+    {
+        var user = await CreateEnabledUserAsync("logout", "Logout User");
+        var deviceA = await LoginAsync(user, "POT Device A/1.0");
+
+        var logoutStatus = await LogoutAsync(deviceA.AccessToken, deviceA.RefreshToken);
+
+        logoutStatus.ShouldBe(HttpStatusCode.OK);
+
+        var currentUserStatus = await GetCurrentUserAsync(deviceA.AccessToken);
+
+        currentUserStatus.ShouldBe(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Should_Keep_Other_Sessions_Access_Token_Usable_When_Logging_Out()
+    {
+        var user = await CreateEnabledUserAsync("logout", "Logout User");
+        var deviceA = await LoginAsync(user, "POT Device A/1.0");
+        var deviceB = await LoginAsync(user, "POT Device B/1.0");
+
+        var logoutStatus = await LogoutAsync(deviceA.AccessToken, deviceA.RefreshToken);
+
+        logoutStatus.ShouldBe(HttpStatusCode.OK);
+
+        var deviceACurrentUserStatus = await GetCurrentUserAsync(deviceA.AccessToken);
+        var deviceBCurrentUserStatus = await GetCurrentUserAsync(deviceB.AccessToken);
+
+        deviceACurrentUserStatus.ShouldBe(HttpStatusCode.Unauthorized);
+        deviceBCurrentUserStatus.ShouldBe(HttpStatusCode.OK);
+    }
+
+    [Fact]
     public async Task Should_Revoke_All_Sessions_When_Password_Changed()
     {
         const string newPassword = "NewPassword456!";

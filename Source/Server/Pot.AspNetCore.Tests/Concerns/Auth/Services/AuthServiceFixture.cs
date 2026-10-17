@@ -127,7 +127,7 @@ public class AuthServiceFixture : PotFixtureBase
 
             _jwtServiceFake
                 .DidNotReceive()
-                .CreateAccessToken(Arg.Any<UserEntity>());
+                .CreateAccessToken(Arg.Any<UserEntity>(), Arg.Any<Guid>());
 
             AssertNoSessionCreated();
             await AssertNoSaveAsync();
@@ -154,8 +154,19 @@ public class AuthServiceFixture : PotFixtureBase
                 .Returns(true);
 
             _jwtServiceFake
-                .CreateAccessToken(user)
+                .CreateAccessToken(user, Arg.Any<Guid>())
                 .Returns(accessToken);
+
+            Guid? createdSessionRowId = null;
+
+            _authSessionServiceFake
+                .CreateSession(Arg.Any<UserEntity>(), Arg.Any<string>(), Arg.Any<DateTime>(), Arg.Any<DateTime>(), Arg.Any<LoginRequestContext>(), Arg.Any<Guid>())
+                .Returns(callInfo =>
+                {
+                    createdSessionRowId = callInfo.Arg<Guid>();
+
+                    return null!;
+                });
 
             var service = CreateService();
 
@@ -176,7 +187,15 @@ public class AuthServiceFixture : PotFixtureBase
             // The session must be created for the same token pair that is returned to the caller.
             _authSessionServiceFake
                 .Received(1)
-                .CreateSession(user, authTokens.RefreshToken, authTokens.RefreshTokenExpiryUtc, _nowUtc, context);
+                .CreateSession(user, authTokens.RefreshToken, authTokens.RefreshTokenExpiryUtc, _nowUtc, context, Arg.Any<Guid>());
+
+            // The token must name the session that is created for it, or revoking that session could not
+            // cancel the token.
+            createdSessionRowId.ShouldNotBeNull();
+
+            _jwtServiceFake
+                .Received(1)
+                .CreateAccessToken(user, createdSessionRowId!.Value);
 
             await _userRepositoryFake
                 .Received(1)
@@ -399,7 +418,7 @@ public class AuthServiceFixture : PotFixtureBase
                 .Returns(CreatePrincipalWithSubject(user.RowId.ToString()));
 
             _jwtServiceFake
-                .CreateAccessToken(user)
+                .CreateAccessToken(user, Arg.Any<Guid>())
                 .Returns(rotatedAccessToken);
 
             _authSessionServiceFake
@@ -425,6 +444,11 @@ public class AuthServiceFixture : PotFixtureBase
                 .Received(1)
                 .RotateRefreshToken(authSession, authTokens.RefreshToken, authTokens.RefreshTokenExpiryUtc, _nowUtc);
 
+            // The rotated token must stay bound to the resolved session so that session still governs it.
+            _jwtServiceFake
+                .Received(1)
+                .CreateAccessToken(user, authSession.RowId);
+
             await _userRepositoryFake
                 .Received(1)
                 .SaveAsync(Arg.Any<CancellationToken>());
@@ -441,7 +465,7 @@ public class AuthServiceFixture : PotFixtureBase
             var rotatedAccessToken = Create<string>();
 
             _jwtServiceFake
-                .CreateAccessToken(user)
+                .CreateAccessToken(user, Arg.Any<Guid>())
                 .Returns(rotatedAccessToken);
 
             _authSessionServiceFake
@@ -616,7 +640,7 @@ public class AuthServiceFixture : PotFixtureBase
     {
         _authSessionServiceFake
             .DidNotReceive()
-            .CreateSession(Arg.Any<UserEntity>(), Arg.Any<string>(), Arg.Any<DateTime>(), Arg.Any<DateTime>(), Arg.Any<LoginRequestContext>());
+            .CreateSession(Arg.Any<UserEntity>(), Arg.Any<string>(), Arg.Any<DateTime>(), Arg.Any<DateTime>(), Arg.Any<LoginRequestContext>(), Arg.Any<Guid>());
     }
 
     private void AssertNoRefreshTokenRotated()

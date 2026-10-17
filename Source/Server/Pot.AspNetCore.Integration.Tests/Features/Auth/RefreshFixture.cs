@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Pot.AspNetCore.Concerns.Auth;
 using Pot.AspNetCore.Integration.Tests.Host;
 using Pot.Data;
 using Pot.Data.Entities;
 using Shouldly;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -49,6 +51,10 @@ public class RefreshFixture : IntegrationAuthFixtureBase
         refreshedSession.RefreshTokenHash.ShouldNotBe(refreshResult.RefreshToken);
         refreshedSession.LastSeenUtc.ShouldNotBeNull();
         refreshedSession.LastSeenUtc.Value.ShouldBeGreaterThan(forcedLastSeenUtc);
+
+        var refreshedTokenStatus = await GetCurrentUserAsync(refreshResult.AccessToken!);
+
+        refreshedTokenStatus.ShouldBe(HttpStatusCode.OK);
 
         var staleRefreshAttempt = await RefreshAsync(refreshResult.AccessToken!, loginResult.RefreshToken!);
 
@@ -119,9 +125,35 @@ public class RefreshFixture : IntegrationAuthFixtureBase
         refreshResult.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
-    private async Task<AuthResponse> RefreshAsync(string accessToken, string refreshToken)
+    [Fact]
+    public async Task Should_Keep_The_Session_Row_Id_When_The_Token_Is_Refreshed()
     {
-        using var client = CreateClient(new WebApplicationFactoryClientOptions
+        var user = await CreateEnabledUserAsync("refresh", "Refresh User");
+        var loginResult = await LoginAsync(user, "POT Refresh Test Agent/1.0");
+        var session = (await GetAuthSessionsAsync(user.UserRowId)).Single();
+
+        var refreshResult = await RefreshAsync(loginResult.AccessToken!, loginResult.RefreshToken!);
+
+        refreshResult.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        // The rotated token must stay bound to the same session, otherwise the session that was just
+        // refreshed could no longer be revoked through the token it issued.
+        ReadSessionRowId(loginResult.AccessToken!).ShouldBe(session.RowId);
+        ReadSessionRowId(refreshResult.AccessToken!).ShouldBe(session.RowId);
+    }
+
+    private static Guid ReadSessionRowId(string accessToken)
+    {
+        var token = new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
+        var sessionIdClaim = token.Claims.SingleOrDefault(claim => claim.Type == PotClaimTypes.SessionId);
+
+        sessionIdClaim.ShouldNotBeNull();
+
+        return Guid.Parse(sessionIdClaim.Value);
+    }
+
+    private async Task<AuthResponse> RefreshAsync(string accessToken, string refreshToken)
+    {        using var client = CreateClient(new WebApplicationFactoryClientOptions
         {
             HandleCookies = false
         });

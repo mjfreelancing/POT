@@ -21,12 +21,15 @@ internal sealed class AuthSessionService : IAuthSessionService
     }
 
     public AuthSessionEntity CreateSession(UserEntity user, string refreshToken, DateTime refreshTokenExpiryUtc,
-        DateTime nowUtc, LoginRequestContext context)
+        DateTime nowUtc, LoginRequestContext context, Guid sessionRowId)
     {
         _logger.LogCall(this, new { userId = user.Id });
 
         var authSession = new AuthSessionEntity
         {
+            // Assigned by the caller instead of the RowId value generator so the access token issued for this
+            // sign-in can carry the session id before the row is inserted. An explicit value is respected.
+            RowId = sessionRowId,
             UserId = user.Id,
             User = user,
             RefreshTokenHash = HashRefreshToken(refreshToken),
@@ -37,6 +40,9 @@ internal sealed class AuthSessionService : IAuthSessionService
             IpAddress = NormalizeValue(context.IpAddress, AuthSessionEntity.MaxIpAddressLength)
         };
 
+        // Staged only, deliberately: the caller saves this row together with its own changes in one
+        // SaveChanges, which is what makes the login's session insert and audit update atomic. Saving here
+        // would split them into two transactions.
         _authSessionRepository.Add(authSession);
 
         return authSession;

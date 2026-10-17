@@ -354,6 +354,10 @@ Plan:
 - Keep TokenVersion claim for global revocation paths
 - Optional future enhancement: include session id claim to support per-session access-token revocation
 
+  Updated 17 Oct 2026: the access token embeds the session RowId as a `session_id` claim, and every authenticated
+  request rejects a token whose session is missing, revoked or expired. `TokenVersion` is unchanged and still
+  covers global revokes. See `Docs/AUTHENTICATION.md` ("Session vs TokenVersion: Separate Controls").
+
 ## Phase 3: Test strategy
 
 Integration tests to add:

@@ -162,7 +162,7 @@ internal sealed class UserRepository : PersistableRepository, IPersistableUserRe
         return Set<UserEntity>().SingleOrDefaultAsync(user => user.Username == username, cancellationToken);
     }
 
-    public Task<UserSecurityState?> GetSecurityStateAsync(Guid userRowId, CancellationToken cancellationToken)
+    public Task<UserSecurityState?> GetSecurityStateAsync(Guid userRowId, Guid sessionRowId, CancellationToken cancellationToken)
     {
         // Cross-tenant: the token is validated before any user context exists.
         return Set<UserEntity>()
@@ -170,7 +170,20 @@ internal sealed class UserRepository : PersistableRepository, IPersistableUserRe
             .Select(user => new UserSecurityState
             {
                 TokenVersion = user.TokenVersion,
-                Status = user.Status
+                Status = user.Status,
+
+                // Both reads stay inside the one projection so validation costs a single round trip. The
+                // expiry is cast to a nullable so a missing session reports null instead of default(DateTime);
+                // an active session always has an expiry.
+                SessionRevokedUtc = user.AuthSessions
+                    .Where(session => session.RowId == sessionRowId)
+                    .Select(session => session.RevokedUtc)
+                    .FirstOrDefault(),
+
+                SessionExpiresUtc = user.AuthSessions
+                    .Where(session => session.RowId == sessionRowId)
+                    .Select(session => (DateTime?)session.ExpiresUtc)
+                    .FirstOrDefault()
             })
             .SingleOrDefaultAsync(cancellationToken);
     }

@@ -157,6 +157,22 @@ public abstract class IntegrationAuthFixtureBase : IntegrationFixtureBase
     }
 
     /// <summary>
+    /// Sends a request to the current-user endpoint with the supplied bearer token.
+    /// </summary>
+    /// <param name="accessToken">The access token to present.</param>
+    /// <returns>The response status, so a fixture can assert whether the token is still accepted.</returns>
+    protected async Task<HttpStatusCode> GetCurrentUserAsync(string accessToken)
+    {
+        using var client = CreateClient();
+
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+        var response = await client.GetAsync("/api/me", TestContext.Current.CancellationToken);
+
+        return response.StatusCode;
+    }
+
+    /// <summary>
     /// Seeds an enabled user into an existing site, so a fixture can place a caller and a target in the same site.
     /// </summary>
     /// <param name="siteRowId">The site to place the user in.</param>
