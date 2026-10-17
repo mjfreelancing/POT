@@ -1,5 +1,19 @@
 # Platform Administration PRD
 
+> **Needs rewriting before delivery (2026-10-17).** This document has not been reviewed since PRD-026 was
+> delivered and PRD-022 was refined from scratch, so parts of it describe requirements, terms and routes that
+> no longer match the delivered code. Rewrite it from the current PRD-022 and server behaviour before planning
+> work, rather than editing it in place.
+>
+> Two known corrections to carry into the rewrite:
+>
+> - Every `422 Unprocessable Entity` below is now **`400 Bad Request`**. The server no longer has an
+>   unprocessable-entity error type, and every validation or refusal is reported as 400 with the same
+>   ProblemDetails body.
+> - A configured platform administrator is no longer permanently protected. They may be deleted and disabled
+>   while another live (enabled) platform administrator exists, and a site may be deleted unless it contains
+>   the last live platform administrator.
+
 **Status:** Blocked — waiting on PRD-026; this document needs review once PRD-026 is delivered
 **Priority:** High
 **Last Updated:** 2026-10-05
