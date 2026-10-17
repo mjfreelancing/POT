@@ -450,44 +450,43 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
     }
 
     [Fact]
-    public async Task Should_Not_Disable_A_Configured_Platform_Administrator()
+    public async Task Should_Not_Disable_The_Last_Enabled_Platform_Administrator()
     {
-        var caller = await CreateAdminUserAsync("platform-admin", "Platform Admin");
+        var caller = await CreateAdminUserAsync("last-platform-caller", "Last Platform Caller");
         var callerWithSite = await GetUserWithSiteAsync(caller.UserRowId);
+        var target = await CreateUserInSiteAsync(callerWithSite.Site.RowId, "last-platform-target", "Last Platform Target", Role.Admin);
+        var targetBefore = await GetUserAsync(target.UserRowId);
 
-        // A second enabled administrator means the last-enabled-Admin rule cannot be what refuses this, so
-        // only the platform-administrator rule can.
-        await CreateUserInSiteAsync(callerWithSite.Site.RowId, "platform-admin-second", "Platform Admin Second", Role.Admin);
-
-        // The nominated id has to be in the host's configuration, so this uses a host built for the test.
+        // The caller is another enabled site administrator, so only the platform-administrator rule can refuse.
         var tokens = await LoginAsync(caller);
 
-        using var factory = new PlatformAdminApiWebApplicationFactory(DbHost, DbPort, caller.UserRowId);
+        using var factory = new PlatformAdminApiWebApplicationFactory(DbHost, DbPort, target.UserRowId);
         using var client = factory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokens.AccessToken);
 
-        var callerBefore = await GetUserAsync(caller.UserRowId);
-
-        using var content = JsonContent.Create(new { Etag = callerBefore.Etag, Status = nameof(UserStatus.Disabled) });
+        using var content = JsonContent.Create(new { Etag = targetBefore.Etag, Status = nameof(UserStatus.Disabled) });
         using var response = await client.PutAsync(
-            $"/api/users/{caller.UserRowId}/status",
+            $"/api/users/{target.UserRowId}/status",
             content,
             TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(
             HttpStatusCode.BadRequest,
-            "a configured platform administrator must not be disabled");
+            "the last enabled platform administrator must not be disabled");
 
-        var callerAfter = await GetUserAsync(caller.UserRowId);
-        callerAfter.Status.Name.ShouldBe(callerBefore.Status.Name);
+        var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
+        problem!.Errors.Single().ErrorMessage.ShouldContain("last enabled platform administrator");
+
+        var targetAfter = await GetUserAsync(target.UserRowId);
+        targetAfter.Status.Name.ShouldBe(targetBefore.Status.Name);
     }
 
     [Fact]
     public async Task Should_Report_The_Platform_Administrator_Refusal_When_Both_Protected_Identity_Rules_Apply()
     {
-        // The caller is the site's only enabled administrator and is also a configured platform administrator,
-        // so both rules refuse this change. The platform-administrator refusal is the one that has to be
-        // reported: unlike the last-enabled-Admin rule, it has no in-app remedy.
+        // The caller is the site's only enabled administrator and is also the last enabled platform
+        // administrator, so both rules refuse this change. The platform-administrator refusal is the one that
+        // has to be reported: unlike the last-enabled-Admin rule, it has no in-app remedy.
         var caller = await CreateAdminUserAsync("both-rules", "Both Rules");
 
         var tokens = await LoginAsync(caller);
@@ -511,7 +510,102 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
 
         problem!.Errors.Length.ShouldBe(1);
-        problem.Errors[0].ErrorMessage.ShouldBe("A platform administrator cannot be disabled.");
+        problem.Errors[0].ErrorMessage.ShouldContain("last enabled platform administrator");
+
+        var callerAfter = await GetUserAsync(caller.UserRowId);
+        callerAfter.Status.Name.ShouldBe(callerBefore.Status.Name);
+    }
+
+    [Fact]
+    public async Task Should_Allow_Disabling_A_Platform_Administrator_When_Another_Enabled_One_Remains()
+    {
+        var caller = await CreateAdminUserAsync("platform-peer-caller", "Platform Peer Caller");
+        var callerWithSite = await GetUserWithSiteAsync(caller.UserRowId);
+        var target = await CreateUserInSiteAsync(callerWithSite.Site.RowId, "platform-peer-target", "Platform Peer Target", Role.Admin);
+        var targetBefore = await GetUserAsync(target.UserRowId);
+
+        var tokens = await LoginAsync(caller);
+
+        using var factory = new PlatformAdminApiWebApplicationFactory(DbHost, DbPort, caller.UserRowId, target.UserRowId);
+        using var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokens.AccessToken);
+
+        using var content = JsonContent.Create(new { Etag = targetBefore.Etag, Status = nameof(UserStatus.Disabled) });
+        using var response = await client.PutAsync(
+            $"/api/users/{target.UserRowId}/status",
+            content,
+            TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(
+            HttpStatusCode.OK,
+            "another enabled platform administrator and another enabled site administrator remain");
+
+        var targetAfter = await GetUserAsync(target.UserRowId);
+        targetAfter.Status.Name.ShouldBe(nameof(UserStatus.Disabled));
+    }
+
+    [Fact]
+    public async Task Should_Not_Count_A_Disabled_Platform_Administrator_As_Live()
+    {
+        var caller = await CreateAdminUserAsync("platform-disabled-peer-caller", "Platform Disabled Peer Caller");
+        var callerWithSite = await GetUserWithSiteAsync(caller.UserRowId);
+        var disabledPeer = await CreateUserInSiteAsync(callerWithSite.Site.RowId, "platform-disabled-peer", "Platform Disabled Peer",
+            Role.Admin, UserStatus.Disabled);
+        var target = await CreateUserInSiteAsync(callerWithSite.Site.RowId, "platform-live-target", "Platform Live Target", Role.Admin);
+        var targetBefore = await GetUserAsync(target.UserRowId);
+
+        var tokens = await LoginAsync(caller);
+
+        using var factory = new PlatformAdminApiWebApplicationFactory(DbHost, DbPort, disabledPeer.UserRowId, target.UserRowId);
+        using var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokens.AccessToken);
+
+        using var content = JsonContent.Create(new { Etag = targetBefore.Etag, Status = nameof(UserStatus.Disabled) });
+        using var response = await client.PutAsync(
+            $"/api/users/{target.UserRowId}/status",
+            content,
+            TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(
+            HttpStatusCode.BadRequest,
+            "a disabled platform administrator cannot operate the platform");
+
+        var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
+        problem!.Errors.Single().ErrorMessage.ShouldContain("last enabled platform administrator");
+
+        var targetAfter = await GetUserAsync(target.UserRowId);
+        targetAfter.Status.Name.ShouldBe(targetBefore.Status.Name);
+    }
+
+    [Fact]
+    public async Task Should_Keep_The_Site_Administrable_When_A_Platform_Administrator_Disables_Themselves()
+    {
+        // The caller is the site's only enabled administrator but another platform administrator exists, so the
+        // platform rule allows the change and the site rule has to refuse it.
+        var caller = await CreateAdminUserAsync("self-platform-admin", "Self Platform Admin");
+        var otherPlatformAdmin = await CreateAdminUserAsync("other-platform-admin", "Other Platform Admin");
+
+        var tokens = await LoginAsync(caller);
+
+        using var factory = new PlatformAdminApiWebApplicationFactory(DbHost, DbPort, caller.UserRowId, otherPlatformAdmin.UserRowId);
+        using var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokens.AccessToken);
+
+        // Signing in records the login on the user row, which changes its etag, so read it afterwards.
+        var callerBefore = await GetUserAsync(caller.UserRowId);
+
+        using var content = JsonContent.Create(new { Etag = callerBefore.Etag, Status = nameof(UserStatus.Disabled) });
+        using var response = await client.PutAsync(
+            $"/api/users/{caller.UserRowId}/status",
+            content,
+            TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(
+            HttpStatusCode.BadRequest,
+            "the site would be left without an enabled administrator");
+
+        var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
+        problem!.Errors.Single().ErrorMessage.ShouldContain("only enabled administrator");
 
         var callerAfter = await GetUserAsync(caller.UserRowId);
         callerAfter.Status.Name.ShouldBe(callerBefore.Status.Name);

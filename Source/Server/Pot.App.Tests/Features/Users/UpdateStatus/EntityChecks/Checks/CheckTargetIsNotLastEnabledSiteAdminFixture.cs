@@ -78,12 +78,27 @@ public class CheckTargetIsNotLastEnabledSiteAdminFixture : PotFixtureBase
         }
 
         [Fact]
-        public async Task Should_Leave_The_Refusal_To_The_Platform_Administrator_Rule_When_The_Target_Is_Configured_As_One()
+        public async Task Should_Refuse_When_The_Target_Is_The_Sites_Only_Administrator_Even_If_Another_Platform_Administrator_Remains()
+        {
+            // The platform-administrator rule allows this change, so the site rule has to protect the tenant.
+            var target = CreateUserInRole(EntityFactory.CreateSite(), "only-admin", Role.Admin);
+            SetEnabledAdministrators(target.RowId);
+            SetOtherEnabledPlatformAdministrators(1);
+
+            var error = await CheckAsync(target, UserStatus.Disabled, target.RowId);
+
+            error.ShouldNotBeNull();
+            error.ErrorMessage.ShouldBe("This is the site's only enabled administrator. Promote or enable another administrator first.");
+        }
+
+        [Fact]
+        public async Task Should_Defer_To_The_Platform_Administrator_Rule_When_The_Target_Is_The_Last_Enabled_Platform_Administrator()
         {
             // Both rules would refuse this change. The platform-administrator refusal is the one with no in-app
             // remedy, so it has to be the one reported, whatever order the checks run in.
             var target = CreateUserInRole(EntityFactory.CreateSite(), "only-admin", Role.Admin);
             SetEnabledAdministrators(target.RowId);
+            SetOtherEnabledPlatformAdministrators(0);
 
             var error = await CheckAsync(target, UserStatus.Disabled, target.RowId);
 
@@ -136,6 +151,13 @@ public class CheckTargetIsNotLastEnabledSiteAdminFixture : PotFixtureBase
             _userRepositoryFake
                 .GetEnabledAdminsForCurrentSiteAsync(Arg.Any<CancellationToken>())
                 .Returns(administrators);
+        }
+
+        private void SetOtherEnabledPlatformAdministrators(int count)
+        {
+            _userRepositoryFake
+                .CountEnabledPlatformAdminsAsync(Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<CancellationToken>())
+                .Returns(count);
         }
     }
 

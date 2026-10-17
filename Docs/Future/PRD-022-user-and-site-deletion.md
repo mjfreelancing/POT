@@ -154,3 +154,117 @@ The items above that name PRD-027 are specified and delivered there. The rest ar
 | Audit                                             | Server log only                                                      |
 | Bulk removal                                      | Not provided                                                         |
 | Retention                                         | None                                                                 |
+
+## Manual Test Plan
+
+Use this after all delivery increments are complete, against the built client and server. It complements the automated unit and integration suites; it does not duplicate them, and it is the only place the end-to-end experience is checked by a person.
+
+### Setup
+
+1. Start the stack with the Docker task `docker-start-client-server`, or run the server and client locally.
+2. Point the server at a mail sink you can inspect (a local SMTP capture tool is ideal), so the notification scenarios can be checked. If no mail sink is available, the deletion scenarios still run; mark the notification checks as not run.
+3. Create throwaway tenants through the signup flow. Do not use an environment whose data matters, and take a database backup first.
+   - **Site A** — Admin A1; a second Admin A2; a Viewer A3; a Pending user A4 (invited, never activated); a Disabled user A5. Add an account with one expense and one income, plus a setting.
+   - **Site B** — Admin B1 and one user B2, with an account and one expense.
+   - **Site C** — a single Admin C1, used for the lone-administrator cases.
+   - **Site D** — a single Admin D1, used for the last-platform-administrator site case.
+4. Record the user ids needed for the platform-administrator scenarios:
+
+   ```sql
+   SELECT "RowId", "Username" FROM "User" ORDER BY "Username";
+   ```
+
+5. Nominate platform administrators by setting `PLATFORM_ADMIN_USERIDS` to the comma-separated ids and restarting the API. Record the previous value so it can be restored afterwards.
+
+### A. Remove another user — Site A, signed in as Admin A1
+
+- **A1 — happy path.** Users → A3 → Delete User…; type `A3`'s username and A1's password; confirm.
+  Expected: a success toast; A3 disappears from the list; A3 can no longer sign in; every enabled administrator of Site A (including A1) and A3's address receive an email.
+- **A2 — wrong password.** Repeat A1 with a wrong password.
+  Expected: the dialog stays open with the invalid-password message; A1 stays signed in; A3 remains; no email is sent.
+- **A3 — removable states.** Remove the Pending user A4 and the Disabled user A5.
+  Expected: both are removed successfully.
+- **A4 — self protection.** Look at A1's own row, on desktop and on a phone-width viewport.
+  Expected: no Delete action for the signed-in user.
+- **A5 — non-administrator.** Sign in as Viewer A3 and open the Users page.
+  Expected: no user-management actions are offered.
+- **A6 — foreign target (API).** As A1, send `DELETE /api/users/{B2's RowId}` with a bearer token.
+  Expected: `404`; B2 is unchanged.
+- **A7 — repeat removal.** As A2, try to remove A3 again after A1 has removed them.
+  Expected: the row is no longer in the list; a direct request returns `404`.
+
+### B. Remove your own account — Settings
+
+- **B1 — viewer happy path.** Sign in as A3 → Settings → the delete block; type `A3` and the password; confirm.
+  Expected: a success toast; the login page with a brief message; A3 cannot sign in; the remaining enabled administrators of Site A receive an email; A3 receives a confirmation email.
+- **B2 — administrator with a peer.** Sign in as A2 and delete the account while A1 remains.
+  Expected: allowed, with the same outcome.
+- **B3 — last enabled administrator.** Sign in as C1 (Site C's only administrator) and attempt self-deletion.
+  Expected: refused with the explanation that the site needs an enabled administrator, and the remedy pointing at deleting the site.
+- **B4 — wrong password.** Repeat B1 with a wrong password.
+  Expected: the dialog stays open; the user stays signed in; nothing is deleted.
+- **B5 — unsaved changes.** Change a setting without saving, then open the delete block, cancel it, and return to the setting.
+  Expected: no unsaved-changes prompt from the delete block; the edited setting is still there.
+- **B6 — visibility.** Check the block as a Viewer and as an administrator.
+  Expected: both see the self-delete block.
+
+### C. Delete a site — Settings, signed in as its administrator
+
+- **C1 — happy path.** Sign in as A1 → Settings → delete-site block; type Site A's name, A1's username and password; confirm.
+  Expected: a success toast; the login page; A1, A2, A3, A4 and A5 can no longer sign in; Site A no longer exists with its users, accounts, expenses, incomes and settings; the enabled administrators of Site A receive an email.
+- **C2 — viewer.** Sign in as a Viewer in a site that still exists.
+  Expected: the site-delete block is absent.
+- **C3 — no backup or counts.** Open the site-delete confirmation.
+  Expected: the copy states plainly that no backup is taken and that the caller is removed too; no record counts are shown.
+- **C4 — lone administrator.** Sign in as C1 (Site C's only administrator) and delete Site C.
+  Expected: allowed; the account and site are removed. This is the remedy B3 points at.
+- **C5 — last live platform administrator.** Nominate only D1 as a platform administrator, restart, and attempt to delete Site D as D1.
+  Expected: refused. Remove D1 from `PLATFORM_ADMIN_USERIDS`, restart, and retry: the deletion succeeds.
+
+### D. Platform administrator safeguards
+
+- **D1 — another enabled administrator remains.** Nominate two enabled administrators of the same site, P1 and P2. As P1, disable P2 through the Users page.
+  Expected: allowed; P2 is disabled.
+- **D2 — the last one.** Nominate only P1, with another administrator in the same site as the caller. Disable P1.
+  Expected: refused with the message naming the configuration-and-redeploy remedy; P1 is unchanged.
+- **D3 — a disabled peer does not count.** Nominate P1 (enabled) and P2 (disabled). Disable P1 as another administrator of the site.
+  Expected: refused with the same message.
+- **D4 — the site rule still applies (API).** Nominate P1 and another enabled platform administrator in a different site. P1 is the only enabled administrator of their own site. Send `PUT /api/users/{P1}/status` with `Disabled` as P1.
+  Expected: refused with the site's last-enabled-administrator message; P1 is unchanged.
+
+### E. Sessions, notifications and failure handling
+
+- **E1 — removed user's open tab.** With A3 signed in on another device, remove A3 as A1. Perform an action in A3's tab.
+  Expected: the next request is rejected and A3 lands on the login page.
+- **E2 — deleted site's open tabs.** With a Site A user signed in on another device, delete Site A. Perform an action in that tab.
+  Expected: the next request is rejected and the user lands on the login page.
+- **E3 — notification failure.** Stop the mail sink, then remove a throwaway user.
+  Expected: the removal succeeds; the failure is visible in the server log; no error is shown for the removal itself.
+- **E4 — no orphaned sessions.** After removing a user, attempt a token refresh from a client that still holds their refresh cookie.
+  Expected: the refresh is rejected; the stale cookie cannot produce a new session.
+
+### F. Confirmation and presentation
+
+- **F1 — dialog behaviour.** In each of the three confirmations: check the initial focus, the disabled destructive button, trimmed and case-insensitive matching, the busy state, a backdrop click, and a short landscape viewport.
+  Expected: Cancel is first and focused by default; the destructive action stays disabled until every value matches; values match regardless of case or surrounding spaces; both actions are disabled while the request runs; a backdrop click does not dismiss; the content scrolls in a short viewport.
+- **F2 — copy.** Read each confirmation.
+  Expected: deleting a user is distinguished from disabling and states that the site's accounts, expenses and incomes remain; self-deletion states that the site's data remains; site deletion states that every user, including the caller, is removed and that no backup is taken.
+- **F3 — menus.** Check the Users list on desktop and on phone width.
+  Expected: Delete User… is the last action, visually destructive, and shown only where it applies.
+
+### Cleanup
+
+- Restore `PLATFORM_ADMIN_USERIDS` and restart the API.
+- Remove any throwaway tenants and users left behind.
+- Restore any mail-sink or database state used for the run.
+
+### Results
+
+| ID | Scenario | Result | Notes |
+| --- | --- | --- | --- |
+| A1–A7 | Remove another user |  |  |
+| B1–B6 | Remove your own account |  |  |
+| C1–C5 | Delete a site |  |  |
+| D1–D4 | Platform administrator safeguards |  |  |
+| E1–E4 | Sessions, notifications and failure handling |  |  |
+| F1–F3 | Confirmation and presentation |  |  |

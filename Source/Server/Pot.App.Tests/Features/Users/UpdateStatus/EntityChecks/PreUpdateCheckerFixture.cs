@@ -19,13 +19,16 @@ public class PreUpdateCheckerFixture : PotFixtureBase
 
     public class CanSaveAsync : PreUpdateCheckerFixture
     {
+        private const string LastPlatformAdministratorMessage =
+            "This is the last enabled platform administrator. Another platform administrator must be configured first.";
+
         [Fact]
         public async Task Should_Report_The_Platform_Administrator_Refusal_When_The_Last_Enabled_Administrator_Check_Runs_First()
         {
             var error = await CheckBothRulesAsync(platformAdminCheckFirst: false);
 
             error.ShouldNotBeNull();
-            error.ErrorMessage.ShouldBe("A platform administrator cannot be disabled.");
+            error.ErrorMessage.ShouldBe(LastPlatformAdministratorMessage);
         }
 
         [Fact]
@@ -34,7 +37,7 @@ public class PreUpdateCheckerFixture : PotFixtureBase
             var error = await CheckBothRulesAsync(platformAdminCheckFirst: true);
 
             error.ShouldNotBeNull();
-            error.ErrorMessage.ShouldBe("A platform administrator cannot be disabled.");
+            error.ErrorMessage.ShouldBe(LastPlatformAdministratorMessage);
         }
 
         /// <summary>
@@ -53,6 +56,7 @@ public class PreUpdateCheckerFixture : PotFixtureBase
                 Substitute.For<ILogger<CheckTargetIsNotLastEnabledSiteAdmin>>());
 
             var platformAdministratorCheck = new CheckTargetIsNotPlatformAdmin(
+                _userRepositoryFake,
                 Substitute.For<ILogger<CheckTargetIsNotPlatformAdmin>>());
 
             PreUpdateCheckBase[] checks = platformAdminCheckFirst

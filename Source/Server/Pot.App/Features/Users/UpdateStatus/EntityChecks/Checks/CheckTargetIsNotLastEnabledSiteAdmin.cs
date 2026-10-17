@@ -35,17 +35,23 @@ internal sealed class CheckTargetIsNotLastEnabledSiteAdmin : PreUpdateCheckBase
         var isDisabling = state.Input.Status != UserStatus.Enabled;
         var isPlatformAdmin = state.PlatformAdminRowIds.Contains(state.Target.RowId);
 
-        // The platform-admin rule takes precedence, and the order the checks run in is decided by registration
-        // rather than declared, so this one defers to it explicitly instead of relying on that order. A disabled
-        // platform administrator has no in-app remedy, which is why its refusal is the one reported.
-        if (isDisabling && !isPlatformAdmin && await IsOnlyEnabledSiteAdminAsync(state, cancellationToken))
+        if (isDisabling && await IsOnlyEnabledSiteAdminAsync(state, cancellationToken))
         {
-            var error = ApiDetailErrorFactory.CreateUnprocessableEntityError(
-                nameof(Input.Status),
-                state.Input.Status.Name,
-                "This is the site's only enabled administrator. Promote or enable another administrator first.");
+            // The platform-admin rule decides whether a configured platform administrator can change state at
+            // all, and the order the checks run in is decided by registration rather than declared, so this one
+            // defers to it explicitly instead of relying on that order. Defer only while that rule refuses; once
+            // it allows, the site must still keep an enabled administrator.
+            var platformRuleRefuses = isPlatformAdmin && await IsLastEnabledPlatformAdminAsync(state, cancellationToken);
 
-            return error;
+            if (!platformRuleRefuses)
+            {
+                var error = ApiDetailErrorFactory.CreateUnprocessableEntityError(
+                    nameof(Input.Status),
+                    state.Input.Status.Name,
+                    "This is the site's only enabled administrator. Promote or enable another administrator first.");
+
+                return error;
+            }
         }
 
         return await base.HandleAsync(state, cancellationToken);
@@ -58,5 +64,16 @@ internal sealed class CheckTargetIsNotLastEnabledSiteAdmin : PreUpdateCheckBase
         // Exactly one enabled administrator, and it is the row being changed. A target that is not in the
         // population, or a population larger than one, leaves the site administrable.
         return enabledAdmins.Count == 1 && enabledAdmins[0].RowId == state.Target.RowId;
+    }
+
+    private async Task<bool> IsLastEnabledPlatformAdminAsync(InputState state, CancellationToken cancellationToken)
+    {
+        var otherConfiguredRowIds = state.PlatformAdminRowIds
+            .Where(rowId => rowId != state.Target.RowId)
+            .ToList();
+
+        var otherEnabledCount = await _userRepository.CountEnabledPlatformAdminsAsync(otherConfiguredRowIds, cancellationToken);
+
+        return otherEnabledCount == 0;
     }
 }
