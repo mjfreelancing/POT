@@ -48,80 +48,6 @@ internal sealed class UserRepository : PersistableRepository, IPersistableUserRe
         return await FindForCurrentSiteAsync(rowId, includeRoles: false, includeSite: true, cancellationToken);
     }
 
-    /// <summary>
-    /// Resolves a user only when the row belongs to the caller's site, and records a cross-tenant attempt.
-    /// </summary>
-    /// <remarks>
-    /// A refusal is reported exactly as a missing row is, so the caller learns nothing. The refusal is recorded
-    /// here, where the two cases can still be told apart, so that every route resolving a target is covered
-    /// rather than each route having to remember to log it.
-    /// </remarks>
-    /// <param name="rowId">The user to resolve.</param>
-    /// <param name="includeRoles">Whether to load the user's roles.</param>
-    /// <param name="includeSite">Whether to load the user's site.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The user, or <see langword="null" /> for a foreign or missing row.</returns>
-    private async Task<UserEntity?> FindForCurrentSiteAsync(Guid rowId, bool includeRoles, bool includeSite, CancellationToken cancellationToken)
-    {
-        var currentSiteId = GetCurrentSiteId();
-
-        if (currentSiteId is null)
-        {
-            return null;
-        }
-
-        var siteId = currentSiteId.Value;
-        var query = Set<UserEntity>();
-
-        if (includeRoles)
-        {
-            query = query.Include(user => user.Roles);
-        }
-
-        if (includeSite)
-        {
-            query = query.Include(user => user.Site);
-        }
-
-        var user = await query.SingleOrDefaultAsync(user => user.RowId == rowId && user.Site.Id == siteId, cancellationToken);
-
-        if (user is not null)
-        {
-            return user;
-        }
-
-        await LogCrossTenantRefusalAsync(rowId, siteId, cancellationToken);
-
-        return null;
-    }
-
-    /// <summary>
-    /// Records a refused attempt to reach a row that exists in another site.
-    /// </summary>
-    /// <remarks>
-    /// A row that does not exist at all is not recorded: only an id that exists elsewhere is evidence of a
-    /// caller reaching outside its own site.
-    /// </remarks>
-    /// <param name="rowId">The user the caller asked for.</param>
-    /// <param name="callerSiteId">The site the caller belongs to.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    private async Task LogCrossTenantRefusalAsync(Guid rowId, int callerSiteId, CancellationToken cancellationToken)
-    {
-        var existsInAnotherSite = await Set<UserEntity>()
-            .AnyAsync(user => user.RowId == rowId && user.Site.Id != callerSiteId, cancellationToken);
-
-        if (!existsInAnotherSite)
-        {
-            return;
-        }
-
-        _logger.LogWarning(
-            "Cross-tenant refusal: caller {CallerRowId} of site {CallerSiteId} requested user {RequestedRowId}",
-            _currentUserContext.UserRowId,
-            callerSiteId,
-            rowId);
-    }
-
     public async Task<List<GetAllUserInfo>> GetAllForCurrentSiteAsync(CancellationToken cancellationToken)
     {
         var currentSiteId = GetCurrentSiteId();
@@ -220,6 +146,121 @@ internal sealed class UserRepository : PersistableRepository, IPersistableUserRe
         return Set<UserEntity>()
             .Where(user => rowIds.Contains(user.RowId))
             .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<int> CountEnabledPlatformAdminsAsync(IReadOnlyList<Guid> rowIds, CancellationToken cancellationToken)
+    {
+        // Cross-tenant: platform administration comes from deployment configuration, not from a site role.
+        return Set<UserEntity>()
+            .Where(user => user.Status == UserStatus.Enabled && rowIds.Contains(user.RowId))
+            .CountAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<UserDeletionCounts?> DeleteUserWithDependentsAsync(Guid userRowId, CancellationToken cancellationToken)
+    {
+        using (WithTracking())
+        {
+            var user = await GetForCurrentSiteAsync(userRowId, cancellationToken);
+
+            if (user is null)
+            {
+                return null;
+            }
+
+            var sessionCount = await DeleteWhereAsync(
+                Set<AuthSessionEntity>()
+                    .Where(session => session.UserId == user.Id),
+                cancellationToken);
+
+            // Signup codes are written before a user exists, so they are linked by username only. Usernames are
+            // unique across every site, so those rows can only belong to the user being removed.
+            var oneTimePasswordCount = await DeleteWhereAsync(
+                Set<OneTimePasswordEntity>()
+                    .Where(otp => (otp.User != null && otp.User.Id == user.Id) || otp.Username == user.Username),
+                cancellationToken);
+
+            Delete(user);
+
+            await SaveAsync(cancellationToken);
+
+            return new UserDeletionCounts(sessionCount, oneTimePasswordCount);
+        }
+    }
+
+    /// <summary>
+    /// Resolves a user only when the row belongs to the caller's site, and records a cross-tenant attempt.
+    /// </summary>
+    /// <remarks>
+    /// A refusal is reported exactly as a missing row is, so the caller learns nothing. The refusal is recorded
+    /// here, where the two cases can still be told apart, so that every route resolving a target is covered
+    /// rather than each route having to remember to log it.
+    /// </remarks>
+    /// <param name="rowId">The user to resolve.</param>
+    /// <param name="includeRoles">Whether to load the user's roles.</param>
+    /// <param name="includeSite">Whether to load the user's site.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The user, or <see langword="null" /> for a foreign or missing row.</returns>
+    private async Task<UserEntity?> FindForCurrentSiteAsync(Guid rowId, bool includeRoles, bool includeSite, CancellationToken cancellationToken)
+    {
+        var currentSiteId = GetCurrentSiteId();
+
+        if (currentSiteId is null)
+        {
+            return null;
+        }
+
+        var siteId = currentSiteId.Value;
+        var query = Set<UserEntity>();
+
+        if (includeRoles)
+        {
+            query = query.Include(user => user.Roles);
+        }
+
+        if (includeSite)
+        {
+            query = query.Include(user => user.Site);
+        }
+
+        var user = await query.SingleOrDefaultAsync(user => user.RowId == rowId && user.Site.Id == siteId, cancellationToken);
+
+        if (user is not null)
+        {
+            return user;
+        }
+
+        await LogCrossTenantRefusalAsync(rowId, siteId, cancellationToken);
+
+        return null;
+    }
+
+    /// <summary>
+    /// Records a refused attempt to reach a row that exists in another site.
+    /// </summary>
+    /// <remarks>
+    /// A row that does not exist at all is not recorded: only an id that exists elsewhere is evidence of a
+    /// caller reaching outside its own site.
+    /// </remarks>
+    /// <param name="rowId">The user the caller asked for.</param>
+    /// <param name="callerSiteId">The site the caller belongs to.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    private async Task LogCrossTenantRefusalAsync(Guid rowId, int callerSiteId, CancellationToken cancellationToken)
+    {
+        var existsInAnotherSite = await Set<UserEntity>()
+            .AnyAsync(user => user.RowId == rowId && user.Site.Id != callerSiteId, cancellationToken);
+
+        if (!existsInAnotherSite)
+        {
+            return;
+        }
+
+        _logger.LogWarning(
+            "Cross-tenant refusal: caller {CallerRowId} of site {CallerSiteId} requested user {RequestedRowId}",
+            _currentUserContext.UserRowId,
+            callerSiteId,
+            rowId);
     }
 
     /// <summary>

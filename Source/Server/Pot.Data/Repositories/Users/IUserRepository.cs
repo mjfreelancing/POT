@@ -138,4 +138,16 @@ public interface IUserRepository : IRepositoryBase
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The users that still exist.</returns>
     Task<List<UserEntity>> GetByIdsForPlatformNotificationAsync(IReadOnlyList<Guid> rowIds, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Counts the configured platform administrators that belong to an enabled user.
+    /// </summary>
+    /// <remarks>
+    /// Cross-tenant by design: platform administration comes from deployment configuration rather than from a
+    /// site role, so the population spans every site.
+    /// </remarks>
+    /// <param name="rowIds">The configured platform administrator identifiers.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The number of configured identifiers that belong to an enabled user.</returns>
+    Task<int> CountEnabledPlatformAdminsAsync(IReadOnlyList<Guid> rowIds, CancellationToken cancellationToken);
 }

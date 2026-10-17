@@ -705,6 +705,233 @@ public class UserRepositoryFixture
         }
     }
 
+    public class CountEnabledPlatformAdminsAsync : UserRepositoryFixture
+    {
+        [Fact]
+        public async Task Should_Count_Only_Configured_Users_That_Are_Enabled()
+        {
+            var cancellationToken = Xunit.TestContext.Current.CancellationToken;
+
+            using var context = CreateDeletionTestContext();
+
+            var enabled = EntityFactory.CreateUser(context.Site, $"enabled-{Guid.NewGuid():N}");
+            var disabled = EntityFactory.CreateUser(context.Site, $"disabled-{Guid.NewGuid():N}");
+            disabled.Status = UserStatus.Disabled;
+
+            await context.SeedAsync(enabled, disabled);
+
+            var configuredRowIds = new[]
+            {
+                context.Caller.RowId,
+                enabled.RowId,
+                disabled.RowId,
+                Guid.NewGuid()
+            };
+
+            var result = await context.Repository.CountEnabledPlatformAdminsAsync(configuredRowIds, cancellationToken);
+
+            result.ShouldBe(2);
+        }
+    }
+
+    public class DeleteUserWithDependentsAsync : UserRepositoryFixture
+    {
+        [Fact]
+        public async Task Should_Remove_The_User_With_All_Sessions_And_One_Time_Passwords()
+        {
+            var cancellationToken = Xunit.TestContext.Current.CancellationToken;
+
+            using var context = CreateDeletionTestContext();
+
+            var activeSession = CreateSession(context.Target);
+            var revokedSession = CreateSession(context.Target, revokedUtc: DateTime.UtcNow.AddMinutes(-5));
+            var linkedOtp = CreateOtp(context.Target.Username, OtpReason.PasswordReset);
+            var signupOtp = CreateOtp(context.Target.Username, OtpReason.Signup);
+
+            await context.SeedAsync(activeSession, revokedSession);
+            await context.SeedOtpAsync(linkedOtp, context.Target);
+            await context.SeedAsync(signupOtp);
+
+            var result = await context.Repository.DeleteUserWithDependentsAsync(context.Target.RowId, cancellationToken);
+
+            result.ShouldNotBeNull();
+            result!.Sessions.ShouldBe(2);
+            result.OneTimePasswords.ShouldBe(2);
+
+            var userRemains = await context.DbContext.Users.AnyAsync(user => user.RowId == context.Target.RowId, cancellationToken);
+            var sessionsRemain = await context.DbContext.AuthSessions.AnyAsync(session => session.UserId == context.Target.Id, cancellationToken);
+            var otpsRemain = await context.DbContext.OneTimePasswords.AnyAsync(otp => otp.Username == context.Target.Username, cancellationToken);
+
+            userRemains.ShouldBeFalse();
+            sessionsRemain.ShouldBeFalse();
+            otpsRemain.ShouldBeFalse();
+        }
+
+        [Fact]
+        public async Task Should_Leave_Other_Users_And_Their_Records_Untouched()
+        {
+            var cancellationToken = Xunit.TestContext.Current.CancellationToken;
+
+            using var context = CreateDeletionTestContext();
+
+            var colleagueSession = CreateSession(context.Colleague);
+            var colleagueOtp = CreateOtp(context.Colleague.Username, OtpReason.Signup);
+            var foreignSession = CreateSession(context.ForeignUser);
+
+            await context.SeedAsync(colleagueSession, colleagueOtp, foreignSession);
+
+            var result = await context.Repository.DeleteUserWithDependentsAsync(context.Target.RowId, cancellationToken);
+
+            result.ShouldNotBeNull();
+
+            (await context.DbContext.Users.AnyAsync(user => user.RowId == context.Colleague.RowId, cancellationToken)).ShouldBeTrue();
+            (await context.DbContext.AuthSessions.AnyAsync(session => session.UserId == context.Colleague.Id, cancellationToken)).ShouldBeTrue();
+            (await context.DbContext.OneTimePasswords.AnyAsync(otp => otp.Username == context.Colleague.Username, cancellationToken)).ShouldBeTrue();
+            (await context.DbContext.Users.AnyAsync(user => user.RowId == context.ForeignUser.RowId, cancellationToken)).ShouldBeTrue();
+            (await context.DbContext.AuthSessions.AnyAsync(session => session.UserId == context.ForeignUser.Id, cancellationToken)).ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task Should_Return_Not_Found_When_The_Target_Belongs_To_Another_Site()
+        {
+            var cancellationToken = Xunit.TestContext.Current.CancellationToken;
+
+            using var context = CreateDeletionTestContext();
+
+            var result = await context.Repository.DeleteUserWithDependentsAsync(context.ForeignUser.RowId, cancellationToken);
+
+            result.ShouldBeNull();
+
+            (await context.DbContext.Users.AnyAsync(user => user.RowId == context.ForeignUser.RowId, cancellationToken)).ShouldBeTrue();
+        }
+    }
+
+    private sealed class DeletionTestContext : IDisposable
+    {
+        public PotDbContext DbContext { get; }
+        public UserRepository Repository { get; }
+        public SiteEntity Site { get; }
+        public UserEntity Caller { get; }
+        public UserEntity Target { get; }
+        public UserEntity Colleague { get; }
+        public SiteEntity OtherSite { get; }
+        public UserEntity ForeignUser { get; }
+
+        public DeletionTestContext(PotDbContext dbContext, UserRepository repository, SiteEntity site, UserEntity caller,
+            UserEntity target, UserEntity colleague, SiteEntity otherSite, UserEntity foreignUser)
+        {
+            DbContext = dbContext;
+            Repository = repository;
+            Site = site;
+            Caller = caller;
+            Target = target;
+            Colleague = colleague;
+            OtherSite = otherSite;
+            ForeignUser = foreignUser;
+        }
+
+        public Task<int> SeedAsync(params EntityBase[] entities)
+        {
+            // A user references a site that was seeded earlier and has since been detached. Attaching that
+            // site first stops the add from walking the graph and inserting a second copy of it.
+            foreach (var user in entities.OfType<UserEntity>())
+            {
+                if (user.Site is not null && DbContext.Entry(user.Site).State == EntityState.Detached)
+                {
+                    DbContext.Attach(user.Site);
+                }
+            }
+
+            DbContext.AddRange(entities);
+
+            return SaveAndDetachAsync();
+        }
+
+        public Task<int> SeedOtpAsync(OneTimePasswordEntity otp, UserEntity user)
+        {
+            DbContext.Add(otp);
+
+            // The one-time password has no user property, only the relationship, so the link is set through
+            // the shadow foreign key after the row is tracked.
+            DbContext.Entry(otp).Property<int?>("UserId").CurrentValue = user.Id;
+
+            return SaveAndDetachAsync();
+        }
+
+        public void Dispose()
+        {
+            DbContext.Dispose();
+        }
+
+        private async Task<int> SaveAndDetachAsync()
+        {
+            var result = await DbContext.SaveChangesAsync(Xunit.TestContext.Current.CancellationToken);
+
+            DbContext.ChangeTracker.Clear();
+
+            return result;
+        }
+    }
+
+    private static DeletionTestContext CreateDeletionTestContext()
+    {
+        var dbOptions = new DbContextOptionsBuilder<PotDbContext>()
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .Options;
+
+        var site = EntityFactory.CreateSite(name: $"Deletion Site {Guid.NewGuid():N}");
+        var otherSite = EntityFactory.CreateSite(name: $"Other Deletion Site {Guid.NewGuid():N}");
+        var caller = EntityFactory.CreateUser(site, $"caller-{Guid.NewGuid():N}");
+        var target = EntityFactory.CreateUser(site, $"target-{Guid.NewGuid():N}");
+        var colleague = EntityFactory.CreateUser(site, $"colleague-{Guid.NewGuid():N}");
+        var foreignUser = EntityFactory.CreateUser(otherSite, $"foreign-{Guid.NewGuid():N}");
+
+        var currentUserContext = Substitute.For<ICurrentUserContext>();
+        currentUserContext.UserRowId.Returns(caller.RowId);
+
+        var dbContext = new PotDbContext(dbOptions, currentUserContext);
+
+        dbContext.AddRange(site, otherSite, caller, target, colleague, foreignUser);
+        dbContext.SaveChanges();
+
+        // Detach the seeded rows so the repository sees them exactly as a fresh request scope would.
+        dbContext.ChangeTracker.Clear();
+
+        var repository = new UserRepository(dbContext, currentUserContext, Substitute.For<ILogger<UserRepository>>());
+
+        return new DeletionTestContext(dbContext, repository, site, caller, target, colleague, otherSite, foreignUser);
+    }
+
+    private static AuthSessionEntity CreateSession(UserEntity user, DateTime? revokedUtc = null)
+    {
+        return new AuthSessionEntity
+        {
+            RowId = Guid.NewGuid(),
+            UserId = user.Id,
+            RefreshTokenHash = Guid.NewGuid().ToString("N"),
+            CreatedUtc = DateTime.UtcNow.AddDays(-1),
+            ExpiresUtc = DateTime.UtcNow.AddDays(7),
+            RevokedUtc = revokedUtc
+        };
+    }
+
+    private static OneTimePasswordEntity CreateOtp(string username, OtpReason reason)
+    {
+        return new OneTimePasswordEntity
+        {
+            RowId = Guid.NewGuid(),
+            CorrelationId = Guid.NewGuid().ToString("N"),
+            Username = username,
+            Email = $"{username}@example.com",
+            Reason = reason,
+            RefCode = "123456",
+            OtpCode = "654321",
+            Status = OtpStatus.Active,
+            CreatedUtc = DateTime.UtcNow,
+            ExpiryUtc = DateTime.UtcNow.AddMinutes(10)
+        };
+    }
+
     private static PotDbContext CreateSeededContext()
     {
         var dbOptions = new DbContextOptionsBuilder<PotDbContext>()

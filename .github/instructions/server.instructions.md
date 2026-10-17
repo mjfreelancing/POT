@@ -23,6 +23,7 @@ Run server commands from `Source/Server`. `.editorconfig` is the source of truth
 - Schema changes are migration-backed and isolated to `Pot.Data.Migrations`. Keep migrations small and focused. Migration generation is a developer-reviewed step: prompt the developer to run `add-migration`; do not generate one unless asked.
 - Default reads to no-tracking; opt into tracking only on write paths.
 - Avoid N+1 queries and over-fetching. Keep transaction boundaries explicit for multi-step writes.
+- In a multi-step write sequence, keep each write next to the query that produced the rows (query, act, query, act) rather than gathering every query first and issuing all the writes afterwards. The repeated shape stays visible, which shows when a small helper method is worth extracting and keeps the ordering readable against the foreign keys.
 - Preserve concurrency and integrity constraints. No destructive schema/data operations unless explicitly requested.
 
 ## C# conventions
