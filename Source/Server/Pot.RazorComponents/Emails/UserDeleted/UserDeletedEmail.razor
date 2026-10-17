@@ -1,0 +1,40 @@
+﻿@using Models
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>POT - User Deleted</title>
+</head>
+<body style="margin:0;padding:20px;background-color:#ffffff;font-family:'Segoe UI',Arial,sans-serif;color:#111827;line-height:1.5;">
+    <div style="max-width:600px;margin:0 auto;">
+        <h1 style="margin:0 0 10px;font-size:22px;font-weight:700;">User Deleted</h1>
+        <hr style="border:none;border-top:1px solid #d1d5db;margin:0 0 16px 0;" />
+
+        <p style="margin:0 0 12px;font-size:15px;">Hello <strong>@Username</strong>,</p>
+        <p style="margin:0 0 16px;font-size:15px;">The user <strong>@DeletedUsername</strong> on the site <strong>@SiteName</strong> was deleted by @DeletedByLabel.</p>
+
+        <p style="margin:0 0 16px;font-size:15px;">This is an automated confirmation. No further action is required.</p>
+
+        <hr style="border:none;border-top:1px solid #d1d5db;margin:18px 0;" />
+
+        <p style="margin:0 0 4px;font-size:14px;color:#4b5563;">POT</p>
+        <p style="margin:0;font-size:14px;"><a href="https://payontime.com.au" style="color:#1d4ed8;">https://payontime.com.au</a></p>
+    </div>
+</body>
+
+</html>
+
+@code {
+    [Parameter]
+    public required string Username { get; set; }
+
+    [Parameter]
+    public required string DeletedUsername { get; set; }
+
+    [Parameter]
+    public required string DeletedByLabel { get; set; }
+
+    [Parameter]
+    public required string SiteName { get; set; }
+}

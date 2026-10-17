@@ -20,6 +20,7 @@ internal static class WebApplicationExtensions
                 .UpdateUser()
                 .UpdateUserStatus()
                 .UpdateUserRoles()
+                .DeleteUser()
                 .InviteUser()
                 .ResendInviteUser();
         }

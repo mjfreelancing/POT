@@ -83,6 +83,23 @@ internal static class RouteGroupBuilderExtensions
         return routeGroupBuilder;
     }
 
+    public static RouteGroupBuilder DeleteUser(this RouteGroupBuilder routeGroupBuilder)
+    {
+        routeGroupBuilder
+            .MapDelete(UsersEndpoints.Delete, Delete.Handler.Invoke)
+            .RequireAuthorization("user:manage")
+            .WithName(nameof(DeleteUser))
+            .WithSummary("Delete a user")
+            .WithDescription("Deletes a user from the caller's site")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        return routeGroupBuilder;
+    }
+
     public static RouteGroupBuilder ResendInviteUser(this RouteGroupBuilder routeGroupBuilder)
     {
         routeGroupBuilder

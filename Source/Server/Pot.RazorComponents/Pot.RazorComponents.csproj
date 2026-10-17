@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Emails\UserDeleted\UserDeletedEmail.text" />
     <EmbeddedResource Include="Emails\ApprovalRejected\ApprovalRejectedEmail.text" />
     <EmbeddedResource Include="Emails\ApprovalAccepted\ApprovalAcceptedEmail.text" />
     <EmbeddedResource Include="Emails\BudgetReminder\BudgetReminderEmail.text" />
