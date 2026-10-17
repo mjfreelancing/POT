@@ -17,7 +17,7 @@ public class AccountDeleteCheckerFixture : PotFixtureBase
 {
     private const string PasswordMessage = "The password is incorrect.";
     private const string LastPlatformAdministratorMessage =
-        "This is the last enabled platform administrator. Enable another platform administrator, or remove this account from the platform administrator configuration and redeploy.";
+        "This is the last enabled platform administrator. Another platform administrator must be configured first.";
 
     public class CanDeleteAsync : AccountDeleteCheckerFixture
     {
