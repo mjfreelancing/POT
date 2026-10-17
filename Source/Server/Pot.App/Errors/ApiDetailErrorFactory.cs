@@ -11,7 +11,7 @@ public static class ApiDetailErrorFactory
             ErrorCode = ErrorCodes.Conflict,
             PropertyName = propertyName,
             AttemptedValue = attemptedValue,
-            ErrorMessage = errorMessage//$"The operation would conflict with another {entityType} entity."
+            ErrorMessage = errorMessage
         };
     }
 
