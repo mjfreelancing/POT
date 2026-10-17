@@ -6,7 +6,7 @@ public enum ErrorType
     NotFound,
     Conflict,
     Constraint,
-    UnprocessableEntity,
+    BadRequest,
     TooManyRequests,
     Server
 }

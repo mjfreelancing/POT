@@ -40,13 +40,15 @@ public class EndpointResponseMetadataFixture : IntegrationFixtureBase
         endpointsMissingBadRequest.ShouldBeEmpty(
             "every API endpoint can return a ProblemDetails 400 for malformed input or an invalid correlation ID");
 
-        var endpointsWithUnprocessableEntity = apiEndpoints
+        var endpointsDocumentingUnprocessableEntity = apiEndpoints
             .Where(endpoint => endpoint.Metadata.GetOrderedMetadata<IProducesResponseTypeMetadata>()
                 .Any(response => response.StatusCode == StatusCodes.Status422UnprocessableEntity))
             .Select(endpoint => endpoint.RoutePattern.RawText)
             .ToList();
 
-        endpointsWithUnprocessableEntity.ShouldBeEmpty("the API no longer returns 422 responses");
+        // A guard rather than a description: the API answers 400 for every invalid request, so a 422 in the
+        // OpenAPI metadata would mean the old contract has crept back in.
+        endpointsDocumentingUnprocessableEntity.ShouldBeEmpty("the API should not return 422 responses");
     }
 
     [Fact]

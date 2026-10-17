@@ -57,7 +57,7 @@ internal sealed class ImportDataService : IImportDataService
             {
                 if (!_expectedEntryNames.All(_importStreamReader.EntryNames.Contains))
                 {
-                    var unsupportedFileError = ApiDetailErrorFactory.CreateUnprocessableEntityError("The import file is not supported");
+                    var unsupportedFileError = ApiDetailErrorFactory.CreateBadRequestError("The import file is not supported");
 
                     return EnrichedResult.Fail<int>(unsupportedFileError);
                 }
@@ -73,7 +73,7 @@ internal sealed class ImportDataService : IImportDataService
                 if (metadataVersion != MetadataBase.CurrentVersion)
                 {
                     var unsupportedMetadataVersionError =
-                        ApiDetailErrorFactory.CreateUnprocessableEntityError(nameof(MetadataBase.Version), metadataVersion,
+                        ApiDetailErrorFactory.CreateBadRequestError(nameof(MetadataBase.Version), metadataVersion,
                             $"The import file has a non-supported version. Expecting version {MetadataBase.CurrentVersion}.");
 
                     return EnrichedResult.Fail<int>(unsupportedMetadataVersionError);
@@ -121,7 +121,7 @@ internal sealed class ImportDataService : IImportDataService
         {
             _logger.LogWarning(exception, "Import failed due to unsupported or invalid payload format");
 
-            var invalidPayloadError = ApiDetailErrorFactory.CreateUnprocessableEntityError("The import file does not have a valid format.");
+            var invalidPayloadError = ApiDetailErrorFactory.CreateBadRequestError("The import file does not have a valid format.");
 
             return EnrichedResult.Fail<int>(invalidPayloadError);
         }

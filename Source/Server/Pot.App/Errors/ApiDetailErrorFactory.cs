@@ -48,18 +48,18 @@ public static class ApiDetailErrorFactory
         };
     }
 
-    public static ApiBasicError CreateUnprocessableEntityError(string errorMessage)
+    public static ApiBasicError CreateBadRequestError(string errorMessage)
     {
-        return new ApiBasicError(ErrorType.UnprocessableEntity)
+        return new ApiBasicError(ErrorType.BadRequest)
         {
             ErrorCode = ErrorCodes.Invalid,
             ErrorMessage = errorMessage
         };
     }
 
-    public static ApiDetailError CreateUnprocessableEntityError(string propertyName, object? attemptedValue, string errorMessage)
+    public static ApiDetailError CreateBadRequestError(string propertyName, object? attemptedValue, string errorMessage)
     {
-        return new ApiDetailError(ErrorType.UnprocessableEntity)
+        return new ApiDetailError(ErrorType.BadRequest)
         {
             ErrorCode = ErrorCodes.Invalid,
             PropertyName = propertyName,

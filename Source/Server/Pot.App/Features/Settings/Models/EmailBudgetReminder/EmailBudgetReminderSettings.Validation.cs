@@ -31,7 +31,7 @@ public sealed partial class EmailBudgetReminderSettings
         {
             if (!stringValue.TryAsBoolean(out _))
             {
-                return ApiDetailErrorFactory.CreateUnprocessableEntityError(
+                return ApiDetailErrorFactory.CreateBadRequestError(
                     nameof(Enabled),
                     stringValue,
                     "Value must be 'true' or 'false'");
@@ -44,7 +44,7 @@ public sealed partial class EmailBudgetReminderSettings
         {
             if (!stringValue.TryAsInt(out int value) || value < 0 || value >= 24)
             {
-                return ApiDetailErrorFactory.CreateUnprocessableEntityError(
+                return ApiDetailErrorFactory.CreateBadRequestError(
                     nameof(LocalHourTrigger),
                     stringValue,
                     "Value must be between 0 and 23 (inclusive)");
@@ -57,7 +57,7 @@ public sealed partial class EmailBudgetReminderSettings
         {
             if (!stringValue.TryAsInt(out var value) || value < 0 || value > 31)
             {
-                return ApiDetailErrorFactory.CreateUnprocessableEntityError(
+                return ApiDetailErrorFactory.CreateBadRequestError(
                     nameof(ReminderDays),
                     stringValue,
                     "Value must be between 0 and 31 (inclusive)");

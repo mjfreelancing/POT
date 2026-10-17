@@ -37,7 +37,7 @@ internal sealed class CheckTargetIsNotPlatformAdmin : PreUpdateCheckBase
 
         if (isDisabling && isPlatformAdmin && await IsLastEnabledPlatformAdminAsync(state, cancellationToken))
         {
-            var error = ApiDetailErrorFactory.CreateUnprocessableEntityError(
+            var error = ApiDetailErrorFactory.CreateBadRequestError(
                 nameof(Input.Status),
                 state.Input.Status.Name,
                 "This is the last enabled platform administrator. Another platform administrator must be configured first.");

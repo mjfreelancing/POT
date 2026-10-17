@@ -69,7 +69,7 @@ internal sealed class InviteUserService : IInviteUserService
 
             if (user is not null)
             {
-                var userError = ApiDetailErrorFactory.CreateUnprocessableEntityError(
+                var userError = ApiDetailErrorFactory.CreateBadRequestError(
                     nameof(input.Username),
                     input.Username,
                     $"The username '{input.Username}' is already in use.");

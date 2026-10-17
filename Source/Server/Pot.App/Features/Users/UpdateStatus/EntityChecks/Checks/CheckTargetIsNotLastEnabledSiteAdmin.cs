@@ -45,7 +45,7 @@ internal sealed class CheckTargetIsNotLastEnabledSiteAdmin : PreUpdateCheckBase
 
             if (!platformRuleRefuses)
             {
-                var error = ApiDetailErrorFactory.CreateUnprocessableEntityError(
+                var error = ApiDetailErrorFactory.CreateBadRequestError(
                     nameof(Input.Status),
                     state.Input.Status.Name,
                     "This is the site's only enabled administrator. Promote or enable another administrator first.");

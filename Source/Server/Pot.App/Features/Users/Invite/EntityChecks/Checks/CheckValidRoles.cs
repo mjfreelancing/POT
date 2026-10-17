@@ -38,7 +38,7 @@ internal sealed class CheckValidRoles : PreUpdateCheckBase
             if (missingRoles.Count > 0)
             {
                 var roleIdsText = string.Join(", ", missingRoles);
-                return ApiDetailErrorFactory.CreateUnprocessableEntityError(nameof(InputState.RoleIds), roleIdsText, "One or more roles were not found");
+                return ApiDetailErrorFactory.CreateBadRequestError(nameof(InputState.RoleIds), roleIdsText, "One or more roles were not found");
             }
         }
 

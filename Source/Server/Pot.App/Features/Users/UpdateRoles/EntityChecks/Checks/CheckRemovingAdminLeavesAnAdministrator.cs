@@ -35,7 +35,7 @@ internal sealed class CheckRemovingAdminLeavesAnAdministrator : PreUpdateCheckBa
         {
             var roleIdsText = string.Join(", ", state.Input.RoleIds);
 
-            var error = ApiDetailErrorFactory.CreateUnprocessableEntityError(
+            var error = ApiDetailErrorFactory.CreateBadRequestError(
                 nameof(InputState.RoleIds),
                 roleIdsText,
                 "This is the site's only enabled administrator. Promote another administrator first.");

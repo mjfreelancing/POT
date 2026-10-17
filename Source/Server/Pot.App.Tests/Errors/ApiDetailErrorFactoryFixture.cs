@@ -153,16 +153,16 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
         }
     }
 
-    public class CreateUnprocessableEntityError_BasicError : ApiDetailErrorFactoryFixture
+    public class CreateBadRequestError_BasicError : ApiDetailErrorFactoryFixture
     {
         [Fact]
-        public void Should_Create_Error_With_UnprocessableEntity_Type()
+        public void Should_Create_Error_With_BadRequest_Type()
         {
             var errorMessage = Create<string>();
 
-            var result = ApiDetailErrorFactory.CreateUnprocessableEntityError(errorMessage);
+            var result = ApiDetailErrorFactory.CreateBadRequestError(errorMessage);
 
-            result.ErrorType.ShouldBe(ErrorType.UnprocessableEntity);
+            result.ErrorType.ShouldBe(ErrorType.BadRequest);
         }
 
         [Fact]
@@ -170,25 +170,25 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
         {
             var errorMessage = Create<string>();
 
-            var result = ApiDetailErrorFactory.CreateUnprocessableEntityError(errorMessage);
+            var result = ApiDetailErrorFactory.CreateBadRequestError(errorMessage);
 
             result.ErrorCode.ShouldBe(ErrorCodes.Invalid);
             result.ErrorMessage.ShouldBe(errorMessage);
         }
     }
 
-    public class CreateUnprocessableEntityError_DetailedError : ApiDetailErrorFactoryFixture
+    public class CreateBadRequestError_DetailedError : ApiDetailErrorFactoryFixture
     {
         [Fact]
-        public void Should_Create_Error_With_UnprocessableEntity_Type()
+        public void Should_Create_Error_With_BadRequest_Type()
         {
             var propertyName = Create<string>();
             var attemptedValue = Create<int>();
             var errorMessage = Create<string>();
 
-            var result = ApiDetailErrorFactory.CreateUnprocessableEntityError(propertyName, attemptedValue, errorMessage);
+            var result = ApiDetailErrorFactory.CreateBadRequestError(propertyName, attemptedValue, errorMessage);
 
-            result.ErrorType.ShouldBe(ErrorType.UnprocessableEntity);
+            result.ErrorType.ShouldBe(ErrorType.BadRequest);
         }
 
         [Fact]
@@ -198,7 +198,7 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
             var attemptedValue = Create<int>();
             var errorMessage = Create<string>();
 
-            var result = ApiDetailErrorFactory.CreateUnprocessableEntityError(propertyName, attemptedValue, errorMessage);
+            var result = ApiDetailErrorFactory.CreateBadRequestError(propertyName, attemptedValue, errorMessage);
 
             result.ErrorCode.ShouldBe(ErrorCodes.Invalid);
             result.PropertyName.ShouldBe(propertyName);
@@ -212,7 +212,7 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
             var propertyName = Create<string>();
             var errorMessage = Create<string>();
 
-            var result = ApiDetailErrorFactory.CreateUnprocessableEntityError(propertyName, null, errorMessage);
+            var result = ApiDetailErrorFactory.CreateBadRequestError(propertyName, null, errorMessage);
 
             result.AttemptedValue.ShouldBeNull();
         }

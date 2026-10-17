@@ -58,7 +58,7 @@ internal sealed class ResendInviteService : IResendInviteService
             // left depending on a password nobody sent them.
             if (user.Status != UserStatus.Pending)
             {
-                var statusError = ApiDetailErrorFactory.CreateUnprocessableEntityError(
+                var statusError = ApiDetailErrorFactory.CreateBadRequestError(
                     nameof(user.Status),
                     user.Status.Name,
                     "An invitation can only be re-sent while it is still outstanding.");

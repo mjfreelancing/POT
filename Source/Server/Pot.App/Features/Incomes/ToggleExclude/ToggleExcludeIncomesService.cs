@@ -37,7 +37,7 @@ internal sealed class ToggleExcludeIncomesService : IToggleExcludeIncomesService
 
             if (missingRowIds.Length > 0)
             {
-                var expenseRenewError = ApiDetailErrorFactory.CreateUnprocessableEntityError(
+                var expenseRenewError = ApiDetailErrorFactory.CreateBadRequestError(
                     nameof(Input.RowIds),
                     missingRowIds,
                     "One or more Incomes do not exist.");

@@ -152,7 +152,7 @@ public class ValidationResultExtensionsFixture : PotFixtureBase
         }
 
         [Fact]
-        public void Should_Set_ErrorType_To_UnprocessableEntity_For_All_Errors()
+        public void Should_Set_ErrorType_To_BadRequest_For_All_Errors()
         {
             var validationFailures = new[]
             {
@@ -167,9 +167,9 @@ public class ValidationResultExtensionsFixture : PotFixtureBase
 
             result.Count.ShouldBe(3);
 
-            result[0].ErrorType.ShouldBe(ErrorType.UnprocessableEntity);
-            result[1].ErrorType.ShouldBe(ErrorType.UnprocessableEntity);
-            result[2].ErrorType.ShouldBe(ErrorType.UnprocessableEntity);
+            result[0].ErrorType.ShouldBe(ErrorType.BadRequest);
+            result[1].ErrorType.ShouldBe(ErrorType.BadRequest);
+            result[2].ErrorType.ShouldBe(ErrorType.BadRequest);
         }
 
         [Fact]
@@ -212,7 +212,7 @@ public class ValidationResultExtensionsFixture : PotFixtureBase
 
         private static void AssertProblemDetailsError(ApiDetailError error, ValidationFailure validationFailure)
         {
-            error.ErrorType.ShouldBe(ErrorType.UnprocessableEntity);
+            error.ErrorType.ShouldBe(ErrorType.BadRequest);
             error.ErrorCode.ShouldBe(validationFailure.ErrorCode);
             error.PropertyName.ShouldBe(validationFailure.PropertyName);
             error.AttemptedValue.ShouldBe(validationFailure.AttemptedValue);

@@ -41,7 +41,7 @@ internal sealed class RenewIncomesService : IRenewIncomesService
 
             if (missingRowIds.Length > 0)
             {
-                var incomeRenewError = ApiDetailErrorFactory.CreateUnprocessableEntityError(
+                var incomeRenewError = ApiDetailErrorFactory.CreateBadRequestError(
                     nameof(Input.RowIds),
                     missingRowIds,
                     "One or more Incomes do not exist.");
