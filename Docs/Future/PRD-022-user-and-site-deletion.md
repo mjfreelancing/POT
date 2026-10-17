@@ -1,6 +1,6 @@
 # User and Site Deletion PRD
 
-**Status:** Draft for review
+**Status:** Planned
 **Priority:** Medium
 **Last Updated:** 2026-10-17
 **Feature ID:** 022
@@ -35,7 +35,7 @@ A platform administrator has no additional authority in this feature. Every acti
 ## Terms
 
 - **Enabled administrator** — a user in a site holding the `Admin` role whose status is enabled. Only enabled administrators count anywhere in this document. Disabled, pending and never-activated administrators do not count.
-- **Live platform administrator** — a configured platform administrator identifier that belongs to an existing user. Configured identifiers that no longer belong to a user do not count.
+- **Live platform administrator** — a configured platform administrator identifier that belongs to an enabled user. Configured identifiers that do not belong to an enabled user do not count.
 
 ## Functional Requirements
 
@@ -122,7 +122,7 @@ The items above that name PRD-027 are specified and delivered there. The rest ar
 
 - **Mutual removal.** If two administrators remove each other at the same moment, each check can pass before either removal completes, leaving the site with no users. The likelihood is considered extremely low. No additional complexity is added for it here; a future capability for a platform administrator to add or promote a user in the site is the intended remedy, specified by PRD-027.
 - **Notification delivery.** Notifications are best effort. A delivery failure is visible in logs but is not reported to the administrator and does not affect the removal.
-- **Stale configuration.** A configured platform administrator identifier that no longer belongs to a user is ignored when counting live platform administrators (see Terms). Configuration hygiene is an operator responsibility.
+- **Stale configuration.** A configured platform administrator identifier that does not belong to an enabled user is ignored when counting live platform administrators (see Terms). Configuration hygiene is an operator responsibility.
 - **Orphaned site.** When the only enabled administrator of a site is also the last live platform administrator, that site cannot be deleted until the administrator is removed from deployment configuration and redeployed (E3, R9). Removing the configuration entry restores the administrator's ability to delete the site. Where the administrator is unavailable, the site can only be resolved by the platform administration feature specified by PRD-027, which can add a user to the site or delete it on the operator's behalf.
 - **Relaxed platform protection.** R7 allows a platform administrator to be disabled or removed when another live platform administrator exists. This replaces the current behaviour, where a configured platform administrator can never be disabled.
 
