@@ -1,5 +1,11 @@
 # Cross-Tenant Authorization Hardening PRD
 
+> **Superseded contract note (2026-10-17).** This document records `422 Unprocessable Entity` for the
+> refusals it introduced. That status code has since been replaced: every invalid or refused request now
+> returns **`400 Bad Request`** with the same ProblemDetails body, and `ErrorType.UnprocessableEntity` no
+> longer exists in the server (`ErrorType.BadRequest` is used instead). Read every `422` below as `400`.
+> The behaviour, refusal rules and messages are unchanged.
+
 **Status:** Complete
 **Priority:** High
 **Last Updated:** 2026-10-14
