@@ -259,6 +259,12 @@ public class DeleteUserFixture : IntegrationAuthFixtureBase
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 
+        // The rejection names the missing confirmation value, so it comes from the request validator rather
+        // than from the pre-delete checks.
+        var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
+
+        problem!.Errors.Select(error => error.PropertyName).ShouldContain("Password");
+
         (await UserExistsAsync(target.UserRowId)).ShouldBeTrue();
     }
 

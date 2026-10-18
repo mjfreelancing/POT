@@ -176,6 +176,15 @@ public class DeleteAccountFixture : IntegrationAuthFixtureBase
         using var response = await SendDeleteAsync(client, username: string.Empty, password: string.Empty);
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+
+        // The rejection names the missing confirmation values, so it comes from the request validator rather
+        // than from the pre-delete checks.
+        var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
+        var rejectedProperties = problem!.Errors.Select(error => error.PropertyName).ToList();
+
+        rejectedProperties.ShouldContain("Username");
+        rejectedProperties.ShouldContain("Password");
+
         (await UserExistsAsync(caller.UserRowId)).ShouldBeTrue();
     }
 

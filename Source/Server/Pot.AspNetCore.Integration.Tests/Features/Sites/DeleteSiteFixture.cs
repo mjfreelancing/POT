@@ -205,6 +205,29 @@ public class DeleteSiteFixture : IntegrationAuthFixtureBase
         (await SiteExistsAsync(callerWithSite.Site.RowId)).ShouldBeFalse();
     }
 
+    [Fact]
+    public async Task Should_Reject_A_Request_Without_The_Confirmation_Values()
+    {
+        var caller = await CreateAdminUserAsync("missing-values-site-delete", "Missing Values Site Delete");
+        var callerWithSite = await GetUserWithSiteAsync(caller.UserRowId);
+
+        using var client = await CreateAuthenticatedClientAsync(caller);
+        using var response = await SendDeleteAsync(client, string.Empty, string.Empty, string.Empty);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+
+        // The rejection names the missing confirmation values, so it comes from the request validator rather
+        // than from the pre-delete checks.
+        var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
+        var rejectedProperties = problem!.Errors.Select(error => error.PropertyName).ToList();
+
+        rejectedProperties.ShouldContain("SiteName");
+        rejectedProperties.ShouldContain("Username");
+        rejectedProperties.ShouldContain("Password");
+
+        (await SiteExistsAsync(callerWithSite.Site.RowId)).ShouldBeTrue();
+    }
+
     private static Task<HttpResponseMessage> SendDeleteAsync(HttpClient client, string siteName, string username, string password)
     {
         var request = new HttpRequestMessage(HttpMethod.Delete, "/api/sites/current")
