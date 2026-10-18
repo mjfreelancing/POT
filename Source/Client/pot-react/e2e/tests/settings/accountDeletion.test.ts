@@ -1,6 +1,7 @@
 import type { Browser } from '@playwright/test';
 
 import { expect, selfDeleteTest as test } from '../../fixtures/auth';
+import { listExistingUsernames } from '../../helpers/databaseSeed';
 import { selfDeleteCredentials } from '../../helpers/secrets';
 
 // Covers the self-service account deletion journey: the settings block, the
@@ -12,9 +13,28 @@ import { selfDeleteCredentials } from '../../helpers/secrets';
 // chromium-only for the same reason userSettings.test.ts is: every project in a
 // run shares ONE Testcontainers Postgres, so a second project would find the
 // account already gone. The configs exclude this file from the other projects.
+//
+// NO RETRIES: the account is gone after the first attempt, so a retry could never sign in and would
+// surface as a misleading auth-fixture failure. The seed is verified below instead, because a regenerated
+// baseline.sql that drops the identity is the usual reason it goes missing.
 
 const isNotChromium = (testInfo: import('@playwright/test').TestInfo) =>
   testInfo.project.name !== 'chromium';
+
+// Declared in the file so the CLI --retries flag cannot re-enable them.
+test.describe.configure({ retries: 0 });
+
+test.beforeAll(async () => {
+  const existingUsernames = await listExistingUsernames([
+    selfDeleteCredentials.username,
+  ]);
+
+  if (!existingUsernames.includes(selfDeleteCredentials.username)) {
+    throw new Error(
+      `${selfDeleteCredentials.username} is missing from the E2E seed. Regenerate e2e/seed/baseline.sql.`,
+    );
+  }
+});
 
 test('deleting your own account returns you to the login page and blocks sign-in', async ({
   page,

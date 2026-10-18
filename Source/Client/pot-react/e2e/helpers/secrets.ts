@@ -40,10 +40,23 @@ const selfDeleteCredentials = {
   password: 'E2E_pwchange-password',
 } as const;
 
+// Dedicated identity for the site-deletion suite, which deletes its own site. It
+// is an Admin on that site and reuses the e2e_pwchange password hash (see
+// baseline.sql), so it shares that password.
+const siteDeleteCredentials = {
+  username: 'e2e_sitedelete',
+  password: 'E2E_pwchange-password',
+} as const;
+
+// The site owned by siteDeleteCredentials, which the site-deletion suite retires.
+const siteDeleteSiteName = "e2e_sitedelete's Site";
+
 export {
   adminCredentials,
   pwChangeCredentials,
   quickActionsCredentials,
   selfDeleteCredentials,
+  siteDeleteCredentials,
+  siteDeleteSiteName,
   viewerCredentials,
 };

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { BaseSiteSchema, EditSiteSchema, SiteSchema } from '@/data/site';
+import { BaseSiteSchema, DeleteSiteSchema, EditSiteSchema, SiteSchema } from '@/data/site';
 
 describe('site schemas', () => {
   test('parses valid site payloads', () => {
@@ -33,5 +33,25 @@ describe('site schemas', () => {
     expect(() => BaseSiteSchema.parse({ name: '' })).toThrow();
     expect(() => EditSiteSchema.parse({ name: 'HQ', etag: 2 })).toThrow();
     expect(() => SiteSchema.parse({ name: 'HQ' })).toThrow();
+  });
+
+  test('requires the site name, username and password to delete a site', () => {
+    expect(
+      DeleteSiteSchema.parse({
+        siteName: 'HQ',
+        username: 'maria',
+        password: 'secret',
+      }),
+    ).toEqual({ siteName: 'HQ', username: 'maria', password: 'secret' });
+
+    expect(() =>
+      DeleteSiteSchema.parse({ username: 'maria', password: 'secret' }),
+    ).toThrow();
+    expect(() =>
+      DeleteSiteSchema.parse({ siteName: 'HQ', password: 'secret' }),
+    ).toThrow();
+    expect(() =>
+      DeleteSiteSchema.parse({ siteName: 'HQ', username: 'maria' }),
+    ).toThrow();
   });
 });

@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { BadRequestError } from '@/api/errors/apiErrors';
 import { useAuthContext } from '@/features/auth/contexts';
 import useClearSession from '@/features/auth/hooks/useClearSession';
-import DeleteAccountSection from '@/features/userSettings/delete/DeleteAccountSection';
+import DeleteAccountAction from '@/features/userSettings/delete/DeleteAccountAction';
 import useDeleteOwnAccount from '@/features/userSettings/delete/hooks/useDeleteOwnAccount';
 import { FailResult, SuccessResult } from '@/lib';
 
@@ -39,19 +39,11 @@ vi.mock('@/features/userSettings/delete/hooks/useDeleteOwnAccount', () => ({
   default: vi.fn(),
 }));
 
-function renderSection() {
-  return render(<DeleteAccountSection />);
+function renderAction() {
+  return render(<DeleteAccountAction />);
 }
 
 async function openConfirmation() {
-  const dangerZoneTrigger = screen.getByRole('button', {
-    name: /Danger Zone/,
-  });
-
-  if (dangerZoneTrigger.getAttribute('aria-expanded') === 'false') {
-    await userEvent.click(dangerZoneTrigger);
-  }
-
   await userEvent.click(
     screen.getByRole('button', { name: 'Delete my account' }),
   );
@@ -59,7 +51,7 @@ async function openConfirmation() {
   return screen.getByRole('alertdialog');
 }
 
-describe('DeleteAccountSection', () => {
+describe('DeleteAccountAction', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -73,55 +65,44 @@ describe('DeleteAccountSection', () => {
     });
   });
 
-  test('keeps the deletion action collapsed until it is asked for', async () => {
-    renderSection();
-
-    expect(screen.getByRole('button', { name: /Danger Zone/ })).toHaveAttribute(
-      'aria-expanded',
-      'false',
-    );
-    expect(
-      screen.queryByRole('button', { name: 'Delete my account' }),
-    ).not.toBeInTheDocument();
-
-    await userEvent.click(screen.getByRole('button', { name: /Danger Zone/ }));
+  test('offers the action with only the permanence warning', () => {
+    renderAction();
 
     expect(
       screen.getByRole('button', { name: 'Delete my account' }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText('This permanently deletes your account.'),
+      screen.getByText('This permanently deletes your account and cannot be undone.'),
     ).toBeInTheDocument();
   });
 
-  test('requires the username and password before the confirmation is accepted', async () => {
-    renderSection();
+  test('enables the confirmation only once the username and password are typed', async () => {
+    renderAction();
 
-    const dialog = await openConfirmation();
-    const confirmButton = screen.getByRole('button', {
-      name: 'Delete Account',
-    });
+    await openConfirmation();
+
+    const confirmButton = screen.getByRole('button', { name: 'Delete Account' });
 
     expect(confirmButton).toBeDisabled();
 
     await userEvent.type(screen.getByLabelText('Username'), 'maria');
+
+    expect(confirmButton).toBeDisabled();
+
     await userEvent.type(screen.getByLabelText('Your password'), 'secret');
 
     expect(confirmButton).toBeEnabled();
-    expect(dialog).toBeInTheDocument();
   });
 
   test('deletes the account, clears the session and returns to the login page', async () => {
     deleteOwnAccountMock.mockResolvedValue(new SuccessResult(undefined));
 
-    renderSection();
+    renderAction();
 
     await openConfirmation();
     await userEvent.type(screen.getByLabelText('Username'), 'maria');
     await userEvent.type(screen.getByLabelText('Your password'), 'secret');
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Delete Account' }),
-    );
+    await userEvent.click(screen.getByRole('button', { name: 'Delete Account' }));
 
     expect(deleteOwnAccountMock).toHaveBeenCalledWith({
       username: 'maria',
@@ -139,14 +120,12 @@ describe('DeleteAccountSection', () => {
       new FailResult(new BadRequestError('The password is incorrect.')),
     );
 
-    renderSection();
+    renderAction();
 
     const dialog = await openConfirmation();
     await userEvent.type(screen.getByLabelText('Username'), 'maria');
     await userEvent.type(screen.getByLabelText('Your password'), 'wrong');
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Delete Account' }),
-    );
+    await userEvent.click(screen.getByRole('button', { name: 'Delete Account' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'The password is incorrect.',
@@ -161,14 +140,12 @@ describe('DeleteAccountSection', () => {
       new FailResult(new BadRequestError('The password is incorrect.')),
     );
 
-    renderSection();
+    renderAction();
 
     await openConfirmation();
     await userEvent.type(screen.getByLabelText('Username'), 'maria');
     await userEvent.type(screen.getByLabelText('Your password'), 'wrong');
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Delete Account' }),
-    );
+    await userEvent.click(screen.getByRole('button', { name: 'Delete Account' }));
 
     expect(await screen.findByRole('alert')).toBeInTheDocument();
 

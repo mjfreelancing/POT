@@ -1,8 +1,8 @@
 import type { Identity } from '@/data';
-import type { EditSite } from '@/data/site';
+import type { DeleteSite, EditSite } from '@/data/site';
 import type { FailResultBase, Result } from '@/lib';
 
-import { usePutWithId } from './useApi';
+import { useDelete, usePutWithId } from './useApi';
 
 const useApiUpdateSite = () => {
   const mutation = usePutWithId<Identity, EditSite>(
@@ -14,4 +14,13 @@ const useApiUpdateSite = () => {
   };
 };
 
-export { useApiUpdateSite };
+const useApiDeleteSite = () => {
+  const mutation = useDelete<void, DeleteSite>('/sites/current');
+
+  return {
+    ...mutation,
+    data: mutation.data as Result<void, FailResultBase>,
+  };
+};
+
+export { useApiDeleteSite, useApiUpdateSite };

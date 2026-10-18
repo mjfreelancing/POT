@@ -4,7 +4,7 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-import { useApiUpdateSite } from '@/api/hooks/useSite';
+import { useApiUpdateSite } from '@/api/hooks';
 import { SuccessToast } from '@/components/feedback/toast';
 import { Button } from '@/components/ui/button';
 import {

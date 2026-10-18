@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { useErrorContext } from '@/contexts';
 import { useAuthContext } from '@/features/auth/contexts';
 import useClearSession from '@/features/auth/hooks/useClearSession';
+import useDeleteCurrentSite from '@/features/userSettings/delete/hooks/useDeleteCurrentSite';
 import useDeleteOwnAccount from '@/features/userSettings/delete/hooks/useDeleteOwnAccount';
 import { AccountSettingsSheet } from '@/features/userSettings/POTSettingsSheet';
 import { usePermissions } from '@/hooks';
@@ -30,6 +31,10 @@ vi.mock('@/features/userSettings/delete/hooks/useDeleteOwnAccount', () => ({
   default: vi.fn(),
 }));
 
+vi.mock('@/features/userSettings/delete/hooks/useDeleteCurrentSite', () => ({
+  default: vi.fn(),
+}));
+
 function renderSheet() {
   return render(
     <MemoryRouter>
@@ -40,6 +45,7 @@ function renderSheet() {
 
 describe('POTSettingsSheet', () => {
   const setErrorMock = vi.fn();
+  const deleteCurrentSiteMock = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -55,12 +61,15 @@ describe('POTSettingsSheet', () => {
     });
 
     vi.mocked(useAuthContext).mockReturnValue({
-      userInfo: { username: 'maria' },
+      userInfo: { username: 'maria', site: { name: 'Site A' } },
     } as ReturnType<typeof useAuthContext>);
 
     vi.mocked(useClearSession).mockReturnValue(vi.fn());
     vi.mocked(useDeleteOwnAccount).mockReturnValue({
       deleteOwnAccount: vi.fn(),
+    });
+    vi.mocked(useDeleteCurrentSite).mockReturnValue({
+      deleteCurrentSite: deleteCurrentSiteMock,
     });
   });
 
@@ -99,6 +108,37 @@ describe('POTSettingsSheet', () => {
     expect(
       screen.getByRole('button', { name: /Danger Zone/ }),
     ).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  test('offers the site deletion action to a site administrator', async () => {
+    renderSheet();
+
+    await userEvent.click(screen.getByRole('button', { name: /Danger Zone/ }));
+
+    expect(
+      screen.getByRole('button', { name: 'Delete my account' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Delete this site' }),
+    ).toBeInTheDocument();
+  });
+
+  test('omits the site deletion action without the site management permission', async () => {
+    vi.mocked(usePermissions).mockReturnValue({
+      hasPermission: (permission: string) => permission !== 'site:manage',
+      hasAnyPermission: () => true,
+    } as unknown as ReturnType<typeof usePermissions>);
+
+    renderSheet();
+
+    await userEvent.click(screen.getByRole('button', { name: /Danger Zone/ }));
+
+    expect(
+      screen.getByRole('button', { name: 'Delete my account' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Delete this site' }),
+    ).not.toBeInTheDocument();
   });
 
   test('does not prompt for unsaved changes when the danger zone is opened', async () => {

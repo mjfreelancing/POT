@@ -15,8 +15,15 @@ const EditSiteSchema = BaseSiteSchema.extend({
   ...EtagSchema.shape,
 });
 
+const DeleteSiteSchema = z.object({
+  siteName: z.string(),
+  username: z.string(),
+  password: z.string(),
+});
+
 type Site = z.infer<typeof SiteSchema>;
 type EditSite = z.infer<typeof EditSiteSchema>;
+type DeleteSite = z.infer<typeof DeleteSiteSchema>;
 
-export { BaseSiteSchema, EditSiteSchema, SiteSchema };
-export type { EditSite, Site };
+export { BaseSiteSchema, DeleteSiteSchema, EditSiteSchema, SiteSchema };
+export type { DeleteSite, EditSite, Site };

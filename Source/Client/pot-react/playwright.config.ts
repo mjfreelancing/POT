@@ -148,12 +148,14 @@ export default defineConfig({
     //
     // accountDeletion.test.ts is CHROMIUM-ONLY for the same reason: it deletes
     // the seeded e2e_selfdelete account, so a concurrent project would find it
-    // already gone.
+    // already gone. siteDeletion.test.ts deletes the seeded e2e_sitedelete site
+    // for the same reason.
     {
       name: 'edge',
       testIgnore: [
         '**/settings/userSettings.test.ts',
         '**/settings/accountDeletion.test.ts',
+        '**/settings/siteDeletion.test.ts',
         '**/dashboard/quickActions.test.ts',
       ],
       use: {
@@ -176,6 +178,7 @@ export default defineConfig({
         // whole-site renew/accrue suite on its own isolated user/site).
         '**/settings/userSettings.test.ts',
         '**/settings/accountDeletion.test.ts',
+        '**/settings/siteDeletion.test.ts',
         '**/filters/filters.test.ts',
         '**/rendering/shortLandscapeScroll.test.ts',
         '**/dashboard/quickActions.test.ts',
@@ -189,6 +192,7 @@ export default defineConfig({
       testIgnore: [
         '**/settings/userSettings.test.ts',
         '**/settings/accountDeletion.test.ts',
+        '**/settings/siteDeletion.test.ts',
         '**/filters/filters.test.ts',
         '**/rendering/shortLandscapeScroll.test.ts',
         '**/dashboard/quickActions.test.ts',
@@ -199,3 +203,4 @@ export default defineConfig({
     },
   ],
 });
+
