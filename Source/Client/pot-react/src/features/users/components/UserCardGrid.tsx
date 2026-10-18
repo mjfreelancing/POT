@@ -8,6 +8,7 @@ type UserCardGridProps = {
   onChangeRole: (user: SiteUser) => void;
   onToggleStatus?: (user: SiteUser) => void;
   onResendInvitation?: (user: SiteUser) => void;
+  onDeleteUser?: (user: SiteUser) => void;
   currentUsername?: string;
 };
 
@@ -20,6 +21,7 @@ function UserCardGrid({
   onChangeRole,
   onToggleStatus,
   onResendInvitation,
+  onDeleteUser,
   currentUsername,
 }: UserCardGridProps) {
   return (
@@ -34,6 +36,7 @@ function UserCardGrid({
                 onChangeRole={onChangeRole}
                 onToggleStatus={onToggleStatus}
                 onResendInvitation={onResendInvitation}
+                onDeleteUser={onDeleteUser}
                 isCurrentUser={user.username === currentUsername}
               />
             ))}

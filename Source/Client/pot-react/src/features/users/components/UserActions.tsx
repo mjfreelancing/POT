@@ -4,6 +4,7 @@ import {
   Mail,
   MoreHorizontal,
   RotateCcw,
+  Trash2,
   UserCheck,
   UserX,
 } from 'lucide-react';
@@ -17,6 +18,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { logger, useCacheInvalidation } from '@/concerns';
@@ -28,9 +30,10 @@ import { usePermissions } from '@/hooks';
 type UserActionsProps = {
   user: SiteUser;
   onChangeRole: (user: SiteUser) => void;
+  onDeleteUser?: (user: SiteUser) => void;
 };
 
-function UserActions({ user, onChangeRole }: UserActionsProps) {
+function UserActions({ user, onChangeRole, onDeleteUser }: UserActionsProps) {
   const queryClient = useQueryClient();
   const invalidateCache = useCacheInvalidation(queryClient);
   const resendInvitationMutation = useResendInvitation();
@@ -152,6 +155,19 @@ function UserActions({ user, onChangeRole }: UserActionsProps) {
               <Mail className="mr-2 h-4 w-4" />
               Resend Invitation
             </DropdownMenuItem>
+          )}
+
+          {onDeleteUser && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => onDeleteUser(user)}
+                className="text-destructive-high-contrast"
+              >
+                <Trash2 className="mr-2 h-4 w-4 text-destructive-high-contrast" />
+                Delete User…
+              </DropdownMenuItem>
+            </>
           )}
         </DropdownMenuContent>
       </DropdownMenu>

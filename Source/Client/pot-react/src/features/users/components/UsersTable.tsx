@@ -15,9 +15,10 @@ import { UserStatusBadge } from './UserStatusBadge';
 type UsersTableProps = {
   users: SiteUser[];
   onChangeRole: (user: SiteUser) => void;
+  onDeleteUser?: (user: SiteUser) => void;
 };
 
-function UsersTable({ users, onChangeRole }: UsersTableProps) {
+function UsersTable({ users, onChangeRole, onDeleteUser }: UsersTableProps) {
   const columns: AppColumnDef<SiteUser>[] = [
     {
       id: 'username',
@@ -128,7 +129,11 @@ function UsersTable({ users, onChangeRole }: UsersTableProps) {
       },
     },
     createActionsColumn<SiteUser>(user => (
-      <UserActions user={user} onChangeRole={onChangeRole} />
+      <UserActions
+        user={user}
+        onChangeRole={onChangeRole}
+        onDeleteUser={onDeleteUser}
+      />
     )),
   ];
 

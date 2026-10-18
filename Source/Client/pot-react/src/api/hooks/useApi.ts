@@ -22,7 +22,8 @@ type MutationDataWithId<TData> = {
   signal?: AbortSignal;
 };
 
-type DeleteMutationData = {
+type DeleteMutationData<TData = void> = {
+  data?: TData;
   signal?: AbortSignal;
 };
 
@@ -70,12 +71,17 @@ const performOperation = async <TResponse>(
  * mutation.mutate({ id: '123' });
  * ```
  */
-const useDelete = <TResponse>(url: string) => {
+const useDelete = <TResponse, TData = void>(url: string) => {
   return useMutation({
     mutationFn: async ({
+      data,
       signal,
-    }: DeleteMutationData): Promise<Result<TResponse, FailResultBase>> => {
-      return performOperation(() => axios.delete<TResponse>(url, { signal }));
+    }: DeleteMutationData<TData>): Promise<
+      Result<TResponse, FailResultBase>
+    > => {
+      return performOperation(() =>
+        axios.delete<TResponse>(url, { data, signal }),
+      );
     },
   });
 };

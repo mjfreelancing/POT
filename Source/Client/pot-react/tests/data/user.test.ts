@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest';
 import {
   compareUserDisplayName,
   CreateUserSchema,
+  DeleteUserSchema,
   EditUserSchema,
   UserSchema,
 } from '@/data';
@@ -51,6 +52,14 @@ describe('user schemas and comparator', () => {
     ).toThrow();
 
     expect(() => UserSchema.parse({ rowId: 'user-1', etag: 1n })).toThrow();
+  });
+
+  test('requires a password to delete a user', () => {
+    expect(DeleteUserSchema.parse({ password: 'secret' })).toEqual({
+      password: 'secret',
+    });
+
+    expect(() => DeleteUserSchema.parse({})).toThrow();
   });
 
   test('compareUserDisplayName sorts by display name', () => {

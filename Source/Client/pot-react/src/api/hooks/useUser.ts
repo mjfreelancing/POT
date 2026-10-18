@@ -1,5 +1,5 @@
 import type { Identity } from '@/data';
-import type { CreateUser, EditUser, User } from '@/data/user';
+import type { CreateUser, DeleteUser, EditUser, User } from '@/data/user';
 import { compareUserDisplayName } from '@/data/user';
 import { type FailResultBase, type Result, SuccessResult } from '@/lib';
 
@@ -53,7 +53,7 @@ const useApiUpdateUser = () => {
 };
 
 const useApiDeleteUser = (id: string) => {
-  const mutation = useDelete<void>(`/users/${id}`);
+  const mutation = useDelete<void, DeleteUser>(`/users/${id}`);
 
   return {
     ...mutation,

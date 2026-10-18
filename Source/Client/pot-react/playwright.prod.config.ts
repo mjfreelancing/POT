@@ -31,6 +31,18 @@ export default defineConfig({
       command:
         'dotnet run --no-launch-profile -c Release --project Pot.AspNetCore/Pot.AspNetCore.csproj -- --urls http://127.0.0.1:5242 --Cors:AllowedOrigins=http://127.0.0.1:5175,http://localhost:5175 --Jwt:Issuer=pot-e2e --Jwt:Audience=pot-e2e-client --Jwt:SecretKey=F4B58D0C1Z2B3E4D5F6A7B8C9D0E1F2A3B4C536E7F8A194A0EF29B0C1D2E3F4A5B6C7D8E9F0A1B2CWD4E5F6A7B8C9D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B6C --Database:Host=localhost --Database:Port=55432 --Database:Name=pot_e2e --Database:Username=test_user --Database:Password=test_pass --Database:SSLMode=disable --RateLimiting:Anonymous:PermitLimit=200 --RateLimiting:Anonymous:WindowSeconds=10 --RateLimiting:Authenticated:PermitLimit=500 --RateLimiting:Authenticated:WindowSeconds=30 --Authentication:Cookie:SecureOnly=false --PlatformAdmin:UserIds=58d1a6b2-bf25-40c1-b3d6-656ccf4a68b5 > e2e-server.log 2>&1',
       cwd: '../../Server',
+      // Startup configuration validation requires the SMTP section to be bound, so the harness
+      // supplies placeholders. Nothing listens on that host and the email dispatch loop tolerates
+      // send failures, so no mail is delivered.
+      env: {
+        Smtp__Host: '127.0.0.1',
+        Smtp__Port: '1025',
+        Smtp__RequireTLS: 'false',
+        Smtp__Authentication__Username: 'e2e',
+        Smtp__Authentication__Password: 'e2e',
+        Smtp__From__Name: 'POT E2E',
+        Smtp__From__Address: 'e2e@local.test',
+      },
       port: 5242,
       reuseExistingServer: false,
       timeout: 180000,

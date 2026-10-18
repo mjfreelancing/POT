@@ -22,6 +22,7 @@ describe('UserMobileCard', () => {
   const onChangeRoleMock = vi.fn();
   const onToggleStatusMock = vi.fn();
   const onResendInvitationMock = vi.fn();
+  const onDeleteUserMock = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -129,5 +130,44 @@ describe('UserMobileCard', () => {
     );
 
     expect(onResendInvitationMock).toHaveBeenCalledWith(user);
+  });
+
+  test('offers Delete User as the last action with destructive styling', async () => {
+    const user = createSiteUser();
+
+    render(
+      <UserMobileCard
+        user={user}
+        onChangeRole={onChangeRoleMock}
+        onDeleteUser={onDeleteUserMock}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Open menu' }));
+
+    const items = screen.getAllByRole('menuitem');
+    const deleteItem = screen.getByRole('menuitem', { name: 'Delete User…' });
+
+    expect(items[items.length - 1]).toBe(deleteItem);
+    expect(deleteItem).toHaveClass('text-destructive-high-contrast');
+  });
+
+  test('reports the user to delete', async () => {
+    const user = createSiteUser();
+
+    render(
+      <UserMobileCard
+        user={user}
+        onChangeRole={onChangeRoleMock}
+        onDeleteUser={onDeleteUserMock}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Open menu' }));
+    await userEvent.click(
+      screen.getByRole('menuitem', { name: 'Delete User…' }),
+    );
+
+    expect(onDeleteUserMock).toHaveBeenCalledWith(user);
   });
 });

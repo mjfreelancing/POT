@@ -23,13 +23,18 @@ const EditUserSchema = BaseUserSchema.extend({
   ...EtagSchema.shape,
 });
 
+const DeleteUserSchema = z.object({
+  password: z.string(),
+});
+
 type User = z.infer<typeof UserSchema>;
 type CreateUser = z.infer<typeof CreateUserSchema>;
 type EditUser = z.infer<typeof EditUserSchema>;
+type DeleteUser = z.infer<typeof DeleteUserSchema>;
 
 const compareUserDisplayName = (lhs: User, rhs: User): number => {
   return lhs.displayName.localeCompare(rhs.displayName);
 };
 
-export { compareUserDisplayName, CreateUserSchema, EditUserSchema, UserSchema };
-export type { CreateUser, EditUser, User };
+export { compareUserDisplayName, CreateUserSchema, DeleteUserSchema, EditUserSchema, UserSchema };
+export type { CreateUser, DeleteUser, EditUser, User };

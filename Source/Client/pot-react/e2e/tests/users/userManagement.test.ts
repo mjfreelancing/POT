@@ -6,10 +6,11 @@ import { authHeaders, createE2eRequestContext } from '../../helpers/api';
 // Covers the Users page administration journeys that call the user-mutation routes:
 // POST /api/users/invite (setup), POST /api/users/{id}/resend-invite and
 // PUT /api/users/{id}/status. These are the journeys the server-side site binding and the
-// protected-identity rules must not break, and the list a row-level delete action will extend.
+// protected-identity rules must not break. The row-level delete action is covered separately
+// by userDeletion.test.ts.
 //
-// Fixture-managed: each run invites its own target user and cannot delete it (there is no
-// delete-user route), so the shared Users list gains rows over time. Assertions are therefore
+// Fixture-managed: each run invites its own target user and leaves it in place (this suite does
+// not delete it), so the shared Users list gains rows over time. Assertions are therefore
 // scoped to the run's own row by its unique email and never count or order the list.
 //
 // Desktop-only: the row action menu belongs to the users table; the mobile projects render a

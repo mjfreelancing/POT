@@ -15,6 +15,7 @@ import { useCacheInvalidation } from '@/concerns';
 import { useErrorContext } from '@/contexts';
 import type { SiteUser } from '@/data/siteUser';
 import { useAuthContext } from '@/features/auth/contexts';
+import useDeleteUser from '@/features/users/delete/hooks/useDeleteUser';
 import UsersPage from '@/features/users/UsersPage';
 import { useIsMobile, usePermissions } from '@/hooks';
 import { useIsShortViewport } from '@/hooks/use-short-viewport';
@@ -93,14 +94,22 @@ vi.mock('@/features/users/components', () => ({
   UsersTable: ({
     users,
     onChangeRole,
+    onDeleteUser,
   }: {
     users: SiteUser[];
     onChangeRole: (user: SiteUser) => void;
+    onDeleteUser?: (user: SiteUser) => void;
   }) => (
     <div>
       <div>{`table:${users.map(user => user.username).join('|')}`}</div>
       <button type="button" onClick={() => onChangeRole(users[0])}>
         Change role for first user
+      </button>
+      <button
+        type="button"
+        onClick={() => onDeleteUser?.(users[0])}
+      >
+        Delete first user
       </button>
     </div>
   ),
@@ -109,12 +118,14 @@ vi.mock('@/features/users/components', () => ({
     onChangeRole,
     onToggleStatus,
     onResendInvitation,
+    onDeleteUser,
     currentUsername,
   }: {
     users: SiteUser[];
     onChangeRole: (user: SiteUser) => void;
     onToggleStatus?: (user: SiteUser) => Promise<void> | void;
     onResendInvitation?: (user: SiteUser) => Promise<void> | void;
+    onDeleteUser?: (user: SiteUser) => void;
     currentUsername?: string;
   }) => (
     <div>
@@ -129,6 +140,9 @@ vi.mock('@/features/users/components', () => ({
       <button type="button" onClick={() => onResendInvitation?.(users[0])}>
         Resend first invitation
       </button>
+      <button type="button" onClick={() => onDeleteUser?.(users[0])}>
+        Delete first user
+      </button>
     </div>
   ),
   UserRoleDialog: ({
@@ -138,6 +152,44 @@ vi.mock('@/features/users/components', () => ({
     user: SiteUser | null;
     isOpen: boolean;
   }) => (isOpen ? <div>{`role-dialog:${user?.username}`}</div> : null),
+}));
+
+vi.mock('@/features/users/delete/hooks/useDeleteUser', () => ({
+  default: vi.fn(),
+}));
+
+vi.mock('@/components/dialog', () => ({
+  DestructiveConfirmDialog: ({
+    open,
+    title,
+    busy,
+    onConfirm,
+    onCancel,
+  }: {
+    open: boolean;
+    title: string;
+    busy?: boolean;
+    onConfirm: (values: {
+      fields: Record<string, string>;
+      password: string;
+    }) => void;
+    onCancel: () => void;
+  }) =>
+    open ? (
+      <div>
+        <div>{`delete-dialog:${title}`}</div>
+        <div>{`delete-dialog-busy:${String(busy)}`}</div>
+        <button
+          type="button"
+          onClick={() => onConfirm({ fields: {}, password: 'secret' })}
+        >
+          Confirm delete
+        </button>
+        <button type="button" onClick={onCancel}>
+          Cancel delete
+        </button>
+      </div>
+    ) : null,
 }));
 
 vi.mock('@/components/feedback/toast', () => ({
@@ -162,6 +214,7 @@ describe('UsersPage', () => {
   const setErrorMock = vi.fn();
   const updateStatusMutateAsyncMock = vi.fn();
   const resendInvitationMutateAsyncMock = vi.fn();
+  const deleteUserMock = vi.fn();
 
   const users: SiteUser[] = [
     createSiteUser(),
@@ -189,6 +242,11 @@ describe('UsersPage', () => {
     resendInvitationMutateAsyncMock.mockResolvedValue(
       new SuccessResult(undefined),
     );
+    deleteUserMock.mockResolvedValue(new SuccessResult(undefined));
+
+    vi.mocked(useDeleteUser).mockReturnValue({
+      deleteUser: deleteUserMock,
+    });
 
     vi.mocked(useUpdateUserStatus).mockReturnValue({
       mutateAsync: updateStatusMutateAsyncMock,
@@ -319,6 +377,69 @@ describe('UsersPage', () => {
       title: 'Unexpected Error',
       description: 'Status update failed',
     });
+  });
+
+  test('opens the delete dialog for the requested user', async () => {
+    renderUsersPage();
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Delete first user' }),
+    );
+
+    expect(screen.getByText('delete-dialog:Delete Maria Carter')).toBeInTheDocument();
+    expect(screen.getByText('delete-dialog-busy:false')).toBeInTheDocument();
+    expect(deleteUserMock).not.toHaveBeenCalled();
+  });
+
+  test('deletes the user with the entered password and closes the dialog', async () => {
+    renderUsersPage();
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Delete first user' }),
+    );
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Confirm delete' }),
+    );
+
+    expect(deleteUserMock).toHaveBeenCalledWith('secret');
+    expect(toastMock).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText('delete-dialog:Delete Maria Carter')).not.toBeInTheDocument();
+  });
+
+  test('keeps the delete dialog open and maps a refusal to the page error context', async () => {
+    deleteUserMock.mockResolvedValueOnce(
+      new FailResult(new UnexpectedError('The password is incorrect.')),
+    );
+
+    renderUsersPage();
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Delete first user' }),
+    );
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Confirm delete' }),
+    );
+
+    expect(setErrorMock).toHaveBeenCalledWith({
+      title: 'Unexpected Error',
+      description: 'The password is incorrect.',
+    });
+    expect(toastMock).not.toHaveBeenCalled();
+    expect(screen.getByText('delete-dialog:Delete Maria Carter')).toBeInTheDocument();
+  });
+
+  test('closes the delete dialog without deleting when cancelled', async () => {
+    renderUsersPage();
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Delete first user' }),
+    );
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Cancel delete' }),
+    );
+
+    expect(deleteUserMock).not.toHaveBeenCalled();
+    expect(screen.queryByText('delete-dialog:Delete Maria Carter')).not.toBeInTheDocument();
   });
 
   test('renders and dismisses page error sheet from error context', async () => {

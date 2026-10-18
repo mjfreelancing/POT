@@ -2,6 +2,7 @@ import {
   Mail,
   MoreHorizontal,
   RotateCcw,
+  Trash2,
   UserCheck,
   UserX,
 } from 'lucide-react';
@@ -13,6 +14,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import type { SiteUser } from '@/data/siteUser';
@@ -26,6 +28,7 @@ type UserMobileCardProps = {
   onChangeRole: (user: SiteUser) => void;
   onToggleStatus?: (user: SiteUser) => void;
   onResendInvitation?: (user: SiteUser) => void;
+  onDeleteUser?: (user: SiteUser) => void;
   isCurrentUser?: boolean;
 };
 
@@ -38,6 +41,7 @@ function UserMobileCard({
   onChangeRole,
   onToggleStatus,
   onResendInvitation,
+  onDeleteUser,
   isCurrentUser = false,
 }: UserMobileCardProps) {
   const { displayName, username, email, roles, status, lastLoggedInUtc } = user;
@@ -167,6 +171,19 @@ function UserMobileCard({
                             <Mail className="mr-2 h-4 w-4" />
                             Resend Invitation
                           </DropdownMenuItem>
+                        )}
+
+                        {onDeleteUser && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => onDeleteUser(user)}
+                              className="text-destructive-high-contrast"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4 text-destructive-high-contrast" />
+                              Delete User…
+                            </DropdownMenuItem>
+                          </>
                         )}
                       </DropdownMenuContent>
                     </DropdownMenu>

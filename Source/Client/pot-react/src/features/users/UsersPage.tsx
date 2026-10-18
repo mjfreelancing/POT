@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { CheckCircle, Mail, UserPlus } from 'lucide-react';
+import { CheckCircle, Mail, Trash2, UserPlus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router';
 import { toast } from 'sonner';
@@ -9,6 +9,7 @@ import {
   useUpdateUserStatus,
   useUsers,
 } from '@/api/hooks';
+import { DestructiveConfirmDialog } from '@/components/dialog';
 import { ErrorSheet, LoadingOverlay } from '@/components/feedback';
 import { SuccessToast } from '@/components/feedback/toast';
 import { PageHeader, Toolbar } from '@/components/layout';
@@ -23,6 +24,7 @@ import { useIsMobile, usePermissions } from '@/hooks';
 import { useIsShortViewport } from '@/hooks/use-short-viewport';
 
 import { UserCardGrid, UserRoleDialog, UsersTable } from './components';
+import useDeleteUser from './delete/hooks/useDeleteUser';
 
 function UsersPage() {
   const { hasAnyPermission } = usePermissions();
@@ -42,6 +44,8 @@ function UsersPage() {
     : 'flex-1 min-h-0 flex flex-col relative';
   const [userRoleDialogOpen, setUserRoleDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<SiteUser | null>(null);
+  const [userToDelete, setUserToDelete] = useState<SiteUser | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { error, setError } = useErrorContext();
 
   const {
@@ -54,6 +58,7 @@ function UsersPage() {
   const invalidateCache = useCacheInvalidation(queryClient);
   const resendInvitationMutation = useResendInvitation();
   const updateStatusMutation = useUpdateUserStatus();
+  const { deleteUser } = useDeleteUser(userToDelete?.rowId ?? '');
 
   const isLoading = useMemo(
     () => usersLoading || usersFetching,
@@ -133,6 +138,40 @@ function UsersPage() {
     }
   };
 
+  const handleConfirmDelete = async (password: string) => {
+    if (!userToDelete) {
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      const result = await deleteUser(password);
+
+      if (result.success) {
+        toast(
+          <SuccessToast
+            icon={Trash2}
+            title="User Deleted"
+            description={`${userToDelete.username} has been deleted.`}
+          />,
+        );
+
+        setUserToDelete(null);
+      } else {
+        // The dialog stays open so the refusal is read in context.
+        setError({
+          title: result.error.code,
+          description: result.error.description,
+        });
+
+        logger.error('UsersPage', 'Failed to delete user', result.error);
+      }
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   // Handle errors
   useEffect(() => {
     if (usersData) {
@@ -186,10 +225,15 @@ function UsersPage() {
               onChangeRole={handleChangeRole}
               onToggleStatus={handleToggleStatus}
               onResendInvitation={handleResendInvitation}
+              onDeleteUser={setUserToDelete}
               currentUsername={userInfo?.username}
             />
           ) : (
-            <UsersTable users={users} onChangeRole={handleChangeRole} />
+            <UsersTable
+              users={users}
+              onChangeRole={handleChangeRole}
+              onDeleteUser={setUserToDelete}
+            />
           )}
         </div>
       </div>
@@ -206,6 +250,29 @@ function UsersPage() {
         user={selectedUser}
         isOpen={userRoleDialogOpen}
         onClose={() => setUserRoleDialogOpen(false)}
+      />
+
+      <DestructiveConfirmDialog
+        open={userToDelete !== null}
+        title={`Delete ${userToDelete?.displayName ?? 'user'}`}
+        description="This permanently deletes the account and cannot be undone."
+        confirmLabel="Delete User"
+        fields={[
+          {
+            id: 'confirm-user-username',
+            label: 'Username',
+            expectedValue: userToDelete?.username ?? '',
+            placeholder: userToDelete?.username,
+            helperText: 'Type the username of the user being deleted.',
+          },
+        ]}
+        passwordLabel="Your password"
+        passwordHelperText="Enter your own password to confirm."
+        busy={isDeleting}
+        onConfirm={({ password }) => {
+          void handleConfirmDelete(password);
+        }}
+        onCancel={() => setUserToDelete(null)}
       />
 
       {/* The Outlet is used to render nested routes, such as when inviting users */}
