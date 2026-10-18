@@ -5,6 +5,7 @@ import {
   adminCredentials,
   pwChangeCredentials,
   quickActionsCredentials,
+  selfDeleteCredentials,
   viewerCredentials,
 } from '../helpers/secrets';
 
@@ -127,5 +128,10 @@ export const pwChangeTest = createAuthenticatedTest(pwChangeCredentials);
 export const quickActionsTest = createAuthenticatedTest(
   quickActionsCredentials,
 );
+
+// Account-deletion test: authenticated as e2e_selfdelete, a Viewer on the shared
+// E2E site that the suite deletes (see baseline.sql). Chromium-only, because the
+// account is gone for the rest of the run.
+export const selfDeleteTest = createAuthenticatedTest(selfDeleteCredentials);
 
 export { expect };

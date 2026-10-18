@@ -9,6 +9,7 @@ import { ErrorSheet } from '@/components/feedback';
 import { logger, useCacheInvalidation } from '@/concerns';
 import { useAuthContext } from '@/features/auth/contexts';
 import LoginForm from '@/features/auth/LoginForm';
+import { takeSessionNotice } from '@/features/auth/sessionNotice';
 import type { DisplayError } from '@/lib';
 
 const LOGIN_TIMEOUT_MS = 120000;
@@ -17,6 +18,8 @@ function LoginPage() {
   const [authError, setAuthError] = useState<DisplayError | null>(null);
   const [otherError, setOtherError] = useState<DisplayError | null>(null);
   const [approvalMessage, setApprovalMessage] = useState<string | null>(null);
+  // A brief message supplied by whatever ended the previous session, such as the account-deletion block.
+  const [sessionNotice] = useState(takeSessionNotice);
   const navigate = useNavigate();
   const loginMutation = useLogin();
   const { login } = useAuthContext();
@@ -85,6 +88,14 @@ function LoginPage() {
   return (
     <div className="flex min-h-screen w-full items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-sm">
+        {sessionNotice && (
+          <div
+            role="status"
+            className="mb-4 rounded-lg border border-border bg-muted/50 p-4 text-sm text-foreground"
+          >
+            {sessionNotice}
+          </div>
+        )}
         <LoginForm
           onSubmit={handleLogin}
           error={authError ? authError.description : undefined}

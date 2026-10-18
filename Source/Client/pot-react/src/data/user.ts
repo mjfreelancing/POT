@@ -27,14 +27,33 @@ const DeleteUserSchema = z.object({
   password: z.string(),
 });
 
+const DeleteOwnAccountSchema = z.object({
+  username: z.string(),
+  password: z.string(),
+});
+
 type User = z.infer<typeof UserSchema>;
 type CreateUser = z.infer<typeof CreateUserSchema>;
 type EditUser = z.infer<typeof EditUserSchema>;
 type DeleteUser = z.infer<typeof DeleteUserSchema>;
+type DeleteOwnAccount = z.infer<typeof DeleteOwnAccountSchema>;
 
 const compareUserDisplayName = (lhs: User, rhs: User): number => {
   return lhs.displayName.localeCompare(rhs.displayName);
 };
 
-export { compareUserDisplayName, CreateUserSchema, DeleteUserSchema, EditUserSchema, UserSchema };
-export type { CreateUser, DeleteUser, EditUser, User };
+export {
+  compareUserDisplayName,
+  CreateUserSchema,
+  DeleteOwnAccountSchema,
+  DeleteUserSchema,
+  EditUserSchema,
+  UserSchema,
+};
+export type {
+  CreateUser,
+  DeleteOwnAccount,
+  DeleteUser,
+  EditUser,
+  User,
+};

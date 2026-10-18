@@ -162,12 +162,14 @@ vi.mock('@/components/dialog', () => ({
   DestructiveConfirmDialog: ({
     open,
     title,
+    error,
     busy,
     onConfirm,
     onCancel,
   }: {
     open: boolean;
     title: string;
+    error?: string;
     busy?: boolean;
     onConfirm: (values: {
       fields: Record<string, string>;
@@ -179,6 +181,7 @@ vi.mock('@/components/dialog', () => ({
       <div>
         <div>{`delete-dialog:${title}`}</div>
         <div>{`delete-dialog-busy:${String(busy)}`}</div>
+        {error && <div role="alert">{error}</div>}
         <button
           type="button"
           onClick={() => onConfirm({ fields: {}, password: 'secret' })}
@@ -406,7 +409,7 @@ describe('UsersPage', () => {
     expect(screen.queryByText('delete-dialog:Delete Maria Carter')).not.toBeInTheDocument();
   });
 
-  test('keeps the delete dialog open and maps a refusal to the page error context', async () => {
+  test('keeps the delete dialog open and shows the refusal in it', async () => {
     deleteUserMock.mockResolvedValueOnce(
       new FailResult(new UnexpectedError('The password is incorrect.')),
     );
@@ -420,12 +423,16 @@ describe('UsersPage', () => {
       screen.getByRole('button', { name: 'Confirm delete' }),
     );
 
-    expect(setErrorMock).toHaveBeenCalledWith({
-      title: 'Unexpected Error',
-      description: 'The password is incorrect.',
-    });
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'The password is incorrect.',
+    );
+    expect(setErrorMock).not.toHaveBeenCalledWith(
+      expect.objectContaining({ description: 'The password is incorrect.' }),
+    );
     expect(toastMock).not.toHaveBeenCalled();
-    expect(screen.getByText('delete-dialog:Delete Maria Carter')).toBeInTheDocument();
+    expect(
+      screen.getByText('delete-dialog:Delete Maria Carter'),
+    ).toBeInTheDocument();
   });
 
   test('closes the delete dialog without deleting when cancelled', async () => {

@@ -145,10 +145,15 @@ export default defineConfig({
     // on its own isolated site, and the dashboard renew/accrue actions operate
     // over the whole site; running the same file on chromium + edge against one
     // shared DB would let the two instances sweep each other's rows mid-test.
+    //
+    // accountDeletion.test.ts is CHROMIUM-ONLY for the same reason: it deletes
+    // the seeded e2e_selfdelete account, so a concurrent project would find it
+    // already gone.
     {
       name: 'edge',
       testIgnore: [
         '**/settings/userSettings.test.ts',
+        '**/settings/accountDeletion.test.ts',
         '**/dashboard/quickActions.test.ts',
       ],
       use: {
@@ -170,6 +175,7 @@ export default defineConfig({
         // phone projects. quickActions.test.ts is chromium-only (desktop
         // whole-site renew/accrue suite on its own isolated user/site).
         '**/settings/userSettings.test.ts',
+        '**/settings/accountDeletion.test.ts',
         '**/filters/filters.test.ts',
         '**/rendering/shortLandscapeScroll.test.ts',
         '**/dashboard/quickActions.test.ts',
@@ -182,6 +188,7 @@ export default defineConfig({
       name: 'mobile-safari',
       testIgnore: [
         '**/settings/userSettings.test.ts',
+        '**/settings/accountDeletion.test.ts',
         '**/filters/filters.test.ts',
         '**/rendering/shortLandscapeScroll.test.ts',
         '**/dashboard/quickActions.test.ts',

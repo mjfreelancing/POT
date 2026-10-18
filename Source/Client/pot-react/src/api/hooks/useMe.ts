@@ -1,8 +1,10 @@
-import type { User } from '@/data/user';
+import type { DeleteOwnAccount, User } from '@/data/user';
 import { useAccessToken } from '@/features/auth/contexts';
 import type { FailResultBase, Result } from '@/lib';
 
-import { useGet } from './useApi';
+import { useDelete, useGet } from './useApi';
+
+export { useApiDeleteMe };
 
 export function useMe() {
   // Uses AccessTokenContext directly to avoid circular dependency with AuthContext
@@ -33,3 +35,13 @@ export function useMe() {
     data: query.data as Result<User, FailResultBase>,
   };
 }
+
+function useApiDeleteMe() {
+  const mutation = useDelete<void, DeleteOwnAccount>('/me');
+
+  return {
+    ...mutation,
+    data: mutation.data as Result<void, FailResultBase>,
+  };
+}
+

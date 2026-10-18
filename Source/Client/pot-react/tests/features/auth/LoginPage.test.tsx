@@ -9,6 +9,7 @@ import { useLogin } from '@/api/hooks/useAuth';
 import { useCacheInvalidation } from '@/concerns';
 import { useAuthContext } from '@/features/auth/contexts';
 import LoginPage from '@/features/auth/LoginPage';
+import { setSessionNotice } from '@/features/auth/sessionNotice';
 import { FailResult, SuccessResult } from '@/lib';
 
 const navigateMock = vi.fn();
@@ -86,6 +87,22 @@ describe('LoginPage', () => {
     expect(screen.getByLabelText('Username')).toBeInTheDocument();
     expect(screen.getByLabelText('Password')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Login' })).toBeDisabled();
+  });
+
+  test('shows the notice recorded for the session that just ended', () => {
+    setSessionNotice('Your account has been deleted.');
+
+    renderLoginPage();
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Your account has been deleted.',
+    );
+  });
+
+  test('shows no notice when none was recorded', () => {
+    renderLoginPage();
+
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 
   test('submitting valid credentials triggers success flow and navigation', async () => {

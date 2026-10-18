@@ -38,6 +38,8 @@ type DestructiveConfirmDialogProps = {
   /** Renders a required password field when a label is supplied. */
   passwordLabel?: string;
   passwordHelperText?: string;
+  /** A refusal from the last attempt, shown in place so the dialog can stay open. */
+  error?: string;
   busy?: boolean;
   onConfirm: (values: DestructiveConfirmValues) => void;
   onCancel: () => void;
@@ -45,6 +47,20 @@ type DestructiveConfirmDialogProps = {
 
 function matches(expectedValue: string, enteredValue: string | undefined): boolean {
   return (enteredValue ?? '').trim().toLowerCase() === expectedValue.trim().toLowerCase();
+}
+
+/**
+ * Browsers and password managers can write into a field without React seeing an event, which would leave a
+ * value on screen that the confirmation never registered. The dialog is deliberately typed, so the field is
+ * returned to the value the caller actually entered when it gains focus.
+ */
+function discardInjectedValue(
+  event: React.FocusEvent<HTMLInputElement>,
+  enteredValue: string,
+) {
+  if (event.currentTarget.value !== enteredValue) {
+    event.currentTarget.value = enteredValue;
+  }
 }
 
 // Held in a child of the dialog so the entered values start empty every time the dialog opens.
@@ -55,6 +71,7 @@ function DestructiveConfirmContent({
   fields = [],
   passwordLabel,
   passwordHelperText,
+  error,
   busy = false,
   onConfirm,
   onCancel,
@@ -92,6 +109,15 @@ function DestructiveConfirmContent({
         </AlertDialogDescription>
       </AlertDialogHeader>
 
+      {error && (
+        <p
+          role="alert"
+          className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive-high-contrast"
+        >
+          {error}
+        </p>
+      )}
+
       {(fields.length > 0 || passwordLabel !== undefined) && (
         <div className="space-y-4">
           {fields.map(field => (
@@ -101,10 +127,14 @@ function DestructiveConfirmContent({
                 id={field.id}
                 value={fieldValues[field.id] ?? ''}
                 placeholder={field.placeholder}
+                autoComplete="off"
                 autoCapitalize="none"
                 autoCorrect="off"
                 spellCheck={false}
                 disabled={busy}
+                onFocus={event =>
+                  discardInjectedValue(event, fieldValues[field.id] ?? '')
+                }
                 onChange={event =>
                   setFieldValues(current => ({ ...current, [field.id]: event.target.value }))
                 }
@@ -121,9 +151,12 @@ function DestructiveConfirmContent({
               <Input
                 id="destructive-confirm-password"
                 type="password"
-                autoComplete="current-password"
+                // "new-password" is the only hint browsers honour here: the dialog offers no stored
+                // credential, so nothing may be filled in on the user's behalf.
+                autoComplete="new-password"
                 value={password}
                 disabled={busy}
+                onFocus={event => discardInjectedValue(event, password)}
                 onChange={event => setPassword(event.target.value)}
               />
               {passwordHelperText && (

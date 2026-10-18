@@ -80,6 +80,7 @@ import { useErrorContext } from '@/contexts';
 import type { SettingsSectionFormHandle } from '@/features/userSettings/sections/settingsSectionForm';
 import { usePermissions } from '@/hooks';
 
+import DeleteAccountSection from './delete/DeleteAccountSection';
 import BudgetRemindersForm from './sections/budgetReminders/BudgetRemindersForm';
 import ChangePasswordForm from './sections/changePassword/ChangePasswordForm';
 import SiteDetailsForm from './sections/siteDetails/SiteDetailsForm';
@@ -505,6 +506,10 @@ function AccountSettingsSheet(props: AccountSettingsSheetProps): JSX.Element {
                 </>
               )}
             </Accordion>
+
+            <Separator className="my-6" />
+
+            <DeleteAccountSection />
           </div>
         </SheetContent>
       </Sheet>

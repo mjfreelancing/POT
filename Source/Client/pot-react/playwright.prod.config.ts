@@ -77,6 +77,9 @@ export default defineConfig({
         // userSettings.test.ts is chromium-only (mutates shared canonical
         // identities — see the file header + dev config rationale).
         '**/settings/userSettings.test.ts',
+        // accountDeletion.test.ts deletes its seeded account, so it can run once
+        // per database.
+        '**/settings/accountDeletion.test.ts',
       ],
       use: {
         browserName: 'chromium',
@@ -88,6 +91,7 @@ export default defineConfig({
       testIgnore: [
         '**/feedback/errorBoundary.test.ts',
         '**/settings/userSettings.test.ts',
+        '**/settings/accountDeletion.test.ts',
         // filters.test.ts is desktop-only; on mobile it immediately skips but
         // still runs the auth fixture (8 wasted PBKDF2 logins per matrix run).
         '**/filters/filters.test.ts',
@@ -101,6 +105,7 @@ export default defineConfig({
       testIgnore: [
         '**/feedback/errorBoundary.test.ts',
         '**/settings/userSettings.test.ts',
+        '**/settings/accountDeletion.test.ts',
         '**/filters/filters.test.ts',
       ],
       use: {

@@ -32,9 +32,18 @@ const quickActionsCredentials = {
   password: 'E2E_quickactions-password',
 } as const;
 
+// Dedicated identity for the account-deletion suite, which deletes it. It is a
+// Viewer on the shared E2E site and reuses the e2e_pwchange password hash (see
+// baseline.sql), so it shares that password.
+const selfDeleteCredentials = {
+  username: 'e2e_selfdelete',
+  password: 'E2E_pwchange-password',
+} as const;
+
 export {
   adminCredentials,
   pwChangeCredentials,
   quickActionsCredentials,
+  selfDeleteCredentials,
   viewerCredentials,
 };

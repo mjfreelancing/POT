@@ -1,8 +1,8 @@
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { useGet } from '@/api/hooks/useApi';
-import { useMe } from '@/api/hooks/useMe';
+import { useDelete,useGet } from '@/api/hooks/useApi';
+import { useApiDeleteMe, useMe } from '@/api/hooks/useMe';
 import { useAccessToken } from '@/features/auth/contexts';
 import { SuccessResult } from '@/lib';
 
@@ -10,6 +10,7 @@ import { createUser } from '../../shared/factories/userFactory';
 
 vi.mock('@/api/hooks/useApi', () => ({
   useGet: vi.fn(),
+  useDelete: vi.fn(),
 }));
 
 vi.mock('@/features/auth/contexts', () => ({
@@ -83,5 +84,24 @@ describe('useMe hook composition', () => {
 
     const call = vi.mocked(useGet).mock.calls[0];
     expect(call?.[2]?.enabled).toBe(false);
+  });
+
+  test('useApiDeleteMe targets the me endpoint with useDelete', () => {
+    const mutationResult = {
+      mutate: vi.fn(),
+      mutateAsync: vi.fn(),
+      isPending: false,
+      data: new SuccessResult(undefined),
+    };
+
+    vi.mocked(useDelete).mockReturnValue(
+      mutationResult as unknown as ReturnType<typeof useDelete>,
+    );
+
+    const { result } = renderHook(() => useApiDeleteMe());
+
+    expect(useDelete).toHaveBeenCalledWith('/me');
+    expect(result.current.data).toBe(mutationResult.data);
+    expect(result.current.mutateAsync).toBe(mutationResult.mutateAsync);
   });
 });

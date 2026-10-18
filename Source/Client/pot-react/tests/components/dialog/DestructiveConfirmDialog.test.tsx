@@ -116,6 +116,36 @@ describe('DestructiveConfirmDialog', () => {
     expect(onCancel).not.toHaveBeenCalled();
   });
 
+  test('shows a refusal above the fields without closing', () => {
+    renderDialog({ error: 'The password is incorrect.' });
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'The password is incorrect.',
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Delete Maria' }),
+    ).toBeInTheDocument();
+  });
+
+  test('discards a value written into a field without an event', async () => {
+    renderDialog();
+
+    const usernameInput = screen.getByLabelText('Username');
+    const passwordInput = screen.getByLabelText('Your password');
+
+    // A password manager can write a value straight into the DOM, which React never sees.
+    usernameInput.setAttribute('value', 'maria');
+    (usernameInput as HTMLInputElement).value = 'maria';
+    (passwordInput as HTMLInputElement).value = 'secret';
+
+    await userEvent.click(usernameInput);
+    await userEvent.click(passwordInput);
+
+    expect(usernameInput).toHaveValue('');
+    expect(passwordInput).toHaveValue('');
+    expect(getDeleteButton()).toBeDisabled();
+  });
+
   test('reports cancel', async () => {
     const { onCancel } = renderDialog();
 

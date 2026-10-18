@@ -1,4 +1,3 @@
-import { useQueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import {
   createContext,
@@ -18,6 +17,7 @@ import { useUserStore } from '@/stores';
 
 import type { AccessTokenRefreshHandle } from '../accessTokenRefreshTimer';
 import { createAccessTokenRefreshTimer } from '../accessTokenRefreshTimer';
+import useClearSession from '../hooks/useClearSession';
 import { AccessTokenProvider, useAccessToken } from './AccessTokenContext';
 
 // Feature layer of auth system - builds on AccessTokenContext to provide:
@@ -45,7 +45,7 @@ function AuthProviderContent({ children }: { children: ReactNode }) {
   const userStore = useUserStore();
   const { accessToken, setAccessToken, isInitialized } = useAccessToken();
   const logoutMutation = useLogout();
-  const queryClient = useQueryClient();
+  const clearSession = useClearSession();
   const prevUserInfoRef = useRef<typeof userInfo>(undefined);
 
   // Update permission store when userInfo changes
@@ -88,12 +88,8 @@ function AuthProviderContent({ children }: { children: ReactNode }) {
 
     logger.info('Auth', 'User logged out');
 
-    setAccessToken(undefined);
-    userStore.clearUserInfo();
-
-    // Clear all React Query cache to prevent data leakage between users
-    queryClient.clear();
-  }, [logoutMutation, queryClient, setAccessToken, userStore]);
+    clearSession();
+  }, [clearSession, logoutMutation]);
 
   // Register logout callback with the logout manager
   useEffect(() => {

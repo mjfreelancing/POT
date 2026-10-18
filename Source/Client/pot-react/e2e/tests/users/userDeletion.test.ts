@@ -150,19 +150,16 @@ test('keeps the user when the confirmation password is wrong', async ({
       .getByRole('button', { name: 'Delete User', exact: true })
       .click();
 
-    // The refusal is a 400 with the password error in the ProblemDetails detail,
-    // rendered by the page-level ErrorSheet. The dialog stays open so the refusal
-    // is read in context, and the user is still listed.
+    // The refusal is a 400 with the password error in the ProblemDetails detail, shown inside the
+    // open confirmation. The dialog stays open so the refusal is read in place, and the user is still listed.
     const refused = await deleteResponse;
     expect(refused.status()).toBe(400);
     await refused.finished();
 
-    await expect(
-      page.getByText('Bad Request Error', { exact: true }),
-    ).toBeVisible({ timeout: 30000 });
-    await expect(
-      page.getByText('The password is incorrect.', { exact: true }),
-    ).toBeVisible();
+    await expect(dialog.getByRole('alert')).toHaveText(
+      'The password is incorrect.',
+      { timeout: 30000 },
+    );
     await expect(dialog).toBeVisible();
 
     // Everything outside an open modal is hidden from the accessibility tree, so

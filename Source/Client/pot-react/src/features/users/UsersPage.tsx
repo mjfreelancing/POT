@@ -45,6 +45,7 @@ function UsersPage() {
   const [userRoleDialogOpen, setUserRoleDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<SiteUser | null>(null);
   const [userToDelete, setUserToDelete] = useState<SiteUser | null>(null);
+  const [deleteError, setDeleteError] = useState<string | undefined>(undefined);
   const [isDeleting, setIsDeleting] = useState(false);
   const { error, setError } = useErrorContext();
 
@@ -144,6 +145,7 @@ function UsersPage() {
     }
 
     setIsDeleting(true);
+    setDeleteError(undefined);
 
     try {
       const result = await deleteUser(password);
@@ -159,11 +161,8 @@ function UsersPage() {
 
         setUserToDelete(null);
       } else {
-        // The dialog stays open so the refusal is read in context.
-        setError({
-          title: result.error.code,
-          description: result.error.description,
-        });
+        // The dialog stays open so the refusal is read in place.
+        setDeleteError(result.error.description);
 
         logger.error('UsersPage', 'Failed to delete user', result.error);
       }
@@ -255,7 +254,7 @@ function UsersPage() {
       <DestructiveConfirmDialog
         open={userToDelete !== null}
         title={`Delete ${userToDelete?.displayName ?? 'user'}`}
-        description="This permanently deletes the account and cannot be undone."
+        description="This permanently deletes the account."
         confirmLabel="Delete User"
         fields={[
           {
@@ -263,16 +262,18 @@ function UsersPage() {
             label: 'Username',
             expectedValue: userToDelete?.username ?? '',
             placeholder: userToDelete?.username,
-            helperText: 'Type the username of the user being deleted.',
           },
         ]}
         passwordLabel="Your password"
-        passwordHelperText="Enter your own password to confirm."
+        error={deleteError}
         busy={isDeleting}
         onConfirm={({ password }) => {
           void handleConfirmDelete(password);
         }}
-        onCancel={() => setUserToDelete(null)}
+        onCancel={() => {
+          setUserToDelete(null);
+          setDeleteError(undefined);
+        }}
       />
 
       {/* The Outlet is used to render nested routes, such as when inviting users */}
