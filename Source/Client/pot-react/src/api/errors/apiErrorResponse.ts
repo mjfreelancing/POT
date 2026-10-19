@@ -1,7 +1,7 @@
 type ApiErrorDetail = {
-  propertyName: string;
+  propertyName?: string | null;
   errorCode: string;
-  attemptedValue: string;
+  attemptedValue?: string | number | null;
   errorMessage: string;
 };
 
@@ -37,19 +37,23 @@ const getRateLimitedMessage = (_: ApiErrorResponse): string => {
 };
 
 const getConflictMessage = (error: ApiErrorResponse): string => {
-  if (error.errors && error.errors.length > 0) {
-    return error.errors
-      .map(err => {
-        if (err.propertyName.toLowerCase() === 'etag') {
-          return 'A conflicting update has been performed by another user. Refresh and try again.';
-        }
+  // Server-generated conflicts (for example a database constraint race) carry no field name, so
+  // there is nothing to describe. Fall back to the server's detail rather than rendering empty quotes.
+  const fieldConflicts = error.errors?.filter(err => Boolean(err.propertyName));
 
-        return `The '${err.propertyName}' conflicts with another record that has the same value '${err.attemptedValue}'`;
-      })
-      .join('\n');
+  if (!fieldConflicts || fieldConflicts.length === 0) {
+    return error.detail ?? 'A conflict error occurred';
   }
 
-  return error.detail ?? 'A conflict error occurred';
+  return fieldConflicts
+    .map(err => {
+      if (err.propertyName?.toLowerCase() === 'etag') {
+        return 'A conflicting update has been performed by another user. Refresh and try again.';
+      }
+
+      return `The '${err.propertyName}' conflicts with another record that has the same value '${err.attemptedValue ?? ''}'`;
+    })
+    .join('\n');
 };
 
 const getBadRequestMessage = (error: ApiErrorResponse): string => {

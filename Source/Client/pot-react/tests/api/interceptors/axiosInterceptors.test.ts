@@ -295,6 +295,41 @@ describe('Axios Interceptors', () => {
       await expectRejectedFailResultErrorType(rejectionPromise, ConflictError);
     });
 
+    it('should use the server detail for a generic database conflict', async () => {
+      const apiErrorResponse: ApiErrorResponse = {
+        title: 'Conflict',
+        detail: 'The request conflicts with the current state of the data.',
+        status: 409,
+        errors: [
+          {
+            propertyName: '',
+            errorCode: 'Conflict',
+            attemptedValue: null,
+            errorMessage:
+              'The request conflicts with the current state of the data.',
+          },
+        ],
+      };
+
+      const axiosError = new AxiosError('Conflict');
+
+      axiosError.response = {
+        status: 409,
+        data: apiErrorResponse,
+        headers: {},
+        config: {
+          headers: new AxiosHeaders({ 'X-Correlation-ID': 'test-id' }),
+        } as InternalAxiosRequestConfig,
+        statusText: 'Conflict',
+      };
+
+      const failResult = await rejectToFailResult<ConflictError>(
+        responseErrorHandler(axiosError),
+      );
+
+      expect(failResult.error.description).toBe(apiErrorResponse.detail);
+    });
+
     it('should convert 400 responses to BadRequestError', async () => {
       const apiErrorResponse: ApiErrorResponse = {
         title: 'Validation Error',
