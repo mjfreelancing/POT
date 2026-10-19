@@ -15,10 +15,12 @@ internal sealed class DatabaseExceptionHandler : IExceptionHandler
     private static readonly Type DbUpdateExceptionType = typeof(DbUpdateException);
 
     private readonly IProblemDetailsService _problemDetailsService;
+    private readonly ILogger<DatabaseExceptionHandler> _logger;
 
-    public DatabaseExceptionHandler(IProblemDetailsService problemDetailsService)
+    public DatabaseExceptionHandler(IProblemDetailsService problemDetailsService, ILogger<DatabaseExceptionHandler> logger)
     {
         _problemDetailsService = problemDetailsService.WhenNotNull();
+        _logger = logger.WhenNotNull();
     }
 
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
@@ -27,6 +29,11 @@ internal sealed class DatabaseExceptionHandler : IExceptionHandler
 
         if (exceptionType.IsDerivedFrom(DbUpdateExceptionType))
         {
+            // Since .NET 10 the exception handler middleware no longer logs an exception that an IExceptionHandler
+            // reports as handled, so this is the only record of the failure.
+            _logger.LogError(exception, "A database update failed while processing {RequestMethod} {RequestPath}: {ExceptionMessage}",
+                httpContext.Request.Method, httpContext.Request.Path, exception.Message);
+
             ProblemDetailsContext problemContext;
 
             if (exception.InnerException is PostgresException postgresException)
