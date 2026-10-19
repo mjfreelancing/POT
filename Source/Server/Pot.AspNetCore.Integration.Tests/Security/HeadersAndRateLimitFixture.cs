@@ -13,6 +13,8 @@ namespace Pot.AspNetCore.Integration.Tests.Security;
 public class HeadersAndRateLimitFixture : IntegrationAuthFixtureBase
 {
     private const string AccessControlAllowOrigin = "Access-Control-Allow-Origin";
+    private const string CorrelationIdExtension = "correlationId";
+    private const string ProblemJson = "application/problem+json";
 
     private sealed class ProblemDetailsResponse
     {
@@ -42,7 +44,10 @@ public class HeadersAndRateLimitFixture : IntegrationAuthFixtureBase
         var problemDetails = await ReadProblemDetailsAsync(throttledResponse);
 
         throttledResponse.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
+        throttledResponse.Content.Headers.ContentType?.MediaType.ShouldBe(ProblemJson);
         problemDetails.Status.ShouldBe((int)HttpStatusCode.TooManyRequests);
+        problemDetails.Detail.ShouldNotBeNullOrWhiteSpace();
+        GetExtensionString(problemDetails, CorrelationIdExtension).ShouldNotBeNullOrWhiteSpace();
         HasExtension(problemDetails, "errors").ShouldBeTrue();
 
         var allowOriginValues = throttledResponse.ShouldHaveHeaderValues(AccessControlAllowOrigin);
@@ -74,7 +79,10 @@ public class HeadersAndRateLimitFixture : IntegrationAuthFixtureBase
         var problemDetails = await ReadProblemDetailsAsync(throttledResponse);
 
         throttledResponse.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
+        throttledResponse.Content.Headers.ContentType?.MediaType.ShouldBe(ProblemJson);
         problemDetails.Status.ShouldBe((int)HttpStatusCode.TooManyRequests);
+        problemDetails.Detail.ShouldNotBeNullOrWhiteSpace();
+        GetExtensionString(problemDetails, CorrelationIdExtension).ShouldNotBeNullOrWhiteSpace();
         HasExtension(problemDetails, "errors").ShouldBeTrue();
 
         var allowOriginValues = throttledResponse.ShouldHaveHeaderValues(AccessControlAllowOrigin);
@@ -118,5 +126,12 @@ public class HeadersAndRateLimitFixture : IntegrationAuthFixtureBase
     private static bool HasExtension(ProblemDetailsResponse problemDetails, string key)
     {
         return problemDetails.Extensions.ContainsKey(key);
+    }
+
+    private static string? GetExtensionString(ProblemDetailsResponse problemDetails, string key)
+    {
+        return problemDetails.Extensions.TryGetValue(key, out var value)
+            ? value.GetString()
+            : null;
     }
 }

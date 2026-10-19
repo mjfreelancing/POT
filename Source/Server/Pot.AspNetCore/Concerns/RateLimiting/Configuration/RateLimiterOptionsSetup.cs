@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Pot.App.Errors;
-using Pot.AspNetCore.Extensions;
+using Pot.AspNetCore.Concerns.ProblemDetails;
 using System.Threading.RateLimiting;
 
 namespace Pot.AspNetCore.Concerns.RateLimiting.Configuration;
@@ -33,7 +34,19 @@ internal sealed class RateLimiterOptionsSetup : IConfigureOptions<RateLimiterOpt
             }
 
             var errorDetail = ApiDetailErrorFactory.CreateTooManyRequests(retryAfter.TotalSeconds);
-            await context.HttpContext.Response.WriteAsJsonAsync(errorDetail.ToProblemDetails(), cancellationToken);
+
+            // Written through IProblemDetailsService so a 429 carries the same content type, correlation id,
+            // instance and errors shape as every other error response.
+            var problemDetailsContext = ProblemDetailsContextFactory.Create(
+                context.HttpContext,
+                StatusCodes.Status429TooManyRequests,
+                errorDetail.ErrorMessage,
+                exception: null,
+                [errorDetail]);
+
+            var problemDetailsService = context.HttpContext.RequestServices.GetRequiredService<IProblemDetailsService>();
+
+            await problemDetailsService.WriteAsync(problemDetailsContext);
         };
 
         var anonymousWindow = TimeSpan.FromSeconds(_rateLimitingConfiguration.Anonymous.WindowSeconds);
