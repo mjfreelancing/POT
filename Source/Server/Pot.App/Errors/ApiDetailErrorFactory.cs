@@ -79,12 +79,19 @@ public static class ApiDetailErrorFactory
         };
     }
 
-    public static ApiDetailError CreateTooManyRequests(double totalSeconds)
+    public static ApiDetailError CreateTooManyRequests(int? retryAfterSeconds)
     {
+        // RFC 9110 defines Retry-After as an integer delta-seconds value (or an HTTP date). The wait is
+        // unknown when the rate-limit lease carries no RetryAfter metadata; saying "after 0 seconds"
+        // would invite a retry that the limiter rejects again.
+        var errorMessage = retryAfterSeconds is null
+            ? "Too many requests. Please wait and try again."
+            : $"Too many requests. Please wait and try again after {retryAfterSeconds} seconds.";
+
         return new ApiDetailError(ErrorType.TooManyRequests)
         {
             ErrorCode = ErrorCodes.TooManyRequests,
-            ErrorMessage = $"Too many requests. Please wait and try again after {totalSeconds} seconds."
+            ErrorMessage = errorMessage
         };
     }
 }

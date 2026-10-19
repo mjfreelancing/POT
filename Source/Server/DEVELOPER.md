@@ -3495,24 +3495,27 @@ app.MapGroup(AccountsEndpoints.Group)
 ```json
 {
   "status": 429,
-  "detail": "Too many requests. Please wait and try again after 42.5 seconds.",
+  "detail": "Too many requests. Please wait and try again after 43 seconds.",
   "errors": [
     {
       "errorCode": "TooManyRequests",
-      "errorMessage": "Too many requests. Please wait and try again after 42.5 seconds."
+      "errorMessage": "Too many requests. Please wait and try again after 43 seconds."
     }
   ]
 }
 ```
 
-The rate limiter writes this body via `errorDetail.ToProblemDetails()` directly, so it carries `status`, `detail` and the `errors` array only - no `type`, `title` or `correlationId` extensions (those are added by `AddCustomProblemDetails`, which the limiter bypasses).
+The rate limiter writes this body through `IProblemDetailsService`, so it carries the same `type`,
+`title`, `correlationId` and `instance` as every other error response. `Retry-After` is an integer
+delta-seconds value (RFC 9110), rounded up to the next whole second. When the lease carries no
+`RetryAfter` metadata the header is omitted and the body omits the wait instead of naming one.
 
 **Response Headers:**
 
 ```
 HTTP/1.1 429 Too Many Requests
-Retry-After: 42.5
-Content-Type: application/json; charset=utf-8
+Retry-After: 43
+Content-Type: application/problem+json
 ```
 
 ### Middleware

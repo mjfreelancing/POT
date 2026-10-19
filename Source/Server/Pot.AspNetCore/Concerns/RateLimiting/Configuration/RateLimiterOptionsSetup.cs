@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Pot.App.Errors;
 using Pot.AspNetCore.Concerns.ProblemDetails;
+using System.Globalization;
 using System.Threading.RateLimiting;
 
 namespace Pot.AspNetCore.Concerns.RateLimiting.Configuration;
@@ -28,12 +29,17 @@ internal sealed class RateLimiterOptionsSetup : IConfigureOptions<RateLimiterOpt
 
         options.OnRejected = async (context, cancellationToken) =>
         {
+            int? retryAfterSeconds = null;
+
             if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
             {
-                context.HttpContext.Response.Headers.RetryAfter = $"{retryAfter.TotalSeconds}";
+                retryAfterSeconds = GetRetryAfterSeconds(retryAfter);
+
+                context.HttpContext.Response.Headers.RetryAfter =
+                    retryAfterSeconds.Value.ToString(CultureInfo.InvariantCulture);
             }
 
-            var errorDetail = ApiDetailErrorFactory.CreateTooManyRequests(retryAfter.TotalSeconds);
+            var errorDetail = ApiDetailErrorFactory.CreateTooManyRequests(retryAfterSeconds);
 
             // Written through IProblemDetailsService so a 429 carries the same content type, correlation id,
             // instance and errors shape as every other error response.
@@ -59,5 +65,14 @@ internal sealed class RateLimiterOptionsSetup : IConfigureOptions<RateLimiterOpt
                 anonymousWindow,
                 _rateLimitingConfiguration.Authenticated.PermitLimit,
                 authenticatedWindow));
+    }
+
+    // RFC 9110 defines Retry-After as an integer number of seconds, or an HTTP date. TotalSeconds is a
+    // double, so it would otherwise emit values such as "59.873" that a strict delta-seconds parser
+    // rejects. Rounding up avoids sending the client back before the window reopens, and the minimum of
+    // one avoids "0", which reads as "retry immediately".
+    internal static int GetRetryAfterSeconds(TimeSpan retryAfter)
+    {
+        return Math.Max(1, (int)Math.Ceiling(retryAfter.TotalSeconds));
     }
 }

@@ -258,12 +258,12 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
 
     public class CreateTooManyRequests : ApiDetailErrorFactoryFixture
     {
+        private const int RetryAfterSeconds = 42;
+
         [Fact]
         public void Should_Create_Error_With_TooManyRequests_Type()
         {
-            var totalSeconds = Create<double>();
-
-            var result = ApiDetailErrorFactory.CreateTooManyRequests(totalSeconds);
+            var result = ApiDetailErrorFactory.CreateTooManyRequests(RetryAfterSeconds);
 
             result.ErrorType.ShouldBe(ErrorType.TooManyRequests);
         }
@@ -271,12 +271,20 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
         [Fact]
         public void Should_Set_All_Properties()
         {
-            var totalSeconds = Create<double>();
-
-            var result = ApiDetailErrorFactory.CreateTooManyRequests(totalSeconds);
+            var result = ApiDetailErrorFactory.CreateTooManyRequests(RetryAfterSeconds);
 
             result.ErrorCode.ShouldBe(ErrorCodes.TooManyRequests);
-            result.ErrorMessage.ShouldBe($"Too many requests. Please wait and try again after {totalSeconds} seconds.");
+            result.ErrorMessage.ShouldBe(
+                $"Too many requests. Please wait and try again after {RetryAfterSeconds} seconds.");
+        }
+
+        [Fact]
+        public void Should_Not_Mention_A_Wait_When_The_Wait_Is_Unknown()
+        {
+            var result = ApiDetailErrorFactory.CreateTooManyRequests(null);
+
+            result.ErrorMessage.ShouldBe("Too many requests. Please wait and try again.");
+            result.ErrorMessage.ShouldNotContain("0 seconds");
         }
     }
 }

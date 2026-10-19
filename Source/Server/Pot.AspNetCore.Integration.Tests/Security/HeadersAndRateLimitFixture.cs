@@ -15,6 +15,7 @@ public class HeadersAndRateLimitFixture : IntegrationAuthFixtureBase
     private const string AccessControlAllowOrigin = "Access-Control-Allow-Origin";
     private const string CorrelationIdExtension = "correlationId";
     private const string ProblemJson = "application/problem+json";
+    private const string RetryAfterHeader = "Retry-After";
 
     private sealed class ProblemDetailsResponse
     {
@@ -52,13 +53,13 @@ public class HeadersAndRateLimitFixture : IntegrationAuthFixtureBase
 
         var allowOriginValues = throttledResponse.ShouldHaveHeaderValues(AccessControlAllowOrigin);
         allowOriginValues.Single().ShouldBe(AllowedOrigin);
-        throttledResponse.ShouldExposeHeader("Retry-After");
+        throttledResponse.ShouldExposeHeader(RetryAfterHeader);
 
-        if (throttledResponse.Headers.TryGetValues("Retry-After", out var retryAfterValues))
-        {
-            var retryAfterSeconds = double.Parse(retryAfterValues.Single(), CultureInfo.InvariantCulture);
-            retryAfterSeconds.ShouldBeGreaterThan(0d);
-        }
+        var retryAfterValue = throttledResponse.ShouldHaveHeaderValues(RetryAfterHeader).Single();
+        var retryAfterSeconds = int.Parse(retryAfterValue, NumberStyles.Integer, CultureInfo.InvariantCulture);
+
+        retryAfterSeconds.ShouldBeGreaterThanOrEqualTo(1);
+        problemDetails.Detail.ShouldContain($"after {retryAfterSeconds} seconds");
     }
 
     [Fact]
@@ -87,13 +88,12 @@ public class HeadersAndRateLimitFixture : IntegrationAuthFixtureBase
 
         var allowOriginValues = throttledResponse.ShouldHaveHeaderValues(AccessControlAllowOrigin);
         allowOriginValues.Single().ShouldBe(AllowedOrigin);
-        throttledResponse.ShouldExposeHeader("Retry-After");
+        throttledResponse.ShouldExposeHeader(RetryAfterHeader);
 
-        if (throttledResponse.Headers.TryGetValues("Retry-After", out var retryAfterValues))
-        {
-            var retryAfterSeconds = double.Parse(retryAfterValues.Single(), CultureInfo.InvariantCulture);
-            retryAfterSeconds.ShouldBeGreaterThan(0d);
-        }
+        // The authenticated limiter is a sliding window, whose failed lease carries no RetryAfter
+        // metadata. The header is therefore omitted and the body must not name a wait.
+        throttledResponse.ShouldNotContainHeader(RetryAfterHeader);
+        problemDetails.Detail.ShouldBe("Too many requests. Please wait and try again.");
     }
 
     [Fact]
