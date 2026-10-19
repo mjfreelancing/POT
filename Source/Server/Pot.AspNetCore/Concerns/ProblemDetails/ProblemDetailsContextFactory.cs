@@ -1,3 +1,4 @@
+using AllOverIt.Extensions;
 using Pot.App.Errors;
 using Pot.App.Extensions;
 
@@ -20,9 +21,7 @@ internal static class ProblemDetailsContextFactory
             Exception = exception
         };
 
-        var errors = errorDetails.Select(error => error.GetErrorDetails());
-
-        context.ProblemDetails.Extensions["errors"] = errors;
+        context.ProblemDetails.Extensions["errors"] = errorDetails.SelectToArray(error => error.GetErrorDetails());
 
         return context;
     }
