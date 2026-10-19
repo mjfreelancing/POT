@@ -74,11 +74,16 @@ public class Program
 
         // REQUIRED ORDER:
         // 1. UseCors() must run before authentication/authorization so CORS headers are included on all responses (including failures).
-        // 2. UseAuthentication() must run before UsePotMiddleware() because UserContextMiddleware reads HttpContext.User
+        // 2. UseCorrelationId() must run straight after UseCors(): after it, so its own 400 rejection carries CORS headers, and
+        //    before authentication, authorization and rate limiting, so their 401/403/429 responses and log entries carry the
+        //    client's correlation id rather than the server-generated one.
+        // 3. UseAuthentication() must run before UsePotMiddleware() because UserContextMiddleware reads HttpContext.User
         //    and populates ICurrentUserContext, which downstream data/repository code depends on.
-        // 3. Do not move UsePotMiddleware() ahead of UseAuthentication() unless UserContextMiddleware is redesigned.
+        // 4. Do not move UsePotMiddleware() ahead of UseAuthentication() unless UserContextMiddleware is redesigned.
         // See AddPotCors() and CorsOptionsSetup for configuration setup - not using the overload with Action<CorsPolicyBuilder> since we need to load from configuration.
         app.UseCors();
+
+        app.UseCorrelationId();
 
         app.UseAuthentication();
         app.UseAuthorization();

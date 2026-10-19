@@ -6,6 +6,8 @@ namespace Pot.AspNetCore.Concerns.Middleware;
 
 internal sealed class CorrelationIdMiddleware : IMiddleware
 {
+    internal const int MaxCorrelationIdLength = 128;
+
     private readonly IProblemDetailsService _problemDetailsService;
 
     public CorrelationIdMiddleware(IProblemDetailsService problemDetailsService)
@@ -19,23 +21,17 @@ internal sealed class CorrelationIdMiddleware : IMiddleware
     {
         if (httpContext.Request.TryGetCorrelationId(out var correlationId))
         {
-            if (correlationId.Length > 128)
+            if (correlationId.Length > MaxCorrelationIdLength)
             {
-                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                await WriteBadRequestAsync(httpContext, $"CorrelationId exceeds max length of {MaxCorrelationIdLength} chars");
 
-                var problemDetails = new Microsoft.AspNetCore.Mvc.ProblemDetails
-                {
-                    Detail = "CorrelationId exceeds max length of 128 chars",
-                    Status = httpContext.Response.StatusCode
-                };
+                return;
+            }
 
-                var problemDetailsContext = new ProblemDetailsContext
-                {
-                    HttpContext = httpContext,
-                    ProblemDetails = problemDetails
-                };
-
-                await _problemDetailsService.WriteAsync(problemDetailsContext);
+            // The value is client supplied and is written into every log entry for the request.
+            if (!IsValidCorrelationId(correlationId))
+            {
+                await WriteBadRequestAsync(httpContext, "CorrelationId may only contain letters, digits, '-', '_', '.' and ':'");
 
                 return;
             }
@@ -49,5 +45,37 @@ internal sealed class CorrelationIdMiddleware : IMiddleware
         activity.AddTag("correlationId", httpContext.TraceIdentifier);
 
         await next(httpContext);
+    }
+
+    private static bool IsValidCorrelationId(string correlationId)
+    {
+        foreach (var character in correlationId)
+        {
+            if (!char.IsAsciiLetterOrDigit(character) && character is not ('-' or '_' or '.' or ':'))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private async Task WriteBadRequestAsync(HttpContext httpContext, string detail)
+    {
+        httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+
+        var problemDetails = new Microsoft.AspNetCore.Mvc.ProblemDetails
+        {
+            Detail = detail,
+            Status = httpContext.Response.StatusCode
+        };
+
+        var problemDetailsContext = new ProblemDetailsContext
+        {
+            HttpContext = httpContext,
+            ProblemDetails = problemDetails
+        };
+
+        await _problemDetailsService.WriteAsync(problemDetailsContext);
     }
 }

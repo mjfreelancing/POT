@@ -5,6 +5,13 @@ namespace Pot.AspNetCore.Extensions;
 
 internal static class WebApplicationExtensions
 {
+    public static WebApplication UseCorrelationId(this WebApplication app)
+    {
+        app.UseMiddleware<CorrelationIdMiddleware>();
+
+        return app;
+    }
+
     public static WebApplication UsePotMiddleware(this WebApplication app)
     {
         if (!app.Environment.IsProduction())
@@ -12,7 +19,6 @@ internal static class WebApplicationExtensions
             app.UseMiddleware<RawRequestLoggingMiddleware>();
         }
 
-        app.UseMiddleware<CorrelationIdMiddleware>();
         app.UseMiddleware<UserContextMiddleware>();
 
         return app;

@@ -3522,6 +3522,13 @@ POT uses custom middleware for cross-cutting request/response processing.
 **Middleware Registration:** `Pot.AspNetCore/Extensions/WebApplicationExtensions.cs`
 
 ```csharp
+public static WebApplication UseCorrelationId(this WebApplication app)
+{
+    app.UseMiddleware<CorrelationIdMiddleware>();
+
+    return app;
+}
+
 public static WebApplication UsePotMiddleware(this WebApplication app)
 {
     if (!app.Environment.IsProduction())
@@ -3529,7 +3536,6 @@ public static WebApplication UsePotMiddleware(this WebApplication app)
         app.UseMiddleware<RawRequestLoggingMiddleware>();
     }
 
-    app.UseMiddleware<CorrelationIdMiddleware>();
     app.UseMiddleware<UserContextMiddleware>();
 
     return app;
@@ -3544,69 +3550,27 @@ app.UseExceptionHandler();          // 1. Global exception handling
 app.MapHealthChecks("/_health");         // 2. Liveness endpoint (executes no checks)
 app.MapHealthChecks("/_health/ready");   // 3. Readiness endpoint (checks tagged "ready")
 app.UseCors();                           // 4. CORS (must be before auth)
-app.UseAuthentication();                 // 5. JWT authentication
-app.UseAuthorization();                  // 6. Permission authorization
-app.UseRateLimiter();                    // 7. Rate limiting
-app.UsePotMiddleware();                  // 8. Raw request logging (non-production), correlation ID, user context
+app.UseCorrelationId();                  // 5. Correlation ID (after CORS, before auth and rate limiting)
+app.UseAuthentication();                 // 6. JWT authentication
+app.UseAuthorization();                  // 7. Permission authorization
+app.UseRateLimiter();                    // 8. Rate limiting
+app.UsePotMiddleware();                  // 9. Raw request logging (non-production), user context
 // ... endpoint routing ...
 ```
 
 **CorrelationIdMiddleware:**
 
-Generates unique correlation ID for each request for tracing and debugging.
+Applies the caller's correlation ID to the request for tracing and debugging
+(`Pot.AspNetCore/Concerns/Middleware/CorrelationIdMiddleware.cs`).
 
-```csharp
-// Pot.AspNetCore/Concerns/Middleware/CorrelationIdMiddleware.cs
-internal sealed class CorrelationIdMiddleware : IMiddleware
-{
-    private readonly IProblemDetailsService _problemDetailsService;
-
-    public CorrelationIdMiddleware(IProblemDetailsService problemDetailsService)
-    {
-        problemDetailsService.WhenNotNull();
-
-        _problemDetailsService = problemDetailsService;
-    }
-
-    public async Task InvokeAsync(HttpContext httpContext, RequestDelegate next)
-    {
-        if (httpContext.Request.TryGetCorrelationId(out var correlationId))
-        {
-            if (correlationId.Length > 128)
-            {
-                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-
-                var problemDetails = new Microsoft.AspNetCore.Mvc.ProblemDetails
-                {
-                    Detail = "CorrelationId exceeds max length of 128 chars",
-                    Status = httpContext.Response.StatusCode
-                };
-
-                var problemDetailsContext = new ProblemDetailsContext
-                {
-                    HttpContext = httpContext,
-                    ProblemDetails = problemDetails
-                };
-
-                await _problemDetailsService.WriteAsync(problemDetailsContext);
-
-                return;
-            }
-
-            httpContext.TraceIdentifier = correlationId;
-        }
-
-        var activityFeature = httpContext.Features.GetRequiredFeature<IHttpActivityFeature>();
-        var activity = activityFeature.Activity;
-
-        activity.AddTag("correlationId", httpContext.TraceIdentifier);
-
-        await next(httpContext);
-    }
-}
-```
-
-The header is `X-Correlation-Id` (via `Request.TryGetCorrelationId()`). When it is absent the request's `TraceIdentifier` is left as the framework default, and no response header is echoed - the id is recorded on the current `Activity` for tracing.
+- The header is `X-Correlation-Id` (via `Request.TryGetCorrelationId()`). An empty or whitespace value is treated as absent.
+- A supplied value must be at most 128 characters and contain only letters, digits, `-`, `_`, `.` and `:`. Anything else is
+  rejected with a 400 ProblemDetails response, because the value is written into every log entry for the request.
+- A valid value replaces `HttpContext.TraceIdentifier`; when the header is absent the framework default is kept. Either way the
+  id is tagged on the current `Activity` as `correlationId`, which the log enricher and every ProblemDetails body pick up.
+- No response header is echoed - the caller already holds the id it sent, and error bodies carry it.
+- It runs straight after `UseCors()`: after it so its own 400 carries CORS headers, and before authentication, authorization
+  and rate limiting so their 401/403/429 responses and log entries carry the caller's id.
 
 **UserContextMiddleware:**
 
@@ -3748,7 +3712,7 @@ The `errors` extension is always an **array** of error detail objects. `type` an
 
 **Problem Types:**
 
-- **400 Bad Request**: Malformed request, or a correlation ID longer than 128 characters (`CorrelationIdMiddleware`)
+- **400 Bad Request**: Malformed request, or a correlation ID longer than 128 characters or containing characters other than letters, digits, `-`, `_`, `.` and `:` (`CorrelationIdMiddleware`)
 - **401 Unauthorized**: No authentication token provided
 - **403 Forbidden**: Authenticated but lacks required permission
 - **404 Not Found**: Entity not found

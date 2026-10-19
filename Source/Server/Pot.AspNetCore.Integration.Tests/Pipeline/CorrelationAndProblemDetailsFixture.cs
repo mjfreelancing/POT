@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Pot.AspNetCore.Integration.Tests.Host.Extensions;
 using Shouldly;
 using System.Net;
 using System.Net.Http.Json;
@@ -23,14 +24,17 @@ public class CorrelationAndProblemDetailsFixture : IntegrationFixtureBase
     }
 
     private const string CorrelationIdHeader = "X-Correlation-Id";
+    private const string AccessControlAllowOrigin = "Access-Control-Allow-Origin";
+    private const string AllowedOrigin = "http://localhost:3000";
+    private const string InvalidCharactersDetail = "CorrelationId may only contain letters, digits, '-', '_', '.' and ':'";
 
     [Fact]
-    public async Task Should_Return_BadRequest_When_CorrelationId_Header_Exceeds_Max_Length_On_Anonymous_Endpoint()
+    public async Task Should_Return_BadRequest_Before_Authentication_When_CorrelationId_Header_Exceeds_Max_Length()
     {
         using var client = CreateClient();
 
-        // Use an anonymous endpoint so the request reaches CorrelationIdMiddleware before any auth challenge short-circuits the pipeline.
-        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/logout");
+        // A protected endpoint and no credentials: a 400 rather than a 401 shows the correlation id is checked first.
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/me");
         request.Headers.Add(CorrelationIdHeader, new string('a', 129));
 
         var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
@@ -39,8 +43,100 @@ public class CorrelationAndProblemDetailsFixture : IntegrationFixtureBase
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         problemDetails.Detail.ShouldBe("CorrelationId exceeds max length of 128 chars");
         problemDetails.Status.ShouldBe(StatusCodes.Status400BadRequest);
-        problemDetails.Instance.ShouldBe("/api/auth/logout");
+        problemDetails.Instance.ShouldBe("/api/me");
         HasExtension(problemDetails, "instance").ShouldBeFalse();
+        GetExtensionString(problemDetails, "correlationId").ShouldNotBeNullOrWhiteSpace();
+    }
+
+    [Theory]
+    [InlineData("pot correlation")]
+    [InlineData("pot\"correlation")]
+    [InlineData("<script>")]
+    [InlineData("pot/correlation")]
+    public async Task Should_Return_BadRequest_Before_Authentication_When_CorrelationId_Header_Has_Invalid_Characters(string correlationId)
+    {
+        using var client = CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/me");
+        request.Headers.TryAddWithoutValidation(CorrelationIdHeader, correlationId).ShouldBeTrue();
+
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+        var problemDetails = await ReadProblemDetailsAsync(response);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        problemDetails.Detail.ShouldBe(InvalidCharactersDetail);
+        GetExtensionString(problemDetails, "correlationId").ShouldNotBe(correlationId);
+    }
+
+    [Fact]
+    public async Task Should_Accept_CorrelationId_Header_With_All_Allowed_Characters()
+    {
+        using var client = CreateClient();
+
+        const string correlationId = "Pot-0123456789_abc.XYZ:9";
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/me");
+        request.Headers.Add(CorrelationIdHeader, correlationId);
+
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+        var problemDetails = await ReadProblemDetailsAsync(response);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        GetExtensionString(problemDetails, "correlationId").ShouldBe(correlationId);
+    }
+
+    [Fact]
+    public async Task Should_Return_Cors_Headers_When_CorrelationId_Header_Is_Rejected()
+    {
+        using var client = CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/me");
+        request.Headers.Add("Origin", AllowedOrigin);
+        request.Headers.TryAddWithoutValidation(CorrelationIdHeader, "pot correlation").ShouldBeTrue();
+
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        response.ShouldHaveHeaderValues(AccessControlAllowOrigin).Single().ShouldBe(AllowedOrigin);
+    }
+
+    [Fact]
+    public async Task Should_Include_Request_CorrelationId_In_ProblemDetails_When_Request_Is_Unauthorized()
+    {
+        using var client = CreateClient();
+
+        const string correlationId = "pot-correlation-id-401";
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/me");
+        request.Headers.Add(CorrelationIdHeader, correlationId);
+
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+        var problemDetails = await ReadProblemDetailsAsync(response);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        GetExtensionString(problemDetails, "correlationId").ShouldBe(correlationId);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task Should_Use_Generated_CorrelationId_When_Header_Is_Empty_Or_Whitespace(string correlationId)
+    {
+        using var client = CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/login")
+        {
+            Content = JsonContent.Create(new { Username = string.Empty, Password = string.Empty })
+        };
+
+        request.Headers.TryAddWithoutValidation(CorrelationIdHeader, correlationId).ShouldBeTrue();
+
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+        var problemDetails = await ReadProblemDetailsAsync(response);
+
+        // The validation error, not a correlation id rejection, shows the header was treated as absent.
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        problemDetails.Detail.ShouldBe("One or more validation errors occurred.");
         GetExtensionString(problemDetails, "correlationId").ShouldNotBeNullOrWhiteSpace();
     }
 
