@@ -63,6 +63,7 @@ public class CorsFixture : IntegrationFixtureBase
 
         allowOriginValues.Single().ShouldBe(AllowedOrigin);
         response.ShouldContainHeader(AccessControlAllowCredentials);
+        response.ShouldHaveHeaderValues("Access-Control-Max-Age").Single().ShouldBe("600");
     }
 
     [Theory]

@@ -7,6 +7,11 @@ namespace Pot.AspNetCore.Concerns.Cors.Configuration;
 /// <summary>Applies the configured origins to cross-origin resource sharing options.</summary>
 public sealed class CorsOptionsSetup : IConfigureOptions<CorsOptions>
 {
+    // Without Access-Control-Max-Age, Chromium remembers a preflight for only five seconds. Any request
+    // carrying an Authorization header or a JSON body is preflighted, so nearly every call from the
+    // front end would otherwise pay a second round trip.
+    private static readonly TimeSpan PreflightMaxAge = TimeSpan.FromMinutes(10);
+
     private readonly CorsConfiguration _corsConfiguration;
 
     /// <summary>Creates an options configurator for cross-origin resource sharing.</summary>
@@ -39,7 +44,9 @@ public sealed class CorsOptionsSetup : IConfigureOptions<CorsOptions>
                 // Browsers hide response headers that are not CORS-safelisted from cross-origin script unless they are exposed:
                 //  - 'content-disposition' allows the client to handle the file download correctly (get the filename)
                 //  - 'retry-after' allows the client to read how long to wait after a 429 rate-limit rejection
-                .WithExposedHeaders("content-disposition", "retry-after");
+                .WithExposedHeaders("content-disposition", "retry-after")
+
+                .SetPreflightMaxAge(PreflightMaxAge);
         });
     }
 }
