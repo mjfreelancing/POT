@@ -3362,7 +3362,7 @@ The frontend export feature needs to extract filenames from the `Content-Disposi
 }
 ```
 
-Note: `AllowedOrigins` is a delimited **string** (not a JSON array). Empty means no cross-origin access; the development settings allow the Vite dev server on port 5175.
+Note: `AllowedOrigins` is a delimited **string** (not a JSON array). Empty means no cross-origin access; the development settings allow the Vite dev server on port 5175. Each entry must be an absolute `http`/`https` origin with no path, query, fragment or trailing slash (and `*` is rejected); an invalid entry fails startup via `ValidateOnStart()`.
 
 **Program.cs Usage:**
 
