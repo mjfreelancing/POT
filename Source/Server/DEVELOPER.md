@@ -3710,6 +3710,10 @@ The `errors` extension is always an **array** of error detail objects. `type` an
 }
 ```
 
+Validation failures are logged by `LogErrors` from the `errors` extension, one entry per error.
+Attempted field values are never logged: for login, signup and password reset they can be a password
+or an OTP.
+
 **Problem Types:**
 
 - **400 Bad Request**: Malformed request, or a correlation ID longer than 128 characters or containing characters other than letters, digits, `-`, `_`, `.` and `:` (`CorrelationIdMiddleware`)
