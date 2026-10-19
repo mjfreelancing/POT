@@ -92,7 +92,7 @@ public class RoleRepositoryFixture : PotFixtureBase
                 Xunit.TestContext.Current.CancellationToken);
 
             result.Count.ShouldBe(2);
-            result.ShouldHaveValues(role => role.Name, new[] { Role.Admin, Role.Viewer });
+            result.ShouldHaveValues(role => role.Name, [Role.Admin, Role.Viewer]);
         }
 
         [Fact]
@@ -142,7 +142,7 @@ public class RoleRepositoryFixture : PotFixtureBase
 
             var permissions = result[0].Permissions;
             permissions.Count.ShouldBe(2);
-            permissions.ShouldHaveValues(permission => permission.Name, new[] { Permission.SiteManage, Permission.SiteView });
+            permissions.ShouldHaveValues(permission => permission.Name, [Permission.SiteManage, Permission.SiteView]);
         }
 
         [Fact]

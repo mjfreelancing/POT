@@ -34,7 +34,7 @@ public class SiteDeleteCheckerFixture : PotFixtureBase
                 checks = [.. checks.Reverse()];
             }
 
-            var input = CreateInput(site, siteName: "Wrong Site");
+            var input = CreateInput(siteName: "Wrong Site");
 
             var error = await CreateChecker(checks).CanDeleteAsync(input, caller, site, CancellationToken.None);
 
@@ -51,7 +51,7 @@ public class SiteDeleteCheckerFixture : PotFixtureBase
 
             var checks = CreateChecks(caller, passwordIsValid: true);
 
-            var input = CreateInput(site, siteName: "Wrong Site");
+            var input = CreateInput(siteName: "Wrong Site");
 
             var error = await CreateChecker(checks).CanDeleteAsync(input, caller, site, CancellationToken.None);
 
@@ -91,7 +91,7 @@ public class SiteDeleteCheckerFixture : PotFixtureBase
             return new SiteDeleteChecker(checks, Substitute.For<ILogger<SiteDeleteChecker>>());
         }
 
-        private static Input CreateInput(SiteEntity site, string siteName)
+        private static Input CreateInput(string siteName)
         {
             return new Input
             {

@@ -130,7 +130,7 @@ public class CheckTargetIsNotPlatformAdminFixture : PotFixtureBase
             error.ShouldBeNull();
         }
 
-        private Task<ApiDetailError?> CheckAsync(CheckTargetIsNotPlatformAdmin check, UserEntity target,
+        private static Task<ApiDetailError?> CheckAsync(CheckTargetIsNotPlatformAdmin check, UserEntity target,
             UserStatus status, params Guid[] platformAdminRowIds)
         {
             var input = new Input

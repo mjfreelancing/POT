@@ -39,6 +39,8 @@ public class HealthCheckUnhealthyFixture : IAsyncLifetime
         _factory = null;
 
         await Task.CompletedTask;
+
+        GC.SuppressFinalize(this);
     }
 
     [Fact]

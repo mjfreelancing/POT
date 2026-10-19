@@ -91,7 +91,7 @@ public class BudgetReminderEmailWorkerFixture : PotFixtureBase
                 scopeFactoryFake,
                 serviceHealthPollerFake);
 
-            var hostedService = (IHostedService)worker;
+            var hostedService = worker;
 
             await hostedService.StartAsync(CancellationToken.None);
 
@@ -168,7 +168,7 @@ public class BudgetReminderEmailWorkerFixture : PotFixtureBase
                 scopeFactoryFake,
                 serviceHealthPollerFake);
 
-            var hostedService = (IHostedService)worker;
+            var hostedService = worker;
 
             await hostedService.StartAsync(CancellationToken.None);
 

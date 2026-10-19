@@ -36,7 +36,7 @@ public class CheckSiteNameMatchesFixture : PotFixtureBase
             error.ShouldBeNull();
         }
 
-        private Task<ApiDetailError?> CheckAsync(UserEntity caller, SiteEntity site, string siteName)
+        private static Task<ApiDetailError?> CheckAsync(UserEntity caller, SiteEntity site, string siteName)
         {
             var state = new InputState
             {
@@ -52,7 +52,7 @@ public class CheckSiteNameMatchesFixture : PotFixtureBase
         }
     }
 
-    private CheckSiteNameMatches CreateCheck()
+    private static CheckSiteNameMatches CreateCheck()
     {
         return new CheckSiteNameMatches(Substitute.For<ILogger<CheckSiteNameMatches>>());
     }

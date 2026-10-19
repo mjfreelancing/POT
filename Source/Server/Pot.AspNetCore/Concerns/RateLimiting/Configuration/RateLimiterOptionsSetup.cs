@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Pot.App.Errors;
 using Pot.AspNetCore.Concerns.ProblemDetails;

@@ -96,5 +96,7 @@ public abstract class IntegrationFixtureBase : IAsyncLifetime
             await _container.DisposeAsync();
             _container = null;
         }
+
+        GC.SuppressFinalize(this);
     }
 }

@@ -111,7 +111,7 @@ public class DatabaseConfigurationSetupFixture : PotFixtureBase
 
     private static DatabaseConfigurationSetup CreateSetup()
     {
-        return new DatabaseConfigurationSetup(BuildConfiguration(new Dictionary<string, string?>()));
+        return new DatabaseConfigurationSetup(BuildConfiguration([]));
     }
 
     private static DatabaseConfiguration CreateConfiguration(string host = "localhost", string name = "Pot",

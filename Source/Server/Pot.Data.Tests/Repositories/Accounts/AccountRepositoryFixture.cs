@@ -307,7 +307,7 @@ public class AccountRepositoryFixture : PotFixtureBase
             var result = await context.Repository.GetAllAccountsWithLinkedCountsAsync(Xunit.TestContext.Current.CancellationToken);
 
             result.Count.ShouldBe(2);
-            result.ShouldHaveValues(item => item.Account.Description, new[] { "Account 1", "Account 2" });
+            result.ShouldHaveValues(item => item.Account.Description, ["Account 1", "Account 2"]);
 
             var resultAccount1 = result.Single(item => item.Account.Description == "Account 1");
             resultAccount1.LinkedIncomes.ShouldBe(1);

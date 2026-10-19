@@ -102,7 +102,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
                 var result = await context.GetAllAccountsAsync(Xunit.TestContext.Current.CancellationToken);
 
                 result.Count.ShouldBe(3);
-                result.ShouldHaveValues(account => account.Description, new[] { "Account 1", "Account 2", "Account 3" });
+                result.ShouldHaveValues(account => account.Description, ["Account 1", "Account 2", "Account 3"]);
             }
 
             [Fact]
@@ -151,7 +151,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 result.Count.ShouldBe(1);
                 result[0].Expenses.Count.ShouldBe(2);
-                result[0].Expenses.ShouldHaveValues(expense => expense.Description, new[] { "Included Expense 1", "Included Expense 2" });
+                result[0].Expenses.ShouldHaveValues(expense => expense.Description, ["Included Expense 1", "Included Expense 2"]);
             }
 
             [Fact]
@@ -194,7 +194,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 result.Count.ShouldBe(1);
                 result[0].Expenses.Count.ShouldBe(2);
-                result[0].Expenses.ShouldHaveValues(expense => expense.Description, new[] { "Included 1", "Included 2" });
+                result[0].Expenses.ShouldHaveValues(expense => expense.Description, ["Included 1", "Included 2"]);
             }
         }
 
@@ -218,7 +218,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 result.Count.ShouldBe(1);
                 result[0].Incomes.Count.ShouldBe(2);
-                result[0].Incomes.ShouldHaveValues(income => income.Description, new[] { "Included Income 1", "Included Income 2" });
+                result[0].Incomes.ShouldHaveValues(income => income.Description, ["Included Income 1", "Included Income 2"]);
             }
 
             [Fact]
@@ -261,7 +261,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
 
                 result.Count.ShouldBe(1);
                 result[0].Incomes.Count.ShouldBe(2);
-                result[0].Incomes.ShouldHaveValues(income => income.Description, new[] { "Included 1", "Included 2" });
+                result[0].Incomes.ShouldHaveValues(income => income.Description, ["Included 1", "Included 2"]);
             }
         }
 
@@ -367,7 +367,7 @@ public class ProjectionsRepositoryFixture : PotFixtureBase
                 var result = await context.GetAllAccountsAsync(Xunit.TestContext.Current.CancellationToken);
 
                 result.Count.ShouldBe(3);
-                result.ShouldHaveValues(account => account.Description, new[] { "Account 1", "Account 2", "Account 3" });
+                result.ShouldHaveValues(account => account.Description, ["Account 1", "Account 2", "Account 3"]);
 
                 var resultAccount1 = result.First(account => account.Description == "Account 1");
                 resultAccount1.Expenses.Count.ShouldBe(1);

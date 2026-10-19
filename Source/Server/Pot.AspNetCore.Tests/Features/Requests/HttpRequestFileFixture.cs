@@ -1,6 +1,6 @@
+using Shouldly;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Shouldly;
 
 namespace Pot.AspNetCore.Tests.Features.Requests;
 
@@ -9,13 +9,22 @@ namespace Pot.AspNetCore.Tests.Features.Requests;
 /// need, and Visual Studio's REST editor silently mis-reads some shapes of them, so the rules they rely on are
 /// asserted here rather than left to whoever edits the file next.
 /// </summary>
-public class HttpRequestFileFixture
+public partial class HttpRequestFileFixture
 {
-    private static readonly Regex VariableReferencePattern = new(@"\{\{([^{}]+)\}\}", RegexOptions.Compiled);
-    private static readonly Regex ResponseReferencePattern = new(@"\A[\w-]+\.(response|request)\.", RegexOptions.Compiled);
-    private static readonly Regex FileVariablePattern = new(@"(?m)^\s*@\w+\s*=", RegexOptions.Compiled);
-    private static readonly Regex MarkerOnlyCommentPattern = new(@"(?m)^(//|#)[ \t]*\r?$", RegexOptions.Compiled);
-    private static readonly Regex NamedRequestPattern = new(@"(?m)^# @name (\w+)\s*$", RegexOptions.Compiled);
+    [GeneratedRegex(@"\{\{([^{}]+)\}\}")]
+    private static partial Regex VariableReferencePattern();
+
+    [GeneratedRegex(@"\A[\w-]+\.(response|request)\.")]
+    private static partial Regex ResponseReferencePattern();
+
+    [GeneratedRegex(@"(?m)^\s*@\w+\s*=")]
+    private static partial Regex FileVariablePattern();
+
+    [GeneratedRegex(@"(?m)^(//|#)[ \t]*\r?$")]
+    private static partial Regex MarkerOnlyCommentPattern();
+
+    [GeneratedRegex(@"(?m)^# @name (\w+)\s*$")]
+    private static partial Regex NamedRequestPattern();
 
     private static readonly string ServerSourceDirectory = FindServerSourceDirectory();
     private static readonly string RequestFilePath = Path.Combine(ServerSourceDirectory, "Pot.AspNetCore", "Pot.AspNetCore.http");
@@ -51,7 +60,7 @@ public class HttpRequestFileFixture
         {
             var unresolved = new List<string>();
 
-            foreach (Match match in VariableReferencePattern.Matches(requestText))
+            foreach (Match match in VariableReferencePattern().Matches(requestText))
             {
                 var expression = match.Groups[1].Value;
 
@@ -61,7 +70,7 @@ public class HttpRequestFileFixture
                     continue;
                 }
 
-                if (ResponseReferencePattern.IsMatch(expression))
+                if (ResponseReferencePattern().IsMatch(expression))
                 {
                     if (!namedRequests.Contains(expression.Split('.')[0]))
                     {
@@ -88,7 +97,7 @@ public class HttpRequestFileFixture
 
         // Values belong in the environment files so every request file resolves the same keys, and the
         // environment files are documented by the comment block inside the request file.
-        FileVariablePattern.IsMatch(requestText)
+        FileVariablePattern().IsMatch(requestText)
             .ShouldBeFalse("the request file must read its values from the environment files, not from @ declarations");
     }
 
@@ -97,7 +106,7 @@ public class HttpRequestFileFixture
     {
         var requestText = File.ReadAllText(RequestFilePath);
 
-        var offendingLines = MarkerOnlyCommentPattern.Matches(requestText)
+        var offendingLines = MarkerOnlyCommentPattern().Matches(requestText)
             .Select(match => 1 + requestText.Take(match.Index).Count(character => character == '\n'))
             .ToList();
 
@@ -162,7 +171,7 @@ public class HttpRequestFileFixture
 
     private static HashSet<string> ReadNamedRequests(string requestText)
     {
-        return NamedRequestPattern.Matches(requestText)
+        return NamedRequestPattern().Matches(requestText)
             .Select(match => match.Groups[1].Value)
             .ToHashSet(StringComparer.Ordinal);
     }

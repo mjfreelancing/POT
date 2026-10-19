@@ -29,6 +29,8 @@ public class CorrelationAndProblemDetailsFixture : IntegrationFixtureBase
     private const string AllowedOrigin = "http://localhost:3000";
     private const string InvalidCharactersDetail = "CorrelationId may only contain letters, digits, '-', '_', '.' and ':'";
 
+    private static readonly JsonSerializerOptions WebJsonSerializerOptions = new(JsonSerializerDefaults.Web);
+
     [Fact]
     public async Task Should_Return_BadRequest_Before_Authentication_When_CorrelationId_Header_Exceeds_Max_Length()
     {
@@ -260,7 +262,7 @@ public class CorrelationAndProblemDetailsFixture : IntegrationFixtureBase
 
         var problemDetails = JsonSerializer.Deserialize<ProblemDetailsResponse>(
             content,
-            new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            WebJsonSerializerOptions);
 
         problemDetails.ShouldNotBeNull();
 

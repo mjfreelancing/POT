@@ -105,7 +105,7 @@ public abstract class IntegrationAuthFixtureBase : IntegrationFixtureBase
 
         using var request = new HttpRequestMessage(HttpMethod.Post, LoginPath)
         {
-            Content = JsonContent.Create(new { Username = user.Username, Password = user.Password })
+            Content = JsonContent.Create(new { user.Username, user.Password })
         };
 
         request.Headers.Add("User-Agent", userAgent);

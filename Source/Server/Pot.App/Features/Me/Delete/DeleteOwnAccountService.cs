@@ -93,12 +93,12 @@ internal sealed class DeleteOwnAccountService : IDeleteOwnAccountService
                 .Where(administrator => administrator.RowId != caller.RowId)
                 .Select(administrator => (administrator.Username, administrator.Email)));
 
-            foreach (var recipient in recipients)
+            foreach (var (Username, Email) in recipients)
             {
                 var deletedInfo = new EmailUserDeletedInfo
                 {
-                    Username = recipient.Username,
-                    Email = recipient.Email,
+                    Username = Username,
+                    Email = Email,
                     DeletedUsername = caller.Username,
                     DeletedByLabel = SelfDeletionLabel,
                     SiteName = caller.Site.Name

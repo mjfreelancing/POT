@@ -52,7 +52,7 @@ public class UserDeleteCheckerFixture : PotFixtureBase
             error.ErrorMessage.ShouldBe(SelfMessage);
         }
 
-        private IUserDeleteCheck[] CreateChecks(bool passwordIsValid)
+        private static IUserDeleteCheck[] CreateChecks(bool passwordIsValid)
         {
             var passwordHasher = Substitute.For<IUserPasswordHasher>();
 

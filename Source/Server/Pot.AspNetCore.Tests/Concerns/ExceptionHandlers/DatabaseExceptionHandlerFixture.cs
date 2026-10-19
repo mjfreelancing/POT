@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using NSubstitute;
 using Npgsql;
+using NSubstitute;
 using Pot.App.Errors;
 using Pot.AspNetCore.Concerns.ExceptionHandlers;
 using Shouldly;
@@ -21,17 +21,22 @@ public class DatabaseExceptionHandlerFixture
 
     public DatabaseExceptionHandlerFixture()
     {
+        // NSubstitute's fluent Returns consumes the substitute's ValueTask once; CA2012 cannot see through the extension.
+#pragma warning disable CA2012
         _problemDetailsService
             .TryWriteAsync(Arg.Do<ProblemDetailsContext>(context => _writtenContext = context))
-            .Returns(ValueTask.FromResult(true));
+            .Returns(_ => ValueTask.FromResult(true));
+#pragma warning restore CA2012
     }
 
-    public static TheoryData<Exception> ConflictExceptions => new()
+    public enum ConflictKind
     {
-        new UniqueConstraintException("Unique violation", CreatePostgresException()),
-        new ReferenceConstraintException("Reference violation", CreatePostgresException()),
-        new DbUpdateConcurrencyException("Concurrency failure")
-    };
+        UniqueConstraint,
+        ReferenceConstraint,
+        Concurrency
+    }
+
+    public static TheoryData<ConflictKind> ConflictKinds => [ConflictKind.UniqueConstraint, ConflictKind.ReferenceConstraint, ConflictKind.Concurrency];
 
     public class TryHandleAsync : DatabaseExceptionHandlerFixture
     {
@@ -65,12 +70,12 @@ public class DatabaseExceptionHandlerFixture
         }
 
         [Theory]
-        [MemberData(nameof(ConflictExceptions))]
-        public async Task Should_Write_Generic_409_When_Exception_Is_A_Conflict(Exception exception)
+        [MemberData(nameof(ConflictKinds))]
+        public async Task Should_Write_Generic_409_When_Exception_Is_A_Conflict(ConflictKind kind)
         {
             var httpContext = CreateHttpContext();
 
-            var handled = await HandleAsync(exception, httpContext);
+            var handled = await HandleAsync(CreateConflictException(kind), httpContext);
 
             handled.ShouldBeTrue();
             httpContext.Response.StatusCode.ShouldBe(StatusCodes.Status409Conflict);
@@ -79,9 +84,11 @@ public class DatabaseExceptionHandlerFixture
         }
 
         [Theory]
-        [MemberData(nameof(ConflictExceptions))]
-        public async Task Should_Log_Warning_With_Exception_When_Exception_Is_A_Conflict(Exception exception)
+        [MemberData(nameof(ConflictKinds))]
+        public async Task Should_Log_Warning_With_Exception_When_Exception_Is_A_Conflict(ConflictKind kind)
         {
+            var exception = CreateConflictException(kind);
+
             await HandleAsync(exception);
 
             var record = _logger.Collector.GetSnapshot().ShouldHaveSingleItem();
@@ -134,6 +141,17 @@ public class DatabaseExceptionHandlerFixture
 
         error["errorCode"].ShouldBe(errorCode);
         error["errorMessage"].ShouldBe(message);
+    }
+
+    private static Exception CreateConflictException(ConflictKind kind)
+    {
+        return kind switch
+        {
+            ConflictKind.UniqueConstraint => new UniqueConstraintException("Unique violation", CreatePostgresException()),
+            ConflictKind.ReferenceConstraint => new ReferenceConstraintException("Reference violation", CreatePostgresException()),
+            ConflictKind.Concurrency => new DbUpdateConcurrencyException("Concurrency failure"),
+            _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null)
+        };
     }
 
     private static PostgresException CreatePostgresException()

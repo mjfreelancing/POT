@@ -17,9 +17,12 @@ public class BadRequestExceptionHandlerFixture
 
     public BadRequestExceptionHandlerFixture()
     {
+        // NSubstitute's fluent Returns consumes the substitute's ValueTask once; CA2012 cannot see through the extension.
+#pragma warning disable CA2012
         _problemDetailsService
             .WriteAsync(Arg.Do<ProblemDetailsContext>(context => _writtenContext = context))
-            .Returns(ValueTask.CompletedTask);
+            .Returns(_ => ValueTask.CompletedTask);
+#pragma warning restore CA2012
     }
 
     public class TryHandleAsync : BadRequestExceptionHandlerFixture

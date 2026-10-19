@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Pot.AspNetCore.Integration.Tests.Host;
@@ -52,7 +51,7 @@ public class SessionValidationRoundTripFixture : IntegrationAuthFixtureBase
     /// </summary>
     private sealed class CommandCountingInterceptor : DbCommandInterceptor
     {
-        private readonly List<string> _commandTexts = new();
+        private readonly List<string> _commandTexts = [];
         private readonly Lock _gate = new();
 
         public IReadOnlyList<string> CommandTexts
@@ -61,7 +60,7 @@ public class SessionValidationRoundTripFixture : IntegrationAuthFixtureBase
             {
                 lock (_gate)
                 {
-                    return _commandTexts.ToArray();
+                    return [.. _commandTexts];
                 }
             }
         }

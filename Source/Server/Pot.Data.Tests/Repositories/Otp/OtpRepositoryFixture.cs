@@ -60,7 +60,7 @@ public class OtpRepositoryFixture : PotFixtureBase
             var result = await context.Repository.GetPendingExpiredAsync(reason: null, now, Xunit.TestContext.Current.CancellationToken);
 
             result.Count.ShouldBe(2);
-            result.ShouldHaveValues(otpRequest => otpRequest.RowId, new[] { expiredSignup.RowId, expiredPasswordReset.RowId });
+            result.ShouldHaveValues(otpRequest => otpRequest.RowId, [expiredSignup.RowId, expiredPasswordReset.RowId]);
         }
 
         [Fact]

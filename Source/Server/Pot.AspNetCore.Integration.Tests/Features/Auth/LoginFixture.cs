@@ -30,7 +30,7 @@ public class LoginFixture : IntegrationAuthFixtureBase
 
         using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/login")
         {
-            Content = JsonContent.Create(new { Username = user.Username, Password = user.Password })
+            Content = JsonContent.Create(new { user.Username, user.Password })
         };
 
         request.Headers.Add("User-Agent", "POT Integration Test Agent/1.0");

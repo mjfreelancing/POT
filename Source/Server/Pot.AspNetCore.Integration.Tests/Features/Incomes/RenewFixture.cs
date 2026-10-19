@@ -22,7 +22,7 @@ public class RenewFixture : IntegrationAuthFixtureBase
         using var client = await CreateAuthenticatedClientAsync(admin);
 
         var today = GetSiteLocalDateToday();
-        var incomeRowId = await CreateIncomeAsync(client, today, today.AddDays(-45));
+        var incomeRowId = await CreateIncomeAsync(client, today.AddDays(-45));
 
         var response = await client.RenewIncomesAsync([incomeRowId], today, RenewalMode.Overdue);
 
@@ -41,7 +41,7 @@ public class RenewFixture : IntegrationAuthFixtureBase
         using var client = await CreateAuthenticatedClientAsync(admin);
 
         var today = GetSiteLocalDateToday();
-        var incomeRowId = await CreateIncomeAsync(client, today, today.AddDays(5));
+        var incomeRowId = await CreateIncomeAsync(client, today.AddDays(5));
 
         var response = await client.RenewIncomesAsync([incomeRowId], today, RenewalMode.Future);
 
@@ -64,7 +64,7 @@ public class RenewFixture : IntegrationAuthFixtureBase
         await response.ShouldHaveStatusAsync(HttpStatusCode.BadRequest);
     }
 
-    private static async Task<Guid> CreateIncomeAsync(HttpClient client, DateOnly today, DateOnly nextDue)
+    private static async Task<Guid> CreateIncomeAsync(HttpClient client, DateOnly nextDue)
     {
         var accountRowId = await client.CreateAccountAsync($"Income Account {Guid.NewGuid():N}", AccountBalance);
         var request = IncomeRequestFactory.CreateIncome(accountRowId, nextDue, Frequency.Days, CycleDays, IncomeAmount);

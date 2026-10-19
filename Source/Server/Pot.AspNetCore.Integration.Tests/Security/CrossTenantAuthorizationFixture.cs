@@ -25,8 +25,16 @@ namespace Pot.AspNetCore.Integration.Tests.Security;
 /// The tests read the target's current etag from the test database so that each case exercises
 /// authorization rather than the concurrency check.
 /// </remarks>
-public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
+public partial class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
 {
+    [GeneratedRegex("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", RegexOptions.IgnoreCase)]
+    private static partial Regex OpaqueIdentifierPattern();
+
+    // A trace id and a correlation id are generated per request, so their values say nothing about the target;
+    // every other member of the two bodies has to match.
+    [GeneratedRegex("(\"(?:traceId|correlationId)\":\")[^\"]*", RegexOptions.IgnoreCase)]
+    private static partial Regex PerRequestIdentifierPattern();
+
     private const string UpdatedDisplayName = "Cross Tenant Update";
     private const string UpdatedEmail = "cross-tenant@example.com";
     private const string UpdatedSiteName = "Cross Tenant Site";
@@ -118,7 +126,7 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
         var targetBefore = await GetUserAsync(target.UserRowId);
 
         using var client = await CreateAuthenticatedClientAsync(caller);
-        using var content = JsonContent.Create(new { Etag = targetBefore.Etag, Status = nameof(UserStatus.Disabled) });
+        using var content = JsonContent.Create(new { targetBefore.Etag, Status = nameof(UserStatus.Disabled) });
         using var response = await client.PutAsync(
             $"/api/users/{target.UserRowId}/status",
             content,
@@ -139,7 +147,7 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
         var adminRoleRowId = await GetRoleRowIdAsync(Role.Admin);
 
         using var client = await CreateAuthenticatedClientAsync(caller);
-        using var content = JsonContent.Create(new { Etag = targetBefore.Etag, RoleIds = new[] { adminRoleRowId } });
+        using var content = JsonContent.Create(new { targetBefore.Etag, RoleIds = new[] { adminRoleRowId } });
         using var response = await client.PutAsync(
             $"/api/users/{target.UserRowId}/roles",
             content,
@@ -205,7 +213,7 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
         using var client = await CreateAuthenticatedClientAsync(caller);
         using var content = JsonContent.Create(new
         {
-            Etag = targetSite.Etag,
+            targetSite.Etag,
             Name = UpdatedSiteName,
             Description = "Cross tenant rewrite"
         });
@@ -253,7 +261,7 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
         var site = callerWithSite.Site;
         using var content = JsonContent.Create(new
         {
-            Etag = site.Etag,
+            site.Etag,
             Name = UpdatedSiteName,
             Description = "Own site rewrite"
         });
@@ -294,7 +302,7 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
         // Signing in records the login on the user row, which changes its etag, so read it afterwards.
         var callerBefore = await GetUserAsync(caller.UserRowId);
 
-        using var content = JsonContent.Create(new { Etag = callerBefore.Etag, Status = nameof(UserStatus.Disabled) });
+        using var content = JsonContent.Create(new { callerBefore.Etag, Status = nameof(UserStatus.Disabled) });
         using var response = await client.PutAsync(
             $"/api/users/{caller.UserRowId}/status",
             content,
@@ -318,7 +326,7 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
         // Signing in records the login on the user row, which changes its etag, so read it afterwards.
         var callerBefore = await GetUserAsync(caller.UserRowId);
 
-        using var content = JsonContent.Create(new { Etag = callerBefore.Etag, RoleIds = Array.Empty<Guid>() });
+        using var content = JsonContent.Create(new { callerBefore.Etag, RoleIds = Array.Empty<Guid>() });
         using var response = await client.PutAsync(
             $"/api/users/{caller.UserRowId}/roles",
             content,
@@ -366,12 +374,12 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
 
         using var foreignResponse = await client.PutAsync(
             $"/api/users/{target.UserRowId}/status",
-            JsonContent.Create(new { Etag = targetBefore.Etag, Status = nameof(UserStatus.Disabled) }),
+            JsonContent.Create(new { targetBefore.Etag, Status = nameof(UserStatus.Disabled) }),
             TestContext.Current.CancellationToken);
 
         using var missingResponse = await client.PutAsync(
             $"/api/users/{Guid.NewGuid()}/status",
-            JsonContent.Create(new { Etag = targetBefore.Etag, Status = nameof(UserStatus.Disabled) }),
+            JsonContent.Create(new { targetBefore.Etag, Status = nameof(UserStatus.Disabled) }),
             TestContext.Current.CancellationToken);
 
         // Anything that separates the two responses turns the route into a membership oracle.
@@ -433,7 +441,7 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
         var collector = GetLogCollector();
         collector.Clear();
 
-        using var content = JsonContent.Create(new { Etag = targetBefore.Etag, Status = nameof(UserStatus.Disabled) });
+        using var content = JsonContent.Create(new { targetBefore.Etag, Status = nameof(UserStatus.Disabled) });
         using var response = await client.PutAsync(
             $"/api/users/{target.UserRowId}/status",
             content,
@@ -464,7 +472,7 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
         using var client = factory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokens.AccessToken);
 
-        using var content = JsonContent.Create(new { Etag = targetBefore.Etag, Status = nameof(UserStatus.Disabled) });
+        using var content = JsonContent.Create(new { targetBefore.Etag, Status = nameof(UserStatus.Disabled) });
         using var response = await client.PutAsync(
             $"/api/users/{target.UserRowId}/status",
             content,
@@ -497,7 +505,7 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
 
         var callerBefore = await GetUserAsync(caller.UserRowId);
 
-        using var content = JsonContent.Create(new { Etag = callerBefore.Etag, Status = nameof(UserStatus.Disabled) });
+        using var content = JsonContent.Create(new { callerBefore.Etag, Status = nameof(UserStatus.Disabled) });
         using var response = await client.PutAsync(
             $"/api/users/{caller.UserRowId}/status",
             content,
@@ -530,7 +538,7 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
         using var client = factory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokens.AccessToken);
 
-        using var content = JsonContent.Create(new { Etag = targetBefore.Etag, Status = nameof(UserStatus.Disabled) });
+        using var content = JsonContent.Create(new { targetBefore.Etag, Status = nameof(UserStatus.Disabled) });
         using var response = await client.PutAsync(
             $"/api/users/{target.UserRowId}/status",
             content,
@@ -560,7 +568,7 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
         using var client = factory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokens.AccessToken);
 
-        using var content = JsonContent.Create(new { Etag = targetBefore.Etag, Status = nameof(UserStatus.Disabled) });
+        using var content = JsonContent.Create(new { targetBefore.Etag, Status = nameof(UserStatus.Disabled) });
         using var response = await client.PutAsync(
             $"/api/users/{target.UserRowId}/status",
             content,
@@ -594,7 +602,7 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
         // Signing in records the login on the user row, which changes its etag, so read it afterwards.
         var callerBefore = await GetUserAsync(caller.UserRowId);
 
-        using var content = JsonContent.Create(new { Etag = callerBefore.Etag, Status = nameof(UserStatus.Disabled) });
+        using var content = JsonContent.Create(new { callerBefore.Etag, Status = nameof(UserStatus.Disabled) });
         using var response = await client.PutAsync(
             $"/api/users/{caller.UserRowId}/status",
             content,
@@ -620,7 +628,7 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
         var colleagueBefore = await GetUserAsync(colleague.UserRowId);
 
         using var client = await CreateAuthenticatedClientAsync(caller);
-        using var content = JsonContent.Create(new { Etag = colleagueBefore.Etag, Status = nameof(UserStatus.Disabled) });
+        using var content = JsonContent.Create(new { colleagueBefore.Etag, Status = nameof(UserStatus.Disabled) });
         using var response = await client.PutAsync(
             $"/api/users/{colleague.UserRowId}/status",
             content,
@@ -644,7 +652,7 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
         // Signing in records the login on the user row, which changes its etag, so read it afterwards.
         var callerBefore = await GetUserAsync(caller.UserRowId);
 
-        using var content = JsonContent.Create(new { Etag = callerBefore.Etag, RoleIds = Array.Empty<Guid>() });
+        using var content = JsonContent.Create(new { callerBefore.Etag, RoleIds = Array.Empty<Guid>() });
         using var response = await client.PutAsync(
             $"/api/users/{caller.UserRowId}/roles",
             content,
@@ -690,7 +698,7 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
         var colleagueBefore = await GetUserAsync(colleague.UserRowId);
 
         using var client = await CreateAuthenticatedClientAsync(caller);
-        using var content = JsonContent.Create(new { Etag = colleagueBefore.Etag, Status = nameof(UserStatus.Disabled) });
+        using var content = JsonContent.Create(new { colleagueBefore.Etag, Status = nameof(UserStatus.Disabled) });
         using var response = await client.PutAsync(
             $"/api/users/{colleague.UserRowId}/status",
             content,
@@ -714,7 +722,7 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
         var viewerRoleRowId = await GetRoleRowIdAsync(Role.Viewer);
 
         using var client = await CreateAuthenticatedClientAsync(caller);
-        using var content = JsonContent.Create(new { Etag = colleagueBefore.Etag, RoleIds = new[] { viewerRoleRowId } });
+        using var content = JsonContent.Create(new { colleagueBefore.Etag, RoleIds = new[] { viewerRoleRowId } });
         using var response = await client.PutAsync(
             $"/api/users/{colleague.UserRowId}/roles",
             content,
@@ -752,20 +760,10 @@ public class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBase
 
     private static string NormaliseOpaqueIdentifiers(string body)
     {
-        var withoutGuids = OpaqueIdentifierPattern.Replace(body, "{identifier}");
+        var withoutGuids = OpaqueIdentifierPattern().Replace(body, "{identifier}");
 
-        return PerRequestIdentifierPattern.Replace(withoutGuids, "$1{identifier}");
+        return PerRequestIdentifierPattern().Replace(withoutGuids, "$1{identifier}");
     }
-
-    private static readonly Regex OpaqueIdentifierPattern = new(
-        "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-        RegexOptions.IgnoreCase);
-
-    // A trace id and a correlation id are generated per request, so their values say nothing about the target;
-    // every other member of the two bodies has to match.
-    private static readonly Regex PerRequestIdentifierPattern = new(
-        "(\"(?:traceId|correlationId)\":\")[^\"]*",
-        RegexOptions.IgnoreCase);
 
     private static HttpRequestMessage CreateUserDetailsRequest(Guid userRowId, long etag)
     {

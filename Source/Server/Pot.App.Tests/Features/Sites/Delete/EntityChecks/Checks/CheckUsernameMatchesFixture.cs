@@ -36,7 +36,7 @@ public class CheckUsernameMatchesFixture : PotFixtureBase
             error.ShouldBeNull();
         }
 
-        private Task<ApiDetailError?> CheckAsync(UserEntity caller, SiteEntity site, string username)
+        private static Task<ApiDetailError?> CheckAsync(UserEntity caller, SiteEntity site, string username)
         {
             var state = new InputState
             {
@@ -52,7 +52,7 @@ public class CheckUsernameMatchesFixture : PotFixtureBase
         }
     }
 
-    private CheckUsernameMatches CreateCheck()
+    private static CheckUsernameMatches CreateCheck()
     {
         return new CheckUsernameMatches(Substitute.For<ILogger<CheckUsernameMatches>>());
     }

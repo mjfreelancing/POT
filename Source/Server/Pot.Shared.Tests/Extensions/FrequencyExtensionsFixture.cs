@@ -9,13 +9,11 @@ public class FrequencyExtensionsFixture : PotFixtureBase
 {
     public class GetDaysToNext : FrequencyExtensionsFixture
     {
-        public static IEnumerable<object[]> EndOfMonthMonthlyTraversalCases()
+        public static TheoryData<DateOnly, DateOnly[]> EndOfMonthMonthlyTraversalCases => new()
         {
-            yield return
-            [
+            {
                 new DateOnly(2023, 12, 31),
-                new[]
-                {
+                [
                     new DateOnly(2024, 1, 31),
                     new DateOnly(2024, 2, 29),
                     new DateOnly(2024, 3, 31),
@@ -31,26 +29,24 @@ public class FrequencyExtensionsFixture : PotFixtureBase
                     new DateOnly(2025, 1, 31),
                     new DateOnly(2025, 2, 28),
                     new DateOnly(2025, 3, 31),
-                },
-            ];
-        }
+                ]
+            }
+        };
 
-        public static IEnumerable<object[]> EndOfMonthQuarterlyTraversalCases()
+        public static TheoryData<DateOnly, DateOnly[]> EndOfMonthQuarterlyTraversalCases => new()
         {
-            yield return
-            [
+            {
                 new DateOnly(2023, 12, 31),
-                new[]
-                {
+                [
                     new DateOnly(2024, 3, 31),
                     new DateOnly(2024, 6, 30),
                     new DateOnly(2024, 9, 30),
                     new DateOnly(2024, 12, 31),
                     new DateOnly(2025, 3, 31),
                     new DateOnly(2025, 6, 30),
-                },
-            ];
-        }
+                ]
+            }
+        };
 
         [Fact]
         public void Should_Return_Frequency_Count_For_Days()
@@ -102,7 +98,7 @@ public class FrequencyExtensionsFixture : PotFixtureBase
 
         [Theory]
         [MemberData(nameof(EndOfMonthMonthlyTraversalCases))]
-        public void Should_Advance_EndOfMonth_One_Month_At_A_Time_Through_Leap_And_NonLeap_Februaries(DateOnly startDate, IReadOnlyList<DateOnly> expectedDates)
+        public void Should_Advance_EndOfMonth_One_Month_At_A_Time_Through_Leap_And_NonLeap_Februaries(DateOnly startDate, DateOnly[] expectedDates)
         {
             var currentDate = startDate;
 
@@ -118,7 +114,7 @@ public class FrequencyExtensionsFixture : PotFixtureBase
 
         [Theory]
         [MemberData(nameof(EndOfMonthQuarterlyTraversalCases))]
-        public void Should_Advance_EndOfMonth_Three_Months_At_A_Time(DateOnly startDate, IReadOnlyList<DateOnly> expectedDates)
+        public void Should_Advance_EndOfMonth_Three_Months_At_A_Time(DateOnly startDate, DateOnly[] expectedDates)
         {
             var currentDate = startDate;
 

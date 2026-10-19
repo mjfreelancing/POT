@@ -19,8 +19,11 @@ namespace Pot.AspNetCore.Integration.Tests.Security;
 /// set of endpoints an author has deliberately marked <c>AllowAnonymous()</c>; everything else must carry its
 /// own requirement.
 /// </remarks>
-public class EndpointAuthorizationMetadataFixture : IntegrationFixtureBase
+public partial class EndpointAuthorizationMetadataFixture : IntegrationFixtureBase
 {
+    [GeneratedRegex(@"\{([^}:]+):[^}]+\}")]
+    private static partial Regex RouteConstraintPattern();
+
     private const string AuthenticatedUserPolicy = "AuthenticatedUser";
 
     // The complete set of routes allowed to be reached while signed out. Every one runs before a session can
@@ -45,7 +48,7 @@ public class EndpointAuthorizationMetadataFixture : IntegrationFixtureBase
     {
         var unprotected = GetEndpoints()
             .Where(endpoint => endpoint.Metadata.GetMetadata<IAllowAnonymous>() is null)
-            .Where(endpoint => !endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Any())
+            .Where(endpoint => endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count == 0)
             .Select(DescribeEndpoint)
             .OrderBy(description => description, StringComparer.Ordinal)
             .ToList();
@@ -131,7 +134,7 @@ public class EndpointAuthorizationMetadataFixture : IntegrationFixtureBase
     {
         using var scope = CreateScope();
 
-        return scope.ServiceProvider.GetRequiredService<EndpointDataSource>().Endpoints.ToList();
+        return [.. scope.ServiceProvider.GetRequiredService<EndpointDataSource>().Endpoints];
     }
 
     private static bool Matches(Endpoint endpoint, string method, string route)
@@ -175,6 +178,6 @@ public class EndpointAuthorizationMetadataFixture : IntegrationFixtureBase
 
         // A route constraint - for example {id:guid} - is an implementation detail; the contract names the
         // path shape, so the constraint is dropped from both sides of the comparison.
-        return Regex.Replace(trimmed, @"\{([^}:]+):[^}]+\}", "{$1}");
+        return RouteConstraintPattern().Replace(trimmed, "{$1}");
     }
 }

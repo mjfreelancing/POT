@@ -115,12 +115,14 @@ public class EndpointResponseMetadataFixture : IntegrationFixtureBase
 
     private static List<RouteEndpoint> GetApiEndpoints(EndpointDataSource endpointDataSource)
     {
-        return endpointDataSource.Endpoints
-            .OfType<RouteEndpoint>()
-            .Where(endpoint => endpoint.RoutePattern.RawText?
-                .TrimStart('/')
-                .StartsWith("api/", StringComparison.OrdinalIgnoreCase) == true)
-            .ToList();
+        return
+        [
+            .. endpointDataSource.Endpoints
+                .OfType<RouteEndpoint>()
+                .Where(endpoint => endpoint.RoutePattern.RawText?
+                    .TrimStart('/')
+                    .StartsWith("api/", StringComparison.OrdinalIgnoreCase) == true)
+        ];
     }
 
 }

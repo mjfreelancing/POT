@@ -120,9 +120,12 @@ public class DeleteOwnAccountServiceFixture : PotFixtureBase
         {
             var caller = ArrangeCaller();
 
+            // NSubstitute's fluent Returns consumes the substitute's ValueTask once; CA2012 cannot see through the extension.
+#pragma warning disable CA2012
             _emailWriterFake
                 .SubmitAsync(Arg.Any<EmailType>(), Arg.Any<EmailConfigBase>(), Arg.Any<CancellationToken>())
                 .Returns<ValueTask>(_ => throw new InvalidOperationException("The email channel is unavailable"));
+#pragma warning restore CA2012
 
             var result = await CreateService().DeleteAccountAsync(CreateInput(caller), CancellationToken.None);
 

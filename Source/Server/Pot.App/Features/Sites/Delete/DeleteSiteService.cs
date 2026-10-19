@@ -2,7 +2,6 @@ using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
-using Pot.App.Errors;
 using Pot.App.Extensions;
 using Pot.App.Features.Sites.Delete.EntityChecks;
 using Pot.App.Features.Sites.Delete.Models;

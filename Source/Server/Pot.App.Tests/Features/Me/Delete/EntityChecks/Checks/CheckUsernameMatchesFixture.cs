@@ -4,7 +4,6 @@ using Pot.App.Errors;
 using Pot.App.Features.Me.Delete.EntityChecks;
 using Pot.App.Features.Me.Delete.EntityChecks.Checks;
 using Pot.App.Features.Me.Delete.Models;
-using Pot.Data.Entities;
 using Pot.TestUtils;
 using Shouldly;
 
@@ -40,7 +39,7 @@ public class CheckUsernameMatchesFixture : PotFixtureBase
             error.ShouldBeNull();
         }
 
-        private Task<ApiDetailError?> CheckAsync(string callerUsername, string typedUsername)
+        private static Task<ApiDetailError?> CheckAsync(string callerUsername, string typedUsername)
         {
             var state = new InputState
             {
@@ -54,7 +53,7 @@ public class CheckUsernameMatchesFixture : PotFixtureBase
         }
     }
 
-    private CheckUsernameMatches CreateCheck()
+    private static CheckUsernameMatches CreateCheck()
     {
         return new CheckUsernameMatches(Substitute.For<ILogger<CheckUsernameMatches>>());
     }

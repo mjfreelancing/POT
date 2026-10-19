@@ -3,7 +3,6 @@ using NSubstitute;
 using Pot.App.Errors;
 using Pot.App.Features.Me.Delete.EntityChecks;
 using Pot.App.Features.Me.Delete.EntityChecks.Checks;
-using Pot.App.Features.Me.Delete.Models;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Users;
 using Pot.Data.Repositories.Users.Dtos;

@@ -26,7 +26,7 @@ public class DeleteUserServiceFixture : PotFixtureBase
         [Fact]
         public async Task Should_Remove_The_Target_And_Return_Success()
         {
-            var (caller, target) = ArrangeCallerAndTarget();
+            var (_, target) = ArrangeCallerAndTarget();
 
             var result = await CreateService().DeleteUserAsync(CreateInput(target), CancellationToken.None);
 
@@ -138,9 +138,12 @@ public class DeleteUserServiceFixture : PotFixtureBase
         {
             var (_, target) = ArrangeCallerAndTarget();
 
+            // NSubstitute's fluent Returns consumes the substitute's ValueTask once; CA2012 cannot see through the extension.
+#pragma warning disable CA2012
             _emailWriterFake
                 .SubmitAsync(Arg.Any<EmailType>(), Arg.Any<EmailConfigBase>(), Arg.Any<CancellationToken>())
                 .Returns<ValueTask>(_ => throw new InvalidOperationException("The email channel is unavailable"));
+#pragma warning restore CA2012
 
             var result = await CreateService().DeleteUserAsync(CreateInput(target), CancellationToken.None);
 

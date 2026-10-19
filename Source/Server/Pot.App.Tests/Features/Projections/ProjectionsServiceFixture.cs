@@ -2030,7 +2030,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                 // Starting: 2000, Prime paid on day 0 (Jan 15): 2000 - 139 = 1861
                 // Income: bi-weekly salary (actual count from test)
                 // Expenses: rent(12) + utilities(12) + internet(12) + groceries(~52) + gas(~26) + insurance(4) + prime(1)
-                var finalDay = accountProjection.Dates.Last();
+                var finalDay = accountProjection.Dates[^1];
                 finalDay.Date.ShouldBe(new DateOnly(2026, 1, 14));
 
                 // Calculate exact final balance based on actual occurrences
@@ -2306,7 +2306,7 @@ public class ProjectionsServiceFixture : PotFixtureBase
                     expectedExpenseDescriptions: ["Bill 1", "Bill 2", "Bill 3"]);
 
                 // Verify all three expense items are present with correct amounts
-                accountProjection.Dates[5].ExpenseItems.Count().ShouldBe(3);
+                accountProjection.Dates[5].ExpenseItems.Count.ShouldBe(3);
                 accountProjection.Dates[5].ExpenseItems.ShouldContain(expense => expense.Description == "Bill 1" && expense.Amount == 100.0d);
                 accountProjection.Dates[5].ExpenseItems.ShouldContain(expense => expense.Description == "Bill 2" && expense.Amount == 150.0d);
                 accountProjection.Dates[5].ExpenseItems.ShouldContain(expense => expense.Description == "Bill 3" && expense.Amount == 75.0d);

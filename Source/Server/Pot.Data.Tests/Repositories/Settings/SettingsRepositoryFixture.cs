@@ -59,7 +59,7 @@ public class SettingsRepositoryFixture : PotFixtureBase
             var result = await context.Repository.GetAllSettingsAsync(Xunit.TestContext.Current.CancellationToken);
 
             result.Count.ShouldBe(2);
-            result.ShouldHaveValues(setting => setting.Key, new[] { EnabledKey, ReminderDaysKey });
+            result.ShouldHaveValues(setting => setting.Key, [EnabledKey, ReminderDaysKey]);
         }
 
         [Fact]
@@ -146,7 +146,7 @@ public class SettingsRepositoryFixture : PotFixtureBase
             var result = await context.Repository.GetSettingsForCategoryAsync(SettingCategory.EmailBudgetReminder, Xunit.TestContext.Current.CancellationToken);
 
             result.Count.ShouldBe(2);
-            result.ShouldHaveValues(setting => setting.Key, new[] { EnabledKey, ReminderDaysKey });
+            result.ShouldHaveValues(setting => setting.Key, [EnabledKey, ReminderDaysKey]);
             result.ShouldAllMatch(setting => setting.Category == SettingCategory.EmailBudgetReminder);
         }
 

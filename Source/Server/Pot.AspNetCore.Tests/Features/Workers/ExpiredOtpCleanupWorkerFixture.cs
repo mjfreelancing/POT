@@ -84,7 +84,7 @@ public class ExpiredOtpCleanupWorkerFixture : PotFixtureBase
                 scopeFactoryFake,
                 serviceHealthPollerFake);
 
-            var hostedService = (IHostedService)worker;
+            var hostedService = worker;
 
             await hostedService.StartAsync(CancellationToken.None);
 

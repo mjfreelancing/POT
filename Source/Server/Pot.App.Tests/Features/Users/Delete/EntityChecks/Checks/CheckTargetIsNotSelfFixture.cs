@@ -40,7 +40,7 @@ public class CheckTargetIsNotSelfFixture : PotFixtureBase
             error.ShouldBeNull();
         }
 
-        private Task<ApiDetailError?> CheckAsync(UserEntity caller, UserEntity target)
+        private static Task<ApiDetailError?> CheckAsync(UserEntity caller, UserEntity target)
         {
             var state = new InputState
             {
@@ -54,7 +54,7 @@ public class CheckTargetIsNotSelfFixture : PotFixtureBase
         }
     }
 
-    private CheckTargetIsNotSelf CreateCheck()
+    private static CheckTargetIsNotSelf CreateCheck()
     {
         return new CheckTargetIsNotSelf(Substitute.For<ILogger<CheckTargetIsNotSelf>>());
     }

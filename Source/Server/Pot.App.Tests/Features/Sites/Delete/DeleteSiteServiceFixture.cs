@@ -29,7 +29,7 @@ public class DeleteSiteServiceFixture : PotFixtureBase
         [Fact]
         public async Task Should_Remove_The_Callers_Site_And_Return_Success()
         {
-            var (caller, site) = ArrangeCallerAndSite();
+            var (_, site) = ArrangeCallerAndSite();
 
             var result = await CreateService().DeleteSiteAsync(CreateInput(site), CancellationToken.None);
 
@@ -103,9 +103,12 @@ public class DeleteSiteServiceFixture : PotFixtureBase
         {
             var (_, site) = ArrangeCallerAndSite();
 
+            // NSubstitute's fluent Returns consumes the substitute's ValueTask once; CA2012 cannot see through the extension.
+#pragma warning disable CA2012
             _emailWriterFake
                 .SubmitAsync(Arg.Any<EmailType>(), Arg.Any<EmailConfigBase>(), Arg.Any<CancellationToken>())
                 .Returns<ValueTask>(_ => throw new InvalidOperationException("The email channel is unavailable"));
+#pragma warning restore CA2012
 
             var result = await CreateService().DeleteSiteAsync(CreateInput(site), CancellationToken.None);
 
