@@ -1,0 +1,71 @@
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Pot.AspNetCore.Integration.Tests.Host;
+using Shouldly;
+using System.Net;
+using System.Text.Json;
+
+namespace Pot.AspNetCore.Integration.Tests.Pipeline;
+
+public class ClientDisconnectFixture : IntegrationFixtureBase
+{
+    private sealed class ClientDisconnectApiWebApplicationFactory : ApiWebApplicationFactory
+    {
+        public ClientDisconnectApiWebApplicationFactory(string dbHost, int dbPort)
+            : base(dbHost, dbPort)
+        {
+        }
+
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        {
+            base.ConfigureWebHost(builder);
+
+            builder.ConfigureTestServices(services =>
+                services.AddSingleton<IStartupFilter, ClientDisconnectProbe>());
+        }
+    }
+
+    [Theory]
+    [InlineData("operation-canceled")]
+    [InlineData("io")]
+    public async Task Should_Return_ClientClosedRequest_When_The_Client_Disconnects(string scenario)
+    {
+        // The custom handler that used to answer this case has been removed. The framework already
+        // recognises a client disconnect before calling any IExceptionHandler, for both
+        // OperationCanceledException and IOException, so the response must still be 499.
+        using var factory = new ClientDisconnectApiWebApplicationFactory(DbHost, DbPort);
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync(
+            $"{ClientDisconnectProbe.Path}?scenario={scenario}",
+            TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe((HttpStatusCode)499);
+        (await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken)).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Should_Return_ServerError_When_The_Cancellation_Did_Not_Come_From_The_Client()
+    {
+        // A server-side cancellation is not a client disconnect, so the framework does not take its 499
+        // path. The handlers are called (and return false), and the request ends as a 500 - the same
+        // outcome with or without the deleted handler.
+        using var factory = new ClientDisconnectApiWebApplicationFactory(DbHost, DbPort);
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync(
+            $"{ClientDisconnectProbe.Path}?scenario=server-canceled",
+            TestContext.Current.CancellationToken);
+
+        var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
+        body.ShouldNotContain("cancelled by the server");
+
+        using var problemDetails = JsonDocument.Parse(body);
+
+        problemDetails.RootElement.GetProperty("correlationId").GetString().ShouldNotBeNullOrWhiteSpace();
+    }
+}

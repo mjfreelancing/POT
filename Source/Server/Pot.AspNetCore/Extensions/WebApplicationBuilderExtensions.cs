@@ -322,13 +322,15 @@ internal static class WebApplicationBuilderExtensions
     {
         // Exception handlers are registered as a singleton.
         // Ordering of registered exception handlers matter.
+        // There is no handler for an aborted request: the exception handler middleware recognises a client
+        // disconnect (OperationCanceledException or IOException with RequestAborted cancelled), records 499
+        // and returns before calling any IExceptionHandler.
         // In Development the framework throws BadHttpRequestException when it cannot read a request.
         // Without a handler for it the exception handler middleware returns 500. The handler returns the
         // status the framework put on the exception instead - 400 for a binding failure, 413 for a body
         // past the size limit - so Development behaves like every other environment.
         builder.Services
             .AddExceptionHandler<BadRequestExceptionHandler>()
-            .AddExceptionHandler<IgnoreExceptionHandler>()
             .AddExceptionHandler<DatabaseExceptionHandler>();
 
         return builder;
