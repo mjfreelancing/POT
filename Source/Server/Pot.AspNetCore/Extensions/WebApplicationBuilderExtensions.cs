@@ -322,8 +322,12 @@ internal static class WebApplicationBuilderExtensions
     {
         // Exception handlers are registered as a singleton.
         // Ordering of registered exception handlers matter.
-        // Note: BadHttpRequestException is returned as 500 during development, but 400 in production.
+        // In Development the framework throws BadHttpRequestException when it cannot read a request.
+        // Without a handler for it the exception handler middleware returns 500. The handler returns the
+        // status the framework put on the exception instead - 400 for a binding failure, 413 for a body
+        // past the size limit - so Development behaves like every other environment.
         builder.Services
+            .AddExceptionHandler<BadRequestExceptionHandler>()
             .AddExceptionHandler<IgnoreExceptionHandler>()
             .AddExceptionHandler<DatabaseExceptionHandler>();
 

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Pot.AspNetCore.Integration.Tests.Host;
 using Pot.AspNetCore.Integration.Tests.Host.Extensions;
 using Shouldly;
 using System.Net;
@@ -210,6 +211,30 @@ public class CorrelationAndProblemDetailsFixture : IntegrationFixtureBase
     public async Task Should_Return_ProblemDetails_When_Request_Json_Is_Malformed()
     {
         using var client = CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/login")
+        {
+            Content = new StringContent("{", Encoding.UTF8, "application/json")
+        };
+
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
+
+        var problemDetails = await ReadProblemDetailsAsync(response);
+
+        problemDetails.Status.ShouldBe(StatusCodes.Status400BadRequest);
+        GetExtensionString(problemDetails, "correlationId").ShouldNotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task Should_Return_ProblemDetails_When_Request_Json_Is_Malformed_In_Development()
+    {
+        // Development turns on ThrowOnBadRequest, so the framework throws BadHttpRequestException instead
+        // of returning a 400 itself. BadRequestExceptionHandler must still answer 400, not 500.
+        using var factory = new DevelopmentApiWebApplicationFactory(DbHost, DbPort);
+        using var client = factory.CreateClient();
 
         using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/login")
         {

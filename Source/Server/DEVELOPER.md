@@ -3774,6 +3774,10 @@ internal static class EnrichedErrorExtensions
 
 **Exception Handler:**
 
+`BadRequestExceptionHandler` answers a `BadHttpRequestException` with the status the framework chose -
+400 for a binding failure, 413 for a body past the size limit - and logs it at Warning, below Error.
+It is registered before `DatabaseExceptionHandler`.
+
 ```csharp
 // Pot.AspNetCore/Concerns/ExceptionHandlers/DatabaseExceptionHandler.cs
 // Note: Exception handlers are registered as a Singleton.
