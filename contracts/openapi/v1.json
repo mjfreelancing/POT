@@ -1,0 +1,5728 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Pot.AspNetCore | v1",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "Auth Api"
+        ],
+        "summary": "Login",
+        "description": "Login the user",
+        "operationId": "LoginUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Auth_Login_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Auth_Login_Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": [
+          "Auth Api"
+        ],
+        "summary": "Logout",
+        "description": "Logout the user",
+        "operationId": "LogoutUser",
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "tags": [
+          "Auth Api"
+        ],
+        "summary": "Refresh Access Token",
+        "description": "Refresh the user access token",
+        "operationId": "RefreshToken",
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Auth_Refresh_Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/password-reset/send": {
+      "post": {
+        "tags": [
+          "Auth Api"
+        ],
+        "summary": "Request a password reset",
+        "description": "Request a password reset",
+        "operationId": "PasswordResetSend",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Auth_PasswordReset_Send_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Auth_PasswordReset_Send_Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/password-reset/verify": {
+      "post": {
+        "tags": [
+          "Auth Api"
+        ],
+        "summary": "Verify a password reset",
+        "description": "Verify a password reset",
+        "operationId": "PasswordResetVerify",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Auth_PasswordReset_Verify_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Auth_PasswordReset_Verify_Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/signup/send": {
+      "post": {
+        "tags": [
+          "Auth Api"
+        ],
+        "summary": "Request to signup",
+        "description": "Request to signup",
+        "operationId": "SignupSend",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Auth_Signup_Send_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Auth_Signup_Send_Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/signup/complete": {
+      "post": {
+        "tags": [
+          "Auth Api"
+        ],
+        "summary": "Complete a signup request",
+        "description": "Complete a signup request",
+        "operationId": "SignupComplete",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Auth_Signup_Complete_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Auth_Signup_Complete_Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/approvals/pending": {
+      "get": {
+        "tags": [
+          "Platform Api"
+        ],
+        "summary": "Get all pending approvals",
+        "description": "Get all pending approvals",
+        "operationId": "GetPendingApprovals",
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Approvals_Pending_Response[]"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/approvals/{id}/status": {
+      "put": {
+        "tags": [
+          "Platform Api"
+        ],
+        "summary": "Update a user pending approval",
+        "description": "Update a user pending approval",
+        "operationId": "UpdateUserApproval",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The user Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Approvals_UpdateStatus_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Approvals_UpdateStatus_Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/me": {
+      "get": {
+        "tags": [
+          "Me Api"
+        ],
+        "summary": "Get User Info",
+        "description": "Get the current user's information and permissions",
+        "operationId": "GetMe",
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me_Get_Response"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Me Api"
+        ],
+        "summary": "Delete my account",
+        "description": "Deletes the signed-in user's account",
+        "operationId": "DeleteMe",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Me_Delete_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/me/change-password": {
+      "put": {
+        "tags": [
+          "Me Api"
+        ],
+        "summary": "Change Password",
+        "description": "Change the user password",
+        "operationId": "ChangePassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Me_ChangePassword_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/users": {
+      "get": {
+        "tags": [
+          "Users Api"
+        ],
+        "summary": "Get all users",
+        "description": "Get all users",
+        "operationId": "GetAllUsers",
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Users_GetAll_Response[]"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/users/{id}": {
+      "put": {
+        "tags": [
+          "Users Api"
+        ],
+        "summary": "Update user details",
+        "description": "Updates existing user details",
+        "operationId": "UpdateUser",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The user Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Users_Update_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Users_Update_Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Users Api"
+        ],
+        "summary": "Delete a user",
+        "description": "Deletes a user from the caller's site",
+        "operationId": "DeleteUser",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The user Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Users_Delete_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/users/{id}/status": {
+      "put": {
+        "tags": [
+          "Users Api"
+        ],
+        "summary": "Update user status",
+        "description": "Updates user status",
+        "operationId": "UpdateUserStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The user Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Users_UpdateStatus_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Users_UpdateStatus_Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/users/{id}/roles": {
+      "put": {
+        "tags": [
+          "Users Api"
+        ],
+        "summary": "Update user roles",
+        "description": "Updates user roles",
+        "operationId": "UpdateUserRoles",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The user Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Users_UpdateRoles_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Users_UpdateRoles_Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/users/invite": {
+      "post": {
+        "tags": [
+          "Users Api"
+        ],
+        "summary": "Invite a new user",
+        "description": "Invite a new user to the same site as the caller",
+        "operationId": "InviteUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Users_Invite_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/users/{id}/resend-invite": {
+      "post": {
+        "tags": [
+          "Users Api"
+        ],
+        "summary": "Resends a user invitation",
+        "description": "Resends a user invitation",
+        "operationId": "ResendInviteUser",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/roles": {
+      "get": {
+        "tags": [
+          "Roles Api"
+        ],
+        "summary": "Get all roles",
+        "description": "Get all roles",
+        "operationId": "GetAllRoles",
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Roles_GetAll_Response[]"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/sites/{id}": {
+      "put": {
+        "tags": [
+          "Sites Api"
+        ],
+        "summary": "Update site details",
+        "description": "Updates existing site details",
+        "operationId": "UpdateSite",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The site Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Sites_Update_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Sites_Update_Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/sites/current": {
+      "delete": {
+        "tags": [
+          "Sites Api"
+        ],
+        "summary": "Delete the current site",
+        "description": "Deletes the caller's site",
+        "operationId": "DeleteSite",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Sites_Delete_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/accounts": {
+      "get": {
+        "tags": [
+          "Accounts Api"
+        ],
+        "summary": "Get all accounts",
+        "description": "Get all account details",
+        "operationId": "GetAllAccounts",
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Accounts_GetAll_Response[]"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Accounts Api"
+        ],
+        "summary": "Create account",
+        "description": "Create new account details",
+        "operationId": "CreateAccount",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Accounts_Create_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Accounts_Create_Response"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/accounts/{id}": {
+      "get": {
+        "tags": [
+          "Accounts Api"
+        ],
+        "summary": "Get account",
+        "description": "Get details for an existing account",
+        "operationId": "GetAccount",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The account Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Accounts_Get_Response"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Accounts Api"
+        ],
+        "summary": "Update account",
+        "description": "Updates existing account details",
+        "operationId": "UpdateAccount",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The account Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Accounts_Update_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Accounts_Update_Response"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Accounts Api"
+        ],
+        "summary": "Delete account",
+        "description": "Deletes existing account details",
+        "operationId": "DeleteAccount",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The account Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/incomes": {
+      "get": {
+        "tags": [
+          "Incomes Api"
+        ],
+        "summary": "Get all incomes",
+        "description": "Get all income details",
+        "operationId": "GetAllIncomes",
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Incomes_GetAll_Response[]"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Incomes Api"
+        ],
+        "summary": "Create income",
+        "description": "Create a new income source",
+        "operationId": "CreateIncome",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Incomes_Create_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Incomes_Create_Response"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/incomes/{id}": {
+      "get": {
+        "tags": [
+          "Incomes Api"
+        ],
+        "summary": "Get income",
+        "description": "Get details for an existing income source",
+        "operationId": "GetIncome",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The income Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Incomes_Get_Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Incomes Api"
+        ],
+        "summary": "Update income",
+        "description": "Updates existing income details",
+        "operationId": "UpdateIncome",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The income Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Incomes_Update_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Incomes_Update_Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Incomes Api"
+        ],
+        "summary": "Delete income",
+        "description": "Deletes existing income details",
+        "operationId": "DeleteIncome",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The income Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/incomes/renew": {
+      "post": {
+        "tags": [
+          "Incomes Api"
+        ],
+        "summary": "Renew incomes",
+        "description": "Renews selected incomes",
+        "operationId": "RenewIncomes",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Incomes_Renew_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/incomes/toggleExclude": {
+      "post": {
+        "tags": [
+          "Incomes Api"
+        ],
+        "summary": "Toggle exclude incomes",
+        "description": "Toggles the 'exclude from calculations' status of selected incomes",
+        "operationId": "ToggleExcludeIncomes",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Incomes_ToggleExclude_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/expenses": {
+      "get": {
+        "tags": [
+          "Expenses Api"
+        ],
+        "summary": "Get all expenses",
+        "description": "Get all expense details",
+        "operationId": "GetAllExpenses",
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Expenses_GetAll_Response[]"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Expenses Api"
+        ],
+        "summary": "Create expense",
+        "description": "Create new expense details",
+        "operationId": "CreateExpense",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Expenses_Create_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Expenses_Create_Response"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/expenses/{id}": {
+      "get": {
+        "tags": [
+          "Expenses Api"
+        ],
+        "summary": "Get expense",
+        "description": "Get details for an existing expense",
+        "operationId": "GetExpense",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The Expense Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Expenses_Get_Response"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Expenses Api"
+        ],
+        "summary": "Update expense",
+        "description": "Updates existing expense details",
+        "operationId": "UpdateExpense",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The expense Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Expenses_Update_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Expenses_Update_Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Expenses Api"
+        ],
+        "summary": "Delete expense",
+        "description": "Deletes an existing expense",
+        "operationId": "DeleteExpense",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The Expense Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/expenses/renew": {
+      "post": {
+        "tags": [
+          "Expenses Api"
+        ],
+        "summary": "Renew expenses",
+        "description": "Renews selected expenses",
+        "operationId": "RenewExpenses",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Expenses_Renew_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/expenses/toggleExclude": {
+      "post": {
+        "tags": [
+          "Expenses Api"
+        ],
+        "summary": "Toggle exclude expenses",
+        "description": "Toggles the 'exclude from calculations' status of selected expenses",
+        "operationId": "ToggleExcludeExpenses",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Expenses_ToggleExclude_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/accruals/status": {
+      "get": {
+        "tags": [
+          "Accruals Api"
+        ],
+        "summary": "Accruals status",
+        "description": "Get accruals status for all accounts",
+        "operationId": "GetStatus",
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Accruals_Status_Response"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/projections": {
+      "get": {
+        "tags": [
+          "Projections Api"
+        ],
+        "summary": "Get projections",
+        "description": "Get projected financial position",
+        "operationId": "GetProjections",
+        "parameters": [
+          {
+            "name": "StartDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "EndDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Projections_Get_Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/maintenance/export": {
+      "get": {
+        "tags": [
+          "Maintenance Api"
+        ],
+        "summary": "Export data",
+        "description": "Export Accounts, Incomes, and Expense data",
+        "operationId": "Export",
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/maintenance/import": {
+      "post": {
+        "tags": [
+          "Maintenance Api"
+        ],
+        "summary": "Import data",
+        "description": "Import Accounts, Incomes, and Expense data",
+        "operationId": "Import",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "File": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Maintenance_Import_Response"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/settings": {
+      "get": {
+        "tags": [
+          "Settings"
+        ],
+        "summary": "Get all site settings",
+        "description": "Retrieve all settings for the current site as a flat list",
+        "operationId": "GetAllSettings",
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Settings_GetAll_Response"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/settings/{category}/{key}": {
+      "put": {
+        "tags": [
+          "Settings"
+        ],
+        "summary": "Update a setting",
+        "description": "Create or update a single setting for the current site",
+        "operationId": "UpdateSettings",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "path",
+            "description": "The setting category",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "in": "path",
+            "description": "The setting key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Settings_Upsert_Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Settings_Upsert_Response"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AccountDailyFinancialProjection": {
+        "required": [
+          "rowId",
+          "description",
+          "dates"
+        ],
+        "type": "object",
+        "properties": {
+          "rowId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": {
+            "type": "string"
+          },
+          "dates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DateProjection"
+            }
+          }
+        }
+      },
+      "Accounts_Create_Request": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "A description of the account"
+          },
+          "balance": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The account balance",
+            "format": "double"
+          },
+          "reserved": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The minimum reserved amount",
+            "format": "double"
+          }
+        },
+        "description": "Carries the values needed to create an account."
+      },
+      "Accounts_Create_Response": {
+        "type": "object",
+        "properties": {
+          "rowId": {
+            "type": "string",
+            "description": "The resource identifier",
+            "format": "uuid"
+          },
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The entity tag for optimistic concurrency",
+            "format": "int64"
+          }
+        },
+        "description": "Describes the result of creating an account."
+      },
+      "Accounts_Get_Response": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "A description of the account"
+          },
+          "balance": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The account balance",
+            "format": "double"
+          },
+          "reserved": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The minimum reserved amount",
+            "format": "double"
+          },
+          "totalExpenseAccrued": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The total amount accrued to pay for future expenses",
+            "format": "double"
+          },
+          "totalArrears": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The total amount owed for expense cycles that are already past due",
+            "format": "double"
+          },
+          "totalCommitted": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The total committed obligation, being the accrued cycles plus the past-due arrears",
+            "format": "double"
+          },
+          "stableExpenseAccrual": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The stable daily accrual required for planning based on recurring obligations and active one-time expenses",
+            "format": "double"
+          },
+          "linkedExpenses": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The number of expenses recorded against this account",
+            "format": "int32"
+          },
+          "linkedIncomes": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The number of incomes recorded against this account",
+            "format": "int32"
+          },
+          "available": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The available balance after considering the Reserved and committed amounts",
+            "format": "double"
+          },
+          "rowId": {
+            "type": "string",
+            "description": "The resource identifier",
+            "format": "uuid"
+          },
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The entity tag for optimistic concurrency",
+            "format": "int64"
+          }
+        }
+      },
+      "Accounts_GetAll_Response": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "A description of the account"
+          },
+          "balance": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The account balance",
+            "format": "double"
+          },
+          "reserved": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The minimum reserved amount",
+            "format": "double"
+          },
+          "totalExpenseAccrued": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The total amount accrued to pay for future expenses",
+            "format": "double"
+          },
+          "totalArrears": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The total amount owed for expense cycles that are already past due",
+            "format": "double"
+          },
+          "totalCommitted": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The total committed obligation, being the accrued cycles plus the past-due arrears",
+            "format": "double"
+          },
+          "stableExpenseAccrual": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The stable daily accrual required for planning based on recurring obligations and active one-time expenses",
+            "format": "double"
+          },
+          "linkedExpenses": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The number of expenses recorded against this account",
+            "format": "int32"
+          },
+          "linkedIncomes": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The number of incomes recorded against this account",
+            "format": "int32"
+          },
+          "available": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The available balance after considering the Reserved and committed amounts",
+            "format": "double"
+          },
+          "rowId": {
+            "type": "string",
+            "description": "The resource identifier",
+            "format": "uuid"
+          },
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The entity tag for optimistic concurrency",
+            "format": "int64"
+          }
+        }
+      },
+      "Accounts_GetAll_Response[]": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Accounts_GetAll_Response"
+        }
+      },
+      "Accounts_Update_Request": {
+        "required": [
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The account's entity tag",
+            "format": "int64"
+          },
+          "description": {
+            "type": "string",
+            "description": "A description of the account"
+          },
+          "balance": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The account balance",
+            "format": "double"
+          },
+          "reserved": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The minimum reserved amount",
+            "format": "double"
+          }
+        },
+        "description": "Carries the values needed to update an account."
+      },
+      "Accounts_Update_Response": {
+        "type": "object",
+        "properties": {
+          "rowId": {
+            "type": "string",
+            "description": "The resource identifier",
+            "format": "uuid"
+          },
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The entity tag for optimistic concurrency",
+            "format": "int64"
+          }
+        }
+      },
+      "AccrualPolicy": { },
+      "Accruals_Status_Response": {
+        "required": [
+          "expenseRenewalsRequired",
+          "incomeRenewalsRequired"
+        ],
+        "type": "object",
+        "properties": {
+          "expenseRenewalsRequired": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The expense renewals required for the requested accounts."
+          },
+          "incomeRenewalsRequired": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The income renewals required for the requested accounts."
+          }
+        },
+        "description": "Represents the accrual status returned by the API."
+      },
+      "Approvals_Pending_Response": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "The user's username"
+          },
+          "email": {
+            "type": "string",
+            "description": "The user's email"
+          },
+          "rowId": {
+            "type": "string",
+            "description": "The resource identifier",
+            "format": "uuid"
+          },
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The entity tag for optimistic concurrency",
+            "format": "int64"
+          }
+        }
+      },
+      "Approvals_Pending_Response[]": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Approvals_Pending_Response"
+        }
+      },
+      "Approvals_UpdateStatus_Request": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The User's entity tag",
+            "format": "int64"
+          },
+          "status": {
+            "description": "The approval status to apply to the user",
+            "$ref": "#/components/schemas/ApprovalStatus"
+          }
+        },
+        "description": "Carries the values needed to update the status of an approval."
+      },
+      "Approvals_UpdateStatus_Response": {
+        "type": "object",
+        "properties": {
+          "rowId": {
+            "type": "string",
+            "description": "The resource identifier",
+            "format": "uuid"
+          },
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The entity tag for optimistic concurrency",
+            "format": "int64"
+          }
+        }
+      },
+      "ApprovalStatus": { },
+      "Auth_Login_Request": {
+        "required": [
+          "username",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "The user's username"
+          },
+          "password": {
+            "type": "string",
+            "description": "The user's password"
+          }
+        },
+        "description": "Carries the credentials and request context needed to sign in a user."
+      },
+      "Auth_Login_Response": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Gets the sign-in outcome."
+          },
+          "accessToken": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Gets the access token issued after successful sign-in."
+          },
+          "message": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Gets the message explaining why additional approval is required."
+          }
+        },
+        "description": "Describes the result of a user sign-in attempt."
+      },
+      "Auth_PasswordReset_Send_Request": {
+        "required": [
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "The user's username"
+          }
+        },
+        "description": "Carries the username needed to send a password-reset message."
+      },
+      "Auth_PasswordReset_Send_Response": {
+        "type": "object",
+        "properties": {
+          "referenceCode": {
+            "type": "string",
+            "description": "Gets the reference code used to complete the password-reset process."
+          }
+        },
+        "description": "Describes the result of sending a password-reset message."
+      },
+      "Auth_PasswordReset_Verify_Request": {
+        "required": [
+          "username",
+          "referenceCode",
+          "verificationCode"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "The user's username"
+          },
+          "referenceCode": {
+            "type": "string",
+            "description": "The reference code to pair with the OTP verification code"
+          },
+          "verificationCode": {
+            "type": "string",
+            "description": "The OTP verification code"
+          }
+        },
+        "description": "Carries the username, reference code and verification code needed to verify a password-reset request."
+      },
+      "Auth_PasswordReset_Verify_Response": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Gets the outcome of the password-reset verification."
+          },
+          "message": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Gets an explanation of the verification outcome, when provided."
+          },
+          "retryMinutes": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "description": "Gets the number of minutes to wait before retrying, when applicable.",
+            "format": "int32"
+          }
+        },
+        "description": "Describes the result of verifying a password-reset request."
+      },
+      "Auth_Refresh_Response": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "Gets the refreshed access token."
+          }
+        },
+        "description": "Describes the result of refreshing a user's authentication tokens."
+      },
+      "Auth_Signup_Complete_Request": {
+        "required": [
+          "username",
+          "referenceCode",
+          "verificationCode"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "The user's username"
+          },
+          "referenceCode": {
+            "type": "string",
+            "description": "The reference code to pair with the OTP verification code"
+          },
+          "verificationCode": {
+            "type": "string",
+            "description": "The OTP verficaition code"
+          }
+        },
+        "description": "Carries the username, reference code and verification code needed to complete user registration."
+      },
+      "Auth_Signup_Complete_Response": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Gets the outcome of the registration attempt."
+          },
+          "message": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Gets an explanation of the registration outcome, when provided."
+          },
+          "retryMinutes": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "description": "Gets the number of minutes to wait before retrying, when applicable.",
+            "format": "int32"
+          }
+        },
+        "description": "Describes the result of completing user registration."
+      },
+      "Auth_Signup_Send_Request": {
+        "required": [
+          "username",
+          "email"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "The user's username"
+          },
+          "email": {
+            "type": "string",
+            "description": "The user's email"
+          }
+        },
+        "description": "Carries the values needed to start a user registration request."
+      },
+      "Auth_Signup_Send_Response": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Gets the outcome of the registration request."
+          },
+          "message": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Gets an explanation of the registration outcome, when provided."
+          },
+          "referenceCode": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Gets the reference code used to complete registration."
+          }
+        },
+        "description": "Describes the result of starting a user registration request."
+      },
+      "DateProjection": {
+        "required": [
+          "date",
+          "balance",
+          "reserved",
+          "arrears",
+          "unpaidAccrual",
+          "dailyAccrual",
+          "incomeReceived",
+          "expensesPaid",
+          "expenseItems",
+          "incomeItems"
+        ],
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "balance": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "reserved": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "arrears": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "unpaidAccrual": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "dailyAccrual": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "incomeReceived": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "expensesPaid": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "expenseItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectionExpenseModel"
+            }
+          },
+          "incomeItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectionIncomeModel"
+            }
+          }
+        }
+      },
+      "Expenses_Create_Request": {
+        "required": [
+          "description",
+          "accrualPolicy",
+          "frequency"
+        ],
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "A description of the Expense"
+          },
+          "accrualStart": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "When automatic allocations will begin accruing for this expense",
+            "format": "date"
+          },
+          "nextDue": {
+            "type": "string",
+            "description": "The date when the next Expense will be due",
+            "format": "date"
+          },
+          "endDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The inclusive date when the Expense source will no longer credit the associated account",
+            "format": "date"
+          },
+          "accrualPolicy": {
+            "description": "The expense accrual policy",
+            "$ref": "#/components/schemas/AccrualPolicy"
+          },
+          "frequency": {
+            "description": "The frequency unit the associated account will be credited",
+            "$ref": "#/components/schemas/Frequency"
+          },
+          "frequencyCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The frequency count the associated account will be credited",
+            "format": "int32"
+          },
+          "amount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The Expense amount",
+            "format": "double"
+          },
+          "accountRowId": {
+            "type": "string",
+            "description": "The identifier for the associated account to be credited",
+            "format": "uuid"
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "A note about the expense"
+          }
+        },
+        "description": "Carries the values needed to create an expense."
+      },
+      "Expenses_Create_Response": {
+        "type": "object",
+        "properties": {
+          "accrualStart": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Gets the date from which the expense accruals begin, when one is configured.",
+            "format": "date"
+          },
+          "rowId": {
+            "type": "string",
+            "description": "The resource identifier",
+            "format": "uuid"
+          },
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The entity tag for optimistic concurrency",
+            "format": "int64"
+          }
+        },
+        "description": "Describes the result of creating an expense."
+      },
+      "Expenses_Get_AccountModel": {
+        "required": [
+          "rowId",
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "rowId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "Expenses_Get_Response": {
+        "type": "object",
+        "properties": {
+          "excludeFromCalcs": {
+            "type": "boolean",
+            "description": "Indicates if the expense is excluded from calculations such as accruals"
+          },
+          "description": {
+            "type": "string",
+            "description": "A description of the Expense"
+          },
+          "accrualStart": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "When automatic allocations will begin accruing for this expense",
+            "format": "date"
+          },
+          "nextDue": {
+            "type": "string",
+            "description": "When the Expense is next due",
+            "format": "date"
+          },
+          "endDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "When the Expense is no longer recurring",
+            "format": "date"
+          },
+          "accrualPolicy": {
+            "description": "The expense accrual policy",
+            "$ref": "#/components/schemas/AccrualPolicy"
+          },
+          "frequency": {
+            "description": "The Expense frequency type",
+            "$ref": "#/components/schemas/Frequency"
+          },
+          "frequencyCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The Expense frequency count",
+            "format": "int32"
+          },
+          "amount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The Expense amount",
+            "format": "double"
+          },
+          "accrued": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The amount accrued for this expense",
+            "format": "double"
+          },
+          "arrears": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The amount owed for occurrences of this expense that are already past due",
+            "format": "double"
+          },
+          "account": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "The account this Expense is associated with",
+                "$ref": "#/components/schemas/Expenses_Get_AccountModel"
+              }
+            ]
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "A note about the expense"
+          },
+          "rowId": {
+            "type": "string",
+            "description": "The resource identifier",
+            "format": "uuid"
+          },
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The entity tag for optimistic concurrency",
+            "format": "int64"
+          }
+        }
+      },
+      "Expenses_GetAll_AccountModel": {
+        "required": [
+          "rowId",
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "rowId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "Expenses_GetAll_Response": {
+        "type": "object",
+        "properties": {
+          "excludeFromCalcs": {
+            "type": "boolean",
+            "description": "Indicates if the expense is excluded from calculations such as accruals"
+          },
+          "description": {
+            "type": "string",
+            "description": "A description of the expense"
+          },
+          "accrualStart": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "When automatic allocations will begin accruing for this expense",
+            "format": "date"
+          },
+          "nextDue": {
+            "type": "string",
+            "description": "When the expense is next due",
+            "format": "date"
+          },
+          "endDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "When the Expense is no longer recurring",
+            "format": "date"
+          },
+          "accrualPolicy": {
+            "description": "The expense accrual policy",
+            "$ref": "#/components/schemas/AccrualPolicy"
+          },
+          "frequency": {
+            "description": "The expense frequency type",
+            "$ref": "#/components/schemas/Frequency"
+          },
+          "frequencyCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The expense frequency count",
+            "format": "int32"
+          },
+          "amount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The expense amount",
+            "format": "double"
+          },
+          "accrued": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The amount accrued towards this expense",
+            "format": "double"
+          },
+          "arrears": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The amount owed for occurrences of this expense that are already past due",
+            "format": "double"
+          },
+          "account": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "The account this expense is associated with",
+                "$ref": "#/components/schemas/Expenses_GetAll_AccountModel"
+              }
+            ]
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "A note about the expense"
+          },
+          "rowId": {
+            "type": "string",
+            "description": "The resource identifier",
+            "format": "uuid"
+          },
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The entity tag for optimistic concurrency",
+            "format": "int64"
+          }
+        }
+      },
+      "Expenses_GetAll_Response[]": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Expenses_GetAll_Response"
+        }
+      },
+      "Expenses_Renew_Request": {
+        "required": [
+          "asOfDate",
+          "mode"
+        ],
+        "type": "object",
+        "properties": {
+          "rowIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The Expense Ids"
+          },
+          "asOfDate": {
+            "type": "string",
+            "description": "The reference date for the renewal operation (typically today's date)",
+            "format": "date"
+          },
+          "mode": {
+            "description": "Indicates the renewal mode to be applied",
+            "$ref": "#/components/schemas/RenewalMode"
+          }
+        },
+        "description": "Carries the values needed to renew an expense."
+      },
+      "Expenses_ToggleExclude_Request": {
+        "type": "object",
+        "properties": {
+          "rowIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The Expense Ids."
+          }
+        },
+        "description": "Carries the values needed to change the exclusion setting for an expense."
+      },
+      "Expenses_Update_Request": {
+        "required": [
+          "description",
+          "accrualPolicy",
+          "frequency"
+        ],
+        "type": "object",
+        "properties": {
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The Expense's entity tag",
+            "format": "int64"
+          },
+          "excludeFromCalcs": {
+            "type": [
+              "null",
+              "boolean"
+            ],
+            "description": "Is the expense excluded from calculations such as accruals"
+          },
+          "description": {
+            "type": "string",
+            "description": "A description of the account"
+          },
+          "accrualStart": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "When automatic allocations will begin accruing for this expense",
+            "format": "date"
+          },
+          "nextDue": {
+            "type": "string",
+            "description": "The date when the next Expense amount will be credited to the associated account",
+            "format": "date"
+          },
+          "endDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The inclusive date when the Expense source will no longer credit the associated account",
+            "format": "date"
+          },
+          "accrualPolicy": {
+            "description": "The expense accrual policy",
+            "$ref": "#/components/schemas/AccrualPolicy"
+          },
+          "frequency": {
+            "description": "The frequency unit the associated account will be credited",
+            "$ref": "#/components/schemas/Frequency"
+          },
+          "frequencyCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The frequency count the associated account will be credited",
+            "format": "int32"
+          },
+          "amount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The Expense amount",
+            "format": "double"
+          },
+          "accountRowId": {
+            "type": "string",
+            "description": "The identifier for the associated account to be credited",
+            "format": "uuid"
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "A note about the expense"
+          }
+        },
+        "description": "Carries the values needed to update an expense."
+      },
+      "Expenses_Update_Response": {
+        "type": "object",
+        "properties": {
+          "accrualStart": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "When automatic allocations will begin accruing for this expense",
+            "format": "date"
+          },
+          "rowId": {
+            "type": "string",
+            "description": "The resource identifier",
+            "format": "uuid"
+          },
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The entity tag for optimistic concurrency",
+            "format": "int64"
+          }
+        }
+      },
+      "Frequency": { },
+      "IFormFile": {
+        "type": "string",
+        "format": "binary"
+      },
+      "Incomes_Create_Request": {
+        "required": [
+          "frequency"
+        ],
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "A description of the Income"
+          },
+          "nextDue": {
+            "type": "string",
+            "description": "The date when the next income amount will be credited to the associated account",
+            "format": "date"
+          },
+          "endDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The inclusive date when the income source will no longer credit the associated account",
+            "format": "date"
+          },
+          "frequency": {
+            "description": "The frequency unit the associated account will be credited",
+            "$ref": "#/components/schemas/Frequency"
+          },
+          "frequencyCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The frequency count the associated account will be credited",
+            "format": "int32"
+          },
+          "amount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The income amount",
+            "format": "double"
+          },
+          "accountRowId": {
+            "type": "string",
+            "description": "The identifier for the associated account to be credited",
+            "format": "uuid"
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "A note about the income"
+          }
+        },
+        "description": "Carries the values needed to create an income."
+      },
+      "Incomes_Create_Response": {
+        "type": "object",
+        "properties": {
+          "rowId": {
+            "type": "string",
+            "description": "The resource identifier",
+            "format": "uuid"
+          },
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The entity tag for optimistic concurrency",
+            "format": "int64"
+          }
+        },
+        "description": "Describes the result of creating an income."
+      },
+      "Incomes_Get_AccountModel": {
+        "required": [
+          "rowId",
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "rowId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "Incomes_Get_Response": {
+        "type": "object",
+        "properties": {
+          "excludeFromCalcs": {
+            "type": "boolean",
+            "description": "Indicates if the income is excluded from calculations"
+          },
+          "description": {
+            "type": "string",
+            "description": "A description of the income"
+          },
+          "nextDue": {
+            "type": "string",
+            "description": "When the income is next due.",
+            "format": "date"
+          },
+          "endDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "When the income is no longer a recurring source",
+            "format": "date"
+          },
+          "frequency": {
+            "description": "The income frequency type",
+            "$ref": "#/components/schemas/Frequency"
+          },
+          "frequencyCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The income frequency count",
+            "format": "int32"
+          },
+          "amount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The income amount",
+            "format": "double"
+          },
+          "account": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "The account this income is associated with",
+                "$ref": "#/components/schemas/Incomes_Get_AccountModel"
+              }
+            ]
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "A note about the income"
+          },
+          "rowId": {
+            "type": "string",
+            "description": "The resource identifier",
+            "format": "uuid"
+          },
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The entity tag for optimistic concurrency",
+            "format": "int64"
+          }
+        }
+      },
+      "Incomes_GetAll_AccountModel": {
+        "required": [
+          "rowId",
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "rowId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "Incomes_GetAll_Response": {
+        "type": "object",
+        "properties": {
+          "excludeFromCalcs": {
+            "type": "boolean",
+            "description": "Indicates if the income is excluded from calculations"
+          },
+          "description": {
+            "type": "string",
+            "description": "A description of the income"
+          },
+          "nextDue": {
+            "type": "string",
+            "description": "When the income is next due.",
+            "format": "date"
+          },
+          "endDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "When the income is no longer a recurring source",
+            "format": "date"
+          },
+          "frequency": {
+            "description": "The income frequency type",
+            "$ref": "#/components/schemas/Frequency"
+          },
+          "frequencyCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The income frequency count",
+            "format": "int32"
+          },
+          "amount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The income amount",
+            "format": "double"
+          },
+          "account": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "The account this income is associated with",
+                "$ref": "#/components/schemas/Incomes_GetAll_AccountModel"
+              }
+            ]
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "A note about the income"
+          },
+          "rowId": {
+            "type": "string",
+            "description": "The resource identifier",
+            "format": "uuid"
+          },
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The entity tag for optimistic concurrency",
+            "format": "int64"
+          }
+        }
+      },
+      "Incomes_GetAll_Response[]": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Incomes_GetAll_Response"
+        }
+      },
+      "Incomes_Renew_Request": {
+        "required": [
+          "asOfDate",
+          "mode"
+        ],
+        "type": "object",
+        "properties": {
+          "rowIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The Income Ids"
+          },
+          "asOfDate": {
+            "type": "string",
+            "description": "The reference date for the renewal operation (typically today's date)",
+            "format": "date"
+          },
+          "mode": {
+            "description": "Indicates the renewal mode to be applied",
+            "$ref": "#/components/schemas/RenewalMode"
+          }
+        },
+        "description": "Carries the values needed to renew an income."
+      },
+      "Incomes_ToggleExclude_Request": {
+        "type": "object",
+        "properties": {
+          "rowIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The Incomes Ids"
+          }
+        },
+        "description": "Carries the values needed to change the exclusion setting for an income."
+      },
+      "Incomes_Update_Request": {
+        "required": [
+          "description",
+          "frequency"
+        ],
+        "type": "object",
+        "properties": {
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The income's entity tag",
+            "format": "int64"
+          },
+          "excludeFromCalcs": {
+            "type": [
+              "null",
+              "boolean"
+            ],
+            "description": "Is the income excluded from calculations"
+          },
+          "description": {
+            "type": "string",
+            "description": "A description of the account"
+          },
+          "nextDue": {
+            "type": "string",
+            "description": "The date when the next income amount will be credited to the associated account",
+            "format": "date"
+          },
+          "endDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The inclusive date when the income source will no longer credit the associated account",
+            "format": "date"
+          },
+          "frequency": {
+            "description": "The frequency unit the associated account will be credited",
+            "$ref": "#/components/schemas/Frequency"
+          },
+          "frequencyCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The frequency count the associated account will be credited",
+            "format": "int32"
+          },
+          "amount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "The income amount",
+            "format": "double"
+          },
+          "accountRowId": {
+            "type": "string",
+            "description": "The identifier for the associated account to be credited",
+            "format": "uuid"
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "A note about the income"
+          }
+        },
+        "description": "Carries the values needed to update an income."
+      },
+      "Incomes_Update_Response": {
+        "type": "object",
+        "properties": {
+          "rowId": {
+            "type": "string",
+            "description": "The resource identifier",
+            "format": "uuid"
+          },
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The entity tag for optimistic concurrency",
+            "format": "int64"
+          }
+        }
+      },
+      "Maintenance_Import_Response": {
+        "type": "object",
+        "properties": {
+          "imported": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The number of records in the ZIP file that were imported",
+            "format": "int32"
+          }
+        }
+      },
+      "Me_ChangePassword_Request": {
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ],
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "description": "The current password"
+          },
+          "newPassword": {
+            "type": "string",
+            "description": "The new password"
+          }
+        },
+        "description": "Carries the values needed to change the password for the current user."
+      },
+      "Me_Delete_Request": {
+        "required": [
+          "username",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "The caller's username, typed as confirmation"
+          },
+          "password": {
+            "type": "string",
+            "description": "The caller's current password, entered as confirmation"
+          }
+        },
+        "description": "Carries the values needed to delete the caller's own account."
+      },
+      "Me_Get_Response": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "The user's username"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "The user's display name"
+          },
+          "email": {
+            "type": "string",
+            "description": "The user's email"
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The user's permissions"
+          },
+          "site": {
+            "$ref": "#/components/schemas/Me_Get_SiteModel"
+          },
+          "rowId": {
+            "type": "string",
+            "description": "The resource identifier",
+            "format": "uuid"
+          },
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The entity tag for optimistic concurrency",
+            "format": "int64"
+          }
+        }
+      },
+      "Me_Get_SiteModel": {
+        "required": [
+          "rowId",
+          "etag",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "rowId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "instance": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ProjectionExpenseModel": {
+        "required": [
+          "rowId",
+          "description",
+          "amount"
+        ],
+        "type": "object",
+        "properties": {
+          "rowId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": {
+            "type": "string"
+          },
+          "amount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "ProjectionIncomeModel": {
+        "required": [
+          "rowId",
+          "description",
+          "amount"
+        ],
+        "type": "object",
+        "properties": {
+          "rowId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": {
+            "type": "string"
+          },
+          "amount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "Projections_Get_Response": {
+        "type": "object",
+        "properties": {
+          "accounts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountDailyFinancialProjection"
+            }
+          }
+        }
+      },
+      "RenewalMode": { },
+      "Roles_GetAll_Response": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The role Name"
+          },
+          "rowId": {
+            "type": "string",
+            "description": "The resource identifier",
+            "format": "uuid"
+          },
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The entity tag for optimistic concurrency",
+            "format": "int64"
+          }
+        }
+      },
+      "Roles_GetAll_Response[]": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Roles_GetAll_Response"
+        }
+      },
+      "Settings_GetAll_Response": {
+        "required": [
+          "settings"
+        ],
+        "type": "object",
+        "properties": {
+          "settings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Settings_GetAll_SettingItem"
+            },
+            "description": "List of all settings"
+          }
+        }
+      },
+      "Settings_GetAll_SettingItem": {
+        "required": [
+          "category",
+          "key",
+          "value",
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "rowId": {
+            "description": "The resource identifier",
+            "format": "uuid"
+          },
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "description": "The entity tag for optimistic concurrency",
+            "format": "int64"
+          },
+          "category": {
+            "type": "string",
+            "description": "The setting category"
+          },
+          "key": {
+            "type": "string",
+            "description": "The setting key"
+          },
+          "value": {
+            "description": "The setting value"
+          },
+          "description": {
+            "type": "string",
+            "description": "The setting description"
+          }
+        }
+      },
+      "Settings_Upsert_Request": {
+        "required": [
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "description": "The setting value"
+          },
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "description": "The setting's entity tag (null for new settings)",
+            "format": "int64"
+          }
+        },
+        "description": "Carries the values needed to save settings."
+      },
+      "Settings_Upsert_Response": {
+        "type": "object",
+        "properties": {
+          "rowId": {
+            "type": "string",
+            "description": "The resource identifier",
+            "format": "uuid"
+          },
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The entity tag for optimistic concurrency",
+            "format": "int64"
+          }
+        }
+      },
+      "Sites_Delete_Request": {
+        "required": [
+          "siteName",
+          "username",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "siteName": {
+            "type": "string",
+            "description": "The site name, typed as confirmation"
+          },
+          "username": {
+            "type": "string",
+            "description": "The caller's username, typed as confirmation"
+          },
+          "password": {
+            "type": "string",
+            "description": "The caller's current password, entered as confirmation"
+          }
+        },
+        "description": "Carries the values needed to delete the caller's site."
+      },
+      "Sites_Update_Request": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The site's entity tag",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string",
+            "description": "The site's name"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The site's description"
+          }
+        },
+        "description": "Carries the values needed to update a site."
+      },
+      "Sites_Update_Response": {
+        "type": "object",
+        "properties": {
+          "rowId": {
+            "type": "string",
+            "description": "The resource identifier",
+            "format": "uuid"
+          },
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The entity tag for optimistic concurrency",
+            "format": "int64"
+          }
+        }
+      },
+      "Users_Delete_Request": {
+        "required": [
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string",
+            "description": "The caller's current password, entered as confirmation"
+          }
+        },
+        "description": "Carries the values needed to delete a user."
+      },
+      "Users_GetAll_Response": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "The user's username"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "The user's display name"
+          },
+          "email": {
+            "type": "string",
+            "description": "The user's email"
+          },
+          "status": {
+            "type": "string",
+            "description": "The user's status"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The user's assigned roles"
+          },
+          "lastLoggedInUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The user's last logged in timestamp (UTC)",
+            "format": "date-time"
+          },
+          "rowId": {
+            "type": "string",
+            "description": "The resource identifier",
+            "format": "uuid"
+          },
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The entity tag for optimistic concurrency",
+            "format": "int64"
+          }
+        }
+      },
+      "Users_GetAll_Response[]": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Users_GetAll_Response"
+        }
+      },
+      "Users_Invite_Request": {
+        "required": [
+          "username",
+          "email",
+          "roleIds"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "The user's username"
+          },
+          "email": {
+            "type": "string",
+            "description": "The user's email"
+          },
+          "roleIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The user roles"
+          }
+        },
+        "description": "Carries the values needed to invite a user."
+      },
+      "Users_Update_Request": {
+        "required": [
+          "displayName",
+          "email"
+        ],
+        "type": "object",
+        "properties": {
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The users's entity tag",
+            "format": "int64"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "The user's display name"
+          },
+          "email": {
+            "type": "string",
+            "description": "The user's email"
+          }
+        },
+        "description": "Carries the values needed to update a user."
+      },
+      "Users_Update_Response": {
+        "type": "object",
+        "properties": {
+          "rowId": {
+            "type": "string",
+            "description": "The resource identifier",
+            "format": "uuid"
+          },
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The entity tag for optimistic concurrency",
+            "format": "int64"
+          }
+        }
+      },
+      "Users_UpdateRoles_Request": {
+        "required": [
+          "roleIds"
+        ],
+        "type": "object",
+        "properties": {
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The users's entity tag",
+            "format": "int64"
+          },
+          "roleIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The role Ids to assign to the user"
+          }
+        },
+        "description": "Carries the values needed to update roles for a user."
+      },
+      "Users_UpdateRoles_Response": {
+        "type": "object",
+        "properties": {
+          "rowId": {
+            "type": "string",
+            "description": "The resource identifier",
+            "format": "uuid"
+          },
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The entity tag for optimistic concurrency",
+            "format": "int64"
+          }
+        }
+      },
+      "Users_UpdateStatus_Request": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The users's entity tag",
+            "format": "int64"
+          },
+          "status": {
+            "description": "The user's status",
+            "$ref": "#/components/schemas/UserStatus"
+          }
+        },
+        "description": "Carries the values needed to update the status of a user."
+      },
+      "Users_UpdateStatus_Response": {
+        "type": "object",
+        "properties": {
+          "rowId": {
+            "type": "string",
+            "description": "The resource identifier",
+            "format": "uuid"
+          },
+          "etag": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The entity tag for optimistic concurrency",
+            "format": "int64"
+          }
+        }
+      },
+      "UserStatus": { }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Auth Api"
+    },
+    {
+      "name": "Platform Api"
+    },
+    {
+      "name": "Me Api"
+    },
+    {
+      "name": "Users Api"
+    },
+    {
+      "name": "Roles Api"
+    },
+    {
+      "name": "Sites Api"
+    },
+    {
+      "name": "Accounts Api"
+    },
+    {
+      "name": "Incomes Api"
+    },
+    {
+      "name": "Expenses Api"
+    },
+    {
+      "name": "Accruals Api"
+    },
+    {
+      "name": "Projections Api"
+    },
+    {
+      "name": "Maintenance Api"
+    },
+    {
+      "name": "Settings"
+    }
+  ]
+}

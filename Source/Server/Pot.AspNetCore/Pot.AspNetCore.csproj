@@ -4,6 +4,13 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<!-- Committed, not a build artifact, so it is deliberately outside the git-ignored artifacts/ folder:
+		     a client developer reads it straight from the repository without installing .NET or building. -->
+		<OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)\..\..\..\contracts\openapi</OpenApiDocumentsDirectory>
+		<OpenApiGenerateDocumentsOnBuild>true</OpenApiGenerateDocumentsOnBuild>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<PackageReference Include="AllOverIt.GenericHost" />
 		<PackageReference Include="AllOverIt.Serialization.Json.SystemText" />
@@ -13,7 +20,88 @@
 		<PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
 		<PackageReference Include="Microsoft.Extensions.Telemetry" />
 		<PackageReference Include="Scalar.AspNetCore" />
+		<PackageReference Include="Microsoft.Extensions.ApiDescription.Server">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 	</ItemGroup>
+
+	<!-- Build-time document generation launches the entry point against a mock server, so Program.Main reaches
+	     RunAsync() and every ValidateOnStart() fires against the deliberately blank appsettings.json. These
+	     values exist only to satisfy those presence checks - nothing connects, sends mail or issues a token
+	     while the document is generated.
+
+	     Supplied here rather than guarded in Program.cs: ValidateOnStart() is called in both Pot.AspNetCore and
+	     Pot.Data, so a GetDocument.Insider check would spread a build concern across projects and leave startup
+	     assembling differently depending on who runs it. Supplied here rather than in the shell, because that
+	     would make `dotnet build` fail for anyone who had not set them. -->
+	<UsingTask TaskName="SetBuildTimeOpenApiConfiguration" TaskFactory="RoslynCodeTaskFactory"
+	           AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+		<Task>
+			<Code Type="Fragment" Language="cs">
+				<![CDATA[
+				void Set(string key, string value) => System.Environment.SetEnvironmentVariable(key, value);
+
+				Set("Cors__AllowedOrigins", "https://openapi-build.invalid");
+
+				Set("Database__Host", "openapi-build.invalid");
+				Set("Database__Name", "openapi-build");
+				Set("Database__Username", "openapi-build");
+				Set("Database__Password", "openapi-build");
+
+				Set("Jwt__Issuer", "https://openapi-build.invalid");
+				Set("Jwt__Audience", "https://openapi-build.invalid");
+				Set("Jwt__SecretKey", "openapi-build-not-a-real-signing-key-0123456789abcdef");
+
+				Set("Smtp__Host", "openapi-build.invalid");
+				Set("Smtp__Authentication__Username", "openapi-build");
+				Set("Smtp__Authentication__Password", "openapi-build");
+				Set("Smtp__From__Name", "OpenAPI Build");
+				Set("Smtp__From__Address", "openapi-build@openapi-build.invalid");
+
+				// appsettings.json ships a single empty entry, which fails the GUID check once the list is
+				// non-empty. Overwritten with a well-formed value rather than cleared, because an index cannot
+				// be removed through an environment variable.
+				Set("PlatformAdmin__UserIds__0", "00000000-0000-0000-0000-000000000000");
+				]]>
+			</Code>
+		</Task>
+	</UsingTask>
+
+	<Target Name="SupplyBuildTimeConfigurationForOpenApi" BeforeTargets="GenerateOpenApiDocuments">
+		<SetBuildTimeOpenApiConfiguration />
+	</Target>
+
+	<UsingTask TaskName="NormaliseOpenApiDocument" TaskFactory="RoslynCodeTaskFactory"
+	           AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+		<ParameterGroup>
+			<DocumentPath ParameterType="System.String" Required="true" />
+		</ParameterGroup>
+		<Task>
+			<Code Type="Fragment" Language="cs">
+				<![CDATA[
+				// The generator writes LF with no final newline. Rewritten as CRLF to match '* text=auto
+				// eol=crlf' in .gitattributes, so the committed file holds exactly what a checkout produces -
+				// otherwise it flip-flops between CRLF and LF on every build and every diff is the whole file.
+				var json = System.IO.File.ReadAllText(DocumentPath).Replace("\r\n", "\n").TrimEnd('\n');
+
+				json = json.Replace("\n", "\r\n") + "\r\n";
+
+				System.IO.File.WriteAllText(DocumentPath, json, new System.Text.UTF8Encoding(false));
+				]]>
+			</Code>
+		</Task>
+	</UsingTask>
+
+	<!-- The generator names the file after the project. Renamed to match the path the API serves it on, so the
+	     committed file and /openapi/v1.json are recognisably the same document. -->
+	<Target Name="FinaliseOpenApiDocument" AfterTargets="GenerateOpenApiDocuments"
+	        Condition=" Exists('$(OpenApiDocumentsDirectory)\$(MSBuildProjectName).json') ">
+		<Move SourceFiles="$(OpenApiDocumentsDirectory)\$(MSBuildProjectName).json"
+		      DestinationFiles="$(OpenApiDocumentsDirectory)\v1.json" />
+
+		<NormaliseOpenApiDocument DocumentPath="$(OpenApiDocumentsDirectory)\v1.json" />
+	</Target>
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Pot.App\Pot.App.csproj" />

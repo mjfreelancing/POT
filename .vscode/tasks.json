@@ -116,6 +116,20 @@
       "problemMatcher": []
     },
     {
+      "label": "server-export-openapi-document",
+      "detail": "Regenerates the committed OpenAPI document at contracts/openapi/v1.json. If it changes, that is a contract change - commit it alongside the code that caused it.",
+      "type": "shell",
+      "command": "dotnet build ./Pot.AspNetCore --configuration Release --no-incremental",
+      "options": {
+        "cwd": "${workspaceFolder}/Source/Server"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "server-run-test-coverage",
       "type": "shell",
       "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./code_coverage.ps1",
