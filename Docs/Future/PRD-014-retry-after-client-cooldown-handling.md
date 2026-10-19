@@ -2,9 +2,9 @@
 
 **Status:** Proposed (discovery draft)
 **Priority:** Medium
-**Last Updated:** 2026-09-02
+**Last Updated:** 2026-10-19
 **Feature ID:** 014
-**Scope:** Client-side (React) graceful handling of HTTP 429 responses. No server-side changes required.
+**Scope:** Client-side (React) graceful handling of HTTP 429 responses. No further server-side changes required — the one server prerequisite (exposing `Retry-After` through CORS) was delivered on 2026-10-19.
 **Audience:** Future implementation agent(s), reviewers, and maintainers.
 
 ## Purpose
@@ -33,7 +33,8 @@ The server already returns `429 Too Many Requests` with a `Retry-After` header a
   - Status code `429`.
   - `Retry-After` response header set to seconds when the lease exposes `RetryAfter` metadata.
   - ProblemDetails body produced by `ApiDetailErrorFactory.CreateTooManyRequests(...)`: error code `TooManyRequests`, detail `"Too many requests. Please wait and try again after {n} seconds."`
-- Integration coverage already asserts 429 + `Retry-After` > 0 (`HeadersAndRateLimitFixture`).
+- `Retry-After` is listed in `Access-Control-Expose-Headers` by the default CORS policy (`CorsOptionsSetup`). It is not a CORS-safelisted response header, and the client calls the API cross-origin, so without this the browser hides the header from script and R1 would always take its fallback path. Added 2026-10-19.
+- Integration coverage already asserts 429 + `Retry-After` > 0 and that `Retry-After` is exposed to the configured origin (`HeadersAndRateLimitFixture`, `CorsFixture`).
 - Separate application-layer OTP cooldown (`OtpService`, 3 attempts / 5 minutes) returns a `retryMinutes` value that the client already renders as a countdown — distinct from the HTTP 429 middleware path.
 
 ### Client behaviour today (the gap)
@@ -78,7 +79,8 @@ Candidate requirements; nothing implemented yet.
 
 - **Client unit tests (interceptor):** a 429 response maps `Retry-After` seconds onto `RateLimitedError`; a missing header falls back correctly; 429 is never auto-retried.
 - **Component tests:** cooldown countdown copy and disabled resubmission render as specified, matching the OTP countdown pattern.
-- **Server integration tests:** the existing `HeadersAndRateLimitFixture` already covers 429 + `Retry-After`; extend only if a new client-side contract requires it.
+- **Server integration tests:** the existing `HeadersAndRateLimitFixture` already covers 429 + `Retry-After`, including that `Retry-After` is exposed through CORS; extend only if a new client-side contract requires it.
+- **Manual / E2E check:** in a browser against the deployed build, confirm the client can read `Retry-After` on a 429 (the header is visible to script, not only in DevTools' network panel). `HttpClient`-based server tests ignore CORS, so only a browser proves this.
 - **E2E (optional):** Playwright config already overrides `RateLimiting` limits for test runs, so a 429-path E2E is feasible but not required.
 
 ## Related Documents
@@ -86,7 +88,8 @@ Candidate requirements; nothing implemented yet.
 - Future index: [Docs/Future/README.md](README.md)
 - Companion design record: [ADR 014 — Retry-After Client Cooldown Handling (Design & Current State)](ADR-014-retry-after-client-cooldown-handling.md)
 - Server rate limiting: `Source/Server/Pot.AspNetCore/Concerns/RateLimiting/RateLimiterOptionsSetup.cs`, `RateLimiterPolicy.cs`, `RateLimiterDefaults.cs`
-- Server integration coverage: `Source/Server/Pot.AspNetCore.Integration.Tests/Security/HeadersAndRateLimitFixture.cs`
+- Server CORS policy (exposed headers): `Source/Server/Pot.AspNetCore/Concerns/Cors/Configuration/CorsOptionsSetup.cs`
+- Server integration coverage: `Source/Server/Pot.AspNetCore.Integration.Tests/Security/HeadersAndRateLimitFixture.cs`, `Source/Server/Pot.AspNetCore.Integration.Tests/Pipeline/CorsFixture.cs`
 - Client error pipeline: `Source/Client/pot-react/src/api/interceptors/axiosInterceptors.ts`, `src/api/errors/apiErrors.ts`, `src/api/errors/apiErrorResponse.ts`
 - Client countdown precedent: `Source/Client/pot-react/src/features/auth/shared/components/OtpVerificationForm.tsx`
 - Server auth-abuse plan (separate concern): [PRD 008](PRD-008-authentication-abuse-protection-and-lockout-policy.md)

@@ -36,8 +36,10 @@ public sealed class CorsOptionsSetup : IConfigureOptions<CorsOptions>
                 // explicit: a wildcard origin with AllowCredentials() causes policy construction to fail.
                 .AllowCredentials()
 
-                // Exposing 'content-disposition' allows the client to handle the file download correctly (get the filename)
-                .WithExposedHeaders("content-disposition");
+                // Browsers hide response headers that are not CORS-safelisted from cross-origin script unless they are exposed:
+                //  - 'content-disposition' allows the client to handle the file download correctly (get the filename)
+                //  - 'retry-after' allows the client to read how long to wait after a 429 rate-limit rejection
+                .WithExposedHeaders("content-disposition", "retry-after");
         });
     }
 }

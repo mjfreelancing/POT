@@ -34,7 +34,11 @@ The server is the enforcement authority and already emits a well-formed 429 cont
 - Rejection payload: `429` + `Retry-After` header (seconds) + ProblemDetails body with error
   code `TooManyRequests` and detail `"Too many requests. Please wait and try again after {n}
 seconds."`
-- Integration-tested: `HeadersAndRateLimitFixture` asserts `429` and `Retry-After` > 0.
+- `Retry-After` is exposed through CORS (`Access-Control-Expose-Headers`, `CorsOptionsSetup`) so the
+  cross-origin client can read it. Added 2026-10-19; before that the browser hid the header from
+  script.
+- Integration-tested: `HeadersAndRateLimitFixture` asserts `429`, `Retry-After` > 0 and that
+  `Retry-After` is exposed; `CorsFixture` asserts the exposed-header list.
 
 ### 1.2 Client behaviour — the gap
 

@@ -45,6 +45,24 @@ public static class HttpResponseMessageExtensions
         response.Headers.Contains(headerName).ShouldBeTrue(customMessage);
     }
 
+    /// <summary>
+    /// Asserts the response lists a header in <c>Access-Control-Expose-Headers</c>, so that cross-origin script can read it.
+    /// </summary>
+    /// <param name="response">The response to assert.</param>
+    /// <param name="headerName">The header expected to be exposed. Compared case-insensitively.</param>
+    public static void ShouldExposeHeader(this HttpResponseMessage response, string headerName)
+    {
+        _ = response.WhenNotNull();
+        ArgumentException.ThrowIfNullOrWhiteSpace(headerName);
+
+        var exposedHeaders = response
+            .ShouldHaveHeaderValues("Access-Control-Expose-Headers")
+            .SelectMany(value => value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries));
+
+        exposedHeaders.ShouldContain(exposedHeader => string.Equals(exposedHeader, headerName, StringComparison.OrdinalIgnoreCase),
+            $"'{headerName}' should be listed in Access-Control-Expose-Headers");
+    }
+
     public static void ShouldNotContainHeader(this HttpResponseMessage response, string headerName, string? customMessage = null)
     {
         _ = response.WhenNotNull();

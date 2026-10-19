@@ -120,6 +120,25 @@ public class CorsFixture : IntegrationFixtureBase
         response.ShouldContainHeader(AccessControlAllowCredentials);
     }
 
+    [Theory]
+    [InlineData("Content-Disposition")]
+    [InlineData("Retry-After")]
+    public async Task Should_Expose_Header_To_Configured_Origin(string headerName)
+    {
+        using var client = CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/login")
+        {
+            Content = JsonContent.Create(new { Username = string.Empty, Password = string.Empty })
+        };
+
+        request.Headers.Add("Origin", AllowedOrigin);
+
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+
+        response.ShouldExposeHeader(headerName);
+    }
+
     [Fact]
     public async Task Should_Not_Return_AccessControlAllowOrigin_For_Disallowed_Origin_On_Validation_Error_Response()
     {

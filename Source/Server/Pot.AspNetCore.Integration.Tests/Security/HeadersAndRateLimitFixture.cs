@@ -47,6 +47,7 @@ public class HeadersAndRateLimitFixture : IntegrationAuthFixtureBase
 
         var allowOriginValues = throttledResponse.ShouldHaveHeaderValues(AccessControlAllowOrigin);
         allowOriginValues.Single().ShouldBe(AllowedOrigin);
+        throttledResponse.ShouldExposeHeader("Retry-After");
 
         if (throttledResponse.Headers.TryGetValues("Retry-After", out var retryAfterValues))
         {
@@ -78,6 +79,7 @@ public class HeadersAndRateLimitFixture : IntegrationAuthFixtureBase
 
         var allowOriginValues = throttledResponse.ShouldHaveHeaderValues(AccessControlAllowOrigin);
         allowOriginValues.Single().ShouldBe(AllowedOrigin);
+        throttledResponse.ShouldExposeHeader("Retry-After");
 
         if (throttledResponse.Headers.TryGetValues("Retry-After", out var retryAfterValues))
         {
