@@ -921,6 +921,10 @@ Authorization: Bearer {your-jwt-token}
 }
 ```
 
+**Which endpoints declare 409.** `ProducesProblem(409)` is declared per feature, only on the endpoints whose own checks can reject the request: a stale entity tag, or a description that already exists within the same site or account. It is deliberately not declared on every write. The shared database handler answers 409 for a unique, reference or concurrency failure that reaches the database, such as a race between the check and the save, and documenting that on every write would present a conflict as a normal outcome rather than the rare one it is.
+
+Because the database answers the same status, a test that asserts only 409 cannot tell the two apart. The integration fixtures assert the `propertyName` and `attemptedValue` that the rule reported (`ShouldBeEntityConflictAsync`); the database fallback reports neither, so those assertions fail if a rule stops running. `EndpointResponseMetadataFixture` additionally fails if a declared 409 is not `ProblemDetails` with `application/problem+json`.
+
 ## Feature Organization
 
 POT uses a **feature-based architecture** where code is organized by domain feature rather than technical layer. This improves discoverability, maintainability, and enables feature teams to work independently.

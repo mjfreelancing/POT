@@ -14,6 +14,8 @@ public class CreateUpdateFixture : IntegrationAuthFixtureBase
     private const double BillAmount = 70.0d;
     private const int CycleDays = 30;
     private const string StaleEtagMessage = "a stale entity tag must not be accepted";
+    private const string DuplicateDescriptionMessage = "a duplicate expense description must not be accepted";
+    private const string DuplicateDescriptionError = "The expense description already exists";
 
     private sealed class ValidationProblem
     {
@@ -130,6 +132,56 @@ public class CreateUpdateFixture : IntegrationAuthFixtureBase
             TestContext.Current.CancellationToken);
 
         await response.ShouldHaveStatusAsync(HttpStatusCode.Conflict, StaleEtagMessage);
+    }
+
+    [Fact]
+    public async Task Should_Return_Conflict_When_Creating_An_Expense_With_An_Existing_Description()
+    {
+        var admin = await CreateAdminUserAsync("expenses", "Expenses User");
+
+        using var client = await CreateAuthenticatedClientAsync(admin);
+
+        var today = GetSiteLocalDateToday();
+        var accountRowId = await client.CreateAccountAsync($"Expense Account {Guid.NewGuid():N}", AccountBalance);
+        var request = ExpenseRequestFactory.CreateBill(accountRowId, today.AddDays(CycleDays), Frequency.Days,
+            CycleDays, BillAmount, AccrualPolicy.Automatic, accrualStart: today);
+
+        await client.CreateExpenseAsync(request);
+
+        var response = await client.PostAsJsonAsync("/api/expenses", request, TestContext.Current.CancellationToken);
+
+        var problem = await response.ShouldBeEntityConflictAsync("Description", request.Description, DuplicateDescriptionMessage);
+
+        problem.Errors.ShouldHaveSingleItem().ErrorMessage.ShouldBe(DuplicateDescriptionError);
+    }
+
+    [Fact]
+    public async Task Should_Return_Conflict_When_Updating_An_Expense_To_An_Existing_Description()
+    {
+        var admin = await CreateAdminUserAsync("expenses", "Expenses User");
+
+        using var client = await CreateAuthenticatedClientAsync(admin);
+
+        var today = GetSiteLocalDateToday();
+        var accountRowId = await client.CreateAccountAsync($"Expense Account {Guid.NewGuid():N}", AccountBalance);
+        var existingRequest = ExpenseRequestFactory.CreateBill(accountRowId, today.AddDays(CycleDays), Frequency.Days,
+            CycleDays, BillAmount, AccrualPolicy.Automatic, accrualStart: today);
+        var requestToUpdate = ExpenseRequestFactory.CreateBill(accountRowId, today.AddDays(CycleDays), Frequency.Days,
+            CycleDays, BillAmount, AccrualPolicy.Automatic, accrualStart: today);
+
+        await client.CreateExpenseAsync(existingRequest);
+
+        var expenseRowId = await client.CreateExpenseAsync(requestToUpdate);
+        var current = await client.GetExpenseAsync(expenseRowId);
+        var duplicateRequest = requestToUpdate with { Etag = current.Etag, Description = existingRequest.Description };
+
+        var response = await client.PutAsJsonAsync($"/api/expenses/{expenseRowId}", duplicateRequest,
+            TestContext.Current.CancellationToken);
+
+        var problem = await response.ShouldBeEntityConflictAsync("Description", existingRequest.Description,
+            DuplicateDescriptionMessage);
+
+        problem.Errors.ShouldHaveSingleItem().ErrorMessage.ShouldBe(DuplicateDescriptionError);
     }
 
     [Fact]

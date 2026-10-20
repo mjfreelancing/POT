@@ -14,6 +14,16 @@ public sealed class AccountResponse
     public Guid RowId { get; set; }
 
     /// <summary>
+    /// The entity tag an update must match.
+    /// </summary>
+    public long Etag { get; set; }
+
+    /// <summary>
+    /// A description of the account.
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
     /// The account balance.
     /// </summary>
     public double Balance { get; set; }

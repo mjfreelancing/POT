@@ -15,6 +15,8 @@ public class CreateUpdateFixture : IntegrationAuthFixtureBase
     private const int CycleDays = 30;
 
     private const string StaleEtagMessage = "a stale entity tag must not be accepted";
+    private const string DuplicateDescriptionMessage = "a duplicate income description must not be accepted";
+    private const string DuplicateDescriptionError = "The income description already exists";
 
     private sealed class ValidationProblem
     {
@@ -132,6 +134,56 @@ public class CreateUpdateFixture : IntegrationAuthFixtureBase
         var response = await client.PutAsJsonAsync($"/api/incomes/{incomeRowId}", staleRequest, TestContext.Current.CancellationToken);
 
         await response.ShouldHaveStatusAsync(HttpStatusCode.Conflict, StaleEtagMessage);
+    }
+
+    [Fact]
+    public async Task Should_Return_Conflict_When_Creating_An_Income_With_An_Existing_Description()
+    {
+        var admin = await CreateAdminUserAsync("incomes", "Incomes User");
+
+        using var client = await CreateAuthenticatedClientAsync(admin);
+
+        var today = GetSiteLocalDateToday();
+        var accountRowId = await client.CreateAccountAsync($"Income Account {Guid.NewGuid():N}", AccountBalance);
+        var request = IncomeRequestFactory.CreateIncome(accountRowId, today.AddDays(CycleDays), Frequency.Days,
+            CycleDays, IncomeAmount);
+
+        await client.CreateIncomeAsync(request);
+
+        var response = await client.PostAsJsonAsync("/api/incomes", request, TestContext.Current.CancellationToken);
+
+        var problem = await response.ShouldBeEntityConflictAsync("Description", request.Description, DuplicateDescriptionMessage);
+
+        problem.Errors.ShouldHaveSingleItem().ErrorMessage.ShouldBe(DuplicateDescriptionError);
+    }
+
+    [Fact]
+    public async Task Should_Return_Conflict_When_Updating_An_Income_To_An_Existing_Description()
+    {
+        var admin = await CreateAdminUserAsync("incomes", "Incomes User");
+
+        using var client = await CreateAuthenticatedClientAsync(admin);
+
+        var today = GetSiteLocalDateToday();
+        var accountRowId = await client.CreateAccountAsync($"Income Account {Guid.NewGuid():N}", AccountBalance);
+        var existingRequest = IncomeRequestFactory.CreateIncome(accountRowId, today.AddDays(CycleDays), Frequency.Days,
+            CycleDays, IncomeAmount);
+        var requestToUpdate = IncomeRequestFactory.CreateIncome(accountRowId, today.AddDays(CycleDays), Frequency.Days,
+            CycleDays, IncomeAmount);
+
+        await client.CreateIncomeAsync(existingRequest);
+
+        var incomeRowId = await client.CreateIncomeAsync(requestToUpdate);
+        var current = await client.GetIncomeAsync(incomeRowId);
+        var duplicateRequest = requestToUpdate with { Etag = current.Etag, Description = existingRequest.Description };
+
+        var response = await client.PutAsJsonAsync($"/api/incomes/{incomeRowId}", duplicateRequest,
+            TestContext.Current.CancellationToken);
+
+        var problem = await response.ShouldBeEntityConflictAsync("Description", existingRequest.Description,
+            DuplicateDescriptionMessage);
+
+        problem.Errors.ShouldHaveSingleItem().ErrorMessage.ShouldBe(DuplicateDescriptionError);
     }
 
     [Fact]

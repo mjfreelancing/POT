@@ -52,6 +52,25 @@ public class EndpointResponseMetadataFixture : IntegrationFixtureBase
     }
 
     [Fact]
+    public void Should_Declare_Conflict_Responses_As_ProblemDetails()
+    {
+        using var scope = CreateScope();
+
+        var apiEndpoints = GetApiEndpoints(scope.ServiceProvider.GetRequiredService<EndpointDataSource>());
+
+        var endpointsWithMalformedConflict = apiEndpoints
+            .Where(endpoint => endpoint.Metadata.GetOrderedMetadata<IProducesResponseTypeMetadata>()
+                .Any(response => response.StatusCode == StatusCodes.Status409Conflict
+                    && (response.Type != typeof(ProblemDetails)
+                        || !response.ContentTypes.Contains("application/problem+json", StringComparer.OrdinalIgnoreCase))))
+            .Select(endpoint => endpoint.RoutePattern.RawText)
+            .ToList();
+
+        endpointsWithMalformedConflict.ShouldBeEmpty(
+            "a declared 409 must describe the shared ProblemDetails conflict response");
+    }
+
+    [Fact]
     public void Should_Not_Describe_Success_Responses_As_ProblemDetails()
     {
         using var scope = CreateScope();
