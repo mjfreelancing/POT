@@ -3712,9 +3712,19 @@ The `errors` extension is always an **array** of error detail objects. `type` an
     }
   ],
   "correlationId": "8e9f7c6d-5b4a-3f2e-1d0c-9a8b7c6d5e4f",
+  "traceId": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
   "instance": "POST /api/accounts"
 }
 ```
+
+Every problem response carries two identifiers:
+
+- `correlationId` is `HttpContext.TraceIdentifier`, which is the caller's `X-Correlation-Id` when
+  supplied. It appears on every log entry for the request and is the value to quote to support.
+- `traceId` is the framework's identifier: `Activity.Current.Id` (the W3C traceparent) when tracing is
+  active, otherwise `TraceIdentifier`, so it matches `correlationId`.
+
+Use `correlationId` for support; `traceId` identifies the distributed trace.
 
 Validation failures are logged by `LogErrors` from the `errors` extension, one entry per error.
 Attempted field values are never logged: for login, signup and password reset they can be a password

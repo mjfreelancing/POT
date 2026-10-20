@@ -11,7 +11,10 @@ type ApiErrorResponse = {
   status?: number;
   detail?: string;
   errors?: ApiErrorDetail[];
+  // The framework's trace identifier: the W3C Activity id when tracing is active, otherwise the
+  // request identifier.
   traceId?: string;
+  // The server's correlation id: the caller's X-Correlation-Id when supplied.
   correlationId?: string;
   instance?: string;
 };

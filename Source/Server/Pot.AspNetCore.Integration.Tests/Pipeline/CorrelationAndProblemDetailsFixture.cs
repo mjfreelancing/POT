@@ -181,6 +181,10 @@ public class CorrelationAndProblemDetailsFixture : IntegrationFixtureBase
         problemDetails.Status.ShouldBe(StatusCodes.Status400BadRequest);
         problemDetails.Detail.ShouldBe("One or more validation errors occurred.");
         GetExtensionString(problemDetails, "correlationId").ShouldBe(correlationId);
+
+        // traceId is the framework's identifier; only correlationId is the support id.
+        GetExtensionString(problemDetails, "traceId").ShouldNotBeNullOrWhiteSpace();
+
         problemDetails.Instance.ShouldBe("/api/auth/login");
         HasExtension(problemDetails, "instance").ShouldBeFalse();
         HasExtension(problemDetails, "errors").ShouldBeTrue();
