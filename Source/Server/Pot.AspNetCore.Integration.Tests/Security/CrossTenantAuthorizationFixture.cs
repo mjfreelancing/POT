@@ -483,7 +483,10 @@ public partial class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBas
             "the last enabled platform administrator must not be disabled");
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
-        problem!.Errors.Single().ErrorMessage.ShouldContain("last enabled platform administrator");
+        var errorMessage = problem!.Errors.Single().ErrorMessage;
+
+        errorMessage.ShouldNotBeNull();
+        errorMessage.ShouldContain("last enabled platform administrator");
 
         var targetAfter = await GetUserAsync(target.UserRowId);
         targetAfter.Status.Name.ShouldBe(targetBefore.Status.Name);
@@ -518,7 +521,11 @@ public partial class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBas
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
 
         problem!.Errors.Length.ShouldBe(1);
-        problem.Errors[0].ErrorMessage.ShouldContain("last enabled platform administrator");
+
+        var errorMessage = problem.Errors[0].ErrorMessage;
+
+        errorMessage.ShouldNotBeNull();
+        errorMessage.ShouldContain("last enabled platform administrator");
 
         var callerAfter = await GetUserAsync(caller.UserRowId);
         callerAfter.Status.Name.ShouldBe(callerBefore.Status.Name);
@@ -579,7 +586,10 @@ public partial class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBas
             "a disabled platform administrator cannot operate the platform");
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
-        problem!.Errors.Single().ErrorMessage.ShouldContain("last enabled platform administrator");
+        var errorMessage = problem!.Errors.Single().ErrorMessage;
+
+        errorMessage.ShouldNotBeNull();
+        errorMessage.ShouldContain("last enabled platform administrator");
 
         var targetAfter = await GetUserAsync(target.UserRowId);
         targetAfter.Status.Name.ShouldBe(targetBefore.Status.Name);
@@ -613,7 +623,10 @@ public partial class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBas
             "the site would be left without an enabled administrator");
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
-        problem!.Errors.Single().ErrorMessage.ShouldContain("only enabled administrator");
+        var errorMessage = problem!.Errors.Single().ErrorMessage;
+
+        errorMessage.ShouldNotBeNull();
+        errorMessage.ShouldContain("only enabled administrator");
 
         var callerAfter = await GetUserAsync(caller.UserRowId);
         callerAfter.Status.Name.ShouldBe(callerBefore.Status.Name);

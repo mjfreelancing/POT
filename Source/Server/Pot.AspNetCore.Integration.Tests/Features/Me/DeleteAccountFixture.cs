@@ -106,8 +106,11 @@ public class DeleteAccountFixture : IntegrationAuthFixtureBase
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
+        var errorMessage = problem!.Errors.Single().ErrorMessage;
 
-        problem!.Errors.Single().ErrorMessage.ShouldContain("only enabled administrator");
+        errorMessage.ShouldNotBeNull();
+        errorMessage.ShouldContain("only enabled administrator");
+
         (await UserExistsAsync(caller.UserRowId)).ShouldBeTrue();
     }
 
@@ -132,8 +135,11 @@ public class DeleteAccountFixture : IntegrationAuthFixtureBase
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
+        var errorMessage = problem!.Errors.Single().ErrorMessage;
 
-        problem!.Errors.Single().ErrorMessage.ShouldContain("last enabled platform administrator");
+        errorMessage.ShouldNotBeNull();
+        errorMessage.ShouldContain("last enabled platform administrator");
+
         (await UserExistsAsync(caller.UserRowId)).ShouldBeTrue();
     }
 

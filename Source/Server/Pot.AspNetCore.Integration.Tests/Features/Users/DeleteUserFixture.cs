@@ -165,8 +165,11 @@ public class DeleteUserFixture : IntegrationAuthFixtureBase
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
+        var errorMessage = problem!.Errors.Single().ErrorMessage;
 
-        problem!.Errors.Single().ErrorMessage.ShouldContain("last enabled platform administrator");
+        errorMessage.ShouldNotBeNull();
+        errorMessage.ShouldContain("last enabled platform administrator");
+
         (await UserExistsAsync(target.UserRowId)).ShouldBeTrue();
     }
 
