@@ -37,7 +37,7 @@ public class Program
             .AddOpenApi()
             .AddHttpJsonOptions()
             .AddLogging()
-            .AddCustomProblemDetails()
+            .AddProblemDetails()
             .AddAspNetDependencies()
             .AddAspNetValidation()
             .AddSmtp()

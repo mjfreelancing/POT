@@ -336,7 +336,7 @@ internal static class WebApplicationBuilderExtensions
         return builder;
     }
 
-    public static WebApplicationBuilder AddCustomProblemDetails(this WebApplicationBuilder builder)
+    public static WebApplicationBuilder AddProblemDetails(this WebApplicationBuilder builder)
     {
         // IProblemDetailsService is registered as a singleton.
         builder.Services.AddProblemDetails(options =>
