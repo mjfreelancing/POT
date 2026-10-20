@@ -2,7 +2,7 @@
 
 **Status:** Planning
 **Priority:** High
-**Last Updated:** 2026-10-20
+**Last Updated:** 2026-10-21
 **Feature ID:** 030
 **Discovery:** not run — the requirements below are recommendations from a code review of the server's error handling. Every item in **Decisions Carried Into This Document** is a proposal, and the PRD must not move to `Planned` until those proposals and the **Open Questions** have been confirmed or changed.
 **Scope:** Change how the server builds and shapes its RFC 9457 Problem Details error responses so that submitted values are never echoed, every error of a given status has one documented shape, an error is written as Problem Details whatever the caller's headers ask for, and failure handling is written once instead of in every endpoint handler. Covers the server's error contract, the code that produces it, the OpenAPI description of it, the developer documentation that describes it, and the React client code that parses it — including how the client reads a response body the application did not write. It does **not** cover the concurrency model (the entity tag stays in the request body and a stale one stays a `409`), the application layer's result library, rate-limit policy values, or the database exception mapping rules — see **Out of Scope**.
@@ -46,6 +46,7 @@ It relies on a sentinel `NoProblemDetails.Single` instance to mean "valid", and 
 
 - The committed `contracts/openapi/v1.json` describes `ProblemDetails` with its five standard members only. `errors`, `correlationId` and `traceId` do not appear.
 - `Source/Server/DEVELOPER.md` says validation answers **`422`** "never 400", and that the administrator lock-out protections answer `422`. The server answers `400`, and `EndpointResponseMetadataFixture` asserts that no endpoint even declares a `422`. The endpoint example in the same document declares `.ProducesProblem(StatusCodes.Status201Created)`, which describes a successful creation as an error body — the mistake `EndpointResponseMetadataFixture.Should_Not_Describe_Success_Responses_As_ProblemDetails` exists to catch.
+- Only the Maintenance import endpoint declares `413`. Every other endpoint that reads a body can return `413` (Kestrel's default 30 MB limit) and `408` (a body arriving below Kestrel's minimum data rate), and the document does not say so. For a bound body the framework sets the status itself and `UseStatusCodePages` writes the body, in every environment (verified against .NET 10 for `413`); `BadRequestExceptionHandler` sees one only when code reads `Request.Body` directly.
 
 **6. An error can arrive with no body, or as plain text.** The framework's problem writer declines a request whose `Accept` header names no JSON media type, so what a caller receives depends on how it asked: `IProblemDetailsService.WriteAsync` throws from inside an exception handler and leaves an empty `500`, `UseStatusCodePages` writes a plain-text page, and `TypedResults.Problem` serialises the body without the shared customisation, so it carries no `correlationId`. A tool or browser that asks for HTML therefore gets either nothing to diagnose with or something that is not the documented contract.
 
@@ -94,6 +95,7 @@ It relies on a sentinel `NoProblemDetails.Single` instance to mean "valid", and 
 - **D3.** `EndpointResponseMetadataFixture` asserts the new declarations: a `400` as a validation problem and a `500` as a problem on every API endpoint, a declared `409` as a problem in `application/problem+json`, no success status described as a problem, and no `422`.
 - **D4.** `Source/Server/DEVELOPER.md` and any other document describing the error contract match the implementation: no `422` claims, no `.ProducesProblem` on a success status, sample bodies in the new shape, and the handler pattern of C2. The passages that have drifted are corrected in the same change — the customisation snippet that shows `Extensions.Add("correlationId", …)` rather than the indexer, the `429` example showing a fractional `Retry-After`, the `DatabaseExceptionHandler` snippet describing the raw provider message, and the problem-types list that calls `409` entity-tag-only and validation `422`. The decisions B7, B9 and D5 are recorded there too: `Retry-After` is whole seconds and exposed through CORS, database exceptions answer a generic `409` and are logged by the handler, `correlationId` is the identifier to quote to support, and `409` is declared per feature rather than on every write.
 - **D5.** Every endpoint that declares a `409` has a test that asserts the body its own rule produced, identified by the `type` of B9, so the test fails if the rule stops running. The fallback conflict carries a different `type` and cannot satisfy it.
+- **D6.** Every endpoint that reads a request body declares `413` and `408` as problems, and no endpoint that reads no body declares either. `EndpointResponseMetadataFixture` asserts both directions, so a new body-accepting endpoint cannot omit them and a `GET` cannot claim them.
 
 ### E. The client reads every response it receives
 
@@ -119,6 +121,8 @@ It relies on a sentinel `NoProblemDetails.Single` instance to mean "valid", and 
 - **Rate-limit policy values and partitioning** — unchanged. Only the shape of the `429` body is in scope (B7, C4).
 - **Which database exceptions map to which status** — `DatabaseExceptionHandler` keeps its mapping rules. Only how it builds the body is in scope (C4).
 - **Localised or machine-readable error codes for the client** — not needed by the current client. If wanted later, it is an additive change, and Open Question 1 records the choice.
+- **The health endpoints' failure responses.** A failing `/_health/ready` answers `503` with the health check writer's plain-text `Unhealthy`, not a problem body, and stays that way: the callers are infrastructure and the E2E gate, which read the status code only. The body is written by the health check middleware, so neither `UseStatusCodePages` nor the wrapped problem writer of F2 replaces it. Nothing in B, C or F applies to these two endpoints.
+- **The size of the default request body limit** — D6 documents the `413` that Kestrel's 30 MB default produces, but whether 30 MB is the right ceiling for JSON endpoints is a separate decision. See **Related Recommendations**.
 
 ## Known Risks and Accepted Limitations
 
@@ -163,6 +167,15 @@ All **proposed**, pending confirmation at review.
 - **3. What URI form should the stale-tag `type` take?** RFC 9457 recommends an absolute URI. A relative reference such as `/problems/stale-entity-tag` is allowed but resolves against the request URI, and a `tag:` URI needs no hosting. Resolved by choosing one form and recording it, since any value is a permanent contract once released.
 - **4. Should a duplicate-value conflict quote the value?** A1 forbids echoing submitted values. The server may still compose a non-secret value it chose into its own `detail` ("An account called 'Rent' already exists"). Resolved by deciding whether that specificity is worth a server-side rule about which fields may be quoted.
 
+## Related Recommendations
+
+Found during the same review and **not part of this PRD's scope**. Each is recorded here so it is not lost, with a suggested home. None blocks this PRD.
+
+- **R1. Validate the service provider in every environment.** Nothing calls `UseDefaultServiceProvider`, so `ValidateScopes` and `ValidateOnBuild` are on in Development only, where the framework enables them itself. Elsewhere a singleton holding a scoped service starts cleanly and shares one request's state with every other, and an unconstructable registration surfaces as a `500` on first use. POT is more exposed than most: services and validators are registered by assembly scanning, validators are singletons by default, and exception handlers are always singletons. Turn both on in `Program` and add a startup test under a non-Development environment that a singleton depending on a scoped service fails to start. If enabling them fails startup today, that is a captive dependency already in production, not a reason to leave them off. **Small standalone change.**
+- **R2. Transient database faults.** Npgsql is configured with no retry strategy, so a database failover or a dropped connection is a `500` logged at `Error` — through the unhandled path on a read, or `DatabaseExceptionHandler`'s fallback on a write — in the same channel as genuine bugs. Enabling `EnableRetryOnFailure` is not a one-line change: `PotTransactionFactory` opens user-initiated transactions, which the retrying strategy rejects unless each is run inside `Database.CreateExecutionStrategy().ExecuteAsync`, with the whole transaction as the retried unit. Once retries exist, decide whether an exhausted transient fault answers `503` with `Retry-After` rather than `500`; `NpgsqlException.IsTransient` is a usable classifier, and the client cooldown handling from PRD-014 may extend to it. This changes the database exception mapping this PRD leaves alone. **Its own PRD.**
+- **R3. Put the user id on every log entry.** `CorrelationIdLogEnricher` adds the correlation id only, so the entry for a `500` says what failed but not who it happened to. Adding the `sub` claim — the id, never a name or an email — to the enricher covers every entry at once. An enricher reads `HttpContext` when each entry is written, so unlike a logging scope it still applies when an exception has unwound to the exception handlers. **Small standalone change.**
+- **R4. The default request body limit.** Every JSON endpoint accepts Kestrel's 30 MB default; only the import endpoint sets its own limit. A lower server-wide `MaxRequestBodySize`, with the import endpoint's `RequestSizeLimit` as the exception, bounds what one request can cost. D6 documents the resulting `413` whatever the value. **Small standalone change.**
+
 ## Implementation Guidance
 
 For the agent delivering this PRD. Describes the current code and a suggested approach. The requirements above are the contract; this section is advice.
@@ -200,14 +213,132 @@ For the agent delivering this PRD. Describes the current code and a suggested ap
 4. **One conversion.** Add `ToHttpResult(this EnrichedResult<T> result, Func<T, IResult> onSuccess)`, plus a non-generic overload if needed, holding the only `!` uses and the only status mapping. A `switch` over `ErrorType` with no default branch, or with `UnreachableException`, makes an unmapped category obvious. Take `detail` from the error's own message: `EnrichedErrorExtensions` copies `EnrichedError.Description` today, which nothing assigns, so it is null on every error a handler reports — carrying it over would give the client nothing to display once B3 removes `errors` from a conflict (B3). Set `type` here for each conflict category (B9); telling a stale tag apart from a duplicate needs the application layer to mark it, for example with a dedicated error type or factory, rather than the client-facing `propertyName`. `DatabaseExceptionHandler` gives a fallback conflict its own `type`, so the two are never confused (D5). Handlers become `return result.ToHttpResult(Response.Created);`.
 5. **Retire the helpers.** Delete `IProblemDetailsInspector`, `ProblemDetailsInspector`, `NoProblemDetails`, `ProblemDetailsExtensions`, `ProblemDetailsContextFactory`, `ValidationResultExtensions.ToProblemDetails` (server), `ApiDetailsErrorExtensions`, and `LoggingExtensions.LogErrors`. Make `LogApiError` stop logging the value. Move the rate limiter, `DatabaseExceptionHandler`, `BadRequestExceptionHandler` and `CorrelationIdMiddleware` to plain `ProblemDetails`/`HttpValidationProblemDetails` written through `IProblemDetailsService`, so C4 holds. `ApiDetailError.AttemptedValue` goes whichever shape Open Question 1 chooses, because A1 leaves nothing to put in it: remove the property, the `attemptedValue` parameter from every `ApiDetailErrorFactory` method, and the argument at each call site. `CustomState` goes only if Open Question 1 drops the `errors` list.
 6. **Write unconditionally.** Wrap the framework's `IProblemDetailsWriter` so it reports that it can write every request: it writes what the framework writer would have written when that writer accepts the request, and writes the same body itself when it does not, so a caller accepting only `text/html` still receives one (F1). Register it as the only writer and fail at startup if another is already present (F2). Keep it behind the shared customisation so the body still carries `correlationId` (C4).
-7. **Document the schema.** Add an `IOpenApiSchemaTransformer` that, for every type assignable to `ProblemDetails`, adds `correlationId` and `traceId` and replaces `instance` with a non-nullable string. It marks all three required, and marks `errors` required on `HttpValidationProblemDetails`. The extensions dictionary is invisible to the generator, which is why these members are missing today. Declare `400` with `ProducesValidationProblem()` rather than `ProducesProblem(400)`, and document each `409` with the `type` of B9. Regenerate `contracts/openapi/v1.json`.
+7. **Document the schema.** Add an `IOpenApiSchemaTransformer` that, for every type assignable to `ProblemDetails`, adds `correlationId` and `traceId` and replaces `instance` with a non-nullable string. It marks all three required, and marks `errors` required on `HttpValidationProblemDetails`. The extensions dictionary is invisible to the generator, which is why these members are missing today. Declare `400` with `ProducesValidationProblem()` rather than `ProducesProblem(400)`, and document each `409` with the `type` of B9. For D6, an endpoint reads a body when it carries `IAcceptsMetadata`, which the framework adds for an inferred or explicit `[FromBody]` parameter; the fixture can select on it. Declare `413` and `408` with `ProducesProblem` per endpoint, or through a helper applied to those endpoints only — not through the helper every endpoint uses. Regenerate `contracts/openapi/v1.json`.
 8. **Client.** Update `ApiErrorResponse` to the new shape. `getBadRequestMessage` flattens the `errors` map's values. `getConflictMessage` checks `type` for the stale-tag value and otherwise uses `detail`. Put one normaliser in front of the message getters: it accepts whatever `data` arrives — a problem object, a string page, a `Blob`, `null` — and returns a problem object or an empty one, decoding a blob by its content type so an export failure can be read (E5). The existing `(data as ApiErrorResponse) || {}` cast is the right instinct but is not defensive: a string satisfies the cast. Make it explicit, keep every getter total (E6), and make the `502`/`503`/`504` path say the API was not reached when nothing readable is present (E7). Add unit tests per shape (E8).
 9. **Documents.** Correct `DEVELOPER.md` (D4) and regenerate any sample bodies from real responses rather than writing them by hand.
 10. **Verify.** Run the full server suite and the client suite, then regenerate `contracts/openapi/v1.json`; the only acceptable outcomes are no change, or a change committed with the code that caused it.
 
+### Reference snippets
+
+The two pieces below are where the framework's behaviour is least obvious and a plausible implementation is subtly wrong. Both are taken from code running against .NET 10 and `Microsoft.AspNetCore.OpenApi` 10.0. They are references, not drop-ins: adapt names, namespaces, guard clauses (`WhenNotNull()`) and logging style to POT's conventions, and let the requirements above win wherever a snippet and a requirement disagree.
+
+**The chained customisation (step 2, C4, B1, B2, B5).**
+
+```csharp
+internal sealed class ProblemDetailsOptionsSetup : IConfigureOptions<ProblemDetailsOptions>
+{
+    internal const string CorrelationIdExtension = "correlationId";
+    internal const string ErrorsExtension = "errors";
+    internal const string GeneralErrorKey = "";
+
+    // HttpValidationProblemDetails' own title, so a 400 reads the same whichever route produced it.
+    private const string ValidationTitle = "One or more validation errors occurred.";
+
+    // For a 400 that arrives with nothing to say, such as UseStatusCodePages filling in a binding failure.
+    private const string GeneralValidationError = "The request was not valid.";
+
+    public void Configure(ProblemDetailsOptions options)
+    {
+        // Chained rather than replaced: a customisation registered earlier still runs, and runs first, so it
+        // cannot remove what this one adds. Anything configuring ProblemDetailsOptions AFTER this that assigns
+        // rather than chains replaces it outright - register such things before AddProblemDetails().
+        var configuredCustomisation = options.CustomizeProblemDetails;
+
+        options.CustomizeProblemDetails = context =>
+        {
+            configuredCustomisation?.Invoke(context);
+
+            var problemDetails = context.ProblemDetails;
+
+            // The indexer, never Add(): Add() throws on an existing key, and this runs while an error response
+            // is being written - where a throw turns a handled failure into an unhandled one.
+            problemDetails.Extensions[CorrelationIdExtension] = context.HttpContext.TraceIdentifier;
+
+            // The property, never Extensions["instance"], or the body can carry two "instance" keys.
+            problemDetails.Instance ??= context.HttpContext.Request.Path;
+
+            // traceId is added by the framework's writer, from the Activity or the request identifier. Adding it
+            // here as well would give one value two sources.
+
+            if (problemDetails.Status == StatusCodes.Status400BadRequest &&
+                problemDetails is not HttpValidationProblemDetails)
+            {
+                problemDetails.Title = ValidationTitle;
+
+                problemDetails.Extensions.TryAdd(ErrorsExtension, new Dictionary<string, string[]>(StringComparer.Ordinal)
+                {
+                    [GeneralErrorKey] = [problemDetails.Detail ?? GeneralValidationError],
+                });
+            }
+        };
+    }
+}
+```
+
+```csharp
+builder.Services
+    .ConfigureOptions<ProblemDetailsOptionsSetup>()
+    .AddProblemDetails();
+```
+
+**The OpenAPI schema transformer (step 7, D1).** `Microsoft.AspNetCore.OpenApi` 10 uses Microsoft.OpenApi 2.x, where `Type` is the `JsonSchemaType` flags enum and properties are `IOpenApiSchema`; examples written for .NET 9 use types that no longer exist. Register with `options.AddSchemaTransformer<ProblemDetailsSchemaTransformer>()` inside `AddOpenApi`.
+
+```csharp
+internal sealed class ProblemDetailsSchemaTransformer : IOpenApiSchemaTransformer
+{
+    public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context,
+        CancellationToken cancellationToken)
+    {
+        // Every Problem Details type, not ProblemDetails alone: a 400 is HttpValidationProblemDetails, which the
+        // generator describes as a schema of its own.
+        if (!typeof(Microsoft.AspNetCore.Mvc.ProblemDetails).IsAssignableFrom(context.JsonTypeInfo.Type))
+        {
+            return Task.CompletedTask;
+        }
+
+        schema.Properties ??= new Dictionary<string, IOpenApiSchema>(StringComparer.Ordinal);
+
+        schema.Properties["correlationId"] = new OpenApiSchema
+        {
+            Type = JsonSchemaType.String,
+            Description = "Identifies this request in the logs. Quote it when reporting a problem.",
+        };
+
+        schema.Properties["traceId"] = new OpenApiSchema
+        {
+            Type = JsonSchemaType.String,
+            Description = "Identifies this request in distributed tracing.",
+        };
+
+        // Replaced, because the property is nullable on the type and so generated as string-or-null. The
+        // customisation always sets it, and "required but nullable" makes a generated client handle a null that
+        // never arrives.
+        schema.Properties["instance"] = new OpenApiSchema
+        {
+            Type = JsonSchemaType.String,
+            Description = "The path of the request that failed.",
+        };
+
+        schema.Required ??= new HashSet<string>(StringComparer.Ordinal);
+        schema.Required.Add("correlationId");
+        schema.Required.Add("traceId");
+        schema.Required.Add("instance");
+
+        if (context.JsonTypeInfo.Type == typeof(HttpValidationProblemDetails))
+        {
+            schema.Required.Add("errors");
+        }
+
+        return Task.CompletedTask;
+    }
+}
+```
+
+The `using` directives these need beyond the implicit ones: `Microsoft.Extensions.Options` (the setup class), and `Microsoft.AspNetCore.OpenApi` and `Microsoft.OpenApi` (the transformer).
+
 ### Tests that will change
 
-`EndpointResponseMetadataFixture` (the `400` declaration type, and the check that a declared `409` is a problem in `application/problem+json`), `CorrelationAndProblemDetailsFixture` (`detail` strings and `errors` assertions), `DatabaseExceptionHandlerFixture` (`errorCode` assertions), `BadRequestExceptionHandlerFixture`, `ApiDetailsErrorExtensionsFixture` and `ValidationResultExtensionsFixture` (removed or rewritten), `LoggingExtensionsFixture`, the feature fixtures asserting validation bodies, the duplicate-description conflict tests in `Features/Accounts/CreateUpdateFixture`, `Features/Expenses/CreateUpdateFixture` and `Features/Incomes/CreateUpdateFixture` together with the `ShouldBeEntityConflictAsync` helper they use (which assert the field details of a `409` today and must instead assert the conflict `type` of B9, per D5), and the client's `tests/api/errors/apiErrorResponse.test.ts` and `tests/api/interceptors/axiosInterceptors.test.ts`, which also gained cases for an HTML page, an empty body and a blob (E8).
+`EndpointResponseMetadataFixture` (the `400` declaration type, the check that a declared `409` is a problem in `application/problem+json`, and the `413`/`408` declarations of D6), `CorrelationAndProblemDetailsFixture` (`detail` strings and `errors` assertions), `DatabaseExceptionHandlerFixture` (`errorCode` assertions), `BadRequestExceptionHandlerFixture`, `ApiDetailsErrorExtensionsFixture` and `ValidationResultExtensionsFixture` (removed or rewritten), `LoggingExtensionsFixture`, the feature fixtures asserting validation bodies, the duplicate-description conflict tests in `Features/Accounts/CreateUpdateFixture`, `Features/Expenses/CreateUpdateFixture` and `Features/Incomes/CreateUpdateFixture` together with the `ShouldBeEntityConflictAsync` helper they use (which assert the field details of a `409` today and must instead assert the conflict `type` of B9, per D5), and the client's `tests/api/errors/apiErrorResponse.test.ts` and `tests/api/interceptors/axiosInterceptors.test.ts`, which also gained cases for an HTML page, an empty body and a blob (E8).
 
 ## Manual Test Plan
 
@@ -249,7 +380,7 @@ For the agent delivering this PRD. Describes the current code and a suggested ap
 ### C. Documentation
 
 - **C1 — OpenAPI.** Open `contracts/openapi/v1.json`.
-  Expected: `HttpValidationProblemDetails` lists `errors` as required. Both problem schemas list `correlationId`, `traceId` and `instance` as required, non-nullable strings. No operation declares `422`, and no success status references a problem schema.
+  Expected: `HttpValidationProblemDetails` lists `errors` as required. Both problem schemas list `correlationId`, `traceId` and `instance` as required, non-nullable strings. No operation declares `422`, and no success status references a problem schema. Every operation with a request body declares `413` and `408`, and no `GET` declares either.
 - **C2 — Developer guide.** Read the error-handling and endpoint sections of `Source/Server/DEVELOPER.md`.
   Expected: no mention of `422` for validation. Sample bodies match what B1 and B3 returned. The endpoint example declares its success type with `Produces<T>`.
 
