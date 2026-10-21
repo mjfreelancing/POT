@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using Pot.App.Concerns.Time;
 using Pot.App.Errors;
 using Pot.App.Features.Users.Delete;
 using Pot.App.Features.Users.Delete.EntityChecks;
@@ -20,6 +21,7 @@ public class DeleteUserServiceFixture : PotFixtureBase
     private readonly IPersistableUserRepository _userRepositoryFake = Substitute.For<IPersistableUserRepository>();
     private readonly IUserDeleteChecker _deleteCheckerFake = Substitute.For<IUserDeleteChecker>();
     private readonly ISendEmailChannelWriter _emailWriterFake = Substitute.For<ISendEmailChannelWriter>();
+    private readonly ITimeProvider _timeProviderFake = Substitute.For<ITimeProvider>();
 
     public class DeleteUserAsync : DeleteUserServiceFixture
     {
@@ -121,15 +123,108 @@ public class DeleteUserServiceFixture : PotFixtureBase
         [Fact]
         public async Task Should_Name_The_Deleted_User_And_The_Administrator_In_Each_Notification()
         {
-            var (caller, target) = ArrangeCallerAndTarget();
+            var (_, target) = ArrangeCallerAndTarget();
 
             await CreateService().DeleteUserAsync(CreateInput(target), CancellationToken.None);
 
             // One message per recipient - the deleted user and the administrator - each naming the same event.
             await _emailWriterFake.Received(2).SubmitAsync(
                 EmailType.UserDeleted,
-                Arg.Is<EmailUserDeletedInfo>(info => info.DeletedUsername == target.Username
-                    && info.DeletedByLabel == caller.Username),
+                Arg.Is<EmailUserDeletedInfo>(info => info.DeletedUserLabel == "Taylor Target (target)" &&
+                    info.DeletedByLabel == "Casey Caller (caller)" &&
+                    info.SiteName == "Delete Site"),
+                Arg.Any<CancellationToken>());
+        }
+
+        [Fact]
+        public async Task Should_Name_A_User_By_Username_Alone_When_The_Display_Name_Matches_It_Ignoring_Case()
+        {
+            var (_, target) = ArrangeCallerAndTarget(targetDisplayName: "TARGET");
+
+            await CreateService().DeleteUserAsync(CreateInput(target), CancellationToken.None);
+
+            await _emailWriterFake.Received(2).SubmitAsync(
+                EmailType.UserDeleted,
+                Arg.Is<EmailUserDeletedInfo>(info => info.DeletedUserLabel == "target"),
+                Arg.Any<CancellationToken>());
+        }
+
+        [Fact]
+        public async Task Should_Address_Each_Recipient_By_Their_Display_Name()
+        {
+            var (caller, target) = ArrangeCallerAndTarget();
+
+            await CreateService().DeleteUserAsync(CreateInput(target), CancellationToken.None);
+
+            await _emailWriterFake.Received(1).SubmitAsync(
+                EmailType.UserDeleted,
+                Arg.Is<EmailUserDeletedInfo>(info => info.Email == target.Email &&
+                    info.DisplayName == target.DisplayName &&
+                    info.RecipientName == target.DisplayName),
+                Arg.Any<CancellationToken>());
+
+            await _emailWriterFake.Received(1).SubmitAsync(
+                EmailType.UserDeleted,
+                Arg.Is<EmailUserDeletedInfo>(info => info.Email == caller.Email &&
+                    info.DisplayName == caller.DisplayName &&
+                    info.RecipientName == caller.DisplayName),
+                Arg.Any<CancellationToken>());
+        }
+
+        [Fact]
+        public async Task Should_Address_The_Deleted_Users_Copy_To_Them()
+        {
+            var (_, target) = ArrangeCallerAndTarget();
+
+            await CreateService().DeleteUserAsync(CreateInput(target), CancellationToken.None);
+
+            await _emailWriterFake.Received(1).SubmitAsync(
+                EmailType.UserDeleted,
+                Arg.Is<EmailUserDeletedInfo>(info => info.Email == target.Email &&
+                    info.IsRecipientDeletedUser &&
+                    info.Heading == "Your Account Was Deleted" &&
+                    info.Introduction == "Your account on the site Delete Site has been deleted by an administrator. You can no longer sign in." &&
+                    info.ClosingNote == "This is an automated confirmation. No further action is required." &&
+                    info.Details.Select(detail => detail.Label).SequenceEqual(new[] { "Site", "Deleted by", "Deleted at" })),
+                Arg.Any<CancellationToken>());
+        }
+
+        [Fact]
+        public async Task Should_Name_The_Deleted_User_In_The_Administrators_Copy()
+        {
+            var (caller, target) = ArrangeCallerAndTarget();
+
+            await CreateService().DeleteUserAsync(CreateInput(target), CancellationToken.None);
+
+            var expectedDetailsSection = string.Join(Environment.NewLine,
+                "User:       Taylor Target (target)",
+                "Site:       Delete Site",
+                "Deleted by: Casey Caller (caller)",
+                "Deleted at: Wed, 21 Oct 2026, 2:30 PM",
+                string.Empty);
+
+            await _emailWriterFake.Received(1).SubmitAsync(
+                EmailType.UserDeleted,
+                Arg.Is<EmailUserDeletedInfo>(info => info.Email == caller.Email &&
+                    !info.IsRecipientDeletedUser &&
+                    info.Heading == "User Deleted" &&
+                    info.Introduction == "A user account has been deleted." &&
+                    info.ClosingNote == "This is an automated confirmation. No further action is required." &&
+                    info.DetailsSection == expectedDetailsSection),
+                Arg.Any<CancellationToken>());
+        }
+
+        [Fact]
+        public async Task Should_Report_When_The_User_Was_Deleted()
+        {
+            var (_, target) = ArrangeCallerAndTarget();
+
+            await CreateService().DeleteUserAsync(CreateInput(target), CancellationToken.None);
+
+            await _emailWriterFake.Received(2).SubmitAsync(
+                EmailType.UserDeleted,
+                Arg.Is<EmailUserDeletedInfo>(info => info.DeletedAt == DeletedAt &&
+                    info.DeletedAtLabel == "Wed, 21 Oct 2026, 2:30 PM"),
                 Arg.Any<CancellationToken>());
         }
 
@@ -150,14 +245,15 @@ public class DeleteUserServiceFixture : PotFixtureBase
             result.IsSuccess.ShouldBeTrue();
         }
 
-        private (UserEntity Caller, UserEntity Target) ArrangeCallerAndTarget()
+        private (UserEntity Caller, UserEntity Target) ArrangeCallerAndTarget(string targetDisplayName = "Taylor Target")
         {
             var site = EntityFactory.CreateSite(name: "Delete Site");
 
-            var caller = EntityFactory.CreateUser(site, "caller", "caller@example.com", "Caller");
-            var target = EntityFactory.CreateUser(site, "target", "target@example.com", "Target");
+            var caller = EntityFactory.CreateUser(site, "caller", "caller@example.com", "Casey Caller");
+            var target = EntityFactory.CreateUser(site, "target", "target@example.com", targetDisplayName);
 
             _userRepositoryFake.GetCurrentUser(includeSite: true).Returns(caller);
+            _timeProviderFake.GetLocalDateTimeNow().Returns(DeletedAt);
 
             ArrangeTarget(target);
 
@@ -204,12 +300,15 @@ public class DeleteUserServiceFixture : PotFixtureBase
         }
     }
 
+    private static readonly DateTime DeletedAt = new(2026, 10, 21, 14, 30, 0, DateTimeKind.Local);
+
     private DeleteUserService CreateService()
     {
         return new DeleteUserService(
             _userRepositoryFake,
             _deleteCheckerFake,
             _emailWriterFake,
+            _timeProviderFake,
             Substitute.For<ILogger<DeleteUserService>>());
     }
 }

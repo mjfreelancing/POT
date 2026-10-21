@@ -31,6 +31,7 @@ internal sealed class EmailSender : IEmailSender
     private const string ApprovalRejectedSubject = "POT - Approval Denied";
     private const string BudgetReminderSubject = "POT - Budget Reminder";
     private const string UserDeletedSubject = "POT - User Deleted";
+    private const string OwnAccountDeletedSubject = "POT - Your Account Was Deleted";
     private const string SiteDeletedSubject = "POT - Site Deleted";
     
     private readonly IRazorComponentRenderer _razorRenderer;
@@ -95,9 +96,12 @@ internal sealed class EmailSender : IEmailSender
 
     public Task SendUserDeletedEmailAsync(EmailUserDeletedInfo config, CancellationToken cancellationToken)
     {
-        _logger.LogCall(this, new { config.Username, config.DeletedUsername, config.SiteName, config.DeletedByLabel });
+        _logger.LogCall(this, new { config.Username, config.DeletedUsername, config.SiteName, config.DeletedByUsername });
 
-        return SendEmailAsync<UserDeletedEmail>(config, UserDeletedSubject, PlainTextEmailTemplateLoader.UserDeleted, cancellationToken);
+        // The deleted user's own copy is addressed to them, so its subject is too.
+        var subject = config.IsRecipientDeletedUser ? OwnAccountDeletedSubject : UserDeletedSubject;
+
+        return SendEmailAsync<UserDeletedEmail>(config, subject, PlainTextEmailTemplateLoader.UserDeleted, cancellationToken);
     }
 
     public Task SendSiteDeletedEmailAsync(EmailSiteDeletedInfo config, CancellationToken cancellationToken)
@@ -119,7 +123,7 @@ internal sealed class EmailSender : IEmailSender
         };
 
         message.From.Add(new MailboxAddress(_smtpConfiguration.From.Name, _smtpConfiguration.From.Address));
-        message.To.Add(new MailboxAddress(config.Username, config.Email));
+        message.To.Add(new MailboxAddress(config.RecipientName, config.Email));
 
         var htmlDictionary = FilterPropertiesByFormat(dictionary, config.GetType(), EmailFormatType.Html);
         var html = await _razorRenderer.RenderToHtmlAsync<TEmailComponent>(htmlDictionary);

@@ -2,6 +2,7 @@ using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
+using Pot.App.Concerns.Time;
 using Pot.App.Errors;
 using Pot.App.Extensions;
 using Pot.App.Features.Users.Delete.EntityChecks;
@@ -21,14 +22,16 @@ internal sealed class DeleteUserService : IDeleteUserService
     private readonly IPersistableUserRepository _userRepository;
     private readonly IUserDeleteChecker _deleteChecker;
     private readonly ISendEmailChannelWriter _sendEmailChannelWriter;
+    private readonly ITimeProvider _timeProvider;
     private readonly ILogger _logger;
 
     public DeleteUserService(IPersistableUserRepository userRepository, IUserDeleteChecker deleteChecker,
-        ISendEmailChannelWriter sendEmailChannelWriter, ILogger<DeleteUserService> logger)
+        ISendEmailChannelWriter sendEmailChannelWriter, ITimeProvider timeProvider, ILogger<DeleteUserService> logger)
     {
         _userRepository = userRepository.WhenNotNull();
         _deleteChecker = deleteChecker.WhenNotNull();
         _sendEmailChannelWriter = sendEmailChannelWriter.WhenNotNull();
+        _timeProvider = timeProvider.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
@@ -92,26 +95,33 @@ internal sealed class DeleteUserService : IDeleteUserService
     {
         try
         {
+            var deletedAt = _timeProvider.GetLocalDateTimeNow();
+
             var administrators = await _userRepository.GetEnabledAdminsForCurrentSiteAsync(cancellationToken);
 
             // One confirmation per recipient: the deleted user, and every enabled administrator of the site
             // (including the caller, who is one of them).
-            var recipients = new List<(string Username, string Email)>
+            var recipients = new List<(string Username, string DisplayName, string Email)>
             {
-                (target.Username, target.Email)
+                (target.Username, target.DisplayName, target.Email)
             };
 
-            recipients.AddRange(administrators.Select(administrator => (administrator.Username, administrator.Email)));
+            recipients.AddRange(administrators.Select(administrator =>
+                (administrator.Username, administrator.DisplayName, administrator.Email)));
 
-            foreach (var (Username, Email) in recipients)
+            foreach (var (Username, DisplayName, Email) in recipients)
             {
                 var deletedInfo = new EmailUserDeletedInfo
                 {
                     Username = Username,
+                    DisplayName = DisplayName,
                     Email = Email,
+                    DeletedUserDisplayName = target.DisplayName,
                     DeletedUsername = target.Username,
-                    DeletedByLabel = caller.Username,
-                    SiteName = caller.Site.Name
+                    DeletedByDisplayName = caller.DisplayName,
+                    DeletedByUsername = caller.Username,
+                    SiteName = caller.Site.Name,
+                    DeletedAt = deletedAt
                 };
 
                 await _sendEmailChannelWriter.SubmitAsync(EmailType.UserDeleted, deletedInfo, cancellationToken);

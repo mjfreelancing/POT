@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using Pot.App.Concerns.Time;
 using Pot.App.Errors;
 using Pot.App.Features.Sites.Delete;
 using Pot.App.Features.Sites.Delete.EntityChecks;
@@ -23,6 +24,7 @@ public class DeleteSiteServiceFixture : PotFixtureBase
     private readonly IUserRepository _userRepositoryFake = Substitute.For<IUserRepository>();
     private readonly ISiteDeleteChecker _deleteCheckerFake = Substitute.For<ISiteDeleteChecker>();
     private readonly ISendEmailChannelWriter _emailWriterFake = Substitute.For<ISendEmailChannelWriter>();
+    private readonly ITimeProvider _timeProviderFake = Substitute.For<ITimeProvider>();
 
     public class DeleteSiteAsync : DeleteSiteServiceFixture
     {
@@ -87,14 +89,43 @@ public class DeleteSiteServiceFixture : PotFixtureBase
         [Fact]
         public async Task Should_Name_The_Deleted_Site_And_The_Administrator_In_The_Notification()
         {
+            var (_, site) = ArrangeCallerAndSite();
+
+            await CreateService().DeleteSiteAsync(CreateInput(site), CancellationToken.None);
+
+            await _emailWriterFake.Received(1).SubmitAsync(
+                EmailType.SiteDeleted,
+                Arg.Is<EmailSiteDeletedInfo>(info => info.DeletedSiteName == site.Name &&
+                    info.DeletedByLabel == "Casey Caller (caller)"),
+                Arg.Any<CancellationToken>());
+        }
+
+        [Fact]
+        public async Task Should_Address_Each_Recipient_By_Their_Display_Name()
+        {
             var (caller, site) = ArrangeCallerAndSite();
 
             await CreateService().DeleteSiteAsync(CreateInput(site), CancellationToken.None);
 
             await _emailWriterFake.Received(1).SubmitAsync(
                 EmailType.SiteDeleted,
-                Arg.Is<EmailSiteDeletedInfo>(info => info.DeletedSiteName == site.Name
-                    && info.DeletedByUsername == caller.Username),
+                Arg.Is<EmailSiteDeletedInfo>(info => info.Email == caller.Email &&
+                    info.DisplayName == caller.DisplayName &&
+                    info.RecipientName == caller.DisplayName),
+                Arg.Any<CancellationToken>());
+        }
+
+        [Fact]
+        public async Task Should_Report_When_The_Site_Was_Deleted()
+        {
+            var (_, site) = ArrangeCallerAndSite();
+
+            await CreateService().DeleteSiteAsync(CreateInput(site), CancellationToken.None);
+
+            await _emailWriterFake.Received(1).SubmitAsync(
+                EmailType.SiteDeleted,
+                Arg.Is<EmailSiteDeletedInfo>(info => info.DeletedAt == DeletedAt &&
+                    info.DeletedAtLabel == "Wed, 21 Oct 2026, 2:30 PM"),
                 Arg.Any<CancellationToken>());
         }
 
@@ -118,10 +149,11 @@ public class DeleteSiteServiceFixture : PotFixtureBase
         private (UserEntity Caller, SiteEntity Site) ArrangeCallerAndSite()
         {
             var site = EntityFactory.CreateSite(name: "Delete Site");
-            var caller = EntityFactory.CreateUser(site, "caller", "caller@example.com", "Caller");
+            var caller = EntityFactory.CreateUser(site, "caller", "caller@example.com", "Casey Caller");
 
             _userRepositoryFake.GetCurrentUser(includeSite: true).Returns(caller);
             _siteRepositoryFake.GetCurrentSite().Returns(site);
+            _timeProviderFake.GetLocalDateTimeNow().Returns(DeletedAt);
 
             _userRepositoryFake
                 .GetEnabledAdminsForCurrentSiteAsync(Arg.Any<CancellationToken>())
@@ -158,6 +190,8 @@ public class DeleteSiteServiceFixture : PotFixtureBase
         }
     }
 
+    private static readonly DateTime DeletedAt = new(2026, 10, 21, 14, 30, 0, DateTimeKind.Local);
+
     private DeleteSiteService CreateService()
     {
         return new DeleteSiteService(
@@ -165,6 +199,7 @@ public class DeleteSiteServiceFixture : PotFixtureBase
             _userRepositoryFake,
             _deleteCheckerFake,
             _emailWriterFake,
+            _timeProviderFake,
             Substitute.For<ILogger<DeleteSiteService>>());
     }
 }

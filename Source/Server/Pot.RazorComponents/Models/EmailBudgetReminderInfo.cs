@@ -43,6 +43,10 @@ public sealed class EmailBudgetReminderInfo : EmailConfigBase
     [EmailFormat(EmailFormatType.Html)]
     public required IReadOnlyList<ExpenseInfo> UserExpenses { get; init; }
 
+    /// <inheritdoc />
+    [EmailFormat(EmailFormatType.None)]
+    public override string RecipientName => DisplayName;
+
     [EmailFormat(EmailFormatType.PlainText)]
     public string IncomesSection => BuildIncomesSection(UserIncomes, ReminderDays, CurrencySymbol);
 

@@ -2,6 +2,7 @@ using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
+using Pot.App.Concerns.Time;
 using Pot.App.Errors;
 using Pot.App.Extensions;
 using Pot.App.Features.Me.Delete.EntityChecks;
@@ -19,19 +20,19 @@ namespace Pot.App.Features.Me.Delete;
 /// </summary>
 internal sealed class DeleteOwnAccountService : IDeleteOwnAccountService
 {
-    private const string SelfDeletionLabel = "themselves";
-
     private readonly IPersistableUserRepository _userRepository;
     private readonly IAccountDeleteChecker _deleteChecker;
     private readonly ISendEmailChannelWriter _sendEmailChannelWriter;
+    private readonly ITimeProvider _timeProvider;
     private readonly ILogger _logger;
 
     public DeleteOwnAccountService(IPersistableUserRepository userRepository, IAccountDeleteChecker deleteChecker,
-        ISendEmailChannelWriter sendEmailChannelWriter, ILogger<DeleteOwnAccountService> logger)
+        ISendEmailChannelWriter sendEmailChannelWriter, ITimeProvider timeProvider, ILogger<DeleteOwnAccountService> logger)
     {
         _userRepository = userRepository.WhenNotNull();
         _deleteChecker = deleteChecker.WhenNotNull();
         _sendEmailChannelWriter = sendEmailChannelWriter.WhenNotNull();
+        _timeProvider = timeProvider.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
@@ -84,24 +85,32 @@ internal sealed class DeleteOwnAccountService : IDeleteOwnAccountService
     {
         try
         {
-            var recipients = new List<(string Username, string Email)>
+            var deletedAt = _timeProvider.GetLocalDateTimeNow();
+
+            var recipients = new List<(string Username, string DisplayName, string Email)>
             {
-                (caller.Username, caller.Email)
+                (caller.Username, caller.DisplayName, caller.Email)
             };
 
             recipients.AddRange(administrators
                 .Where(administrator => administrator.RowId != caller.RowId)
-                .Select(administrator => (administrator.Username, administrator.Email)));
+                .Select(administrator => (administrator.Username, administrator.DisplayName, administrator.Email)));
 
-            foreach (var (Username, Email) in recipients)
+            foreach (var (Username, DisplayName, Email) in recipients)
             {
+                // The caller is both the deleted user and the one who deleted it, which the message reports as a
+                // self-deletion.
                 var deletedInfo = new EmailUserDeletedInfo
                 {
                     Username = Username,
+                    DisplayName = DisplayName,
                     Email = Email,
+                    DeletedUserDisplayName = caller.DisplayName,
                     DeletedUsername = caller.Username,
-                    DeletedByLabel = SelfDeletionLabel,
-                    SiteName = caller.Site.Name
+                    DeletedByDisplayName = caller.DisplayName,
+                    DeletedByUsername = caller.Username,
+                    SiteName = caller.Site.Name,
+                    DeletedAt = deletedAt
                 };
 
                 await _sendEmailChannelWriter.SubmitAsync(EmailType.UserDeleted, deletedInfo, cancellationToken);

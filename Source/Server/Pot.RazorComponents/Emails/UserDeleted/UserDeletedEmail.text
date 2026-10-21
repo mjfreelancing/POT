@@ -1,11 +1,16 @@
-﻿POT - User Deleted
-==================
+﻿POT - {Heading}
+{HeadingUnderline}
 
-Hello {Username},
+Hello {DisplayName},
 
-The user {DeletedUsername} on the site {SiteName} was deleted by {DeletedByLabel}.
+{Introduction}
 
-This is an automated confirmation. No further action is required.
+
+DELETION DETAILS
+----------------
+{DetailsSection}
+
+{ClosingNote}
 
 ---
 POT

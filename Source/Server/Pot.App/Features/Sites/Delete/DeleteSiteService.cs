@@ -2,6 +2,7 @@ using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using AllOverIt.Patterns.Result;
 using Microsoft.Extensions.Logging;
+using Pot.App.Concerns.Time;
 using Pot.App.Extensions;
 using Pot.App.Features.Sites.Delete.EntityChecks;
 using Pot.App.Features.Sites.Delete.Models;
@@ -23,15 +24,18 @@ internal sealed class DeleteSiteService : IDeleteSiteService
     private readonly IUserRepository _userRepository;
     private readonly ISiteDeleteChecker _deleteChecker;
     private readonly ISendEmailChannelWriter _sendEmailChannelWriter;
+    private readonly ITimeProvider _timeProvider;
     private readonly ILogger _logger;
 
     public DeleteSiteService(IPersistableSiteRepository siteRepository, IUserRepository userRepository,
-        ISiteDeleteChecker deleteChecker, ISendEmailChannelWriter sendEmailChannelWriter, ILogger<DeleteSiteService> logger)
+        ISiteDeleteChecker deleteChecker, ISendEmailChannelWriter sendEmailChannelWriter, ITimeProvider timeProvider,
+        ILogger<DeleteSiteService> logger)
     {
         _siteRepository = siteRepository.WhenNotNull();
         _userRepository = userRepository.WhenNotNull();
         _deleteChecker = deleteChecker.WhenNotNull();
         _sendEmailChannelWriter = sendEmailChannelWriter.WhenNotNull();
+        _timeProvider = timeProvider.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
@@ -80,14 +84,19 @@ internal sealed class DeleteSiteService : IDeleteSiteService
     {
         try
         {
+            var deletedAt = _timeProvider.GetLocalDateTimeNow();
+
             foreach (var administrator in administrators)
             {
                 var siteDeletedInfo = new EmailSiteDeletedInfo
                 {
                     Username = administrator.Username,
+                    DisplayName = administrator.DisplayName,
                     Email = administrator.Email,
                     DeletedSiteName = site.Name,
-                    DeletedByUsername = caller.Username
+                    DeletedByDisplayName = caller.DisplayName,
+                    DeletedByUsername = caller.Username,
+                    DeletedAt = deletedAt
                 };
 
                 await _sendEmailChannelWriter.SubmitAsync(EmailType.SiteDeleted, siteDeletedInfo, cancellationToken);

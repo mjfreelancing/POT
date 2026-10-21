@@ -1,9 +1,17 @@
 ﻿POT - Site Deleted
 ==================
 
-Hello {Username},
+Hello {DisplayName},
 
-The site {DeletedSiteName} was deleted by {DeletedByUsername}.
+A site has been deleted, together with its users and all of its data.
+
+
+DELETION DETAILS
+----------------
+Site:       {DeletedSiteName}
+Deleted by: {DeletedByLabel}
+Deleted at: {DeletedAtLabel}
+
 
 This is an automated confirmation. No further action is required.
 
