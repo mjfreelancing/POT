@@ -45,7 +45,7 @@ internal sealed class EmailSender : IEmailSender
         _logger = logger.WhenNotNull();
     }
 
-    public Task SendChangePasswordEmailAsync(EmailOtpInfo config, CancellationToken cancellationToken)
+    public Task SendChangePasswordEmailAsync(EmailChangePasswordInfo config, CancellationToken cancellationToken)
     {
         _logger.LogCall(this, new { config.Username, config.ReferenceCode, config.OtpExpiryMinutes });
 

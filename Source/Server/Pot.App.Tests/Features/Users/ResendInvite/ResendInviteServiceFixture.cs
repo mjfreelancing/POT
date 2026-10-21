@@ -5,6 +5,7 @@ using Pot.App.Features.Users.ResendInvite;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Users;
 using Pot.EmailSender;
+using Pot.RazorComponents.Models;
 using Pot.Shared.Enumerations;
 using Pot.TestUtils;
 using Shouldly;
@@ -128,8 +129,45 @@ public class ResendInviteServiceFixture : PotFixtureBase
         [Fact]
         public async Task Should_Resend_The_Invitation_When_The_User_Is_Pending()
         {
-            var user = EntityFactory.CreateUser(EntityFactory.CreateSite(), "pending-user");
+            var user = ArrangePendingUser();
+
+            var service = CreateService();
+
+            var result = await service.ResendInviteAsync(user.RowId, CancellationToken.None);
+
+            result.IsSuccess.ShouldBeTrue();
+
+            await _userRepositoryFake.Received(1).SaveAsync(Arg.Any<CancellationToken>());
+        }
+
+        [Fact]
+        public async Task Should_Name_The_Site_And_The_Administrator_Re_Sending_The_Invitation()
+        {
+            var user = ArrangePendingUser();
+
+            var service = CreateService();
+
+            await service.ResendInviteAsync(user.RowId, CancellationToken.None);
+
+            await _sendEmailChannelWriterFake.Received(1).SubmitAsync(
+                EmailType.Invitation,
+                Arg.Is<EmailInvitationInfo>(info => info.Username == "pending-user" &&
+                    info.DisplayName == "Pending User" &&
+                    info.RecipientName == "Pending User" &&
+                    info.SiteName == "Invite Site" &&
+                    info.InvitedByLabel == "Casey Caller (caller)"),
+                Arg.Any<CancellationToken>());
+        }
+
+        private UserEntity ArrangePendingUser()
+        {
+            var site = EntityFactory.CreateSite(name: "Invite Site");
+
+            var caller = EntityFactory.CreateUser(site, "caller", "caller@example.com", "Casey Caller");
+            var user = EntityFactory.CreateUser(site, "pending-user", "pending@example.com", "Pending User");
             user.Status = UserStatus.Pending;
+
+            _userRepositoryFake.GetCurrentUser(includeSite: true).Returns(caller);
 
             _passwordHasherFake
                 .GetHash(user, Arg.Any<string>())
@@ -139,13 +177,7 @@ public class ResendInviteServiceFixture : PotFixtureBase
                 .GetForCurrentSiteAsync(user.RowId, Arg.Any<CancellationToken>())
                 .Returns(user);
 
-            var service = CreateService();
-
-            var result = await service.ResendInviteAsync(user.RowId, CancellationToken.None);
-
-            result.IsSuccess.ShouldBeTrue();
-
-            await _userRepositoryFake.Received(1).SaveAsync(Arg.Any<CancellationToken>());
+            return user;
         }
 
         private ResendInviteService CreateService()

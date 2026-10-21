@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Pot.RazorComponents.Models;
 
 public abstract class EmailConfigBase
@@ -24,5 +26,16 @@ public abstract class EmailConfigBase
         return string.Equals(displayName, username, StringComparison.OrdinalIgnoreCase)
             ? username
             : $"{displayName} ({username})";
+    }
+
+    /// <summary>
+    /// Formats a date and time as, for example, "Wed, 21 Oct 2026, 2:30 PM", so every message and both formats
+    /// of a message show times the same way.
+    /// </summary>
+    /// <param name="dateTime">The date and time to format.</param>
+    /// <returns>The formatted date and time.</returns>
+    protected static string FormatDateTime(DateTime dateTime)
+    {
+        return dateTime.ToString("ddd, dd MMM yyyy, h:mm tt", CultureInfo.InvariantCulture);
     }
 }

@@ -99,7 +99,7 @@ internal sealed class SendEmailChannel : ISendEmailChannelReader, ISendEmailChan
     {
         Func<EmailConfigBase, CancellationToken, Task> emailAction = channelConfig.EmailType switch
         {
-            EmailType.ChangePassword => (config, token) => emailSender.SendChangePasswordEmailAsync((EmailOtpInfo)config, token),
+            EmailType.ChangePassword => (config, token) => emailSender.SendChangePasswordEmailAsync((EmailChangePasswordInfo)config, token),
             EmailType.Signup => (config, token) => emailSender.SendSignupEmailAsync((EmailOtpInfo)config, token),
             EmailType.Invitation => (config, token) => emailSender.SendInvitationEmailAsync((EmailInvitationInfo)config, token),
             EmailType.PendingApproval => (config, token) => emailSender.SendPendingApprovalEmailAsync((EmailPendingApprovalInfo)config, token),

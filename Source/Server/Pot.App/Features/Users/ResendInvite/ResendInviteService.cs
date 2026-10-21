@@ -84,10 +84,17 @@ internal sealed class ResendInviteService : IResendInviteService
 
     private ValueTask SendInvitationEmail(UserEntity user, string tempPassword, CancellationToken cancellationToken)
     {
+        // The administrator re-sending the invitation is the one named as having sent it.
+        var inviter = _userRepository.GetCurrentUser(includeSite: true);
+
         var emailConfig = new EmailInvitationInfo
         {
             Username = user.Username,
+            DisplayName = user.DisplayName,
             Email = user.Email,
+            SiteName = inviter.Site.Name,
+            InvitedByDisplayName = inviter.DisplayName,
+            InvitedByUsername = inviter.Username,
             TempPassword = tempPassword!,
         };
 

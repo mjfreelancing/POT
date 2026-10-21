@@ -83,6 +83,17 @@ public interface IUserRepository : IRepositoryBase
     Task<UserEntity?> GetByUsernameAsync(string username, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Resolves a user by username across every site, loading the site the user belongs to.
+    /// </summary>
+    /// <remarks>
+    /// Cross-tenant by design, for the same reasons as <see cref="GetByUsernameAsync" />.
+    /// </remarks>
+    /// <param name="username">The username to resolve.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The user with its site, or <see langword="null" /> when no user has that username.</returns>
+    Task<UserEntity?> GetByUsernameWithSiteAsync(string username, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Reads the token-validation state of a user across every site.
     /// </summary>
     /// <remarks>

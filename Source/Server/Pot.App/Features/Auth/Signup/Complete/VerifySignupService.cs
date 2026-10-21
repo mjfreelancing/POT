@@ -229,8 +229,10 @@ internal sealed class VerifySignupService : VerificationServiceBase, IVerifySign
         {
             var approvalInfo = new EmailPendingApprovalInfo
             {
+                Username = platformAdmin.Username,
+
                 // The platform admin is approving this user - use their display name
-                Username = platformAdmin.DisplayName,
+                DisplayName = platformAdmin.DisplayName,
                 Email = platformAdmin.Email,
                 UserUsername = username,
                 UserEmail = userEmail

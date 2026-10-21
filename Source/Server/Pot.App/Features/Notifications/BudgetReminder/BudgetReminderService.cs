@@ -83,7 +83,7 @@ internal sealed class BudgetReminderService : IBudgetReminderService
             Username = user.Username,
             Email = user.Email,
             DisplayName = user.DisplayName,
-            LastLoggedInUtc = user.LastLoggedInUtc.ConvertToLocalDateTime(_appContext)!.Value,
+            LastLoggedIn = user.LastLoggedInUtc.ConvertToLocalDateTime(_appContext)!.Value,
 
             UserIncomes = includedIncomes.SelectToList(income => new EmailBudgetReminderInfo.IncomeInfo
             {

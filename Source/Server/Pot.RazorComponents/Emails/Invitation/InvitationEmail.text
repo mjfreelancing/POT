@@ -1,9 +1,14 @@
 POT - Invitation
 ================
 
-Hello {Username},
+Hello {DisplayName},
 
-Your account has been created. Use the temporary password below to sign in.
+{InvitedByLabel} has created an account for you on the site {SiteName}. Use the details below to sign in.
+
+
+USERNAME
+--------
+{Username}
 
 
 TEMPORARY PASSWORD

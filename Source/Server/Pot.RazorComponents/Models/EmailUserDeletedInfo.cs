@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Text;
 
 namespace Pot.RazorComponents.Models;
@@ -74,7 +73,7 @@ public sealed class EmailUserDeletedInfo : EmailConfigBase
 
     /// <summary>Gets the formatted local date and time of the deletion.</summary>
     [EmailFormat(EmailFormatType.None)]
-    public string DeletedAtLabel => DeletedAt.ToString("ddd, dd MMM yyyy, h:mm tt", CultureInfo.InvariantCulture);
+    public string DeletedAtLabel => FormatDateTime(DeletedAt);
 
     /// <summary>Gets the message heading.</summary>
     [EmailFormat(EmailFormatType.Both)]

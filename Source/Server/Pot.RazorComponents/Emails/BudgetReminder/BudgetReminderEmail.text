@@ -9,8 +9,8 @@ Here are your upcoming incomes and expenses for the next {ReminderDays} days.
 {ExpensesSection}
 
 ---
-Generated: {GeneratedDateTime}
-Last logged in: {LastLoggedInUtc}
+Generated: {GeneratedLabel}
+Last logged in: {LastLoggedInLabel}
 
 
 POT

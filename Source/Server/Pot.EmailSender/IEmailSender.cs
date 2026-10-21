@@ -5,7 +5,7 @@ namespace Pot.EmailSender;
 
 public interface IEmailSender : IPotScopedDependency
 {
-    Task SendChangePasswordEmailAsync(EmailOtpInfo config, CancellationToken cancellationToken);
+    Task SendChangePasswordEmailAsync(EmailChangePasswordInfo config, CancellationToken cancellationToken);
     Task SendSignupEmailAsync(EmailOtpInfo config, CancellationToken cancellationToken);
     Task SendInvitationEmailAsync(EmailInvitationInfo config, CancellationToken cancellationToken);
     Task SendPendingApprovalEmailAsync(EmailPendingApprovalInfo config, CancellationToken cancellationToken);

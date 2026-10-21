@@ -88,6 +88,14 @@ internal sealed class UserRepository : PersistableRepository, IPersistableUserRe
         return Set<UserEntity>().SingleOrDefaultAsync(user => user.Username == username, cancellationToken);
     }
 
+    public Task<UserEntity?> GetByUsernameWithSiteAsync(string username, CancellationToken cancellationToken)
+    {
+        // Cross-tenant, as GetByUsernameAsync
+        return Set<UserEntity>()
+            .Include(user => user.Site)
+            .SingleOrDefaultAsync(user => user.Username == username, cancellationToken);
+    }
+
     public Task<UserSecurityState?> GetSecurityStateAsync(Guid userRowId, Guid sessionRowId, CancellationToken cancellationToken)
     {
         // Cross-tenant: the token is validated before any user context exists.

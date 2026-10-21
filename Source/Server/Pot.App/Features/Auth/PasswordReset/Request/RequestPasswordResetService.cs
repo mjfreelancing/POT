@@ -1,6 +1,7 @@
 using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
 using Microsoft.Extensions.Logging;
+using Pot.App.Concerns.Time;
 using Pot.App.Features.Auth.PasswordReset.Request.Models;
 using Pot.App.Features.Otp;
 using Pot.App.Features.Otp.Models;
@@ -20,14 +21,16 @@ internal sealed class RequestPasswordResetService : IRequestPasswordResetService
     private readonly IUserRepository _userRepository;
     private readonly IOtpService _otpService;
     private readonly ISendEmailChannelWriter _sendEmailChannelWriter;
+    private readonly ITimeProvider _timeProvider;
     private readonly ILogger _logger;
 
     public RequestPasswordResetService(IUserRepository userRepository, IOtpService otpService,
-        ISendEmailChannelWriter sendEmailChannelWriter, ILogger<RequestPasswordResetService> logger)
+        ISendEmailChannelWriter sendEmailChannelWriter, ITimeProvider timeProvider, ILogger<RequestPasswordResetService> logger)
     {
         _userRepository = userRepository.WhenNotNull();
         _otpService = otpService.WhenNotNull();
         _sendEmailChannelWriter = sendEmailChannelWriter.WhenNotNull();
+        _timeProvider = timeProvider.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
@@ -41,7 +44,8 @@ internal sealed class RequestPasswordResetService : IRequestPasswordResetService
             // Tracking is required otherwise the user cannot be attached to the OneTimePasswordEntity when
             // it is created since EF will assume it is a new entity rather than an existing one.
             // Cross-tenant by design: a signed-out caller resolves a username in order to reset a password.
-            var user = await _userRepository.GetByUsernameAsync(input.Username, cancellationToken);
+            // The site is loaded so the message can name it: one email address can hold accounts in several sites.
+            var user = await _userRepository.GetByUsernameWithSiteAsync(input.Username, cancellationToken);
 
             if (user?.Email is null)
             {
@@ -62,14 +66,17 @@ internal sealed class RequestPasswordResetService : IRequestPasswordResetService
 
     private ValueTask SendChangePasswordEmail(UserEntity user, UserOtpData otpData, CancellationToken cancellationToken)
     {
-        var emailConfig = new EmailOtpInfo
+        var emailConfig = new EmailChangePasswordInfo
         {
             Username = user.Username,
+            DisplayName = user.DisplayName,
             Email = user.Email,
+            SiteName = user.Site.Name,
             ReferenceCode = otpData.ReferenceCode,
             VerificationCode = otpData.OtpCode!,
             TempPassword = otpData.TempPassword!,
-            OtpExpiryMinutes = otpData.OtpExpiryMinutes
+            OtpExpiryMinutes = otpData.OtpExpiryMinutes,
+            RequestedAt = _timeProvider.GetLocalDateTimeNow()
         };
 
         return _sendEmailChannelWriter.SubmitAsync(EmailType.ChangePassword, emailConfig, cancellationToken);

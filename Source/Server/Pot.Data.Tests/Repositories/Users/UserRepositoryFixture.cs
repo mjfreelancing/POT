@@ -225,6 +225,47 @@ public class UserRepositoryFixture
         }
     }
 
+    public class GetByUsernameWithSiteAsync : UserRepositoryFixture
+    {
+        [Fact]
+        public async Task Should_Return_The_User_With_Its_Site()
+        {
+            using var context = CreateTestContext();
+
+            var result = await context.Repository.GetByUsernameWithSiteAsync(context.User.Username, Xunit.TestContext.Current.CancellationToken);
+
+            result.ShouldNotBeNull();
+            result.RowId.ShouldBe(context.User.RowId);
+            result.Site.ShouldNotBeNull();
+            result.Site.RowId.ShouldBe(context.Site.RowId);
+        }
+
+        [Fact]
+        public async Task Should_Resolve_A_User_In_Another_Site()
+        {
+            using var context = CreateTestContext();
+
+            var otherSiteUser = EntityFactory.CreateUser(context.OtherSite, "other-site-user");
+
+            await context.AddUsersAsync(otherSiteUser);
+
+            var result = await context.Repository.GetByUsernameWithSiteAsync(otherSiteUser.Username, Xunit.TestContext.Current.CancellationToken);
+
+            result.ShouldNotBeNull();
+            result.Site.RowId.ShouldBe(context.OtherSite.RowId);
+        }
+
+        [Fact]
+        public async Task Should_Return_Null_When_The_Username_Does_Not_Exist()
+        {
+            using var context = CreateTestContext();
+
+            var result = await context.Repository.GetByUsernameWithSiteAsync("missing-user", Xunit.TestContext.Current.CancellationToken);
+
+            result.ShouldBeNull();
+        }
+    }
+
     public class GetForCurrentSiteAsync : UserRepositoryFixture
     {
         [Fact]

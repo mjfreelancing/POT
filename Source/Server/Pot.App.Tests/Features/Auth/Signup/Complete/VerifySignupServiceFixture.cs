@@ -101,6 +101,28 @@ public class VerifySignupServiceFixture : PotFixtureBase
 
             GetWarnings().ShouldBeEmpty();
         }
+
+        [Fact]
+        public async Task Should_Address_Each_Administrator_By_Username_And_Display_Name()
+        {
+            ArrangeAMatchingSignup();
+
+            var administrator = EntityFactory.CreateUser(EntityFactory.CreateSite(), "platform-admin", "admin@example.com", "Pat Admin");
+
+            ArrangeConfiguredAdministrators(administrator);
+
+            await CreateService().VerifySignupAsync(CreateInput([administrator.RowId]), CancellationToken.None);
+
+            await _sendEmailChannelWriterFake
+                .Received(1)
+                .SubmitAsync(
+                    EmailType.PendingApproval,
+                    Arg.Is<EmailPendingApprovalInfo>(info => info.Username == "platform-admin" &&
+                        info.DisplayName == "Pat Admin" &&
+                        info.RecipientName == "Pat Admin" &&
+                        info.UserUsername == Username),
+                    Arg.Any<CancellationToken>());
+        }
     }
 
     /// <summary>

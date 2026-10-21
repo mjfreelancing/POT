@@ -105,10 +105,16 @@ internal sealed class InviteUserService : IInviteUserService
 
     private ValueTask SendInvitationEmail(UserEntity user, string tempPassword, CancellationToken cancellationToken)
     {
+        var inviter = _userRepository.GetCurrentUser(includeSite: false);
+
         var emailConfig = new EmailInvitationInfo
         {
             Username = user.Username,
+            DisplayName = user.DisplayName,
             Email = user.Email,
+            SiteName = user.Site.Name,
+            InvitedByDisplayName = inviter.DisplayName,
+            InvitedByUsername = inviter.Username,
             TempPassword = tempPassword!,
         };
 
