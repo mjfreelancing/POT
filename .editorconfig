@@ -1,0 +1,9 @@
+# Line endings for everything outside Source/Server, which has its own .editorconfig with root = true.
+# These match .gitattributes: CRLF on checkout, except shell scripts, which must stay LF to run in a container.
+root = true
+
+[*]
+end_of_line = crlf
+
+[*.sh]
+end_of_line = lf

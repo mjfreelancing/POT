@@ -1,6 +1,11 @@
 ﻿# Remove the line below if you want to inherit .editorconfig settings from higher directories
 root = true
 
+# All files. CRLF to match '* text=auto eol=crlf' in .gitattributes, so an editor writes what a checkout produces.
+# Repeated from the repository root's .editorconfig because root = true above stops the search here.
+[*]
+end_of_line = crlf
+
 # C# files
 [*.cs]
 charset = utf-8

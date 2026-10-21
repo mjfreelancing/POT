@@ -1,5 +1,7 @@
 # Enforce consistent line endings across platforms.
-# Keep repository text files as CRLF for this codebase.
+# Text files are stored with LF in the repository and checked out with CRLF on every platform, so the committed content
+# never depends on anyone's core.autocrlf. The editor and formatter settings - .editorconfig, Source/Server/.editorconfig
+# and Source/Client/pot-react/.prettierrc - say CRLF too, so a tool never writes a file differently from a checkout.
 * text=auto eol=crlf
 
 # Shell scripts should remain LF for POSIX environments.
