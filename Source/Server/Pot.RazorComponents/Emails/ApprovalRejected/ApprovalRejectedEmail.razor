@@ -22,7 +22,7 @@
             <tr>
                 <td style="padding:24px;">
                     <div style="margin-bottom:20px;">
-                        <h2 style="color:#333;margin:0 0 8px 0;font-size:18px;">Hello @Username,</h2>
+                        <h2 style="color:#333;margin:0 0 8px 0;font-size:18px;">Hello @DisplayName,</h2>
                         <p style="color:#555;margin:0;font-size:14px;">Thank you for your interest in POT. After reviewing your account application, we are unable to approve your request at this time.</p>
                     </div>
 
@@ -54,4 +54,7 @@
 @code {
     [Parameter]
     public required string Username { get; set; }
+
+    [Parameter]
+    public required string DisplayName { get; set; }
 }

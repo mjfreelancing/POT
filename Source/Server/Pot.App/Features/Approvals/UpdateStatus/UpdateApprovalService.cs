@@ -83,6 +83,7 @@ internal sealed class UpdateApprovalService : IUpdateApprovalService
         var emailConfig = new EmailApprovalStatusInfo
         {
             Username = user.Username,
+            DisplayName = user.DisplayName,
             Email = user.Email
         };
 

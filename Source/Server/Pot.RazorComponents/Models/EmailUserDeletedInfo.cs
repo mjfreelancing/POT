@@ -105,7 +105,7 @@ public sealed class EmailUserDeletedInfo : EmailConfigBase
     {
         if (!IsRecipientDeletedUser)
         {
-            return "A user account has been deleted.";
+            return "A user account on your site has been deleted.";
         }
 
         return IsSelfDeletion

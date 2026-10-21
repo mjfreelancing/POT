@@ -148,7 +148,7 @@ public class DeleteOwnAccountServiceFixture : PotFixtureBase
                 Arg.Is<EmailUserDeletedInfo>(info => info.Email == OtherAdministratorEmail &&
                     !info.IsRecipientDeletedUser &&
                     info.Heading == "User Deleted" &&
-                    info.Introduction == "A user account has been deleted." &&
+                    info.Introduction == "A user account on your site has been deleted." &&
                     info.ClosingNote == "This is an automated confirmation. No further action is required." &&
                     info.Details.Select(detail => detail.Label).SequenceEqual(new[] { "User", "Site", "Deleted by", "Deleted at" })),
                 Arg.Any<CancellationToken>());
