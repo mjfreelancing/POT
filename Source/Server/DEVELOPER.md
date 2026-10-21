@@ -90,7 +90,7 @@ Source/Server/
 │   ├── DependencyRegistrar.cs  # Marker class for auto-registration
 │   └── Program.cs         # Application startup and configuration
 ├── Pot.Data/              # Data Layer - EF Core, entities, repositories
-│   ├── Annotations/       # Custom data annotations (AccountBsb, CiText, MediumString, OtpCode, SmallString)
+│   ├── Annotations/       # Custom data annotations (CiText, MediumString, OtpCode, SmallString)
 │   ├── Configuration/     # Database configuration
 │   ├── Entities/          # Database entities (AccountEntity, ExpenseEntity, IncomeEntity, etc.)
 │   ├── Extensions/        # EF Core extensions and query helpers
@@ -164,8 +164,8 @@ Source/Server/
 **3. Pre-Validation with Problem Details**
 
 - **FluentValidation** executes before business logic via `IProblemDetailsInspector`
-- All validation errors returned as **RFC 7807 Problem Details** for consistent error handling
-- **422 Unprocessable Entity** for all validation errors (never 400)
+- All validation errors returned as **RFC 9457 Problem Details** for consistent error handling
+- **400 Bad Request** for all validation errors, with every failure listed in the `errors` array
 
 **4. Result Pattern for Business Logic**
 
@@ -203,7 +203,8 @@ Source/Server/
 - All public APIs use `RowId` (Guid), never `Id` (int) to prevent leaking internal database identifiers
 - Endpoints return typed results: `Results<Ok<Response>, ProblemHttpResult>`
 - Include `Etag` in responses for optimistic concurrency control
-- HTTP status codes: 200 (OK), 201 (Created), 404 (Not Found), 422 (Validation), 429 (Rate Limit), 500 (Error)
+- HTTP status codes: 200 (OK), 201 (Created), 204 (No Content), 400 (Validation or a refused business rule), 401, 403,
+  404 (Not Found), 409 (Conflict), 429 (Rate Limit), 500 (Error) - see [Problem Details](#problem-details)
 
 **Code Organization:**
 
@@ -236,7 +237,7 @@ How the product is protected. Every item is a mechanism that is implemented, not
 - **The target decides tenancy, not the caller.** A caller's own site proves nothing about the row a request names, so every id-taking route resolves its target through a site-scoped lookup. A target in another site and a target that does not exist answer `404` with the same body, never a distinguishable `403`, so a refusal cannot be used to discover that a row exists elsewhere. Cross-tenant refusals are logged at warning, naming the caller and the requested id.
 - **Authorization is resolved per request.** Permissions use the `resource:action` pattern and are computed from the caller's roles plus the deployment-configured platform grant, from the database, on every request. A fail-closed `RequireAuthenticatedUser` fallback policy makes an endpoint that declares no requirement of its own authenticated-only, and the routes that must stay reachable before a session exists are marked `AllowAnonymous()` explicitly, so the anonymous set is a short reviewable list rather than a default that grows by accident. A regression test enumerates the host's endpoints and fails if a route is neither.
 - **The access token carries no derived state.** It holds `jti`, `sub` and `tokenVersion` and nothing else. Tenancy, permissions and account status are read from the database on every request, because a JWT payload is readable by anyone holding the token and a claim goes stale while the token stays valid.
-- **Two identities are protected from lock-out.** A configured platform administrator cannot be disabled, and a site's last enabled `Admin` cannot be disabled or demoted, so neither platform nor tenant administration can be left without an administrator. Both refusals answer `422` with copy the user can act on, and the target is left unchanged.
+- **Two identities are protected from lock-out.** A configured platform administrator cannot be disabled, and a site's last enabled `Admin` cannot be disabled or demoted, so neither platform nor tenant administration can be left without an administrator. Both refusals answer `400` with copy the user can act on, and the target is left unchanged.
 - **Credentials.** Passwords are stored only as salted one-way hashes. Invitations, sign-ups and password resets use single-use codes with an expiry and an attempt limit. Changing a password or signing out increments the token version, which invalidates every access token already issued, and a disabled account is rejected when its token is validated.
 - **Abuse throttling.** Rate limiting is partitioned by anonymous client and by signed-in user, and answers `429` with a `Retry-After` header and the wait time in the problem details.
 - **The deliberate cross-tenant surfaces.** Approvals and the platform routes run behind the platform grant and read across sites on purpose. Every read that crosses a site boundary is deliberate, is served by a repository method named for it, and records at its call site why it is allowed: a username resolved before a site is known, a caller who is signed out, a token validated before any user context exists, or the platform surface acting on every site. There is no unnamed cross-tenant read.
@@ -302,24 +303,31 @@ using System.ComponentModel;
 
 namespace Pot.AspNetCore.Features.Accounts.Create;
 
+/// <summary>Carries the values needed to create an account.</summary>
 public sealed class Request
 {
-    [Description("The account BSB")]
-    public string Bsb { get; init; } = string.Empty;
-
-    [Description("The account number")]
-    public string Number { get; init; } = string.Empty;
-
+    /// <summary>A description of the account</summary>
     [Description("A description of the account")]
     public string Description { get; init; } = string.Empty;
 
+    /// <summary>The account balance</summary>
     [Description("The account balance")]
     public double Balance { get; init; }
 
+    /// <summary>The minimum reserved amount</summary>
     [Description("The minimum reserved amount")]
     public double Reserved { get; init; }
 }
 ```
+
+The XML `<summary>` comments reach the OpenAPI document as schema descriptions - `OpenApiSecurityFixture` asserts that
+they do - so a request or response type is documented in both places.
+
+Schema components are named after the slice, because the document has one flat namespace and a second `Response` would
+silently replace the first: `Pot.AspNetCore.Features.Accounts.Create.Request` is `Accounts_Create_Request`. A feature type
+from another project that reaches the document is qualified by that project as well (`App_Projections_Models_DateProjection`),
+and collections are described inline. `Concerns/OpenApi/SchemaReferenceId` does the naming, and `SchemaReferenceIdFixture`
+fails if two feature types would share a name.
 
 **Why Init-Only Properties?**
 
@@ -341,14 +349,15 @@ internal sealed class RequestValidator : PotValidatorBase<Request>
 {
     public RequestValidator()
     {
-        RuleFor(account => account.Bsb).IsNotEmpty();
-        RuleFor(account => account.Number).IsNotEmpty();
         RuleFor(account => account.Description).IsNotEmpty();
         RuleFor(account => account.Balance).IsGreaterThanOrEqualTo(0.0d);
         RuleFor(account => account.Reserved).IsGreaterThanOrEqualTo(0.0d);
     }
 }
 ```
+
+The validator checks only what the request alone can decide. Whether the description is already used needs the database,
+so it is an entity check in `Pot.App` (Step 10), not a rule here.
 
 **Why Inherit from PotValidatorBase?**
 
@@ -399,12 +408,12 @@ public sealed class Response : ResponseBase
 
 **Step 5: Create Request to Input Mapping**
 
-Create `Pot.AspNetCore/Features/Accounts/Create/Mappings/RequestMapping.cs`:
+Create `Pot.AspNetCore/Features/Accounts/Create/RequestMapping.cs`:
 
 ```csharp
 using Pot.App.Features.Accounts.Create.Models;
 
-namespace Pot.AspNetCore.Features.Accounts.Create.Mappings;
+namespace Pot.AspNetCore.Features.Accounts.Create;
 
 internal static class RequestMapping
 {
@@ -412,8 +421,6 @@ internal static class RequestMapping
     {
         return new Input
         {
-            Bsb = request.Bsb,
-            Number = request.Number,
             Description = request.Description,
             Balance = request.Balance,
             Reserved = request.Reserved
@@ -438,18 +445,14 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Pot.App.Features.Accounts.Create;
 using Pot.AspNetCore.Concerns.Validation;
 using Pot.AspNetCore.Extensions;
-using Pot.AspNetCore.Features.Accounts.Create.Mappings;
 
 namespace Pot.AspNetCore.Features.Accounts.Create;
 
 internal sealed class Handler
 {
-    public static async Task<Results<CreatedAtRoute<Response>, ProblemHttpResult>> Invoke(
-        Request request,
-        ICreateAccountService accountService,
-        IProblemDetailsInspector problemDetailsInspector,
-        ILogger<Handler> logger,
-        CancellationToken cancellationToken)
+    public static async Task<Results<CreatedAtRoute<Response>, ProblemHttpResult>> Invoke(Request request,
+        ICreateAccountService accountService, IProblemDetailsInspector problemDetailsInspector,
+        ILogger<Handler> logger, CancellationToken cancellationToken)
     {
         logger.LogCall(null);
 
@@ -488,8 +491,6 @@ internal sealed class Handler
 Create `Pot.AspNetCore/Features/Accounts/Extensions/RouteGroupBuilderExtensions.cs`:
 
 ```csharp
-using System.Net;
-
 namespace Pot.AspNetCore.Features.Accounts.Extensions;
 
 internal static class RouteGroupBuilderExtensions
@@ -502,10 +503,9 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(CreateAccount))
             .WithSummary("Create account")
             .WithDescription("Create new account details")
-            .ProducesProblem(StatusCodes.Status201Created)
+            .Produces<Create.Response>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status409Conflict);
 
         return routeGroupBuilder;
     }
@@ -514,10 +514,15 @@ internal static class RouteGroupBuilderExtensions
 }
 ```
 
+`Produces<T>` declares the success body; `ProducesProblem` declares only failures, because it documents the body as
+`ProblemDetails`. The `400` and `500` every endpoint can return come from `ProducesStandardProblems()` on the route group
+below, so they are not repeated here.
+
 Create `Pot.AspNetCore/Features/Accounts/Extensions/WebApplicationExtensions.cs`:
 
 ```csharp
 using Pot.AspNetCore.Concerns.RateLimiting;
+using Pot.AspNetCore.Extensions;
 
 namespace Pot.AspNetCore.Features.Accounts.Extensions;
 
@@ -531,6 +536,7 @@ internal static class WebApplicationExtensions
 
             app.MapGroup(AccountsEndpoints.Group)
                 .WithTags(AccountsEndpoints.Tag)
+                .ProducesStandardProblems()
                 .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .GetAllAccounts()
                 .GetAccount()
@@ -547,8 +553,9 @@ internal static class WebApplicationExtensions
 Update `Pot.AspNetCore/Program.cs` to register endpoints:
 
 ```csharp
-app.UsePotMiddleware()
-   .UseScalarOpenApi()
+app.UsePotMiddleware();
+
+app.UseScalarOpenApi()
    .AddAuthEndpoints()
    .AddApprovalEndpoints()
    .AddMeEndpoints()
@@ -568,9 +575,9 @@ namespace Pot.App.Features.Accounts.Create.Models;
 
 public sealed class Input
 {
-    public Guid? RowId { get; init; }  // Optional for import scenarios
-    public string Bsb { get; init; } = string.Empty;
-    public string Number { get; init; } = string.Empty;
+    // Provided when importing - required so income and expense items can be linked correctly
+    public Guid? RowId { get; init; }
+
     public string Description { get; init; } = string.Empty;
     public double Balance { get; init; }
     public double Reserved { get; init; }
@@ -666,25 +673,57 @@ internal sealed class PreCreateChecker : ChainOfResponsibilityAsyncComposer<Inpu
 }
 ```
 
-Create individual checks in `Pot.App/Features/Accounts/Create/EntityChecks/Checks/`:
+Create `Pot.App/Features/Accounts/Create/EntityChecks/InputState.cs`, the state passed along the chain:
 
 ```csharp
-// CheckAccountNumberDoesNotExist.cs
+using Pot.Data.Entities;
+
+namespace Pot.App.Features.Accounts.Create.EntityChecks;
+
+internal sealed class InputState
+{
+    public required AccountEntity AccountToCreate { get; init; }
+}
+```
+
+Create `Pot.App/Features/Accounts/Create/EntityChecks/Checks/PreCreateCheckBase.cs`. The marker interface is what lets every
+check be injected into `PreCreateChecker` as one `IEnumerable<IPreCreateCheck>`:
+
+```csharp
+using AllOverIt.Patterns.ChainOfResponsibility;
+using Pot.App.Errors;
+using Pot.Shared.DependencyInjection;
+
+namespace Pot.App.Features.Accounts.Create.EntityChecks.Checks;
+
+internal interface IPreCreateCheck : IPotScopedDependency;
+
+internal abstract class PreCreateCheckBase : ChainOfResponsibilityHandlerAsync<InputState, ApiDetailError?>, IPreCreateCheck
+{
+}
+```
+
+Create each check in `Pot.App/Features/Accounts/Create/EntityChecks/Checks/`:
+
+```csharp
+// CheckDescriptionDoesNotExist.cs
 using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pot.App.Errors;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
+using Pot.Data.Specifications;
 
 namespace Pot.App.Features.Accounts.Create.EntityChecks.Checks;
 
-internal sealed class CheckAccountNumberDoesNotExist : PreCreateCheckBase
+internal sealed class CheckDescriptionDoesNotExist : PreCreateCheckBase
 {
     private readonly IAccountRepository _accountRepository;
     private readonly ILogger _logger;
 
-    public CheckAccountNumberDoesNotExist(IAccountRepository accountRepository, ILogger<CheckAccountNumberDoesNotExist> logger)
+    public CheckDescriptionDoesNotExist(IAccountRepository accountRepository, ILogger<CheckDescriptionDoesNotExist> logger)
     {
         _accountRepository = accountRepository.WhenNotNull();
         _logger = logger.WhenNotNull();
@@ -696,23 +735,29 @@ internal sealed class CheckAccountNumberDoesNotExist : PreCreateCheckBase
 
         var account = state.AccountToCreate;
 
-        var accountExists = await _accountRepository.AccountExistsAsync(account.Bsb, account.Number, cancellationToken);
+        var predicate = AccountSpecifications.IsSameDescription(account.Description).Expression;
 
-        if (accountExists)
+        // Description uniqueness is per-site; the query filter restricts the check to the current site
+        var descriptionExists = await _accountRepository.Accounts.AnyAsync(predicate, cancellationToken);
+
+        if (descriptionExists)
         {
             return ApiDetailErrorFactory.CreateEntityExistsError(
-                $"{nameof(AccountEntity.Bsb)}, {nameof(AccountEntity.Number)}",
-                $"{account.Bsb}, {account.Number}",
-                "The account number already exists");
+                nameof(AccountEntity.Description),
+                account.Description,
+                "The account description already exists");
         }
 
-        // Call next handler in chain
+        // Call the next handler in the chain
         return await base.HandleAsync(state, cancellationToken);
     }
 }
-
-// CheckDescriptionDoesNotExist.cs (similar pattern)
 ```
+
+The check needs no site filter of its own: the global query filter on `AccountEntity` already restricts `Accounts` to the
+caller's site, which is what makes the rule "unique within a site" - see
+[Multi-Tenancy & Query Filters](#multi-tenancy--query-filters). The database enforces the same rule with a unique index on
+`(SiteId, Description)`, so a request that races past this check gets a `409` from `DatabaseExceptionHandler` instead.
 
 **Why Chain of Responsibility for Entity Checks?**
 
@@ -787,25 +832,23 @@ internal sealed class CreateAccountService : ICreateAccountService
             var accountToCreate = new AccountEntity
             {
                 Site = userSite,
-                Bsb = input.Bsb,
-                Number = input.Number,
                 Description = input.Description,
                 Balance = input.Balance,
                 Reserved = input.Reserved
             };
 
-            // Optional RowId for import scenarios
+            // Provided when importing - required so income and expense items can be linked correctly
             if (input.RowId.HasValue)
             {
                 accountToCreate.RowId = input.RowId.Value;
             }
 
             // Run entity checks (business rule validation)
-            var problemDetails = await _preCreateChecker.CanSaveAsync(accountToCreate, cancellationToken);
+            var apiError = await _preCreateChecker.CanSaveAsync(accountToCreate, cancellationToken);
 
-            if (problemDetails is not null)
+            if (apiError is not null)
             {
-                return EnrichedResult.Fail<Output>(problemDetails);
+                return EnrichedResult.Fail<Output>(apiError);
             }
 
             // Save to database
@@ -861,9 +904,7 @@ Content-Type: application/json
 Authorization: Bearer {your-jwt-token}
 
 {
-  "bsb": "123-456",
-  "number": "12345678",
-  "description": "Savings Account",
+  "description": "Savings",
   "balance": 5000.00,
   "reserved": 500.00
 }
@@ -878,46 +919,45 @@ Authorization: Bearer {your-jwt-token}
 }
 ```
 
-**Validation Error Response (422 Unprocessable Entity):**
+**Validation Error Response (400 Bad Request):**
 
-`type` and `title` are supplied by ASP.NET Core; the members below are the ones POT sets.
+`type`, `title` and `traceId` are supplied by ASP.NET Core; the members below are the ones POT sets.
 
 ```json
 {
-  "status": 422,
+  "status": 400,
   "detail": "One or more validation errors occurred.",
   "errors": [
     {
       "errorCode": "NotEmptyValidator",
-      "propertyName": "Bsb",
+      "propertyName": "Description",
       "attemptedValue": "",
-      "errorMessage": "'Bsb' must not be empty."
-    },
-    {
-      "errorCode": "NotEmptyValidator",
-      "propertyName": "Number",
-      "attemptedValue": "",
-      "errorMessage": "'Number' must not be empty."
+      "errorMessage": "'Description' must not be empty."
     }
   ],
-  "correlationId": "8e9f7c6d-5b4a-3f2e-1d0c-9a8b7c6d5e4f"
+  "correlationId": "8e9f7c6d-5b4a-3f2e-1d0c-9a8b7c6d5e4f",
+  "instance": "/api/accounts"
 }
 ```
 
 **Business Rule Violation (409 Conflict):**
 
+A failure from a service carries its message in `errors` only. `ToProblemDetails()` sets `detail` from the error's
+`Description`, which `ApiDetailErrorFactory` does not set, so there is no `detail` member.
+
 ```json
 {
   "status": 409,
-  "detail": "The account number already exists",
   "errors": [
     {
       "errorCode": "Conflict",
-      "propertyName": "Bsb, Number",
-      "attemptedValue": "123-456, 12345678",
-      "errorMessage": "The account number already exists"
+      "propertyName": "Description",
+      "attemptedValue": "Savings",
+      "errorMessage": "The account description already exists"
     }
-  ]
+  ],
+  "correlationId": "8e9f7c6d-5b4a-3f2e-1d0c-9a8b7c6d5e4f",
+  "instance": "/api/accounts"
 }
 ```
 
@@ -946,9 +986,8 @@ Pot.AspNetCore/
 │   │   │   ├── Handler.cs                 # Static handler with Invoke method
 │   │   │   ├── Request.cs                 # HTTP request model
 │   │   │   ├── RequestValidator.cs        # FluentValidation validator
-│   │   │   ├── Response.cs                # HTTP response model
-│   │   │   └── Mappings/
-│   │   │       └── RequestMapping.cs      # Request → Input mapping
+│   │   │   ├── RequestMapping.cs          # Request → Input mapping (flat - no Mappings/ folder in the API layer)
+│   │   │   └── Response.cs                # HTTP response model
 │   │   ├── Update/                        # Similar structure
 │   │   ├── Delete/                        # Similar structure
 │   │   ├── Get/                           # Similar structure
@@ -1004,8 +1043,7 @@ Pot.App/
 │   │   │       ├── PreCreateChecker.cs         # Chain of responsibility coordinator
 │   │   │       ├── InputState.cs               # State object for chain
 │   │   │       └── Checks/
-│   │   │           ├── PreCreateCheckBase.cs   # Base class for checks
-│   │   │           ├── CheckAccountNumberDoesNotExist.cs
+│   │   │           ├── PreCreateCheckBase.cs   # Base class and IPreCreateCheck marker
 │   │   │           └── CheckDescriptionDoesNotExist.cs
 │   │   ├── Update/                             # Similar structure
 │   │   └── ...
@@ -1053,14 +1091,22 @@ public async Task<EnrichedResult<Output>> OperationAsync(Input input, Cancellati
 
     using (_repository.WithTracking())
     {
-        // 1. Load entity
-        var entity = await _repository.GetByPrimaryKeyAsync<Entity, Guid>(input.Id, cancellationToken);
+        // 1. Load entity, through a site-scoped repository method
+        var entity = await _repository.GetEntityOrDefaultAsync(input.RowId, cancellationToken);
+
+        if (entity is null)
+        {
+            var notFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(input.RowId, "The entity does not exist");
+
+            return EnrichedResult.Fail<Output>(notFoundError);
+        }
 
         // 2. Run entity checks (business rules)
-        var problemDetails = await _entityChecker.CanSaveAsync(entity, cancellationToken);
-        if (problemDetails is not null)
+        var apiError = await _entityChecker.CanSaveAsync(input, entity, cancellationToken);
+
+        if (apiError is not null)
         {
-            return EnrichedResult.Fail<Output>(problemDetails);
+            return EnrichedResult.Fail<Output>(apiError);
         }
 
         // 3. Perform operation
@@ -1399,8 +1445,6 @@ internal sealed class RequestValidator : PotValidatorBase<Request>
 {
     public RequestValidator()
     {
-        RuleFor(account => account.Bsb).IsNotEmpty();
-        RuleFor(account => account.Number).IsNotEmpty();
         RuleFor(account => account.Description).IsNotEmpty();
         RuleFor(account => account.Balance).IsGreaterThanOrEqualTo(0.0d);
         RuleFor(account => account.Reserved).IsGreaterThanOrEqualTo(0.0d);
@@ -1495,11 +1539,11 @@ RuleFor(x => x.Items).Must(x => x.Count > 0);
 RuleFor(x => x.EndDate).IsNotEmpty().When(x => x.Frequency != Frequency.OneTime);
 
 // Custom validation
-RuleFor(x => x.Bsb).Must(BeValidBsb).WithMessage("BSB must be in format XXX-XXX");
+RuleFor(x => x.Code).Must(BeSixDigits).WithMessage("Code must be exactly 6 digits");
 
-private bool BeValidBsb(string bsb)
+private static bool BeSixDigits(string code)
 {
-    return System.Text.RegularExpressions.Regex.IsMatch(bsb, @"^\d{3}-\d{3}$");
+    return System.Text.RegularExpressions.Regex.IsMatch(code, @"^\d{6}$");
 }
 ```
 
@@ -1605,8 +1649,6 @@ public abstract class ResponseBase
 **Pattern:**
 
 ```csharp
-using System.Net;
-
 namespace Pot.AspNetCore.Features.Accounts.Extensions;
 
 internal static class RouteGroupBuilderExtensions
@@ -1619,10 +1661,9 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(CreateAccount))
             .WithSummary("Create account")
             .WithDescription("Create new account details")
-            .ProducesProblem(StatusCodes.Status201Created)
+            .Produces<Create.Response>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status409Conflict);
 
         return routeGroupBuilder;
     }
@@ -1635,10 +1676,9 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(GetAccount))
             .WithSummary("Get account")
             .WithDescription("Get details for an existing account")
-            .ProducesProblem(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .Produces<Get.Response>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         return routeGroupBuilder;
     }
@@ -1654,7 +1694,10 @@ internal static class RouteGroupBuilderExtensions
 - **`WithName`**: Named route for `CreatedAtRoute` references
 - **`WithSummary`**: Short description for OpenAPI documentation
 - **`WithDescription`**: Detailed description for OpenAPI documentation
-- **`ProducesProblem`**: Expected status codes for OpenAPI documentation
+- **`Produces<T>`**: The success status and its body type. Never `ProducesProblem` for a success: that documents the body as
+  `ProblemDetails`, and a generated client then types the successful call as an error object
+- **`ProducesProblem`**: The failures this endpoint's own rules can produce - `404`, `409`, and `401` for a protected endpoint.
+  The `400` and `500` every endpoint can return are declared once on the route group by `ProducesStandardProblems()`
 
 **Feature Registration:**
 
@@ -1662,6 +1705,7 @@ internal static class RouteGroupBuilderExtensions
 
 ```csharp
 using Pot.AspNetCore.Concerns.RateLimiting;
+using Pot.AspNetCore.Extensions;
 
 namespace Pot.AspNetCore.Features.Accounts.Extensions;
 
@@ -1675,6 +1719,7 @@ internal static class WebApplicationExtensions
 
             app.MapGroup(AccountsEndpoints.Group)
                 .WithTags(AccountsEndpoints.Tag)
+                .ProducesStandardProblems()
                 .RequireRateLimiting(RateLimiterPolicy.Chained)
                 .GetAllAccounts()
                 .GetAccount()
@@ -1787,25 +1832,23 @@ internal sealed class CreateAccountService : ICreateAccountService
             var accountToCreate = new AccountEntity
             {
                 Site = userSite,
-                Bsb = input.Bsb,
-                Number = input.Number,
                 Description = input.Description,
                 Balance = input.Balance,
                 Reserved = input.Reserved
             };
 
-            // Optional RowId for import scenarios
+            // Provided when importing - required so income and expense items can be linked correctly
             if (input.RowId.HasValue)
             {
                 accountToCreate.RowId = input.RowId.Value;
             }
 
             // Step 4: Run entity checks (business rule validation)
-            var problemDetails = await _preCreateChecker.CanSaveAsync(accountToCreate, cancellationToken);
+            var apiError = await _preCreateChecker.CanSaveAsync(accountToCreate, cancellationToken);
 
-            if (problemDetails is not null)
+            if (apiError is not null)
             {
-                return EnrichedResult.Fail<Output>(problemDetails);
+                return EnrichedResult.Fail<Output>(apiError);
             }
 
             // Step 5: Save to database
@@ -1834,6 +1877,8 @@ The ASP.NET Core server does not install a synchronization context, so POT serve
 
 **Service Operation Patterns:**
 
+The create pattern is generic; the others are the Account feature's own services, lightly trimmed.
+
 **1. Create Service:**
 
 ```csharp
@@ -1845,10 +1890,11 @@ public async Task<EnrichedResult<Output>> CreateAsync(Input input, CancellationT
     {
         var entity = new Entity { /* map from input */ };
 
-        var problemDetails = await _preCreateChecker.CanSaveAsync(entity, cancellationToken);
-        if (problemDetails is not null)
+        var apiError = await _preCreateChecker.CanSaveAsync(entity, cancellationToken);
+
+        if (apiError is not null)
         {
-            return EnrichedResult.Fail<Output>(problemDetails);
+            return EnrichedResult.Fail<Output>(apiError);
         }
 
         await _repository.AddAndSaveAsync(entity, cancellationToken);
@@ -1861,38 +1907,46 @@ public async Task<EnrichedResult<Output>> CreateAsync(Input input, CancellationT
 **2. Update Service:**
 
 ```csharp
-public async Task<EnrichedResult<Output>> UpdateAsync(Input input, CancellationToken cancellationToken)
+public async Task<EnrichedResult<Output>> UpdateAccountAsync(Input input, CancellationToken cancellationToken)
 {
     _logger.LogCall(this);
 
-    using (_repository.WithTracking())
+    using (_accountRepository.WithTracking())
     {
-        // Load entity
-        var entity = await _repository.GetByPrimaryKeyAsync<Entity, Guid>(input.RowId, cancellationToken);
+        var accountId = input.RowId;
 
-        if (entity is null)
+        // Load entity - tracked, because its properties are changed below
+        var accountToUpdate = await _accountRepository.GetAccountOrDefaultAsync(accountId, cancellationToken);
+
+        if (accountToUpdate is null)
         {
-            var error = ApiDetailErrorFactory.CreateEntityNotFoundError(
-                input.RowId, "The entity does not exist.");
-            return EnrichedResult.Fail<Output>(error);
+            var accountNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(accountId, "The account does not exist");
+
+            _logger.LogApiError(accountNotFoundError);
+
+            return EnrichedResult.Fail<Output>(accountNotFoundError);
         }
 
         // Run entity checks - business rules including etag validation, which is implemented
         // as a check in the chain (CheckHasSameEtag -> CreateEtagConflict("<EntityType>", input.Etag))
-        var problemDetails = await _preUpdateChecker.CanSaveAsync(input, entity, cancellationToken);
-        if (problemDetails is not null)
+        var apiError = await _preUpdateChecker.CanSaveAsync(input, accountToUpdate, cancellationToken);
+
+        if (apiError is not null)
         {
-            return EnrichedResult.Fail<Output>(problemDetails);
+            _logger.LogApiError(apiError);
+
+            return EnrichedResult.Fail<Output>(apiError);
         }
 
         // Update entity properties
-        entity.Property1 = input.Property1;
-        entity.Property2 = input.Property2;
+        accountToUpdate.Description = input.Description;
+        accountToUpdate.Balance = input.Balance;
+        accountToUpdate.Reserved = input.Reserved;
 
         // Save changes
-        await _repository.SaveAsync(cancellationToken);
+        _ = await _accountRepository.SaveAsync(cancellationToken);
 
-        return EnrichedResult.Success(entity.MapToOutput());
+        return EnrichedResult.Success(accountToUpdate.MapToOutput());
     }
 }
 ```
@@ -1900,29 +1954,33 @@ public async Task<EnrichedResult<Output>> UpdateAsync(Input input, CancellationT
 **3. Delete Service:**
 
 ```csharp
-public async Task<EnrichedResult<bool>> DeleteAsync(Guid rowId, CancellationToken cancellationToken)
+public async Task<EnrichedResult<bool>> DeleteAccountAsync(Guid accountId, CancellationToken cancellationToken)
 {
     _logger.LogCall(this);
 
-    var problemDetails = await _preDeleteChecker.CanDeleteAsync(rowId, cancellationToken);
+    // Checks first - for example, an account with linked expenses or incomes cannot be deleted (400)
+    var apiError = await _preDeleteChecker.CanDeleteAsync(accountId, cancellationToken);
 
-    if (problemDetails is not null)
+    if (apiError is not null)
     {
-        return EnrichedResult.Fail<bool>(problemDetails);
+        return EnrichedResult.Fail<bool>(apiError);
     }
 
-    var entity = await _repository.GetByPrimaryKeyAsync<Entity, Guid>(rowId, cancellationToken);
+    var account = await _accountRepository.GetAccountOrDefaultAsync(accountId, cancellationToken);
 
-    if (entity is null)
+    if (account is null)
     {
-        var error = ApiDetailErrorFactory.CreateEntityNotFoundError(
-            rowId, "The entity does not exist.");
+        var accountNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(accountId, "The account does not exist");
 
-        return EnrichedResult.Fail<bool>(error);
+        _logger.LogApiError(accountNotFoundError);
+
+        return EnrichedResult.Fail<bool>(accountNotFoundError);
     }
 
-    _repository.Delete(entity);
-    await _repository.SaveAsync(cancellationToken);
+    // No tracking scope needed: Delete attaches the entity itself
+    _accountRepository.Delete(account);
+
+    await _accountRepository.SaveAsync(cancellationToken);
 
     return EnrichedResult.Success(true);
 }
@@ -1931,35 +1989,47 @@ public async Task<EnrichedResult<bool>> DeleteAsync(Guid rowId, CancellationToke
 **4. GetAll Service:**
 
 ```csharp
-public async Task<List<Output>> GetAllAccountsAsync(CancellationToken cancellationToken)
+public async Task<IReadOnlyList<Output>> GetAllAccountsAsync(CancellationToken cancellationToken)
 {
     _logger.LogCall(this);
 
     var accounts = await _accountRepository.GetAllAccountsWithLinkedCountsAsync(cancellationToken);
+    var asOfDate = _timeProvider.GetLocalDateNow();
 
-    return accounts.SelectToList(account => account.MapToOutput());
+    // Accrual totals are calculated, not stored, so they are passed to the mapping alongside the entity
+    return accounts.SelectToArray(account => account.MapToOutput(CalculateAccrual(account, asOfDate)));
 }
 ```
+
+An empty site returns an empty list, never `null` and never `404`.
 
 **5. Get Service:**
 
 ```csharp
-public async Task<EnrichedResult<Output>> GetAsync(Guid rowId, CancellationToken cancellationToken)
+public async Task<EnrichedResult<Output>> GetAccountWithLinkedCountsAsync(Guid accountId, CancellationToken cancellationToken)
 {
     _logger.LogCall(this);
 
-    var entity = await _repository.GetByPrimaryKeyAsync<Entity, Guid>(rowId, cancellationToken);
+    var account = await _accountRepository.GetAccountWithLinkedCountsOrDefaultAsync(accountId, cancellationToken);
 
-    if (entity is null)
+    if (account is null)
     {
-        var error = ApiDetailErrorFactory.CreateEntityNotFoundError(
-            rowId, "The entity does not exist.");
-        return EnrichedResult.Fail<Output>(error);
+        var accountNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(accountId, "The account does not exist");
+
+        _logger.LogApiError(accountNotFoundError);
+
+        return EnrichedResult.Fail<Output>(accountNotFoundError);
     }
 
-    return EnrichedResult.Success(entity.MapToOutput());
+    var accrualView = CalculateAccrual(account);
+    var output = account.MapToOutput(accrualView);
+
+    return EnrichedResult.Success(output);
 }
 ```
+
+Because the query runs through the site filter, an account in another site is `null` here - so it is reported as `404`,
+exactly as a missing one is, and its existence is not disclosed.
 
 ### Entity Checks
 
@@ -1982,10 +2052,8 @@ EntityChecks/
 ├── IPreCreateChecker.cs           # Checker interface
 ├── PreCreateChecker.cs            # Chain coordinator
 ├── InputState.cs                  # State object passed through chain
-├── IPreCreateCheck.cs             # Individual check interface
 └── Checks/
-    ├── PreCreateCheckBase.cs      # Base class for checks
-    ├── CheckAccountNumberDoesNotExist.cs
+    ├── PreCreateCheckBase.cs      # Base class, and the IPreCreateCheck marker interface
     └── CheckDescriptionDoesNotExist.cs
 ```
 
@@ -2018,6 +2086,8 @@ internal sealed class InputState
 ```
 
 **3. Define Individual Check Interface:**
+
+Declared in the same file as the base class below, `Checks/PreCreateCheckBase.cs`:
 
 ```csharp
 using Pot.Shared.DependencyInjection;
@@ -2081,45 +2151,46 @@ internal sealed class PreCreateChecker : ChainOfResponsibilityAsyncComposer<Inpu
 **6. Implement Individual Checks:**
 
 ```csharp
-// CheckAccountNumberDoesNotExist.cs
+// CheckDescriptionDoesNotExist.cs
 using AllOverIt.Assertion;
 using AllOverIt.Logging.Extensions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pot.App.Errors;
 using Pot.Data.Entities;
 using Pot.Data.Repositories.Accounts;
+using Pot.Data.Specifications;
 
 namespace Pot.App.Features.Accounts.Create.EntityChecks.Checks;
 
-internal sealed class CheckAccountNumberDoesNotExist : PreCreateCheckBase
+internal sealed class CheckDescriptionDoesNotExist : PreCreateCheckBase
 {
     private readonly IAccountRepository _accountRepository;
     private readonly ILogger _logger;
 
-    public CheckAccountNumberDoesNotExist(
-        IAccountRepository accountRepository,
-        ILogger<CheckAccountNumberDoesNotExist> logger)
+    public CheckDescriptionDoesNotExist(IAccountRepository accountRepository, ILogger<CheckDescriptionDoesNotExist> logger)
     {
         _accountRepository = accountRepository.WhenNotNull();
         _logger = logger.WhenNotNull();
     }
 
-    public override async Task<ApiDetailError?> HandleAsync(
-        InputState state,
-        CancellationToken cancellationToken)
+    public override async Task<ApiDetailError?> HandleAsync(InputState state, CancellationToken cancellationToken)
     {
         _logger.LogCall(this);
 
         var account = state.AccountToCreate;
 
-        var accountExists = await _accountRepository.AccountExistsAsync(account.Bsb, account.Number, cancellationToken);
+        var predicate = AccountSpecifications.IsSameDescription(account.Description).Expression;
 
-        if (accountExists)
+        // Description uniqueness is per-site; the query filter restricts the check to the current site
+        var descriptionExists = await _accountRepository.Accounts.AnyAsync(predicate, cancellationToken);
+
+        if (descriptionExists)
         {
             return ApiDetailErrorFactory.CreateEntityExistsError(
-                $"{nameof(AccountEntity.Bsb)}, {nameof(AccountEntity.Number)}",
-                $"{account.Bsb}, {account.Number}",
-                "The account number already exists");
+                nameof(AccountEntity.Description),
+                account.Description,
+                "The account description already exists");
         }
 
         // Call next handler in chain (or return null if no more handlers)
@@ -2127,6 +2198,17 @@ internal sealed class CheckAccountNumberDoesNotExist : PreCreateCheckBase
     }
 }
 ```
+
+The update operation has its own `CheckDescriptionDoesNotExist` in `Update/EntityChecks/Checks/`. It runs the query only when
+the description has changed, and excludes the account being updated, by combining the specification with a second predicate:
+
+```csharp
+var predicate = AccountSpecifications
+    .IsSameDescription(input.Description).Expression
+    .And(item => item.Id != account.Id);
+```
+
+The two are separate classes rather than one shared check, because each operation's chain has its own `InputState`.
 
 **Entity Check Guidelines:**
 
@@ -2212,7 +2294,7 @@ public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke(...)
 
     return result.IsSuccess
         ? TypedResults.Ok(result.Value)  // HTTP 200
-        : TypedResults.Problem(result.Error!.ToProblemDetails());  // HTTP 422/404/409
+        : TypedResults.Problem(result.Error!.ToProblemDetails());  // HTTP 400/401/404/409, from the error's ErrorType
 }
 ```
 
@@ -2247,31 +2329,34 @@ var error = ApiDetailErrorFactory.CreateEntityNotFoundError(
 
 // Entity exists conflict (409)
 var error = ApiDetailErrorFactory.CreateEntityExistsError(
-    propertyName: $"{nameof(AccountEntity.Bsb)}, {nameof(AccountEntity.Number)}",
-    attemptedValue: $"{account.Bsb}, {account.Number}",
-    errorMessage: "The account number already exists");
+    propertyName: nameof(AccountEntity.Description),
+    attemptedValue: account.Description,
+    errorMessage: "The account description already exists");
 
-// Entity constraint violation (422)
+// Entity constraint violation (400) - a rule about related data refused the operation
 var error = ApiDetailErrorFactory.CreateEntityConstraintError(
-    propertyName: "AccountId",
-    attemptedValue: accountId,
-    errorMessage: "Cannot delete account with linked expenses.");
+    propertyName: nameof(AccountEntity.RowId),
+    attemptedValue: accountId.ToString(),
+    errorMessage: "Cannot delete an Account that has linked Expenses");
 
 // ETag conflict (409)
 var error = ApiDetailErrorFactory.CreateEtagConflict(
     entityType: "Account",
     attemptedValue: attemptedEtag);
 
-// Generic unprocessable entity (422)
-var error = ApiDetailErrorFactory.CreateUnprocessableEntityError(
+// Generic bad request (400) - a business rule refused the request
+var error = ApiDetailErrorFactory.CreateBadRequestError(
     errorMessage: "The operation cannot be completed.");
 
-// With property name (422)
-var error = ApiDetailErrorFactory.CreateUnprocessableEntityError(
-    propertyName: "Balance",
-    attemptedValue: -100,
-    errorMessage: "Balance cannot be negative.");
+// With property name (400)
+var error = ApiDetailErrorFactory.CreateBadRequestError(
+    propertyName: nameof(InputState.RoleIds),
+    attemptedValue: roleIdsText,
+    errorMessage: "This is the site's only enabled administrator. Promote another administrator first.");
 ```
+
+There is no `422` in POT: request validation and refused business rules both answer `400`, and a client tells them apart by
+the `errorCode` of each entry in `errors`. `EnrichedErrorExtensionsFixture` pins the mapping from `ErrorType` to status.
 
 ### Transaction Management
 
@@ -2291,47 +2376,54 @@ public async Task<EnrichedResult<Output>> UpdateUserRolesAsync(Input input, Canc
 {
     _logger.LogCall(this);
 
+    // The user must be tracked to update its etag and roles
     using (_userRepository.WithTracking())
     {
         // Begin transaction
         using var transaction = await _transactionFactory.CreateTransactionAsync(cancellationToken);
 
-        // Step 1: Load user with roles
-        var user = await _userRepository.Users
-            .Include(u => u.Roles)
-            .SingleOrDefaultAsync(u => u.RowId == input.RowId, cancellationToken);
+        var userId = input.RowId;
 
-        if (user is null)
+        // Step 1: Load user with roles, through a site-scoped repository method - the user repository exposes no
+        // queryable, because UserEntity has no site query filter
+        var userToUpdate = await _userRepository.GetForCurrentSiteWithRolesAsync(userId, cancellationToken);
+
+        if (userToUpdate is null)
         {
-            var error = ApiDetailErrorFactory.CreateEntityNotFoundError(
-                input.RowId, "The user does not exist.");
-            return EnrichedResult.Fail<Output>(error);
+            var userNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(userId, "The user does not exist");
+
+            _logger.LogApiError(userNotFoundError);
+
+            return EnrichedResult.Fail<Output>(userNotFoundError);
         }
 
         // Step 2: Run entity checks
-        var problemDetails = await _preUpdateChecker.CanSaveAsync(input, user, cancellationToken);
-        if (problemDetails is not null)
+        var apiError = await _preUpdateChecker.CanSaveAsync(input, userToUpdate, cancellationToken);
+
+        if (apiError is not null)
         {
-            return EnrichedResult.Fail<Output>(problemDetails);
+            _logger.LogApiError(apiError);
+
+            return EnrichedResult.Fail<Output>(apiError);
         }
 
         // Step 3: Load new roles
         var roles = await _roleRepository.GetRolesAsync(input.RoleIds, cancellationToken);
 
         // Step 4: Update user roles
-        user.Roles = roles;
+        userToUpdate.Roles = roles;
 
-        // Step 5: Force etag update
-        var userEntry = _userRepository.GetEntry(user);
+        // Step 5: Force the etag update. The user is already tracked, so this does not hit the database
+        var userEntry = _userRepository.GetEntry(userToUpdate);
         userEntry.State = EntityState.Modified;
 
         // Step 6: Save changes (within transaction)
-        await _userRepository.SaveAsync(cancellationToken);
+        _ = await _userRepository.SaveAsync(cancellationToken);
 
         // Step 7: Commit transaction
         await transaction.CommitAsync(cancellationToken);
 
-        return EnrichedResult.Success(user.MapToOutput());
+        return EnrichedResult.Success(userToUpdate.MapToOutput());
     }
 }
 ```
@@ -2355,10 +2447,11 @@ public async Task<EnrichedResult<Output>> CreateAccountAsync(Input input, Cancel
     {
         var account = new AccountEntity { /* ... */ };
 
-        var problemDetails = await _preCreateChecker.CanSaveAsync(account, cancellationToken);
-        if (problemDetails is not null)
+        var apiError = await _preCreateChecker.CanSaveAsync(account, cancellationToken);
+
+        if (apiError is not null)
         {
-            return EnrichedResult.Fail<Output>(problemDetails);
+            return EnrichedResult.Fail<Output>(apiError);
         }
 
         // Single operation - no transaction needed
@@ -2399,10 +2492,10 @@ public interface IRepositoryBase : IPotScopedDependency
     IDisposable WithTracking();
 
     EntityEntry GetEntry<TEntity>(TEntity entity) where TEntity : EntityBase;
-    ValueTask<TEntity?> GetByPrimaryKeyAsync<TEntity, TKey>(TKey id, CancellationToken cancellationToken) where TEntity : EntityBase;
-    ValueTask<TEntity?> GetByPrimaryKeyAsync<TEntity>(object?[]? values, CancellationToken cancellationToken) where TEntity : EntityBase;
 
-    IQueryable<TEntity> Set<TEntity>() where TEntity : EntityBase;
+    // Deliberately no Set<TEntity>() here: a queryable on the interface would let any caller write a lookup with
+    // no site predicate, which is what the site-scoped repository methods exist to prevent. It stays on
+    // RepositoryBase for repository implementations to use.
 }
 
 // Pot.Data/Repositories/IPersistableRepository.cs
@@ -2432,18 +2525,18 @@ public interface IAccountRepository : IRepositoryBase
     Task<AccountEntity> GetAccountAsync(Guid rowId, CancellationToken cancellationToken);
     Task<AccountEntity?> GetAccountOrDefaultAsync(Guid rowId, CancellationToken cancellationToken);
     Task<AccountWithLinkedCounts?> GetAccountWithLinkedCountsOrDefaultAsync(Guid rowId, CancellationToken cancellationToken);
-    Task<AccountWithLinkedCounts[]> GetAllAccountsWithLinkedCountsAsync(CancellationToken cancellationToken);
-    Task<bool> AccountExistsAsync(string bsb, string number, CancellationToken cancellationToken);
-    Task<AccountEntity?> GetAccountOrDefaultAsync(string bsb, string number, CancellationToken cancellationToken);
+    Task<IReadOnlyList<AccountWithLinkedCounts>> GetAllAccountsWithLinkedCountsAsync(CancellationToken cancellationToken);
 }
 
-// Pot.Data/Repositories/Accounts/IPersistableAccountRepository.cs
-public interface IPersistableAccountRepository : IAccountRepository, IPersistableRepository
-{
-    // Inherits all read operations from IAccountRepository
-    // Inherits all write operations from IPersistableRepository
-}
+// Pot.Data/Repositories/Accounts/IPersistableAccountRepository.cs - read operations from IAccountRepository,
+// write operations from IPersistableRepository
+public interface IPersistableAccountRepository : IAccountRepository, IPersistableRepository;
 ```
+
+**Exposing `Accounts` as a queryable is safe because `AccountEntity` has a site query filter**, so any query a caller
+writes against it is already scoped to the caller's site - which is how `CheckDescriptionDoesNotExist` composes its own query.
+`UserEntity` and `SiteEntity` have no filter, so their repositories expose no queryable at all - see
+[Multi-Tenancy & Query Filters](#multi-tenancy--query-filters).
 
 **Why Split Interfaces?**
 
@@ -2459,13 +2552,13 @@ public interface IPersistableAccountRepository : IAccountRepository, IPersistabl
 
 **`IRepositoryBase` (Read-Only Base):**
 
-Provides core query capabilities without write operations:
+Provides core capabilities without write operations:
 
 - `WithTracking()` - Enable change tracking for a scope
-- `Set<TEntity>()` - Access DbSet for entity queries
 - `GetEntry<TEntity>()` - Get entity entry metadata
-- `GetByPrimaryKeyAsync<TEntity, TKey>()` - Retrieve by primary key (typed key)
-- `GetByPrimaryKeyAsync<TEntity>()` - Retrieve by primary key (key values array)
+
+`Set<TEntity>()` is on the `RepositoryBase` class only, for repository implementations - see the comment in the interface
+above.
 
 **`IPersistableRepository` (Write Operations):**
 
@@ -2513,6 +2606,8 @@ using Pot.Data.Entities;
 using Pot.Data.Extensions;
 using Pot.Data.Repositories.Accounts.Dtos;
 using Pot.Data.Specifications;
+using Pot.Shared.Models;
+using System.Linq.Expressions;
 
 namespace Pot.Data.Repositories.Accounts;
 
@@ -2552,9 +2647,7 @@ internal sealed class AccountRepository : PersistableRepository, IPersistableAcc
             cancellationToken);
     }
 
-    public async Task<AccountWithLinkedCounts?> GetAccountWithLinkedCountsOrDefaultAsync(
-        Guid rowId,
-        CancellationToken cancellationToken)
+    public async Task<AccountWithLinkedCounts?> GetAccountWithLinkedCountsOrDefaultAsync(Guid rowId, CancellationToken cancellationToken)
     {
         // Projection query - returns DTO instead of entity
         return await Accounts
@@ -2563,40 +2656,45 @@ internal sealed class AccountRepository : PersistableRepository, IPersistableAcc
             {
                 Account = item,
                 LinkedIncomes = item.Incomes.Count,
-                LinkedExpenses = item.Expenses.Count
+                LinkedExpenses = item.Expenses.Count,
+                AccrualExpenses = item.Expenses
+                    .AsQueryable()
+                    .Where(expense => !expense.ExcludeFromCalcs)
+                    .Select(AccrualExpenseProjection)
+                    .ToArray()
             })
             .SingleOrDefaultAsync(cancellationToken);
     }
 
-    public Task<AccountWithLinkedCounts[]> GetAllAccountsWithLinkedCountsAsync(
-        CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<AccountWithLinkedCounts>> GetAllAccountsWithLinkedCountsAsync(CancellationToken cancellationToken)
     {
-        return Accounts
-            .Select(item => new AccountWithLinkedCounts
-            {
-                Account = item,
-                LinkedIncomes = item.Incomes.Count,
-                LinkedExpenses = item.Expenses.Count
-            })
+        // The same projection over every account in the site
+        return await Accounts
+            .Select(item => new AccountWithLinkedCounts { /* as above */ })
             .ToArrayAsync(cancellationToken);
     }
 
-    public Task<bool> AccountExistsAsync(string bsb, string number, CancellationToken cancellationToken)
-    {
-        // Global uniqueness check - ignores multi-tenancy filter
-        return Accounts
-            .IgnoreQueryFilters()
-            .AnyAsync(AccountSpecifications.IsSameBsbNumber(bsb, number).Expression, cancellationToken);
-    }
-
-    public Task<AccountEntity?> GetAccountOrDefaultAsync(string bsb, string number, CancellationToken cancellationToken)
-    {
-        return Accounts.SingleOrDefaultAsync(
-            AccountSpecifications.IsSameBsbNumber(bsb, number).Expression,
-            cancellationToken);
-    }
+    // Part of a query expression: this must stay an expression tree so EF Core can translate it into SQL, and the
+    // nested collections call AsQueryable() so this overload binds. Declared once because both account queries
+    // project the same accrual facts.
+    private static readonly Expression<Func<ExpenseEntity, ExpenseAccrualInput>> AccrualExpenseProjection =
+        expense => new ExpenseAccrualInput
+        {
+            RowId = expense.RowId,
+            ExcludeFromCalcs = expense.ExcludeFromCalcs,
+            AccrualStart = expense.AccrualStart,
+            NextDue = expense.NextDue,
+            EndDate = expense.EndDate,
+            AccrualPolicy = expense.AccrualPolicy,
+            Frequency = expense.Frequency,
+            FrequencyCount = expense.FrequencyCount,
+            Amount = expense.Amount
+        };
 }
 ```
+
+A uniqueness rule is not a repository method here. The description check composes its query from
+`AccountSpecifications.IsSameDescription` against `Accounts` - see [Query Specifications](#query-specifications).
 
 **Repository Method Naming Conventions:**
 
@@ -2613,7 +2711,6 @@ Entity-specific methods are prefixed with the entity name, for example:
 - `Save()` / `SaveAsync()` - Persists changes
 - `AddAndSaveAsync()` - Adds and persists immediately
 - `UpdateAndSaveAsync()` - Updates and persists immediately
-- `GetByPrimaryKeyAsync()` - Base helper for primary-key lookup
 
 ### Tracking vs No-Tracking
 
@@ -2728,12 +2825,6 @@ namespace Pot.Data.Specifications;
 
 public static class AccountSpecifications
 {
-    public static ILinqSpecification<AccountEntity> IsSameBsbNumber(string bsb, string number)
-    {
-        // This appears case-insensitive but the database schema uses CITEXT for the text fields
-        return LinqSpecification<AccountEntity>.Create(account => account.Bsb == bsb && account.Number == number);
-    }
-
     public static ILinqSpecification<AccountEntity> IsSameDescription(string description)
     {
         // This appears case-insensitive but the database schema uses CITEXT for the text fields
@@ -2746,11 +2837,9 @@ public static class AccountSpecifications
 
 ```csharp
 // In repository
-public Task<AccountEntity?> GetAccountOrDefaultAsync(string bsb, string number, CancellationToken cancellationToken)
+public Task<AccountEntity?> GetAccountOrDefaultAsync(Guid rowId, CancellationToken cancellationToken)
 {
-    return Accounts.SingleOrDefaultAsync(
-        AccountSpecifications.IsSameBsbNumber(bsb, number).Expression,
-        cancellationToken);
+    return Accounts.SingleOrDefaultAsync(EntitySpecifications.IsSameId<AccountEntity>(rowId).Expression, cancellationToken);
 }
 
 // In entity check
@@ -2758,10 +2847,12 @@ public override async Task<ApiDetailError?> HandleAsync(InputState state, Cancel
 {
     var account = state.AccountToCreate;
 
-    var exists = await _accountRepository.Accounts
-        .AnyAsync(AccountSpecifications.IsSameBsbNumber(account.Bsb, account.Number).Expression, cancellationToken);
+    var predicate = AccountSpecifications.IsSameDescription(account.Description).Expression;
 
-    if (exists)
+    // Description uniqueness is per-site; the query filter restricts the check to the current site
+    var descriptionExists = await _accountRepository.Accounts.AnyAsync(predicate, cancellationToken);
+
+    if (descriptionExists)
     {
         return ApiDetailErrorFactory.CreateEntityExistsError(/* ... */);
     }
@@ -2774,8 +2865,8 @@ public override async Task<ApiDetailError?> HandleAsync(InputState state, Cancel
 
 ```csharp
 // AND combination
-var spec = AccountSpecifications.IsSameBsbNumber("123-456", "00112233")
-    .And(AccountSpecifications.IsSameDescription("Savings"));
+var spec = AccountSpecifications.IsSameDescription("Savings")
+    .And(EntitySpecifications.IsSameId<AccountEntity>(rowId));
 
 var accounts = await _repository.Accounts
     .Where(spec.Expression)
@@ -2783,19 +2874,28 @@ var accounts = await _repository.Accounts
 
 // OR combination
 var spec = AccountSpecifications.IsSameDescription("Savings")
-    .Or(AccountSpecifications.IsSameDescription("Checking"));
+    .Or(AccountSpecifications.IsSameDescription("Everyday"));
 
 var accounts = await _repository.Accounts
     .Where(spec.Expression)
     .ToListAsync(cancellationToken);
 
 // NOT combination
-var spec = AccountSpecifications.IsSameBsbNumber("123-456", "00112233")
-    .And(AccountSpecifications.IsSameDescription("Closed").Not());
+var spec = AccountSpecifications.IsSameDescription("Savings")
+    .And(EntitySpecifications.IsSameId<AccountEntity>(rowId).Not());
 
 var accounts = await _repository.Accounts
     .Where(spec.Expression)
     .ToListAsync(cancellationToken);
+```
+
+A specification's `Expression` can also be combined with a plain lambda, through `AllOverIt.Expressions`. The update
+check does that to exclude the account being updated:
+
+```csharp
+var predicate = AccountSpecifications
+    .IsSameDescription(input.Description).Expression
+    .And(item => item.Id != account.Id);
 ```
 
 **Specification Benefits:**
@@ -2815,7 +2915,10 @@ POT uses **explicit mapping** with extension methods to transform between layers
 
 ### Request to Input Mapping
 
-**Location:** `Pot.AspNetCore/Features/{Feature}/{Operation}/Mappings/RequestMapping.cs`
+**Location:** `Pot.AspNetCore/Features/{Feature}/{Operation}/RequestMapping.cs`
+
+The API operation folder is flat - there is no `Mappings/` folder in `Pot.AspNetCore` - so the mapping shares the handler's
+namespace and the handler needs no `using` to call it. `Pot.App` operations do use a `Mappings/` folder (see below).
 
 **Purpose:** Transform HTTP request models (API layer) to service input models (application layer).
 
@@ -2824,7 +2927,7 @@ POT uses **explicit mapping** with extension methods to transform between layers
 ```csharp
 using Pot.App.Features.Accounts.Create.Models;
 
-namespace Pot.AspNetCore.Features.Accounts.Create.Mappings;
+namespace Pot.AspNetCore.Features.Accounts.Create;
 
 internal static class RequestMapping
 {
@@ -2832,8 +2935,6 @@ internal static class RequestMapping
     {
         return new Input
         {
-            Bsb = request.Bsb,
-            Number = request.Number,
             Description = request.Description,
             Balance = request.Balance,
             Reserved = request.Reserved
@@ -2847,7 +2948,7 @@ internal static class RequestMapping
 ```csharp
 using Pot.App.Features.Accounts.Update.Models;
 
-namespace Pot.AspNetCore.Features.Accounts.Update.Mappings;
+namespace Pot.AspNetCore.Features.Accounts.Update;
 
 internal static class RequestMapping
 {
@@ -2857,8 +2958,6 @@ internal static class RequestMapping
         {
             RowId = accountId,  // From route
             Etag = request.Etag,
-            Bsb = request.Bsb,
-            Number = request.Number,
             Description = request.Description,
             Balance = request.Balance,
             Reserved = request.Reserved
@@ -2917,12 +3016,14 @@ internal static class EntityMapping
 ```csharp
 using Pot.App.Features.Expenses.GetAll.Models;
 using Pot.Data.Entities;
+using Pot.Shared.Models;
 
 namespace Pot.App.Features.Expenses.GetAll.Mappings;
 
 internal static class EntityMapping
 {
-    public static Output MapToOutput(this ExpenseEntity expense)
+    // Accrued and Arrears are calculated by the service, not stored on the entity, so they arrive as a second argument
+    public static Output MapToOutput(this ExpenseEntity expense, ExpenseAccrualDetail accrual)
     {
         return new Output
         {
@@ -2937,7 +3038,8 @@ internal static class EntityMapping
             Frequency = expense.Frequency,
             FrequencyCount = expense.FrequencyCount,
             Amount = expense.Amount,
-            Accrued = expense.Accrued,
+            Accrued = accrual.Accrued,
+            Arrears = accrual.Arrears,
             Note = expense.Note,
             Account = new Output.AccountModel
             {
@@ -2990,7 +3092,7 @@ Concerns/
 ├── Cors/                    # CORS configuration
 ├── RateLimiting/            # Rate limiting policies
 ├── Middleware/              # Custom middleware (raw request logging, correlation ID, user context)
-├── ProblemDetails/          # RFC 7807 problem details customization
+├── ProblemDetails/          # RFC 9457 problem details customization
 ├── ExceptionHandlers/       # Global exception handlers
 ├── Email/                   # SMTP configuration setup
 ├── Health/                  # Service health polling
@@ -3348,7 +3450,7 @@ public sealed class CorsOptionsSetup : IConfigureOptions<CorsOptions>
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials()
-                .WithExposedHeaders("content-disposition", "retry-after")
+                .WithExposedHeaders("content-disposition", "retry-after", CorrelationIdMiddleware.HeaderName)
                 .SetPreflightMaxAge(PreflightMaxAge);
         });
     }
@@ -3357,7 +3459,7 @@ public sealed class CorsOptionsSetup : IConfigureOptions<CorsOptions>
 
 **Why expose these headers?**
 
-The frontend export feature needs to extract filenames from the `Content-Disposition` header. By default, browsers only expose "safe" CORS headers (`Content-Type`, `Cache-Control`, etc.). `retry-after` is exposed so the client can read the 429 cooldown. The policy caches preflights for ten minutes; without `Access-Control-Max-Age`, Chromium caches them for only five seconds and nearly every JSON or `Authorization` request pays an extra `OPTIONS` round trip.
+The frontend export feature needs to extract filenames from the `Content-Disposition` header. By default, browsers only expose "safe" CORS headers (`Content-Type`, `Cache-Control`, etc.). `retry-after` is exposed so the client can read the 429 cooldown, and `X-Correlation-Id` so it can read the id to quote to support. The policy caches preflights for ten minutes; without `Access-Control-Max-Age`, Chromium caches them for only five seconds and nearly every JSON or `Authorization` request pays an extra `OPTIONS` round trip.
 
 **Configuration (`appsettings.json`):**
 
@@ -3575,10 +3677,22 @@ Applies the caller's correlation ID to the request for tracing and debugging
 
 - The header is `X-Correlation-Id` (via `Request.TryGetCorrelationId()`). An empty or whitespace value is treated as absent.
 - A supplied value must be at most 128 characters and contain only letters, digits, `-`, `_`, `.` and `:`. Anything else is
-  rejected with a 400 ProblemDetails response, because the value is written into every log entry for the request.
-- A valid value replaces `HttpContext.TraceIdentifier`; when the header is absent the framework default is kept. Either way the
-  id is tagged on the current `Activity` as `correlationId`, which the log enricher and every ProblemDetails body pick up.
-- No response header is echoed - the caller already holds the id it sent, and error bodies carry it.
+  rejected with a 400 ProblemDetails response, because the value is written into every log entry for the request. The reason
+  is in `detail` and also in `errors`, as one entry with `propertyName` set to `X-Correlation-Id` and `errorCode` `Invalid`;
+  the rejected value is not echoed as `attemptedValue`.
+- A valid value replaces `HttpContext.TraceIdentifier`; when the header is absent the framework default is kept. Every
+  ProblemDetails body carries `TraceIdentifier` as `correlationId`, and `CorrelationIdLogEnricher` adds the same value to every
+  log entry written during the request - including the exception handlers' and a rejected id's, which carry the generated id.
+- The id is also tagged on the request's `Activity` as `correlationId`, so a trace can be found by it. The hosting layer only
+  creates that `Activity` when something observes it, so the tag is skipped when there is none and nothing else relies on it.
+- The id is echoed in `X-Correlation-Id` on every response that passes through the middleware - the caller's own id, or the
+  generated one when none was sent or the one sent was rejected. On a successful response the header is the only place the id
+  travels. It is written as the response starts, because the exception handler clears the response headers before writing
+  a 500. CORS exposes it so browser script can read it.
+- The header is documented on every operation in the OpenAPI document: optional on the request, with the same length and
+  character limits, and present on every response. `correlationId`, `traceId` and `instance` are documented as required,
+  non-nullable members of every Problem Details schema (`Concerns/OpenApi/ProblemDetailsSchemaTransformer`): the first two travel in
+  the extensions dictionary the generator cannot see, and `instance` is always set although the type allows null.
 - It runs straight after `UseCors()`: after it so its own 400 carries CORS headers, and before authentication, authorization
   and rate limiting so their 401/403/429 responses and log entries carry the caller's id.
 
@@ -3676,28 +3790,31 @@ public SiteEntity GetCurrentSite()
 
 ### Problem Details
 
-POT follows **RFC 7807 Problem Details** standard for all error responses.
+POT follows the **RFC 9457 Problem Details** standard (which replaced RFC 7807) for all error responses.
 
 **Configuration:** `Pot.AspNetCore/Extensions/WebApplicationBuilderExtensions.cs`
 
 ```csharp
-public static WebApplicationBuilder AddCustomProblemDetails(this WebApplicationBuilder builder)
+public static WebApplicationBuilder AddProblemDetails(this WebApplicationBuilder builder)
 {
+    // IProblemDetailsService is registered as a singleton.
     builder.Services.AddProblemDetails(options =>
         options.CustomizeProblemDetails = ctx =>
         {
-            // Add correlation ID to all problem details
-            ctx.ProblemDetails.Extensions.Add("correlationId", ctx.HttpContext.TraceIdentifier);
-
-            // Add HTTP method and path
-            ctx.ProblemDetails.Extensions.Add(
-                "instance",
-                $"{ctx.HttpContext.Request.Method} {ctx.HttpContext.Request.Path}");
+            ctx.ProblemDetails.Extensions["correlationId"] = ctx.HttpContext.TraceIdentifier;
+            ctx.ProblemDetails.Instance = ctx.HttpContext.Request.Path.ToString();
         });
+
+    // ...then the framework's IProblemDetailsWriter is wrapped in UnconditionalProblemDetailsWriter - see below.
 
     return builder;
 }
 ```
+
+- **The indexer, not `Extensions.Add()`.** `Add()` throws on a key that is already present, and this runs while an error
+  response is being written - the one place a throw turns a handled failure into an unhandled one.
+- **`instance` is the `ProblemDetails.Instance` property, never an extension**, and holds the request path only (`/api/accounts`,
+  not `POST /api/accounts`). An `instance` extension alongside the property would give the body two `instance` keys.
 
 **Problem Details Structure:**
 
@@ -3705,21 +3822,24 @@ The `errors` extension is always an **array** of error detail objects. `type` an
 
 ```json
 {
-  "status": 422,
+  "status": 400,
   "detail": "One or more validation errors occurred.",
   "errors": [
     {
       "errorCode": "NotEmptyValidator",
-      "propertyName": "Bsb",
+      "propertyName": "Description",
       "attemptedValue": "",
-      "errorMessage": "'Bsb' must not be empty."
+      "errorMessage": "'Description' must not be empty."
     }
   ],
   "correlationId": "8e9f7c6d-5b4a-3f2e-1d0c-9a8b7c6d5e4f",
   "traceId": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
-  "instance": "POST /api/accounts"
+  "instance": "/api/accounts"
 }
 ```
+
+`detail` is present on validation failures, rejected correlation ids and database errors, which set it. A failure returned
+from a service has none - its message is in `errors`, as in the 409 example earlier in this guide.
 
 Every problem response carries two identifiers:
 
@@ -3730,20 +3850,31 @@ Every problem response carries two identifiers:
 
 Use `correlationId` for support; `traceId` identifies the distributed trace.
 
+**Every error is Problem Details, whatever the `Accept` header says.** The framework's writer declines a request whose `Accept`
+excludes JSON (a browser navigation sends `text/html`), and each route into an error body then fails differently: a rejected
+correlation id became a 500, the exception handler and `UseStatusCodePages` wrote plain text, and `TypedResults.Problem` wrote
+JSON without `correlationId`. `AddProblemDetails()` wraps the framework's writer in `UnconditionalProblemDetailsWriter`
+(`Pot.AspNetCore/Concerns/ProblemDetails/`), which always writes, so the body stays the framework's but the decision to write is
+ours. Startup fails if anything other than exactly one framework writer is registered, since a second writer would still decline.
+
 Validation failures are logged by `LogErrors` from the `errors` extension, one entry per error.
 Attempted field values are never logged: for login, signup and password reset they can be a password
 or an OTP.
 
 **Problem Types:**
 
-- **400 Bad Request**: Malformed request, or a correlation ID longer than 128 characters or containing characters other than letters, digits, `-`, `_`, `.` and `:` (`CorrelationIdMiddleware`)
-- **401 Unauthorized**: No authentication token provided
+- **400 Bad Request**: Request validation errors; a business rule that refused the request (`ErrorType.BadRequest` or
+  `ErrorType.Constraint`, such as deleting an account that has linked expenses); a malformed request; or a correlation ID
+  longer than 128 characters or containing characters other than letters, digits, `-`, `_`, `.` and `:` (`CorrelationIdMiddleware`)
+- **401 Unauthorized**: No valid authentication token, or a failed sign-in (`ErrorType.Auth`)
 - **403 Forbidden**: Authenticated but lacks required permission
 - **404 Not Found**: Entity not found
-- **409 Conflict**: ETag mismatch (optimistic concurrency)
-- **422 Unprocessable Entity**: Validation errors (request or business rules)
+- **409 Conflict**: ETag mismatch (optimistic concurrency), an entity that already exists, or a unique, reference or
+  concurrency failure reported by the database (`DatabaseExceptionHandler`)
 - **429 Too Many Requests**: Rate limit exceeded
 - **500 Internal Server Error**: Unexpected server error
+
+POT does not use `422`; see the note under the error factory methods.
 
 **Converting Service Errors to Problem Details:**
 
@@ -3760,8 +3891,8 @@ internal static class EnrichedErrorExtensions
             ErrorType.Auth => StatusCodes.Status401Unauthorized,
             ErrorType.NotFound => StatusCodes.Status404NotFound,
             ErrorType.Conflict => StatusCodes.Status409Conflict,
-            ErrorType.Constraint => StatusCodes.Status422UnprocessableEntity,
-            ErrorType.UnprocessableEntity => StatusCodes.Status422UnprocessableEntity,
+            ErrorType.Constraint => StatusCodes.Status400BadRequest,
+            ErrorType.BadRequest => StatusCodes.Status400BadRequest,
             ErrorType.TooManyRequests => StatusCodes.Status429TooManyRequests,
             ErrorType.Server => StatusCodes.Status500InternalServerError,
             _ => throw new UnreachableException($"Unknown problem type: {error.ErrorType}")
@@ -3953,18 +4084,8 @@ private static void SetTableName(IMutableEntityType entityType, string entityNam
 ```csharp
 // Pot.Data/Entities/AccountEntity.cs
 [Index("SiteId", nameof(Description), IsUnique = true)]  // Description unique per site
-[Index(nameof(Bsb), nameof(Number), IsUnique = true)]
 public sealed class AccountEntity : EntityBase
 {
-    [Required]
-    [AccountBsb]
-    [MaxLength(7)]
-    public required string Bsb { get; set; }
-
-    [Required]
-    [MaxLength(20)]
-    public required string Number { get; set; }
-
     [Required]
     [MediumString]
     [Citext]
@@ -4024,8 +4145,11 @@ public sealed class AccountEntity : EntityBase
 7. **Create custom validation attributes** for domain-specific rules
 
    ```csharp
-   [AccountBsb]  // See Pot.Data/Annotations/
-   public required string Bsb { get; set; }
+   // OneTimePasswordEntity.cs - see Pot.Data/Annotations/
+   [Required]
+   [MaxLength(6)]
+   [OtpCode]
+   public required string OtpCode { get; set; }
    ```
 
 ### Entity Configuration
@@ -4101,8 +4225,8 @@ public sealed class AccountEntity : EntityBase
 4. **Use specifications pattern** for reusable query logic
 
    ```csharp
-   // See Pot.Data/Repositories/*/Specifications/ for examples
-   return Accounts.Where(AccountSpecifications.IsSameBsbNumber(bsb, number).Expression);
+   // See Pot.Data/Specifications/ for examples
+   return Accounts.Where(AccountSpecifications.IsSameDescription(description).Expression);
    ```
 
 ### API Design Guidelines
@@ -4383,14 +4507,16 @@ Indexes are defined using **Data Annotations** directly on entity classes:
 ```csharp
 // AccountEntity.cs
 [Index("SiteId", nameof(Description), IsUnique = true)]  // Description unique per site
-[Index(nameof(Bsb), nameof(Number), IsUnique = true)]
 public sealed class AccountEntity : EntityBase
 {
     public required string Description { get; set; }
-    public required string Bsb { get; set; }
-    public required string Number { get; set; }
+    public required SiteEntity Site { get; set; }
 }
 ```
+
+The unique index is the database's half of a rule `Pot.App` also checks. `CheckDescriptionDoesNotExist` rejects a duplicate
+with a `409` naming the field; the index catches the request that races past that check, which `DatabaseExceptionHandler`
+answers with a generic `409`. The description is `citext`, so the index - and the check - are case-insensitive.
 
 ### Single Column Index
 
@@ -4804,7 +4930,7 @@ public void Configure(CorsOptions options)
             .AllowCredentials()
 
             // Expose the download filename and the 429 cooldown
-            .WithExposedHeaders("content-disposition", "retry-after")
+            .WithExposedHeaders("content-disposition", "retry-after", CorrelationIdMiddleware.HeaderName)
 
             // Cache preflights for ten minutes instead of Chromium's five-second default
             .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
@@ -4814,7 +4940,7 @@ public void Configure(CorsOptions options)
 
 ### Why Expose `content-disposition`?
 
-The frontend export feature needs to extract filenames from the `Content-Disposition` header. By default, browsers only expose "safe" CORS headers (`Content-Type`, `Cache-Control`, etc.). `retry-after` is exposed for the 429 cooldown. The ten-minute preflight cache keeps most API calls from paying an extra `OPTIONS` round trip.
+The frontend export feature needs to extract filenames from the `Content-Disposition` header. By default, browsers only expose "safe" CORS headers (`Content-Type`, `Cache-Control`, etc.). `retry-after` is exposed for the 429 cooldown, and `X-Correlation-Id` for the id to quote to support. The ten-minute preflight cache keeps most API calls from paying an extra `OPTIONS` round trip.
 
 **Without this configuration:**
 
