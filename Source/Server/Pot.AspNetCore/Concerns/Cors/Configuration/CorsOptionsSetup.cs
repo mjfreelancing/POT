@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.Extensions.Options;
+using Pot.AspNetCore.Concerns.Middleware;
 
 namespace Pot.AspNetCore.Concerns.Cors.Configuration;
 
@@ -44,7 +45,8 @@ public sealed class CorsOptionsSetup : IConfigureOptions<CorsOptions>
                 // Browsers hide response headers that are not CORS-safelisted from cross-origin script unless they are exposed:
                 //  - 'content-disposition' allows the client to handle the file download correctly (get the filename)
                 //  - 'retry-after' allows the client to read how long to wait after a 429 rate-limit rejection
-                .WithExposedHeaders("content-disposition", "retry-after")
+                //  - 'X-Correlation-Id' is the id to quote to support; on a successful response it travels only here
+                .WithExposedHeaders("content-disposition", "retry-after", CorrelationIdMiddleware.HeaderName)
 
                 .SetPreflightMaxAge(PreflightMaxAge);
         });

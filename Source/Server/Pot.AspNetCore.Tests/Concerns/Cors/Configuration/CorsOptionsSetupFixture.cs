@@ -42,11 +42,11 @@ public class CorsOptionsSetupFixture
         }
 
         [Fact]
-        public void Should_Expose_Content_Disposition_And_Retry_After()
+        public void Should_Expose_Content_Disposition_Retry_After_And_The_Correlation_Id()
         {
             var policy = GetDefaultPolicy("https://app.example.com");
 
-            policy.ExposedHeaders.ShouldBe(["content-disposition", "retry-after"], ignoreOrder: true);
+            policy.ExposedHeaders.ShouldBe(["content-disposition", "retry-after", "X-Correlation-Id"], ignoreOrder: true);
         }
 
         [Fact]

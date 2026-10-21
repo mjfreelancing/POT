@@ -1,5 +1,6 @@
 using AllOverIt.Assertion;
 using AllOverIt.Extensions;
+using Pot.AspNetCore.Concerns.Middleware;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Pot.AspNetCore.Extensions;
@@ -11,7 +12,7 @@ internal static class HttpRequestExtensions
     {
         _ = request.WhenNotNull();
 
-        if (request.Headers.TryGetValue("X-Correlation-Id", out var values) && !string.IsNullOrWhiteSpace(values.FirstOrDefault()))
+        if (request.Headers.TryGetValue(CorrelationIdMiddleware.HeaderName, out var values) && !string.IsNullOrWhiteSpace(values.FirstOrDefault()))
         {
             correlationId = values.First()!;
             return true;

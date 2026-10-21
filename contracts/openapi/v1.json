@@ -1,7 +1,8 @@
 {
   "openapi": "3.1.1",
   "info": {
-    "title": "Pot.AspNetCore | v1",
+    "title": "POT API",
+    "description": "Every error response is Problem Details (RFC 9457), carrying a `correlationId` to quote when reporting a problem. The same id is returned on every response in the `X-Correlation-Id` header.",
     "version": "1.0.0"
   },
   "paths": {
@@ -13,6 +14,18 @@
         "summary": "Login",
         "description": "Login the user",
         "operationId": "LoginUser",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -26,6 +39,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -36,6 +58,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -46,6 +77,15 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -65,9 +105,30 @@
         "summary": "Logout",
         "description": "Logout the user",
         "operationId": "LogoutUser",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -78,6 +139,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -87,7 +157,16 @@
             }
           },
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }
@@ -100,9 +179,30 @@
         "summary": "Refresh Access Token",
         "description": "Refresh the user access token",
         "operationId": "RefreshToken",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -113,6 +213,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -123,6 +232,15 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -142,6 +260,18 @@
         "summary": "Request a password reset",
         "description": "Request a password reset",
         "operationId": "PasswordResetSend",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -155,6 +285,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -165,6 +304,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -175,6 +323,15 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -194,6 +351,18 @@
         "summary": "Verify a password reset",
         "description": "Verify a password reset",
         "operationId": "PasswordResetVerify",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -207,6 +376,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -217,6 +395,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -227,6 +414,15 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -246,6 +442,18 @@
         "summary": "Request to signup",
         "description": "Request to signup",
         "operationId": "SignupSend",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -259,6 +467,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -269,6 +486,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -279,6 +505,15 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -298,6 +533,18 @@
         "summary": "Complete a signup request",
         "description": "Complete a signup request",
         "operationId": "SignupComplete",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -311,6 +558,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -321,6 +577,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -331,6 +596,15 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -350,9 +624,30 @@
         "summary": "Get all pending approvals",
         "description": "Get all pending approvals",
         "operationId": "GetPendingApprovals",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -363,6 +658,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -373,16 +677,37 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Approvals_Pending_Response[]"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Approvals_Pending_Response"
+                  }
                 }
               }
             }
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -417,6 +742,16 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -432,6 +767,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -442,6 +786,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -452,6 +805,15 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -462,6 +824,15 @@
           },
           "404": {
             "description": "Not Found",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -472,6 +843,15 @@
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -482,6 +862,15 @@
           },
           "409": {
             "description": "Conflict",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -506,9 +895,30 @@
         "summary": "Get User Info",
         "description": "Get the current user's information and permissions",
         "operationId": "GetMe",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -519,6 +929,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -529,6 +948,15 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -539,6 +967,15 @@
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -561,6 +998,18 @@
         "summary": "Delete my account",
         "description": "Deletes the signed-in user's account",
         "operationId": "DeleteMe",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -574,6 +1023,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -584,6 +1042,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -593,10 +1060,28 @@
             }
           },
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -621,6 +1106,18 @@
         "summary": "Change Password",
         "description": "Change the user password",
         "operationId": "ChangePassword",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -634,6 +1131,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -644,6 +1150,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -653,10 +1168,28 @@
             }
           },
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -681,9 +1214,30 @@
         "summary": "Get all users",
         "description": "Get all users",
         "operationId": "GetAllUsers",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -694,6 +1248,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -704,16 +1267,37 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Users_GetAll_Response[]"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Users_GetAll_Response"
+                  }
                 }
               }
             }
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -748,6 +1332,16 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -763,6 +1357,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -773,6 +1376,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -783,6 +1395,15 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -793,6 +1414,15 @@
           },
           "404": {
             "description": "Not Found",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -803,6 +1433,15 @@
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -813,6 +1452,15 @@
           },
           "409": {
             "description": "Conflict",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -845,6 +1493,16 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -860,6 +1518,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -870,6 +1537,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -879,10 +1555,28 @@
             }
           },
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -893,6 +1587,15 @@
           },
           "403": {
             "description": "Forbidden",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -903,6 +1606,15 @@
           },
           "404": {
             "description": "Not Found",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -937,6 +1649,16 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -952,6 +1674,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -962,6 +1693,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -972,6 +1712,15 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -982,6 +1731,15 @@
           },
           "404": {
             "description": "Not Found",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -992,6 +1750,15 @@
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1002,6 +1769,15 @@
           },
           "409": {
             "description": "Conflict",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1036,6 +1812,16 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -1051,6 +1837,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1061,6 +1856,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1071,6 +1875,15 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -1081,6 +1894,15 @@
           },
           "404": {
             "description": "Not Found",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1091,6 +1913,15 @@
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1101,6 +1932,15 @@
           },
           "409": {
             "description": "Conflict",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1125,6 +1965,18 @@
         "summary": "Invite a new user",
         "description": "Invite a new user to the same site as the caller",
         "operationId": "InviteUser",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1138,6 +1990,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1148,6 +2009,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1157,10 +2027,28 @@
             }
           },
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1171,6 +2059,15 @@
           },
           "404": {
             "description": "Not Found",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1204,11 +2101,30 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1219,6 +2135,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1228,10 +2153,28 @@
             }
           },
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1242,6 +2185,15 @@
           },
           "404": {
             "description": "Not Found",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1266,9 +2218,30 @@
         "summary": "Get all roles",
         "description": "Get all roles",
         "operationId": "GetAllRoles",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1279,6 +2252,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1289,16 +2271,37 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Roles_GetAll_Response[]"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Roles_GetAll_Response"
+                  }
                 }
               }
             }
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1333,6 +2336,16 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -1348,6 +2361,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1358,6 +2380,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1368,6 +2399,15 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -1378,6 +2418,15 @@
           },
           "404": {
             "description": "Not Found",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1388,6 +2437,15 @@
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1398,6 +2456,15 @@
           },
           "409": {
             "description": "Conflict",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1422,6 +2489,18 @@
         "summary": "Delete the current site",
         "description": "Deletes the caller's site",
         "operationId": "DeleteSite",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1435,6 +2514,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1445,6 +2533,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1454,10 +2551,28 @@
             }
           },
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1468,6 +2583,15 @@
           },
           "403": {
             "description": "Forbidden",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1492,9 +2616,30 @@
         "summary": "Get all accounts",
         "description": "Get all account details",
         "operationId": "GetAllAccounts",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1505,6 +2650,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1515,16 +2669,37 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Accounts_GetAll_Response[]"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Accounts_GetAll_Response"
+                  }
                 }
               }
             }
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1547,6 +2722,18 @@
         "summary": "Create account",
         "description": "Create new account details",
         "operationId": "CreateAccount",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1560,6 +2747,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1570,6 +2766,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1580,6 +2785,15 @@
           },
           "201": {
             "description": "Created",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -1590,6 +2804,15 @@
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1600,6 +2823,15 @@
           },
           "409": {
             "description": "Conflict",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1634,11 +2866,30 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1649,6 +2900,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1659,6 +2919,15 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -1669,6 +2938,15 @@
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1679,6 +2957,15 @@
           },
           "404": {
             "description": "Not Found",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1711,6 +2998,16 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -1726,6 +3023,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1736,6 +3042,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1746,6 +3061,15 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -1756,6 +3080,15 @@
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1766,6 +3099,15 @@
           },
           "404": {
             "description": "Not Found",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1776,6 +3118,15 @@
           },
           "409": {
             "description": "Conflict",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1808,11 +3159,30 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1823,6 +3193,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1832,10 +3211,28 @@
             }
           },
           "204": {
-            "description": "No Content"
+            "description": "No Content",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1846,6 +3243,15 @@
           },
           "404": {
             "description": "Not Found",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1870,9 +3276,30 @@
         "summary": "Get all incomes",
         "description": "Get all income details",
         "operationId": "GetAllIncomes",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1883,6 +3310,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1893,16 +3329,37 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Incomes_GetAll_Response[]"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Incomes_GetAll_Response"
+                  }
                 }
               }
             }
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1925,6 +3382,18 @@
         "summary": "Create income",
         "description": "Create a new income source",
         "operationId": "CreateIncome",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1938,6 +3407,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1948,6 +3426,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1958,6 +3445,15 @@
           },
           "201": {
             "description": "Created",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -1968,6 +3464,15 @@
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1978,6 +3483,15 @@
           },
           "409": {
             "description": "Conflict",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2012,11 +3526,30 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2027,6 +3560,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2037,6 +3579,15 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -2047,6 +3598,15 @@
           },
           "404": {
             "description": "Not Found",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2057,6 +3617,15 @@
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2089,6 +3658,16 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -2104,6 +3683,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2114,6 +3702,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2124,6 +3721,15 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -2134,6 +3740,15 @@
           },
           "404": {
             "description": "Not Found",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2144,6 +3759,15 @@
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2154,6 +3778,15 @@
           },
           "409": {
             "description": "Conflict",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2186,11 +3819,30 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2201,6 +3853,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2210,10 +3871,28 @@
             }
           },
           "204": {
-            "description": "No Content"
+            "description": "No Content",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "404": {
             "description": "Not Found",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2224,6 +3903,15 @@
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2248,6 +3936,18 @@
         "summary": "Renew incomes",
         "description": "Renews selected incomes",
         "operationId": "RenewIncomes",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -2261,6 +3961,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2271,6 +3980,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2280,10 +3998,28 @@
             }
           },
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2294,6 +4030,15 @@
           },
           "404": {
             "description": "Not Found",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2318,6 +4063,18 @@
         "summary": "Toggle exclude incomes",
         "description": "Toggles the 'exclude from calculations' status of selected incomes",
         "operationId": "ToggleExcludeIncomes",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -2331,6 +4088,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2341,6 +4107,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2350,10 +4125,28 @@
             }
           },
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2364,6 +4157,15 @@
           },
           "404": {
             "description": "Not Found",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2388,9 +4190,30 @@
         "summary": "Get all expenses",
         "description": "Get all expense details",
         "operationId": "GetAllExpenses",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2401,6 +4224,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2411,16 +4243,37 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Expenses_GetAll_Response[]"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Expenses_GetAll_Response"
+                  }
                 }
               }
             }
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2443,6 +4296,18 @@
         "summary": "Create expense",
         "description": "Create new expense details",
         "operationId": "CreateExpense",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -2456,6 +4321,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2466,6 +4340,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2476,6 +4359,15 @@
           },
           "201": {
             "description": "Created",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -2486,6 +4378,15 @@
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2496,6 +4397,15 @@
           },
           "409": {
             "description": "Conflict",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2530,11 +4440,30 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2545,6 +4474,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2555,6 +4493,15 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -2565,6 +4512,15 @@
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2575,6 +4531,15 @@
           },
           "404": {
             "description": "Not Found",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2607,6 +4572,16 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -2622,6 +4597,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2632,6 +4616,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2642,6 +4635,15 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -2652,6 +4654,15 @@
           },
           "404": {
             "description": "Not Found",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2662,6 +4673,15 @@
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2672,6 +4692,15 @@
           },
           "409": {
             "description": "Conflict",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2704,11 +4733,30 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2719,6 +4767,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2728,10 +4785,28 @@
             }
           },
           "204": {
-            "description": "No Content"
+            "description": "No Content",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2742,6 +4817,15 @@
           },
           "404": {
             "description": "Not Found",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2766,6 +4850,18 @@
         "summary": "Renew expenses",
         "description": "Renews selected expenses",
         "operationId": "RenewExpenses",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -2779,6 +4875,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2789,6 +4894,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2798,10 +4912,28 @@
             }
           },
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2812,6 +4944,15 @@
           },
           "404": {
             "description": "Not Found",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2836,6 +4977,18 @@
         "summary": "Toggle exclude expenses",
         "description": "Toggles the 'exclude from calculations' status of selected expenses",
         "operationId": "ToggleExcludeExpenses",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -2849,6 +5002,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2859,6 +5021,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2868,10 +5039,28 @@
             }
           },
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2882,6 +5071,15 @@
           },
           "404": {
             "description": "Not Found",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2906,9 +5104,30 @@
         "summary": "Accruals status",
         "description": "Get accruals status for all accounts",
         "operationId": "GetStatus",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2919,6 +5138,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2929,6 +5157,15 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -2939,6 +5176,15 @@
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2949,6 +5195,15 @@
           },
           "404": {
             "description": "Not Found",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2991,11 +5246,30 @@
               "type": "string",
               "format": "date"
             }
+          },
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3006,6 +5280,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3016,6 +5299,15 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -3025,10 +5317,28 @@
             }
           },
           "404": {
-            "description": "Not Found"
+            "description": "Not Found",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3053,9 +5363,30 @@
         "summary": "Export data",
         "description": "Export Accounts, Incomes, and Expense data",
         "operationId": "Export",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3066,6 +5397,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3075,10 +5415,28 @@
             }
           },
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3103,6 +5461,18 @@
         "summary": "Import data",
         "description": "Import Accounts, Incomes, and Expense data",
         "operationId": "Import",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "multipart/form-data": {
@@ -3121,6 +5491,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3131,6 +5510,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3141,6 +5529,15 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -3151,6 +5548,15 @@
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3161,6 +5567,15 @@
           },
           "413": {
             "description": "Payload Too Large",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3185,9 +5600,30 @@
         "summary": "Get all site settings",
         "description": "Retrieve all settings for the current site as a flat list",
         "operationId": "GetAllSettings",
+        "parameters": [
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3198,6 +5634,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3208,6 +5653,15 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -3218,6 +5672,15 @@
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3260,6 +5723,16 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "description": "An id of the caller's own to identify this request by in the logs and in any error response. Optional: where it is absent the API generates one. An id that is too long or uses another character is rejected with 400, never altered.",
+            "schema": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -3275,6 +5748,15 @@
         "responses": {
           "400": {
             "description": "Bad Request",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3285,6 +5767,15 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3295,6 +5786,15 @@
           },
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -3305,6 +5805,15 @@
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3315,6 +5824,15 @@
           },
           "409": {
             "description": "Conflict",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3334,29 +5852,6 @@
   },
   "components": {
     "schemas": {
-      "AccountDailyFinancialProjection": {
-        "required": [
-          "rowId",
-          "description",
-          "dates"
-        ],
-        "type": "object",
-        "properties": {
-          "rowId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "description": {
-            "type": "string"
-          },
-          "dates": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/DateProjection"
-            }
-          }
-        }
-      },
       "Accounts_Create_Request": {
         "type": "object",
         "properties": {
@@ -3613,12 +6108,6 @@
           }
         }
       },
-      "Accounts_GetAll_Response[]": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/Accounts_GetAll_Response"
-        }
-      },
       "Accounts_Update_Request": {
         "required": [
           "description"
@@ -3705,6 +6194,168 @@
         },
         "description": "Represents the accrual status returned by the API."
       },
+      "App_Projections_Models_AccountDailyFinancialProjection": {
+        "required": [
+          "rowId",
+          "description",
+          "dates"
+        ],
+        "type": "object",
+        "properties": {
+          "rowId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": {
+            "type": "string"
+          },
+          "dates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/App_Projections_Models_DateProjection"
+            }
+          }
+        }
+      },
+      "App_Projections_Models_DateProjection": {
+        "required": [
+          "date",
+          "balance",
+          "reserved",
+          "arrears",
+          "unpaidAccrual",
+          "dailyAccrual",
+          "incomeReceived",
+          "expensesPaid",
+          "expenseItems",
+          "incomeItems"
+        ],
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "balance": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "reserved": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "arrears": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "unpaidAccrual": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "dailyAccrual": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "incomeReceived": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "expensesPaid": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "expenseItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/App_Projections_Models_ProjectionExpenseModel"
+            }
+          },
+          "incomeItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/App_Projections_Models_ProjectionIncomeModel"
+            }
+          }
+        }
+      },
+      "App_Projections_Models_ProjectionExpenseModel": {
+        "required": [
+          "rowId",
+          "description",
+          "amount"
+        ],
+        "type": "object",
+        "properties": {
+          "rowId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": {
+            "type": "string"
+          },
+          "amount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "App_Projections_Models_ProjectionIncomeModel": {
+        "required": [
+          "rowId",
+          "description",
+          "amount"
+        ],
+        "type": "object",
+        "properties": {
+          "rowId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": {
+            "type": "string"
+          },
+          "amount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
       "Approvals_Pending_Response": {
         "type": "object",
         "properties": {
@@ -3730,12 +6381,6 @@
             "description": "The entity tag for optimistic concurrency",
             "format": "int64"
           }
-        }
-      },
-      "Approvals_Pending_Response[]": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/Approvals_Pending_Response"
         }
       },
       "Approvals_UpdateStatus_Request": {
@@ -3999,95 +6644,6 @@
           }
         },
         "description": "Describes the result of starting a user registration request."
-      },
-      "DateProjection": {
-        "required": [
-          "date",
-          "balance",
-          "reserved",
-          "arrears",
-          "unpaidAccrual",
-          "dailyAccrual",
-          "incomeReceived",
-          "expensesPaid",
-          "expenseItems",
-          "incomeItems"
-        ],
-        "type": "object",
-        "properties": {
-          "date": {
-            "type": "string",
-            "format": "date"
-          },
-          "balance": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
-            "type": [
-              "number",
-              "string"
-            ],
-            "format": "double"
-          },
-          "reserved": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
-            "type": [
-              "number",
-              "string"
-            ],
-            "format": "double"
-          },
-          "arrears": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
-            "type": [
-              "number",
-              "string"
-            ],
-            "format": "double"
-          },
-          "unpaidAccrual": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
-            "type": [
-              "number",
-              "string"
-            ],
-            "format": "double"
-          },
-          "dailyAccrual": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
-            "type": [
-              "number",
-              "string"
-            ],
-            "format": "double"
-          },
-          "incomeReceived": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
-            "type": [
-              "number",
-              "string"
-            ],
-            "format": "double"
-          },
-          "expensesPaid": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
-            "type": [
-              "number",
-              "string"
-            ],
-            "format": "double"
-          },
-          "expenseItems": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ProjectionExpenseModel"
-            }
-          },
-          "incomeItems": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ProjectionIncomeModel"
-            }
-          }
-        }
       },
       "Expenses_Create_Request": {
         "required": [
@@ -4441,12 +6997,6 @@
             "description": "The entity tag for optimistic concurrency",
             "format": "int64"
           }
-        }
-      },
-      "Expenses_GetAll_Response[]": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/Expenses_GetAll_Response"
         }
       },
       "Expenses_Renew_Request": {
@@ -4884,12 +7434,6 @@
           }
         }
       },
-      "Incomes_GetAll_Response[]": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/Incomes_GetAll_Response"
-        }
-      },
       "Incomes_Renew_Request": {
         "required": [
           "asOfDate",
@@ -5150,6 +7694,11 @@
         }
       },
       "ProblemDetails": {
+        "required": [
+          "correlationId",
+          "traceId",
+          "instance"
+        ],
         "type": "object",
         "properties": {
           "type": {
@@ -5180,60 +7729,16 @@
             ]
           },
           "instance": {
-            "type": [
-              "null",
-              "string"
-            ]
-          }
-        }
-      },
-      "ProjectionExpenseModel": {
-        "required": [
-          "rowId",
-          "description",
-          "amount"
-        ],
-        "type": "object",
-        "properties": {
-          "rowId": {
             "type": "string",
-            "format": "uuid"
+            "description": "The path of the request that failed."
           },
-          "description": {
-            "type": "string"
-          },
-          "amount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
-            "type": [
-              "number",
-              "string"
-            ],
-            "format": "double"
-          }
-        }
-      },
-      "ProjectionIncomeModel": {
-        "required": [
-          "rowId",
-          "description",
-          "amount"
-        ],
-        "type": "object",
-        "properties": {
-          "rowId": {
+          "correlationId": {
             "type": "string",
-            "format": "uuid"
+            "description": "Identifies this request in the logs. Quote it when reporting a problem."
           },
-          "description": {
-            "type": "string"
-          },
-          "amount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
-            "type": [
-              "number",
-              "string"
-            ],
-            "format": "double"
+          "traceId": {
+            "type": "string",
+            "description": "Identifies this request in distributed tracing: the W3C traceparent where the request was traced, otherwise the same value as correlationId."
           }
         }
       },
@@ -5243,7 +7748,7 @@
           "accounts": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/AccountDailyFinancialProjection"
+              "$ref": "#/components/schemas/App_Projections_Models_AccountDailyFinancialProjection"
             }
           }
         }
@@ -5270,12 +7775,6 @@
             "description": "The entity tag for optimistic concurrency",
             "format": "int64"
           }
-        }
-      },
-      "Roles_GetAll_Response[]": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/Roles_GetAll_Response"
         }
       },
       "Settings_GetAll_Response": {
@@ -5507,12 +8006,6 @@
             "description": "The entity tag for optimistic concurrency",
             "format": "int64"
           }
-        }
-      },
-      "Users_GetAll_Response[]": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/Users_GetAll_Response"
         }
       },
       "Users_Invite_Request": {

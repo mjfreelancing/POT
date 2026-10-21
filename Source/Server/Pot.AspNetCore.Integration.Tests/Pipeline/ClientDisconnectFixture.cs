@@ -68,4 +68,44 @@ public class ClientDisconnectFixture : IntegrationFixtureBase
 
         problemDetails.RootElement.GetProperty("correlationId").GetString().ShouldNotBeNullOrWhiteSpace();
     }
+
+    [Fact]
+    public async Task Should_Echo_The_CorrelationId_On_A_Server_Error()
+    {
+        // The exception handler clears the response headers before writing the error, so the echo surviving to a 500
+        // depends on CorrelationIdMiddleware writing it as the response starts. A 500 is the response a user is most
+        // likely to report.
+        using var factory = new ClientDisconnectApiWebApplicationFactory(DbHost, DbPort);
+        using var client = factory.CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"{ClientDisconnectProbe.Path}?scenario=server-canceled");
+        request.Headers.Add("X-Correlation-Id", "pot-correlation-id-500");
+
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
+        response.Headers.GetValues("X-Correlation-Id").ShouldBe(["pot-correlation-id-500"]);
+    }
+
+    [Fact]
+    public async Task Should_Return_ProblemDetails_For_A_Server_Error_When_The_Caller_Does_Not_Accept_Json()
+    {
+        // The framework's writer declines a request whose Accept header excludes JSON, and the exception handler then
+        // has nothing to write the 500 with.
+        using var factory = new ClientDisconnectApiWebApplicationFactory(DbHost, DbPort);
+        using var client = factory.CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"{ClientDisconnectProbe.Path}?scenario=server-canceled");
+        request.Headers.TryAddWithoutValidation("Accept", "text/html").ShouldBeTrue();
+
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+        var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
+
+        using var problemDetails = JsonDocument.Parse(body);
+
+        problemDetails.RootElement.GetProperty("correlationId").GetString().ShouldNotBeNullOrWhiteSpace();
+    }
 }

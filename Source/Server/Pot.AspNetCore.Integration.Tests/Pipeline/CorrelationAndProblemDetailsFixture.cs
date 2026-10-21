@@ -27,6 +27,7 @@ public class CorrelationAndProblemDetailsFixture : IntegrationFixtureBase
     private const string CorrelationIdHeader = "X-Correlation-Id";
     private const string AccessControlAllowOrigin = "Access-Control-Allow-Origin";
     private const string AllowedOrigin = "http://localhost:3000";
+    private const string NonJsonAccept = "text/html";
     private const string InvalidCharactersDetail = "CorrelationId may only contain letters, digits, '-', '_', '.' and ':'";
 
     private static readonly JsonSerializerOptions WebJsonSerializerOptions = new(JsonSerializerDefaults.Web);
@@ -256,6 +257,141 @@ public class CorrelationAndProblemDetailsFixture : IntegrationFixtureBase
 
         problemDetails.Status.ShouldBe(StatusCodes.Status400BadRequest);
         GetExtensionString(problemDetails, "correlationId").ShouldNotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task Should_Echo_Request_CorrelationId_On_A_Successful_Response()
+    {
+        // A successful response has no body to carry the id, so the header is the only place a caller learns which
+        // id the server used.
+        using var client = CreateClient();
+
+        const string correlationId = "pot-correlation-id-200";
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/_health");
+        request.Headers.Add(CorrelationIdHeader, correlationId);
+
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.ShouldHaveHeaderValues(CorrelationIdHeader).ShouldBe([correlationId]);
+    }
+
+    [Fact]
+    public async Task Should_Echo_Generated_CorrelationId_On_A_Successful_Response_When_Header_Is_Not_Provided()
+    {
+        using var client = CreateClient();
+
+        var response = await client.GetAsync("/_health", TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.ShouldHaveHeaderValues(CorrelationIdHeader).Single().ShouldNotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task Should_Echo_The_Same_Generated_CorrelationId_As_The_ProblemDetails_Carry()
+    {
+        using var client = CreateClient();
+
+        var response = await client.GetAsync("/api/me", TestContext.Current.CancellationToken);
+        var problemDetails = await ReadProblemDetailsAsync(response);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        response.ShouldHaveHeaderValues(CorrelationIdHeader).Single().ShouldBe(GetExtensionString(problemDetails, "correlationId"));
+    }
+
+    [Fact]
+    public async Task Should_Echo_The_Generated_CorrelationId_When_The_Header_Is_Rejected()
+    {
+        // The caller's id was refused, so the generated one is the one to quote - on the header as well as the body.
+        using var client = CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/me");
+        request.Headers.TryAddWithoutValidation(CorrelationIdHeader, "pot correlation").ShouldBeTrue();
+
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+        var problemDetails = await ReadProblemDetailsAsync(response);
+
+        var echoedId = response.ShouldHaveHeaderValues(CorrelationIdHeader).Single();
+
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        echoedId.ShouldNotBe("pot correlation");
+        echoedId.ShouldBe(GetExtensionString(problemDetails, "correlationId"));
+    }
+
+    [Fact]
+    public async Task Should_Report_A_Rejected_CorrelationId_In_Errors_Keyed_By_The_Header()
+    {
+        // The client finds the reason where it finds every other field error. The rejected value is not echoed back.
+        using var client = CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/me");
+        request.Headers.TryAddWithoutValidation(CorrelationIdHeader, "<script>").ShouldBeTrue();
+
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+        var problemDetails = await ReadProblemDetailsAsync(response);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+
+        var error = problemDetails.Extensions["errors"].EnumerateArray().ShouldHaveSingleItem();
+
+        error.GetProperty("propertyName").GetString().ShouldBe(CorrelationIdHeader);
+        error.GetProperty("errorCode").GetString().ShouldBe("Invalid");
+        error.GetProperty("errorMessage").GetString().ShouldBe(InvalidCharactersDetail);
+        error.GetProperty("attemptedValue").ValueKind.ShouldBe(JsonValueKind.Null);
+    }
+
+    // A client whose Accept header excludes JSON - a browser navigation sends text/html - must still get Problem Details
+    // carrying the correlation id. The framework's writer declines such a request, and each route into an error body
+    // then falls back differently, so each is asserted separately.
+    [Fact]
+    public async Task Should_Return_ProblemDetails_For_An_Authentication_Failure_When_The_Caller_Does_Not_Accept_Json()
+    {
+        using var client = CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/me");
+        request.Headers.TryAddWithoutValidation("Accept", NonJsonAccept).ShouldBeTrue();
+
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
+        GetExtensionString(await ReadProblemDetailsAsync(response), "correlationId").ShouldNotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task Should_Return_ProblemDetails_For_A_Validation_Failure_When_The_Caller_Does_Not_Accept_Json()
+    {
+        using var client = CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/login")
+        {
+            Content = JsonContent.Create(new { Username = string.Empty, Password = string.Empty })
+        };
+
+        request.Headers.TryAddWithoutValidation("Accept", NonJsonAccept).ShouldBeTrue();
+
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
+        GetExtensionString(await ReadProblemDetailsAsync(response), "correlationId").ShouldNotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task Should_Return_ProblemDetails_For_A_Rejected_CorrelationId_When_The_Caller_Does_Not_Accept_Json()
+    {
+        using var client = CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/me");
+        request.Headers.TryAddWithoutValidation("Accept", NonJsonAccept).ShouldBeTrue();
+        request.Headers.TryAddWithoutValidation(CorrelationIdHeader, "pot correlation").ShouldBeTrue();
+
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
+        GetExtensionString(await ReadProblemDetailsAsync(response), "correlationId").ShouldNotBeNullOrWhiteSpace();
     }
 
     private static async Task<ProblemDetailsResponse> ReadProblemDetailsAsync(HttpResponseMessage response)

@@ -3,6 +3,7 @@ using Shouldly;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace Pot.AspNetCore.Integration.Tests.Pipeline;
 
@@ -257,6 +258,126 @@ public class OpenApiSecurityFixture : IntegrationFixtureBase
             apiOperation.Operation.TryGetProperty("security", out _)
                 .ShouldBeFalse($"{apiOperation.Path} should remain anonymous in OpenAPI");
         }
+    }
+
+    [Fact]
+    public async Task Should_Declare_The_Optional_CorrelationId_Header_On_Every_Api_Operation()
+    {
+        // CorrelationIdMiddleware accepts the header on every request without any endpoint declaring it, so only the
+        // operation transformer puts it in the document. Constrained exactly as the middleware enforces it.
+        using var client = CreateClient();
+
+        var response = await client.GetAsync("/openapi/v1.json", TestContext.Current.CancellationToken);
+        var responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, responseContent);
+
+        using var openApiDocument = await response.Content.ReadFromJsonAsync<JsonDocument>(
+            TestContext.Current.CancellationToken);
+
+        openApiDocument.ShouldNotBeNull();
+
+        var apiOperations = openApiDocument!.RootElement.GetProperty("paths")
+            .EnumerateObject()
+            .Where(path => path.Name.StartsWith("/api/", StringComparison.OrdinalIgnoreCase))
+            .SelectMany(path => path.Value.EnumerateObject()
+                .Where(operation => IsHttpMethod(operation.Name))
+                .Select(operation => (Path: path.Name, Operation: operation.Value)))
+            .ToList();
+
+        apiOperations.ShouldNotBeEmpty();
+
+        foreach (var apiOperation in apiOperations)
+        {
+            var parameter = apiOperation.Operation.GetProperty("parameters")
+                .EnumerateArray()
+                .Where(item => item.GetProperty("name").GetString() == "X-Correlation-Id")
+                .ToList()
+                .ShouldHaveSingleItem($"{apiOperation.Path} should declare X-Correlation-Id once");
+
+            parameter.GetProperty("in").GetString().ShouldBe("header");
+            (parameter.TryGetProperty("required", out var required) && required.GetBoolean()).ShouldBeFalse();
+
+            var schema = parameter.GetProperty("schema");
+            schema.GetProperty("maxLength").GetInt32().ShouldBe(128);
+            schema.GetProperty("pattern").GetString().ShouldBe("^[A-Za-z0-9_.:-]+$");
+
+            // Echoed on every response, and on a success the header is the only place the id travels.
+            foreach (var operationResponse in apiOperation.Operation.GetProperty("responses").EnumerateObject())
+            {
+                var documented = operationResponse.Value.TryGetProperty("headers", out var headers) &&
+                    headers.TryGetProperty("X-Correlation-Id", out _);
+
+                documented.ShouldBeTrue($"{apiOperation.Path} {operationResponse.Name} should declare the X-Correlation-Id response header");
+            }
+        }
+    }
+
+    [Fact]
+    public async Task Should_Describe_The_Common_ProblemDetails_Members_As_Required_Strings()
+    {
+        // Every error body carries them, but they travel in the Extensions dictionary the generator cannot see, so
+        // only the schema transformer puts them in the document.
+        using var client = CreateClient();
+
+        var response = await client.GetAsync("/openapi/v1.json", TestContext.Current.CancellationToken);
+        var responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, responseContent);
+
+        using var openApiDocument = await response.Content.ReadFromJsonAsync<JsonDocument>(
+            TestContext.Current.CancellationToken);
+
+        openApiDocument.ShouldNotBeNull();
+
+        var problemDetailsSchema = openApiDocument!.RootElement.GetProperty("components")
+            .GetProperty("schemas")
+            .GetProperty("ProblemDetails");
+
+        var required = problemDetailsSchema.GetProperty("required")
+            .EnumerateArray()
+            .Select(item => item.GetString())
+            .ToList();
+
+        foreach (var member in new[] { "correlationId", "traceId", "instance" })
+        {
+            required.ShouldContain(member);
+
+            // A plain string, not string-or-null: the members are never null, and a nullable type would make a
+            // generated client handle a null that never arrives.
+            problemDetailsSchema.GetProperty("properties")
+                .GetProperty(member)
+                .GetProperty("type")
+                .GetString()
+                .ShouldBe("string", member);
+        }
+    }
+
+    [Fact]
+    public async Task Should_Key_Every_Schema_Component_With_Characters_OpenApi_Allows()
+    {
+        // OpenAPI restricts component keys to this pattern. A key outside it - "Response[]" for an array that was
+        // given a component of its own - is rejected by some generators and validators.
+        using var client = CreateClient();
+
+        var response = await client.GetAsync("/openapi/v1.json", TestContext.Current.CancellationToken);
+        var responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, responseContent);
+
+        using var openApiDocument = await response.Content.ReadFromJsonAsync<JsonDocument>(
+            TestContext.Current.CancellationToken);
+
+        openApiDocument.ShouldNotBeNull();
+
+        var invalidKeys = openApiDocument!.RootElement.GetProperty("components")
+            .GetProperty("schemas")
+            .EnumerateObject()
+            .Select(schema => schema.Name)
+            .Where(name => !Regex.IsMatch(name, "^[a-zA-Z0-9.\\-_]+$"))
+            .ToList();
+
+        invalidKeys.ShouldBeEmpty();
     }
 
     protected override ApiWebApplicationFactory CreateApiWebApplicationFactory(string dbHost, int dbPort)

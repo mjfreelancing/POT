@@ -124,6 +124,7 @@ public class CorsFixture : IntegrationFixtureBase
     [Theory]
     [InlineData("Content-Disposition")]
     [InlineData("Retry-After")]
+    [InlineData("X-Correlation-Id")]
     public async Task Should_Expose_Header_To_Configured_Origin(string headerName)
     {
         using var client = CreateClient();
