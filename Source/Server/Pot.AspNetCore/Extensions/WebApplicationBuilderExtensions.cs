@@ -191,6 +191,7 @@ internal static class WebApplicationBuilderExtensions
     public static WebApplicationBuilder AddPotMiddleware(this WebApplicationBuilder builder)
     {
         builder.Services.AddScoped<RawRequestLoggingMiddleware>();  // Only used in a Production environment
+        builder.Services.AddScoped<SecurityHeadersMiddleware>();
         builder.Services.AddScoped<CorrelationIdMiddleware>();
 
         return builder;

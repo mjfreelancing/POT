@@ -5,6 +5,13 @@ namespace Pot.AspNetCore.Extensions;
 
 internal static class WebApplicationExtensions
 {
+    public static WebApplication UseSecurityHeaders(this WebApplication app)
+    {
+        app.UseMiddleware<SecurityHeadersMiddleware>();
+
+        return app;
+    }
+
     public static WebApplication UseCorrelationId(this WebApplication app)
     {
         app.UseMiddleware<CorrelationIdMiddleware>();

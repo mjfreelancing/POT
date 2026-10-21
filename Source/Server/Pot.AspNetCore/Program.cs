@@ -47,6 +47,10 @@ public class Program
 
         app.Logger.LogInformation("POT Startup: {AppStartup}", new { Local = DateTime.Now });
 
+        // First, so every response carries X-Content-Type-Options and Cache-Control - including the 500s and status code
+        // pages written by the two calls below, and the 401, 403 and 429 responses refused further down.
+        app.UseSecurityHeaders();
+
         app.UseExceptionHandler();
 
         // Write ProblemDetails for error responses that otherwise have no body.

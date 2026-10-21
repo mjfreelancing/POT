@@ -239,6 +239,7 @@ How the product is protected. Every item is a mechanism that is implemented, not
 - **The access token carries no derived state.** It holds `jti`, `sub` and `tokenVersion` and nothing else. Tenancy, permissions and account status are read from the database on every request, because a JWT payload is readable by anyone holding the token and a claim goes stale while the token stays valid.
 - **Two identities are protected from lock-out.** A configured platform administrator cannot be disabled, and a site's last enabled `Admin` cannot be disabled or demoted, so neither platform nor tenant administration can be left without an administrator. Both refusals answer `400` with copy the user can act on, and the target is left unchanged.
 - **Credentials.** Passwords are stored only as salted one-way hashes. Invitations, sign-ups and password resets use single-use codes with an expiry and an attempt limit. Changing a password or signing out increments the token version, which invalidates every access token already issued, and a disabled account is rejected when its token is validated.
+- **Responses are not sniffed or cached.** Every response carries `X-Content-Type-Options: nosniff` and `Cache-Control: no-store`, error responses included, so a browser cannot reinterpret a body as script and neither a browser nor a proxy keeps a copy of financial data, user details or tokens. See [Middleware](#middleware).
 - **Abuse throttling.** Rate limiting is partitioned by anonymous client and by signed-in user, and answers `429` with a `Retry-After` header and the wait time in the problem details.
 - **The deliberate cross-tenant surfaces.** Approvals and the platform routes run behind the platform grant and read across sites on purpose. Every read that crosses a site boundary is deliberate, is served by a repository method named for it, and records at its call site why it is allowed: a username resolved before a site is known, a caller who is signed out, a token validated before any user context exists, or the platform surface acting on every site. There is no unnamed cross-tenant read.
 - **Checklist for a new endpoint that takes an id.** Declare its authorization requirement. Resolve the target through a site-scoped repository method. Refuse as not-found when the caller cannot act on the target. Log the refusal at warning. If the read genuinely has to cross sites, name the method for it and say why at the call site.
@@ -3634,6 +3635,13 @@ POT uses custom middleware for cross-cutting request/response processing.
 **Middleware Registration:** `Pot.AspNetCore/Extensions/WebApplicationExtensions.cs`
 
 ```csharp
+public static WebApplication UseSecurityHeaders(this WebApplication app)
+{
+    app.UseMiddleware<SecurityHeadersMiddleware>();
+
+    return app;
+}
+
 public static WebApplication UseCorrelationId(this WebApplication app)
 {
     app.UseMiddleware<CorrelationIdMiddleware>();
@@ -3657,18 +3665,35 @@ public static WebApplication UsePotMiddleware(this WebApplication app)
 **Middleware Order in Pipeline:**
 
 ```csharp
-app.UseExceptionHandler();          // 1. Global exception handling
-// app.UseHttpsRedirection();       // (Not used - behind Azure reverse proxy)
-app.MapHealthChecks("/_health");         // 2. Liveness endpoint (executes no checks)
-app.MapHealthChecks("/_health/ready");   // 3. Readiness endpoint (checks tagged "ready")
-app.UseCors();                           // 4. CORS (must be before auth)
-app.UseCorrelationId();                  // 5. Correlation ID (after CORS, before auth and rate limiting)
-app.UseAuthentication();                 // 6. JWT authentication
-app.UseAuthorization();                  // 7. Permission authorization
-app.UseRateLimiter();                    // 8. Rate limiting
-app.UsePotMiddleware();                  // 9. Raw request logging (non-production), user context
+app.UseSecurityHeaders();                // 1. nosniff and no-store on every response (first, so error responses get them)
+app.UseExceptionHandler();               // 2. Global exception handling
+app.UseStatusCodePages();                // 3. Problem Details for error responses that have no body
+// app.UseHttpsRedirection();            // (Not used - behind Azure reverse proxy)
+app.MapHealthChecks("/_health");         // 4. Liveness endpoint (executes no checks)
+app.MapHealthChecks("/_health/ready");   // 5. Readiness endpoint (checks tagged "ready")
+app.UseCors();                           // 6. CORS (must be before auth)
+app.UseCorrelationId();                  // 7. Correlation ID (after CORS, before auth and rate limiting)
+app.UseAuthentication();                 // 8. JWT authentication
+app.UseAuthorization();                  // 9. Permission authorization
+app.UseRateLimiter();                    // 10. Rate limiting
+app.UsePotMiddleware();                  // 11. Raw request logging (non-production), user context
 // ... endpoint routing ...
 ```
+
+**SecurityHeadersMiddleware:**
+
+Adds `X-Content-Type-Options: nosniff` and `Cache-Control: no-store` to every response
+(`Pot.AspNetCore/Concerns/Middleware/SecurityHeadersMiddleware.cs`).
+
+- `nosniff` stops a browser second-guessing the declared content type, so a body is never treated as script or HTML because
+  of what it contains. `no-store` keeps responses out of browser and proxy caches: almost everything the API returns is a
+  site's financial data or a user's details, login and refresh responses carry tokens, and error bodies carry the correlation id.
+- Every response, not only `/api`, because nothing the API serves is meant to be cached and a path test is one more thing a
+  new route can fall outside of. An endpoint that genuinely wants caching sets its own `Cache-Control`, which is left alone.
+- The headers are written as the response starts, because the exception handler clears the response headers before writing
+  a 500. It runs first in the pipeline so the exception handler's 500s, status code pages, and the 401/403/429 responses from
+  authentication, authorization and rate limiting all carry them. A 500 carries the exception handler's own
+  `no-cache,no-store`, which satisfies the same rule.
 
 **CorrelationIdMiddleware:**
 
