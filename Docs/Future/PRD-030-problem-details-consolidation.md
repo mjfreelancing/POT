@@ -1,11 +1,11 @@
 # Problem Details Consolidation PRD
 
-**Status:** Planning
+**Status:** Planned
 **Priority:** High
-**Last Updated:** 2026-10-21
+**Last Updated:** 2026-10-22
 **Feature ID:** 030
 **Discovery:** complete
-**Scope:** Define and enforce one reporting contract for API failures: every failure is an RFC 9457 problem body, no submitted value appears in a body or a log, each status has one documented shape, every conflict names its category in a stable `type`, and the client reads whatever body it receives without rendering markup. It covers the code that builds problem bodies and the shared customisation that completes them, the logging of validation and application failures, the raw request-body logger, the OpenAPI description, the developer guide, and the React client's error parsing. It does not cover the concurrency model (the entity tag stays in the request body and a stale one stays `409`), moving request validation or application-result conversion out of endpoint handlers, the application-layer result library, rate-limit policy values, the mapping from database exceptions to statuses, or whether state-dependent refusals should answer `409` rather than `400`.
+**Scope:** Define and enforce one reporting contract for API failures: every failure is an RFC 9457 problem body, no submitted value appears in a body or a log, each status has one documented shape, every conflict names its category in a stable `type`, and the client reads whatever body it receives without rendering markup. It covers the code that builds problem bodies and the shared customisation that completes them, the logging of validation and application failures, HTTP request logging, the OpenAPI description, the developer guide, and the React client's error parsing. It does not cover the concurrency model (the entity tag stays in the request body and a stale one stays `409`), moving request validation or application-result conversion out of endpoint handlers, the application-layer result library, rate-limit policy values, the mapping from database exceptions to statuses, or whether state-dependent refusals should answer `409` rather than `400`.
 
 ## Problem Statement
 
@@ -13,7 +13,7 @@ Error reporting is assembled by hand in several places. The result returns submi
 
 **1. Submitted values are returned in error bodies.** Every validation failure carries an `attemptedValue` member holding the value the caller sent. On Change Password, a new password that fails a strength rule is returned in the `400` body, and the cross-field rule that compares the two passwords reports the whole request object, so a failure returns both passwords. The same applies to any other field a validator rejects. A value the server composes into a message it writes can leak the same way: the settings validator interpolates the submitted category into its message.
 
-The codebase already treats the value as sensitive in one place: the validation log deliberately omits it. A second helper, `LoggerExtensions.LogApiError`, writes it. The raw request-body logger goes further and writes every request body, including sign-in and password-reset payloads, whenever the server runs outside Production. A response body is not a safer place than a log: it is held by the browser, visible in developer tools, and recorded by any proxy, APM agent or support tooling that captures traffic.
+The codebase already treats the value as sensitive in one place: the validation log deliberately omits it. A second helper, `LoggerExtensions.LogApiError`, writes it. The raw request-body logger goes further and writes every request body, including sign-in and password-reset payloads, whenever the server runs outside Production. It is a hand-rolled substitute for the framework's HTTP logging: it buffers the whole body, caps nothing, and — because it sits after authentication and rate limiting — records nothing at all for a request those reject. The API therefore logs its most sensitive content and none of the request metadata a diagnosis usually starts with. A response body is not a safer place than a log: it is held by the browser, visible in developer tools, and recorded by any proxy, APM agent or support tooling that captures traffic.
 
 **2. One status, several shapes.**
 
@@ -33,24 +33,24 @@ The codebase already treats the value as sensitive in one place: the validation 
 
 Where an error body is produced today:
 
-| Concern | Where |
-| --- | --- |
-| Shared completion (`correlationId`, `instance`) and the writer | `Pot.AspNetCore/Extensions/WebApplicationBuilderExtensions.AddProblemDetails` |
-| Application failure to body | `Pot.AspNetCore/Extensions/EnrichedErrorExtensions.ToProblemDetails` |
-| Validation result to body | `Pot.AspNetCore/Concerns/Validation/Extensions/ValidationResultExtensions.ToProblemDetails` |
-| Per-handler request validation | `Pot.AspNetCore/Concerns/Validation/ProblemDetailsInspector` |
-| Body for the rate limiter, database handler and correlation rejection | `Pot.AspNetCore/Concerns/ProblemDetails/ProblemDetailsContextFactory` |
-| Unreadable request | `Pot.AspNetCore/Concerns/ExceptionHandlers/BadRequestExceptionHandler` |
-| Error-entry serialisation | `Pot.App/Extensions/ApiDetailsErrorExtensions` |
-| Submitted-value logging | `Pot.App/Extensions/LoggerExtensions.LogApiError`; `Pot.AspNetCore/Concerns/Middleware/RawRequestLoggingMiddleware` |
-| OpenAPI description | `Pot.AspNetCore/Concerns/OpenApi/ProblemDetailsSchemaTransformer`; `contracts/openapi/v1.json` |
-| Client parsing | `Source/Client/pot-react/src/api/errors/apiErrorResponse.ts`; `src/api/interceptors/axiosInterceptors.ts` |
+| Concern                                                               | Where                                                                                                                                                                             |
+| --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shared completion (`correlationId`, `instance`) and the writer        | `Pot.AspNetCore/Extensions/WebApplicationBuilderExtensions.AddProblemDetails`                                                                                                     |
+| Application failure to body                                           | `Pot.AspNetCore/Extensions/EnrichedErrorExtensions.ToProblemDetails`                                                                                                              |
+| Validation result to body                                             | `Pot.AspNetCore/Concerns/Validation/Extensions/ValidationResultExtensions.ToProblemDetails`                                                                                       |
+| Per-handler request validation                                        | `Pot.AspNetCore/Concerns/Validation/ProblemDetailsInspector`                                                                                                                      |
+| Body for the rate limiter, database handler and correlation rejection | `Pot.AspNetCore/Concerns/ProblemDetails/ProblemDetailsContextFactory`                                                                                                             |
+| Unreadable request                                                    | `Pot.AspNetCore/Concerns/ExceptionHandlers/BadRequestExceptionHandler`                                                                                                            |
+| Error-entry serialisation                                             | `Pot.App/Extensions/ApiDetailsErrorExtensions`                                                                                                                                    |
+| Submitted-value logging and the missing request log                   | `Pot.App/Extensions/LoggerExtensions.LogApiError`; `Pot.AspNetCore/Concerns/Middleware/RawRequestLoggingMiddleware` (hand-rolled; the framework's HTTP logging is not configured) |
+| OpenAPI description                                                   | `Pot.AspNetCore/Concerns/OpenApi/ProblemDetailsSchemaTransformer`; `contracts/openapi/v1.json`                                                                                    |
+| Client parsing                                                        | `Source/Client/pot-react/src/api/errors/apiErrorResponse.ts`; `src/api/interceptors/axiosInterceptors.ts`                                                                         |
 
 ## Terms
 
 - **Problem body** — any error response body, in `application/problem+json`, whatever produced it.
 - **Validation problem** — a `400` problem body whose `errors` member maps a field name to the messages for that field, in the shape ASP.NET Core's `HttpValidationProblemDetails` defines.
-- **General error key** — the empty string `""`, used as the `errors` key for a message that belongs to the whole request rather than one field.
+- **General error key** — the empty string `""`, used as the `errors` key for a message that belongs to the whole request rather than one field. It is the convention ASP.NET Core already uses for model-level validation: MVC's `ModelStateDictionary` files an error added against the model itself (`AddModelError(string.Empty, …)`) under that key, and `ValidationProblemDetails` copies it into the `errors` map unchanged, so the wire body shows `"errors": { "": ["…"] }`. The key is a convention inherited from MVC, not something `HttpValidationProblemDetails` reserves or interprets. POT uses it for a whole-request rule or an application refusal, which FluentValidation does not otherwise place anywhere.
 - **Submitted value** — anything the caller sent: a body property, a query or route value, a header.
 - **Stale-tag conflict** — a `409` returned because the entity tag in an update request no longer matches the stored record.
 - **Fallback conflict** — a `409` the database exception handler writes because a constraint or race reached the database, as opposed to one an endpoint's own rule decided on.
@@ -64,6 +64,8 @@ Where an error body is produced today:
 - **A2.** No log entry written for a validation failure or a rejected application result contains a submitted value. Field names, messages and identifiers the server generated are allowed.
 - **A3.** No request body is written to a log in any environment.
 - **A4.** Automated tests assert A1 and A2 at these points: a weak new password; the new-password-equals-current rule; a setting whose category is not recognised; and the log written for a rejected application result. Each body test asserts that the response does not contain the submitted value and carries no `attemptedValue` member. A test asserts A3 by confirming that no request body is logged for a sign-in or a password change.
+- **A5.** Every request other than the health probes produces one request log entry carrying its method, path, query, status code and duration, with the correlation id, and no request or response headers. The health probes produce no request log entry and carry no security headers or correlation id; their callers read the status only. A test captures the host's request log and asserts those fields, the absence of a body and headers, and no entry for either probe.
+- **A6.** The request log in A5 is produced by the framework's HTTP logging. The hand-rolled request-body logger is removed, and no component reads or buffers a request body in order to log it.
 
 ### B. One shape per status
 
@@ -80,19 +82,19 @@ Where an error body is produced today:
 
 Default `detail` for B3 when the failure supplies no message of its own:
 
-| Status | Default `detail` |
-| --- | --- |
-| `400` | none — the messages are in `errors` (B1) |
-| `401` | Authentication is required. |
-| `403` | You do not have permission to perform this action. |
-| `404` | The requested resource was not found. |
-| `405` | The requested method is not allowed for this resource. |
-| `408` | The request timed out. |
-| `413` | The request body is too large. |
-| `415` | The request content type is not supported. |
-| `429` | Too many requests. Please wait and try again. |
-| `500` | An unexpected error occurred. |
-| any other | The request could not be completed. |
+| Status    | Default `detail`                                       |
+| --------- | ------------------------------------------------------ |
+| `400`     | none — the messages are in `errors` (B1)               |
+| `401`     | Authentication is required.                            |
+| `403`     | You do not have permission to perform this action.     |
+| `404`     | The requested resource was not found.                  |
+| `405`     | The requested method is not allowed for this resource. |
+| `408`     | The request timed out.                                 |
+| `413`     | The request body is too large.                         |
+| `415`     | The request content type is not supported.             |
+| `429`     | Too many requests. Please wait and try again.          |
+| `500`     | An unexpected error occurred.                          |
+| any other | The request could not be completed.                    |
 
 ### C. The body is built in one place
 
@@ -107,7 +109,7 @@ Default `detail` for B3 when the failure supplies no message of its own:
 - **D1.** The OpenAPI document describes every `400` as the validation problem schema, with `errors` required, and every problem schema with `correlationId`, `traceId` and `instance` as required, non-nullable strings.
 - **D2.** The document describes the stale-tag `type` on the endpoints that can return it, and its description says how to tell a stale-tag `409` from every other conflict.
 - **D3.** A metadata test asserts: every API endpoint declares `400` as the validation problem and `500` as a problem in `application/problem+json`; every declared `409` is a problem in `application/problem+json`; no success status is described as a problem; no `422` is declared.
-- **D4.** `Source/Server/DEVELOPER.md` matches the implementation: no `422`, no `errors` list, no `errorCode` or `attemptedValue`, no guidance to log request bodies, sample bodies in the new shape, and the endpoint example showing the handler pattern this contract uses.
+- **D4.** `Source/Server/DEVELOPER.md` matches the implementation: no `422`, no `errors` list, no `errorCode` or `attemptedValue`, no guidance to log request bodies, the request log described as the framework's with the fields it records, sample bodies in the new shape, and the endpoint example showing the handler pattern this contract uses.
 - **D5.** Every endpoint that declares a `409` has a test asserting the `type` its own rule produced, so the test fails if the rule stops running. The fallback conflict type cannot satisfy it.
 - **D6.** Every endpoint that reads a request body declares `413` and `408` as problems, and no endpoint that reads none declares either. A metadata test asserts both directions, so a new body-accepting endpoint cannot omit them and a `GET` cannot claim them.
 - **D7.** `contracts/openapi/v1.json` is regenerated and committed with the change that alters it.
@@ -123,6 +125,12 @@ Default `detail` for B3 when the failure supplies no message of its own:
 - **E7.** A `502`, `503` or `504` that carries no readable problem body means the application was not reached, and reads as unreachable rather than as a server error with nothing to say.
 - **E8.** Unit tests cover each shape in E5 against at least a `400`, a `409`, a `500` and a `504`, asserting the user-visible message rather than the parse internals.
 
+## Non-Functional Requirements
+
+- **N1. Related documentation moves with the change.** Every document that describes the error contract, request logging or the health endpoints is updated in the same delivery: `Source/Server/DEVELOPER.md` (D4), `contracts/openapi/v1.json` (D7), `Docs/ARCHITECTURE.md` where it describes error handling (it names RFC 7807, which RFC 9457 supersedes), and any client or setup documentation that describes error parsing. A repository search for the retired vocabulary — `attemptedValue`, `errorCode`, the `errors` list, "Inbound request body", `422` — finds it only where a historical document records the old behaviour (this PRD's problem statement and superseded notes in other PRDs), never where current behaviour is described.
+- **N2. Other PRDs are reviewed, not assumed unaffected.** Before completion, every PRD under `Docs/Future/` that states or depends on an error shape, a status, the request log or the health endpoints is checked, and each is either confirmed unchanged or amended. At least: PRD-014 (its 429 body names an error code), PRD-021 and PRD-023 (historical `422` statements), PRD-022 (deletion refusals and their tests), PRD-026 (the `propertyName == etag` conflict convention and its `422` note) and PRD-027 (refusal statuses and bodies), with PRD-013 and ADR-012 for the probes. Folder conventions apply: a superseded statement is annotated with the later PRD's number rather than rewritten, a `Planned` or `In Progress` PRD whose requirements conflict is updated, and no PRD or ADR reference enters code, tests or comments.
+- **N3. Tests come before the code they cover.** A test for behaviour this PRD changes starts red for the expected reason and goes green with the implementation. A test that fills a coverage gap in behaviour that already holds starts green and stays green. The stage report states which case applied, and a test claimed as red is shown failing before the change; a test that passes without exercising the change does not count.
+
 ## Out of Scope
 
 - **Moving request validation into an endpoint filter, and replacing the per-handler result conversion with one mapping** — a code-quality refactor of its own. Every endpoint whose request type has a validator runs it today; the open risk is a future endpoint forgetting, which belongs with that refactor. Handlers keep their current shape here.
@@ -132,7 +140,7 @@ Default `detail` for B3 when the failure supplies no message of its own:
 - **Rate-limit policy values and partitioning** — unchanged. Only the shape of the `429` body is in scope (B8, C1).
 - **Which database exceptions map to which status** — the database exception handler keeps its mapping rules. Only how it builds the body is in scope (C1, C2).
 - **Localised or machine-readable error codes beyond the conflict types** — not needed by the current client. If wanted later, it is an additive change.
-- **The health endpoints' failure responses** — a failing readiness check answers `503` with the health check writer's plain-text `Unhealthy`, and stays that way: the callers are infrastructure and the E2E gate, which read the status only. Nothing in B, C or D applies to those two endpoints.
+- **The health endpoints** — a failing readiness check answers `503` with the health check writer's plain-text `Unhealthy`, and stays that way: the callers are infrastructure and the E2E gate, which read the status only. Both probes are short-circuited out of the pipeline, so they produce no request log entry, carry no security headers and carry no correlation id. Nothing in B, C or D applies to them.
 - **The size of the default request body limit** — D6 documents the `413` that Kestrel's 30 MB default produces; whether 30 MB is the right ceiling for JSON endpoints is a separate decision.
 
 ## Known Risks and Accepted Limitations
@@ -142,7 +150,7 @@ Default `detail` for B3 when the failure supplies no message of its own:
 - **A session already open keeps its bundle.** A tab left open across a server release shows generic `400` and `409` wording until it reloads. Accepted: the new bodies stay readable to the old bundle, so the page degrades in wording and never fails.
 - **Conflict messages lose the submitted value.** A duplicate reads "The account description already exists" rather than quoting the description. Accepted: quoting would need a per-field judgement about what is safe to repeat, and A1 gives no exception.
 - **A state-dependent refusal reads as a validation problem.** Because B1 applies to every `400`, "Cannot delete an Account that has linked Expenses" carries the validation title. Accepted for this contract; making it a `409` is the out-of-scope product decision above.
-- **Raw request-body logging is removed.** Diagnosing a deserialisation fault then relies on the status, the correlation id and the exception log. Accepted: a developer can add temporary logging when investigating, and credentials must not be written to a log.
+- **Request bodies are never logged.** Diagnosing a deserialisation fault relies on the request log's metadata, the status, the correlation id and the exception log. Accepted: a developer can add temporary body logging locally when investigating, and credentials must not be written to a log. The health probes also stop carrying security headers and the correlation id; they are polled by infrastructure that reads the status only and nothing about a probe's response is user-facing.
 
 ## Assumptions
 
@@ -155,85 +163,37 @@ Default `detail` for B3 when the failure supplies no message of its own:
 
 ## Decisions Carried Into This Document
 
-| Decision | Resolution |
-| --- | --- |
-| Shape of `errors` on a `400` | The framework's validation-problem map (`field → messages`), replacing the custom list. It removes the name clash with ASP.NET Core, the custom serialisation and its custom-state camel-casing, and gives the document a known schema. |
-| `errors` on other statuses | Removed (B3). Every non-`400` failure has one message, and `detail` carries it. |
-| `attemptedValue` | Removed from the wire and from logs (A1, A2). |
-| `errorCode` | Removed from the wire (B9). The server keeps its own category constants to choose a status and a problem type; they are not serialised. |
-| How a conflict is identified | A `type` per category (B6, B7), the member RFC 9457 defines for identifying a problem type. |
-| `type` URI form | `urn:pot:problem:<slug>` — absolute, stable and independent of the deployment host. |
-| State-dependent refusals | Stay `400` (Out of Scope); a future PRD decides whether they become `409`. |
-| Where the common members are added | One shared customisation, covering every source in C1. |
-| Default `detail` per status | The table in B, defined once and shared (C5). |
-| Submitted values in messages | Never quoted, including a duplicate description (A1). |
-| Raw request-body logging | Removed (A3). |
-| Request validation and result conversion | Stay in the endpoint handlers; the filter and single-conversion refactor is out of scope. |
-| A request whose `Accept` header excludes JSON | Answered with the problem body anyway (B10). The API is JSON-only, so no caller loses a format it asked for. |
-| A body the client cannot read | Treated as absent: the status supplies the message and the body is never rendered (E5, E6). |
-| A proxy response with no problem body | Read as the application being unreachable when the status is `502`, `503` or `504` (E7). |
-| Client and server release | Together, in one release, so the client carries no compatibility path for the previous wire shape (Assumptions). |
+| Decision                                      | Resolution                                                                                                                                                                                                                              |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shape of `errors` on a `400`                  | The framework's validation-problem map (`field → messages`), replacing the custom list. It removes the name clash with ASP.NET Core, the custom serialisation and its custom-state camel-casing, and gives the document a known schema. |
+| `errors` on other statuses                    | Removed (B3). Every non-`400` failure has one message, and `detail` carries it.                                                                                                                                                         |
+| `attemptedValue`                              | Removed from the wire and from logs (A1, A2).                                                                                                                                                                                           |
+| `errorCode`                                   | Removed from the wire (B9). The server keeps its own category constants to choose a status and a problem type; they are not serialised.                                                                                                 |
+| How a conflict is identified                  | A `type` per category (B6, B7), the member RFC 9457 defines for identifying a problem type.                                                                                                                                             |
+| `type` URI form                               | `urn:pot:problem:<slug>` — absolute, stable and independent of the deployment host.                                                                                                                                                     |
+| State-dependent refusals                      | Stay `400` (Out of Scope); a future PRD decides whether they become `409`.                                                                                                                                                              |
+| Where the common members are added            | One shared customisation, covering every source in C1.                                                                                                                                                                                  |
+| Default `detail` per status                   | The table in B, defined once and shared (C5).                                                                                                                                                                                           |
+| Submitted values in messages                  | Never quoted, including a duplicate description (A1).                                                                                                                                                                                   |
+| Request logging                               | The framework's HTTP logging, with method, path, query, status and duration, one combined entry per request, and no request body or headers in any environment (A3, A5, A6). The health probes are short-circuited out of the pipeline. |
+| Request validation and result conversion      | Stay in the endpoint handlers; the filter and single-conversion refactor is out of scope.                                                                                                                                               |
+| A request whose `Accept` header excludes JSON | Answered with the problem body anyway (B10). The API is JSON-only, so no caller loses a format it asked for.                                                                                                                            |
+| A body the client cannot read                 | Treated as absent: the status supplies the message and the body is never rendered (E5, E6).                                                                                                                                             |
+| A proxy response with no problem body         | Read as the application being unreachable when the status is `502`, `503` or `504` (E7).                                                                                                                                                |
+| Client and server release                     | Together, in one release, so the client carries no compatibility path for the previous wire shape (Assumptions).                                                                                                                        |
 
 ## Manual Test Plan
 
-### Setup
+**Not required.** Every behaviour a manual plan would check is asserted by an automated suite, and those suites are the completion gate:
 
-1. Start the full stack locally as described in `Docs/LOCAL-SETUP.md`, and open the client with the browser's developer tools on the Network tab.
-2. Sign in as a site administrator, **Admin A**, whose password you know. Keep Scalar (Development) or Postman open with Admin A's bearer token for the requests the client cannot make.
-3. Create an account named **Rent**.
-4. Create an expense named **Rent Payment**, linked to **Rent**, so a delete-conflict scenario is available.
-5. Open **Rent** for editing in two browser tabs, **Tab 1** and **Tab 2**, without saving either.
+- Server contract and status shapes: integration tests, including the coverage required by A4, B10, D3, D5 and D6.
+- Request logging, the probe exclusion and the absence of a body: an integration test that captures the host's request log (A5, A6).
+- OpenAPI: the document and endpoint-metadata fixtures (D1–D3, D6).
+- Client parsing and unreadable bodies: the interceptor and error-parser unit tests (E5–E8), including an HTML page, an empty body and a blob.
+- Client journeys: the prodlike Playwright suite at completion; the conflict copy is covered by a unit test (E2).
+- Developer guide: D4 is a documentation change, reviewed with the change rather than exercised at runtime.
 
-### A. Submitted values are not echoed
-
-- **A1 — Weak new password.** On Change Password, enter the correct current password and the new password `weakpass1`. Submit.
-  Expected: the form shows the strength messages. The `400` response body in the Network tab contains no occurrence of `weakpass1` and no `attemptedValue` member; `errors` is keyed by `newPassword`.
-- **A2 — New password equal to current.** On Change Password, enter the same valid password in both fields. Submit.
-  Expected: the form shows "The new password must be different from the current password." The response body contains neither password.
-- **A3 — A submitted route value in a message.** With Admin A's token, send `PUT /api/settings/not-a-category/anything` with the body `{"value":"1"}`.
-  Expected: `400`, and no part of the body contains `not-a-category`.
-- **A4 — Server log.** Repeat A1 and A2, then sign in once more, and read the server console output for those requests.
-  Expected: the validation entry names the field and message without the submitted value, and no "Inbound request body" entry appears for any of them.
-
-### B. Error shapes
-
-- **B1 — Field validation.** Create an account with an empty description.
-  Expected: the form shows the description message. The `400` body has `title` "One or more validation errors occurred.", an `errors` object keyed by `description`, no `detail` member, and `correlationId`, `traceId` and `instance`.
-- **B2 — Malformed request.** From Scalar or Postman, send a `POST` to the account-create endpoint with the body `{`.
-  Expected: `400`, `application/problem+json`, the validation title, and an `errors` object with a message under the `""` key.
-- **B3 — Duplicate name.** Create a second account named **Rent**.
-  Expected: `409`. The body has `detail` "The account description already exists", no `errors` member, the framework title "Conflict", and `type` `urn:pot:problem:duplicate-value`. The client shows that message.
-- **B4 — Stale entity tag.** Change and save **Rent** in **Tab 1**, then change and save it in **Tab 2**.
-  Expected: **Tab 2** shows "A conflicting update has been performed by another user. Refresh and try again." The `409` body carries `type` `urn:pot:problem:stale-entity-tag`.
-- **B5 — A refusal about current state.** Delete **Rent**, which still has **Rent Payment** linked.
-  Expected: `400`. The message under the `""` key explains that the account has linked expenses; no table name, constraint name or exception text appears.
-- **B6 — Not found.** With Admin A's token, request an account by a random GUID.
-  Expected: `404` with a `detail`, `correlationId` present, and no `errors` member.
-- **B7 — Rate limit.** Send rapid anonymous requests to the sign-in endpoint until one is refused.
-  Expected: `429` with a whole-number `Retry-After` header of at least 1. The client shows the rate-limited message, the body's `detail` states the wait, and there is no `errors` member.
-- **B8 — A caller that asks for HTML.** From the developer tools console, request `/api/does-not-exist` with `Accept: text/html`.
-  Expected: `404`, `application/problem+json`, and a body with a `detail` and `correlationId` — no plain-text page and no empty body.
-- **B9 — The proxy answers first.** With the Docker stack running (`Source/Docker`), stop only the API container, reload the client, and open a page that reads data.
-  Expected: the page states that the server cannot be reached — no blank error and no raw HTML on screen, and navigation keeps working.
-
-### C. Documentation
-
-- **C1 — OpenAPI.** Open `contracts/openapi/v1.json`.
-  Expected: the `400` schema is the validation problem with `errors` required. Both problem schemas list `correlationId`, `traceId` and `instance` as required, non-nullable strings. No operation declares `422`, and no success status references a problem schema. Every operation with a request body declares `413` and `408`, and no `GET` declares either.
-- **C2 — Developer guide.** Read the error-handling and endpoint sections of `Source/Server/DEVELOPER.md`.
-  Expected: no mention of `422`, `errorCode`, `attemptedValue` or request-body logging. Sample bodies match what B1 and B3 returned, including the conflict `type`. The endpoint example matches the handler pattern in the code.
-
-### Cleanup
-
-- Delete **Rent Payment**, then delete the **Rent** account, and reset **Admin A**'s password if A1 or A2 changed it. Restart the API container stopped in B9.
-
-### Results
-
-| ID | Scenario | Result | Notes |
-| --- | --- | --- | --- |
-| A1–A4 | Submitted values are not echoed | | |
-| B1–B9 | Error shapes | | |
-| C1–C2 | Documentation | | |
+The only environmental difference not reproduced is the reverse proxy's own error page when the API is unreachable. The client unit tests supply the same HTML body and assert the same outcome (E5, E7), so a manual run would repeat the assertion rather than prove anything new.
 
 ## Design Notes (Rationale and Rejected Alternatives)
 
@@ -241,3 +201,5 @@ Default `detail` for B3 when the failure supplies no message of its own:
 - **Why the validation-problem map replaced the custom list.** Once `attemptedValue` and `errorCode` are removed, the list carries nothing the map does not, while keeping a custom serialiser, a custom OpenAPI schema and the name clash with the framework. The map is what ASP.NET Core, generated clients and generic readers already understand.
 - **Why no submitted value is ever quoted.** A1 has no per-field exception because the server cannot know that a description, a name or an identifier is safe to repeat in every context. "The account description already exists" is the information the user needs; the value is already on their screen.
 - **Why `urn:pot:problem:<slug>`.** An absolute URI is the RFC 9457 recommendation, and the URN form makes the identifier permanent without claiming or reserving a DNS name that the deployment would have to keep serving.
+- **Why the hand-rolled request-body logger was replaced.** Problem: POT logged raw request bodies with no size cap and no request metadata, so it captured credentials and told a diagnosis nothing about the request itself. Reason: ASP.NET Core's `Microsoft.AspNetCore.HttpLogging` already provides request logging with fields that are chosen rather than inherited, one combined entry per request, and an optional bounded body; the API needs the metadata, not the body. Solution: delete `RawRequestLoggingMiddleware`; register `AddHttpLogging` with method, path, query, status and duration; place `UseHttpLogging` after the security headers and before the exception handler, so a failure is logged with its final status; add the `Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware` category at `Information` in `appsettings.json`, without which the entry is swallowed by `Microsoft.AspNetCore: Warning`; log no body and no headers. The existing correlation-id enricher tags the entry, so header logging is unnecessary.
+- **Why the health probes are short-circuited.** They are anonymous, infrastructure-only and polled every few seconds. Logging them is noise, and a security header on a plain-text probe response protects nothing: there is no session, no user content and no browser. `ShortCircuit()` ends the request at routing, so a probe reaches no middleware at all — no request log entry, no security headers and no correlation id — and its caller reads the status only.
