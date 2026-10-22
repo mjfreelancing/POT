@@ -1,6 +1,7 @@
 using AllOverIt.Assertion;
 using Microsoft.AspNetCore.Http.Features;
 using Pot.App.Errors;
+using Pot.App.Extensions;
 using Pot.AspNetCore.Concerns.ProblemDetails;
 using Pot.AspNetCore.Extensions;
 
@@ -96,8 +97,10 @@ internal sealed class CorrelationIdMiddleware : IMiddleware
             ErrorMessage = detail
         };
 
-        var problemDetailsContext = ProblemDetailsContextFactory.Create(httpContext, StatusCodes.Status400BadRequest, detail,
-            null, [errorDetail]);
+        var problemDetailsContext = ProblemDetailsContextFactory.Create(httpContext, StatusCodes.Status400BadRequest, detail, null);
+
+        // A 400 states its reasons as field errors, which the shared customisation does not supply.
+        problemDetailsContext.ProblemDetails.Extensions["errors"] = new object[] { errorDetail.GetErrorDetails() };
 
         await _problemDetailsService.WriteAsync(problemDetailsContext);
     }

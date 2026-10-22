@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Pot.AspNetCore.Integration.Tests.Host;
+using Pot.AspNetCore.Integration.Tests.Host.Models;
 using Shouldly;
 using System.Net;
 using System.Text.Json;
@@ -65,8 +66,40 @@ public class ClientDisconnectFixture : IntegrationFixtureBase
         body.ShouldNotContain("cancelled by the server");
 
         using var problemDetails = JsonDocument.Parse(body);
+        var problem = problemDetails.RootElement;
 
-        problemDetails.RootElement.GetProperty("correlationId").GetString().ShouldNotBeNullOrWhiteSpace();
+        problem.GetProperty("correlationId").GetString().ShouldNotBeNullOrWhiteSpace();
+
+        // A server failure states what happened in 'detail', so the caller has something to show.
+        problem.GetProperty("detail").GetString().ShouldBe(ProblemTypes.UnexpectedErrorDetail);
+        problem.TryGetProperty("errors", out _).ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Should_Return_A_Problem_For_A_Server_Error_When_The_Caller_Does_Not_Accept_Json()
+    {
+        // A browser navigation sends text/html. The API is JSON-only, so the failure is answered as a problem body
+        // rather than a page, and the exception message stays out of it.
+        using var factory = new ClientDisconnectApiWebApplicationFactory(DbHost, DbPort);
+        using var client = factory.CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Get,
+            $"{ClientDisconnectProbe.Path}?scenario=server-canceled");
+        request.Headers.TryAddWithoutValidation("Accept", "text/html").ShouldBeTrue();
+
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+        var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
+        body.ShouldNotContain("cancelled by the server");
+
+        using var problemDetails = JsonDocument.Parse(body);
+        var problem = problemDetails.RootElement;
+
+        problem.GetProperty("detail").GetString().ShouldBe(ProblemTypes.UnexpectedErrorDetail);
+        problem.TryGetProperty("errors", out _).ShouldBeFalse();
+        problem.GetProperty("correlationId").GetString().ShouldNotBeNullOrWhiteSpace();
     }
 
     [Fact]

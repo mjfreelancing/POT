@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Pot.AspNetCore.Integration.Tests.Host;
 using Pot.AspNetCore.Integration.Tests.Host.Extensions;
+using Pot.AspNetCore.Integration.Tests.Host.Models;
 using Shouldly;
 using System.Net;
 using System.Net.Http.Json;
@@ -14,6 +15,8 @@ public class CorrelationAndProblemDetailsFixture : IntegrationAuthFixtureBase
 {
     private sealed class ProblemDetailsResponse
     {
+        public string? Type { get; set; }
+
         public string? Detail { get; set; }
 
         public string? Instance { get; set; }
@@ -396,6 +399,75 @@ public class CorrelationAndProblemDetailsFixture : IntegrationAuthFixtureBase
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         response.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
         GetExtensionString(await ReadProblemDetailsAsync(response), "correlationId").ShouldNotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task Should_State_Why_Authentication_Is_Required_When_The_Caller_Is_Anonymous()
+    {
+        // A framework-written challenge has no message of its own, so the shared customisation supplies the default
+        // for the status rather than leaving the caller with a title alone.
+        using var client = CreateClient();
+
+        var response = await client.GetAsync("/api/me", TestContext.Current.CancellationToken);
+
+        await response.ShouldBeProblemAsync(HttpStatusCode.Unauthorized,
+            expectedDetail: ProblemTypes.AuthenticationRequiredDetail);
+    }
+
+    [Fact]
+    public async Task Should_State_That_The_Resource_Was_Not_Found()
+    {
+        var user = await CreateEnabledUserAsync("problem-404", "Problem Not Found");
+        using var client = await CreateAuthenticatedClientAsync(user);
+
+        var response = await client.GetAsync("/api/this-route-does-not-exist", TestContext.Current.CancellationToken);
+
+        await response.ShouldBeProblemAsync(HttpStatusCode.NotFound,
+            expectedDetail: ProblemTypes.NotFoundDetail);
+    }
+
+    [Fact]
+    public async Task Should_Return_ProblemDetails_For_A_Not_Found_When_The_Caller_Does_Not_Accept_Json()
+    {
+        var user = await CreateEnabledUserAsync("problem-404-html", "Problem Not Found Html");
+        using var client = await CreateAuthenticatedClientAsync(user);
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/this-route-does-not-exist");
+        request.Headers.TryAddWithoutValidation("Accept", NonJsonAccept).ShouldBeTrue();
+
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+
+        await response.ShouldBeProblemAsync(HttpStatusCode.NotFound,
+            expectedDetail: ProblemTypes.NotFoundDetail);
+    }
+
+    [Fact]
+    public async Task Should_State_That_The_Method_Is_Not_Allowed()
+    {
+        var user = await CreateEnabledUserAsync("problem-405", "Problem Method Not Allowed");
+        using var client = await CreateAuthenticatedClientAsync(user);
+
+        using var request = new HttpRequestMessage(HttpMethod.Delete, "/api/accounts");
+
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+
+        await response.ShouldBeProblemAsync(HttpStatusCode.MethodNotAllowed,
+            expectedDetail: ProblemTypes.MethodNotAllowedDetail);
+    }
+
+    [Fact]
+    public async Task Should_Return_ProblemDetails_For_A_Method_Not_Allowed_When_The_Caller_Does_Not_Accept_Json()
+    {
+        var user = await CreateEnabledUserAsync("problem-405-html", "Problem Method Not Allowed Html");
+        using var client = await CreateAuthenticatedClientAsync(user);
+
+        using var request = new HttpRequestMessage(HttpMethod.Delete, "/api/accounts");
+        request.Headers.TryAddWithoutValidation("Accept", NonJsonAccept).ShouldBeTrue();
+
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+
+        await response.ShouldBeProblemAsync(HttpStatusCode.MethodNotAllowed,
+            expectedDetail: ProblemTypes.MethodNotAllowedDetail);
     }
 
     private static async Task<ProblemDetailsResponse> ReadProblemDetailsAsync(HttpResponseMessage response)

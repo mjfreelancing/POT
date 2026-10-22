@@ -9,6 +9,11 @@ namespace Pot.AspNetCore.Integration.Tests.Host.Models;
 public sealed class ProblemResponse
 {
     /// <summary>
+    /// The problem type the failure belongs to, when the endpoint declares one.
+    /// </summary>
+    public string? Type { get; set; }
+
+    /// <summary>
     /// The HTTP status code, repeated in the body.
     /// </summary>
     public int? Status { get; set; }

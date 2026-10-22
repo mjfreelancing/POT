@@ -15,6 +15,9 @@ public class DatabaseExceptionHandlerFixture
 {
     private const string PostgresMessageText = "duplicate key value violates unique constraint \"IX_User_Username\"";
 
+    // The conflict a constraint or a race rejected in the database produces, as published to a caller.
+    private const string DataConflictType = "urn:pot:problem:data-conflict";
+
     private readonly IProblemDetailsService _problemDetailsService = Substitute.For<IProblemDetailsService>();
     private readonly FakeLogger<DatabaseExceptionHandler> _logger = new();
     private ProblemDetailsContext? _writtenContext;
@@ -66,7 +69,8 @@ public class DatabaseExceptionHandlerFixture
 
             httpContext.Response.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
 
-            AssertWrittenProblem(StatusCodes.Status500InternalServerError, ErrorCodes.Database, DatabaseExceptionHandler.DatabaseErrorMessage);
+            AssertWrittenProblem(StatusCodes.Status500InternalServerError, DatabaseExceptionHandler.DatabaseErrorMessage,
+                expectedType: null);
         }
 
         [Theory]
@@ -80,7 +84,7 @@ public class DatabaseExceptionHandlerFixture
             handled.ShouldBeTrue();
             httpContext.Response.StatusCode.ShouldBe(StatusCodes.Status409Conflict);
 
-            AssertWrittenProblem(StatusCodes.Status409Conflict, ErrorCodes.Conflict, DatabaseExceptionHandler.ConflictMessage);
+            AssertWrittenProblem(StatusCodes.Status409Conflict, DatabaseExceptionHandler.ConflictMessage, DataConflictType);
         }
 
         [Theory]
@@ -103,11 +107,9 @@ public class DatabaseExceptionHandlerFixture
             await HandleAsync(new UniqueConstraintException("Unique violation", CreatePostgresException()));
 
             var problemDetails = _writtenContext.ShouldNotBeNull().ProblemDetails;
-            var errors = problemDetails.Extensions["errors"].ShouldBeOfType<object[]>();
-            var error = errors.ShouldHaveSingleItem().ShouldBeOfType<Dictionary<string, object?>>();
 
-            problemDetails.Detail.ShouldNotBeNull().ShouldNotContain("IX_User_Username");
-            error["errorMessage"].ShouldBe(DatabaseExceptionHandler.ConflictMessage);
+            problemDetails.Detail.ShouldNotBeNull().ShouldBe(DatabaseExceptionHandler.ConflictMessage);
+            problemDetails.Detail.ShouldNotContain("IX_User_Username");
         }
 
         [Fact]
@@ -129,18 +131,16 @@ public class DatabaseExceptionHandlerFixture
         return await exceptionHandler.TryHandleAsync(httpContext ?? CreateHttpContext(), exception, CancellationToken.None);
     }
 
-    private void AssertWrittenProblem(int statusCode, string errorCode, string message)
+    private void AssertWrittenProblem(int statusCode, string message, string? expectedType)
     {
         var problemDetails = _writtenContext.ShouldNotBeNull().ProblemDetails;
 
         problemDetails.Status.ShouldBe(statusCode);
         problemDetails.Detail.ShouldBe(message);
+        problemDetails.Type.ShouldBe(expectedType);
 
-        var errors = problemDetails.Extensions["errors"].ShouldBeOfType<object[]>();
-        var error = errors.ShouldHaveSingleItem().ShouldBeOfType<Dictionary<string, object?>>();
-
-        error["errorCode"].ShouldBe(errorCode);
-        error["errorMessage"].ShouldBe(message);
+        // A status other than a 400 states what happened in 'detail' alone.
+        problemDetails.Extensions.ShouldNotContainKey("errors");
     }
 
     private static Exception CreateConflictException(ConflictKind kind)

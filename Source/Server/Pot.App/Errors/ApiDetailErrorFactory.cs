@@ -8,7 +8,7 @@ public static class ApiDetailErrorFactory
     {
         return new ApiDetailError(ErrorType.Conflict)
         {
-            ErrorCode = ErrorCodes.Conflict,
+            ErrorCode = ErrorCodes.Duplicate,
             PropertyName = propertyName,
             ErrorMessage = errorMessage
         };
@@ -67,7 +67,7 @@ public static class ApiDetailErrorFactory
     {
         return new ApiDetailError(ErrorType.Conflict)
         {
-            ErrorCode = ErrorCodes.Conflict,
+            ErrorCode = ErrorCodes.StaleEntityTag,
             PropertyName = nameof(EntityBase.Etag),
             ErrorMessage = $"The entity tag for the {entityType} does not match the current record"
         };

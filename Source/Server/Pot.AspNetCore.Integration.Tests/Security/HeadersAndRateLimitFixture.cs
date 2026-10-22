@@ -19,6 +19,8 @@ public class HeadersAndRateLimitFixture : IntegrationAuthFixtureBase
 
     private sealed class ProblemDetailsResponse
     {
+        public string? Type { get; set; }
+
         public string? Detail { get; set; }
 
         public int? Status { get; set; }
@@ -49,7 +51,10 @@ public class HeadersAndRateLimitFixture : IntegrationAuthFixtureBase
         problemDetails.Status.ShouldBe((int)HttpStatusCode.TooManyRequests);
         problemDetails.Detail.ShouldNotBeNullOrWhiteSpace();
         GetExtensionString(problemDetails, CorrelationIdExtension).ShouldNotBeNullOrWhiteSpace();
-        HasExtension(problemDetails, "errors").ShouldBeTrue();
+
+        // A 429 is not a validation failure, so it states what happened in 'detail' and carries no field errors.
+        problemDetails.Type.ShouldBeNull();
+        HasExtension(problemDetails, "errors").ShouldBeFalse();
 
         var allowOriginValues = throttledResponse.ShouldHaveHeaderValues(AccessControlAllowOrigin);
         allowOriginValues.Single().ShouldBe(AllowedOrigin);
@@ -84,7 +89,8 @@ public class HeadersAndRateLimitFixture : IntegrationAuthFixtureBase
         problemDetails.Status.ShouldBe((int)HttpStatusCode.TooManyRequests);
         problemDetails.Detail.ShouldNotBeNullOrWhiteSpace();
         GetExtensionString(problemDetails, CorrelationIdExtension).ShouldNotBeNullOrWhiteSpace();
-        HasExtension(problemDetails, "errors").ShouldBeTrue();
+        problemDetails.Type.ShouldBeNull();
+        HasExtension(problemDetails, "errors").ShouldBeFalse();
 
         var allowOriginValues = throttledResponse.ShouldHaveHeaderValues(AccessControlAllowOrigin);
         allowOriginValues.Single().ShouldBe(AllowedOrigin);

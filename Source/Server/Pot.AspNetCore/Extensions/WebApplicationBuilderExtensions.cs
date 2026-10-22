@@ -36,9 +36,6 @@ namespace Pot.AspNetCore.Extensions;
 
 internal static class WebApplicationBuilderExtensions
 {
-    // The Problem Details member carrying the support id. ProblemDetailsSchemaTransformer documents it by this name.
-    internal const string CorrelationIdExtension = "correlationId";
-
     private const string BearerSecuritySchemeName = "Bearer";
     private static readonly Type ScopedLifetimeValidatorType = typeof(IScopedLifetimeValidator);
 
@@ -398,13 +395,10 @@ internal static class WebApplicationBuilderExtensions
 
     public static WebApplicationBuilder AddProblemDetails(this WebApplicationBuilder builder)
     {
-        // IProblemDetailsService is registered as a singleton.
-        builder.Services.AddProblemDetails(options =>
-            options.CustomizeProblemDetails = ctx =>
-            {
-                ctx.ProblemDetails.Extensions[CorrelationIdExtension] = ctx.HttpContext.TraceIdentifier;
-                ctx.ProblemDetails.Instance = ctx.HttpContext.Request.Path.ToString();
-            });
+        // IProblemDetailsService is registered as a singleton. The customisation that completes every body lives in
+        // ProblemDetailsOptionsSetup, so one place decides the correlation id, the instance and the default detail.
+        builder.Services.AddProblemDetails();
+        builder.Services.ConfigureOptions<ProblemDetailsOptionsSetup>();
 
         // Wrap the framework's writer so a request whose Accept header excludes JSON still gets Problem Details - see
         // UnconditionalProblemDetailsWriter for how each route fails otherwise. Found by its service type because the

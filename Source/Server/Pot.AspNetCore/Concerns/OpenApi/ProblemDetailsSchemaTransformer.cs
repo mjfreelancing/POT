@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi;
-using Pot.AspNetCore.Extensions;
+using Pot.AspNetCore.Concerns.ProblemDetails;
 
 namespace Pot.AspNetCore.Concerns.OpenApi;
 
@@ -28,7 +28,7 @@ internal sealed class ProblemDetailsSchemaTransformer : IOpenApiSchemaTransforme
         schema.Properties ??= new Dictionary<string, IOpenApiSchema>(StringComparer.Ordinal);
 
         // Added to every body by the shared CustomizeProblemDetails.
-        schema.Properties[WebApplicationBuilderExtensions.CorrelationIdExtension] = new OpenApiSchema
+        schema.Properties[ProblemDetailsOptionsSetup.CorrelationIdExtension] = new OpenApiSchema
         {
             Type = JsonSchemaType.String,
             Description = "Identifies this request in the logs. Quote it when reporting a problem."
@@ -53,7 +53,7 @@ internal sealed class ProblemDetailsSchemaTransformer : IOpenApiSchemaTransforme
         };
 
         schema.Required ??= new HashSet<string>(StringComparer.Ordinal);
-        schema.Required.Add(WebApplicationBuilderExtensions.CorrelationIdExtension);
+        schema.Required.Add(ProblemDetailsOptionsSetup.CorrelationIdExtension);
         schema.Required.Add(TraceIdMember);
         schema.Required.Add(InstanceMember);
 

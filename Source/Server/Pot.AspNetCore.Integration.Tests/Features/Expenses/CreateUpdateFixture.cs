@@ -131,7 +131,10 @@ public class CreateUpdateFixture : IntegrationAuthFixtureBase
         var response = await client.PutAsJsonAsync($"/api/expenses/{expenseRowId}", staleRequest,
             TestContext.Current.CancellationToken);
 
-        await response.ShouldHaveStatusAsync(HttpStatusCode.Conflict, StaleEtagMessage);
+        var problem = await response.ShouldBeStaleEtagConflictAsync(
+            "The entity tag for the Expense does not match the current record", StaleEtagMessage);
+
+        problem.Detail.ShouldNotBeNullOrWhiteSpace();
     }
 
     [Fact]
@@ -150,9 +153,9 @@ public class CreateUpdateFixture : IntegrationAuthFixtureBase
 
         var response = await client.PostAsJsonAsync("/api/expenses", request, TestContext.Current.CancellationToken);
 
-        var problem = await response.ShouldBeEntityConflictAsync("Description", DuplicateDescriptionMessage);
+        var problem = await response.ShouldBeEntityConflictAsync(DuplicateDescriptionMessage);
 
-        problem.Errors.ShouldHaveSingleItem().ErrorMessage.ShouldBe(DuplicateDescriptionError);
+        problem.Detail.ShouldBe(DuplicateDescriptionError);
     }
 
     [Fact]
@@ -178,10 +181,9 @@ public class CreateUpdateFixture : IntegrationAuthFixtureBase
         var response = await client.PutAsJsonAsync($"/api/expenses/{expenseRowId}", duplicateRequest,
             TestContext.Current.CancellationToken);
 
-        var problem = await response.ShouldBeEntityConflictAsync("Description",
-            DuplicateDescriptionMessage);
+        var problem = await response.ShouldBeEntityConflictAsync(DuplicateDescriptionMessage);
 
-        problem.Errors.ShouldHaveSingleItem().ErrorMessage.ShouldBe(DuplicateDescriptionError);
+        problem.Detail.ShouldBe(DuplicateDescriptionError);
     }
 
     [Fact]

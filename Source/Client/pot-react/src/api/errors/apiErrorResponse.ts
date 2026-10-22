@@ -38,32 +38,19 @@ const getRateLimitedMessage = (_: ApiErrorResponse): string => {
   return 'Too many requests. Please wait a moment and try again.';
 };
 
-const getConflictMessage = (error: ApiErrorResponse): string => {
-  // A stale etag is the one conflict whose meaning the server's message does not convey on its own:
-  // the caller needs to know it has to refresh before retrying.
-  const isStaleUpdate = error.errors?.some(
-    detail => detail.propertyName?.toLowerCase() === 'etag',
-  );
+// The server names the conflict category in 'type', so a stale update is recognised without inspecting
+// a field name.
+const staleUpdateProblemType = 'urn:pot:problem:stale-entity-tag';
 
-  if (isStaleUpdate) {
+const getConflictMessage = (error: ApiErrorResponse): string => {
+  // A stale tag is the one conflict whose meaning the server's message does not convey on its own: the
+  // caller has to know it must refresh before retrying.
+  if (error.type === staleUpdateProblemType) {
     return 'A conflicting update has been performed by another user. Refresh and try again.';
   }
 
-  // Every other conflict reports the server's own message, which names the field without echoing
-  // the rejected value.
-  if (error.detail) {
-    return error.detail;
-  }
-
-  const fieldConflicts = error.errors?.filter(detail =>
-    Boolean(detail.propertyName),
-  );
-
-  if (!fieldConflicts || fieldConflicts.length === 0) {
-    return 'A conflict error occurred';
-  }
-
-  return fieldConflicts.map(detail => detail.errorMessage).join('\n');
+  // Every other conflict states what happened in 'detail', written by the server for the user.
+  return error.detail ?? 'A conflict error occurred';
 };
 
 const getBadRequestMessage = (error: ApiErrorResponse): string => {

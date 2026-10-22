@@ -15,7 +15,7 @@ internal sealed class DatabaseExceptionHandler : IExceptionHandler
     internal const string ConflictMessage = "The request conflicts with the current state of the data.";
     internal const string DatabaseErrorMessage = "A database error occurred.";
 
-    private sealed record DatabaseErrorMapping(Type ExceptionType, int StatusCode, ErrorType ErrorType, string ErrorCode,
+    private sealed record DatabaseErrorMapping(Type ExceptionType, int StatusCode, string ErrorCode,
         string Message, LogLevel LogLevel);
 
     // The first mapping whose exception type matches is used, so a derived type must appear before its base type.
@@ -23,14 +23,14 @@ internal sealed class DatabaseExceptionHandler : IExceptionHandler
     // past an "already exists" check, or a row changed or removed by another request after it was read.
     private static readonly DatabaseErrorMapping[] Mappings =
     [
-        new(typeof(UniqueConstraintException), StatusCodes.Status409Conflict, ErrorType.Conflict, ErrorCodes.Conflict, ConflictMessage, LogLevel.Warning),
-        new(typeof(ReferenceConstraintException), StatusCodes.Status409Conflict, ErrorType.Conflict, ErrorCodes.Conflict, ConflictMessage, LogLevel.Warning),
-        new(typeof(DbUpdateConcurrencyException), StatusCodes.Status409Conflict, ErrorType.Conflict, ErrorCodes.Conflict, ConflictMessage, LogLevel.Warning)
+        new(typeof(UniqueConstraintException), StatusCodes.Status409Conflict, ErrorCodes.Conflict, ConflictMessage, LogLevel.Warning),
+        new(typeof(ReferenceConstraintException), StatusCodes.Status409Conflict, ErrorCodes.Conflict, ConflictMessage, LogLevel.Warning),
+        new(typeof(DbUpdateConcurrencyException), StatusCodes.Status409Conflict, ErrorCodes.Conflict, ConflictMessage, LogLevel.Warning)
     ];
 
     // Every other DbUpdateException.
     private static readonly DatabaseErrorMapping FallbackMapping =
-        new(typeof(DbUpdateException), StatusCodes.Status500InternalServerError, ErrorType.Server, ErrorCodes.Database, DatabaseErrorMessage, LogLevel.Error);
+        new(typeof(DbUpdateException), StatusCodes.Status500InternalServerError, ErrorCodes.Database, DatabaseErrorMessage, LogLevel.Error);
 
     private readonly IProblemDetailsService _problemDetailsService;
     private readonly ILogger<DatabaseExceptionHandler> _logger;
@@ -56,13 +56,14 @@ internal sealed class DatabaseExceptionHandler : IExceptionHandler
             "A database update failed while processing {RequestMethod} {RequestPath}: {ExceptionMessage}",
             httpContext.Request.Method, httpContext.Request.Path, exception.Message);
 
-        var errorDetail = new ApiDetailError(mapping.ErrorType)
-        {
-            ErrorCode = mapping.ErrorCode,
-            ErrorMessage = mapping.Message
-        };
+        // The body states what happened and nothing about the database. The type separates a race or constraint
+        // refusal from the conflicts an endpoint's own rules decide on.
+        var problemType = mapping.StatusCode == StatusCodes.Status409Conflict
+            ? ProblemTypes.ToConflictType(mapping.ErrorCode)
+            : null;
 
-        var problemContext = ProblemDetailsContextFactory.Create(httpContext, mapping.StatusCode, mapping.Message, exception, [errorDetail]);
+        var problemContext = ProblemDetailsContextFactory.Create(httpContext, mapping.StatusCode, mapping.Message,
+            exception, problemType);
 
         return await _problemDetailsService.TryWriteAsync(problemContext);
     }

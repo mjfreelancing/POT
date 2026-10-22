@@ -941,25 +941,27 @@ Authorization: Bearer {your-jwt-token}
 
 **Business Rule Violation (409 Conflict):**
 
-A failure from a service carries its message in `detail` and repeats it in `errors`. `ToProblemDetails()` sets `detail`
-from the error's message, so a client can show one sentence without having to join the `errors` entries. No submitted
-value is echoed back: the message names the field, never the value the caller sent.
+A failure from a service states what happened in `detail`, and the `type` names the conflict's category. A status
+other than `400` carries no `errors` member: there is one message to show, and a second place to look is a second
+shape. No submitted value is echoed back: the message names the field, never the value the caller sent.
 
 ```json
 {
   "status": 409,
+  "type": "urn:pot:problem:duplicate-value",
   "detail": "The account description already exists",
-  "errors": [
-    {
-      "errorCode": "Conflict",
-      "propertyName": "Description",
-      "errorMessage": "The account description already exists"
-    }
-  ],
   "correlationId": "8e9f7c6d-5b4a-3f2e-1d0c-9a8b7c6d5e4f",
   "instance": "/api/accounts"
 }
 ```
+
+Every conflict carries one of three types, so a caller never infers the category from a field name:
+
+| `type`                             | Meaning                                                                      |
+| ---------------------------------- | ---------------------------------------------------------------------------- |
+| `urn:pot:problem:stale-entity-tag` | The entity tag in an update no longer matches the stored record.             |
+| `urn:pot:problem:duplicate-value`  | A value that must be unique already exists.                                  |
+| `urn:pot:problem:data-conflict`    | A constraint or a race the database rejected, after an endpoint's own check. |
 
 **Which endpoints declare 409.** `ProducesProblem(409)` is declared per feature, only on the endpoints whose own checks can reject the request: a stale entity tag, or a description that already exists within the same site or account. It is deliberately not declared on every write. The shared database handler answers 409 for a unique, reference or concurrency failure that reaches the database, such as a race between the check and the save, and documenting that on every write would present a conflict as a normal outcome rather than the rare one it is.
 
@@ -3841,7 +3843,8 @@ public static WebApplicationBuilder AddProblemDetails(this WebApplicationBuilder
 
 **Problem Details Structure:**
 
-The `errors` extension is always an **array** of error detail objects. `type` and `title` are supplied by ASP.NET Core.
+The `errors` extension is an **array** of error detail objects, and only a `400` carries it: it is the list of field
+failures for the request. `type` and `title` are supplied by ASP.NET Core.
 
 ```json
 {
@@ -3860,8 +3863,27 @@ The `errors` extension is always an **array** of error detail objects. `type` an
 }
 ```
 
-`detail` is set from the failure's message on every status, so a client can show it without inspecting `errors`. No
-submitted value appears in `detail`, in `errors` or in the request log.
+`detail` is set from the failure's message on every status, so a client can show it without inspecting `errors`. A
+status other than `400` has no `errors` member. No submitted value appears in `detail`, in `errors` or in the
+request log.
+
+The default `detail` for a status whose failure supplies no message of its own is defined once, in
+`Pot.AspNetCore/Concerns/ProblemDetails/ProblemDetailsOptionsSetup`, and applied by the shared customisation that also
+adds `correlationId` and `instance`:
+
+| Status    | Default `detail`                                       |
+| --------- | ------------------------------------------------------ |
+| `400`     | none — the messages are in `errors`                    |
+| `401`     | Authentication is required.                            |
+| `403`     | You do not have permission to perform this action.     |
+| `404`     | The requested resource was not found.                  |
+| `405`     | The requested method is not allowed for this resource. |
+| `408`     | The request timed out.                                 |
+| `413`     | The request body is too large.                         |
+| `415`     | The request content type is not supported.             |
+| `429`     | Too many requests. Please wait and try again.          |
+| `500`     | An unexpected error occurred.                          |
+| any other | The request could not be completed.                    |
 
 Every problem response carries two identifiers:
 

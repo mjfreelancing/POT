@@ -32,28 +32,27 @@ public static class HttpResponseMessageExtensions
     }
 
     /// <summary>
-    /// Asserts the response is a conflict that names the field which clashed with an existing record.
+    /// Asserts the response is a problem body for the given status, and returns it.
     /// </summary>
     /// <param name="response">The response to assert.</param>
-    /// <param name="expectedPropertyName">The field the endpoint's rule rejected.</param>
-    /// <param name="customMessage">An optional message explaining what the conflict means for the test.</param>
-    /// <returns>The parsed problem response, so a caller can assert the message it reports.</returns>
+    /// <param name="expectedStatus">The status the failure must answer with.</param>
+    /// <param name="expectedType">The problem type the body must declare, or <see langword="null" /> to leave the type unasserted.</param>
+    /// <param name="expectedDetail">The message the body must state, or <see langword="null" /> to only require one.</param>
+    /// <param name="customMessage">An optional message explaining what the failure means for the test.</param>
+    /// <returns>The parsed problem response, so a caller can assert anything else it reports.</returns>
     /// <remarks>
-    /// Asserting the status alone would not show that a rule rejected the request. A duplicate that is not caught
-    /// beforehand reaches the database, and the unique constraint that follows is answered with a 409 as well - but
-    /// that response names no field. Checking the field is what makes the test fail if the rule is removed, instead
-    /// of passing on the database's answer.
+    /// A failure other than a 400 states what happened in <c>detail</c> alone, so its <c>errors</c> member must be
+    /// absent: a client reads one message for every status, and a second place to look is a second shape.
     /// </remarks>
-    public static async Task<ProblemResponse> ShouldBeEntityConflictAsync(this HttpResponseMessage response,
-        string expectedPropertyName, string? customMessage = null)
+    public static async Task<ProblemResponse> ShouldBeProblemAsync(this HttpResponseMessage response,
+        HttpStatusCode expectedStatus, string? expectedType = null, string? expectedDetail = null, string? customMessage = null)
     {
         _ = response.WhenNotNull();
-        ArgumentException.ThrowIfNullOrWhiteSpace(expectedPropertyName);
 
         var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         var message = customMessage is null ? body : $"{customMessage}{Environment.NewLine}{body}";
 
-        response.StatusCode.ShouldBe(HttpStatusCode.Conflict, message);
+        response.StatusCode.ShouldBe(expectedStatus, message);
 
         response.Content.Headers.ContentType?.MediaType.ShouldBe(ProblemJsonContentType, message);
 
@@ -61,15 +60,56 @@ public static class HttpResponseMessageExtensions
 
         problem.ShouldNotBeNull(message);
 
-        var error = problem!.Errors.ShouldHaveSingleItem(message);
+        if (expectedType is not null)
+        {
+            problem!.Type.ShouldBe(expectedType, message);
+        }
 
-        error.PropertyName.ShouldBe(expectedPropertyName, message);
-        error.ErrorMessage.ShouldNotBeNullOrWhiteSpace(message);
+        problem!.Errors.ShouldBeEmpty($"a {expectedStatus} carries its message in detail only{Environment.NewLine}{message}");
 
-        // The client shows 'detail', so it has to repeat the message the endpoint wrote.
-        problem.Detail.ShouldBe(error.ErrorMessage, message);
+        if (expectedDetail is null)
+        {
+            problem.Detail.ShouldNotBeNullOrWhiteSpace(message);
+        }
+        else
+        {
+            problem.Detail.ShouldBe(expectedDetail, message);
+        }
 
         return problem;
+    }
+
+    /// <summary>
+    /// Asserts the response is the conflict a uniqueness rule produces.
+    /// </summary>
+    /// <param name="response">The response to assert.</param>
+    /// <param name="customMessage">An optional message explaining what the conflict means for the test.</param>
+    /// <returns>The parsed problem response, so a caller can assert the message it reports.</returns>
+    /// <remarks>
+    /// Asserting the status alone would not show that a rule rejected the request. A duplicate that is not caught
+    /// beforehand reaches the database, and the unique constraint that follows is answered with a 409 as well - but
+    /// with the data-conflict type. Checking the type is what makes the test fail if the rule stops running, instead
+    /// of passing on the database's answer.
+    /// </remarks>
+    public static async Task<ProblemResponse> ShouldBeEntityConflictAsync(this HttpResponseMessage response,
+        string? customMessage = null)
+    {
+        return await response.ShouldBeProblemAsync(HttpStatusCode.Conflict, ProblemTypes.DuplicateValue,
+            customMessage: customMessage);
+    }
+
+    /// <summary>
+    /// Asserts the response is the conflict a stale entity tag produces.
+    /// </summary>
+    /// <param name="response">The response to assert.</param>
+    /// <param name="expectedDetail">The message the body must state about the entity it refused.</param>
+    /// <param name="customMessage">An optional message explaining what the conflict means for the test.</param>
+    /// <returns>The parsed problem response.</returns>
+    public static async Task<ProblemResponse> ShouldBeStaleEtagConflictAsync(this HttpResponseMessage response,
+        string expectedDetail, string? customMessage = null)
+    {
+        return await response.ShouldBeProblemAsync(HttpStatusCode.Conflict, ProblemTypes.StaleEntityTag,
+            expectedDetail, customMessage);
     }
 
     public static IEnumerable<string> ShouldHaveHeaderValues(this HttpResponseMessage response, string headerName, string? customMessage = null)

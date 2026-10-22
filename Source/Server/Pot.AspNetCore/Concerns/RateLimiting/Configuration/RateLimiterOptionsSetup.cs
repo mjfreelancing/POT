@@ -40,14 +40,13 @@ internal sealed class RateLimiterOptionsSetup : IConfigureOptions<RateLimiterOpt
 
             var errorDetail = ApiDetailErrorFactory.CreateTooManyRequests(retryAfterSeconds);
 
-            // Written through IProblemDetailsService so a 429 carries the same content type, correlation id,
-            // instance and errors shape as every other error response.
+            // Written through IProblemDetailsService so a 429 carries the same content type, correlation id, instance
+            // and default detail as every other error response.
             var problemDetailsContext = ProblemDetailsContextFactory.Create(
                 context.HttpContext,
                 StatusCodes.Status429TooManyRequests,
                 errorDetail.ErrorMessage,
-                exception: null,
-                [errorDetail]);
+                exception: null);
 
             var problemDetailsService = context.HttpContext.RequestServices.GetRequiredService<IProblemDetailsService>();
 
