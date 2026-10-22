@@ -9,7 +9,8 @@ namespace Pot.AspNetCore.Concerns.Middleware;
 //
 // Applied to every response rather than only to /api, because nothing the API serves is meant to be cached and a path
 // test is one more thing a new route can fall outside of. An endpoint that genuinely wants caching sets its own
-// Cache-Control, and that is left alone.
+// Cache-Control, and that is left alone. The health probes are the exception: they are short-circuited at routing, so
+// they never reach this middleware, and there is nothing user-facing or cacheable in their plain-text status.
 internal sealed class SecurityHeadersMiddleware : IMiddleware
 {
     internal const string NoSniff = "nosniff";

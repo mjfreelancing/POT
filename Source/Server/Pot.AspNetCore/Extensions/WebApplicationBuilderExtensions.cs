@@ -5,7 +5,7 @@ using AllOverIt.Validation.Extensions;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.OpenApi;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Pot.App.Concerns.Validation;
@@ -190,7 +190,6 @@ internal static class WebApplicationBuilderExtensions
 
     public static WebApplicationBuilder AddPotMiddleware(this WebApplicationBuilder builder)
     {
-        builder.Services.AddScoped<RawRequestLoggingMiddleware>();  // Only used in a Production environment
         builder.Services.AddScoped<SecurityHeadersMiddleware>();
         builder.Services.AddScoped<CorrelationIdMiddleware>();
 
@@ -358,6 +357,23 @@ internal static class WebApplicationBuilderExtensions
                 options.UseUtcTimestamp = true;
             });
         }
+
+        // One request-log entry per request, on fields chosen rather than inherited. No request body and no headers are
+        // logged in any environment: a body can hold a password or an OTP, and header values are worse. CombineLogs
+        // produces one entry when the response completes, so a failure is recorded with the status the caller received.
+        // The narrower category entry in appsettings.json is what lets these entries through "Microsoft.AspNetCore":
+        // "Warning"; deleting it turns request logging off without any other sign that it has gone.
+        builder.Services.AddHttpLogging(options =>
+        {
+            options.LoggingFields =
+                HttpLoggingFields.RequestMethod |
+                HttpLoggingFields.RequestPath |
+                HttpLoggingFields.RequestQuery |
+                HttpLoggingFields.ResponseStatusCode |
+                HttpLoggingFields.Duration;
+
+            options.CombineLogs = true;
+        });
 
         return builder;
     }

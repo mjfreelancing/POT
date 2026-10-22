@@ -51,6 +51,11 @@ public class Program
         // pages written by the two calls below, and the 401, 403 and 429 responses refused further down.
         app.UseSecurityHeaders();
 
+        // One entry per request on the fields chosen in AddLogging, written when the response completes - after the
+        // exception handler and status code pages below have decided the status the caller receives. The health probes
+        // are short-circuited at routing and never reach it; no request body or header is logged in any environment.
+        app.UseHttpLogging();
+
         app.UseExceptionHandler();
 
         // Write ProblemDetails for error responses that otherwise have no body.
@@ -62,10 +67,17 @@ public class Program
         // Liveness: always Healthy while the app is running — no checks are executed.
         // Used by production monitoring (called every 10 s) so no DB query is incurred.
         // Anonymous: polled by infrastructure that holds no credentials.
+        //
+        // ShortCircuit() ends the request at routing, so a probe reaches none of the middleware above: no request-log
+        // entry, no security headers and no correlation id. Its caller reads the status, and there is nothing user-facing
+        // or cacheable in the plain-text response. AllowAnonymous() stays as belt and braces, because routing skips
+        // authorization for a short-circuited endpoint.
         app.MapHealthChecks("/_health", new HealthCheckOptions
         {
             Predicate = _ => false,
-        }).AllowAnonymous();
+        })
+        .AllowAnonymous()
+        .ShortCircuit();
 
         // Readiness: runs checks tagged "ready" to confirm the schema is fully migrated.
         // Used by E2E tests to gate on DB and schema availability.
@@ -74,7 +86,9 @@ public class Program
         app.MapHealthChecks("/_health/ready", new HealthCheckOptions
         {
             Predicate = registration => registration.Tags.Contains("ready"),
-        }).AllowAnonymous();
+        })
+        .AllowAnonymous()
+        .ShortCircuit();
 
         // REQUIRED ORDER:
         // 1. UseCors() must run before authentication/authorization so CORS headers are included on all responses (including failures).

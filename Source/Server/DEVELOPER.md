@@ -3092,7 +3092,7 @@ Concerns/
 ├── Validation/              # FluentValidation setup, problem details inspection
 ├── Cors/                    # CORS configuration
 ├── RateLimiting/            # Rate limiting policies
-├── Middleware/              # Custom middleware (raw request logging, correlation ID, user context)
+├── Middleware/              # Custom middleware (correlation ID, security headers, user context)
 ├── ProblemDetails/          # RFC 9457 problem details customization
 ├── ExceptionHandlers/       # Global exception handlers
 ├── Email/                   # SMTP configuration setup
@@ -3651,11 +3651,6 @@ public static WebApplication UseCorrelationId(this WebApplication app)
 
 public static WebApplication UsePotMiddleware(this WebApplication app)
 {
-    if (!app.Environment.IsProduction())
-    {
-        app.UseMiddleware<RawRequestLoggingMiddleware>();
-    }
-
     app.UseMiddleware<UserContextMiddleware>();
 
     return app;
@@ -3666,19 +3661,29 @@ public static WebApplication UsePotMiddleware(this WebApplication app)
 
 ```csharp
 app.UseSecurityHeaders();                // 1. nosniff and no-store on every response (first, so error responses get them)
-app.UseExceptionHandler();               // 2. Global exception handling
-app.UseStatusCodePages();                // 3. Problem Details for error responses that have no body
+app.UseHttpLogging();                    // 2. One request-log entry per request; no body or headers
+app.UseExceptionHandler();               // 3. Global exception handling
+app.UseStatusCodePages();                // 4. Problem Details for error responses that have no body
 // app.UseHttpsRedirection();            // (Not used - behind Azure reverse proxy)
-app.MapHealthChecks("/_health");         // 4. Liveness endpoint (executes no checks)
-app.MapHealthChecks("/_health/ready");   // 5. Readiness endpoint (checks tagged "ready")
-app.UseCors();                           // 6. CORS (must be before auth)
-app.UseCorrelationId();                  // 7. Correlation ID (after CORS, before auth and rate limiting)
-app.UseAuthentication();                 // 8. JWT authentication
-app.UseAuthorization();                  // 9. Permission authorization
-app.UseRateLimiter();                    // 10. Rate limiting
-app.UsePotMiddleware();                  // 11. Raw request logging (non-production), user context
+app.MapHealthChecks("/_health");         // 5. Liveness endpoint (short-circuited: no middleware, no headers)
+app.MapHealthChecks("/_health/ready");   // 6. Readiness endpoint (short-circuited)
+app.UseCors();                           // 7. CORS (must be before auth)
+app.UseCorrelationId();                  // 8. Correlation ID (after CORS, before auth and rate limiting)
+app.UseAuthentication();                 // 9. JWT authentication
+app.UseAuthorization();                  // 10. Permission authorization
+app.UseRateLimiter();                    // 11. Rate limiting
+app.UsePotMiddleware();                  // 12. User context
 // ... endpoint routing ...
 ```
+
+**Request logging (framework HTTP logging):**
+
+`AddLogging` registers `AddHttpLogging` with `RequestMethod | RequestPath | RequestQuery | ResponseStatusCode | Duration`
+and `CombineLogs = true`, so each request produces one entry when its response completes. No request body and no request
+or response headers are logged in any environment. `appsettings.json` sets the
+`Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware` category to `Information`; `Microsoft.AspNetCore` is `Warning`,
+which would otherwise swallow the entry. The health probes are short-circuited at routing, so they produce no entry and
+are outside the security-header and correlation middleware (the health check middleware's own no-cache headers remain).
 
 **SecurityHeadersMiddleware:**
 
@@ -3690,6 +3695,7 @@ Adds `X-Content-Type-Options: nosniff` and `Cache-Control: no-store` to every re
   site's financial data or a user's details, login and refresh responses carry tokens, and error bodies carry the correlation id.
 - Every response, not only `/api`, because nothing the API serves is meant to be cached and a path test is one more thing a
   new route can fall outside of. An endpoint that genuinely wants caching sets its own `Cache-Control`, which is left alone.
+  The health probes are the exception: they are short-circuited at routing and never reach this middleware.
 - The headers are written as the response starts, because the exception handler clears the response headers before writing
   a 500. It runs first in the pipeline so the exception handler's 500s, status code pages, and the 401/403/429 responses from
   authentication, authorization and rate limiting all carry them. A 500 carries the exception handler's own

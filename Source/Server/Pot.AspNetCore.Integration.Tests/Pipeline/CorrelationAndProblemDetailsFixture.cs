@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 
 namespace Pot.AspNetCore.Integration.Tests.Pipeline;
 
-public class CorrelationAndProblemDetailsFixture : IntegrationFixtureBase
+public class CorrelationAndProblemDetailsFixture : IntegrationAuthFixtureBase
 {
     private sealed class ProblemDetailsResponse
     {
@@ -263,12 +263,14 @@ public class CorrelationAndProblemDetailsFixture : IntegrationFixtureBase
     public async Task Should_Echo_Request_CorrelationId_On_A_Successful_Response()
     {
         // A successful response has no body to carry the id, so the header is the only place a caller learns which
-        // id the server used.
-        using var client = CreateClient();
+        // id the server used. The health probes are short-circuited out of the pipeline, so this uses a real endpoint.
+        var user = await CreateEnabledUserAsync("correlation-echo", "Correlation Echo User");
+
+        using var client = await CreateAuthenticatedClientAsync(user);
 
         const string correlationId = "pot-correlation-id-200";
 
-        using var request = new HttpRequestMessage(HttpMethod.Get, "/_health");
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/me");
         request.Headers.Add(CorrelationIdHeader, correlationId);
 
         var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
@@ -280,9 +282,11 @@ public class CorrelationAndProblemDetailsFixture : IntegrationFixtureBase
     [Fact]
     public async Task Should_Echo_Generated_CorrelationId_On_A_Successful_Response_When_Header_Is_Not_Provided()
     {
-        using var client = CreateClient();
+        var user = await CreateEnabledUserAsync("correlation-generated", "Correlation Generated User");
 
-        var response = await client.GetAsync("/_health", TestContext.Current.CancellationToken);
+        using var client = await CreateAuthenticatedClientAsync(user);
+
+        var response = await client.GetAsync("/api/me", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         response.ShouldHaveHeaderValues(CorrelationIdHeader).Single().ShouldNotBeNullOrWhiteSpace();
