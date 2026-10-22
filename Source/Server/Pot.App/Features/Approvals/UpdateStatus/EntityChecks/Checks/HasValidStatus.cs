@@ -35,7 +35,7 @@ internal sealed class HasValidStatus : PreUpdateCheckBase
 
         if (userToUpdate.Status != UserStatus.Approval)
         {
-            return ApiDetailErrorFactory.CreateBadRequestError(nameof(Input.Status), input.Status, "The user is not in a Pending Approval status");
+            return ApiDetailErrorFactory.CreateBadRequestError(nameof(Input.Status), "The user is not in a Pending Approval status");
         }
 
         return await base.HandleAsync(state, cancellationToken);

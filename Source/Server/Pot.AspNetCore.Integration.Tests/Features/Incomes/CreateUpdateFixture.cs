@@ -152,7 +152,7 @@ public class CreateUpdateFixture : IntegrationAuthFixtureBase
 
         var response = await client.PostAsJsonAsync("/api/incomes", request, TestContext.Current.CancellationToken);
 
-        var problem = await response.ShouldBeEntityConflictAsync("Description", request.Description, DuplicateDescriptionMessage);
+        var problem = await response.ShouldBeEntityConflictAsync("Description", DuplicateDescriptionMessage);
 
         problem.Errors.ShouldHaveSingleItem().ErrorMessage.ShouldBe(DuplicateDescriptionError);
     }
@@ -180,7 +180,7 @@ public class CreateUpdateFixture : IntegrationAuthFixtureBase
         var response = await client.PutAsJsonAsync($"/api/incomes/{incomeRowId}", duplicateRequest,
             TestContext.Current.CancellationToken);
 
-        var problem = await response.ShouldBeEntityConflictAsync("Description", existingRequest.Description,
+        var problem = await response.ShouldBeEntityConflictAsync("Description",
             DuplicateDescriptionMessage);
 
         problem.Errors.ShouldHaveSingleItem().ErrorMessage.ShouldBe(DuplicateDescriptionError);

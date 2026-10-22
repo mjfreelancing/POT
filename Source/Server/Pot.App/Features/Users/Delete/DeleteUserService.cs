@@ -48,7 +48,7 @@ internal sealed class DeleteUserService : IDeleteUserService
 
         if (target is null)
         {
-            var notFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(input.RowId, "The user does not exist");
+            var notFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError("The user does not exist");
 
             _logger.LogApiError(notFoundError);
 
@@ -69,7 +69,7 @@ internal sealed class DeleteUserService : IDeleteUserService
         if (counts is null)
         {
             // Another caller removed the same user between the lookup and the sweep.
-            var notFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(input.RowId, "The user does not exist");
+            var notFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError("The user does not exist");
 
             _logger.LogApiError(notFoundError);
 

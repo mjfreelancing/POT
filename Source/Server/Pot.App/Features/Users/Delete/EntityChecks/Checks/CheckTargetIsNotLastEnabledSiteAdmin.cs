@@ -42,7 +42,6 @@ internal sealed class CheckTargetIsNotLastEnabledSiteAdmin : UserDeleteCheckBase
         {
             return ApiDetailErrorFactory.CreateBadRequestError(
                 nameof(Input.RowId),
-                state.Target.RowId,
                 "This is the site's only enabled administrator. Promote or enable another administrator first.");
         }
 

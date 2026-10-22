@@ -44,7 +44,6 @@ internal sealed class CheckUsernameMatches : AccountDeleteCheckBase
         {
             return ApiDetailErrorFactory.CreateBadRequestError(
                 nameof(Input.Username),
-                state.Username,
                 "The username does not match your account.");
         }
 

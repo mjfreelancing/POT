@@ -19,7 +19,7 @@ internal sealed class RequestValidator : PotValidatorBase<Request>
 
                 if (!SettingCategory.TryFromName(validationContext.Category, out var _))
                 {
-                    context.AddFailure(nameof(validationContext.Category), $"'{validationContext.Category}' is not a valid setting category.");
+                    context.AddFailure(nameof(validationContext.Category), "The setting category is not recognised.");
                 }
             });
 

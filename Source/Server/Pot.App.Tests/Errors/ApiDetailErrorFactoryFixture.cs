@@ -13,10 +13,9 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
         public void Should_Create_Error_With_Conflict_Type()
         {
             var propertyName = Create<string>();
-            var attemptedValue = Create<int>();
             var errorMessage = Create<string>();
 
-            var result = ApiDetailErrorFactory.CreateEntityExistsError(propertyName, attemptedValue, errorMessage);
+            var result = ApiDetailErrorFactory.CreateEntityExistsError(propertyName, errorMessage);
 
             result.ErrorType.ShouldBe(ErrorType.Conflict);
         }
@@ -25,26 +24,13 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
         public void Should_Set_All_Properties()
         {
             var propertyName = Create<string>();
-            var attemptedValue = Create<int>();
             var errorMessage = Create<string>();
 
-            var result = ApiDetailErrorFactory.CreateEntityExistsError(propertyName, attemptedValue, errorMessage);
+            var result = ApiDetailErrorFactory.CreateEntityExistsError(propertyName, errorMessage);
 
             result.ErrorCode.ShouldBe(ErrorCodes.Conflict);
             result.PropertyName.ShouldBe(propertyName);
-            result.AttemptedValue.ShouldBe(attemptedValue);
             result.ErrorMessage.ShouldBe(errorMessage);
-        }
-
-        [Fact]
-        public void Should_Handle_Null_AttemptedValue()
-        {
-            var propertyName = Create<string>();
-            var errorMessage = Create<string>();
-
-            var result = ApiDetailErrorFactory.CreateEntityExistsError(propertyName, null, errorMessage);
-
-            result.AttemptedValue.ShouldBeNull();
         }
     }
 
@@ -53,10 +39,9 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
         [Fact]
         public void Should_Create_Error_With_NotFound_Type()
         {
-            var attemptedValue = Create<int>();
             var errorMessage = Create<string>();
 
-            var result = ApiDetailErrorFactory.CreateEntityNotFoundError(attemptedValue, errorMessage);
+            var result = ApiDetailErrorFactory.CreateEntityNotFoundError(errorMessage);
 
             result.ErrorType.ShouldBe(ErrorType.NotFound);
         }
@@ -64,25 +49,13 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
         [Fact]
         public void Should_Set_All_Properties()
         {
-            var attemptedValue = Create<int>();
             var errorMessage = Create<string>();
 
-            var result = ApiDetailErrorFactory.CreateEntityNotFoundError(attemptedValue, errorMessage);
+            var result = ApiDetailErrorFactory.CreateEntityNotFoundError(errorMessage);
 
             result.ErrorCode.ShouldBe(ErrorCodes.NotFound);
             result.PropertyName.ShouldBeEmpty();
-            result.AttemptedValue.ShouldBe(attemptedValue);
             result.ErrorMessage.ShouldBe(errorMessage);
-        }
-
-        [Fact]
-        public void Should_Handle_Null_AttemptedValue()
-        {
-            var errorMessage = Create<string>();
-
-            var result = ApiDetailErrorFactory.CreateEntityNotFoundError(null, errorMessage);
-
-            result.AttemptedValue.ShouldBeNull();
         }
     }
 
@@ -92,10 +65,9 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
         public void Should_Create_Error_With_Constraint_Type()
         {
             var propertyName = Create<string>();
-            var attemptedValue = Create<int>();
             var errorMessage = Create<string>();
 
-            var result = ApiDetailErrorFactory.CreateEntityConstraintError(propertyName, attemptedValue, errorMessage);
+            var result = ApiDetailErrorFactory.CreateEntityConstraintError(propertyName, errorMessage);
 
             result.ErrorType.ShouldBe(ErrorType.Constraint);
         }
@@ -104,26 +76,13 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
         public void Should_Set_All_Properties()
         {
             var propertyName = Create<string>();
-            var attemptedValue = Create<int>();
             var errorMessage = Create<string>();
 
-            var result = ApiDetailErrorFactory.CreateEntityConstraintError(propertyName, attemptedValue, errorMessage);
+            var result = ApiDetailErrorFactory.CreateEntityConstraintError(propertyName, errorMessage);
 
             result.ErrorCode.ShouldBe(ErrorCodes.Constraint);
             result.PropertyName.ShouldBe(propertyName);
-            result.AttemptedValue.ShouldBe(attemptedValue);
             result.ErrorMessage.ShouldBe(errorMessage);
-        }
-
-        [Fact]
-        public void Should_Handle_Null_AttemptedValue()
-        {
-            var propertyName = Create<string>();
-            var errorMessage = Create<string>();
-
-            var result = ApiDetailErrorFactory.CreateEntityConstraintError(propertyName, null, errorMessage);
-
-            result.AttemptedValue.ShouldBeNull();
         }
     }
 
@@ -148,7 +107,6 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
 
             result.ErrorCode.ShouldBe(ErrorCodes.Auth);
             result.PropertyName.ShouldBeEmpty();
-            result.AttemptedValue.ShouldBe(string.Empty);
             result.ErrorMessage.ShouldBe(errorMessage);
         }
     }
@@ -183,10 +141,9 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
         public void Should_Create_Error_With_BadRequest_Type()
         {
             var propertyName = Create<string>();
-            var attemptedValue = Create<int>();
             var errorMessage = Create<string>();
 
-            var result = ApiDetailErrorFactory.CreateBadRequestError(propertyName, attemptedValue, errorMessage);
+            var result = ApiDetailErrorFactory.CreateBadRequestError(propertyName, errorMessage);
 
             result.ErrorType.ShouldBe(ErrorType.BadRequest);
         }
@@ -195,26 +152,13 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
         public void Should_Set_All_Properties()
         {
             var propertyName = Create<string>();
-            var attemptedValue = Create<int>();
             var errorMessage = Create<string>();
 
-            var result = ApiDetailErrorFactory.CreateBadRequestError(propertyName, attemptedValue, errorMessage);
+            var result = ApiDetailErrorFactory.CreateBadRequestError(propertyName, errorMessage);
 
             result.ErrorCode.ShouldBe(ErrorCodes.Invalid);
             result.PropertyName.ShouldBe(propertyName);
-            result.AttemptedValue.ShouldBe(attemptedValue);
             result.ErrorMessage.ShouldBe(errorMessage);
-        }
-
-        [Fact]
-        public void Should_Handle_Null_AttemptedValue()
-        {
-            var propertyName = Create<string>();
-            var errorMessage = Create<string>();
-
-            var result = ApiDetailErrorFactory.CreateBadRequestError(propertyName, null, errorMessage);
-
-            result.AttemptedValue.ShouldBeNull();
         }
     }
 
@@ -224,9 +168,8 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
         public void Should_Create_Error_With_Conflict_Type()
         {
             var entityType = Create<string>();
-            var attemptedValue = Create<int>();
 
-            var result = ApiDetailErrorFactory.CreateEtagConflict(entityType, attemptedValue);
+            var result = ApiDetailErrorFactory.CreateEtagConflict(entityType);
 
             result.ErrorType.ShouldBe(ErrorType.Conflict);
         }
@@ -235,24 +178,12 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
         public void Should_Set_All_Properties()
         {
             var entityType = Create<string>();
-            var attemptedValue = Create<int>();
 
-            var result = ApiDetailErrorFactory.CreateEtagConflict(entityType, attemptedValue);
+            var result = ApiDetailErrorFactory.CreateEtagConflict(entityType);
 
             result.ErrorCode.ShouldBe(ErrorCodes.Conflict);
             result.PropertyName.ShouldBe(nameof(EntityBase.Etag));
-            result.AttemptedValue.ShouldBe(attemptedValue);
             result.ErrorMessage.ShouldBe($"The entity tag for the {entityType} does not match the current record");
-        }
-
-        [Fact]
-        public void Should_Handle_Null_AttemptedValue()
-        {
-            var entityType = Create<string>();
-
-            var result = ApiDetailErrorFactory.CreateEtagConflict(entityType, null);
-
-            result.AttemptedValue.ShouldBeNull();
         }
     }
 

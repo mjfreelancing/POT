@@ -27,7 +27,6 @@ public class CheckTargetIsNotPlatformAdminFixture : PotFixtureBase
 
             error.ShouldNotBeNull();
             error.PropertyName.ShouldBe(nameof(Input.Status));
-            error.AttemptedValue.ShouldBe(UserStatus.Disabled.Name);
             error.ErrorMessage.ShouldBe(LastPlatformAdministratorMessage);
         }
 

@@ -39,7 +39,6 @@ internal sealed class CheckTargetIsNotPlatformAdmin : PreUpdateCheckBase
         {
             var error = ApiDetailErrorFactory.CreateBadRequestError(
                 nameof(Input.Status),
-                state.Input.Status.Name,
                 "This is the last enabled platform administrator. Another platform administrator must be configured first.");
 
             return error;

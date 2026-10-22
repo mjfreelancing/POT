@@ -11,6 +11,7 @@ internal static class EnrichedErrorExtensions
     public static Microsoft.AspNetCore.Mvc.ProblemDetails ToProblemDetails(this EnrichedError enrichedError)
     {
         var error = enrichedError as ApiErrorBase;
+        var errorMessage = (enrichedError as ApiBasicError)?.ErrorMessage;
 
         var statusCode = error!.ErrorType switch
         {
@@ -35,7 +36,7 @@ internal static class EnrichedErrorExtensions
 
         return new Microsoft.AspNetCore.Mvc.ProblemDetails
         {
-            Detail = error.Description,
+            Detail = errorMessage,
             Status = statusCode,
             Extensions = new Dictionary<string, object?>
             {

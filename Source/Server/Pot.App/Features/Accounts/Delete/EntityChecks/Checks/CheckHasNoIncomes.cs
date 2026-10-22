@@ -39,7 +39,6 @@ internal sealed class CheckHasNoIncomes : PreDeleteCheckBase
         {
             return ApiDetailErrorFactory.CreateEntityConstraintError(
                 nameof(AccountEntity.RowId),
-                accountId.ToString(),
                 "Cannot delete an Account that has linked Incomes");
         }
 

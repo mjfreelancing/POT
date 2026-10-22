@@ -95,7 +95,7 @@ public class UpdateUserStatusServiceFixture : PotFixtureBase
         public async Task Should_Fail_And_Not_Write_When_The_PreUpdateChecker_Refuses()
         {
             var user = EntityFactory.CreateUser(EntityFactory.CreateSite(), "same-site-user");
-            var checkerError = ApiDetailErrorFactory.CreateEntityConstraintError("Status", nameof(UserStatus.Disabled), "Status cannot be changed");
+            var checkerError = ApiDetailErrorFactory.CreateEntityConstraintError("Status", "Status cannot be changed");
 
             _userRepositoryFake
                 .GetForCurrentSiteAsync(user.RowId, Arg.Any<CancellationToken>())

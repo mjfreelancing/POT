@@ -43,7 +43,6 @@ internal sealed class CheckUsernameMatches : SiteDeleteCheckBase
         {
             return ApiDetailErrorFactory.CreateBadRequestError(
                 nameof(Input.Username),
-                state.Username,
                 "The username does not match your account.");
         }
 

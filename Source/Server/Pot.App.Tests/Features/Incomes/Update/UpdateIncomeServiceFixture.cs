@@ -83,7 +83,7 @@ public class UpdateIncomeServiceFixture : PotFixtureBase
             var existingIncome = CreateIncome(CreateAccount());
             var targetAccount = CreateAccount();
             var checkerError = ApiDetailErrorFactory.CreateEntityConstraintError(
-                "Description", "Updated salary", "Description must be unique");
+                "Description", "Description must be unique");
 
             _incomeRepositoryFake
                 .GetIncomeOrDefaultAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())

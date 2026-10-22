@@ -30,7 +30,6 @@ public class CheckRemovingAdminLeavesAnAdministratorFixture : PotFixtureBase
 
             error.ShouldNotBeNull();
             error.PropertyName.ShouldBe(nameof(InputState.RoleIds));
-            error.AttemptedValue.ShouldBe(string.Empty);
             error.ErrorMessage.ShouldBe("This is the site's only enabled administrator. Promote another administrator first.");
 
             target.Roles.ShouldContain(role => role.RowId == adminRole.RowId);

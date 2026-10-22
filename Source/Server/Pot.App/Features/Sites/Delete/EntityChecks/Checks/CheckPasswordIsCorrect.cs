@@ -44,7 +44,6 @@ internal sealed class CheckPasswordIsCorrect : SiteDeleteCheckBase
         {
             return ApiDetailErrorFactory.CreateBadRequestError(
                 nameof(Input.Password),
-                attemptedValue: string.Empty,
                 "The password is incorrect.");
         }
 

@@ -45,7 +45,7 @@ internal sealed class UpdateIncomeService : IUpdateIncomeService
 
             if (incomeToUpdate is null)
             {
-                var incomeNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(incomeId, "The income does not exist");
+                var incomeNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError("The income does not exist");
 
                 _logger.LogApiError(incomeNotFoundError);
 
@@ -56,7 +56,7 @@ internal sealed class UpdateIncomeService : IUpdateIncomeService
 
             if (incomeAccount is null)
             {
-                var incomeAccountNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(input.AccountRowId, "The account does not exist");
+                var incomeAccountNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError("The account does not exist");
 
                 _logger.LogApiError(incomeAccountNotFoundError);
 

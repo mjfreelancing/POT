@@ -33,7 +33,6 @@ public sealed partial class EmailBudgetReminderSettings
             {
                 return ApiDetailErrorFactory.CreateBadRequestError(
                     nameof(Enabled),
-                    stringValue,
                     "Value must be 'true' or 'false'");
             }
 
@@ -46,7 +45,6 @@ public sealed partial class EmailBudgetReminderSettings
             {
                 return ApiDetailErrorFactory.CreateBadRequestError(
                     nameof(LocalHourTrigger),
-                    stringValue,
                     "Value must be between 0 and 23 (inclusive)");
             }
 
@@ -59,7 +57,6 @@ public sealed partial class EmailBudgetReminderSettings
             {
                 return ApiDetailErrorFactory.CreateBadRequestError(
                     nameof(ReminderDays),
-                    stringValue,
                     "Value must be between 0 and 31 (inclusive)");
             }
 

@@ -96,7 +96,7 @@ public class UpdateSiteServiceFixture : PotFixtureBase
         public async Task Should_Fail_And_Not_Write_When_The_PreUpdateChecker_Refuses()
         {
             var site = EntityFactory.CreateSite();
-            var checkerError = ApiDetailErrorFactory.CreateEntityConstraintError("Name", UpdatedSiteName, "The site name is not allowed");
+            var checkerError = ApiDetailErrorFactory.CreateEntityConstraintError("Name", "The site name is not allowed");
 
             _siteRepositoryFake
                 .GetCurrentSite()

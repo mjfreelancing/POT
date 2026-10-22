@@ -33,11 +33,8 @@ internal sealed class CheckRemovingAdminLeavesAnAdministrator : PreUpdateCheckBa
 
         if (RemovesAdmin(state) && await IsOnlyEnabledSiteAdminAsync(state, cancellationToken))
         {
-            var roleIdsText = string.Join(", ", state.Input.RoleIds);
-
             var error = ApiDetailErrorFactory.CreateBadRequestError(
                 nameof(InputState.RoleIds),
-                roleIdsText,
                 "This is the site's only enabled administrator. Promote another administrator first.");
 
             return error;

@@ -215,7 +215,6 @@ public class ValidationResultExtensionsFixture : PotFixtureBase
             error.ErrorType.ShouldBe(ErrorType.BadRequest);
             error.ErrorCode.ShouldBe(validationFailure.ErrorCode);
             error.PropertyName.ShouldBe(validationFailure.PropertyName);
-            error.AttemptedValue.ShouldBe(validationFailure.AttemptedValue);
             error.ErrorMessage.ShouldBe(validationFailure.ErrorMessage);
             error.CustomState.ShouldBeSameAs(validationFailure.CustomState);
         }

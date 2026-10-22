@@ -9,24 +9,22 @@ public class EnrichedErrorExtensionsFixture
     public class ToProblemDetails : EnrichedErrorExtensionsFixture
     {
         [Fact]
-        public void Should_Map_An_Entity_Exists_Error_To_A_409_Carrying_The_Message_Only_In_Errors()
+        public void Should_Map_An_Entity_Exists_Error_To_A_409_Carrying_The_Message_In_Detail_And_Errors()
         {
-            // DEVELOPER.md documents this body. The factory sets no Description, so there is no 'detail' and a client
-            // reads the message from 'errors'.
-            var error = ApiDetailErrorFactory.CreateEntityExistsError("Description", "Savings",
+            // DEVELOPER.md documents this body. A client shows 'detail'; 'errors' keeps the machine-readable parts.
+            var error = ApiDetailErrorFactory.CreateEntityExistsError("Description",
                 "The account description already exists");
 
             var problemDetails = error.ToProblemDetails();
 
             problemDetails.Status.ShouldBe(409);
-            problemDetails.Detail.ShouldBeNull();
+            problemDetails.Detail.ShouldBe("The account description already exists");
 
             var errors = problemDetails.Extensions["errors"].ShouldBeOfType<object[]>();
             var details = errors.ShouldHaveSingleItem().ShouldBeOfType<Dictionary<string, object?>>();
 
             details["errorCode"].ShouldBe("Conflict");
             details["propertyName"].ShouldBe("Description");
-            details["attemptedValue"].ShouldBe("Savings");
             details["errorMessage"].ShouldBe("The account description already exists");
         }
 

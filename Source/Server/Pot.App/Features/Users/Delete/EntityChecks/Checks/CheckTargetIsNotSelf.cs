@@ -42,7 +42,6 @@ internal sealed class CheckTargetIsNotSelf : UserDeleteCheckBase
         {
             return ApiDetailErrorFactory.CreateBadRequestError(
                 nameof(Input.RowId),
-                state.Target.RowId,
                 RefusalMessage);
         }
 

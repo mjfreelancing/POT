@@ -30,17 +30,6 @@ public class CheckPasswordIsCorrectFixture : PotFixtureBase
         }
 
         [Fact]
-        public async Task Should_Not_Echo_The_Attempted_Password()
-        {
-            SetPasswordIsValid(isValid: false);
-
-            var error = await CheckAsync(EntityFactory.CreateUser(EntityFactory.CreateSite(), "caller"), "WrongPassword1!");
-
-            error.ShouldNotBeNull();
-            error.AttemptedValue.ShouldBe(string.Empty);
-        }
-
-        [Fact]
         public async Task Should_Allow_When_The_Password_Matches()
         {
             SetPasswordIsValid(isValid: true);

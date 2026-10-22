@@ -54,7 +54,7 @@ internal sealed class UpdateSiteService : IUpdateSiteService
                     siteId,
                     currentSite.RowId);
 
-                var siteNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(siteId, "The site does not exist");
+                var siteNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError("The site does not exist");
 
                 _logger.LogApiError(siteNotFoundError);
 

@@ -1,7 +1,6 @@
 type ApiErrorDetail = {
   propertyName?: string | null;
   errorCode: string;
-  attemptedValue?: string | number | null;
   errorMessage: string;
 };
 
@@ -40,23 +39,31 @@ const getRateLimitedMessage = (_: ApiErrorResponse): string => {
 };
 
 const getConflictMessage = (error: ApiErrorResponse): string => {
-  // Server-generated conflicts (for example a database constraint race) carry no field name, so
-  // there is nothing to describe. Fall back to the server's detail rather than rendering empty quotes.
-  const fieldConflicts = error.errors?.filter(err => Boolean(err.propertyName));
+  // A stale etag is the one conflict whose meaning the server's message does not convey on its own:
+  // the caller needs to know it has to refresh before retrying.
+  const isStaleUpdate = error.errors?.some(
+    detail => detail.propertyName?.toLowerCase() === 'etag',
+  );
 
-  if (!fieldConflicts || fieldConflicts.length === 0) {
-    return error.detail ?? 'A conflict error occurred';
+  if (isStaleUpdate) {
+    return 'A conflicting update has been performed by another user. Refresh and try again.';
   }
 
-  return fieldConflicts
-    .map(err => {
-      if (err.propertyName?.toLowerCase() === 'etag') {
-        return 'A conflicting update has been performed by another user. Refresh and try again.';
-      }
+  // Every other conflict reports the server's own message, which names the field without echoing
+  // the rejected value.
+  if (error.detail) {
+    return error.detail;
+  }
 
-      return `The '${err.propertyName}' conflicts with another record that has the same value '${err.attemptedValue ?? ''}'`;
-    })
-    .join('\n');
+  const fieldConflicts = error.errors?.filter(detail =>
+    Boolean(detail.propertyName),
+  );
+
+  if (!fieldConflicts || fieldConflicts.length === 0) {
+    return 'A conflict error occurred';
+  }
+
+  return fieldConflicts.map(detail => detail.errorMessage).join('\n');
 };
 
 const getBadRequestMessage = (error: ApiErrorResponse): string => {

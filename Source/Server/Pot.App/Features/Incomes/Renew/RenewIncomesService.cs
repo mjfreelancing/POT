@@ -43,7 +43,6 @@ internal sealed class RenewIncomesService : IRenewIncomesService
             {
                 var incomeRenewError = ApiDetailErrorFactory.CreateBadRequestError(
                     nameof(Input.RowIds),
-                    missingRowIds,
                     "One or more Incomes do not exist.");
 
                 return EnrichedResult.Fail<bool>(incomeRenewError);

@@ -42,7 +42,6 @@ internal sealed class CheckIsNotLastSiteAdmin : AccountDeleteCheckBase
         {
             return ApiDetailErrorFactory.CreateBadRequestError(
                 nameof(Input.Username),
-                state.Caller.RowId,
                 "You are your site's only enabled administrator. Promote or enable another administrator first, or delete the site instead.");
         }
 

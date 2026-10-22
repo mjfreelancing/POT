@@ -60,7 +60,7 @@ internal sealed class DeleteOwnAccountService : IDeleteOwnAccountService
 
         if (counts is null)
         {
-            var notFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(caller.RowId, "The user does not exist");
+            var notFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError("The user does not exist");
 
             _logger.LogApiError(notFoundError);
 

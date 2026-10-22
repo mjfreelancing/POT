@@ -47,7 +47,6 @@ internal sealed class CheckSiteHasNoPlatformAdmin : SiteDeleteCheckBase
         {
             return ApiDetailErrorFactory.CreateBadRequestError(
                 nameof(Input.SiteName),
-                state.Site.RowId,
                 RefusalMessage);
         }
 

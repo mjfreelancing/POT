@@ -272,7 +272,6 @@ describe('Axios Interceptors', () => {
           {
             propertyName: 'name',
             errorCode: 'duplicate',
-            attemptedValue: 'test',
             errorMessage: 'Name already exists',
           },
         ],
@@ -304,7 +303,6 @@ describe('Axios Interceptors', () => {
           {
             propertyName: '',
             errorCode: 'Conflict',
-            attemptedValue: null,
             errorMessage:
               'The request conflicts with the current state of the data.',
           },
@@ -339,7 +337,6 @@ describe('Axios Interceptors', () => {
           {
             propertyName: 'email',
             errorCode: 'invalid',
-            attemptedValue: 'test',
             errorMessage: 'Invalid email format',
           },
         ],

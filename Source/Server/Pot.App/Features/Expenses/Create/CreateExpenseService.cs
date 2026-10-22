@@ -41,7 +41,7 @@ internal sealed class CreateExpenseService : ICreateExpenseService
 
         if (expenseAccount is null)
         {
-            var expenseAccountError = ApiDetailErrorFactory.CreateEntityNotFoundError(input.AccountRowId, "The account does not exist");
+            var expenseAccountError = ApiDetailErrorFactory.CreateEntityNotFoundError("The account does not exist");
 
             return EnrichedResult.Fail<Output>(expenseAccountError);
         }

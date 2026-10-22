@@ -7,9 +7,8 @@ public static class LoggerExtensions
 {
     public static void LogApiError(this ILogger logger, ApiDetailError apiDetailError)
     {
-        logger.LogInformation("Validation Error: {ValidationErrorMessage} (Property: {Property}, Value: {Value})",
+        logger.LogInformation("Validation Error: {ValidationErrorMessage} (Property: {Property})",
             apiDetailError.ErrorMessage,
-            apiDetailError.PropertyName ?? string.Empty,
-            apiDetailError.AttemptedValue ?? string.Empty);
+            apiDetailError.PropertyName ?? string.Empty);
     }
 }

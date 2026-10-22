@@ -43,7 +43,6 @@ internal sealed class RenewExpensesService : IRenewExpensesService
             {
                 var expenseRenewError = ApiDetailErrorFactory.CreateBadRequestError(
                     nameof(Input.RowIds),
-                    missingRowIds,
                     "One or more Expenses do not exist.");
 
                 return EnrichedResult.Fail<bool>(expenseRenewError);

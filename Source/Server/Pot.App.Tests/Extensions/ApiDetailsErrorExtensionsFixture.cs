@@ -70,7 +70,7 @@ public class ApiDetailsErrorExtensionsFixture : PotFixtureBase
 
             var keys = GetKeys(error.GetErrorDetails());
 
-            keys.ShouldBe(["errorCode", "propertyName", "attemptedValue", "errorMessage"], ignoreOrder: true);
+            keys.ShouldBe(["errorCode", "propertyName", "errorMessage"], ignoreOrder: true);
         }
 
         [Fact]
@@ -82,7 +82,6 @@ public class ApiDetailsErrorExtensionsFixture : PotFixtureBase
 
             serialized["errorCode"].GetString().ShouldBe("TooShort");
             serialized["propertyName"].GetString().ShouldBe("NewPassword");
-            serialized["attemptedValue"].GetString().ShouldBe("abc");
             serialized["errorMessage"].GetString().ShouldBe("Too short");
         }
 
@@ -116,22 +115,6 @@ public class ApiDetailsErrorExtensionsFixture : PotFixtureBase
         }
 
         [Fact]
-        public void Should_Preserve_A_Null_Attempted_Value()
-        {
-            var error = new ApiDetailError(ErrorType.BadRequest)
-            {
-                ErrorCode = "TooShort",
-                PropertyName = "NewPassword",
-                AttemptedValue = null,
-                ErrorMessage = "Too short"
-            };
-
-            var serialized = Serialize(error.GetErrorDetails());
-
-            serialized["attemptedValue"].ValueKind.ShouldBe(JsonValueKind.Null);
-        }
-
-        [Fact]
         public void Should_Ignore_Custom_State_That_Is_Not_A_Dictionary()
         {
             var error = CreateDetailError("not a dictionary");
@@ -161,7 +144,6 @@ public class ApiDetailsErrorExtensionsFixture : PotFixtureBase
             {
                 ErrorCode = "TooShort",
                 PropertyName = "NewPassword",
-                AttemptedValue = "abc",
                 ErrorMessage = "Too short",
                 CustomState = customState
             };

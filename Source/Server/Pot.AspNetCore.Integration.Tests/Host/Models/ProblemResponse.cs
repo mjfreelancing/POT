@@ -40,11 +40,6 @@ public sealed class ProblemResponseError
     public string? PropertyName { get; set; }
 
     /// <summary>
-    /// The value that was rejected, when the failure reports it.
-    /// </summary>
-    public object? AttemptedValue { get; set; }
-
-    /// <summary>
     /// The human readable description of the failure.
     /// </summary>
     public string? ErrorMessage { get; set; }

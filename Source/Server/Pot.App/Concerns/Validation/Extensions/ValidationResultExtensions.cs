@@ -11,7 +11,6 @@ public static class ValidationResultExtensions
         {
             ErrorCode = error.ErrorCode,
             PropertyName = error.PropertyName,
-            AttemptedValue = error.AttemptedValue,
             ErrorMessage = error.ErrorMessage,
             CustomState = error.CustomState
         });

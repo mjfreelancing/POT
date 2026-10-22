@@ -42,7 +42,7 @@ internal sealed class UpdateUserService : IUpdateUserService
 
             if (userToUpdate is null)
             {
-                var userNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(userId, "The user does not exist");
+                var userNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError("The user does not exist");
 
                 _logger.LogApiError(userNotFoundError);
 

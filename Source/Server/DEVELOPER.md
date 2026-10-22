@@ -745,7 +745,6 @@ internal sealed class CheckDescriptionDoesNotExist : PreCreateCheckBase
         {
             return ApiDetailErrorFactory.CreateEntityExistsError(
                 nameof(AccountEntity.Description),
-                account.Description,
                 "The account description already exists");
         }
 
@@ -932,7 +931,6 @@ Authorization: Bearer {your-jwt-token}
     {
       "errorCode": "NotEmptyValidator",
       "propertyName": "Description",
-      "attemptedValue": "",
       "errorMessage": "'Description' must not be empty."
     }
   ],
@@ -943,17 +941,18 @@ Authorization: Bearer {your-jwt-token}
 
 **Business Rule Violation (409 Conflict):**
 
-A failure from a service carries its message in `errors` only. `ToProblemDetails()` sets `detail` from the error's
-`Description`, which `ApiDetailErrorFactory` does not set, so there is no `detail` member.
+A failure from a service carries its message in `detail` and repeats it in `errors`. `ToProblemDetails()` sets `detail`
+from the error's message, so a client can show one sentence without having to join the `errors` entries. No submitted
+value is echoed back: the message names the field, never the value the caller sent.
 
 ```json
 {
   "status": 409,
+  "detail": "The account description already exists",
   "errors": [
     {
       "errorCode": "Conflict",
       "propertyName": "Description",
-      "attemptedValue": "Savings",
       "errorMessage": "The account description already exists"
     }
   ],
@@ -964,7 +963,7 @@ A failure from a service carries its message in `errors` only. `ToProblemDetails
 
 **Which endpoints declare 409.** `ProducesProblem(409)` is declared per feature, only on the endpoints whose own checks can reject the request: a stale entity tag, or a description that already exists within the same site or account. It is deliberately not declared on every write. The shared database handler answers 409 for a unique, reference or concurrency failure that reaches the database, such as a race between the check and the save, and documenting that on every write would present a conflict as a normal outcome rather than the rare one it is.
 
-Because the database answers the same status, a test that asserts only 409 cannot tell the two apart. The integration fixtures assert the `propertyName` and `attemptedValue` that the rule reported (`ShouldBeEntityConflictAsync`); the database fallback reports neither, so those assertions fail if a rule stops running. `EndpointResponseMetadataFixture` additionally fails if a declared 409 is not `ProblemDetails` with `application/problem+json`.
+Because the database answers the same status, a test that asserts only 409 cannot tell the two apart. The integration fixtures assert the `propertyName` the rule reported and that `detail` repeats its message (`ShouldBeEntityConflictAsync`); the database fallback names no field, so those assertions fail if a rule stops running. `EndpointResponseMetadataFixture` additionally fails if a declared 409 is not `ProblemDetails` with `application/problem+json`.
 
 ## Feature Organization
 
@@ -1097,7 +1096,7 @@ public async Task<EnrichedResult<Output>> OperationAsync(Input input, Cancellati
 
         if (entity is null)
         {
-            var notFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(input.RowId, "The entity does not exist");
+            var notFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError("The entity does not exist");
 
             return EnrichedResult.Fail<Output>(notFoundError);
         }
@@ -1921,7 +1920,7 @@ public async Task<EnrichedResult<Output>> UpdateAccountAsync(Input input, Cancel
 
         if (accountToUpdate is null)
         {
-            var accountNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(accountId, "The account does not exist");
+            var accountNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError("The account does not exist");
 
             _logger.LogApiError(accountNotFoundError);
 
@@ -1971,7 +1970,7 @@ public async Task<EnrichedResult<bool>> DeleteAccountAsync(Guid accountId, Cance
 
     if (account is null)
     {
-        var accountNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(accountId, "The account does not exist");
+        var accountNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError("The account does not exist");
 
         _logger.LogApiError(accountNotFoundError);
 
@@ -2015,7 +2014,7 @@ public async Task<EnrichedResult<Output>> GetAccountWithLinkedCountsAsync(Guid a
 
     if (account is null)
     {
-        var accountNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(accountId, "The account does not exist");
+        var accountNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError("The account does not exist");
 
         _logger.LogApiError(accountNotFoundError);
 
@@ -2190,7 +2189,6 @@ internal sealed class CheckDescriptionDoesNotExist : PreCreateCheckBase
         {
             return ApiDetailErrorFactory.CreateEntityExistsError(
                 nameof(AccountEntity.Description),
-                account.Description,
                 "The account description already exists");
         }
 
@@ -2269,14 +2267,14 @@ public async Task<EnrichedResult<Output>> OperationAsync(Input input, Cancellati
     // Business rule violation - return failure
     if (someBusinessRuleViolated)
     {
-        var error = ApiDetailErrorFactory.CreateEntityExistsError("PropertyName", attemptedValue, "Error message");
+        var error = ApiDetailErrorFactory.CreateEntityExistsError("PropertyName", "Error message");
         return EnrichedResult.Fail<Output>(error);
     }
 
     // Entity not found - return failure
     if (entity is null)
     {
-        var error = ApiDetailErrorFactory.CreateEntityNotFoundError(id, "Entity does not exist");
+        var error = ApiDetailErrorFactory.CreateEntityNotFoundError("Entity does not exist");
         return EnrichedResult.Fail<Output>(error);
     }
 
@@ -2314,7 +2312,6 @@ public class ApiBasicError : ApiErrorBase
 public class ApiDetailError : ApiBasicError
 {
     public string PropertyName { get; init; } = string.Empty;
-    public object? AttemptedValue { get; init; }
 
     public ApiDetailError(ErrorType errorType) : base(errorType) { }
 }
@@ -2325,25 +2322,21 @@ public class ApiDetailError : ApiBasicError
 ```csharp
 // Entity not found (404)
 var error = ApiDetailErrorFactory.CreateEntityNotFoundError(
-    attemptedValue: rowId,
     errorMessage: "The account does not exist.");
 
 // Entity exists conflict (409)
 var error = ApiDetailErrorFactory.CreateEntityExistsError(
     propertyName: nameof(AccountEntity.Description),
-    attemptedValue: account.Description,
     errorMessage: "The account description already exists");
 
 // Entity constraint violation (400) - a rule about related data refused the operation
 var error = ApiDetailErrorFactory.CreateEntityConstraintError(
     propertyName: nameof(AccountEntity.RowId),
-    attemptedValue: accountId.ToString(),
     errorMessage: "Cannot delete an Account that has linked Expenses");
 
 // ETag conflict (409)
 var error = ApiDetailErrorFactory.CreateEtagConflict(
-    entityType: "Account",
-    attemptedValue: attemptedEtag);
+    entityType: "Account");
 
 // Generic bad request (400) - a business rule refused the request
 var error = ApiDetailErrorFactory.CreateBadRequestError(
@@ -2352,7 +2345,6 @@ var error = ApiDetailErrorFactory.CreateBadRequestError(
 // With property name (400)
 var error = ApiDetailErrorFactory.CreateBadRequestError(
     propertyName: nameof(InputState.RoleIds),
-    attemptedValue: roleIdsText,
     errorMessage: "This is the site's only enabled administrator. Promote another administrator first.");
 ```
 
@@ -2391,7 +2383,7 @@ public async Task<EnrichedResult<Output>> UpdateUserRolesAsync(Input input, Canc
 
         if (userToUpdate is null)
         {
-            var userNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(userId, "The user does not exist");
+            var userNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError("The user does not exist");
 
             _logger.LogApiError(userNotFoundError);
 
@@ -3710,7 +3702,7 @@ Applies the caller's correlation ID to the request for tracing and debugging
 - A supplied value must be at most 128 characters and contain only letters, digits, `-`, `_`, `.` and `:`. Anything else is
   rejected with a 400 ProblemDetails response, because the value is written into every log entry for the request. The reason
   is in `detail` and also in `errors`, as one entry with `propertyName` set to `X-Correlation-Id` and `errorCode` `Invalid`;
-  the rejected value is not echoed as `attemptedValue`.
+  the rejected value is not echoed back.
 - A valid value replaces `HttpContext.TraceIdentifier`; when the header is absent the framework default is kept. Every
   ProblemDetails body carries `TraceIdentifier` as `correlationId`, and `CorrelationIdLogEnricher` adds the same value to every
   log entry written during the request - including the exception handlers' and a rejected id's, which carry the generated id.
@@ -3859,7 +3851,6 @@ The `errors` extension is always an **array** of error detail objects. `type` an
     {
       "errorCode": "NotEmptyValidator",
       "propertyName": "Description",
-      "attemptedValue": "",
       "errorMessage": "'Description' must not be empty."
     }
   ],
@@ -3869,8 +3860,8 @@ The `errors` extension is always an **array** of error detail objects. `type` an
 }
 ```
 
-`detail` is present on validation failures, rejected correlation ids and database errors, which set it. A failure returned
-from a service has none - its message is in `errors`, as in the 409 example earlier in this guide.
+`detail` is set from the failure's message on every status, so a client can show it without inspecting `errors`. No
+submitted value appears in `detail`, in `errors` or in the request log.
 
 Every problem response carries two identifiers:
 

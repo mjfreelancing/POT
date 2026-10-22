@@ -73,7 +73,7 @@ internal sealed class ImportDataService : IImportDataService
                 if (metadataVersion != MetadataBase.CurrentVersion)
                 {
                     var unsupportedMetadataVersionError =
-                        ApiDetailErrorFactory.CreateBadRequestError(nameof(MetadataBase.Version), metadataVersion,
+                        ApiDetailErrorFactory.CreateBadRequestError(nameof(MetadataBase.Version),
                             $"The import file has a non-supported version. Expecting version {MetadataBase.CurrentVersion}.");
 
                     return EnrichedResult.Fail<int>(unsupportedMetadataVersionError);

@@ -45,7 +45,6 @@ internal sealed class CheckDescriptionDoesNotExist : PreCreateCheckBase
         {
             return ApiDetailErrorFactory.CreateEntityExistsError(
                 nameof(AccountEntity.Description),
-                account.Description,
                 "The account description already exists");
         }
 

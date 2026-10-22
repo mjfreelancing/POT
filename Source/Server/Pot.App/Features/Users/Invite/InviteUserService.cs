@@ -71,8 +71,7 @@ internal sealed class InviteUserService : IInviteUserService
             {
                 var userError = ApiDetailErrorFactory.CreateBadRequestError(
                     nameof(input.Username),
-                    input.Username,
-                    $"The username '{input.Username}' is already in use.");
+                    "The username is already in use.");
 
                 _logger.LogApiError(userError);
 

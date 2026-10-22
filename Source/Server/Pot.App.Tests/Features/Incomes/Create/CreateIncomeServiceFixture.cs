@@ -45,7 +45,7 @@ public class CreateIncomeServiceFixture : PotFixtureBase
         {
             var account = CreateAccount();
             var checkerError = ApiDetailErrorFactory.CreateEntityConstraintError(
-                "Description", "Salary", "Description must be unique");
+                "Description", "Description must be unique");
 
             _accountRepositoryFake
                 .GetAccountOrDefaultAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())

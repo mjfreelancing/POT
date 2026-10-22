@@ -512,7 +512,6 @@ public class AuthServiceFixture : PotFixtureBase
             var error = result.Error.ShouldBeOfType<ApiDetailError>();
 
             error.ErrorType.ShouldBe(ErrorType.NotFound);
-            error.AttemptedValue.ShouldBe(userId);
             error.ErrorMessage.ShouldBe("The user does not exist");
 
             _passwordHasherFake

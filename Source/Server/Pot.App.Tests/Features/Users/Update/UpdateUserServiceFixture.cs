@@ -97,7 +97,7 @@ public class UpdateUserServiceFixture : PotFixtureBase
         public async Task Should_Fail_And_Not_Write_When_The_PreUpdateChecker_Refuses()
         {
             var user = EntityFactory.CreateUser(EntityFactory.CreateSite(), "same-site-user");
-            var checkerError = ApiDetailErrorFactory.CreateEntityConstraintError("Email", UpdatedEmail, "Email is already in use");
+            var checkerError = ApiDetailErrorFactory.CreateEntityConstraintError("Email", "Email is already in use");
 
             _userRepositoryFake
                 .GetForCurrentSiteAsync(user.RowId, Arg.Any<CancellationToken>())

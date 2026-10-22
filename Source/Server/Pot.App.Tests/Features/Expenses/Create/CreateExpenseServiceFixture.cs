@@ -143,7 +143,7 @@ public class CreateExpenseServiceFixture : PotFixtureBase
             var logger = Substitute.For<ILogger<CreateExpenseService>>();
 
             var account = CreateAccount(accountId: 11);
-            var checkerError = ApiDetailErrorFactory.CreateEntityConstraintError("Description", "Rent", "Description must be unique");
+            var checkerError = ApiDetailErrorFactory.CreateEntityConstraintError("Description", "Description must be unique");
 
             _accountRepositoryFake
                 .GetAccountOrDefaultAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())

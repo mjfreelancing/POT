@@ -13,7 +13,6 @@ public static class ApiDetailsErrorExtensions
     private const string ErrorCodeKey = "errorCode";
     private const string ErrorMessageKey = "errorMessage";
     private const string PropertyNameKey = "propertyName";
-    private const string AttemptedValueKey = "attemptedValue";
 
     // Only report the properties of interest (not the base class properties)
     public static object GetErrorDetails(this ApiBasicError error)
@@ -34,7 +33,6 @@ public static class ApiDetailsErrorExtensions
 
         details[ErrorCodeKey] = error.ErrorCode;
         details[PropertyNameKey] = error.PropertyName;
-        details[AttemptedValueKey] = error.AttemptedValue;
         details[ErrorMessageKey] = error.ErrorMessage;
 
         return details;

@@ -12,7 +12,6 @@ describe('getConflictMessage', () => {
         {
           propertyName: '',
           errorCode: 'Conflict',
-          attemptedValue: null,
           errorMessage:
             'The request conflicts with the current state of the data.',
         },
@@ -69,7 +68,6 @@ describe('getConflictMessage', () => {
         {
           propertyName: 'Etag',
           errorCode: 'Conflict',
-          attemptedValue: 7,
           errorMessage:
             'The entity tag for the account does not match the current record',
         },
@@ -83,36 +81,31 @@ describe('getConflictMessage', () => {
     );
   });
 
-  it('should describe a field conflict with the attempted value', () => {
+  it('should use the server detail for a conflict that names a field', () => {
     const error: ApiErrorResponse = {
       status: 409,
-      detail: 'Resource already exists',
+      detail: 'The account description already exists',
       errors: [
         {
-          propertyName: 'name',
+          propertyName: 'Description',
           errorCode: 'Conflict',
-          attemptedValue: 'Savings',
-          errorMessage: 'Name already exists',
+          errorMessage: 'The account description already exists',
         },
       ],
     };
 
     const result = getConflictMessage(error);
 
-    expect(result).toBe(
-      "The 'name' conflicts with another record that has the same value 'Savings'",
-    );
+    expect(result).toBe(error.detail);
   });
 
-  it('should not print null when a field conflict has no attempted value', () => {
+  it('should fall back to the field error messages when there is no detail', () => {
     const error: ApiErrorResponse = {
       status: 409,
-      detail: 'Resource already exists',
       errors: [
         {
           propertyName: 'name',
           errorCode: 'Conflict',
-          attemptedValue: null,
           errorMessage: 'Name already exists',
         },
       ],
@@ -120,8 +113,6 @@ describe('getConflictMessage', () => {
 
     const result = getConflictMessage(error);
 
-    expect(result).toBe(
-      "The 'name' conflicts with another record that has the same value ''",
-    );
+    expect(result).toBe('Name already exists');
   });
 });

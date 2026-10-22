@@ -50,7 +50,6 @@ public class ImportVersionGateFixture : PotFixtureBase
         var error = result.Error.ShouldBeOfType<ApiDetailError>();
 
         error.PropertyName.ShouldBe(nameof(MetadataBase.Version));
-        error.AttemptedValue.ShouldBe(packageVersion);
         error.ErrorMessage.ShouldBe(
             $"The import file has a non-supported version. Expecting version {MetadataBase.CurrentVersion}.");
 

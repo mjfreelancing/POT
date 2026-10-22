@@ -70,7 +70,7 @@ public class DeleteUserServiceFixture : PotFixtureBase
         {
             var (_, target) = ArrangeCallerAndTarget();
 
-            var refusal = ApiDetailErrorFactory.CreateBadRequestError(nameof(Input.RowId), target.RowId, "Refused");
+            var refusal = ApiDetailErrorFactory.CreateBadRequestError(nameof(Input.RowId), "Refused");
 
             _deleteCheckerFake
                 .CanDeleteAsync(Arg.Any<Input>(), Arg.Any<UserEntity>(), Arg.Any<UserEntity>(), Arg.Any<CancellationToken>())

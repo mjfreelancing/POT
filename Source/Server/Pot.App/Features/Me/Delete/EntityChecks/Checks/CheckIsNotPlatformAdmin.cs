@@ -44,7 +44,6 @@ internal sealed class CheckIsNotPlatformAdmin : AccountDeleteCheckBase
         {
             return ApiDetailErrorFactory.CreateBadRequestError(
                 nameof(Input.Username),
-                state.Caller.RowId,
                 "This is the last enabled platform administrator. Another platform administrator must be configured first.");
         }
 

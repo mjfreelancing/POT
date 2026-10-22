@@ -37,7 +37,7 @@ internal sealed class CreateIncomeService : ICreateIncomeService
 
         if (incomeAccount is null)
         {
-            var incomeAccounterror = ApiDetailErrorFactory.CreateEntityNotFoundError(input.AccountRowId, "The account does not exist");
+            var incomeAccounterror = ApiDetailErrorFactory.CreateEntityNotFoundError("The account does not exist");
 
             return EnrichedResult.Fail<Output>(incomeAccounterror);
         }

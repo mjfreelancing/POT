@@ -44,7 +44,6 @@ internal sealed class CheckSiteNameMatches : SiteDeleteCheckBase
         {
             return ApiDetailErrorFactory.CreateBadRequestError(
                 nameof(Input.SiteName),
-                state.SiteName,
                 "The site name does not match your site.");
         }
 

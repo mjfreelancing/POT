@@ -39,7 +39,6 @@ internal sealed class ToggleExcludeExpensesService : IToggleExcludeExpensesServi
             {
                 var expenseRenewError = ApiDetailErrorFactory.CreateBadRequestError(
                     nameof(Input.RowIds),
-                    missingRowIds,
                     "One or more Expenses do not exist.");
 
                 return EnrichedResult.Fail<bool>(expenseRenewError);

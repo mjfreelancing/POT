@@ -47,7 +47,7 @@ internal sealed class ResendInviteService : IResendInviteService
 
             if (user is null)
             {
-                var userError = ApiDetailErrorFactory.CreateEntityNotFoundError(userRowId, "User not found");
+                var userError = ApiDetailErrorFactory.CreateEntityNotFoundError("User not found");
 
                 _logger.LogApiError(userError);
 
@@ -60,7 +60,6 @@ internal sealed class ResendInviteService : IResendInviteService
             {
                 var statusError = ApiDetailErrorFactory.CreateBadRequestError(
                     nameof(user.Status),
-                    user.Status.Name,
                     "An invitation can only be re-sent while it is still outstanding.");
 
                 _logger.LogApiError(statusError);

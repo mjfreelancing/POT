@@ -33,7 +33,7 @@ internal sealed class CheckHasSameEtag : PreUpdateCheckBase
 
         if (userToUpdate.Etag != input.Etag)
         {
-            return ApiDetailErrorFactory.CreateEtagConflict("User", input.Etag);
+            return ApiDetailErrorFactory.CreateEtagConflict("User");
         }
 
         return await base.HandleAsync(state, cancellationToken);

@@ -342,7 +342,7 @@ public class CorrelationAndProblemDetailsFixture : IntegrationAuthFixtureBase
         error.GetProperty("propertyName").GetString().ShouldBe(CorrelationIdHeader);
         error.GetProperty("errorCode").GetString().ShouldBe("Invalid");
         error.GetProperty("errorMessage").GetString().ShouldBe(InvalidCharactersDetail);
-        error.GetProperty("attemptedValue").ValueKind.ShouldBe(JsonValueKind.Null);
+        error.TryGetProperty("attemptedValue", out _).ShouldBeFalse();
     }
 
     // A client whose Accept header excludes JSON - a browser navigation sends text/html - must still get Problem Details

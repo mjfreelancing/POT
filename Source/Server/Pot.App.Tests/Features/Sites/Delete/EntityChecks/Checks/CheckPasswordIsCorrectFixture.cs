@@ -18,7 +18,7 @@ public class CheckPasswordIsCorrectFixture : PotFixtureBase
     public class HandleAsync : CheckPasswordIsCorrectFixture
     {
         [Fact]
-        public async Task Should_Reject_A_Wrong_Password_Without_Echoing_It()
+        public async Task Should_Reject_A_Wrong_Password()
         {
             SetPasswordIsValid(isValid: false);
 
@@ -29,7 +29,6 @@ public class CheckPasswordIsCorrectFixture : PotFixtureBase
             error.ShouldNotBeNull();
             error.PropertyName.ShouldBe(nameof(Input.Password));
             error.ErrorMessage.ShouldBe("The password is incorrect.");
-            error.AttemptedValue.ShouldBe(string.Empty);
         }
 
         [Fact]

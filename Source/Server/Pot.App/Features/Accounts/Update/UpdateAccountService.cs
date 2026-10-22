@@ -42,7 +42,7 @@ internal sealed class UpdateAccountService : IUpdateAccountService
 
             if (accountToUpdate is null)
             {
-                var accountNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(accountId, "The account does not exist");
+                var accountNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError("The account does not exist");
 
                 _logger.LogApiError(accountNotFoundError);
 

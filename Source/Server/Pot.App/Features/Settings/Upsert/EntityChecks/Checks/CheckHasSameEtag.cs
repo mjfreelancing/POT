@@ -31,7 +31,7 @@ internal sealed class CheckHasSameEtag : PreUpdateCheckBase
         {
             if (input.Etag is not null)
             {
-                return ApiDetailErrorFactory.CreateEtagConflict("Setting", input.Etag.Value);
+                return ApiDetailErrorFactory.CreateEtagConflict("Setting");
             }
         }
         else
@@ -39,7 +39,7 @@ internal sealed class CheckHasSameEtag : PreUpdateCheckBase
             // If setting exists, Etag must be provided and match
             if (input.Etag is null || setting.Etag != input.Etag.Value)
             {
-                return ApiDetailErrorFactory.CreateEtagConflict("Setting", input.Etag ?? 0);
+                return ApiDetailErrorFactory.CreateEtagConflict("Setting");
             }
         }
 

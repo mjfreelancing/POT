@@ -43,7 +43,7 @@ internal sealed class GetExpenseService : IGetExpenseService
 
         if (expense is null)
         {
-            var expenseNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError(expenseId, "The expense does not exist");
+            var expenseNotFoundError = ApiDetailErrorFactory.CreateEntityNotFoundError("The expense does not exist");
 
             _logger.LogApiError(expenseNotFoundError);
 

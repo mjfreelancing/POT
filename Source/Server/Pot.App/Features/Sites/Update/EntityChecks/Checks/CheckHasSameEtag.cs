@@ -27,7 +27,7 @@ internal sealed class CheckHasSameEtag : PreUpdateCheckBase
 
         if (site.Etag != input.Etag)
         {
-            return ApiDetailErrorFactory.CreateEtagConflict("Site", input.Etag);
+            return ApiDetailErrorFactory.CreateEtagConflict("Site");
         }
 
         return await base.HandleAsync(state, cancellationToken);

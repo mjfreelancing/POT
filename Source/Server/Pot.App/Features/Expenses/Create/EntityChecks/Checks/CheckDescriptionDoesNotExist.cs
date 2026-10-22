@@ -46,7 +46,6 @@ internal sealed class CheckDescriptionDoesNotExist : PreCreateCheckBase
         {
             return ApiDetailErrorFactory.CreateEntityExistsError(
                 nameof(ExpenseEntity.Description),
-                expenseToCreate.Description,
                 "The expense description already exists");
         }
 

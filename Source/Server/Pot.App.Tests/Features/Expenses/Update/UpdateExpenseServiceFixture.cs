@@ -254,7 +254,7 @@ public class UpdateExpenseServiceFixture : PotFixtureBase
 
             var existingExpense = CreateExpense(accountId: 10);
             var targetAccount = CreateAccount(accountId: 12);
-            var checkerError = ApiDetailErrorFactory.CreateEntityConstraintError("Description", "Updated expense", "Description must be unique");
+            var checkerError = ApiDetailErrorFactory.CreateEntityConstraintError("Description", "Description must be unique");
 
             _expenseRepositoryFake
                 .GetExpenseOrDefaultAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())

@@ -57,7 +57,7 @@ public class DeleteSiteServiceFixture : PotFixtureBase
         {
             var (_, site) = ArrangeCallerAndSite();
 
-            var refusal = ApiDetailErrorFactory.CreateBadRequestError(nameof(Input.SiteName), site.RowId, "Refused");
+            var refusal = ApiDetailErrorFactory.CreateBadRequestError(nameof(Input.SiteName), "Refused");
 
             _deleteCheckerFake
                 .CanDeleteAsync(Arg.Any<Input>(), Arg.Any<UserEntity>(), Arg.Any<SiteEntity>(), Arg.Any<CancellationToken>())

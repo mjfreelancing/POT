@@ -79,7 +79,6 @@ public class CheckDescriptionDoesNotExistFixture : PotFixtureBase
 
             error.ShouldNotBeNull();
             error.PropertyName.ShouldBe(nameof(AccountEntity.Description));
-            error.AttemptedValue.ShouldBe("Everyday");
             error.ErrorMessage.ShouldBe("The account description already exists");
         }
 

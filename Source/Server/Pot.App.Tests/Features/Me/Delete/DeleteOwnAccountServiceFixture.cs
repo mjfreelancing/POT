@@ -55,7 +55,7 @@ public class DeleteOwnAccountServiceFixture : PotFixtureBase
         {
             var caller = ArrangeCaller();
 
-            var refusal = ApiDetailErrorFactory.CreateBadRequestError(nameof(Input.Username), caller.RowId, "Refused");
+            var refusal = ApiDetailErrorFactory.CreateBadRequestError(nameof(Input.Username), "Refused");
 
             _deleteCheckerFake
                 .CanDeleteAsync(Arg.Any<Input>(), Arg.Any<UserEntity>(), Arg.Any<CancellationToken>())
