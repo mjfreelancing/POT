@@ -18,13 +18,13 @@ what the product does now, and what it forces people to do instead. Do not descr
 
 <Include when more than one actor has different powers. Omit when there is only one.>
 
-| Actor | Definition |
-| --- | --- |
+| Actor   | Definition                      |
+| ------- | ------------------------------- |
 | <actor> | <what makes someone this actor> |
 
-| Action | Who may perform it | What it affects |
-| --- | --- | --- |
-| <action> | <actor> | <blast radius> |
+| Action   | Who may perform it | What it affects |
+| -------- | ------------------ | --------------- |
+| <action> | <actor>            | <blast radius>  |
 
 <Any authority deliberately withheld, and from whom.>
 
@@ -76,8 +76,8 @@ can judge whether the risk is still acceptable.>
 <The decisions reached during discovery, as a table, so a reader can see what was settled without
 reading the discovery transcript.>
 
-| Decision | Resolution |
-| --- | --- |
+| Decision   | Resolution   |
+| ---------- | ------------ |
 | <decision> | <resolution> |
 
 ## Open Questions
@@ -90,7 +90,9 @@ and each with what is needed to close it. Delete the section when there are none
 ## Manual Test Plan
 
 <Executed by a person against the built product at the end of delivery. Complements the automated
-suites; do not restate what they already assert.>
+suites; do not restate what they already assert. If the automated suites cover every behaviour this
+plan would check, replace the setup, scenarios, cleanup and results table with a single line —
+`**Not required** — <the suites and tests that cover it>` — and say why no manual check adds value.>
 
 ### Setup
 
@@ -116,7 +118,7 @@ suites; do not restate what they already assert.>
 
 ### Results
 
-| ID | Scenario | Result | Notes |
-| --- | --- | --- | --- |
-| A1–A2 | <scenario group> |  |  |
-| B1 | <scenario group> |  |  |
+| ID    | Scenario         | Result | Notes |
+| ----- | ---------------- | ------ | ----- |
+| A1–A2 | <scenario group> |        |       |
+| B1    | <scenario group> |        |       |

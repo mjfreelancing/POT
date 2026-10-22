@@ -36,6 +36,7 @@ project, adjust these four things and nothing else:
 - **Number questions continuously across rounds** (1, 2, 3, …). A ROUND 2 follow-up continues the sequence so any item can be referenced later ("answer 27").
 - **`unknown` is a valid answer.** Record it under Open Questions in the discovery document and carry on. When an answer is `unknown` because the human does not understand the question, explain it plainly and offer a rephrasing instead of recording a meaningless unknown.
 - **Do not invent requirements.** Anything the human has not answered belongs in Open Questions, not in the requirements list.
+- **`Not required` is a decision, not an omission.** A PRD may mark its Manual Test Plan `Not required` only when the automated suites cover every behaviour it would check, and it must name them. Otherwise the plan is written.
 - **The discovery document is scratch.** Delete it once the PRD exists and has been approved.
 - **Offer a commit message at the end of every stage.** The index row and the PRD are the durable artefacts; whether a commit includes the scratch discovery document is the human's call.
 
@@ -92,7 +93,7 @@ When the rounds are done, **ask the human whether to produce the PRD now or wait
 
 1. Create `Docs/Future/PRD-NNN-<slug>.md` from the [PRD template](./references/prd.template.md), which defines the whole shape: header metadata, problem statement, actors and authority, terms, grouped functional requirements, out of scope, known risks, assumptions, decisions, open questions and the manual test plan. Keep every section the template defines; delete a section only when the template says it may be omitted.
 2. Rewrite the `Docs/Future/README.md` row to link to the PRD, keep status `Planning`, refresh the date and the one-line summary.
-3. Complete the **Manual Test Plan** section of that same file: a setup section, scenario groups with referenceable IDs (`A1`, `B2`, …) and expected results, a cleanup section, and a results table. It must be executable by a person against the built product and must not duplicate the automated suites.
+3. Complete the **Manual Test Plan** section of that same file: a setup section, scenario groups with referenceable IDs (`A1`, `B2`, …) and expected results, a cleanup section, and a results table. It must be executable by a person against the built product and must not duplicate the automated suites. If the automated suites cover every behaviour the plan would check, write `**Not required** — <the suites and tests that cover it>` instead and omit the setup, scenarios, cleanup and results table.
 4. Delete the discovery document when the PRD is approved.
 5. Report what was produced and offer a commit message.
 
@@ -106,4 +107,4 @@ When the rounds are done, **ask the human whether to produce the PRD now or wait
 
 - The PRD records decisions; the discovery document records how they were reached. Once the PRD exists, the second is noise.
 - Never reference the PRD number, requirement IDs or this process in code, tests, comments or test names. Those identifiers live only in `Docs/Future/`.
-- The Manual Test Plan is executed at the end of delivery — `prd-delivery` pauses for it before completing a PRD.
+- The Manual Test Plan is executed at the end of delivery — `prd-delivery` pauses for it before completing a PRD — unless the PRD marks it `Not required`, in which case the automated suites named there are the completion gate.

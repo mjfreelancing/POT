@@ -11,8 +11,8 @@
 
 <Include only when the PRD has client work. The human should never have to guess when the UI is ready.>
 
-| After | What can be tested by hand |
-| --- | --- |
+| After     | What can be tested by hand               |
+| --------- | ---------------------------------------- |
 | Stage <n> | <surface and behaviour now exerciseable> |
 
 ## Stage 1 — <short name>
@@ -23,7 +23,7 @@
 - Progress: 0/3 complete
 - Notes: <decisions, deferrals and follow-ups>
 
-- [ ] 1.1 **Red** — <the failing tests that describe this stage's behaviour>
+- [ ] 1.1 **Tests** — <tests that describe this stage's behaviour: red for changed behaviour, already green for a coverage gap>
 - [ ] 1.2 **Green** — <the implementation that makes them pass>
 - [ ] 1.3 Run the targeted tests and format the changed files
 
@@ -35,13 +35,13 @@
 - Progress: 0/2 complete
 - Notes: <decisions, deferrals and follow-ups>
 
-- [ ] 2.1 **Red** — <failing tests>
+- [ ] 2.1 **Tests** — <tests: red for changed behaviour, already green for a coverage gap>
 - [ ] 2.2 **Green** — <implementation>
 
 ## Completion
 
 - [ ] C.1 Broader validation for the affected side(s)
-- [ ] C.2 Run the PRD manual test plan and record the results
+- [ ] C.2 Run the PRD manual test plan and record the results, or record that it is `Not required` and name the automated coverage
 - [ ] C.3 PRD bookkeeping and delete this file
 
 ## Deferred / follow-up
