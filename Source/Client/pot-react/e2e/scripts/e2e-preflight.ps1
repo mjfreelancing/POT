@@ -12,6 +12,12 @@
 
     This script only reports; it never stops a process or a container. Each problem it
     finds is printed with the exact command that resolves it.
+
+    A leftover Playwright `test-server` daemon is reported as a warning even though it holds
+    no E2E port: the daemon outlives a killed run, the next run can attach to it, and the
+    abandoned job's teardown then stops the Vite server mid-run (every test failing with
+    ERR_CONNECTION_REFUSED at 5175 while the API stays up). `npm run e2e:clean` stops it and
+    `npm run e2e:all:dev:log` clears it automatically before starting.
 .PARAMETER SkipDocker
     Skip the container and Docker daemon checks (useful when Docker Desktop is known to
     be down and the intent is to inspect ports only).
@@ -27,6 +33,8 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+
+. (Join-Path $PSScriptRoot 'e2e-processes.ps1')
 
 # E2E harness endpoints. Keep in sync with playwright.config.ts and e2e/README.md.
 $clientPort = 5175
@@ -175,45 +183,39 @@ foreach ($entry in $toleratedPorts) {
 
 Write-Section 'Stray processes'
 
-$strayProcesses = @()
+$daemons = @(Get-PlaywrightDaemons)
+$testClients = @(Get-PlaywrightTestClients)
+$viteServers = @(Get-ViteDevServers)
 
-foreach ($process in @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue)) {
-    $commandLine = $process.CommandLine
-
-    if (-not $commandLine) {
-        continue
-    }
-
-    # A running test session. `test-server` (VS Code Test Explorer) and `@playwright/mcp`
-    # bind no E2E port, so they are deliberately not treated as strays.
-    if ($commandLine -like '*playwright*cli.js*test *') {
-        $strayProcesses += $process
-        continue
-    }
-
-    # A Vite dev server that outlived its Playwright parent.
-    if ($commandLine -like '*vite*' -and $commandLine -notlike '*test-server*') {
-        $strayProcesses += $process
-    }
+foreach ($daemon in $daemons) {
+    Write-Warn ("Playwright test-server daemon already running (pid {0}, started {1:yyyy-MM-dd HH:mm:ss})" -f $daemon.ProcessId, $daemon.CreationDate)
+    Write-Host ("         {0}" -f (Get-ShortCommandLine $daemon.CommandLine)) -ForegroundColor DarkGray
+    $warnings += ("Playwright daemon already running (pid {0})" -f $daemon.ProcessId)
 }
 
-if ($strayProcesses.Count -eq 0) {
-    Write-Pass 'no stray Vite or Playwright test processes'
+if ($daemons.Count -gt 0) {
+    Write-Host '         Normal after any run and for the editor''s test discovery. It only matters when the' -ForegroundColor DarkGray
+    Write-Host '         daemon belongs to a KILLED run: it still owns that run''s webServers, and its' -ForegroundColor DarkGray
+    Write-Host '         teardown can stop the next run''s Vite server (ERR_CONNECTION_REFUSED at 5175).' -ForegroundColor DarkGray
+    Write-Host '         resolve: npm run e2e:clean, or run through e2e:all:dev:log which clears it first' -ForegroundColor DarkGray
 }
-else {
-    foreach ($process in $strayProcesses) {
-        $commandLine = $process.CommandLine
 
-        if ($commandLine.Length -gt 150) {
-            $commandLine = $commandLine.Substring(0, 150) + '...'
-        }
+foreach ($client in $testClients) {
+    Write-Warn ("an E2E run is in progress: {0} (pid {1})" -f $client.Name, $client.ProcessId)
+    Write-Host ("         {0}" -f (Get-ShortCommandLine $client.CommandLine)) -ForegroundColor DarkGray
+    Write-Host '         two stacks cannot share ports 5175/5242 - let it finish first' -ForegroundColor DarkGray
+    $warnings += ("an E2E run is in progress (pid {0})" -f $client.ProcessId)
+}
 
-        Write-Warn ("{0} (pid {1})" -f $process.Name, $process.ProcessId)
-        Write-Host ("         {0}" -f $commandLine) -ForegroundColor DarkGray
-    }
+foreach ($server in $viteServers) {
+    Write-Warn ("stray Vite dev server: {0} (pid {1})" -f $server.Name, $server.ProcessId)
+    Write-Host ("         {0}" -f (Get-ShortCommandLine $server.CommandLine)) -ForegroundColor DarkGray
+    Write-Host '         resolve: npm run e2e:clean' -ForegroundColor DarkGray
+    $warnings += ("stray Vite dev server (pid {0})" -f $server.ProcessId)
+}
 
-    Write-Host '         resolve: Stop-Process -Id <pid> -Force for each process above' -ForegroundColor DarkGray
-    $warnings += ("{0} stray process(es) found" -f $strayProcesses.Count)
+if ($daemons.Count -eq 0 -and $testClients.Count -eq 0 -and $viteServers.Count -eq 0) {
+    Write-Pass 'no leftover Playwright daemon, running E2E session or stray Vite server'
 }
 
 if (-not $SkipDocker) {

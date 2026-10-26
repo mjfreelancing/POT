@@ -55,6 +55,9 @@ export default defineConfig({
       port: 5175,
       reuseExistingServer: false,
       timeout: 180000,
+      // Same reasoning as playwright.config.ts: keep the client server's output so a run
+      // that could not connect still records what that server did.
+      stdout: 'pipe',
     },
   ],
   projects: [
@@ -118,4 +121,3 @@ export default defineConfig({
     },
   ],
 });
-

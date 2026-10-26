@@ -124,6 +124,12 @@ export default defineConfig({
       // never full-reload a page mid-test — removes the load-induced reload
       // flake (userSettings sheet wiped to /dashboard, loginFlow form to /login).
       env: { E2E: '1' },
+      // Pipe Vite's output instead of ignoring it, so the `[WebServer]` lines reach the
+      // console and the logged run's e2e-<timestamp>.log. A process that is KILLED writes
+      // nothing, but port/optimizer/crash messages are the only record of what the dev
+      // server was doing when a run could not connect to it (`-DebugWebServer` on
+      // e2e-logged-run.ps1 additionally logs the webServer lifecycle).
+      stdout: 'pipe',
     },
   ],
   projects: [
@@ -203,4 +209,3 @@ export default defineConfig({
     },
   ],
 });
-

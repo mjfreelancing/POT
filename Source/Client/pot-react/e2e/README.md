@@ -18,6 +18,7 @@ All scripts run from `Source/Client/pot-react`. Exact definitions are in `packag
 
 ```bash
 npm run e2e:preflight       # check ports/processes/containers before a run (read-only)
+npm run e2e:clean           # stop what an interrupted run left behind (daemon, stray Vite/API)
 npm run e2e                 # alias of `npm run e2e:chromium` (chromium project)
 npm run e2e:dev             # ALL 4 projects via playwright.config.ts
 npm run e2e:all             # alias of `npm run e2e:all:dev`
@@ -49,6 +50,24 @@ config targets a **built client**. Both run the same 4 projects.
 Full matrix requires Docker Desktop + the .NET SDK. Each run does a heavy setup:
 Testcontainers Postgres (port `55432`) → migrations → `baseline.sql` seed → financial
 import (63 records) → renewal.
+
+---
+
+## Run hygiene (read before trusting a failed matrix)
+
+A matrix that cannot connect to the client is almost always a **process-lifecycle** problem,
+not a product problem. `npm run e2e:all:dev:log` is the default way to run it, because every
+run then starts from a clean process state and keeps its evidence:
+
+1. `npm run e2e:preflight` — read-only. Fails only on something that will abort or block the
+   run (a harness port taken, Docker unavailable); warns about leftovers.
+2. `npm run e2e:clean` — stops the Playwright daemon, a stray Vite server and the harness API.
+   Never touches Docker containers; refuses to run while a matrix is in progress.
+3. `npm run e2e:all:dev:log` — clears a leftover Playwright daemon itself, then writes
+   `e2e/logs/e2e-<timestamp>.log` and `e2e-ports-<timestamp>.log`.
+
+A plain `npm run e2e:all:dev` is fine when the machine is known-clean; it has no cleanup and
+no log, so a failure from it is not diagnosable after the fact.
 
 ---
 
@@ -278,17 +297,43 @@ when the client production build changes.
 
 - **Every test fails with `net::ERR_CONNECTION_REFUSED` at `http://127.0.0.1:5175/...`** (or
   WebKit's `Could not connect to server`): nothing was listening on the client port for the
-  duration of the run, while the API stayed up. Start from `npm run e2e:preflight` to confirm
-  the ports/processes/containers are clear, then re-run as `npm run e2e:all:dev:log` so the
-  next failure keeps its evidence:
+  duration of the run, while the API stayed up. Read the port timeline **before** anything else:
+
+  | Timeline reading                                           | What it means                                                                          |
+  | ---------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+  | `client=False` from the first sample                       | the Vite server never started — something held 5175                                    |
+  | `client=True`, then `client=False` for the rest of the run | the Vite server was serving and was **stopped mid-run** — see the daemon bullet below  |
+  | `client=True` throughout, tests still refused              | the tests hit a different port/host than the server bound (`127.0.0.1` vs `localhost`) |
+
+  Recover with `npm run e2e:clean`, then re-run as `npm run e2e:all:dev:log` so the next
+  failure keeps its evidence:
   - `e2e/logs/e2e-<timestamp>.log` — console output, including the `[WebServer]` lines
-    Playwright forwards from the Vite dev server.
+    Playwright forwards from the Vite dev server (`webServer[1]` pipes Vite's stdout; the API
+    redirects its own output to `Source/Server/e2e-server.log`).
   - `e2e/logs/e2e-ports-<timestamp>.log` — client/API/Postgres/report port state, free memory
     and the container count sampled every 10 s. A `client=False` reading from early on (or a
     `client=True` that turns `False`) is the moment the Vite server was not serving.
 
+  A process that is **killed** writes nothing, so an empty `[WebServer]` section is itself a
+  finding: re-run with `pwsh ./e2e/scripts/e2e-logged-run.ps1 -DebugWebServer` (sets
+  `DEBUG=pw:webserver`) to log when Playwright starts, loses and stops each webServer.
+
   The HTML report contains **no** webServer output, and `test-results/` + `playwright-report/`
   are cleared by the next run — which is why the logged run exists.
+
+- **Leftover Playwright `test-server` daemon**: `playwright test` is a thin CLI client for a
+  long-lived daemon (`node_modules/@playwright/test/cli.js test-server`). An **interrupted**
+  run (closed terminal, agent timeout, native crash such as exit code `-1073740791` /
+  `0xC0000409`, Ctrl+C during startup) leaves that daemon behind. It holds no E2E port — it
+  listens on a random one — so a port check never sees it, and the next run can attach to it;
+  the abandoned job's teardown then stops the new run's Vite server a few seconds in, which is
+  the `client=True` → `client=False` timeline above. A daemon being **present** is normal — a
+  completed run leaves one (that is how the next run avoids paying startup cost) and the VS
+  Code Playwright test discovery keeps one alive — so the preflight only warns about it. The
+  reliable rule is: **after a run that died abnormally, run `npm run e2e:clean` before the
+  next one.** `npm run e2e:clean` stops the daemon, `npm run e2e:all:dev:log` clears it before
+  starting (and prints its pid and start time in the log header, which shows whether it
+  outlived a killed run).
 
 - **`Error: http://localhost:5175 is already used` / `…5242 is already used`**: an occupant
   existed at startup, so Playwright aborted before any test ran (`reuseExistingServer: false`).
@@ -305,3 +350,4 @@ when the client production build changes.
   Reduction note; re-run the matrix once (retries: 1) before assuming a code bug.
 - **Browser downloads / PWA**: the suite targets the dev server; export/download tests use
   Playwright's `page.waitForEvent('download')` (see 8.7).
+

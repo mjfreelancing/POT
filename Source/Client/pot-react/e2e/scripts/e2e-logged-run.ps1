@@ -28,6 +28,10 @@
 .PARAMETER SampleSeconds
     Interval between port/resource samples. Container counts are sampled every third
     interval to keep the `docker` CLI calls off the hot path.
+.PARAMETER DebugWebServer
+    Sets DEBUG=pw:webserver for the run, so Playwright logs the webServers it starts, the exit
+    code of one that dies and when it stops them. Use it when a failure left the console log
+    with no `[WebServer]` lines: a process that is killed writes nothing itself.
 .EXAMPLE
     npm run e2e:all:dev:log
 
@@ -36,16 +40,22 @@
 
 .EXAMPLE
     pwsh ./e2e/scripts/e2e-logged-run.ps1 -TestPath e2e/tests/rendering/projectionsRendering.test.ts
+
+.EXAMPLE
+    pwsh ./e2e/scripts/e2e-logged-run.ps1 -DebugWebServer
 #>
 
 param(
     [string]$Script = 'e2e:all:dev',
     [string]$TestPath = '',
     [string]$Project = 'chromium',
-    [int]$SampleSeconds = 10
+    [int]$SampleSeconds = 10,
+    [switch]$DebugWebServer
 )
 
 $ErrorActionPreference = 'Stop'
+
+. (Join-Path $PSScriptRoot 'e2e-processes.ps1')
 
 # e2e/scripts -> e2e -> the client project root (the package.json that owns these scripts).
 $clientDirectory = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
@@ -63,6 +73,24 @@ Write-Host (" console log:    {0}" -f $outputLog) -ForegroundColor DarkGray
 Write-Host (" port timeline:  {0}" -f $sampleLog) -ForegroundColor DarkGray
 Write-Host '═══════════════════════════════════════════════════════' -ForegroundColor Cyan
 Write-Host ''
+
+# A daemon left behind by an interrupted run still owns that run's webServers, and its
+# teardown stops this run's Vite server a few seconds in (every test then fails with
+# ERR_CONNECTION_REFUSED at 5175 while the API stays healthy). Clear it here so this run
+# starts with a daemon of its own.
+$testClients = @(Get-PlaywrightTestClients)
+
+if ($testClients.Count -gt 0) {
+    Write-Host ' An E2E run is already in progress - leaving its Playwright daemon alone.' -ForegroundColor Yellow
+    Write-Host ' Two stacks cannot share ports 5175/5242; stop that run first.' -ForegroundColor Yellow
+    Write-Host ''
+}
+else {
+    foreach ($daemon in @(Get-PlaywrightDaemons)) {
+        Write-Host (" Cleared leftover Playwright daemon (pid {0}, started {1:yyyy-MM-dd HH:mm:ss})" -f $daemon.ProcessId, $daemon.CreationDate) -ForegroundColor Yellow
+        Stop-E2eProcess -Processes $daemon | Out-Null
+    }
+}
 
 $sampler = Start-Job -ScriptBlock {
     param($TargetPath, $IntervalSeconds)
@@ -107,6 +135,14 @@ if ($TestPath) {
     $npmArguments = @('run', 'e2e:dev', '--', $TestPath, "--project=$Project")
 }
 
+$previousDebug = $env:DEBUG
+
+if ($DebugWebServer) {
+    $env:DEBUG = if ($previousDebug) { "$previousDebug,pw:webserver" } else { 'pw:webserver' }
+    Write-Host ' DEBUG=pw:webserver - Playwright will log every webServer start, exit and stop.' -ForegroundColor DarkGray
+    Write-Host ''
+}
+
 $writer = [System.IO.StreamWriter]::new($outputLog, $false, [System.Text.UTF8Encoding]::new($false))
 $writer.AutoFlush = $true
 $exitCode = 0
@@ -129,6 +165,7 @@ try {
 }
 finally {
     $ErrorActionPreference = $previousErrorActionPreference
+    $env:DEBUG = $previousDebug
     $writer.Dispose()
     Stop-Job $sampler -ErrorAction SilentlyContinue
     Receive-Job $sampler -ErrorAction SilentlyContinue | Out-Null
@@ -166,10 +203,12 @@ Write-Host (" port timeline: {0}" -f $sampleLog) -ForegroundColor DarkGray
 if ($exitCode -ne 0) {
     Write-Host ''
     Write-Host ' Diagnostics to compare against the timeline:' -ForegroundColor Yellow
-    Write-Host ("   Select-String -Path '{0}' -Pattern '\[WebServer\]|Error|already used|Timed out'" -f $outputLog) -ForegroundColor DarkGray
+    Write-Host ("   Select-String -Path '{0}' -Pattern '\[WebServer\]|Error|already used|Timed out|webServer'" -f $outputLog) -ForegroundColor DarkGray
     Write-Host ("   Get-Content '{0}'" -f $sampleLog) -ForegroundColor DarkGray
     Write-Host ' A client=False reading from early in the timeline means the Vite server was not serving;' -ForegroundColor Yellow
     Write-Host ' a client=True reading that turns False marks the moment it went away.' -ForegroundColor Yellow
+    Write-Host ' Empty [WebServer] output for a killed process is expected - re-run with -DebugWebServer' -ForegroundColor Yellow
+    Write-Host ' (pwsh ./e2e/scripts/e2e-logged-run.ps1 -DebugWebServer) to log the webServer lifecycle.' -ForegroundColor Yellow
 }
 
 Write-Host '═══════════════════════════════════════════════════════' -ForegroundColor Cyan
