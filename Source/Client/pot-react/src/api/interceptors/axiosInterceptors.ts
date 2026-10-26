@@ -26,11 +26,14 @@
  * 4. Common Issues:
  *    - "Unexpected Error" means an HTTP status code not explicitly handled by the switch
  *    - "Server Error" means 500/502/503/504:
- *      - Empty apiError (proxy/nginx responding but server not running): "Unable to connect to the server."
- *      - Populated apiError (server returned actual error): Shows server's error detail/title
+ *      - 502/503/504 with no readable problem body (a proxy answered but the application did not):
+ *        "Unable to connect to the server."
+ *      - Any other 5xx, or one whose body carries a message: the server's detail/title
+ *    - The body is read once, at this boundary: a proxy page, an empty body, JSON that is not
+ *      problem shaped or a blob of either counts as no body at all, so no markup becomes a message
  *    - "Network Error" means no HTTP response at all (true connection failure, timeout, CORS)
  *    - Double-processing is normal and handled by the FailResult check
- *    - Missing error messages may mean apiError is empty - check the data structure
+ *    - An empty apiError means the body could not be read - the fixed copy for the status applies
  *
  * 5. Future Considerations:
  *    - When adding new error types:
@@ -48,7 +51,7 @@ import { logger } from '@/concerns';
 import { FailResult } from '@/lib';
 
 import { addCorrelationId, getNetworkError } from '../apiHelpers';
-import type { ApiError, ApiErrorResponse } from '../errors';
+import type { ApiError } from '../errors';
 import {
   AuthenticationError,
   BadRequestError,
@@ -63,9 +66,11 @@ import {
   getNotFoundMessage,
   getRateLimitedMessage,
   getServerErrorMessage,
+  getUnreachableMessage,
   MethodNotAllowedError,
   NotFoundError,
   RateLimitedError,
+  readApiErrorResponse,
   ServerError,
   UnexpectedError,
 } from '../errors';
@@ -122,10 +127,11 @@ const responseErrorHandler = async (error: AxiosError) => {
 
   // Handle HTTP errors with response data
   // These are mapped to specific domain errors based on status code
-  // If response.data is empty, we still create the error but with default messages
+  // The body is read before the message is chosen: whatever axios handed back - a problem body, a
+  // proxy page, a blob, nothing at all - is reduced once to the members that can be trusted
   if (error.response) {
     const { status, data } = error.response;
-    const apiError = (data as ApiErrorResponse) || {}; // Handle empty response
+    const apiError = await readApiErrorResponse(data);
 
     logger.error(
       'API',
@@ -169,10 +175,14 @@ const responseErrorHandler = async (error: AxiosError) => {
         break;
 
       case 500:
+        errorResult = new ServerError(getServerErrorMessage(apiError));
+        break;
+
       case 502:
       case 503:
       case 504:
-        errorResult = new ServerError(getServerErrorMessage(apiError));
+        // Whatever answered, the request never reached the application.
+        errorResult = new ServerError(getUnreachableMessage(apiError));
         break;
 
       default:

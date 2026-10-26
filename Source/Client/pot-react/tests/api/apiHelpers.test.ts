@@ -7,6 +7,7 @@ import {
   addCorrelationId,
   getNetworkError,
   getNetworkErrorMessage,
+  readJsonBody,
 } from '@/api/apiHelpers';
 import { NetworkError } from '@/api/errors/apiErrors';
 
@@ -276,6 +277,76 @@ describe('API helper utilities', () => {
 
       expect(result.headers).toBeDefined();
       expect(result.headers['X-Correlation-ID']).toEqual(mockUuid);
+    });
+  });
+
+  describe('readJsonBody', () => {
+    const problem = {
+      status: 400,
+      title: 'One or more validation errors occurred.',
+      errors: { email: ['Invalid email format'] },
+    };
+
+    const proxyPage =
+      '<html><head><title>502 Bad Gateway</title></head><body><h1>502 Bad Gateway</h1><hr><center>nginx</center></body></html>';
+
+    it('should read a JSON string body', async () => {
+      const result = await readJsonBody(JSON.stringify(problem));
+
+      expect(result).toEqual(problem);
+    });
+
+    it('should read a body the client already parsed', async () => {
+      const result = await readJsonBody(problem);
+
+      expect(result).toEqual(problem);
+    });
+
+    it('should read a JSON blob by its content type', async () => {
+      const blob = new Blob([JSON.stringify(problem)], {
+        type: 'application/problem+json',
+      });
+
+      const result = await readJsonBody(blob);
+
+      expect(result).toEqual(problem);
+    });
+
+    it('should read an untyped blob as JSON when it parses', async () => {
+      const blob = new Blob([JSON.stringify(problem)]);
+
+      const result = await readJsonBody(blob);
+
+      expect(result).toEqual(problem);
+    });
+
+    it('should treat an html page as no body', async () => {
+      const result = await readJsonBody(proxyPage);
+
+      expect(result).toBeUndefined();
+      expect(result).not.toBe(proxyPage);
+    });
+
+    it('should treat an html blob as no body', async () => {
+      const blob = new Blob([proxyPage], { type: 'text/html' });
+
+      const result = await readJsonBody(blob);
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should treat a plain-text page as no body', async () => {
+      const blob = new Blob(['502 Bad Gateway'], { type: 'text/plain' });
+
+      const result = await readJsonBody(blob);
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should treat an empty body as no body', async () => {
+      expect(await readJsonBody('')).toBeUndefined();
+      expect(await readJsonBody(undefined)).toBeUndefined();
+      expect(await readJsonBody(null)).toBeUndefined();
     });
   });
 });

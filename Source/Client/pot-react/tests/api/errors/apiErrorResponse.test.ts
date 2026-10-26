@@ -5,6 +5,7 @@ import {
   getBadRequestMessage,
   getConflictMessage,
   getServerErrorMessage,
+  readApiErrorResponse,
 } from '@/api/errors/apiErrorResponse';
 
 describe('getConflictMessage', () => {
@@ -90,6 +91,14 @@ describe('getServerErrorMessage', () => {
 
     expect(result).toBe('The server encountered an error. Please try again.');
   });
+
+  it('should keep the server fallback for a body it has nothing to say about', () => {
+    // An unreachable application is a 502, 503 or 504 and is decided by the status, not by an
+    // empty 500 body.
+    const result = getServerErrorMessage({});
+
+    expect(result).toBe('The server encountered an error. Please try again.');
+  });
 });
 
 describe('getBadRequestMessage', () => {
@@ -134,5 +143,97 @@ describe('getBadRequestMessage', () => {
     const result = getBadRequestMessage(error);
 
     expect(result).toBe('One or more validation errors occurred.');
+  });
+});
+
+describe('readApiErrorResponse', () => {
+  it('should read every member a problem body carries', async () => {
+    const body = {
+      type: 'urn:pot:problem:duplicate-value',
+      title: 'Conflict',
+      status: 409,
+      detail: 'The account description already exists',
+      traceId: '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01',
+      correlationId: '8e9f7c6d-5b4a-3f2e-1d0c-9a8b7c6d5e4f',
+      instance: '/api/accounts',
+    };
+
+    const result = await readApiErrorResponse(body);
+
+    expect(result).toEqual(body);
+  });
+
+  it('should read the validation map, the general key included', async () => {
+    const body = {
+      status: 400,
+      title: 'One or more validation errors occurred.',
+      errors: {
+        email: ['Invalid email format'],
+        '': ['The request could not be read.'],
+      },
+    };
+
+    const result = await readApiErrorResponse(body);
+
+    expect(result.errors).toEqual(body.errors);
+  });
+
+  it('should read a problem body that arrives as a blob', async () => {
+    const body = { status: 500, detail: 'An unexpected error occurred.' };
+    const blob = new Blob([JSON.stringify(body)], {
+      type: 'application/problem+json',
+    });
+
+    const result = await readApiErrorResponse(blob);
+
+    expect(result.detail).toBe('An unexpected error occurred.');
+  });
+
+  it('should keep only the members that are text', async () => {
+    const body = { detail: 42, title: {}, type: [], instance: null };
+
+    const result = await readApiErrorResponse(body);
+
+    expect(result).toEqual({});
+  });
+
+  it('should drop a blank member so it cannot become an empty message', async () => {
+    const result = await readApiErrorResponse({ status: 409, detail: '   ' });
+
+    expect(result.detail).toBeUndefined();
+  });
+
+  it.each([
+    ['a string', 'not a map'],
+    ['a field that is not an array', { email: 'Invalid email format' }],
+    ['a message that is not a string', { email: [1, 2] }],
+    ['an array of blank messages', { email: ['  '] }],
+  ])(
+    'should drop an errors member that is %s',
+    async (_description, errors) => {
+      const result = await readApiErrorResponse({ status: 400, errors });
+
+      expect(result.errors).toBeUndefined();
+    },
+  );
+
+  it('should keep the fields of a partly unreadable map', async () => {
+    const result = await readApiErrorResponse({
+      status: 400,
+      errors: { email: ['Invalid email format'], broken: 5 },
+    });
+
+    expect(result.errors).toEqual({ email: ['Invalid email format'] });
+  });
+
+  it.each([
+    ['an html page', '<html><body><h1>502 Bad Gateway</h1></body></html>'],
+    ['an empty body', ''],
+    ['json that is not problem shaped', { message: 'boom' }],
+    ['a json array', [{ detail: 'not a problem' }]],
+  ])('should treat %s as no body at all', async (_description, body) => {
+    const result = await readApiErrorResponse(body);
+
+    expect(result).toEqual({});
   });
 });

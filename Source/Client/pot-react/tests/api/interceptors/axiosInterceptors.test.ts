@@ -493,4 +493,155 @@ describe('Axios Interceptors', () => {
       await expect(rejectionPromise).rejects.not.toBeInstanceOf(FailResult);
     });
   });
+
+  describe('Error bodies the client cannot read', () => {
+    // What a reverse proxy answers with when it cannot reach the application.
+    const proxyPage =
+      '<html><head><title>502 Bad Gateway</title></head><body><h1>502 Bad Gateway</h1><hr><center>nginx</center></body></html>';
+
+    // Every shape a transport failure can hand back, each resolved to the message a caller shows.
+    const unreadableBodies: [string, () => unknown][] = [
+      ['an html page', () => proxyPage],
+      ['an empty body', () => ''],
+      ['a missing body', () => undefined],
+      ['an html blob', () => new Blob([proxyPage], { type: 'text/html' })],
+      ['json that is not problem shaped', () => ({ message: 'boom' })],
+    ];
+
+    const createAxiosError = (status: number, data: unknown): AxiosError => {
+      const axiosError = new AxiosError(`HTTP ${status}`);
+
+      axiosError.response = {
+        status,
+        data,
+        headers: {},
+        config: {
+          headers: new AxiosHeaders({ 'X-Correlation-ID': 'test-id' }),
+        } as InternalAxiosRequestConfig,
+        statusText: String(status),
+      };
+
+      return axiosError;
+    };
+
+    const messageFor = async (
+      status: number,
+      data: unknown,
+    ): Promise<string> => {
+      const failResult = await rejectToFailResult(
+        responseErrorHandler(createAxiosError(status, data)),
+      );
+
+      return failResult.error.description;
+    };
+
+    const expectMessageOnly = (message: string): void => {
+      expect(message.trim()).not.toBe('');
+      expect(message).not.toContain('<');
+    };
+
+    it.each(unreadableBodies)(
+      'should show the validation fallback for a 400 carrying %s',
+      async (_description, body) => {
+        const message = await messageFor(400, body());
+
+        expect(message).toBe('The request was not valid.');
+        expectMessageOnly(message);
+      },
+    );
+
+    it.each(unreadableBodies)(
+      'should show the conflict fallback for a 409 carrying %s',
+      async (_description, body) => {
+        const message = await messageFor(409, body());
+
+        expect(message).toBe('A conflict error occurred');
+        expectMessageOnly(message);
+      },
+    );
+
+    it.each(unreadableBodies)(
+      'should show the server fallback for a 500 carrying %s',
+      async (_description, body) => {
+        const message = await messageFor(500, body());
+
+        expect(message).toBe(
+          'The server encountered an error. Please try again.',
+        );
+        expectMessageOnly(message);
+      },
+    );
+
+    it.each(unreadableBodies)(
+      'should read a 504 carrying %s as unreachable',
+      async (_description, body) => {
+        const message = await messageFor(504, body());
+
+        expect(message).toBe('Unable to connect to the server.');
+        expectMessageOnly(message);
+      },
+    );
+
+    it.each([502, 503])(
+      'should read a %s with no body as unreachable',
+      async status => {
+        const message = await messageFor(status, '');
+
+        expect(message).toBe('Unable to connect to the server.');
+      },
+    );
+
+    it('should read the validation messages a download brought back as a blob', async () => {
+      const blob = new Blob(
+        [
+          JSON.stringify({
+            status: 400,
+            title: 'One or more validation errors occurred.',
+            errors: { email: ['Invalid email format'] },
+          }),
+        ],
+        { type: 'application/problem+json' },
+      );
+
+      const message = await messageFor(400, blob);
+
+      expect(message).toBe('Invalid email format');
+    });
+
+    it('should read a stale-tag conflict that arrives as a blob', async () => {
+      const blob = new Blob(
+        [
+          JSON.stringify({
+            status: 409,
+            type: 'urn:pot:problem:stale-entity-tag',
+            detail:
+              'The entity tag for the Account does not match the current record',
+          }),
+        ],
+        { type: 'application/problem+json' },
+      );
+
+      const message = await messageFor(409, blob);
+
+      expect(message).toBe(
+        'A conflicting update has been performed by another user. Refresh and try again.',
+      );
+    });
+
+    it.each([
+      [401, 'Invalid username or password'],
+      [403, 'You do not have permission to access this resource'],
+      [404, 'The requested resource was not found'],
+      [405, 'The requested method is not allowed for this resource'],
+      [429, 'Too many requests. Please wait a moment and try again.'],
+    ])(
+      'should keep the fixed copy for a %s whatever the body is',
+      async (status, expected) => {
+        const message = await messageFor(status, proxyPage);
+
+        expect(message).toBe(expected);
+        expectMessageOnly(message);
+      },
+    );
+  });
 });

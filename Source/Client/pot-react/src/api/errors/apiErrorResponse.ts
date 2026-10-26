@@ -1,3 +1,5 @@
+import { readJsonBody } from '../apiHelpers';
+
 type ApiErrorResponse = {
   type?: string;
   title?: string;
@@ -12,6 +14,90 @@ type ApiErrorResponse = {
   correlationId?: string;
   instance?: string;
 };
+
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+};
+
+// A member is read only when it is text: any other type is a body this client cannot interpret, and
+// a blank one would leave a caller with an empty message.
+const readText = (value: unknown): string | undefined => {
+  return typeof value === 'string' && value.trim().length > 0
+    ? value
+    : undefined;
+};
+
+const readMessages = (value: unknown): string[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter(
+    (message): message is string =>
+      typeof message === 'string' && message.trim().length > 0,
+  );
+};
+
+const readErrors = (value: unknown): Record<string, string[]> | undefined => {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+
+  const fields = Object.entries(value)
+    .map(([field, messages]) => [field, readMessages(messages)] as const)
+    .filter(([, messages]) => messages.length > 0);
+
+  return fields.length > 0 ? Object.fromEntries(fields) : undefined;
+};
+
+// A body is reduced to the members it can be trusted to carry: an unknown member, a member of the
+// wrong type and a blank member are all dropped, so every getter below stays total.
+const toApiErrorResponse = (value: unknown): ApiErrorResponse => {
+  const error: ApiErrorResponse = {};
+
+  if (!isRecord(value)) {
+    return error;
+  }
+
+  const textMembers = [
+    'type',
+    'title',
+    'detail',
+    'traceId',
+    'correlationId',
+    'instance',
+  ] as const;
+
+  for (const member of textMembers) {
+    const text = readText(value[member]);
+
+    if (text !== undefined) {
+      error[member] = text;
+    }
+  }
+
+  const errors = readErrors(value.errors);
+
+  if (errors !== undefined) {
+    error.errors = errors;
+  }
+
+  if (typeof value.status === 'number') {
+    error.status = value.status;
+  }
+
+  return error;
+};
+
+/**
+ * Reads any error body into the problem shape
+ *
+ * A body this client cannot interpret - a page written by a reverse proxy, an empty body, JSON that
+ * is not problem shaped - is treated as absent, so it can never become a message.
+ */
+async function readApiErrorResponse(data: unknown): Promise<ApiErrorResponse> {
+  return toApiErrorResponse(await readJsonBody(data));
+}
 
 const getNotFoundMessage = (_: ApiErrorResponse): string => {
   return 'The requested resource was not found';
@@ -60,27 +146,17 @@ const getBadRequestMessage = (error: ApiErrorResponse): string => {
 };
 
 const getServerErrorMessage = (error: ApiErrorResponse): string => {
-  // Check if we actually have error data from the server
-  // If the server isn't running, error object will be empty
-  const hasErrorData =
-    error.detail || error.title || error.type || error.traceId;
+  return (
+    error.detail ??
+    error.title ??
+    'The server encountered an error. Please try again.'
+  );
+};
 
-  if (!hasErrorData) {
-    // Empty error object = server not responding
-    return 'Unable to connect to the server.';
-  }
-
-  // Server is running and returned actual error data
-  if (error.detail) {
-    return error.detail;
-  }
-
-  if (error.title) {
-    return error.title;
-  }
-
-  // Fallback for malformed server errors
-  return 'The server encountered an error. Please try again.';
+// A 502, 503 or 504 is answered by whatever sits in front of the application, so a body with no
+// message of its own means the application was never reached rather than that it failed.
+const getUnreachableMessage = (error: ApiErrorResponse): string => {
+  return error.detail ?? error.title ?? 'Unable to connect to the server.';
 };
 
 const getErrorTitle = (error: ApiErrorResponse): string => {
@@ -97,5 +173,7 @@ export {
   getNotFoundMessage,
   getRateLimitedMessage,
   getServerErrorMessage,
+  getUnreachableMessage,
+  readApiErrorResponse,
 };
 export type { ApiErrorResponse };

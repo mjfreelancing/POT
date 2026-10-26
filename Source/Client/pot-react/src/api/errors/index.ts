@@ -11,6 +11,8 @@ export {
   getNotFoundMessage,
   getRateLimitedMessage,
   getServerErrorMessage,
+  getUnreachableMessage,
+  readApiErrorResponse,
 } from './apiErrorResponse';
 
 // Error types and classes
