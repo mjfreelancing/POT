@@ -358,7 +358,9 @@ embedded assembly-qualified type name and its length prefix are all correct, the
 format delta to the CSV entries and leave the other entries byte-identical. Do not relabel the
 version integer alone: `MetadataSerializer.Deserialize<T>` constructs the type the payload
 names, so a payload naming the previous version's type throws `InvalidCastException` (a 500),
-even though a genuine stale package is rejected cleanly (422) by the version gate. API output
+even though a genuine stale package is rejected cleanly by the version gate (a `400`: this ADR
+records `422`, which [PRD-030](PRD-030-problem-details-consolidation.md) replaced when every
+validation failure became a `400`). API output
 for a local run is written to `../../Server/e2e-server.log` (survives the run; overwritten each
 run), which is where an import failure's exception appears — the harness reports only a generic
 500 otherwise.

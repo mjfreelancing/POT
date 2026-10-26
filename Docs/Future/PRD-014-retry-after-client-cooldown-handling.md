@@ -32,7 +32,7 @@ The server already returns `429 Too Many Requests` with a `Retry-After` header a
 - On rejection (`RateLimiterOptionsSetup.OnRejected`):
   - Status code `429`.
   - `Retry-After` response header set to seconds when the lease exposes `RetryAfter` metadata.
-  - ProblemDetails body produced by `ApiDetailErrorFactory.CreateTooManyRequests(...)`: error code `TooManyRequests`, detail `"Too many requests. Please wait and try again after {n} seconds."`
+  - ProblemDetails body produced by `ApiDetailErrorFactory.CreateTooManyRequests(...)`: error code `TooManyRequests`, detail `"Too many requests. Please wait and try again after {n} seconds."` ([PRD-030](PRD-030-problem-details-consolidation.md) removed the error code and every other member from the wire - a 429 carries one `detail` and no `errors`; the header and detail this document relies on are unchanged)
 - `Retry-After` is listed in `Access-Control-Expose-Headers` by the default CORS policy (`CorsOptionsSetup`). It is not a CORS-safelisted response header, and the client calls the API cross-origin, so without this the browser hides the header from script and R1 would always take its fallback path. Added 2026-10-19.
 - Integration coverage already asserts 429 + `Retry-After` > 0 and that `Retry-After` is exposed to the configured origin (`HeadersAndRateLimitFixture`, `CorsFixture`).
 - Separate application-layer OTP cooldown (`OtpService`, 3 attempts / 5 minutes) returns a `retryMinutes` value that the client already renders as a countdown — distinct from the HTTP 429 middleware path.

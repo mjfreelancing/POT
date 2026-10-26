@@ -10,6 +10,8 @@
 > - Every `422 Unprocessable Entity` below is now **`400 Bad Request`**. The server no longer has an
 >   unprocessable-entity error type, and every validation or refusal is reported as 400 with the same
 >   ProblemDetails body.
+> - [PRD-030](PRD-030-problem-details-consolidation.md) later reshaped that body: a `400` carries the validation
+>   problem's `errors` map of field to messages and no `detail`, so a refusal's message is read from the map.
 > - A configured platform administrator is no longer permanently protected. They may be deleted and disabled
 >   while another live (enabled) platform administrator exists, and a site may be deleted unless it contains
 >   the last live platform administrator.
@@ -194,34 +196,34 @@ Planned coverage, following the existing unit/integration split.
 
 ## Decisions
 
-| ID   | Decision                                                  | Resolution                                                                                                                                                                                                                                              |
-| ---- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| D-01 | Identification key                                        | **Site Name + Username**, both globally unique; the server resolves the ids. Email is not used (non-unique).                                                                                                                                            |
-| D-02 | Cross-tenant browse console                               | **No.** Resolve-only. A site list would turn "platform admin" into "can read every tenant's directory", a larger data-exposure decision than this feature needs. The operator learns the names from whoever requested the change.                       |
-| D-03 | How the preview is exposed                                | **Dedicated `POST` preview endpoints** under the platform route group, names in the body. No dry-run flag, no reuse of an Approvals read.                                                                                                              |
-| D-04 | Where the endpoints live                                  | A **new `platform` route group** (`/api/platform/...`). Extending `Users` / `Sites` would mix cross-tenant and site-scoped contracts in one group.                                                                                                      |
-| D-05 | How `platform:manage` combines with site-scoped authority | **It does not combine.** Platform endpoints require `platform:manage` only; no site permission is needed or consulted, so there is no OR policy and no in-handler authority check.                                                                      |
-| D-06 | Audit record                                              | **Structured log line only** (R19). A durable audit table is deferred; it would add a migration and a prerequisite stage for a single trusted operator.                                                                                                 |
-| D-11 | Pre-deletion backup                                       | **No gate and no recorded reference.** The site-deletion dialog warns that no restorable backup is taken and that the maintenance export is not one.                                                                                                    |
-| D-13 | Are a platform admin's site roles frozen                  | **No — status only** (PRD-026). `platform:manage` comes from configuration, so removing a role does not remove it; the last-enabled-admin rule already protects tenant administrability.                                                                |
-| D-14 | Values typed to confirm a site deletion                   | **Site Name + the operator's own username**, matching PRD-022.                                                                                                                                                                                         |
-| D-15 | May recovery also revoke `Admin`                          | **Assign only.** Revocation has no recovery use case.                                                                                                                                                                                                  |
+| ID   | Decision                                                  | Resolution                                                                                                                                                                                                                        |
+| ---- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D-01 | Identification key                                        | **Site Name + Username**, both globally unique; the server resolves the ids. Email is not used (non-unique).                                                                                                                      |
+| D-02 | Cross-tenant browse console                               | **No.** Resolve-only. A site list would turn "platform admin" into "can read every tenant's directory", a larger data-exposure decision than this feature needs. The operator learns the names from whoever requested the change. |
+| D-03 | How the preview is exposed                                | **Dedicated `POST` preview endpoints** under the platform route group, names in the body. No dry-run flag, no reuse of an Approvals read.                                                                                         |
+| D-04 | Where the endpoints live                                  | A **new `platform` route group** (`/api/platform/...`). Extending `Users` / `Sites` would mix cross-tenant and site-scoped contracts in one group.                                                                                |
+| D-05 | How `platform:manage` combines with site-scoped authority | **It does not combine.** Platform endpoints require `platform:manage` only; no site permission is needed or consulted, so there is no OR policy and no in-handler authority check.                                                |
+| D-06 | Audit record                                              | **Structured log line only** (R19). A durable audit table is deferred; it would add a migration and a prerequisite stage for a single trusted operator.                                                                           |
+| D-11 | Pre-deletion backup                                       | **No gate and no recorded reference.** The site-deletion dialog warns that no restorable backup is taken and that the maintenance export is not one.                                                                              |
+| D-13 | Are a platform admin's site roles frozen                  | **No — status only** (PRD-026). `platform:manage` comes from configuration, so removing a role does not remove it; the last-enabled-admin rule already protects tenant administrability.                                          |
+| D-14 | Values typed to confirm a site deletion                   | **Site Name + the operator's own username**, matching PRD-022.                                                                                                                                                                    |
+| D-15 | May recovery also revoke `Admin`                          | **Assign only.** Revocation has no recovery use case.                                                                                                                                                                             |
 
 ## Rejected and Deferred Controls
 
 The original draft proposed the controls below as candidate requirements after a security/DBA consultation. They were reviewed and removed because none of the supporting infrastructure exists and POT is run by a small number of trusted administrators. Each can become its own PRD if the operating model changes.
 
-| Control                                            | Reason removed                                                                                                                                                                   |
-| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Two-person approval                                | Impossible with a single platform administrator; would require a second operator, an approval workflow and a pending-request store.                                              |
-| Cooling-off window and break-glass path            | Needs an intent store, cancellation and a second execution path for a risk that typed confirmation plus preview already addresses.                                               |
-| Step-up re-authentication                          | POT has no MFA or step-up pattern; the session plus typed confirmation is the bar, consistent with PRD-022's decision on password re-entry.                                      |
-| Rate limiting / per-operator quota                 | One trusted operator; login abuse protection is a separate track.                                                                                                                |
-| Deletion notifications                             | Depends on the unbuilt durable email dispatch (PRD-019); PRD-022 sends none.                                                                                                     |
-| Backup gate and recorded backup reference          | Reduced to a warning in the dialog (D-11); enforcement and a stored reference have no infrastructure.                                                                            |
-| Email as a search hint                             | The email is not unique and adds nothing to resolution; it is display-only in the preview.                                                                                       |
-| Preview concurrency token                          | Execution re-resolves and re-checks inside the write transaction (R5), which gives the same protection without a token.                                                          |
-| Durable audit table                                | Deferred (D-06); structured logs are the record.                                                                                                                                 |
+| Control                                   | Reason removed                                                                                                                              |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Two-person approval                       | Impossible with a single platform administrator; would require a second operator, an approval workflow and a pending-request store.         |
+| Cooling-off window and break-glass path   | Needs an intent store, cancellation and a second execution path for a risk that typed confirmation plus preview already addresses.          |
+| Step-up re-authentication                 | POT has no MFA or step-up pattern; the session plus typed confirmation is the bar, consistent with PRD-022's decision on password re-entry. |
+| Rate limiting / per-operator quota        | One trusted operator; login abuse protection is a separate track.                                                                           |
+| Deletion notifications                    | Depends on the unbuilt durable email dispatch (PRD-019); PRD-022 sends none.                                                                |
+| Backup gate and recorded backup reference | Reduced to a warning in the dialog (D-11); enforcement and a stored reference have no infrastructure.                                       |
+| Email as a search hint                    | The email is not unique and adds nothing to resolution; it is display-only in the preview.                                                  |
+| Preview concurrency token                 | Execution re-resolves and re-checks inside the write transaction (R5), which gives the same protection without a token.                     |
+| Durable audit table                       | Deferred (D-06); structured logs are the record.                                                                                            |
 
 ## Open Questions
 
@@ -230,22 +232,22 @@ The original draft proposed the controls below as candidate requirements after a
 
 ## Assumptions and Constraints Register
 
-| ID    | Assumption / Constraint                                                                                                                                                   | Confidence |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| AC-01 | `UserEntity.Username` and `SiteEntity.Name` are both globally unique `citext`; the pair identifies at most one user.                                                      | High       |
-| AC-02 | `UserEntity.Email` is not unique, and `OneTimePasswordEntity` carries its own `Username` and `Email`; email cannot identify a single user or site.                         | High       |
-| AC-03 | `User` and `Site` have no global query filters; cross-tenant reads require `IgnoreQueryFilters()`, as in the `Approvals` services.                                         | High       |
+| ID    | Assumption / Constraint                                                                                                                                                            | Confidence |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| AC-01 | `UserEntity.Username` and `SiteEntity.Name` are both globally unique `citext`; the pair identifies at most one user.                                                               | High       |
+| AC-02 | `UserEntity.Email` is not unique, and `OneTimePasswordEntity` carries its own `Username` and `Email`; email cannot identify a single user or site.                                 | High       |
+| AC-03 | `User` and `Site` have no global query filters; cross-tenant reads require `IgnoreQueryFilters()`, as in the `Approvals` services.                                                 | High       |
 | AC-04 | `platform:manage` is added at runtime by `PermissionService` from the `PLATFORM_ADMIN_USERIDS` config list; it is neither a database role nor a `user:manage`/`site:manage` grant. | High       |
-| AC-05 | `DbContextBase.DisableCascadeDelete` forces `Restrict` on every `EntityBase` FK; every delete is an ordered, transactional sweep, and a racing login cannot orphan a session. | High       |
-| AC-06 | No audit / tombstone / soft-delete infrastructure exists; the only record is application logging.                                                                         | High       |
-| AC-07 | The maintenance export is not a restorable backup — it carries no users, roles, settings or site row.                                                                     | High       |
-| AC-08 | PRD-022 specifies the user and site sweeps, refusal rules and destructive dialog; this feature reuses them rather than re-specifying them.                                 | High       |
-| AC-09 | PRD-026 is delivered first and closes the cross-tenant target-binding gaps.                                                                                               | High       |
-| AC-10 | A configured platform admin can never be deleted (PRD-022 R9/AC-10) or disabled (PRD-026 R13).                                                                            | High       |
-| AC-11 | The only platform-admin surface today is `AppSidebarMenus.tsx` → Platform → Approvals; there is no browse surface.                                                        | High       |
-| AC-12 | The `Approvals` endpoints are intentionally cross-tenant behind `platform:manage` and use `IgnoreQueryFilters()` — the precedent this feature follows.                    | High       |
-| AC-13 | No `platform:manage` member exists in `Permission.cs`; it is a runtime string, so it is not part of the role/permission seed data.                                        | High       |
-| AC-14 | POT is operated by a single trusted administrator or a very small team; controls designed for separation of duties are not applicable.                                     | Medium     |
+| AC-05 | `DbContextBase.DisableCascadeDelete` forces `Restrict` on every `EntityBase` FK; every delete is an ordered, transactional sweep, and a racing login cannot orphan a session.      | High       |
+| AC-06 | No audit / tombstone / soft-delete infrastructure exists; the only record is application logging.                                                                                  | High       |
+| AC-07 | The maintenance export is not a restorable backup — it carries no users, roles, settings or site row.                                                                              | High       |
+| AC-08 | PRD-022 specifies the user and site sweeps, refusal rules and destructive dialog; this feature reuses them rather than re-specifying them.                                         | High       |
+| AC-09 | PRD-026 is delivered first and closes the cross-tenant target-binding gaps.                                                                                                        | High       |
+| AC-10 | A configured platform admin can never be deleted (PRD-022 R9/AC-10) or disabled (PRD-026 R13).                                                                                     | High       |
+| AC-11 | The only platform-admin surface today is `AppSidebarMenus.tsx` → Platform → Approvals; there is no browse surface.                                                                 | High       |
+| AC-12 | The `Approvals` endpoints are intentionally cross-tenant behind `platform:manage` and use `IgnoreQueryFilters()` — the precedent this feature follows.                             | High       |
+| AC-13 | No `platform:manage` member exists in `Permission.cs`; it is a runtime string, so it is not part of the role/permission seed data.                                                 | High       |
+| AC-14 | POT is operated by a single trusted administrator or a very small team; controls designed for separation of duties are not applicable.                                             | Medium     |
 
 ## Readiness Criteria
 

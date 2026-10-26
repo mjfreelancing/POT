@@ -5,6 +5,12 @@
 > returns **`400 Bad Request`** with the same ProblemDetails body, and `ErrorType.UnprocessableEntity` no
 > longer exists in the server (`ErrorType.BadRequest` is used instead). Read every `422` below as `400`.
 > The behaviour, refusal rules and messages are unchanged.
+>
+> **Problem Details note (2026-10-26).** [PRD-030](PRD-030-problem-details-consolidation.md) reshaped that body:
+> a `400` now carries the validation problem's `errors` map of field to messages and no `detail`, so a refusal's
+> message is read from the map (a whole-request message takes the empty key), every other status carries one
+> `detail` and no `errors`, and a conflict names its category in `type`. The refusals this document introduced
+> are all `400`s, so read their message from `errors` rather than from `detail`.
 
 **Status:** Complete
 **Priority:** High
