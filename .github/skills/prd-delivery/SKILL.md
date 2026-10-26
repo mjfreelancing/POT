@@ -23,7 +23,7 @@ Use this skill only for PRDs under `Docs/Future/`. For general multi-stage work,
 - **Start only from a discovered PRD.** The PRD must carry `**Discovery:** complete`. Without it, the requirements were never agreed — report that and stop.
 - **One stage at a time.** After a stage is implemented and validated, stop and summarize. Do not begin the next stage until the human explicitly approves it ("approved", "continue", "go").
 - **Tests first per stage.** Write the tests that describe the stage's behaviour before the implementation. A test for behaviour the stage changes starts red for the expected reason and goes green; a test that fills a coverage gap in behaviour that already holds starts green and stays green. The stage report says which case applied, and the plan's sub-tasks must say so.
-- **The Manual Test Plan is required unless the PRD says `Not required`.** A PRD marks it `Not required` only when the automated suites cover every behaviour the plan would check, and names that coverage. For such a PRD, skip completion step 4.2 and record that the automated suites were the gate.
+- **The Manual Test Plan is required unless the PRD says `Not required`.** A PRD marks it `Not required` only when the automated suites cover every behaviour the plan would check, and names that coverage. For such a PRD, skip the Manual Test Plan step when closing the PRD and record that the automated suites were the gate.
 - **Two pause points up front:** wait for approval of the staged plan before implementing anything, then wait after every stage.
 - **Block unless approved.** Start only when the PRD `Status` is `Planned` (approved and ready) or `In Progress` (resuming). When it is anything else — `Proposed`, `Planning`, `Proposed (discovery draft)` or `Complete` — **block**: do not write the plan or touch code, report the status and what is required, and stop.
 - **The PRD stays editable during delivery.** While its `Status` is `Planned` or `In Progress`, the human may review and edit the PRD. Re-read it at the start of each stage and reconcile the TASKS plan if it changed; do not treat the PRD as frozen.
@@ -61,7 +61,7 @@ For the approved stage only:
 5. Summarize: the files changed, the behaviour impact, the exact tests run with their result, and any follow-up. Reference the tasks by number.
 6. **State whether the human can test it in the UI.** If the stage added or changed a client surface, say what they can exercise by hand and where. If it is server-only, say so plainly, so nobody goes looking for a screen that does not exist yet.
 7. **Offer a commit message** for the stage's change set.
-8. **Client stages only — ask about E2E.** If the stage changed client product code (the shipped client, typically under `Source/Client/pot-react/src`; not client test specs alone), ask whether to run the dev E2E suite and who runs it. Ask at every client-changing stage, but skip the question on the final stage — step 4 runs the prodlike gate instead.
+8. **Client stages only — ask about E2E.** If the stage changed client product code (the shipped client, typically under `Source/Client/pot-react/src`; not client test specs alone), ask whether to run the dev E2E suite and who runs it. Ask at every client-changing stage, but skip the question on the final stage — the final verification runs the prodlike gate instead.
    - **Agent runs it:** run `npm run e2e:preflight` first (read-only) to confirm the E2E ports are free, then `npm run e2e:all:dev` (use `npm run e2e:all:dev:log` when the run's evidence should be kept), and report the result.
    - **Human runs it:** wait for the human to run it and report back.
      If the run fails, report the failures and **pause** — do not fix them automatically; wait for the human to decide.
@@ -71,16 +71,25 @@ For the approved stage only:
 
 On "approved" / "continue", resume at the next unticked task in the TASKS file — the next stage's first sub-task, or the remaining sub-tasks if a stage was paused part-way. Do not re-do ticked tasks or re-edit already-committed code unless the human asks. Repeat step 2 until every stage is complete.
 
-### 4. Complete the PRD
+### 4. Verify before final approval
 
-After the final stage is approved:
+After the last stage is implemented and reviewed, and before the PRD is marked Complete, prove the delivery holds as a whole. Run every check below, report each result, then **stop** for final approval. Green stages do not make any of this optional, and a failing check is reported and paused on — never worked around.
 
-1. Run the broader validation for the affected side(s), from the right directory:
-   - Server: `dotnet test pot.sln -c Debug --nologo --verbosity minimal` (`Source/Server`).
-   - Client unit tests: `npm run test` (`Source/Client/pot-react`).
-   - Client E2E (completion gate): for a PRD that changed client product code, run `npm run e2e:all:prodlike` (`Source/Client/pot-react`) — the production-build gate, and the final-stage replacement for the optional dev E2E. Preflight first and follow `.github/instructions/e2e.instructions.md`. If it fails, report and pause before the completion bookkeeping.
-     Run the `code-coverage` skill over the changed code if it warrants it. Targeted tests are sufficient for the intermediate stages; broaden only here.
-2. **Run the PRD's Manual Test Plan — unless it is `Not required`.** When the PRD marks it `Not required`, skip this step and state in the completion summary that the automated suites named by the PRD were the gate; add no results table. Otherwise ask the human to execute it against the built product and report the results, and **wait** — the run is theirs to perform, not the agent's. Record the outcome in the PRD's results table. If the human defers it, say so explicitly and do not record it as passed.
-3. Do the completion bookkeeping per `Docs/Future` conventions: PRD `Status` to `Complete`, update `Last Updated`, add or adjust the `Scope` line, rewrite the `Docs/Future/README.md` row summary to state what the feature **is**, and bump the index-update date.
-4. Delete `Docs/Future/TASKS-PRD-NNN.md`.
-5. Summarize the whole delivery, offer a final commit message, and **stop** for final review.
+1. **Cross-reference the requirements.** Re-read the PRD's requirements and, for each numbered one (`A1`…`A6`, `B1`…`B10`, `C1`…`C5`, `D1`…`D7`, `E1`…`E8`, `N1`…`N3`, or whatever IDs the PRD uses), name the code and the test that satisfy it. Put the result in the report as a requirement table. An unaccounted requirement is a blocker: implement it or have the human amend the PRD — never close a PRD with a requirement unaccounted for. A requirement the PRD marks out of scope is listed as out of scope, not as a gap.
+2. **Server build, with analysis warnings cleared.** From `Source/Server` run `dotnet build pot.sln -c Debug --nologo --verbosity minimal`, then `dotnet format analyzers pot.sln --verify-no-changes --severity warn --no-restore` and `dotnet format style pot.sln --verify-no-changes --severity warn --no-restore`. Exit code 0 on both means clean; the build alone does not report style diagnostics, so the two `dotnet format` runs are the check, not a formality. Fix every warning in code this PRD touched in the code itself — not with a `#pragma` or a blanket `NoWarn`. A warning that predates the PRD is reported, not fixed, unless the human asks for it.
+   **Never edit an EF Core migration** (`Pot.Data/Migrations/**`, the designer and model snapshot included). When one triggers an analyzer, suppress that diagnostic selectively for those paths in `.editorconfig`, keeping the `[/Pot.Data/Migrations/*.cs]` section last — a section applies to every setting after it.
+3. **Server tests.** `dotnet test pot.sln -c Debug --nologo --verbosity minimal`.
+4. **Client production build.** From `Source/Client/pot-react` run `npm run build` (`tsc -b && vite build`). It must finish with no errors, and no warning the change introduced — the shipped bundle compiling is a different proof from its tests passing.
+5. **Client unit tests.** `npm run test`.
+6. **Client E2E, prodlike.** For a PRD that changed client product code, run `npm run e2e:all:prodlike` — the production-build gate, and the replacement for the optional dev E2E at this point. Run `npm run e2e:preflight` first and follow `.github/instructions/e2e.instructions.md`. Skip it only when the PRD changed no client product code, and say so explicitly in the report.
+7. **Coverage of the new code.** Run the `code-coverage` skill over the code this PRD added or changed and check that every new or changed line and branch is exercised. Report what is uncovered together with the reason a line cannot be reached — unreachable code is a defect, not a coverage gap. Report a pre-existing coverage gap only when you notice one; do not go looking for unrelated gaps. Intermediate stages rely on their targeted tests; this is the only place coverage is measured.
+8. **Report and stop.** Summarize the requirement table, the build and warning results, the suite results, the E2E gate and the coverage outcome, then stop for final approval. No bookkeeping happens before the human approves.
+
+### 5. Close the PRD
+
+After final approval:
+
+1. **Run the PRD's Manual Test Plan — unless it is `Not required`.** When the PRD marks it `Not required`, skip this step and state in the completion summary that the automated suites named by the PRD were the gate; add no results table. Otherwise ask the human to execute it against the built product and report the results, and **wait** — the run is theirs to perform, not the agent's. Record the outcome in the PRD's results table. If the human defers it, say so explicitly and do not record it as passed.
+2. Do the completion bookkeeping per `Docs/Future` conventions: PRD `Status` to `Complete`, update `Last Updated`, add or adjust the `Scope` line, rewrite the `Docs/Future/README.md` row summary to state what the feature **is**, and bump the index-update date.
+3. Delete `Docs/Future/TASKS-PRD-NNN.md`.
+4. Summarize the whole delivery, offer a final commit message, and **stop** for final review.

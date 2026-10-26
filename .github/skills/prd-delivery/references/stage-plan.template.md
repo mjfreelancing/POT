@@ -40,9 +40,13 @@
 
 ## Completion
 
-- [ ] C.1 Broader validation for the affected side(s)
-- [ ] C.2 Run the PRD manual test plan and record the results, or record that it is `Not required` and name the automated coverage
-- [ ] C.3 PRD bookkeeping and delete this file
+- [ ] C.1 Cross-reference every PRD requirement and record where each is met
+- [ ] C.2 Server: full build with analysis warnings cleared (never edit a migration; suppress selectively) and the full suite
+- [ ] C.3 Client: production build (`npm run build`) and the full unit suite
+- [ ] C.4 Client E2E: the prodlike matrix (client-affecting PRDs only)
+- [ ] C.5 Coverage of every new or changed line and branch
+- [ ] C.6 Manual test plan, or record `Not required` and name the automated coverage
+- [ ] C.7 PRD bookkeeping and delete this file
 
 ## Deferred / follow-up
 
