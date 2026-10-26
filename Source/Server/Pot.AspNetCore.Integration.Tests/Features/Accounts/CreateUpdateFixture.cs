@@ -10,6 +10,8 @@ public class CreateUpdateFixture : IntegrationAuthFixtureBase
     private const double AccountBalance = 1000.0d;
     private const string DuplicateDescriptionMessage = "a duplicate account description must not be accepted";
     private const string DuplicateDescriptionError = "The account description already exists";
+    private const string StaleEtagMessage = "a stale entity tag must not be accepted";
+    private const string StaleEtagError = "The entity tag for the Account does not match the current record";
 
     [Fact]
     public async Task Should_Return_Conflict_When_Creating_An_Account_With_An_Existing_Description()
@@ -64,5 +66,31 @@ public class CreateUpdateFixture : IntegrationAuthFixtureBase
         var problem = await response.ShouldBeEntityConflictAsync(DuplicateDescriptionMessage);
 
         problem.Detail.ShouldBe(DuplicateDescriptionError);
+    }
+
+    [Fact]
+    public async Task Should_Return_Conflict_When_The_Etag_Is_Stale()
+    {
+        var admin = await CreateAdminUserAsync("accounts-stale", "Accounts Stale User");
+
+        using var client = await CreateAuthenticatedClientAsync(admin);
+
+        var accountRowId = await client.CreateAccountAsync($"Account {Guid.NewGuid():N}", AccountBalance);
+        var current = await client.GetAccountAsync(accountRowId);
+
+        var request = new
+        {
+            Etag = current.Etag - 1,
+            Description = current.Description,
+            Balance = current.Balance,
+            Reserved = current.Reserved
+        };
+
+        var response = await client.PutAsJsonAsync($"/api/accounts/{accountRowId}", request,
+            TestContext.Current.CancellationToken);
+
+        var problem = await response.ShouldBeStaleEtagConflictAsync(StaleEtagError, StaleEtagMessage);
+
+        problem.Detail.ShouldBe(StaleEtagError);
     }
 }

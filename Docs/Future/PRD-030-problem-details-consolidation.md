@@ -1,8 +1,8 @@
 # Problem Details Consolidation PRD
 
-**Status:** In Progress
+**Status:** Complete
 **Priority:** High
-**Last Updated:** 2026-10-22
+**Last Updated:** 2026-10-26
 **Feature ID:** 030
 **Discovery:** complete
 **Scope:** Define and enforce one reporting contract for API failures: every failure is an RFC 9457 problem body, no submitted value appears in a body or a log, each status has one documented shape, every conflict names its category in a stable `type`, and the client reads whatever body it receives without rendering markup. It covers the code that builds problem bodies and the shared customisation that completes them, the logging of validation and application failures, HTTP request logging, the OpenAPI description, the developer guide, and the React client's error parsing. It does not cover the concurrency model (the entity tag stays in the request body and a stale one stays `409`), moving request validation or application-result conversion out of endpoint handlers, the application-layer result library, rate-limit policy values, the mapping from database exceptions to statuses, or whether state-dependent refusals should answer `409` rather than `400`.

@@ -16,6 +16,10 @@ public static class HttpClientExtensions
     private const string AccountsPath = "/api/accounts";
     private const string ExpensesPath = "/api/expenses";
     private const string IncomesPath = "/api/incomes";
+    private const string CurrentUserPath = "/api/me";
+    private const string UsersPath = "/api/users";
+    private const string PendingApprovalsPath = "/api/approvals/pending";
+    private const string SettingsPath = "/api/settings";
 
     private sealed class IdentifiedResponse
     {
@@ -270,6 +274,54 @@ public static class HttpClientExtensions
         };
 
         return client.PostAsJsonAsync($"{IncomesPath}/toggleExclude", body, TestContext.Current.CancellationToken);
+    }
+
+    /// <summary>
+    /// Reads the settings of the caller's site, including the ones it has not saved yet.
+    /// </summary>
+    /// <param name="client">A client authenticated with permission to view settings.</param>
+    /// <returns>Every setting of every category, with the entity tag of each saved one.</returns>
+    public static Task<SettingsResponse> GetSettingsAsync(this HttpClient client)
+    {
+        _ = client.WhenNotNull();
+
+        return ReadItemAsync<SettingsResponse>(client, SettingsPath);
+    }
+
+    /// <summary>
+    /// Reads the signed-in user, including the entity tag of the site they belong to.
+    /// </summary>
+    /// <param name="client">A client authenticated as the user to read.</param>
+    /// <returns>The current user as the endpoint returns them.</returns>
+    public static Task<CurrentUserResponse> GetCurrentUserAsync(this HttpClient client)
+    {
+        _ = client.WhenNotNull();
+
+        return ReadItemAsync<CurrentUserResponse>(client, CurrentUserPath);
+    }
+
+    /// <summary>
+    /// Reads every user of the caller's site.
+    /// </summary>
+    /// <param name="client">A client authenticated with permission to view users.</param>
+    /// <returns>Every user, in the order the endpoint returns them.</returns>
+    public static Task<UserResponse[]> GetUsersAsync(this HttpClient client)
+    {
+        _ = client.WhenNotNull();
+
+        return ReadArrayAsync<UserResponse>(client, UsersPath);
+    }
+
+    /// <summary>
+    /// Reads the users awaiting a platform administrator's decision, across every site.
+    /// </summary>
+    /// <param name="client">A client authenticated as a platform administrator.</param>
+    /// <returns>Every pending approval, in the order the endpoint returns them.</returns>
+    public static Task<PendingApprovalResponse[]> GetPendingApprovalsAsync(this HttpClient client)
+    {
+        _ = client.WhenNotNull();
+
+        return ReadArrayAsync<PendingApprovalResponse>(client, PendingApprovalsPath);
     }
 
     private static async Task<Guid> ReadRowIdAsync(HttpResponseMessage response)
