@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using Pot.App.Errors;
-using Pot.AspNetCore.Concerns.ProblemDetails;
 using System.Globalization;
 using System.Threading.RateLimiting;
 

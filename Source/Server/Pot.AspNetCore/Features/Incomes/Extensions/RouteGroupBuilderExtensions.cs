@@ -1,3 +1,4 @@
+using Pot.AspNetCore.Extensions;
 using Pot.AspNetCore.Features.Incomes.ToggleExclude;
 
 namespace Pot.AspNetCore.Features.Incomes.Extensions;
@@ -43,7 +44,8 @@ internal static class RouteGroupBuilderExtensions
             .WithDescription("Create a new income source")
             .Produces<Create.Response>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status409Conflict);
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesRequestBodyProblems();
 
         return routeGroupBuilder;
     }
@@ -59,7 +61,8 @@ internal static class RouteGroupBuilderExtensions
             .Produces<Update.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status409Conflict);
+            .ProducesStaleEntityTagConflict()
+            .ProducesRequestBodyProblems();
 
         return routeGroupBuilder;
     }
@@ -89,7 +92,8 @@ internal static class RouteGroupBuilderExtensions
             .WithDescription("Renews selected incomes")
             .Produces(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status404NotFound);
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesRequestBodyProblems();
 
         return routeGroupBuilder;
     }
@@ -104,7 +108,8 @@ internal static class RouteGroupBuilderExtensions
             .WithDescription("Toggles the 'exclude from calculations' status of selected incomes")
             .Produces(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status404NotFound);
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesRequestBodyProblems();
 
         return routeGroupBuilder;
     }

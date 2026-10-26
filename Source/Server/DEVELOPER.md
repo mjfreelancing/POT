@@ -165,7 +165,7 @@ Source/Server/
 
 - **FluentValidation** executes before business logic via `IProblemDetailsInspector`
 - All validation errors returned as **RFC 9457 Problem Details** for consistent error handling
-- **400 Bad Request** for all validation errors, with every failure listed in the `errors` array
+- **400 Bad Request** for all validation errors, with every failure in the `errors` map, keyed by the field it belongs to
 
 **4. Result Pattern for Business Logic**
 
@@ -462,7 +462,7 @@ internal sealed class Handler
 
         if (problemDetails.IsProblem())
         {
-            logger.LogErrors(problemDetails);
+            // The inspector logged the failure; a handler does not log it a second time.
             return TypedResults.Problem(problemDetails);
         }
 
@@ -961,9 +961,9 @@ Every conflict carries one of three types, so a caller never infers the category
 | `urn:pot:problem:duplicate-value`  | A value that must be unique already exists.                                  |
 | `urn:pot:problem:data-conflict`    | A constraint or a race the database rejected, after an endpoint's own check. |
 
-**Which endpoints declare 409.** `ProducesProblem(409)` is declared per feature, only on the endpoints whose own checks can reject the request: a stale entity tag, or a description that already exists within the same site or account. It is deliberately not declared on every write. The shared database handler answers 409 for a unique, reference or concurrency failure that reaches the database, such as a race between the check and the save, and documenting that on every write would present a conflict as a normal outcome rather than the rare one it is.
+**Which endpoints declare 409.** The 409 is declared per feature, only on the endpoints whose own checks can reject the request: a stale entity tag, or a description that already exists within the same site or account. `ProducesStaleEntityTagConflict()` declares it on the endpoints that compare an entity tag and marks the operation so the `stale-entity-tag` category is described in the OpenAPI document; `ProducesProblem(409)` declares it on the rest. It is deliberately not declared on every write. The shared database handler answers 409 for a unique, reference or concurrency failure that reaches the database, such as a race between the check and the save, and documenting that on every write would present a conflict as a normal outcome rather than the rare one it is.
 
-Because the database answers the same status, a test that asserts only 409 cannot tell the two apart. The integration fixtures assert the `propertyName` the rule reported and that `detail` repeats its message (`ShouldBeEntityConflictAsync`); the database fallback names no field, so those assertions fail if a rule stops running. `EndpointResponseMetadataFixture` additionally fails if a declared 409 is not `ProblemDetails` with `application/problem+json`.
+Because the database answers the same status, a test that asserts only 409 cannot tell the two apart. The integration fixtures assert the conflict `type` the rule produced and that `detail` repeats its message (`ShouldBeEntityConflictAsync`, `ShouldBeStaleEtagConflictAsync`); the database fallback names the data-conflict type, so those assertions fail if a rule stops running. `EndpointResponseMetadataFixture` additionally fails if a declared 409 is not `ProblemDetails` with `application/problem+json`.
 
 ## Feature Organization
 
@@ -1266,7 +1266,7 @@ internal sealed class Handler
 
         if (problemDetails.IsProblem())
         {
-            logger.LogErrors(problemDetails);
+            // The inspector logged the failure; a handler does not log it a second time.
             return TypedResults.Problem(problemDetails);
         }
 
@@ -1365,7 +1365,7 @@ public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke(
 
     if (problemDetails.IsProblem())
     {
-        logger.LogErrors(problemDetails);
+        // The inspector logged the failure; a handler does not log it a second time.
         return TypedResults.Problem(problemDetails);
     }
 
@@ -1415,7 +1415,7 @@ public static async Task<Results<Ok, ProblemHttpResult>> Invoke(
 
     if (problemDetails.IsProblem())
     {
-        logger.LogErrors(problemDetails);
+        // The inspector logged the failure; a handler does not log it a second time.
         return TypedResults.Problem(problemDetails);
     }
 
@@ -1697,7 +1697,13 @@ internal static class RouteGroupBuilderExtensions
 - **`Produces<T>`**: The success status and its body type. Never `ProducesProblem` for a success: that documents the body as
   `ProblemDetails`, and a generated client then types the successful call as an error object
 - **`ProducesProblem`**: The failures this endpoint's own rules can produce - `404`, `409`, and `401` for a protected endpoint.
-  The `400` and `500` every endpoint can return are declared once on the route group by `ProducesStandardProblems()`
+  The `400` and `500` every endpoint can return are declared once on the route group by `ProducesStandardProblems()`, and the
+  `400` there is `ProducesValidationProblem()` so the document describes it as the validation problem
+- **`ProducesStaleEntityTagConflict()`**: The `409` of an endpoint that compares an entity tag. It also marks the operation so
+  the document names the `stale-entity-tag` category and says how to tell it from the other two
+- **`ProducesRequestBodyProblems()`**: `408` and `413` on an endpoint that reads a request body. Only such an endpoint can be
+  refused for taking too long or for being too large, so it is declared per route rather than on the group, and
+  `EndpointResponseMetadataFixture` asserts both directions
 
 **Feature Registration:**
 
@@ -2348,8 +2354,16 @@ var error = ApiDetailErrorFactory.CreateBadRequestError(
     errorMessage: "This is the site's only enabled administrator. Promote another administrator first.");
 ```
 
-There is no `422` in POT: request validation and refused business rules both answer `400`, and a client tells them apart by
-the `errorCode` of each entry in `errors`. `EnrichedErrorExtensionsFixture` pins the mapping from `ErrorType` to status.
+There is no `422` in POT: request validation and refused business rules both answer `400`, as the validation problem whose
+`errors` map names the field that was refused. A conflict keeps its own category in `type` instead.
+`EnrichedErrorExtensionsFixture` pins the mapping from `ErrorType` to status.
+
+**The published contract.** `contracts/openapi/v1.json` is generated at build time and committed, so the document a caller
+reads is the one the build produced. It describes every `400` as `HttpValidationProblemDetails` with `errors` required, both
+problem schemas require `correlationId`, `traceId` and `instance`, every operation that reads a request body declares `413`
+and `408`, and each `409` states the categories its own rule can produce - including `stale-entity-tag` only where an update
+compares an entity tag. `Concerns/OpenApi/ProblemDetailsSchemaTransformer` and `ConflictResponseOperationTransformer` add what
+the generator cannot see. A metadata change changes the document, so regenerate it and commit it with the change.
 
 ### Transaction Management
 
@@ -3366,7 +3380,7 @@ public static async Task<Results<CreatedAtRoute<Response>, ProblemHttpResult>> I
     // Check if validation failed
     if (problemDetails.IsProblem())
     {
-        logger.LogErrors(problemDetails);
+        // The inspector logged the failure; a handler does not log it a second time.
         return TypedResults.Problem(problemDetails);
     }
 
@@ -3598,12 +3612,8 @@ app.MapGroup(AccountsEndpoints.Group)
 {
   "status": 429,
   "detail": "Too many requests. Please wait and try again after 43 seconds.",
-  "errors": [
-    {
-      "errorCode": "TooManyRequests",
-      "errorMessage": "Too many requests. Please wait and try again after 43 seconds."
-    }
-  ]
+  "correlationId": "8e9f7c6d-5b4a-3f2e-1d0c-9a8b7c6d5e4f",
+  "instance": "/api/accounts"
 }
 ```
 
@@ -3701,8 +3711,7 @@ Applies the caller's correlation ID to the request for tracing and debugging
 - The header is `X-Correlation-Id` (via `Request.TryGetCorrelationId()`). An empty or whitespace value is treated as absent.
 - A supplied value must be at most 128 characters and contain only letters, digits, `-`, `_`, `.` and `:`. Anything else is
   rejected with a 400 ProblemDetails response, because the value is written into every log entry for the request. The reason
-  is in `detail` and also in `errors`, as one entry with `propertyName` set to `X-Correlation-Id` and `errorCode` `Invalid`;
-  the rejected value is not echoed back.
+  is the message filed under the header's own key in `errors`, and the rejected value is not echoed back.
 - A valid value replaces `HttpContext.TraceIdentifier`; when the header is absent the framework default is kept. Every
   ProblemDetails body carries `TraceIdentifier` as `correlationId`, and `CorrelationIdLogEnricher` adds the same value to every
   log entry written during the request - including the exception handlers' and a rejected id's, which carry the generated id.
@@ -3924,37 +3933,42 @@ internal static class EnrichedErrorExtensions
     public static Microsoft.AspNetCore.Mvc.ProblemDetails ToProblemDetails(this EnrichedError enrichedError)
     {
         var error = enrichedError as ApiErrorBase;
+        var errorMessage = (enrichedError as ApiBasicError)?.ErrorMessage;
 
-        var statusCode = error!.ErrorType switch
+        var statusCode = ProblemTypes.ToStatusCode(error!.ErrorType);
+
+        var problemDetails = new Microsoft.AspNetCore.Mvc.ProblemDetails
         {
-            ErrorType.Auth => StatusCodes.Status401Unauthorized,
-            ErrorType.NotFound => StatusCodes.Status404NotFound,
-            ErrorType.Conflict => StatusCodes.Status409Conflict,
-            ErrorType.Constraint => StatusCodes.Status400BadRequest,
-            ErrorType.BadRequest => StatusCodes.Status400BadRequest,
-            ErrorType.TooManyRequests => StatusCodes.Status429TooManyRequests,
-            ErrorType.Server => StatusCodes.Status500InternalServerError,
-            _ => throw new UnreachableException($"Unknown problem type: {error.ErrorType}")
+            Detail = errorMessage,
+            Status = statusCode
         };
 
-        // Note: 'errors' must be an array of objects
-        var errors = enrichedError switch
+        if (statusCode == StatusCodes.Status409Conflict)
         {
-            ApiDetailError problemDetailsError => [problemDetailsError.GetErrorDetails()],
-            ApiBasicError problemDetailsBasicError => [problemDetailsBasicError.GetErrorDetails()],
-            ApiDetailErrorCollection problemDetailsErrorCollection => problemDetailsErrorCollection.Errors.SelectToArray(error => error.GetErrorDetails()),
-            _ => throw new UnreachableException($"Unknown enriched error type: {enrichedError.GetType()}")
-        };
+            // The type, not a field name, is how a caller tells a stale update from a duplicate or a race.
+            problemDetails.Type = ProblemTypes.ToConflictType(((ApiBasicError)error).ErrorCode);
+        }
 
-        return new Microsoft.AspNetCore.Mvc.ProblemDetails
+        if (statusCode == StatusCodes.Status400BadRequest)
         {
-            Detail = error.Description,
-            Status = statusCode,
-            Extensions = new Dictionary<string, object?>
+            // A validation problem is the only one that describes individual fields: the messages live in the map
+            // and there is no 'detail' to read instead.
+            var failures = enrichedError switch
             {
-                { "errors", errors }
-            }
-        };
+                ApiDetailError problemDetailsError => [new ValidationErrors.FieldFailure(problemDetailsError.PropertyName, problemDetailsError.ErrorMessage)],
+                ApiBasicError problemDetailsBasicError => [new ValidationErrors.FieldFailure(string.Empty, problemDetailsBasicError.ErrorMessage)],
+                ApiDetailErrorCollection problemDetailsErrorCollection => problemDetailsErrorCollection.Errors
+                    .Select(errorItem => new ValidationErrors.FieldFailure(errorItem.PropertyName, errorItem.ErrorMessage))
+                    .ToArray(),
+                _ => throw new UnreachableException($"Unknown enriched error type: {enrichedError.GetType()}")
+            };
+
+            problemDetails.Detail = null;
+            problemDetails.Title = ValidationErrors.Title;
+            problemDetails.Extensions[ValidationErrors.Extension] = ValidationErrors.ToMap(failures);
+        }
+
+        return problemDetails;
     }
 }
 ```

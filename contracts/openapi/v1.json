@@ -51,7 +51,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -90,6 +90,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Auth_Login_Response"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -132,7 +170,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -206,7 +244,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -297,7 +335,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -336,6 +374,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Auth_PasswordReset_Send_Response"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -388,7 +464,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -427,6 +503,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Auth_PasswordReset_Verify_Response"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -479,7 +593,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -518,6 +632,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Auth_Signup_Send_Response"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -570,7 +722,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -609,6 +761,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Auth_Signup_Complete_Response"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -651,7 +841,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -779,7 +969,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -861,7 +1051,45 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "A conflict names its category in `type`: `urn:pot:problem:stale-entity-tag` means the record changed since it was read, so refresh and retry; `urn:pot:problem:duplicate-value` means the value already exists; and `urn:pot:problem:data-conflict` means the database rejected a constraint or a race.",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
             "headers": {
               "X-Correlation-Id": {
                 "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
@@ -922,7 +1150,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -1035,7 +1263,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -1073,6 +1301,44 @@
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
             "headers": {
               "X-Correlation-Id": {
                 "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
@@ -1143,7 +1409,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -1181,6 +1447,44 @@
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
             "headers": {
               "X-Correlation-Id": {
                 "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
@@ -1241,7 +1545,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -1369,7 +1673,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -1451,7 +1755,45 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "A conflict names its category in `type`: `urn:pot:problem:stale-entity-tag` means the record changed since it was read, so refresh and retry; `urn:pot:problem:duplicate-value` means the value already exists; and `urn:pot:problem:data-conflict` means the database rejected a constraint or a race.",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
             "headers": {
               "X-Correlation-Id": {
                 "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
@@ -1530,7 +1872,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -1622,6 +1964,44 @@
                 }
               }
             }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1686,7 +2066,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -1768,7 +2148,45 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "A conflict names its category in `type`: `urn:pot:problem:stale-entity-tag` means the record changed since it was read, so refresh and retry; `urn:pot:problem:duplicate-value` means the value already exists; and `urn:pot:problem:data-conflict` means the database rejected a constraint or a race.",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
             "headers": {
               "X-Correlation-Id": {
                 "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
@@ -1849,7 +2267,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -1931,7 +2349,45 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "A conflict names its category in `type`: `urn:pot:problem:stale-entity-tag` means the record changed since it was read, so refresh and retry; `urn:pot:problem:duplicate-value` means the value already exists; and `urn:pot:problem:data-conflict` means the database rejected a constraint or a race.",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
             "headers": {
               "X-Correlation-Id": {
                 "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
@@ -2002,7 +2458,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -2075,6 +2531,44 @@
                 }
               }
             }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2128,7 +2622,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -2245,7 +2739,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -2373,7 +2867,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -2455,7 +2949,45 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "A conflict names its category in `type`: `urn:pot:problem:stale-entity-tag` means the record changed since it was read, so refresh and retry; `urn:pot:problem:duplicate-value` means the value already exists; and `urn:pot:problem:data-conflict` means the database rejected a constraint or a race.",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
             "headers": {
               "X-Correlation-Id": {
                 "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
@@ -2526,7 +3058,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -2599,6 +3131,44 @@
                 }
               }
             }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2643,7 +3213,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -2759,7 +3329,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -2822,7 +3392,45 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "A conflict names its category in `type`: `urn:pot:problem:duplicate-value` means the value already exists, and `urn:pot:problem:data-conflict` means the database rejected a constraint or a race.",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
             "headers": {
               "X-Correlation-Id": {
                 "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
@@ -2893,7 +3501,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -3035,7 +3643,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -3117,7 +3725,45 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "A conflict names its category in `type`: `urn:pot:problem:stale-entity-tag` means the record changed since it was read, so refresh and retry; `urn:pot:problem:duplicate-value` means the value already exists; and `urn:pot:problem:data-conflict` means the database rejected a constraint or a race.",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
             "headers": {
               "X-Correlation-Id": {
                 "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
@@ -3186,7 +3832,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -3303,7 +3949,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -3419,7 +4065,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -3482,7 +4128,45 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "A conflict names its category in `type`: `urn:pot:problem:duplicate-value` means the value already exists, and `urn:pot:problem:data-conflict` means the database rejected a constraint or a race.",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
             "headers": {
               "X-Correlation-Id": {
                 "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
@@ -3553,7 +4237,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -3695,7 +4379,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -3777,7 +4461,45 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "A conflict names its category in `type`: `urn:pot:problem:stale-entity-tag` means the record changed since it was read, so refresh and retry; `urn:pot:problem:duplicate-value` means the value already exists; and `urn:pot:problem:data-conflict` means the database rejected a constraint or a race.",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
             "headers": {
               "X-Correlation-Id": {
                 "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
@@ -3846,7 +4568,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -3973,7 +4695,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -4030,6 +4752,44 @@
           },
           "404": {
             "description": "Not Found",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
             "headers": {
               "X-Correlation-Id": {
                 "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
@@ -4100,7 +4860,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -4173,6 +4933,44 @@
                 }
               }
             }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -4217,7 +5015,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -4333,7 +5131,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -4396,7 +5194,45 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "A conflict names its category in `type`: `urn:pot:problem:duplicate-value` means the value already exists, and `urn:pot:problem:data-conflict` means the database rejected a constraint or a race.",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
             "headers": {
               "X-Correlation-Id": {
                 "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
@@ -4467,7 +5303,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -4609,7 +5445,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -4691,7 +5527,45 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "A conflict names its category in `type`: `urn:pot:problem:stale-entity-tag` means the record changed since it was read, so refresh and retry; `urn:pot:problem:duplicate-value` means the value already exists; and `urn:pot:problem:data-conflict` means the database rejected a constraint or a race.",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
             "headers": {
               "X-Correlation-Id": {
                 "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
@@ -4760,7 +5634,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -4887,7 +5761,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -4944,6 +5818,44 @@
           },
           "404": {
             "description": "Not Found",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
             "headers": {
               "X-Correlation-Id": {
                 "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
@@ -5014,7 +5926,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -5087,6 +5999,44 @@
                 }
               }
             }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -5131,7 +6081,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -5273,7 +6223,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -5390,7 +6340,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -5503,7 +6453,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -5548,6 +6498,25 @@
           },
           "401": {
             "description": "Unauthorized",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout",
             "headers": {
               "X-Correlation-Id": {
                 "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
@@ -5627,7 +6596,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -5760,7 +6729,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -5823,7 +6792,45 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "A conflict names its category in `type`: `urn:pot:problem:stale-entity-tag` means the record changed since it was read, so refresh and retry; `urn:pot:problem:duplicate-value` means the value already exists; and `urn:pot:problem:data-conflict` means the database rejected a constraint or a race.",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "headers": {
+              "X-Correlation-Id": {
+                "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
             "headers": {
               "X-Correlation-Id": {
                 "description": "Identifies this request in the logs - the caller's own id where one was accepted, otherwise one the API generated. Quote it when reporting a problem.",
@@ -7158,6 +8165,66 @@
         }
       },
       "Frequency": { },
+      "HttpValidationProblemDetails": {
+        "required": [
+          "correlationId",
+          "traceId",
+          "instance",
+          "errors"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "instance": {
+            "type": "string",
+            "description": "The path of the request that failed."
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "The validation messages, keyed by the field each belongs to. A rejected header is keyed by the name the caller sent, and a message about the whole request by the empty string."
+          },
+          "correlationId": {
+            "type": "string",
+            "description": "Identifies this request in the logs. Quote it when reporting a problem."
+          },
+          "traceId": {
+            "type": "string",
+            "description": "Identifies this request in distributed tracing: the W3C traceparent where the request was traced, otherwise the same value as correlationId."
+          }
+        }
+      },
       "IFormFile": {
         "type": "string",
         "format": "binary"

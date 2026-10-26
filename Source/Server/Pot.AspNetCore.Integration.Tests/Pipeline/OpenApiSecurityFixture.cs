@@ -28,18 +28,25 @@ public class OpenApiSecurityFixture : IntegrationFixtureBase
             .GetProperty("/api/auth/login")
             .GetProperty("post");
 
-        foreach (var statusCode in new[] { "400", "500" })
-        {
-            var problemDetailsContent = loginOperation.GetProperty("responses")
-                .GetProperty(statusCode)
-                .GetProperty("content")
-                .GetProperty("application/problem+json");
+        var loginResponses = loginOperation.GetProperty("responses");
 
-            problemDetailsContent.GetProperty("schema")
-                .GetProperty("$ref")
-                .GetString()
-                .ShouldBe("#/components/schemas/ProblemDetails");
-        }
+        // The failure describes itself with a detail, so it is documented as the shared problem body.
+        loginResponses.GetProperty("500")
+            .GetProperty("content")
+            .GetProperty("application/problem+json")
+            .GetProperty("schema")
+            .GetProperty("$ref")
+            .GetString()
+            .ShouldBe("#/components/schemas/ProblemDetails");
+
+        // A 400 states its messages in the map, so it is documented as the validation problem.
+        loginResponses.GetProperty("400")
+            .GetProperty("content")
+            .GetProperty("application/problem+json")
+            .GetProperty("schema")
+            .GetProperty("$ref")
+            .GetString()
+            .ShouldBe("#/components/schemas/HttpValidationProblemDetails");
     }
 
     [Fact]
@@ -380,9 +387,165 @@ public class OpenApiSecurityFixture : IntegrationFixtureBase
         invalidKeys.ShouldBeEmpty();
     }
 
+    [Fact]
+    public async Task Should_Describe_Every_Bad_Request_As_The_Validation_Problem()
+    {
+        using var client = CreateClient();
+
+        var response = await client.GetAsync("/openapi/v1.json", TestContext.Current.CancellationToken);
+        var responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, responseContent);
+
+        using var openApiDocument = await response.Content.ReadFromJsonAsync<JsonDocument>(
+            TestContext.Current.CancellationToken);
+
+        openApiDocument.ShouldNotBeNull();
+
+        var root = openApiDocument!.RootElement;
+        var schemas = root.GetProperty("components").GetProperty("schemas");
+        var apiOperations = GetApiOperations(root);
+        var validationProblemReferences = new List<string>();
+
+        foreach (var apiOperation in apiOperations)
+        {
+            var reference = apiOperation.Operation.GetProperty("responses")
+                .GetProperty("400")
+                .GetProperty("content")
+                .GetProperty("application/problem+json")
+                .GetProperty("schema")
+                .GetProperty("$ref")
+                .GetString();
+
+            reference.ShouldNotBeNull($"{apiOperation.Path} {apiOperation.Method} must describe its 400 as a problem body");
+            validationProblemReferences.Add(reference!);
+        }
+
+        validationProblemReferences.ShouldNotBeEmpty();
+
+        // One shape for every 400, whatever route produced it.
+        validationProblemReferences.Distinct(StringComparer.Ordinal).Count().ShouldBe(1);
+
+        var validationProblemSchemaName = validationProblemReferences[0].Split('/').Last();
+        var validationProblemSchema = schemas.GetProperty(validationProblemSchemaName);
+
+        validationProblemSchema.GetProperty("required")
+            .EnumerateArray()
+            .Select(item => item.GetString())
+            .ShouldContain("errors", "a 400 always carries the map of field to messages");
+
+        var errorsSchema = validationProblemSchema.GetProperty("properties").GetProperty("errors");
+
+        errorsSchema.GetProperty("type").GetString().ShouldBe("object", "the map is keyed by field name");
+        errorsSchema.GetProperty("additionalProperties").GetProperty("type").GetString().ShouldBe("array");
+        errorsSchema.GetProperty("additionalProperties").GetProperty("items").GetProperty("type").GetString().ShouldBe("string");
+
+        // Both problem shapes carry the members the shared customisation writes on every body.
+        foreach (var problemSchemaName in new[] { "ProblemDetails", validationProblemSchemaName })
+        {
+            var required = schemas.GetProperty(problemSchemaName)
+                .GetProperty("required")
+                .EnumerateArray()
+                .Select(item => item.GetString())
+                .ToList();
+
+            foreach (var member in new[] { "correlationId", "traceId", "instance" })
+            {
+                required.ShouldContain(member, problemSchemaName);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task Should_Describe_Each_Conflict_Category_Where_It_Can_Happen()
+    {
+        using var client = CreateClient();
+
+        var response = await client.GetAsync("/openapi/v1.json", TestContext.Current.CancellationToken);
+        var responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, responseContent);
+
+        using var openApiDocument = await response.Content.ReadFromJsonAsync<JsonDocument>(
+            TestContext.Current.CancellationToken);
+
+        openApiDocument.ShouldNotBeNull();
+
+        var apiOperations = GetApiOperations(openApiDocument!.RootElement);
+
+        // An update compares the entity tag it was given with the stored one, so these - and only these - can refuse
+        // a stale update.
+        var staleUpdateOperations = new HashSet<(string Path, string Method)>
+        {
+            ("/api/accounts/{id}", "put"),
+            ("/api/approvals/{id}/status", "put"),
+            ("/api/expenses/{id}", "put"),
+            ("/api/incomes/{id}", "put"),
+            ("/api/settings/{category}/{key}", "put"),
+            ("/api/sites/{id}", "put"),
+            ("/api/users/{id}", "put"),
+            ("/api/users/{id}/roles", "put"),
+            ("/api/users/{id}/status", "put")
+        };
+
+        foreach (var staleUpdateOperation in staleUpdateOperations)
+        {
+            apiOperations.ShouldContain(operation => operation.Path == staleUpdateOperation.Path
+                    && operation.Method == staleUpdateOperation.Method,
+                $"{staleUpdateOperation.Method} {staleUpdateOperation.Path} is documented");
+        }
+
+        var operationsWithAConflict = 0;
+
+        foreach (var apiOperation in apiOperations)
+        {
+            if (!apiOperation.Operation.GetProperty("responses").TryGetProperty("409", out var conflict))
+            {
+                continue;
+            }
+
+            operationsWithAConflict++;
+
+            var description = conflict.TryGetProperty("description", out var descriptionElement)
+                ? descriptionElement.GetString()
+                : null;
+
+            description.ShouldNotBeNullOrWhiteSpace($"{apiOperation.Method} {apiOperation.Path} describes its conflict");
+
+            if (staleUpdateOperations.Contains((apiOperation.Path, apiOperation.Method)))
+            {
+                description.ShouldContain("urn:pot:problem:stale-entity-tag");
+                description.ShouldContain("urn:pot:problem:duplicate-value");
+                description.ShouldContain("urn:pot:problem:data-conflict");
+            }
+            else
+            {
+                var namesTheStaleTagType = description!.Contains("urn:pot:problem:stale-entity-tag", StringComparison.Ordinal);
+
+                namesTheStaleTagType.ShouldBeFalse(
+                    $"{apiOperation.Method} {apiOperation.Path} cannot refuse a stale update");
+            }
+        }
+
+        operationsWithAConflict.ShouldBeGreaterThanOrEqualTo(staleUpdateOperations.Count);
+    }
+
     protected override ApiWebApplicationFactory CreateApiWebApplicationFactory(string dbHost, int dbPort)
     {
         return new DevelopmentApiWebApplicationFactory(dbHost, dbPort);
+    }
+
+    private static List<(string Path, string Method, JsonElement Operation)> GetApiOperations(JsonElement root)
+    {
+        return
+        [
+            .. root.GetProperty("paths")
+                .EnumerateObject()
+                .Where(path => path.Name.StartsWith("/api/", StringComparison.OrdinalIgnoreCase))
+                .SelectMany(path => path.Value.EnumerateObject()
+                    .Where(operation => IsHttpMethod(operation.Name))
+                    .Select(operation => (path.Name, operation.Name, operation.Value)))
+        ];
     }
 
     private static bool IsHttpMethod(string operationName)

@@ -1,7 +1,5 @@
 using AllOverIt.Assertion;
 using Microsoft.AspNetCore.Http.Features;
-using Pot.App.Errors;
-using Pot.App.Extensions;
 using Pot.AspNetCore.Concerns.ProblemDetails;
 using Pot.AspNetCore.Extensions;
 

@@ -1,3 +1,5 @@
+using Pot.AspNetCore.Extensions;
+
 namespace Pot.AspNetCore.Features.Accounts.Extensions;
 
 internal static class RouteGroupBuilderExtensions
@@ -41,7 +43,8 @@ internal static class RouteGroupBuilderExtensions
             .WithDescription("Create new account details")
             .Produces<Create.Response>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status409Conflict);
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesRequestBodyProblems();
 
         return routeGroupBuilder;
     }
@@ -57,7 +60,8 @@ internal static class RouteGroupBuilderExtensions
             .Produces<Update.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status409Conflict);
+            .ProducesStaleEntityTagConflict()
+            .ProducesRequestBodyProblems();
 
         return routeGroupBuilder;
     }

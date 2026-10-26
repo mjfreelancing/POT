@@ -4,7 +4,6 @@ using Pot.AspNetCore.Integration.Tests.Host.Models;
 using Pot.Shared.Enumerations;
 using Shouldly;
 using System.Net;
-using System.Net.Http.Json;
 
 namespace Pot.AspNetCore.Integration.Tests.Features.Expenses;
 

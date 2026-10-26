@@ -263,7 +263,8 @@ The frontend communicates with the backend via RESTful APIs:
   - Local: `http://localhost:5242` (via Visual Studio/dotnet run)
 - Authentication: JWT Bearer tokens
 - Content-Type: `application/json`
-- Error handling: RFC 7807 Problem Details
+- Error handling: RFC 9457 Problem Details - every failure carries `detail` except a `400`, which carries the validation
+  problem's `errors` map instead, and every body carries `correlationId`, `traceId` and `instance`
 
 ## State Management Strategy
 

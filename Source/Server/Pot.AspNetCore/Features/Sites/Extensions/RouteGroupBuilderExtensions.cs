@@ -1,3 +1,4 @@
+using Pot.AspNetCore.Extensions;
 
 namespace Pot.AspNetCore.Features.Sites.Extensions;
 
@@ -14,7 +15,8 @@ internal static class RouteGroupBuilderExtensions
             .Produces<Update.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status409Conflict);
+            .ProducesStaleEntityTagConflict()
+            .ProducesRequestBodyProblems();
 
         return routeGroupBuilder;
     }
@@ -28,9 +30,9 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Delete the current site")
             .WithDescription("Deletes the caller's site")
             .Produces(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status403Forbidden);
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesRequestBodyProblems();
 
         return routeGroupBuilder;
     }

@@ -1,4 +1,5 @@
 using Pot.AspNetCore.Concerns.Auth;
+using Pot.AspNetCore.Extensions;
 
 namespace Pot.AspNetCore.Features.Me.Extensions;
 
@@ -27,8 +28,8 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Delete my account")
             .WithDescription("Deletes the signed-in user's account")
             .Produces(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesRequestBodyProblems();
 
         return routeGroupBuilder;
     }
@@ -42,7 +43,8 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Change Password")
             .WithDescription("Change the user password")
             .Produces(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesRequestBodyProblems();
 
         return routeGroupBuilder;
     }

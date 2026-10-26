@@ -1,3 +1,5 @@
+using Pot.AspNetCore.Extensions;
+
 namespace Pot.AspNetCore.Features.Auth.Extensions;
 
 internal static class RouteGroupBuilderExtensions
@@ -11,7 +13,8 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(LoginUser))
             .WithSummary("Login")
             .WithDescription("Login the user")
-            .Produces<Login.Response>(StatusCodes.Status200OK);
+            .Produces<Login.Response>(StatusCodes.Status200OK)
+            .ProducesRequestBodyProblems();
 
         return routeGroupBuilder;
     }
@@ -53,7 +56,8 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(PasswordResetSend))
             .WithSummary("Request a password reset")
             .WithDescription("Request a password reset")
-            .Produces<PasswordReset.Send.Response>(StatusCodes.Status200OK);
+            .Produces<PasswordReset.Send.Response>(StatusCodes.Status200OK)
+            .ProducesRequestBodyProblems();
 
         return routeGroupBuilder;
     }
@@ -67,7 +71,8 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(PasswordResetVerify))
             .WithSummary("Verify a password reset")
             .WithDescription("Verify a password reset")
-            .Produces<PasswordReset.Verify.Response>(StatusCodes.Status200OK);
+            .Produces<PasswordReset.Verify.Response>(StatusCodes.Status200OK)
+            .ProducesRequestBodyProblems();
 
         return routeGroupBuilder;
     }
@@ -81,7 +86,8 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(SignupSend))
             .WithSummary("Request to signup")
             .WithDescription("Request to signup")
-            .Produces<Signup.Send.Response>(StatusCodes.Status200OK);
+            .Produces<Signup.Send.Response>(StatusCodes.Status200OK)
+            .ProducesRequestBodyProblems();
 
         return routeGroupBuilder;
     }
@@ -95,7 +101,8 @@ internal static class RouteGroupBuilderExtensions
             .WithName(nameof(SignupComplete))
             .WithSummary("Complete a signup request")
             .WithDescription("Complete a signup request")
-            .Produces<Signup.Complete.Response>(StatusCodes.Status200OK);
+            .Produces<Signup.Complete.Response>(StatusCodes.Status200OK)
+            .ProducesRequestBodyProblems();
 
         return routeGroupBuilder;
     }

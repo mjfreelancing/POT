@@ -1,4 +1,5 @@
 using Pot.AspNetCore.Concerns.Auth;
+using Pot.AspNetCore.Extensions;
 
 namespace Pot.AspNetCore.Features.Users.Extensions;
 
@@ -31,7 +32,8 @@ internal static class RouteGroupBuilderExtensions
             .Produces<Update.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status409Conflict);
+            .ProducesStaleEntityTagConflict()
+            .ProducesRequestBodyProblems();
 
         return routeGroupBuilder;
     }
@@ -47,7 +49,8 @@ internal static class RouteGroupBuilderExtensions
             .Produces<UpdateStatus.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status409Conflict);
+            .ProducesStaleEntityTagConflict()
+            .ProducesRequestBodyProblems();
 
         return routeGroupBuilder;
     }
@@ -63,7 +66,8 @@ internal static class RouteGroupBuilderExtensions
             .Produces<UpdateRoles.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status409Conflict);
+            .ProducesStaleEntityTagConflict()
+            .ProducesRequestBodyProblems();
 
         return routeGroupBuilder;
     }
@@ -78,7 +82,8 @@ internal static class RouteGroupBuilderExtensions
             .WithDescription("Invite a new user to the same site as the caller")
             .Produces(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status404NotFound);
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesRequestBodyProblems();
 
         return routeGroupBuilder;
     }
@@ -92,10 +97,10 @@ internal static class RouteGroupBuilderExtensions
             .WithSummary("Delete a user")
             .WithDescription("Deletes a user from the caller's site")
             .Produces(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
-            .ProducesProblem(StatusCodes.Status404NotFound);
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesRequestBodyProblems();
 
         return routeGroupBuilder;
     }

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Pot.AspNetCore.Extensions;
 
 namespace Pot.AspNetCore.Features.Maintenance.Extensions;
 
@@ -32,7 +33,7 @@ internal static class RouteGroupBuilderExtensions
             .DisableAntiforgery()
             .Produces<Import.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status413RequestEntityTooLarge);
+            .ProducesRequestBodyProblems();
 
         return routeGroupBuilder;
     }

@@ -32,13 +32,13 @@ public class EndpointResponseMetadataFixture : IntegrationFixtureBase
         var endpointsMissingBadRequest = apiEndpoints
             .Where(endpoint => endpoint.Metadata.GetOrderedMetadata<IProducesResponseTypeMetadata>()
                 .All(response => response.StatusCode != StatusCodes.Status400BadRequest
-                    || response.Type != typeof(ProblemDetails)
+                    || response.Type != typeof(HttpValidationProblemDetails)
                     || !response.ContentTypes.Contains("application/problem+json", StringComparer.OrdinalIgnoreCase)))
             .Select(endpoint => endpoint.RoutePattern.RawText)
             .ToList();
 
         endpointsMissingBadRequest.ShouldBeEmpty(
-            "every API endpoint can return a ProblemDetails 400 for malformed input or an invalid correlation ID");
+            "every API endpoint can return the validation problem for malformed input or an invalid correlation ID");
 
         var endpointsDocumentingUnprocessableEntity = apiEndpoints
             .Where(endpoint => endpoint.Metadata.GetOrderedMetadata<IProducesResponseTypeMetadata>()
@@ -130,6 +130,84 @@ public class EndpointResponseMetadataFixture : IntegrationFixtureBase
                 : candidate.ContentTypes.Contains(contentType, StringComparer.OrdinalIgnoreCase)));
 
         declaresExpectedResponse.ShouldBeTrue($"{endpointName} must document its actual successful response");
+    }
+
+    [Fact]
+    public void Should_Declare_Every_Bad_Request_As_The_Validation_Problem()
+    {
+        using var scope = CreateScope();
+
+        var apiEndpoints = GetApiEndpoints(scope.ServiceProvider.GetRequiredService<EndpointDataSource>());
+
+        var endpointsWithoutTheValidationProblem = apiEndpoints
+            .Where(endpoint => !DeclaresOnlyTheValidationProblem(endpoint))
+            .Select(endpoint => $"{endpoint.RoutePattern.RawText} -> {DescribeBadRequest(endpoint)}")
+            .ToList();
+
+        endpointsWithoutTheValidationProblem.ShouldBeEmpty(
+            "every API endpoint answers a 400 with the validation problem, and with nothing else");
+    }
+
+    [Fact]
+    public void Should_Declare_Payload_Too_Large_And_Request_Timeout_For_Body_Accepting_Endpoints()
+    {
+        using var scope = CreateScope();
+
+        var apiEndpoints = GetApiEndpoints(scope.ServiceProvider.GetRequiredService<EndpointDataSource>());
+
+        var endpointsAcceptingABody = apiEndpoints
+            .Where(endpoint => endpoint.Metadata.GetMetadata<IAcceptsMetadata>() is not null)
+            .ToList();
+
+        endpointsAcceptingABody.ShouldNotBeEmpty();
+
+        var endpointsMissingBodyProblems = endpointsAcceptingABody
+            .Where(endpoint => !DeclaresStatus(endpoint, StatusCodes.Status413PayloadTooLarge)
+                || !DeclaresStatus(endpoint, StatusCodes.Status408RequestTimeout))
+            .Select(endpoint => endpoint.RoutePattern.RawText)
+            .ToList();
+
+        endpointsMissingBodyProblems.ShouldBeEmpty(
+            "an endpoint that reads a request body can be refused for its size and for taking too long");
+
+        var endpointsWithoutABodyDeclaringBodyProblems = apiEndpoints
+            .Where(endpoint => endpoint.Metadata.GetMetadata<IAcceptsMetadata>() is null)
+            .Where(endpoint => DeclaresStatus(endpoint, StatusCodes.Status413PayloadTooLarge)
+                || DeclaresStatus(endpoint, StatusCodes.Status408RequestTimeout))
+            .Select(endpoint => endpoint.RoutePattern.RawText)
+            .ToList();
+
+        endpointsWithoutABodyDeclaringBodyProblems.ShouldBeEmpty(
+            "an endpoint that reads no request body can answer neither 413 nor 408");
+    }
+
+    private static bool DeclaresOnlyTheValidationProblem(RouteEndpoint endpoint)
+    {
+        var badRequests = endpoint.Metadata.GetOrderedMetadata<IProducesResponseTypeMetadata>()
+            .Where(response => response.StatusCode == StatusCodes.Status400BadRequest)
+            .ToList();
+
+        return badRequests.Count == 1
+            && badRequests[0].Type == typeof(HttpValidationProblemDetails)
+            && badRequests[0].ContentTypes.Contains("application/problem+json", StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static string DescribeBadRequest(RouteEndpoint endpoint)
+    {
+        var badRequests = endpoint.Metadata.GetOrderedMetadata<IProducesResponseTypeMetadata>()
+            .Where(response => response.StatusCode == StatusCodes.Status400BadRequest)
+            .Select(response => $"{response.Type?.Name ?? "no type"} ({string.Join(", ", response.ContentTypes)})")
+            .ToList();
+
+        return badRequests.Count == 0
+            ? "no 400 declared"
+            : string.Join(" | ", badRequests);
+    }
+
+    private static bool DeclaresStatus(RouteEndpoint endpoint, int statusCode)
+    {
+        return endpoint.Metadata.GetOrderedMetadata<IProducesResponseTypeMetadata>()
+            .Any(response => response.StatusCode == statusCode);
     }
 
     private static List<RouteEndpoint> GetApiEndpoints(EndpointDataSource endpointDataSource)

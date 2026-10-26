@@ -217,6 +217,10 @@ internal static class WebApplicationBuilderExtensions
 
             options.AddSchemaTransformer<ProblemDetailsSchemaTransformer>();
 
+            // Describes the conflict categories on every operation that can return one, with the stale-tag case
+            // named only where an update compares an entity tag.
+            options.AddOperationTransformer<ConflictResponseOperationTransformer>();
+
             // Describe JWT bearer authentication in the document so API tooling knows how clients authenticate.
             // This documents the existing auth scheme; it does not enable or enforce authentication at runtime.
             options.AddDocumentTransformer((document, _, _) =>

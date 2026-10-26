@@ -1,4 +1,5 @@
 using Pot.AspNetCore.Concerns.Auth;
+using Pot.AspNetCore.Extensions;
 
 namespace Pot.AspNetCore.Features.Approvals.Extensions;
 
@@ -29,7 +30,8 @@ internal static class RouteGroupBuilderExtensions
             .Produces<UpdateStatus.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status409Conflict);
+            .ProducesStaleEntityTagConflict()
+            .ProducesRequestBodyProblems();
 
         return routeGroupBuilder;
     }

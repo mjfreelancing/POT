@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Npgsql;
 using NSubstitute;
-using Pot.App.Errors;
 using Pot.AspNetCore.Concerns.ExceptionHandlers;
 using Shouldly;
 

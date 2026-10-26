@@ -17,6 +17,7 @@ internal sealed class ProblemDetailsSchemaTransformer : IOpenApiSchemaTransforme
 {
     private const string TraceIdMember = "traceId";
     private const string InstanceMember = "instance";
+    private const string ErrorsMember = "errors";
 
     public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
     {
@@ -56,6 +57,28 @@ internal sealed class ProblemDetailsSchemaTransformer : IOpenApiSchemaTransforme
         schema.Required.Add(ProblemDetailsOptionsSetup.CorrelationIdExtension);
         schema.Required.Add(TraceIdMember);
         schema.Required.Add(InstanceMember);
+
+        // Only a validation problem carries the map, and every 400 carries at least one message in it. The framework's
+        // type holds it as a dictionary the generator cannot describe, so the shape is written here.
+        if (typeof(HttpValidationProblemDetails).IsAssignableFrom(context.JsonTypeInfo.Type))
+        {
+            schema.Properties[ErrorsMember] = new OpenApiSchema
+            {
+                Type = JsonSchemaType.Object,
+                AdditionalProperties = new OpenApiSchema
+                {
+                    Type = JsonSchemaType.Array,
+                    Items = new OpenApiSchema
+                    {
+                        Type = JsonSchemaType.String
+                    }
+                },
+                Description = "The validation messages, keyed by the field each belongs to. A rejected header is keyed " +
+                    "by the name the caller sent, and a message about the whole request by the empty string."
+            };
+
+            schema.Required.Add(ErrorsMember);
+        }
 
         return Task.CompletedTask;
     }

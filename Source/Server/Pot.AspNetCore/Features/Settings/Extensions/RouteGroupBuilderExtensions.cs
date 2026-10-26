@@ -1,3 +1,4 @@
+using Pot.AspNetCore.Extensions;
 using Pot.AspNetCore.Features.Settings.Upsert;
 
 namespace Pot.AspNetCore.Features.Settings.Extensions;
@@ -28,7 +29,8 @@ internal static class RouteGroupBuilderExtensions
             .WithDescription("Create or update a single setting for the current site")
             .Produces<Upsert.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status409Conflict);
+            .ProducesStaleEntityTagConflict()
+            .ProducesRequestBodyProblems();
 
         return routeGroupBuilder;
     }

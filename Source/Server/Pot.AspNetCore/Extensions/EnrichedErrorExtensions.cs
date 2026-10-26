@@ -1,7 +1,5 @@
-using AllOverIt.Extensions;
 using AllOverIt.Patterns.Result;
 using Pot.App.Errors;
-using Pot.App.Extensions;
 using Pot.AspNetCore.Concerns.ProblemDetails;
 using System.Diagnostics;
 
