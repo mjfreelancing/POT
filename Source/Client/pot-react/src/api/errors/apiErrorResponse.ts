@@ -1,15 +1,10 @@
-type ApiErrorDetail = {
-  propertyName?: string | null;
-  errorCode: string;
-  errorMessage: string;
-};
-
 type ApiErrorResponse = {
   type?: string;
   title?: string;
   status?: number;
   detail?: string;
-  errors?: ApiErrorDetail[];
+  // The validation messages, keyed by the field they belong to. Only a 400 carries them.
+  errors?: Record<string, string[]>;
   // The framework's trace identifier: the W3C Activity id when tracing is active, otherwise the
   // request identifier.
   traceId?: string;
@@ -54,8 +49,11 @@ const getConflictMessage = (error: ApiErrorResponse): string => {
 };
 
 const getBadRequestMessage = (error: ApiErrorResponse): string => {
-  if (error.errors && error.errors.length > 0) {
-    return error.errors.map(err => err.errorMessage).join('\n');
+  // The caller needs every message, field and general alike, whatever field the server keyed it by.
+  const messages = Object.values(error.errors ?? {}).flat();
+
+  if (messages.length > 0) {
+    return messages.join('\n');
   }
 
   return error.detail ?? error.title ?? 'The request was not valid.';
@@ -100,4 +98,4 @@ export {
   getRateLimitedMessage,
   getServerErrorMessage,
 };
-export type { ApiErrorDetail, ApiErrorResponse };
+export type { ApiErrorResponse };

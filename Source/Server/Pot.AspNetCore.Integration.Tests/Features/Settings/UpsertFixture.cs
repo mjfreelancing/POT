@@ -30,20 +30,23 @@ public class UpsertFixture : IntegrationAuthFixtureBase
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 
-        // 'instance' repeats the request path, which the caller already supplied, so only the message
-        // fields are checked.
+        // 'instance' repeats the request path, which the caller already supplied, so only the message fields are
+        // checked: the rejected category is not echoed back in any of them.
         using var document = JsonDocument.Parse(body);
         var problem = document.RootElement;
 
-        var detail = problem.GetProperty("detail").GetString() ?? string.Empty;
+        problem.TryGetProperty("detail", out _).ShouldBeFalse();
 
-        var error = problem.GetProperty("errors").EnumerateArray().ShouldHaveSingleItem();
+        var errors = problem.GetProperty("errors");
 
-        var propertyName = error.GetProperty("propertyName").GetString() ?? string.Empty;
-        var errorMessage = error.GetProperty("errorMessage").GetString() ?? string.Empty;
+        errors.ValueKind.ShouldBe(JsonValueKind.Object);
 
-        detail.ShouldNotContain(category);
-        propertyName.ShouldNotContain(category);
-        errorMessage.ShouldNotContain(category);
+        var messages = errors.GetProperty("category").EnumerateArray()
+            .Select(message => message.GetString() ?? string.Empty)
+            .ToArray();
+
+        var message = messages.ShouldHaveSingleItem();
+
+        message.ShouldNotContain(category);
     }
 }

@@ -1,4 +1,7 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Pot.AspNetCore.Integration.Tests.Host;
 using Pot.AspNetCore.Integration.Tests.Host.Extensions;
 using Pot.AspNetCore.Integration.Tests.Host.Models;
@@ -17,6 +20,8 @@ public class CorrelationAndProblemDetailsFixture : IntegrationAuthFixtureBase
     {
         public string? Type { get; set; }
 
+        public string? Title { get; set; }
+
         public string? Detail { get; set; }
 
         public string? Instance { get; set; }
@@ -32,6 +37,8 @@ public class CorrelationAndProblemDetailsFixture : IntegrationAuthFixtureBase
     private const string AllowedOrigin = "http://localhost:3000";
     private const string NonJsonAccept = "text/html";
     private const string InvalidCharactersDetail = "CorrelationId may only contain letters, digits, '-', '_', '.' and ':'";
+    private const string ValidationProblemTitle = "One or more validation errors occurred.";
+    private const string ValidationLogCategory = "Pot.AspNetCore.Concerns.Validation.ProblemDetailsInspector";
 
     private static readonly JsonSerializerOptions WebJsonSerializerOptions = new(JsonSerializerDefaults.Web);
 
@@ -48,11 +55,16 @@ public class CorrelationAndProblemDetailsFixture : IntegrationAuthFixtureBase
         var problemDetails = await ReadProblemDetailsAsync(response);
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        problemDetails.Detail.ShouldBe("CorrelationId exceeds max length of 128 chars");
         problemDetails.Status.ShouldBe(StatusCodes.Status400BadRequest);
+        problemDetails.Title.ShouldBe(ValidationProblemTitle);
+        problemDetails.Detail.ShouldBeNull();
         problemDetails.Instance.ShouldBe("/api/me");
         HasExtension(problemDetails, "instance").ShouldBeFalse();
         GetExtensionString(problemDetails, "correlationId").ShouldNotBeNullOrWhiteSpace();
+
+        var message = GetErrorMessages(problemDetails, CorrelationIdHeader).ShouldHaveSingleItem();
+
+        message.ShouldBe("CorrelationId exceeds max length of 128 chars");
     }
 
     [Theory]
@@ -71,7 +83,9 @@ public class CorrelationAndProblemDetailsFixture : IntegrationAuthFixtureBase
         var problemDetails = await ReadProblemDetailsAsync(response);
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        problemDetails.Detail.ShouldBe(InvalidCharactersDetail);
+        problemDetails.Title.ShouldBe(ValidationProblemTitle);
+        problemDetails.Detail.ShouldBeNull();
+        GetErrorMessages(problemDetails, CorrelationIdHeader).ShouldHaveSingleItem().ShouldBe(InvalidCharactersDetail);
         GetExtensionString(problemDetails, "correlationId").ShouldNotBe(correlationId);
     }
 
@@ -143,7 +157,8 @@ public class CorrelationAndProblemDetailsFixture : IntegrationAuthFixtureBase
 
         // The validation error, not a correlation id rejection, shows the header was treated as absent.
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        problemDetails.Detail.ShouldBe("One or more validation errors occurred.");
+        problemDetails.Title.ShouldBe(ValidationProblemTitle);
+        problemDetails.Detail.ShouldBeNull();
         GetExtensionString(problemDetails, "correlationId").ShouldNotBeNullOrWhiteSpace();
     }
 
@@ -183,7 +198,8 @@ public class CorrelationAndProblemDetailsFixture : IntegrationAuthFixtureBase
         var problemDetails = await ReadProblemDetailsAsync(response);
 
         problemDetails.Status.ShouldBe(StatusCodes.Status400BadRequest);
-        problemDetails.Detail.ShouldBe("One or more validation errors occurred.");
+        problemDetails.Title.ShouldBe(ValidationProblemTitle);
+        problemDetails.Detail.ShouldBeNull();
         GetExtensionString(problemDetails, "correlationId").ShouldBe(correlationId);
 
         // traceId is the framework's identifier; only correlationId is the support id.
@@ -191,7 +207,10 @@ public class CorrelationAndProblemDetailsFixture : IntegrationAuthFixtureBase
 
         problemDetails.Instance.ShouldBe("/api/auth/login");
         HasExtension(problemDetails, "instance").ShouldBeFalse();
-        HasExtension(problemDetails, "errors").ShouldBeTrue();
+
+        // A body field is keyed by its camelCase JSON name.
+        GetErrorMessages(problemDetails, "username").ShouldNotBeEmpty();
+        GetErrorMessages(problemDetails, "password").ShouldNotBeEmpty();
     }
 
     [Fact]
@@ -236,6 +255,12 @@ public class CorrelationAndProblemDetailsFixture : IntegrationAuthFixtureBase
 
         problemDetails.Status.ShouldBe(StatusCodes.Status400BadRequest);
         GetExtensionString(problemDetails, "correlationId").ShouldNotBeNullOrWhiteSpace();
+
+        // The request could not be read, so there is no field to key the message by: it belongs to the
+        // whole request and takes the general key.
+        problemDetails.Title.ShouldBe(ValidationProblemTitle);
+        problemDetails.Detail.ShouldBeNull();
+        GetErrorMessages(problemDetails, string.Empty).ShouldHaveSingleItem().ShouldNotBeNullOrWhiteSpace();
     }
 
     [Fact]
@@ -340,14 +365,10 @@ public class CorrelationAndProblemDetailsFixture : IntegrationAuthFixtureBase
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 
-        var error = problemDetails.Extensions["errors"].EnumerateArray().ShouldHaveSingleItem();
+        var message = GetErrorMessages(problemDetails, CorrelationIdHeader).ShouldHaveSingleItem();
 
-        error.GetProperty("propertyName").GetString().ShouldBe(CorrelationIdHeader);
-        error.GetProperty("errorCode").GetString().ShouldBe("Invalid");
-        error.GetProperty("errorMessage").GetString().ShouldBe(InvalidCharactersDetail);
-        error.TryGetProperty("attemptedValue", out _).ShouldBeFalse();
+        message.ShouldBe(InvalidCharactersDetail);
     }
-
     // A client whose Accept header excludes JSON - a browser navigation sends text/html - must still get Problem Details
     // carrying the correlation id. The framework's writer declines such a request, and each route into an error body
     // then falls back differently, so each is asserted separately.
@@ -468,6 +489,56 @@ public class CorrelationAndProblemDetailsFixture : IntegrationAuthFixtureBase
 
         await response.ShouldBeProblemAsync(HttpStatusCode.MethodNotAllowed,
             expectedDetail: ProblemTypes.MethodNotAllowedDetail);
+    }
+
+    [Fact]
+    public async Task Should_Log_A_Validation_Failure_Once_With_Field_Names_And_Messages_Only()
+    {
+        using var scope = CreateScope();
+        var collector = scope.ServiceProvider.GetFakeLogCollector();
+        collector.Clear();
+
+        using var client = CreateClient();
+
+        const string submittedPassword = "not-a-real-password";
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/login")
+        {
+            Content = JsonContent.Create(new { Username = string.Empty, Password = submittedPassword })
+        };
+
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+
+        var problem = await response.ShouldBeValidationProblemAsync("username");
+
+        var entries = collector.GetSnapshot()
+            .Where(record => record.Category == ValidationLogCategory)
+            .ToList();
+
+        var messages = problem.AllMessages();
+
+        entries.Count.ShouldBe(messages.Length, "each failure is logged once, not once per handler and inspector");
+        entries.ShouldAllBe(entry => entry.Level == LogLevel.Information);
+
+        foreach (var message in messages)
+        {
+            entries.ShouldContain(entry => entry.Message.Contains(message));
+        }
+
+        // A logged failure carries the field name and the message, never the value the caller sent.
+        entries.ShouldAllBe(entry => !entry.Message.Contains(submittedPassword));
+    }
+
+    private static string[] GetErrorMessages(ProblemDetailsResponse problemDetails, string fieldKey)
+    {
+        if (!problemDetails.Extensions.TryGetValue("errors", out var errors))
+        {
+            return [];
+        }
+
+        return errors.TryGetProperty(fieldKey, out var messages)
+            ? [.. messages.EnumerateArray().Select(message => message.GetString() ?? string.Empty)]
+            : [];
     }
 
     private static async Task<ProblemDetailsResponse> ReadProblemDetailsAsync(HttpResponseMessage response)

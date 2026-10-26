@@ -30,17 +30,21 @@ internal static class EnrichedErrorExtensions
 
         if (statusCode == StatusCodes.Status400BadRequest)
         {
-            // A validation problem is the only one that describes individual fields.
-            // Every other status states what happened in 'detail' alone.
-            var errors = enrichedError switch
+            // A validation problem is the only one that describes individual fields: the messages live in the map
+            // and there is no 'detail' to read instead.
+            var failures = enrichedError switch
             {
-                ApiDetailError problemDetailsError => [problemDetailsError.GetErrorDetails()],
-                ApiBasicError problemDetailsBasicError => [problemDetailsBasicError.GetErrorDetails()],
-                ApiDetailErrorCollection problemDetailsErrorCollection => problemDetailsErrorCollection.Errors.SelectToArray(errorItem => errorItem.GetErrorDetails()),
+                ApiDetailError problemDetailsError => [new ValidationErrors.FieldFailure(problemDetailsError.PropertyName, problemDetailsError.ErrorMessage)],
+                ApiBasicError problemDetailsBasicError => [new ValidationErrors.FieldFailure(string.Empty, problemDetailsBasicError.ErrorMessage)],
+                ApiDetailErrorCollection problemDetailsErrorCollection => problemDetailsErrorCollection.Errors
+                    .Select(errorItem => new ValidationErrors.FieldFailure(errorItem.PropertyName, errorItem.ErrorMessage))
+                    .ToArray(),
                 _ => throw new UnreachableException($"Unknown enriched error type: {enrichedError.GetType()}")
             };
 
-            problemDetails.Extensions["errors"] = errors;
+            problemDetails.Detail = null;
+            problemDetails.Title = ValidationErrors.Title;
+            problemDetails.Extensions[ValidationErrors.Extension] = ValidationErrors.ToMap(failures);
         }
 
         return problemDetails;

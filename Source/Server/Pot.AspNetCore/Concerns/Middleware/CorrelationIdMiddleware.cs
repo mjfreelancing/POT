@@ -87,20 +87,24 @@ internal sealed class CorrelationIdMiddleware : IMiddleware
 
     private async Task WriteBadRequestAsync(HttpContext httpContext, string detail)
     {
-        // Carried in 'errors' as well as 'detail', keyed by the header, so the client finds the reason where it finds
-        // every other field error. The rejected value is deliberately not echoed as the attempted value: it is
-        // whatever the caller sent, and refusing it is the point.
-        var errorDetail = new ApiDetailError(ErrorType.BadRequest)
+        // Keyed by the header the caller sent, so the reason is found where every other field error is. The rejected
+        // value is deliberately not echoed: it is whatever the caller sent, and refusing it is the point.
+        httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+
+        var problemDetails = new Microsoft.AspNetCore.Mvc.ProblemDetails
         {
-            ErrorCode = ErrorCodes.Invalid,
-            PropertyName = HeaderName,
-            ErrorMessage = detail
+            Status = StatusCodes.Status400BadRequest,
+            Extensions = new Dictionary<string, object?>
+            {
+                { ValidationErrors.Extension, new Dictionary<string, string[]> { [HeaderName] = [detail] } }
+            }
         };
 
-        var problemDetailsContext = ProblemDetailsContextFactory.Create(httpContext, StatusCodes.Status400BadRequest, detail, null);
-
-        // A 400 states its reasons as field errors, which the shared customisation does not supply.
-        problemDetailsContext.ProblemDetails.Extensions["errors"] = new object[] { errorDetail.GetErrorDetails() };
+        var problemDetailsContext = new ProblemDetailsContext
+        {
+            HttpContext = httpContext,
+            ProblemDetails = problemDetails
+        };
 
         await _problemDetailsService.WriteAsync(problemDetailsContext);
     }

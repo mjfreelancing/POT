@@ -18,16 +18,6 @@ public class CreateUpdateFixture : IntegrationAuthFixtureBase
     private const string DuplicateDescriptionMessage = "a duplicate income description must not be accepted";
     private const string DuplicateDescriptionError = "The income description already exists";
 
-    private sealed class ValidationProblem
-    {
-        public ValidationError[] Errors { get; set; } = [];
-    }
-
-    private sealed class ValidationError
-    {
-        public string? PropertyName { get; set; }
-    }
-
     [Fact]
     public async Task Should_Return_Unauthorized_When_Creating_Without_Authentication()
     {
@@ -82,10 +72,7 @@ public class CreateUpdateFixture : IntegrationAuthFixtureBase
 
         await response.ShouldHaveStatusAsync(HttpStatusCode.BadRequest);
 
-        var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
-
-        problem.ShouldNotBeNull();
-        problem!.Errors.Select(error => error.PropertyName).ShouldContain("Description");
+        await response.ShouldBeValidationProblemAsync("description");
     }
 
     [Fact]

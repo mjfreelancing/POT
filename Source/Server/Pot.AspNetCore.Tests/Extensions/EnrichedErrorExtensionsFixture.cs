@@ -76,20 +76,33 @@ public class EnrichedErrorExtensionsFixture
         }
 
         [Fact]
-        public void Should_Keep_The_Field_Errors_On_A_Bad_Request()
+        public void Should_Describe_A_Bad_Request_As_A_Validation_Problem()
         {
             var error = ApiDetailErrorFactory.CreateBadRequestError("Status", "Status cannot be changed");
 
             var problemDetails = error.ToProblemDetails();
 
             problemDetails.Status.ShouldBe(400);
-            problemDetails.Detail.ShouldBe("Status cannot be changed");
+            problemDetails.Title.ShouldBe("One or more validation errors occurred.");
+            problemDetails.Detail.ShouldBeNull();
 
-            var errors = problemDetails.Extensions["errors"].ShouldBeOfType<object[]>();
-            var details = errors.ShouldHaveSingleItem().ShouldBeOfType<Dictionary<string, object?>>();
+            var errors = problemDetails.Extensions["errors"].ShouldBeOfType<Dictionary<string, string[]>>();
 
-            details["propertyName"].ShouldBe("Status");
-            details["errorMessage"].ShouldBe("Status cannot be changed");
+            errors.ShouldContainKey("status");
+            errors["status"].ShouldBe(["Status cannot be changed"]);
+        }
+
+        [Fact]
+        public void Should_File_A_Whole_Request_Refusal_Under_The_General_Key()
+        {
+            var error = ApiDetailErrorFactory.CreateBadRequestError("The operation cannot be completed.");
+
+            var problemDetails = error.ToProblemDetails();
+
+            var errors = problemDetails.Extensions["errors"].ShouldBeOfType<Dictionary<string, string[]>>();
+
+            errors.ShouldContainKey(string.Empty);
+            errors[string.Empty].ShouldBe(["The operation cannot be completed."]);
         }
 
         [Theory]

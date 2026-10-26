@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { ApiErrorResponse } from '@/api/errors/apiErrorResponse';
 import {
+  getBadRequestMessage,
   getConflictMessage,
   getServerErrorMessage,
 } from '@/api/errors/apiErrorResponse';
@@ -88,5 +89,50 @@ describe('getServerErrorMessage', () => {
     const result = getServerErrorMessage(error);
 
     expect(result).toBe('The server encountered an error. Please try again.');
+  });
+});
+
+describe('getBadRequestMessage', () => {
+  it('should show every message in the validation map, field and general alike', () => {
+    const error: ApiErrorResponse = {
+      status: 400,
+      title: 'One or more validation errors occurred.',
+      errors: {
+        username: ['Username is required.'],
+        password: ['Password is required.'],
+        '': ['The request could not be read.'],
+      },
+    };
+
+    const result = getBadRequestMessage(error);
+
+    expect(result).toBe(
+      'Username is required.\nPassword is required.\nThe request could not be read.',
+    );
+  });
+
+  it('should show every message when one field has more than one', () => {
+    const error: ApiErrorResponse = {
+      status: 400,
+      title: 'One or more validation errors occurred.',
+      errors: {
+        password: ['Password is required.', 'Password is too short.'],
+      },
+    };
+
+    const result = getBadRequestMessage(error);
+
+    expect(result).toBe('Password is required.\nPassword is too short.');
+  });
+
+  it('should fall back to the body title when the map is absent', () => {
+    const error: ApiErrorResponse = {
+      status: 400,
+      title: 'One or more validation errors occurred.',
+    };
+
+    const result = getBadRequestMessage(error);
+
+    expect(result).toBe('One or more validation errors occurred.');
   });
 });

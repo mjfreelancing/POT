@@ -15,19 +15,6 @@ public class RenewFixture : IntegrationAuthFixtureBase
     private const double BillAmount = 70.0d;
     private const int CycleDays = 30;
 
-    private const string RowIdsProperty = "RowIds";
-
-    private sealed class ValidationProblem
-    {
-        public ValidationError[] Errors { get; set; } = [];
-    }
-
-    private sealed class ValidationError
-    {
-        public string? PropertyName { get; set; }
-        public string? ErrorMessage { get; set; }
-    }
-
     [Fact]
     public async Task Should_Return_Unauthorized_When_Renewing_Without_Authentication()
     {
@@ -75,10 +62,7 @@ public class RenewFixture : IntegrationAuthFixtureBase
 
         await response.ShouldHaveStatusAsync(HttpStatusCode.BadRequest);
 
-        var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
-
-        problem.ShouldNotBeNull();
-        problem!.Errors.Select(error => error.PropertyName).ShouldContain(RowIdsProperty);
+        await response.ShouldBeValidationProblemAsync("rowIds");
     }
 
     // A selection the database cannot resolve is reported as a failure rather than a silent success.

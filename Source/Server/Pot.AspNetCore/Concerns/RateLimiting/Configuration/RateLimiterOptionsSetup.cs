@@ -42,11 +42,17 @@ internal sealed class RateLimiterOptionsSetup : IConfigureOptions<RateLimiterOpt
 
             // Written through IProblemDetailsService so a 429 carries the same content type, correlation id, instance
             // and default detail as every other error response.
-            var problemDetailsContext = ProblemDetailsContextFactory.Create(
-                context.HttpContext,
-                StatusCodes.Status429TooManyRequests,
-                errorDetail.ErrorMessage,
-                exception: null);
+            context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+
+            var problemDetailsContext = new ProblemDetailsContext
+            {
+                HttpContext = context.HttpContext,
+                ProblemDetails = new Microsoft.AspNetCore.Mvc.ProblemDetails
+                {
+                    Detail = errorDetail.ErrorMessage,
+                    Status = StatusCodes.Status429TooManyRequests
+                }
+            };
 
             var problemDetailsService = context.HttpContext.RequestServices.GetRequiredService<IProblemDetailsService>();
 

@@ -18,13 +18,12 @@ public class DeleteSiteFixture : IntegrationAuthFixtureBase
 {
     private sealed class ValidationProblem
     {
-        public ValidationError[] Errors { get; set; } = [];
-    }
+        public Dictionary<string, string[]> Errors { get; set; } = [];
 
-    private sealed class ValidationError
-    {
-        public string? PropertyName { get; set; }
-        public string? ErrorMessage { get; set; }
+        public string[] AllMessages()
+        {
+            return [.. Errors.Values.SelectMany(messages => messages)];
+        }
     }
 
     [Fact]
@@ -121,7 +120,7 @@ public class DeleteSiteFixture : IntegrationAuthFixtureBase
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
 
-        problem!.Errors.Single().ErrorMessage.ShouldBe("The password is incorrect.");
+        problem!.AllMessages().ShouldHaveSingleItem().ShouldBe("The password is incorrect.");
         (await SiteExistsAsync(callerWithSite.Site.RowId)).ShouldBeTrue();
     }
 
@@ -138,7 +137,7 @@ public class DeleteSiteFixture : IntegrationAuthFixtureBase
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
 
-        problem!.Errors.Single().ErrorMessage.ShouldBe("The site name does not match your site.");
+        problem!.AllMessages().ShouldHaveSingleItem().ShouldBe("The site name does not match your site.");
         (await SiteExistsAsync(callerWithSite.Site.RowId)).ShouldBeTrue();
     }
 
@@ -155,7 +154,7 @@ public class DeleteSiteFixture : IntegrationAuthFixtureBase
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
 
-        problem!.Errors.Single().ErrorMessage.ShouldBe("The username does not match your account.");
+        problem!.AllMessages().ShouldHaveSingleItem().ShouldBe("The username does not match your account.");
         (await SiteExistsAsync(callerWithSite.Site.RowId)).ShouldBeTrue();
     }
 
@@ -177,7 +176,7 @@ public class DeleteSiteFixture : IntegrationAuthFixtureBase
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
-        var errorMessage = problem!.Errors.Single().ErrorMessage;
+        var errorMessage = problem!.AllMessages().ShouldHaveSingleItem();
 
         errorMessage.ShouldNotBeNull();
         errorMessage.ShouldContain("last enabled platform administrator");
@@ -222,11 +221,11 @@ public class DeleteSiteFixture : IntegrationAuthFixtureBase
         // The rejection names the missing confirmation values, so it comes from the request validator rather
         // than from the pre-delete checks.
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
-        var rejectedProperties = problem!.Errors.Select(error => error.PropertyName).ToList();
+        var rejectedProperties = problem!.Errors.Keys.ToList();
 
-        rejectedProperties.ShouldContain("SiteName");
-        rejectedProperties.ShouldContain("Username");
-        rejectedProperties.ShouldContain("Password");
+        rejectedProperties.ShouldContain("siteName");
+        rejectedProperties.ShouldContain("username");
+        rejectedProperties.ShouldContain("password");
 
         (await SiteExistsAsync(callerWithSite.Site.RowId)).ShouldBeTrue();
     }

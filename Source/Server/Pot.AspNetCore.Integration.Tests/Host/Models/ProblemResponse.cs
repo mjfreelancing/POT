@@ -14,6 +14,11 @@ public sealed class ProblemResponse
     public string? Type { get; set; }
 
     /// <summary>
+    /// The framework's title for the failure.
+    /// </summary>
+    public string? Title { get; set; }
+
+    /// <summary>
     /// The HTTP status code, repeated in the body.
     /// </summary>
     public int? Status { get; set; }
@@ -24,28 +29,16 @@ public sealed class ProblemResponse
     public string? Detail { get; set; }
 
     /// <summary>
-    /// The individual failures, one entry per rejected field or rule.
+    /// The validation messages, keyed by the field they belong to. Only a 400 carries it.
     /// </summary>
-    public ProblemResponseError[] Errors { get; set; } = [];
-}
-
-/// <summary>
-/// A single entry in a problem response's <c>errors</c> node.
-/// </summary>
-public sealed class ProblemResponseError
-{
-    /// <summary>
-    /// The machine readable error code.
-    /// </summary>
-    public string? ErrorCode { get; set; }
+    public Dictionary<string, string[]> Errors { get; set; } = [];
 
     /// <summary>
-    /// The field the failure relates to, when there is one.
+    /// Every validation message, whatever field it belongs to.
     /// </summary>
-    public string? PropertyName { get; set; }
-
-    /// <summary>
-    /// The human readable description of the failure.
-    /// </summary>
-    public string? ErrorMessage { get; set; }
+    /// <returns>The messages, in no particular order.</returns>
+    public string[] AllMessages()
+    {
+        return [.. Errors.Values.SelectMany(messages => messages)];
+    }
 }

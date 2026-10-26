@@ -18,13 +18,12 @@ public class DeleteAccountFixture : IntegrationAuthFixtureBase
 {
     private sealed class ValidationProblem
     {
-        public ValidationError[] Errors { get; set; } = [];
-    }
+        public Dictionary<string, string[]> Errors { get; set; } = [];
 
-    private sealed class ValidationError
-    {
-        public string? PropertyName { get; set; }
-        public string? ErrorMessage { get; set; }
+        public string[] AllMessages()
+        {
+            return [.. Errors.Values.SelectMany(messages => messages)];
+        }
     }
 
     [Fact]
@@ -75,7 +74,7 @@ public class DeleteAccountFixture : IntegrationAuthFixtureBase
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
 
-        problem!.Errors.Single().ErrorMessage.ShouldBe("The password is incorrect.");
+        problem!.AllMessages().ShouldHaveSingleItem().ShouldBe("The password is incorrect.");
         (await UserExistsAsync(caller.UserRowId)).ShouldBeTrue();
     }
 
@@ -91,7 +90,7 @@ public class DeleteAccountFixture : IntegrationAuthFixtureBase
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
 
-        problem!.Errors.Single().ErrorMessage.ShouldBe("The username does not match your account.");
+        problem!.AllMessages().ShouldHaveSingleItem().ShouldBe("The username does not match your account.");
         (await UserExistsAsync(caller.UserRowId)).ShouldBeTrue();
     }
 
@@ -106,7 +105,7 @@ public class DeleteAccountFixture : IntegrationAuthFixtureBase
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
-        var errorMessage = problem!.Errors.Single().ErrorMessage;
+        var errorMessage = problem!.AllMessages().ShouldHaveSingleItem();
 
         errorMessage.ShouldNotBeNull();
         errorMessage.ShouldContain("only enabled administrator");
@@ -135,7 +134,7 @@ public class DeleteAccountFixture : IntegrationAuthFixtureBase
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
-        var errorMessage = problem!.Errors.Single().ErrorMessage;
+        var errorMessage = problem!.AllMessages().ShouldHaveSingleItem();
 
         errorMessage.ShouldNotBeNull();
         errorMessage.ShouldContain("last enabled platform administrator");
@@ -186,10 +185,10 @@ public class DeleteAccountFixture : IntegrationAuthFixtureBase
         // The rejection names the missing confirmation values, so it comes from the request validator rather
         // than from the pre-delete checks.
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
-        var rejectedProperties = problem!.Errors.Select(error => error.PropertyName).ToList();
+        var rejectedProperties = problem!.Errors.Keys.ToList();
 
-        rejectedProperties.ShouldContain("Username");
-        rejectedProperties.ShouldContain("Password");
+        rejectedProperties.ShouldContain("username");
+        rejectedProperties.ShouldContain("password");
 
         (await UserExistsAsync(caller.UserRowId)).ShouldBeTrue();
     }

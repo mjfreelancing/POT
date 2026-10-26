@@ -14,7 +14,7 @@ public class ErrorCodesFixture : PotFixtureBase
         {
             var fields = typeof(ErrorCodes).GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly);
 
-            fields.Length.ShouldBe(8, "If this fails, new fields were added. Update the individual field tests below.");
+            fields.Length.ShouldBe(9, "If this fails, new fields were added. Update the individual field tests below.");
         }
     }
 
@@ -54,6 +54,12 @@ public class ErrorCodesFixture : PotFixtureBase
         public void Duplicate_Should_Match_Field_Name()
         {
             ErrorCodes.Duplicate.ShouldBe(nameof(ErrorCodes.Duplicate));
+        }
+
+        [Fact]
+        public void StaleEntityTag_Should_Match_Field_Name()
+        {
+            ErrorCodes.StaleEntityTag.ShouldBe(nameof(ErrorCodes.StaleEntityTag));
         }
 
         [Fact]

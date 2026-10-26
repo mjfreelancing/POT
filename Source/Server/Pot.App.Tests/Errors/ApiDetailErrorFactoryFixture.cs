@@ -28,7 +28,7 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
 
             var result = ApiDetailErrorFactory.CreateEntityExistsError(propertyName, errorMessage);
 
-            result.ErrorCode.ShouldBe(ErrorCodes.Conflict);
+            result.ErrorCode.ShouldBe(ErrorCodes.Duplicate);
             result.PropertyName.ShouldBe(propertyName);
             result.ErrorMessage.ShouldBe(errorMessage);
         }
@@ -181,7 +181,7 @@ public class ApiDetailErrorFactoryFixture : PotFixtureBase
 
             var result = ApiDetailErrorFactory.CreateEtagConflict(entityType);
 
-            result.ErrorCode.ShouldBe(ErrorCodes.Conflict);
+            result.ErrorCode.ShouldBe(ErrorCodes.StaleEntityTag);
             result.PropertyName.ShouldBe(nameof(EntityBase.Etag));
             result.ErrorMessage.ShouldBe($"The entity tag for the {entityType} does not match the current record");
         }

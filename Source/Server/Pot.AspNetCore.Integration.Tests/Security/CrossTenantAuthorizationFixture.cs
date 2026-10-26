@@ -41,13 +41,12 @@ public partial class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBas
 
     private sealed class ValidationProblem
     {
-        public ValidationError[] Errors { get; set; } = [];
-    }
+        public Dictionary<string, string[]> Errors { get; set; } = [];
 
-    private sealed class ValidationError
-    {
-        public string? PropertyName { get; set; }
-        public string? ErrorMessage { get; set; }
+        public string[] AllMessages()
+        {
+            return [.. Errors.Values.SelectMany(messages => messages)];
+        }
     }
 
     [Fact]
@@ -483,7 +482,7 @@ public partial class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBas
             "the last enabled platform administrator must not be disabled");
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
-        var errorMessage = problem!.Errors.Single().ErrorMessage;
+        var errorMessage = problem!.AllMessages().ShouldHaveSingleItem();
 
         errorMessage.ShouldNotBeNull();
         errorMessage.ShouldContain("last enabled platform administrator");
@@ -520,9 +519,9 @@ public partial class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBas
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
 
-        problem!.Errors.Length.ShouldBe(1);
+        problem!.AllMessages().ShouldHaveSingleItem();
 
-        var errorMessage = problem.Errors[0].ErrorMessage;
+        var errorMessage = problem.AllMessages().Single();
 
         errorMessage.ShouldNotBeNull();
         errorMessage.ShouldContain("last enabled platform administrator");
@@ -586,7 +585,7 @@ public partial class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBas
             "a disabled platform administrator cannot operate the platform");
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
-        var errorMessage = problem!.Errors.Single().ErrorMessage;
+        var errorMessage = problem!.AllMessages().ShouldHaveSingleItem();
 
         errorMessage.ShouldNotBeNull();
         errorMessage.ShouldContain("last enabled platform administrator");
@@ -623,7 +622,7 @@ public partial class CrossTenantAuthorizationFixture : IntegrationAuthFixtureBas
             "the site would be left without an enabled administrator");
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
-        var errorMessage = problem!.Errors.Single().ErrorMessage;
+        var errorMessage = problem!.AllMessages().ShouldHaveSingleItem();
 
         errorMessage.ShouldNotBeNull();
         errorMessage.ShouldContain("only enabled administrator");

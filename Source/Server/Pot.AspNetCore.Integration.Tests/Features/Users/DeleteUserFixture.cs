@@ -18,13 +18,12 @@ public class DeleteUserFixture : IntegrationAuthFixtureBase
 {
     private sealed class ValidationProblem
     {
-        public ValidationError[] Errors { get; set; } = [];
-    }
+        public Dictionary<string, string[]> Errors { get; set; } = [];
 
-    private sealed class ValidationError
-    {
-        public string? PropertyName { get; set; }
-        public string? ErrorMessage { get; set; }
+        public string[] AllMessages()
+        {
+            return [.. Errors.Values.SelectMany(messages => messages)];
+        }
     }
 
     [Fact]
@@ -125,7 +124,7 @@ public class DeleteUserFixture : IntegrationAuthFixtureBase
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
 
-        problem!.Errors.Single().ErrorMessage.ShouldBe("The password is incorrect.");
+        problem!.AllMessages().ShouldHaveSingleItem().ShouldBe("The password is incorrect.");
         (await UserExistsAsync(target.UserRowId)).ShouldBeTrue();
     }
 
@@ -141,7 +140,7 @@ public class DeleteUserFixture : IntegrationAuthFixtureBase
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
 
-        problem!.Errors.Single().ErrorMessage.ShouldBe("You cannot delete your own account with this request.");
+        problem!.AllMessages().ShouldHaveSingleItem().ShouldBe("You cannot delete your own account with this request.");
         (await UserExistsAsync(caller.UserRowId)).ShouldBeTrue();
     }
 
@@ -165,7 +164,7 @@ public class DeleteUserFixture : IntegrationAuthFixtureBase
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
-        var errorMessage = problem!.Errors.Single().ErrorMessage;
+        var errorMessage = problem!.AllMessages().ShouldHaveSingleItem();
 
         errorMessage.ShouldNotBeNull();
         errorMessage.ShouldContain("last enabled platform administrator");
@@ -219,7 +218,7 @@ public class DeleteUserFixture : IntegrationAuthFixtureBase
 
             var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
 
-            problem!.Errors.Single().ErrorMessage.ShouldBe(
+            problem!.AllMessages().ShouldHaveSingleItem().ShouldBe(
                 "This is the site's only enabled administrator. Promote or enable another administrator first.");
 
             (await UserExistsAsync(target.UserRowId)).ShouldBeTrue();
@@ -266,7 +265,7 @@ public class DeleteUserFixture : IntegrationAuthFixtureBase
         // than from the pre-delete checks.
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
 
-        problem!.Errors.Select(error => error.PropertyName).ShouldContain("Password");
+        problem!.Errors.Keys.ShouldContain("password");
 
         (await UserExistsAsync(target.UserRowId)).ShouldBeTrue();
     }

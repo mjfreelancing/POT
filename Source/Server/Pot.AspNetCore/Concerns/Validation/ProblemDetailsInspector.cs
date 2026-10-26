@@ -9,10 +9,12 @@ namespace Pot.AspNetCore.Concerns.Validation;
 internal sealed class ProblemDetailsInspector : IProblemDetailsInspector
 {
     private readonly ILifetimeValidationInvoker _validationInvoker;
+    private readonly ILogger<ProblemDetailsInspector> _logger;
 
-    public ProblemDetailsInspector(ILifetimeValidationInvoker validationInvoker)
+    public ProblemDetailsInspector(ILifetimeValidationInvoker validationInvoker, ILogger<ProblemDetailsInspector> logger)
     {
         _validationInvoker = validationInvoker.WhenNotNull();
+        _logger = logger.WhenNotNull();
     }
 
     public Microsoft.AspNetCore.Mvc.ProblemDetails Validate<TType>(TType instance)
@@ -36,10 +38,26 @@ internal sealed class ProblemDetailsInspector : IProblemDetailsInspector
         return AsProblemDetails(validationResult);
     }
 
-    private static Microsoft.AspNetCore.Mvc.ProblemDetails AsProblemDetails(ValidationResult validationResult)
+    private Microsoft.AspNetCore.Mvc.ProblemDetails AsProblemDetails(ValidationResult validationResult)
     {
-        return validationResult.IsValid
-            ? NoProblemDetails.Single
-            : validationResult.ToProblemDetails();
+        if (validationResult.IsValid)
+        {
+            return NoProblemDetails.Single;
+        }
+
+        Log(validationResult);
+
+        return validationResult.ToProblemDetails();
+    }
+
+    // Logging happens once, here: a handler that logged the same failure would record every rejection twice. Only
+    // the field name and the message are written - never the value the caller sent.
+    private void Log(ValidationResult validationResult)
+    {
+        foreach (var failure in validationResult.Errors)
+        {
+            _logger.LogInformation("Validation Error: {ValidationErrorMessage} (Property: {Property})",
+                failure.ErrorMessage, failure.PropertyName);
+        }
     }
 }

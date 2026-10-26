@@ -9,6 +9,7 @@ namespace Pot.AspNetCore.Integration.Tests.Host.Extensions;
 public static class HttpResponseMessageExtensions
 {
     private const string ProblemJsonContentType = "application/problem+json";
+    private const string ValidationProblemTitle = "One or more validation errors occurred.";
 
     /// <summary>
     /// Asserts the response's status code.
@@ -74,6 +75,46 @@ public static class HttpResponseMessageExtensions
         else
         {
             problem.Detail.ShouldBe(expectedDetail, message);
+        }
+
+        return problem;
+    }
+
+    /// <summary>
+    /// Asserts the response is a validation problem and returns it.
+    /// </summary>
+    /// <param name="response">The response to assert.</param>
+    /// <param name="expectedFieldKeys">The fields the failure must name, as the caller reads them.</param>
+    /// <returns>The parsed problem response, so a caller can assert the messages it reports.</returns>
+    /// <remarks>
+    /// A 400 states its messages in the <c>errors</c> map and carries no <c>detail</c>, and no implementation detail
+    /// reaches the body: no validator class name and no submitted value.
+    /// </remarks>
+    public static async Task<ProblemResponse> ShouldBeValidationProblemAsync(this HttpResponseMessage response,
+        params string[] expectedFieldKeys)
+    {
+        _ = response.WhenNotNull();
+
+        var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, body);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe(ProblemJsonContentType, body);
+
+        body.ShouldNotContain("errorCode", Case.Sensitive);
+        body.ShouldNotContain("attemptedValue", Case.Sensitive);
+
+        var problem = JsonSerializer.Deserialize<ProblemResponse>(body, JsonSerializerOptions.Web);
+
+        problem.ShouldNotBeNull(body);
+
+        problem!.Title.ShouldBe(ValidationProblemTitle, body);
+        problem.Detail.ShouldBeNull($"a 400 states its messages in the map{Environment.NewLine}{body}");
+        problem.Errors.ShouldNotBeEmpty(body);
+
+        foreach (var expectedFieldKey in expectedFieldKeys)
+        {
+            problem.Errors.ShouldContainKey(expectedFieldKey, body);
+            problem.Errors[expectedFieldKey].ShouldNotBeEmpty(body);
         }
 
         return problem;

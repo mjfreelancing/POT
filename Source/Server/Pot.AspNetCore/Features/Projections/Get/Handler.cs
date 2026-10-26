@@ -26,8 +26,6 @@ internal sealed class Handler
 
         if (problemDetails.IsProblem())
         {
-            logger.LogErrors(problemDetails);
-
             return TypedResults.Problem(problemDetails);
         }
 

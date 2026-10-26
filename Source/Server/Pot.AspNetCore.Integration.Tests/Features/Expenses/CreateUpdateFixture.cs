@@ -17,16 +17,6 @@ public class CreateUpdateFixture : IntegrationAuthFixtureBase
     private const string DuplicateDescriptionMessage = "a duplicate expense description must not be accepted";
     private const string DuplicateDescriptionError = "The expense description already exists";
 
-    private sealed class ValidationProblem
-    {
-        public ValidationError[] Errors { get; set; } = [];
-    }
-
-    private sealed class ValidationError
-    {
-        public string? PropertyName { get; set; }
-    }
-
     [Fact]
     public async Task Should_Return_Unauthorized_When_Creating_Without_Authentication()
     {
@@ -81,10 +71,9 @@ public class CreateUpdateFixture : IntegrationAuthFixtureBase
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 
-        var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
+        var problem = await response.ShouldBeValidationProblemAsync("description");
 
-        problem.ShouldNotBeNull();
-        problem!.Errors.Select(error => error.PropertyName).ShouldContain("Description");
+        problem.Errors["description"].ShouldNotBeEmpty();
     }
 
     [Fact]

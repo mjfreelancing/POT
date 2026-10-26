@@ -62,6 +62,8 @@ public class RenewFixture : IntegrationAuthFixtureBase
         var response = await client.RenewIncomesAsync([], GetSiteLocalDateToday(), RenewalMode.Overdue);
 
         await response.ShouldHaveStatusAsync(HttpStatusCode.BadRequest);
+
+        await response.ShouldBeValidationProblemAsync("rowIds");
     }
 
     private static async Task<Guid> CreateIncomeAsync(HttpClient client, DateOnly nextDue)

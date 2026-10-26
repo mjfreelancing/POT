@@ -17,6 +17,8 @@ internal sealed class ProblemDetailsOptionsSetup : IConfigureOptions<ProblemDeta
 
     private const string FallbackDetail = "The request could not be completed.";
 
+    private const string UnreadableRequestMessage = "The request could not be read.";
+
     // The message a status states when the failure supplies none of its own. A 400 is absent on purpose: its
     // messages are the field errors a validation problem carries instead.
     private static readonly Dictionary<int, string> DefaultDetails = new()
@@ -53,7 +55,31 @@ internal sealed class ProblemDetailsOptionsSetup : IConfigureOptions<ProblemDeta
             {
                 problemDetails.Detail = GetDefaultDetail(problemDetails.Status);
             }
+
+            CompleteValidationProblem(problemDetails);
         };
+    }
+
+    // Every 400 is a validation problem: the framework's title, the messages in a map keyed by field, and no detail.
+    private static void CompleteValidationProblem(Microsoft.AspNetCore.Mvc.ProblemDetails problemDetails)
+    {
+        if (problemDetails.Status != StatusCodes.Status400BadRequest)
+        {
+            return;
+        }
+
+        problemDetails.Title = ValidationErrors.Title;
+
+        if (!problemDetails.Extensions.ContainsKey(ValidationErrors.Extension))
+        {
+            // A 400 written without a map - an unreadable request, say - states its reason under the general key.
+            problemDetails.Extensions[ValidationErrors.Extension] = new Dictionary<string, string[]>
+            {
+                [ValidationErrors.GeneralKey] = [problemDetails.Detail ?? UnreadableRequestMessage]
+            };
+        }
+
+        problemDetails.Detail = null;
     }
 
     private static string? GetDefaultDetail(int? statusCode)

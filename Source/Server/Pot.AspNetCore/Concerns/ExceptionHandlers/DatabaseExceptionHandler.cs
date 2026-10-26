@@ -62,8 +62,25 @@ internal sealed class DatabaseExceptionHandler : IExceptionHandler
             ? ProblemTypes.ToConflictType(mapping.ErrorCode)
             : null;
 
-        var problemContext = ProblemDetailsContextFactory.Create(httpContext, mapping.StatusCode, mapping.Message,
-            exception, problemType);
+        httpContext.Response.StatusCode = mapping.StatusCode;
+
+        var problemDetails = new Microsoft.AspNetCore.Mvc.ProblemDetails
+        {
+            Detail = mapping.Message,
+            Status = mapping.StatusCode
+        };
+
+        if (problemType is not null)
+        {
+            problemDetails.Type = problemType;
+        }
+
+        var problemContext = new ProblemDetailsContext
+        {
+            HttpContext = httpContext,
+            ProblemDetails = problemDetails,
+            Exception = exception
+        };
 
         return await _problemDetailsService.TryWriteAsync(problemContext);
     }

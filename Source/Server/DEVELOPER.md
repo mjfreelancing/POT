@@ -921,19 +921,17 @@ Authorization: Bearer {your-jwt-token}
 
 **Validation Error Response (400 Bad Request):**
 
-`type`, `title` and `traceId` are supplied by ASP.NET Core; the members below are the ones POT sets.
+`type`, `title` and `traceId` are supplied by ASP.NET Core; the members below are the ones POT sets. A `400` states
+its messages in `errors`, keyed by the field each belongs to (a body field by its camelCase JSON name, a header by the
+name the caller sent), and carries no `detail`. A message about the whole request takes the empty string as its key.
 
 ```json
 {
   "status": 400,
-  "detail": "One or more validation errors occurred.",
-  "errors": [
-    {
-      "errorCode": "NotEmptyValidator",
-      "propertyName": "Description",
-      "errorMessage": "'Description' must not be empty."
-    }
-  ],
+  "title": "One or more validation errors occurred.",
+  "errors": {
+    "description": ["'Description' must not be empty."]
+  },
   "correlationId": "8e9f7c6d-5b4a-3f2e-1d0c-9a8b7c6d5e4f",
   "instance": "/api/accounts"
 }
@@ -3843,29 +3841,26 @@ public static WebApplicationBuilder AddProblemDetails(this WebApplicationBuilder
 
 **Problem Details Structure:**
 
-The `errors` extension is an **array** of error detail objects, and only a `400` carries it: it is the list of field
-failures for the request. `type` and `title` are supplied by ASP.NET Core.
+The `errors` extension is a **map of field name to messages**, and only a `400` carries it: it is the validation problem
+ASP.NET Core already defines. `type` and `title` are supplied by ASP.NET Core, except that a `400` always carries the
+validation title.
 
 ```json
 {
   "status": 400,
-  "detail": "One or more validation errors occurred.",
-  "errors": [
-    {
-      "errorCode": "NotEmptyValidator",
-      "propertyName": "Description",
-      "errorMessage": "'Description' must not be empty."
-    }
-  ],
+  "title": "One or more validation errors occurred.",
+  "errors": {
+    "description": ["'Description' must not be empty."]
+  },
   "correlationId": "8e9f7c6d-5b4a-3f2e-1d0c-9a8b7c6d5e4f",
   "traceId": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
   "instance": "/api/accounts"
 }
 ```
 
-`detail` is set from the failure's message on every status, so a client can show it without inspecting `errors`. A
-status other than `400` has no `errors` member. No submitted value appears in `detail`, in `errors` or in the
-request log.
+`detail` is set from the failure's message on every status other than `400`, so a client can show it without inspecting
+`errors`; a `400` has no `detail`, because its messages are the map. No submitted value appears in `detail`, in `errors`
+or in the request log.
 
 The default `detail` for a status whose failure supplies no message of its own is defined once, in
 `Pot.AspNetCore/Concerns/ProblemDetails/ProblemDetailsOptionsSetup`, and applied by the shared customisation that also
@@ -3901,9 +3896,9 @@ JSON without `correlationId`. `AddProblemDetails()` wraps the framework's writer
 (`Pot.AspNetCore/Concerns/ProblemDetails/`), which always writes, so the body stays the framework's but the decision to write is
 ours. Startup fails if anything other than exactly one framework writer is registered, since a second writer would still decline.
 
-Validation failures are logged by `LogErrors` from the `errors` extension, one entry per error.
-Attempted field values are never logged: for login, signup and password reset they can be a password
-or an OTP.
+Validation failures are logged once, by `ProblemDetailsInspector`, one entry per failure, from the field name and the
+message that the `errors` map carries. Handlers do not log them. Attempted field values are never logged: for login,
+signup and password reset they can be a password or an OTP.
 
 **Problem Types:**
 

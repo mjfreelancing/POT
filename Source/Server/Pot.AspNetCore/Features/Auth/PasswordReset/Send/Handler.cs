@@ -26,8 +26,6 @@ internal sealed class Handler
 
         if (problemDetails.IsProblem())
         {
-            logger.LogErrors(problemDetails);
-
             // Don't give any clues to bad actors
             var authProblem = ApiDetailErrorFactory.CreateAuthError("Invalid Request");
             return TypedResults.Problem(authProblem.ToProblemDetails());

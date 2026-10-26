@@ -268,13 +268,6 @@ describe('Axios Interceptors', () => {
         title: 'Conflict',
         detail: 'Resource already exists',
         status: 409,
-        errors: [
-          {
-            propertyName: 'name',
-            errorCode: 'duplicate',
-            errorMessage: 'Name already exists',
-          },
-        ],
       };
 
       const axiosError = new AxiosError('Conflict');
@@ -299,14 +292,6 @@ describe('Axios Interceptors', () => {
         title: 'Conflict',
         detail: 'The request conflicts with the current state of the data.',
         status: 409,
-        errors: [
-          {
-            propertyName: '',
-            errorCode: 'Conflict',
-            errorMessage:
-              'The request conflicts with the current state of the data.',
-          },
-        ],
       };
 
       const axiosError = new AxiosError('Conflict');
@@ -330,16 +315,11 @@ describe('Axios Interceptors', () => {
 
     it('should convert 400 responses to BadRequestError', async () => {
       const apiErrorResponse: ApiErrorResponse = {
-        title: 'Validation Error',
-        detail: 'Validation failed',
+        title: 'One or more validation errors occurred.',
         status: 400,
-        errors: [
-          {
-            propertyName: 'email',
-            errorCode: 'invalid',
-            errorMessage: 'Invalid email format',
-          },
-        ],
+        errors: {
+          email: ['Invalid email format'],
+        },
       };
 
       const axiosError = new AxiosError('Validation Error');
