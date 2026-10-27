@@ -1,6 +1,6 @@
 # Automated Tenant Scenario Testing PRD
 
-**Status:** Planned
+**Status:** In Progress
 **Priority:** High
 **Last Updated:** 2026-10-27
 **Feature ID:** 031
@@ -120,6 +120,7 @@ No harness capability is reachable from a running product host. There is no endp
 - Replacing the browser suite's baseline seed wholesale — the scenarios are additive, and the seed keeps only what a scenario cannot create, such as a platform administrator, which comes from configuration rather than data.
 - Any change to the deployed Docker or Azure topology — the mail sink exists only in the test environment.
 - Test-only endpoints or production composition changes to support testing — the harness lives in the test projects.
+- **Restructuring the developer guides.** The harness documents itself where it lives: `e2e/README.md`, `e2e/AUTHORING.md` and the scoped instruction files an agent loads. `Docs/LOCAL-SETUP.md` gains no E2E section here and `Source/Server/DEVELOPER.md` gains no harness section, because both are due to be converted into ADRs — the E2E material belongs to that pass, recorded here so it is not lost when it happens.
 
 ## Known Risks and Accepted Limitations
 
