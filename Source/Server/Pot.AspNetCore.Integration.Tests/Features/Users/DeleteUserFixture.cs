@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Pot.AspNetCore.Integration.Tests.Host;
+using Pot.AspNetCore.Integration.Tests.Host.Extensions;
+using Pot.AspNetCore.Integration.Tests.Host.Models;
 using Pot.Data;
 using Pot.Data.Entities;
 using Pot.Shared.Enumerations;
@@ -25,6 +27,14 @@ public class DeleteUserFixture : IntegrationAuthFixtureBase
             return [.. Errors.Values.SelectMany(messages => messages)];
         }
     }
+
+    private sealed class RoleOption
+    {
+        public Guid RowId { get; set; }
+        public string Name { get; set; } = string.Empty;
+    }
+
+    private const string DeleteUserServiceCategory = "Pot.App.Features.Users.Delete.DeleteUserService";
 
     [Fact]
     public async Task Should_Reject_An_Anonymous_Request()
@@ -108,6 +118,82 @@ public class DeleteUserFixture : IntegrationAuthFixtureBase
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         (await UserExistsAsync(target.UserRowId)).ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Should_Remove_A_Disabled_User()
+    {
+        var caller = await CreateAdminUserAsync("disabled-delete-caller", "Disabled Delete Caller");
+        var callerWithSite = await GetUserWithSiteAsync(caller.UserRowId);
+        var target = await CreateUserInSiteAsync(callerWithSite.Site.RowId, "disabled-delete-target", "Disabled Delete Target",
+            Role.Viewer, UserStatus.Disabled);
+
+        using var client = await CreateAuthenticatedClientAsync(caller);
+        using var response = await SendDeleteAsync(client, target.UserRowId, SeededPassword);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await UserExistsAsync(target.UserRowId)).ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Should_Leave_The_Sites_Accounts_Expenses_And_Incomes_In_Place()
+    {
+        var caller = await CreateAdminUserAsync("records-left-caller", "Records Left Caller");
+        var callerWithSite = await GetUserWithSiteAsync(caller.UserRowId);
+        var target = await CreateUserInSiteAsync(callerWithSite.Site.RowId, "records-left-target", "Records Left Target", Role.Viewer);
+
+        using var client = await CreateAuthenticatedClientAsync(caller);
+
+        var accountRowId = await client.CreateAccountAsync("Records Left Account", 1500.0d);
+
+        var expenseRowId = await client.CreateExpenseAsync(ExpenseRequestFactory.CreateBill(accountRowId,
+            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(10)), Frequency.Months, 1, 40.0d, AccrualPolicy.None, null));
+
+        var incomeRowId = await client.CreateIncomeAsync(IncomeRequestFactory.CreateIncome(accountRowId,
+            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(5)), Frequency.Months, 1, 900.0d));
+
+        using (var response = await SendDeleteAsync(client, target.UserRowId, SeededPassword))
+        {
+            response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        }
+
+        // The records belong to the site rather than to the user who happened to be signed in when they were entered.
+        (await client.GetAccountsAsync()).ShouldContain(account => account.RowId == accountRowId);
+        (await client.GetExpensesAsync()).ShouldContain(expense => expense.RowId == expenseRowId);
+        (await client.GetIncomesAsync()).ShouldContain(income => income.RowId == incomeRowId);
+    }
+
+    [Fact]
+    public async Task Should_Allow_The_Same_Username_To_Be_Invited_Again_After_Removal()
+    {
+        var caller = await CreateAdminUserAsync("username-reuse-caller", "Username Reuse Caller");
+
+        using var client = await CreateAuthenticatedClientAsync(caller);
+
+        var roles = await client.GetFromJsonAsync<RoleOption[]>("/api/roles", TestContext.Current.CancellationToken);
+        var viewerRoleId = roles!.Single(role => role.Name == Role.Viewer.Name).RowId;
+
+        var username = $"username-reuse-{Guid.NewGuid():N}";
+
+        using (var inviteResponse = await SendInviteAsync(client, username, viewerRoleId))
+        {
+            inviteResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        }
+
+        var users = await client.GetUsersAsync();
+        var invited = users.Single(user => user.Username == username);
+
+        using (var deleteResponse = await SendDeleteAsync(client, invited.RowId, SeededPassword))
+        {
+            deleteResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        }
+
+        // Nothing may outlive the removal that would stop the same name being used again.
+        using var secondInviteResponse = await SendInviteAsync(client, username, viewerRoleId);
+
+        secondInviteResponse.StatusCode.ShouldBe(
+            HttpStatusCode.OK,
+            "the removal must leave no record that blocks the username being reused");
     }
 
     [Fact]
@@ -270,6 +356,85 @@ public class DeleteUserFixture : IntegrationAuthFixtureBase
         (await UserExistsAsync(target.UserRowId)).ShouldBeTrue();
     }
 
+    [Fact]
+    public async Task Should_Report_Every_Repeated_Wrong_Password_As_Invalid()
+    {
+        var caller = await CreateAdminUserAsync("repeated-password-caller", "Repeated Password Caller");
+        var callerWithSite = await GetUserWithSiteAsync(caller.UserRowId);
+        var target = await CreateUserInSiteAsync(callerWithSite.Site.RowId, "repeated-password-target", "Repeated Password Target", Role.Viewer);
+
+        using var client = await CreateAuthenticatedClientAsync(caller);
+
+        // The confirmation adds no attempt counter of its own, so each wrong password is answered the same way.
+        for (var attempt = 1; attempt <= 3; attempt++)
+        {
+            using var response = await SendDeleteAsync(client, target.UserRowId, "NotMyPassword1!");
+
+            response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, $"attempt {attempt}");
+
+            var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
+
+            problem!.AllMessages().ShouldHaveSingleItem().ShouldBe("The password is incorrect.");
+        }
+
+        (await UserExistsAsync(target.UserRowId)).ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Should_Refuse_Removing_The_Only_Enabled_Administrator_When_The_Other_Administrator_Is_Disabled()
+    {
+        var target = await CreateAdminUserAsync("disabled-peer-admin", "Disabled Peer Admin");
+        var targetWithSite = await GetUserWithSiteAsync(target.UserRowId);
+
+        // A disabled administrator does not keep the site administrable, so the target is still its only enabled one.
+        await CreateUserInSiteAsync(targetWithSite.Site.RowId, "disabled-peer", "Disabled Peer", Role.Admin, UserStatus.Disabled);
+
+        var caller = await CreateUserInSiteAsync(targetWithSite.Site.RowId, "enable-count-caller", "Enable Count Caller", Role.Viewer);
+
+        await GrantUserManageToViewerRoleAsync();
+
+        try
+        {
+            using var client = await CreateAuthenticatedClientAsync(caller);
+            using var response = await SendDeleteAsync(client, target.UserRowId, SeededPassword);
+
+            response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+
+            (await UserExistsAsync(target.UserRowId)).ShouldBeTrue();
+        }
+        finally
+        {
+            await RevokeUserManageFromViewerRoleAsync();
+        }
+    }
+
+    [Fact]
+    public async Task Should_Log_The_Removal_Server_Side()
+    {
+        var caller = await CreateAdminUserAsync("logged-delete-caller", "Logged Delete Caller");
+        var callerWithSite = await GetUserWithSiteAsync(caller.UserRowId);
+        var target = await CreateUserInSiteAsync(callerWithSite.Site.RowId, "logged-delete-target", "Logged Delete Target", Role.Viewer);
+
+        using var client = await CreateAuthenticatedClientAsync(caller);
+
+        using (var response = await SendDeleteAsync(client, target.UserRowId, SeededPassword))
+        {
+            response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        }
+
+        using var scope = CreateScope();
+        var collector = scope.ServiceProvider.GetFakeLogCollector();
+
+        var entries = collector.GetSnapshot()
+            .Where(record => record.Category == DeleteUserServiceCategory)
+            .Where(record => record.Message.Contains(target.UserRowId.ToString(), StringComparison.Ordinal))
+            .ToList();
+
+        entries.ShouldNotBeEmpty("each removal is recorded in the server log");
+        entries.Any(entry => entry.Message.Contains("Sessions removed", StringComparison.Ordinal))
+            .ShouldBeTrue("the record carries what the sweep removed");
+    }
+
     private static Task<HttpResponseMessage> SendDeleteAsync(HttpClient client, Guid userRowId, string password)
     {
         var request = new HttpRequestMessage(HttpMethod.Delete, $"/api/users/{userRowId}")
@@ -278,6 +443,18 @@ public class DeleteUserFixture : IntegrationAuthFixtureBase
         };
 
         return client.SendAsync(request, TestContext.Current.CancellationToken);
+    }
+
+    private static Task<HttpResponseMessage> SendInviteAsync(HttpClient client, string username, Guid roleId)
+    {
+        var request = new
+        {
+            Username = username,
+            Email = $"{username}@example.com",
+            RoleIds = new[] { roleId }
+        };
+
+        return client.PostAsJsonAsync("/api/users/invite", request, TestContext.Current.CancellationToken);
     }
 
     private async Task GrantUserManageToViewerRoleAsync()

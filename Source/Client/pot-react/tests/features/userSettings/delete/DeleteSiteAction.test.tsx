@@ -140,6 +140,38 @@ describe('DeleteSiteAction', () => {
     expect(screen.getByRole('button', { name: 'Delete Site' })).toBeDisabled();
   });
 
+  test('states that no backup is taken and offers no backup or export', async () => {
+    renderAction();
+
+    const dialog = await openConfirmation();
+
+    expect(dialog).toHaveTextContent('No backup is taken.');
+
+    expect(
+      screen.queryByRole('button', { name: /backup|export/i }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /backup|export/i })).toBeNull();
+  });
+
+  test('shows no record counts before confirming', async () => {
+    vi.mocked(useAuthContext).mockReturnValue({
+      userInfo: {
+        username: 'maria',
+        site: { name: 'Site A' },
+        permissions: ['site:manage', 'user:manage'],
+      },
+    } as ReturnType<typeof useAuthContext>);
+
+    renderAction();
+
+    const dialog = await openConfirmation();
+
+    // A reader decides on the scope alone: no figures, no summary of what will be removed.
+    expect(dialog.textContent).not.toMatch(/\d/);
+    expect(screen.queryByRole('list')).not.toBeInTheDocument();
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+  });
+
   test('deletes the site, clears the session and returns to the login page', async () => {
     deleteCurrentSiteMock.mockResolvedValue(new SuccessResult(undefined));
 

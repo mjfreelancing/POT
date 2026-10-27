@@ -16,6 +16,8 @@ namespace Pot.AspNetCore.Integration.Tests.Features.Sites;
 /// </summary>
 public class DeleteSiteFixture : IntegrationAuthFixtureBase
 {
+    private const string DeleteSiteServiceCategory = "Pot.App.Features.Sites.Delete.DeleteSiteService";
+
     private sealed class ValidationProblem
     {
         public Dictionary<string, string[]> Errors { get; set; } = [];
@@ -61,6 +63,7 @@ public class DeleteSiteFixture : IntegrationAuthFixtureBase
 
         var other = await CreateAdminUserAsync("untouched-site", "Untouched Site");
 
+        var colleagueTokens = await LoginAsync(colleague);
         var tokens = await LoginAsync(caller);
 
         using var client = CreateClient();
@@ -81,6 +84,62 @@ public class DeleteSiteFixture : IntegrationAuthFixtureBase
 
         var tokenStatus = await GetCurrentUserAsync(tokens.AccessToken);
         tokenStatus.ShouldBe(HttpStatusCode.Unauthorized, "the deleted administrator's token must be rejected");
+
+        var colleagueTokenStatus = await GetCurrentUserAsync(colleagueTokens.AccessToken);
+        colleagueTokenStatus.ShouldBe(
+            HttpStatusCode.Unauthorized,
+            "every user of the deleted site loses access, not only the administrator who acted");
+    }
+
+    [Fact]
+    public async Task Should_Reject_A_Repeat_Deletion_Because_The_Callers_Session_Is_Gone()
+    {
+        var caller = await CreateAdminUserAsync("repeat-site-delete", "Repeat Site Delete");
+        var callerWithSite = await GetUserWithSiteAsync(caller.UserRowId);
+
+        var tokens = await LoginAsync(caller);
+
+        using var client = CreateClient();
+
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokens.AccessToken);
+
+        using (var response = await SendDeleteAsync(client, callerWithSite.Site.Name, caller.Username, SeededPassword))
+        {
+            response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        }
+
+        // A repeat cannot reach the deletion itself: the site and its users are gone, so the request is refused
+        // at authentication before any handler sees it.
+        using var repeatResponse = await SendDeleteAsync(client, callerWithSite.Site.Name, caller.Username, SeededPassword);
+
+        repeatResponse.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        (await SiteExistsAsync(callerWithSite.Site.RowId)).ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Should_Log_The_Deletion_Server_Side()
+    {
+        var caller = await CreateAdminUserAsync("logged-site-delete", "Logged Site Delete");
+        var callerWithSite = await GetUserWithSiteAsync(caller.UserRowId);
+
+        using var client = await CreateAuthenticatedClientAsync(caller);
+
+        using (var response = await SendDeleteAsync(client, callerWithSite.Site.Name, caller.Username, SeededPassword))
+        {
+            response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        }
+
+        using var scope = CreateScope();
+        var collector = scope.ServiceProvider.GetFakeLogCollector();
+
+        var entries = collector.GetSnapshot()
+            .Where(record => record.Category == DeleteSiteServiceCategory)
+            .Where(record => record.Message.Contains(callerWithSite.Site.RowId.ToString(), StringComparison.Ordinal))
+            .ToList();
+
+        entries.ShouldNotBeEmpty("each deletion is recorded in the server log");
+        entries.Any(entry => entry.Message.Contains("Users removed", StringComparison.Ordinal))
+            .ShouldBeTrue("the record carries what the sweep removed");
     }
 
     [Fact]

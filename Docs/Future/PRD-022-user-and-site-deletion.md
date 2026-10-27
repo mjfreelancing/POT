@@ -4,6 +4,7 @@
 **Priority:** Medium
 **Last Updated:** 2026-10-17
 **Feature ID:** 022
+**Discovery:** complete
 **Scope:** Three deletion actions, all confined to the caller's own site and identity. (1) A site administrator removes another user from their site. (2) A signed-in user removes their own account. (3) A site administrator deletes their whole site. Includes the safeguards that keep a site administrable, the safeguards that keep the platform operable, and the confirmation, authorisation and notification behaviour of all three actions. Cross-tenant operations by a platform administrator are out of scope and are addressed by PRD-027.
 
 ## Problem Statement
@@ -98,7 +99,7 @@ A platform administrator has no additional authority in this feature. Every acti
 
 ### F. Concurrency and record keeping
 
-- **F1.** If two administrators remove the same user at the same moment, the second action reports that the user was not found. The same applies to a repeat of a completed removal or site deletion.
+- **F1.** If two administrators remove the same user at the same moment, the second action reports that the user was not found, and a repeat of a completed removal reports the same. A repeat site deletion is refused before it reaches the deletion: the site and its users are gone, so the request cannot be authenticated.
 - **F2.** If a user is signing up or resetting their password at the same moment they are removed, the removal wins. Requests that follow it report that the user was not found.
 - **F3.** Each removal and deletion is logged server-side. No durable, queryable audit record is created.
 - **F4.** Removal is one user at a time. Bulk removal and "remove all disabled users" are not provided.
@@ -127,6 +128,8 @@ The items above that name PRD-027 are specified and delivered there. The rest ar
 - **Orphaned site.** When the only enabled administrator of a site is also the last live platform administrator, that site cannot be deleted until the administrator is removed from deployment configuration and redeployed (E3, R9). Removing the configuration entry restores the administrator's ability to delete the site. Where the administrator is unavailable, the site can only be resolved by the platform administration feature specified by PRD-027, which can add a user to the site or delete it on the operator's behalf.
 - **Relaxed platform protection.** R7 allows a platform administrator to be disabled or removed when another live platform administrator exists. This replaces the current behaviour, where a configured platform administrator can never be disabled.
 - **Refusals are discovered on submission.** The client does not predict whether an action will be refused. A user who cannot be removed, or a site that cannot be deleted, is only learned when the server refuses the request, and the caller then reads the message. The refusal is authoritative and actionable, so the experience is correct but reactive; a pre-emptive indicator is recorded in Out of Scope.
+- **The signup and password-reset race with a removal.** A one-time code issued for a username is removed with the user, so a signup or reset already in flight cannot complete after the removal. Two requests that interleave inside the same transaction are not serialised against each other; the removal wins by ordering rather than by locking.
+- **The browser specs for self-deletion and site deletion consume seeded identities.** Each destroys the account or site it is signed in with, so the E2E database must be reseeded after a run. Both run on one project only, with retries disabled, and fail with a reseed instruction when the identity is missing.
 
 ## Assumptions
 
@@ -262,11 +265,11 @@ Use this after all delivery increments are complete, against the built client an
 
 ### Results
 
-| ID | Scenario | Result | Notes |
-| --- | --- | --- | --- |
-| A1–A7 | Remove another user |  |  |
-| B1–B6 | Remove your own account |  |  |
-| C1–C5 | Delete a site |  |  |
-| D1–D4 | Platform administrator safeguards |  |  |
-| E1–E4 | Sessions, notifications and failure handling |  |  |
-| F1–F3 | Confirmation and presentation |  |  |
+| ID    | Scenario                                     | Result | Notes |
+| ----- | -------------------------------------------- | ------ | ----- |
+| A1–A7 | Remove another user                          |        |       |
+| B1–B6 | Remove your own account                      |        |       |
+| C1–C5 | Delete a site                                |        |       |
+| D1–D4 | Platform administrator safeguards            |        |       |
+| E1–E4 | Sessions, notifications and failure handling |        |       |
+| F1–F3 | Confirmation and presentation                |        |       |

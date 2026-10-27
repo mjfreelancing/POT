@@ -530,6 +530,36 @@ public class OpenApiSecurityFixture : IntegrationFixtureBase
         operationsWithAConflict.ShouldBeGreaterThanOrEqualTo(staleUpdateOperations.Count);
     }
 
+    [Fact]
+    public async Task Should_Describe_User_Removal_One_Account_At_A_Time()
+    {
+        using var client = CreateClient();
+
+        var response = await client.GetAsync("/openapi/v1.json", TestContext.Current.CancellationToken);
+        var responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, responseContent);
+
+        using var openApiDocument = await response.Content.ReadFromJsonAsync<JsonDocument>(
+            TestContext.Current.CancellationToken);
+
+        openApiDocument.ShouldNotBeNull();
+
+        var deleteOperations = GetApiOperations(openApiDocument!.RootElement)
+            .Where(operation => operation.Method == "delete")
+            .Select(operation => operation.Path)
+            .ToList();
+
+        // Removing a user is offered one account at a time, so no collection route carries a delete and nothing
+        // addresses a group of users.
+        deleteOperations.ShouldNotContain("/api/users");
+        deleteOperations.ShouldNotContain("/api/users/{ids}");
+        deleteOperations.ShouldNotContain(path => path.Contains("bulk", StringComparison.OrdinalIgnoreCase));
+
+        deleteOperations.Where(path => path.StartsWith("/api/users/", StringComparison.OrdinalIgnoreCase) || path == "/api/me")
+            .ShouldBe(["/api/me", "/api/users/{id}"], ignoreOrder: true);
+    }
+
     protected override ApiWebApplicationFactory CreateApiWebApplicationFactory(string dbHost, int dbPort)
     {
         return new DevelopmentApiWebApplicationFactory(dbHost, dbPort);

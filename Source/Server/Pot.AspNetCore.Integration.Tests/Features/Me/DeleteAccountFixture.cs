@@ -107,10 +107,38 @@ public class DeleteAccountFixture : IntegrationAuthFixtureBase
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>(TestContext.Current.CancellationToken);
         var errorMessage = problem!.AllMessages().ShouldHaveSingleItem();
 
-        errorMessage.ShouldNotBeNull();
-        errorMessage.ShouldContain("only enabled administrator");
+        // The caller is the site's only user, so the remedy is the action that removes the site itself.
+        errorMessage.ShouldBe(
+            "You are your site's only enabled administrator. Promote or enable another administrator first, or delete the site instead.");
 
         (await UserExistsAsync(caller.UserRowId)).ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Should_Log_The_Deletion_Server_Side()
+    {
+        var caller = await CreateAdminUserAsync("logged-self-delete", "Logged Self Delete");
+        var callerWithSite = await GetUserWithSiteAsync(caller.UserRowId);
+
+        // Another enabled administrator keeps the site administrable, so the deletion is allowed.
+        await CreateUserInSiteAsync(callerWithSite.Site.RowId, "logged-self-delete-peer", "Logged Self Delete Peer", Role.Admin);
+
+        using var client = await CreateAuthenticatedClientAsync(caller);
+
+        using (var response = await SendDeleteAsync(client, caller.Username, SeededPassword))
+        {
+            response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        }
+
+        using var scope = CreateScope();
+        var collector = scope.ServiceProvider.GetFakeLogCollector();
+
+        var entries = collector.GetSnapshot()
+            .Where(record => record.Category == "Pot.App.Features.Me.Delete.DeleteOwnAccountService")
+            .Where(record => record.Message.Contains(caller.UserRowId.ToString(), StringComparison.Ordinal))
+            .ToList();
+
+        entries.ShouldNotBeEmpty("each removal is recorded in the server log");
     }
 
     [Fact]
