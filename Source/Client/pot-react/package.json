@@ -34,6 +34,7 @@
     "e2e:all:prodlike": "playwright test --config=playwright.prod.config.ts --project chromium --project edge --project mobile-chrome --project mobile-safari",
     "e2e:preflight": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./e2e/scripts/e2e-preflight.ps1",
     "e2e:clean": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./e2e/scripts/e2e-clean.ps1",
+    "e2e:scripts": "pwsh -NoProfile -ExecutionPolicy Bypass -Command \"Import-Module Pester -MinimumVersion 5.0; Invoke-Pester -Path ./e2e/scripts/tests -Output Detailed\"",
     "e2e:report": "playwright show-report",
     "e2e:install": "playwright install chromium webkit",
     "type:check": "tsc -b"

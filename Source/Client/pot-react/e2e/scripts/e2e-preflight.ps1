@@ -35,25 +35,14 @@ param(
 $ErrorActionPreference = 'Stop'
 
 . (Join-Path $PSScriptRoot 'e2e-processes.ps1')
+. (Join-Path $PSScriptRoot 'e2e-ports.ps1')
 
-# E2E harness endpoints. Keep in sync with playwright.config.ts and e2e/README.md.
-$clientPort = 5175
-$apiPort = 5242
-$postgresPort = 55432
-$reportPort = 9323
+# Ports the run binds itself, including the mail sink it starts: an occupant makes Playwright abort, unless the
+# occupant is the run's own sink container, which the run replaces.
+$requiredPorts = @(Get-E2eRequiredPorts) + @(Get-E2eReclaimablePorts)
 
-# Ports the harness binds itself: an occupant makes Playwright abort.
-$requiredPorts = @(
-    [pscustomobject]@{ Port = $clientPort; Name = 'Vite dev server (webServer[1])' },
-    [pscustomobject]@{ Port = $apiPort; Name = 'ASP.NET Core API (webServer[0])' }
-)
-
-# Ports that are expected to be held by the harness but tolerate a leftover, because
-# globalSetup removes a stale Testcontainers Postgres before binding 55432 again.
-$toleratedPorts = @(
-    [pscustomobject]@{ Port = $postgresPort; Name = 'Testcontainers Postgres' },
-    [pscustomobject]@{ Port = $reportPort; Name = 'Playwright HTML report server' }
-)
+# Ports globalSetup reclaims for itself, so an occupant is only worth a warning.
+$toleratedPorts = @(Get-E2eToleratedPorts)
 
 $failures = @()
 $warnings = @()
@@ -137,11 +126,28 @@ Write-Host '══════════════════════�
 
 Write-Section 'Required ports'
 
+$sinkContainerPresent = @(Get-E2eMailSinkContainers).Count -gt 0
+
 foreach ($entry in $requiredPorts) {
     $owners = @(Get-PortOwners -Port $entry.Port)
+    $verdict = Get-E2ePortVerdict -Entry $entry -Owners $owners -SinkContainerPresent $sinkContainerPresent
 
-    if ($owners.Count -eq 0) {
+    if ($verdict -eq 'free') {
         Write-Pass ("{0} port {1} is free" -f $entry.Name, $entry.Port)
+        continue
+    }
+
+    if ($verdict -eq 'reclaim') {
+        Write-Warn ("{0} port {1} is held by the E2E mail sink a previous run left behind" -f $entry.Name, $entry.Port)
+
+        foreach ($owner in $owners) {
+            Write-OwnerDetail -Owner $owner
+        }
+
+        Write-Host '         the run reports it, removes the container and starts a fresh sink' -ForegroundColor DarkGray
+        Write-Host '         resolve now: npm run e2e:clean' -ForegroundColor DarkGray
+
+        $warnings += ("port {0} ({1}) is held by a leftover E2E mail sink" -f $entry.Port, $entry.Name)
         continue
     }
 
@@ -153,7 +159,10 @@ foreach ($entry in $requiredPorts) {
 
     $stopCommand = "Get-NetTCPConnection -State Listen -LocalPort $($entry.Port) | ForEach-Object { Stop-Process -Id `$_.OwningProcess -Force }"
     Write-Host ("         resolve: {0}" -f $stopCommand) -ForegroundColor DarkGray
-    Write-Host ("         or stop the Docker dev stack: task 'docker-stop-client-server' (its client publish {0})" -f $clientPort) -ForegroundColor DarkGray
+
+    if ($entry.Key -eq 'client') {
+        Write-Host ("         or stop the Docker dev stack: task 'docker-stop-client-server' (its client publish {0})" -f $entry.Port) -ForegroundColor DarkGray
+    }
 
     $failures += ("port {0} ({1}) is in use" -f $entry.Port, $entry.Name)
 }
@@ -163,7 +172,7 @@ Write-Section 'Harness-managed ports'
 foreach ($entry in $toleratedPorts) {
     $owners = @(Get-PortOwners -Port $entry.Port)
 
-    if ($owners.Count -eq 0) {
+    if (@($owners).Count -eq 0) {
         Write-Pass ("{0} port {1} is free" -f $entry.Name, $entry.Port)
         continue
     }
@@ -174,7 +183,7 @@ foreach ($entry in $toleratedPorts) {
         Write-OwnerDetail -Owner $owner
     }
 
-    if ($entry.Port -eq $postgresPort) {
+    if ($entry.Key -eq 'postgres') {
         Write-Host '         globalSetup removes a stale Testcontainers container itself; the run will only log a warning.' -ForegroundColor DarkGray
     }
 

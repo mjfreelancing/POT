@@ -13,9 +13,14 @@
       * a stray Vite dev server on 5175
       * the harness ASP.NET Core API on 5242
 
-    Only those are stopped. Docker containers are never touched (stop the dev stack with the
-    VS Code task `docker-stop-client-server`) and nothing is stopped while an E2E run is still
-    in progress. Exits 1 when the client or API port is still held afterwards.
+    It also removes the harness's own mail sink container, which a killed run leaves holding the
+    sink's ports. Only the container named by this harness is a target: the development Docker
+    stack is never stopped here (use the VS Code task `docker-stop-client-server`), and nothing is
+    stopped while an E2E run is still in progress. Exits 1 when the client or API port is still
+    held afterwards.
+
+    The decision about what to stop lives in `Get-E2eCleanPlan`, so it is covered by the script
+    suite in `e2e/scripts/tests` rather than only by running this script.
 .PARAMETER DryRun
     Report what would be stopped without stopping anything.
 .EXAMPLE
@@ -32,53 +37,66 @@ param(
 $ErrorActionPreference = 'Stop'
 
 . (Join-Path $PSScriptRoot 'e2e-processes.ps1')
-
-# E2E harness endpoints. Keep in sync with playwright.config.ts and e2e/README.md.
-$clientPort = 5175
-$apiPort = 5242
+. (Join-Path $PSScriptRoot 'e2e-ports.ps1')
 
 Write-Host ''
 Write-Host '═══════════════════════════════════════════════════════' -ForegroundColor Cyan
 Write-Host ' E2E clean' -ForegroundColor Cyan
 Write-Host '═══════════════════════════════════════════════════════' -ForegroundColor Cyan
 
-$testClients = @(Get-PlaywrightTestClients)
+$runClients = @(Get-PlaywrightTestClients)
 
-if ($testClients.Count -gt 0) {
+$plan = Get-E2eCleanPlan -RunInProgress ($runClients.Count -gt 0) `
+    -RunProcesses $runClients `
+    -Daemons @(Get-PlaywrightDaemons) `
+    -ViteServers @(Get-ViteDevServers) `
+    -ApiProcesses @(Get-E2eApiProcesses) `
+    -Containers @(Get-E2eRunningContainers)
+
+if ($plan.Refused) {
     Write-Host ''
-    Write-Host ' An E2E run is in progress - nothing was stopped.' -ForegroundColor Yellow
-
-    foreach ($client in $testClients) {
-        Write-Host ("   pid {0} {1}" -f $client.ProcessId, (Get-ShortCommandLine $client.CommandLine)) -ForegroundColor DarkGray
-    }
-
+    Write-Host (" {0}." -f $plan.RefusalReason) -ForegroundColor Yellow
     Write-Host ' Wait for it to finish (or stop it) and run this again.' -ForegroundColor Yellow
     Write-Host '═══════════════════════════════════════════════════════' -ForegroundColor Cyan
     exit 1
 }
 
-$targets = @(
-    [pscustomobject]@{ Name = 'Playwright test-server daemon'; Processes = @(Get-PlaywrightDaemons) }
-    [pscustomobject]@{ Name = 'stray Vite dev server'; Processes = @(Get-ViteDevServers) }
-    [pscustomobject]@{ Name = 'E2E ASP.NET Core API'; Processes = @(Get-E2eApiProcesses) }
-)
-
 Write-Host ''
 Write-Host ' Leftovers' -ForegroundColor Cyan
 
-foreach ($target in $targets) {
-    if ($target.Processes.Count -eq 0) {
-        Write-Host ("  [ ok ] no {0}" -f $target.Name) -ForegroundColor Green
+$stoppedProcesses = @()
+$stoppedContainers = @()
+
+if ($plan.Targets.Count -eq 0) {
+    Write-Host '  [ ok ] nothing left behind by an interrupted run' -ForegroundColor Green
+}
+
+foreach ($target in $plan.Targets) {
+    $verb = if ($DryRun) { 'would stop' } else { '[stop]' }
+
+    if ($target.Kind -eq 'container') {
+        Write-Host ("  {0} {1} ({2})" -f $verb, $target.Name, $target.ContainerName) -ForegroundColor Yellow
+
+        if (-not $DryRun) {
+            $removed = docker rm -f $target.ContainerName 2>&1
+
+            if ($LASTEXITCODE -eq 0) {
+                $stoppedContainers += $target.ContainerName
+            }
+            else {
+                Write-Host ("         could not remove it: {0}" -f $removed) -ForegroundColor DarkGray
+            }
+        }
+
         continue
     }
 
     foreach ($process in $target.Processes) {
-        $verb = if ($DryRun) { 'would stop' } else { '[stop]' }
         Write-Host ("  {0} {1} (pid {2}, started {3})" -f $verb, $target.Name, $process.ProcessId, $process.CreationDate.ToString('HH:mm:ss')) -ForegroundColor Yellow
         Write-Host ("         {0}" -f (Get-ShortCommandLine $process.CommandLine)) -ForegroundColor DarkGray
 
         if (-not $DryRun) {
-            Stop-E2eProcess -Processes $process | Out-Null
+            $stoppedProcesses += @(Stop-E2eProcess -Processes $process)
         }
     }
 }
@@ -88,10 +106,7 @@ Write-Host ' Ports' -ForegroundColor Cyan
 
 $blocked = @()
 
-foreach ($entry in @(
-        [pscustomobject]@{ Port = $clientPort; Name = 'client (Vite)' }
-        [pscustomobject]@{ Port = $apiPort; Name = 'API' }
-    )) {
+foreach ($entry in (Get-E2eRequiredPorts)) {
     $listeners = @(Get-NetTCPConnection -State Listen -LocalPort $entry.Port -ErrorAction SilentlyContinue)
 
     if ($listeners.Count -eq 0) {
@@ -123,8 +138,11 @@ if ($blocked.Count -gt 0) {
 if ($DryRun) {
     Write-Host ' DRY RUN - nothing was stopped. Drop -DryRun to clear the leftovers.' -ForegroundColor Yellow
 }
+elseif ($stoppedProcesses.Count -eq 0 -and $stoppedContainers.Count -eq 0) {
+    Write-Host ' CLEAN - there was nothing left to stop.' -ForegroundColor Green
+}
 else {
-    Write-Host ' CLEAN - the next run starts with its own daemon and free ports.' -ForegroundColor Green
+    Write-Host (" CLEAN - stopped {0} process(es) and {1} container(s)." -f $stoppedProcesses.Count, $stoppedContainers.Count) -ForegroundColor Green
 }
 
 Write-Host ' Next: npm run e2e:preflight   then   npm run e2e:all:dev:log' -ForegroundColor Cyan
