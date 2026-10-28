@@ -48,6 +48,17 @@ Every documented operation is exercised for authorization by a generated case. N
 - An operation may only be ignored through `IgnoredOperations`, with a reason a reviewer can judge, and the list stays small. A reason is acceptable when the case cannot be run safely or means nothing: the operation ends the session, the tenant or the identity the run depends on, its answer is decided by something other than the caller's authorization, or the only body it accepts would change data. "Not written yet" is not a reason.
 - `InventoryCoverage` decides whether coverage is complete, and its rules are tested on operations the application does not contain, so the failure modes stay proven while the contract happens to be fully covered.
 
+## Isolation invariants
+
+A destructive action is proven to touch only what it names, by fingerprinting a tenant the action must not see and the tenant it acts in, before and after.
+
+- `TenantSnapshotter` reads every tenant-scoped table for a site, and `TenantScopeResolver` decides which those are from the model: an entity that holds, or reaches through its foreign keys, the site's key is tenant-scoped. No table is listed by hand, so a table added later is fingerprinted without anyone remembering it.
+- An entity that reaches no site is not assumed to be shared. It fails until it appears in `GlobalEntities` with a reason, and an entry that has since become tenant-scoped fails too. That is what makes a newly declared entity a decision rather than an omission.
+- `TenantFingerprint.FindChanges` compares two snapshots and reports the tenant, the table, the row and the column whose value moved, or that a row is gone or appeared. Report the first difference; a count of rows hides which one changed.
+- A case allows only the removals the action targets: the rows that belong to the removed person — their own row, the rows keyed by it and the rows that name it — or, for a tenant removal, every row of that tenant. Anything else that moved is a failure, and it names itself.
+- `OrphanSweep` runs the model's own foreign keys as `LEFT JOIN … WHERE principal IS NULL`, so a row that outlives what it references is found without listing the relationships. Run it after every destructive action: an action can report success and still leave a reference behind.
+- A tenant that no longer exists is snapshotted as empty rather than throwing, so its removal reads as every row being gone.
+
 ## Conventions
 
 - Organize by feature first, then cross-cutting concerns. Order tests to follow the endpoint/handler flow (early validation or logging paths before deeper branches).
