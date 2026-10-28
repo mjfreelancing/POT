@@ -35,6 +35,18 @@ A scenario is a tenant and the people in it, declared as data and provisioned by
 - A provisioning failure raises `ScenarioProvisioningException`, which names the step and carries the status and body the route answered with. Never catch it to keep a test going: a broken harness must read as a broken harness, not as a failing assertion about behaviour.
 - `ScenarioFixtureBase` raises the host's rate limits for its own fixture, because provisioning spends several anonymous requests before the first assertion. Every other fixture keeps the production limits, and `HeadersAndRateLimitFixture` continues to prove them.
 
+## The endpoint inventory and the authorization matrix
+
+Every documented operation is exercised for authorization by a generated case. Nothing about coverage is written per operation, so an endpoint added later is exercised before anyone remembers to test it.
+
+- The inventory is the generated contract, read from a running host with `DocumentedOperations`. Never keep a list of operations beside the tests: a list is what goes stale.
+- `AuthorizationMatrix.Generate` produces the cases: each operation anonymously, as the administrator role and as the viewer role, plus a case naming another tenant's row when the path contains `{id}`.
+- The expectation comes from the endpoint, not from a table of intended outcomes: `EndpointRequirements` reads each mapped route's `AllowAnonymous` marker and policies, and `EndpointRequirement.Allows` decides whether a caller's permissions satisfy them. A permission policy carries the permission string, so a caller's permissions are resolved with the application's own `IPermissionService` rather than guessed from the role name.
+- A case asserts the authorization decision, not a business outcome: 401 when the endpoint refuses anonymous callers, 403 when the caller lacks the declared permission, and neither when the declaration lets the caller through. Ids in a path are replaced with an identifier that exists nowhere, unless the case is about another tenant's row.
+- A case naming another tenant's row requires the row to exist, so `ForeignTenantRows` classifies the resource a path addresses. A path naming a row of an unclassified resource fails the coverage check rather than quietly losing its case.
+- An operation may only be ignored through `IgnoredOperations`, with a reason a reviewer can judge, and the list stays small. A reason is acceptable when the case cannot be run safely or means nothing: the operation ends the session, the tenant or the identity the run depends on, its answer is decided by something other than the caller's authorization, or the only body it accepts would change data. "Not written yet" is not a reason.
+- `InventoryCoverage` decides whether coverage is complete, and its rules are tested on operations the application does not contain, so the failure modes stay proven while the contract happens to be fully covered.
+
 ## Conventions
 
 - Organize by feature first, then cross-cutting concerns. Order tests to follow the endpoint/handler flow (early validation or logging paths before deeper branches).
