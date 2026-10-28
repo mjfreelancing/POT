@@ -44,6 +44,11 @@ $requiredPorts = @(Get-E2eRequiredPorts) + @(Get-E2eReclaimablePorts)
 # Ports globalSetup reclaims for itself, so an occupant is only worth a warning.
 $toleratedPorts = @(Get-E2eToleratedPorts)
 
+# The port the development stack's client publishes, read from the port definitions so it cannot drift from the port
+# the E2E Vite server needs.
+$clientPort = [int](Get-E2ePortDefinitions | Where-Object { $_.Key -eq 'client' }).Port
+$mailSinkContainer = Get-E2eMailSinkContainerName
+
 $failures = @()
 $warnings = @()
 
@@ -261,32 +266,30 @@ if (-not $SkipDocker) {
         else {
             foreach ($container in $runningContainers) {
                 $parts = $container -split '\|'
-                $isE2eStack = $parts[0] -like 'testcontainers-ryuk*' -or $parts[1] -like 'postgres:*'
-                $isDevStack = $parts[0] -like 'pot-*'
+                $publishedPorts = if ($parts.Count -gt 2) { $parts[2] } else { '' }
+                $classification = Get-E2eContainerClassification -Name $parts[0] -Image $parts[1] -Ports $publishedPorts -ClientPort $clientPort -MailSinkContainer $mailSinkContainer
 
-                if ($isE2eStack) {
-                    Write-Warn ("leftover E2E container: {0} ({1})" -f $parts[0], $parts[1])
-                    $warnings += ("leftover E2E container {0}" -f $parts[0])
-                    continue
+                switch ($classification.Kind) {
+                    'e2e-leftover' {
+                        Write-Warn ("leftover E2E container: {0} ({1})" -f $classification.Name, $classification.Image)
+                        $warnings += ("leftover E2E container {0}" -f $classification.Name)
+                    }
+                    'dev-client' {
+                        Write-Fail ("dev stack client {0} is running - it publishes port {1}, which the E2E Vite server needs" -f $classification.Name, $classification.ClientPort)
+                        $failures += ("dev stack client {0} publishes port {1}" -f $classification.Name, $classification.ClientPort)
+                    }
+                    'dev-stack' {
+                        Write-Warn ("dev stack container {0} is running (it does not publish {1})" -f $classification.Name, $classification.ClientPort)
+                        $warnings += ("dev stack container {0} is running" -f $classification.Name)
+                    }
+                    default {
+                        Write-Warn ("unrelated container: {0} ({1})" -f $classification.Name, $classification.Image)
+                    }
                 }
 
-                if ($isDevStack) {
-                    # Identify the client by the port it publishes, not by name: the compose
-                    # container is `pot-react` while its image is `pot-client`.
-                    if ($parts[2] -like "*$clientPort*") {
-                        Write-Fail ("dev stack client {0} is running - it publishes port {1}, which the E2E Vite server needs" -f $parts[0], $clientPort)
-                        $failures += ("dev stack client {0} publishes port {1}" -f $parts[0], $clientPort)
-                    }
-                    else {
-                        Write-Warn ("dev stack container {0} is running (it does not publish {1})" -f $parts[0], $clientPort)
-                        $warnings += ("dev stack container {0} is running" -f $parts[0])
-                    }
-
+                if ($classification.Kind -like 'dev-*') {
                     Write-Host "         resolve: run the VS Code task 'docker-stop-client-server'" -ForegroundColor DarkGray
-                    continue
                 }
-
-                Write-Warn ("unrelated container: {0} ({1})" -f $parts[0], $parts[1])
             }
         }
     }

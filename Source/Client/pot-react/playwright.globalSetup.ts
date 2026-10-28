@@ -15,6 +15,7 @@ import { Socket } from 'node:net';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { startMailSink } from './e2e/helpers/mailSink';
 import { adminCredentials } from './e2e/helpers/secrets';
 
 /**
@@ -37,10 +38,16 @@ let postgresContainer: StartedPostgreSqlContainer;
 const currentFilePath = fileURLToPath(import.meta.url);
 const currentDirectory = dirname(currentFilePath);
 const serverDirectory = resolve(currentDirectory, '../../Server');
-const runtimeStatePath = resolve(
+
+/**
+ * Where a run records the Postgres container it started, so a run that died without teardown can be recognised by
+ * the next one. Exported because the teardown hook deletes it.
+ */
+export const runtimeStatePath = resolve(
   currentDirectory,
   'e2e/.runtime/testcontainers.json',
 );
+
 const migrationProjectPath = resolve(
   serverDirectory,
   'Pot.Data.Migrations/Pot.Data.Migrations.csproj',
@@ -444,6 +451,10 @@ export default async (_config: FullConfig) => {
   console.log('🐘 Starting Testcontainers Postgres...');
 
   try {
+    // The sink starts before the database: a run that cannot have its ports should say so before it spends a
+    // container start and a migration on a stack it cannot finish.
+    await startMailSink();
+
     // Clear auth state files from any previous run to prevent stale sessions.
     const authDirectory = resolve(currentDirectory, 'e2e/.auth');
     rmSync(authDirectory, { recursive: true, force: true });
@@ -580,25 +591,3 @@ export default async (_config: FullConfig) => {
   }
 };
 
-/**
- * Global teardown runs after all tests complete.
- *
- * We do NOT call `docker stop` here. On Docker Desktop for Windows, stopping a container
- * explicitly during teardown leaves the port in TCP TIME_WAIT. Docker Desktop's proxy layer
- * then reports the port as "already allocated" on the very next test run.
- *
- * Instead we rely on the Testcontainers Ryuk reaper, which removes the container AFTER
- * the Playwright process exits. By the time the user starts another run, the port has been
- * cleanly released.
- *
- * For runs where Ryuk also cannot fire (hard kill / SIGKILL), globalSetup detects the
- * leftover container from the runtime state file at the start of the next run and removes
- * it with `docker rm -f` (see stale cleanup block in the default export above).
- *
- * This function's only job is to delete the runtime state file so a stale container ID
- * written by this run cannot confuse the next run's stale-cleanup logic.
- */
-export async function globalTeardown() {
-  rmSync(runtimeStatePath, { force: true });
-  console.log('✅ Runtime state cleared');
-}

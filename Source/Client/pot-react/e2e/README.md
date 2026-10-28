@@ -61,10 +61,17 @@ run then starts from a clean process state and keeps its evidence:
 
 1. `npm run e2e:preflight` — read-only. Fails only on something that will abort or block the
    run (a harness port taken, Docker unavailable); warns about leftovers.
-2. `npm run e2e:clean` — stops the Playwright daemon, a stray Vite server and the harness API.
-   Never touches Docker containers; refuses to run while a matrix is in progress.
+2. `npm run e2e:clean` — stops the Playwright daemon, a stray Vite server and the harness API,
+   and removes the harness's own mail sink container (`pot-e2e-mail-sink`). It still never
+   touches the development Docker stack (the `pot-*` containers): stopping those is the VS Code
+   task `docker-stop-client-server`. Refuses to run while a matrix is in progress.
 3. `npm run e2e:all:dev:log` — clears a leftover Playwright daemon itself, then writes
    `e2e/logs/e2e-<timestamp>.log` and `e2e-ports-<timestamp>.log`.
+
+`npm run e2e:scripts` runs the script suite (Pester 5, `e2e/scripts/tests/`) that asserts what
+those scripts decide — which ports are required, reclaimable or tolerated, which processes count
+as a leftover, and what clean refuses to do. It needs no Docker, no browser and no database, and
+finishes in about a second.
 
 A plain `npm run e2e:all:dev` is fine when the machine is known-clean; it has no cleanup and
 no log, so a failure from it is not diagnosable after the fact.
@@ -77,11 +84,12 @@ no log, so a failure from it is not diagnosable after the fact.
 Playwright (@1.59.1)
    ├─ webServer[0]: ASP.NET Core API  (dotnet run -c Release, http://127.0.0.1:5242)
    ├─ webServer[1]: Vite dev server   (http://127.0.0.1:5175, proxies /api -> 5242)
-   └─ globalSetup: Testcontainers Postgres (host port 55432)
-        └─ migrations -> baseline.sql seed -> financial import -> renewal
-              └─ GET /_health/ready gate (waitForDatabaseReady) before any test runs
-              └─ shared-stack pre-warm (warmUpSharedStack: mounts every lazy route
-                 in a real browser so the first test never pays the cold start)
+   └─ globalSetup: mail sink container (SMTP 1025, read back over HTTP on 1080)
+        └─ Testcontainers Postgres (host port 55432)
+             └─ migrations -> baseline.sql seed -> financial import -> renewal
+                   └─ GET /_health/ready gate (waitForDatabaseReady) before any test runs
+                   └─ shared-stack pre-warm (warmUpSharedStack: mounts every lazy route
+                      in a real browser so the first test never pays the cold start)
 ```
 
 **ONE shared stack for the whole matrix**: one API process, one Vite dev server, one
@@ -90,9 +98,19 @@ per-test containers**. All test isolation comes from classification + teardown (
 
 Key contracts:
 
-- E2E ports: client `5175` (Vite dev server), API `5242` (E2E webServer), Testcontainers
+- E2E ports: client `5175` (Vite dev server), API `5242` (E2E webServer), mail sink `1025`
+  (SMTP, which is what the API is configured to deliver to) and `1080` (read back), Testcontainers
   Postgres `55432`. (The docker-compose dev stack uses different ports — this doc covers
-  the E2E harness only.)
+  the E2E harness only.) `npm run e2e:preflight` reports all of them, so an occupant is
+  identified before a run rather than deduced from a failure part-way through one.
+- A port held by the harness's **own** mail sink is reported and replaced rather than tolerated
+  silently: a killed run leaves the container behind, and the next run must start with an empty
+  inbox. Anything else holding `1025` or `1080` fails the run before any test, naming the process
+  that has it.
+- Messages are read with `e2e/helpers/mail.ts`: `waitForMessage({ to, subjectContains })` returns
+  the message, `oneTimeCode` and `temporaryPassword` read the secrets out of the templates'
+  monospaced blocks. A sign-up's or an invitation's credential exists nowhere else, which is why
+  the browser tier needs the sink at all.
 - API auth: HTTP-only rotating refresh cookie + Bearer access token (15-min JWT, in-memory only).
 - The server **rotates the refresh token on every `/api/auth/refresh`** — a refresh cookie is
   single-use. This is why each test must log in fresh (no worker-scoped shared auth state).

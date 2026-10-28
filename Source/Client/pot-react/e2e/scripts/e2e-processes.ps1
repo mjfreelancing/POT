@@ -168,6 +168,58 @@ function Get-E2eMailSinkContainers {
 
 <#
 .SYNOPSIS
+    Decides what a running container is: this harness's leftover, the Docker development stack, or neither.
+.DESCRIPTION
+    The development stack's containers are named `pot-*` (`pot-postgres`, `pot-aspnet`, `pot-react`), which is also the
+    shape of the harness's own mail sink, so the sink is identified by name before the development stack is. The
+    stack's client is identified by the port it publishes rather than by its name, because its container is
+    `pot-react` while its image is `pot-client`.
+.OUTPUTS
+    A record with Kind ('e2e-leftover', 'dev-client', 'dev-stack' or 'unrelated'), Name, Image and ClientPort.
+#>
+function Get-E2eContainerClassification {
+    param(
+        [Parameter(Mandatory)][string]$Name,
+        [string]$Image = '',
+        [string]$Ports = '',
+        [Parameter(Mandatory)][int]$ClientPort,
+        [Parameter(Mandatory)][string]$MailSinkContainer
+    )
+
+    $result = [pscustomobject]@{
+        Kind       = 'unrelated'
+        Name       = $Name
+        Image      = $Image
+        ClientPort = $ClientPort
+    }
+
+    # The sink is this harness's own container even though it is named `pot-*`.
+    if ($Name -eq $MailSinkContainer -or $Name -like 'testcontainers-ryuk*') {
+        $result.Kind = 'e2e-leftover'
+
+        return $result
+    }
+
+    # The development stack is checked before the image, because its Postgres runs the same `postgres:*` image as the
+    # harness's and an image match would report it as a leftover E2E container.
+    if ($Name -like 'pot-*') {
+        # Matched as `<port>->` so 5175 is not found inside 15175.
+        $publishesClientPort = $Ports -match "(?<!\d)$ClientPort->"
+
+        $result.Kind = $(if ($publishesClientPort) { 'dev-client' } else { 'dev-stack' })
+
+        return $result
+    }
+
+    if ($Image -like 'postgres:*') {
+        $result.Kind = 'e2e-leftover'
+    }
+
+    return $result
+}
+
+<#
+.SYNOPSIS
     Decides what an interrupted run left behind, without stopping anything.
 .OUTPUTS
     An object with Refused, RefusalReason and Targets. Each target has Name, Kind ('process' or 'container'),

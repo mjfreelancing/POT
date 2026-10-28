@@ -56,6 +56,14 @@ Always run the read-only preflight first. It reports anything holding the E2E po
 | Prodlike suite (full matrix) | `npm run e2e:all:prodlike`                                                                               | Completion gate for client-affecting work  |
 | Prodlike, on demand          | `npm run e2e:prodlike`                                                                                   | When the client production build changes   |
 | Open last HTML report        | `npm run e2e:report`                                                                                     | After a failing run                        |
+| Script suite (Pester)        | `npm run e2e:scripts`                                                                                    | After changing anything in `e2e/scripts/`  |
+| Clear what a killed run left | `npm run e2e:clean`                                                                                      | When the preflight reports leftovers       |
+
+The script suite asserts what `e2e/scripts/` decides — which ports are required, reclaimable by the harness's own
+mail sink, or tolerated; which processes count as a leftover; what clean refuses to do. It needs no Docker, browser
+or database and finishes in about a second, so it is the first thing to run after touching those scripts. The E2E
+run itself starts a mail sink container (SMTP `1025`, read back on `1080`) and removes it at teardown; the preflight
+reports both ports.
 
 The dev suite drives the Vite dev server; the prodlike suite drives the production build (`playwright.prod.config.ts`). Do not run the prodlike suite per change.
 
@@ -66,3 +74,4 @@ The dev suite drives the Vite dev server; the prodlike suite drives the producti
 3. If tests pass, return concise totals and stop.
 4. Never pass `--reporter` to a Playwright script; the config governs the reporters.
 5. Treat E2E as opt-in: confirm before starting a suite, run the preflight first, and report failures before changing anything.
+

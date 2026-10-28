@@ -53,11 +53,11 @@ export default defineConfig({
   // For runs where Ryuk also cannot fire (hard kill), globalSetup detects the stale
   // container from the runtime state file and removes it before starting a new one.
   //
-  // NOTE: both globalSetup and globalTeardown point at the same module. Playwright calls
-  // the `default` export as setup and the named `globalTeardown` export as teardown.
-  // Support for a named globalTeardown export in a shared file requires Playwright >= 1.44
-  // (repo pins ^1.59.1). Do not downgrade below 1.44 without splitting teardown into its own module.
-  globalTeardown: './playwright.globalSetup.ts',
+  // NOTE: the hooks are separate modules because Playwright resolves each global hook from the module's
+  // `default` export only (measured on the pinned 1.59.1: a named `globalTeardown` export next to a default
+  // `globalSetup` export is ignored, and setup then runs a second time as the teardown, re-migrating, re-seeding
+  // and leaving a fresh mail sink behind). Adding a hook to the setup module will not take effect.
+  globalTeardown: './playwright.globalTeardown.ts',
   expect: {
     // Cold-browser first loads (Edge channel, mobile matrix) can exceed the 5s
     // default while lazy page chunks mount; give web-first assertions room.

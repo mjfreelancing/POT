@@ -83,3 +83,76 @@ Describe 'Leftover identification' {
         $apiProcesses.ProcessId | Should -Be 30
     }
 }
+
+Describe 'Container classification' {
+    BeforeAll {
+        $clientPort = 5175
+        $mailSinkContainer = 'pot-e2e-mail-sink'
+
+        function New-ClassifiedContainer {
+            param(
+                [string]$Name,
+                [string]$Image = 'pot-client:latest',
+                [string]$Ports = ''
+            )
+
+            return Get-E2eContainerClassification -Name $Name -Image $Image -Ports $Ports -ClientPort $clientPort -MailSinkContainer $mailSinkContainer
+        }
+    }
+
+    It 'reports the harness mail sink as its own leftover, not as the development stack' {
+        $containers = @(
+            New-ClassifiedContainer -Name 'pot-e2e-mail-sink' -Image 'maildev/maildev:2.2.1' -Ports '127.0.0.1:1025->1025/tcp, 127.0.0.1:1080->1080/tcp'
+        )
+
+        $containers[0].Kind | Should -Be 'e2e-leftover'
+    }
+
+    It 'identifies the development client by the port it publishes, not by its name' {
+        $containers = @(
+            New-ClassifiedContainer -Name 'pot-react' -Image 'pot-client:latest' -Ports '0.0.0.0:5175->80/tcp'
+        )
+
+        $containers[0].Kind | Should -Be 'dev-client'
+    }
+
+    It 'does not read the client port out of a longer port number' {
+        $containers = @(
+            New-ClassifiedContainer -Name 'pot-react' -Image 'pot-client:latest' -Ports '0.0.0.0:15175->80/tcp'
+        )
+
+        $containers[0].Kind | Should -Be 'dev-stack'
+    }
+
+    It 'reports a development stack container that does not publish the client port as the development stack' {
+        $containers = @(
+            New-ClassifiedContainer -Name 'pot-aspnet' -Image 'pot-server:latest' -Ports '0.0.0.0:5241->8080/tcp'
+        )
+
+        $containers[0].Kind | Should -Be 'dev-stack'
+    }
+
+    It 'does not report the development stack Postgres as a leftover E2E container, though it runs the same image' {
+        $containers = @(
+            New-ClassifiedContainer -Name 'pot-postgres' -Image 'postgres:17-alpine' -Ports '0.0.0.0:5444->5432/tcp'
+        )
+
+        $containers[0].Kind | Should -Be 'dev-stack'
+    }
+
+    It 'reports a Postgres container outside the development stack as a leftover E2E container' {
+        $containers = @(
+            New-ClassifiedContainer -Name 'testcontainers-postgres-1' -Image 'postgres:17-alpine' -Ports '0.0.0.0:55432->5432/tcp'
+        )
+
+        $containers[0].Kind | Should -Be 'e2e-leftover'
+    }
+
+    It 'reports a container belonging to neither as unrelated' {
+        $containers = @(
+            New-ClassifiedContainer -Name 'some-other-app' -Image 'nginx:alpine' -Ports '0.0.0.0:8080->80/tcp'
+        )
+
+        $containers[0].Kind | Should -Be 'unrelated'
+    }
+}
