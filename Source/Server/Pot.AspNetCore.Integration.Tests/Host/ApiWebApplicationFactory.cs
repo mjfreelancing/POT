@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Pot.EmailSender;
 
 namespace Pot.AspNetCore.Integration.Tests.Host;
 
@@ -138,6 +139,13 @@ public abstract class ApiWebApplicationFactory : WebApplicationFactory<Program>
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<IHostedService>();
+
+            // Nothing consumes the real channel once every hosted service is removed, so messages are captured
+            // instead. It is the only way a test can reach an invitation, whose temporary password exists nowhere
+            // else. The capture type belongs to this test project, so no configuration can enable it in the product.
+            services.RemoveAll<ISendEmailChannelWriter>();
+            services.AddSingleton<CapturingEmailWriter>();
+            services.AddSingleton<ISendEmailChannelWriter>(provider => provider.GetRequiredService<CapturingEmailWriter>());
 
             services.AddFakeLogging(options =>
             {

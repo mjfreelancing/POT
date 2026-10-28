@@ -15,6 +15,15 @@ Rerun targeted tests from `Source/Server`:
 - Unit test: executes a class or method directly without booting the API host, or mocks/fakes dependencies in-process and asserts local behavior.
 - Integration test (belongs here): boots `Program` via `WebApplicationFactory<Program>` (or a derived factory) and sends real HTTP requests through middleware, routing, auth, filters or rate limiting; validates endpoint handler behavior and request/response mapping; or asserts HTTP contracts (status codes, headers, ProblemDetails shape, CORS, `405` method contracts).
 
+## Reading the messages the application sends
+
+The test host removes every hosted service, so nothing consumes the email channel and no message leaves the process. It replaces the channel writer with `CapturingEmailWriter`, which keeps every submitted message so a test can read what a person would have received.
+
+- Read a message with `Emails` (on `IntegrationAuthFixtureBase`) — `Latest(type, recipient)` for the most recent message of a type to an address, `Snapshot()` for everything in submission order, `Clear()` to ignore what came before.
+- Read a _secret_ only through `GetInvitationPassword(recipient)`. A test never parses a message body or reads a field to find a password; if a new message type carries a secret a scenario needs, add a helper beside that one.
+- A missing message throws with the messages that were captured, so a provisioning problem reads as itself rather than as a null reference in the test that follows.
+- Never register a capturing writer outside the test host, and never add a way for the running product to record a message. `MessageCaptureFixture` asserts the shipped assembly offers exactly one writer and that the capture lives in this project.
+
 ## Conventions
 
 - Organize by feature first, then cross-cutting concerns. Order tests to follow the endpoint/handler flow (early validation or logging paths before deeper branches).
@@ -22,3 +31,4 @@ Rerun targeted tests from `Source/Server`:
 - Shared host configuration lives in `Host/*WebApplicationFactory.cs`; use real `HttpClient` calls. Put repeated assertion patterns in `Host/Extensions`.
 - Assert logs with `FakeLogCollector` from the test host (`GetFakeLogCollector()`, `Microsoft.Extensions.Diagnostics.Testing`); extract repeated log assertions into shared helpers. Do not use `Pot.TestUtils` for this.
 - Include validation-failure and method-contract (`405`) checks where applicable, and verify responses do not leak sensitive request or header data.
+

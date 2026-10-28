@@ -57,6 +57,7 @@ Run server commands from `Source/Server`. `.editorconfig` is the source of truth
 - Constructors: the logger (`ILogger<T>`) is the last injected parameter. Backing fields follow the same order as the constructor parameters. Chain multiple constructors to one primary constructor instead of duplicating assignments.
 - Methods: `CancellationToken` is the last argument, unless a language constraint requires otherwise (for example `[CallerMemberName]` after it).
 - Allowed abbreviation in variable names: `kvp` (dictionary key-value pairs in LINQ). Add new entries here as needed.
+- Concurrency: declare a lock field as `System.Threading.Lock` (`private readonly Lock _gate = new();`), never as `object`. `lock (_gate)` is written exactly as before and compiles to `Lock.EnterScope()`, so there is no ceremony to justify the weaker type — and a `Lock` cannot be mistaken for a domain object that happens to be locked, nor accidentally locked by unrelated code holding the same instance. `object` is only for a target framework that predates `Lock` (before .NET 9); every project here targets `net10.0`.
 
 ## Dependency injection
 

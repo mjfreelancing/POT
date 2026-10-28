@@ -5,7 +5,7 @@
 - PRD: `Docs/Future/PRD-031-automated-tenant-scenario-testing.md`
 - Status: In Progress
 - Started: 2026-10-27
-- Progress: 0/35
+- Progress: 5/35
 
 ## UI testing checkpoints
 
@@ -36,14 +36,14 @@ Requirement coverage by stage: 1 → A1, A2, A4 (server), A5 · 2 → B1–B6 ·
 - Goal: a server test can read a message the application has just submitted, including an invitation's temporary password.
 - Touches: `Pot.AspNetCore.Integration.Tests/Host` (the test factories and a capturing writer), `Host/Extensions` (the one helper that turns a message into a usable secret).
 - Validation: `dotnet test Pot.AspNetCore.Integration.Tests/Pot.AspNetCore.Integration.Tests.csproj --filter "FullyQualifiedName~MessageCapture"`
-- Progress: 0/5 complete
-- Notes: the integration host already removes every hosted service, so nothing is sent today and only the writer has to change. The production factory is exercised too, so the guarantee that the shipped composition cannot record is asserted rather than assumed.
+- Progress: 5/5 complete
+- Notes: the integration host already removes every hosted service, so nothing is sent today and only the writer has to change. The production factory is exercised too, so the guarantee that the shipped composition cannot record is asserted rather than assumed. Done: the capture is `CapturingEmailWriter`, resolved through an `Emails` property on the fixture base; the guarantee is asserted by reflection over the shipped email assembly (exactly one writer, and the capture declared in this project) rather than by resolving the writer on a production factory, because every factory in the suite inherits the substitution and so could not show the difference.
 
-- [ ] 1.1 **Tests (red)** — a submitted message is readable afterwards with its type and full content; the production composition resolves the real channel rather than a recorder.
-- [ ] 1.2 **Green** — a capturing writer in the test host, queryable by recipient and message type.
-- [ ] 1.3 **Green** — one helper that returns an invitation's temporary password from the captured messages, so no test parses a body itself.
-- [ ] 1.4 **Docs** — record the capturing writer and the message helper in `.github/instructions/aspnetcore-integration-tests.instructions.md`, so the next test is written against them rather than around them.
-- [ ] 1.5 Run the targeted tests and format the changed files.
+- [x] 1.1 **Tests (red)** — a submitted message is readable afterwards with its type and full content; the production composition resolves the real channel rather than a recorder.
+- [x] 1.2 **Green** — a capturing writer in the test host, queryable by recipient and message type.
+- [x] 1.3 **Green** — one helper that returns an invitation's temporary password from the captured messages, so no test parses a body itself.
+- [x] 1.4 **Docs** — record the capturing writer and the message helper in `.github/instructions/aspnetcore-integration-tests.instructions.md`, so the next test is written against them rather than around them.
+- [x] 1.5 Run the targeted tests and format the changed files.
 
 ## Stage 2 — Scenarios provisioned through the routes
 

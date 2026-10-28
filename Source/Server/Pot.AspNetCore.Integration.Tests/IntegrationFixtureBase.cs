@@ -17,6 +17,19 @@ public abstract class IntegrationFixtureBase : IAsyncLifetime
     protected string DbHost { get; private set; }
     protected int DbPort { get; private set; }
 
+    /// <summary>
+    /// The messages the application has submitted, so a test can read what a person would have received.
+    /// </summary>
+    protected CapturingEmailWriter Emails
+    {
+        get
+        {
+            _factory.ShouldNotBeNull("Factory must be initialized by IAsyncLifetime.InitializeAsync()");
+
+            return _factory.Services.GetRequiredService<CapturingEmailWriter>();
+        }
+    }
+
     protected IServiceScope CreateScope()
     {
         _factory.ShouldNotBeNull("Factory must be initialized by IAsyncLifetime.InitializeAsync()");
