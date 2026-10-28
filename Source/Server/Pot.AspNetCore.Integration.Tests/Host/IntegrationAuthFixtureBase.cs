@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Pot.App.Concerns.Auth;
+using Pot.AspNetCore.Integration.Tests.Scenarios;
 using Pot.Data;
 using Pot.Data.Entities;
 using Pot.Shared.Enumerations;
@@ -20,7 +21,7 @@ namespace Pot.AspNetCore.Integration.Tests.Host;
 /// Kept separate from <see cref="IntegrationFixtureBase" />, which stays responsible for the container and host
 /// lifecycle alone, so a fixture that never authenticates keeps deriving from it directly.
 /// </remarks>
-public abstract class IntegrationAuthFixtureBase : IntegrationFixtureBase
+public abstract class IntegrationAuthFixtureBase : IntegrationFixtureBase, IScenarioHost
 {
     /// <summary>
     /// A user seeded for a fixture, with the credentials needed to log in as them.
@@ -65,6 +66,9 @@ public abstract class IntegrationAuthFixtureBase : IntegrationFixtureBase
     /// The name of the refresh token cookie the login endpoint sets.
     /// </summary>
     protected const string RefreshTokenCookieName = "pot_refresh_token";
+
+    private PlatformAdminApiWebApplicationFactory? _scenarioApproverFactory;
+    private string? _scenarioApproverToken;
 
     /// <summary>
     /// Seeds a site and an enabled user with no role, for tests that only need a valid identity.
@@ -223,6 +227,74 @@ public abstract class IntegrationAuthFixtureBase : IntegrationFixtureBase
         }
 
         return new SeededUser(user.RowId, username, SeededPassword);
+    }
+
+    /// <summary>
+    /// Provisions a declared scenario through the product's routes.
+    /// </summary>
+    /// <param name="definition">The scenario to provision.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The provisioned tenant and its people.</returns>
+    /// <exception cref="ScenarioProvisioningException">A step could not be completed.</exception>
+    protected Task<ProvisionedScenario> ProvisionScenarioAsync(ScenarioDefinition definition, CancellationToken cancellationToken)
+    {
+        var provisioner = new ScenarioProvisioner(this);
+
+        return provisioner.ProvisionAsync(definition, cancellationToken);
+    }
+
+    /// <summary>
+    /// Provides a client that the host treats as a platform administrator, which is what deciding an approval
+    /// requires.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A client whose requests are authorized to decide approvals.</returns>
+    /// <remarks>
+    /// The nomination lives in the host's configuration, so the approving client is served by a host of its own.
+    /// The fixture keeps that host and the token, because provisioning many scenarios would otherwise sign the
+    /// approver in again each time.
+    /// </remarks>
+    protected virtual async Task<HttpClient> CreatePlatformApproverClientAsync(CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (_scenarioApproverFactory is null || _scenarioApproverToken is null)
+        {
+            var approver = await CreateAdminUserAsync("scenario-approver", "Scenario Approver");
+            var tokens = await LoginAsync(approver);
+
+            _scenarioApproverFactory = TrackForDisposal(new PlatformAdminApiWebApplicationFactory(DbHost, DbPort, approver.UserRowId));
+            _scenarioApproverToken = tokens.AccessToken;
+        }
+
+        var client = _scenarioApproverFactory.CreateClient();
+
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _scenarioApproverToken);
+
+        return client;
+    }
+
+    CapturingEmailWriter IScenarioHost.Emails
+    {
+        get
+        {
+            return Emails;
+        }
+    }
+
+    HttpClient IScenarioHost.CreateAnonymousClient()
+    {
+        return CreateClient();
+    }
+
+    IServiceScope IScenarioHost.CreateDataScope()
+    {
+        return CreateScope();
+    }
+
+    async Task<HttpClient> IScenarioHost.CreatePlatformApproverClientAsync(CancellationToken cancellationToken)
+    {
+        return await CreatePlatformApproverClientAsync(cancellationToken);
     }
 
     private async Task<SeededUser> SeedUserAsync(string purpose, string displayName, bool assignAdminRole)

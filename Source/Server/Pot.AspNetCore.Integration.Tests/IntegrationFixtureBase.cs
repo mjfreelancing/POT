@@ -1,3 +1,4 @@
+using AllOverIt.Assertion;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +12,7 @@ namespace Pot.AspNetCore.Integration.Tests;
 
 public abstract class IntegrationFixtureBase : IAsyncLifetime
 {
+    private readonly List<IDisposable> _extraDisposables = [];
     private PostgreSqlContainer? _container;
     private ApiWebApplicationFactory? _factory;
 
@@ -73,6 +75,21 @@ public abstract class IntegrationFixtureBase : IAsyncLifetime
         return new ProductionApiWebApplicationFactory(dbHost, dbPort);
     }
 
+    /// <summary>
+    /// Registers a disposable to be released when the fixture finishes, for hosts a test creates beyond the
+    /// fixture's own.
+    /// </summary>
+    /// <param name="disposable">The disposable to release.</param>
+    /// <typeparam name="T">The disposable's type, so the caller can keep using it.</typeparam>
+    /// <returns>The same instance, so registration can wrap a construction.</returns>
+    protected T TrackForDisposal<T>(T disposable)
+        where T : class, IDisposable
+    {
+        _extraDisposables.Add(disposable.WhenNotNull());
+
+        return disposable;
+    }
+
     async ValueTask IAsyncLifetime.InitializeAsync()
     {
         // Step 1: Create a fresh isolated Postgres container for this fixture
@@ -101,6 +118,13 @@ public abstract class IntegrationFixtureBase : IAsyncLifetime
 
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
+        foreach (var disposable in _extraDisposables)
+        {
+            disposable.Dispose();
+        }
+
+        _extraDisposables.Clear();
+
         _factory?.Dispose();
         _factory = null;
 

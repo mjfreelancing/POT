@@ -24,6 +24,17 @@ The test host removes every hosted service, so nothing consumes the email channe
 - A missing message throws with the messages that were captured, so a provisioning problem reads as itself rather than as a null reference in the test that follows.
 - Never register a capturing writer outside the test host, and never add a way for the running product to record a message. `MessageCaptureFixture` asserts the shipped assembly offers exactly one writer and that the capture lives in this project.
 
+## Provisioning a scenario
+
+A scenario is a tenant and the people in it, declared as data and provisioned by the product's own routes, so the flows a person uses are the flows under test.
+
+- Derive a scenario fixture from `ScenarioFixtureBase` (not `IntegrationAuthFixtureBase` directly). Declare the tenant with `ScenarioDefinition` and `ScenarioMember`, then call `ProvisionScenarioAsync`. It returns the site, the owner and every member with the credentials that let a test act as them.
+- Do not seed a tenant a scenario could reach instead. Signing up, approving, inviting, activating an invitation and changing a status all happen through endpoints; the harness reads the sign-up code from the store and each password from the message that carried it.
+- A state no route can produce is declared as `ScenarioDirectWrite` and must state the reason in the same sentence a reviewer would ask for. A blank reason fails at the validation step, so the exception stays visible rather than becoming habit.
+- Every identifier is unique per provisioning, so two scenarios may share a name and tests may run in any order.
+- A provisioning failure raises `ScenarioProvisioningException`, which names the step and carries the status and body the route answered with. Never catch it to keep a test going: a broken harness must read as a broken harness, not as a failing assertion about behaviour.
+- `ScenarioFixtureBase` raises the host's rate limits for its own fixture, because provisioning spends several anonymous requests before the first assertion. Every other fixture keeps the production limits, and `HeadersAndRateLimitFixture` continues to prove them.
+
 ## Conventions
 
 - Organize by feature first, then cross-cutting concerns. Order tests to follow the endpoint/handler flow (early validation or logging paths before deeper branches).

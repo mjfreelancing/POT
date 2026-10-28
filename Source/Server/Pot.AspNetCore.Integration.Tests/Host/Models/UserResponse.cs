@@ -37,4 +37,9 @@ public sealed class UserResponse
     /// The user's status, by name.
     /// </summary>
     public string? Status { get; set; }
+
+    /// <summary>
+    /// The names of the roles the user holds.
+    /// </summary>
+    public string[] Roles { get; set; } = [];
 }

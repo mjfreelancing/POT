@@ -35,4 +35,32 @@ public static class CapturingEmailWriterExtensions
 
         return ((EmailInvitationInfo)invitation.Content).TempPassword;
     }
+
+    /// <summary>
+    /// Reads the temporary password from the message a sign-up sent to an address.
+    /// </summary>
+    /// <param name="emails">The captured messages.</param>
+    /// <param name="recipient">The address the sign-up message was sent to.</param>
+    /// <returns>The temporary password the message carries.</returns>
+    /// <remarks>
+    /// A sign-up generates a password, stores only its hash, and sends the password itself. Without this helper a
+    /// test could complete a sign-up but never sign in as the account it created.
+    /// </remarks>
+    public static string GetSignUpPassword(this CapturingEmailWriter emails, string recipient)
+    {
+        _ = emails.WhenNotNull();
+        ArgumentException.ThrowIfNullOrWhiteSpace(recipient);
+
+        var signUp = emails.Latest(EmailType.Signup, recipient);
+
+        if (signUp is null)
+        {
+            var captured = string.Join(", ", emails.Snapshot().Select(message => $"{message.Type} to {message.Content.Email}"));
+
+            throw new InvalidOperationException(
+                $"No sign-up message was captured for '{recipient}'. Captured: {(captured.Length == 0 ? "nothing" : captured)}.");
+        }
+
+        return ((EmailOtpInfo)signUp.Content).TempPassword;
+    }
 }
