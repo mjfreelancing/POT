@@ -27,7 +27,7 @@ public static class IgnoredOperations
             "Removes the tenant every case in the run acts in, and with it the rows the other cases read."),
         new(
             EndpointOperation.Create("POST", "/api/maintenance/import"),
-            "Binds a multipart form, so a body of any other shape is refused as unsupported before the caller's authorization is judged - and the shape it does accept imports data.")
+            "Binds a multipart form, and a request ASP.NET cannot bind is answered 415 before the caller's authorization is tested - so the only body that reaches the decision imports data.")
     ];
 
     /// <summary>
