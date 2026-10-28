@@ -1,4 +1,4 @@
-namespace Pot.AspNetCore.Integration.Tests.Pipeline;
+namespace Pot.AspNetCore.Integration.Tests.Pipeline.Support;
 
 /// <summary>
 /// One operation the contract documents, with the part of its shape an authorization case depends on.

@@ -1,4 +1,4 @@
-namespace Pot.AspNetCore.Integration.Tests.Pipeline;
+namespace Pot.AspNetCore.Integration.Tests.Pipeline.Support;
 
 /// <summary>
 /// One authorization case: an operation, the caller that attempts it and whether the row it names belongs to

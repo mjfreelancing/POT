@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Pot.AspNetCore.Integration.Tests.Pipeline;
+namespace Pot.AspNetCore.Integration.Tests.Pipeline.Support;
 
 /// <summary>
 /// Reads what each mapped endpoint declares about who may call it, which is where an authorization case's

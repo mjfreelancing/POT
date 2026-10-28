@@ -1,6 +1,6 @@
 using AllOverIt.Assertion;
 
-namespace Pot.AspNetCore.Integration.Tests.Pipeline;
+namespace Pot.AspNetCore.Integration.Tests.Pipeline.Support;
 
 /// <summary>
 /// The rows another tenant owns, so a case can name one and prove the caller is answered as though it did not exist.

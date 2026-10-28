@@ -1,4 +1,4 @@
-namespace Pot.AspNetCore.Integration.Tests.Pipeline;
+namespace Pot.AspNetCore.Integration.Tests.Pipeline.Support;
 
 /// <summary>
 /// An operation the authorization matrix deliberately leaves alone, with the reason a case would be unsafe or

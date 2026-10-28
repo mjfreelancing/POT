@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Pot.Data.Entities;
 using System.Text;
 
-namespace Pot.AspNetCore.Integration.Tests.Invariants;
+namespace Pot.AspNetCore.Integration.Tests.Invariants.Support;
 
 /// <summary>
 /// Works out how each declared entity belongs to a site, so a fingerprint reads every tenant-scoped table without a

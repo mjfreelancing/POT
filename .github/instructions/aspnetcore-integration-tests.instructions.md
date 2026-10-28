@@ -62,6 +62,7 @@ A destructive action is proven to touch only what it names, by fingerprinting a 
 ## Conventions
 
 - Organize by feature first, then cross-cutting concerns. Order tests to follow the endpoint/handler flow (early validation or logging paths before deeper branches).
+- A folder holds its fixtures at its root, and everything the fixtures use goes in a `Support` folder beside them (`Pipeline/Support`, `Invariants/Support`), the way `Host` already separates `Models` and `Extensions`. A fixture is then visible without reading a file, and a supporting type is never mistaken for one.
 - Assert HTTP status first, then critical contract fields and headers. Prefer typed response models over ad-hoc JSON traversal.
 - Shared host configuration lives in `Host/*WebApplicationFactory.cs`; use real `HttpClient` calls. Put repeated assertion patterns in `Host/Extensions`.
 - Assert logs with `FakeLogCollector` from the test host (`GetFakeLogCollector()`, `Microsoft.Extensions.Diagnostics.Testing`); extract repeated log assertions into shared helpers. Do not use `Pot.TestUtils` for this.

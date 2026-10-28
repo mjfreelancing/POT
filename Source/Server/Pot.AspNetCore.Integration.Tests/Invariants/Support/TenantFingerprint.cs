@@ -1,6 +1,6 @@
 using AllOverIt.Assertion;
 
-namespace Pot.AspNetCore.Integration.Tests.Invariants;
+namespace Pot.AspNetCore.Integration.Tests.Invariants.Support;
 
 /// <summary>
 /// What one tenant's rows held at a moment in time, table by table and row by row, so a difference can name the row

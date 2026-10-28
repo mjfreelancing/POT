@@ -1,6 +1,6 @@
 using AllOverIt.Assertion;
 
-namespace Pot.AspNetCore.Integration.Tests.Pipeline;
+namespace Pot.AspNetCore.Integration.Tests.Pipeline.Support;
 
 /// <summary>
 /// Generates the authorization cases for the documented operations, so an operation added later is exercised without

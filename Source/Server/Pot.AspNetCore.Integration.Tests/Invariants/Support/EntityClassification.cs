@@ -1,6 +1,6 @@
 using AllOverIt.Assertion;
 
-namespace Pot.AspNetCore.Integration.Tests.Invariants;
+namespace Pot.AspNetCore.Integration.Tests.Invariants.Support;
 
 /// <summary>
 /// Decides whether every entity the data model declares has had its tenant scope decided: reachable from a site, or

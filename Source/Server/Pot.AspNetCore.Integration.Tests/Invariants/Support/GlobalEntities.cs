@@ -1,6 +1,6 @@
 using Pot.Data.Entities;
 
-namespace Pot.AspNetCore.Integration.Tests.Invariants;
+namespace Pot.AspNetCore.Integration.Tests.Invariants.Support;
 
 /// <summary>
 /// The entities that belong to no tenant, each with the reason it is shared, so a fingerprint cannot mistake a

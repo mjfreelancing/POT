@@ -1,6 +1,6 @@
 using Pot.AspNetCore.Concerns.Auth;
 
-namespace Pot.AspNetCore.Integration.Tests.Pipeline;
+namespace Pot.AspNetCore.Integration.Tests.Pipeline.Support;
 
 /// <summary>
 /// What an endpoint declares about who may call it, read from the endpoint itself rather than from a second table

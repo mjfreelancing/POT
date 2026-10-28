@@ -1,3 +1,4 @@
+using Pot.AspNetCore.Integration.Tests.Pipeline.Support;
 using Shouldly;
 
 namespace Pot.AspNetCore.Integration.Tests.Pipeline;

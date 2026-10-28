@@ -3,6 +3,7 @@ using Pot.AspNetCore.Concerns.Auth.Services;
 using Pot.AspNetCore.Integration.Tests.Host;
 using Pot.AspNetCore.Integration.Tests.Host.Extensions;
 using Pot.AspNetCore.Integration.Tests.Host.Models;
+using Pot.AspNetCore.Integration.Tests.Pipeline.Support;
 using Pot.AspNetCore.Integration.Tests.Scenarios;
 using Pot.Shared.Enumerations;
 using Shouldly;

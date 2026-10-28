@@ -5,7 +5,7 @@ using Pot.Data.Entities;
 using System.Data.Common;
 using System.Globalization;
 
-namespace Pot.AspNetCore.Integration.Tests.Invariants;
+namespace Pot.AspNetCore.Integration.Tests.Invariants.Support;
 
 /// <summary>
 /// Reads a tenant's rows out of every tenant-scoped table, so an invariant compares what an action actually touched

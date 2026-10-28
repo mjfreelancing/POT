@@ -1,4 +1,4 @@
-namespace Pot.AspNetCore.Integration.Tests.Invariants;
+namespace Pot.AspNetCore.Integration.Tests.Invariants.Support;
 
 /// <summary>
 /// What the data model declares: every entity, the ones that belong to a tenant, and the query that reads each

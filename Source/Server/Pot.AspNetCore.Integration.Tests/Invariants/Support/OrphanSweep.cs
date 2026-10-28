@@ -5,7 +5,7 @@ using Pot.Data;
 using System.Data.Common;
 using System.Text;
 
-namespace Pot.AspNetCore.Integration.Tests.Invariants;
+namespace Pot.AspNetCore.Integration.Tests.Invariants.Support;
 
 /// <summary>
 /// Looks for rows that still point at a row that no longer exists, across every foreign key the model declares.

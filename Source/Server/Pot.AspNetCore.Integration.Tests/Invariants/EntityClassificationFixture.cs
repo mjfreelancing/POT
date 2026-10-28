@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Pot.AspNetCore.Integration.Tests.Invariants.Support;
 using Pot.Data;
 using Pot.Data.Entities;
 using Shouldly;

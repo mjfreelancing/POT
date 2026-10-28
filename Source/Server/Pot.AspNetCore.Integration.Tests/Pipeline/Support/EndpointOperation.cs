@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Pot.AspNetCore.Integration.Tests.Pipeline;
+namespace Pot.AspNetCore.Integration.Tests.Pipeline.Support;
 
 /// <summary>
 /// One documented operation, named by the method it answers and the shape of its path.

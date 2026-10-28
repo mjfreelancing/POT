@@ -1,4 +1,4 @@
-namespace Pot.AspNetCore.Integration.Tests.Invariants;
+namespace Pot.AspNetCore.Integration.Tests.Invariants.Support;
 
 /// <summary>
 /// One table the fingerprint reads, with the query that restricts it to a single tenant.

@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Pot.AspNetCore.Integration.Tests.Pipeline;
+namespace Pot.AspNetCore.Integration.Tests.Pipeline.Support;
 
 /// <summary>
 /// Reads the operations the generated contract documents, which is the inventory the authorization matrix is

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Pot.AspNetCore.Integration.Tests.Host.Extensions;
 using Pot.AspNetCore.Integration.Tests.Host.Models;
+using Pot.AspNetCore.Integration.Tests.Invariants.Support;
 using Pot.AspNetCore.Integration.Tests.Scenarios;
 using Pot.Data;
 using Pot.Data.Entities;

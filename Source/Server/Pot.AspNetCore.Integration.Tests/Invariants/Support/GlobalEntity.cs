@@ -1,4 +1,4 @@
-namespace Pot.AspNetCore.Integration.Tests.Invariants;
+namespace Pot.AspNetCore.Integration.Tests.Invariants.Support;
 
 /// <summary>
 /// An entity the data model declares that belongs to no tenant, together with the reason it is shared.

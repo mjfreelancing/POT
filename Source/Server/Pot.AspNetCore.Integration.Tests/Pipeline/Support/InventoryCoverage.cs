@@ -1,6 +1,6 @@
 using AllOverIt.Assertion;
 
-namespace Pot.AspNetCore.Integration.Tests.Pipeline;
+namespace Pot.AspNetCore.Integration.Tests.Pipeline.Support;
 
 /// <summary>
 /// Decides whether every documented operation has had its coverage decided: exercised by the matrix, or left alone
