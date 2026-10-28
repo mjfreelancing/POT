@@ -39,7 +39,7 @@ Run server commands from `Source/Server`. `.editorconfig` is the source of truth
 
 - After creating or editing C# files, run `dotnet format style <Project>/<Project>.csproj --verify-no-changes --severity warn --include <changed files>` from `Source/Server` and fix every reported violation in the files you touched (naming rules are enforced at `warning` in `.editorconfig`; the normal build does not report them). Ignore pre-existing violations in files you did not change, and do not edit `Pot.Data/Migrations`.
 
-- One class per file (nested types/records/enums that belong to the enclosing type are exempt). Default to `sealed`.
+- One class per file (nested types/records/enums that belong to the enclosing type are exempt, as is a marker interface declared beside the base type it marks — the entity-check `IPreCreateCheck`/`PreCreateCheckBase` shape). Default to `sealed`.
 - No primary constructors; use explicit constructors. Prefer constructor injection; avoid static dependencies.
 - No sync-over-async (`.Result`, `.Wait()`, `.GetAwaiter().GetResult()`); keep `CancellationToken` propagation intact.
 - Extension methods go in an `Extensions` folder; name the file/class `<ExtendedType>Extensions`.
