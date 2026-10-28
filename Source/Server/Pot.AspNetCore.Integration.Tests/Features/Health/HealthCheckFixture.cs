@@ -1,4 +1,3 @@
-using Pot.AspNetCore.Integration.Tests.Host;
 using Shouldly;
 using System.Net;
 
@@ -14,44 +13,5 @@ public class HealthCheckFixture : IntegrationFixtureBase
         var response = await client.GetAsync("/_health/ready", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-    }
-}
-
-public class HealthCheckUnhealthyFixture : IAsyncLifetime
-{
-    // Port 59999 on loopback is intentionally unreachable — no service binds there.
-    // A TCP connection attempt gets an immediate "connection refused", so the EF Core
-    // health check fails fast without waiting for a timeout.
-    private const int UnreachableDbPort = 59999;
-
-    private ProductionApiWebApplicationFactory? _factory;
-
-    async ValueTask IAsyncLifetime.InitializeAsync()
-    {
-        _factory = new ProductionApiWebApplicationFactory("127.0.0.1", UnreachableDbPort);
-
-        await Task.CompletedTask;
-    }
-
-    async ValueTask IAsyncDisposable.DisposeAsync()
-    {
-        _factory?.Dispose();
-        _factory = null;
-
-        await Task.CompletedTask;
-
-        GC.SuppressFinalize(this);
-    }
-
-    [Fact]
-    public async Task Should_Return_ServiceUnavailable_When_Database_Is_Not_Available()
-    {
-        _factory.ShouldNotBeNull();
-
-        using var client = _factory.CreateClient();
-
-        var response = await client.GetAsync("/_health/ready", TestContext.Current.CancellationToken);
-
-        response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
     }
 }

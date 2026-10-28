@@ -41,6 +41,7 @@ public abstract class IntegrationAuthFixtureBase : IntegrationFixtureBase, IScen
     private sealed class LoginResponse
     {
         public string? Status { get; set; }
+
         public string? AccessToken { get; set; }
     }
 
