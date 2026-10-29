@@ -14,15 +14,13 @@
 -- actions never touch the shared E2E site's data.
 --
 -- NOTE: e2e_selfdelete is a canonical seed user (Viewer role) on the shared E2E
--- site, dedicated to the account-deletion suite, which deletes it. It reuses the
--- e2e_pwchange password hash, so its password is E2E_pwchange-password. It must
--- stay chromium-only: other projects in the same run share this database and
--- would find the account already deleted.
+-- site. The account-deletion suite no longer consumes it: that suite invites its
+-- own viewer and deletes that, so it can run in every browser project. The row is
+-- kept so an existing baseline keeps its row numbering.
 --
--- NOTE: e2e_sitedelete is a canonical seed user (Admin role) on its OWN site,
--- dedicated to the site-deletion suite, which deletes that site. It reuses the
--- e2e_pwchange password hash, so its password is E2E_pwchange-password. Like
--- e2e_selfdelete it must stay chromium-only.
+-- NOTE: e2e_sitedelete is a canonical seed user (Admin role) on its OWN site. The
+-- site-deletion suite no longer consumes it: that suite signs up a site and its
+-- administrator and deletes them. Kept for the same reason.
 --
 
 

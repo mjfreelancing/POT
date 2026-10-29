@@ -34,6 +34,7 @@ Classify every test before writing it.
 
 - **Parallel-safe**: never calls a state-changing endpoint and never asserts on shared mutable state. Exception: calls producing only transient server state with no effect on other tests (for example `/api/auth/login`) qualify if any browser context created solely for that call is closed right after the assertion.
 - **Fixture-managed**: creates or deletes its own records. Wrap in `test.describe.serial()`; clean up in `afterEach` (not `afterAll`) so cleanup runs on failure. Use ONE request context per suite and reuse the `accessToken` fixture.
+- **Destructive**: destroys the tenant or identity it runs as (account deletion, site deletion). It must PROVISION that tenant through the product's routes with `e2e/helpers/provisioning.ts` (`provisionInvitedViewer`, `provisionSiteAdministrator`) and drive the journey in its own `browser.newContext({ storageState })` — never an auth fixture over a seeded identity, which can only be destroyed once per database. Such a spec runs in every browser project and is expected to pass twice in a row without reseeding; assert the seeded identities still exist once it finishes.
 - CI `workers: 1` does not make a test parallel-safe; classify for local parallel execution. All workers share one API process (port `5242`) and one Testcontainers database (port `55432`).
 
 ## Fixtures and config

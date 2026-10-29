@@ -1,54 +1,35 @@
 import type { Browser } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
-import { expect, selfDeleteTest as test } from '../../fixtures/auth';
 import { listExistingUsernames } from '../../helpers/databaseSeed';
-import { selfDeleteCredentials } from '../../helpers/secrets';
+import { provisionInvitedViewer } from '../../helpers/provisioning';
+import { adminCredentials, viewerCredentials } from '../../helpers/secrets';
 
-// Covers the self-service account deletion journey: the settings block, the
-// typed confirmation with the caller's own password, the return to the login
-// page and the account being unusable afterwards.
+// Covers the self-service account deletion journey: the settings block, the typed confirmation with the caller's
+// own password, the return to the login page and the account being unusable afterwards.
 //
-// Runs as the DEDICATED seeded identity e2e_selfdelete (Viewer on the shared E2E
-// site, see baseline.sql) because the journey deletes the account. It is
-// chromium-only for the same reason userSettings.test.ts is: every project in a
-// run shares ONE Testcontainers Postgres, so a second project would find the
-// account already gone. The configs exclude this file from the other projects.
+// The identity is PROVISIONED for the journey rather than seeded. An invitation creates a viewer on the shared E2E
+// site and the journey deletes it, so the file can run in every browser project against one database - and again
+// on a later run - without consuming an identity the seed would have to keep supplying.
 //
-// NO RETRIES: the account is gone after the first attempt, so a retry could never sign in and would
-// surface as a misleading auth-fixture failure. The seed is verified below instead, because a regenerated
-// baseline.sql that drops the identity is the usual reason it goes missing.
-
-const isNotChromium = (testInfo: import('@playwright/test').TestInfo) =>
-  testInfo.project.name !== 'chromium';
-
-// Declared in the file so the CLI --retries flag cannot re-enable them.
-test.describe.configure({ retries: 0 });
-
-test.beforeAll(async () => {
-  const existingUsernames = await listExistingUsernames([
-    selfDeleteCredentials.username,
-  ]);
-
-  if (!existingUsernames.includes(selfDeleteCredentials.username)) {
-    throw new Error(
-      `${selfDeleteCredentials.username} is missing from the E2E seed. Regenerate e2e/seed/baseline.sql.`,
-    );
-  }
-});
+// The seeded identities are asserted intact at the end: consuming one is the failure this arrangement prevents.
 
 test('deleting your own account returns you to the login page and blocks sign-in', async ({
-  page,
   browser,
-}, testInfo) => {
-  test.skip(
-    isNotChromium(testInfo),
-    'chromium-only: deletes the shared seeded e2e_selfdelete identity',
-  );
+  playwright,
+}) => {
+  const account = await provisionInvitedViewer(playwright, 'account-deletion');
+
+  const context = await browser.newContext({
+    storageState: account.storageState,
+  });
+
+  const page = await context.newPage();
 
   await page.goto('/dashboard');
 
   await page
-    .getByRole('button', { name: selfDeleteCredentials.username, exact: true })
+    .getByRole('button', { name: account.displayName, exact: true })
     .click();
   await page.getByRole('menuitem', { name: 'Settings', exact: true }).click();
 
@@ -64,12 +45,10 @@ test('deleting your own account returns you to the login page and blocks sign-in
   });
   await expect(confirmButton).toBeDisabled();
 
-  await dialog
-    .getByLabel('Username', { exact: true })
-    .fill(selfDeleteCredentials.username);
+  await dialog.getByLabel('Username', { exact: true }).fill(account.username);
   await dialog
     .getByLabel('Your password', { exact: true })
-    .fill(selfDeleteCredentials.password);
+    .fill(account.password);
 
   await expect(confirmButton).toBeEnabled();
 
@@ -90,14 +69,29 @@ test('deleting your own account returns you to the login page and blocks sign-in
     page.getByText('Your account has been deleted.', { exact: true }),
   ).toBeVisible();
 
-  await expectSignInRefused(browser);
+  await context.close();
+
+  await expectSignInRefused(browser, account.username, account.password);
+
+  const seededUsernames = await listExistingUsernames([
+    adminCredentials.username,
+    viewerCredentials.username,
+  ]);
+
+  expect(seededUsernames.slice().sort()).toEqual(
+    [adminCredentials.username, viewerCredentials.username].sort(),
+  );
 });
 
 /**
  * A refused sign-in leaves the visitor on the login page with an authentication error, so the successful
  * login response is what distinguishes a deleted account from a working one.
  */
-async function expectSignInRefused(browser: Browser): Promise<void> {
+async function expectSignInRefused(
+  browser: Browser,
+  username: string,
+  password: string,
+): Promise<void> {
   const context = await browser.newContext({
     storageState: { cookies: [], origins: [] },
   });
@@ -105,8 +99,8 @@ async function expectSignInRefused(browser: Browser): Promise<void> {
   const page = await context.newPage();
 
   await page.goto('/login');
-  await page.getByLabel('Username').fill(selfDeleteCredentials.username);
-  await page.getByLabel('Password').fill(selfDeleteCredentials.password);
+  await page.getByLabel('Username').fill(username);
+  await page.getByLabel('Password').fill(password);
 
   const loginResponsePromise = page.waitForResponse(
     response =>

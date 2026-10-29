@@ -14,6 +14,9 @@ export default defineConfig({
   // HTML report, so a failing prodlike run cannot block on the report prompt.
   reporter: [['line'], ['html', { open: 'never' }]],
   globalSetup: './playwright.globalSetup.ts',
+  // Stops the mail sink and clears the runtime state file, exactly as the dev config does; the sink is a
+  // separate container, so a prod-like run that omitted this would leave it behind.
+  globalTeardown: './playwright.globalTeardown.ts',
   use: {
     baseURL: 'http://127.0.0.1:5175',
     trace: 'on-first-retry',
@@ -80,11 +83,6 @@ export default defineConfig({
         // userSettings.test.ts is chromium-only (mutates shared canonical
         // identities — see the file header + dev config rationale).
         '**/settings/userSettings.test.ts',
-        // accountDeletion.test.ts deletes its seeded account, and
-        // siteDeletion.test.ts deletes its seeded site, so each can run once per
-        // database.
-        '**/settings/accountDeletion.test.ts',
-        '**/settings/siteDeletion.test.ts',
       ],
       use: {
         browserName: 'chromium',
@@ -96,8 +94,6 @@ export default defineConfig({
       testIgnore: [
         '**/feedback/errorBoundary.test.ts',
         '**/settings/userSettings.test.ts',
-        '**/settings/accountDeletion.test.ts',
-        '**/settings/siteDeletion.test.ts',
         // filters.test.ts is desktop-only; on mobile it immediately skips but
         // still runs the auth fixture (8 wasted PBKDF2 logins per matrix run).
         '**/filters/filters.test.ts',
@@ -111,8 +107,6 @@ export default defineConfig({
       testIgnore: [
         '**/feedback/errorBoundary.test.ts',
         '**/settings/userSettings.test.ts',
-        '**/settings/accountDeletion.test.ts',
-        '**/settings/siteDeletion.test.ts',
         '**/filters/filters.test.ts',
       ],
       use: {

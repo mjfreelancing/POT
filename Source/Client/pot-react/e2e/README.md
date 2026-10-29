@@ -180,7 +180,7 @@ Architecture).
 
 ## Test isolation model
 
-Every test is one of two classes (the suite runs in a single fully-seeded mode):
+Every test is one of three classes (the suite runs in a single fully-seeded mode):
 
 ### Parallel-safe (read-only)
 
@@ -257,6 +257,25 @@ test.describe.serial('X (fixture-managed)', () => {
   });
 });
 ```
+
+---
+
+### Destructive (provisions its own tenant)
+
+A journey that deletes the account or the site it runs as creates that tenant first and destroys
+it during the journey, so nothing the seed supplies is consumed and the file runs in **every**
+browser project, against one database, and again on a later run:
+
+- `provisionInvitedViewer` - an invitation creates a viewer on the shared E2E site; the journey
+  deletes that identity (`settings/accountDeletion.test.ts`).
+- `provisionSiteAdministrator` - a sign-up creates a site with one administrator; the journey
+  deletes that site (`settings/siteDeletion.test.ts`).
+
+Both live in `e2e/helpers/provisioning.ts` and drive the product's own routes, reading the two
+generated secrets from the messages the application sent. Each returns the identity's
+`storageState`, so the journey drives its own `browser.newContext()` rather than an auth fixture.
+The seeded identities are asserted intact at the end, because consuming one is what this class
+exists to prevent.
 
 ---
 

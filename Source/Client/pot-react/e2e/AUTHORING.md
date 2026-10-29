@@ -15,13 +15,16 @@ before writing a test. The agent rules that load automatically are in
 
 ## Pick the test class FIRST
 
-| Class               | Use when                                              | Structure                                                                                     |
-| ------------------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| **parallel-safe**   | read-only: GETs / UI-only, never mutates shared state | plain `test(...)`; no teardown                                                                |
-| **fixture-managed** | creates/deletes its OWN records                       | `test.describe.serial(...)`; `afterEach` cleanup; reuse `accessToken` via ONE request context |
+| Class               | Use when                                                 | Structure                                                                                        |
+| ------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| **parallel-safe**   | read-only: GETs / UI-only, never mutates shared state    | plain `test(...)`; no teardown                                                                   |
+| **fixture-managed** | creates/deletes its OWN records                          | `test.describe.serial(...)`; `afterEach` cleanup; reuse `accessToken` via ONE request context    |
+| **destructive**     | destroys a tenant or an identity (account/site deletion) | `e2e/helpers/provisioning.ts` creates the tenant, the journey destroys it; runs in every project |
 
 A test is **parallel-safe only** if it never calls a state-changing endpoint and never asserts
-shared mutable state. When in doubt, make it **fixture-managed**.
+shared mutable state. When in doubt, make it **fixture-managed**. A journey that destroys what
+it runs against is **destructive**: it must provision that tenant rather than consume a seeded
+one (see below), because a seeded identity can only be destroyed once per database.
 
 ## Authentication
 
@@ -34,6 +37,41 @@ shared mutable state. When in doubt, make it **fixture-managed**.
   an auth fixture — `browser.newContext({ storageState: { cookies: [], origins: [] } })`,
   then `page.goto('/login')` (see `dialogs/modalDialogs.test.ts`). Name the base import
   `baseTest` and use `adminTest.skip(...)` (a bare `test(`/`test.skip` raises ReferenceError).
+
+## Destructive journeys provision their own tenant
+
+A journey that deletes the account or the site it runs as must create that tenant itself.
+`e2e/helpers/provisioning.ts` drives the product's own routes to do it:
+
+- `provisionInvitedViewer(playwright, label)` invites a viewer onto the shared E2E site — for a
+  journey that deletes the identity and nothing else.
+- `provisionSiteAdministrator(playwright, label)` signs up, approves and signs in — for a journey
+  that deletes the site, because a sign-up creates the site and its only administrator.
+
+Both return `{ username, password, displayName, siteName, accessToken, storageState }`, read from
+the application rather than assumed, and both are uniquely named per call. That is what lets the
+file run in every browser project against one database, and again on a later run, without a seed
+identity being consumed. Drive the journey in your own context:
+
+```ts
+test('deletes its own tenant', async ({ browser, playwright }) => {
+  const administrator = await provisionSiteAdministrator(
+    playwright,
+    'site-deletion',
+  );
+  const context = await browser.newContext({
+    storageState: administrator.storageState,
+  });
+  const page = await context.newPage();
+  // ... use administrator.siteName / username / password in the confirmation
+  await context.close();
+});
+```
+
+The two secrets a provisioning flow needs (the sign-up's temporary password and the invitation's)
+exist only in the message the application sent, so they are read from the sink
+(`e2e/helpers/mail.ts`). Assert the seeded identities are still present at the end: consuming one
+is the failure this arrangement exists to prevent.
 
 ## Locator preference
 
@@ -82,3 +120,4 @@ npm run e2e:prodlike                          # built-client subset (on-demand)
 Validate the way the repo does: targeted chromium -> all 4 projects -> (for a gate) the full
 matrix twice / three consecutive clean runs. **No flaky tests**: fix the root cause; a retry
 is a safety net, not a fix.
+

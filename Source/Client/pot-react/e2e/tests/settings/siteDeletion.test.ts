@@ -1,61 +1,30 @@
-import type { Browser, Locator, Page, TestInfo } from '@playwright/test';
+import type { Browser, Locator, Page } from '@playwright/test';
 
-import { expect, siteDeleteTest, test, viewerTest } from '../../fixtures/auth';
+import { expect, test, viewerTest } from '../../fixtures/auth';
 import { listExistingUsernames } from '../../helpers/databaseSeed';
-import {
-  adminCredentials,
-  siteDeleteCredentials,
-  siteDeleteSiteName,
-  viewerCredentials,
-} from '../../helpers/secrets';
+import { provisionSiteAdministrator } from '../../helpers/provisioning';
+import { adminCredentials, viewerCredentials } from '../../helpers/secrets';
 
-// Covers the site deletion row in the danger zone: who is offered it, the three-part confirmation, the
-// successful deletion of a throwaway site, and the server refusal for a site that holds the last enabled
-// platform administrator.
+// Covers the site deletion row in the danger zone: who is offered it, the three-part confirmation, the successful
+// deletion of a throwaway site, and the server refusal for a site that holds the last enabled platform
+// administrator.
 //
-// The successful deletion runs as the DEDICATED seeded identity e2e_sitedelete (an Admin on its own site,
-// see baseline.sql) because the journey destroys the site. It is chromium-only for the same reason
-// accountDeletion.test.ts is: every project in a run shares ONE Testcontainers Postgres, so a second project
-// would find the site already gone. The configs exclude this file from the other projects.
+// The site and its administrator are PROVISIONED for the journey rather than seeded: a sign-up creates a site whose
+// only administrator is the sign-up, and the journey deletes that site. Provisioning is what lets the file run in
+// every browser project against one database - and again on a later run - without consuming the seeded identity it
+// used to destroy.
 //
-// NO RETRIES: the site and its administrator are gone after the first attempt, so a retry could never sign
-// in and would surface as a misleading auth-fixture failure. The seed is verified below instead, because a
-// regenerated baseline.sql that drops the identity is the usual reason it goes missing.
+// The seeded identities and the shared site are asserted intact at the end: consuming one is the failure this
+// arrangement prevents.
 //
-// The shared E2E site cannot be deleted in the harness because it holds the seeded platform administrator;
-// that safeguard is asserted below.
-//
-// Desktop-only: the settings sheet is opened from the user menu, which the mobile projects render
-// differently; the row itself is shared markup.
-
-const isMobileProject = (testInfo: TestInfo) =>
-  testInfo.project.name.startsWith('mobile');
-
-const isNotChromium = (testInfo: TestInfo) =>
-  testInfo.project.name !== 'chromium';
+// The shared E2E site cannot be deleted in the harness because it holds the seeded platform administrator; that
+// safeguard is asserted without changing anything, so it stays parallel-safe.
 
 const sharedSiteName = 'POT E2E Site';
 
-// Declared in the file so the CLI --retries flag cannot re-enable them.
-test.describe.configure({ retries: 0 });
-
-test.beforeAll(async () => {
-  const existingUsernames = await listExistingUsernames([
-    siteDeleteCredentials.username,
-  ]);
-
-  if (!existingUsernames.includes(siteDeleteCredentials.username)) {
-    throw new Error(
-      `${siteDeleteCredentials.username} is missing from the E2E seed. Regenerate e2e/seed/baseline.sql.`,
-    );
-  }
-});
-
 viewerTest(
   'offers only the account deletion to a non-administrator',
-  async ({ page }, testInfo) => {
-    test.skip(isMobileProject(testInfo), 'Desktop settings sheet');
-
+  async ({ page }) => {
     await openDangerZone(page, viewerCredentials.username);
 
     await expect(
@@ -67,127 +36,137 @@ viewerTest(
   },
 );
 
-siteDeleteTest(
-  'deletes a site of its own and blocks further sign-in',
-  async ({ page, browser }, testInfo) => {
-    test.skip(
-      isNotChromium(testInfo),
-      'chromium-only: deletes the shared seeded e2e_sitedelete identity',
-    );
+test('deletes a site of its own and blocks further sign-in', async ({
+  browser,
+  playwright,
+}) => {
+  const administrator = await provisionSiteAdministrator(
+    playwright,
+    'site-deletion',
+  );
 
-    await openDangerZone(page, siteDeleteCredentials.username);
+  const context = await browser.newContext({
+    storageState: administrator.storageState,
+  });
 
-    // The account action keeps its position for every role; the site action escalates below it.
-    const actions = page.getByRole('button', {
-      name: /Delete my account|Delete this site/,
-    });
+  const page = await context.newPage();
 
-    await expect(actions).toHaveCount(2);
-    await expect(actions.first()).toHaveText('Delete my account');
-    await expect(actions.last()).toHaveText('Delete this site');
+  await openDangerZone(page, administrator.displayName);
 
-    await page.getByRole('button', { name: 'Delete this site' }).click();
+  // The account action keeps its position for every role; the site action escalates below it.
+  const actions = page.getByRole('button', {
+    name: /Delete my account|Delete this site/,
+  });
 
-    const dialog = page.getByRole('alertdialog');
-    await expect(dialog).toBeVisible();
-    await expect(
-      dialog.getByRole('heading', { name: `Delete ${siteDeleteSiteName}` }),
-    ).toBeVisible();
+  await expect(actions).toHaveCount(2);
+  await expect(actions.first()).toHaveText('Delete my account');
+  await expect(actions.last()).toHaveText('Delete this site');
 
-    const confirmButton = dialog.getByRole('button', {
-      name: 'Delete Site',
-      exact: true,
-    });
+  await page.getByRole('button', { name: 'Delete this site' }).click();
 
-    await expect(confirmButton).toBeDisabled();
+  const dialog = page.getByRole('alertdialog');
+  await expect(dialog).toBeVisible();
+  await expect(
+    dialog.getByRole('heading', { name: `Delete ${administrator.siteName}` }),
+  ).toBeVisible();
 
-    await fillSiteConfirmation(
-      dialog,
-      siteDeleteSiteName,
-      siteDeleteCredentials.username,
-    );
+  const confirmButton = dialog.getByRole('button', {
+    name: 'Delete Site',
+    exact: true,
+  });
 
-    await expect(confirmButton).toBeDisabled();
+  await expect(confirmButton).toBeDisabled();
 
-    await dialog
-      .getByLabel('Your password', { exact: true })
-      .fill(siteDeleteCredentials.password);
+  await fillSiteConfirmation(
+    dialog,
+    administrator.siteName,
+    administrator.username,
+  );
 
-    await expect(confirmButton).toBeEnabled();
+  await expect(confirmButton).toBeDisabled();
 
-    const deleteResponse = page.waitForResponse(
-      response =>
-        response.url().includes('/api/sites/current') &&
-        response.request().method() === 'DELETE',
-    );
+  await dialog
+    .getByLabel('Your password', { exact: true })
+    .fill(administrator.password);
 
-    await confirmButton.click();
+  await expect(confirmButton).toBeEnabled();
 
-    const deleted = await deleteResponse;
+  const deleteResponse = page.waitForResponse(
+    response =>
+      response.url().includes('/api/sites/current') &&
+      response.request().method() === 'DELETE',
+  );
 
-    expect(deleted.ok()).toBeTruthy();
-    await deleted.finished();
+  await confirmButton.click();
 
-    await expect(page).toHaveURL(/\/login$/);
-    await expect(
-      page.getByText('Your site has been deleted.', { exact: true }),
-    ).toBeVisible();
+  const deleted = await deleteResponse;
 
-    await expectSignInRefused(
-      browser,
-      siteDeleteCredentials.username,
-      siteDeleteCredentials.password,
-    );
-  },
-);
+  expect(deleted.ok()).toBeTruthy();
+  await deleted.finished();
 
-test(
-  'refuses to delete a site that holds the last platform administrator',
-  async ({ page }, testInfo) => {
-    test.skip(isMobileProject(testInfo), 'Desktop settings sheet');
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(
+    page.getByText('Your site has been deleted.', { exact: true }),
+  ).toBeVisible();
 
-    await openDangerZone(page, adminCredentials.username);
-    await page.getByRole('button', { name: 'Delete this site' }).click();
+  await context.close();
 
-    const dialog = page.getByRole('alertdialog');
-    await expect(dialog).toBeVisible();
+  await expectSignInRefused(
+    browser,
+    administrator.username,
+    administrator.password,
+  );
 
-    await fillSiteConfirmation(
-      dialog,
-      sharedSiteName,
-      adminCredentials.username,
-    );
-    await dialog
-      .getByLabel('Your password', { exact: true })
-      .fill(adminCredentials.password);
+  const seededUsernames = await listExistingUsernames([
+    adminCredentials.username,
+    viewerCredentials.username,
+  ]);
 
-    const deleteResponse = page.waitForResponse(
-      response =>
-        response.url().includes('/api/sites/current') &&
-        response.request().method() === 'DELETE',
-    );
+  expect(seededUsernames.slice().sort()).toEqual(
+    [adminCredentials.username, viewerCredentials.username].sort(),
+  );
+});
 
-    await dialog
-      .getByRole('button', { name: 'Delete Site', exact: true })
-      .click();
+test('refuses to delete a site that holds the last platform administrator', async ({
+  page,
+}) => {
+  await openDangerZone(page, adminCredentials.username);
+  await page.getByRole('button', { name: 'Delete this site' }).click();
 
-    const refused = await deleteResponse;
+  const dialog = page.getByRole('alertdialog');
+  await expect(dialog).toBeVisible();
 
-    expect(refused.status()).toBe(400);
-    await refused.finished();
+  await fillSiteConfirmation(dialog, sharedSiteName, adminCredentials.username);
+  await dialog
+    .getByLabel('Your password', { exact: true })
+    .fill(adminCredentials.password);
 
-    // The refusal is read inside the confirmation, which stays open, and the caller stays signed in.
-    await expect(dialog.getByRole('alert')).toHaveText(
-      'This site contains the last enabled platform administrator. Another platform administrator must be configured first.',
-      { timeout: 30000 },
-    );
-    await expect(dialog).toBeVisible();
+  const deleteResponse = page.waitForResponse(
+    response =>
+      response.url().includes('/api/sites/current') &&
+      response.request().method() === 'DELETE',
+  );
 
-    await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
-    await expect(dialog).toBeHidden();
-    await expect(page).toHaveURL(/\/dashboard$/);
-  },
-);
+  await dialog
+    .getByRole('button', { name: 'Delete Site', exact: true })
+    .click();
+
+  const refused = await deleteResponse;
+
+  expect(refused.status()).toBe(400);
+  await refused.finished();
+
+  // The refusal is read inside the confirmation, which stays open, and the caller stays signed in.
+  await expect(dialog.getByRole('alert')).toHaveText(
+    'This site contains the last enabled platform administrator. Another platform administrator must be configured first.',
+    { timeout: 30000 },
+  );
+  await expect(dialog).toBeVisible();
+
+  await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect(dialog).toBeHidden();
+  await expect(page).toHaveURL(/\/dashboard$/);
+});
 
 /** Types the site name and username, which are two of the three parts of the confirmation. */
 async function fillSiteConfirmation(

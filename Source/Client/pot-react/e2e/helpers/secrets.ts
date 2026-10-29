@@ -32,31 +32,14 @@ const quickActionsCredentials = {
   password: 'E2E_quickactions-password',
 } as const;
 
-// Dedicated identity for the account-deletion suite, which deletes it. It is a
-// Viewer on the shared E2E site and reuses the e2e_pwchange password hash (see
-// baseline.sql), so it shares that password.
-const selfDeleteCredentials = {
-  username: 'e2e_selfdelete',
-  password: 'E2E_pwchange-password',
-} as const;
-
-// Dedicated identity for the site-deletion suite, which deletes its own site. It
-// is an Admin on that site and reuses the e2e_pwchange password hash (see
-// baseline.sql), so it shares that password.
-const siteDeleteCredentials = {
-  username: 'e2e_sitedelete',
-  password: 'E2E_pwchange-password',
-} as const;
-
-// The site owned by siteDeleteCredentials, which the site-deletion suite retires.
-const siteDeleteSiteName = "e2e_sitedelete's Site";
+// The suites that destroy a tenant (account and site deletion) provision their own
+// identity through the product's routes rather than sharing a seeded one, so the
+// identities below are only ever read.
 
 export {
   adminCredentials,
   pwChangeCredentials,
   quickActionsCredentials,
-  selfDeleteCredentials,
-  siteDeleteCredentials,
-  siteDeleteSiteName,
   viewerCredentials,
 };
+
