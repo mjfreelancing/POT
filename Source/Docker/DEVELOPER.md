@@ -49,14 +49,15 @@ equivalent for terminals outside VS Code.
 
 These are separate compose files, not part of the stack described here:
 
-| Location            | Project name   | Postgres host port | Purpose                             |
-| ------------------- | -------------- | ------------------ | ----------------------------------- |
-| `Source/Docker`     | `pot-prodlike` | `5444`             | Full prodlike stack (this document) |
-| `Data/Local Docker` | `pot-local`    | `5432`             | Database for dev-mode client/server |
-| `Data/E2E Docker`   | `pot-e2e`      | `5432`             | Isolated database for E2E runs      |
+| Location            | Project name   | Postgres host port | Purpose                                                            |
+| ------------------- | -------------- | ------------------ | ------------------------------------------------------------------ |
+| `Source/Docker`     | `pot-prodlike` | `5444`             | Full prodlike stack (this document)                                |
+| `Data/Local Docker` | `pot-local`    | `5432`             | Scratch database: restore a dump and inspect it                    |
+| `Data/Seed Docker`  | `pot-seed`     | `5432`             | Seed authoring; the E2E suite uses its own Testcontainers database |
 
-Only one stack should run at a time: `pot-local` and `pot-e2e` both bind port `5432`, and both
-`pot-prodlike` and the local dev client use port `5175`. See `Data/README.md`.
+Only one stack should run at a time: `pot-local` and `pot-seed` both bind port `5432`, and both
+`pot-prodlike` and the local dev client use port `5175`. Each folder's own README covers its
+connection details and start/stop commands.
 
 ### Key terms
 
@@ -135,8 +136,9 @@ task recompiles from scratch.
 | Client only                             | `docker-start-client`        | `docker-stop-client`        |
 
 The client-only tasks assume the server is already running. Two further Docker-related tasks exist:
-`docker-prune-all-unused-images` (removes unused images) and the `docker-start-e2e-postgres` /
-`docker-stop-e2e-postgres` pair, which manages the independent E2E stack in `Data/E2E Docker`.
+`docker-prune-all-unused-images` (removes unused images) and the `docker-start-seed-postgres` /
+`docker-stop-seed-postgres` pair, which manages the independent seed-authoring stack in
+`Data/Seed Docker`.
 
 ### Start with the PowerShell script
 
@@ -584,8 +586,8 @@ docker cp .\pot-backup.sql pot-postgres:/tmp/pot-backup.sql
 docker exec pot-postgres psql -U postgres -d Pot -f /tmp/pot-backup.sql
 ```
 
-`Data/README.md` describes where database and application backups are kept for the various
-environments.
+Backups are not part of the repository: the dump tooling and the archives it writes live in `Data/`
+on the machine that needs them, and each folder's README says what belongs there.
 
 ---
 
@@ -835,6 +837,7 @@ In this repository:
 - `Docs/DOCKER-SETUP.md` — step-by-step local setup with Docker
 - `Docs/LOCAL-SETUP.md` — running the client and server without Docker
 - `Docs/Azure/Azure-Deployment-Notes.md` — Azure deployment detail
-- `Data/README.md` — the three local database environments
+- `Data/Seed Docker/README.md` — the seed-authoring database (E2E baseline data)
+- `Data/Local Docker/README.md` — the scratch database for restoring a dump locally
 - `Source/Server/DEVELOPER.md` — backend patterns
 - `Source/Client/pot-react/DEVELOPER.md` — frontend patterns

@@ -4,7 +4,7 @@
 .SYNOPSIS
     Test E2E seed data export from local Docker database
 .DESCRIPTION
-    Exports Site, User, and UserRole tables from the running pot-e2e-postgres container
+    Exports Site, User, and UserRole tables from the running pot-seed-postgres container
     to a timestamped file (baseline_yyyyMMdd_HHmmss.sql) to prevent accidental overwrites.
     After verification, the script offers to promote the export to baseline.sql for E2E use.
 .EXAMPLE
@@ -56,14 +56,14 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Host " ✓" -ForegroundColor $Success
 
-# Check if pot-e2e-postgres container exists and is running
-Write-Host "  • Checking pot-e2e-postgres container..." -NoNewline
-$container = & docker ps --filter "name=pot-e2e-postgres" --quiet 2>&1
+# Check if pot-seed-postgres container exists and is running
+Write-Host "  • Checking pot-seed-postgres container..." -NoNewline
+$container = & docker ps --filter "name=pot-seed-postgres" --quiet 2>&1
 if (-not $container) {
     Write-Host " ✗" -ForegroundColor $Error_
     Write-Host ""
     Write-Host "  Container not found. Start it with:" -ForegroundColor $Warning
-    Write-Host "    .\Start-E2EPot.ps1  (from Data/E2E Docker/)" -ForegroundColor $Warning
+    Write-Host "    .\Start-SeedPot.ps1  (from Data/Seed Docker/)" -ForegroundColor $Warning
     exit 1
 }
 Write-Host " ✓" -ForegroundColor $Success
@@ -87,7 +87,7 @@ try {
         'exec'
         '-e'
         'PGPASSWORD=password'
-        'pot-e2e-postgres'
+        'pot-seed-postgres'
         'pg_dump'
         '--data-only'
         '-t'

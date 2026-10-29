@@ -413,3 +413,12 @@ Source/Server/CoverageArtifacts
 .playwright-mcp
 Data/Azure
 Data/*Backup*/
+Data/**/Backups/
+
+# Local database backup tooling: kept out of the repository on purpose. It drives the docker stacks and
+# Desktop database on this machine, and the Azure target needs a password, so it stays local.
+Data/Scripts
+
+# Data/README.md indexes this machine's data folders (restored dumps, backups, scratch databases), so it
+# is local too. The per-folder READMEs under Data/ stay tracked: they document the compose files.
+Data/README.md

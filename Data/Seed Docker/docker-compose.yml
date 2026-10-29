@@ -1,26 +1,29 @@
 # ============================================================================
-# POT E2E - POSTGRES COMPOSE FILE
+# POT SEED - POSTGRES COMPOSE FILE
 # ============================================================================
-# Provides a local PostgreSQL container for use during E2E testing.
-# This is the database backend when running E2E tests against a local stack.
+# Provides a local PostgreSQL container used to AUTHOR the E2E seed data
+# (`Source/Client/pot-react/e2e/seed/baseline.sql`).
 #
-# Project name "pot-e2e" appears as the container group in Docker Desktop.
+# The E2E suite never connects here: each run starts its own throwaway
+# Testcontainers database (port 55432) and applies the seed to it.
+#
+# Project name "pot-seed" appears as the container group in Docker Desktop.
 #
 # Usage:
-#   Start:  .\Start-E2EPot.ps1
-#   Stop:   docker compose -p pot-e2e stop
-#   Remove: docker compose -p pot-e2e down
+#   Start:  .\Start-SeedPot.ps1
+#   Stop:   docker compose -p pot-seed stop
+#   Remove: docker compose -p pot-seed down
 #
 # Data is stored at ./postgres-data (relative to this file) and is NOT removed
 # by 'docker compose down' or 'docker compose down -v' — bind mounts are never
 # managed by Docker. Delete the postgres-data folder manually to wipe the data.
 
-name: pot-e2e
+name: pot-seed
 
 services:
   postgres:
     image: postgres:13
-    container_name: pot-e2e-postgres
+    container_name: pot-seed-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
