@@ -61,12 +61,16 @@ This creates the schema with no application data. Follow the steps in the
 
 ### Option B — Restore from a backup
 
-If you have a previous export, you can restore it manually using `pg_restore` or
-`psql` after running migrations to create the schema:
+The current dumps are in [`Backups/`](Backups/): `e2e-dump-Pot-<timestamp>-baseline.tar` and
+`…-financial.tar`. Each is a `pg_dump` archive of a freshly migrated database with the E2E seed
+applied (the financial one also carries the accounts, expenses and incomes), so the archive brings
+its own schema and can be restored into an empty `Pot` database:
 
 ```powershell
-# Example using psql (adjust the file path and credentials as needed)
-psql -h localhost -p 5432 -U postgres -d Pot -f "path\to\backup.sql"
+# Copy the archive in (PowerShell has no '<' input redirection), then restore it.
+docker cp "Backups\e2e-dump-Pot-<timestamp>-financial.tar" pot-e2e-postgres:/tmp/dump.tar
+docker exec pot-e2e-postgres pg_restore -U postgres -d Pot --no-owner --clean --if-exists /tmp/dump.tar
 ```
 
-Previous exports are stored in [`Data/Exports/`](../Exports/).
+Restore a dump of the same vintage as the application: an older archive carries an older schema and
+identities the seed no longer has.

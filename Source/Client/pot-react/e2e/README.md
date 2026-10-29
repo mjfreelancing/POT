@@ -118,11 +118,9 @@ Key contracts:
   `e2e_viewer`/`E2E_viewer-password` (Viewer, read-only), and
   `e2e_pwchange`/`E2E_pwchange-password` (Viewer — dedicated identity so the
   user-settings password-change test can rotate its own credentials without
-  invalidating the shared admin session). Two further identities exist only so
-  the deletion suites can destroy what they own, and both reuse the
-  `E2E_pwchange-password` hash: `e2e_selfdelete` (Viewer, deletes its own
-  account) and `e2e_sitedelete` (Admin on its own throwaway site, deletes that
-  site). Platform admin
+  invalidating the shared admin session). The deletion suites consume none of
+  them: they provision the tenant they destroy (see "Destructive" below), which
+  is why the seed holds no throwaway identity for them. Platform admin
   `58d1a6b2-bf25-40c1-b3d6-656ccf4a68b5`. Credentials live in `e2e/helpers/secrets.ts`.
 
 ### Current `playwright.config.ts` values (2026-08-27)
@@ -155,10 +153,12 @@ before releases; the dev matrix remains the default (validated 3x consecutive cl
 ## Auth fixtures
 
 `e2e/fixtures/auth.ts` builds `test` (admin), `viewerTest` (viewer),
-`pwChangeTest` (e2e_pwchange), `selfDeleteTest` (e2e_selfdelete) and
-`siteDeleteTest` (e2e_sitedelete) via `createAuthenticatedTest(credentials)`. Each
-authenticated test performs **one fresh login**
-(`loginResult` fixture) which produces **both**:
+`pwChangeTest` (e2e_pwchange) and `quickActionsTest` (e2e_quickactions) via
+`createAuthenticatedTest(credentials)`. A destructive spec uses none of them: it provisions its
+own identity and drives a context built from the returned `storageState`.
+
+Each authenticated test performs **one fresh login** (`loginResult` fixture) which produces
+**both**:
 
 - `storageState` — used to create the browser context (the refresh cookie).
 - `accessToken` — the login response's 15-min JWT, exposed for API setup/cleanup.

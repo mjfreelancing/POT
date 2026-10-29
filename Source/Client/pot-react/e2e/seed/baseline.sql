@@ -13,15 +13,6 @@
 -- dedicated to the dashboard quick-actions suite so its whole-site renew
 -- actions never touch the shared E2E site's data.
 --
--- NOTE: e2e_selfdelete is a canonical seed user (Viewer role) on the shared E2E
--- site. The account-deletion suite no longer consumes it: that suite invites its
--- own viewer and deletes that, so it can run in every browser project. The row is
--- kept so an existing baseline keeps its row numbering.
---
--- NOTE: e2e_sitedelete is a canonical seed user (Admin role) on its OWN site. The
--- site-deletion suite no longer consumes it: that suite signs up a site and its
--- administrator and deletes them. Kept for the same reason.
---
 
 
 -- Dumped from database version 13.22 (Debian 13.22-1.pgdg13+1)
@@ -45,7 +36,6 @@ SET row_security = off;
 COPY public."Site" ("Id", "Description", "RowId", "Etag", "Name") FROM stdin;
 1	A Site for E2E testing	8faab70c-3aad-42d7-8a78-4744c0596e22	1778889518096	POT E2E Site
 2	A site for E2E Quick Action testing	4e0cdf24-4b98-4f5e-9953-6c966d3149d1	1788694945122	e2e_quickactions's Site
-3	\N	c47e5b90-6d21-4f8a-9a55-2f0d1b7e3c68	1792292400000	e2e_sitedelete's Site
 \.
 
 
@@ -58,8 +48,6 @@ COPY public."User" ("Id", "Username", "Email", "DisplayName", "PasswordHash", "S
 1	e2e_admin	e2e_admin@local.test	e2e_admin	AQAAAAIAAYagAAAAEHAoGUVEdsKyglWASVe6lcqt98vguTtcyYYwmo4r5s44PLirZqJql2Se7Xh2N+jwSw==	1	58d1a6b2-bf25-40c1-b3d6-656ccf4a68b5	1788694457482	2026-09-06 11:34:17.24962+00	Enabled	2
 4	e2e_quickactions	e2e_quickactions@local.test	e2e_quickactions	AQAAAAIAAYagAAAAEDr7V5W0KqqLph5UHjq4iLdY8W9b4RWbiMkX1KfYoLrUoUUi2Sbxn52c6EtqKgHM8A==	2	fa468896-6df2-4352-83f5-66995d8007f2	1788695165109	2026-09-06 11:44:55.407633+00	Enabled	1
 2	e2e_viewer	e2e_viewer@local.test	e2e_viewer	AQAAAAIAAYagAAAAEOBTcdtOuFxRDyTYXN3sBc3+af6UvwSg/Vc3ZlT3l8VvZ9Wx4RuAQqeTytZrbRMYNQ==	1	e67c3105-7076-4f56-b373-01a8d0991295	1792166306605	2026-10-16 15:58:26.455756+00	Enabled	1
-5	e2e_selfdelete	e2e_selfdelete@local.test	e2e_selfdelete	AQAAAAIAAYagAAAAEI7Z1FxyDe4HTsQ7jZlNmHQ9PBZy2oe6hUvQ4AjGJA/iaBTlXBPgFi3jvWz1sTfmkg==	1	8b1d7f3e-2c94-4a6b-9f0d-51e8c7a3b624	1792291800000	\N	Enabled	1
-6	e2e_sitedelete	e2e_sitedelete@local.test	e2e_sitedelete	AQAAAAIAAYagAAAAEI7Z1FxyDe4HTsQ7jZlNmHQ9PBZy2oe6hUvQ4AjGJA/iaBTlXBPgFi3jvWz1sTfmkg==	3	d92f4c15-8a3e-4b70-b6d1-7e0a25c8f439	1792292400000	\N	Enabled	1
 \.
 
 
@@ -72,8 +60,6 @@ COPY public."UserRole" ("RolesId", "UsersId") FROM stdin;
 2	2
 2	3
 1	4
-2	5
-1	6
 \.
 
 

@@ -63,7 +63,12 @@ All data is persisted between container deletions and recreations via the bind-m
 Contains a Docker Compose setup and persistent postgres data for the **pot-e2e** container. This container is used exclusively for **preparing and maintaining the baseline data for E2E tests**.
 
 - `E2E Docker/postgres-data/` — bind-mounted postgres data directory. Survives `docker compose down`.
-- `E2E Docker/Backups/` — manual DBeaver backups of the E2E database state.
+- `E2E Docker/Backups/` — the E2E database dumps worth keeping, and only those: `…-baseline.tar`
+  (schema plus the sites and identities the seed carries) and `…-financial.tar` (the same plus the
+  accounts, expenses and incomes the financial artifact describes). Both are a `pg_dump` archive of a
+  freshly migrated database with `e2e/seed/baseline.sql` applied, so neither carries logins, sessions
+  or other state a run left behind. A superseded dump is deleted, not archived: an old dump silently
+  re-introduces identities that have since been removed from the seed.
 
 ### Connection details
 
