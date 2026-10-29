@@ -73,6 +73,11 @@ exist only in the message the application sent, so they are read from the sink
 (`e2e/helpers/mail.ts`). Assert the seeded identities are still present at the end: consuming one
 is the failure this arrangement exists to prevent.
 
+When provisioning itself fails it throws `ProvisioningFailure`, whose message starts by saying it is
+a harness failure and not a product defect, and then carries the step that failed and what the
+application answered. Do not widen that type into a plain `Error`: a provisioning failure and a
+product defect both look red, and the label is what stops the wrong half of the system being debugged.
+
 ## Locator preference
 
 `getByRole` -> `getByLabel` -> `getByText` -> stable test id. Never style classes as

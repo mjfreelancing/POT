@@ -57,6 +57,14 @@ $ErrorActionPreference = 'Stop'
 
 . (Join-Path $PSScriptRoot 'e2e-processes.ps1')
 
+# The command's own duration, reported when it finishes. No time limit is imposed on any suite, so drift stays
+# visible only if each run says how long it took.
+function Format-Elapsed([TimeSpan] $Elapsed) {
+    return '{0:N0}m {1:D2}s' -f [Math]::Floor($Elapsed.TotalMinutes), $Elapsed.Seconds
+}
+
+$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+
 # e2e/scripts -> e2e -> the client project root (the package.json that owns these scripts).
 $clientDirectory = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $logDirectory = Join-Path $clientDirectory 'e2e/logs'
@@ -64,11 +72,23 @@ $timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
 $outputLog = Join-Path $logDirectory "e2e-$timestamp.log"
 $sampleLog = Join-Path $logDirectory "e2e-ports-$timestamp.log"
 
+$npmArguments = @('run', $Script)
+
+# What the run actually is, for the header and the summary. A test path replaces the script's own selection, so
+# reporting the script name there would describe a run that never happened.
+$runLabel = "npm run $Script"
+
+if ($TestPath) {
+    # e2e:dev is the flagless `playwright test`, so the file filter can be placed first.
+    $npmArguments = @('run', 'e2e:dev', '--', $TestPath, "--project=$Project")
+    $runLabel = "playwright test $TestPath --project $Project"
+}
+
 New-Item -ItemType Directory -Path $logDirectory -Force | Out-Null
 
 Write-Host ''
 Write-Host '═══════════════════════════════════════════════════════' -ForegroundColor Cyan
-Write-Host (" Logged E2E run: npm run {0}" -f $Script) -ForegroundColor Cyan
+Write-Host (" Logged E2E run: {0}" -f $runLabel) -ForegroundColor Cyan
 Write-Host (" console log:    {0}" -f $outputLog) -ForegroundColor DarkGray
 Write-Host (" port timeline:  {0}" -f $sampleLog) -ForegroundColor DarkGray
 Write-Host '═══════════════════════════════════════════════════════' -ForegroundColor Cyan
@@ -128,13 +148,6 @@ $sampler = Start-Job -ScriptBlock {
     }
 } -ArgumentList $sampleLog, $SampleSeconds
 
-$npmArguments = @('run', $Script)
-
-if ($TestPath) {
-    # e2e:dev is the flagless `playwright test`, so the file filter can be placed first.
-    $npmArguments = @('run', 'e2e:dev', '--', $TestPath, "--project=$Project")
-}
-
 $previousDebug = $env:DEBUG
 
 if ($DebugWebServer) {
@@ -173,6 +186,9 @@ finally {
     Pop-Location
 }
 
+$stopwatch.Stop()
+$elapsed = Format-Elapsed $stopwatch.Elapsed
+
 $lastRunPath = Join-Path $clientDirectory 'test-results/.last-run.json'
 $status = 'unknown'
 $failedCount = 0
@@ -186,7 +202,8 @@ if (Test-Path $lastRunPath) {
 $summary = @(
     ''
     '# ---- logged run summary ----'
-    ("# npm run {0} exit code: {1}" -f $Script, $exitCode)
+    ("# {0} exit code: {1}" -f $runLabel, $exitCode)
+    ("# duration: {0}" -f $elapsed)
     ("# test-results/.last-run.json status: {0} (failed tests: {1})" -f $status, $failedCount)
     ("# console log:   {0}" -f $outputLog)
     ("# port timeline: {0}" -f $sampleLog)
@@ -196,7 +213,7 @@ Add-Content -Path $outputLog -Value $summary
 
 Write-Host ''
 Write-Host '═══════════════════════════════════════════════════════' -ForegroundColor Cyan
-Write-Host (" exit code: {0}   status: {1}   failed tests: {2}" -f $exitCode, $status, $failedCount) -ForegroundColor $(if ($exitCode -eq 0) { 'Green' } else { 'Red' })
+Write-Host (" exit code: {0}   status: {1}   failed tests: {2}   duration: {3}" -f $exitCode, $status, $failedCount, $elapsed) -ForegroundColor $(if ($exitCode -eq 0) { 'Green' } else { 'Red' })
 Write-Host (" console log:   {0}" -f $outputLog) -ForegroundColor DarkGray
 Write-Host (" port timeline: {0}" -f $sampleLog) -ForegroundColor DarkGray
 

@@ -26,12 +26,13 @@ Every command runs from its own project directory. Running from the repository r
 
 ### Server (xUnit) - from `Source/Server`
 
-| Scope              | Command                                                                                                             |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------- |
-| Full server        | `dotnet test pot.sln -c Debug --nologo --verbosity minimal`                                                         |
-| One server project | `dotnet test <Project>/<Project>.csproj -c Debug --nologo --verbosity minimal`                                      |
-| Targeted server    | add `--filter "FullyQualifiedName~<FixtureOrTestName>"` to a project command                                        |
-| Server integration | `dotnet test Pot.AspNetCore.Integration.Tests/Pot.AspNetCore.Integration.Tests.csproj --nologo --verbosity minimal` |
+| Scope              | Command                                                                                                                                                     |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Full server        | `dotnet test pot.sln -c Debug --nologo --verbosity minimal`                                                                                                 |
+| One server project | `dotnet test <Project>/<Project>.csproj -c Debug --nologo --verbosity minimal`                                                                              |
+| Targeted server    | add `--filter "FullyQualifiedName~<FixtureOrTestName>"` to a project command                                                                                |
+| Server integration | `dotnet test Pot.AspNetCore.Integration.Tests/Pot.AspNetCore.Integration.Tests.csproj --nologo --verbosity minimal`                                         |
+| Scenario tier      | `dotnet test Pot.AspNetCore.Integration.Tests/Pot.AspNetCore.Integration.Tests.csproj --nologo --verbosity minimal --filter "FullyQualifiedName~Scenarios"` |
 
 ### Client (Vitest) - from `Source/Client/pot-react`
 
@@ -66,6 +67,23 @@ run itself starts a mail sink container (SMTP `1025`, read back on `1080`) and r
 reports both ports.
 
 The dev suite drives the Vite dev server; the prodlike suite drives the production build (`playwright.prod.config.ts`). Do not run the prodlike suite per change.
+
+## Tiers
+
+Always-on work runs inside the ordinary server suite: the endpoint inventory and authorization matrix, the isolation
+invariants, and the tenant provisioning the two rely on. It is cheap enough for every change, and it is the assurance
+that must not be skipped.
+
+Two tiers are opt-in because they are slow, and the delivery workflow asks about them when a PRD completes:
+
+| Tier     | Command                                                                                                                                                     | Covers                                                                                               |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Scenario | `dotnet test Pot.AspNetCore.Integration.Tests/Pot.AspNetCore.Integration.Tests.csproj --nologo --verbosity minimal --filter "FullyQualifiedName~Scenarios"` | Provisioning through the product's own routes: sign-up, approval, invitation, one-time code          |
+| Browser  | `npm run e2e:preflight`, then `npm run e2e:all:dev` (or `npm run e2e:all:dev:log`)                                                                          | The Playwright journeys, including the destructive specs that provision and destroy their own tenant |
+
+No tier is time-limited. Each command reports its duration when it finishes — `dotnet test` prints a per-assembly
+`Duration`, Playwright prints `N passed (Xm)`, the logged run adds `duration:` to its summary, Pester prints its own
+total — so drift is visible without a threshold to enforce.
 
 ## Rules
 

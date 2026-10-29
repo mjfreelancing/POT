@@ -51,6 +51,10 @@ Full matrix requires Docker Desktop + the .NET SDK. Each run does a heavy setup:
 Testcontainers Postgres (port `55432`) → migrations → `baseline.sql` seed → financial
 import (63 records) → renewal.
 
+No suite is time-limited, so each command reports its duration when it finishes: Playwright ends with
+`N passed (Xm)`, and `npm run e2e:all:dev:log` adds a `duration:` line to its summary and to the log, so a run that
+has quietly become slower is visible without a threshold to enforce it.
+
 ---
 
 ## Run hygiene (read before trusting a failed matrix)
@@ -332,6 +336,11 @@ when the client production build changes.
 
 ## Troubleshooting
 
+- **A failure names `ProvisioningFailure`.** It came from `e2e/helpers/provisioning.ts`, before the journey reached
+  the application: the harness could not create the tenant the spec needed (a refusal, a missing role, a message that
+  never arrived). Read the detail after "not a product defect" — it carries the step and the status the application
+  answered — and treat it as a harness problem until proven otherwise. A red test that is _not_ wrapped this way came
+  from the journey itself.
 - **Every test fails with `net::ERR_CONNECTION_REFUSED` at `http://127.0.0.1:5175/...`** (or
   WebKit's `Could not connect to server`): nothing was listening on the client port for the
   duration of the run, while the API stayed up. Read the port timeline **before** anything else:
@@ -387,4 +396,3 @@ when the client production build changes.
   Reduction note; re-run the matrix once (retries: 1) before assuming a code bug.
 - **Browser downloads / PWA**: the suite targets the dev server; export/download tests use
   Playwright's `page.waitForEvent('download')` (see 8.7).
-

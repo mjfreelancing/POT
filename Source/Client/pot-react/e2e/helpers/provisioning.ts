@@ -73,6 +73,25 @@ type CurrentUserResponse = {
 };
 
 /**
+ * The failure a journey sees when the harness could not build its tenant.
+ *
+ * A provisioning failure and a product defect produce the same kind of red test in a Playwright report, and reading
+ * one as the other sends someone debugging the wrong half of the system. So this has its own type and says what it
+ * is in the first line of the message, and the detail that caused it follows.
+ */
+export class ProvisioningFailure extends Error {
+  constructor(label: string, cause: unknown) {
+    const detail = cause instanceof Error ? cause.message : String(cause);
+
+    super(
+      `Provisioning failed for '${label}': the harness could not create the tenant this journey needs, so this is a harness failure and not a product defect. ${detail}`,
+    );
+
+    this.name = 'ProvisioningFailure';
+  }
+}
+
+/**
  * Provisions a viewer on the caller's own site by invitation.
  *
  * Intended for a journey that destroys the identity and nothing else: the invitation joins an existing site, so
@@ -81,14 +100,17 @@ type CurrentUserResponse = {
  * @param playwright The worker's request factory, for reaching the API directly.
  * @param label Names the invitation, so a failure says which journey caused it.
  * @returns The provisioned identity, signed in.
+ * @throws {ProvisioningFailure} The harness could not build the tenant, so the journey never started.
  */
 export async function provisionInvitedViewer(
   playwright: E2eRequestFactory,
   label: string,
 ): Promise<ProvisionedTenant> {
-  const request = await createE2eRequestContext(playwright);
+  let request: APIRequestContext | undefined;
 
   try {
+    request = await createE2eRequestContext(playwright);
+
     const identity = newIdentity(label);
 
     const inviter = await signIn(
@@ -134,8 +156,10 @@ export async function provisionInvitedViewer(
       identity,
       temporaryPassword(invitation),
     );
+  } catch (error) {
+    throw new ProvisioningFailure(label, error);
   } finally {
-    await request.dispose();
+    await request?.dispose();
   }
 }
 
@@ -148,14 +172,17 @@ export async function provisionInvitedViewer(
  * @param playwright The worker's request factory, for reaching the API directly.
  * @param label Names the sign-up, so a failure says which journey caused it.
  * @returns The provisioned administrator, signed in, and the site it administers.
+ * @throws {ProvisioningFailure} The harness could not build the tenant, so the journey never started.
  */
 export async function provisionSiteAdministrator(
   playwright: E2eRequestFactory,
   label: string,
 ): Promise<ProvisionedTenant> {
-  const request = await createE2eRequestContext(playwright);
+  let request: APIRequestContext | undefined;
 
   try {
+    request = await createE2eRequestContext(playwright);
+
     const identity = newIdentity(label);
 
     const sendResponse = await request.post('/api/auth/signup/send', {
@@ -193,8 +220,10 @@ export async function provisionSiteAdministrator(
 
     // The password is usable only once the sign-up is approved, so signing in here is what proves it arrived.
     return await completeSignIn(request, identity, password);
+  } catch (error) {
+    throw new ProvisioningFailure(label, error);
   } finally {
-    await request.dispose();
+    await request?.dispose();
   }
 }
 
