@@ -1,10 +1,12 @@
-# Local POT — PostgreSQL Container
+# POT Local — PostgreSQL Container (scratch database)
 
-This folder contains a Docker Compose setup that provides a local PostgreSQL database for use **while running the POT .NET API in Visual Studio** (or via `dotnet run`).
+This folder contains a Docker Compose setup that provides the **scratch database**: restore a dump into
+it and inspect the result, or point the API at it while working. It is not the database the API uses by
+default — `appsettings.Development.json` points at the prodlike stack on `5444`.
 
 ## Purpose
 
-This container is a local development convenience, not a production service. It is intentionally lightweight and disposable — the container itself can be removed and recreated freely without losing anything that cannot be restored.
+This container is a local development convenience, not a production service. It is intentionally lightweight and disposable — the container itself can be removed and recreated freely without losing anything that cannot be restored. Nothing lives only here: the prodlike stack and the seed-authoring database each have their own backups, and a dump can be restored into this one again.
 
 > Data is stored in `Data/Local Docker/postgres-data/` on the host filesystem — it is a bind mount, not a Docker-managed volume. This means `docker compose down` (with or without `-v`) **never deletes your data**. To wipe the database, stop the container and manually delete the `postgres-data` folder.
 
@@ -59,14 +61,20 @@ Then populate it using one of the two options below.
 This creates the schema with no application data. Follow the steps in the
 [Getting Started guide](../../Docs/GETTING-STARTED.md) to run migrations and seed initial data.
 
-### Option B — Restore from a backup
+### Option B — Restore from a dump
 
-If you have a previous export, you can restore it manually using `pg_restore` or
-`psql` after running migrations to create the schema:
+`Backups/` holds this container's own dumps, `local-dump-Pot-<yyyyMMddHHmm>.tar`. The prodlike stack's
+dumps are in `Data/ProdLike Backups/` and the seed-authoring database's in `Data/Seed Docker/Backups/`,
+and all of them restore the same way. A `pg_dump` archive carries its own schema, so it can go into an
+empty database:
 
 ```powershell
-# Example using psql (adjust the file path and credentials as needed)
-psql -h localhost -p 5432 -U postgres -d Pot -f "path\to\backup.sql"
+# Copy the archive in (PowerShell has no '<' input redirection), then restore it.
+docker cp "Backups\local-dump-Pot-<timestamp>.tar" pot-local-postgres:/tmp/dump.tar
+docker exec pot-local-postgres pg_restore -U postgres -d Pot --no-owner --clean --if-exists /tmp/dump.tar
 ```
 
-Previous exports are stored in [`Data/Exports/`](../Exports/).
+`--clean --if-exists` replaces what the database holds, and `--no-owner` makes the restore portable
+between machines. If the current contents matter, back this container up first.
+
+Restore a dump of the same vintage as the application: an older archive carries an older schema.

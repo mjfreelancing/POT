@@ -1,8 +1,9 @@
 # ============================================================================
 # LOCAL POT - POSTGRES COMPOSE FILE
 # ============================================================================
-# Provides a local PostgreSQL container for use during Visual Studio development.
-# This is the database backend when running the .NET API locally (not via Docker).
+# Provides the scratch PostgreSQL container: restore a dump into it and inspect the result, or point
+# the API at it while working. It is not the API's default database; appsettings.Development.json
+# points at the prodlike stack on port 5444.
 #
 # Project name "pot-local" appears as the container group in Docker Desktop.
 #

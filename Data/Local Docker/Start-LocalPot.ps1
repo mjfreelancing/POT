@@ -7,8 +7,10 @@
     Pulls the postgres:13 image if not already present, then starts the
     pot-local container group defined in docker-compose.yml.
 
-    The container exposes PostgreSQL on localhost:5432 for use while running
-    the POT .NET API locally in Visual Studio.
+    The container exposes PostgreSQL on localhost:5432 as a scratch database:
+    restore a dump into it and inspect the result. It is not the database the
+    API uses by default (appsettings.Development.json points at the prodlike
+    stack on 5444); point the connection there to see this data in the app.
 
     Data is stored in the postgres-data folder next to this script and persists
     between container restarts. Deleting the postgres-data folder will wipe the
