@@ -3457,7 +3457,7 @@ public sealed class CorsOptionsSetup : IConfigureOptions<CorsOptions>
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials()
-                .WithExposedHeaders("content-disposition", "retry-after", CorrelationIdMiddleware.HeaderName)
+                .WithExposedHeaders("content-disposition", "location", "retry-after", CorrelationIdMiddleware.HeaderName)
                 .SetPreflightMaxAge(PreflightMaxAge);
         });
     }
@@ -3466,7 +3466,7 @@ public sealed class CorsOptionsSetup : IConfigureOptions<CorsOptions>
 
 **Why expose these headers?**
 
-The frontend export feature needs to extract filenames from the `Content-Disposition` header. By default, browsers only expose "safe" CORS headers (`Content-Type`, `Cache-Control`, etc.). `retry-after` is exposed so the client can read the 429 cooldown, and `X-Correlation-Id` so it can read the id to quote to support. The policy caches preflights for ten minutes; without `Access-Control-Max-Age`, Chromium caches them for only five seconds and nearly every JSON or `Authorization` request pays an extra `OPTIONS` round trip.
+The frontend export feature needs to extract filenames from the `Content-Disposition` header. By default, browsers only expose "safe" CORS headers (`Content-Type`, `Cache-Control`, etc.). `location` is exposed so a `201 Created` carries the new resource's URL to cross-origin script as it does to any other caller (the client takes the id from the body, so nothing reads it today), `retry-after` so the client can read the 429 cooldown, and `X-Correlation-Id` so it can read the id to quote to support. The policy caches preflights for ten minutes; without `Access-Control-Max-Age`, Chromium caches them for only five seconds and nearly every JSON or `Authorization` request pays an extra `OPTIONS` round trip.
 
 **Configuration (`appsettings.json`):**
 
@@ -4982,8 +4982,8 @@ public void Configure(CorsOptions options)
             // Required for authentication (cookies/tokens)
             .AllowCredentials()
 
-            // Expose the download filename and the 429 cooldown
-            .WithExposedHeaders("content-disposition", "retry-after", CorrelationIdMiddleware.HeaderName)
+            // Expose the download filename, a 201's resource URL, the 429 cooldown and the correlation id
+            .WithExposedHeaders("content-disposition", "location", "retry-after", CorrelationIdMiddleware.HeaderName)
 
             // Cache preflights for ten minutes instead of Chromium's five-second default
             .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
@@ -4993,7 +4993,7 @@ public void Configure(CorsOptions options)
 
 ### Why Expose `content-disposition`?
 
-The frontend export feature needs to extract filenames from the `Content-Disposition` header. By default, browsers only expose "safe" CORS headers (`Content-Type`, `Cache-Control`, etc.). `retry-after` is exposed for the 429 cooldown, and `X-Correlation-Id` for the id to quote to support. The ten-minute preflight cache keeps most API calls from paying an extra `OPTIONS` round trip.
+The frontend export feature needs to extract filenames from the `Content-Disposition` header. By default, browsers only expose "safe" CORS headers (`Content-Type`, `Cache-Control`, etc.). `location` is exposed for the URL a `201 Created` returns, `retry-after` for the 429 cooldown, and `X-Correlation-Id` for the id to quote to support. The ten-minute preflight cache keeps most API calls from paying an extra `OPTIONS` round trip.
 
 **Without this configuration:**
 

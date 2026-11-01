@@ -44,9 +44,11 @@ public sealed class CorsOptionsSetup : IConfigureOptions<CorsOptions>
 
                 // Browsers hide response headers that are not CORS-safelisted from cross-origin script unless they are exposed:
                 //  - 'content-disposition' allows the client to handle the file download correctly (get the filename)
+                //  - 'location' is the URL of the resource a 201 Created made. The client takes the new id from the response
+                //    body, so nothing reads it today - it is exposed so the 201 contract holds for cross-origin script too
                 //  - 'retry-after' allows the client to read how long to wait after a 429 rate-limit rejection
                 //  - 'X-Correlation-Id' is the id to quote to support; on a successful response it travels only here
-                .WithExposedHeaders("content-disposition", "retry-after", CorrelationIdMiddleware.HeaderName)
+                .WithExposedHeaders("content-disposition", "location", "retry-after", CorrelationIdMiddleware.HeaderName)
 
                 .SetPreflightMaxAge(PreflightMaxAge);
         });

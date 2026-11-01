@@ -123,6 +123,7 @@ public class CorsFixture : IntegrationFixtureBase
 
     [Theory]
     [InlineData("Content-Disposition")]
+    [InlineData("Location")]
     [InlineData("Retry-After")]
     [InlineData("X-Correlation-Id")]
     public async Task Should_Expose_Header_To_Configured_Origin(string headerName)
