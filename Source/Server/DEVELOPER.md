@@ -37,6 +37,7 @@ Comprehensive guide for developers working on the POT ASP.NET Core backend. This
 - [Concerns (Cross-Cutting)](#concerns-cross-cutting)
   - [Authentication & Authorization](#authentication--authorization)
   - [Validation](#validation)
+  - [Forwarded Headers](#forwarded-headers)
   - [CORS Configuration](#cors-configuration)
   - [Rate Limiting](#rate-limiting)
   - [Middleware](#middleware)
@@ -240,7 +241,7 @@ How the product is protected. Every item is a mechanism that is implemented, not
 - **Two identities are protected from lock-out.** A configured platform administrator cannot be disabled, and a site's last enabled `Admin` cannot be disabled or demoted, so neither platform nor tenant administration can be left without an administrator. Both refusals answer `400` with copy the user can act on, and the target is left unchanged.
 - **Credentials.** Passwords are stored only as salted one-way hashes. Invitations, sign-ups and password resets use single-use codes with an expiry and an attempt limit. Changing a password or signing out increments the token version, which invalidates every access token already issued, and a disabled account is rejected when its token is validated.
 - **Responses are not sniffed or cached.** Every response carries `X-Content-Type-Options: nosniff` and `Cache-Control: no-store`, error responses included, so a browser cannot reinterpret a body as script and neither a browser nor a proxy keeps a copy of financial data, user details or tokens. See [Middleware](#middleware).
-- **Abuse throttling.** Rate limiting is partitioned by anonymous client and by signed-in user, and answers `429` with a `Retry-After` header and the wait time in the problem details.
+- **Abuse throttling.** Rate limiting is partitioned by anonymous client and by signed-in user, and answers `429` with a `Retry-After` header and the wait time in the problem details. An anonymous client is identified by the address the Azure ingress forwards, not by the ingress itself; see [Forwarded Headers](#forwarded-headers) for what that trusts and why.
 - **The deliberate cross-tenant surfaces.** Approvals and the platform routes run behind the platform grant and read across sites on purpose. Every read that crosses a site boundary is deliberate, is served by a repository method named for it, and records at its call site why it is allowed: a username resolved before a site is known, a caller who is signed out, a token validated before any user context exists, or the platform surface acting on every site. There is no unnamed cross-tenant read.
 - **Checklist for a new endpoint that takes an id.** Declare its authorization requirement. Resolve the target through a site-scoped repository method. Refuse as not-found when the caller cannot act on the target. Log the refusal at warning. If the read genuinely has to cross sites, name the method for it and say why at the call site.
 
@@ -3410,6 +3411,42 @@ public static bool IsProblem(this Microsoft.AspNetCore.Mvc.ProblemDetails proble
 - Type-safe check with extension method
 - Clear intent: "no problems" vs null
 
+### Forwarded Headers
+
+In Azure the API runs behind the Container Apps ingress, which terminates HTTPS and forwards plain HTTP to the container.
+Without forwarded header processing, `Request.Scheme` is `http` and `Connection.RemoteIpAddress` is the ingress rather than
+the caller, which quietly breaks three things:
+
+- the `Location` header on every `201 Created` is an `http://` URL
+- every anonymous caller shares one rate-limit partition, so one caller using up the limit throttles every signed-out user
+- every login records the ingress as the session's IP address
+
+**Configuration:** `Pot.AspNetCore/Concerns/Forwarding/Configuration/ForwardedHeadersOptionsSetup.cs`, registered by
+`AddPotForwardedHeaders()`. Nothing is bound from configuration - the values are a property of the hosting platform, not of
+the environment.
+
+- `X-Forwarded-For` and `X-Forwarded-Proto` are processed. `X-Forwarded-Host` is not: the ingress passes the original `Host`
+  through, and honouring the header as well would let a caller choose the host the API believes it is serving.
+- `KnownIPNetworks` and `KnownProxies` are cleared. The defaults trust loopback only, so the headers would otherwise be read
+  and discarded. This trusts whoever sent the headers, which is safe **only** because nothing reaches the container except
+  through the ingress. Exposing the container directly would let a caller choose its own IP address and scheme.
+- `ForwardLimit` stays at 1, so only the rightmost `X-Forwarded-For` entry - the one the ingress wrote - is used. Callers reach
+  the ingress directly, so that entry is the caller. If a CDN or Front Door is ever placed in front of the ingress, the entry
+  becomes that proxy's address and this needs revisiting.
+
+**Program.cs Usage:**
+
+```csharp
+// Before everything else, so nothing reads the scheme or remote address before they are corrected
+app.UseForwardedHeaders();
+```
+
+`UseForwardedHeaders()` resolves the options itself, so forgetting the call leaves the options correct and unread with no sign at
+startup. `ForwardedHeadersFixture` (integration) covers the `Location` scheme, the rate-limit partition and the session IP
+address through the real pipeline for that reason.
+
+Running locally there is no proxy setting these headers, so the API sees the connection's own address and scheme as before.
+
 ### CORS Configuration
 
 CORS (Cross-Origin Resource Sharing) allows the frontend to call the API from a different origin.
@@ -3590,7 +3627,8 @@ internal static class RateLimiterPolicy
 - **Anonymous users**:
   - **15 requests per 10 seconds** (fixed window)
   - **No queue** - immediate failure if limit exceeded
-  - **Partition key**: `ip:{remoteIp}` (per-IP limits)
+  - **Partition key**: `ip:{remoteIp}` (per-IP limits) - the caller's address as forwarded by the ingress, not the ingress
+    itself (see [Forwarded Headers](#forwarded-headers))
   - **Fixed window**: Simple, aggressive limiting for untrusted traffic
 - **Response**: 429 Too Many Requests with `Retry-After` header
 
@@ -3662,19 +3700,20 @@ public static WebApplication UsePotMiddleware(this WebApplication app)
 **Middleware Order in Pipeline:**
 
 ```csharp
-app.UseSecurityHeaders();                // 1. nosniff and no-store on every response (first, so error responses get them)
-app.UseHttpLogging();                    // 2. One request-log entry per request; no body or headers
-app.UseExceptionHandler();               // 3. Global exception handling
-app.UseStatusCodePages();                // 4. Problem Details for error responses that have no body
+app.UseForwardedHeaders();               // 1. Caller's scheme and IP address from the ingress (first, before anything reads them)
+app.UseSecurityHeaders();                // 2. nosniff and no-store on every response (early, so error responses get them)
+app.UseHttpLogging();                    // 3. One request-log entry per request; no body or headers
+app.UseExceptionHandler();               // 4. Global exception handling
+app.UseStatusCodePages();                // 5. Problem Details for error responses that have no body
 // app.UseHttpsRedirection();            // (Not used - behind Azure reverse proxy)
-app.MapHealthChecks("/_health");         // 5. Liveness endpoint (short-circuited: no middleware, no headers)
-app.MapHealthChecks("/_health/ready");   // 6. Readiness endpoint (short-circuited)
-app.UseCors();                           // 7. CORS (must be before auth)
-app.UseCorrelationId();                  // 8. Correlation ID (after CORS, before auth and rate limiting)
-app.UseAuthentication();                 // 9. JWT authentication
-app.UseAuthorization();                  // 10. Permission authorization
-app.UseRateLimiter();                    // 11. Rate limiting
-app.UsePotMiddleware();                  // 12. User context
+app.MapHealthChecks("/_health");         // 6. Liveness endpoint (short-circuited: no middleware, no headers)
+app.MapHealthChecks("/_health/ready");   // 7. Readiness endpoint (short-circuited)
+app.UseCors();                           // 8. CORS (must be before auth)
+app.UseCorrelationId();                  // 9. Correlation ID (after CORS, before auth and rate limiting)
+app.UseAuthentication();                 // 10. JWT authentication
+app.UseAuthorization();                  // 11. Permission authorization
+app.UseRateLimiter();                    // 12. Rate limiting
+app.UsePotMiddleware();                  // 13. User context
 // ... endpoint routing ...
 ```
 

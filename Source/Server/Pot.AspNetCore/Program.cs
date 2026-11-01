@@ -28,6 +28,7 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         builder
+            .AddPotForwardedHeaders()
             .AddPotHealthChecks()
             .AddExceptionHandlers()
             .AddPotAuth()
@@ -47,7 +48,13 @@ public class Program
 
         app.Logger.LogInformation("POT Startup: {AppStartup}", new { Local = DateTime.Now });
 
-        // First, so every response carries X-Content-Type-Options and Cache-Control - including the 500s and status code
+        // Before everything else. The Container Apps ingress terminates TLS and forwards plain HTTP, so until this has run
+        // Request.Scheme is "http" and Connection.RemoteIpAddress is the ingress rather than the caller. Anything that reads
+        // either earlier - a Location header, the anonymous rate-limit partition, the IP address recorded on a login - is
+        // wrong, and wrong quietly. See ForwardedHeadersOptionsSetup for what is trusted and why.
+        app.UseForwardedHeaders();
+
+        // Straight after UseForwardedHeaders(), so every response carries X-Content-Type-Options and Cache-Control - including the 500s and status code
         // pages written by the two calls below, and the 401, 403 and 429 responses refused further down.
         app.UseSecurityHeaders();
 

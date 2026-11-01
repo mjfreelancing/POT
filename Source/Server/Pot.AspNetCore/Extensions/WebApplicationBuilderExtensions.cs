@@ -17,6 +17,7 @@ using Pot.AspNetCore.Concerns.Converters.JsonSerialization;
 using Pot.AspNetCore.Concerns.Cors.Configuration;
 using Pot.AspNetCore.Concerns.Email.Configuration;
 using Pot.AspNetCore.Concerns.ExceptionHandlers;
+using Pot.AspNetCore.Concerns.Forwarding.Configuration;
 using Pot.AspNetCore.Concerns.Logging;
 using Pot.AspNetCore.Concerns.Middleware;
 using Pot.AspNetCore.Concerns.OpenApi;
@@ -38,6 +39,15 @@ internal static class WebApplicationBuilderExtensions
 {
     private const string BearerSecuritySchemeName = "Bearer";
     private static readonly Type ScopedLifetimeValidatorType = typeof(IScopedLifetimeValidator);
+
+    public static WebApplicationBuilder AddPotForwardedHeaders(this WebApplicationBuilder builder)
+    {
+        // Configures ForwardedHeadersOptions only - there is no service to add.
+        // UseForwardedHeaders() resolves these options.
+        builder.Services.ConfigureOptions<ForwardedHeadersOptionsSetup>();
+
+        return builder;
+    }
 
     public static WebApplicationBuilder AddPotHealthChecks(this WebApplicationBuilder builder)
     {
