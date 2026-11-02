@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
 using Pot.AspNetCore.Concerns.Middleware;
 
 namespace Pot.AspNetCore.Concerns.Cors.Configuration;
@@ -48,7 +49,7 @@ public sealed class CorsOptionsSetup : IConfigureOptions<CorsOptions>
                 //    body, so nothing reads it today - it is exposed so the 201 contract holds for cross-origin script too
                 //  - 'retry-after' allows the client to read how long to wait after a 429 rate-limit rejection
                 //  - 'X-Correlation-Id' is the id to quote to support; on a successful response it travels only here
-                .WithExposedHeaders("content-disposition", "location", "retry-after", CorrelationIdMiddleware.HeaderName)
+                .WithExposedHeaders(HeaderNames.ContentDisposition, HeaderNames.Location, HeaderNames.RetryAfter, CorrelationIdMiddleware.HeaderName)
 
                 .SetPreflightMaxAge(PreflightMaxAge);
         });

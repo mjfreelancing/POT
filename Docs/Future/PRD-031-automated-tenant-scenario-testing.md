@@ -1,8 +1,8 @@
 # Automated Tenant Scenario Testing PRD
 
-**Status:** In Progress
+**Status:** Complete
 **Priority:** High
-**Last Updated:** 2026-10-27
+**Last Updated:** 2026-11-02
 **Feature ID:** 031
 **Discovery:** complete
 **Scope:** A repeatable automated harness that proves the account and site lifecycle behaves correctly and that a destructive action touches only its own tenant's data. It covers reading the messages the application sends, so a test can complete an invitation, provisioning realistic tenants through the product's own routes, an endpoint inventory that cannot silently fall behind, isolation invariants around every destructive action, and an authorization matrix asserted against each endpoint's own declaration. It covers the server suites, the browser suite, the commands that prepare and clean the browser run's environment, and the delivery workflow's prompt to run the opt-in tiers. It does not cover a pipeline or runner, load and performance testing, changing how invitations deliver their credential (addressed by a separate document), or any change to the deployed Docker or Azure topology.
@@ -112,6 +112,51 @@ No harness capability is reachable from a running product host. There is no endp
 - **H1.** Every failure names the behaviour that broke, the input that broke it, and the first observable difference — never a bare status code or a count.
 - **H2.** A failure attributable to provisioning rather than to the behaviour under test says so, so a broken harness is not mistaken for a product defect.
 
+## Requirement Coverage
+
+Where each requirement is met, so a reviewer can go from the statement to the code that satisfies it. Server paths are
+relative to `Source/Server/Pot.AspNetCore.Integration.Tests/`; browser paths to `Source/Client/pot-react/`.
+
+| Req | Met at                                                                                                                                                                | Proved by                                                                                     |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| A1  | `Host/CapturingEmailWriter.cs`, `Host/Extensions/CapturingEmailWriterExtensions.cs` — the writer the test host registers instead of the real sender                   | `Pipeline/MessageCaptureFixture.cs`                                                           |
+| A2  | the same writer: a message is complete in the capture before the request that sent it returns                                                                         | `Pipeline/MessageCaptureFixture.cs`                                                           |
+| A3  | `e2e/helpers/mailSink.ts` (starts `pot-e2e-mail-sink`), `e2e/helpers/mail.ts` `waitForMessage({ to, subjectContains })`                                               | `e2e/tests/smoke/mailSink.test.ts`                                                            |
+| A4  | `e2e/helpers/mail.ts` `oneTimeCode()`, `temporaryPassword()` — the only readers of a message body                                                                     | `smoke/mailSink.test.ts`, `settings/accountDeletion.test.ts`, `settings/siteDeletion.test.ts` |
+| A5  | no product code records messages: the sink is a container the harness starts (`e2e/helpers/mailSink.ts`) and the app only consumes SMTP settings the configs supply   | manual checks C3 and D3                                                                       |
+| A6  | `e2e/scripts/e2e-ports.ps1` declares 1025/1080; `e2e/scripts/e2e-preflight.ps1` reports the owning process                                                            | `e2e/scripts/tests/*.Tests.ps1`                                                               |
+| A7  | `startMailSink()` reports and replaces a leftover sink; `e2e/scripts/e2e-processes.ps1` classifies it                                                                 | manual check C3 (a run killed mid-migration)                                                  |
+| A8  | `e2e/scripts/e2e-clean.ps1` removes only the harness's own sink and daemon                                                                                            | manual check D3, Pester cases                                                                 |
+| B1  | `Scenarios/ScenarioDefinition.cs`, `ScenarioMember.cs`, `ScenarioUser.cs`                                                                                             | `Features/Scenarios/ScenarioProvisioningFixture.cs`                                           |
+| B2  | `Scenarios/ScenarioProvisioner.cs` — signup with the one-time code, invitations with the temporary password, status and role changes through their endpoints          | `Features/Scenarios/ScenarioProvisioningFixture.cs`                                           |
+| B3  | `Scenarios/ScenarioDirectWrite.cs`, with the reason recorded where the scenario is declared                                                                           | `Features/Scenarios/ScenarioProvisioningFixture.cs`                                           |
+| B4  | identifiers built per scenario and run in `ScenarioProvisioner`, so workers cannot collide                                                                            | the isolation, authorization and browser suites all run in parallel                           |
+| B5  | `Scenarios/ProvisionedScenario.cs` reports the identities and credentials a test needs                                                                                | `Features/Scenarios/ScenarioProvisioningFixture.cs`                                           |
+| B6  | `Scenarios/ScenarioProvisioningException.cs` carries the step and the response                                                                                        | `Features/Scenarios/ScenarioProvisioningRefusalFixture.cs`                                    |
+| C1  | `Pipeline/Support/DocumentedOperations.cs` reads `/openapi/v1.json`, so the inventory is generated                                                                    | `Pipeline/AuthorizationCoverageFixture.cs`                                                    |
+| C2  | `Pipeline/Support/InventoryCoverage.cs` matches documented operations against cases and the ignore list                                                               | `Pipeline/AuthorizationCoverageFixture.cs`                                                    |
+| C3  | the coverage assertion fails when an operation has neither a case nor an ignore entry with a reason                                                                   | manual check B1/B2                                                                            |
+| C4  | `Pipeline/Support/IgnoredOperations.cs` — a blanket ignore and a blank reason are both refused                                                                        | `Pipeline/AuthorizationCoverageFixture.cs`                                                    |
+| D1  | `Invariants/IsolationFixture.cs` with `Invariants/Support/TenantSnapshotter.cs`                                                                                       | the three isolation invariants                                                                |
+| D2  | `IsolationFixture` (allowed removals) over `TenantFingerprint.FindChanges`                                                                                            | the three isolation invariants                                                                |
+| D3  | `Invariants/EntityClassificationFixture.cs` with `Support/EntityClassification.cs`, `TenantScopes.cs`, `GlobalEntities.cs` — an unclassified table fails              | `Invariants/EntityClassificationFixture.cs`                                                   |
+| D4  | `Invariants/Support/OrphanSweep.cs`                                                                                                                                   | `Repositories/DeletionSweepFixture.cs`                                                        |
+| D5  | `Support/TenantFingerprint.cs` (`FindFirstDifference`) and the canary message in `IsolationFixture`                                                                   | manual check A1–A3                                                                            |
+| E1  | `Pipeline/AuthorizationMatrixFixture.cs` over `Support/AuthorizationMatrix.cs`, `AuthorizationCase.cs`, `AuthorizationCaller.cs`                                      | `Pipeline/AuthorizationMatrixFixture.cs`                                                      |
+| E2  | `Support/EndpointRequirements.cs`, `EndpointRequirement.cs`, `EndpointOperation.cs` read the authorization the endpoint declares                                      | `Security/EndpointAuthorizationMetadataFixture.cs`                                            |
+| E3  | `Support/ForeignTenantRows.cs` names the row each case addresses from another tenant                                                                                  | `Security/CrossTenantAuthorizationFixture.cs`                                                 |
+| E4  | the cases are generated from the inventory, so a new operation is included without being listed                                                                       | `Pipeline/AuthorizationMatrixFixture.cs`                                                      |
+| F1  | `e2e/helpers/provisioning.ts` (`provisionInvitedViewer`, `provisionSiteAdministrator`) used by `settings/accountDeletion.test.ts` and `settings/siteDeletion.test.ts` | both specs                                                                                    |
+| F2  | the same specs assert the seeded identities survive, via `e2e/helpers/databaseSeed.ts`                                                                                | manual check C1/C2 (16 passed twice, no reseeding)                                            |
+| F3  | no per-project exclusion remains in `playwright.config.ts` or `playwright.prod.config.ts`; the built-client matrix runs all four projects                             | the prodlike matrix completes across chromium, edge, mobile-chrome and mobile-safari          |
+| G1  | `Features/Scenarios/*`, `Invariants/*` and `Pipeline/*` run inside the existing integration fixture and its database lifecycle, adding no container                   | the full integration project                                                                  |
+| G2  | `.github/skills/run-tests/SKILL.md` documents the tiers; `.github/skills/prd-delivery/SKILL.md` asks about the opt-in tiers at completion                             | both skill files                                                                              |
+| G3  | `e2e/seed/baseline.sql` and fixtures that create their own data; nothing depends on wall-clock time or a previous run                                                 | manual check C1/C2                                                                            |
+| G4  | `e2e/scripts/e2e-logged-run.ps1` reports the run's duration; `dotnet test` reports its own                                                                            | the logged run's summary                                                                      |
+| G5  | `e2e/scripts/e2e-ports.ps1`, `e2e-preflight.ps1` and `e2e-clean.ps1` all report the sink's ports beside the client, API and database ports                            | manual check D1–D3                                                                            |
+| H1  | `Invariants/Support/TenantFingerprint.cs` (first difference with expected against actual), the `IsolationFixture` canary message, and the matrix's per-case messages  | manual checks A1–A3 and B1–B3                                                                 |
+| H2  | `e2e/helpers/provisioning.ts` `ProvisioningFailure` states that the harness, not the product, failed                                                                  | `e2e/tests/smoke/provisioningFailure.test.ts`                                                 |
+
 ## Out of Scope
 
 - A pipeline, runner or any form of CI configuration — a separate decision, deliberately local-only for now.
@@ -182,8 +227,8 @@ The deliverable is the harness, so the manual checks are the opposite of the usu
 
 ### B. The harness notices an unclassified endpoint
 
-- **B1 — a new operation blocks the suite.** Temporarily add a trivial new endpoint, build, and run the inventory test without classifying it.
-  Expected: the run fails and names the operation by method and path.
+- **B1 — an operation whose coverage is undecided blocks the suite.** Temporarily add an operation that names a row of a resource no row is declared for in another tenant — for example `GET /api/sites/probes/{id}` — build, and run the inventory test.
+  Expected: the run fails and names the operation by method and path. A plain operation needs no decision: the matrix generates a case for it, which is the inventory working as intended, so this check needs an operation the generator cannot cover on its own.
 - **B2 — an ignored operation needs a reason.** Add the new operation to the ignored list with no reason and run again.
   Expected: the run still fails, because an ignore without a stated reason is not accepted.
 - **B3 — revert and confirm green.** Remove the endpoint and the ignore entry.
@@ -220,9 +265,61 @@ The deliverable is the harness, so the manual checks are the opposite of the usu
 
 ### Results
 
-| ID    | Check                                                    | Result | Notes |
-| ----- | -------------------------------------------------------- | ------ | ----- |
-| A1–A3 | A leak is detected, attributed and reverts green         |        |       |
-| B1–B3 | An unclassified operation blocks the suite               |        |       |
-| C1–C3 | Browser scenarios provision, repeat and leave no residue |        |       |
-| D1–D3 | A blocked or leftover mail sink is caught before a run   |        |       |
+| ID    | Check                                                    | Result | Notes                                                                                                                                                                                                                              |
+| ----- | -------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A1–A3 | A leak is detected, attributed and reverts green         | Pass   | A sweep that removed another tenant's rows failed with `tenant <canary site> table 'Income': row 1 is gone`, naming the canary rather than the tenant under test; the isolation invariants passed again once it was reverted.      |
+| B1–B3 | An unclassified operation blocks the suite               | Pass   | `GET /api/sites/probes/{id}` was reported as a documented operation naming a row of an unclassified resource, and the same operation ignored with a blank reason was reported too; the suite passed again once both were removed.  |
+| C1–C3 | Browser scenarios provision, repeat and leave no residue | Pass   | 16 tests passed twice with no reseeding; a run killed during its migrations left its sink behind, and the next run replaced it and passed.                                                                                         |
+| D1–D3 | A blocked or leftover mail sink is caught before a run   | Pass   | An occupied port was reported with the process holding it; a leftover sink was reported and replaced; with the development stack running, clean stopped only the harness's daemon and sink and exited non-zero on the client port. |
+
+## Verification Evidence
+
+The Manual Test Plan's Results table records which checks passed. This section records what was broken to make each one fail,
+so the experiment can be repeated, and the measurements a later reader would compare against.
+
+### Deliberately broken, one at a time
+
+Each fault was introduced, the affected suite was run, and the fault was reverted.
+
+| Check | Fault introduced                                                                                      | What the suite said                                                                                                                             | Verdict                                                                                               |
+| ----- | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| A1/A2 | the user-removal sweep ran `Set<IncomeEntity>().IgnoreQueryFilters()`, removing another tenant's rows | `canaryDifference should be null but was "tenant fe8873f6-… table 'Income': row 1 is gone"`                                                     | names the tenant, the table and the first row, and names the canary rather than the tenant under test |
+| A3    | the sweep reverted                                                                                    | 3 of 3 isolation invariants pass                                                                                                                | the failure came from the change, not from the harness                                                |
+| B1    | `GET /api/sites/probes/{id}` added, naming a row of a resource with no foreign row declared           | `GET /api/sites/probes/{id} names a row but no row of that resource is declared for another tenant - classify the resource so the case can run` | named by method and path                                                                              |
+| B2    | the same operation added to the ignore list with a blank reason                                       | `GET /api/sites/probes/{id} is ignored without a stated reason - a reader cannot tell whether it still holds`                                   | a reason is required                                                                                  |
+| B3    | the endpoint and its ignore entry removed                                                             | 6 of 6 matrix and isolation tests pass, and `contracts/openapi/v1.json` regenerated to its committed content                                    | green again, so the earlier failures were the fault's                                                 |
+| C1/C2 | nothing broken: the browser specs were run twice without reseeding                                    | 16 passed twice                                                                                                                                 | the seeded identities survive a destructive run                                                       |
+| C3    | a run killed during its migrations, then run again                                                    | `Mail sink left behind by a previous run detected … replacing it`, then 4 passed (40.4s)                                                        | the next run is unaffected by an interrupted one                                                      |
+| D1/D2 | a plain process holding the sink's port, and a sink left behind                                       | the port reported `[FAIL]` with its owner; preflight reported the leftover sink and the killed run's daemon                                     | an occupant is identified before a run                                                                |
+| D3    | development stack up, leftover sink present                                                           | clean stopped only the harness's daemon and sink, left `pot-react`, `pot-aspnet` and `pot-postgres` running, and exited 1 on the client port    | the stack is never touched                                                                            |
+
+Two findings from running them. A plain authenticated `GET` needs no classification, because the matrix generates a case for it,
+so the unclassified-resource fault only bites when an operation names a row. And the canary message named its tenant by site row
+id when these runs were taken; the fixture now names the scenario as well, so a failure reads `the canary tenant '<name>'
+(<row id>) must be untouched by the action: …`.
+
+A third came from measuring rather than reading: the mobile projects needed no reduced selection, because the user menu sits in the
+page header on every viewport, which made the `Desktop settings sheet` mobile skip unnecessary.
+
+### Measured baselines
+
+| What                      | Measurement                                                                                                                      | Why it is kept                                                                                                                            |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Client production build   | 55s on an idle machine (Vite 14.7s, Workbox `closeBundle` 22.9s); 535.6s on a machine that had lost most of its CPU              | the prodlike client server builds before it serves, so its start budget covers a build that can be an order of magnitude slower than idle |
+| Prodlike matrix           | 318 passed, 88 skipped, 0 failed in 7m12s — the 406 collected tests across four projects, with `retries: 0` locally (2026-11-02) | the completion gate, and the reference for spotting drift                                                                                 |
+| Browser destructive specs | 16 passed twice back to back, 1.9m then 1.6m, no reseeding between runs                                                          | repeatability, and what a second run costs                                                                                                |
+| Server suite              | 1262 tests, 289 of them integration at 8m28s; a second run of the same suite took 11m18s                                         | the suite's own drift, and why a duration is reported at all                                                                              |
+| Scenario tier             | 6 tests in 28s                                                                                                                   | the opt-in tier's reference                                                                                                               |
+| Coverage                  | 90.5% of lines and 78.1% of branches across five product assemblies (2026-11-02)                                                 | see the limit below                                                                                                                       |
+
+### What the evidence cannot show
+
+`code_coverage.ps1` instruments Pot.App, Pot.AspNetCore, Pot.Data, Pot.Shared and Pot.EmailSender. It does not instrument
+`Pot.AspNetCore.Integration.Tests`, where the server harness lives, and the browser harness is TypeScript and PowerShell, so no
+line or branch figure exists for this work; the figures above describe product assemblies the harness does not change.
+`Pot.EmailSender` sits at 10.3%, which is consistent with the integration host substituting `CapturingEmailWriter` for the real
+sender — the substitution A1 and A2 require.
+
+A machine short of CPU also produces failures that do not exist: an earlier prodlike attempt reported 32 failures, every one of
+which passed once the machine was idle. Time `npm run build` before trusting an E2E failure — 55s means the machine is healthy,
+minutes mean the run is not.

@@ -6,6 +6,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
+  // Matches playwright.config.ts. Without it this config inherits Playwright's 30s default, so a spec would get
+  // half the budget it has in the dev matrix while running against a slower, built client.
+  timeout: 60_000,
   // Bound local parallelism like the dev config: the shared stack (one API, one
   // Postgres, one preview server) plus the built client's per-context service-
   // worker install can't fit unlimited browsers.
@@ -57,7 +60,11 @@ export default defineConfig({
         'npm run build && npm run preview -- --host 127.0.0.1 --strictPort',
       port: 5175,
       reuseExistingServer: false,
-      timeout: 180000,
+      // This entry builds the client before it serves it, so the start budget covers `tsc -b && vite build`
+      // as well as Vite's startup. Measured on this machine: ~55s when idle (Vite ~15s plus ~23s of Workbox
+      // work inside vite-plugin-pwa's closeBundle) and over 8 minutes while the machine was short of CPU. The
+      // API entry's 180s covers a server start only, so it does not apply here.
+      timeout: 600000,
       // Same reasoning as playwright.config.ts: keep the client server's output so a run
       // that could not connect still records what that server did.
       stdout: 'pipe',
