@@ -2,7 +2,7 @@
 
 Each brief is one undecided item from `DOCS-REORGANISATION-PLAN.md`: a `Dec` row in its section 8, or a code risk mapped in its section 11. It says what the code does today, why it matters, the options and a recommendation.
 
-**Baseline:** commit `ceb57419`. Paths are relative to the repo root, and `path:line` references are to that commit.
+**Baseline:** commit `9024e1d2`. Paths are relative to the repo root, and `path:line` references are to that commit. Phase 0b re-checked every reference against the files that changed since `ceb57419`; its record, including the availability check, is in `DOCS-REORGANISATION-PLAN.md` ("Phase 0b record").
 
 **How to answer:** write your decision after `> **Your call:**` at the end of each brief. A short answer is fine ("Option B", "Keep, record honestly", "Defer until after PRD-019"). Add any conditions on the same line or the lines below.
 
@@ -17,10 +17,10 @@ Each brief is one undecided item from `DOCS-REORGANISATION-PLAN.md`: a `Dec` row
 **Before acting on a brief, re-check its evidence against the code at that time.** These briefs were written on a machine without the full repository. Several rely on something being absent:
 
 - DD-04, DD-06 and DD-16: no infrastructure-as-code;
-- DD-05: an empty `.github/workflows/`;
+- DD-05: no `.github/workflows/` directory;
 - DD-06: the local data folders.
 
-Run the availability check in `DOCS-REORGANISATION-PLAN.md` ("Files reported as missing or unavailable") first. Never copy the contents of a git-ignored file into a brief or an ADR.
+Run the availability check in `DOCS-REORGANISATION-PLAN.md` ("Files reported as missing or unavailable") first; it has been run once, and its result is the Phase 0b record in that file. Never copy the contents of a git-ignored file into a brief or an ADR.
 
 The briefs are ordered by severity, highest first. A follow-up on an item already fixed is at the end.
 
@@ -116,7 +116,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 
 - **Backlog row:** 0090 (`Dec`).
 - **What the code does today:**
-  - `.github/workflows/` exists but is empty and untracked.
+  - There is no `.github/workflows/` directory.
   - Deployment uses two VS Code tasks (`.vscode/tasks.json:93-117`). They run `docker build --no-cache` from the local working tree and `docker push ghcr.io/mjfreelancing/pot-{server,client}:latest` (`:95`, `:108`). No tests or lint run first.
   - The server image runs migrations at start-up (`Source/Docker/Server/entrypoint.sh`).
 - **Why it matters:** Uncommitted or failing code can ship. There is no record of which commit is in production, and `:latest` gives no image to roll back to. Nothing checks that the committed OpenAPI document matches the build. The planned `docs-check` script (D11) would also have nowhere to run.

@@ -1,7 +1,7 @@
 # Documentation Reorganisation Plan
 
-**Status:** Agreed. Ready for Phase 0b on a machine with the full repository.
-**Baseline:** commit `ceb57419`, the tip of `v0.1-prod-022-030`. Every line number, count, quote and `path:line` reference in this plan and in `DECISIONS-TO-DISCUSS.md` refers to it.
+**Status:** Agreed. Phase 0b is complete; Phase 1 starts on the owner's OK.
+**Baseline:** commit `9024e1d2`, the tip of `v0.1-doc-update-plan` when Phase 0b ran. Every line number, count, quote and `path:line` reference in this plan and in `DECISIONS-TO-DISCUSS.md` was taken at `ceb57419`; Phase 0b re-checked every reference into a file that changed since, so all of them hold at this commit too.
 **What this file holds:** only the work still to do and the rules it follows. Earlier drafts, the review that produced them, and the options weighed for each settled decision are in git history.
 
 Agents never stage or commit. Each phase ends with a stop for the owner's review and an offered commit message.
@@ -31,6 +31,37 @@ Agents never stage or commit. Each phase ends with a stop for the owner's review
 
      Then stop for the owner's review before starting Phase 1.
 
+### Phase 0b record (completed 2026-11-02 at `9024e1d2`)
+
+Phase 0b ran on a full checkout, on `v0.1-doc-update-plan`. Repeat the procedure above if the plan waits again before Phase 1 starts.
+
+**What moved since `ceb57419`:** 12 commits, 13 files.
+
+| Change | Effect on this plan |
+| --- | --- |
+| PRD-031 moved In Progress → Complete (2026-11-02), in `Docs/Future/README.md` and its own header | Section 8 row 0083 is now accepted, and the PRD-031 rows in Appendix D are due now rather than at closure |
+| PRD-031 gained `## Requirement Coverage` and `## Verification Evidence` | The PRD template change in section 12 must carry both sections, or the delivery skill writes sections the template lacks |
+| `Docs/Future/TASKS-PRD-031.md` deleted | The target `prd/` layout and the 6.3 mapping treat a task list as a resident file; the delivery skill now keeps the stage plan out and deletes the file at close (6.1, 6.3) |
+| `.github/skills/prd-delivery/SKILL.md`: close-out now harvests deliberately-broken checks, measured baselines and the limits of the evidence into the PRD, then deletes the task list; the close-out steps renumbered 1–5 | Section 12 records that the evidence half of the close-out already exists, so only the ADR flip and the amendments are left to add |
+| `Source/Server/DEVELOPER.md`: two CORS samples now use `HeaderNames` constants | No section 10 item covers those lines, and the file's line count is unchanged, so every reference into it still holds |
+| `Pot.AspNetCore/Concerns/Cors/Configuration/CorsOptionsSetup.cs` and its test, `Invariants/IsolationFixture.cs`, `e2e/scripts/e2e-logged-run.ps1`, `playwright.prod.config.ts` | Reviewed: none is cited as evidence in section 8, Appendix E or a brief, and none fixes a section 10 item |
+
+**No section 10 item has been fixed since the baseline.** The only file section 10 names that changed is the server guide, and the change touches none of the listed lines. The four "code that does not exist" claims in section 10 were re-checked and all still hold at this commit: no `@/hooks/useToast` import, no `ValidationError` type in the client, "Site Owner" only in the stale `_DOCUMENTATION_PLAN.md`, and `import-export:manage` only at `AUTHENTICATION.md:1919`.
+
+**Decisions weighed and not raised as backlog rows.** A narrowed E2E run now keeps its script's config (`e2e-logged-run.ps1`). The prodlike config now sets `timeout: 60_000`, which removes a drift against ADR-012 §13 rather than creating one, and a 600s client start budget that only the config comment records. Both are tooling and measured-budget facts for the E2E reference, which section 9 already places outside the ADR series; the start budget is content for that reference when Phase 5 splits the E2E docs.
+
+**Availability check** (run last, as the procedure asks). Five items differ from what the planning machine reported:
+
+| Item | Found here | Follow-up |
+| --- | --- | --- |
+| `Docs/Azure/Azure-Deployment-Notes.md` | Present, but untracked and ignored (`.gitignore:408`) | **Owner decision.** Track it, track a redacted template, or remove the three links. Until then `how-to/deploy-to-azure.md` replaces it rather than renames it |
+| `Source/Docker/.env.development.template` | Absent: not on disk, never tracked | **Owner decision.** Add a tracked template (row 0089) or correct "copy the template" to "create from scratch" (§10.12, Appendix E.3) |
+| `Source/Docker/.env` | **Tracked**, not ignored; holds `COMPOSE_PROJECT_NAME` and `POSTGRES_DB` only, no secrets | Row 0089's `Ver` narrowed; Appendix E.3 corrected |
+| `.github/workflows/` | No such directory | DD-05's evidence is "there is no CI", not "empty and untracked"; `docs-check` stays a local task |
+| `.github/instructions/playwright-e2e.instructions.md` | Still absent; the live file is `e2e.instructions.md` | **Owner decision at Phase 2.** Create the file, or repoint `e2e/README.md:10`, `e2e/AUTHORING.md:5` and `ADR-012:20` |
+
+Confirmed as reported, so no claim changes: `appsettings.Development.json`, `Data/README.md`, `Data/Scripts`, `Data/**/postgres-data` and both client `.env` files are present and ignored; `Data/Exports` is empty; there is still no infrastructure-as-code for Azure.
+
 ### Files reported as missing or unavailable
 
 > **For the agent executing this plan:** this plan and `DECISIONS-TO-DISCUSS.md` were written on a machine that **did not have the full repository**. Everything below was reported as missing, absent, empty or "not in the repo". Some of it may exist on the executing machine but be git-ignored, often deliberately, because it holds secrets, connection strings or machine-specific data. Before Phase 1, check each item on the machine that will do the work, and record the result in the re-baseline addendum.
@@ -50,12 +81,12 @@ Agents never stage or commit. Each phase ends with a stop for the owner's review
 
 | Item | Reported as | Claims that depend on it |
 | --- | --- | --- |
-| `Docs/Azure/Azure-Deployment-Notes.md` | Linked three times, does not exist | §10.12; §6.1 (`how-to/deploy-to-azure.md` "replaces" it); §6.3 Docker guide row; Appendix E.3 (Ports, Production Deployment, Additional Resources) |
-| `.github/instructions/playwright-e2e.instructions.md` | Linked from `e2e/README.md:10`, `e2e/AUTHORING.md:5` and `ADR-012:20`, does not exist | §3.1 (ADR-012 broken link); §10.11; Phase 2 ("fix the broken instruction-file link") |
-| Infrastructure-as-code for Azure (Container App replica count, ingress, health probes, PostgreSQL server version) | Not in the repo | DD-04 (replica count), DD-06 (Azure runs 17.6, from a diagram label only), DD-16 option C (probes), the forwarded-headers follow-up at the end of `DECISIONS-TO-DISCUSS.md` (the ingress sets `X-Forwarded-For`); rows 0051, 0054, 0084 |
-| `.github/workflows/` | Exists but empty and untracked | DD-05; row 0090; Appendix E.1 Migrations row ("there is no CI") |
+| `Docs/Azure/Azure-Deployment-Notes.md` | Linked three times, does not exist. **Phase 0b:** present, untracked and ignored | §10.12; §6.1 (`how-to/deploy-to-azure.md` "replaces" it); §6.3 Docker guide row; Appendix E.3 (Ports, Production Deployment, Additional Resources) |
+| `.github/instructions/playwright-e2e.instructions.md` | Linked from `e2e/README.md:10`, `e2e/AUTHORING.md:5` and `ADR-012:20`, does not exist. **Phase 0b:** still absent | §3.1 (ADR-012 broken link); §10.11; Phase 2 ("fix the broken instruction-file link") |
+| Infrastructure-as-code for Azure (Container App replica count, ingress, health probes, PostgreSQL server version) | Not in the repo. **Phase 0b:** still none | DD-04 (replica count), DD-06 (Azure runs 17.6, from a diagram label only), DD-16 option C (probes), the forwarded-headers follow-up at the end of `DECISIONS-TO-DISCUSS.md` (the ingress sets `X-Forwarded-For`); rows 0051, 0054, 0084 |
+| `.github/workflows/` | Exists but empty and untracked. **Phase 0b:** no such directory | DD-05; row 0090; Appendix E.1 Migrations row ("there is no CI") |
 | `Source/Client/pot-react/.env.development`, `.env.production` | Git-ignored (`.gitignore:405–406`), absent from a clean checkout | Appendix E.2 Environment Configuration; Appendix E.3 Images and Dockerfiles (the `.env.production` fallback); row 0073/0085 |
-| `Source/Docker/.env`, `Source/Docker/.env.development` | Git-ignored; created from `.env.development.template` | Row 0089 (`Ver`); §10.12 ("create from scratch" vs "copy the template"); Appendix E.3 Environment Variables |
+| `Source/Docker/.env`, `Source/Docker/.env.development` | Git-ignored; created from `.env.development.template`. **Phase 0b:** `.env` is tracked (two non-secret keys), `.env.development` is ignored, and no template exists | Row 0089 (`Ver`); §10.12 ("create from scratch" vs "copy the template"); Appendix E.3 Environment Variables |
 | `Source/Server/Pot.AspNetCore/appsettings.Development.json` | Not found on the planning machine, but `Data/Local Docker/README.md:5` says it points the API at the prodlike stack on `5444` | Row 0088 ("the prodlike stack is also the dev-mode API's database") |
 | `Data/README.md` | Git-ignored machine-local index of this machine's data folders | Row 0088 (local environments) |
 | `Data/Scripts/`, `Data/**/Backups/` | Git-ignored (backup tooling; the Azure target needs a password) | Row 0089 (backups are kept outside the repository) |
@@ -429,7 +460,8 @@ Docs/
   prd/                             renamed from Future/ (same depth, D5)
     README.md                      "How this works" (D8) + PRD index (one-line summaries + Amended column)
     template.md                    moved from the prd-discovery skill (D8)
-    PRD-NNN-*.md, TASKS-PRD-NNN.md
+    PRD-NNN-*.md
+    TASKS-PRD-NNN.md               only while a delivery runs; deleted at close, never a resident
   standards/                       rule documents (D13)
     server/  client/  api/
   tutorials/
@@ -501,7 +533,7 @@ Two rules come with it:
 | `Docs/FEATURES.md` | Merges into `user-guide/README.md` (a third copy of the feature list). |
 | `Docs/USER-GUIDE/*` | Moves to `user-guide/`. Projections.md's client persistence and fetch-window spec moves to ADRs and reference. |
 | `Docs/USER-GUIDE/_DOCUMENTATION_PLAN.md` | Retire after harvesting anything still valid. It is a stale work plan, wrong in at least six places. |
-| `Docs/Future/PRD-*.md`, `README.md`, `TASKS-*.md` | Move to `Docs/prd/` (D5). Contents unchanged apart from the amendments. |
+| `Docs/Future/PRD-*.md`, `README.md` | Move to `Docs/prd/` (D5). Contents unchanged apart from the amendments. A `TASKS-PRD-NNN.md` is a working document deleted at close, so it is never a resident of `prd/`; `TASKS-PRD-031.md` has already been removed. |
 | `Docs/Future/ADR-012…`, `ADR-014…` | Re-homed (5.4). Tombstones are left behind. |
 | `Docs/pot_erd.d2` / `.png` | Move to `reference/diagrams/`. **Caveat:** `Pot.Data.Migrations/App.cs:61` hard-codes `..\..\..\..\..\..\Docs\pot_erd.d2`, so moving it is a one-line code change (the owner's approval), or the file stays where it is. |
 | `Docs/Azure/*` | Moves to `reference/diagrams/`. `Docs/pot-azure-diagram.png` is a *different, older* render of the same diagram; delete it. |
@@ -673,7 +705,7 @@ It must not contain:
 | 0080 | Every E2E test is classified as parallel-safe or fixture-managed | Acc | ADR-012 §7 | 1 |
 | 0081 | Every E2E test logs in fresh; storage state is never shared | Acc | ADR-012 §6 | 2 |
 | 0082 | E2E execution policy: dev matrix by default, prodlike gate, fixed timeouts, config-owned reporters, four-browser matrix | Acc + Dec (prodlike: per-PRD gate or on demand?) | ADR-012 §10, §13; e2e README:150–153; e2e.instructions:13 | 2 |
-| 0083 | Scenario-driven tenant testing: test-only message capture and mail sink, product-route provisioning (server scenarios and a third, **destructive** E2E class that provisions its own tenant), canary-tenant isolation invariants, an authorization matrix generated from the contract, and opt-in scenario and browser tiers (amends 0058, 0079 and 0080) | Prop (implementation landed; PRD-031 still In Progress) | PRD-031; aspnetcore-integration-tests.instructions; e2e.instructions; run-tests SKILL "Tiers"; prd-delivery step 4.8 | 2 |
+| 0083 | Scenario-driven tenant testing: test-only message capture and mail sink, product-route provisioning (server scenarios and a third, **destructive** E2E class that provisions its own tenant), canary-tenant isolation invariants, an authorization matrix generated from the contract, and opt-in scenario and browser tiers (amends 0058, 0079 and 0080) | Acc (implementation landed; PRD-031 completed 2026-11-02) | PRD-031; aspnetcore-integration-tests.instructions; e2e.instructions; run-tests SKILL "Tiers"; prd-delivery step 4.8 | 2 |
 
 ### Infrastructure
 
@@ -684,8 +716,8 @@ It must not contain:
 | 0086 | Images build with the cache by default | Sup by 0087 | PRD-007:56–76 | 3 |
 | 0087 | Images always build with `--no-cache` | Acc | PRD-007:246–264 | 2 |
 | 0088 | Local environments: prodlike compose stack (also the dev-mode API's database), a scratch database and a seed-authoring database on bind mounts, E2E on its own Testcontainers database, fixed ports, one stack at a time | Acc | Data/Local Docker/README; Data/Seed Docker/README; Docker DEVELOPER:48–61 | 2 |
-| 0089 | Secrets stay out of the repo: a tracked template, an ignored env file, the platform secret store in production | Acc + Ver | GETTING-STARTED:103–126; Docker DEVELOPER:417–456 | 2 |
-| 0090 | Build and deploy by hand from VS Code tasks; no CI | Dec | .vscode/tasks.json; empty .github/workflows | 2 |
+| 0089 | Secrets stay out of the repo: a tracked template, an ignored env file, the platform secret store in production | Acc + Ver (Phase 0b: no tracked template exists; `Source/Docker/.env` is tracked and holds only `COMPOSE_PROJECT_NAME` and `POSTGRES_DB`) | GETTING-STARTED:103–126; Docker DEVELOPER:417–456 | 2 |
+| 0090 | Build and deploy by hand from VS Code tasks; no CI | Dec | .vscode/tasks.json; no `.github/workflows` directory | 2 |
 
 **Folded rows (agreed).** These rows are written as part of their host ADR, and their numbers are not used:
 
@@ -774,8 +806,8 @@ Each item is fixed when its file is reworked, not in a separate pass.
     - e2e.instructions:67 says react-day-picker v9; the project uses v10.
 12. **Setup docs:**
     - Node minimum: 22.22.2 vs `>=22.22.0` vs "Node 24 is the minimum".
-    - `.env.development`: "create from scratch" vs "copy the tracked template" (the template exists).
-    - `Docs/Azure/Azure-Deployment-Notes.md` is linked three times but doesn't exist (Docker DEVELOPER 107, 720 and 843).
+    - `.env.development`: "create from scratch" vs "copy the tracked template". **Phase 0b:** no template exists in the repository or on disk, so the "copy" instruction has nothing to copy; add a tracked template (row 0089) or correct the instruction.
+    - `Docs/Azure/Azure-Deployment-Notes.md` is linked three times (Docker DEVELOPER 107, 720 and 843) but is untracked and ignored, so those links are dead for every other reader. **Phase 0b:** the file exists on this machine only; the owner decides whether to track it, track a redacted template, or remove the links.
     - The GETTING-STARTED anchor at 228 is broken.
     - DOCKER-SETUP's "curl" output is actually PowerShell output.
     - LOCAL-SETUP Option B collides with the prodlike container name.
@@ -818,9 +850,9 @@ The code risks and the `Dec` backlog rows are decided one at a time in `DECISION
 
 | File | Change |
 | --- | --- |
-| `.github/skills/prd-discovery/references/prd.template.md` | **Moves to `Docs/prd/template.md`** (D8); the skill links to the new path. Add a commented `**Amended:**` header line, used only once amended. Add an `ADR` column to "Decisions Carried Into This Document". Add an `## Effect on Earlier Documents` section (Document, What changes, Amendment). Add a closing `## Amendments` section containing "None." |
+| `.github/skills/prd-discovery/references/prd.template.md` | **Moves to `Docs/prd/template.md`** (D8); the skill links to the new path. Add a commented `**Amended:**` header line, used only once amended. Add an `ADR` column to "Decisions Carried Into This Document". Add an `## Effect on Earlier Documents` section (Document, What changes, Amendment). Add a closing `## Amendments` section containing "None." Add `## Requirement Coverage` and `## Verification Evidence`, which the delivery skill already writes at close. |
 | `.github/skills/prd-discovery/SKILL.md` | **Stage 5:** classify each carried decision as product or architectural, apply the significance test (5.3), and draft a `proposed` ADR for each architectural decision. **Before deleting the discovery document**, harvest the rejected alternatives into those ADRs; today that rationale is lost when the scratch file is deleted. Fill in "Effect on Earlier Documents". Update the paths if D5 is approved. |
-| `.github/skills/prd-delivery/SKILL.md` | **Step 4 (verify):** add a check listing decisions taken during delivery that are not covered by an ADR, and raise or justify each. **Step 5 (close):** flip the PRD's ADRs to `accepted`; write an `AM-n` entry into every document named in "Effect on Earlier Documents", plus any other contradicted Complete PRD; keep the index row to one line. Replace "per `Docs/Future` conventions" with a link to ADR-0003. |
+| `.github/skills/prd-delivery/SKILL.md` | **Step 4 (verify):** add a check listing decisions taken during delivery that are not covered by an ADR, and raise or justify each. **Step 5 (close):** flip the PRD's ADRs to `accepted`; write an `AM-n` entry into every document named in "Effect on Earlier Documents", plus any other contradicted Complete PRD; keep the index row to one line. Replace "per `Docs/Future` conventions" with a link to ADR-0003. Its close-out already harvests deliberately-broken checks, measured baselines and the evidence's limits into the PRD before deleting the task list, so only the ADR flip and the amendments need adding. |
 | `.github/skills/prd-delivery/references/stage-plan.template.md` | Path update (D5). |
 | `.github/skills/adr/SKILL.md` (new) | Create an ADR from `Docs/adr/template.md` following `Docs/adr/README.md`, take the next number from the folder, fill in the front matter (with evidence for retroactive records), update the related instruction-file citations, and run `docs-check`. Never stages or commits, like the other skills. |
 | `Docs/adr/README.md` (new) | A hand-written "How this works" section (D8) above the generated index. |
@@ -839,7 +871,7 @@ Each phase ends with a stop for the owner’s review and an offered commit messa
 
 | Phase | Work | Output |
 | --- | --- | --- |
-| **0b. Re-baseline** | Follow [Before you start](#before-you-start-re-baseline-phase-0b), including the availability check for files that were missing on the planning machine. | This plan and `DECISIONS-TO-DISCUSS.md` updated in place, and the owner’s OK to start Phase 1. |
+| **0b. Re-baseline** — done 2026-11-02 | Ran at `9024e1d2`; the outcome is the [Phase 0b record](#phase-0b-record-completed-2026-11-02-at-9024e1d2). | This plan and `DECISIONS-TO-DISCUSS.md` updated in place. **Waiting only on the owner's OK to start Phase 1.** The three owner decisions the record lists are needed at Phase 2 (the instruction-file link) and Phase 5 (the Azure notes and the env template), so they gate nothing earlier. |
 | **1. Foundations** | Create `Docs/adr/` with `template.md`, the "How this works" README, ADR-0001 to 0004 and the generated index. Move the PRD template to `Docs/prd/template.md` (still under `Docs/Future/` until Phase 5) and write its "How this works" section. Write `Docs/README.md` (docs map plus the "where does X go" table). Build `docs-check.ps1` with its Pester tests and VS Code task. Make the skill and copilot-instructions changes from section 12. Create the `adr` skill and `AGENTS.md`. Create `Docs/standards/` (`server/`, `client/`, `api/`) with an empty rule-document template and the three standards ADRs. Renumber the section 8 backlog into a clean sequence, without the folded rows. | Conventions in place before any content moves. |
 | **2. Re-home the legacy ADRs** | Write ADR-0079 to 0082 from ADR-012 and ADR-0072 from ADR-014. Move ADR-012's reference content into `e2e/README.md`. Leave tombstones at the old paths. Fix the broken instruction-file link. | ADR-012 and ADR-014 retired. |
 | **3. Write the ADRs in themed batches** | Batches of 5–10 ADRs per commit, in this order: domain, then the API contract, security, backend, frontend, infrastructure. Each batch also adds the ADR citations to the instruction files. The `Ver` rows are checked against the code first. Each `Dec` row is written once its item in `DECISIONS-TO-DISCUSS.md` is decided. | The ADR series. |
@@ -1053,7 +1085,7 @@ Under D4, each of these gets a new `AM-n` entry.
 | PRD-001:78–80 | Storage read on render (S004–S006) | PRD-011 (URL is authoritative) |
 | PRD-009:155–157 | Package "current version is v3" | PRD-021 (v4) |
 | PRD-021:91–97 | Any column change bumps the version | PRD-023 OD-02 changed v4 in place |
-| PRD-012 NG5, D5, C2–C3, R3 / ADR-012 §1.3, §2, §14.2 | No email E2E; committed seeds only | PRD-031 mail sink and route provisioning (landed in `ee148852` and `5d9d9fad`; PRD-031 is still In Progress, so the entry is written when it closes) |
+| PRD-012 NG5, D5, C2–C3, R3 / ADR-012 §1.3, §2, §14.2 | No email E2E; committed seeds only | PRD-031 mail sink and route provisioning (landed in `ee148852` and `5d9d9fad`; PRD-031 completed 2026-11-02, so the entry is due) |
 | ADR-012 §5:185–203 | Three seeded users | Four now: `e2e_quickactions` was added, and PRD-022's two deletion identities were removed again by the PRD-031 work (`5d9d9fad`) |
 | ADR-012 §7:254–293 | "Every test belongs to one of two classes" | PRD-031 adds a third class, **destructive**, which provisions the tenant it destroys (`5d9d9fad`; e2e.instructions, e2e/README "Test isolation model") |
 | ADR-012 §6.2:227–243 | Auth fixtures include the deletion identities | Those fixtures were removed (`5d9d9fad`); `e2e/fixtures/auth.ts` exports four |
