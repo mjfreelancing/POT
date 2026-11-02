@@ -3494,7 +3494,7 @@ public sealed class CorsOptionsSetup : IConfigureOptions<CorsOptions>
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials()
-                .WithExposedHeaders("content-disposition", "location", "retry-after", CorrelationIdMiddleware.HeaderName)
+                .WithExposedHeaders(HeaderNames.ContentDisposition, HeaderNames.Location, HeaderNames.RetryAfter, CorrelationIdMiddleware.HeaderName)
                 .SetPreflightMaxAge(PreflightMaxAge);
         });
     }
@@ -5022,7 +5022,7 @@ public void Configure(CorsOptions options)
             .AllowCredentials()
 
             // Expose the download filename, a 201's resource URL, the 429 cooldown and the correlation id
-            .WithExposedHeaders("content-disposition", "location", "retry-after", CorrelationIdMiddleware.HeaderName)
+            .WithExposedHeaders(HeaderNames.ContentDisposition, HeaderNames.Location, HeaderNames.RetryAfter, CorrelationIdMiddleware.HeaderName)
 
             // Cache preflights for ten minutes instead of Chromium's five-second default
             .SetPreflightMaxAge(TimeSpan.FromMinutes(10));

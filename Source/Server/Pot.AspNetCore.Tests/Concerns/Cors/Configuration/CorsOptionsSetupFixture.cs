@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.Net.Http.Headers;
 using Pot.AspNetCore.Concerns.Cors.Configuration;
+using Pot.AspNetCore.Concerns.Middleware;
 using Shouldly;
 
 namespace Pot.AspNetCore.Tests.Concerns.Cors.Configuration;
@@ -46,7 +48,9 @@ public class CorsOptionsSetupFixture
         {
             var policy = GetDefaultPolicy("https://app.example.com");
 
-            policy.ExposedHeaders.ShouldBe(["content-disposition", "location", "retry-after", "X-Correlation-Id"], ignoreOrder: true);
+            policy.ExposedHeaders.ShouldBe(
+                [HeaderNames.ContentDisposition, HeaderNames.Location, HeaderNames.RetryAfter, CorrelationIdMiddleware.HeaderName],
+                ignoreOrder: true);
         }
 
         [Fact]
