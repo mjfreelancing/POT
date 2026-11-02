@@ -59,8 +59,8 @@ public class IsolationFixture : ScenarioFixtureBase
             HttpStatusCode.OK,
             $"removing a member of the caller's own tenant should succeed, but the API answered {(int)response.StatusCode}: {body}");
 
-        await AssertIsolationAsync(canaryBefore, canary.SiteRowId, targetBefore, target.SiteRowId, allowedRemovals,
-            cancellationToken);
+        await AssertIsolationAsync(canaryBefore, canary.SiteRowId, canary.Name, targetBefore, target.SiteRowId,
+            allowedRemovals, cancellationToken);
     }
 
     [Fact]
@@ -97,8 +97,8 @@ public class IsolationFixture : ScenarioFixtureBase
             HttpStatusCode.OK,
             $"an administrator should be able to remove their own account while another remains, but the API answered {(int)response.StatusCode}: {body}");
 
-        await AssertIsolationAsync(canaryBefore, canary.SiteRowId, targetBefore, target.SiteRowId, allowedRemovals,
-            cancellationToken);
+        await AssertIsolationAsync(canaryBefore, canary.SiteRowId, canary.Name, targetBefore, target.SiteRowId,
+            allowedRemovals, cancellationToken);
     }
 
     [Fact]
@@ -139,8 +139,8 @@ public class IsolationFixture : ScenarioFixtureBase
             HttpStatusCode.OK,
             $"removing the caller's own tenant should succeed, but the API answered {(int)response.StatusCode}: {body}");
 
-        var targetAfter = await AssertIsolationAsync(canaryBefore, canary.SiteRowId, targetBefore, target.SiteRowId,
-            allowedRemovals, cancellationToken);
+        var targetAfter = await AssertIsolationAsync(canaryBefore, canary.SiteRowId, canary.Name, targetBefore,
+            target.SiteRowId, allowedRemovals, cancellationToken);
 
         targetAfter.Tables.Values.ShouldAllBe(
             rows => rows.Count == 0,
@@ -152,13 +152,14 @@ public class IsolationFixture : ScenarioFixtureBase
     /// </summary>
     /// <param name="canaryBefore">The untouched tenant, captured before the action.</param>
     /// <param name="canarySiteRowId">The untouched tenant's identifier.</param>
+    /// <param name="canaryName">The untouched tenant's scenario name, so a failure says which tenant moved.</param>
     /// <param name="targetBefore">The tenant the action acted in, captured before the action.</param>
     /// <param name="targetSiteRowId">The tenant the action acted in.</param>
     /// <param name="allowedRemovals">The rows the action is allowed to have removed.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The acting tenant's fingerprint after the action.</returns>
     private async Task<TenantFingerprint> AssertIsolationAsync(TenantFingerprint canaryBefore, Guid canarySiteRowId,
-        TenantFingerprint targetBefore, Guid targetSiteRowId, IReadOnlySet<string> allowedRemovals,
+        string canaryName, TenantFingerprint targetBefore, Guid targetSiteRowId, IReadOnlySet<string> allowedRemovals,
         CancellationToken cancellationToken)
     {
         var canaryAfter = await CaptureAsync(canarySiteRowId, cancellationToken);
@@ -166,7 +167,8 @@ public class IsolationFixture : ScenarioFixtureBase
 
         var canaryDifference = canaryBefore.FindFirstDifference(canaryAfter);
 
-        canaryDifference.ShouldBeNull($"another tenant must be untouched by the action: {canaryDifference}");
+        canaryDifference.ShouldBeNull(
+            $"the canary tenant '{canaryName}' ({canarySiteRowId}) must be untouched by the action: {canaryDifference}");
 
         var unexpected = targetBefore.FindChanges(targetAfter)
             .Where(change => !change.WasRemoved || !allowedRemovals.Contains(change.Identify()))
