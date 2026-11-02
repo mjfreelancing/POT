@@ -20,9 +20,11 @@
 .PARAMETER Script
     The npm script to run when no test path is given. Defaults to the full matrix (e2e:all:dev).
 .PARAMETER TestPath
-    A single test file (or directory) to run instead of the script's own selection. The path is
-    placed BEFORE --project because Playwright's --project is variadic: a trailing path is parsed
-    as another project name and fails with "Project(s) ... not found".
+    A single test file (or directory) to run instead of the script's own selection. The script's
+    config is kept: the run is narrowed through the selection-free script that shares it (e2e:dev
+    or e2e:prodlike), and the path is placed BEFORE --project because Playwright's --project is
+    variadic: a trailing path is parsed as another project name and fails with
+    "Project(s) ... not found".
 .PARAMETER Project
     The project used with TestPath. Defaults to chromium, the fastest loop.
 .PARAMETER SampleSeconds
@@ -79,9 +81,36 @@ $npmArguments = @('run', $Script)
 $runLabel = "npm run $Script"
 
 if ($TestPath) {
-    # e2e:dev is the flagless `playwright test`, so the file filter can be placed first.
-    $npmArguments = @('run', 'e2e:dev', '--', $TestPath, "--project=$Project")
-    $runLabel = "playwright test $TestPath --project $Project"
+    # A test path replaces the script's selection but must keep the script's config, or the run would test a
+    # different build than the script names. The matrix scripts carry --project flags and Playwright's --project
+    # is variadic, so a path placed after them is read as another project name; narrow through the
+    # selection-free script that shares the config instead.
+    $selectionFreeScriptByScript = @{
+        'e2e'              = 'e2e:dev'
+        'e2e:dev'          = 'e2e:dev'
+        'e2e:all'          = 'e2e:dev'
+        'e2e:all:dev'      = 'e2e:dev'
+        'e2e:chromium'     = 'e2e:dev'
+        'e2e:edge'         = 'e2e:dev'
+        'e2e:mobile'       = 'e2e:dev'
+        'e2e:smoke'        = 'e2e:dev'
+        'e2e:smoke:headed' = 'e2e:dev'
+        'e2e:headed'       = 'e2e:dev'
+        'e2e:debug'        = 'e2e:dev'
+        'e2e:prodlike'     = 'e2e:prodlike'
+        'e2e:all:prodlike' = 'e2e:prodlike'
+    }
+
+    $selectionFreeScript = $selectionFreeScriptByScript[$Script]
+
+    if (-not $selectionFreeScript) {
+        # Running the path against a different config would test something other than what -Script names.
+        $message = "-TestPath has no config mapping for script '{0}'. Add it to the mapping in this script, or run '{0}' without -TestPath."
+        throw ($message -f $Script)
+    }
+
+    $npmArguments = @('run', $selectionFreeScript, '--', $TestPath, "--project=$Project")
+    $runLabel = "playwright test $TestPath --project $Project ($selectionFreeScript)"
 }
 
 New-Item -ItemType Directory -Path $logDirectory -Force | Out-Null
