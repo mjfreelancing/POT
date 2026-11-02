@@ -1,22 +1,33 @@
 # Decisions to discuss
 
-This file is the input to the per-item discussions agreed under D10 of `DOCS-REORGANISATION-PLAN.md`. It covers every `Dec` row in section 8 and every risk in section 11. Each brief says what the code does today (checked against the working tree on branch `v0.1-prod-022-030-doc-update-plan`), why it matters, the options, and a recommendation.
+Each brief is one undecided item from `DOCS-REORGANISATION-PLAN.md`: a `Dec` row in its section 8, or a code risk mapped in its section 11. It says what the code does today, why it matters, the options and a recommendation.
 
-How to answer: write your decision after `> **Your call:**` at the end of each brief. A short answer is fine ("Option B", "Keep, record honestly", "Defer until after PRD-019"). Add any conditions on the same line or the lines below.
+**Baseline:** commit `ceb57419`. Paths are relative to the repo root, and `path:line` references are to that commit.
 
-Nothing changes in code until a decision is approved. Where a decision changes code, a PRD is raised through the prd-discovery skill first. The ADR is written once the decision is made. Agents never generate EF migrations, so any option marked "DB migration" needs a human to generate it.
+**How to answer:** write your decision after `> **Your call:**` at the end of each brief. A short answer is fine ("Option B", "Keep, record honestly", "Defer until after PRD-019"). Add any conditions on the same line or the lines below.
 
-Paths are relative to the repo root. `path:line` references are to lines I read.
+**What happens next:**
 
-**Baseline:** the evidence was checked at commit `68ee3480`. The code and docs on `v0.1-prod-022-030` have moved on since then. Before acting on any decision, re-check its brief's evidence against the current code; a recommendation may change. The re-baseline step in `DOCS-REORGANISATION-PLAN.md` (Phase 0b) covers this for the migration.
+- Nothing changes in code until a decision is approved.
+- **A decision that changes code:** a PRD is raised through the prd-discovery skill first.
+- **The ADR** is written once the decision is made.
+- **Migrations:** agents never generate EF migrations, so any option marked "DB migration" needs a human to generate it.
+- **Once a brief is decided and recorded,** remove it from this file. Its outcome lives in the ADR, or in the PRD it raised.
 
-The briefs are ordered by severity, highest first. DD-13 to DD-16 were added later, from a review of the developer guides, so the IDs are not in sequence. The point that the server guide agrees with the code on DI scanning is folded into DD-10.
+**Before acting on a brief, re-check its evidence against the code at that time.** These briefs were written on a machine without the full repository. Several rely on something being absent:
+
+- DD-04, DD-06 and DD-16: no infrastructure-as-code;
+- DD-05: an empty `.github/workflows/`;
+- DD-06: the local data folders.
+
+Run the availability check in `DOCS-REORGANISATION-PLAN.md` ("Files reported as missing or unavailable") first. Never copy the contents of a git-ignored file into a brief or an ADR.
+
+The briefs are ordered by severity, highest first. A follow-up on an item already fixed is at the end.
 
 ## Summary
 
 | ID | Item | Severity | Recommendation | Needs migration? |
 | --- | --- | --- | --- | --- |
-| DD-01 | No forwarded headers: the anonymous rate limit and session IPs use the proxy's address | High (availability) | C: forwarded-headers middleware, after checking production session IPs | No |
 | DD-02 | Etag checked in code but not a database concurrency token; client types it as `bigint` | Med (integrity) | B + C: concurrency token, a monotonic value and `z.number()` | Model-only (empty migration) |
 | DD-03 | Money stored and calculated as `double` | Med (correctness) | C: `decimal` / `numeric(18,2)` end to end | Yes: DB + data |
 | DD-04 | Email queued in process; reminders assume one replica | Med (reliability) | A now (pin to one replica), C (the outbox PRD) later | Not for A; yes for C |
@@ -25,34 +36,13 @@ The briefs are ordered by severity, highest first. DD-13 to DD-16 were added lat
 | DD-07 | Client API types are hand-written | Med (drift) | B: generate types from the committed contract | No |
 | DD-14 | No policy for API/client version skew while an old PWA shell is cached | Med (skew) | A: record that no window exists, correct the guide | No |
 | DD-08 | One-time codes stored in plaintext, and written to logs | Low (contained) | B: stop logging codes; keep storage as-is | No |
-| DD-09 | Permission policies are string literals | Low (fails closed) | B: named constants and a test for every endpoint | No |
+| DD-09 | Permission policies are string literals | Low (fails closed) | B: named constants and a test for every endpoint (now one assertion over the new endpoint inventory) | No |
 | DD-10 | DI by marker-interface scanning: code and server guide agree, `server.instructions.md` does not | Low (documentation) | A: keep scanning, correct the instructions | No |
 | DD-13 | Features import other features (and shared layers import features) | Low (structure) | C: move auth and shared pieces into layers, enforce with lint | No |
 | DD-15 | `WhenNotNull()` on injected dependencies: the server guide and the instructions disagree | Low (consistency) | A: keep the guards, correct the instructions | No |
 | DD-11 | The prodlike E2E gate is per-PRD or on demand, depending on which doc you read | Low (documentation) | A: per client-affecting PRD, plus on demand | No |
 | DD-16 | No server health check in the prodlike compose stack | Low (local only) | B: readiness health check, client waits for it | No |
 | DD-12 | Smaller items (Cronos, sonner theme, animate plugin, EF InMemory, ERD path) | Low (housekeeping) | Per item, see brief | No |
-
----
-
-### DD-01 — No forwarded headers: the anonymous rate limit and session IPs use the proxy's address
-
-- **Backlog row:** 0039 (`Acc + Ver`).
-- **What the code does today:**
-  - There is no `UseForwardedHeaders` or `ForwardedHeadersOptions` anywhere in `Source/Server`. The pipeline is `UseCors`, `UseCorrelationId`, `UseAuthentication`, `UseAuthorization`, then `UseRateLimiter` (`Pot.AspNetCore/Program.cs:102-108`).
-  - Anonymous callers are partitioned on `ip:{httpContext.Connection.RemoteIpAddress}` (`Pot.AspNetCore/Concerns/RateLimiting/RateLimiterPolicy.cs:30-32`). Each partition gets a fixed window of 15 requests per 10 seconds (`RateLimiterDefaults.cs:17,24`).
-  - The whole auth group is rate limited (`Features/Auth/Extensions/WebApplicationExtensions.cs:18`). That covers login, refresh, sign-up and password reset. Refresh is anonymous (`Features/Auth/Extensions/RouteGroupBuilderExtensions.cs:36-41`), and the client's `authClient` sends only the cookie (`src/api/authClient.ts:20`). **So every token refresh, from every signed-in user, also lands in the anonymous bucket.**
-  - The same `RemoteIpAddress` is stored on every session (`Features/Auth/Login/Handler.cs:28` → `AuthSessionService.cs:40` → `AuthSessionEntity.cs:33-34`).
-  - **Correction to the plan:** "behind nginx" is true only of the local Docker stack. There, `Source/Docker/Client/nginx.conf:38-49` proxies `/api/` without setting `X-Forwarded-For`. In Azure, `nginx.azure.conf` has no `/api` location: the client calls `https://api.payontime.com.au/api` directly (`.vscode/tasks.json:108`). The only proxy in Azure is the Container Apps ingress (Envoy).
-- **Why it matters:** Behind the ingress, `RemoteIpAddress` is expected to be the ingress's internal address, so all anonymous traffic shares one bucket. As few as two or three users signing in, or refreshing tokens, at the same moment can get 429s. One script hitting `/api/auth/login` can lock everyone out of signing in. The brute-force protection per IP is also meaningless. **You can check this without any code change:** if `AuthSessions.IpAddress` in production holds the same private address on every row, the problem is real.
-- **Options:**
-  - **A. Keep as-is (record honestly).** The ADR records that the anonymous limit is effectively global behind a proxy. Effort: none.
-  - **B. Raise the anonymous limit through configuration as a stopgap.** The limits can be overridden by configuration (`RateLimiterDefaults.cs:8`). Effort S. Config/infra only. Brute-force protection gets weaker.
-  - **C. Add the forwarded-headers middleware.** Run it before CORS, with `XForwardedFor | XForwardedProto` and `ForwardLimit = 1`. Trust only the ingress network (or clear `KnownNetworks`, because Container Apps can only be reached through the ingress). Add `proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;` to the local `nginx.conf`. Effort S. No migration, no contract change, no client change. Infra: confirm the ingress sets `X-Forwarded-For`, then check the stored session IPs after deploying.
-- **Recommendation:** C, after the session-IP check confirms the problem. It is a small change that restores both the per-IP limit and accurate session records.
-- **Route if changed:** raise a PRD via the prd-discovery skill (server and local nginx config only).
-
-> **Your call:**
 
 ---
 
@@ -85,7 +75,7 @@ The briefs are ordered by severity, highest first. DD-13 to DD-16 were added lat
 - **What the code does today:**
   - Stored money is `double` / `double precision`: `AccountEntity.cs:15-16` (Balance, Reserved), `ExpenseEntity.cs:25` and `IncomeEntity.cs:23` (Amount). The current model snapshot confirms `double precision` (`Pot.Data/Migrations/PotDbContextModelSnapshot.cs:34-46,147-148,208-209`).
   - Every input and output model, the CSV import/export rows and the export metadata use `double` (for example `Features/Accounts/Get/Models/Output.cs:8-16`, `Features/Maintenance/Import/Models/ExpenseCsvRow.cs:63`, `Metadata/Models/MetadataV1.cs:14-63`). Altogether, 116 server files mention `double`.
-  - **Partly wrong in the plan:** "rounded to 2 dp away from zero" applies only to each expense's accrued amount (`Pot.App/Calculators/AccrualCalculator.cs:220`). The totals are summed unrounded (`:66-79`), and so is the daily rate (`:237`, `:241`). The derived `Available` is unrounded too (`Accounts/Get/Models/Output.cs:16`). The comment at `AccrualCalculator.cs:18` claims all monetary results are rounded.
+  - "Rounded to 2 dp away from zero" applies only to each expense's accrued amount (`Pot.App/Calculators/AccrualCalculator.cs:220`). The totals are summed unrounded (`:66-79`), and so is the daily rate (`:237`, `:241`). The derived `Available` is unrounded too (`Accounts/Get/Models/Output.cs:16`). The comment at `AccrualCalculator.cs:18` claims all monetary results are rounded.
   - The contract publishes money as `number|string`, `format: double` (`contracts/openapi/v1.json:6869-6876`). The client uses `MoneyValue = number` (`src/lib/types.ts:3`) and formats it with `Intl.NumberFormat`, AUD / en-AU by default (`src/lib/moneyUtils.ts:22-35`).
 - **Why it matters:** Binary floating point cannot hold most cent values exactly. Sums of many amounts drift, for example 0.1 + 0.2 = 0.30000000000000004. Display rounding hides most of this. It shows up as a `-$0.00` available balance, a comparison against zero that goes the wrong way, CSV exports with long fractions, and tests that need tolerances. The cost of switching grows with every feature and every row of data.
 - **Options:**
@@ -109,7 +99,7 @@ The briefs are ordered by severity, highest first. DD-13 to DD-16 were added lat
   - Database migrations also run on every container start (`Source/Docker/Server/entrypoint.sh`).
   - PRD-019 (outbox and durable dispatch) is **Proposed**, priority High, dated 2026-09-23 (`Docs/Future/README.md:36`). PRD-018 is its prerequisite and is also Proposed (`:35`).
   - The repo has no infrastructure-as-code, so the replica count in Azure cannot be confirmed from the code.
-  - **The plan's claim is correct, and understates the problem.** Duplicates happen with one replica too, not just with several. A restart inside the trigger hour sends that hour's reminder again. A failed SMTP send is lost even when the process does not restart.
+  - **Duplicates happen with one replica too,** not just with several. A restart inside the trigger hour sends that hour's reminder again. A failed SMTP send is lost even when the process does not restart.
 - **Why it matters:** A user who requests a sign-up code during a deploy may never receive it. If the container restarts at 07:20 and reminders go out at 07:00, every admin gets a second reminder. Scaling to two replicas doubles every reminder and runs migrations concurrently.
 - **Options:**
   - **A. Keep as-is (record honestly), and pin Azure to one replica.** Set the Container App's minimum and maximum replicas to 1. The ADR states the single-replica constraint and the loss and duplicate cases. Effort S. Infra change only.
@@ -129,7 +119,6 @@ The briefs are ordered by severity, highest first. DD-13 to DD-16 were added lat
   - `.github/workflows/` exists but is empty and untracked.
   - Deployment uses two VS Code tasks (`.vscode/tasks.json:93-117`). They run `docker build --no-cache` from the local working tree and `docker push ghcr.io/mjfreelancing/pot-{server,client}:latest` (`:95`, `:108`). No tests or lint run first.
   - The server image runs migrations at start-up (`Source/Docker/Server/entrypoint.sh`).
-  - **The plan's claim is correct.**
 - **Why it matters:** Uncommitted or failing code can ship. There is no record of which commit is in production, and `:latest` gives no image to roll back to. Nothing checks that the committed OpenAPI document matches the build. The planned `docs-check` script (D11) would also have nowhere to run.
 - **Options:**
   - **A. Keep as-is (record honestly).** The ADR records manual build and deploy, and its consequences. Effort: none.
@@ -147,14 +136,19 @@ The briefs are ordered by severity, highest first. DD-13 to DD-16 were added lat
 - **Backlog row:** 0051 (`Dec`).
 - **What the code does today:**
   - EF is told the server is 13.6: `options.SetPostgresVersion(new Version(13, 6))` (`Pot.Data/Extensions/DbContextOptionsBuilderExtensions.cs:11`).
-  - These all run `postgres:13`: the Docker stack (`Source/Docker/Postgres/Dockerfile:16`), the standalone stacks (`Data/Local Docker/docker-compose.yml:22`, `Data/E2E Docker/docker-compose.yml:22`) and the server integration tests (`Pot.AspNetCore.Integration.Tests/IntegrationFixtureBase.cs:66`).
-  - **Not in the plan:** Playwright E2E uses `postgres:16` (`Source/Client/pot-react/playwright.globalSetup.ts:505`), so there are three versions in use.
+  - These all run `postgres:13`:
+    - the Docker stack (`Source/Docker/Postgres/Dockerfile:16`);
+    - the standalone stacks (`Data/Local Docker/docker-compose.yml:23`, and `Data/Seed Docker/docker-compose.yml:25`, renamed from `Data/E2E Docker` in `2d1e23ec`);
+    - the server integration tests (`Pot.AspNetCore.Integration.Tests/IntegrationFixtureBase.cs:96`, with a matching doc comment in `Host/ApiWebApplicationFactory.cs:49`).
+
+    The compose file's comments also name it (`docker-compose-client-server.yml:82,92`).
+  - Playwright E2E uses `postgres:16` (`Source/Client/pot-react/playwright.globalSetup.ts:516`), so there are three versions in use.
   - The only source for "Azure runs 17.6" is a diagram label (`Docs/Azure/POT-Azure-Diagram.mmd:18`). There is no infrastructure-as-code to confirm it.
   - PostgreSQL 13 reached end of life in November 2025.
 - **Why it matters:** The integration tests prove behaviour on 13, but production runs 17. Differences in planner behaviour, `citext`, collation and new defaults would show up in production first. The 13.6 hint is harmless against a 17 server: EF just avoids newer SQL. The real risk is the drift between test and production, and running an unsupported version locally.
 - **Options:**
   - **A. Keep as-is (record honestly).** The ADR records all three versions and the drift. Effort: none.
-  - **B. Align everything on the Azure version.** First confirm the Azure server version in the portal. Then update the Dockerfile, both compose files, the integration-test image, the Playwright image and `SetPostgresVersion`. Effort S. No EF migration. **Local data:** the existing `Source/Docker/postgres-data` directory is a version 13 cluster and will not start under 17. You would need to dump and restore it, or recreate it, yourself; agents never touch that folder.
+  - **B. Align everything on the Azure version.** First confirm the Azure server version in the portal. Then update the Dockerfile, both compose files, the integration-test image, the Playwright image and `SetPostgresVersion`. Effort S. No EF migration. **Local data:** the existing `Source/Docker/postgres-data` directory, and the `postgres-data` folders under `Data/Local Docker` and `Data/Seed Docker`, are version 13 clusters and will not start under 17. You would need to dump and restore it, or recreate it, yourself; agents never touch that folder.
   - **C. B plus a single source for the version.** Put the image tag in `Source/Docker/.env` and the test configuration, so the version cannot drift again. Effort M.
 - **Recommendation:** B. It is a small change that makes the tests prove the production engine. C is worth it only if the version drifts again.
 - **Route if changed:** raise a PRD via the prd-discovery skill. The local data rebuild is a manual step for you.
@@ -171,7 +165,6 @@ The briefs are ordered by severity, highest first. DD-13 to DD-16 were added lat
   - The client has no codegen dependency (`Source/Client/pot-react/package.json`). Its API types are Zod schemas in `src/data/*.ts`, used only through `z.infer`. Nothing in `src/` calls `.parse` or `.safeParse` on API data. Responses are `JSON.parse(text) as unknown` and then cast (`src/api/apiHelpers.ts:88`).
   - In the contract, numbers are typed `["number","string"]` with a pattern (for example `v1.json:6869-6876`), because the server accepts numeric strings when reading.
   - The Etag type mismatch in DD-02 is one drift this has already let through.
-  - **The plan's claim is correct.**
 - **Why it matters:** A renamed or retyped server field compiles on both sides and fails only at runtime, usually as `undefined` in the UI. Nothing in the build compares the client with the contract.
 - **Options:**
   - **A. Keep as-is (record honestly).** The ADR records hand-written types, and that the contract is a reference, not a source. Effort: none.
@@ -213,7 +206,7 @@ The briefs are ordered by severity, highest first. DD-13 to DD-16 were added lat
   - `RefCode` and `OtpCode` are six-digit strings stored as-is (`Pot.Data/Entities/OneTimePasswordEntity.cs:51-59`). They are generated with `RandomNumberGenerator` (`Pot.App/Features/Auth/OtpGenerator.cs:20`), expire after 15 minutes (`Features/Otp/OtpService.cs:23,152`), allow 3 attempts (`Features/Auth/VerificationServiceBase.cs:26,128-134`), and are checked with a plain `==` (`:106`).
   - The temporary password is stored only as a hash (`OneTimePasswordEntity.cs:65-66`). A successful reset sets the user's password to that hash (`PasswordReset/Verify/VerifyPasswordResetService.cs:84`). **So a stolen code alone does not let anyone sign in.** Signing in still needs the emailed temporary password. Someone who already knows the username can use a stolen code to complete a pending reset, which stops the old password working.
   - `RefCode` is not a secret: it is returned to the browser (`Signup/Request/RequestSignupService.cs:71`).
-  - **Not in the plan:** the verification code is written to the logs. `LogCall(…, new { Username, ReferenceCode, VerificationCode })` appears at `VerifyPasswordResetService.cs:63`, `Signup/Complete/VerifySignupService.cs:78` and the two handlers (`Pot.AspNetCore/Features/Auth/PasswordReset/Verify/Handler.cs:16`, `Signup/Complete/Handler.cs:17`). `LogCall` defaults to `Information` (AllOverIt.Logging 9.4.0), and the default level is `Information` (`Pot.AspNetCore/appsettings.json:4`).
+  - **The verification code is written to the logs.** `LogCall(…, new { Username, ReferenceCode, VerificationCode })` appears at `VerifyPasswordResetService.cs:63`, `Signup/Complete/VerifySignupService.cs:78` and the two handlers (`Pot.AspNetCore/Features/Auth/PasswordReset/Verify/Handler.cs:16`, `Signup/Complete/Handler.cs:17`). `LogCall` defaults to `Information` (AllOverIt.Logging 9.4.0), and the default level is `Information` (`Pot.AspNetCore/appsettings.json:4`).
 - **Why it matters:** Anyone with read access to the database or the logs can see live codes for 15 minutes. Because of the hashed temporary password, the damage is limited to forcing a pending reset or sign-up through. That is real but contained. Secrets in logs are the more general problem, because logs are kept longer and shared more widely than the database.
 - **Options:**
   - **A. Keep as-is (record honestly).** The ADR records plaintext storage and the reasons the impact is limited. Effort: none.
@@ -234,11 +227,12 @@ The briefs are ordered by severity, highest first. DD-13 to DD-16 were added lat
   - The permissions already exist as an enriched enum (`Pot.Shared/Enumerations/Permission.cs:9-20`, 12 values). Approvals uses a constant (`AuthorizationPolicies.PlatformManage`).
   - `PermissionAuthorizationPolicyProvider.cs:22-34` turns any unknown policy name into a permission requirement, so a typo is never rejected; it just never matches (`PermissionAuthorizationHandler.cs:34`).
   - `EndpointAuthorizationMetadataFixture` checks that every endpoint is protected or on the anonymous allow-list, and pins the exact policy on 8 routes only.
-  - **The plan's claim is correct.** A typo fails closed (403), so it is a defect, not a security hole.
+  - `AuthorizationMatrixFixture` exercises every documented operation anonymously, as Admin and as Viewer. **It does not catch a typo.** It reads each endpoint's declared policies (`Pipeline/Support/EndpointRequirements.cs`) and derives the expected answer from them (`EndpointRequirement.Allows`). A misspelt policy is therefore expected to answer 403 to everyone, and it does. It does, though, already enumerate every endpoint's policies, which is exactly the input option B's test needs.
+  - A typo fails closed (403), so it is a defect, not a security hole.
 - **Why it matters:** A misspelt policy on a new endpoint ships, and every user gets a 403 on that endpoint until someone notices. Today only 8 routes would catch this in a test.
 - **Options:**
   - **A. Keep as-is (record honestly).** Effort: none.
-  - **B. Use names from `Permission` (or constants generated from it) at every endpoint, and add one fixture test.** The test asserts that every policy on every endpoint is a known `Permission` name or an `AuthorizationPolicies` constant. Effort S. No migration, contract or client change.
+  - **B. Use names from `Permission` (or constants generated from it) at every endpoint, and add one fixture test.** The test asserts that every policy on every endpoint is a known `Permission` name or an `AuthorizationPolicies` constant. It can be a single assertion over `EndpointRequirements`, beside the matrix. Effort S. No migration, contract or client change.
   - **C. Make the provider reject unknown names.** It returns `null`, so ASP.NET Core throws. This is loud, but only at runtime on that endpoint. Effort S.
 - **Recommendation:** B. The test alone catches every typo at build time, and the constants make typos unlikely in the first place.
 - **Route if changed:** raise a PRD via the prd-discovery skill (server only).
@@ -251,12 +245,12 @@ The briefs are ordered by severity, highest first. DD-13 to DD-16 were added lat
 
 - **Backlog row:** 0044 (`Dec`).
 - **What the code does today:**
-  - Each layer has an empty `ServiceRegistrarBase` marker (for example `Pot.Data/PotDataRegistrar.cs:6`). Each scans for `IPotScopedDependency` and `IPotSingletonDependency` (`Pot.App/Extensions/ServiceCollectionExtensions.cs:14-38`, `Pot.AspNetCore/Extensions/WebApplicationBuilderExtensions.cs:447,463`, `Pot.Data/Extensions/ServiceCollectionExtensions.cs:11,20`, `Pot.EmailSender/Extensions/ServiceCollectionExtensions.cs:12`).
+  - Each layer has an empty `ServiceRegistrarBase` marker (for example `Pot.Data/PotDataRegistrar.cs:6`). Each scans for `IPotScopedDependency` and `IPotSingletonDependency` (`Pot.App/Extensions/ServiceCollectionExtensions.cs:14-38`, `Pot.AspNetCore/Extensions/WebApplicationBuilderExtensions.cs:457,473`, `Pot.Data/Extensions/ServiceCollectionExtensions.cs:11,20`, `Pot.EmailSender/Extensions/ServiceCollectionExtensions.cs:12`).
   - About 108 interfaces extend a marker (99 of them in `Pot.App`). 91 `Pot.App` files reference `IPotScopedDependency` and 10 reference `IPotSingletonDependency`. No class implements a marker directly, so every scanned service has an interface, even when there is only one implementation.
   - Tests depend on this: there are about 354 `Substitute.For<I…>`-style substitutions (NSubstitute).
-  - **The server guide agrees with the code.** `Source/Server/DEVELOPER.md:5026-5223` ("Dependency Injection", "Auto-Registration Pattern") describes the scanning. The worked example says "No manual registration needed" and points to `AutoRegisterScoped<DependencyRegistrar, IPotScopedDependency>` (`DEVELOPER.md:875-889`).
-  - **`.github/instructions/server.instructions.md:63-65` is the only outlier.** It says to register concrete classes, and to add an interface only for multiple implementations, a public boundary or a test seam.
-  - **Partly right in the plan:** the instruction's "small set of composition-root methods" rule *is* met. The "interface only when needed" rule is the one contradicted.
+  - **The server guide agrees with the code.** `Source/Server/DEVELOPER.md:5065-5262` ("Dependency Injection", "Auto-Registration Pattern") describes the scanning. The worked example says "No manual registration needed" and points to `AutoRegisterScoped<DependencyRegistrar, IPotScopedDependency>` (`DEVELOPER.md:876-890`).
+  - **`.github/instructions/server.instructions.md:64-66` is the only outlier.** It says to register concrete classes, and to add an interface only for multiple implementations, a public boundary or a test seam.
+  - The instruction's "small set of composition-root methods" rule *is* met. The "interface only when needed" rule is the one contradicted.
 - **Why it matters:** Agents follow the instruction file, which takes precedence over the guide for them. A new service written to the instruction (concrete, no interface) is never registered, and fails at runtime with "unable to resolve". The code and the guide are consistent; only the instruction is wrong.
 - **Options:**
   - **A. Keep scanning, and change the instructions to describe it (record honestly).** New services implement an interface that extends the right marker; the test seam is the accepted reason for the interface. Effort S. Docs only.
@@ -282,7 +276,7 @@ The briefs are ordered by severity, highest first. DD-13 to DD-16 were added lat
     For example: `src/features/accounts/AccountsPage.tsx:16`, `src/features/userSettings/delete/DeleteAccountAction.tsx:6-8`.
   - `dashboard` imports `renewExpenses` and `renewIncomes` from `expenses` and `incomes` (`src/features/dashboard/actions/accruals/RenewExpensesAction.tsx:12`, `RenewIncomesAction.tsx:12`). These are plain mutation-plus-cache-invalidation helpers (`src/features/expenses/bulkActions/renew.ts`).
   - `expenses` and `incomes` import `@/features/shared/sheets/asyncSheetStates` (for example `src/features/expenses/edit/EditExpenseSheet.tsx:10`). That is a folder under `features/` acting as a shared layer.
-  - **Not in the item as raised: the shared layers also import features**, which breaks the one-way rule in row 0061:
+  - **The shared layers also import features**, which breaks the one-way rule in row 0061:
     - `src/api/hooks/useMe.ts:2` and `src/api/hooks/useSignup.ts:1` (auth);
     - `src/components/nav/AppSidebarMenus.tsx:16-18` (auth, maintenance);
     - `src/components/user/UserMenu.tsx:13-14` (auth, userSettings);
@@ -303,7 +297,7 @@ The briefs are ordered by severity, highest first. DD-13 to DD-16 were added lat
 
 - **Backlog row:** none.
 - **What the code does today:**
-  - The server guide's service pattern says "All dependencies validated with `.WhenNotNull()`" (`Source/Server/DEVELOPER.md:1874`). Its example matches `Pot.App/Features/Accounts/Create/CreateAccountService.cs:27-30`.
+  - The server guide's service pattern says "All dependencies validated with `.WhenNotNull()`" (`Source/Server/DEVELOPER.md:1875`). Its example matches `Pot.App/Features/Accounts/Create/CreateAccountService.cs:27-30`.
   - `.github/instructions/allsoverit-patterns.instructions.md:18` (reworked 2026-10-03, commit `8140ff76`) says the opposite: "Constructor parameters resolved by DI need no null guard … Keep `WhenNotNull()` … only when the class is also created by a factory that may pass `null`."
   - The code follows the guide. There are 356 `_x = x.WhenNotNull();` assignments in 157 non-test server files, against 25 plain `_x = x;` assignments (a few of which are not DI constructors).
   - Removing the guards has no test cost: I found no constructor null-guard tests for services. The 63 "Should_Throw_When_…_Null" tests cover method arguments, for example `Pot.App.Tests/Calculators/AccrualCalculatorFixture.cs:73`.
@@ -323,10 +317,11 @@ The briefs are ordered by severity, highest first. DD-13 to DD-16 were added lat
 
 - **Backlog row:** 0082 (`Acc + Dec`).
 - **What the code does today:**
-  - "On demand" only, run "when the client production build changes … and before releases": `Source/Client/pot-react/e2e/README.md:122-133`, and `Docs/Future/ADR-012-playwright-e2e-testing-infrastructure.md:147-165` and `:402`.
+  - "On demand" only, run "when the client production build changes … and before releases": `Source/Client/pot-react/e2e/README.md:142-153`, and `Docs/Future/ADR-012-playwright-e2e-testing-infrastructure.md:147-165` and `:402`.
   - "The completion gate for client-affecting work … when such a PRD completes, and on demand when the client production build changes": `.github/instructions/e2e.instructions.md:13`.
-  - The same per-PRD rule appears in `.github/skills/prd-delivery/SKILL.md:15,64,84`, `prd-delivery/references/stage-plan.template.md:46` and `.github/skills/run-tests/SKILL.md:56-57`.
-  - **Partly right in the plan:** the guidance agents follow is consistent (per client-affecting PRD, plus on demand). Only the human-facing README and ADR-012 disagree. There are no formal "releases" (see DD-05), so "before releases" has no trigger.
+  - The same per-PRD rule appears in `.github/skills/prd-delivery/SKILL.md:15,64,84`, `prd-delivery/references/stage-plan.template.md:46` and `.github/skills/run-tests/SKILL.md:57-58`.
+  - `prd-delivery` step 4.8 also asks, at completion, whether to run two opt-in tiers. One is the scenario tier; the other is the browser tier, which is the **dev** matrix (`e2e:all:dev`). This is separate from the prodlike gate at step 4.6, and it does not change the disagreement above.
+  - The guidance agents follow is consistent (per client-affecting PRD, plus on demand). Only the human-facing README and ADR-012 disagree. There are no formal "releases" (see DD-05), so "before releases" has no trigger.
 - **Why it matters:** This is documentation only. Someone working from the README skips a gate that the delivery skill enforces, or the other way round.
 - **Options:**
   - **A. Per client-affecting PRD at completion, plus on demand when the production build changes.** Update the README and the new ADR to match the skills. Effort S. Docs only.
@@ -350,9 +345,8 @@ The briefs are ordered by severity, highest first. DD-13 to DD-16 were added lat
     - `client` uses a plain `depends_on: - server` (`:486-489`).
   - The client's own health check probes the **server**: `wget … http://server:5241/_health` (`:530`). So the client container's health reports the API's liveness, not nginx's.
   - The server image has no `HEALTHCHECK` (`Source/Docker/Server/Dockerfile`). Its entrypoint runs migrations before the API starts listening (`Source/Docker/Server/entrypoint.sh`).
-  - The API exposes `/_health` (liveness) and `/_health/ready` (readiness, including the database) (`Pot.AspNetCore/Program.cs:75,86`).
-  - `Source/Docker/DEVELOPER.md:87-91`, `:296-298` and `:619-647` describe the gap, and propose a `wget` check on `/_health` with a 40s start period. The image ships BusyBox `wget` but not `curl`.
-  - **The item is correct.**
+  - The API exposes `/_health` (liveness) and `/_health/ready` (readiness, including the database) (`Pot.AspNetCore/Program.cs:82,93`).
+  - `Source/Docker/DEVELOPER.md:88-92`, `:298-300` and `:621-649` describe the gap, and propose a `wget` check on `/_health` with a 40s start period. The image ships BusyBox `wget` but not `curl`.
 - **Why it matters:** On a cold start, the browser can load the client while the API is still migrating, and the first requests fail. The guide's workaround is "Refresh if the first request fails". This affects the local prodlike stack only. Azure uses Container Apps probes, which are not in the repo and cannot be checked from the code.
 - **Options:**
   - **A. Keep as-is (record honestly).** Effort: none.
@@ -369,10 +363,10 @@ The briefs are ordered by severity, highest first. DD-13 to DD-16 were added lat
 
 - **Backlog rows:** none directly, apart from 0058 (server test strategy) for 12d and the plan's section 6.3 note for 12e.
 - **What the code does today, item by item:**
-  - **12a — Cronos.** Referenced at `Source/Server/Directory.Packages.props:21` and `Pot.AspNetCore/Pot.AspNetCore.csproj:17`. No `using Cronos` or other use anywhere. **Correct.**
-  - **12b — sonner and next-themes.** `src/components/ui/sonner.tsx:10,14` calls `useTheme` from `next-themes`, but no `next-themes` provider is mounted, so `theme` is always `"system"`. The app's own `ThemeProvider` (`src/App.tsx:56`) exports its own `useTheme` (`src/components/theme/ThemeProvider.tsx:109`). Toasts follow the OS setting, not the user's chosen theme. The colours mostly come from the app's CSS variables, so the visible effect is small. **Correct.**
-  - **12c — tailwindcss-animate.** Loaded with `@plugin "tailwindcss-animate"` (`src/index.css:3`) and used in about 15 places (`animate-in`, `fade-in-…`). **Partly right:** it is a v3-era plugin, but Tailwind 4 loads it through `@plugin` and it works. The issue is maintenance, not breakage. shadcn now recommends `tw-animate-css` for v4.
-  - **12d — EF InMemory.** **Partly wrong in the plan:** the plan says the App unit tests use it, but most use is in `Pot.Data.Tests`. 15 repository test files use `UseInMemoryDatabase`, against 4 in `Pot.App.Tests` (for example `Features/Accounts/Create/EntityChecks/Checks/CheckDescriptionDoesNotExistFixture.cs:99`). InMemory ignores `citext` (`Pot.Data/DbContextBase.cs:73`), unique indexes and SQL translation, so the case-insensitive duplicate checks are not really tested there. The Testcontainers integration project covers some of this.
+  - **12a — Cronos.** Referenced at `Source/Server/Directory.Packages.props:21` and `Pot.AspNetCore/Pot.AspNetCore.csproj:17`. No `using Cronos` or other use anywhere.
+  - **12b — sonner and next-themes.** `src/components/ui/sonner.tsx:10,14` calls `useTheme` from `next-themes`, but no `next-themes` provider is mounted, so `theme` is always `"system"`. The app's own `ThemeProvider` (`src/App.tsx:56`) exports its own `useTheme` (`src/components/theme/ThemeProvider.tsx:109`). Toasts follow the OS setting, not the user's chosen theme. The colours mostly come from the app's CSS variables, so the visible effect is small.
+  - **12c — tailwindcss-animate.** Loaded with `@plugin "tailwindcss-animate"` (`src/index.css:3`) and used in about 15 places (`animate-in`, `fade-in-…`). It is a v3-era plugin, but Tailwind 4 loads it through `@plugin` and it works. The issue is maintenance, not breakage. shadcn now recommends `tw-animate-css` for v4.
+  - **12d — EF InMemory.** Most use is in `Pot.Data.Tests`, not the App unit tests. 15 repository test files use `UseInMemoryDatabase`, against 4 in `Pot.App.Tests` (for example `Features/Accounts/Create/EntityChecks/Checks/CheckDescriptionDoesNotExistFixture.cs:99`). InMemory ignores `citext` (`Pot.Data/DbContextBase.cs:73`), unique indexes and SQL translation, so the case-insensitive duplicate checks are not really tested there. The Testcontainers integration project covers some of this.
   - **12e — ERD path.** `Pot.Data.Migrations/App.cs:61` writes to `"..\\..\\..\\..\\..\\..\\Docs\\pot_erd.d2"`, only in Development. The path is relative to the working directory, uses Windows separators, and assumes the app is run from `bin/<config>/<tfm>`. **Correct.**
 - **Why it matters:** none of these breaks production. 12d is the one that can hide a real defect.
 - **Options and recommendation per item** (all effort S, no migration, no contract change):
@@ -392,3 +386,14 @@ The briefs are ordered by severity, highest first. DD-13 to DD-16 were added lat
 > **12d Your call:**
 
 > **12e Your call:**
+
+---
+
+## Follow-up: forwarded headers (fixed in `ceb57419`)
+
+The forwarded-headers problem is fixed. Its trust model is recorded in backlog rows 0084 and 0039. Two small items remain:
+
+1. **After the next deploy:** confirm that `AuthSessions.IpAddress` in production holds real client addresses, not the ingress's private address.
+2. **Local prodlike stack only:** `Source/Docker/Client/nginx.conf` proxies `/api/` without `X-Forwarded-For`, so locally every anonymous caller shares nginx's rate-limit partition. Fixing it is one line: `proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`.
+
+> **Your call (item 2):**
