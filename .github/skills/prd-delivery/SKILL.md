@@ -12,7 +12,7 @@ A PRD reaches this skill from `prd-discovery`, which writes the durable PRD and 
 
 Every stage and sub-task is numbered (Stage 1 holds tasks `1.1`, `1.2`, …; Stage 2 holds `2.1`, `2.2`, …) so work can be referenced precisely — the human can say "do task 2.3". Each sub-task carries a checkbox the agent ticks as it implements it, and each stage reports its progress.
 
-Client E2E is gated on client code: the dev suite (`npm run e2e:all:dev`) is opt-in at each client-changing stage, and the prodlike suite (`npm run e2e:all:prodlike`) runs once at completion. Server-only work never triggers E2E.
+Client E2E is gated on client code: the dev suite (`npm run e2e:all:dev`) is opt-in at each client-changing stage, and the prodlike suite (`npm run e2e:all:prodlike`) runs once at completion. Server-only work never triggers E2E if there is no impact to the client.
 
 Use this skill only for PRDs under `Docs/Future/`. For general multi-stage work, use the `feature-implementation` skill.
 
@@ -28,7 +28,7 @@ Use this skill only for PRDs under `Docs/Future/`. For general multi-stage work,
 - **Block unless approved.** Start only when the PRD `Status` is `Planned` (approved and ready) or `In Progress` (resuming). When it is anything else — `Proposed`, `Planning`, `Proposed (discovery draft)` or `Complete` — **block**: do not write the plan or touch code, report the status and what is required, and stop.
 - **The PRD stays editable during delivery.** While its `Status` is `Planned` or `In Progress`, the human may review and edit the PRD. Re-read it at the start of each stage and reconcile the TASKS plan if it changed; do not treat the PRD as frozen.
 - **Track progress in the plan.** Tick each sub-task's checkbox (`- [x]`) as it is implemented and keep each stage's `Progress: n/total complete` line accurate. Reference work by task number (e.g. `2.3`) in summaries and questions.
-- **Never generate EF Core migrations.** If a stage changes schema, tell the developer to run and review `add-migration`.
+- **Never generate EF Core migrations.** If a stage changes schema, ask the developer to add a migration and review it; `Running things` in `.github/copilot-instructions.md` has the command.
 - **Stay inside PRD scope.** Do not refactor unrelated code or change public API shape beyond what the PRD specifies; ask if scope is unclear.
 - **Never reference PRDs, ADRs, task lists, stage numbers or requirement IDs in code, tests, comments or test names.** Those belong only inside `Docs/Future/` (the plan file lives there, so references to the PRD are fine in it).
 - Obey the scoped `.github/instructions/` file for every area the stage touches, and never touch `Source/Docker/postgres-data/**`.
@@ -87,7 +87,12 @@ After the last stage is implemented and reviewed, and before the PRD is marked C
    - **Scenario tier** — `dotnet test Pot.AspNetCore.Integration.Tests/Pot.AspNetCore.Integration.Tests.csproj --nologo --verbosity minimal --filter "FullyQualifiedName~Scenarios"` — provisions tenants through the product's own routes (sign-up, approval, invitation, one-time code) and asserts that provisioning itself, which the ordinary suite only exercises in passing.
    - **Browser tier** — `npm run e2e:preflight`, then `npm run e2e:all:dev` (or `npm run e2e:all:dev:log` when the run's evidence should be kept) — the Playwright journeys across the full browser matrix, including the destructive specs that provision and then destroy their own tenant.
      Run whichever the human asks for, and report each one's duration and result: both tiers report their duration when they finish. If the human declines, say so plainly in the report and record that the always-on tier is the assurance for this delivery.
-9. **Report and stop.** Summarize the requirement table, the build and warning results, the suite results, the E2E gate, the opt-in tiers that were run or declined, and the coverage outcome, then stop for final approval. No bookkeeping happens before the human approves.
+9. **List the decisions delivery took that no ADR covers.** Re-read the work: a shape chosen because
+   the first attempt failed, a contract detail settled in a stage, a constraint discovered late. For each
+   one, decide whether it meets the significance test in the "When to write one" section of
+   [the ADR guide](../../../Docs/adr/README.md). Ask, and if approved, raise a `proposed` ADR for each that does, and name it in the report. For each that does not, say in one line why it is a rule or a product detail instead. A
+   delivery that reports "no ADR needed" without listing what it considered has not done this check.
+10. **Report and stop.** Summarize the requirement table, the build and warning results, the suite results, the E2E gate, the opt-in tiers that were run or declined, the coverage outcome and the ADRs raised, then stop for final approval. No bookkeeping happens before the human approves.
 
 ### 5. Close the PRD
 
@@ -98,7 +103,22 @@ After final approval:
    - **The deliberately-broken checks**, one row per fault — what was broken, what the suite answered, and the verdict. This is the only proof that the new assertions fire on a real defect, and it is expensive to repeat.
    - **Measured baselines** a later reader would compare against to spot drift — suite durations, test counts, build times — each with the date it was taken.
    - **The limits of the evidence**, so a number is not read as covering more than it does: a tool that cannot instrument the code, a suite that was not run, a result that holds only on an idle machine.
-   Leave the stage plan out. The commit messages and the PRD already record what happened, and a second document describing the same behaviour drifts away from the first.
-3. Do the completion bookkeeping per `Docs/Future` conventions: PRD `Status` to `Complete`, update `Last Updated`, add or adjust the `Scope` line, rewrite the `Docs/Future/README.md` row summary to state what the feature **is**, and bump the index-update date.
-4. Delete `Docs/Future/TASKS-PRD-NNN.md`. If it was ever committed — to read it from another machine, say — state that in the summary so the removal is staged with the rest of the close.
-5. Summarize the whole delivery, offer a final commit message, and **stop** for final review.
+     Leave the stage plan out. The commit messages and the PRD already record what happened, and a second document describing the same behaviour drifts away from the first.
+3. Do the completion bookkeeping defined in the "How this works" section of
+   [Docs/Future/README.md](../../../Docs/Future/README.md): PRD `Status` to `Complete`, update
+   `Last Updated`, add or adjust the `Scope` line, copy the requirement table from the final verification
+   report into `## Requirement Coverage`, rewrite the `Docs/Future/README.md` row summary to state what
+   the feature **is**, and bump the index-update date.
+4. **Amend what this delivery made wrong.** For every row of the PRD's "Effect on Earlier Documents" —
+   and for any other Complete PRD this delivery contradicted, even if the row was missed — append an
+   `AM-n` entry to that document, add or update its `**Amended:**` header line, and leave the body text
+   alone. Use the type that fits: `Superseded`, `Obsoleted`, `Corrected` or `Clarified`. Keep each
+   `Docs/Future/README.md` row to one line; the history belongs in the amendment, not the index.
+5. **Flip the ADRs this PRD raised to `accepted`.** Every ADR named in the PRD's decisions table, and
+   any raised during delivery, moves from `proposed` to `accepted` now that the PRD is Complete; one whose
+   work was abandoned moves to `rejected` instead. Run `docs-check` and regenerate the ADR index with
+   `-Update`, because the status change alters it. This is the second validation point the `adr` skill
+   defines; the first ran when each record was written, and this run is what proves the instruction files
+   may now cite them.
+6. Delete `Docs/Future/TASKS-PRD-NNN.md`. If it was ever committed — to read it from another machine, say — state that in the summary so the removal is staged with the rest of the close.
+7. Summarize the whole delivery, offer a final commit message, and **stop** for final review.

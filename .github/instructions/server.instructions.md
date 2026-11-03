@@ -9,7 +9,7 @@ Run server commands from `Source/Server`. `.editorconfig` is the source of truth
 
 ## Architecture
 
-- Layering direction: `Pot.AspNetCore` -> `Pot.App` -> `Pot.Data`. Migrations live in `Pot.Data.Migrations`.
+- Layering direction: `Pot.AspNetCore` -> `Pot.App` -> `Pot.Data`. Migrations live in `Pot.Data/Migrations`; `Pot.Data.Migrations` is the console app that applies them and supplies the design-time factory.
 - Prefer vertical-slice organization per feature or operation.
 - Handlers are thin: validate, map input, call service, map result to a typed HTTP result.
 - Register endpoints through the extension chain in `Pot.AspNetCore/Program.cs` (`Add*Endpoints()`).
@@ -29,7 +29,7 @@ Run server commands from `Source/Server`. `.editorconfig` is the source of truth
 
 ## Persistence (Postgres + EF Core)
 
-- Schema changes are migration-backed and isolated to `Pot.Data.Migrations`. Keep migrations small and focused. Migration generation is a developer-reviewed step: prompt the developer to run `add-migration`; do not generate one unless asked.
+- Schema changes are migration-backed and isolated to `Pot.Data/Migrations`. Keep migrations small and focused. Migration generation is a developer-reviewed step: ask the developer to add a migration and review it; do not generate one unless asked.
 - Default reads to no-tracking; opt into tracking only on write paths.
 - Avoid N+1 queries and over-fetching. Keep transaction boundaries explicit for multi-step writes.
 - In a multi-step write sequence, keep each write next to the query that produced the rows (query, act, query, act) rather than gathering every query first and issuing all the writes afterwards. The repeated shape stays visible, which shows when a small helper method is worth extracting and keeps the ordering readable against the foreign keys.

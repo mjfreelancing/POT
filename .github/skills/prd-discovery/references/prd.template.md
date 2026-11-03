@@ -3,6 +3,7 @@
 **Status:** Planning
 **Priority:** <High | Medium | Low>
 **Last Updated:** <yyyy-mm-dd>
+<!-- **Amended:** <yyyy-mm-dd> — <count> amendments, see [Amendments](#amendments). Uncomment only once the document is Complete and a later change has overtaken it. -->
 **Feature ID:** NNN
 **Discovery:** complete
 **Scope:** <One paragraph. What the feature does, which actors it serves, and — explicitly — what it
@@ -51,6 +52,16 @@ endpoint paths, class names or component names unless the contract genuinely req
 - **B1.** <requirement>
 - **B2.** <requirement>
 
+## Requirement Coverage
+
+<Every requirement, and what proves it. Name the test, suite or manual scenario that fails if the
+requirement stops holding; a requirement with no row is either untested or not really a requirement.
+Fill this in as delivery proceeds, and keep it accurate at completion.>
+
+| Requirement | Verified by |
+| ----------- | ----------- |
+| A1          | <suite and fixture, or manual scenario ID> |
+
 ## Out of Scope
 
 <Each excluded item, and where it belongs instead — another feature, another document, or future work.
@@ -74,11 +85,22 @@ can judge whether the risk is still acceptable.>
 ## Decisions Carried Into This Document
 
 <The decisions reached during discovery, as a table, so a reader can see what was settled without
-reading the discovery transcript.>
+reading the discovery transcript. A decision that meets the significance test becomes an ADR, and the
+`ADR` column names it; a product rule stays here with no ADR.>
 
-| Decision   | Resolution   |
-| ---------- | ------------ |
-| <decision> | <resolution> |
+| Decision   | Resolution   | ADR |
+| ---------- | ------------ | --- |
+| <decision> | <resolution> | <ADR-NNNN, or "—"> |
+
+## Effect on Earlier Documents
+
+<Filled in during discovery. Every Complete document this feature makes wrong, and the amendment entry
+that will record it. The delivery skill writes the entries into those documents at close-out; leave a
+row empty only when the change needs no amendment.>
+
+| Document | What changes | Amendment |
+| -------- | ------------ | --------- |
+| <PRD-NNN, ADR-NNNN or reference page> | <what it now says wrongly> | <AM-n, or "(rewrite)"> |
 
 ## Open Questions
 
@@ -122,3 +144,38 @@ plan would check, replace the setup, scenarios, cleanup and results table with a
 | ----- | ---------------- | ------ | ----- |
 | A1–A2 | <scenario group> |        |       |
 | B1    | <scenario group> |        |       |
+
+## Amendments
+
+Append-only, oldest first. The text above is this document as approved; read it through these entries.
+None.
+
+## Verification Evidence
+
+<Filled in by the delivery skill at close-out, from the stage plan. This is the part of the plan that
+cannot be reconstructed once it is deleted.>
+
+### Deliberately broken, one at a time
+
+<One row per fault deliberately introduced to prove an assertion fires: what was broken, what the suite
+answered, and the verdict.>
+
+| Fault introduced | What the suite answered | Verdict |
+| ---------------- | ----------------------- | ------- |
+| <fault>          | <failure observed>      | <proved> |
+
+### Measured baselines
+
+<Numbers a later reader would compare against to spot drift — suite durations, test counts, build
+times — each with the date it was taken and the machine it was taken on.>
+
+| Measure | Value | Date | Conditions |
+| ------- | ----- | ---- | ---------- |
+| <measure> | <value> | <yyyy-mm-dd> | <idle machine, cold build, …> |
+
+### What the evidence cannot show
+
+<The limits: a tool that cannot instrument the code, a suite that was not run, a result that holds only
+on an idle machine. Say it here so the numbers above are not read as covering more than they do.>
+
+- <limit>

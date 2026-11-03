@@ -1,5 +1,32 @@
 # Future Features Index
 
+## How this works
+
+A PRD records what a feature must do and why. It is written by the `prd-discovery` skill, delivered by
+`prd-delivery`, and frozen once it reaches `Complete`.
+
+- **When to write one.** A new feature, or a change to behaviour a user or caller can observe. A
+  technical decision that outlives its feature is an ADR ([Docs/adr/](../adr/README.md)), a binding
+  convention is a rule document ([Docs/standards/](../standards/)), and neither needs a PRD.
+- **How to create one.** Use the `prd-discovery` skill. It claims the next number from this file, writes
+  a scratch discovery document, gathers requirements in numbered rounds, and produces the PRD from
+  [the template](../../.github/skills/prd-discovery/references/prd.template.md).
+- **The format.** The template defines it: header metadata, problem statement, actors and authority,
+  terms, grouped functional requirements, requirement coverage, out of scope, known risks, assumptions,
+  decisions, effect on earlier documents, open questions, the manual test plan, and the empty
+  `Amendments` and `Verification Evidence` sections that delivery fills in.
+- **Statuses and lifecycle.** `Proposed` → `Planning` → `Planned` → `In Progress` → `Complete`, or
+  `Blocked` while a prerequisite is missing. A PRD may be edited freely until `Complete`; delivery
+  starts only from `Planned` or `In Progress`.
+- **Amendments and supersession.** A `Complete` PRD is frozen. A later change that makes it wrong
+  appends an `AM-n` entry to its `## Amendments` section and adds one `**Amended:**` line to its
+  header; the body is never edited, because the document is the record of what was agreed and what
+  shipped. The entry shape is in
+  [the template](../../.github/skills/prd-discovery/references/prd.template.md), and `prd-delivery`
+  writes it at close-out. A PRD is never superseded by another PRD: the newer document amends it.
+
+The index below lists one row per feature. Detail belongs in the feature's own document.
+
 Purpose: Track proposed but not-yet-implemented features and design tracks for POT.
 
 Status legend:
@@ -53,5 +80,5 @@ Status legend:
 - This folder is intentionally implementation-planning focused.
 - Keep one row per feature and link to a dedicated detail document when available.
 - Notes in this file describe the index itself. Per-feature detail — decisions, rationale, supersessions, open questions and implementation checklists — belongs in the feature's own document; the index row's Summary column carries a one-line description only.
-- Next free PRD number: PRD-033; next free ADR number: ADR-015 (ADRs are a separate sequence — 012 and 014 exist, 013 does not).
+- Next free PRD number: PRD-033. ADRs are numbered separately, from the highest number in `Docs/adr/`.
 - Current date of this index update: 2026-11-02.

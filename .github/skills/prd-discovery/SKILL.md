@@ -21,6 +21,8 @@ The procedure below hard-codes the layout this repository uses. When this skill 
 project, adjust these four things and nothing else:
 
 - PRDs live in `Docs/Future/` — change the paths in Stages 1, 5 and 6.
+- The PRD template lives beside this skill at `references/prd.template.md` — change the Stage 5 link if
+  it moves.
 - The next number comes from a `Next free PRD number:` line in `Docs/Future/README.md` — change the
   number source if the project keeps one elsewhere, or ask the human outright when it keeps none.
 - The index is a Markdown table in that same README — change the row format if the project's index differs.
@@ -91,11 +93,38 @@ Repeat until nothing material is unanswered.
 
 When the rounds are done, **ask the human whether to produce the PRD now or wait**, because some open questions become answerable as the work progresses. Then:
 
-1. Create `Docs/Future/PRD-NNN-<slug>.md` from the [PRD template](./references/prd.template.md), which defines the whole shape: header metadata, problem statement, actors and authority, terms, grouped functional requirements, out of scope, known risks, assumptions, decisions, open questions and the manual test plan. Keep every section the template defines; delete a section only when the template says it may be omitted.
-2. Rewrite the `Docs/Future/README.md` row to link to the PRD, keep status `Planning`, refresh the date and the one-line summary.
-3. Complete the **Manual Test Plan** section of that same file: a setup section, scenario groups with referenceable IDs (`A1`, `B2`, …) and expected results, a cleanup section, and a results table. It must be executable by a person against the built product and must not duplicate the automated suites. If the automated suites cover every behaviour the plan would check, write `**Not required** — <the suites and tests that cover it>` instead and omit the setup, scenarios, cleanup and results table.
-4. Delete the discovery document when the PRD is approved.
-5. Report what was produced and offer a commit message.
+1. Create `Docs/Future/PRD-NNN-<slug>.md` from the
+   [PRD template](./references/prd.template.md), which
+   defines the whole shape: header metadata, problem statement, actors and authority, terms, grouped
+   functional requirements, requirement coverage, out of scope, known risks, assumptions, decisions,
+   effect on earlier documents, open questions and the manual test plan, plus the empty `Amendments` and
+   `Verification Evidence` sections that delivery fills in later. Keep every section the template
+   defines; delete a section only when the template says it may be omitted.
+2. **Classify the decisions, and raise an ADR for each architectural one.** Take every row of
+   "Decisions Carried Into This Document" and apply the significance test in the "When to write one"
+   section of [the ADR guide](../../../Docs/adr/README.md): does it constrain features beyond this one,
+   cost a lot to reverse, cross components, or invite "why is it like this?" later? A product rule stays
+   in the PRD. An architectural decision gets a `proposed` ADR written from
+   [the ADR template](../adr/references/adr.template.md), named in the table's `ADR` column, and its
+   `status` stays `proposed` while the PRD is not Complete.
+3. **Harvest the rejected alternatives before the discovery document goes.** The alternatives weighed
+   and dropped are the most valuable part of the discovery transcript, and they exist nowhere else. Put
+   them in the `Considered Options` and `Pros and Cons of the Options` sections of the ADR that replaced
+   them. If there is no ADR, keep the one-line reason in the PRD's decisions table instead.
+4. **Fill in "Effect on Earlier Documents".** List every Complete PRD, accepted ADR or reference page
+   this feature makes wrong, what it will say wrongly, and the amendment entry that will record the
+   change. A feature that contradicts a Complete PRD without a row here will leave two documents in
+   conflict, so an empty table is a claim worth stating explicitly.
+5. Rewrite the `Docs/Future/README.md` row to link to the PRD, keep status `Planning`, refresh the date
+   and the one-line summary.
+6. Complete the **Manual Test Plan** section of that same file: a setup section, scenario groups with
+   referenceable IDs (`A1`, `B2`, …) and expected results, a cleanup section, and a results table. It
+   must be executable by a person against the built product and must not duplicate the automated
+   suites. If the automated suites cover every behaviour the plan would check, write
+   `**Not required** — <the suites and tests that cover it>` instead and omit the setup, scenarios,
+   cleanup and results table.
+7. Delete the discovery document when the PRD is approved.
+8. Report what was produced and offer a commit message.
 
 ### Stage 6 — Refine, then hand off
 

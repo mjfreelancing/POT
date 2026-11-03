@@ -4,6 +4,7 @@ On-demand multi-step workflows. Copilot discovers each skill by its `name` and `
 
 | Skill                     | Purpose                                                                                   |
 | ------------------------- | ----------------------------------------------------------------------------------------- |
+| `adr`                     | Record a technical decision as an Architecture Decision Record.                            |
 | `client-tests`            | Create or update Vitest tests for the client.                                             |
 | `code-coverage`           | Run the server coverage workflow and close gaps in changed code.                          |
 | `docker-workflow`         | Build, start, stop and health-check the Docker stack (manual invocation only).            |

@@ -46,7 +46,8 @@
 - [ ] C.4 Client E2E: the prodlike matrix (client-affecting PRDs only)
 - [ ] C.5 Coverage of every new or changed line and branch
 - [ ] C.6 Manual test plan, or record `Not required` and name the automated coverage
-- [ ] C.7 PRD bookkeeping and delete this file
+- [ ] C.7 PRD bookkeeping: requirement table, verification evidence, `Complete`, index row, delete this file
+- [ ] C.8 Flip the PRD's ADRs to `accepted`, amend the documents it made wrong, and regenerate the ADR index
 
 ## Deferred / follow-up
 
