@@ -19,11 +19,18 @@ Raise an ADR when any of these is true:
 - it constrains features beyond the one being built;
 - it is costly to reverse;
 - it crosses components or defines the contract between the client and the server;
-- someone will later ask "why is it like this?".
+- it was a consequential choice made before or during implementation, and the alternatives, rationale
+  or trade-offs would be lost if only the current code remained.
 
 Do not raise one for a coding convention ([Docs/standards/](../standards/) holds those), for a product
 rule (a PRD holds those), or for an approach that was tried and dropped without shipping — record that
-in the "Considered Options" of the ADR that replaced it.
+in the "Considered Options" of the ADR that replaced it. For a backfilled record, use the PRDs, dated
+notes, commit history, guides and source as evidence. State when the record is reconstructed and do not
+present an inference as established historical fact.
+
+Review the system as it was being designed, not only as it behaves now. A decision can merit an ADR
+even when it is old, stable or already encoded in tests. Current code establishes current behavior; it
+does not necessarily explain why the system took that shape.
 
 ## How to create one
 
@@ -39,6 +46,11 @@ The template lives with the `adr` skill, which is what writes records:
 5. Write the body in the order the template gives. "Confirmation" must name something mechanical — a
    test, an analyzer, an instruction file or a review rule — because a record nobody applies is prose.
 6. Run `docs-check` (`-Update` regenerates the index below) before offering the change for review.
+
+Related ADRs can be grouped as a decision family in an overview or index (for example, API architecture
+may include separate records for its contract, concurrency, error handling and security boundaries).
+The family is for navigation, not a record that combines independent decisions; keep one decision per
+ADR.
 
 ## The format
 

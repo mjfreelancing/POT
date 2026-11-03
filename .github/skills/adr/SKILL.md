@@ -15,6 +15,8 @@ format, the statuses and the amendment rules. This skill is the procedure that a
 ## Hard rules
 
 - **One decision per file.** If the draft covers several, write several ADRs.
+- **Related decisions may form a family.** Group them with links from an overview or index, but do not
+  combine independent decisions in an umbrella ADR.
 - **Never rewrite an accepted decision in place.** Supersede it: set the old record to `superseded`,
   point `superseded-by` at the new one, and give the new one `supersedes`.
 - **Never reuse a number.** A withdrawn draft still consumes its number.
@@ -32,10 +34,13 @@ format, the statuses and the amendment rules. This skill is the procedure that a
 
 ### 1. Decide whether it is an ADR at all
 
-Apply the "When to write one" test. If the item is a coding convention, it belongs in
-[Docs/standards/](../../../Docs/standards/) as a rule document. If it is a product rule, it belongs in
-the PRD. If it was an approach tried and dropped without shipping, it belongs in the `Considered
-Options` of the ADR that replaced it.
+Apply the "When to write one" test, including the historical question: before or during implementation,
+what consequential alternatives were considered, and would the rationale or trade-offs be lost if only
+the current code remained? A stable decision can still merit a backfilled ADR. Use source material as
+evidence; do not present an inference as established history. If the item is a coding convention, it
+belongs in [Docs/standards/](../../../Docs/standards/) as a rule document. If it is a product rule, it
+belongs in the PRD. If it was an approach tried and dropped without shipping, it belongs in the
+`Considered Options` of the ADR that replaced it.
 
 Stop and say so when it is not an ADR, naming where it belongs instead.
 

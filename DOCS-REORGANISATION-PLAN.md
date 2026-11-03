@@ -32,9 +32,14 @@ Three checks, each run by a person in a few minutes:
    says. Version numbers live in the manifests.
 3. **Correct a document when you touch it.** No separate "documentation fix" pass; a file is fixed as it
    is moved or reworked.
-4. **An ADR records a decision only when someone will ask "why is it like this?" and no surviving
-   document answers it.** A convention is a rule document. A requirement is a PRD. A decision nobody
-   will question does not need a record.
+4. **Preserve the decisions that shaped the system, including decisions made before and during
+   implementation.** Review the system from the point before it was written: what consequential
+   alternatives were available, what was chosen, why, and what constraints or trade-offs followed?
+   Backfill significant, evidenced decisions even when the implementation is stable. Code is the
+   authority for current behavior; it is not, by itself, the history of why that behavior was chosen.
+   Record one bounded decision per ADR. Group related ADRs into navigable decision families, but do not
+   bundle independent choices into an umbrella ADR. Conventions belong in standards; product
+   requirements belong in PRDs.
 5. **A format lives with the skill that applies it.** The PRD and ADR templates sit in their skill's
    `references/` folder, next to the procedure that uses them; `Docs` links to them rather than holding
    a second copy.
@@ -93,25 +98,33 @@ detail, and every deleted copy left a link or was genuinely redundant. Verify th
 
 ### W3 — Move and split
 
-**Does:** apply the layout and the file mapping, split the three developer guides into an index plus
-rule documents and worked examples, retire the stale plans, rename the folders. **Why:** this is the
-"easy to find" criterion.
+**Does:** apply the layout and file mapping; retire stale plans; rename folders; and reduce the
+developer guides to only content with a clear owner and ongoing value. The guides are migration
+evidence, not authoritative descriptions of current code and not a mandate to create replacement
+documents section by section. Point readers to code and tests for implementation patterns; retain
+standards for binding rules, ADRs for evidenced decision rationale, and how-tos only where a sequence
+adds durable value. Replace a guide with a concise index only if it improves navigation. **Why:** this
+is the "easy to find" criterion without creating another layer of copied, drifting documentation.
 
 **Done when:** the files sit where [Docs/README.md](Docs/README.md) says they do, `docs-check` passes,
 and the entry points in `README.md`, `AGENTS.md` and `copilot-instructions.md` all resolve.
 
-### W4 — Records on demand
+### W4 — Decision-history review and ADRs
 
-**Does:** write an ADR when the work above leaves a "why" that nothing answers. The inventory in
-`DOCS-WORK-LISTS.md` W4 is a menu, not a backlog: no commitment, no target count. **Why:** the reasoning
-is worth keeping, but only where it is asked for; writing eighty records up front adds eighty documents
-that can go stale.
+**Does:** systematically review decisions made before and during implementation, using the W4
+inventory, PRDs, dated records, commit history, and the developer guides as evidence. Confirm, split,
+merge, or reject inventory topics; identify important gaps; and write an ADR for each consequential,
+evidenced decision whose rationale should survive. Do not infer an undocumented historical rationale:
+state what the evidence supports and what remains uncertain. The inventory is a review aid, not an ADR
+numbering scheme or a fixed target count.
 
-**Done when:** a reader following any accepted decision can find out why in one hop.
+**Done when:** system-shaping decisions in the reviewed sources have either a concise ADR with evidence
+and consequences, or a recorded reason why no ADR is appropriate. Related ADRs are easy to navigate as
+families, while each record remains about one decision.
 
 ### Owner decisions
 
-Three items need your call and are listed at the end of `DOCS-WORK-LISTS.md`; they block a link fix in
+Two items need your call and are listed at the end of `DOCS-WORK-LISTS.md`; they block a link fix in
 W3 and one setup-docs item in W1. Nothing else waits on them.
 
 ## Process lives in the skills, not in records
@@ -131,16 +144,18 @@ person editing a document still needs the placement rule in front of them.
 
 | Dropped | Why |
 | --- | --- |
-| A programme of about eighty backfilled ADRs | Serves "rationale lives once", not any of the three criteria. It is the largest single cost in v1 and adds eighty new documents that can drift. Replaced by W4. |
+| A predetermined batch of about eighty ADRs | A fixed count and preassigned record set would treat every inventory row as equally significant. Replaced by W4's evidence-led historical review: preserve consequential decisions, group related records for navigation, and do not invent rationale. |
 | Retrofitting twenty-nine old amendment notes | None of the three criteria needs history reorganised; the convention matters from now on, applied when a change actually contradicts a Complete PRD. |
 | Four process ADRs and three standards ADRs | Process belongs in the skills and the two guides; the standards records restated the rule documents' own headings. Removed; the rule documents stand on their own. |
 | Status and tier machinery on the decision inventory | It was planning overhead for a programme that no longer exists. The inventory is now a menu with a priority hint. |
 
 ## Sequencing
 
-W1 first, because a correction to a file that is about to move is cheaper than one that has to be found
-again. W2 and W3 then run together file by file, so each document is touched once. W4 follows, written
-from what survives rather than from what we remember.
+W1 starts with demonstrably false, high-risk claims. Before W3 retires or splits a long-lived guide,
+W4 reviews its decision material alongside the PRDs and other historical evidence; that way the guide
+is treated as evidence to assess, not as a source to copy wholesale or discard wholesale. W2 and W3
+then proceed file by file, using the resulting decision records as their rationale sources. Each
+increment ends for owner review before the next begins.
 
 Each workstream ends with a stop for your review and an offered commit message. Agents never stage or
 commit.
@@ -150,10 +165,10 @@ commit.
 | Workstream | State |
 | --- | --- |
 | Foundations (v1 Phase 1) | Done 2026-11-02: `docs-check` with 14 Pester tests, the ADR and PRD templates (with their skills), the docs map, the rule documents, `AGENTS.md`, and the skill changes. The seven meta records were removed when this plan replaced v1. |
-| W1 Truth pass | Not started. |
+| W1 Truth pass | In progress: W1 item 1 corrected in the working tree; pending owner review. |
 | W2 Dedup pass | Not started. |
 | W3 Move and split | Not started. |
-| W4 Records on demand | Not started. |
+| W4 Decision-history review | In progress: criteria and initial candidate gaps updated in the working tree; pending owner review. |
 
 ## Verifying a change
 
