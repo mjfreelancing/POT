@@ -1,0 +1,579 @@
+# Documentation work lists
+
+Working lists for [DOCS-REORGANISATION-PLAN.md](DOCS-REORGANISATION-PLAN.md). They hold the detail an
+agent needs while doing one workstream, and nothing a reader of the docs needs.
+
+**This file is disposable.** Delete a section when its workstream completes; delete the file when all
+four are done.
+
+## W1 — Content to correct
+
+Each item is fixed when its file is reworked, not in a separate pass.
+
+**Fix early: wrong in a security-relevant way, or misleading enough to cause bad code**
+
+1. **Server DEVELOPER 4022–4084:** the `DatabaseExceptionHandler` sample echoes `PostgresException.MessageText` and maps everything to 500. The real handler returns 409 or 500 with fixed messages and never echoes database text.
+2. **AUTHENTICATION 923 and 2163 say BCrypt.** The code uses the Identity `PasswordHasher` (PBKDF2).
+3. **AUTHENTICATION 461, 469, 836, 1335 and 1417–1460 describe the removed `User.RefreshToken` design.** Lines 1460 and 2166 say there is "no server-side session store", which contradicts AuthSession.
+4. **Access-token storage contradicts itself.** AUTHENTICATION 1181 and 1246 say sessionStorage, while 1269 and 1300 say memory only. The refresh model at 1826–1832 contradicts 952–971.
+5. **The "Site Owner" role doesn't exist.** The user guide (README 77–79 and every page) and `_DOCUMENTATION_PLAN.md` use it; the real roles are Admin and Viewer. AUTHENTICATION 1919 lists a non-existent `import-export:manage` permission.
+6. **ARCHITECTURE 284–291 says production is Docker Compose with Docker PostgreSQL.** It is Azure Container Apps with a separate PostgreSQL 17.6.
+
+**Fix when the file is reworked**
+
+7. **ARCHITECTURE.md:**
+   - The tree (38–79) shows `store/` and omits `Pot.Shared.Tests`, `Pot.RazorComponents` and `contracts/`.
+   - The stack list omits AllOverIt, TanStack Table, the PWA, Scalar and Tailwind v4.
+   - Line 272 says Zustand holds authentication; the access token is in React context.
+8. **Server DEVELOPER:**
+   - JWT claims (240, 3251–3258) omit `session_id`. Line 240 also still says `tokenVersion` "and nothing else"; the claim is `token_version`.
+   - The enriched-enum sample (4362) omits `EndOfMonth`.
+   - Line 207 lists 204, but deletes return 200.
+   - Line 1875 (`WhenNotNull` on every dependency) contradicts allsoverit-patterns:18 (DD-15).
+   - The table of contents is wrong.
+9. **IMPLEMENTATION.md:**
+   - Encoding corruption at about 20 lines.
+   - `AccruedIsDirty` at 442 and 603 no longer exists.
+   - The projection mechanism text (374–381, 732–740, 767–777, 802, 804–813) predates the fold or cursor design.
+   - `EndOfMonth` is never mentioned.
+10. **Client DEVELOPER:**
+    - The source tree (46–101) is stale.
+    - It claims ESLint "strict" (262–323), but the config is `recommended` + `stylistic`.
+    - Filter persistence is described as localStorage (1854–1866); the code uses the URL plus sessionStorage.
+    - Auth and logout paths are wrong (2391–2427).
+    - The cache invalidation path is wrong (2678).
+    - It lists a `ValidationError (422)` that doesn't exist (2707–2726).
+    - It imports from `react-router-dom` (2556).
+    - Chart heights are stale (1689–1759).
+    - The toast import points at a non-existent hook (765).
+11. **E2E docs:**
+    - `e2e/README.md:10`, `e2e/AUTHORING.md:5` and `ADR-012:20` link to a non-existent `playwright-e2e.instructions.md`.
+    - The fixture lists in `AUTHORING.md:31` and `e2e.instructions:42` are stale: they list three fixtures, but `e2e/fixtures/auth.ts` exports four (`quickActionsTest` is missing).
+    - `e2e/README.md:121–128` lists three canonical users; the seed has four (`e2e_quickactions` is missing).
+    - `e2e/README.md:398` refers to a "see 8.7" that matches nothing.
+    - Playwright and Vite versions are stale (`e2e/README.md:88` says Playwright 1.59.1; `package.json` has `^1.62.1`).
+    - e2e.instructions:13 calls prodlike a per-PRD completion gate, while the README (150–153) calls it on-demand (DD-11).
+    - e2e.instructions:67 says react-day-picker v9; the project uses v10.
+12. **Setup docs:**
+    - Node minimum: 22.22.2 vs `>=22.22.0` vs "Node 24 is the minimum".
+    - `.env.development`: "create from scratch" vs "copy the tracked template", and no template exists — see "Owner decisions pending" at the end of this file.
+    - `Docs/Azure/Azure-Deployment-Notes.md` is linked three times (Docker DEVELOPER 107, 720 and 843) but is untracked and ignored, so those links are dead for every other reader. **Decided:** the file stays private; remove the links. See "Private and ignored files" at the end of this file.
+    - The GETTING-STARTED anchor at 228 is broken.
+    - DOCKER-SETUP's "curl" output is actually PowerShell output.
+    - LOCAL-SETUP Option B collides with the prodlike container name.
+13. **FIRST-TIME-SETUP:**
+    - Status names are inconsistent: `PendingApproval` vs `Approval`.
+    - It says only platform admins see the Users menu; the real gate is `user:manage`.
+14. **Other docs:**
+    - FEATURES 145 claims automatic logout on inactivity, which doesn't exist.
+    - USER-GUIDE/Security 7 says a password change ends "every other session"; it ends every session, including the current one.
+15. **Compose file comment** (`docker-compose-client-server.yml:430`): it refers to `/swagger`, but the API UI is Scalar and is Development-only.
+
+---
+
+## W2 — Duplication
+
+### Duplication to consolidate
+
+| Topic | Number of places | Where |
+| --- | --- | --- |
+| Docker env-file setup | 7 | GETTING-STARTED, DOCKER-SETUP, Docker DEVELOPER, ARCHITECTURE, FIRST-TIME-SETUP, AUTHENTICATION (twice), LOCAL-SETUP |
+| Ports | 10 | ARCHITECTURE, DOCKER-SETUP, Docker DEVELOPER (three places), copilot-instructions, docker.instructions, the two `Data/*/README.md` files, LOCAL-SETUP, e2e.instructions, e2e/README |
+| Accrued / Arrears / Committed / Available definitions | 7 | ARCHITECTURE, server DEVELOPER, IMPLEMENTATION, FEATURES, three user-guide pages |
+| Tenancy model | 4 in server DEVELOPER alone | lines 157/183, 237, 1878, 4678 |
+| CORS configuration | 2 full copies | server DEVELOPER 3450–3538 and 4989–5062 |
+| Platform-admin bootstrap | 5 | AUTHENTICATION, FIRST-TIME-SETUP, GETTING-STARTED, LOCAL-SETUP, Docker DEVELOPER |
+| Health-check verification blocks | 2 verbatim copies | DOCKER-SETUP 54–134 = 171–251 |
+| Income vs expense renewal explanation | ~90% copy | IMPLEMENTATION 189–399 vs 402–604 |
+
+### The document estate at the baseline
+
+| Family | Files | Lines | What needs attention |
+| --- | --- | --- | --- |
+| PRDs (`Docs/Future/PRD-*.md`) | 32 | ~8,800 | PRD-001 to 011 are planning documents in a pre-template shape. Four header statuses disagree with the index (007, 009, 012, 027). PRD-032 is still a discovery document, linked from the index as if it were the PRD. |
+| Legacy ADRs | 2 | 757 | Numbered after their PRD. They mix decision, current-state description, config tables, how-to and design history. ADR-012 has a broken link to a non-existent instruction file. |
+| `Docs/*.md` (architecture, auth, setup, features) | 7 | ~3,660 | Heavy duplication (3.2). `AUTHENTICATION.md` (2,217 lines) is partly current and partly describes the pre-AuthSession design. |
+| User guide | 13 | ~1,560 | Accounts, Dashboard, Projections and Security are real. Seven pages are stubs. A 745-line `_DOCUMENTATION_PLAN.md` is a stale work plan. |
+| Developer guides | 6 | ~10,600 | Server `DEVELOPER.md` 5,347; client `DEVELOPER.md` 3,228; `IMPLEMENTATION.md` 825 (with encoding corruption); Docker `DEVELOPER.md` 847; `Data/Local Docker/README.md` 80; `Data/Seed Docker/README.md` 81. |
+| Agent guidance (`.github/`) | 8 instructions + 13 skills | ~1,050 | Current and concise. It carries many decisions as rules, with no "why". |
+
+## W3 — Move and split
+
+| Current | Action |
+| --- | --- |
+| `README.md` | Keep. Add links to the docs map and the ADR index; the setup docs are currently missing from its list. |
+| `Docs/ARCHITECTURE.md` | Slim (section 7). Cashflow sections go to `explanation/cashflow-model.md`; consider the related W4 candidate topics when deciding whether any rationale needs an ADR. The test split is covered by the W4 test-strategy discussion. Setup steps are deleted (they duplicate the tutorial). |
+| `Docs/AUTHENTICATION.md` | Split four ways (the content is listed below the table). Drop the large code snapshots: several describe the removed `User.RefreshToken` design. |
+| `Docs/GETTING-STARTED.md` | Becomes `tutorials/getting-started.md`, the single entry point. |
+| `Docs/DOCKER-SETUP.md` | Its quick start merges into the tutorial; the rest goes to `how-to/run-the-docker-stack.md`. The duplicated verification blocks are removed. |
+| `Docs/LOCAL-SETUP.md` | Becomes `how-to/run-locally-without-docker.md`. Option B is replaced with the `Data/Local Docker` stack. |
+| `Docs/FIRST-TIME-SETUP.md` (+ `Docs/images/first-time-setup/`) | Becomes `tutorials/first-time-setup.md`. It becomes the only place for bootstrapping the first platform admin. |
+| `Docs/FEATURES.md` | Merges into `user-guide/README.md` (a third copy of the feature list). |
+| `Docs/USER-GUIDE/*` | Moves to `user-guide/`. Projections.md's client persistence and fetch-window spec moves to reference, with an ADR only if the rationale meets the W4 test. |
+| `Docs/USER-GUIDE/_DOCUMENTATION_PLAN.md` | Retire after harvesting anything still valid. It is a stale work plan, wrong in at least six places. |
+| `Docs/Future/PRD-*.md`, `README.md` | Move to `Docs/prd/` (D5). Contents unchanged apart from the amendments. A `TASKS-PRD-NNN.md` is a working document deleted at close, so it is never a resident of `prd/`; `TASKS-PRD-031.md` has already been removed. |
+| `Docs/Future/ADR-012…`, `ADR-014…` | Re-homed (5.4). Tombstones are left behind. |
+| `Docs/pot_erd.d2` / `.png` | Move to `reference/diagrams/`. **Caveat:** `Pot.Data.Migrations/App.cs:61` hard-codes `..\..\..\..\..\..\Docs\pot_erd.d2`, so moving it is a one-line code change (the owner's approval), or the file stays where it is. |
+| `Docs/Azure/*` | The tracked diagram files (`POT-Azure-Diagram.mmd`, its PNG) move to `reference/diagrams/`; the private `Azure-Deployment-Notes.md` stays where it is, ignored. `Docs/pot-azure-diagram.png` is a *different, older* render of the same diagram; delete it. |
+| `Source/Server/DEVELOPER.md` | Split (D6). "Key Architectural Principles" (148–197) is reorganized around the relevant decision topics, with links to ADRs only where a record is actually written. The second CORS copy is deleted. |
+| `Source/Server/IMPLEMENTATION.md` | Its domain explanation goes to `explanation/cashflow-model.md`, and its calculator detail to `Source/Server/docs/calculations.md`. Fix the encoding. Income and expense renewal collapse into one section with a differences table. |
+| `Source/Client/pot-react/DEVELOPER.md` | Split (D6). Regenerate the stale tree and table of contents. |
+| `Source/Docker/DEVELOPER.md` | Keep. Remove the three links to `Azure-Deployment-Notes.md`: the file stays private, so the links can never resolve for another reader. |
+| `Data/Local Docker/README.md`, `Data/Seed Docker/README.md` | Keep. Each describes its own stack. Their ports and purposes feed `reference/ports-and-environments.md`. |
+
+`Docs/AUTHENTICATION.md` splits into:
+
+W4 rows 0027–0036 and 0063 are candidate topics to assess, not a commitment to write ADRs.
+
+- `explanation/authentication.md` (flows);
+- `reference/auth-and-sessions.md`;
+- two how-tos (platform admins; cookies and CORS);
+- the user-facing parts, which move to `user-guide/Security.md`.
+
+The bare four-digit references in this W3 mapping and the developer-guide classification below refer
+to W4 inventory rows, not ADR numbers. They identify candidate topics only; assign an ADR number only
+if and when a record is justified and written.
+
+---
+
+### Developer guide classification
+
+This list sorts every section of the three developer guides into the layers agreed for the split:
+
+- **Decision:** may warrant an ADR if its rationale meets the W4 test; otherwise keep only the concise explanation needed by the guide.
+- **Rule:** goes to a rule document.
+- **How-to:** worked examples, which stay beside the code.
+
+It also flags sections that are **Tool-enforced**, **Duplicate** or **Stale**. Every code check behind a note is named in the Notes column.
+
+- **Guides covered:**
+  - `Source/Server/DEVELOPER.md` (5,347 lines)
+  - `Source/Client/pot-react/DEVELOPER.md` (3,228 lines)
+  - `Source/Docker/DEVELOPER.md` (847 lines)
+- **Reading the Mix column:** it estimates how each section's lines split between Decision, Rule and How-to, in that order. Code blocks count as How-to, so example-heavy sections score high on How-to even when their prose is mostly rule.
+- **Folded inventory rows** are cited through their host row.
+- **Naming conventions:**
+  - Rule-document topics are written as `server/<topic>` and `client/<topic>`.
+  - How-to files are written as `docs/<name>.md`, relative to the component folder (`Source/Server/` or `Source/Client/pot-react/`).
+- Bare four-digit references in the Target and Notes columns are W4 inventory row IDs, not ADR numbers
+  or commitments to create ADRs. Link to an ADR only when one is actually written.
+
+
+#### E.1 Server guide: `Source/Server/DEVELOPER.md`
+
+| Section | Lines | Mix (D/R/H) | Primary category | Target | Notes |
+| --- | --- | --- | --- | --- | --- |
+| Title + Table of Contents | 1–61 | – | Delete | The new ≤150-line index | The TOC is wrong (plan §10.8). Regenerate it as part of the split. |
+| Architecture Overview / Project Structure | 62–148 | 5/15/80 | How-to | 0037; rule `server/project-structure`; `docs/project-structure.md` | The tree is nearly current but misses `Pot.App/Mappings`, `Pot.AspNetCore/Concerns/OpenApi` and `Pot.Shared/Models` (checked with `ls`). The test-project list duplicates dotnet-tests.instructions:8. Replace it with one paragraph per layer plus a link. |
+| Key Architectural Principles | 149–199 | 70/30/0 | Decision (+Duplicate) | Organize the analysis around relevant W4 topics: 0029/0028 (1), 0037 (2), 0042/0022/0024 (3), 0041 (4), 0038 (5), 0027 (6), 0048 (7), 0043 (8); rate numbers → 0036. Keep concise guide content and link to ADRs only where a record is written. | This duplicates Security (233–249) and ARCHITECTURE 95–118. Line 153 says "role-based authorization", but permissions are resolved from the database (0029). |
+| Design Conventions | 200–232 | 20/70/10 | Rule | 0020, 0021, 0038, 0041, 0044; rules `server/project-structure` (naming), `server/endpoints`, `server/error-handling` | Good rule material (naming patterns, RowId only). Line 207 lists 204, but deletes return 200 (plan §10.8). |
+| Security | 233–249 | 65/30/5 | Decision | 0027, 0028, 0029, 0030, 0031, 0033, 0034, 0035, 0036, 0051 (security headers, not request metadata); rule `server/security` | This is the best decision prose in the guide. Line 246 (the checklist for a new endpoint that takes an id) is pure rule. **Stale:** line 240 says the token holds "`jti`, `sub` and `tokenVersion` and nothing else", but `PotClaimTypes.cs` adds `session_id` (and the claim is `token_version`). Overlaps AUTHENTICATION.md. |
+| Feature Implementation Recipe: Step-by-Step Guide | 250–268 | 0/30/70 | How-to | `docs/add-a-feature.md` | – |
+| Example Walkthrough, Steps 1–13 | 269–890 | 10/20/70 | How-to | `docs/add-a-feature.md`; rules `server/endpoints`, `server/services` | All ten file paths checked exist (AccountsEndpoints.cs, Create/RequestMapping.cs, EntityChecks/Checks/*, Concerns/OpenApi/SchemaReferenceId.cs …). The embedded "why" decisions go to: OpenAPI schema naming (325–332) → 0025; Request vs Input (434–438) → 0038; validator vs entity check (361–362) and Chain of Responsibility (763–768) → 0042. Its code is repeated almost verbatim in Endpoint Patterns and Service Layer: keep this as the one worked example. |
+| Example Walkthrough, Step 14 (test + error bodies) | 891–968 | 45/35/20 | Decision | 0022, 0024, 0021; rule `server/error-handling` | The 409 `type` URN table and the "which endpoints declare 409" policy (957–967) are contract decisions buried in a how-to step. They duplicate Problem Details 3890–3964. Move them out and leave a link. Port 5242 and `/scalar` are current. |
+| Feature Organization (API/App/Data/Shared) | 969–1242 | 10/30/60 | Duplicate | 0037; rule `server/project-structure` | The four trees repeat Project Structure (66–148) and the walkthrough. The App "Service Pattern" code (1088–1124) repeats the Service Layer. Keep only the "Critical" WithTracking note (1205) as a `server/data-access` rule. Collapse the rest into one structure page. |
+| Endpoint Patterns: Handler Pattern | 1243–1432 | 10/25/65 | How-to | 0038; rule `server/endpoints`; `docs/endpoints.md` | The step order (validate → map → call → typed result) is the rule. The six handler variants are a good catalogue. |
+| Request Validation | 1433–1550 | 10/25/65 | How-to | 0042; rule `server/endpoints`; `docs/endpoints.md` | "Common Validation Rules" (1516–1549) is generic FluentValidation: trim it. The validator base-class rules overlap allsoverit-patterns. |
+| Response Construction | 1551–1645 | 10/30/60 | How-to | 0038, 0020/0021 (ResponseBase); rule `server/endpoints` | Current, including the note that there is no zero-argument `Response.Ok()`. |
+| Endpoint Registration | 1646–1763 | 25/40/35 | Rule | 0025 (response metadata), 0036 (group rate limit); rule `server/endpoints` | Lines 1698–1707 (Produces vs ProducesProblem, 400/500 on the group, 408/413 per route) are binding and pinned by `EndpointResponseMetadataFixture`. |
+| Service Layer: Service Pattern | 1764–2040 | 5/25/70 | How-to | 0041, 0027; rule `server/services`; `docs/services-and-entity-checks.md` | **Rule conflict:** line 1875 says to guard every DI dependency with `WhenNotNull()` (as `CreateAccountService.cs:27` still does), but allsoverit-patterns:18 says not to. Lines 2011 (empty list, never 404) and 2038 (foreign reads as 404) are rules that duplicate Security. The ConfigureAwait note (1883) is C# style (plan §9). |
+| Entity Checks | 2041–2227 | 15/20/65 | How-to | 0042; rule `server/services` | The code duplicates walkthrough Step 10 (624–768): keep one copy. The guidelines (2219–2226) are rule. |
+| Result Pattern | 2228–2368 | 30/30/40 | Decision | 0041, 0024 ("no 422", 2357–2359), 0025 (2361–2366); rule `server/error-handling` | The rationale (2232–2238) is ADR material. The contract paragraph (2362–2367) duplicates the OpenAPI section of server.instructions. |
+| Transaction Management | 2369–2474 | 15/35/50 | How-to | 0043; rule `server/data-access` | The guidelines (2439–2445) are rule. Merge in the "query, act, query, act" rule from server.instructions, which is missing here. |
+| Repository Layer: Repository Pattern | 2475–2722 | 20/30/50 | How-to | 0043, 0027 (no `IQueryable` for User/Site); rule `server/data-access`; `docs/data-access.md` | The method-naming list (2707–2721) is rule. |
+| Tracking vs No-Tracking | 2723–2804 | 30/30/40 | Duplicate | 0043; rule `server/data-access` | Repeats 2582–2606, and Performance Considerations repeats it again (4276–4294). Keep one copy. |
+| Query Specifications | 2805–2919 | 10/20/70 | How-to | 0039 (AllOverIt) / 0043; `docs/data-access.md` | No ADR of its own. |
+| Mapping Patterns (Request→Input, Entity→Output) | 2920–3087 | 20/35/45 | Rule | 0038 (no AutoMapper); rules `server/project-structure` (placement), `server/endpoints` | The `RequestMapping` placement duplicates server.instructions ("Feature-specific request mapping …"). |
+| Concerns (intro) | 3088–3110 | 0/20/80 | How-to | `docs/cross-cutting.md` | A folder tree only. |
+| Authentication & Authorization | 3111–3267 | 30/20/50 | Stale | 0028, 0029, 0030, 0034, 0035; rule `server/security`; `Docs/reference/auth-and-sessions.md` | **Stale:** the claims block (3249–3259) omits `session_id` (plan §10.8). "Refresh Token Pattern" (3261–3266) is thin and duplicates AUTHENTICATION.md, so replace it with a link. The permission list (3242–3247) belongs in `reference/permissions.md`. |
+| Validation (Concerns) | 3268–3413 | 15/25/60 | How-to | 0042; `docs/cross-cutting.md` | Internals of `ProblemDetailsInspector`, for maintainers. Overlaps Request Validation (1433–1550). |
+| Forwarded Headers | 3414–3449 | 50/30/20 | Decision | 0074 (trust model), 0036 (partition key), 0051 (first in the pipeline); rule `server/security` | The three things that broke without it, and the trust model (clear the known networks, `ForwardLimit` 1, ignore `X-Forwarded-Host`), are ADR text. "Never expose the container directly" and "revisit if a CDN is placed in front" are rules. Matches `ForwardedHeadersOptionsSetup.cs` (checked). |
+| CORS Configuration (first copy) | 3450–3538 | 40/30/30 | Decision | 0034; `Docs/reference/configuration.md` | Keep this copy. The exposed-headers rationale (including `location`) and the 10-minute preflight cache (3506) are ADR text. Line 3518 (the `AllowedOrigins` format) is reference. |
+| Rate Limiting | 3539–3670 | 40/20/40 | Decision | 0036, 0064 (`Retry-After`); rule `server/security` | Defaults 15 and 50 match `RateLimiterDefaults.cs`. Per-IP partitioning (`RateLimiterPolicy.cs:32`) reads the forwarded caller address. The numbers belong in reference, not prose. |
+| Middleware | 3671–3861 | 50/25/25 | Decision | 0051 (request logging metadata only), 0022 (correlation ID); rules `server/security`, `server/error-handling` | The documented order matches `Program.cs:55–117` (checked). The rationale prose (3729–3768) is ADR material. The UserContext/ICurrentUserContext code (3770–3861) is How-to. |
+| Problem Details | 3862–4087 | 45/30/25 | Decision | 0022, 0024, 0051; rule `server/error-handling`; default-`detail` table → `Docs/reference/` | **Stale:** the `DatabaseExceptionHandler` sample (4022–4084) differs from the real handler, which maps to fixed 409/500 messages (`DatabaseExceptionHandler.cs:26–33`; plan §10.1, fix early). The "always write" rationale (3940–3945) is ADR material. |
+| Entity Framework Core (intro: EntityBase) | 4088–4117 | 50/40/10 | Decision | 0020, 0021 | "Why three identifiers" is ADR text. Duplicated at 4324–4349. |
+| Entity / Table Naming Convention | 4118–4195 | 30/50/20 | Rule | 0044; rule `server/project-structure` (naming) | The debug-only suffix check exists (`DbContextBase.cs:16, 90`). |
+| Entity Conventions + Entity Configuration | 4196–4273 | 10/70/20 | Rule | 0044; rule `server/data-access` | The data annotations claim is true (`AccountEntity.cs:10`). "Seal entity classes" overlaps server.instructions. |
+| Performance Considerations | 4274–4323 | 20/50/30 | Duplicate | 0043; rule `server/data-access` | Repeats Tracking (2723–2804) and server.instructions (N+1, no-tracking). |
+| API Design Guidelines | 4324–4349 | 30/60/10 | Duplicate | 0020, 0021 | The third statement of RowId/Etag (after 204–206 and 4105–4111). Delete. |
+| Enriched Enums | 4350–4465 | 35/25/40 | Decision | 0044; rule `server/data-access`; `docs/entities-and-schema.md` | **Stale:** the `Frequency` sample (4362) omits `EndOfMonth` (`Frequency.cs:14`). "Why strings" (4391–4396) is ADR text. The enum list (4451–4462) is reference, and its permission list matches `Permission.cs`. |
+| Entity Relationships | 4466–4592 | 20/30/50 | How-to | 0045 (cascade restrict); `docs/entities-and-schema.md` | The cascade rationale (4587–4589) belongs in the ADR. |
+| Indexes | 4593–4677 | 15/40/45 | How-to | 0044 (citext + check-plus-index, 4570–4572); rule `server/data-access` | Current. |
+| Multi-Tenancy & Query Filters | 4678–4782 | 45/30/25 | Decision | 0027; rules `server/security`, `server/data-access` | The third statement of the two-mechanism model (after 157/183–187 and 237). Keep the mechanics here and move the "why" to 0027. |
+| Optimistic Concurrency (ETags) | 4783–4865 | 40/20/40 | Decision | 0021 (Ver) | "Why" (4857–4862) is ADR text. The plan §11 caveat applies: this is not a database concurrency token. |
+| Migrations | 4866–4988 | 15/25/60 | How-to | 0046; rule `server/data-access`; `docs/migrations.md` | **Stale:** line 4937 says the runner is used by "CI/CD pipelines", but there is no CI (0080). The commands are repeated at 5316–5324 and in Docker 191–195. The "humans generate migrations" rule (server.instructions) is missing here. |
+| CORS Configuration (second copy) | 4989–5064 | 40/30/30 | Duplicate | Delete (plan §6.3); move 5022 (startup validation) → 0054 | Keep only line 5061. |
+| Dependency Injection | 5065–5265 | 30/30/40 | Decision | 0040 (Dec); rule `server/di-and-configuration`; `docs/dependency-injection.md` | **Conflict:** the guide and the code agree (91 Pot.App files implement `IPotScopedDependency`; `AutoRegisterScoped` in WebApplicationBuilderExtensions.cs:457), while server.instructions (DI section) says "register concrete classes … interface only when …". The instruction file is the outlier. |
+| Accrual Metrics Semantics | 5266–5305 | 90/10/0 | Decision (domain) | 0009, 0010, 0011; `Docs/explanation/cashflow-model.md` | Domain explanation, not developer guidance. Duplicates ARCHITECTURE 120–133 and IMPLEMENTATION. Remove from this guide. |
+| Available Commands | 5306–5336 | 0/10/90 | How-to | The index, or `docs/commands.md` | Migration rows repeat 4888–4978. |
+| Additional Resources | 5337–5347 | – | How-to | The index | – |
+
+#### E.2 Client guide: `Source/Client/pot-react/DEVELOPER.md`
+
+| Section | Lines | Mix (D/R/H) | Primary category | Target | Notes |
+| --- | --- | --- | --- | --- | --- |
+| Title + Table of Contents | 1–45 | – | Delete | The new index | It lists headings that do not exist (Accounts/Expenses/Incomes Page, Reusable Layout Components) and omits Badge Styling System (plan §10.10). |
+| Architecture Overview (stack + tree) | 46–101 | 10/10/80 | Stale | 0055; rule `client/project-structure` | Stale tree (plan §10.10). The "Vite 8" version belongs in package.json (plan §6.2). Duplicates ARCHITECTURE 81–93. |
+| Project Organization | 102–261 | 35/45/20 | Rule | 0055; rule `client/project-structure` | "Why this pattern" (201–207) and lib vs concerns (191–199) are ADR text. **Stale:** line 260 says "Features never import from other features", but accounts, expenses, incomes, users and userSettings import `@/features/auth`, and dashboard imports expenses and incomes (grep). That is 0055's "Ver". The feature tree (114–124) omits the real `create/ edit/ delete/ schemas/ utils/` sub-folders. |
+| TypeScript Standards | 262–323 | 25/25/50 | Tool-enforced (Stale) | 0067; config `eslint.config.js`, `tsconfig.app.json` | **Stale:** it cites `tseslint.configs.strict` in `eslint.config.mjs`. The real file is `eslint.config.js`, using `recommended` + `stylistic` (lines 14–16). `no-non-null-assertion` and `no-floating-promises` are not enabled. Reduce to "see the config" plus the "no `any`" rule. |
+| Code Formatting (exports, barrels, spacing, braces) | 324–477 | 10/60/30 | Rule | rule `client/code-style`; config `.prettierrc` | None of these is lint-enforced (no `curly` or padding rules in eslint.config.js), so they really are rules. They duplicate client.instructions "TypeScript style". The import sort is enforced by `simple-import-sort` and should only be pointed at. |
+| Function Declarations | 478–518 | 30/50/20 | Rule | rule `client/code-style` | Duplicates client.instructions:38–39. |
+| Custom Components (intro) | 519–528 | 30/70/0 | Rule | 0056 | Duplicates client.instructions:16. |
+| Table, Cards, Dialog components | 529–719 | 5/10/85 | How-to | `docs/components.md` | A catalogue (plan §9). |
+| Feedback components | 720–793 | 5/25/70 | How-to | `docs/components.md`; 0058 | **Stale:** line 765 imports `@/hooks/useToast`, which does not exist. The guidelines (782–788) duplicate 2223–2240 and client.instructions:30. |
+| Badge Styling System | 794–1023 | 10/40/50 | Rule | rule `client/components-and-styling`; `docs/styling-and-layout.md` | The colour-semantics table and "always use the helpers" are rules. Duplicates client.instructions:31. `src/lib/badgeStyles.ts` exists. |
+| Filter, Input, Layout, Navigation, Picker, Theme, User components | 1024–1353 | 5/10/85 | How-to | `docs/components.md` | Theme persistence (1284–1285) is a storage policy → 0059. |
+| Sheet Components | 1354–1595 | 20/45/35 | Rule | 0061; rule `client/components-and-styling` | The binding conventions are `modal={false}`, hidden default X, the two widths and route-driven forms. The Separator + `opacity-80` rule (client.instructions:31) is missing here. |
+| Projections Page | 1596–1785 | 5/25/70 | Stale | `docs/styling-and-layout.md` | **Stale:** `ProjectionsPage.tsx:247` is `h-screen overflow-hidden`, not `md:h-screen`, and the chart is `h-[500px]`/`min-h-[500px]` with a short-viewport branch (`ProjectionChart.tsx:176–181`), not 400px. The "Pure CSS responsive" learning (1749–1753) is contradicted by that JS branch. Keep the learnings and drop the class-by-class breakdown. |
+| Dashboard + Table-Based Pages | 1786–1869 | 5/40/55 | Stale | 0060, 0059; `docs/styling-and-layout.md` | **Stale:** 1854–1866 says filters persist in localStorage, but `useExpenseStorage.ts:34` uses sessionStorage and the URL (plan §10.10). |
+| Error Handling: core, standard pattern, examples, mutation, storage, early return | 1870–2222 | 5/25/70 | How-to | 0058; `docs/error-handling.md` | The root error boundary (0065) is not documented anywhere in the guide. |
+| When to Use ErrorSheet vs Toasts + Guidelines | 2223–2254 | 20/80/0 | Rule | 0058; rule `client/error-handling` | The core rule list. Duplicates 782–788 and client.instructions:30. |
+| Common Patterns | 2255–2322 | 0/10/90 | Duplicate | – | Repeats 1954–2221. Delete. |
+| State Management | 2323–2384 | 30/50/20 | Duplicate | 0057, 0059; rule `client/data-and-state` | Duplicates client.instructions "State and data flow" and ARCHITECTURE 269–274. The `useLocalStorage('theme')` example ignores the env/user-scoped keys (0059). React Hook Form + Zod (0062) is not covered anywhere in the guide. |
+| Authentication & Authorization | 2385–2544 | 15/35/50 | Stale | 0063, 0029; rule `client/auth-and-routing` | **Stale paths:** AuthContext is at `src/features/auth/contexts/AuthContext.tsx`, and logoutManager is at `src/concerns/auth/logoutManager.ts` (2391, 2422, 2427). "PermissionGuard vs WithPermission" (2506–2509) is a rule. The permission list belongs in `reference/permissions.md`. |
+| Routing | 2545–2611 | 30/40/30 | Rule | 0061; rule `client/auth-and-routing` | **Stale:** a `react-router-dom` import (2556). The `/logout` and catch-all rules duplicate client.instructions:27. |
+| API Integration: Result Pattern | 2612–2653 | 40/30/30 | Decision | 0058 | – |
+| Available API Hooks | 2654–2673 | 0/20/80 | How-to | `docs/data-fetching.md` | The names match the `useApi.ts` exports (checked). |
+| Cache Invalidation | 2674–2706 | 20/40/40 | Stale | 0057; rule `client/data-and-state` | **Stale:** the path `src/lib/cacheInvalidation.ts` should be `src/concerns/cache/cacheInvalidation.ts`. |
+| Error Types | 2707–2726 | 10/10/80 | Stale | 0058, 0024 | Lists `ValidationError (422)`, which does not exist. `apiErrors.ts` has `BadRequestError` and `ServerError`, and the list omits both. Replace the list with a pointer to the file. |
+| Import/Export Features | 2727–2766 | 50/20/30 | Decision (local) | 0057; `docs/data-fetching.md` | A small design note, not ADR-worthy on its own. |
+| Environment Configuration | 2767–2836 | 20/30/50 | How-to | 0075; `Docs/reference/configuration.md` | **Stale:** `.env.development` and `.env.production` are git-ignored (`.gitignore:405–406`) and absent from a clean checkout, yet they are shown as if tracked. Duplicates Docker 492–504. |
+| Testing Mocking Strategy | 2837–2915 | 60/25/15 | Decision | 0069; rule `client/testing` | Already written almost as an ADR (options, trade-offs, triggers). The rule side is in client-tests.instructions. |
+| Available Commands | 2916–2938 | 0/10/90 | How-to | The index | **Stale:** "ESLint with strict TypeScript rules". It omits the `e2e:*` scripts; point at package.json instead. |
+| PWA: What is a PWA? + Why PWA | 2939–2964 | 60/0/40 | Decision | 0065 | "What is a PWA" is generic: delete it. "Why" is ADR context. |
+| PWA: Setup, `serialize-javascript` override, Icon Generation | 2965–3028 | 30/10/60 | How-to | 0068 or the new candidate N1; `docs/pwa.md` | The `vite-plugin-pwa@^1.3.0` pin duplicates package.json. The CVE override and the removal of the generator are decision records. |
+| `vite.config.ts` Changes | 3029–3081 | 50/20/30 | Decision | 0065 | Restates config: point at `vite.config.ts`. The "Key configuration decisions" table is ADR content. |
+| Service Worker Registration and Update UX | 3082–3125 | 55/20/25 | Decision | 0065 | The strongest decision content in this guide: enforced update, quiet window, `version.json` channel (the files exist under `src/concerns/pwa/`). **Conflict:** line 3122 relies on a "backward-compatibility policy", but 0019 says breaking changes need no compatibility window. |
+| `index.html` / TypeScript support / Build Output | 3126–3177 | 5/10/85 | Delete | – | A changelog ("was updated"). The precache count "~64 entries" drifts. The files themselves are the source. |
+| Validating PWA + Local Sanity Check | 3178–3215 | 0/10/90 | How-to | `docs/pwa.md` | – |
+| Additional Resources | 3216–3228 | – | How-to | The index | – |
+
+#### E.3 Docker guide: `Source/Docker/DEVELOPER.md`
+
+| Section | Lines | Mix (D/R/H) | Primary category | Target | Notes |
+| --- | --- | --- | --- | --- | --- |
+| Title + TOC | 1–26 | – | How-to | Keep | The `Docs/DOCKER-SETUP.md` link must follow the plan's rename. |
+| Overview | 27–47 | 10/20/70 | How-to (reference) | 0078; `Docs/reference/ports-and-environments.md` | The port table duplicates docker.instructions:9 and the two `Data/*/README.md` files. |
+| Other Docker stacks | 48–61 | 30/40/30 | Rule | 0078; rule `docker` | "One stack at a time" is repeated at 819. |
+| Key terms | 62–74 | – | How-to | Keep (or the glossary) | – |
+| Dependencies and startup order | 75–93 | 30/20/50 | Decision | 0046, 0048 | Matches the compose file (checked). Only postgres and client have health checks, so 0048's readiness has no compose expression (see N2). |
+| Ports | 94–110 | 10/20/70 | How-to (reference) | `Docs/reference/ports-and-environments.md`; 0074 (Ver) | **Contradiction:** "ingress routes `/api/*` to the API container" against `VITE_API_BASE_URL=https://api.payontime.com.au/api` (499, 689). That is exactly 0074's "Ver". The `Azure-Deployment-Notes.md` link (107) is dead. |
+| Development Workflow | 111–202 | 5/25/70 | How-to | `Docs/how-to/run-the-docker-stack.md`; rule `docker` | **Stale:** 116–117 say "each developer creates their own" `.env.development`, but `Source/Docker/.env.development.template` exists (plan §10.12). The rules are "Do not add `-p pot`" (173) and the env-file pair (155–158). The migration command duplicates the server guide. |
+| Docker Compose Configuration | 203–315 | 20/10/70 | How-to | 0077 (`no_cache`), 0078; keep | The excerpts match the compose file (checked). The client `environment: NODE_ENV` is omitted (minor). The network YAML is repeated at 512–516. |
+| Images and Dockerfiles | 316–408 | 35/10/55 | How-to | 0075 (build-time config), 0046 (migrations in entrypoint, `set -e`), 0077; keep | `entrypoint.sh` matches. "Node 24 is the minimum" (366) conflicts with the setup docs (plan §10.12), and versions belong in the Dockerfile. **Risk:** the `.env.production` fallback (379–381) relies on a git-ignored local file, and `.dockerignore` also drops the client `.env`, so a clean clone has neither fallback. The nginx notes omit the `/version.json` no-cache location (`nginx.conf:25`). |
+| Environment Variables: `.env`, `.env.development` | 409–466 | 30/20/50 | How-to | 0079; `Docs/reference/configuration.md` | Should say "copy `.env.development.template`". |
+| Variables compose passes / Client build arguments | 467–507 | 10/10/80 | How-to (reference) | `Docs/reference/configuration.md` | Matches the compose file (checked). Duplicates client guide 2767–2836. |
+| Networking | 508–544 | 10/40/50 | How-to | 0078; rule `docker` (use service names, not localhost) | – |
+| Data Persistence + Backup | 545–593 | 20/20/60 | How-to | 0078 (bind mounts); `Docs/how-to/run-the-docker-stack.md` | The reset steps are repeated at 777–780. It says backups live outside the repository (0079). |
+| Health Checks | 594–666 | 25/15/60 | How-to | 0048; see N2 | 635–649 propose adding a server health check. That is an open design choice, not documentation. |
+| Production Deployment | 667–723 | 40/10/50 | Decision | 0074 (Ver), 0077, 0080; `Docs/how-to/deploy-to-azure.md` | The link at 720 is dead. It contains the same `/api` ingress contradiction. The forwarded-headers bullet (713–716) is 0074 decision text. |
+| Troubleshooting | 724–791 | 0/10/90 | How-to | Keep | "Rebuild after changing code" (782–791) duplicates 185–189. |
+| Best Practices | 792–830 | 40/50/10 | Duplicate | 0075, 0079, 0078, 0048; rule `docker` | Generic advice that restates the earlier sections and the ADR rationale. "Pin base image versions" while using `nginx:alpine` and `postgres:13` is inconsistent. Delete once the ADRs exist; move the few real rules to `docker`. |
+| Additional Resources | 831–847 | – | How-to | Keep | The link at 843 is dead. |
+
+
+#### E.4 Summary
+
+##### E.4.1 Lines per category (approximate)
+
+These totals are mix-weighted, so a section that is 30% rule adds 30% of its lines to Rule. Code counts as How-to.
+
+| Guide | Total | Decision | Rule | How-to / example | Delete outright | Duplicate (primary) | Stale (primary) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Server | 5,347 | ~1,220 (23%) | ~1,480 (28%) | ~2,590 (49%) | ~60 | ~510 | ~160 |
+| Client | 3,228 | ~500 (16%) | ~920 (28%) | ~1,760 (55%) | ~100 | ~130 | ~540 |
+| Docker | 847 | ~160 (19%) | ~140 (17%) | ~530 (64%) | 0 | ~40 | 0 |
+
+**Tool-enforced:**
+
+- Server: no section is tool-enforced. `.editorconfig` style lives only in server.instructions.
+- Client: only TypeScript Standards (~60 lines), plus parts of Code Formatting.
+
+**Duplicated or stale sections that are not primary:**
+
+- The "Duplicate" and "Stale" columns count only sections where that is the primary category. Many more sections carry a duplicate or stale paragraph (see the Notes columns).
+- Most of the server's decision lines are already stated two or three times inside the guide itself: tenancy three times, RowId/Etag three times, CORS twice, problem details twice.
+
+##### E.4.2 Proposed rule documents
+
+**Server (8 topics):**
+
+| Topic | Fed by (lines) | Also merge |
+| --- | --- | --- |
+| `server/project-structure` (layers, slices, naming) | 62–148, 200–232, 969–1242 (trimmed), 2920–3087 (placement), 2707–2721, 4118–4195, 4904–4908 | server.instructions "Architecture" |
+| `server/endpoints` (handler, validation call, response, registration, OpenAPI metadata) | 250–890 (rules only), 1243–1763, 2924–2994 | server.instructions "OpenAPI contract" |
+| `server/services` (service shape, entity checks, results, transactions) | 1764–2227, 2228–2368 (rules), 2369–2474 | allsoverit-patterns |
+| `server/error-handling` (status map, problem body, 409 types, logging of failures) | 200–232 (errors), 891–968, 2327–2367, 3671–3861 (correlation), 3862–4087 | – |
+| `server/data-access` (repos, tracking, specs, entities, enums, relationships, indexes, ETags, migration guidelines) | 2475–2919, 4088–4677, 4783–4865, 4979–4988 | server.instructions "Persistence" |
+| `server/security` (tenancy checklist, authz, forwarded headers, CORS, rate limits, headers) | 233–249 (esp. 246), 3111–3267, 3414–3670, 3729–3743, 4678–4782 | – |
+| `server/di-and-configuration` (registration, lifetimes, validated options) | 5065–5265, 5061, 3518 | Resolve 0040 first. |
+| `server/testing` (fixtures that pin architecture rules) | Barely fed by the guide: only the fixture names it cites (`EndpointResponseMetadataFixture`, `OpenApiSecurityFixture`, `SchemaReferenceIdFixture`, `EnrichedErrorExtensionsFixture`) | dotnet-tests and aspnetcore-integration-tests instructions |
+
+**Client (8 topics):**
+
+| Topic | Fed by (lines) | Also merge |
+| --- | --- | --- |
+| `client/project-structure` | 46–261 | client.instructions "Architecture" |
+| `client/code-style` (with pointers to eslint, prettier and tsconfig for the enforced parts) | 262–518 | client.instructions "TypeScript style" |
+| `client/components-and-styling` (shadcn rule, sheets, badges, page-layout learnings) | 519–528, 794–1023, 1354–1595, 1747–1784, 1803–1858 | – |
+| `client/error-handling` | 782–788, 2223–2254, rule lines of 1870–2222 | – |
+| `client/data-and-state` (state split, Result, cache invalidation, storage scope, URL filters) | 2323–2384, 2612–2766, 1860–1866 (corrected) | – |
+| `client/auth-and-routing` | 2385–2611 | – |
+| `client/testing` | 2837–2915 | client-tests.instructions |
+| `client/build-and-pwa` (env vars baked at build, PWA never caches `/api`, enforced update) | 2767–2836, 2939–3125 | – |
+
+**Docker (1 topic):** `docker`, fed by lines 48–61, 155–158, 173, 508–544 and the rule lines of 792–830. Merge docker.instructions, which already holds most of it.
+
+##### E.4.3 Smaller decisions and contradictions
+
+- The smaller decisions found in the guides are folded into existing rows; they are listed under section 8, "Smaller decisions to fold in".
+- The contradictions the classification found are decided in `DECISIONS-TO-DISCUSS.md`. Write the affected ADR or rule only once its brief is decided:
+  - feature-to-feature imports, client line 260 (row 0055, DD-13);
+  - DI registration, server guide vs `server.instructions.md` (row 0040, DD-10);
+  - the backward-compatibility policy assumed at client line 3122 (row 0019, DD-14);
+  - `WhenNotNull` on injected dependencies, server line 1875 vs `allsoverit-patterns.instructions.md:18` (DD-15);
+  - the missing server health check in the compose stack (rows 0048 and 0078, DD-16).
+
+##### E.4.4 Sections to delete outright
+
+| Guide | Lines | Section | Why |
+| --- | --- | --- | --- |
+| Server | 1–61 | TOC | Wrong; replaced by the split index. |
+| Server | 969–1242 | Feature Organization | Repeats Project Structure and the walkthrough. Keep the one WithTracking warning. |
+| Server | 4274–4323 | Performance Considerations | Repeats Tracking and server.instructions. |
+| Server | 4324–4349 | API Design Guidelines | The third copy of RowId/Etag. |
+| Server | 4989–5064 | CORS Configuration, second copy | The first copy is kept (see the mapping above). Keep line 5061 (to 0054). |
+| Server | 5266–5305 | Accrual Metrics Semantics | Move to `explanation/cashflow-model.md` and 0009–0011; it is domain content, not developer guidance. |
+| Server | 3261–3266 | Refresh Token Pattern | Thin and partly stale. Replace with a link to `reference/auth-and-sessions.md`. |
+| Client | 1–45 | TOC | Stale. |
+| Client | 2255–2322 | Common Patterns | Repeats the error examples above it. |
+| Client | 2941–2951 | What is a PWA? | Generic web content. |
+| Client | 3126–3177 | `index.html` / TS support / Build Output | A changelog of a past change, not guidance. |
+| Client | 1606–1745 | Class-by-class Projections layout breakdown | Stale. Keep only the learnings. |
+| Client | 2707–2726 | Error Types | Stale. Replace with a pointer to `src/api/errors/apiErrors.ts`. |
+| Docker | 792–830 | Best Practices | Restates the guide and the future ADR rationale. Move its few rules to `docker`. |
+| Docker | 782–791 | Rebuild after changing code | A verbatim duplicate of 185–189. |
+
+### Files reported missing, and where they turned out to be
+
+> **For the agent executing this plan:** this plan and `DECISIONS-TO-DISCUSS.md` were written on a machine that **did not have the full repository**, so everything below was reported as missing, absent, empty or "not in the repo". The availability check was then run against a full checkout on 2026-11-02; the outcome is in the right-hand column and in the owner decisions at the end of this file. Anything git-ignored may hold secrets, connection strings or machine-specific data.
+
+**How to check:**
+
+- `Test-Path '<path>'` shows whether the item is on disk.
+- `git check-ignore -v '<path>'` shows whether it is ignored, and by which `.gitignore` rule.
+- `git ls-files --others --ignored --exclude-standard` lists every ignored file that is present. Skim it for anything else the plan should know about.
+
+**Rules for anything you find:**
+
+- **Never copy the contents of an ignored file into a tracked document, ADR or instruction file.** That includes values, secrets, connection strings, host names and passwords. Record only that the file exists, what it is for, and its shape (for example, which keys it defines) where that is safe.
+- **If a file looks ignored for security reasons, ask the owner** before citing it at all, even by path.
+- **A link to a file that exists only locally is still broken** for every other reader. Do not mark such a link as fixed. Ask the owner whether to track the file, track a redacted template, or remove the link.
+- **If an item exists, re-check every claim that depends on it.** Update the plan, the affected inventory row or brief, and W1.
+
+| Item | Reported as | Claims that depend on it |
+| --- | --- | --- |
+| `Docs/Azure/Azure-Deployment-Notes.md` | Linked three times, does not exist. **Phase 0b:** present, untracked and ignored. **Decided:** stays private; the links are removed rather than satisfied | W1 item 12; the W3 Docker guide row; E.3 (Ports, Production Deployment, Additional Resources) |
+| `.github/instructions/playwright-e2e.instructions.md` | Linked from `e2e/README.md:10`, `e2e/AUTHORING.md:5` and `ADR-012:20`, does not exist. **Phase 0b:** still absent | W3 (ADR-012 broken link); W1 item 11; W3 ("fix the broken instruction-file link") |
+| Infrastructure-as-code for Azure (Container App replica count, ingress, health probes, PostgreSQL server version) | Not in the repo. **Phase 0b:** still none | DD-04 (replica count), DD-06 (Azure runs 17.6, from a diagram label only), DD-16 option C (probes), the forwarded-headers follow-up at the end of `DECISIONS-TO-DISCUSS.md` (the ingress sets `X-Forwarded-For`); rows 0047, 0049, 0074 |
+| `.github/workflows/` | Exists but empty and untracked. **Phase 0b:** no such directory | DD-05; row 0080; E.1 Migrations row ("there is no CI") |
+| `Source/Client/pot-react/.env.development`, `.env.production` | Git-ignored (`.gitignore:405–406`), absent from a clean checkout | E.2 Environment Configuration; E.3 Images and Dockerfiles (the `.env.production` fallback); row 0075 |
+| `Source/Docker/.env`, `Source/Docker/.env.development` | Git-ignored; created from `.env.development.template`. **Phase 0b:** `.env` is tracked (two non-secret keys), `.env.development` is ignored, and no template exists | Row 0079 (`Ver`); W1 item 12 ("create from scratch" vs "copy the template"); E.3 Environment Variables |
+| `Source/Server/Pot.AspNetCore/appsettings.Development.json` | Not found on the planning machine, but `Data/Local Docker/README.md:5` says it points the API at the prodlike stack on `5444` | Row 0078 ("the prodlike stack is also the dev-mode API's database") |
+| `Data/README.md` | Git-ignored machine-local index of this machine's data folders | Row 0078 (local environments) |
+| `Data/Scripts/`, `Data/**/Backups/` | Git-ignored (backup tooling; the Azure target needs a password) | Row 0079 (backups are kept outside the repository) |
+| `Data/Exports` | Reported as empty by commit `a7cbded7` | The restore instructions in the `Data/` and E2E READMEs |
+| `Source/Docker/postgres-data`, `Data/*/postgres-data` | Local PostgreSQL 13 clusters (bind mounts) | DD-06 option B (the manual dump and restore); agents never touch these folders |
+
+The W1 items that describe code that does not exist (the `@/hooks/useToast` import, the `ValidationError (422)` type, the "Site Owner" role, the `import-export:manage` permission) are claims about tracked source. Re-check them as part of W1, not here.
+
+---
+
+## W4 — Candidate decisions
+
+A menu, not a commitment. These are the decisions the v1 analysis found worth recording; an ADR is
+written only when a reader will actually ask why, and none of these numbers is an ADR number. An
+inventory row that becomes an ADR notes the ADR number beside it.
+
+`DECISIONS-TO-DISCUSS.md` calls these "backlog rows"; the numbers here are what it refers to.
+
+**Reading the table:**
+
+- **Numbers** identify inventory rows. They are stable so other documents can cite them; they are not ADR numbers, and a row that is never written consumes no ADR number.
+- **Status values:**
+  - `Acc`: accepted, decided and current.
+  - `Sup`: superseded; the record is kept for history.
+  - `Prop`: proposed, its PRD not complete.
+  - `Dec`: waits for its brief in `DECISIONS-TO-DISCUSS.md`.
+  - `Ver`: verify against the code before writing, because the docs disagree.
+- **Tier values:**
+  - `1`: the strongest candidates when a record is needed.
+  - `2`: worth writing if the section is reworked anyway.
+  - `3`: fold into a neighbour, or leave in prose.
+
+### Process
+
+| # | Decision | Status | Main sources | Tier |
+| --- | --- | --- | --- | --- |
+| 0005 | CRLF line endings everywhere except shell scripts | Acc | .gitattributes; .editorconfig; .prettierrc; OpenAPI normaliser | 3 |
+
+### Product and domain (cross-cutting)
+
+| # | Decision | Status | Main sources | Tier |
+| --- | --- | --- | --- | --- |
+| 0006 | POT forecasts from schedules; it is not a transaction register (manual balances, no bank feeds) | Acc | README:9–50; copilot-instructions:3; PRD-024:119 | 1 |
+| 0007 | Obligation-first, cash-basis model with rolling forecast windows | Acc | ARCHITECTURE:146–189 | 1 |
+| 0008 | Persist account accrual and recalculate on a dirty flag | Sup by 0009 | PRD-003; PRD-009 | 2 |
+| 0009 | Derive accrual on read from the schedule; never persist a computed value | Acc | PRD-023 | 1 |
+| 0010 | Two accrual metrics (stable daily need; dynamic operational), gated by per-expense policy `Automatic`/`None` | Acc | PRD-003; ARCHITECTURE:120–132; IMPLEMENTATION:123–135 | 1 |
+| 0011 | Obligation components: Accrued + Arrears = Committed; Available = Balance − Reserved − Committed | Acc | PRD-023 OD-17; ARCHITECTURE:138–144 | 1 |
+| 0012 | `NextDue` is the user-acknowledged schedule cursor; due-day timing, renewal modes and calendar arithmetic (incl. `EndOfMonth`) | Acc | PRD-023:32, 228; IMPLEMENTATION:65–398; FrequencyExtensions.cs | 1 |
+| 0013 | Projections are a day-by-day in-memory simulation over immutable cursors; nothing is persisted | Acc | PRD-023:186–204; IMPLEMENTATION:608–823 | 2 |
+| 0014 | The projection API publishes components; the client composes balances and totals | Acc | PRD-025; PRD-028 | 1 |
+| 0015 | One business time zone (Australia/Sydney) through `ITimeProvider`; `DateOnly` schedules, UTC timestamps | Acc (interim; PRD-018 proposes superseding) | Pot.App/AppContext.cs; ITimeProvider | 1 |
+| 0016 | Money is `double`, rounded to 2 dp away from zero; AUD and en-AU assumed | Dec | pot_erd.d2; ExpenseEntity.cs:25; moneyUtils.ts | 1 |
+| 0017 | Export packages are versioned; import accepts only the current version and never deletes | Acc | PRD-021:91–173; PRD-023 OD-02; MetadataV1–V4 readers | 2 |
+| 0018 | A settlement ledger, if built, is history only and never feeds a calculation | Prop | PRD-024 | 3 |
+
+### API contract (cross-cutting)
+
+| # | Decision | Status | Main sources | Tier |
+| --- | --- | --- | --- | --- |
+| 0019 | Client and server release together; breaking API changes need no compatibility window | Acc | PRD-021:169; PRD-025:261; PRD-028:73; PRD-030:157 | 1 |
+| 0020 | Expose only GUID `RowId`s; integer keys stay internal | Acc | server.instructions:17; EntityBase.cs | 1 |
+| 0021 | Optimistic concurrency via an app-managed `Etag` in the body; a stale tag answers 409 | Acc + Ver | server DEVELOPER:4783–4862; PRD-030:137; CheckHasSameEtag (not a database concurrency token, see §11) | 1 |
+| 0022 | Every failure is RFC 9457 Problem Details, written regardless of `Accept` | Acc | PRD-030; server DEVELOPER:3862–3945 | 1 |
+| 0023 | Refusals answer 422 Unprocessable Entity | Sup by 0024 | PRD-026:428–433 | 2 |
+| 0024 | Validation failures and refused business rules answer 400 with an `errors` map | Acc | commit `bec69a48` (2026-10-16); PRD-030 | 1 |
+| 0025 | The OpenAPI document is generated at build time and committed as the contract | Acc | server.instructions:21–28; Pot.AspNetCore.csproj | 1 |
+| 0026 | Client API types are hand-written; not generated from, or validated against, the contract | Dec | source scan (no codegen, no `.parse` on API data) | 2 |
+
+### Security and identity (cross-cutting)
+
+| # | Decision | Status | Main sources | Tier |
+| --- | --- | --- | --- | --- |
+| 0027 | Tenants are isolated by site (query filters for financial data, site-scoped repositories for users and sites, named cross-tenant reads); a foreign target reads as missing (404) | Acc | PRD-026; server DEVELOPER:4678–4780 | 1 |
+| 0028 | Authorisation fails closed: authentication by default, an explicit anonymous allow-list, pinned by test | Acc | PRD-026:437 | 1 |
+| 0029 | `resource:action` permissions, resolved from the database on every request | Acc | AUTHENTICATION:1902–2017; AddRolesAndPermissions migration | 1 |
+| 0030 | Platform administration is granted by deployment configuration, not a role | Acc | AUTHENTICATION:2021–2155; PRD-026:518; PRD-027:75 | 1 |
+| 0031 | A site's last enabled Admin and the platform's last live platform administrator are protected | Acc | PRD-026:439–441 as amended by PRD-022:43–57 | 1 |
+| 0032 | Sign-up requires email verification and platform-admin approval; rejected usernames stay locked | Acc | AUTHENTICATION:24–256 | 2 |
+| 0033 | Credentials: PBKDF2 hashing via the Identity hasher (without Identity), single-use one-time codes, enumeration-safe reset with temporary password | Acc + Dec (plaintext codes) | AUTHENTICATION:568–944; UserPasswordHasher.cs; OneTimePasswordEntity.cs; PRD-032 may amend | 1 |
+| 0034 | Short-lived access tokens with minimal claims plus server-side AuthSessions with a rotating HttpOnly refresh cookie | Acc | PRD-001; PRD-002; AUTHENTICATION:1258–1313, 1844–1898 | 1 |
+| 0035 | Revocation per session (`session_id` checked on every request) and globally (`TokenVersion`) | Acc | PRD-002:55; commit `31c96313` (2026-10-17) | 1 |
+| 0036 | One server-side chained rate-limit policy, partitioned by the forwarded caller address or the signed-in user; accounts are never locked | Acc | server DEVELOPER:3539–3669, 3414–3449; commit `ceb57419`; PRD-014:27–37; user-guide Security; ForwardedHeadersOptionsSetup.cs | 1 |
+
+### Backend
+
+| # | Decision | Status | Main sources | Tier |
+| --- | --- | --- | --- | --- |
+| 0037 | Layered server (API → App → Data, plus Shared) with feature slices mirrored across layers; auth lives in the host | Acc | ARCHITECTURE:95–118; server.instructions:10–15 | 1 |
+| 0038 | Endpoints are Minimal API slices: static handler, typed results, separate request/response models, hand-written mapping (no AutoMapper) | Acc | server DEVELOPER:440–489, 2920–3086 | 1 |
+| 0039 | Build on the AllOverIt library family | Acc | Directory.Packages.props; allsoverit-patterns.instructions | 1 |
+| 0040 | Services are registered by marker-interface scanning | Dec (conflicts with server.instructions:61–65) | server DEVELOPER:5065–5262 | 2 |
+| 0041 | Business failures are `EnrichedResult` values, not exceptions | Acc | server DEVELOPER:2228–2305; PRD-030:138 | 1 |
+| 0042 | Request shape is validated in the handler; data-dependent rules are entity-check chains | Acc | server DEVELOPER:340–368, 2041–2226, 3268–3412 | 1 |
+| 0043 | Split read/persist repositories, no-tracking by default, explicit transactions | Acc | server DEVELOPER:2369–2803 | 1 |
+| 0044 | Persistence conventions: `Entity` suffix, enriched enums stored by name, `citext` with check-plus-index uniqueness | Acc | server DEVELOPER:4118–4674 | 2 |
+| 0045 | Cascade delete is restricted; deletions are ordered hard-delete sweeps; no soft delete | Acc | server DEVELOPER:4570–4589; PRD-022 | 1 |
+| 0046 | A separate runner applies migrations before the API starts; destructive changes ship in two append-only steps; humans generate migrations | Acc | PRD-023:313–324; PRD-013; entrypoint.sh | 1 |
+| 0047 | PostgreSQL version target | Dec (13.6 pinned, EOL; Azure runs 17.6) | DbContextOptionsBuilderExtensions.cs:11; Postgres Dockerfile; Azure .mmd | 1 |
+| 0048 | Liveness is separate from readiness; background workers wait for readiness | Acc | PRD-013; PRD-030:67 | 2 |
+| 0049 | Background work runs in the API process (single-replica assumption) | Acc + Dec | Features/Workers; PRD-019 proposes an outbox | 2 |
+| 0050 | Email is queued in process and rendered with Razor components | Acc (PRD-019 proposes superseding) | Pot.EmailSender; Pot.RazorComponents | 2 |
+| 0051 | Log request metadata only, never submitted values; structured exception logging; JSON console in production | Acc | PRD-030 A1–A6; allsoverit-patterns:64–68 | 1 |
+| 0052 | Server tests: per-layer unit projects plus one hosted integration project on Testcontainers; architecture rules pinned by fixture tests | Acc | ARCHITECTURE:191–211; dotnet-tests.instructions; aspnetcore-integration-tests.instructions (the authorization matrix and isolation invariants belong to 0073) | 1 |
+| 0053 | Server tests stay on VSTest (`xunit.v3.mtp-off`) until MTP mode works | Acc | PRD-020; dotnet-tests:27 | 3 |
+| 0054 | Build quality gates: nullable warnings are errors, `.editorconfig` is the style source, central package versions with major-version ranges | Acc + Prop (PRD-029) | PRD-029; Directory.Build.props / Directory.Packages.props | 2 |
+
+### Frontend
+
+| # | Decision | Status | Main sources | Tier |
+| --- | --- | --- | --- | --- |
+| 0055 | Feature modules over shared `api/`, `concerns/` and `lib/` layers, with one-way dependencies | Acc + Ver (existing feature→feature imports must be sanctioned or scheduled) | client DEVELOPER:106–261; client.instructions:12–18 | 1 |
+| 0056 | shadcn/ui primitives are vendored and never hand-edited | Acc | PRD-015:33; client.instructions:16 | 1 |
+| 0057 | Server state lives in TanStack Query over one axios instance; invalidation follows a dependency graph | Acc | client DEVELOPER:2339–2705; cacheInvalidation.ts | 1 |
+| 0058 | API hooks return `Result` values; one interceptor normalises every failure and never fails on a body | Acc | client DEVELOPER:2612–2723; PRD-030 E1–E8 | 1 |
+| 0059 | Browser storage is scoped by environment and user, with a persistence policy per setting | Acc | PRD-001 (amended by PRD-011, PRD-025) | 1 |
+| 0060 | The URL is the only render-time source of truth for list filters | Acc | PRD-011 | 1 |
+| 0061 | Lazy declarative routes behind `ProtectedRoute`; create/edit forms are route-driven non-modal sheets | Acc | AppRoutes.tsx; client DEVELOPER:1354–1595, 2545–2611 | 2 |
+| 0062 | Forms use React Hook Form with Zod; API types are derived with `z.infer` | Acc | client DEVELOPER; feature schemas | 2 |
+| 0063 | Client token handling: access token in memory only, proactive and reactive refresh, one logout path | Acc + Ver (the docs disagree on the refresh model) | AUTHENTICATION:948–1488; authInterceptor.ts; logoutManager.ts | 1 |
+| 0064 | Honour `Retry-After` and never auto-retry a 429 (re-homes legacy ADR 014) | Prop | ADR-014; PRD-014 | 2 |
+| 0065 | PWA precaches only the shell, never `/api`, and enforces updates | Acc | client DEVELOPER:2939–3125; vite.config.ts | 1 |
+| 0066 | Login alone gets a longer timeout with progress feedback | Acc | PRD-006 | 3 |
+| 0067 | Strict TypeScript and lint policy; no React Compiler | Acc | eslint.config.js; tsconfig.app.json; PRD-015 DQ-7 | 2 |
+| 0068 | Client dependencies upgrade in gated micro-batches; TypeScript 7 waits for typescript-eslint | Acc | PRD-015; PRD-016; PRD-017 | 2 |
+| 0069 | Client unit tests use Vitest with module mocks; MSW is deferred behind stated triggers | Acc | client DEVELOPER:2837–2915 | 2 |
+
+### End-to-end testing (cross-cutting; replaces legacy ADR 012)
+
+| # | Decision | Status | Main sources | Tier |
+| --- | --- | --- | --- | --- |
+| 0070 | E2E runs one shared stack with Testcontainers Postgres and a single seeded database | Acc | ADR-012 §3–4, §8–9, App. A | 1 |
+| 0071 | Every E2E test is classified as parallel-safe or fixture-managed | Acc | ADR-012 §7 | 1 |
+| 0072 | E2E execution policy: dev matrix by default, prodlike gate, fixed timeouts, config-owned reporters, four-browser matrix | Acc + Dec (prodlike: per-PRD gate or on demand?) | ADR-012 §10, §13; e2e README:150–153; e2e.instructions:13 | 2 |
+| 0073 | Scenario-driven tenant testing: test-only message capture and mail sink, product-route provisioning (server scenarios and a third, **destructive** E2E class that provisions its own tenant), canary-tenant isolation invariants, an authorization matrix generated from the contract, and opt-in scenario and browser tiers (amends 0052, 0070 and 0071) | Acc (implementation landed; PRD-031 completed 2026-11-02) | PRD-031; aspnetcore-integration-tests.instructions; e2e.instructions; run-tests SKILL "Tiers"; prd-delivery step 4.8 | 2 |
+
+### Infrastructure
+
+| # | Decision | Status | Main sources | Tier |
+| --- | --- | --- | --- | --- |
+| 0074 | Production runs on Azure Container Apps from GHCR images; nginx serves the SPA; the API is on its own subdomain; the API trusts the ingress's `X-Forwarded-For`/`-Proto` from any sender because only the ingress can reach it | Ver (docs disagree on whether ingress routes `/api`) | Azure .mmd; Docker DEVELOPER:667–723; server DEVELOPER:3414–3449 (commit `ceb57419`); AUTHENTICATION:1612–1662 | 1 |
+| 0075 | Multi-stage, non-root Alpine images containing runtime projects only | Acc | PRD-007:61–114; Dockerfiles | 2 |
+| 0076 | Images build with the cache by default | Sup by 0077 | PRD-007:56–76 | 3 |
+| 0077 | Images always build with `--no-cache` | Acc | PRD-007:246–264 | 2 |
+| 0078 | Local environments: prodlike compose stack (also the dev-mode API's database), a scratch database and a seed-authoring database on bind mounts, E2E on its own Testcontainers database, fixed ports, one stack at a time | Acc | Data/Local Docker/README; Data/Seed Docker/README; Docker DEVELOPER:48–61 | 2 |
+| 0079 | Secrets stay out of the repo: a tracked template, an ignored env file, the platform secret store in production | Acc + Ver (Phase 0b: no tracked template exists; `Source/Docker/.env` is tracked and holds only `COMPOSE_PROJECT_NAME` and `POSTGRES_DB`) | GETTING-STARTED:103–126; Docker DEVELOPER:417–456 | 2 |
+| 0080 | Build and deploy by hand from VS Code tasks; no CI | Dec | .vscode/tasks.json; no `.github/workflows` directory | 2 |
+
+Earlier drafts consolidated some inventory rows. The W4 table above is authoritative for current inventory IDs and statuses; these IDs are not ADR numbers and do not reserve ADR numbers.
+
+**Smaller decisions to fold in, not number:**
+
+- The dependency-advisory handling (the `serialize-javascript` override; the icon generator removed, with the icons committed) folds into 0068. Evidence: client DEVELOPER 2975, 2979–3011.
+- "The OpenAPI document declares only the failures an endpoint's own rules can produce" widens 0025. Evidence: server DEVELOPER 519–521, 965–967, 1698–1707, plus the per-slice schema names at 325–332.
+- "No test tier is time-limited; every documented command reports its duration" folds into 0073 (run-tests "Tiers", e2e README).
+- "Database backups are kept outside the repository" folds into 0079 (`.gitignore`; Docker DEVELOPER 589–590).
+- The compose stack's missing server health check is decided in DD-16, then recorded in 0048 or 0078.
+
+---
+
+## Decisions with no PRD
+
+Two decisions were made with no PRD and are represented by W4 candidate rows 0024 and 0035. Those row IDs are inventory references, not ADR numbers:
+
+- the switch from 422 to 400, in commit `bec69a48` (2026-10-16);
+- binding access tokens to their session, in commit `31c96313` (2026-10-17).
+
+ADR-012:362 wrongly attributes the 422 change to PRD-030 (Appendix C, site 9).
+
+---
+
+## Owner decisions pending
+
+Two items need the owner's call, and each blocks one thing:
+
+- **No tracked `.env.development.template`** exists, so the setup docs' "copy the template" instruction
+  has nothing to copy. The real env files stay where the tooling expects them and stay ignored; the
+  choice is a tracked keys-only template, or correcting the instruction to "create from scratch".
+  Blocks W1's setup-docs item.
+- **`.github/instructions/playwright-e2e.instructions.md`** does not exist; the live file is
+  `e2e.instructions.md`. Create it, or repoint `e2e/README.md:10`, `e2e/AUTHORING.md:5` and
+  `ADR-012:20`. Blocks W3's link fix.
+
+## Private and ignored files
+
+Decided: these are read for reference and never edited, published or replaced.
+
+- **`Docs/Azure/Azure-Deployment-Notes.md`** stays private and ignored. It holds secrets, records one
+  deployment choice rather than a shared one, and the eventual answer is Bicep rather than prose. Do not
+  publish it, do not write a redacted replacement, and **remove** the three links to it in
+  `Source/Docker/DEVELOPER.md` (107, 720, 843) — they can never resolve for another reader. W1 item 12.
+- **`Source/Client/pot-react/.env.development`, `.env.production`, `Source/Docker/.env.development` and
+  `appsettings.Development.json`** stay where the tooling reads them, and stay ignored. They are never
+  edited by this work.
+- **`Data/README.md`, `Data/Scripts/`, `Data/**/Backups/`** are machine-local and out of scope entirely.
+- **If one ever must change**, copy it aside, edit it, compare the copies in a diff tool, and delete the
+  copy. Never `git add -f` it: that writes the contents into the object store before any commit exists.

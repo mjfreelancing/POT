@@ -2,7 +2,7 @@
 
 Each brief is one undecided item from `DOCS-REORGANISATION-PLAN.md`: a `Dec` row in its section 8, or a code risk mapped in its section 11. It says what the code does today, why it matters, the options and a recommendation.
 
-**Baseline:** commit `9024e1d2`. Paths are relative to the repo root, and `path:line` references are to that commit. Phase 0b re-checked every reference against the files that changed since `ceb57419`; its record, including the availability check, is in `DOCS-REORGANISATION-PLAN.md` ("Phase 0b record").
+**Baseline:** commit `9024e1d2`. Paths are relative to the repo root, and `path:line` references are to that commit. Every reference was re-checked against the code at that commit; the availability check is recorded in `DOCS-WORK-LISTS.md` ("Files reported missing, and where they turned out to be").
 
 **How to answer:** write your decision after `> **Your call:**` at the end of each brief. A short answer is fine ("Option B", "Keep, record honestly", "Defer until after PRD-019"). Add any conditions on the same line or the lines below.
 
@@ -20,7 +20,7 @@ Each brief is one undecided item from `DOCS-REORGANISATION-PLAN.md`: a `Dec` row
 - DD-05: no `.github/workflows/` directory;
 - DD-06: the local data folders.
 
-Run the availability check in `DOCS-REORGANISATION-PLAN.md` ("Files reported as missing or unavailable") first; it has been run once, and its result is the Phase 0b record in that file. Never copy the contents of a git-ignored file into a brief or an ADR.
+Run the availability check in `DOCS-WORK-LISTS.md` ("Files reported missing, and where they turned out to be") first; it has been run once, and its result is recorded there. Never copy the contents of a git-ignored file into a brief or an ADR.
 
 The briefs are ordered by severity, highest first. A follow-up on an item already fixed is at the end.
 
@@ -48,7 +48,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 
 ### DD-02 — Etag checked in code but not a database concurrency token; client types it as `bigint`
 
-- **Backlog row:** 0022 (`Acc + Ver`).
+- **Backlog row:** 0021 (`Acc + Ver`).
 - **What the code does today:**
   - `EntityBase.Etag` is a plain `long` (`Pot.Data/Entities/EntityBase.cs:11`). It is indexed, but there is no `IsConcurrencyToken`, `[ConcurrencyCheck]` or `xmin` anywhere in `Pot.Data`.
   - The value is set on every insert and update to `DateTime.UtcNow.GetEtag()` (`Pot.Data/DbContextBase.cs:154`), which is Unix milliseconds (`Pot.Shared/Extensions/DateTimeExtensions.cs:13-18`). It bypasses `ITimeProvider`.
@@ -71,7 +71,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 
 ### DD-03 — Money stored and calculated as `double`
 
-- **Backlog row:** 0017 (`Dec`).
+- **Backlog row:** 0016 (`Dec`).
 - **What the code does today:**
   - Stored money is `double` / `double precision`: `AccountEntity.cs:15-16` (Balance, Reserved), `ExpenseEntity.cs:25` and `IncomeEntity.cs:23` (Amount). The current model snapshot confirms `double precision` (`Pot.Data/Migrations/PotDbContextModelSnapshot.cs:34-46,147-148,208-209`).
   - Every input and output model, the CSV import/export rows and the export metadata use `double` (for example `Features/Accounts/Get/Models/Output.cs:8-16`, `Features/Maintenance/Import/Models/ExpenseCsvRow.cs:63`, `Metadata/Models/MetadataV1.cs:14-63`). Altogether, 116 server files mention `double`.
@@ -81,7 +81,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 - **Options:**
   - **A. Keep as-is (record honestly).** The ADR records double, the rounding rule as it really is, and the known drift. Effort: none.
   - **B. Keep double, but round at defined boundaries.** Round totals, rates and `Available` to 2 dp in the calculator and the outputs. Effort S. No migration or contract change. This reduces visible drift; it does not make values exact.
-  - **C. Use `decimal` end to end.** C# `decimal`, PostgreSQL `numeric(18,2)` for the stored amounts (computed values are never stored, row 0010), with explicit rounding rules in the calculators. Effort L. **DB migration and data migration** (`USING round(col::numeric, 2)`, written by a human). Contract: `format` changes from `double` to `decimal` on about 30 properties, but the wire format stays a JSON number, so the client is unchanged apart from tests. Import/export parsing and tests change.
+  - **C. Use `decimal` end to end.** C# `decimal`, PostgreSQL `numeric(18,2)` for the stored amounts (computed values are never stored, row 0009), with explicit rounding rules in the calculators. Effort L. **DB migration and data migration** (`USING round(col::numeric, 2)`, written by a human). Contract: `format` changes from `double` to `decimal` on about 30 properties, but the wire format stays a JSON number, so the client is unchanged apart from tests. Import/export parsing and tests change.
   - **D. Integer cents (`long`).** Effort L. DB and data migration, a breaking contract change, and client changes everywhere. Not recommended.
 - **Recommendation:** C. It is the standard representation for money, the wire format does not change, and the data set is still small. Sequence it next to the per-site currency work (PRD-018) so the rounding rules are decided once.
 - **Route if changed:** raise a PRD via the prd-discovery skill. The schema and data migration are generated and written by a human.
@@ -92,7 +92,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 
 ### DD-04 — Email queued in process; reminders assume one replica
 
-- **Backlog row:** 0054 (`Acc + Dec`), related to 0055.
+- **Backlog row:** 0049 (`Acc + Dec`), related to 0050.
 - **What the code does today:**
   - Email goes through an unbounded in-memory channel (`Pot.EmailSender/SendEmailChannel.cs:27-31`), drained by `SendEmailWorker` (`Pot.AspNetCore/Features/Workers/SendEmailWorker.cs:17-20`). If a send throws, the error is logged and the message is dropped, with no retry anywhere in `Pot.EmailSender` (`SendEmailChannel.cs:62,68-71`). Anything still queued is lost on restart. OTP, sign-up and reset emails all go this way.
   - `BudgetReminderEmailWorker` runs once at start-up and then on every UTC hour (`Features/Workers/BudgetReminderEmailWorker.cs:29-104`, `:89-90`). Whether to send depends only on "current local hour == configured hour" (`Pot.App/Features/Notifications/BudgetReminder/BudgetReminderService.cs:65`). There is no record that a reminder was sent.
@@ -114,7 +114,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 
 ### DD-05 — No CI; deploy pushes `:latest` from the local working tree
 
-- **Backlog row:** 0090 (`Dec`).
+- **Backlog row:** 0080 (`Dec`).
 - **What the code does today:**
   - There is no `.github/workflows/` directory.
   - Deployment uses two VS Code tasks (`.vscode/tasks.json:93-117`). They run `docker build --no-cache` from the local working tree and `docker push ghcr.io/mjfreelancing/pot-{server,client}:latest` (`:95`, `:108`). No tests or lint run first.
@@ -133,7 +133,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 
 ### DD-06 — PostgreSQL 13 locally and in tests, 16 in E2E, 17.6 in Azure
 
-- **Backlog row:** 0051 (`Dec`).
+- **Backlog row:** 0047 (`Dec`).
 - **What the code does today:**
   - EF is told the server is 13.6: `options.SetPostgresVersion(new Version(13, 6))` (`Pot.Data/Extensions/DbContextOptionsBuilderExtensions.cs:11`).
   - These all run `postgres:13`:
@@ -159,7 +159,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 
 ### DD-07 — Client API types are hand-written
 
-- **Backlog row:** 0029 (`Dec`). Related to 0028.
+- **Backlog row:** 0026 (`Dec`). Related to 0025.
 - **What the code does today:**
   - The contract is generated at build time and committed (`contracts/openapi/v1.json`; `.github/instructions/server.instructions.md:21-28`).
   - The client has no codegen dependency (`Source/Client/pot-react/package.json`). Its API types are Zod schemas in `src/data/*.ts`, used only through `z.infer`. Nothing in `src/` calls `.parse` or `.safeParse` on API data. Responses are `JSON.parse(text) as unknown` and then cast (`src/api/apiHelpers.ts:88`).
@@ -179,9 +179,9 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 
 ### DD-14 — No policy for API/client version skew while an old PWA shell is cached
 
-- **Backlog row:** 0020 (`Acc`: "Client and server release together; breaking API changes need no compatibility window").
+- **Backlog row:** 0019 (`Acc`: "Client and server release together; breaking API changes need no compatibility window").
 - **What the code does today:**
-  - `Source/Client/pot-react/DEVELOPER.md:3122` says detection has no client/server version handshake, "so a breaking API change still relies on the backward-compatibility policy". **No such policy exists anywhere in the repo.** The only related statements are the four PRD lines behind row 0020 (`PRD-021:169`, `PRD-025:261`, `PRD-028:73`, `PRD-030:157`), and they say the opposite: no compatibility period is needed.
+  - `Source/Client/pot-react/DEVELOPER.md:3122` says detection has no client/server version handshake, "so a breaking API change still relies on the backward-compatibility policy". **No such policy exists anywhere in the repo.** The only related statements are the four PRD lines behind row 0019 (`PRD-021:169`, `PRD-025:261`, `PRD-028:73`, `PRD-030:157`), and they say the opposite: no compatibility period is needed.
   - "Release together" is not true in practice:
     - The server and client are built and pushed by two separate manual tasks (`.vscode/tasks.json:93-117`), so for a while the new server serves the old client.
     - An open or cached PWA shell keeps calling the API until it updates.
@@ -189,8 +189,8 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
   - Nothing sends a client build id to the server (no version header in `src/api/axios.ts`, nothing in `Pot.AspNetCore`).
 - **Why it matters:** For about 10 minutes after a deploy, plus the gap between the two deploy tasks, an old client can call a changed endpoint. The usual results are a 400 on a write (a missing or renamed field) or a blank value in the UI (a removed response field). Silent data damage is unlikely, because the server validates every input. The guide currently promises a safeguard that does not exist.
 - **Options:**
-  - **A. Keep as-is (record honestly).** The ADR for row 0020 states that there is no compatibility window, that skew is accepted, and how long it can last. Correct `DEVELOPER.md:3122` to say so. Optionally, run both deploy tasks together. Effort S. Docs only.
-  - **B. "Expand, then contract" for breaking changes.** The server accepts both shapes for one deploy, and removes the old one in a later deploy. This supersedes row 0020. Effort S per breaking PRD (process cost on every one). No migration.
+  - **A. Keep as-is (record honestly).** The ADR for row 0019 states that there is no compatibility window, that skew is accepted, and how long it can last. Correct `DEVELOPER.md:3122` to say so. Optionally, run both deploy tasks together. Effort S. Docs only.
+  - **B. "Expand, then contract" for breaking changes.** The server accepts both shapes for one deploy, and removes the old one in a later deploy. This supersedes row 0019. Effort S per breaking PRD (process cost on every one). No migration.
   - **C. A version handshake.** The client sends its build id in a header. The server answers a dedicated Problem Details type when the client is older than a minimum, and the client forces the update immediately. Effort M. Server, client and contract changes (new header, new problem type). Infra: none.
 - **Recommendation:** A. The enforced PWA update already bounds the skew to minutes, and there is one client and one operator. Revisit C if a breaking change causes real failures.
 - **Route if changed:** A is a docs change made with the ADR. B and C each need a PRD via the prd-discovery skill.
@@ -201,7 +201,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 
 ### DD-08 — One-time codes stored in plaintext, and written to logs
 
-- **Backlog row:** 0036 (`Acc + Dec (plaintext codes)`).
+- **Backlog row:** 0033 (`Acc + Dec (plaintext codes)`).
 - **What the code does today:**
   - `RefCode` and `OtpCode` are six-digit strings stored as-is (`Pot.Data/Entities/OneTimePasswordEntity.cs:51-59`). They are generated with `RandomNumberGenerator` (`Pot.App/Features/Auth/OtpGenerator.cs:20`), expire after 15 minutes (`Features/Otp/OtpService.cs:23,152`), allow 3 attempts (`Features/Auth/VerificationServiceBase.cs:26,128-134`), and are checked with a plain `==` (`:106`).
   - The temporary password is stored only as a hash (`OneTimePasswordEntity.cs:65-66`). A successful reset sets the user's password to that hash (`PasswordReset/Verify/VerifyPasswordResetService.cs:84`). **So a stolen code alone does not let anyone sign in.** Signing in still needs the emailed temporary password. Someone who already knows the username can use a stolen code to complete a pending reset, which stops the old password working.
@@ -221,7 +221,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 
 ### DD-09 — Permission policies are string literals
 
-- **Backlog row:** 0032 (`Acc`); no `Dec` row.
+- **Backlog row:** 0029 (`Acc`); no `Dec` row.
 - **What the code does today:**
   - 34 endpoint registrations pass literals such as `.RequireAuthorization("account:view")`, for example `Pot.AspNetCore/Features/Accounts/Extensions/RouteGroupBuilderExtensions.cs:11`. Accruals passes three literals, and all three must pass (`Features/Accruals/Extensions/RouteGroupBuilderExtensions.cs:9`).
   - The permissions already exist as an enriched enum (`Pot.Shared/Enumerations/Permission.cs:9-20`, 12 values). Approvals uses a constant (`AuthorizationPolicies.PlatformManage`).
@@ -243,7 +243,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 
 ### DD-10 — DI by marker-interface scanning: code and server guide agree, `server.instructions.md` does not
 
-- **Backlog row:** 0044 (`Dec`).
+- **Backlog row:** 0040 (`Dec`).
 - **What the code does today:**
   - Each layer has an empty `ServiceRegistrarBase` marker (for example `Pot.Data/PotDataRegistrar.cs:6`). Each scans for `IPotScopedDependency` and `IPotSingletonDependency` (`Pot.App/Extensions/ServiceCollectionExtensions.cs:14-38`, `Pot.AspNetCore/Extensions/WebApplicationBuilderExtensions.cs:457,473`, `Pot.Data/Extensions/ServiceCollectionExtensions.cs:11,20`, `Pot.EmailSender/Extensions/ServiceCollectionExtensions.cs:12`).
   - About 108 interfaces extend a marker (99 of them in `Pot.App`). 91 `Pot.App` files reference `IPotScopedDependency` and 10 reference `IPotSingletonDependency`. No class implements a marker directly, so every scanned service has an interface, even when there is only one implementation.
@@ -265,7 +265,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 
 ### DD-13 — Features import other features (and shared layers import features)
 
-- **Backlog row:** 0061 (`Acc + Ver`: "Feature modules over shared `api/`, `concerns/` and `lib/` layers, with one-way dependencies").
+- **Backlog row:** 0055 (`Acc + Ver`: "Feature modules over shared `api/`, `concerns/` and `lib/` layers, with one-way dependencies").
 - **What the code does today:**
   - `Source/Client/pot-react/DEVELOPER.md:260` says "Features never import from other features (use shared utilities instead)". There is no ESLint rule enforcing it: `eslint.config.js` has no `no-restricted-imports` or import-boundary rule.
   - **Six features import `@/features/auth`**: `accounts`, `dashboard`, `expenses`, `incomes`, `users` and `userSettings`. What they import:
@@ -276,7 +276,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
     For example: `src/features/accounts/AccountsPage.tsx:16`, `src/features/userSettings/delete/DeleteAccountAction.tsx:6-8`.
   - `dashboard` imports `renewExpenses` and `renewIncomes` from `expenses` and `incomes` (`src/features/dashboard/actions/accruals/RenewExpensesAction.tsx:12`, `RenewIncomesAction.tsx:12`). These are plain mutation-plus-cache-invalidation helpers (`src/features/expenses/bulkActions/renew.ts`).
   - `expenses` and `incomes` import `@/features/shared/sheets/asyncSheetStates` (for example `src/features/expenses/edit/EditExpenseSheet.tsx:10`). That is a folder under `features/` acting as a shared layer.
-  - **The shared layers also import features**, which breaks the one-way rule in row 0061:
+  - **The shared layers also import features**, which breaks the one-way rule in row 0055:
     - `src/api/hooks/useMe.ts:2` and `src/api/hooks/useSignup.ts:1` (auth);
     - `src/components/nav/AppSidebarMenus.tsx:16-18` (auth, maintenance);
     - `src/components/user/UserMenu.tsx:13-14` (auth, userSettings);
@@ -315,7 +315,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 
 ### DD-11 — The prodlike E2E gate is per-PRD or on demand, depending on which doc you read
 
-- **Backlog row:** 0082 (`Acc + Dec`).
+- **Backlog row:** 0072 (`Acc + Dec`).
 - **What the code does today:**
   - "On demand" only, run "when the client production build changes … and before releases": `Source/Client/pot-react/e2e/README.md:142-153`, and `Docs/Future/ADR-012-playwright-e2e-testing-infrastructure.md:147-165` and `:402`.
   - "The completion gate for client-affecting work … when such a PRD completes, and on demand when the client production build changes": `.github/instructions/e2e.instructions.md:13`.
@@ -337,7 +337,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 
 ### DD-16 — No server health check in the prodlike compose stack
 
-- **Backlog rows:** 0053 (liveness separate from readiness) and 0088 (local environments).
+- **Backlog rows:** 0048 (liveness separate from readiness) and 0078 (local environments).
 - **What the code does today:**
   - In `Source/Docker/docker-compose-client-server.yml`:
     - `postgres` has a health check (`:147-160`, `pg_isready`).
@@ -361,7 +361,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 
 ### DD-12 — Smaller items
 
-- **Backlog rows:** none directly, apart from 0058 (server test strategy) for 12d and the plan's section 6.3 note for 12e.
+- **Backlog rows:** none directly, apart from 0052 (server test strategy) for 12d and the plan's section 6.3 note for 12e.
 - **What the code does today, item by item:**
   - **12a — Cronos.** Referenced at `Source/Server/Directory.Packages.props:21` and `Pot.AspNetCore/Pot.AspNetCore.csproj:17`. No `using Cronos` or other use anywhere.
   - **12b — sonner and next-themes.** `src/components/ui/sonner.tsx:10,14` calls `useTheme` from `next-themes`, but no `next-themes` provider is mounted, so `theme` is always `"system"`. The app's own `ThemeProvider` (`src/App.tsx:56`) exports its own `useTheme` (`src/components/theme/ThemeProvider.tsx:109`). Toasts follow the OS setting, not the user's chosen theme. The colours mostly come from the app's CSS variables, so the visible effect is small.
@@ -391,7 +391,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 
 ## Follow-up: forwarded headers (fixed in `ceb57419`)
 
-The forwarded-headers problem is fixed. Its trust model is recorded in backlog rows 0084 and 0039. Two small items remain:
+The forwarded-headers problem is fixed. Its trust model is recorded in backlog rows 0074 and 0036. Two small items remain:
 
 1. **After the next deploy:** confirm that `AuthSessions.IpAddress` in production holds real client addresses, not the ingress's private address.
 2. **Local prodlike stack only:** `Source/Docker/Client/nginx.conf` proxies `/api/` without `X-Forwarded-For`, so locally every anonymous caller shares nginx's rate-limit partition. Fixing it is one line: `proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`.
