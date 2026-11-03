@@ -537,8 +537,10 @@ are consequential and evidenced. Do not invent missing history.
 
 ### Additional candidates from the historical review
 
-These were missing or bundled with adjacent topics in the initial inventory. The IDs continue after
-the current range while leaving retired ID 0081 unused.
+The CORS, forwarded-header and transport examples below were a small initial selection, not the
+boundary of the historical review. Continue discovering candidates across the guides and other
+historical sources. These three were missing or bundled with adjacent topics in the initial inventory.
+The IDs continue after the current range while leaving retired ID 0081 unused.
 
 For navigation, review these as related decision families while keeping each actual decision separate:
 
@@ -554,8 +556,72 @@ For navigation, review these as related decision families while keeping each act
 | 0082 | CORS boundary: explicitly allow trusted browser origins with credentialed requests; expose required response headers and cache preflights | Acc | server DEVELOPER:3450–3538; `CorsOptionsSetup.cs`; `CorsConfigurationSetup.cs` | 1 |
 | 0083 | Forwarded-header trust boundary: which proxy may supply client address and scheme, which headers are honored, and how the API limits trusted hops | Acc + Ver (the deployment reachability assumption needs confirmation) | server DEVELOPER:3414–3449; `ForwardedHeadersOptionsSetup.cs`; Azure deployment configuration is not in the repository | 1 |
 | 0084 | Production transport boundary: where public TLS terminates, whether ingress-to-container traffic is encrypted, and how HTTPS scheme/redirect behavior is enforced | Ver (do not describe this as "no HTTPS" without confirming the deployment boundary) | Azure deployment configuration is not in the repository; public API URL and forwarded-header behavior are described in Docker and server guides | 1 |
+| 0085 | PostgreSQL as POT's primary relational datastore, distinct from the version target | Acc | `Pot.Data/PotDbContext.cs`; database provider configuration; local Docker database | 1 |
+| 0086 | Entity Framework Core as the persistence ORM | Acc | `Pot.Data/PotDbContext.cs`; `Directory.Packages.props`; server guide | 2 |
 
 Earlier drafts consolidated some inventory rows. The W4 table above is authoritative for current inventory IDs and statuses; these IDs are not ADR numbers and do not reserve ADR numbers.
+
+### Interview queue: server guide, first pass
+
+This is the ordered queue for asking the owner why each candidate choice was made. It is a discovery
+tool, not a list of promised ADRs: a decision may be grounded in prior experience, have had no credible
+alternative, belong in a standard or PRD, or lack enough evidence for an ADR. Record the owner's
+account and supporting evidence before deciding its destination. Queue IDs are interview references,
+not W4 inventory IDs or ADR numbers. Update each status as it is discussed; continue the discovery
+sweep across other guides and historical sources before treating coverage as complete. `Interviewed`
+means an owner recollection was recorded; it does not mean the history is independently verified or
+that an ADR is warranted.
+
+| Queue | Candidate decision to discuss | W4 row(s) | Server guide evidence | Status / owner recollection |
+| --- | --- | --- | --- | --- |
+| SQ-01 | Project boundaries and dependency direction between API, application, data and shared projects | 0037 | Architecture Overview; Feature Organization | Interviewed — past-project experience; separate HTTP/API, business logic and data/repository concerns |
+| SQ-02 | Organizing code by business feature within each layer | 0037 | Architecture Overview; Feature Organization | Interviewed — mirrored vertical slices separate cross-cutting concerns from features and improve predictability and discoverability |
+| SQ-03 | Minimal APIs and static handlers rather than controller-based endpoints | 0038 | Endpoint Patterns; Endpoint Registration | Interviewed — owner recollection: well suited to a pure API without views; independent handlers inject only what they need, are easier to test, and can be configured individually for concerns such as Problem Details and rate limiting; the readable registration chain and fit with vertical slices were also factors |
+| SQ-04 | Organizing API work into operation-specific endpoint slices | 0038 | Feature Organization; Endpoint Patterns | Interviewed — owner recollection: feature organization felt more natural than technical grouping, improved discoverability and predictability, and mapped well to UI calls |
+| SQ-05 | Keeping HTTP request/response models and hand-written mapping at the API boundary | 0038 | Endpoint Patterns; Mapping Patterns | Interviewed — owner recollection: consistent per-handler request/response and mapping keeps each feature/operation independently changeable; only genuinely common models should be shared, in the appropriate API or common package |
+| SQ-06 | Keeping business orchestration in application services rather than endpoint handlers | 0037, 0041 | Service Layer; Feature Organization | Interviewed — owner recollection: handlers stay focused on HTTP with no business logic; application-layer unit tests can run without infrastructure |
+| SQ-07 | Representing expected business failures as `EnrichedResult` values rather than exceptions | 0041 | Result Pattern; Service Layer | Interviewed — owner recollection: predictable failure flows avoid searching for exceptions, map more directly to HTTP status codes, and keep exceptions for exceptional conditions; concern about the cost/performance impact of raising and catching exceptions was also a factor |
+| SQ-08 | Separating request-shape validation from data-dependent entity checks | 0042 | Request Validation; Entity Checks | Interviewed — owner recollection: validators replace data annotations and are easier to test and extend for complex rules; application checks then enforce domain rules after the input is correctly formatted |
+| SQ-09 | Encapsulating data access behind feature-specific repositories instead of exposing the DbContext to application services | 0043 | Repository Layer | Interviewed — owner recollection: named repository methods make service code easier to read and interpret; repositories can be tested independently and allow service tests to mock database calls when needed |
+| SQ-10 | Separating read-only and persistable repository capabilities | 0043 | Repository Layer | Interviewed — owner recollection: chosen purely on the basis of the Interface Segregation Principle |
+| SQ-11 | Using no-tracking reads by default and explicit, scoped tracking for writes | 0043 | Tracking vs No-Tracking; Service Layer | Interviewed — owner recollection: prioritize performance and opt in to tracking only when needed |
+| SQ-12 | Using explicit transactions for operations that coordinate multiple writes | 0043 | Transaction Management | Interviewed — owner recollection: required when EF calls across multiple services cannot otherwise act as one atomic unit, so failures can roll the work back |
+| SQ-13 | Combining EF query filters for selected tenant data with site-scoped repository surfaces for users and sites | 0027 | Multi-Tenancy & Query Filters; Repository Layer | Evidence reviewed — owner directed to PRD-026 §§4.1, 4.7: a `User` filter would be self-referential and authorization/token validation can run before a site is known, so site-scoped repository methods constrain those lookups; existing filters remain for the other four entity types |
+| SQ-14 | Separating public GUID `RowId` values from internal integer database keys | 0020 | Entity Framework Core; API Design Guidelines | Interviewed — owner recollection: a security measure intended to make routes harder to guess than incrementing identifiers |
+| SQ-15 | Application-level ETag checks for optimistic concurrency, without a database concurrency token | 0021 | Optimistic Concurrency (ETags) | Interviewed — owner recollection: wanted database-independent concurrency; unfamiliarity with database tokens made the ETag approach simpler, with an acceptable race risk given parallel edits are very unlikely in this application |
+| SQ-16 | Restricting foreign-key cascades and using explicit hard-delete workflows rather than soft deletes | 0045 | Cascade Delete Behavior | Interviewed — owner recollection: avoid accidental data loss caused by coding errors or direct database access |
+| SQ-17 | Modeling domain enums as enriched shared types | 0044 | Enriched Enums | Interviewed — owner recollection: enriched enums allow display/storage names to differ from enum member names, which matters because the names are stored in the database |
+| SQ-18 | Backing business uniqueness checks with database indexes and case-insensitive text | 0044 | Indexes; Entity Framework Core | Interviewed — owner recollection: application checks provide clearer business-rule errors; database constraints are a second defense against coding errors or direct database access |
+| SQ-19 | Applying migrations through a separate runner before the API starts | 0046 | Architecture Overview; Migrations | Interviewed — owner recollection: separation of concerns and easier mitigation when deployments fail; a separate migration process is considered better practice |
+| SQ-20 | Requiring destructive schema changes to be delivered in separate append-only steps | 0046 | Migration Guidelines; PRD-013 and PRD-023 evidence listed in W4 | Interviewed — owner recollection: aim for one migration per change where possible, and use separate steps for safer rolling deployments |
+| SQ-21 | Running background workers in the API process under a single-replica assumption | 0049 | Architecture Overview; worker references in W4 | Interviewed — owner recollection: currently kept in-process for simplicity; PRD-019 addresses durable, scale-safe email dispatch without introducing another deployable, but does not by itself decide the host for every worker |
+| SQ-22 | Queuing email in process rather than using a durable external queue | 0050 | Architecture Overview; email references in W4 | Interviewed — owner recollection: initial simple implementation to get the feature working; expected to evolve to a more durable approach under PRD-019 |
+| SQ-23 | Registering services through marker-interface assembly scanning | 0040 | Dependency Injection | Interviewed — owner recollection: use the AllOverIt registrar to avoid manual service registration and keep code simple; explicit registration remains a fallback if performance becomes a concern |
+| SQ-24 | Returning every API failure as RFC 9457 Problem Details | 0022 | Architecture Overview; Problem Details | Interviewed — owner recollection: a consistent shape lets the React client interpret and handle errors predictably |
+| SQ-25 | Committing a build-generated OpenAPI document as the API contract | 0025 | OpenAPI references in W4; `.github/instructions/server.instructions.md` | Interviewed — owner recollection: no current requirement or client use; included for completeness and could help a future consumer such as an MCP server |
+| SQ-26 | Splitting server tests by layer and using hosted integration tests for HTTP behavior | 0052 | Architecture Overview; test project structure | Interviewed — owner recollection: database-independent tests are fast and run frequently; hosted integration tests are slower but verify full behavior such as database errors becoming Problem Details |
+| SQ-27 | Storing enriched enum values by name in the database | 0044 | Enriched Enums; Database Storage | Interviewed — owner recollection: improves database-query readability and avoids enum-ordering problems when inserting values; logical sequence can differ from numeric values |
+| SQ-28 | Authentication required by default, with an explicit anonymous endpoint allow-list | 0028 | Security; Authentication & Authorization | Evidence reviewed — PRD-026 §4.3: a forgotten authorization annotation had left a route open; the fallback makes omissions authenticated-only and an integration test requires every endpoint to be authorized or explicitly anonymous |
+| SQ-29 | Resolving `resource:action` permissions from the database on each request | 0029 | Authentication & Authorization | Interviewed — owner recollection: believed this preferable to carrying readable permission claims over the wire; the owner is unsure whether that is best practice and asks for the trade-off to be challenged |
+| SQ-30 | Granting platform administration from deployment configuration rather than a database role | 0030 | Authentication & Authorization | Interviewed — owner recollection: platform administration belongs to the product creator, not to any tenant; a tenant is a consumer |
+| SQ-31 | Using short-lived access tokens with server-side sessions and a rotating HttpOnly refresh cookie | 0034 | Authentication & Authorization | Interviewed — owner confirms the security motivations: limit access-token exposure, revoke a device without waiting for token expiry, keep refresh tokens out of JavaScript via an HttpOnly cookie, and support independent device sessions; PRD-001/002 record the design goals and implementation direction |
+| SQ-32 | Supporting per-session and global access-token revocation | 0035 | Authentication & Authorization | Interviewed — owner recollection: independent sign-in/logout across multiple devices; PRD-002 supplies the separate global-revocation goal, including password-change invalidation |
+| SQ-33 | Chained rate limiting partitioned by caller address or signed-in user, without account lockout | 0036 | Rate Limiting | Interviewed — owner recollection: anonymous traffic (notably sign-in) needs brute-force protection; signed-in users are more trusted; temporary throttling is enough for now, with account lockout deferred until a requirement justifies added complexity |
+| SQ-34 | Restricting CORS to configured origins while allowing credentials and exposing selected response headers | 0082 | CORS Configuration | Unconfirmed — owner does not recall the rationale and says an agent made these choices; verify the current client requirements and security properties before deciding whether to retain or revisit |
+| SQ-35 | Trusting selected forwarded headers and limiting the trusted proxy hop | 0083 | Forwarded Headers | Unverified — owner recalls an agent said Container Apps drops/rewrites the original address unless forwarded headers are honored; confirm actual ingress behavior, trusted-hop configuration and reachability before recording this as fact |
+| SQ-36 | Logging request metadata and structured failures without submitted values | 0051 | Middleware; Security | Interviewed — owner recollection: avoid recording credentials and sensitive financial data in logs |
+| SQ-37 | Separating liveness from readiness and gating background workers on readiness | 0048 | Middleware; health and worker startup references in W4 | Evidence reviewed — owner recalls this prevents requests/work from reaching an unready database; PRD-013 confirms separate liveness/readiness purposes and worker gating; which Azure probes target which endpoint still needs deployment verification |
+| SQ-38 | Production TLS termination and ingress-to-container transport boundary | 0084 | Server and Docker deployment sections; Azure configuration is not in the repository | Unverified; establish deployment facts before interviewing rationale |
+| SQ-39 | Choosing PostgreSQL as the primary relational datastore | 0085 | `Pot.Data/PotDbContext.cs`; database provider configuration; local Docker database | Interviewed — owner recollection: open-source and cost-effective for a small application that was not expected to grow very large |
+| SQ-40 | Choosing Entity Framework Core as the persistence ORM | 0086 | Entity Framework Core; `Directory.Packages.props` | Interviewed — owner recollection: prior experience, built-in migration support, and ease of composing LINQ queries |
+| SQ-41 | Building on the AllOverIt library family | 0039 | Server guide; `Directory.Packages.props`; AllOverIt instruction file | Interviewed — owner recollection: AllOverIt is the owner's personal library, showcases its features, and is backed by extensive tests |
+
+**Follow-up raised during interviews:**
+
+| Follow-up | Request | Priority | Status |
+| --- | --- | --- | --- |
+| FQ-01 | Owner suggests a PRD to investigate whether database-level concurrency is worthwhile compared with the current database-independent ETag approach | Low | Proposed; PRD not started |
+| FQ-02 | Evaluate per-request database permission resolution against token claims or caching, including token visibility, permission freshness/revocation, and request/database cost | To assess | Proposed; confirm evidence and scope before deciding whether a PRD is warranted |
 
 **Smaller decisions to fold in, not number:**
 
