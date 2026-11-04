@@ -16,13 +16,14 @@ window, accepting a database read in the authorization path.
 
 ## Context and Problem Statement
 
-Policies are named `resource:action` — `accounts:create`, `users:manage`, and so on — and each
-endpoint declares the policy it needs. The policy itself carries no permissions; it carries a
-requirement, and the handler resolves the caller's permission set and checks membership.
+Policies are named after `resource:action` permissions — `account:view`, `account:manage`,
+`user:manage`, `platform:manage` — and each endpoint declares the policy it needs. The policy itself
+carries no permissions; it carries a requirement, and the handler resolves the caller's permission set and
+checks membership.
 
-The access token carries identity and session state (`sub`, the token version and the session
-identifier) but no permissions. Role and permission data lives in the database and can be changed by
-an administrator at any time.
+The access token carries identity and session state — `sub`, `jti`, the token version and the session
+identifier — but no permissions. Role and permission data lives in the database and can be changed by an
+administrator at any time.
 
 The resolution happens during authorization, before the user-context middleware has established which
 site the caller is acting in, so it is necessarily cross-tenant: it answers "what may this user do
@@ -44,11 +45,12 @@ anywhere", not "what may this user do here". Site scoping is enforced later, by 
 
 ## Decision Outcome
 
-Chosen option: 1. `PermissionService` loads the caller's roles and their permissions, flattens them to
-names, and adds the platform-administrator permission when the caller's identifier appears in the
-deployment's platform-administrator configuration. The handler runs per requirement and succeeds only
-when the resolved set contains the required permission; anything unresolved fails the requirement,
-so the endpoint answers `403`.
+Chosen option: 1. `PermissionService` loads the caller's roles and their permissions — reference data, not
+site data — flattens them to names, and adds the platform-administrator permission when the caller's
+identifier appears in the deployment's platform-administrator configuration. The handler runs per
+requirement and succeeds only when the resolved set contains the required permission. A caller whose
+permissions do not include it is refused with `403`; a caller with no valid session is challenged with
+`401` before the permission is even considered.
 
 The same service also supplies the caller's permission list to the profile response the client reads,
 so the interface is shaped by the same answer that the server enforces.
@@ -69,12 +71,17 @@ so the interface is shaped by the same answer that the server enforces.
 
 ### Confirmation
 
-- Test: `AuthorizationMatrixFixture` exercises the endpoint-permission matrix, so a route that lost
-  its permission check or gained the wrong one fails.
+- Test: `AuthorizationMatrixFixture` exercises the endpoint-permission matrix from each endpoint's own
+declaration, so a route that answers a caller without the permission fails. Because the expectation is
+derived from the declaration, a deliberately changed permission changes the expectation with it and still
+passes.
 - Test: `EndpointAuthorizationMetadataFixture` requires every endpoint to be authorized or explicitly
-  anonymous, so a route cannot silently escape the resolution by omitting its policy.
+anonymous and pins the expected policy for the routes it names, so a new route cannot silently join the
+set of unprotected ones.
+- Gap: no unit fixture covers the permission flattening or the configuration-added platform permission;
+all of that rests on the hosted matrix.
 - Review: caching must not be added without recording the staleness window it introduces; the reason
-  this design exists is that there is none.
+this design exists is that there is none.
 
 ## Pros and Cons of the Options
 
@@ -103,7 +110,9 @@ so the interface is shaped by the same answer that the server enforces.
 
 ## More Information
 
-- Platform administration is itself a separate decision: the permission is derived from deployment
-  configuration, not from a tenant role.
+- Platform administration is itself a separate decision, recorded as
+  [ADR-0010](0010-platform-administration-is-granted-by-deployment-configuration.md).
+- The token and its revocation are [ADR-0008](0008-access-tokens-are-short-lived-and-backed-by-a-server-side-session.md)
+  and [ADR-0009](0009-access-tokens-are-rejected-once-their-session-or-user-version-changes.md).
 - Whether the per-request read is worth caching is open; the trade-off to evaluate is permission
   freshness against request cost.
