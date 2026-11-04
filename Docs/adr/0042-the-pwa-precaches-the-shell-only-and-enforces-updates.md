@@ -62,8 +62,10 @@ maximum deferral if it never is.
 
 ### Confirmation
 
-- Test: the service-worker fixtures assert API routes are not handled by the worker and that the version
-  manifest is requested without cache.
+- Test: the enforcement fixtures assert the quiet-period and maximum-deferral behaviour, and the version
+  check asserts the manifest is requested without cache.
+- Gap: no fixture asserts that the service worker leaves API routes alone; that exclusion is configuration
+  only.
 - Review: a route added to the service worker for API traffic is a defect; a change to the update prompt
   keeps the reload explicit rather than automatic behind a form.
 - Known limitation: an old shell can outlive a breaking API change until the user reloads, which is a
