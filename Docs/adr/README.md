@@ -149,6 +149,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | ADR | Title | Status |
 | --- | --- | --- |
 | [ADR-0037](0037-the-client-is-organised-by-feature-over-shared-layers.md) | The client is organised by feature over shared API, concern and utility layers | accepted |
+| [ADR-0038](0038-server-state-lives-in-a-query-cache-over-one-http-client.md) | Server state lives in TanStack Query over one configured HTTP client | accepted |
 
 ### Infrastructure
 
@@ -164,7 +165,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 - [ADR-0002](0002-retry-after-client-cooldown-handling.md) — Retry-After client cooldown handling
 
-### Accepted (36)
+### Accepted (37)
 
 - [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) — Playwright E2E testing infrastructure
 - [ADR-0003](0003-public-tls-terminates-at-the-container-apps-ingress.md) — Public TLS terminates at the Container Apps ingress
@@ -202,6 +203,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 - [ADR-0035](0035-builds-and-deployments-are-run-by-hand.md) — Builds, tests and deployments are run by hand; there is no continuous integration
 - [ADR-0036](0036-production-runs-two-container-apps.md) — Production runs two container apps: nginx serves the SPA and the API is separate
 - [ADR-0037](0037-the-client-is-organised-by-feature-over-shared-layers.md) — The client is organised by feature over shared API, concern and utility layers
+- [ADR-0038](0038-server-state-lives-in-a-query-cache-over-one-http-client.md) — Server state lives in TanStack Query over one configured HTTP client
 
 ## By PRD
 
