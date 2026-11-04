@@ -10,6 +10,12 @@ superseded-by: [ADR-0047]
 
 # ADR-0002: Retry-After client cooldown handling
 
+> **Clarification (2026-11-04).** The 429 body carries no error code: it holds `detail`, `status`,
+> `correlationId` and `instance` only (`ProblemDetailsOptionsSetup.cs`), and `Retry-After` is written
+> only where the limiter exposes it, so an authenticated sliding-window rejection carries neither the
+> header nor a timed message (`HeadersAndRateLimitFixture`). The decision itself is recorded as
+> [ADR-0047](0047-a-rate-limited-caller-is-told-when-to-retry.md).
+
 ## Context
 
 [PRD 014](../Future/PRD-014-retry-after-client-cooldown-handling.md) defines **what** Retry-After client

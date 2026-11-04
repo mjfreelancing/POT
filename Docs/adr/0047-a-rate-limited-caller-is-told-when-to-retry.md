@@ -4,6 +4,7 @@ title: A rate-limited caller is told when to retry, and nothing retries automati
 status: accepted
 date: 2026-11-04
 area: frontend
+supersedes: [ADR-0002]
 ---
 
 # ADR-0047: A rate-limited caller is told when to retry, and nothing retries automatically
