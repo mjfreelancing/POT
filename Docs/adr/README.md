@@ -129,6 +129,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | [ADR-0023](0023-services-access-data-through-feature-repositories.md) | Services read and write through feature repositories, never through the context | accepted |
 | [ADR-0024](0024-transactions-are-explicit-and-only-where-writes-must-be-one-unit.md) | Transactions are explicit and used only where writes must be one unit | accepted |
 | [ADR-0025](0025-tenant-confinement-is-structural-query-filters-and-site-scoped-reads.md) | Tenant confinement is structural: query filters and site-scoped reads | accepted |
+| [ADR-0026](0026-request-shape-is-validated-at-the-edge-and-rules-in-check-chains.md) | Request shape is validated at the edge and data-dependent rules in check chains | accepted |
 
 ### Infrastructure
 
@@ -142,7 +143,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 - [ADR-0002](0002-retry-after-client-cooldown-handling.md) — Retry-After client cooldown handling
 
-### Accepted (24)
+### Accepted (25)
 
 - [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) — Playwright E2E testing infrastructure
 - [ADR-0003](0003-public-tls-terminates-at-the-container-apps-ingress.md) — Public TLS terminates at the Container Apps ingress
@@ -168,6 +169,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 - [ADR-0023](0023-services-access-data-through-feature-repositories.md) — Services read and write through feature repositories, never through the context
 - [ADR-0024](0024-transactions-are-explicit-and-only-where-writes-must-be-one-unit.md) — Transactions are explicit and used only where writes must be one unit
 - [ADR-0025](0025-tenant-confinement-is-structural-query-filters-and-site-scoped-reads.md) — Tenant confinement is structural: query filters and site-scoped reads
+- [ADR-0026](0026-request-shape-is-validated-at-the-edge-and-rules-in-check-chains.md) — Request shape is validated at the edge and data-dependent rules in check chains
 
 ## By PRD
 
