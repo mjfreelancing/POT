@@ -39,9 +39,11 @@ still comes from the server — but the interface itself can be an old build.
 ## Decision Outcome
 
 Chosen option: 1. The build generates a precache manifest of the shell and hashed assets. Requests to the
-API are excluded from the service worker, so data is always the server's answer. A version manifest is
-served with no-cache so the client can detect that a newer build exists, and when it does the user is told
-and the application reloads to it.
+API are excluded from the service worker, so data is always the server's answer. A new build is detected
+through two channels: a build identifier baked into the bundle, and a version manifest served with
+no-cache and polled at start-up, on focus and on a timer. When a newer build exists the user is told, and
+the application applies it and reloads once the interface has been idle for a quiet period, or after a
+maximum deferral if it never is.
 
 ### Consequences
 
@@ -50,10 +52,12 @@ and the application reloads to it.
   until the cache happens to be cleared.
 - Good, because excluded API traffic means the service worker cannot mask a failure or a rate limit with a
   cached success.
-- Bad, because the cached shell is only as new as the last update, so a change that removes an endpoint
-  leaves old code calling it until the reload.
-- Bad, because the update prompt is an interruption the user must accept, and its behaviour across tabs and
-  visibility changes needs its own checks.
+- Bad, because the cached shell is only as new as the last enforced update, so a change that removes an
+  endpoint leaves old code calling it until the reload happens.
+- Bad, because the reload is not entirely the user's: the notice cannot be dismissed indefinitely, and the
+  interface reloads on its own after the deferral limit, which can interrupt work.
+- Bad, because each tab enforces independently on its own timers, so several tabs can reload at different
+  moments.
 - Bad, because the precache manifest is another artefact whose entries drift from the build.
 
 ### Confirmation
