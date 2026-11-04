@@ -41,13 +41,16 @@ tenant would be able to create an authority above itself.
 
 ## Decision Outcome
 
-Chosen option: 1. The configuration holds a comma-separated list of user identifiers. When the
-resolved permission set is built, a user whose identifier appears in that list also receives the
-platform permission, on top of whatever their roles give them. Everything else about them is an
-ordinary user: their site, their roles and their data are unchanged.
+Chosen option: 1. The configuration holds a comma-separated list of user identifiers in
+`PlatformAdmin:UserIds`, each one a user's `RowId`. When the resolved permission set is built, a user
+whose identifier appears in that list also receives the platform permission, on top of whatever their
+roles give them. Everything else about them is an ordinary user: their site, their roles and their data
+are unchanged, apart from two guards that protect an administrator from being removed by accident — the
+last platform administrator cannot be disabled, and a site holding one cannot be deleted.
 
-Configuration is validated at startup, so a malformed list fails the deployment rather than producing
-an administrator who is silently not one.
+The list is validated on start, so a malformed entry fails the deployment rather than producing an
+administrator who silently is not one. An empty list is accepted, which means a deployment can run with
+no platform administrator at all; a well-formed identifier that names no user also passes validation.
 
 ### Consequences
 
@@ -58,14 +61,19 @@ an administrator who is silently not one.
   can read the deployment configuration.
 - Bad, because granting or removing platform authority is a deployment change rather than an
   administrative action.
+- Bad, because a syntactically valid identifier that names nobody, or an empty list, passes validation:
+  the deployment starts and has no platform administrator.
 - Bad, because the configuration holds user identifiers, so the operator must know them before the
   first sign-in; the identifier is discovered from the database after the account exists.
 - Bad, because the authority is not auditable through the application's own role history.
 
 ### Confirmation
 
-- Test: `AuthorizationMatrixFixture` and the platform-scoped endpoints show that the permission is
-  required and that it is satisfied only for configured users.
+- Test: the startup-validation fixture asserts a malformed list fails the start, and the hosted matrix
+  asserts that a caller without the permission is refused. The grant side is exercised by the fixtures
+  that run against a host configured with a platform administrator.
+- Gap: no fixture asserts that a configured user holds the platform permission in addition to their role
+  permissions, and nothing covers the parsing of the setting itself.
 - Review: a platform authority granted anywhere other than this list is a defect, and a tenant-scoped
   endpoint must never depend on it for its ordinary behaviour.
 
