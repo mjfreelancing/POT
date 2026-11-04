@@ -122,6 +122,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | [ADR-0016](0016-validation-failures-answer-400-with-an-errors-map.md) | Validation failures answer 400 with an errors map, never 422 | accepted |
 | [ADR-0017](0017-only-guid-row-identifiers-are-exposed.md) | Only GUID row identifiers are exposed; integer keys stay internal | accepted |
 | [ADR-0018](0018-the-openapi-document-is-generated-at-build-time-and-committed.md) | The OpenAPI document is generated at build time and committed | accepted |
+| [ADR-0019](0019-endpoints-are-minimal-api-slices-with-their-own-models.md) | Endpoints are minimal API slices with their own request and response models | accepted |
 
 ### Infrastructure
 
@@ -135,7 +136,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 - [ADR-0002](0002-retry-after-client-cooldown-handling.md) — Retry-After client cooldown handling
 
-### Accepted (17)
+### Accepted (18)
 
 - [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) — Playwright E2E testing infrastructure
 - [ADR-0003](0003-public-tls-terminates-at-the-container-apps-ingress.md) — Public TLS terminates at the Container Apps ingress
@@ -154,6 +155,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 - [ADR-0016](0016-validation-failures-answer-400-with-an-errors-map.md) — Validation failures answer 400 with an errors map, never 422
 - [ADR-0017](0017-only-guid-row-identifiers-are-exposed.md) — Only GUID row identifiers are exposed; integer keys stay internal
 - [ADR-0018](0018-the-openapi-document-is-generated-at-build-time-and-committed.md) — The OpenAPI document is generated at build time and committed
+- [ADR-0019](0019-endpoints-are-minimal-api-slices-with-their-own-models.md) — Endpoints are minimal API slices with their own request and response models
 
 ## By PRD
 
