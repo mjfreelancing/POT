@@ -120,6 +120,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | [ADR-0014](0014-every-failure-is-written-as-a-problem-details-document.md) | Every failure is written as a Problem Details document | accepted |
 | [ADR-0015](0015-expected-business-failures-are-returned-as-results.md) | Expected business failures are returned as results, not thrown as exceptions | accepted |
 | [ADR-0016](0016-validation-failures-answer-400-with-an-errors-map.md) | Validation failures answer 400 with an errors map, never 422 | accepted |
+| [ADR-0017](0017-only-guid-row-identifiers-are-exposed.md) | Only GUID row identifiers are exposed; integer keys stay internal | accepted |
 
 ### Infrastructure
 
@@ -133,7 +134,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 - [ADR-0002](0002-retry-after-client-cooldown-handling.md) — Retry-After client cooldown handling
 
-### Accepted (15)
+### Accepted (16)
 
 - [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) — Playwright E2E testing infrastructure
 - [ADR-0003](0003-public-tls-terminates-at-the-container-apps-ingress.md) — Public TLS terminates at the Container Apps ingress
@@ -150,6 +151,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 - [ADR-0014](0014-every-failure-is-written-as-a-problem-details-document.md) — Every failure is written as a Problem Details document
 - [ADR-0015](0015-expected-business-failures-are-returned-as-results.md) — Expected business failures are returned as results, not thrown as exceptions
 - [ADR-0016](0016-validation-failures-answer-400-with-an-errors-map.md) — Validation failures answer 400 with an errors map, never 422
+- [ADR-0017](0017-only-guid-row-identifiers-are-exposed.md) — Only GUID row identifiers are exposed; integer keys stay internal
 
 ## By PRD
 
