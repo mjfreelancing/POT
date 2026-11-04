@@ -17,9 +17,9 @@ request and a refresh round trip.
 
 ## Context and Problem Statement
 
-Signing in mints two credentials. The access token is a JWT signed with HMAC-SHA512 that carries the
-user identifier (`sub`), a token identifier (`jti`), the user's token version and the identifier of the
-session it was issued for, and expires fifteen minutes after issue.
+Signing in mints two credentials. The access token is a JWT signed with HMAC-SHA512, expiring fifteen
+minutes after issue, and it carries the user identifier (`sub`), a token identifier (`jti`), the user's
+token version and the identifier of the session it was issued for — and nothing else.
 
 The refresh token is an opaque value that is never stored in clear: the session row keeps a unique
 hash and an expiry, and the browser keeps the value in a cookie that is `HttpOnly`, `SameSite=Lax`,
@@ -61,7 +61,7 @@ shape but hands it to any script running on the page.
 - Good, because the browser never exposes the refresh token to script, so an injection bug cannot read
   it.
 - Good, because each device holds its own session, so one device signing out leaves the others signed
-  in.
+  in; a second session survives another session's refresh.
 - Bad, because every request carries a session identifier the server must be able to interpret, which
   is the mechanism the revocation rules depend on.
 - Bad, because a refresh is an extra round trip the client has to interleave with the requests that
@@ -75,7 +75,12 @@ shape but hands it to any script running on the page.
   once the session is expired, which is the revocation mechanism itself.
 - Test: `RefreshFixture` asserts the stored hash changes on refresh and that the previous token no
   longer works.
-- Test: `RefreshTokenHelperFixture` asserts the cookie is `HttpOnly` and cleared on the same domain.
+- Test: `RefreshTokenHelperFixture` asserts the cookie is `HttpOnly`, `SameSite=Lax` and path-scoped on
+  set, and cleared as an expired cookie on the same domain.
+- Test: `LoginFixture` asserts the stored value is not the refresh token itself, which is what "never
+  stored in clear" means in practice.
+- Gap: the `Secure` attribute and the thirty-day maximum age are configuration defaults and no test
+  asserts them on a set cookie, because the fixture runs with `SecureOnly` disabled.
 - Review: the access-token lifetime stays short and the refresh token never leaves an HttpOnly
   cookie; a change to either belongs in a new record, not in a tweak.
 
@@ -104,6 +109,7 @@ shape but hands it to any script running on the page.
 
 ## More Information
 
-- Revocation, both per session and globally, is a separate decision.
+- Revocation, both per session and globally, is a separate decision:
+  [ADR-0009](0009-access-tokens-are-rejected-once-their-session-or-user-version-changes.md).
 - The client side of this — access token in memory, proactive and reactive refresh, one logout path —
-  is recorded for the client separately.
+  is [ADR-0040](0040-the-access-token-lives-in-memory-with-proactive-and-reactive-refresh.md).
