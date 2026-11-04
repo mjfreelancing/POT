@@ -126,6 +126,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | [ADR-0020](0020-the-server-is-layered-with-feature-slices-mirrored-across-layers.md) | The server is layered by responsibility with feature slices mirrored across the layers | accepted |
 | [ADR-0021](0021-entity-framework-core-is-the-persistence-mechanism.md) | Entity Framework Core is the persistence mechanism | accepted |
 | [ADR-0022](0022-postgresql-is-the-relational-datastore.md) | PostgreSQL is the relational datastore | accepted |
+| [ADR-0023](0023-services-access-data-through-feature-repositories.md) | Services read and write through feature repositories, never through the context | accepted |
 
 ### Infrastructure
 
@@ -139,7 +140,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 - [ADR-0002](0002-retry-after-client-cooldown-handling.md) — Retry-After client cooldown handling
 
-### Accepted (21)
+### Accepted (22)
 
 - [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) — Playwright E2E testing infrastructure
 - [ADR-0003](0003-public-tls-terminates-at-the-container-apps-ingress.md) — Public TLS terminates at the Container Apps ingress
@@ -162,6 +163,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 - [ADR-0020](0020-the-server-is-layered-with-feature-slices-mirrored-across-layers.md) — The server is layered by responsibility with feature slices mirrored across the layers
 - [ADR-0021](0021-entity-framework-core-is-the-persistence-mechanism.md) — Entity Framework Core is the persistence mechanism
 - [ADR-0022](0022-postgresql-is-the-relational-datastore.md) — PostgreSQL is the relational datastore
+- [ADR-0023](0023-services-access-data-through-feature-repositories.md) — Services read and write through feature repositories, never through the context
 
 ## By PRD
 
