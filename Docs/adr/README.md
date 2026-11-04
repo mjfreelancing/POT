@@ -111,6 +111,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | [ADR-0005](0005-cross-origin-access-is-limited-to-configured-browser-origins.md) | Cross-origin access is limited to configured browser origins | accepted |
 | [ADR-0006](0006-optimistic-concurrency-is-checked-in-the-application.md) | Optimistic concurrency is checked in the application, not by the database | accepted |
 | [ADR-0007](0007-each-request-resolves-the-callers-permissions-from-the-database.md) | Each request resolves the caller's permissions from the database | accepted |
+| [ADR-0008](0008-access-tokens-are-short-lived-and-backed-by-a-server-side-session.md) | Access tokens are short-lived and backed by a server-side session | accepted |
 
 ### Infrastructure
 
@@ -124,7 +125,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 - [ADR-0002](0002-retry-after-client-cooldown-handling.md) — Retry-After client cooldown handling
 
-### Accepted (6)
+### Accepted (7)
 
 - [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) — Playwright E2E testing infrastructure
 - [ADR-0003](0003-public-tls-terminates-at-the-container-apps-ingress.md) — Public TLS terminates at the Container Apps ingress
@@ -132,6 +133,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 - [ADR-0005](0005-cross-origin-access-is-limited-to-configured-browser-origins.md) — Cross-origin access is limited to configured browser origins
 - [ADR-0006](0006-optimistic-concurrency-is-checked-in-the-application.md) — Optimistic concurrency is checked in the application, not by the database
 - [ADR-0007](0007-each-request-resolves-the-callers-permissions-from-the-database.md) — Each request resolves the caller's permissions from the database
+- [ADR-0008](0008-access-tokens-are-short-lived-and-backed-by-a-server-side-session.md) — Access tokens are short-lived and backed by a server-side session
 
 ## By PRD
 
