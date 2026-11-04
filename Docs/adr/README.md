@@ -152,6 +152,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | [ADR-0038](0038-server-state-lives-in-a-query-cache-over-one-http-client.md) | Server state lives in TanStack Query over one configured HTTP client | accepted |
 | [ADR-0039](0039-api-hooks-return-results-and-one-interceptor-normalises-failures.md) | API hooks return results and one interceptor normalises every failure | accepted |
 | [ADR-0040](0040-the-access-token-lives-in-memory-with-proactive-and-reactive-refresh.md) | The access token lives in memory, with proactive and reactive refresh | accepted |
+| [ADR-0041](0041-browser-storage-is-keyed-by-environment-and-user.md) | Browser storage is keyed by environment and user, with a policy per setting | accepted |
 
 ### Infrastructure
 
@@ -167,7 +168,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 - [ADR-0002](0002-retry-after-client-cooldown-handling.md) — Retry-After client cooldown handling
 
-### Accepted (39)
+### Accepted (40)
 
 - [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) — Playwright E2E testing infrastructure
 - [ADR-0003](0003-public-tls-terminates-at-the-container-apps-ingress.md) — Public TLS terminates at the Container Apps ingress
@@ -208,6 +209,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 - [ADR-0038](0038-server-state-lives-in-a-query-cache-over-one-http-client.md) — Server state lives in TanStack Query over one configured HTTP client
 - [ADR-0039](0039-api-hooks-return-results-and-one-interceptor-normalises-failures.md) — API hooks return results and one interceptor normalises every failure
 - [ADR-0040](0040-the-access-token-lives-in-memory-with-proactive-and-reactive-refresh.md) — The access token lives in memory, with proactive and reactive refresh
+- [ADR-0041](0041-browser-storage-is-keyed-by-environment-and-user.md) — Browser storage is keyed by environment and user, with a policy per setting
 
 ## By PRD
 
