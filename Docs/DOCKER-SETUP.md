@@ -27,7 +27,10 @@ Before you run the task, make sure these local prerequisites exist:
 - `Source/Docker/.env.development`
 - `Source/Docker/postgres-data/`
 
-If `Source/Docker/.env.development` does not exist yet, create it. It is git-ignored, so the repository does not ship one; it needs the database credentials, JWT keys, SMTP settings, CORS origins and platform admin IDs described in the [Docker Developer Guide](../Source/Docker/DEVELOPER.md#environment-variables).
+If `Source/Docker/.env.development` does not exist yet, copy it from the tracked
+`Source/Docker/.env.development.template` in the same folder and fill the values that file marks
+REQUIRED. Your copy is git-ignored; the template is the tracked starting point, and each value is
+described in the [Docker Developer Guide](../Source/Docker/DEVELOPER.md#environment-variables).
 
 > **Important:** VS Code must be opened at the workspace root (the `POT` folder) for tasks to work correctly. The tasks are defined in `.vscode/tasks.json` and rely on the workspace folder structure.
 

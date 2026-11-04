@@ -404,6 +404,8 @@ Source/Client/pot-react/coverage
 # Environment-specific configuration files
 *.development*
 *.production*
+# The development env template is tracked: it holds keys and startup-safe placeholders, no secrets.
+!Source/Docker/.env.development.template
 Source/Client/pot-react/.vite
 Docs/Azure/Azure-Deployment-Notes.md
 Source/Server/CoverageReport

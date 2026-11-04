@@ -57,13 +57,13 @@ git --version
 
 POT is built against the following tooling versions. **Required** is the minimum the code enforces; **Recommended / verified** is what the maintainers build and test with. Planning and decision records under `Docs/Future/` may quote older versions as of their writing date — this table reflects the current codebase.
 
-| Tool | Required | Recommended / verified |
-| --- | --- | --- |
-| Node.js | `>= 22.22.0` | Node **24.x LTS** (24.15.0) |
-| npm | bundled with Node.js | bundled with Node 24 (npm 11.x) |
-| .NET SDK | 10.0 | 10.0 |
-| Docker client base image | — | `node:24-alpine` |
-| Docker server base image | — | `mcr.microsoft.com/dotnet/sdk:10.0-alpine` (build) · `mcr.microsoft.com/dotnet/aspnet:10.0-alpine` (runtime) |
+| Tool                     | Required             | Recommended / verified                                                                                       |
+| ------------------------ | -------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Node.js                  | `>= 22.22.0`         | Node **24.x LTS** (24.15.0)                                                                                  |
+| npm                      | bundled with Node.js | bundled with Node 24 (npm 11.x)                                                                              |
+| .NET SDK                 | 10.0                 | 10.0                                                                                                         |
+| Docker client base image | —                    | `node:24-alpine`                                                                                             |
+| Docker server base image | —                    | `mcr.microsoft.com/dotnet/sdk:10.0-alpine` (build) · `mcr.microsoft.com/dotnet/aspnet:10.0-alpine` (runtime) |
 
 Where these are declared:
 
@@ -129,20 +129,35 @@ You can use the template as-is to get the Docker stack running locally. It conta
 
 ```bash
 # Development environment overrides for the Docker full-stack workflow.
-# This file is intentionally local-only because it contains secrets.
+#
+# Copy this file to .env.development in the same folder, then edit your copy:
+#   Copy-Item .env.development.template .env.development
+#
+# The copy is git-ignored because it holds your local settings; this template is tracked. Never put a
+# real credential in this file.
+#
+# Values marked REQUIRED have no usable default, because the API validates them at startup. Everything
+# else below works as-is for a local stack.
 
 # Database Configuration
+# POSTGRES_PASSWORD must match the password the postgres image is created with
+# (Source/Docker/Postgres/Dockerfile - the default is "password").
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=password
 
 # JWT Configuration
+# Issuer and audience must match the URL the API is reached at.
 JWT_ISSUER=http://localhost:5241
 JWT_AUDIENCE=http://localhost:5241
+# REQUIRED - replace with your own random value before relying on this environment for anything
+# beyond basic local startup. Tokens signed with the placeholder below are not trustworthy, and a
+# production key must never be reused here.
 JWT_SECRET_KEY=REPLACE_THIS_WITH_AN_EXACTLY_128_CHARACTER_RANDOM_SECRET_KEY_FOR_LOCAL_DEVELOPMENT_ONLY_0123456789ABCDEFGHIJKLMNOPQRSTUVW
 
 # SMTP Configuration
-# These placeholder values satisfy startup validation only.
-# Replace them with real provider credentials before testing email flows.
+# The API validates every one of these at startup, so none may be blank. These placeholder values
+# satisfy that validation only: replace them with real provider credentials before testing signup,
+# password reset, invitations or budget reminders.
 SMTP_HOST=localhost
 SMTP_PORT=2525
 SMTP_REQUIRE_TLS=false
@@ -152,10 +167,13 @@ SMTP_FROM_NAME=POT - Do Not Reply
 SMTP_FROM_ADDRESS=pot@example.local
 
 # CORS Configuration
+# Must include the browser origin the client is served from.
 CORS_ALLOWED_ORIGINS=http://localhost:5175
 
 # Platform Admin Configuration
-# Leave empty for initial setup. Add your user GUID after first signup.
+# Comma-separated list of user GUIDs (RowIds) that have platform-level admin access. May be empty
+# until a user exists. Find yours after signup with:
+#   SELECT "RowId" FROM "User" WHERE "Username" = '<username>';
 PLATFORM_ADMIN_USERIDS=
 ```
 

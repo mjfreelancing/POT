@@ -113,8 +113,9 @@ container-app ingress terminates HTTPS and routes `/api/*` to the API container.
 ### Prerequisites
 
 - Docker Desktop running.
-- `Source/Docker/.env.development` present. It is git-ignored, so each developer creates their own
-  (see [Environment Variables](#environment-variables) for the values it needs).
+- `Source/Docker/.env.development` present. It is git-ignored, so copy the tracked
+  `.env.development.template` in the same folder and edit your copy (see
+  [Environment Variables](#environment-variables) for what each value is used for).
 - `Source/Docker/postgres-data/` exists. `Start-ProdlikePot.ps1` creates it automatically; when
   starting compose by hand, create it first:
 
@@ -423,11 +424,11 @@ COMPOSE_PROJECT_NAME=pot-prodlike
 POSTGRES_DB=Pot
 ```
 
-### `.env.development` (git-ignored — create it locally)
+### `.env.development` (git-ignored — copy it from the template)
 
 `Source/Docker/.env.development` is not in source control (`.gitignore` includes `*.development*`),
-so each developer creates their own. It supplies the values the compose file substitutes into the
-containers:
+so copy the tracked `Source/Docker/.env.development.template` and edit your copy. It supplies the
+values the compose file substitutes into the containers:
 
 ```properties
 # Database credentials
