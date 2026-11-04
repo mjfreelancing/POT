@@ -15,15 +15,14 @@ operate and that its version varies between environments.
 
 ## Context and Problem Statement
 
-The schema needs more than tables and indexes: case-insensitive unique text, a check-plus-index
-combination for business uniqueness, generated identifiers, and a provider that Entity Framework Core
-supports well. Cost matters, because this is a personal project with a single operator.
+The schema needs more than tables and indexes: case-insensitive unique text, composite uniqueness scoped
+to a site, generated identifiers, and a provider that Entity Framework Core supports well. Cost matters,
+because this is a personal project with a single operator.
 
 ## Decision Drivers
 
 - No licence cost for a database that will be small at every environment.
-- Features the schema relies on: `citext`, partial and composite indexes, transactions with clear
-  semantics.
+- Features the schema relies on: `citext` for case-insensitive text, and composite unique indexes over it.
 - A managed hosting option, because the deployment is a single operator's.
 
 ## Considered Options
@@ -48,16 +47,17 @@ index rather than as application comparison, and the same engine can be run loca
 - Good, because `citext` and partial indexes express the uniqueness rules without application code.
 - Good, because the local container and the hosted server are the same engine, so a query that works
   locally is not a different dialect in production.
-- Bad, because the engine version differs between environments: the container, the test fixtures and the
-  hosted server do not currently agree, which is drift the schema is exposed to.
+- Bad, because the engine version differs between environments: the local container and the integration
+  fixtures run 13, the end-to-end stack runs 16 and the deployed server runs 17.6, and the provider is
+  pinned to the oldest of them.
 - Bad, because production requires SSL on the connection, so the connection configuration is not the same
   as the local one.
 - Bad, because another component to operate, back up and restore.
 
 ### Confirmation
 
-- Test: the data-layer and integration fixtures run against a real PostgreSQL instance, so a dialect
-  mistake is a test failure.
+- Test: the hosted integration fixtures run against a real PostgreSQL container, so a dialect mistake is a
+  test failure there; the data-layer fixtures use an in-memory provider and would not catch one.
 - Review: a schema rule that can be an index or a constraint should be one, rather than an application
   check that a direct database write could bypass.
 
