@@ -38,11 +38,9 @@ component.
 
 ## Decision Outcome
 
-Chosen option: 1. A message is a small record — recipients, subject, rendered body — written to an
-in-process channel; a hosted worker reads the channel and sends. Bodies are produced by rendering a Razor
-component to a string, so the template is compiled and its model is typed.
-
-The queue is in memory, so its lifetime is the process's lifetime.
+Chosen option: 1. A queued message carries only the email type and its configuration; the subject and both
+bodies are rendered from a Razor component at send time, when the worker dequeues it. The channel is
+unbounded and lives as long as the process.
 
 ### Consequences
 
@@ -54,13 +52,17 @@ The queue is in memory, so its lifetime is the process's lifetime.
 - Bad, because a message queued and not yet sent is lost if the process stops, with no record that it
   existed and nothing to retry.
 - Bad, because there is no backoff: a transient mail failure loses that message rather than delaying it.
+- Bad, because the channel is unbounded, so a burst is absorbed by memory rather than by backpressure, and
+  it declares single-writer semantics while request threads write to it concurrently.
 - Bad, because delivery is not observable after the fact, so "did the invitation go out" is answered from
   logs rather than from state.
 
 ### Confirmation
 
-- Test: the worker fixtures assert a queued message is drained and sent, and that a mail failure is
-  recorded rather than thrown into the request.
+- Test: the channel's fixtures assert a queued item is dequeued and that a send failure is logged and
+  swallowed rather than thrown back to the request.
+- Gap: no worker fixture asserts end-to-end delivery, and none asserts what happens to messages still
+  queued when the host stops.
 - Review: a new message is queued rather than sent inline; a request must never call the mail sender
   directly.
 
@@ -90,6 +92,7 @@ The queue is in memory, so its lifetime is the process's lifetime.
 ## More Information
 
 - This record is expected to be superseded by a durable outbox. The intended direction — a database
-  outbox drained with claim-and-lease, with retry and same-day catch-up — is already written up separately;
-  adopting it would supersede this record rather than edit it.
+  outbox drained with claim and lease, with retry and same-day catch-up — is written up in
+  `Docs/Future/PRD-019-email-outbox-durable-dispatch.md`; adopting it would supersede this record rather
+  than edit it.
 - Running the worker inside the API process is a separate decision with its own intended supersession.
