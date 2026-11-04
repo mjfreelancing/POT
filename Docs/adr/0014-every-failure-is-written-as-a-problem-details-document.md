@@ -43,18 +43,22 @@ request that quotes only a status code cannot be traced to a request at all.
 
 ## Decision Outcome
 
-Chosen option: 1. Failures are written as Problem Details with a stable `type` per kind, a `title`, an
-HTTP-status-bearing `status`, a user-safe `detail`, an `errors` map for validation, an error code, the
-caller's correlation identifier and the framework trace identifier.
+Chosen option: 1. Failures are written as Problem Details carrying a `type`, a `title`, an HTTP-status-bearing
+`status`, a user-safe `detail`, a correlation identifier, the framework trace identifier, the request path
+as `instance`, and an `errors` map when the failure is a validation one. A bespoke `urn:pot:*` type is
+published for the three conflict categories, which is where a caller needs to tell one conflict from
+another; every other status keeps the framework's per-status type, so a validation failure and a refused
+business rule share a type and are distinguished by their `detail`.
 
-Two pipeline stages do the work the framework does not: the exception handler writes a body for an
-unhandled exception, and the status-code pages write one for a status that otherwise has none. Both run
-late enough that every refusal above them is covered.
+Three producers write failures the framework would not: the exception handler writes a body for an
+unhandled exception, the status-code pages write one for a status that otherwise has none, and the rate
+limiter writes its own rejection. The body is written whatever the request's `Accept` header asks for,
+which is what makes the shape uniform for a caller that did not ask for JSON.
 
 ### Consequences
 
-- Good, because the client parses one document and can branch on `type` or the error code rather than
-  on prose.
+- Good, because the client parses one document and can branch on `type` rather than on prose, and on the
+  conflict family the type distinguishes the cases.
 - Good, because a failure always carries the identifier the caller quoted when they reported it, on
   success as a header and on failure in the body.
 - Good, because no submitted value reaches the body, so a validation failure cannot echo a password.
@@ -69,8 +73,12 @@ late enough that every refusal above them is covered.
 
 - Test: `CorrelationAndProblemDetailsFixture` asserts the document shape and that the correlation
   identifier survives into the failure body.
+- Test: a validation failure's body is asserted to carry no submitted value and no error-code member,
+  which is the evidence for the driver above.
 - Test: `EndpointResponseMetadataFixture` pins which failures each endpoint declares, so the contract
   matches the behaviour.
+- Outside this decision: the readiness probe is short-circuited and answers in plain text, and a request
+  aborted by the client gets no body. Both are deliberate exceptions rather than gaps.
 - Review: a handler that writes an error body by hand is a defect; expected failures are returned as
   results and converted in one place.
 
