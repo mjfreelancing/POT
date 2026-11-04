@@ -9,11 +9,6 @@ related-prds: [PRD-012]
 
 # ADR-0001: Playwright E2E testing infrastructure
 
-> **Legacy record.** Written as a design-and-current-state document before this series was
-> consolidated, and renumbered here unchanged. It mixes the decision, a description of current
-> state and design history; bounded records for each decision will supersede it. The work was
-> implemented and validated, with a complete test catalog and a green matrix.
-
 ## Context
 
 [PRD 012](../Future/PRD-012-playwright-e2e-testing-infrastructure.md) defines **what** the E2E testing

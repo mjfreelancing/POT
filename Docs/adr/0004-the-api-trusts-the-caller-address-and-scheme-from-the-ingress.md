@@ -17,10 +17,6 @@ container must never be reachable except through the ingress.
 
 ## Context and Problem Statement
 
-This is a backfilled record, written on 2026-11-04 from the pipeline, the tests and the owner's
-account. The values have been in place since the deployment and were reviewed rather than newly
-chosen.
-
 The ingress terminates TLS and forwards plain HTTP to the container (ADR-0003). Without processing
 the headers it writes, two things are wrong and wrong quietly:
 
@@ -52,9 +48,9 @@ Chosen option: 1. `ForwardedHeadersOptions` is configured in code with
 `XForwardedFor | XForwardedProto`, `KnownProxies` and `KnownIPNetworks` cleared, and `ForwardLimit`
 left at its default of one. `UseForwardedHeaders()` runs first in the pipeline.
 
-Owner's account: trusting any sender was deliberate. The ingress address cannot be enumerated, the
-container is unreachable except through the ingress, and the limit of one means only the entry the
-ingress wrote is used.
+Trusting any sender is deliberate: the ingress address cannot be enumerated, the container is
+unreachable except through the ingress, and the limit of one means only the entry the ingress wrote
+is used.
 
 ### Consequences
 

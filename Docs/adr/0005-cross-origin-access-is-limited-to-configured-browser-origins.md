@@ -17,10 +17,6 @@ configuration change.
 
 ## Context and Problem Statement
 
-This is a backfilled record, written on 2026-11-04 from the policy, the client code and the owner's
-account. The owner reviewed and approved the original configuration; it is recorded here as the
-project's decision rather than as something that arrived unnoticed.
-
 In the deployed system the client and the API are separate origins, and the access token is refreshed
 by an HttpOnly cookie, so the browser must send credentials cross-origin. Browsers refuse a wildcard
 origin together with credentials, and they hide non-safelisted response headers from script unless the
@@ -45,11 +41,10 @@ requests, allows every method and header, exposes `Content-Disposition`, `Locati
 `X-Correlation-Id`, and caches preflights for ten minutes. Startup validation rejects an empty list,
 `*`, and malformed origins.
 
-Owner's account: the configuration was reviewed and accepted as it stands. The reasoning for each
-setting was confirmed by audit rather than recalled: credentials are mandatory because the refresh
-cookie is HttpOnly and cross-origin; `Authorization`, `Content-Type` and `X-Correlation-ID` are all
-non-safelisted, so a header list would have to name them; and without a preflight cache, nearly every
-call pays an extra round trip.
+Each setting follows from the client. Credentials are mandatory because the refresh cookie is HttpOnly
+and cross-origin; `Authorization`, `Content-Type` and `X-Correlation-ID` are all non-safelisted, so a
+header list would have to name them; and without a preflight cache, nearly every call pays an extra
+round trip.
 
 ### Consequences
 

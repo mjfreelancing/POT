@@ -9,10 +9,6 @@ related-prds: [PRD-014]
 
 # ADR-0002: Retry-After client cooldown handling
 
-> **Legacy record.** Written as a design-and-current-state document before this series was
-> consolidated, and renumbered here unchanged. The design direction is recorded and not yet
-> implemented; a bounded record will supersede it.
-
 ## Context
 
 [PRD 014](../Future/PRD-014-retry-after-client-cooldown-handling.md) defines **what** Retry-After client

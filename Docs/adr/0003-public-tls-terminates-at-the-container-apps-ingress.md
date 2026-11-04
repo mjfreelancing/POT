@@ -17,10 +17,6 @@ depends on the container never being reachable except through the ingress.
 
 ## Context and Problem Statement
 
-This is a backfilled record, written on 2026-11-04 from the deployment record, the application
-pipeline and the owner's account. The deployment is configured by hand, so the date the decision was
-taken is not recorded.
-
 The apex, www and api domains are served over HTTPS with Azure-managed (Let's Encrypt) certificates.
 The API container app accepts traffic from anywhere through its ingress, with ingress type `HTTP`.
 The PostgreSQL server requires SSL on its connections.
@@ -44,12 +40,11 @@ plain HTTP on 5175 and 5241.
 
 ## Decision Outcome
 
-Chosen option: 1. Container Apps terminates TLS at the ingress with managed certificates and the
-container receives plain HTTP. The application therefore neither redirects to HTTPS nor knows the
-public scheme except through the header the ingress writes.
+Chosen option: 1, because it is the platform default and keeps certificate handling out of the
+application. The application therefore neither redirects to HTTPS nor knows the public scheme except
+through the header the ingress writes.
 
-Owner's account: this was the platform default, accepted as it came; options 2 and 3 were not weighed
-at the time. The consequences below are what follow from that choice, not a comparison that was made.
+The alternatives below record what each would have cost; they were not weighed before the choice.
 
 ### Consequences
 
