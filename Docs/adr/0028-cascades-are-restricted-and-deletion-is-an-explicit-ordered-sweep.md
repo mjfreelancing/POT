@@ -39,9 +39,11 @@ are handled, which turns an unintended deletion into an error.
 
 ## Decision Outcome
 
-Chosen option: 1. Foreign keys restrict by default, and deleting an aggregate is a sequence of named
-repository operations in dependency order — children, then the parent — inside one transaction, so the
-whole removal either applies or does not.
+Chosen option: 1. Foreign keys from an entity to its owner restrict, and deleting an aggregate is a
+sequence of named repository operations in dependency order — children, then the parent — inside one
+save, so the whole removal either applies or does not. The join tables that link roles to permissions and
+users to roles are the exception: their keys cascade, because those rows exist only as pairs and are never
+addressed on their own.
 
 There is no soft-delete column and no filtered read path: a deleted row is gone, and a reference to it
 fails rather than returning a tombstone.
@@ -56,15 +58,15 @@ fails rather than returning a tombstone.
 - Bad, because every deletable aggregate needs a sweep that must be kept in step with the schema, and a
   new dependent table means a new step.
 - Bad, because deletion is irreversible: there is no undo, and recovery is a backup.
-- Bad, because a large site's removal is many statements in one transaction, which is slower and holds
-  locks longer than a cascade would.
+- Bad, because a large site's removal is many statements in one save, which holds its transaction longer
+  than a cascade would.
 
 ### Confirmation
 
-- Test: `DeletionSweepFixture` deletes an aggregate and asserts that no dependent row remains, and that a
-  partially applied removal cannot be observed.
-- Test: `CrossTenantAuthorizationFixture` asserts a deletion confined to one site leaves the could-be
-  neighbour intact.
+- Test: `DeletionSweepFixture` deletes an aggregate and asserts that no dependent row remains and that the
+  neighbouring site's rows are untouched.
+- Gap: no test injects a failure mid-sweep to show the partial removal is rolled back; the guarantee rests
+  on the single save's implicit transaction.
 - Review: a cascade in a migration is a decision to be challenged; a new dependent table needs its sweep
   step in the same change.
 
