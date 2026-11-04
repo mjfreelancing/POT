@@ -39,8 +39,10 @@ they would diverge.
 ## Decision Outcome
 
 Chosen option: 1. Server data is read through query hooks and changed through mutation hooks, keyed by
-resource. Transport is one axios instance with its interceptors; a second instance exists only for the
-authentication calls that must not run through the interceptor that depends on them.
+resource. The client sets a five-minute stale time and a thirty-minute retention, so a screen shows what it
+has and refetches only when the data is older than that, or when a mutation invalidates it. Transport is one
+axios instance with its interceptors; a second instance exists only for the authentication calls that must
+not run through the interceptor that depends on them.
 
 Invalidation is explicit: an operation declares which query keys it affects, so a change to the accounts
 list refreshes what derives from accounts and nothing else.
@@ -53,6 +55,8 @@ list refreshes what derives from accounts and nothing else.
   is defined once and inherited by every call.
 - Good, because a mutation's effect on cached reads is stated where the mutation is written, so it can be
   reviewed.
+- Bad, because retries are the library's default rather than a decision: a failing query is retried, and
+  only one hook opts out, so a throttled or forbidden read is repeated before the user sees it.
 - Bad, because the invalidation graph is maintained by hand: a mutation that forgets a dependent key leaves
   a stale screen, and nothing detects it.
 - Bad, because query keys are strings with structure, so a typo is a silent miss rather than a compile
@@ -62,7 +66,9 @@ list refreshes what derives from accounts and nothing else.
 
 ### Confirmation
 
-- Test: the hook tests assert that a mutation invalidates the keys it declares, using a real query client.
+- Test: the invalidation helper and the mutation hooks are tested with the query client substituted, so the
+  assertions are about which keys a mutation invalidates rather than about refetching from a real cache.
+- Gap: no test runs a mutation against a real cache and observes a dependent query refetch.
 - Review: a new mutation names the keys it invalidates; a screen that fetches with `useEffect` instead of a
   query hook is a defect.
 
