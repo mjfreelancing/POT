@@ -39,11 +39,14 @@ the session, while a theme or a column layout should.
 
 ## Decision Outcome
 
-Chosen option: 1. A storage helper prefixes every key with an environment marker and the current user's
-identifier, so the same setting can hold different values per user and per environment. Each setting is
-declared as persisted or session-scoped, and the ones that describe a transient view live for the session.
+Chosen option: 1. A storage helper builds every key from an environment marker and a feature or setting
+name, so the same setting holds different values per environment. Keys are environment-scoped rather than
+user-scoped, which is what makes them usable before anyone is signed in; the one value that follows the
+user is the signed-in identity the interface keeps so it can render before the first request completes.
 
-Browser storage is used for preferences only. Server data lives in the query cache, not in storage.
+Most settings are persisted and some are session-scoped, decided per setting when it is added; the helper
+does not enforce the choice, so a setting that should be session-scoped is one declaration away from
+being persistent.
 
 ### Consequences
 
@@ -52,8 +55,11 @@ Browser storage is used for preferences only. Server data lives in the query cac
 - Good, because a setting's lifetime is declared with it, so a filter does not survive a session it was
   meant to describe.
 - Good, because storage is not a shadow cache of server data, so there is no second copy to invalidate.
-- Bad, because every read and write must go through the helper; a direct storage call bypasses the scoping
-  and produces a key nobody else reads.
+- Bad, because the environment marker is the only isolation: two users of the same browser against the
+  same environment share every persisted preference, and the identity kept for rendering is the only
+  per-user value.
+- Bad, because storage holds a copy of the signed-in identity and its permission list, so a stale entry can
+  describe a user the server no longer agrees with until the next fetch replaces it.
 - Bad, because keys accumulate per user and are not collected when a user stops using the browser, so
   storage grows.
 - Bad, because a signed-out state has to decide which key it uses, and that is a decision to make rather
@@ -61,10 +67,10 @@ Browser storage is used for preferences only. Server data lives in the query cac
 
 ### Confirmation
 
-- Test: the storage helper's fixtures assert the key contains both dimensions and that a session-scoped
-  setting is not written to persistent storage.
-- Review: a direct use of browser storage outside the helper is a defect; a new setting declares its
-  lifetime when it is added.
+- Test: the storage helper's fixtures assert the key contains the environment segment and that the chosen
+  backend is the one written to; the lifetime rule itself has no fixture, because the helper does not
+  enforce it.
+- Review: a storage key built by hand is a defect; a new setting states whether it persists when it is added.
 
 ## Pros and Cons of the Options
 
