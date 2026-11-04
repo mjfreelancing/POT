@@ -38,8 +38,10 @@ unrelated work into one unit for no reason.
 
 ## Decision Outcome
 
-Chosen option: 1. An operation that writes through more than one repository call opens a transaction
-around the whole unit, and the failure path rolls it back. An operation that saves once does not.
+Chosen option: 1. An operation that writes through more than one save opens a transaction around the
+whole unit, and the early-return failure paths leave without committing, so disposing the transaction at
+the end of the operation rolls the work back. An operation that saves once does not open one, with one
+exception — a role assignment opens a transaction around its single save.
 
 ### Consequences
 
@@ -50,6 +52,8 @@ around the whole unit, and the failure path rolls it back. An operation that sav
   where the failure is handled.
 - Bad, because whether an operation needs one is a judgement made per feature, and a missed one is a
   partial write that only shows under failure.
+- Bad, because the rollback is implicit: nothing calls it, so an operation that returns early without
+  committing relies on the transaction being disposed to undo its work.
 - Bad, because a transaction that spans several repository calls relies on those calls sharing one
   context scope, which is a wiring detail rather than something the type system enforces.
 - Bad, because a long transaction holds locks and a slow operation inside it blocks writers of the same
@@ -59,6 +63,8 @@ around the whole unit, and the failure path rolls it back. An operation that sav
 
 - Test: the failure path of a multi-write operation is exercised with the second write failing, and the
   first is asserted absent afterwards.
+- Gap: no such test exists yet; the import path is the operation the rule exists for, and its transaction
+  is only covered through the version gate.
 - Review: a service that performs two saves without a transaction is a defect, and an operation that opens
   one for a single save is questioned.
 
@@ -87,6 +93,7 @@ around the whole unit, and the failure path rolls it back. An operation that sav
 
 ## More Information
 
-- The repository access model this sits on is a separate decision.
+- The repository access model this sits on is
+  [ADR-0023](0023-services-access-data-through-feature-repositories.md).
 - Optimistic concurrency decides what happens when two writers reach the same row, which is separate from
-  the unit of work.
+  the unit of work: [ADR-0006](0006-optimistic-concurrency-is-checked-in-the-application.md).
