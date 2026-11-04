@@ -39,31 +39,37 @@ most validation rules here. Either could be defended on its own.
 
 ## Decision Outcome
 
-Chosen option: 1. Validation failures answer `400` with a Problem Details body whose `errors` member
-maps each field to its messages. Refusals from business rules answer `400` as well, distinguished by
-their `type` and error code rather than by status.
+Chosen option: 1. Validation failures answer `400` with a Problem Details body carrying the `errors` member,
+which maps each field to its messages. Refusals from business rules answer `400` as well and are written
+into the same shape, differing in the `detail` they carry; no `type` or error-code member distinguishes
+them, because a client-visible error code was deliberately removed from the wire.
 
-The switch away from `422` was made deliberately, and the endpoints that had declared it were updated
-with it, so no route answers both.
+The switch away from `422` was made deliberately, in a single change that updated the route declarations,
+the client's error mapping and the metadata fixture together, so no route answers both.
 
 ### Consequences
 
 - Good, because the client has one status to handle and can read `errors` for field placement.
+- Good, because validation errors are assembled by the application from its own validators into the
+  framework's validation shape, so the client sees one document whichever layer refused.
 - Good, because the contract declares one failure for "the request was not acceptable", which is
   simpler to keep accurate per endpoint.
 - Bad, because `400` now covers two situations — the request was malformed, and the request was
-  understood but refused — so the status alone does not tell the client which.
-- Bad, because the `type` and error code carry that distinction, so they must stay stable.
+  understood but refused — so the status alone does not tell the client which, and the `detail` is the
+  only signal, which is prose rather than something to branch on.
 - Bad, because the previous `422` declarations had to be found and changed, and a missed one would have
   produced a status no client branch handled.
 
 ### Confirmation
 
-- Test: the validation fixtures assert the `400` shape and the `errors` map for a request that fails
-  several rules.
-- Test: `EndpointResponseMetadataFixture` asserts the declared failure set matches the behaviour, so a
-  route cannot reintroduce `422` in its contract.
-- Review: `422` in a new endpoint is a defect; the distinction belongs in the `type`.
+- Test: the validation fixtures assert the `400` shape and the `errors` map for a request that fails a
+  rule on one field.
+- Test: `EndpointResponseMetadataFixture` asserts the endpoints' metadata — one `400` in the validation
+  shape and no `422` declared — while the bodies themselves are asserted by the per-feature fixtures.
+- Review: `422` in a new endpoint is a defect; a refusal that needs its own meaning carries it in the
+  `detail`, not in a new type or code.
+- Evidence of the change: commit `bec69a48` removed the `422` route declarations and updated the client's
+  error mapping in the same change.
 
 ## Pros and Cons of the Options
 
