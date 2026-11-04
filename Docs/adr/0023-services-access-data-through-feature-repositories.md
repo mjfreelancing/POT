@@ -34,7 +34,7 @@ The cost is that a new query shape is a new method.
 ## Considered Options
 
 1. Feature-specific repository interfaces, split into read-only and persistable, with untracked reads by
-  default.
+   default.
 2. Inject the context into services and query directly.
 3. One generic repository over all entities.
 4. No repository, and a query object per operation.
