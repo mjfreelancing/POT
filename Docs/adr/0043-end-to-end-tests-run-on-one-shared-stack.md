@@ -10,9 +10,9 @@ area: frontend
 
 **Summary:** In the context of browser tests that need a real API, a real database and realistic data,
 facing the choice between a stack per test file and one stack for the run, we decided on a single shared
-stack — the API and a PostgreSQL container, provisioned once by global setup and seeded through the
-product's own routes — to achieve a suite that starts in seconds and exercises the real pipeline,
-accepting that the tests share state and must be written knowing it.
+stack — a PostgreSQL container, the API, the client and a mail sink, started once for the run — to achieve
+a suite that starts in seconds and exercises the real pipeline, accepting that the tests share state and
+must be written knowing it.
 
 ## Context and Problem Statement
 
@@ -38,17 +38,21 @@ in the database.
 
 ## Decision Outcome
 
-Chosen option: 1. Global setup starts PostgreSQL in a container and the API against it, waits for the
-application to report readiness, and provisions the canonical accounts through the product's own sign-up,
-approval and invitation routes rather than by inserting rows. The run then shares that stack, and tests
-are written to isolate themselves within it by owning the data they create.
+Chosen option: 1. The Playwright configuration starts the API and the client as web servers, and global
+setup starts the PostgreSQL container and the mail sink, waits for the application to report readiness and
+applies the baseline: canonical sites, users and roles inserted as SQL, with the financial data loaded
+through the product's own import and renewal routes. The run then shares that stack, in two workers
+locally and one on CI, and tests are written to isolate themselves within it by owning the data they
+create.
 
 ### Consequences
 
 - Good, because the run pays one container start and one migration, so the suite is fast enough to run
   often.
-- Good, because seeding through the routes exercises the same code a user would, so the seed cannot
-  disagree with the application about what a valid account is.
+- Good, because seeding the financial data through the routes exercises the same code a user would, so the
+  seed cannot disagree with the application about what a valid import is.
+- Bad, because the canonical identities are inserted as SQL, so that part of the seed can drift from what
+  the product would accept.
 - Good, because readiness waiting in setup means no test has to handle a stack that is not ready.
 - Bad, because the tests share a database: a test that writes broadly can break another, so isolation is a
   discipline each test carries.
