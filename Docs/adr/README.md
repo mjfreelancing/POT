@@ -114,6 +114,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | [ADR-0008](0008-access-tokens-are-short-lived-and-backed-by-a-server-side-session.md) | Access tokens are short-lived and backed by a server-side session | accepted |
 | [ADR-0009](0009-access-tokens-are-rejected-once-their-session-or-user-version-changes.md) | Access tokens are rejected once their session or user version changes | accepted |
 | [ADR-0010](0010-platform-administration-is-granted-by-deployment-configuration.md) | Platform administration is granted by deployment configuration, not by a role | accepted |
+| [ADR-0011](0011-every-endpoint-is-authenticated-unless-explicitly-anonymous.md) | Every endpoint is authenticated unless it is explicitly anonymous | accepted |
 
 ### Infrastructure
 
@@ -127,7 +128,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 - [ADR-0002](0002-retry-after-client-cooldown-handling.md) — Retry-After client cooldown handling
 
-### Accepted (9)
+### Accepted (10)
 
 - [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) — Playwright E2E testing infrastructure
 - [ADR-0003](0003-public-tls-terminates-at-the-container-apps-ingress.md) — Public TLS terminates at the Container Apps ingress
@@ -138,6 +139,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 - [ADR-0008](0008-access-tokens-are-short-lived-and-backed-by-a-server-side-session.md) — Access tokens are short-lived and backed by a server-side session
 - [ADR-0009](0009-access-tokens-are-rejected-once-their-session-or-user-version-changes.md) — Access tokens are rejected once their session or user version changes
 - [ADR-0010](0010-platform-administration-is-granted-by-deployment-configuration.md) — Platform administration is granted by deployment configuration, not by a role
+- [ADR-0011](0011-every-endpoint-is-authenticated-unless-explicitly-anonymous.md) — Every endpoint is authenticated unless it is explicitly anonymous
 
 ## By PRD
 
