@@ -133,6 +133,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | [ADR-0027](0027-enumerations-are-stored-by-name-and-uniqueness-is-enforced-by-the-database.md) | Enumerations are stored by name and uniqueness is enforced by the database | accepted |
 | [ADR-0028](0028-cascades-are-restricted-and-deletion-is-an-explicit-ordered-sweep.md) | Cascades are restricted and deletion is an explicit, ordered sweep | accepted |
 | [ADR-0029](0029-migrations-run-in-a-separate-process-before-the-api-starts.md) | Migrations run in a separate process before the API starts, in additive steps | accepted |
+| [ADR-0030](0030-background-work-runs-inside-the-api-process.md) | Background work runs inside the API process under a single-replica assumption | accepted |
 
 ### Infrastructure
 
@@ -146,7 +147,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 - [ADR-0002](0002-retry-after-client-cooldown-handling.md) — Retry-After client cooldown handling
 
-### Accepted (28)
+### Accepted (29)
 
 - [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) — Playwright E2E testing infrastructure
 - [ADR-0003](0003-public-tls-terminates-at-the-container-apps-ingress.md) — Public TLS terminates at the Container Apps ingress
@@ -176,6 +177,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 - [ADR-0027](0027-enumerations-are-stored-by-name-and-uniqueness-is-enforced-by-the-database.md) — Enumerations are stored by name and uniqueness is enforced by the database
 - [ADR-0028](0028-cascades-are-restricted-and-deletion-is-an-explicit-ordered-sweep.md) — Cascades are restricted and deletion is an explicit, ordered sweep
 - [ADR-0029](0029-migrations-run-in-a-separate-process-before-the-api-starts.md) — Migrations run in a separate process before the API starts, in additive steps
+- [ADR-0030](0030-background-work-runs-inside-the-api-process.md) — Background work runs inside the API process under a single-replica assumption
 
 ## By PRD
 
