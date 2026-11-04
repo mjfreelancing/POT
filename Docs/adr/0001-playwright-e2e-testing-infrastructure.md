@@ -9,6 +9,23 @@ related-prds: [PRD-012]
 
 # ADR-0001: Playwright E2E testing infrastructure
 
+## Clarifications
+
+Recorded as the design has moved, rather than by rewriting the sections below.
+
+- 2026-11-04: `@playwright/test` is `^1.62.1` (`Source/Client/pot-react/package.json`), not `^1.59.1`.
+- Teardown is its own module, `playwright.globalTeardown.ts`, because a global hook must be the module's
+  default export; it also stops the mail sink, not only the state file.
+- The run starts a mail sink (`e2e/helpers/mailSink.ts`, started in `playwright.globalSetup.ts`) so
+  sign-up and invitation codes can be read. The statements in this record that email and OTP flows are
+  deferred no longer hold.
+- Tests are classified three ways — parallel-safe, fixture-managed and destructive — not two.
+- Reporters are configured in the Playwright configs; the npm scripts deliberately pass no `--reporter`.
+- A fourth canonical user, `e2e_quickactions`, exists with its own site (`e2e/seed/baseline.sql`).
+- `e2e/.auth` is only deleted during setup; authentication state is kept in memory by the fixtures.
+- `e2e/tests/users/`, the account and site deletion journeys, and the newer helpers (`mail`, `mailSink`,
+  `provisioning`, `radix`, `api`, `dates`) exist and are not listed in the directory tree below.
+
 ## Context
 
 [PRD 012](../Future/PRD-012-playwright-e2e-testing-infrastructure.md) defines **what** the E2E testing
