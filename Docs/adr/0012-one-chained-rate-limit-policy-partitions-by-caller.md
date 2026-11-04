@@ -40,9 +40,11 @@ path that is itself an attack surface.
 ## Decision Outcome
 
 Chosen option: 1. Every endpoint group requires the same named policy, which chooses a partition:
-anonymous callers are limited per address with a short fixed window, and authenticated callers per
-user with a longer sliding window. Rejection is `429` with `Retry-After`, and the windows are sized so
-a rejected request returns well inside the client's request timeout.
+anonymous callers get fifteen permits in a ten-second fixed window per address, and authenticated
+callers fifty permits in a thirty-second sliding window per user, split into ten segments, with no
+queueing in either. Rejection is `429` with a Problem Details body that names the wait. `Retry-After` is
+written where the limiter exposes the retry metadata, which the fixed window does and the sliding window
+does not, so an authenticated rejection carries the detail without the header.
 
 There is no lockout of an account. The temporary rejection is the whole of the response to guessing.
 
@@ -50,8 +52,10 @@ There is no lockout of an account. The temporary rejection is the whole of the r
 
 - Good, because an attacker's address is throttled while the account owner signing in normally is not.
 - Good, because signed-in users get a smoother sliding window, which is fair to normal interactive use.
-- Good, because the short window means a rejected request returns quickly and can be reported as a
-  cooldown rather than a hang.
+- Good, because the short anonymous window means a rejected anonymous request returns quickly, and can
+  be reported as a cooldown rather than a hang.
+- Bad, because the authenticated window is as long as the client's request timeout, so a rejected
+  authenticated request can be reported as a timeout rather than as a refusal.
 - Bad, because a caller sharing an address — an office, a mobile network — is throttled as one, which
   is a real limit of address-based partitioning.
 - Bad, because anonymous partitions depend on the caller address being the real one, so the forwarded
@@ -61,8 +65,10 @@ There is no lockout of an account. The temporary rejection is the whole of the r
 
 ### Confirmation
 
-- Test: `HeadersAndRateLimitFixture` exercises the chained policy and asserts the rejection carries
-  `Retry-After`.
+- Test: `HeadersAndRateLimitFixture` exercises the chained policy, asserts the anonymous rejection
+  carries `Retry-After`, and asserts the authenticated one does not.
+- Review: the permit limits and windows are constants, not settings; the configuration section exists so
+  a test run can raise them, and must not appear in a deployed environment's settings.
 - Review: a new endpoint group must opt into the same policy; a route that omits it is unthrottled, and
   that is a defect rather than a tuning choice.
 
