@@ -10,10 +10,10 @@ area: frontend
 
 **Summary:** In the context of a browser suite that is slow enough to be run deliberately and valuable
 enough not to skip, facing the choice between one configuration and two, we decided on a development
-profile covering four browser engines that runs for any client-affecting change, and a production-like
-profile that runs against a production build on demand and before a release, to achieve confidence
-without paying the strictest cost every time, accepting that the stricter profile is a discipline rather
-than a gate.
+profile running the suite across four projects — two Chromium variants, a mobile Chromium device and a
+mobile WebKit device — and a production-like profile that runs the built client against the API, to achieve
+confidence without paying the strictest cost every time, accepting that the stricter profile is a discipline
+rather than a gate.
 
 ## Context and Problem Statement
 
@@ -40,20 +40,24 @@ deployment.
 
 ## Decision Outcome
 
-Chosen option: 1. The default profile runs the suite across four browser engines against the API and the
-development client, with fixed per-test timeouts and reporters configured in the project rather than on the
-command line. The production-like profile builds the client, serves it the way a deployment would and runs
-the suite against it; it is run on demand and before a release, and for any change that affects the client.
+Chosen option: 1. The default profile runs the suite across four projects — desktop Chromium, Edge, a mobile
+Chromium device and a mobile WebKit device — against the API and the development client, with fixed
+per-test timeouts and reporters configured in the project rather than on the command line, and with a few
+suites excluded per project where they are known to be engine-specific. The production-like profile builds
+the client, serves it from the local preview server and runs the suite against it; it is the completion gate
+for a client-affecting change and is not run per change.
 
 ### Consequences
 
 - Good, because an engine-specific failure is found by the default run rather than by a user.
-- Good, because the strict profile exists and is specified, so "before release" is a command rather than an
-  intention.
+- Bad, because the production-like profile runs fewer projects and a subset of the suites, so it is a
+  different slice of the suite rather than the same one against a different build.
 - Good, because timeouts and reporters live in the project, so two people running the suite get the same
   behaviour.
-- Bad, because nothing enforces the production-like run; a release can be made without it.
-- Bad, because four engines multiply the default suite's duration by four.
+- Bad, because nothing enforces the production-like run; it is a completion gate by convention, and a
+  change can be declared done without it.
+- Bad, because the four projects are two engines: Edge is Chromium and the mobile projects are Chromium and
+  WebKit, so Gecko is not covered at all.
 - Bad, because the default profile never exercises the built client, so a build-only defect is found by the
   profile that is easiest to skip.
 
