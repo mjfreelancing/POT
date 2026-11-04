@@ -43,11 +43,10 @@ The cost is that a new query shape is a new method.
 
 Chosen option: 1. Each feature has repository interfaces — plural where the capabilities differ — naming
 the queries the feature needs. Read interfaces expose only reads, persistable ones add the operations
-that change state, so a service that only reads is given a type that cannot write. Writes opt into
+that change state. Some entity repositories expose a single named queryable that services compose for
+filters the repository does not anticipate; the tenant-scoped repositories for users and sites expose
+none, because composing them would bypass the confinement they exist to enforce. Writes opt into
 tracking explicitly; reads do not track.
-
-Repositories return entities or projections. They do not contain business rules, and they do not return
-queryables that a caller could keep composing.
 
 ### Consequences
 
@@ -55,8 +54,10 @@ queryables that a caller could keep composing.
   database or a container.
 - Good, because the query lives in a named method, so the same read is not written twice with different
   filters.
-- Good, because the split interfaces make a read-only path unable to write, which is the interface
-  segregation principle applied where it prevents a real mistake.
+- Good, because the split interfaces make every writing capability explicit, so a reader can see which
+  paths may change data.
+- Bad, because the split is not applied uniformly: several read-only services take a persistable
+  interface, so the type does not prove they only read.
 - Good, because untracked reads avoid change tracking that is discarded unread.
 - Bad, because each new query shape is a new method on an interface and its implementation, which is more
   ceremony than a lambda over the context.
@@ -69,8 +70,8 @@ queryables that a caller could keep composing.
 
 - Test: the application-layer fixtures substitute the interfaces, so a repository dependency reaching for
   the database would fail the test rather than pass.
-- Review: a service that resolves the context, or a repository method that returns `IQueryable`, is a
-  defect.
+- Review: a service that resolves the context, or a repository method on a tenant-scoped interface that
+  returns `IQueryable`, is a defect.
 - Review: a read that tracks is justified in the change, because tracking exists for a write that
   follows.
 
