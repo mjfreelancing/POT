@@ -150,6 +150,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | --- | --- | --- |
 | [ADR-0003](0003-public-tls-terminates-at-the-container-apps-ingress.md) | Public TLS terminates at the Container Apps ingress | accepted |
 | [ADR-0034](0034-secret-values-live-outside-the-repository.md) | Secret values live outside the repository, in a tracked template and a platform store | accepted |
+| [ADR-0036](0036-production-runs-two-container-apps.md) | Production runs two container apps: nginx serves the SPA and the API is separate | accepted |
 
 ## By status
 
@@ -157,7 +158,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 - [ADR-0002](0002-retry-after-client-cooldown-handling.md) — Retry-After client cooldown handling
 
-### Accepted (34)
+### Accepted (35)
 
 - [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) — Playwright E2E testing infrastructure
 - [ADR-0003](0003-public-tls-terminates-at-the-container-apps-ingress.md) — Public TLS terminates at the Container Apps ingress
@@ -193,6 +194,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 - [ADR-0033](0033-tests-are-per-layer-unit-projects-plus-one-hosted-integration-project.md) — Tests are per-layer unit projects plus one hosted integration project
 - [ADR-0034](0034-secret-values-live-outside-the-repository.md) — Secret values live outside the repository, in a tracked template and a platform store
 - [ADR-0035](0035-builds-and-deployments-are-run-by-hand.md) — Builds, tests and deployments are run by hand; there is no continuous integration
+- [ADR-0036](0036-production-runs-two-container-apps.md) — Production runs two container apps: nginx serves the SPA and the API is separate
 
 ## By PRD
 
