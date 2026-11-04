@@ -66,7 +66,8 @@ server broke" never look the same.
 
 - Test: the application-layer service fixtures assert the failing result for each refusal and the
   successful value otherwise.
-- Test: `ApiDetailErrorFactoryFixture` pins the error code and status each failure kind produces.
+- Test: `ApiDetailErrorFactoryFixture` pins the error type, code, property name and message each failure
+  kind produces, and `EnrichedErrorExtensionsFixture` pins the status each kind maps to.
 - Review: a `throw` inside a service for a condition the feature defines is a defect; a fault is not.
 
 ## Pros and Cons of the Options
@@ -96,6 +97,7 @@ server broke" never look the same.
 
 ## More Information
 
-- How these failures and faults are written on the wire is a separate decision.
+- How these failures and faults are written on the wire is
+  [ADR-0014](0014-every-failure-is-written-as-a-problem-details-document.md).
 - Cost was a consideration in keeping exceptions for faults only; no measurement of it was taken, so it
   is not offered as a reason.
