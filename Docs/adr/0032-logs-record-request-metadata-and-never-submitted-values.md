@@ -40,19 +40,25 @@ enters a log has left the controls that were designed around it.
 ## Decision Outcome
 
 Chosen option: 1. One entry per request is written when the response completes, carrying the method, the
-path, the status, the duration and the correlation identifier — the caller's when supplied. There is no
-configuration in which a body or a header value is logged.
+path, the query string as supplied, the status, the duration and the correlation identifier — the caller's
+when supplied. No configuration can enable logging of a request body or a header value: the fields are
+chosen in code, not bound from configuration.
 
 Failures are logged with structured properties and the exception, not with the request content, and the
 correlation identifier is how a user's report and a log entry are joined.
 
 ### Consequences
 
-- Good, because no log, in any environment, can contain a credential or an account amount.
+- Good, because the request log cannot be made to contain a body or a header value in any environment.
+- Bad, because the rule has exceptions in the current code: several authentication handlers log the
+  username, a reference code or a verification code alongside their call, and one logs the refresh token.
+  Those statements contradict this decision and are defects to be removed, not an accepted exception.
 - Good, because the correlation identifier joins the caller's report to the server's entries, including
   on requests that failed before a handler ran.
 - Good, because the rule is uniform, so a developer cannot enable verbosity that leaks in development and
   forgets it is on.
+- Bad, because request logging itself is enabled by a single logging level entry, so removing it silently
+  stops every entry while leaving the no-body rule intact.
 - Bad, because reproducing a failure from logs alone is sometimes impossible without the input that caused
   it.
 - Bad, because a debugging session has to rely on tests or on temporary instrumentation rather than on a
@@ -61,10 +67,12 @@ correlation identifier is how a user's report and a log entry are joined.
 
 ### Confirmation
 
-- Test: `RequestLoggingFixture` asserts the entry carries metadata and the correlation identifier, and that
-  health probes are not logged.
-- Review: a log statement that includes a request or response value is a defect, and a log level that
-  would enable one is not a configuration choice.
+- Test: `RequestLoggingFixture` asserts the entry carries the method, the path and the status, that the
+  health probes are not logged, and that a body sent in a request never appears; the correlation identifier
+  in entries is asserted by the enricher fixture.
+- Review: a log statement that includes a request or response value is a defect. The one path payload
+  values take into logs is call logging with an argument object, so an object logged that way must not
+  carry a credential field.
 
 ## Pros and Cons of the Options
 
