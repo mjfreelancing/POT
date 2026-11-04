@@ -134,6 +134,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | [ADR-0028](0028-cascades-are-restricted-and-deletion-is-an-explicit-ordered-sweep.md) | Cascades are restricted and deletion is an explicit, ordered sweep | accepted |
 | [ADR-0029](0029-migrations-run-in-a-separate-process-before-the-api-starts.md) | Migrations run in a separate process before the API starts, in additive steps | accepted |
 | [ADR-0030](0030-background-work-runs-inside-the-api-process.md) | Background work runs inside the API process under a single-replica assumption | accepted |
+| [ADR-0031](0031-email-is-queued-in-process-and-rendered-from-razor-components.md) | Email is queued in process and rendered from Razor components | accepted |
 
 ### Infrastructure
 
@@ -147,7 +148,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 - [ADR-0002](0002-retry-after-client-cooldown-handling.md) — Retry-After client cooldown handling
 
-### Accepted (29)
+### Accepted (30)
 
 - [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) — Playwright E2E testing infrastructure
 - [ADR-0003](0003-public-tls-terminates-at-the-container-apps-ingress.md) — Public TLS terminates at the Container Apps ingress
@@ -178,6 +179,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 - [ADR-0028](0028-cascades-are-restricted-and-deletion-is-an-explicit-ordered-sweep.md) — Cascades are restricted and deletion is an explicit, ordered sweep
 - [ADR-0029](0029-migrations-run-in-a-separate-process-before-the-api-starts.md) — Migrations run in a separate process before the API starts, in additive steps
 - [ADR-0030](0030-background-work-runs-inside-the-api-process.md) — Background work runs inside the API process under a single-replica assumption
+- [ADR-0031](0031-email-is-queued-in-process-and-rendered-from-razor-components.md) — Email is queued in process and rendered from Razor components
 
 ## By PRD
 
