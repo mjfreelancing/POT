@@ -18,12 +18,13 @@ the database provider, accepting a race window between the check and the save.
 
 Every mutable entity inherits a `long` `Etag`, indexed but not declared as a concurrency token: there
 is no `IsConcurrencyToken`, `[ConcurrencyCheck]` or `xmin` anywhere in the data project. The value is
-assigned on every insert and update as a Unix millisecond timestamp taken from `DateTime.UtcNow` when
-the change is saved, bypassing the application's time provider.
+assigned on every insert and update, in the save override, as `DateTime.UtcNow.GetEtag()` — Unix
+milliseconds — so it bypasses the application's own time provider.
 
 Nine update paths compare the tag the caller supplied with the tag on the entity that was just
-loaded, and answer `409 Conflict` when they differ. The tag travels inside the request and response
-bodies, not as an HTTP `ETag` header with `If-Match`.
+loaded, and answer `409 Conflict` when they differ — accounts, approvals, expenses, incomes, settings,
+sites and the three user operations. The tag travels inside the request and response bodies, not as an
+HTTP `ETag` header with `If-Match`, and nothing in the API reads or writes either header.
 
 ## Decision Drivers
 
@@ -53,8 +54,9 @@ application.
 ### Consequences
 
 - Good, because the behaviour is identical on any provider and needs no schema-level configuration.
-- Good, because a conflict is an ordinary business failure answered with `409 Conflict`, alongside —
-  and indistinguishable in shape from — the conflicts raised by unique and reference constraints.
+- Good, because a conflict is an ordinary business failure answered with `409 Conflict`, carrying the
+  `stale-entity-tag` problem type and the `etag` property name, so it is distinguishable from the conflicts
+  raised by unique and reference constraints, which use their own types.
 - Bad, because the check is advisory: two callers who load the same row and save within the window
   between the check and the save both succeed, and the second silently replaces the first.
 - Bad, because two saves of the same entity within one millisecond produce the same version, so a
@@ -69,10 +71,15 @@ application.
 
 - Test: the per-feature integration fixtures (`CreateUpdateFixture` for accounts, expenses and
   incomes, `UpsertFixture` for settings, `UpdateFixture` for sites and users, `UpdateStatusFixture`
-  for approvals) assert that a stale tag answers `409`.
-- Review: a new update path must include its own tag check; there is no cross-cutting enforcement that
-  would fail if one were omitted.
-- Known gap: no test can assert atomicity, because the design does not provide any.
+  for approvals) assert that a stale tag answers `409`. Seven fixtures cover the nine paths, because the
+  user fixture exercises details, roles and status.
+- Review: a new update path must include its own tag check. Checks are bound by scanning for the
+  interface, so a path that omits one runs an empty chain and nothing fails — there is no cross-cutting
+  enforcement to catch it.
+- Known gap: the settings upsert has a second rule this record does not rely on — a tag supplied for a
+  setting that does not exist yet is its own refusal, with a nullable tag in its input.
+- Known gap: no test is written against `CheckHasSameEtag` itself; every assertion runs through the
+  service or the endpoint.
 
 ## Pros and Cons of the Options
 
@@ -103,4 +110,5 @@ application.
 
 - The remaining gap, and the change that would close it — a concurrency token with a monotonic value,
   plus a matching client type — is written up in `DECISIONS-TO-DISCUSS.md` (DD-02) and is awaiting a
-  decision. If it is adopted, this record is superseded rather than edited.
+  decision. If it is adopted, this record is superseded rather than edited. That write-up says six update
+  paths compare the tag; the count is nine, and the write-up is the one that is stale.
