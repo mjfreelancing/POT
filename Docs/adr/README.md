@@ -156,6 +156,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | [ADR-0042](0042-the-pwa-precaches-the-shell-only-and-enforces-updates.md) | The PWA precaches the application shell only and enforces updates | accepted |
 | [ADR-0043](0043-end-to-end-tests-run-on-one-shared-stack.md) | End-to-end tests run on one shared stack against a single seeded database | accepted |
 | [ADR-0044](0044-every-end-to-end-test-declares-whether-it-may-run-beside-others.md) | Every end-to-end test declares whether it may run beside others | accepted |
+| [ADR-0045](0045-the-end-to-end-matrix-runs-on-every-change-with-a-stricter-release-profile.md) | The end-to-end matrix runs on every change, with a stricter profile before release | accepted |
 
 ### Infrastructure
 
@@ -171,7 +172,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 - [ADR-0002](0002-retry-after-client-cooldown-handling.md) — Retry-After client cooldown handling
 
-### Accepted (43)
+### Accepted (44)
 
 - [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) — Playwright E2E testing infrastructure
 - [ADR-0003](0003-public-tls-terminates-at-the-container-apps-ingress.md) — Public TLS terminates at the Container Apps ingress
@@ -216,6 +217,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 - [ADR-0042](0042-the-pwa-precaches-the-shell-only-and-enforces-updates.md) — The PWA precaches the application shell only and enforces updates
 - [ADR-0043](0043-end-to-end-tests-run-on-one-shared-stack.md) — End-to-end tests run on one shared stack against a single seeded database
 - [ADR-0044](0044-every-end-to-end-test-declares-whether-it-may-run-beside-others.md) — Every end-to-end test declares whether it may run beside others
+- [ADR-0045](0045-the-end-to-end-matrix-runs-on-every-change-with-a-stricter-release-profile.md) — The end-to-end matrix runs on every change, with a stricter profile before release
 
 ## By PRD
 
