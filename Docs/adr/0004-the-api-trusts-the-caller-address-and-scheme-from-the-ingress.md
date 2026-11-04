@@ -44,13 +44,13 @@ anything.
 
 ## Decision Outcome
 
-Chosen option: 1. `ForwardedHeadersOptions` is configured in code with
-`XForwardedFor | XForwardedProto`, `KnownProxies` and `KnownIPNetworks` cleared, and `ForwardLimit`
-left at its default of one. `UseForwardedHeaders()` runs first in the pipeline.
+Chosen option: 1. `AddPotForwardedHeaders()` registers the options setup and `UseForwardedHeaders()` runs
+first in the pipeline, with `XForwardedFor | XForwardedProto` enabled, `KnownProxies` and
+`KnownIPNetworks` cleared, and `ForwardLimit` left at the framework default of one.
 
 Trusting any sender is deliberate: the ingress address cannot be enumerated, the container is
-unreachable except through the ingress, and the limit of one means only the entry the ingress wrote
-is used.
+unreachable except through the ingress (`Source/Docker/DEVELOPER.md`, "How Azure differs from local"),
+and the limit of one means only the entry the ingress wrote is used.
 
 ### Consequences
 
@@ -62,16 +62,20 @@ is used.
   directly would let a caller choose its own address and scheme.
 - Bad, because another proxy in front of the ingress would become the address the API sees, so this
   must be revisited if one is ever added.
-- Neutral, because the local compose proxy (`nginx.conf`) sets neither header, so local calls through
-  it present the client container's address and always report `http`. That is correct for a local
-  stack and needs no change.
+- Neutral, because the local compose proxy (`nginx.conf`) sets `Host`, `Upgrade` and `Connection` only, so
+  local calls through it present the client container's address and always report `http`. That is correct
+  for a local stack and needs no change.
 
 ### Confirmation
 
 - Test: `ForwardedHeadersOptionsSetupFixture` asserts both headers are enabled, `X-Forwarded-Host` is
-  not, `KnownProxies` is empty and `ForwardLimit` is 1.
-- Test: `ForwardedHeadersFixture` drives a real request through the pipeline and asserts the effect of
-  each header, so the unit test cannot pass while the middleware is unused.
+  not, `KnownProxies` and `KnownIPNetworks` are empty, and `ForwardLimit` is 1 — the last as a default
+  the fixture checks rather than a value the setup assigns.
+- Test: `ForwardedHeadersFixture` drives real requests through the pipeline, so the unit test cannot pass
+  while the middleware is unused: a forwarded scheme produces an `https` location for a created resource,
+  an absent one produces `http`.
+- Gap: no request-level test covers `X-Forwarded-Host` being ignored; that half of the decision rests on
+  the options test alone.
 - Review: a second proxy, a CDN, or any published port on the API container invalidates this record.
 
 ## Pros and Cons of the Options
