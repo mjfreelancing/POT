@@ -103,15 +103,22 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) | Playwright E2E testing infrastructure | accepted |
 | [ADR-0002](0002-retry-after-client-cooldown-handling.md) | Retry-After client cooldown handling | proposed |
 
+### Infrastructure
+
+| ADR | Title | Status |
+| --- | --- | --- |
+| [ADR-0003](0003-public-tls-terminates-at-the-container-apps-ingress.md) | Public TLS terminates at the Container Apps ingress | accepted |
+
 ## By status
 
 ### Proposed (1)
 
 - [ADR-0002](0002-retry-after-client-cooldown-handling.md) — Retry-After client cooldown handling
 
-### Accepted (1)
+### Accepted (2)
 
 - [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) — Playwright E2E testing infrastructure
+- [ADR-0003](0003-public-tls-terminates-at-the-container-apps-ingress.md) — Public TLS terminates at the Container Apps ingress
 
 ## By PRD
 
