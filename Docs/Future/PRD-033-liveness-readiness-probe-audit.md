@@ -36,17 +36,30 @@ The unresolved question is whether the current arrangement is equivalent to the 
 whether readiness is simply not applied to traffic routing. If the latter, HTTP traffic can reach a
 replica whose database checks have not passed, and the split currently protects only in-process work.
 
+Two further questions belong to the same audit because they depend on the same facts:
+
+- The worker readiness gate exists, but what it protects against in the deployed environment has
+  never been stated. Startup ordering is already guaranteed by the container entrypoint, which runs
+  the migration runner and only then starts the API, exiting if migrations fail. The gate therefore
+  guards against transient database unavailability during a worker's first cycle rather than against
+  an unmigrated schema.
+- Locally, nothing uses readiness either: compose starts the server only after `pg_isready` reports
+  the database healthy, and the server service has no health check of its own.
+
 ## What Is Known
 
-| Area | Fact | Source |
-| --- | --- | --- |
-| Liveness endpoint | `/_health`, no checks executed | `Pot.AspNetCore/Program.cs` |
-| Readiness endpoint | `/_health/ready`, runs `ready`-tagged checks including the database check | `Pot.AspNetCore/Program.cs` |
-| Worker gate | Both database-dependent workers wait for readiness before their first cycle | Worker startup gate and its unit tests |
-| API container probe | Liveness on `/_health`, port 5241, 30 s initial delay, 60 s period, 5 s timeout, failure threshold 3 | Azure deployment record (owner confirms factual) |
-| API container readiness | Enabled, no route configured | Owner, 2026-11-04 |
-| Client container probe | Liveness on `/health` | Azure deployment record |
-| Infrastructure as code | None; the deployment is configured by hand | Repository has no Azure IaC |
+| Area                    | Fact                                                                                                                                                                                                                 | Source                                           |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| Liveness endpoint       | `/_health`, no checks executed                                                                                                                                                                                       | `Pot.AspNetCore/Program.cs`                      |
+| Readiness endpoint      | `/_health/ready`, runs `ready`-tagged checks including the database check                                                                                                                                            | `Pot.AspNetCore/Program.cs`                      |
+| Readiness consumers     | Polled by the E2E gate; workers call the health check service by name, not the endpoint; no platform probe targets it                                                                                                | `Program.cs`; `playwright.globalSetup.ts`        |
+| Startup ordering        | The container entrypoint runs the migration runner, then the API, under `set -e`, so an instance never serves with an unmigrated schema                                                                              | `Source/Docker/Server/entrypoint.sh`             |
+| Worker gate             | Both database-dependent workers wait for readiness before their first cycle                                                                                                                                          | Worker startup gate and its unit tests           |
+| Local compose           | The server starts only after `pg_isready` reports postgres healthy; the server service has no health check of its own; the client's health check polls `http://server:5241/_health` from inside the client container | `docker-compose-client-server.yml`               |
+| API container probe     | Liveness on `/_health`, port 5241, 30 s initial delay, 60 s period, 5 s timeout, failure threshold 3                                                                                                                 | Azure deployment record (owner confirms factual) |
+| API container readiness | Enabled, no route configured                                                                                                                                                                                         | Owner, 2026-11-04                                |
+| Client container probe  | Liveness on `/health`                                                                                                                                                                                                | Azure deployment record                          |
+| Infrastructure as code  | None; the deployment is configured by hand                                                                                                                                                                           | Repository has no Azure IaC                      |
 
 ## Questions the Audit Must Answer
 
@@ -58,9 +71,14 @@ replica whose database checks have not passed, and the split currently protects 
    only to cover startup migrations?
 4. Is the worker readiness gate still wanted if the platform gates traffic on readiness, and does
    anything else consume readiness?
-5. Should the client container app also have a readiness probe, or is static file serving without one
+5. What does the worker readiness gate protect against in the deployed environment, given startup
+   ordering is already guaranteed by the entrypoint — transient database unavailability only, and is
+   that judged worth keeping?
+6. Should the local compose stack gate the server on readiness rather than only on postgres
+   `pg_isready`, and should the server service carry a health check of its own?
+7. Should the client container app also have a readiness probe, or is static file serving without one
    deliberate?
-6. Does anything in the change need to be captured in the deployment record so the deployed state and
+8. Does anything in the change need to be captured in the deployment record so the deployed state and
    the documentation stop differing?
 
 ## Out Of Scope
