@@ -117,6 +117,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | [ADR-0011](0011-every-endpoint-is-authenticated-unless-explicitly-anonymous.md) | Every endpoint is authenticated unless it is explicitly anonymous | accepted |
 | [ADR-0012](0012-one-chained-rate-limit-policy-partitions-by-caller.md) | One chained rate-limit policy partitions by caller and never locks an account | accepted |
 | [ADR-0013](0013-passwords-are-hashed-with-the-framework-hasher-and-reset-by-single-use-code.md) | Passwords are hashed with the ASP.NET Core hasher and reset by single-use code | accepted |
+| [ADR-0014](0014-every-failure-is-written-as-a-problem-details-document.md) | Every failure is written as a Problem Details document | accepted |
 
 ### Infrastructure
 
@@ -130,7 +131,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 - [ADR-0002](0002-retry-after-client-cooldown-handling.md) — Retry-After client cooldown handling
 
-### Accepted (12)
+### Accepted (13)
 
 - [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) — Playwright E2E testing infrastructure
 - [ADR-0003](0003-public-tls-terminates-at-the-container-apps-ingress.md) — Public TLS terminates at the Container Apps ingress
@@ -144,6 +145,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 - [ADR-0011](0011-every-endpoint-is-authenticated-unless-explicitly-anonymous.md) — Every endpoint is authenticated unless it is explicitly anonymous
 - [ADR-0012](0012-one-chained-rate-limit-policy-partitions-by-caller.md) — One chained rate-limit policy partitions by caller and never locks an account
 - [ADR-0013](0013-passwords-are-hashed-with-the-framework-hasher-and-reset-by-single-use-code.md) — Passwords are hashed with the ASP.NET Core hasher and reset by single-use code
+- [ADR-0014](0014-every-failure-is-written-as-a-problem-details-document.md) — Every failure is written as a Problem Details document
 
 ## By PRD
 
