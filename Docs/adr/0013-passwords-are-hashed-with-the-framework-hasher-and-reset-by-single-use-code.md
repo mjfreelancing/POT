@@ -49,30 +49,41 @@ self-contained algorithm that embeds its format marker, work factor and salt in 
 
 Verification and reset codes are rows keyed by username, reason and reference code, carrying an
 expiry, an attempt count and a status, with indexes matching the queries that find expired codes,
-count failures and invalidate the previous active code for a username. A code is single-use: using it
-moves the row out of its active state, and a new request invalidates the earlier one.
+count failures and invalidate the previous active code for a username. A code is six digits, expires
+fifteen minutes after issue, allows three attempts and then locks verification for five minutes. A new
+request invalidates the earlier active code for that username.
 
 A reset request is answered identically whether or not the account exists, and the temporary password
 it produces travels only by email.
 
 ### Consequences
 
-- Good, because the stored value carries its own algorithm, work factor and salt, so the cost can be
-  raised later without a data migration beyond rehashing on next sign-in.
+- Good, because the stored value carries its own algorithm, work factor and salt, so the format is
+  self-describing.
+- Bad, because only a full success is accepted: a hash that verifies but reports that it needs rehashing
+  is treated as a failure, and nothing rehashes after a successful verification, so raising the work
+  factor would lock users out rather than upgrade them.
 - Good, because taking the hasher without the rest of Identity avoids a second user schema, a second
   set of endpoints and Identity's own conventions.
 - Good, because codes expire, are counted and are invalidated by a later request, so a leaked earlier
   code is not a permanent key.
+- Bad, because a code is not unconditionally consumed: a matched code whose username became taken
+  returns a refusal with the row still active and no attempt counted, so it can be retried until it
+  expires.
 - Bad, because the same hasher is used for the temporary password that a reset issues, so that value
   is stored as a hash it can never be shown again from — which is correct, but makes support recovery
   impossible.
+- Bad, because the temporary password keeps working until the user changes it; there is no
+  forced-change flag, so "works once" is a statement about the email, not about the credential.
 - Bad, because code state is another table to clean up, which is why a background sweep exists.
 - Bad, because a temporary password is a credential the user did not choose and must change.
 
 ### Confirmation
 
-- Test: the authentication fixtures assert that a sign-in with the wrong password fails, that a
-  temporary password works once, and that a used or expired code is refused.
+- Test: the authentication fixtures assert that a sign-in with the wrong password fails and that a
+  temporary password is accepted.
+- Gap: no fixture asserts that a used or expired code is refused, and none asserts that a temporary
+  password stops working, because nothing implements that.
 - Review: no endpoint may return a different answer for a reset request depending on whether the
   account exists.
 - Known gap: codes are stored and logged in a form that a reader of the data can use; a change here
