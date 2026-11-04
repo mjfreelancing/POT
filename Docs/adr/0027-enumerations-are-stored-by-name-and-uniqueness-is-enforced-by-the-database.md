@@ -41,12 +41,16 @@ other writer — a migration fix, a support query, a future feature.
 ## Decision Outcome
 
 Chosen option: 1. Enumerations are modelled as enriched types that carry their own display and storage
-names, and the model is configured to persist them as text with a bounded length. A name in the database
-is the name in the code, so an insert into the middle of a declaration cannot reinterpret existing rows.
+names, and the model is configured to persist them as text with a bounded length of fifty. A name in the
+database is the name in the code, so an insert into the middle of a declaration cannot reinterpret
+existing rows. The reference tables that hold them — roles and permissions — have plain, case-sensitive
+unique indexes on those names, which are global rather than site-scoped.
 
-Uniqueness is a case-insensitive unique index scoped to the site, expressed with the database's
-case-insensitive text type. An application check runs first so the caller receives a business message
-rather than a constraint violation, but the index is the guarantee.
+Uniqueness of user-entered text is a separate application of the same principle: user-facing names such
+as an account's description are held in the database's case-insensitive text type with a composite unique
+index scoped to the site, and a settings row is unique per site with a separate global index for the
+unscoped case. An application check runs first where one exists, so the caller receives a business
+message rather than a constraint violation, but the index is the guarantee.
 
 ### Consequences
 
@@ -60,10 +64,10 @@ rather than a constraint violation, but the index is the guarantee.
 
 ### Confirmation
 
-- Test: the data fixtures insert a duplicate through the context and assert the database refuses it, so
-  the rule is shown to be in the schema rather than only in the service.
 - Test: the service fixtures assert the application check answers the business failure, with its error
-  code, before the constraint is reached.
+  code, before the constraint is reached — for the text fields that have such a check.
+- Gap: no data fixture inserts a duplicate to show the database refusing it; the constraint is evidenced by
+  the migrations that create the indexes, and the refusal path by the exception-handler fixture.
 - Review: a new enumeration is added as an enriched type with explicit storage names; a raw `int` column
   is a defect.
 
