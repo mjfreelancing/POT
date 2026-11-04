@@ -38,8 +38,9 @@ safelisted header.
 
 Chosen option: 1. The default policy allows only origins from configuration, allows credentialed
 requests, allows every method and header, exposes `Content-Disposition`, `Location`, `Retry-After` and
-`X-Correlation-Id`, and caches preflights for ten minutes. Startup validation rejects an empty list,
-`*`, and malformed origins.
+`X-Correlation-Id`, and caches preflights for ten minutes. Origins are supplied as one delimited string
+in `Cors:AllowedOrigins`, split on `,` or `;`, trimmed and de-duplicated; startup validation rejects an
+empty list, `*` and malformed origins and the options are validated on start, not on first use.
 
 Each setting follows from the client. Credentials are mandatory because the refresh cookie is HttpOnly
 and cross-origin; `Authorization`, `Content-Type` and `X-Correlation-ID` are all non-safelisted, so a
@@ -49,11 +50,14 @@ round trip.
 ### Consequences
 
 - Good, because the refresh cookie works while only configured origins can read responses.
-- Good, because the download filename, the rate-limit hint and the correlation id are readable by
-  script; the correlation id is also the only support signal when a gateway failure carries no body.
+- Good, because the download filename and the rate-limit hint are readable by script; `Location` is part
+  of the 201 contract, and `X-Correlation-Id` is what a caller can quote when a response carries no body —
+  though a failure produced by the ingress before the API runs never reaches the correlation middleware, so
+  the identifier the caller already sent is the only one in that case.
 - Good, because a malformed or wildcard origin fails at startup rather than at request time.
-- Bad, because adding a deployment hostname is a configuration change; an origin that is omitted is
-  blocked by the browser before the request is even sent.
+- Bad, because adding a deployment hostname is a configuration change; the shipped configuration is
+  empty, so an environment that supplies no origins does not start at all, and an omitted host is blocked
+  by the browser before the request is sent.
 - Bad, because `Location`, `Retry-After` and `X-Correlation-Id` are exposed although nothing reads
   them from a response today. They are kept deliberately: `Location` is part of the 201 contract, and
   `Retry-After` is what a cooldown feature would read.
@@ -64,9 +68,10 @@ round trip.
 
 - Test: `CorsFixture` drives real preflight and validation-error requests, asserting the allowed
   origin is echoed, the disallowed origin receives no `Access-Control-Allow-Origin`, a second
-  configured origin works with both `,` and `;` separators, and the cache is 600 seconds.
-- Test: `CorsOptionsSetupFixture` and `CorsConfigurationSetupFixture` assert the policy and the
-  startup validation, including rejection of `*`.
+  configured origin works with both `,` and `;` separators, credentials are allowed on the actual
+  response as well as the preflight, each exposed header name is present, and the cache is 600 seconds.
+- Test: `CorsOptionsSetupFixture` and `CorsConfigurationSetupFixture` assert the policy, the delimiter
+  handling and the startup validation, including rejection of `*`.
 - Review: a policy change that adds an origin or exposes a header belongs in configuration and in this
   record's consequences, not in an inline policy built in a handler.
 
@@ -97,8 +102,11 @@ round trip.
 
 ## More Information
 
-- Client side: `Source/Client/pot-react/src/api/axios.ts` and `src/api/authClient.ts` set
-  `withCredentials`; `src/features/maintenance/export/utils/fileUtils.ts` reads
-  `content-disposition`.
+- Client side: `Source/Client/pot-react/src/api/axios.ts` sets `withCredentials` on the global axios
+  defaults, so every request carries it, and `src/api/authClient.ts` sets it on the separate instance the
+  authentication calls use. `src/features/maintenance/export/utils/fileUtils.ts` reads
+  `content-disposition`, reached through the export hooks.
+- CORS runs before authentication and authorization so that a failure still carries the headers, which is
+  the pipeline order in `Program.cs`.
 - The transport boundary these origins live behind is
   [ADR-0003](0003-public-tls-terminates-at-the-container-apps-ingress.md).
