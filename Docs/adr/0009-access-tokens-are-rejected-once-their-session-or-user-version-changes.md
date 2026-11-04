@@ -21,8 +21,8 @@ row therefore does nothing on its own to a token already issued. Two revocations
 
 - **One device.** Logging out ends that device's session and nothing else, because a user may be signed
   in on several.
-- **Everything.** A password change, or an account being disabled, must end every existing session at
-  once.
+- **Everything.** A password change must end every existing session at once, because a credential the
+  account no longer uses should not keep working.
 
 Neither can be expressed inside the token, because a token cannot be edited after it is issued. They
 can only be detected by comparing the token against current state.
@@ -47,8 +47,10 @@ token's session: the stored token version must equal the token's, the session mu
 unrevoked and be unexpired, and the account must still be enabled. Any mismatch fails authentication,
 so the caller receives `401`.
 
-A password change or an account disablement increments the user's version, which invalidates every
-token issued before it. Logging out revokes one session row, which invalidates the tokens that name it.
+A password change increments the user's version, which invalidates every token issued before it. Logging
+out revokes one session row, which invalidates the tokens that name it. An account being disabled does
+not bump the version: it is caught by the account-status part of the same check, so its tokens stop being
+accepted for as long as the account is disabled and work again if it is re-enabled.
 
 ### Consequences
 
@@ -69,6 +71,10 @@ token issued before it. Logging out revokes one session row, which invalidates t
   accepted.
 - Test: `RefreshFixture` asserts a refresh rotates the stored token, so the superseded one cannot be
   replayed.
+- Test: the logout fixture asserts a password change increments the token version and that logging out
+  does not, which are the two behaviours this record rests on.
+- Gap: no fixture asserts that a disabled account's access token is rejected; that half of the check is
+  unverified by the suite.
 - Review: no caching may be added to this path without recording the revocation delay it introduces.
 
 ## Pros and Cons of the Options
