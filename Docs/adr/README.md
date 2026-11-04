@@ -107,7 +107,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | ADR | Title | Status |
 | --- | --- | --- |
 | [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) | Playwright E2E testing infrastructure | accepted |
-| [ADR-0002](0002-retry-after-client-cooldown-handling.md) | Retry-After client cooldown handling | proposed |
+| [ADR-0002](0002-retry-after-client-cooldown-handling.md) | Retry-After client cooldown handling | superseded |
 
 ### Backend
 
@@ -170,10 +170,6 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 ## By status
 
-### Proposed (1)
-
-- [ADR-0002](0002-retry-after-client-cooldown-handling.md) — Retry-After client cooldown handling
-
 ### Accepted (46)
 
 - [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) — Playwright E2E testing infrastructure
@@ -222,6 +218,10 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 - [ADR-0045](0045-the-end-to-end-matrix-runs-on-every-change-with-a-stricter-release-profile.md) — The end-to-end matrix runs on every change, with a stricter profile before release
 - [ADR-0046](0046-tenants-are-provisioned-and-destroyed-by-the-products-own-routes-in-tests.md) — Tenants are provisioned and destroyed by the product's own routes in tests
 - [ADR-0047](0047-a-rate-limited-caller-is-told-when-to-retry.md) — A rate-limited caller is told when to retry, and nothing retries automatically
+
+### Superseded (1)
+
+- [ADR-0002](0002-retry-after-client-cooldown-handling.md) — Retry-After client cooldown handling
 
 ## By PRD
 

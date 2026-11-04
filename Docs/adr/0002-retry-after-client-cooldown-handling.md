@@ -1,10 +1,11 @@
 ---
 id: ADR-0002
 title: Retry-After client cooldown handling
-status: proposed
+status: superseded
 date: 2026-09-02
 area: cross-cutting
 related-prds: [PRD-014]
+superseded-by: [ADR-0047]
 ---
 
 # ADR-0002: Retry-After client cooldown handling
