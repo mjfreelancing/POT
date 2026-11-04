@@ -40,8 +40,9 @@ immediately public, and nothing in a normal review catches it.
 ## Decision Outcome
 
 Chosen option: 1. The authorization fallback requires an authenticated user, so a route is protected
-unless it explicitly opts out. The endpoints reachable without a session — sign-in, sign-up, password
-reset, refresh, and the health probes — carry `AllowAnonymous()` explicitly.
+unless it explicitly opts out. Nine routes are reachable without a session: the seven authentication
+operations — including logout — and the two health probes, each carrying `AllowAnonymous()` explicitly.
+The probes are also short-circuited at routing, so authorization never runs for them at all.
 
 A test enumerates the application's endpoints and requires each one to be either authorized or
 explicitly anonymous, so a new route cannot arrive without that decision having been made.
@@ -55,13 +56,15 @@ explicitly anonymous, so a new route cannot arrive without that decision having 
 - Bad, because the public routes now depend on that annotation, so removing one accidentally locks
   users out rather than exposing data.
 - Bad, because the fallback is authentication only: it says the caller is signed in, not that they may
-  do this, so every protected route still needs its permission policy.
+  do this, so most protected routes still need their own permission policy — the profile and user routes
+  are the exception, and they require authentication alone.
 - Bad, because the endpoint inventory must be maintained as the list of anonymous routes changes.
 
 ### Confirmation
 
-- Test: `EndpointAuthorizationMetadataFixture` requires every endpoint to be authorized or explicitly
-  anonymous, and fails when a new route is neither.
+- Test: `EndpointAuthorizationMetadataFixture` asserts that the set of anonymous routes equals the
+expected set, so an unexpected `AllowAnonymous()` fails as well as a missing one, and a separate theory
+pins the exact policy on named routes, which is what distinguishes authentication from authority.
 - Review: `AllowAnonymous()` on a route that reads or writes tenant data is a defect, whatever the
   fallback says.
 
@@ -94,4 +97,5 @@ explicitly anonymous, so a new route cannot arrive without that decision having 
 
 - This decides authentication, not authority: which permissions a signed-in caller needs is recorded
   separately.
-- The health probes are anonymous for the same reason sign-in is: infrastructure holds no credentials.
+- The health probes are short-circuited at routing, so their anonymity is a belt-and-braces annotation
+  rather than the reason they are reachable.
