@@ -42,8 +42,10 @@ project whose deployment is a container app on a consumption plan.
 ## Decision Outcome
 
 Chosen option: 1. Tasks defined with the project build the images, publish them to the registry and start
-the stacks; tests are the same commands a pipeline would invoke. A deployment publishes the `latest` tag
-built from the working tree.
+the local stacks; for the hosted environment a task stops at publishing the image, and the running revision
+is switched by hand in the portal. Tests are the same commands a pipeline would invoke — server tests
+through a task, client tests through a package script. A deployment publishes the `latest` tag built from
+the working tree.
 
 Nothing gates a deployment on the tests passing. A published image is what the developer's machine
 produced, from whatever the working tree contained.
@@ -53,8 +55,11 @@ produced, from whatever the working tree contained.
 - Good, because there is no build infrastructure to pay for, authorise or maintain for a small deployment.
 - Good, because the commands are the same ones used locally, so a deployment failure is reproducible on a
   developer machine.
-- Good, because a deployment takes one task rather than a commit and a wait.
+- Good, because a deployment takes one task and one manual switch rather than a commit, a pipeline run and
+a wait.
 - Bad, because nothing enforces that the tests ran, or passed, before an image was published.
+- Bad, because the switch to a new revision is a manual action in a portal, so what is running is not
+  determined by the same command that built it.
 - Bad, because an image cannot be traced to a commit: `latest` is whatever was built last, and the working
   tree may have contained anything.
 - Bad, because a rollback means rebuilding from a remembered state rather than deploying an earlier
