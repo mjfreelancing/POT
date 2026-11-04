@@ -13,7 +13,7 @@ planned, implemented, and evaluated.
 
 The **implemented design and current state** (the architecture, operational detail, and the
 history of approaches that were tried and rejected) are documented separately in
-[ADR 012 — Playwright E2E Testing Infrastructure: Design & Current State](ADR-012-playwright-e2e-testing-infrastructure.md).
+[ADR 0001 — Playwright E2E Testing Infrastructure](../adr/0001-playwright-e2e-testing-infrastructure.md).
 Read the PRD for requirements; read the ADR for how they are met.
 
 ---
@@ -270,13 +270,13 @@ Fixed, non-negotiable rules:
 | D7  | Keep Vite dev server for the dev matrix (HMR disabled)                     | A built-client local matrix regressed (PWA service-worker install per context; errorBoundary aborts a dev-source chunk) — see ADR design history                         |
 
 Rejected alternatives and the full design history are recorded in
-[ADR 012, Appendix A](ADR-012-playwright-e2e-testing-infrastructure.md#appendix-a-design-history--what-was-tried-and-rejected).
+[ADR 0001, Appendix A](../adr/0001-playwright-e2e-testing-infrastructure.md#appendix-a-design-history--what-was-tried-and-rejected).
 
 ## 9. References
 
-- [ADR 012 — Design & Current State](ADR-012-playwright-e2e-testing-infrastructure.md)
+- [ADR 0001 — Design & Current State](../adr/0001-playwright-e2e-testing-infrastructure.md)
 - `Source/Client/pot-react/e2e/README.md` — architecture & conventions
 - `Source/Client/pot-react/e2e/AUTHORING.md` — authoring guide
 - `Source/Client/pot-react/playwright.config.ts`, `playwright.prod.config.ts`,
   `playwright.globalSetup.ts` — implementation
-- `.github/instructions/playwright-e2e.instructions.md` — agent rules
+- `.github/instructions/e2e.instructions.md` — agent rules

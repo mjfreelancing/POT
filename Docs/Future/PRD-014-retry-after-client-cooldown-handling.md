@@ -86,7 +86,7 @@ Candidate requirements; nothing implemented yet.
 ## Related Documents
 
 - Future index: [Docs/Future/README.md](README.md)
-- Companion design record: [ADR 014 — Retry-After Client Cooldown Handling (Design & Current State)](ADR-014-retry-after-client-cooldown-handling.md)
+- Companion design record: [ADR 0002 — Retry-After Client Cooldown Handling (Design & Current State)](../adr/0002-retry-after-client-cooldown-handling.md)
 - Server rate limiting: `Source/Server/Pot.AspNetCore/Concerns/RateLimiting/RateLimiterOptionsSetup.cs`, `RateLimiterPolicy.cs`, `RateLimiterDefaults.cs`
 - Server CORS policy (exposed headers): `Source/Server/Pot.AspNetCore/Concerns/Cors/Configuration/CorsOptionsSetup.cs`
 - Server integration coverage: `Source/Server/Pot.AspNetCore.Integration.Tests/Security/HeadersAndRateLimitFixture.cs`, `Source/Server/Pot.AspNetCore.Integration.Tests/Pipeline/CorsFixture.cs`

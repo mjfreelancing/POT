@@ -26,23 +26,23 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 
 ## Summary
 
-| ID | Item | Severity | Recommendation | Needs migration? |
-| --- | --- | --- | --- | --- |
-| DD-02 | Etag checked in code but not a database concurrency token; client types it as `bigint` | Med (integrity) | B + C: concurrency token, a monotonic value and `z.number()` | Model-only (empty migration) |
-| DD-03 | Money stored and calculated as `double` | Med (correctness) | C: `decimal` / `numeric(18,2)` end to end | Yes: DB + data |
-| DD-04 | Email queued in process; reminders assume one replica | Med (reliability) | A now (pin to one replica), C (the outbox PRD) later | Not for A; yes for C |
-| DD-05 | No CI; deploy pushes `:latest` from the local working tree | Med (process) | B: a build-and-test workflow, deploy unchanged | No |
-| DD-06 | PostgreSQL 13 locally and in tests, 16 in E2E, 17.6 in Azure | Med (drift) | B: align everything on the Azure version | No (local data rebuild) |
-| DD-07 | Client API types are hand-written | Med (drift) | B: generate types from the committed contract | No |
-| DD-14 | No policy for API/client version skew while an old PWA shell is cached | Med (skew) | A: record that no window exists, correct the guide | No |
-| DD-08 | One-time codes stored in plaintext, and written to logs | Low (contained) | B: stop logging codes; keep storage as-is | No |
-| DD-09 | Permission policies are string literals | Low (fails closed) | B: named constants and a test for every endpoint (now one assertion over the new endpoint inventory) | No |
-| DD-10 | DI by marker-interface scanning: code and server guide agree, `server.instructions.md` does not | Low (documentation) | A: keep scanning, correct the instructions | No |
-| DD-13 | Features import other features (and shared layers import features) | Low (structure) | C: move auth and shared pieces into layers, enforce with lint | No |
-| DD-15 | `WhenNotNull()` on injected dependencies: the server guide and the instructions disagree | Low (consistency) | A: keep the guards, correct the instructions | No |
-| DD-11 | The prodlike E2E gate is per-PRD or on demand, depending on which doc you read | Low (documentation) | A: per client-affecting PRD, plus on demand | No |
-| DD-16 | No server health check in the prodlike compose stack | Low (local only) | B: readiness health check, client waits for it | No |
-| DD-12 | Smaller items (Cronos, sonner theme, animate plugin, EF InMemory, ERD path) | Low (housekeeping) | Per item, see brief | No |
+| ID    | Item                                                                                            | Severity            | Recommendation                                                                                       | Needs migration?             |
+| ----- | ----------------------------------------------------------------------------------------------- | ------------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------- |
+| DD-02 | Etag checked in code but not a database concurrency token; client types it as `bigint`          | Med (integrity)     | B + C: concurrency token, a monotonic value and `z.number()`                                         | Model-only (empty migration) |
+| DD-03 | Money stored and calculated as `double`                                                         | Med (correctness)   | C: `decimal` / `numeric(18,2)` end to end                                                            | Yes: DB + data               |
+| DD-04 | Email queued in process; reminders assume one replica                                           | Med (reliability)   | A now (pin to one replica), C (the outbox PRD) later                                                 | Not for A; yes for C         |
+| DD-05 | No CI; deploy pushes `:latest` from the local working tree                                      | Med (process)       | B: a build-and-test workflow, deploy unchanged                                                       | No                           |
+| DD-06 | PostgreSQL 13 locally and in tests, 16 in E2E, 17.6 in Azure                                    | Med (drift)         | B: align everything on the Azure version                                                             | No (local data rebuild)      |
+| DD-07 | Client API types are hand-written                                                               | Med (drift)         | B: generate types from the committed contract                                                        | No                           |
+| DD-14 | No policy for API/client version skew while an old PWA shell is cached                          | Med (skew)          | A: record that no window exists, correct the guide                                                   | No                           |
+| DD-08 | One-time codes stored in plaintext, and written to logs                                         | Low (contained)     | B: stop logging codes; keep storage as-is                                                            | No                           |
+| DD-09 | Permission policies are string literals                                                         | Low (fails closed)  | B: named constants and a test for every endpoint (now one assertion over the new endpoint inventory) | No                           |
+| DD-10 | DI by marker-interface scanning: code and server guide agree, `server.instructions.md` does not | Low (documentation) | A: keep scanning, correct the instructions                                                           | No                           |
+| DD-13 | Features import other features (and shared layers import features)                              | Low (structure)     | C: move auth and shared pieces into layers, enforce with lint                                        | No                           |
+| DD-15 | `WhenNotNull()` on injected dependencies: the server guide and the instructions disagree        | Low (consistency)   | A: keep the guards, correct the instructions                                                         | No                           |
+| DD-11 | The prodlike E2E gate is per-PRD or on demand, depending on which doc you read                  | Low (documentation) | A: per client-affecting PRD, plus on demand                                                          | No                           |
+| DD-16 | No server health check in the prodlike compose stack                                            | Low (local only)    | B: readiness health check, client waits for it                                                       | No                           |
+| DD-12 | Smaller items (Cronos, sonner theme, animate plugin, EF InMemory, ERD path)                     | Low (housekeeping)  | Per item, see brief                                                                                  | No                           |
 
 ---
 
@@ -142,9 +142,11 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
     - the server integration tests (`Pot.AspNetCore.Integration.Tests/IntegrationFixtureBase.cs:96`, with a matching doc comment in `Host/ApiWebApplicationFactory.cs:49`).
 
     The compose file's comments also name it (`docker-compose-client-server.yml:82,92`).
+
   - Playwright E2E uses `postgres:16` (`Source/Client/pot-react/playwright.globalSetup.ts:516`), so there are three versions in use.
   - The only source for "Azure runs 17.6" is a diagram label (`Docs/Azure/POT-Azure-Diagram.mmd:18`). There is no infrastructure-as-code to confirm it.
   - PostgreSQL 13 reached end of life in November 2025.
+
 - **Why it matters:** The integration tests prove behaviour on 13, but production runs 17. Differences in planner behaviour, `citext`, collation and new defaults would show up in production first. The 13.6 hint is harmless against a 17 server: EF just avoids newer SQL. The real risk is the drift between test and production, and running an unsupported version locally.
 - **Options:**
   - **A. Keep as-is (record honestly).** The ADR records all three versions and the drift. Effort: none.
@@ -250,7 +252,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
   - Tests depend on this: there are about 354 `Substitute.For<I…>`-style substitutions (NSubstitute).
   - **The server guide agrees with the code.** `Source/Server/DEVELOPER.md:5065-5262` ("Dependency Injection", "Auto-Registration Pattern") describes the scanning. The worked example says "No manual registration needed" and points to `AutoRegisterScoped<DependencyRegistrar, IPotScopedDependency>` (`DEVELOPER.md:876-890`).
   - **`.github/instructions/server.instructions.md:64-66` is the only outlier.** It says to register concrete classes, and to add an interface only for multiple implementations, a public boundary or a test seam.
-  - The instruction's "small set of composition-root methods" rule *is* met. The "interface only when needed" rule is the one contradicted.
+  - The instruction's "small set of composition-root methods" rule _is_ met. The "interface only when needed" rule is the one contradicted.
 - **Why it matters:** Agents follow the instruction file, which takes precedence over the guide for them. A new service written to the instruction (concrete, no interface) is never registered, and fails at runtime with "unable to resolve". The code and the guide are consistent; only the instruction is wrong.
 - **Options:**
   - **A. Keep scanning, and change the instructions to describe it (record honestly).** New services implement an interface that extends the right marker; the test seam is the accepted reason for the interface. Effort S. Docs only.
@@ -273,7 +275,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
     - `useAuthContext` and `useAccessToken`;
     - `sessionNotice`;
     - `useClearSession`.
-    For example: `src/features/accounts/AccountsPage.tsx:16`, `src/features/userSettings/delete/DeleteAccountAction.tsx:6-8`.
+      For example: `src/features/accounts/AccountsPage.tsx:16`, `src/features/userSettings/delete/DeleteAccountAction.tsx:6-8`.
   - `dashboard` imports `renewExpenses` and `renewIncomes` from `expenses` and `incomes` (`src/features/dashboard/actions/accruals/RenewExpensesAction.tsx:12`, `RenewIncomesAction.tsx:12`). These are plain mutation-plus-cache-invalidation helpers (`src/features/expenses/bulkActions/renew.ts`).
   - `expenses` and `incomes` import `@/features/shared/sheets/asyncSheetStates` (for example `src/features/expenses/edit/EditExpenseSheet.tsx:10`). That is a folder under `features/` acting as a shared layer.
   - **The shared layers also import features**, which breaks the one-way rule in row 0055:
@@ -300,7 +302,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
   - The server guide's service pattern says "All dependencies validated with `.WhenNotNull()`" (`Source/Server/DEVELOPER.md:1875`). Its example matches `Pot.App/Features/Accounts/Create/CreateAccountService.cs:27-30`.
   - `.github/instructions/allsoverit-patterns.instructions.md:18` (reworked 2026-10-03, commit `8140ff76`) says the opposite: "Constructor parameters resolved by DI need no null guard … Keep `WhenNotNull()` … only when the class is also created by a factory that may pass `null`."
   - The code follows the guide. There are 356 `_x = x.WhenNotNull();` assignments in 157 non-test server files, against 25 plain `_x = x;` assignments (a few of which are not DI constructors).
-  - Removing the guards has no test cost: I found no constructor null-guard tests for services. The 63 "Should_Throw_When_…_Null" tests cover method arguments, for example `Pot.App.Tests/Calculators/AccrualCalculatorFixture.cs:73`.
+  - Removing the guards has no test cost: I found no constructor null-guard tests for services. The 63 "Should*Throw_When*…\_Null" tests cover method arguments, for example `Pot.App.Tests/Calculators/AccrualCalculatorFixture.cs:73`.
 - **Why it matters:** Agents read the instruction and write unguarded constructors, while reviewers and the guide expect guards. The result is a codebase that drifts into two styles, and review churn. Neither style changes runtime behaviour: the container never passes `null`.
 - **Options:**
   - **A. The guide wins: keep `WhenNotNull()` on every injected dependency.** Change the instruction line. Effort S. Docs only. Matches about 94% of the existing code.
@@ -317,11 +319,11 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 
 - **Backlog row:** 0072 (`Acc + Dec`).
 - **What the code does today:**
-  - "On demand" only, run "when the client production build changes … and before releases": `Source/Client/pot-react/e2e/README.md:142-153`, and `Docs/Future/ADR-012-playwright-e2e-testing-infrastructure.md:147-165` and `:402`.
+  - "On demand" only, run "when the client production build changes … and before releases": `Source/Client/pot-react/e2e/README.md:142-153`, and `Docs/adr/0001-playwright-e2e-testing-infrastructure.md:147-165` and `:402`.
   - "The completion gate for client-affecting work … when such a PRD completes, and on demand when the client production build changes": `.github/instructions/e2e.instructions.md:13`.
   - The same per-PRD rule appears in `.github/skills/prd-delivery/SKILL.md:15,64,84`, `prd-delivery/references/stage-plan.template.md:46` and `.github/skills/run-tests/SKILL.md:57-58`.
   - `prd-delivery` step 4.8 also asks, at completion, whether to run two opt-in tiers. One is the scenario tier; the other is the browser tier, which is the **dev** matrix (`e2e:all:dev`). This is separate from the prodlike gate at step 4.6, and it does not change the disagreement above.
-  - The guidance agents follow is consistent (per client-affecting PRD, plus on demand). Only the human-facing README and ADR-012 disagree. There are no formal "releases" (see DD-05), so "before releases" has no trigger.
+  - The guidance agents follow is consistent (per client-affecting PRD, plus on demand). Only the human-facing README and ADR-0001 disagree. There are no formal "releases" (see DD-05), so "before releases" has no trigger.
 - **Why it matters:** This is documentation only. Someone working from the README skips a gate that the delivery skill enforces, or the other way round.
 - **Options:**
   - **A. Per client-affecting PRD at completion, plus on demand when the production build changes.** Update the README and the new ADR to match the skills. Effort S. Docs only.

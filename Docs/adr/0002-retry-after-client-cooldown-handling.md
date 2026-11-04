@@ -1,11 +1,21 @@
-# ADR 014 — Retry-After Client Cooldown Handling: Design & Current State
+---
+id: ADR-0002
+title: Retry-After client cooldown handling
+status: proposed
+date: 2026-09-02
+area: cross-cutting
+related-prds: [PRD-014]
+---
 
-**Status:** Proposed — design direction recorded; not yet implemented
-**Date:** 2026-09-02
+# ADR-0002: Retry-After client cooldown handling
+
+> **Legacy record.** Written as a design-and-current-state document before this series was
+> consolidated, and renumbered here unchanged. The design direction is recorded and not yet
+> implemented; a bounded record will supersede it.
 
 ## Context
 
-[PRD 014](PRD-014-retry-after-client-cooldown-handling.md) defines **what** Retry-After client
+[PRD 014](../Future/PRD-014-retry-after-client-cooldown-handling.md) defines **what** Retry-After client
 handling must deliver — requirements, non-goals, and open questions. This ADR records **how**
 the work would be approached: the verified current state of the server contract and the client
 gap, the proposed design, and the decisions under consideration. No code changes have been
@@ -13,7 +23,7 @@ applied in this session.
 
 ## Companion documents
 
-- [PRD 014 — Retry-After Client Cooldown Handling](PRD-014-retry-after-client-cooldown-handling.md)
+- [PRD 014 — Retry-After Client Cooldown Handling](../Future/PRD-014-retry-after-client-cooldown-handling.md)
   — requirements (what/why).
 - Server rate limiting source: `Source/Server/Pot.AspNetCore/Concerns/RateLimiting/`.
 - Client error pipeline source: `Source/Client/pot-react/src/api/`.

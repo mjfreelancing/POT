@@ -94,6 +94,30 @@ dated clarification that does not change the decision.
 <!-- BEGIN GENERATED INDEX -->
 _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.ps1`. Do not edit by hand._
 
-No ADR has been written yet. The first record takes `ADR-0001`.
+## By area
+
+### Cross-cutting
+
+| ADR | Title | Status |
+| --- | --- | --- |
+| [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) | Playwright E2E testing infrastructure | accepted |
+| [ADR-0002](0002-retry-after-client-cooldown-handling.md) | Retry-After client cooldown handling | proposed |
+
+## By status
+
+### Proposed (1)
+
+- [ADR-0002](0002-retry-after-client-cooldown-handling.md) — Retry-After client cooldown handling
+
+### Accepted (1)
+
+- [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) — Playwright E2E testing infrastructure
+
+## By PRD
+
+| PRD | ADRs |
+| --- | --- |
+| PRD-012 | [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) |
+| PRD-014 | [ADR-0002](0002-retry-after-client-cooldown-handling.md) |
 
 <!-- END GENERATED INDEX -->

@@ -1,11 +1,22 @@
-# ADR 012 — Playwright E2E Testing Infrastructure: Design & Current State
+---
+id: ADR-0001
+title: Playwright E2E testing infrastructure
+status: accepted
+date: 2026-09-02
+area: cross-cutting
+related-prds: [PRD-012]
+---
 
-**Status:** Accepted — implemented and validated (test catalog complete, matrix green)
-**Date:** 2026-09-02
+# ADR-0001: Playwright E2E testing infrastructure
+
+> **Legacy record.** Written as a design-and-current-state document before this series was
+> consolidated, and renumbered here unchanged. It mixes the decision, a description of current
+> state and design history; bounded records for each decision will supersede it. The work was
+> implemented and validated, with a complete test catalog and a green matrix.
 
 ## Context
 
-[PRD 012](PRD-012-playwright-e2e-testing-infrastructure.md) defines **what** the E2E testing
+[PRD 012](../Future/PRD-012-playwright-e2e-testing-infrastructure.md) defines **what** the E2E testing
 infrastructure must deliver — goals, non-goals, requirements, and acceptance criteria. This
 ADR records **how** those requirements are met: the implemented architecture and its current
 state. Read the PRD for the requirements and their rationale; read this ADR for the concrete
@@ -13,11 +24,11 @@ design, operational detail, and design history.
 
 ## Companion documents
 
-- [PRD 012 — Playwright E2E Testing Infrastructure](PRD-012-playwright-e2e-testing-infrastructure.md)
+- [PRD 012 — Playwright E2E Testing Infrastructure](../Future/PRD-012-playwright-e2e-testing-infrastructure.md)
   — requirements (what/why).
 - `Source/Client/pot-react/e2e/README.md` — day-to-day architecture & conventions reference.
 - `Source/Client/pot-react/e2e/AUTHORING.md` — how to add/update a test.
-- `.github/instructions/playwright-e2e.instructions.md` — agent-facing rules that load
+- `.github/instructions/e2e.instructions.md` — agent-facing rules that load
   automatically when editing files under `e2e/`.
 
 Earlier iterations of this work (a multi-mode database model, an "isolated-sequence" test
@@ -322,7 +333,7 @@ contract), then globalSetup:
     renew incomes (mode `Overdue`, as of the local date) → renew expenses. Throws if
     `e2e/seed/financial.export` is missing.
 
-    > **Note (2026-09-27).** The `accrue expenses` leg is gone. [PRD-023](PRD-023-dynamic-accrual-calculation.md) removed the accrual command surface because accrual is derived on read, so there is nothing to run after an import: the helper now goes login → import → renew incomes → renew expenses. The same correction applies to the two other places this ADR states the step — the `renewal/accrual` label in the §3 setup diagram and step 5 of §4 — where it now means renewal only. The step above is kept as it was written when this ADR was accepted.
+    > **Note (2026-09-27).** The `accrue expenses` leg is gone. [PRD-023](../Future/PRD-023-dynamic-accrual-calculation.md) removed the accrual command surface because accrual is derived on read, so there is nothing to run after an import: the helper now goes login → import → renew incomes → renew expenses. The same correction applies to the two other places this ADR states the step — the `renewal/accrual` label in the §3 setup diagram and step 5 of §4 — where it now means renewal only. The step above is kept as it was written when this ADR was accepted.
 
 11. Pre-warms the shared stack (`warmUpSharedStack`): mounts every authenticated route in a
     real browser once, forcing Vite to transform lazy chunks and the API to serve first reads
@@ -359,7 +370,7 @@ format delta to the CSV entries and leave the other entries byte-identical. Do n
 version integer alone: `MetadataSerializer.Deserialize<T>` constructs the type the payload
 names, so a payload naming the previous version's type throws `InvalidCastException` (a 500),
 even though a genuine stale package is rejected cleanly by the version gate (a `400`: this ADR
-records `422`, which [PRD-030](PRD-030-problem-details-consolidation.md) replaced when every
+records `422`, which [PRD-030](../Future/PRD-030-problem-details-consolidation.md) replaced when every
 validation failure became a `400`). API output
 for a local run is written to `../../Server/e2e-server.log` (survives the run; overwritten each
 run), which is where an import failure's exception appears — the harness reports only a generic

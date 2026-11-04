@@ -7,7 +7,7 @@ PWA/theme/empty states, matrix & prodlike validation).
 
 This is the central reference for how POT's Playwright E2E suite is architected and how to
 extend it. The **agent-facing rules** that load automatically when editing files under this
-directory live in `.github/instructions/playwright-e2e.instructions.md`.
+directory live in `.github/instructions/e2e.instructions.md`.
 
 ---
 

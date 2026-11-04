@@ -2,7 +2,7 @@
 
 How to add or update a Playwright E2E test for POT. Read this + `e2e/README.md` (architecture)
 before writing a test. The agent rules that load automatically are in
-`.github/instructions/playwright-e2e.instructions.md`.
+`.github/instructions/e2e.instructions.md`.
 
 ---
 
@@ -125,4 +125,3 @@ npm run e2e:prodlike                          # built-client subset (on-demand)
 Validate the way the repo does: targeted chromium -> all 4 projects -> (for a gate) the full
 matrix twice / three consecutive clean runs. **No flaky tests**: fix the root cause; a retry
 is a safety net, not a fix.
-
