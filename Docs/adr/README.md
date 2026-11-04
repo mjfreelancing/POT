@@ -143,6 +143,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | ADR | Title | Status |
 | --- | --- | --- |
 | [ADR-0003](0003-public-tls-terminates-at-the-container-apps-ingress.md) | Public TLS terminates at the Container Apps ingress | accepted |
+| [ADR-0034](0034-secret-values-live-outside-the-repository.md) | Secret values live outside the repository, in a tracked template and a platform store | accepted |
 
 ## By status
 
@@ -150,7 +151,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 - [ADR-0002](0002-retry-after-client-cooldown-handling.md) — Retry-After client cooldown handling
 
-### Accepted (32)
+### Accepted (33)
 
 - [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) — Playwright E2E testing infrastructure
 - [ADR-0003](0003-public-tls-terminates-at-the-container-apps-ingress.md) — Public TLS terminates at the Container Apps ingress
@@ -184,6 +185,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 - [ADR-0031](0031-email-is-queued-in-process-and-rendered-from-razor-components.md) — Email is queued in process and rendered from Razor components
 - [ADR-0032](0032-logs-record-request-metadata-and-never-submitted-values.md) — Logs record request metadata and never submitted values
 - [ADR-0033](0033-tests-are-per-layer-unit-projects-plus-one-hosted-integration-project.md) — Tests are per-layer unit projects plus one hosted integration project
+- [ADR-0034](0034-secret-values-live-outside-the-repository.md) — Secret values live outside the repository, in a tracked template and a platform store
 
 ## By PRD
 

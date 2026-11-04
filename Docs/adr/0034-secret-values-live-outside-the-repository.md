@@ -1,0 +1,94 @@
+---
+id: ADR-0034
+title: Secret values live outside the repository, in a tracked template and a platform store
+status: accepted
+date: 2026-11-04
+area: infrastructure
+---
+
+# ADR-0034: Secret values live outside the repository, in a tracked template and a platform store
+
+**Summary:** In the context of an application that needs database credentials, a signing key and mail
+credentials to start, facing the choice between committing usable values and committing only their
+names, we decided that the repository holds a tracked template with no secrets and that the working file
+and the deployed values live outside it, in an ignored file locally and in the platform's secret store in
+production, to achieve a clone that contains no credential, accepting that a new environment must be
+supplied with values before it can start.
+
+## Context and Problem Statement
+
+A committed value is permanent in a way a rotated value is not: it is in the history of every clone,
+including the ones that were already taken. A configuration that cannot start without a value makes that
+pressure real, which is why the tempting answer is a working default with a real credential in it.
+
+The application already validates required settings at startup, so a missing value is a failed start
+rather than a silent misconfiguration.
+
+## Decision Drivers
+
+- Nothing that grants access should be in the repository, including its history.
+- A new developer should know which values are needed without being given them.
+- A deployed environment should take its values from a store that can rotate them, not from the image.
+
+## Considered Options
+
+1. A tracked template of keys with placeholders, an ignored working file, and the platform's secret store
+   in production.
+2. Commit working development values, with production overridden at deployment.
+3. No template; document the keys in prose.
+4. Encrypt the values in the repository with a shared key.
+
+## Decision Outcome
+
+Chosen option: 1. The repository holds `.env.development.template`: every key the compose file
+substitutes, with startup-safe values where a local default is harmless and marked placeholders where a
+value must be supplied. Copying it produces a working local stack; the copy is ignored.
+
+Production values come from the platform's secret store and reach the container as environment settings,
+so the image contains no credential and a rotated value does not need a rebuild.
+
+### Consequences
+
+- Good, because a clone contains no credential, and a leaked repository is not a leaked environment.
+- Good, because the key list is versioned, so adding a required setting is visible in review and a
+  developer learns what exists without being handed the values.
+- Good, because production values can be rotated without rebuilding an image.
+- Bad, because a fresh environment cannot start until its values are supplied, which is a step somebody
+  must perform.
+- Bad, because the template is one more file to keep in step with the settings the application reads.
+- Bad, because placeholders that satisfy validation can make a stack that starts and then fails at the
+  first mail, which is correct but easy to mistake for working.
+
+### Confirmation
+
+- Review: a real credential in a tracked file, and a template that contains one, are both defects.
+- Test: the local compose instructions are executable as written — copying the template produces a stack
+  that starts, which is the property the template exists for.
+
+## Pros and Cons of the Options
+
+### Template, ignored file, secret store (chosen)
+
+- Good: nothing sensitive tracked, and values rotatable.
+- Bad: a setup step and a file to maintain.
+
+### Committed development values
+
+- Good: a clone simply runs.
+- Bad: the values are in history forever, and the habit spreads to production values.
+
+### Documented keys only
+
+- Good: no file to maintain.
+- Bad: the documentation drifts from the settings the code reads, and a typo is discovered at runtime.
+
+### Encrypted values in the repository
+
+- Good: versioned and secret.
+- Bad: a second secret to distribute, and re-encryption on every rotation.
+
+## More Information
+
+- Which settings are required at startup is decided by each settings type's validation, not by this
+  record.
+- The deployment that consumes the secret store is a separate decision.
