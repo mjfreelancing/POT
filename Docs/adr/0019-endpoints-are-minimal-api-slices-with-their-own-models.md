@@ -39,8 +39,13 @@ Minimal APIs make the operation the unit: its route, its metadata and its handle
 ## Decision Outcome
 
 Chosen option: 1. Each operation has its own folder containing its handler, its request and response
-models, its mapping, its validation and its declared responses. Handlers are static, take only the
-services they use, and return typed results. Mapping is written by hand — no mapping library — so a
+models, its mapping, its validation and its entity checks. Handlers are static and take only the services
+they use; one handler is an exception and returns an untyped result. Most response models derive from one
+shared base carrying the row identifier and version, so "its own model" means what the operation adds
+rather than a type built from nothing.
+
+Response metadata and the rate-limit policy are declared once per feature group, not per operation, so a
+new route in a feature inherits them. Mapping is written by hand — no mapping library is referenced — so a
 shape change is a compile error rather than a silent convention.
 
 Endpoints are registered as a chain of per-feature extension methods, so the registration reads as the
@@ -51,8 +56,8 @@ API's surface.
 - Good, because an operation can change its models, rules and failures without touching another.
 - Good, because a handler's dependencies are visible in its signature, and mocking them in a test needs
   nothing but those services.
-- Good, because metadata — response types, failures, rate-limit policy, anonymity — is declared at the
-  operation it applies to.
+- Good, because metadata — response types, the standard failure set, the rate-limit policy, anonymity —
+  is declared at the group or the operation it applies to, rather than in a controller-wide pipeline.
 - Bad, because similar operations repeat similar models instead of sharing one, which looks like
   duplication until the operations diverge.
 - Bad, because hand-written mapping is more code than a convention-based mapper, and every new field is
@@ -62,9 +67,11 @@ API's surface.
 
 ### Confirmation
 
-- Test: `EndpointResponseMetadataFixture` pins each endpoint's declared failures, which is only
-  meaningful because each slice declares its own.
-- Test: the per-feature handler fixtures exercise the slice end to end through the hosted API.
+- Test: `EndpointResponseMetadataFixture` asserts the shared rules over every endpoint — the standard
+  failures, one validation problem, and no `422` — and pins the success shape of named routes. It does not
+  assert a single endpoint's own failure set, because those declarations are made per feature group.
+- Review: the hand-written mapping has no mechanical check; the evidence is that no mapping library is
+  referenced, so adding one is the change that would need challenging.
 - Review: a shared request model introduced between operations is a decision to be challenged, not a
   refactor; only genuinely common shapes are shared.
 
