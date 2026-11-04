@@ -39,16 +39,18 @@ Two uses want different things from an identifier, so the design answers both ra
 ## Decision Outcome
 
 Chosen option: 1. `RowId` is a GUID generated on insert, indexed, and used as the identifier in routes,
-request and response payloads, export files and cross-entity references. The integer key remains a
-database implementation detail and does not appear outside the data layer.
+request and response payloads and export files. The integer key remains a database implementation detail:
+foreign keys inside the database are integer keys, and no payload or route carries one.
 
 ### Consequences
 
 - Good, because an address cannot be guessed or walked, and the record count is not disclosed by an
   identifier.
 - Good, because the database keeps the efficient key it wants for joins and indexes.
-- Good, because identifiers can be generated before a row exists, which a sequential key cannot.
-- Bad, because every table carries a second identifier and an index to resolve it.
+- Good, because identifiers can be shared — in a link, an export or a support message — without
+  disclosing the record count, while the database keeps integer keys for its own joins.
+- Bad, because every entity table carries a second identifier and an index to resolve it; join tables,
+  which are never addressed individually, carry neither.
 - Bad, because a GUID is larger than an integer in every index and payload that carries it.
 - Neutral, because a GUID is not an authorization mechanism: the rules that decide who may read a record
   are enforced server-side, and an opaque identifier only removes the enumeration the key would have
