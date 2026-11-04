@@ -38,9 +38,10 @@ A single suite of unit tests would never show what the framework does with what 
 
 ## Decision Outcome
 
-Chosen option: 1. There is a test project per production project, testing that layer with its
-neighbours substituted, and one integration project that boots the application with a real database
-container and drives it through HTTP.
+Chosen option: 1. There is a unit project for each layer that carries behaviour — application, data, host
+and shared — testing that layer with its neighbours substituted, and one integration project that boots the
+application against a PostgreSQL container and drives it through HTTP. The projects that are thin wrappers
+around a library, such as the email sender, have no test project of their own.
 
 The integration project owns the things only it can show: status codes, Problem Details bodies, headers,
 authorization, the middleware order, and database failures surfacing as ordinary failures. Architecture
@@ -54,17 +55,20 @@ are pinned there too.
   database provider and the error mapping together.
 - Good, because a layer's test substitutes its neighbours, so a failing test points at one layer.
 - Bad, because a change can need both suites, and the outer one costs a container start.
-- Bad, because the per-layer probes mock behaviour the integration suite proves, so some intent is
-  expressed twice.
+- Bad, because the data-layer tests use an in-memory provider, so query translation, constraints and
+  concurrency are covered only by the hosted suite — the failures that reach production first are the ones
+  furthest down the pyramid.
+- Bad, because the per-layer tests substitute their neighbours, so some intent is expressed twice, once
+  as a substitute and once against the real thing.
 - Bad, because the layer tests can pass while the wiring between layers is wrong, which only the outer
   suite catches.
 
 ### Confirmation
 
+- Test: the hosted suite's base fixture starts the container and applies the migrations, and the metadata
+  fixtures are what make the architecture rules checkable rather than remembered.
 - Review: a rule tested only through the hosted suite is an expensive test for something that did not need
   a pipeline; a status code asserted in a unit test is a test in the wrong project.
-- Test: the integration project is the only place an assertion about HTTP shape belongs, so its fixtures
-  are the confirmation that the layering holds.
 
 ## Pros and Cons of the Options
 
