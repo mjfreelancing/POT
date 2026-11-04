@@ -39,12 +39,14 @@ the API — for a deployment operated by one person.
 
 ## Decision Outcome
 
-Chosen option: 1. Each unit of background work is a hosted service that waits until the database is ready,
-then runs its cycle on a schedule. All of them live in the API process, and the deployment runs one
-replica, so no two processes run the same cycle at the same time.
+Chosen option: 1. Each unit of background work is a hosted service in the API process: the two that touch
+the database wait until it is ready before their first cycle and then run on a schedule, and the one that
+drains the in-memory email channel simply starts draining when the host starts. The deployment is assumed
+to run one replica, so no two processes run the same cycle at the same time.
 
 The single-replica assumption is what makes the scheduling safe: a per-process timer would otherwise run
-the same job once per replica.
+the same job once per replica. It is an assumption about the deployment rather than something the
+application configures, and nothing in the repository sets a replica count.
 
 ### Consequences
 
@@ -60,8 +62,9 @@ the same job once per replica.
 
 ### Confirmation
 
-- Test: the worker fixtures assert each worker waits for database readiness before its first cycle and does
-  not run when the host is stopping.
+- Test: `BudgetReminderEmailWorkerFixture` and `ExpiredOtpCleanupWorkerFixture` assert that each waits for
+database readiness before its first cycle and does not run when the host is stopping.
+- Gap: the email drainer has no fixture of its own; its behaviour is covered through the channel's tests.
 - Review: a new scheduled job must be written to be idempotent for its period, because the single-replica
   assumption is environmental rather than enforced.
 
@@ -91,7 +94,8 @@ the same job once per replica.
 
 ## More Information
 
-- This record is expected to be superseded by a more scalable arrangement. The shape it would take — a
-  durable queue with a claim-and-lease drainer — is already written up separately, and adopting it would
-  supersede this record rather than edit it.
+- This record is expected to be superseded by a more scalable arrangement. The shape it would take is
+  written up in `Docs/Future/PRD-019-email-outbox-durable-dispatch.md`: a database outbox drained with
+  claim and lease, delivering email without a new deployable, and explicitly leaving the expired-code
+  sweep out of scope.
 - The email mechanism being queued in process is a separate decision with its own intended supersession.
