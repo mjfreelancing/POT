@@ -37,9 +37,11 @@ The team writing it is small, and familiarity matters more than the last increme
 
 ## Decision Outcome
 
-Chosen option: 1. Entities are configured in code, migrations are generated from the model, and reads
-compose LINQ projections. Conventions are applied centrally — entity naming, value generation, enriched
-enum storage, query filters — rather than per entity.
+Chosen option: 1. Entity Framework Core 10 with the Npgsql provider is referenced centrally, entities are
+configured in code, migrations are generated from the model, and reads compose LINQ projections.
+Conventions are applied centrally — entity naming, value generation, enriched enum storage, query filters
+— rather than per entity. Reads do not track by default, with identity resolution enabled so a projection
+still returns one instance per key.
 
 ### Consequences
 
@@ -57,8 +59,9 @@ enum storage, query filters — rather than per entity.
 
 - Review: a read that returns whole entities where a projection would do is questioned, because it is
   both slower and wider than the contract.
-- Test: the data-layer fixtures run against a real PostgreSQL instance, so a translation failure is a
-  test failure rather than a production one.
+- Test: the data-layer fixtures run against the in-memory provider, so repository rules are covered without
+  a container; queries that depend on provider translation are covered only by the hosted suite, which runs
+  against a real PostgreSQL instance.
 
 ## Pros and Cons of the Options
 
