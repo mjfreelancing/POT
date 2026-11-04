@@ -41,11 +41,12 @@ resolve which site the caller is in.
 
 Chosen option: 1. Accounts, expenses, incomes and settings are filtered globally by the current site, so
 a query that does not mention tenancy is still confined. Users and sites are reached only through
-repository methods that take the site and constrain the lookup themselves, and the raw queryables for
-those two are not exposed.
+repository methods that apply the current site themselves — the caller cannot pass one — and the raw
+queryables for those two are not exposed. A small set of deliberately cross-tenant user reads exists and
+is named as such, which is how authentication and recovery work before a site is known.
 
-A lookup that targets another tenant's row answers exactly as a missing one: `404`, never `403`, so the
-answer does not confirm the row's existence.
+A lookup that targets another tenant's row answers exactly as a missing one: `404`, with a body identical
+to the response for an id that does not exist, so the answer does not confirm the row's existence.
 
 ### Consequences
 
@@ -57,13 +58,16 @@ answer does not confirm the row's existence.
 - Bad, because there are two mechanisms, and a reader must know which entities use which.
 - Bad, because a filter applies to every query, including administrative ones, so a cross-tenant read
   has to be written deliberately and is visible as such in the code.
+- Bad, because the site a scoped read confines itself to comes from ambient state, so a read outside a
+  site's scope fails rather than returning everything.
 - Bad, because an operation acting on many rows must still reason about the site, since the filter
   decides what it can see rather than what it may change.
 
 ### Confirmation
 
 - Test: `CrossTenantAuthorizationFixture` addresses another tenant's records across the endpoint set and
-  asserts `404` rather than a body.
+  asserts `404` with a body byte-identical to the missing-id response, so the answer leaks neither the
+  row's existence nor its absence.
 - Test: `EndpointAuthorizationMetadataFixture` keeps every endpoint in the authorization inventory, so a
   new route is covered by the same sweeps.
 - Review: exposing the user or site queryable, or writing a cross-tenant read without a named method, is
