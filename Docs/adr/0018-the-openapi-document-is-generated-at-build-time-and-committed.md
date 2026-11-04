@@ -39,21 +39,24 @@ an artefact of the change rather than of the running process.
 
 ## Decision Outcome
 
-Chosen option: 1. The build writes the document for the current version into the repository, and a
-release build overrides the runtime-only default so the file is always produced from the same code the
-binary is built from. Each endpoint declares the failures its own rules can produce, so the document's
-failure sets match behaviour rather than listing a maximal set.
+Chosen option: 1. The project generates the document on every build, rather than only in a release
+configuration, so the committed file is rewritten whenever the API is compiled — by a build, a test run or
+a publish. Each endpoint declares the failures its own rules can produce, so the document's failure sets
+match behaviour rather than listing a maximal set.
 
-The document is not currently consumed by the client: client API types are hand-written. It is committed
-because it is the clearest description of the contract that exists, and because a future consumer — a
+The document is also served in development and read by the integration suite, and it is not used to
+generate the client: client API types are hand-written. It is committed because it is the clearest
+description of the contract that exists, and because a consumer that is not the React client — a
 generator, or an assistant-facing server — can be built on it without the API having to change.
 
 ### Consequences
 
-- Good, because a shape change produces a diff in the same commit, and a forgotten regeneration is
-  visible as an unexpected document change.
-- Good, because the failure set per endpoint is stated once, where the endpoint is declared.
-- Good, because a consumer that is not the React client has a machine-readable contract to start from.
+- Good, because a shape change produces a diff in the same commit, and a shape change with no document
+  change is visible as a missing diff.
+- Good, because the API serves the document in development only, so outside that environment the
+  committed file is the contract.
+- Good, because the integration suite reads the served document to derive and check expectations, so the
+  document is a machine-read artefact rather than documentation only.
 - Bad, because the committed file is a generated artefact in version control: it can conflict, and a
   careless merge can leave it inconsistent with the code.
 - Bad, because the declared failures must be maintained deliberately; the generator records what is
@@ -64,8 +67,8 @@ generator, or an assistant-facing server — can be built on it without the API 
 ### Confirmation
 
 - Test: `EndpointResponseMetadataFixture` pins which failures each endpoint declares, which is what the
-  document records.
-- Review: a change to a request or response shape that does not change the document is a missing
+  document records, and `OpenApiSecurityFixture` checks the served document's security and schema shape.
+- Review: a change to a request or response shape that leaves the document unchanged is a missing
   regeneration, not a no-op.
 - Known gap: no check compares the committed document to a freshly generated one; detecting a stale copy
   relies on the reviewer.
