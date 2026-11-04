@@ -10,9 +10,9 @@ area: backend
 
 **Summary:** In the context of a server that must keep HTTP concerns, business rules and persistence
 separable while remaining navigable, facing the choice between technical grouping and feature grouping,
-we decided on four projects — host, application, data and shared — with the same feature names repeated
-in each, to achieve one direction of dependency and a place to look for anything about a feature,
-accepting that a feature's code is spread across projects rather than sitting in one folder.
+we decided on a host, an application and a data project with support projects beside them, and feature
+folders inside the layers that carry features, to achieve one direction of dependency and a predictable
+place to look, accepting that features appear in some layers and not others.
 
 ## Context and Problem Statement
 
@@ -39,26 +39,32 @@ feature everywhere.
 
 ## Decision Outcome
 
-Chosen option: 1. The host project holds the HTTP pipeline, endpoints, middleware and authentication;
-the application project holds orchestration, validation and entity checks; the data project holds
-entities, configuration, repositories and migrations; the shared project holds types both sides of a
-boundary need. Dependencies point host → application → data, and shared is referenced by whichever needs
-it without referencing anything back.
+Chosen option: 1. The host project holds the HTTP pipeline, endpoints, middleware and authentication; the
+application project holds orchestration, validation and entity checks; the data project holds entities,
+configuration, repositories and migrations; and support projects hold what both sides of a boundary need —
+shared types, the email sender and its Razor components, the migration runner and test utilities.
+Dependencies point host → application → data, and shared is reached through data rather than referenced
+directly by the application.
 
-Authentication lives in the host rather than in the application layer, because everything it touches —
-tokens, cookies, claims, the pipeline — is transport.
+Features are named in the host and the application, and the data project's repositories are grouped by
+feature; entities, specifications and configuration are grouped by technical concern. Authentication lives
+in the host because everything it touches — tokens, cookies, claims, the pipeline — is transport, but it is
+not purely transport: the host also owns the login, session and token-version rules while the application
+layer holds the account workflows around them.
 
 ### Consequences
 
-- Good, because application code can be tested with substituted repositories, and data code with a real
-  database, without a web host in either case.
-- Good, because a feature's name identifies it in every project, so navigation is predictable.
+- Good, because application code can be tested with substituted repositories without a web host, and data
+  code can be tested against a database — an in-memory provider for the repository rules, and the real
+  engine in the hosted suite.
+- Good, because a feature's name identifies it in the layers that carry features, so navigation is
+  predictable.
 - Good, because the dependency direction is enforced by project references rather than by convention.
 - Bad, because one feature's change touches several projects, and a review sees it in pieces.
 - Bad, because the boundary invites a type to be copied per layer — a request model, an input model, an
   output model, an entity — where a single type would have been shorter.
-- Bad, because the host is not purely transport: it also owns authentication decisions, which is a
-  deliberate exception rather than a clean separation.
+- Bad, because the host is not purely transport: it also owns authentication rules, which is a deliberate
+  exception rather than a clean separation.
 
 ### Confirmation
 
