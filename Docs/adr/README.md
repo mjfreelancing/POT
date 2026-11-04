@@ -96,6 +96,12 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 ## By area
 
+### Process
+
+| ADR | Title | Status |
+| --- | --- | --- |
+| [ADR-0035](0035-builds-and-deployments-are-run-by-hand.md) | Builds, tests and deployments are run by hand; there is no continuous integration | accepted |
+
 ### Cross-cutting
 
 | ADR | Title | Status |
@@ -151,7 +157,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 - [ADR-0002](0002-retry-after-client-cooldown-handling.md) — Retry-After client cooldown handling
 
-### Accepted (33)
+### Accepted (34)
 
 - [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) — Playwright E2E testing infrastructure
 - [ADR-0003](0003-public-tls-terminates-at-the-container-apps-ingress.md) — Public TLS terminates at the Container Apps ingress
@@ -186,6 +192,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 - [ADR-0032](0032-logs-record-request-metadata-and-never-submitted-values.md) — Logs record request metadata and never submitted values
 - [ADR-0033](0033-tests-are-per-layer-unit-projects-plus-one-hosted-integration-project.md) — Tests are per-layer unit projects plus one hosted integration project
 - [ADR-0034](0034-secret-values-live-outside-the-repository.md) — Secret values live outside the repository, in a tracked template and a platform store
+- [ADR-0035](0035-builds-and-deployments-are-run-by-hand.md) — Builds, tests and deployments are run by hand; there is no continuous integration
 
 ## By PRD
 
