@@ -40,8 +40,10 @@ must be renewed and the request retried rather than surfaced.
 
 ## Decision Outcome
 
-Chosen option: 1. The token is held in the application's authentication context, not in storage. A timer
-refreshes it before expiry, and a response interceptor refreshes it on a `401` and replays the request.
+Chosen option: 1. The token is held in memory only: a small token provider module is the authoritative copy
+that the transport reads and the refresh writes, and the authentication context mirrors it for rendering.
+Nothing is written to storage. A timer refreshes it before expiry, and a response interceptor refreshes it
+on a `401` and replays the request.
 
 Concurrent requests that fail together wait on one refresh rather than each starting their own, and a
 single logout path clears the session, the token and the cached server data.
@@ -60,6 +62,11 @@ the session.
   be sure who the user is.
 - Bad, because there are two refresh triggers to keep consistent, and a third — the start-up case — that
   behaves differently from both.
+- Bad, because the token now has two in-memory homes — the provider the transport uses and the context the
+  interface renders from — and a refresh that writes only the provider leaves the context holding a stale
+  value, which the timer then re-arms from.
+- Bad, because the start-up refresh has no fixture of its own, so the path a reload takes is verified only
+  by using the application.
 - Bad, because the wait-and-replay logic is the most intricate part of the client's transport, and a bug
   there shows as duplicated or lost requests rather than as an error.
 
