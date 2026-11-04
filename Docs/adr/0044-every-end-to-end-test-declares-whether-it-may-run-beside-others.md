@@ -9,20 +9,22 @@ area: frontend
 # ADR-0044: Every end-to-end test declares whether it may run beside others
 
 **Summary:** In the context of one shared database for the whole end-to-end run, facing the choice between
-serialising everything and letting tests run in parallel, we decided that each test is written either as
+serialising everything and letting tests run in parallel, we decided that a suite is written as
 parallel-safe — reading only data it did not create — or as fixture-managed — owning the records it
-creates and removing them — and that the classification is visible in the test, to achieve parallelism
-where it is safe without hiding the tests that cannot have it, accepting that the classification is the
-author's assertion, not something the runner can verify.
+creates and removing them — or, where it must destroy a tenant, as destructive and provisioning its own,
+and that the classification is stated at the top of the file, to achieve parallelism where it is safe
+without hiding the tests that cannot have it, accepting that the classification is the author's assertion
+rather than something the runner enforces.
 
 ## Context and Problem Statement
 
 Parallelism is worth having: the suite is the slowest gate in a change. It is only safe if two tests
 running together cannot observe each other.
 
-Two kinds of test exist. One reads: it opens a list, filters, charts data that the seed created and
+Two kinds of test dominate. One reads: it opens a list, filters, charts data that the seed created and
 nothing else touches. The other writes: it creates an account, edits it, deletes it. The first can run
-beside anything; the second must not collide with another test doing the same thing to the same records.
+beside anything; the second must not collide with another test doing the same thing to the same records. A
+third exists for the journeys that destroy a whole tenant, which cannot share anything at all.
 
 ## Decision Drivers
 
@@ -39,10 +41,14 @@ beside anything; the second must not collide with another test doing the same th
 
 ## Decision Outcome
 
-Chosen option: 1. A parallel-safe test is written to read data it does not own and to make no assertion that
-another test could invalidate. A fixture-managed test creates its records with unique values, operates only
-on them, and removes them, so it can run beside another of its kind. The classification is expressed in the
-test's declaration, so a reviewer sees it and a new test must choose.
+Chosen option: 1. A fixture-managed suite creates its records with unique values, operates only on them,
+and removes them, so it can run beside another of its kind; a parallel-safe one reads only seed data; a
+destructive one provisions its own tenant through the product's routes and destroys that. The
+classification is stated at the top of the file, so a reviewer sees it and a new file must choose.
+
+It is a statement rather than a declaration the runner can check, and the current suite does not apply it
+consistently — some suites mutate the shared site without a label. Playwright runs files in parallel and
+the label is what tells a reader which ones may.
 
 ### Consequences
 
@@ -57,9 +63,10 @@ test's declaration, so a reviewer sees it and a new test must choose.
 
 ### Confirmation
 
-- Review: every new test states its classification, and a test that writes anything it did not create is
-  not parallel-safe.
-- Review: a fixture-managed test creates its own uniquely-named records and removes them.
+- Review: every new file states its classification in its header, and a suite that writes anything it did
+  not create is not parallel-safe.
+- Review: a fixture-managed suite creates its own uniquely-named records and removes them; a destructive
+  suite provisions its own tenant and asserts the seeded identities are untouched.
 
 ## Pros and Cons of the Options
 
