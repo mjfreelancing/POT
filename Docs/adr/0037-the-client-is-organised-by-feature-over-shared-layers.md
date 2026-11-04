@@ -38,14 +38,17 @@ it, and promotion has to have a place to happen.
 
 ## Decision Outcome
 
-Chosen option: 1. Each feature holds its pages, its components, its forms and its API hooks. `api` holds
-the HTTP client, interceptors and shared types; `concerns` holds cross-cutting behaviour such as
-authentication context, caching and logging; `lib` holds utilities with no feature knowledge. A feature
-depends on those layers, and a layer does not depend on a feature.
+Chosen option: 1. Each feature holds its pages, its components, its forms, its contexts and its API hooks.
+Below the features sit the shared folders — `api` for the HTTP client, interceptors and shared types;
+`concerns` for cross-cutting behaviour such as caching, logging, token providers and session handling;
+`lib` for utilities; and the shared `components`, `data`, `hooks`, `routes` and `stores` folders. A feature
+depends on those layers, and the layers are meant not to depend on a feature.
 
-Where features do depend on each other — sharing authentication context, or a dashboard composing other
-features' data — the dependency is in the import direction of the code and visible in review rather than
-prevented by the structure. This is the one place the rule is softer than the folder layout suggests.
+In practice they do: shared hooks, the logout manager and the sidebar import from features, because a
+piece promoted to a shared folder kept its old imports. Feature-to-feature imports also exist — the
+dashboard composes other features' data — and one feature folder, `features/shared`, holds sheets that
+several features use. Both are visible in the import graph rather than prevented by the structure, which
+is the one place this record's rule is softer than the folder layout suggests.
 
 ### Consequences
 
@@ -55,15 +58,17 @@ prevented by the structure. This is the one place the rule is softer than the fo
 - Good, because a new screen has an obvious home that does not need a decision.
 - Bad, because shared layers can become a dumping ground: something used by two features can be promoted
   before it is genuinely general.
-- Bad, because the feature-to-feature dependency that does exist is not prevented by the layout, so the
-  rule is partly conventional.
+- Bad, because the boundary is not holding: shared folders import features, so "a layer depends on no
+  feature" is an intention rather than a property anyone can check.
 - Bad, because a feature that is imported by others cannot be changed freely, which is the coupling the
   layout was meant to reduce.
+- Bad, because `features/shared` is a feature folder that behaves as a shared layer, so the convention has
+  an exception that newcomers have to learn.
 
 ### Confirmation
 
-- Review: an import from a shared layer into a feature is a defect; a new feature-to-feature import is
-  challenged, and recorded if it stays.
+- Review: an import from a shared layer into a feature is a defect; the existing ones are debt to be
+  removed, not a pattern to copy. A new feature-to-feature import is challenged, and recorded if it stays.
 - Review: a new file in a shared layer states what more than one feature uses it.
 
 ## Pros and Cons of the Options
