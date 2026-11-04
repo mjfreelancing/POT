@@ -41,9 +41,10 @@ application answers with no body at all.
 
 Chosen option: 1. A successful call produces a successful result carrying the typed value; a failure
 produces a failing result carrying one of the client's error types — bad request, authentication,
-forbidden, not found, method not allowed, conflict, rate limited, server, unexpected, network. The
+forbidden, not found, method not allowed, conflict, rate limited, server, unexpected, network. One
 interceptor reads whatever body arrived, reduces it to members it can trust, and chooses the error type
-from the status.
+from the status. A second interceptor in front of it handles authentication and, when a refresh fails,
+produces its own authentication failure — the one place where two interceptors can decide a message.
 
 The root error boundary exists for the failures that no interceptor sees — a render error — and is not
 the general mechanism.
@@ -65,8 +66,8 @@ the general mechanism.
 
 - Test: the interceptor fixtures assert each status maps to its error type, including a response with no
   body and one with a body that is not Problem Details.
-- Review: a screen that inspects a status code or a response body directly is a defect; the interceptor is
-  the only place that reads them.
+- Review: a screen that inspects a status code or a response body directly is a defect; the normalising
+  interceptor is the only place that reads them, the authentication interceptor's refresh failure aside.
 
 ## Pros and Cons of the Options
 
