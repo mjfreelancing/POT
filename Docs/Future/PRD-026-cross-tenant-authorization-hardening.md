@@ -603,6 +603,14 @@ Run commands (from `Source/Client/pot-react`): `npm run e2e:preflight` before a 
 | D2  | Is a configured platform administrator's site role frozen, or only their status?            | **Status only.** `platform:manage` is granted from deployment configuration and is unaffected by roles, and the last-enabled-`Admin` rule already protects a tenant's administrability.     |
 | D3  | Which population counts toward "last enabled `Admin`"?                                      | **Enabled `Admin`-role holders only** — a disabled or pending `Admin` cannot administer the site or re-enable anyone. Shared with PRD-022 and PRD-027 so the three cannot disagree.         |
 
+## Decisions Carried Into This Document
+
+| Decision                                            | Resolution                                                                                                 | ADR                                                                                             |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| How tenant confinement is enforced                  | Structurally, through site-scoped repository reads and a query filter, not per-handler checks (§4.1, §4.7) | [ADR-0025](../adr/0025-tenant-confinement-is-structural-query-filters-and-site-scoped-reads.md) |
+| How permissions reach a request                     | Resolved from the database during authorization, never carried as claims in the token (§4.6)               | [ADR-0007](../adr/0007-each-request-resolves-the-callers-permissions-from-the-database.md)      |
+| What happens to an endpoint that declares no policy | A fallback policy requires a caller, and an endpoint test fails when a route is left open (§4.3)           | [ADR-0011](../adr/0011-every-endpoint-is-authenticated-unless-explicitly-anonymous.md)          |
+
 ## 11. Scope
 
 **In scope:** the repository surface for user and site access; the five routes in §5; the protected-identity checks; the fallback authorization policy and its regression test; the cross-tenant inventory, naming and `DEVELOPER.md` correction; the acceptance suite; the developer and user security documentation in §4.8.

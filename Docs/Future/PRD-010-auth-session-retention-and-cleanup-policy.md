@@ -111,6 +111,12 @@ Before moving this PRD to Planning:
 
 When this PRD moves from Proposed to Planning, re-evaluate this baseline recommendation before implementation. Treat all values in this document as proposed defaults, not finalized decisions.
 
+## Effect on Earlier Documents
+
+| Document                                                                                                                                                         | What changes                                                                                                                                                                    | Amendment                                                                      |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| [ADR-0008](../adr/0008-access-tokens-are-short-lived-and-backed-by-a-server-side-session.md) — Access tokens are short-lived and backed by a server-side session | Nothing in the session model; its stated consequence that the expiry slides on every refresh with no absolute lifetime, and that nothing purges revoked or expired session rows | Dated clarification, or a superseding record if the expiry rule itself changes |
+
 ## Related Documents
 
 - Future index: [Docs/Future/README.md](README.md)

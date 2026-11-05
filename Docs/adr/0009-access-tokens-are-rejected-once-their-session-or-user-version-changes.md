@@ -4,6 +4,7 @@ title: Access tokens are rejected once their session or user version changes
 status: accepted
 date: 2025-11-22
 area: backend
+related-prds: [PRD-002]
 ---
 
 # ADR-0009 (backfilled): Access tokens are rejected once their session or user version changes
@@ -114,6 +115,7 @@ accepted for as long as the account is disabled and work again if it is re-enabl
 - Good: removes most of the cost.
 - Bad: reintroduces exactly the delay the design exists to remove, for a read that is small at this
   scale.
+
 ### Token version only
 
 - Good: the token names no session, and the check reads the user row alone.

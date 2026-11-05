@@ -4,6 +4,7 @@ title: Every endpoint is authenticated unless it is explicitly anonymous
 status: accepted
 date: 2026-10-08
 area: backend
+related-prds: [PRD-026]
 ---
 
 # ADR-0011 (backfilled): Every endpoint is authenticated unless it is explicitly anonymous
@@ -69,10 +70,10 @@ route the test does not see, such as one mapped only in another environment.
 ### Confirmation
 
 - Test: `EndpointAuthorizationMetadataFixture` asserts that every endpoint declares a requirement or is
-anonymous, and that the set of anonymous routes equals the expected nine, so an unexpected
-`AllowAnonymous()` fails as well as a missing one; a separate theory requires the expected policy on
-eight named routes, which is what distinguishes authentication from authority. The fixture hosts the API
-as Production, so the Development-only anonymous routes are outside it.
+  anonymous, and that the set of anonymous routes equals the expected nine, so an unexpected
+  `AllowAnonymous()` fails as well as a missing one; a separate theory requires the expected policy on
+  eight named routes, which is what distinguishes authentication from authority. The fixture hosts the API
+  as Production, so the Development-only anonymous routes are outside it.
 - Review: `AllowAnonymous()` on a route that reads or writes tenant data is a defect, whatever the
   fallback says.
 

@@ -240,12 +240,13 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 | PRD | ADRs |
 | --- | --- |
-| PRD-001 | [ADR-0041](0041-browser-storage-is-keyed-by-environment-and-user.md) |
+| PRD-001 | [ADR-0008](0008-access-tokens-are-short-lived-and-backed-by-a-server-side-session.md), [ADR-0041](0041-browser-storage-is-keyed-by-environment-and-user.md) |
+| PRD-002 | [ADR-0008](0008-access-tokens-are-short-lived-and-backed-by-a-server-side-session.md), [ADR-0009](0009-access-tokens-are-rejected-once-their-session-or-user-version-changes.md) |
 | PRD-012 | [ADR-0001](0001-playwright-e2e-testing-infrastructure.md), [ADR-0043](0043-end-to-end-tests-run-on-one-shared-stack.md), [ADR-0044](0044-every-end-to-end-test-is-classified-by-whether-it-may-run-beside-others.md), [ADR-0045](0045-end-to-end-tests-run-as-a-four-project-development-matrix-with-a-separately-run-production-build-profile.md), [ADR-0048](0048-no-end-to-end-test-shares-authentication-state-with-another.md) |
 | PRD-014 | [ADR-0002](0002-retry-after-client-cooldown-handling.md), [ADR-0047](0047-a-rate-limited-caller-is-told-when-to-retry.md) |
 | PRD-022 | [ADR-0028](0028-cascades-are-restricted-and-deletion-is-an-explicit-ordered-sweep.md) |
-| PRD-026 | [ADR-0025](0025-tenant-confinement-is-structural-query-filters-and-site-scoped-reads.md) |
-| PRD-030 | [ADR-0014](0014-every-failure-is-written-as-a-problem-details-document.md), [ADR-0032](0032-logs-record-request-metadata-and-never-submitted-values.md), [ADR-0039](0039-api-hooks-return-results-and-one-interceptor-normalises-failures.md) |
+| PRD-026 | [ADR-0007](0007-each-request-resolves-the-callers-permissions-from-the-database.md), [ADR-0011](0011-every-endpoint-is-authenticated-unless-explicitly-anonymous.md), [ADR-0025](0025-tenant-confinement-is-structural-query-filters-and-site-scoped-reads.md) |
+| PRD-030 | [ADR-0014](0014-every-failure-is-written-as-a-problem-details-document.md), [ADR-0016](0016-validation-failures-answer-400-with-an-errors-map.md), [ADR-0032](0032-logs-record-request-metadata-and-never-submitted-values.md), [ADR-0039](0039-api-hooks-return-results-and-one-interceptor-normalises-failures.md) |
 | PRD-031 | [ADR-0044](0044-every-end-to-end-test-is-classified-by-whether-it-may-run-beside-others.md), [ADR-0046](0046-tenants-are-provisioned-and-destroyed-by-the-products-own-routes-in-tests.md) |
 
 <!-- END GENERATED INDEX -->

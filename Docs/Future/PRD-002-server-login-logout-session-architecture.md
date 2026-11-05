@@ -199,6 +199,13 @@ Targeted execution convention (from repo guidance):
 5. Start with schema and tests before endpoint behavior changes.
 6. Keep Feature 001 and Feature 002 changes coordinated but independently releasable.
 
+## Decisions Carried Into This Document
+
+| Decision                          | Resolution                                                                                                         | ADR                                                                                              |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| How a sign-in is represented      | An `AuthSession` row per login; the legacy single refresh-token columns are removed                                | [ADR-0008](../adr/0008-access-tokens-are-short-lived-and-backed-by-a-server-side-session.md)     |
+| What each kind of revocation ends | Logging out ends that session without bumping the token version; a password change bumps it and ends every session | [ADR-0009](../adr/0009-access-tokens-are-rejected-once-their-session-or-user-version-changes.md) |
+
 ## Related Documents
 
 - Future index: [Docs/Future/README.md](README.md)

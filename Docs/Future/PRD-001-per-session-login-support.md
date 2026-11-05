@@ -161,6 +161,13 @@ If hybrid/tab policies are used, load order must be:
 
 - Rationale: Keep long-lived projection preferences while treating date-focused analysis context as session-level.
 
+## Decisions Carried Into This Document
+
+| Decision                      | Resolution                                                                              | ADR                                                                                          |
+| ----------------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| How browser storage is scoped | Every key is keyed by environment and by user, as D001–D007 record                      | [ADR-0041](../adr/0041-browser-storage-is-keyed-by-environment-and-user.md)                  |
+| How a sign-in is represented  | One session row per sign-in, with the refresh token stored as a hash and rotated on use | [ADR-0008](../adr/0008-access-tokens-are-short-lived-and-backed-by-a-server-side-session.md) |
+
 ## Finalized Storage Requirements (Client)
 
 | Item ID | Key                             | Final Policy                                       | Field-Level Requirement                                                                                                                                 |

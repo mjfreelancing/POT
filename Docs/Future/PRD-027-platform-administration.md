@@ -271,6 +271,12 @@ Reference notes for future maintainers.
 - **404 on a repeat delete, not an error.** The operation is expressed as "ensure this target is gone"; a second call reporting not-found is the honest, non-disclosing answer.
 - **Proportionate controls.** The review of the original control set (two-person approval, cooling-off, step-up, rate limiting, backup gate, notifications, audit table) concluded they were designed for a multi-operator organisation. They are listed in Rejected and Deferred Controls rather than deleted silently so the reasoning survives.
 
+## Effect on Earlier Documents
+
+| Document                                                                                                                                                   | What changes                                                                                                                                                                | Amendment           |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| [ADR-0010](../adr/0010-platform-administration-is-granted-by-deployment-configuration.md) — Platform administration is granted by deployment configuration | Its statements about the current system: that `platform:manage` guards only the approvals routes, and that the cross-tenant repair operations are planned but not delivered | Dated clarification |
+
 ## Related Documents
 
 - **Prerequisite:** [Cross-Tenant Authorization Hardening PRD](PRD-026-cross-tenant-authorization-hardening.md) — closes the target-binding gaps and the status/role invariants this feature relies on.

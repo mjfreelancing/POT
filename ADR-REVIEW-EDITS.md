@@ -9,12 +9,6 @@ ever holds what is still open; numbers are not reused, so the list may skip.
 
 ## Decisions still open
 
-**D-4. `related-prds` front matter is filled in (applied).**
-
-- Each PRD named there should list the ADR in its "Decisions Carried Into This Document" table. Those PRD
-  edits have not been made. See F-21.
-- The auth records cite their PRDs in the body text instead, so the series is not yet consistent.
-
 **D-5. Records whose status runs ahead of an open decision.**
 
 - **ADR-0035** (hand-run builds, no CI) is `accepted`, which in effect answers DD-05 with option A. Either
@@ -131,8 +125,7 @@ directly; the rest are as the reviewers reported.
   - DD-11 cites ADR-0001 by line number (`:147-165`, `:402`). Those lines have moved; cite the sections
     instead.
 - **F-16. Documents that say a 429 always carries `Retry-After`:** PRD-014:22-30, PRD-030 B8,
-  `Source/Server/DEVELOPER.md:244` and `:3633`. An authenticated 429 carries none. PRD-014:89 still names
-  ADR-0002 as its companion record.
+  `Source/Server/DEVELOPER.md:244` and `:3633`. An authenticated 429 carries none.
 - **F-17. The client's "features never import features" rule is false in practice.**
   `Source/Client/pot-react/DEVELOPER.md:260` states it, and the client instruction says shared layers
   "must never depend on features"; both are contradicted by the code. See DD-13.
@@ -146,5 +139,3 @@ directly; the rest are as the reviewers reported.
   - `src/hooks/useLocalStorage.ts:24-61` describes the legacy `pot-` prefix.
 - **F-20. PRD-031 D1** says a canary covers "every destructive action". `IsolationFixture` covers three
   routes.
-- **F-21. PRD-030** should name ADR-0014, ADR-0032 and ADR-0039 in its "Decisions Carried" table, now that
-  their `related-prds` name it (D-4).

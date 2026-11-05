@@ -4,6 +4,7 @@ title: Validation failures answer 400 with an errors map, never 422
 status: accepted
 date: 2026-10-16
 area: backend
+related-prds: [PRD-030]
 ---
 
 # ADR-0016 (backfilled): Validation failures answer 400 with an errors map, never 422
@@ -32,7 +33,6 @@ and PRD-030 rather than from a recorded rationale.
 
 - One status per category, so the client has one branch and the contract has one entry.
 - A machine-readable field map, so the interface can point at the input.
-
 
 ## Considered Options
 

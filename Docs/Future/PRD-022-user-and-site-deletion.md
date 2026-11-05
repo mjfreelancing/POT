@@ -139,26 +139,26 @@ The items above that name PRD-027 are specified and delivered there. The rest ar
 
 ## Decisions Carried Into This Document
 
-| Decision                                          | Resolution                                                           |
-| ------------------------------------------------- | -------------------------------------------------------------------- |
-| Removal type                                      | Permanent hard delete; disabling remains the reversible alternative  |
-| Financial data on user removal                    | Belongs to the site and stays                                        |
-| Username after removal                            | Reusable immediately                                                 |
-| Removable account states                          | Enabled, disabled and never-activated                                |
-| Last remaining user                               | Never removable                                                      |
-| Last enabled administrator                        | Protected against removal, disabling and role removal                |
-| Administrator removing an administrator           | Allowed; only the last enabled one is protected                      |
-| Self-removal                                      | Any signed-in user, subject to the administrator safeguards          |
-| Site deletion                                     | In scope; only by the site's own enabled administrator               |
-| Lone administrator deleting the site              | Allowed; their own account is removed with the site                  |
-| Site holding the last live platform administrator | Not deletable until that administrator is removed from configuration |
-| Site deletion recoverability                      | Immediate; no backup, no grace period, no counts                     |
-| Confirmation                                      | Target name plus the actor's current password                        |
-| Wrong password                                    | Reported in place; the actor stays signed in                         |
-| Notification channel                              | Email, with new message content                                      |
-| Audit                                             | Server log only                                                      |
-| Bulk removal                                      | Not provided                                                         |
-| Retention                                         | None                                                                 |
+| Decision                                          | Resolution                                                           | ADR                                                                                          |
+| ------------------------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Removal type                                      | Permanent hard delete; disabling remains the reversible alternative  | [ADR-0028](../adr/0028-cascades-are-restricted-and-deletion-is-an-explicit-ordered-sweep.md) |
+| Financial data on user removal                    | Belongs to the site and stays                                        | —                                                                                            |
+| Username after removal                            | Reusable immediately                                                 | —                                                                                            |
+| Removable account states                          | Enabled, disabled and never-activated                                | —                                                                                            |
+| Last remaining user                               | Never removable                                                      | —                                                                                            |
+| Last enabled administrator                        | Protected against removal, disabling and role removal                | —                                                                                            |
+| Administrator removing an administrator           | Allowed; only the last enabled one is protected                      | —                                                                                            |
+| Self-removal                                      | Any signed-in user, subject to the administrator safeguards          | —                                                                                            |
+| Site deletion                                     | In scope; only by the site's own enabled administrator               | —                                                                                            |
+| Lone administrator deleting the site              | Allowed; their own account is removed with the site                  | —                                                                                            |
+| Site holding the last live platform administrator | Not deletable until that administrator is removed from configuration | —                                                                                            |
+| Site deletion recoverability                      | Immediate; no backup, no grace period, no counts                     | —                                                                                            |
+| Confirmation                                      | Target name plus the actor's current password                        | —                                                                                            |
+| Wrong password                                    | Reported in place; the actor stays signed in                         | —                                                                                            |
+| Notification channel                              | Email, with new message content                                      | —                                                                                            |
+| Audit                                             | Server log only                                                      | —                                                                                            |
+| Bulk removal                                      | Not provided                                                         | —                                                                                            |
+| Retention                                         | None                                                                 | —                                                                                            |
 
 ## Manual Test Plan
 

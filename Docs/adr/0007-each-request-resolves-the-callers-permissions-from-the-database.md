@@ -4,6 +4,7 @@ title: Each request resolves the caller's permissions from the database
 status: accepted
 date: 2025-09-12
 area: backend
+related-prds: [PRD-026]
 ---
 
 # ADR-0007 (backfilled): Each request resolves the caller's permissions from the database
@@ -82,19 +83,19 @@ so the interface is shaped by the same answer that the server enforces.
 ### Confirmation
 
 - Test: `AuthorizationMatrixFixture` exercises the endpoint-permission matrix from each endpoint's own
-declaration, so a route that answers a caller without the permission fails. Because the expectation is
-derived from the declaration, a deliberately changed permission changes the expectation with it and still
-passes.
+  declaration, so a route that answers a caller without the permission fails. Because the expectation is
+  derived from the declaration, a deliberately changed permission changes the expectation with it and still
+  passes.
 - Test: `EndpointAuthorizationMetadataFixture` requires every endpoint to be authorized or explicitly
-anonymous and pins the expected policy for the routes it names, so a new route cannot silently join the
-set of unprotected ones.
+  anonymous and pins the expected policy for the routes it names, so a new route cannot silently join the
+  set of unprotected ones.
 - Gap: no fixture checks the resolution itself. The matrix takes each caller's expected permissions from
-`PermissionService`, so it proves enforcement against the resolved set, not the flattening; its callers
-are a tenant `Admin` and a `Viewer`, so it proves the platform routes refuse them, while the
-configuration-added grant is exercised only by fixtures that start `PlatformAdminApiWebApplicationFactory`
-(for example the approvals `UpdateStatusFixture`).
+  `PermissionService`, so it proves enforcement against the resolved set, not the flattening; its callers
+  are a tenant `Admin` and a `Viewer`, so it proves the platform routes refuse them, while the
+  configuration-added grant is exercised only by fixtures that start `PlatformAdminApiWebApplicationFactory`
+  (for example the approvals `UpdateStatusFixture`).
 - Review: caching must not be added without recording the staleness window it introduces; the reason
-this design exists is that there is none.
+  this design exists is that there is none.
 
 ## Pros and Cons of the Options
 

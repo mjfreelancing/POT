@@ -152,6 +152,13 @@ Reference notes for future maintainers. Rationale recorded here would otherwise 
 - **Occurrence key is a date, not a timestamp or an hour.** An hour-based or timestamp-based key reproduces the DST defects; a site-local date is stable across a DST transition and makes same-day catch-up a natural property rather than a special case.
 - **This is a correctness fix, not a throughput feature.** At the current scale the duplicate volume is trivially small; the reason to do the work is that scaling the API out — a normal, intended operation — silently breaks a user-facing promise.
 
+## Effect on Earlier Documents
+
+| Document                                                                                                                                                 | What changes                                                                                                                                                                          | Amendment           |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| [ADR-0031](../adr/0031-email-is-queued-in-process-and-rendered-from-razor-components.md) — Email is queued in-process and rendered from Razor components | Its record of the in-process queue as the delivery mechanism; an outbox drains from the database instead, so the record would be superseded rather than edited, possibly only in part | Superseding record  |
+| [ADR-0030](../adr/0030-background-work-runs-inside-the-api-process.md) — Background work runs inside the API process                                     | Its single-replica assumption for scheduled email; the workers stay in the API process, so the hosting decision stands                                                                | Dated clarification |
+
 ## Related Documents
 
 - Future index: [Docs/Future/README.md](README.md)

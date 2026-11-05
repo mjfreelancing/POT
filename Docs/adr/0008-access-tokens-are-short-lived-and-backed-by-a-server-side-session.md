@@ -4,6 +4,7 @@ title: Access tokens are short-lived and backed by a server-side session
 status: accepted
 date: 2025-09-12
 area: backend
+related-prds: [PRD-001, PRD-002]
 ---
 
 # ADR-0008 (backfilled): Access tokens are short-lived and backed by a server-side session
@@ -121,6 +122,7 @@ shape but hands it to any script running on the page.
 
 - Good: no cookie and no cross-site complications.
 - Bad: any script on the page can read and exfiltrate it, which is the attack this design avoids.
+
 ### One refresh token per user
 
 - Good: no session table to keep.
