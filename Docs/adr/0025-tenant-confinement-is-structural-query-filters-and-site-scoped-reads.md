@@ -4,6 +4,7 @@ title: Tenant confinement is structural: query filters and site-scoped reads
 status: accepted
 date: 2025-10-26
 area: backend
+related-prds: [PRD-026]
 ---
 
 # ADR-0025 (backfilled): Tenant confinement is structural: query filters and site-scoped reads
@@ -24,6 +25,12 @@ One mechanism cannot cover everything. A global filter needs the current site to
 not during authentication, and a filter on users or sites would have to exclude the very rows used to
 resolve which site the caller is in.
 
+The site-scoped repository methods for users and sites, and the refusal contract, come from
+[PRD-026](../Future/PRD-026-cross-tenant-authorization-hardening.md) (§§4.1, 4.2). That PRD also
+considered a filter on `User` and `Site` and rejected it (§4.7). The four entity filters predate the PRD;
+beyond what §4.7 says, the record does not show why they were chosen, or whether options 3 and 4 below
+were weighed.
+
 ## Decision Drivers
 
 - Isolation must not depend on each new query remembering a filter.
@@ -42,8 +49,10 @@ resolve which site the caller is in.
 Chosen option: 1. Accounts, expenses, incomes and settings are filtered globally by the current site, so
 a query that does not mention tenancy is still confined. Users and sites are reached only through
 repository methods that apply the current site themselves — the caller cannot pass one — and the raw
-queryables for those two are not exposed. A small set of deliberately cross-tenant user reads exists and
-is named as such, which is how authentication and recovery work before a site is known.
+queryables for those two are not exposed. A small set of deliberately cross-tenant user reads exists, and
+this is how authentication and recovery work before a site is known. Each read is marked in the
+repository with a `Cross-tenant` comment and listed in PRD-026 §4.5. Some names say so, such as
+`GetEnabledUsersForAllSitesAsync`, but `GetByUsernameAsync` and `GetSecurityStateAsync` do not.
 
 A lookup that targets another tenant's row answers exactly as a missing one: `404`, with a body identical
 to the response for an id that does not exist, so the answer does not confirm the row's existence.
@@ -55,7 +64,9 @@ to the response for an id that does not exist, so the answer does not confirm th
   before a site is known, so their confinement belongs to the lookup method rather than to a filter.
 - Good, because a cross-tenant probe learns nothing: both "not yours" and "does not exist" are the same
   answer.
-- Bad, because there are two mechanisms, and a reader must know which entities use which.
+- Bad, because there are two mechanisms, and a reader must know which entities use which.- Bad, because the user and site confinement holds only for code that goes through the repositories.
+  `PotDbContext` is public and exposes `Users`, so code that injects the context can still write an
+  unconfined lookup (PRD-026 §4.1).
 - Bad, because a filter applies to every query, including administrative ones, so a cross-tenant read
   has to be written deliberately and is visible as such in the code.
 - Bad, because the site a scoped read confines itself to comes from ambient state, so a read outside a
@@ -65,11 +76,16 @@ to the response for an id that does not exist, so the answer does not confirm th
 
 ### Confirmation
 
-- Test: `CrossTenantAuthorizationFixture` addresses another tenant's records across the endpoint set and
-  asserts `404` with a body byte-identical to the missing-id response, so the answer leaks neither the
-  row's existence nor its absence.
-- Test: `EndpointAuthorizationMetadataFixture` keeps every endpoint in the authorization inventory, so a
-  new route is covered by the same sweeps.
+- Test: `AuthorizationMatrixFixture` generates a case naming another tenant's row for every documented
+  operation whose path carries an id. It expects `404`, or, for an operation with a body, no success and
+  no `401` or `403`. A path naming an unclassified resource fails the coverage check, so a new route is
+  swept too. `Should_Answer_A_Foreign_Tenants_Row_As_Not_Found` covers the filtered account, expense and
+  income reads.
+- Test: `CrossTenantAuthorizationFixture` covers the user and site routes.
+  `Should_Report_A_Foreign_Target_Indistinguishably_From_A_Missing_One` asserts that a foreign user and a
+  missing user get the same status, content type and body once per-request identifiers are normalised.
+- Test: `IsolationFixture` fingerprints a canary tenant before and after each destructive action, and
+  fails if any of its rows changed.
 - Review: exposing the user or site queryable, or writing a cross-tenant read without a named method, is
   a defect.
 
@@ -98,7 +114,8 @@ to the response for an id that does not exist, so the answer does not confirm th
 
 ## More Information
 
-- Which authority a signed-in caller has anywhere is a separate decision; this one is about which rows a
-  query can see.
+- Which authority a signed-in caller has anywhere is a separate decision,
+  [ADR-0007](0007-each-request-resolves-the-callers-permissions-from-the-database.md). This one is about
+  which rows a query can see.
 - Queries over financial data were the ones that could be filtered safely; the two identity entities
   were not, and the reason is recorded in the decision above.

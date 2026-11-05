@@ -1,19 +1,21 @@
 ---
 id: ADR-0045
-title: The end-to-end matrix runs on every change, with a stricter profile before release
+title: End-to-end tests run as a four-project development matrix, with a separately run production-build profile
 status: accepted
 date: 2026-05-11
-area: frontend
+area: cross-cutting
+related-prds: [PRD-012]
+supersedes: [ADR-0001]
 ---
 
-# ADR-0045 (backfilled): The end-to-end matrix runs on every change, with a stricter profile before release
+# ADR-0045 (backfilled): End-to-end tests run as a four-project development matrix, with a separately run production-build profile
 
 **Summary:** In the context of a browser suite that is slow enough to be run deliberately and valuable
 enough not to skip, facing the choice between one configuration and two, we decided on a development
 profile running the suite across four projects — two Chromium variants, a mobile Chromium device and a
 mobile WebKit device — and a production-like profile that runs the built client against the API, to achieve
-confidence without paying the strictest cost every time, accepting that the stricter profile is a discipline
-rather than a gate.
+confidence without paying the strictest cost every time, accepting that neither profile runs automatically
+and that when the production-build profile must run is not yet settled.
 
 ## Context and Problem Statement
 
@@ -33,25 +35,34 @@ deployment.
 
 ## Considered Options
 
-1. A development matrix by default plus a production-like profile on demand and before a release.
+1. A development matrix by default plus a production-like profile that is run separately.
 2. One configuration only, always.
 3. Both profiles on every change.
 4. No fixed policy; run whatever is convenient.
 
 ## Decision Outcome
 
-Chosen option: 1. The default profile runs the suite across four projects — desktop Chromium, Edge, a mobile
-Chromium device and a mobile WebKit device — against the API and the development client, with fixed
-per-test timeouts and reporters configured in the project rather than on the command line, and with a few
-suites excluded per project where they are known to be engine-specific. The production-like profile builds
-the client, serves it from the local preview server and runs the suite against it; it is the completion gate
-for a client-affecting change and is not run per change.
+Chosen option: 1. The default profile (`playwright.config.ts`) runs the suite across four projects: desktop
+Chromium, Edge, a Pixel 7 (Chromium) and an iPhone 14 (WebKit). It runs against the API and the Vite
+development server, with a fixed 60-second per-test timeout and reporters configured in the file rather than
+on the command line. Some files are kept off some projects, none for engine reasons. Two that change shared
+data run on `chromium` only (`settings/userSettings.test.ts`, `dashboard/quickActions.test.ts`), and two
+desktop-layout files skip the phone projects. The default profile is itself opt-in: the delivery skill asks
+before running it, and `run-tests` never runs it as routine verification. The production-like profile
+(`playwright.prod.config.ts`) builds the client, serves it from the local preview server and runs the same four
+projects against it. Neither profile is run on every change. The documents give two rules for when the
+production-like profile runs. The delivery skills and `e2e.instructions.md` make the full matrix the completion
+gate for a PRD that changed client product code. `e2e/README.md`, PRD-012 R8 and ADR-0001 call it on demand,
+when the production build changes and before releases. That disagreement is open as DD-11, and this record
+does not settle it.
 
 ### Consequences
 
 - Good, because an engine-specific failure is found by the default run rather than by a user.
-- Bad, because the production-like profile runs fewer projects and a subset of the suites, so it is a
-  different slice of the suite rather than the same one against a different build.
+- Bad, because the two configurations exclude different files. The production-like one drops
+  `feedback/errorBoundary.test.ts` on every project, but it does not repeat the default's exclusions of
+  `dashboard/quickActions.test.ts` (Edge and both phones) or `rendering/shortLandscapeScroll.test.ts` (both
+  phones). The two runs are therefore different slices of the suite, and nothing checks that the lists agree.
 - Good, because timeouts and reporters live in the project, so two people running the suite get the same
   behaviour.
 - Bad, because nothing enforces the production-like run; it is a completion gate by convention, and a
@@ -63,9 +74,12 @@ for a client-affecting change and is not run per change.
 
 ### Confirmation
 
-- Review: a client-affecting change states that the production-like profile was run, or why not.
-- Review: a test that needs a longer timeout changes the project's configuration deliberately rather than
-  passing a flag.
+- Instruction: `.github/skills/prd-delivery/SKILL.md` (step 4.6) runs `npm run e2e:all:prodlike` for a PRD that
+  changed client product code, and the report must say so when it is skipped. `.github/skills/run-tests/SKILL.md`
+  says not to run the prodlike suite per change.
+- Instruction: `.github/instructions/e2e.instructions.md` (Fixtures and config; Reporting and process lifecycle).
+  Do not raise `timeout` to chase flakes, and never pass `--reporter` from an npm script.
+- Review: a change to a timeout is made in the configuration and justified there, never passed as a flag.
 
 ## Pros and Cons of the Options
 
@@ -91,5 +105,8 @@ for a client-affecting change and is not run per change.
 
 ## More Information
 
-- The shared stack and the test classification are separate decisions.
-- Continuous integration does not currently run the suite; that is a separate decision.
+- The shared stack and the test classification: [ADR-0043](0043-end-to-end-tests-run-on-one-shared-stack.md) and
+  [ADR-0044](0044-every-end-to-end-test-declares-whether-it-may-run-beside-others.md).
+- There is no continuous integration, so nothing runs either profile automatically:
+  [ADR-0035](0035-builds-and-deployments-are-run-by-hand.md).
+- Source: [PRD-012](../Future/PRD-012-playwright-e2e-testing-infrastructure.md) R7 and R8.

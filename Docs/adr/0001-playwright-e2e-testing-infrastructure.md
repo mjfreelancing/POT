@@ -1,17 +1,19 @@
 ---
 id: ADR-0001
 title: Playwright E2E testing infrastructure
-status: accepted
+status: superseded
 date: 2026-09-02
 area: cross-cutting
 related-prds: [PRD-012]
+superseded-by: [ADR-0043, ADR-0044, ADR-0045, ADR-0046]
 ---
 
 # ADR-0001 (legacy): Playwright E2E testing infrastructure
 
 ## Clarifications
 
-Recorded as the design has moved, rather than by rewriting the sections below.
+Recorded as the design has moved, rather than by rewriting the sections below. The undated entries were recorded on
+2026-11-04 with the first; later entries carry their own date.
 
 - 2026-11-04: `@playwright/test` is `^1.62.1` (`Source/Client/pot-react/package.json`), not `^1.59.1`.
 - Teardown is its own module, `playwright.globalTeardown.ts`, because a global hook must be the module's
@@ -24,7 +26,18 @@ Recorded as the design has moved, rather than by rewriting the sections below.
 - A fourth canonical user, `e2e_quickactions`, exists with its own site (`e2e/seed/baseline.sql`).
 - `e2e/.auth` is only deleted during setup; authentication state is kept in memory by the fixtures.
 - `e2e/tests/users/`, the account and site deletion journeys, and the newer helpers (`mail`, `mailSink`,
-  `provisioning`, `radix`, `api`, `dates`) exist and are not listed in the directory tree below.
+  `provisioning`, `radix`, `api`, `dates`) exist and are not listed in the directory tree below.- 2026-11-05: The client uses Vite 8 (`vite` `^8.2.2` in `package.json`), not Vite 6 (§3).
+- 2026-11-05: The platform administrator named in §3 and §5 is not a separate identity. `58d1a6b2-bf25-40c1-b3d6-656ccf4a68b5`
+  is `e2e_admin`'s row id (`e2e/seed/baseline.sql`), and the `--PlatformAdmin:UserIds` argument in both Playwright
+  configs makes that user a platform administrator.
+- 2026-11-05: `e2e/fixtures/auth.ts` also exports `quickActionsTest` (`e2e_quickactions`), which §6.2 does not list.
+- 2026-11-05: Tests create data through the API during setup. Fixture-managed suites create their own rows, and the
+  destructive journeys provision a tenant by sign-up, approval or invitation (`e2e/helpers/provisioning.ts`). The §2
+  constraint against ad-hoc API data creation in setup no longer holds.
+- 2026-11-05: The mail sink is maildev (`maildev/maildev:2.2.1`, container `pot-e2e-mail-sink`), not MailPit
+  (Appendix A, item 8).
+- 2026-11-05: `package.json` also defines `e2e:all:dev:log`, `e2e:preflight`, `e2e:clean` and `e2e:scripts`, which
+  §10.1 does not list. The run-tests skill runs `e2e:preflight` before every E2E run.
 
 ## Context
 
@@ -382,7 +395,7 @@ format delta to the CSV entries and leave the other entries byte-identical. Do n
 version integer alone: `MetadataSerializer.Deserialize<T>` constructs the type the payload
 names, so a payload naming the previous version's type throws `InvalidCastException` (a 500),
 even though a genuine stale package is rejected cleanly by the version gate (a `400`: this ADR
-records `422`, which [PRD-030](../Future/PRD-030-problem-details-consolidation.md) replaced when every
+records `422`, which commit `bec69a48` (2026-10-16, made without a PRD) replaced when every
 validation failure became a `400`). API output
 for a local run is written to `../../Server/e2e-server.log` (survives the run; overwritten each
 run), which is where an import failure's exception appears — the harness reports only a generic

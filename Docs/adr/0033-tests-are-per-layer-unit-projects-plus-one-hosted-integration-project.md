@@ -22,6 +22,9 @@ fallback, a middleware ordering — none of those exist outside the pipeline.
 
 A single suite at the top of that pyramid would be slow and would make a rule change wait on a container.
 A single suite of unit tests would never show what the framework does with what the code returns.
+Database-independent tests are fast and run often. The hosted tests are slower but verify whole
+behaviour, such as a database error becoming Problem Details. The record does not show whether the other
+options below were weighed.
 
 ## Decision Drivers
 
@@ -39,8 +42,10 @@ A single suite of unit tests would never show what the framework does with what 
 ## Decision Outcome
 
 Chosen option: 1. There is a unit project for each layer that carries behaviour — application, data, host
-and shared — testing that layer with its neighbours substituted, and one integration project that boots the
-application against a PostgreSQL container and drives it through HTTP. The projects that are thin wrappers
+and shared — testing that layer with its neighbours substituted (a few application fixtures run real
+repositories over the EF Core in-memory provider instead), and one integration project that boots the
+application against a PostgreSQL container and drives it through HTTP. Each integration test starts its
+own `postgres:13` container and applies every migration before it runs (`IntegrationFixtureBase`). The projects that are thin wrappers
 around a library, such as the email sender, have no test project of their own.
 
 The integration project owns the things only it can show: status codes, Problem Details bodies, headers,
@@ -54,10 +59,10 @@ are pinned there too.
 - Good, because the outer suite proves the parts that no unit test can: the pipeline, the serializer, the
   database provider and the error mapping together.
 - Good, because a layer's test substitutes its neighbours, so a failing test points at one layer.
-- Bad, because a change can need both suites, and the outer one costs a container start.
-- Bad, because the data-layer tests use an in-memory provider, so query translation, constraints and
-  concurrency are covered only by the hosted suite — the failures that reach production first are the ones
-  furthest down the pyramid.
+- Bad, because a change can need both suites, and the outer one starts a container and migrates a fresh
+  database for every test.
+- Bad, because the data-layer tests use an in-memory provider, which ignores `citext`, unique indexes and
+  SQL translation, so those are covered only where a hosted test happens to exercise them.
 - Bad, because the per-layer tests substitute their neighbours, so some intent is expressed twice, once
   as a substitute and once against the real thing.
 - Bad, because the layer tests can pass while the wiring between layers is wrong, which only the outer
@@ -66,9 +71,14 @@ are pinned there too.
 ### Confirmation
 
 - Test: the hosted suite's base fixture starts the container and applies the migrations, and the metadata
-  fixtures are what make the architecture rules checkable rather than remembered.
+  fixtures (`EndpointAuthorizationMetadataFixture`, `EndpointResponseMetadataFixture`) are what make the
+  architecture rules checkable rather than remembered.
+- Instruction: `.github/instructions/aspnetcore-integration-tests.instructions.md` (Unit or integration?)
+  defines which tests belong in the hosted project.
 - Review: a rule tested only through the hosted suite is an expensive test for something that did not need
-  a pipeline; a status code asserted in a unit test is a test in the wrong project.
+  a pipeline; an endpoint's status code or body asserted without booting the host is a test in the wrong
+  project. A unit test of the class that maps a failure to a status, such as
+  `EnrichedErrorExtensionsFixture`, is not.
 
 ## Pros and Cons of the Options
 

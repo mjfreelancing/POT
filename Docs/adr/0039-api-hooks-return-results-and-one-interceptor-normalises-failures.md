@@ -4,6 +4,7 @@ title: API hooks return results and one interceptor normalises every failure
 status: accepted
 date: 2025-05-03
 area: frontend
+related-prds: [PRD-030]
 ---
 
 # ADR-0039 (backfilled): API hooks return results and one interceptor normalises every failure
@@ -23,6 +24,9 @@ that does it slightly differently produces a different message for the same fail
 
 The server's contract helps but does not remove the problem: a gateway that never reaches the
 application answers with no body at all.
+How the interceptor reads a body, and which message each status shows, are set by
+[PRD-030](../Future/PRD-030-problem-details-consolidation.md) (E1–E8). The alternatives below record what
+each would have cost; the record does not show whether they were weighed before the choice.
 
 ## Decision Drivers
 
@@ -39,7 +43,7 @@ application answers with no body at all.
 
 ## Decision Outcome
 
-Chosen option: 1. A successful call produces a successful result carrying the typed value; a failure
+Chosen option: 1. A successful call produces a successful result carrying the response body, cast to the hook's type but not validated; a failure
 produces a failing result carrying one of the client's error types — bad request, authentication,
 forbidden, not found, method not allowed, conflict, rate limited, server, unexpected, network. One
 interceptor reads whatever body arrived, reduces it to members it can trust, and chooses the error type
@@ -59,8 +63,10 @@ the general mechanism.
   generic error, and adding a status is a change in one place that every screen inherits.
 - Bad, because the interceptor's reduction of a body drops members it does not recognise, so a new
   server field is invisible until the client is told about it.
-- Bad, because a caller that wants a nuance the taxonomy does not carry — a field-level message, for
-  instance — has to read further into the result than the type alone.
+- Bad, because a failure carries only a type, a code and one description: a `400`'s messages are joined
+  into one string and their field names dropped, so a form cannot place a server message beside its
+  field, and a `401`, `403`, `404`, `405` or `429` always shows fixed client copy, whatever `detail` the
+  server sent.
 
 ### Confirmation
 

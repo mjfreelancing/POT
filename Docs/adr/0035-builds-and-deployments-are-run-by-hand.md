@@ -23,8 +23,9 @@ and pay for, and a class of failures that only exist in the pipeline.
 For a single developer with a small deployment, the checks can be the same commands the pipeline would
 run, and the temptation to skip them is a personal discipline problem rather than a process guarantee.
 
-Cost is the deciding factor at this stage: a hosted pipeline and its minutes are a recurring cost for a
-project whose deployment is a container app on a consumption plan.
+No interview or dated note in the repository gives the reason there is no pipeline. The deployment plan
+written when the hosted environment was first set up (November 2025) intended automation to follow a
+manual first deployment; it has not followed.
 
 ## Decision Drivers
 
@@ -70,7 +71,8 @@ a wait.
 - Review: a deployment is preceded by the test suites being run, and that remains a personal discipline
   rather than a check.
 - Known gap: no artefact identifies the commit it was built from, so provenance depends on the developer's
-  record.
+  record.- Review: a pipeline definition added to the repository (for example under `.github/workflows/`)
+  supersedes this record.
 
 ## Pros and Cons of the Options
 
@@ -96,6 +98,7 @@ a wait.
 
 ## More Information
 
-- This decision is expected to be revisited as the product grows; a pipeline would then be a change to
-  this record rather than an addition beside it.
-- The deployment target and its topology are separate decisions.
+- Whether to add a build-and-test workflow is open (`DECISIONS-TO-DISCUSS.md`, DD-05). A pipeline, if
+  adopted, supersedes this record rather than sitting beside it.
+- The deployment target and its topology are
+  [ADR-0036](0036-production-runs-two-container-apps.md).

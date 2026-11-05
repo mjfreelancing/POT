@@ -20,15 +20,15 @@ protection is deliberately temporary and never becomes a lockout.
 Two populations share the pipeline. Anonymous callers include sign-in, sign-up, password reset and
 refresh — the routes worth attacking. Signed-in callers are already known and are trusted more.
 
-An account lockout is the traditional answer to guessing, and it is the wrong one here: it converts a
-guessing attempt into a denial of service against the account's real owner, and it needs a recovery
-path that is itself an attack surface.
+An account lockout is the traditional answer to guessing. It has not been built: temporary throttling is
+enough for now, and a lockout is deferred until a requirement justifies its added complexity. A lockout's
+known costs are set out under the options below.
 
 ## Decision Drivers
 
 - Guessing must be slowed at the caller, not at the account.
 - The window must be short enough that a throttled request fails fast rather than making the user wait.
-- Limits should be configurable, and the code's defaults should be a sound starting point.
+- The production limits should be fixed in code, while a test run can raise them without a code change.
 
 ## Considered Options
 
@@ -42,9 +42,11 @@ path that is itself an attack surface.
 Chosen option: 1. Every endpoint group requires the same named policy, which chooses a partition:
 anonymous callers get fifteen permits in a ten-second fixed window per address, and authenticated
 callers fifty permits in a thirty-second sliding window per user, split into ten segments, with no
-queueing in either. Rejection is `429` with a Problem Details body that names the wait. `Retry-After` is
-written where the limiter exposes the retry metadata, which the fixed window does and the sliding window
-does not, so an authenticated rejection carries the detail without the header.
+queueing in either. Despite the name `ChainedPolicy`, no limiters are chained: each request is counted by
+exactly one partition. Rejection is `429` with a Problem Details body. `Retry-After` is written, and the
+`detail` names the wait, only where the limiter exposes the retry metadata, which the fixed window does
+and the sliding window does not, so an authenticated rejection carries neither the header nor a timed
+message.
 
 There is no lockout of an account. The temporary rejection is the whole of the response to guessing.
 
@@ -52,10 +54,10 @@ There is no lockout of an account. The temporary rejection is the whole of the r
 
 - Good, because an attacker's address is throttled while the account owner signing in normally is not.
 - Good, because signed-in users get a smoother sliding window, which is fair to normal interactive use.
-- Good, because the short anonymous window means a rejected anonymous request returns quickly, and can
-  be reported as a cooldown rather than a hang.
-- Bad, because the authenticated window is as long as the client's request timeout, so a rejected
-  authenticated request can be reported as a timeout rather than as a refusal.
+- Good, because with no queue a rejected request returns at once, and the short anonymous window means
+  the wait it names is at most ten seconds.
+- Bad, because an authenticated rejection names no wait, so a signed-in user is not told how long to
+  wait, which can be up to the thirty-second window.
 - Bad, because a caller sharing an address — an office, a mobile network — is throttled as one, which
   is a real limit of address-based partitioning.
 - Bad, because anonymous partitions depend on the caller address being the real one, so the forwarded

@@ -23,6 +23,9 @@ declarations or by running the application.
 A document generated at runtime cannot be reviewed in a pull request, and an unpublished document
 cannot be compared across changes. Generating it during the build and committing it makes the contract
 an artefact of the change rather than of the running process.
+No requirement or API client uses the document today. It exists for completeness, and because a future
+consumer such as an MCP server could be built on it. The record does not show whether the other options
+below were weighed.
 
 ## Decision Drivers
 
@@ -45,14 +48,15 @@ a publish. Each endpoint declares the failures its own rules can produce, so the
 match behaviour rather than listing a maximal set.
 
 The document is also served in development and read by the integration suite, and it is not used to
-generate the client: client API types are hand-written. It is committed because it is the clearest
-description of the contract that exists, and because a consumer that is not the React client — a
-generator, or an assistant-facing server — can be built on it without the API having to change.
+generate the client: client API types are hand-written. It is committed so that a client developer can read
+it from the repository without installing .NET, and so that a contract change appears in the pull request
+beside the code that caused it. A consumer other than the React client, such as an assistant-facing
+server, could be built on it later.
 
 ### Consequences
 
-- Good, because a shape change produces a diff in the same commit, and a shape change with no document
-  change is visible as a missing diff.
+- Good, because a shape change produces a diff of the document when the regenerated file is committed
+  with it; committing it is a manual step, so an omitted document is noticed only by a reviewer.
 - Good, because the API serves the document in development only, so outside that environment the
   committed file is the contract.
 - Good, because the integration suite reads the served document to derive and check expectations, so the
@@ -66,8 +70,11 @@ generator, or an assistant-facing server — can be built on it without the API 
 
 ### Confirmation
 
-- Test: `EndpointResponseMetadataFixture` pins which failures each endpoint declares, which is what the
-  document records, and `OpenApiSecurityFixture` checks the served document's security and schema shape.
+- Test: `EndpointResponseMetadataFixture` asserts the declarations every endpoint shares — the `500`, a
+  single validation-problem `400`, no `422`, and `413` and `408` only where a body is read — and the
+  success shape of named routes. `OpenApiSecurityFixture` reads the served document, checks its security,
+  schemas and problem descriptions, and pins which operations can answer a stale-entity-tag `409`. Neither
+  pins every endpoint's full failure set.
 - Review: a change to a request or response shape that leaves the document unchanged is a missing
   regeneration, not a no-op.
 - Known gap: no check compares the committed document to a freshly generated one; detecting a stale copy
@@ -98,4 +105,4 @@ generator, or an assistant-facing server — can be built on it without the API 
 ## More Information
 
 - The client types being hand-written rather than generated is a separate, current state.
-- Per-endpoint failure declarations are also what keeps the client able to read any body it receives.
+

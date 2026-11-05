@@ -19,14 +19,17 @@ the process stops before it is sent.
 Sending mail synchronously in a request would make a sign-up wait on somebody else's SMTP server and fail
 with it. So the send is moved off the request, which leaves the question of how durable the handover is.
 
-The templates are content in code: the same Razor components used to build markup, rendered to a string
-for the body. That keeps the body type-checked and shareable with anything else that renders the same
-component.
+Each message has two templates in `Pot.RazorComponents`: a Razor component for the HTML body, rendered to
+a string outside any web request, and a plain-text file with `{Property}` placeholders for the text body.
+Both are filled from the message's properties by name at send time.
+
+The in-process queue is a deliberately simple first implementation that gets email working, and it is
+expected to become more durable under PRD-019. The record does not show why Razor components were chosen
+for the HTML body.
 
 ## Decision Drivers
 
 - A request must not wait for, or fail with, the mail server.
-- Templates should be code, so a wrong property is a build error.
 - No new infrastructure for a volume measured in messages per day.
 
 ## Considered Options
@@ -38,16 +41,20 @@ component.
 
 ## Decision Outcome
 
-Chosen option: 1. A queued message carries only the email type and its configuration; the subject and both
-bodies are rendered from a Razor component at send time, when the worker dequeues it. The channel is
-unbounded and lives as long as the process.
+Chosen option: 1. A queued message carries the email type and the message's values; nothing is rendered
+until the worker dequeues it. The subject is a fixed string per type, the HTML body is rendered from the
+type's Razor component, and the plain-text body is the type's text template with its placeholders
+replaced. The channel is unbounded and lives as long as the process.
 
 ### Consequences
 
 - Good, because the request completes without waiting for the mail server, and a mail failure cannot fail
   the request that caused it.
-- Good, because templates are components: a renamed property breaks the build rather than producing a
-  blank line in someone's inbox.
+- Good, because the HTML layout is written as markup and rendered by the framework.
+- Bad, because the values reach the templates by property name at run time, not through a typed contract:
+  a value the component does not declare fails the render, and the message is then logged and dropped,
+  while a placeholder the text template names but the values lack is sent as written. Nothing checks this
+  at build time; `EmailGreetingFixture` renders some of the templates.
 - Good, because no additional component exists to deploy, monitor or pay for.
 - Bad, because a message queued and not yet sent is lost if the process stops, with no record that it
   existed and nothing to retry.
@@ -59,10 +66,14 @@ unbounded and lives as long as the process.
 
 ### Confirmation
 
-- Test: the channel's fixtures assert a queued item is dequeued and that a send failure is logged and
-  swallowed rather than thrown back to the request.
-- Gap: no worker fixture asserts end-to-end delivery, and none asserts what happens to messages still
-  queued when the host stops.
+- Test: the application fixtures for services that send mail (for example
+  `RequestPasswordResetServiceFixture` and `InviteUserServiceFixture`) assert the message is submitted to
+  the channel writer; the hosted suite replaces that writer with `CapturingEmailWriter`, proved by
+  `MessageCaptureFixture`, so no request path reaches a mail server in tests.
+- Test: `EmailGreetingFixture` renders several of the HTML and plain-text templates with the values the
+  sender passes.
+- Gap: `SendEmailChannel`, `EmailSender` and `SendEmailWorker` have no fixtures, so dequeueing, the
+  swallowed send failure and messages still queued when the host stops are not asserted anywhere.
 - Review: a new message is queued rather than sent inline; a request must never call the mail sender
   directly.
 
@@ -93,6 +104,7 @@ unbounded and lives as long as the process.
 
 - This record is expected to be superseded by a durable outbox. The intended direction — a database
   outbox drained with claim and lease, with retry and same-day catch-up — is written up in
-  `Docs/Future/PRD-019-email-outbox-durable-dispatch.md`; adopting it would supersede this record rather
-  than edit it.
+  `Docs/Future/PRD-019-email-outbox-durable-dispatch.md` (Proposed); adopting it would supersede this
+  record rather than edit it. PRD-019 leaves open whether transactional messages move to the outbox or
+  stay on the in-process channel, so the supersession may be partial.
 - Running the worker inside the API process is a separate decision with its own intended supersession.

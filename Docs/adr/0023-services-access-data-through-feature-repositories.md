@@ -24,6 +24,11 @@ the same query is written three slightly different ways.
 A repository reverses that: the service names what it wants, and the repository decides how to get it.
 The cost is that a new query shape is a new method.
 
+Named repository methods make service code easier to read and let a service test mock the database
+calls. The split between read-only and persistable interfaces follows the Interface Segregation
+Principle, and reads do not track, for performance. The alternatives below record what each would have
+cost; the record does not show whether they were weighed before the choice.
+
 ## Decision Drivers
 
 - Application tests must run without a database, which means data access must be substitutable.
@@ -63,13 +68,20 @@ tracking explicitly; reads do not track.
   ceremony than a lambda over the context.
 - Bad, because returning entities keeps some persistence shape in the service, and returning projections
   adds a type per read.
-- Bad, because a caller cannot refine a query after the fact — the repository must anticipate the shapes
-  it needs, and one that guesses wrong is extended.
+- Bad, because a caller of the user or site repository cannot refine a query after the fact. The
+  repository must anticipate the shapes it needs, and one that guesses wrong is extended. The account,
+  expense, income and role repositories avoid this by exposing a queryable that callers compose.
 
 ### Confirmation
 
-- Test: the application-layer fixtures substitute the interfaces, so a repository dependency reaching for
-  the database would fail the test rather than pass.
+- Test: most application-layer fixtures build services with substituted repository interfaces, so
+  business rules run without a database. Four use the EF in-memory provider instead: the account
+  description checks, the expense delete fixture and the projections fixture. Nothing fails if a service
+  injects `PotDbContext`, which is public, so that part of the rule rests on review.
+- Test: `DbContextExtensionsFixture` asserts that the context defaults to
+  `NoTrackingWithIdentityResolution` and that nested tracking scopes restore it.
+- Instruction: `.github/instructions/server.instructions.md` (Persistence: default reads to no-tracking;
+  opt into tracking only on write paths).
 - Review: a service that resolves the context, or a repository method on a tenant-scoped interface that
   returns `IQueryable`, is a defect.
 - Review: a read that tracks is justified in the change, because tracking exists for a write that
@@ -100,7 +112,7 @@ tracking explicitly; reads do not track.
 
 ## More Information
 
-- Tenant confinement by query filters and site-scoped reads builds on this access model and is a separate
-  decision.
-- Explicit transactions are used where several repository calls must be one unit, which is a separate
-  decision.
+- Tenant confinement by query filters and site-scoped reads builds on this access model:
+  [ADR-0025](0025-tenant-confinement-is-structural-query-filters-and-site-scoped-reads.md).
+- Explicit transactions are used where several repository calls must be one unit:
+  [ADR-0024](0024-transactions-are-explicit-and-only-where-writes-must-be-one-unit.md).

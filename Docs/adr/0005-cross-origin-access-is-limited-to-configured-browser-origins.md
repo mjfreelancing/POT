@@ -70,8 +70,10 @@ round trip.
   origin is echoed, the disallowed origin receives no `Access-Control-Allow-Origin`, a second
   configured origin works with both `,` and `;` separators, credentials are allowed on the actual
   response as well as the preflight, each exposed header name is present, and the cache is 600 seconds.
-- Test: `CorsOptionsSetupFixture` and `CorsConfigurationSetupFixture` assert the policy, the delimiter
-  handling and the startup validation, including rejection of `*`.
+- Test: `CorsOptionsSetupFixture` asserts the policy; `CorsConfigurationFixture` the splitting on `,` and
+  `;`, trimming and case-insensitive de-duplication; `CorsConfigurationSetupFixture` the validation rules,
+  including rejection of an empty list, `*`, a path or trailing slash, user info and a non-HTTP scheme; and
+  `OptionsStartupValidationFixture` that an empty `Cors:AllowedOrigins` fails startup.
 - Review: a policy change that adds an origin or exposes a header belongs in configuration and in this
   record's consequences, not in an inline policy built in a handler.
 
@@ -92,7 +94,8 @@ round trip.
 
 - Good: no CORS problem exists, and cookies become same-site.
 - Bad: the client and API would have to be served under one host, which changes the deployment shape
-  rather than the policy, and would still leave local development cross-origin.
+  rather than the policy. Locally that shape already exists — the compose client's nginx proxies `/api`,
+  and the Vite dev server is configured to — so only the deployed system is cross-origin.
 
 ### Explicit method and header lists
 

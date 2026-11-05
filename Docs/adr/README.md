@@ -114,8 +114,12 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 | ADR | Title | Status |
 | --- | --- | --- |
-| [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) | Playwright E2E testing infrastructure | accepted |
+| [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) | Playwright E2E testing infrastructure | superseded |
 | [ADR-0002](0002-retry-after-client-cooldown-handling.md) | Retry-After client cooldown handling | superseded |
+| [ADR-0043](0043-end-to-end-tests-run-on-one-shared-stack.md) | End-to-end tests run on one shared stack against a single seeded database | accepted |
+| [ADR-0044](0044-every-end-to-end-test-declares-whether-it-may-run-beside-others.md) | Every end-to-end test is classified by whether it may run beside others | accepted |
+| [ADR-0045](0045-the-end-to-end-matrix-runs-on-every-change-with-a-stricter-release-profile.md) | End-to-end tests run as a four-project development matrix, with a separately run production-build profile | accepted |
+| [ADR-0046](0046-tenants-are-provisioned-and-destroyed-by-the-products-own-routes-in-tests.md) | Tenants are provisioned and destroyed by the product's own routes in tests | accepted |
 
 ### Backend
 
@@ -162,10 +166,6 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | [ADR-0040](0040-the-access-token-lives-in-memory-with-proactive-and-reactive-refresh.md) | The access token lives in memory, with proactive and reactive refresh | accepted |
 | [ADR-0041](0041-browser-storage-is-keyed-by-environment-and-user.md) | Browser storage is keyed by environment and user, with a policy per setting | accepted |
 | [ADR-0042](0042-the-pwa-precaches-the-shell-only-and-enforces-updates.md) | The PWA precaches the application shell only and enforces updates | accepted |
-| [ADR-0043](0043-end-to-end-tests-run-on-one-shared-stack.md) | End-to-end tests run on one shared stack against a single seeded database | accepted |
-| [ADR-0044](0044-every-end-to-end-test-declares-whether-it-may-run-beside-others.md) | Every end-to-end test declares whether it may run beside others | accepted |
-| [ADR-0045](0045-the-end-to-end-matrix-runs-on-every-change-with-a-stricter-release-profile.md) | The end-to-end matrix runs on every change, with a stricter profile before release | accepted |
-| [ADR-0046](0046-tenants-are-provisioned-and-destroyed-by-the-products-own-routes-in-tests.md) | Tenants are provisioned and destroyed by the product's own routes in tests | accepted |
 | [ADR-0047](0047-a-rate-limited-caller-is-told-when-to-retry.md) | A rate-limited caller is told when to retry, and nothing retries automatically | proposed |
 
 ### Infrastructure
@@ -182,9 +182,8 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 - [ADR-0047](0047-a-rate-limited-caller-is-told-when-to-retry.md) — A rate-limited caller is told when to retry, and nothing retries automatically
 
-### Accepted (45)
+### Accepted (44)
 
-- [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) — Playwright E2E testing infrastructure
 - [ADR-0003](0003-public-tls-terminates-at-the-container-apps-ingress.md) — Public TLS terminates at the Container Apps ingress
 - [ADR-0004](0004-the-api-trusts-the-caller-address-and-scheme-from-the-ingress.md) — The API trusts the caller address and scheme from the ingress
 - [ADR-0005](0005-cross-origin-access-is-limited-to-configured-browser-origins.md) — Cross-origin access is limited to configured browser origins
@@ -226,19 +225,25 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 - [ADR-0041](0041-browser-storage-is-keyed-by-environment-and-user.md) — Browser storage is keyed by environment and user, with a policy per setting
 - [ADR-0042](0042-the-pwa-precaches-the-shell-only-and-enforces-updates.md) — The PWA precaches the application shell only and enforces updates
 - [ADR-0043](0043-end-to-end-tests-run-on-one-shared-stack.md) — End-to-end tests run on one shared stack against a single seeded database
-- [ADR-0044](0044-every-end-to-end-test-declares-whether-it-may-run-beside-others.md) — Every end-to-end test declares whether it may run beside others
-- [ADR-0045](0045-the-end-to-end-matrix-runs-on-every-change-with-a-stricter-release-profile.md) — The end-to-end matrix runs on every change, with a stricter profile before release
+- [ADR-0044](0044-every-end-to-end-test-declares-whether-it-may-run-beside-others.md) — Every end-to-end test is classified by whether it may run beside others
+- [ADR-0045](0045-the-end-to-end-matrix-runs-on-every-change-with-a-stricter-release-profile.md) — End-to-end tests run as a four-project development matrix, with a separately run production-build profile
 - [ADR-0046](0046-tenants-are-provisioned-and-destroyed-by-the-products-own-routes-in-tests.md) — Tenants are provisioned and destroyed by the product's own routes in tests
 
-### Superseded (1)
+### Superseded (2)
 
+- [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) — Playwright E2E testing infrastructure
 - [ADR-0002](0002-retry-after-client-cooldown-handling.md) — Retry-After client cooldown handling
 
 ## By PRD
 
 | PRD | ADRs |
 | --- | --- |
-| PRD-012 | [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) |
-| PRD-014 | [ADR-0002](0002-retry-after-client-cooldown-handling.md) |
+| PRD-001 | [ADR-0041](0041-browser-storage-is-keyed-by-environment-and-user.md) |
+| PRD-012 | [ADR-0001](0001-playwright-e2e-testing-infrastructure.md), [ADR-0043](0043-end-to-end-tests-run-on-one-shared-stack.md), [ADR-0044](0044-every-end-to-end-test-declares-whether-it-may-run-beside-others.md), [ADR-0045](0045-the-end-to-end-matrix-runs-on-every-change-with-a-stricter-release-profile.md) |
+| PRD-014 | [ADR-0002](0002-retry-after-client-cooldown-handling.md), [ADR-0047](0047-a-rate-limited-caller-is-told-when-to-retry.md) |
+| PRD-022 | [ADR-0028](0028-cascades-are-restricted-and-deletion-is-an-explicit-ordered-sweep.md) |
+| PRD-026 | [ADR-0025](0025-tenant-confinement-is-structural-query-filters-and-site-scoped-reads.md) |
+| PRD-030 | [ADR-0014](0014-every-failure-is-written-as-a-problem-details-document.md), [ADR-0032](0032-logs-record-request-metadata-and-never-submitted-values.md), [ADR-0039](0039-api-hooks-return-results-and-one-interceptor-normalises-failures.md) |
+| PRD-031 | [ADR-0044](0044-every-end-to-end-test-declares-whether-it-may-run-beside-others.md), [ADR-0046](0046-tenants-are-provisioned-and-destroyed-by-the-products-own-routes-in-tests.md) |
 
 <!-- END GENERATED INDEX -->

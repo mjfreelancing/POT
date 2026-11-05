@@ -19,37 +19,42 @@ The schema needs more than tables and indexes: case-insensitive unique text, com
 to a site, generated identifiers, and a provider that Entity Framework Core supports well. Cost matters,
 because this is a personal project with a single operator.
 
+The engine was chosen because it is open source and cost-effective for a small application that is not
+expected to grow very large. The schema features above are what the schema relies on now; the record does
+not show whether they, or the other options below, were weighed when the engine was chosen.
+
 ## Decision Drivers
 
 - No licence cost for a database that will be small at every environment.
 - Features the schema relies on: `citext` for case-insensitive text, and composite unique indexes over it.
-- A managed hosting option, because the deployment is a single operator's.
+
 
 ## Considered Options
 
-1. PostgreSQL, run in a container locally and as a managed server in production.
+1. PostgreSQL, run in a container locally and as a hosted server in production.
 2. SQL Server, with its developer and small-worker licensing.
 3. SQLite, as a file-based database.
 4. MySQL or MariaDB.
 
 ## Decision Outcome
 
-Chosen option: 1. PostgreSQL runs as a container for local development and for tests, and as a managed
-server in production with SSL required on connections.
+Chosen option: 1, because it is open source and cost-effective for a small application that is not
+expected to grow very large. PostgreSQL runs as a container for local development and for tests, and in
+production as a hosted server in Azure, with SSL required on connections.
 
-The engine's case-insensitive text type is what makes per-site uniqueness of names implementable as an
-index rather than as application comparison, and the same engine can be run locally and hosted.
+The schema has since come to rely on `citext`, which lets a unique index back the case-insensitive
+uniqueness of names alongside the application's own check. The same engine runs locally and hosted.
 
 ### Consequences
 
-- Good, because there is no licence cost at any environment, and the managed option removes most of the
-  operational work.
-- Good, because `citext` and partial indexes express the uniqueness rules without application code.
+- Good, because there is no licence cost at any environment.
+- Good, because `citext` columns under composite unique indexes enforce case-insensitive uniqueness in
+  the database, as a second line of defence behind the application checks.
 - Good, because the local container and the hosted server are the same engine, so a query that works
   locally is not a different dialect in production.
 - Bad, because the engine version differs between environments: the local container and the integration
-  fixtures run 13, the end-to-end stack runs 16 and the deployed server runs 17.6, and the provider is
-  pinned to the oldest of them.
+  fixtures run 13, and the end-to-end stack runs 16. The deployment diagram labels the production server
+  17.6, which nothing else in the repository confirms. EF is told to target 13.6 (`SetPostgresVersion`).
 - Bad, because production requires SSL on the connection, so the connection configuration is not the same
   as the local one.
 - Bad, because another component to operate, back up and restore.
@@ -82,10 +87,12 @@ index rather than as application comparison, and the same engine can be run loca
 ### MySQL
 
 - Good: free and widely hosted.
-- Bad: historically weaker support for the case-insensitive-text and partial-index behaviours the schema
-  uses, and no advantage over PostgreSQL here.
+- Bad: no `citext` equivalent, because case-insensitivity comes from column collations instead, and no
+  advantage over PostgreSQL here.
 
 ## More Information
 
-- The version target and the drift between environments is a separate, open item.
-- Uniqueness being enforced by the database rather than only by application checks is a separate decision.
+- The version target and the drift between environments are a separate, open item:
+  `DECISIONS-TO-DISCUSS.md` (DD-06).
+- Enforcing uniqueness in the database as well as by application checks is
+  [ADR-0027](0027-enumerations-are-stored-by-name-and-uniqueness-is-enforced-by-the-database.md).

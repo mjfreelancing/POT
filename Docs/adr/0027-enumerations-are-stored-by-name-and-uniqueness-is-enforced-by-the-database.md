@@ -24,6 +24,11 @@ An enumeration stored as its numeric value is unreadable in a query and silently
 member is inserted or reordered. A uniqueness rule enforced only in application code is bypassed by any
 other writer — a migration fix, a support query, a future feature.
 
+Names are stored to keep queries readable and to avoid ordering problems when a member is inserted. An
+enriched type lets the stored name differ from the member name, which matters once the name is in the
+data. The application check gives the caller a clear business-rule error, and the index is a second
+defence against a coding error or direct database access.
+
 ## Decision Drivers
 
 - Data should be inspectable without the code that wrote it.
@@ -32,25 +37,33 @@ other writer — a migration fix, a support query, a future feature.
 
 ## Considered Options
 
-1. Enriched enumerations persisted by name, with per-site case-insensitive unique indexes and an
-   application check in front.
+1. Enriched enumerations persisted by name, with case-insensitive unique indexes scoped to their owner and
+   an application check in front.
 2. Numeric enumeration values with a lookup table.
 3. Names stored as free text with no shared type.
 4. Names stored, uniqueness enforced in application code only.
 
 ## Decision Outcome
 
-Chosen option: 1. Enumerations are modelled as enriched types that carry their own display and storage
-names, and the model is configured to persist them as text with a bounded length of fifty. A name in the
+Chosen option: 1. Enumerations are modelled as enriched types, each member carrying a name — the member
+name by default, or an explicit one such as `site:manage` for a permission — and the model is configured
+to persist every enriched type as that name, as text with a bounded length of fifty. A name in the
 database is the name in the code, so an insert into the middle of a declaration cannot reinterpret
-existing rows. The reference tables that hold them — roles and permissions — have plain, case-sensitive
-unique indexes on those names, which are global rather than site-scoped.
+existing rows. The names are columns on the entities that use them (an expense's frequency, a user's
+status, a setting's category, a one-time code's reason and status); the two reference tables, roles and
+permissions, have plain, case-sensitive unique indexes on their names, which are global rather than
+site-scoped.
 
-Uniqueness of user-entered text is a separate application of the same principle: user-facing names such
-as an account's description are held in the database's case-insensitive text type with a composite unique
-index scoped to the site, and a settings row is unique per site with a separate global index for the
-unscoped case. An application check runs first where one exists, so the caller receives a business
+Uniqueness of user-entered text is a separate application of the same principle: user-facing names are
+held in the database's case-insensitive text type under a unique index scoped to their owner — an
+account's description per site, an expense's or income's description per account, and a site's name and
+a username across the whole database. A settings row is unique per site, category and key, and its key is
+case-sensitive text. An application check runs first where one exists, so the caller receives a business
 message rather than a constraint violation, but the index is the guarantee.
+
+The settings index was created by hand as two partial indexes, one for rows with a site and one for
+global rows with none. Settings have since been made site-specific, so the global index can match no row,
+and the model snapshot records the site index without its filter.
 
 ### Consequences
 
@@ -64,12 +77,15 @@ message rather than a constraint violation, but the index is the guarantee.
 
 ### Confirmation
 
-- Test: the service fixtures assert the application check answers the business failure, with its error
-  code, before the constraint is reached — for the text fields that have such a check.
-- Gap: no data fixture inserts a duplicate to show the database refusing it; the constraint is evidenced by
-  the migrations that create the indexes, and the refusal path by the exception-handler fixture.
-- Review: a new enumeration is added as an enriched type with explicit storage names; a raw `int` column
-  is a defect.
+- Test: `CheckDescriptionDoesNotExistFixture` asserts the account check refuses a description already used
+  on the same site, with its message, and allows one used on another site. It runs on the in-memory
+  provider, so it does not exercise case-insensitivity.
+- Test: the hosted `Features/Accounts/CreateUpdateFixture` and `Features/Expenses/CreateUpdateFixture`
+  assert that an exact duplicate answers 409 against PostgreSQL, and `DatabaseExceptionHandlerFixture`
+  asserts that a unique-constraint violation reaching the database is answered 409.
+- Gap: no test writes past the application check, or sends a duplicate that differs only by case, to show
+  the index refusing it; the constraint is evidenced by the migrations that create the indexes.
+- Review: a new enumeration is added as an enriched type, stored by name; a raw `int` column is a defect.
 
 ## Pros and Cons of the Options
 

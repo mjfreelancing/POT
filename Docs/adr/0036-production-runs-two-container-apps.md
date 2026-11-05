@@ -45,6 +45,11 @@ environment, each with its own ingress and managed certificate, on the custom do
 
 The client is built with the API's absolute base URL, because there is no proxy to make a relative path
 work.
+Both are set in `.vscode/tasks.json` (`azure-client-build-and-deploy`): it builds with
+`NGINX_CONFIG=nginx.azure.conf`, which has no `/api` proxy, and with the API's own hostname as the base
+URL. The tracked diagram and `Source/Docker/DEVELOPER.md` instead describe the ingress routing `/api/*`
+to the API container. This record follows the build, and the repository cannot settle the discrepancy.
+The record does not show whether the single-origin options were weighed when the deployment was set up.
 
 ### Consequences
 
@@ -57,15 +62,20 @@ work.
 - Bad, because the API base URL is baked into the client at build time, so the client image is
   environment-specific and the URL cannot be changed without rebuilding.
 - Bad, because every call is cross-origin, so the CORS policy and the cookie's `SameSite` behaviour are
-  load-bearing rather than incidental.
-- Bad, because two deployments and two ingress configurations must be kept in step.
+  load-bearing rather than incidental: the refresh cookie is `SameSite=Lax` (`RefreshTokenHelper.cs`),
+  which works only because the client and API hostnames share one registrable domain.
+- Bad, because two deployments and two ingress configurations must be kept in step.- Bad, because the two images are built and pushed by separate tasks, so for a while after a deployment
+  the new API serves the old client (and a cached PWA shell keeps calling it); no compatibility policy
+  covers that window, which is the open question DD-14 in `DECISIONS-TO-DISCUSS.md`.
 
 ### Confirmation
 
 - Review: the client image is built with the API base URL for its environment, so a client built for one
   environment must not be deployed to another.
-- Test: the production-like end-to-end configuration runs the built client against the API, which is the
-  arrangement that catches a base-URL mistake.
+- Gap: no test exercises the deployed arrangement. The production-like end-to-end configuration
+  (`playwright.prod.config.ts`) serves the built client through `vite preview`, whose proxy forwards a
+  relative `/api`, so it is same-origin and would not catch a wrong absolute base URL or a missing origin
+  in the deployed CORS list. `CorsFixture` covers the API's side of the cross-origin boundary.
 - Known limitation: the deployment is configured by hand, so the two apps' settings are not recorded as
   code and can only be verified against the running deployment.
 
@@ -94,5 +104,9 @@ work.
 
 ## More Information
 
-- Where TLS terminates, and what the container receives, is a separate decision.
-- The CORS policy that makes the cross-origin boundary work is a separate decision.
+- Where TLS terminates, and what the container receives, is
+  [ADR-0003](0003-public-tls-terminates-at-the-container-apps-ingress.md).
+- The CORS policy that makes the cross-origin boundary work is
+  [ADR-0005](0005-cross-origin-access-is-limited-to-configured-browser-origins.md).
+- How the images are built and published is
+  [ADR-0035](0035-builds-and-deployments-are-run-by-hand.md).

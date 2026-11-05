@@ -23,6 +23,10 @@ aggregates — because a failure between them leaves a half-applied change.
 Wrapping everything in a transaction would be uniform, and it would hold locks for longer and couple
 unrelated work into one unit for no reason.
 
+An explicit transaction is for exactly the case where EF calls made across several services cannot
+otherwise act as one atomic unit, so that a failure rolls all of them back. The alternatives below record
+what each would have cost; the record does not show whether they were weighed before the choice.
+
 ## Decision Drivers
 
 - A partially applied change is worse than a rejection; some operations genuinely need all or nothing.
@@ -38,10 +42,15 @@ unrelated work into one unit for no reason.
 
 ## Decision Outcome
 
-Chosen option: 1. An operation that writes through more than one save opens a transaction around the
-whole unit, and the early-return failure paths leave without committing, so disposing the transaction at
-the end of the operation rolls the work back. An operation that saves once does not open one, with one
-exception — a role assignment opens a transaction around its single save.
+Chosen option: 1. An operation whose saves must succeed together opens a transaction around the whole
+unit. Its early-return failure paths leave without committing, so disposing the transaction at the end
+of the operation rolls the work back. Today the only such operation is the data import: its account,
+expense and income importers each save once, inside one transaction. Signup and password-reset
+verification also save twice without a transaction, because the first save only expires stale codes and
+need not roll back with the second.
+
+An operation that saves once does not open a transaction, with one exception: a role assignment opens
+one around its single save. The record does not show why.
 
 ### Consequences
 
@@ -61,12 +70,16 @@ exception — a role assignment opens a transaction around its single save.
 
 ### Confirmation
 
-- Test: the failure path of a multi-write operation is exercised with the second write failing, and the
-  first is asserted absent afterwards.
-- Gap: no such test exists yet; the import path is the operation the rule exists for, and its transaction
-  is only covered through the version gate.
-- Review: a service that performs two saves without a transaction is a defect, and an operation that opens
-  one for a single save is questioned.
+- Instruction: `.github/instructions/server.instructions.md` (Persistence: keep transaction boundaries
+  explicit for multi-step writes).
+- Gap: no test exercises a rollback. The import is the operation the rule exists for, and nothing covers
+  its transaction:
+  - `ImportVersionGateFixture` rejects the package before the transaction is opened, with the transaction
+    factory substituted;
+  - no hosted fixture calls the import;
+  - the authorization matrix ignores it.
+- Review: a service whose saves must succeed together but run without a transaction is a defect, and an
+  operation that opens one for a single save is questioned.
 
 ## Pros and Cons of the Options
 

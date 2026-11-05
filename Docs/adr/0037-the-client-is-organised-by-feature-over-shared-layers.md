@@ -22,6 +22,8 @@ it hard to know which pieces belong together.
 
 Sharing is the counter-pressure. A second feature that needs the same thing either copies it or promotes
 it, and promotion has to have a place to happen.
+The alternatives below record what each would have cost; the record does not show whether they were
+weighed when the layout was chosen.
 
 ## Decision Drivers
 
@@ -38,21 +40,27 @@ it, and promotion has to have a place to happen.
 
 ## Decision Outcome
 
-Chosen option: 1. Each feature holds its pages, its components, its forms, its contexts and its API hooks.
-Below the features sit the shared folders — `api` for the HTTP client, interceptors and shared types;
-`concerns` for cross-cutting behaviour such as caching, logging, token providers and session handling;
-`lib` for utilities; and the shared `components`, `data`, `hooks`, `routes` and `stores` folders. A feature
-depends on those layers, and the layers are meant not to depend on a feature.
+Chosen option: 1. Each feature holds its pages, components, forms, schemas, contexts and the hooks that
+orchestrate its mutations. Below the features sit the shared folders: `api` for the HTTP client,
+interceptors, error types and the per-resource query and mutation hooks; `concerns` for cross-cutting
+behaviour such as authentication tokens and logout, caching, logging, storage keys and the PWA; `lib` for
+utilities; and the shared `components`, `contexts`, `data`, `hooks` and `stores` folders. A feature
+depends on those layers, and the layers are meant not to depend on a feature. `App.tsx` and
+`routes/AppRoutes.tsx` are the composition root and import features by design.
 
-In practice they do: shared hooks, the logout manager and the sidebar import from features, because a
-piece promoted to a shared folder kept its old imports. Feature-to-feature imports also exist — the
-dashboard composes other features' data — and one feature folder, `features/shared`, holds sheets that
-several features use. Both are visible in the import graph rather than prevented by the structure, which
-is the one place this record's rule is softer than the folder layout suggests.
+In practice the direction does not hold. Shared folders import features: the API hooks `useMe` and
+`useSignup` and the logout manager import from `features/auth`, and the sidebar menus and the user menu
+import from `auth`, `maintenance` and `userSettings`. Most feature-to-feature imports are into
+`features/auth`: six features (accounts, dashboard, expenses, incomes, users, userSettings) import its
+permission components, contexts, session notice or session-clearing hook, so `auth` already behaves as a
+shared layer. The dashboard also imports the expense and income renew helpers, and one feature folder,
+`features/shared`, holds sheet states that expenses and incomes use. None of this is prevented by the
+structure or by lint, which is the one place this record's rule is softer than the folder layout suggests.
 
 ### Consequences
 
-- Good, because a screen's code is in one folder, and its removal is one deletion.
+- Good, because a screen's code is in one folder, so removing it is that folder plus its route and menu
+  entries.
 - Good, because shared transport and state exist once, which is what makes the interceptors and the query
   client possible at all.
 - Good, because a new screen has an obvious home that does not need a decision.
@@ -67,8 +75,12 @@ is the one place this record's rule is softer than the folder layout suggests.
 
 ### Confirmation
 
-- Review: an import from a shared layer into a feature is a defect; the existing ones are debt to be
-  removed, not a pattern to copy. A new feature-to-feature import is challenged, and recorded if it stays.
+- Instruction: `.github/instructions/client.instructions.md` (Architecture) states the one-way rule.
+- Review: a new import from a shared layer into a feature is a defect, and a new feature-to-feature import
+  is challenged. Whether the existing ones are moved into shared layers or sanctioned is undecided; until
+  it is, they are not a pattern to copy.
+- Gap: nothing mechanical enforces the direction; `eslint.config.js` has no `no-restricted-imports` or
+  import-boundary rule.
 - Review: a new file in a shared layer states what more than one feature uses it.
 
 ## Pros and Cons of the Options

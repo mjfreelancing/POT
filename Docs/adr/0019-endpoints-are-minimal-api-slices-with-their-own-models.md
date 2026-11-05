@@ -22,6 +22,11 @@ projecting balances have different models, different rules and different failure
 forces shared models and a shared pipeline, and every addition widens the group.
 
 Minimal APIs make the operation the unit: its route, its metadata and its handler are declared together.
+Minimal APIs suit a pure API with no views. Independent handlers inject only what they need, are easier
+to test, and can be configured individually for concerns such as Problem Details and rate limiting.
+Operation slices map well to the client's calls. Per-operation models and mapping keep each operation
+independently changeable, and only genuinely common models are shared. The record does not show whether
+returning entities or generated handlers were weighed.
 
 ## Decision Drivers
 
@@ -38,14 +43,17 @@ Minimal APIs make the operation the unit: its route, its metadata and its handle
 
 ## Decision Outcome
 
-Chosen option: 1. Each operation has its own folder containing its handler, its request and response
-models, its mapping, its validation and its entity checks. Handlers are static and take only the services
+Chosen option: 1. Each operation has its own folder in the host containing its handler, its request and
+response models, its request mapping and its request validator, and a folder of the same name in the
+application layer holding its service, input and output models, mapping and entity checks. Handlers are static and take only the services
 they use; one handler is an exception and returns an untyped result. Most response models derive from one
 shared base carrying the row identifier and version, so "its own model" means what the operation adds
 rather than a type built from nothing.
 
-Response metadata and the rate-limit policy are declared once per feature group, not per operation, so a
-new route in a feature inherits them. Mapping is written by hand — no mapping library is referenced — so a
+The standard failures (the validation-problem `400` and the `500`) and the rate-limit policy are declared
+once per feature group, so a new route in a feature inherits them. Each operation declares its own success
+response, its authorization and the failures specific to it, such as `401`, `404`, `409` and the
+request-body `408` and `413`. Mapping is written by hand — no mapping library is referenced — so a
 shape change is a compile error rather than a silent convention.
 
 Endpoints are registered as a chain of per-feature extension methods, so the registration reads as the
@@ -69,7 +77,10 @@ API's surface.
 
 - Test: `EndpointResponseMetadataFixture` asserts the shared rules over every endpoint — the standard
   failures, one validation problem, and no `422` — and pins the success shape of named routes. It does not
-  assert a single endpoint's own failure set, because those declarations are made per feature group.
+  assert an operation's own failure set, which each operation declares for itself.
+- Test: `OpenApiSecurityFixture.Should_Use_Distinct_Schemas_For_Feature_Specific_Requests_And_Responses`
+  asserts that operations publish feature-specific request and response schemas rather than one shared
+  `Request` or `Response`.
 - Review: the hand-written mapping has no mechanical check; the evidence is that no mapping library is
   referenced, so adding one is the change that would need challenging.
 - Review: a shared request model introduced between operations is a decision to be challenged, not a

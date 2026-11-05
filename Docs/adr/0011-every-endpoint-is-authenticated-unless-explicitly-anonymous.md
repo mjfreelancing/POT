@@ -18,10 +18,12 @@ and that a test must keep the two in step.
 
 Authorization in ASP.NET Core is applied per endpoint: a route with no policy and no fallback is
 reachable by anyone. That is a safe default for a public site and an unsafe one for an API whose every
-route but sign-in, sign-up, refresh and the health probes expects a caller.
+route but sign-in, sign-up, password reset, refresh, logout and the health probes expects a caller.
 
 The failure is silent in both directions. A new protected endpoint that forgets its policy is
-immediately public, and nothing in a normal review catches it.
+immediately public, and nothing in a normal review catches it.That happened: [PRD-026](../Future/PRD-026-cross-tenant-authorization-hardening.md) found that the API
+had no fallback policy and that `PUT /api/users/{id}` declared no requirement, so an anonymous caller
+could edit any user's details (§2.1, issue I1); its §4.3 introduced the fallback and the endpoint test.
 
 ## Decision Drivers
 
@@ -40,12 +42,16 @@ immediately public, and nothing in a normal review catches it.
 ## Decision Outcome
 
 Chosen option: 1. The authorization fallback requires an authenticated user, so a route is protected
-unless it explicitly opts out. Nine routes are reachable without a session: the seven authentication
-operations — including logout — and the two health probes, each carrying `AllowAnonymous()` explicitly.
+unless it explicitly opts out. Outside Development, nine routes are reachable without a session: the
+seven authentication operations — including logout — and the two health probes, each carrying
+`AllowAnonymous()` explicitly. Development adds two more, the OpenAPI document and the Scalar reference
+page, also marked `AllowAnonymous()`.
 The probes are also short-circuited at routing, so authorization never runs for them at all.
 
-A test enumerates the application's endpoints and requires each one to be either authorized or
-explicitly anonymous, so a new route cannot arrive without that decision having been made.
+A test enumerates the application's endpoints and requires each one to declare its own authorization
+requirement or be explicitly anonymous, so a new route cannot arrive without that decision having been
+made. No route therefore relies on the fallback alone in the test host; the fallback is the net for a
+route the test does not see, such as one mapped only in another environment.
 
 ### Consequences
 
@@ -56,15 +62,17 @@ explicitly anonymous, so a new route cannot arrive without that decision having 
 - Bad, because the public routes now depend on that annotation, so removing one accidentally locks
   users out rather than exposing data.
 - Bad, because the fallback is authentication only: it says the caller is signed in, not that they may
-  do this, so most protected routes still need their own permission policy — the profile and user routes
-  are the exception, and they require authentication alone.
+  do this, so most protected routes still need their own permission policy — the three profile routes and
+  `PUT /api/users/{id}` are the exception, and they declare the `AuthenticatedUser` policy explicitly.
 - Bad, because the endpoint inventory must be maintained as the list of anonymous routes changes.
 
 ### Confirmation
 
-- Test: `EndpointAuthorizationMetadataFixture` asserts that the set of anonymous routes equals the
-expected set, so an unexpected `AllowAnonymous()` fails as well as a missing one, and a separate theory
-pins the exact policy on named routes, which is what distinguishes authentication from authority.
+- Test: `EndpointAuthorizationMetadataFixture` asserts that every endpoint declares a requirement or is
+anonymous, and that the set of anonymous routes equals the expected nine, so an unexpected
+`AllowAnonymous()` fails as well as a missing one; a separate theory requires the expected policy on
+eight named routes, which is what distinguishes authentication from authority. The fixture hosts the API
+as Production, so the Development-only anonymous routes are outside it.
 - Review: `AllowAnonymous()` on a route that reads or writes tenant data is a defect, whatever the
   fallback says.
 

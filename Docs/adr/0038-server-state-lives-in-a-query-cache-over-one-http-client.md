@@ -22,6 +22,8 @@ others. Fetched data also has to survive navigation, refetch when stale, and not
 Transport has its own cross-cutting behaviour: base URL, credentials, correlation identifier, token
 refresh, and turning a failure into the shape the interface uses. If every screen configured that itself,
 they would diverge.
+The alternatives below record what each would have cost; the record does not show whether they were
+weighed before the choice.
 
 ## Decision Drivers
 
@@ -40,12 +42,15 @@ they would diverge.
 
 Chosen option: 1. Server data is read through query hooks and changed through mutation hooks, keyed by
 resource. The client sets a five-minute stale time and a thirty-minute retention, so a screen shows what it
-has and refetches only when the data is older than that, or when a mutation invalidates it. Transport is one
-axios instance with its interceptors; a second instance exists only for the authentication calls that must
-not run through the interceptor that depends on them.
+has and refetches only when the data is older than that, or when a mutation invalidates it. Transport is the
+default axios instance, configured once at start-up (`src/main.tsx`, `src/api/axios.ts`) with its
+interceptors; a second instance, `authClient`, exists only for the token refresh, which must not run through
+the authentication interceptor that depends on it. It shares the correlation and normalising interceptors.
 
-Invalidation is explicit: an operation declares which query keys it affects, so a change to the accounts
-list refreshes what derives from accounts and nothing else.
+Invalidation is explicit: a mutation names the keys it changed, and one dependency table
+(`src/concerns/cache/cacheInvalidation.ts`) adds what derives from them — expenses and incomes invalidate
+accounts, and accounts invalidate projections. A few call sites bypass the table and call the query client
+directly: the dashboard renew actions for projections, and the budget reminders form for settings.
 
 ### Consequences
 
@@ -55,19 +60,26 @@ list refreshes what derives from accounts and nothing else.
   is defined once and inherited by every call.
 - Good, because a mutation's effect on cached reads is stated where the mutation is written, so it can be
   reviewed.
-- Bad, because retries are the library's default rather than a decision: a failing query is retried, and
-  only one hook opts out, so a throttled or forbidden read is repeated before the user sees it.
+- Bad, because the query hooks never reject: `useGet` resolves a failure as a `FailResult` value, so the
+  library treats every failure as success. Its retries never run (the `retry: false` on `useMe` has no
+  effect), `isError` is never set, and a failed read is held as fresh data for the five-minute stale time,
+  so remounting a screen shows the cached failure rather than asking again.
 - Bad, because the invalidation graph is maintained by hand: a mutation that forgets a dependent key leaves
   a stale screen, and nothing detects it.
-- Bad, because query keys are strings with structure, so a typo is a silent miss rather than a compile
-  error.
+- Bad, because the keys a query is stored under are untyped `string[]` while invalidation accepts a typed
+  union, so a query whose key is outside the union (`settings`, `roles`) can be invalidated only by a direct
+  call, and a mismatch between the two is a silent miss rather than a compile error.
 - Bad, because a second axios instance is needed for authentication, which is a wrinkle every reader
   encounters.
 
 ### Confirmation
 
-- Test: the invalidation helper and the mutation hooks are tested with the query client substituted, so the
-  assertions are about which keys a mutation invalidates rather than about refetching from a real cache.
+- Test: `tests/concerns/cache/cacheInvalidation.test.ts` asserts the dependency expansion against a mocked
+  query client. `tests/features/users/delete/hooks/useDeleteUser.test.tsx`,
+  `tests/features/approvals/components/PendingApprovalMobileCard.test.tsx` and
+  `tests/features/users/UsersPage.test.tsx` assert the keys a mutation invalidates, with
+  `useCacheInvalidation` mocked; the account, expense and income mutation hooks have no such fixture.
+- Instruction: `.github/instructions/client.instructions.md` (State and data flow).
 - Gap: no test runs a mutation against a real cache and observes a dependent query refetch.
 - Review: a new mutation names the keys it invalidates; a screen that fetches with `useEffect` instead of a
   query hook is a defect.

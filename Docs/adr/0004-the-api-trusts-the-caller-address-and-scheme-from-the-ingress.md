@@ -48,9 +48,11 @@ Chosen option: 1. `AddPotForwardedHeaders()` registers the options setup and `Us
 first in the pipeline, with `XForwardedFor | XForwardedProto` enabled, `KnownProxies` and
 `KnownIPNetworks` cleared, and `ForwardLimit` left at the framework default of one.
 
-Trusting any sender is deliberate: the ingress address cannot be enumerated, the container is
-unreachable except through the ingress (`Source/Docker/DEVELOPER.md`, "How Azure differs from local"),
-and the limit of one means only the entry the ingress wrote is used.
+Trusting any sender is deliberate: the ingress address cannot be enumerated, the ingress is the
+container's only public route (`Source/Docker/DEVELOPER.md`, "How Azure differs from local"), and the
+limit of one means only the entry the ingress wrote is used. The deployment record does not say whether
+another workload in the same environment could reach the container directly, and no
+infrastructure-as-code exists to check it.
 
 ### Consequences
 
@@ -63,8 +65,9 @@ and the limit of one means only the entry the ingress wrote is used.
 - Bad, because another proxy in front of the ingress would become the address the API sees, so this
   must be revisited if one is ever added.
 - Neutral, because the local compose proxy (`nginx.conf`) sets `Host`, `Upgrade` and `Connection` only, so
-  local calls through it present the client container's address and always report `http`. That is correct
-  for a local stack and needs no change.
+  local calls through it present the client container's address and always report `http`; locally every
+  anonymous caller therefore shares one rate-limit partition. Whether to forward `X-Forwarded-For` there
+  is an open follow-up in `DECISIONS-TO-DISCUSS.md` (forwarded headers, item 2).
 
 ### Confirmation
 
@@ -72,8 +75,10 @@ and the limit of one means only the entry the ingress wrote is used.
   not, `KnownProxies` and `KnownIPNetworks` are empty, and `ForwardLimit` is 1 — the last as a default
   the fixture checks rather than a value the setup assigns.
 - Test: `ForwardedHeadersFixture` drives real requests through the pipeline, so the unit test cannot pass
-  while the middleware is unused: a forwarded scheme produces an `https` location for a created resource,
-  an absent one produces `http`.
+  while the middleware is unused: a forwarded scheme produces an `https` location for a created resource
+  and an absent one `http`; two forwarded addresses get separate anonymous rate-limit partitions; a login
+  records the forwarded address on its session; and with two entries in `X-Forwarded-For` only the
+  rightmost is recorded, so a caller cannot choose its own address.
 - Gap: no request-level test covers `X-Forwarded-Host` being ignored; that half of the decision rests on
   the options test alone.
 - Review: a second proxy, a CDN, or any published port on the API container invalidates this record.

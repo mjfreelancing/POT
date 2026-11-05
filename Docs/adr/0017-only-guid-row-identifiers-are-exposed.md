@@ -21,6 +21,8 @@ also the worst possible thing to publish. An incrementing number in a URL tells 
 records exist, lets them walk the space, and makes a leaked link guessable for its neighbours.
 
 Two uses want different things from an identifier, so the design answers both rather than compromising.
+The public identifier is a security measure, to make routes harder to guess than incrementing identifiers
+would. The record does not show whether the other options below were weighed.
 
 ## Decision Drivers
 
@@ -38,8 +40,9 @@ Two uses want different things from an identifier, so the design answers both ra
 
 ## Decision Outcome
 
-Chosen option: 1. `RowId` is a GUID generated on insert, indexed, and used as the identifier in routes,
-request and response payloads and export files. The integer key remains a database implementation detail:
+Chosen option: 1. `RowId` is a random GUID assigned when a row is added, or carried over from the export
+file when an import creates the row. It sits under a unique index and is the identifier in routes, request
+and response payloads, token claims and export files. The integer key remains a database implementation detail:
 foreign keys inside the database are integer keys, and no payload or route carries one.
 
 ### Consequences
@@ -60,7 +63,10 @@ foreign keys inside the database are integer keys, and no payload or route carri
 
 - Test: the endpoint fixtures address records by `RowId`, and the cross-tenant fixtures show that knowing
   another tenant's identifier still answers `404`.
-- Review: a payload that carries an integer key, and a route that accepts one, are defects.
+- Review: a payload that carries an integer key, and a route that accepts one, are defects.- Instruction: `.github/instructions/server.instructions.md` (Architecture): public contracts use `RowId`
+  and `Etag`, and never expose internal persistence ids.
+- Review: every identifier route segment is declared `{id:guid}`, so a route that accepts an integer key
+  would have to change that constraint, which is the change to challenge.
 
 ## Pros and Cons of the Options
 

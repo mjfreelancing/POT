@@ -40,12 +40,18 @@ rather than a silent misconfiguration.
 
 ## Decision Outcome
 
-Chosen option: 1. The repository holds `.env.development.template`: every key the compose file
-substitutes, with startup-safe values where a local default is harmless and marked placeholders where a
-value must be supplied. Copying it produces a working local stack; the copy is ignored.
+Chosen option: 1. The repository holds `Source/Docker/.env.development.template`: every per-developer
+key the compose file substitutes, with startup-safe values where a local default is harmless and marked
+placeholders where a value must be supplied. Copying it produces a working local stack; the copy is
+ignored (`.gitignore` ignores `*.development*` and `*.production*`, with the template as the one
+exception). The two non-secret keys, `COMPOSE_PROJECT_NAME` and `POSTGRES_DB`, are in the tracked `.env`.
+The API run outside Docker reads its local values from `appsettings.Development.json`, which the same
+rule ignores; no template is tracked for it.
 
-Production values come from the platform's secret store and reach the container as environment settings,
-so the image contains no credential and a rotated value does not need a rebuild.
+Production values come from the platform's secret store (Key Vault, read through a managed identity, in
+`Docs/Azure/POT-Azure-Diagram.mmd`) and reach the container as environment settings, so the image
+contains no credential and a rotated value does not need a rebuild. The API has no Key Vault client of its
+own; how each value is mapped is container-app configuration that the repository does not record.
 
 ### Consequences
 
@@ -62,8 +68,12 @@ so the image contains no credential and a rotated value does not need a rebuild.
 ### Confirmation
 
 - Review: a real credential in a tracked file, and a template that contains one, are both defects.
-- Test: the local compose instructions are executable as written — copying the template produces a stack
-  that starts, which is the property the template exists for.
+- Mechanism: `.gitignore` ignores `*.development*` and `*.production*` and re-includes only
+  `Source/Docker/.env.development.template`, so an ordinary `git add` does not pick up a working copy.
+- Test: `OptionsStartupValidationFixture` asserts that missing or malformed required settings fail startup,
+  which is what makes an unsupplied value a failed start rather than a silent default.
+- Gap: nothing scans tracked files for credentials, and no test checks that a copy of the template starts
+  a stack; both are kept by review.
 
 ## Pros and Cons of the Options
 
@@ -91,4 +101,5 @@ so the image contains no credential and a rotated value does not need a rebuild.
 
 - Which settings are required at startup is decided by each settings type's validation, not by this
   record.
-- The deployment that consumes the secret store is a separate decision.
+- The deployment that consumes the secret store is
+  [ADR-0036](0036-production-runs-two-container-apps.md).

@@ -4,6 +4,7 @@ title: Logs record request metadata and never submitted values
 status: accepted
 date: 2026-10-22
 area: backend
+related-prds: [PRD-030]
 ---
 
 # ADR-0032 (backfilled): Logs record request metadata and never submitted values
@@ -23,6 +24,11 @@ the amounts of a user's accounts.
 
 Logs are read by more people, kept longer and stored in more places than the database. A value that
 enters a log has left the controls that were designed around it.
+
+Before [PRD-030](../Future/PRD-030-problem-details-consolidation.md), a hand-written middleware wrote
+every request body whenever the server ran outside Production and recorded no request metadata, which is
+close to option 2 below. PRD-030 (requirements A2 to A6) replaced it with this decision, to keep
+credentials and sensitive financial data out of logs.
 
 ## Decision Drivers
 
@@ -50,15 +56,18 @@ correlation identifier is how a user's report and a log entry are joined.
 ### Consequences
 
 - Good, because the request log cannot be made to contain a body or a header value in any environment.
-- Bad, because the rule has exceptions in the current code: several authentication handlers log the
-  username, a reference code or a verification code alongside their call, and one logs the refresh token.
-  Those statements contradict this decision and are defects to be removed, not an accepted exception.
+- Bad, because the rule has exceptions in the current code, all through call logging at `Information` and
+  so in every environment: the sign-up and password-reset verification handlers and services log the
+  username, reference code and verification code; `AuthService.RefreshAsync` logs the refresh token; and
+  other handlers, services and the email sender log usernames and reference codes. They contradict this
+  decision; whether and when they are removed is not yet decided.
 - Good, because the correlation identifier joins the caller's report to the server's entries, including
   on requests that failed before a handler ran.
 - Good, because the rule is uniform, so a developer cannot enable verbosity that leaks in development and
   forgets it is on.
-- Bad, because request logging itself is enabled by a single logging level entry, so removing it silently
-  stops every entry while leaving the no-body rule intact.
+- Bad, because request logging itself is enabled by a single logging level entry in `appsettings.json`,
+  so removing it stops every entry with no sign at run time; `RequestLoggingFixture` asserts the entry is
+  present.
 - Bad, because reproducing a failure from logs alone is sometimes impossible without the input that caused
   it.
 - Bad, because a debugging session has to rely on tests or on temporary instrumentation rather than on a
@@ -67,9 +76,11 @@ correlation identifier is how a user's report and a log entry are joined.
 
 ### Confirmation
 
-- Test: `RequestLoggingFixture` asserts the entry carries the method, the path and the status, that the
-  health probes are not logged, and that a body sent in a request never appears; the correlation identifier
-  in entries is asserted by the enricher fixture.
+- Test: `RequestLoggingFixture` asserts the request-log category is configured at `Information`, that the
+  entry carries the method, the path and the status, that the health probes are not logged, and that a
+  body sent in a request never appears; the correlation identifier in entries is asserted by
+  `CorrelationIdLogEnricherFixture`.
+- Gap: no test asserts that call logging carries no credential, which is how the exceptions above exist.
 - Review: a log statement that includes a request or response value is a defect. The one path payload
   values take into logs is call logging with an argument object, so an object logged that way must not
   carry a credential field.

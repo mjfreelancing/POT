@@ -28,6 +28,9 @@ administrator at any time.
 The resolution happens during authorization, before the user-context middleware has established which
 site the caller is acting in, so it is necessarily cross-tenant: it answers "what may this user do
 anywhere", not "what may this user do here". Site scoping is enforced later, by the data layer.
+[PRD-026](../Future/PRD-026-cross-tenant-authorization-hardening.md) §4.6 records why permission and
+site claims are kept out of the token: a JWT payload is encoded, not encrypted, so a claim is readable by
+anyone holding the token; and a claim goes stale while the token stays valid.
 
 ## Decision Drivers
 
@@ -45,7 +48,9 @@ anywhere", not "what may this user do here". Site scoping is enforced later, by 
 
 ## Decision Outcome
 
-Chosen option: 1. `PermissionService` loads the caller's roles and their permissions — reference data, not
+Chosen option: 1, because a permission carried as a claim would be readable by whoever holds the token
+and would stay in force until the token expired. `PermissionService` loads the caller's roles and their
+permissions — reference data, not
 site data — flattens them to names, and adds the platform-administrator permission when the caller's
 identifier appears in the deployment's platform-administrator configuration. The handler runs per
 requirement and succeeds only when the resolved set contains the required permission. A caller whose
@@ -62,12 +67,17 @@ so the interface is shaped by the same answer that the server enforces.
 - Good, because the token stays identity-only, so a leaked token reveals no permission map and no role
   names.
 - Good, because there is one source of truth: the interface and the enforcement cannot disagree.
-- Bad, because every authorized request costs at least one database read of the caller's roles and
-  their permissions, in a scope created in the handler.
+- Bad, because the read is repeated per requirement, not per request: the handler resolves the set
+  afresh, in a scope it creates, for each permission an endpoint declares, so the accruals route, which
+  declares three, pays three reads on top of the session check.
 - Bad, because the resolution cannot be site-scoped: it runs before the site is known, so it is
   deliberately cross-tenant and site confinement stays the data layer's job.
 - Bad, because platform administration is decided from deployment configuration rather than from the
-  same role data, so a permission answer can change only by redeploying.
+  same role data, so that grant changes only when the configuration changes and the API restarts: the
+  options are bound once into a singleton.
+- Bad, because a policy name is not checked against the permissions that exist: the policy provider turns
+  any name it does not recognise into a requirement, so a misspelt name builds, is held by no one and
+  answers `403` to every caller. Whether to close that is open (`DECISIONS-TO-DISCUSS.md`, DD-09).
 
 ### Confirmation
 
@@ -78,8 +88,11 @@ passes.
 - Test: `EndpointAuthorizationMetadataFixture` requires every endpoint to be authorized or explicitly
 anonymous and pins the expected policy for the routes it names, so a new route cannot silently join the
 set of unprotected ones.
-- Gap: no unit fixture covers the permission flattening or the configuration-added platform permission;
-all of that rests on the hosted matrix.
+- Gap: no fixture checks the resolution itself. The matrix takes each caller's expected permissions from
+`PermissionService`, so it proves enforcement against the resolved set, not the flattening; its callers
+are a tenant `Admin` and a `Viewer`, so it proves the platform routes refuse them, while the
+configuration-added grant is exercised only by fixtures that start `PlatformAdminApiWebApplicationFactory`
+(for example the approvals `UpdateStatusFixture`).
 - Review: caching must not be added without recording the staleness window it introduces; the reason
 this design exists is that there is none.
 

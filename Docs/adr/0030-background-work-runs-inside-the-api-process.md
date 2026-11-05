@@ -16,13 +16,15 @@ that scaling out would duplicate it.
 
 ## Context and Problem Statement
 
-The work is scheduled and periodic rather than request-driven: send queued mail, sweep expired one-time
-codes, run the budget reminder cycle. It needs the application's services and its database, and it needs
+The work runs outside requests: drain queued mail as it arrives, mark expired one-time codes as expired
+every five minutes, and run the budget reminder cycle every hour. It needs the application's services and its database, and it needs
 to run on a schedule.
 
 A separate worker process would isolate the work and let it scale independently. It would also be a second
 deployable, a second configuration surface, and a second thing that can be running an older version than
 the API — for a deployment operated by one person.
+
+The workers are kept in the API process for simplicity.
 
 ## Decision Drivers
 
@@ -44,9 +46,13 @@ the database wait until it is ready before their first cycle and then run on a s
 drains the in-memory email channel simply starts draining when the host starts. The deployment is assumed
 to run one replica, so no two processes run the same cycle at the same time.
 
-The single-replica assumption is what makes the scheduling safe: a per-process timer would otherwise run
-the same job once per replica. It is an assumption about the deployment rather than something the
-application configures, and nothing in the repository sets a replica count.
+The single-replica assumption removes only the scale-out duplicate: a per-process timer would otherwise
+run the same job once per replica. It is an assumption about the deployment rather than something the
+application configures, and nothing in the repository sets a replica count. It does not make the reminder
+safe on its own: the cycle runs once at start-up and then at each UTC hour, decides to send only by
+matching the configured local hour, and records nothing, so a restart inside the trigger hour sends that
+hour's reminders again and a trigger hour with no process running sends none. The expired-code update is
+idempotent, so a duplicate run of it is only redundant work.
 
 ### Consequences
 
@@ -58,15 +64,19 @@ application configures, and nothing in the repository sets a replica count.
 - Bad, because the work stops when the API stops and competes with requests for the same resources.
 - Bad, because a second replica would duplicate every scheduled cycle, so horizontal scaling is currently
   blocked by the design rather than by capacity.
-- Bad, because a long cycle holds a request thread pool slot and is not observable except through logs.
+- Bad, because a cycle runs on the same thread pool and database connection pool as requests, and is not
+  observable except through logs.
 
 ### Confirmation
 
 - Test: `BudgetReminderEmailWorkerFixture` and `ExpiredOtpCleanupWorkerFixture` assert that each waits for
-database readiness before its first cycle and does not run when the host is stopping.
-- Gap: the email drainer has no fixture of its own; its behaviour is covered through the channel's tests.
+  the `database` health check before creating the scope for its first cycle; the reminder fixture also
+  asserts that one user's failure does not stop the rest of the cycle.
+- Gap: `SendEmailWorker` and the channel it drains have no fixtures, no fixture asserts behaviour at host
+  shutdown, and the hosted integration suite removes every hosted service, so no test runs a worker inside
+  a host.
 - Review: a new scheduled job must be written to be idempotent for its period, because the single-replica
-  assumption is environmental rather than enforced.
+  assumption is environmental rather than enforced. The budget reminder does not meet this today.
 
 ## Pros and Cons of the Options
 
@@ -94,8 +104,9 @@ database readiness before its first cycle and does not run when the host is stop
 
 ## More Information
 
-- This record is expected to be superseded by a more scalable arrangement. The shape it would take is
-  written up in `Docs/Future/PRD-019-email-outbox-durable-dispatch.md`: a database outbox drained with
-  claim and lease, delivering email without a new deployable, and explicitly leaving the expired-code
-  sweep out of scope.
+- `Docs/Future/PRD-019-email-outbox-durable-dispatch.md` (Proposed) would make scheduled email safe under
+  more than one replica and across restarts — a database outbox drained with claim and lease — while
+  keeping the workers in the API process and adding no deployable, and it leaves the expired-code update
+  out of scope. It would replace the single-replica assumption for email, not the in-process hosting; the
+  record does not show that the hosting itself is expected to change.
 - The email mechanism being queued in process is a separate decision with its own intended supersession.

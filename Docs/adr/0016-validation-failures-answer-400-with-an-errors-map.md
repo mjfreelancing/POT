@@ -23,12 +23,16 @@ next to the input rather than at the top of the form.
 Two statuses are plausible. `400` is the long-standing answer for a request the server will not accept.
 `422` was introduced for a request that is syntactically valid but semantically wrong — which describes
 most validation rules here. Either could be defended on its own.
+Until commit `bec69a48`, request validation and the constraint and unprocessable-entity refusals
+answered `422` — PRD-026 records the earlier rule for refusals — and the client had no `400` branch; that
+commit moved them all to `400`. Its message gives no reason, so the drivers below are read from the code
+and PRD-030 rather than from a recorded rationale.
 
 ## Decision Drivers
 
 - One status per category, so the client has one branch and the contract has one entry.
 - A machine-readable field map, so the interface can point at the input.
-- Proxies, gateways and tooling handle the conventional status more consistently.
+
 
 ## Considered Options
 
@@ -40,9 +44,11 @@ most validation rules here. Either could be defended on its own.
 ## Decision Outcome
 
 Chosen option: 1. Validation failures answer `400` with a Problem Details body carrying the `errors` member,
-which maps each field to its messages. Refusals from business rules answer `400` as well and are written
-into the same shape, differing in the `detail` they carry; no `type` or error-code member distinguishes
-them, because a client-visible error code was deliberately removed from the wire.
+which maps each field to its messages, and no `detail`. Refusals from business rules that map to `400`
+(`BadRequest` and `Constraint`) are written into the same shape: the message sits in `errors` under the
+field it names, or under the empty key when it belongs to the whole request. No `type`, `detail` or
+error-code member distinguishes a refusal from a validation failure; PRD-030 later removed the error code
+from the wire (B9).
 
 The switch away from `422` was made deliberately, in a single change that updated the route declarations,
 the client's error mapping and the metadata fixture together, so no route answers both.
@@ -55,19 +61,23 @@ the client's error mapping and the metadata fixture together, so no route answer
 - Good, because the contract declares one failure for "the request was not acceptable", which is
   simpler to keep accurate per endpoint.
 - Bad, because `400` now covers two situations — the request was malformed, and the request was
-  understood but refused — so the status alone does not tell the client which, and the `detail` is the
-  only signal, which is prose rather than something to branch on.
+  understood but refused — so nothing in the body tells the client which; the messages in `errors` are
+  prose rather than something to branch on.
 - Bad, because the previous `422` declarations had to be found and changed, and a missed one would have
   produced a status no client branch handled.
 
 ### Confirmation
 
-- Test: the validation fixtures assert the `400` shape and the `errors` map for a request that fails a
-  rule on one field.
+- Test: `ShouldBeValidationProblemAsync`
+  (`Pot.AspNetCore.Integration.Tests/Host/Extensions/HttpResponseMessageExtensions.cs`), used by the
+  expense, income, user and pipeline fixtures, asserts the `400` status, the validation title, the
+  expected field keys in `errors`, and no `detail`.
+- Test: `EnrichedErrorExtensionsFixture` asserts `BadRequest` and `Constraint` map to `400`, a refusal is
+  written as a validation problem, and a whole-request refusal is filed under the general key.
 - Test: `EndpointResponseMetadataFixture` asserts the endpoints' metadata — one `400` in the validation
   shape and no `422` declared — while the bodies themselves are asserted by the per-feature fixtures.
-- Review: `422` in a new endpoint is a defect; a refusal that needs its own meaning carries it in the
-  `detail`, not in a new type or code.
+- Review: `422` in a new endpoint is a defect; a refusal that needs its own meaning carries it in its
+  message in `errors`, not in a new type or code.
 - Evidence of the change: commit `bec69a48` removed the `422` route declarations and updated the client's
   error mapping in the same change.
 

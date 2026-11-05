@@ -42,11 +42,14 @@ must be renewed and the request retried rather than surfaced.
 
 Chosen option: 1. The token is held in memory only: a small token provider module is the authoritative copy
 that the transport reads and the refresh writes, and the authentication context mirrors it for rendering.
-Nothing is written to storage. A timer refreshes it before expiry, and a response interceptor refreshes it
-on a `401` and replays the request.
+Nothing is written to storage. A timer refreshes it five minutes before expiry, and a response interceptor
+refreshes it on a `401` (except on `/auth/` routes) and replays the request.
 
-Concurrent requests that fail together wait on one refresh rather than each starting their own, and a
-single logout path clears the session, the token and the cached server data.
+Concurrent requests that fail together wait on the interceptor's one refresh rather than each starting
+their own. Every sign-out reaches one logout function, registered with `logoutManager`, which asks the
+server to end the session and then clears the token, the cached user and the query cache through
+`useClearSession`; the account and site deletion flows call `useClearSession` directly, because the
+server session has already gone with the account.
 
 On a reload the token is gone but the cookie is not, so the application refreshes at start-up to resume
 the session.
@@ -65,16 +68,24 @@ the session.
 - Bad, because the token now has two in-memory homes — the provider the transport uses and the context the
   interface renders from — and a refresh that writes only the provider leaves the context holding a stale
   value, which the timer then re-arms from.
-- Bad, because the start-up refresh has no fixture of its own, so the path a reload takes is verified only
-  by using the application.
+- Bad, because the start-up refresh has no unit fixture of its own; it is exercised by the end-to-end
+  suite, whose authenticated tests begin each page with the refresh cookie and no token in memory.
 - Bad, because the wait-and-replay logic is the most intricate part of the client's transport, and a bug
-  there shows as duplicated or lost requests rather than as an error.
+  there shows as duplicated or lost requests rather than as an error.- Bad, because the single-flight guard covers the interceptor only, and only in one tab: the timer and
+  the start-up refresh call the refresh endpoint on their own, so a refresh that overlaps another can
+  present a refresh token the other has just rotated, which the server refuses and the client treats as
+  a failed refresh that signs the user out.
 
 ### Confirmation
 
-- Test: the interceptor fixtures assert a `401` triggers one refresh, that queued requests are replayed
-  after it, and that a failed refresh ends the session through the same logout path.
-- Review: a token written to storage, or a logout that does not go through the single path, is a defect.
+- Test: `tests/api/interceptors/authInterceptor.test.ts` asserts a `401` triggers a refresh and a retry,
+  that a concurrent `401` is queued and replayed after it, that `/auth/` routes are not retried, and that
+  a failed refresh clears the tokens; `tests/concerns/auth/authTokenProvider.test.ts` asserts that
+  clearing the tokens triggers the logout manager.
+- Test: `tests/features/auth/accessTokenRefreshTimer.test.ts` asserts the timer refreshes when it fires
+  and reports a failure to its error callback.
+- Review: a token written to storage, or a sign-out that bypasses `logoutManager` while the server
+  session still exists, is a defect.
 
 ## Pros and Cons of the Options
 

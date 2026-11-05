@@ -46,17 +46,19 @@ HTTP `ETag` header with `If-Match`, and nothing in the API reads or writes eithe
 Chosen option: 1. The version is a plain value on the entity, the tag is supplied by the caller, and
 each update path compares the two before the change is saved.
 
-The aim is concurrency handling that does not depend on the database. The database-token approach
-would make each update path responsible for setting the original value, and the residual race is
-accepted because two people editing the same record at the same moment is very unlikely in this
-application.
+The aim is concurrency handling that does not depend on the database, and the application check was the
+simpler choice because database concurrency tokens were unfamiliar. The remaining race is accepted
+because two people editing the same record at the same moment is very unlikely in this application. The
+record does not show whether `xmin` or last-write-wins were weighed; they are listed because they are the
+realistic alternatives.
 
 ### Consequences
 
 - Good, because the behaviour is identical on any provider and needs no schema-level configuration.
 - Good, because a conflict is an ordinary business failure answered with `409 Conflict`, carrying the
-  `stale-entity-tag` problem type and the `etag` property name, so it is distinguishable from the conflicts
-  raised by unique and reference constraints, which use their own types.
+  `urn:pot:problem:stale-entity-tag` problem type. That type sets it apart from a duplicate value
+  (`duplicate-value`) and from the conflicts the database raises (`data-conflict`). The body names no
+  field, because only a `400` lists fields.
 - Bad, because the check is advisory: two callers who load the same row and save within the window
   between the check and the save both succeed, and the second silently replaces the first.
 - Bad, because two saves of the same entity within one millisecond produce the same version, so a
@@ -74,7 +76,7 @@ application.
   for approvals) assert that a stale tag answers `409`. Seven fixtures cover the nine paths, because the
   user fixture exercises details, roles and status.
 - Review: a new update path must include its own tag check. Checks are bound by scanning for the
-  interface, so a path that omits one runs an empty chain and nothing fails — there is no cross-cutting
+  interface, so a path whose chain has no tag check runs its other checks and nothing fails — there is no cross-cutting
   enforcement to catch it.
 - Known gap: the settings upsert has a second rule this record does not rely on — a tag supplied for a
   setting that does not exist yet is its own refusal, with a nullable tag in its input.
@@ -91,7 +93,8 @@ application.
 ### Entity Framework concurrency token
 
 - Good: the guard moves into the `UPDATE`, so the check and the write are one atomic step, and the
-  existing `DbUpdateConcurrencyException` mapping already answers `409`.
+  existing `DbUpdateConcurrencyException` mapping already answers `409`. That mapping uses the
+  `data-conflict` type, so keeping `stale-entity-tag` would need a mapping of its own.
 - Bad: the value must be monotonic, and each update path must set the original value from the request,
   so it is more code rather than less.
 

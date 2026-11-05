@@ -20,7 +20,8 @@ The application's data is relational and mostly conventional: a site has users, 
 has accounts, an account has schedules. The work is query composition — projections filtered by site,
 joined across several entities — rather than bulk operations or hand-tuned SQL.
 
-The team writing it is small, and familiarity matters more than the last increment of control.
+Entity Framework Core was chosen for prior experience with it, its built-in migration support, and how
+easily LINQ queries compose. The record does not show whether the other options below were weighed.
 
 ## Decision Drivers
 
@@ -39,9 +40,10 @@ The team writing it is small, and familiarity matters more than the last increme
 
 Chosen option: 1. Entity Framework Core 10 with the Npgsql provider is referenced centrally, entities are
 configured in code, migrations are generated from the model, and reads compose LINQ projections.
-Conventions are applied centrally — entity naming, value generation, enriched enum storage, query filters
-— rather than per entity. Reads do not track by default, with identity resolution enabled so a projection
-still returns one instance per key.
+Conventions are applied centrally in `DbContextBase` rather than per entity: entity naming, `RowId`
+value generation, enriched enum storage and restricted cascades. The four tenant query filters are
+declared per entity in `PotDbContext`. Reads do not track by default. Identity resolution is enabled, so
+a query that reaches the same row twice materialises one instance of it.
 
 ### Consequences
 
@@ -59,9 +61,10 @@ still returns one instance per key.
 
 - Review: a read that returns whole entities where a projection would do is questioned, because it is
   both slower and wider than the contract.
-- Test: the data-layer fixtures run against the in-memory provider, so repository rules are covered without
-  a container; queries that depend on provider translation are covered only by the hosted suite, which runs
-  against a real PostgreSQL instance.
+- Test: the data-layer fixtures run against the in-memory provider, so repository logic is covered
+  without a container. That provider ignores `citext`, unique indexes and SQL translation, so those are
+  covered only by the hosted suite, which runs against a real PostgreSQL container. Whether that split is
+  the intended test strategy is still open (`DECISIONS-TO-DISCUSS.md`, DD-12d).
 
 ## Pros and Cons of the Options
 
@@ -87,5 +90,7 @@ still returns one instance per key.
 
 ## More Information
 
-- No-tracking reads and explicit transactions are separate decisions.
-- The database engine choice is a separate decision.
+- No-tracking reads are part of the repository access model,
+  [ADR-0023](0023-services-access-data-through-feature-repositories.md). Explicit transactions are
+  [ADR-0024](0024-transactions-are-explicit-and-only-where-writes-must-be-one-unit.md).
+- The database engine choice is [ADR-0022](0022-postgresql-is-the-relational-datastore.md).

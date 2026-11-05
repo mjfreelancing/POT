@@ -26,6 +26,10 @@ row therefore does nothing on its own to a token already issued. Two revocations
 
 Neither can be expressed inside the token, because a token cannot be edited after it is issued. They
 can only be detected by comparing the token against current state.
+Global revocation by a per-user token version came first, with the password-change goal recorded in
+[PRD-002](../Future/PRD-002-server-login-logout-session-architecture.md). Per-session rejection was added
+on 2026-10-17, when each access token began to carry its session's identifier; before that, logging out
+stopped the session's refresh but left its access token usable until it expired.
 
 ## Decision Drivers
 
@@ -38,17 +42,19 @@ can only be detected by comparing the token against current state.
 1. Validate the token's session and user version against the database on every request.
 2. Rely on token expiry alone, with no revocation.
 3. Keep a server-side denylist of revoked tokens until they expire.
-4. Cache the validation result per user for a short window.
+4. Cache the validation result per user for a short window.5. Validate the user's token version only, so logging out ends a session's refresh but not its access
+   token.
 
 ## Decision Outcome
 
 Chosen option: 1. On token validation the request reads the user's current security state for the
 token's session: the stored token version must equal the token's, the session must exist, be
 unrevoked and be unexpired, and the account must still be enabled. Any mismatch fails authentication,
-so the caller receives `401`.
+so a protected route answers `401`; an anonymous route carries on with no signed-in caller.
 
-A password change increments the user's version, which invalidates every token issued before it. Logging
-out revokes one session row, which invalidates the tokens that name it. An account being disabled does
+A password change increments the user's version and revokes every unrevoked session row, so the tokens
+issued before it fail on both counts and no refresh token can mint a replacement. Logging out revokes
+one session row, which invalidates the tokens that name it. An account being disabled does
 not bump the version: it is caught by the account-status part of the same check, so its tokens stop being
 accepted for as long as the account is disabled and work again if it is re-enabled.
 
@@ -63,7 +69,11 @@ accepted for as long as the account is disabled and work again if it is re-enabl
   availability of the database is part of authentication rather than only of the work.
 - Bad, because a token is only as revocable as that read is reliable; a stale cache or a replicated
   read in the future would reintroduce the window this design removes.
-- Bad, because the failure is a plain `401` with no distinction between "never valid" and "revoked".
+- Bad, because the failure is a plain `401` with no distinction between "never valid" and "revoked".- Bad, because only the signed-in password change revokes anything: completing a password reset
+  replaces the password hash and touches neither the version nor the sessions, so sessions opened with
+  the old password keep working after a reset.
+- Bad, because the version is incremented only on the path that also revokes every session, so today it
+  never rejects a token the session check would accept; it is held for a future sign-out-everywhere.
 
 ### Confirmation
 
@@ -71,8 +81,11 @@ accepted for as long as the account is disabled and work again if it is re-enabl
   accepted.
 - Test: `RefreshFixture` asserts a refresh rotates the stored token, so the superseded one cannot be
   replayed.
-- Test: the logout fixture asserts a password change increments the token version and that logging out
-  does not, which are the two behaviours this record rests on.
+- Test: `LogoutFixture` asserts that a signed-out device's access token is refused while another
+  device's still works, that a password change ends every session's refresh, and that a password change
+  increments the token version while logging out does not.
+- Gap: no fixture presents a token whose version is stale and expects it to be refused; because a
+  password change also revokes every session, removing the version comparison would leave the suite green.
 - Gap: no fixture asserts that a disabled account's access token is rejected; that half of the check is
   unverified by the suite.
 - Review: no caching may be added to this path without recording the revocation delay it introduces.
@@ -101,6 +114,10 @@ accepted for as long as the account is disabled and work again if it is re-enabl
 - Good: removes most of the cost.
 - Bad: reintroduces exactly the delay the design exists to remove, for a read that is small at this
   scale.
+### Token version only
+
+- Good: the token names no session, and the check reads the user row alone.
+- Bad: a signed-out device's access token keeps working until it expires — the gap closed on 2026-10-17.
 
 ## More Information
 

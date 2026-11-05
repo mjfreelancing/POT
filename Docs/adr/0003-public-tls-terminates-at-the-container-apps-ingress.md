@@ -17,13 +17,16 @@ depends on the container never being reachable except through the ingress.
 
 ## Context and Problem Statement
 
-The apex, www and api domains are served over HTTPS with Azure-managed certificates; which authority
-issues them is not recorded. The API container app accepts traffic from anywhere through its ingress,
+The apex, www and api domains are served over HTTPS with Azure-managed certificates, which the
+deployment record and `Docs/Azure/POT-Azure-Diagram.mmd` give as Let's Encrypt; the issuer does not
+affect this decision. The API container app accepts traffic from anywhere through its ingress,
 with ingress type `HTTP` and target port 5241. The deployed PostgreSQL server requires SSL on its
 connections, while the local compose stack disables it (`DATABASE__SSLMODE=Disable`).
 
-The application itself contains no HTTPS configuration. In the container Kestrel listens on
-`http://+:5241`; run outside Docker, the API listens on `http://localhost:5242`. `UseHttpsRedirection()`
+The application itself contains no HTTPS configuration. The image sets no listening address (its
+Dockerfile only exposes 5241); the compose file sets `ASPNETCORE_URLS=http://+:5241`, and the deployed
+container app's environment, which the repository does not record, must supply the equivalent for the
+ingress target port to match. Run outside Docker, the API listens on `http://localhost:5242`. `UseHttpsRedirection()`
 is absent from the pipeline deliberately, with a comment recording that a reverse proxy in Azure handles
 HTTPS. The local compose stack serves plain HTTP on 5175 and 5241.
 
@@ -42,8 +45,8 @@ HTTPS. The local compose stack serves plain HTTP on 5175 and 5241.
 
 ## Decision Outcome
 
-Chosen option: 1, because it keeps certificate handling out of the application and matches the
-configuration the deployment runs under. The application therefore neither redirects to HTTPS nor knows
+Chosen option: 1, because it is the platform default, keeps certificate handling out of the
+application and matches the configuration the deployment runs under. The application therefore neither redirects to HTTPS nor knows
 the public scheme except through the header the ingress writes.
 
 The alternatives below record what each would have cost; they were not weighed before the choice.
@@ -64,9 +67,12 @@ The alternatives below record what each would have cost; they were not weighed b
 
 - Review: an API container published anywhere other than through its ingress contradicts this record
   and is a security defect, not a configuration preference.
-- Code check: `UseHttpsRedirection()` must stay out of the pipeline. It runs after the forwarded-header
-  middleware, so forwarded traffic already reports `https`; the redirect would fire on requests that
-  arrive without the header — a direct or local call — and send them to an address nothing serves.
+- Code check: `UseHttpsRedirection()` must stay out of the pipeline (`Program.cs` keeps it commented out
+  with the reason). It would add nothing: placed after the forwarded-header middleware, forwarded traffic
+  already reports `https`, and with no HTTPS port configured the middleware finds no redirect target and
+  passes requests through. If an HTTPS port were ever configured, it would redirect requests that arrive
+  without the header — a direct or local call — to an address nothing serves. No test fails if it is
+  re-added.
 - Test: `ForwardedHeadersFixture` shows the `Location` of a created resource as `https` when the proto
   header is forwarded and `http` when it is not, and `ForwardedHeadersOptionsSetupFixture` asserts the
   header handling this record depends on.
@@ -86,7 +92,7 @@ The alternatives below record what each would have cost; they were not weighed b
 ### Encrypt the ingress-to-container hop
 
 - Good: no plain HTTP exists inside the environment at all.
-- Bad: more configuration to keep working, for a hop that is already confined to a private network.
+- Bad: more configuration to keep working, for a hop assumed to stay inside the environment's own network.
 
 ### Terminate TLS in Kestrel
 

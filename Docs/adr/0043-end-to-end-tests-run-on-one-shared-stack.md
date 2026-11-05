@@ -3,7 +3,9 @@ id: ADR-0043
 title: End-to-end tests run on one shared stack against a single seeded database
 status: accepted
 date: 2026-05-11
-area: frontend
+area: cross-cutting
+related-prds: [PRD-012]
+supersedes: [ADR-0001]
 ---
 
 # ADR-0043 (backfilled): End-to-end tests run on one shared stack against a single seeded database
@@ -11,7 +13,7 @@ area: frontend
 **Summary:** In the context of browser tests that need a real API, a real database and realistic data,
 facing the choice between a stack per test file and one stack for the run, we decided on a single shared
 stack — a PostgreSQL container, the API, the client and a mail sink, started once for the run — to achieve
-a suite that starts in seconds and exercises the real pipeline, accepting that the tests share state and
+a suite that pays its setup cost once per run and exercises the real pipeline, accepting that the tests share state and
 must be written knowing it.
 
 ## Context and Problem Statement
@@ -38,12 +40,13 @@ in the database.
 
 ## Decision Outcome
 
-Chosen option: 1. The Playwright configuration starts the API and the client as web servers, and global
-setup starts the PostgreSQL container and the mail sink, waits for the application to report readiness and
-applies the baseline: canonical sites, users and roles inserted as SQL, with the financial data loaded
-through the product's own import and renewal routes. The run then shares that stack, in two workers
-locally and one on CI, and tests are written to isolate themselves within it by owning the data they
-create.
+Chosen option: 1. The Playwright configuration starts the API and the client as web servers. Global setup
+then starts the mail sink and the PostgreSQL container, runs the migrations, inserts the canonical sites,
+users and role assignments as SQL (`e2e/seed/baseline.sql`), and waits for the API to report readiness on
+`/_health/ready`. Only then does it load the financial data through the product's own import and renewal
+routes. The run shares that stack, in two workers locally or one when the `CI` variable is set (no pipeline
+sets it; see [ADR-0035](0035-builds-and-deployments-are-run-by-hand.md)). Tests are written to isolate
+themselves within it by owning the data they create.
 
 ### Consequences
 
@@ -62,8 +65,13 @@ create.
 
 ### Confirmation
 
-- Test: global setup fails the run rather than letting tests start against an unready API, so a broken stack
-  is one clear failure rather than a hundred misleading ones.
+- Setup: `waitForDatabaseReady` in `playwright.globalSetup.ts` polls `/_health/ready` at most 60 times and then
+  throws, and every other setup step throws on failure. A broken stack fails the run once instead of letting
+  tests start against it.
+- Config: `playwright.config.ts` and `playwright.prod.config.ts` each declare one `globalSetup`, one API and one
+  client `webServer`, both with `reuseExistingServer: false`, so a run owns exactly one stack.
+- Instruction: `.github/instructions/e2e.instructions.md` (Isolation classification: all workers share one API
+  process on `5242` and one Testcontainers database on `55432`).
 - Review: a test that mutates data it does not own is a defect, and a new test states how it isolates
   itself.
 
@@ -91,5 +99,11 @@ create.
 
 ## More Information
 
-- How a test declares that it can run beside others is a separate decision.
-- The execution policy — which configurations run, and when — is separate again.
+- How a test is classified for running beside others:
+  [ADR-0044](0044-every-end-to-end-test-declares-whether-it-may-run-beside-others.md).
+- Which configurations run, and when:
+  [ADR-0045](0045-the-end-to-end-matrix-runs-on-every-change-with-a-stricter-release-profile.md).
+- How destructive journeys get a tenant of their own:
+  [ADR-0046](0046-tenants-are-provisioned-and-destroyed-by-the-products-own-routes-in-tests.md).
+- Source: [PRD-012](../Future/PRD-012-playwright-e2e-testing-infrastructure.md) R1, R2 and R10. The earlier combined
+  design record is [ADR-0001](0001-playwright-e2e-testing-infrastructure.md).

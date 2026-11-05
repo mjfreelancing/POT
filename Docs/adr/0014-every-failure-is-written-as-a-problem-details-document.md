@@ -4,6 +4,7 @@ title: Every failure is written as a Problem Details document
 status: accepted
 date: 2025-01-11
 area: backend
+related-prds: [PRD-030]
 ---
 
 # ADR-0014 (backfilled): Every failure is written as a Problem Details document
@@ -11,7 +12,8 @@ area: backend
 **Summary:** In the context of a client that has to explain a failure to a user and a support process
 that has to find the request that caused it, facing a framework that leaves many error responses with
 no body at all, we decided that every failure response carries an RFC 9457 Problem Details document
-with a stable type, a user-safe detail and an error code, to achieve one shape the client can read
+with a correlation identifier and a user-safe message — in `detail`, or for a `400` in an `errors` map
+keyed by field — and a stable `type` for each conflict category, to achieve one shape the client can read
 whatever produced it, accepting that the server must fill in bodies the framework would have left
 empty.
 
@@ -24,6 +26,8 @@ a developer.
 
 A client that receives no body cannot say anything useful, so it invents a generic message; a support
 request that quotes only a status code cannot be traced to a request at all.
+A consistent shape is what lets the client interpret and handle every error predictably;
+[PRD-030](../Future/PRD-030-problem-details-consolidation.md) consolidated the responses into one.
 
 ## Decision Drivers
 
@@ -31,7 +35,8 @@ request that quotes only a status code cannot be traced to a request at all.
 - No submitted value in a body or a log, because the same value may be a password or a financial
   figure.
 - A correlation identifier on every failure, so a user's report can be matched to a log entry.
-- A stable, machine-readable type per failure kind, so behaviour can be tested without matching prose.
+- A stable, machine-readable type wherever a caller must tell failures of one status apart, so it need
+  not match prose.
 
 ## Considered Options
 
@@ -43,12 +48,15 @@ request that quotes only a status code cannot be traced to a request at all.
 
 ## Decision Outcome
 
-Chosen option: 1. Failures are written as Problem Details carrying a `type`, a `title`, an HTTP-status-bearing
-`status`, a user-safe `detail`, a correlation identifier, the framework trace identifier, the request path
-as `instance`, and an `errors` map when the failure is a validation one. A bespoke `urn:pot:*` type is
-published for the three conflict categories, which is where a caller needs to tell one conflict from
-another; every other status keeps the framework's per-status type, so a validation failure and a refused
-business rule share a type and are distinguished by their `detail`.
+Chosen option: 1. Every failure body carries `status`, a correlation identifier (`correlationId`), the
+framework trace identifier (`traceId`) and the request path as `instance`. A `400` is always a validation
+problem: the framework's validation title, an `errors` map from field to messages (a message for the whole
+request under the empty key), and no `detail`. Every other status carries no `errors` and a user-safe
+`detail`, the application's own or a per-status default. A bespoke `urn:pot:*` type is published for the
+three conflict categories, which is where a caller needs to tell one conflict from another; every other
+status keeps the framework's per-status `type` where the framework defines one, and a `429` has none. No
+error code is serialised, so a validation failure and a refused business rule share one shape and differ
+only in the messages in `errors`.
 
 Three producers write failures the framework would not: the exception handler writes a body for an
 unhandled exception, the status-code pages write one for a status that otherwise has none, and the rate
@@ -57,8 +65,8 @@ which is what makes the shape uniform for a caller that did not ask for JSON.
 
 ### Consequences
 
-- Good, because the client parses one document and can branch on `type` rather than on prose, and on the
-  conflict family the type distinguishes the cases.
+- Good, because the client parses one document, and on a conflict can branch on `type` rather than on
+  prose.
 - Good, because a failure always carries the identifier the caller quoted when they reported it, on
   success as a header and on failure in the body.
 - Good, because no submitted value reaches the body, so a validation failure cannot echo a password.
@@ -73,11 +81,17 @@ which is what makes the shape uniform for a caller that did not ask for JSON.
 
 - Test: `CorrelationAndProblemDetailsFixture` asserts the document shape and that the correlation
   identifier survives into the failure body.
-- Test: a validation failure's body is asserted to carry no submitted value and no error-code member,
-  which is the evidence for the driver above.
-- Test: `EndpointResponseMetadataFixture` pins which failures each endpoint declares, so the contract
-  matches the behaviour.
-- Outside this decision: the readiness probe is short-circuited and answers in plain text, and a request
+- Test: `ShouldBeValidationProblemAsync`
+  (`Pot.AspNetCore.Integration.Tests/Host/Extensions/HttpResponseMessageExtensions.cs`) asserts every
+  validation failure it checks carries no submitted value, no error-code member and no `detail`, with a
+  non-empty `errors` map.
+- Test: `HeadersAndRateLimitFixture` asserts the `429` body carries `detail`, `status` and
+  `correlationId`, and no `type` or `errors`.
+- Test: `EndpointResponseMetadataFixture` pins the failures every endpoint shares — `400` as the validation
+  problem, `500` as Problem Details, a declared `409` as Problem Details, `413` and `408` on routes that read
+  a body, and no `422`. It does not compare each endpoint's declared set with its behaviour, and no
+  endpoint declares the `429` that every rate-limited group can return.
+- Outside this decision: both health probes are short-circuited and answer in plain text, and a request
   aborted by the client gets no body. Both are deliberate exceptions rather than gaps.
 - Review: a handler that writes an error body by hand is a defect; expected failures are returned as
   results and converted in one place.

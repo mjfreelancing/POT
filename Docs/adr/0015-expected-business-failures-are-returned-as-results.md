@@ -41,12 +41,16 @@ visible in the method's signature.
 ## Decision Outcome
 
 Chosen option: 1. Service methods return `EnrichedResult<Output>`: a success carries the value, a
-failure carries an `ApiDetailError` naming the kind, the error code, the user-safe message and the
-status it should produce. Handlers check the result and convert it to a response; the conversion from
-error kind to status code exists once.
+failure carries an `ApiErrorBase` — an `ApiBasicError`, an `ApiDetailError` that also names the field, or
+an `ApiDetailErrorCollection` — whose `ErrorType` names the kind, with an error code and a user-safe
+message. The error does not carry a status. Handlers check the result and convert it with
+`ToProblemDetails()`; the conversion from error kind to status code exists once, in
+`ProblemTypes.ToStatusCode`.
 
 Faults remain exceptions and reach the exception handler, so "the caller may not do this" and "the
-server broke" never look the same.
+server broke" never look the same. Two exception families are refusals rather than faults and are
+converted centrally: a unique, reference or concurrency failure from the database becomes a `409`
+(`DatabaseExceptionHandler`), and an unreadable request a `400` (`BadRequestExceptionHandler`).
 
 ### Consequences
 
@@ -54,8 +58,9 @@ server broke" never look the same.
   discovered by reading catch blocks.
 - Good, because status codes and error codes come from one mapping, so a new feature inherits them
   rather than inventing them.
-- Good, because the distinction between a refusal and a fault is structural: one is a value, the other
-  is an exception.
+- Good, because for the refusals a feature defines the distinction from a fault is structural: one is a
+  value, the other is an exception. A refusal the database discovers — a race past an "already exists"
+  check — still arrives as an exception and is converted by the database exception handler.
 - Bad, because every call site must handle the result; an ignored result is a silent success path that
   does nothing.
 - Bad, because a failure is slightly more work to construct than a `throw`.
@@ -74,8 +79,8 @@ server broke" never look the same.
 
 ### Result values (chosen)
 
-- Good: failure is part of the signature and cannot be forgotten by the compiler's silence — a caller
-  has a result to handle.
+- Good: failure is part of the signature, so a caller can see it has a result to handle, though nothing
+  forces it to.
 - Bad: propagation is explicit at each layer.
 
 ### Domain exceptions
@@ -99,5 +104,5 @@ server broke" never look the same.
 
 - How these failures and faults are written on the wire is
   [ADR-0014](0014-every-failure-is-written-as-a-problem-details-document.md).
-- Cost was a consideration in keeping exceptions for faults only; no measurement of it was taken, so it
-  is not offered as a reason.
+- The cost of raising and catching exceptions was a further reason to keep them for faults, and the
+  server guide lists performance among its reasons; no measurement of that cost is recorded.
