@@ -2,11 +2,11 @@
 id: ADR-0030
 title: Background work runs inside the API process under a single-replica assumption
 status: accepted
-date: 2026-11-04
+date: 2025-10-05
 area: backend
 ---
 
-# ADR-0030: Background work runs inside the API process under a single-replica assumption
+# ADR-0030 (backfilled): Background work runs inside the API process under a single-replica assumption
 
 **Summary:** In the context of a small deployment with recurring work — reminder emails, expired code
 cleanup, queued sends — facing the choice between a separate worker process and hosted background

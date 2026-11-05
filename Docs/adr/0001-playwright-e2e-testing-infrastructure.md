@@ -7,7 +7,7 @@ area: cross-cutting
 related-prds: [PRD-012]
 ---
 
-# ADR-0001: Playwright E2E testing infrastructure
+# ADR-0001 (legacy): Playwright E2E testing infrastructure
 
 ## Clarifications
 

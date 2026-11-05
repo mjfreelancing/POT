@@ -2,11 +2,11 @@
 id: ADR-0012
 title: One chained rate-limit policy partitions by caller and never locks an account
 status: accepted
-date: 2026-11-04
+date: 2025-11-08
 area: backend
 ---
 
-# ADR-0012: One chained rate-limit policy partitions by caller and never locks an account
+# ADR-0012 (backfilled): One chained rate-limit policy partitions by caller and never locks an account
 
 **Summary:** In the context of an internet-facing API whose sign-in route is the obvious target for
 credential guessing, facing the need to slow abuse without penalising a legitimate user who mistyped a

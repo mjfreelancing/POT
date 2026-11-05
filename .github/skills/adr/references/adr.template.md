@@ -17,8 +17,7 @@ superseded-by: []       # optional
 ## Context and Problem Statement
 
 <Three to ten lines: the forces, not the history of the discussion. Link the PRD section or the code
-that shows the problem. If this record is backfilled — written after the decision was already in the code
-— say so here and name what it was reconstructed from.>
+that shows the problem. If the decision is already in the code, cite the evidence for it here.>
 
 ## Decision Drivers            <!-- optional -->
 
@@ -26,7 +25,7 @@ that shows the problem. If this record is backfilled — written after the decis
 
 ## Considered Options
 
-1. <option, including the status quo for a backfilled record>
+1. <option, including the status quo when the decision is already in the code>
 2. <option>
 3. <option>
 

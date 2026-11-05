@@ -8,7 +8,7 @@ related-prds: [PRD-014]
 superseded-by: [ADR-0047]
 ---
 
-# ADR-0002: Retry-After client cooldown handling
+# ADR-0002 (legacy): Retry-After client cooldown handling
 
 > **Clarification (2026-11-04).** The 429 body carries no error code: it holds `detail`, `status`,
 > `correlationId` and `instance` only (`ProblemDetailsOptionsSetup.cs`), and `Retry-After` is written

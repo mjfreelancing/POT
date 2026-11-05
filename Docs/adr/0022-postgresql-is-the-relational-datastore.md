@@ -2,11 +2,11 @@
 id: ADR-0022
 title: PostgreSQL is the relational datastore
 status: accepted
-date: 2026-11-04
+date: 2024-12-28
 area: backend
 ---
 
-# ADR-0022: PostgreSQL is the relational datastore
+# ADR-0022 (backfilled): PostgreSQL is the relational datastore
 
 **Summary:** In the context of a small application with a conventional relational schema, facing the
 choice of database engine, we decided on PostgreSQL, to achieve a capable open-source database with the

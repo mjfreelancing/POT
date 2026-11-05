@@ -2,11 +2,11 @@
 id: ADR-0040
 title: The access token lives in memory, with proactive and reactive refresh
 status: accepted
-date: 2026-11-04
+date: 2025-09-11
 area: frontend
 ---
 
-# ADR-0040: The access token lives in memory, with proactive and reactive refresh
+# ADR-0040 (backfilled): The access token lives in memory, with proactive and reactive refresh
 
 **Summary:** In the context of a fifteen-minute access token and a refresh token the browser holds in an
 HttpOnly cookie, facing the choice between persisting the access token and holding it only in memory, we

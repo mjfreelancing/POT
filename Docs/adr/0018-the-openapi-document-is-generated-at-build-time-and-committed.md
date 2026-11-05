@@ -2,11 +2,11 @@
 id: ADR-0018
 title: The OpenAPI document is generated at build time and committed
 status: accepted
-date: 2026-11-04
+date: 2026-10-19
 area: backend
 ---
 
-# ADR-0018: The OpenAPI document is generated at build time and committed
+# ADR-0018 (backfilled): The OpenAPI document is generated at build time and committed
 
 **Summary:** In the context of an API whose contract exists only as the code that declares it, facing
 the need for a reviewable description of what each endpoint accepts, returns and fails with, we decided

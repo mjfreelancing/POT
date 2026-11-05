@@ -2,11 +2,11 @@
 id: ADR-0035
 title: Builds, tests and deployments are run by hand; there is no continuous integration
 status: accepted
-date: 2026-11-04
+date: 2025-11-07
 area: process
 ---
 
-# ADR-0035: Builds, tests and deployments are run by hand; there is no continuous integration
+# ADR-0035 (backfilled): Builds, tests and deployments are run by hand; there is no continuous integration
 
 **Summary:** In the context of a personal project with one developer and a small hosted deployment,
 facing the choice between a pipeline and a set of editor tasks, we decided that builds, tests, image

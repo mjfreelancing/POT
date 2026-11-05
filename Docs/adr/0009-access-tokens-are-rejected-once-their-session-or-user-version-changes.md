@@ -2,11 +2,11 @@
 id: ADR-0009
 title: Access tokens are rejected once their session or user version changes
 status: accepted
-date: 2026-11-04
+date: 2025-11-22
 area: backend
 ---
 
-# ADR-0009: Access tokens are rejected once their session or user version changes
+# ADR-0009 (backfilled): Access tokens are rejected once their session or user version changes
 
 **Summary:** In the context of self-contained access tokens that stay valid until they expire, facing
 the need to end one device's access without waiting, or to invalidate every token after a credential

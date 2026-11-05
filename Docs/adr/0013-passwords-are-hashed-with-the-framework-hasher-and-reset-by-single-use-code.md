@@ -2,11 +2,11 @@
 id: ADR-0013
 title: Passwords are hashed with the ASP.NET Core hasher and reset by single-use code
 status: accepted
-date: 2026-11-04
+date: 2025-09-12
 area: backend
 ---
 
-# ADR-0013: Passwords are hashed with the ASP.NET Core hasher and reset by single-use code
+# ADR-0013 (backfilled): Passwords are hashed with the ASP.NET Core hasher and reset by single-use code
 
 **Summary:** In the context of local credentials for a product with no external identity provider,
 facing the need to store passwords safely, to prove an email address is reachable, and to reset a

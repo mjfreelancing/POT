@@ -2,11 +2,11 @@
 id: ADR-0016
 title: Validation failures answer 400 with an errors map, never 422
 status: accepted
-date: 2026-11-04
+date: 2026-10-16
 area: backend
 ---
 
-# ADR-0016: Validation failures answer 400 with an errors map, never 422
+# ADR-0016 (backfilled): Validation failures answer 400 with an errors map, never 422
 
 **Summary:** In the context of a client that must show a message beside the field that caused it,
 facing the choice between `400 Bad Request` and `422 Unprocessable Entity` for a request whose shape is

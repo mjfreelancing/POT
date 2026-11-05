@@ -2,11 +2,11 @@
 id: ADR-0028
 title: Cascades are restricted and deletion is an explicit, ordered sweep
 status: accepted
-date: 2026-11-04
+date: 2024-12-28
 area: backend
 ---
 
-# ADR-0028: Cascades are restricted and deletion is an explicit, ordered sweep
+# ADR-0028 (backfilled): Cascades are restricted and deletion is an explicit, ordered sweep
 
 **Summary:** In the context of a schema where removing a site or a user must remove what belongs to
 them, facing the choice between database cascades and an explicit ordered deletion, we decided that

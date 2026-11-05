@@ -2,11 +2,11 @@
 id: ADR-0014
 title: Every failure is written as a Problem Details document
 status: accepted
-date: 2026-11-04
+date: 2025-01-11
 area: backend
 ---
 
-# ADR-0014: Every failure is written as a Problem Details document
+# ADR-0014 (backfilled): Every failure is written as a Problem Details document
 
 **Summary:** In the context of a client that has to explain a failure to a user and a support process
 that has to find the request that caused it, facing a framework that leaves many error responses with

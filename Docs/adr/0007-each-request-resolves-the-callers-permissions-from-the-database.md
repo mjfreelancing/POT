@@ -2,11 +2,11 @@
 id: ADR-0007
 title: Each request resolves the caller's permissions from the database
 status: accepted
-date: 2026-11-04
+date: 2025-09-12
 area: backend
 ---
 
-# ADR-0007: Each request resolves the caller's permissions from the database
+# ADR-0007 (backfilled): Each request resolves the caller's permissions from the database
 
 **Summary:** In the context of role-based authorization where an administrator can change a user's
 role while that user is signed in, facing the choice between a token that carries the permissions and

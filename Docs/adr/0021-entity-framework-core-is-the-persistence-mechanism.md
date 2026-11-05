@@ -2,11 +2,11 @@
 id: ADR-0021
 title: Entity Framework Core is the persistence mechanism
 status: accepted
-date: 2026-11-04
+date: 2024-12-28
 area: backend
 ---
 
-# ADR-0021: Entity Framework Core is the persistence mechanism
+# ADR-0021 (backfilled): Entity Framework Core is the persistence mechanism
 
 **Summary:** In the context of a relational schema with entities, relationships and migrations, facing
 the choice between an ORM and hand-written statements, we decided to use Entity Framework Core, to

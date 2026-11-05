@@ -2,11 +2,11 @@
 id: ADR-0023
 title: Services read and write through feature repositories, never through the context
 status: accepted
-date: 2026-11-04
+date: 2025-01-01
 area: backend
 ---
 
-# ADR-0023: Services read and write through feature repositories, never through the context
+# ADR-0023 (backfilled): Services read and write through feature repositories, never through the context
 
 **Summary:** In the context of application services that need data but must be testable without a
 database, facing the choice between injecting the persistence context and injecting a named repository,

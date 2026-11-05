@@ -2,11 +2,11 @@
 id: ADR-0008
 title: Access tokens are short-lived and backed by a server-side session
 status: accepted
-date: 2026-11-04
+date: 2025-09-12
 area: backend
 ---
 
-# ADR-0008: Access tokens are short-lived and backed by a server-side session
+# ADR-0008 (backfilled): Access tokens are short-lived and backed by a server-side session
 
 **Summary:** In the context of a browser client that must stay signed in across refreshes and devices
 while a stolen credential can be revoked, facing the choice between a self-contained token that lives

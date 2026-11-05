@@ -2,11 +2,11 @@
 id: ADR-0032
 title: Logs record request metadata and never submitted values
 status: accepted
-date: 2026-11-04
+date: 2026-10-22
 area: backend
 ---
 
-# ADR-0032: Logs record request metadata and never submitted values
+# ADR-0032 (backfilled): Logs record request metadata and never submitted values
 
 **Summary:** In the context of an API whose requests carry passwords, one-time codes and personal
 financial data, facing the choice between rich request logging and logs that never contain what was

@@ -2,11 +2,11 @@
 id: ADR-0044
 title: Every end-to-end test declares whether it may run beside others
 status: accepted
-date: 2026-11-04
+date: 2026-05-16
 area: frontend
 ---
 
-# ADR-0044: Every end-to-end test declares whether it may run beside others
+# ADR-0044 (backfilled): Every end-to-end test declares whether it may run beside others
 
 **Summary:** In the context of one shared database for the whole end-to-end run, facing the choice between
 serialising everything and letting tests run in parallel, we decided that a suite is written as

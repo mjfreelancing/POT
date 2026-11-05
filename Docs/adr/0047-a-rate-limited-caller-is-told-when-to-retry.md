@@ -2,12 +2,12 @@
 id: ADR-0047
 title: A rate-limited caller is told when to retry, and nothing retries automatically
 status: proposed
-date: 2026-11-04
+date: 2025-11-08
 area: frontend
 supersedes: [ADR-0002]
 ---
 
-# ADR-0047: A rate-limited caller is told when to retry, and nothing retries automatically
+# ADR-0047 (backfilled): A rate-limited caller is told when to retry, and nothing retries automatically
 
 **Summary:** In the context of a server that answers a throttled request with `429` and a `Retry-After`
 value, facing the choice between retrying automatically and telling the user when they may try again, we

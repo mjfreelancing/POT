@@ -2,11 +2,11 @@
 id: ADR-0024
 title: Transactions are explicit and used only where writes must be one unit
 status: accepted
-date: 2026-11-04
+date: 2025-10-26
 area: backend
 ---
 
-# ADR-0024: Transactions are explicit and used only where writes must be one unit
+# ADR-0024 (backfilled): Transactions are explicit and used only where writes must be one unit
 
 **Summary:** In the context of operations that sometimes change several rows through different
 repository calls, facing the choice between wrapping everything in a transaction and opening one only

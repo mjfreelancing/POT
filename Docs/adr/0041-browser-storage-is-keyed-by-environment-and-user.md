@@ -2,11 +2,11 @@
 id: ADR-0041
 title: Browser storage is keyed by environment and user, with a policy per setting
 status: accepted
-date: 2026-11-04
+date: 2026-05-03
 area: frontend
 ---
 
-# ADR-0041: Browser storage is keyed by environment and user, with a policy per setting
+# ADR-0041 (backfilled): Browser storage is keyed by environment and user, with a policy per setting
 
 **Summary:** In the context of a single browser used against more than one environment and by more than
 one user, facing preferences that would otherwise leak between them, we decided that every persisted

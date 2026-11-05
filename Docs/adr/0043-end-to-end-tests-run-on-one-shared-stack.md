@@ -2,11 +2,11 @@
 id: ADR-0043
 title: End-to-end tests run on one shared stack against a single seeded database
 status: accepted
-date: 2026-11-04
+date: 2026-05-11
 area: frontend
 ---
 
-# ADR-0043: End-to-end tests run on one shared stack against a single seeded database
+# ADR-0043 (backfilled): End-to-end tests run on one shared stack against a single seeded database
 
 **Summary:** In the context of browser tests that need a real API, a real database and realistic data,
 facing the choice between a stack per test file and one stack for the run, we decided on a single shared

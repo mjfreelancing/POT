@@ -2,11 +2,11 @@
 id: ADR-0019
 title: Endpoints are minimal API slices with their own request and response models
 status: accepted
-date: 2026-11-04
+date: 2024-12-28
 area: backend
 ---
 
-# ADR-0019: Endpoints are minimal API slices with their own request and response models
+# ADR-0019 (backfilled): Endpoints are minimal API slices with their own request and response models
 
 **Summary:** In the context of an API with no views and a client that calls it operation by operation,
 facing the choice between controllers shared per resource and a handler per operation, we decided that

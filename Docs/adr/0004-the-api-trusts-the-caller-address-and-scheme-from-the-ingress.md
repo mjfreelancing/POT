@@ -2,11 +2,11 @@
 id: ADR-0004
 title: The API trusts the caller address and scheme from the ingress
 status: accepted
-date: 2026-11-04
+date: 2026-11-02
 area: backend
 ---
 
-# ADR-0004: The API trusts the caller address and scheme from the ingress
+# ADR-0004 (backfilled): The API trusts the caller address and scheme from the ingress
 
 **Summary:** In the context of an API whose only route is an ingress that terminates TLS and rewrites
 the caller's scheme and address, facing the need for a correct `201 Location`, correct rate-limit

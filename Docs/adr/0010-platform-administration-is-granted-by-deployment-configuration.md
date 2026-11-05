@@ -2,11 +2,11 @@
 id: ADR-0010
 title: Platform administration is granted by deployment configuration, not by a role
 status: accepted
-date: 2026-11-04
+date: 2025-11-09
 area: backend
 ---
 
-# ADR-0010: Platform administration is granted by deployment configuration, not by a role
+# ADR-0010 (backfilled): Platform administration is granted by deployment configuration, not by a role
 
 **Summary:** In the context of a multi-tenant product operated by its author, facing the need for an
 authority that can act across tenants and recover a site whose administrators are locked out, we

@@ -2,11 +2,11 @@
 id: ADR-0017
 title: Only GUID row identifiers are exposed; integer keys stay internal
 status: accepted
-date: 2026-11-04
+date: 2025-01-19
 area: backend
 ---
 
-# ADR-0017: Only GUID row identifiers are exposed; integer keys stay internal
+# ADR-0017 (backfilled): Only GUID row identifiers are exposed; integer keys stay internal
 
 **Summary:** In the context of an API whose routes address a record directly, facing the choice between
 exposing the database's own key and a separate public identifier, we decided that every entity carries

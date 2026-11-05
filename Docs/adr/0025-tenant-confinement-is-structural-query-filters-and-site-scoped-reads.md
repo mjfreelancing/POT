@@ -2,11 +2,11 @@
 id: ADR-0025
 title: Tenant confinement is structural: query filters and site-scoped reads
 status: accepted
-date: 2026-11-04
+date: 2025-10-26
 area: backend
 ---
 
-# ADR-0025: Tenant confinement is structural: query filters and site-scoped reads
+# ADR-0025 (backfilled): Tenant confinement is structural: query filters and site-scoped reads
 
 **Summary:** In the context of a shared database where every row belongs to a site, facing the risk that
 a forgotten filter exposes another tenant's data, we decided to confine reads in two mechanisms — query

@@ -2,11 +2,11 @@
 id: ADR-0042
 title: The PWA precaches the application shell only and enforces updates
 status: accepted
-date: 2026-11-04
+date: 2026-03-30
 area: frontend
 ---
 
-# ADR-0042: The PWA precaches the application shell only and enforces updates
+# ADR-0042 (backfilled): The PWA precaches the application shell only and enforces updates
 
 **Summary:** In the context of a single-page application served as static files that should work on a
 phone, facing the choice between caching whatever the service worker sees and caching only the shell with

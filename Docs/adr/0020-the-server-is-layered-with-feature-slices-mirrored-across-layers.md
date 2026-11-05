@@ -2,11 +2,11 @@
 id: ADR-0020
 title: The server is layered by responsibility with feature slices mirrored across the layers
 status: accepted
-date: 2026-11-04
+date: 2024-12-28
 area: backend
 ---
 
-# ADR-0020: The server is layered by responsibility with feature slices mirrored across the layers
+# ADR-0020 (backfilled): The server is layered by responsibility with feature slices mirrored across the layers
 
 **Summary:** In the context of a server that must keep HTTP concerns, business rules and persistence
 separable while remaining navigable, facing the choice between technical grouping and feature grouping,

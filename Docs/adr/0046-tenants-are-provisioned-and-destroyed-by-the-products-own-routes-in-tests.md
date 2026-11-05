@@ -2,11 +2,11 @@
 id: ADR-0046
 title: Tenants are provisioned and destroyed by the product's own routes in tests
 status: accepted
-date: 2026-11-04
+date: 2026-10-27
 area: frontend
 ---
 
-# ADR-0046: Tenants are provisioned and destroyed by the product's own routes in tests
+# ADR-0046 (backfilled): Tenants are provisioned and destroyed by the product's own routes in tests
 
 **Summary:** In the context of destructive operations that must be shown to touch only their own tenant,
 facing the choice between inserting fixture rows and driving the product's own provisioning routes, we

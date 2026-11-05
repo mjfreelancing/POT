@@ -2,11 +2,11 @@
 id: ADR-0015
 title: Expected business failures are returned as results, not thrown as exceptions
 status: accepted
-date: 2026-11-04
+date: 2025-01-24
 area: backend
 ---
 
-# ADR-0015: Expected business failures are returned as results, not thrown as exceptions
+# ADR-0015 (backfilled): Expected business failures are returned as results, not thrown as exceptions
 
 **Summary:** In the context of application services whose failures are ordinary outcomes — a missing
 record, a rule refusing the change, a stale tag — facing the choice between signalling them by throwing

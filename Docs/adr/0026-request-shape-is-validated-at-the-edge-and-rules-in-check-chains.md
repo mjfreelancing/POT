@@ -2,11 +2,11 @@
 id: ADR-0026
 title: Request shape is validated at the edge and data-dependent rules in check chains
 status: accepted
-date: 2026-11-04
+date: 2025-01-11
 area: backend
 ---
 
-# ADR-0026: Request shape is validated at the edge and data-dependent rules in check chains
+# ADR-0026 (backfilled): Request shape is validated at the edge and data-dependent rules in check chains
 
 **Summary:** In the context of requests that can be wrong in two different ways — malformed, and
 unacceptable given the data — facing the choice between one validation layer and two, we decided that

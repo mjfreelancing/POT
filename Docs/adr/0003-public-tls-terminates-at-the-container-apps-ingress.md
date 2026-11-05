@@ -2,11 +2,11 @@
 id: ADR-0003
 title: Public TLS terminates at the Container Apps ingress
 status: accepted
-date: 2026-11-04
+date: 2025-11-08
 area: infrastructure
 ---
 
-# ADR-0003: Public TLS terminates at the Container Apps ingress
+# ADR-0003 (backfilled): Public TLS terminates at the Container Apps ingress
 
 **Summary:** In the context of a single deployed API that is reached only through Azure Container Apps
 ingress, facing the need for HTTPS on the public domains without managing certificates or public

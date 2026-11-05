@@ -2,11 +2,11 @@
 id: ADR-0011
 title: Every endpoint is authenticated unless it is explicitly anonymous
 status: accepted
-date: 2026-11-04
+date: 2026-10-08
 area: backend
 ---
 
-# ADR-0011: Every endpoint is authenticated unless it is explicitly anonymous
+# ADR-0011 (backfilled): Every endpoint is authenticated unless it is explicitly anonymous
 
 **Summary:** In the context of an API where a missing authorization annotation leaves a route open, and
 where an omission is invisible in review, we decided that the fallback policy requires an

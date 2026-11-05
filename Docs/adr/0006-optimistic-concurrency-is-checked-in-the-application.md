@@ -2,11 +2,11 @@
 id: ADR-0006
 title: Optimistic concurrency is checked in the application, not by the database
 status: accepted
-date: 2026-11-04
+date: 2024-12-28
 area: backend
 ---
 
-# ADR-0006: Optimistic concurrency is checked in the application, not by the database
+# ADR-0006 (backfilled): Optimistic concurrency is checked in the application, not by the database
 
 **Summary:** In the context of entities edited through per-feature update services against a
 single relational database, facing the need to reject a stale edit rather than silently overwrite

@@ -2,11 +2,11 @@
 id: ADR-0036
 title: Production runs two container apps: nginx serves the SPA and the API is separate
 status: accepted
-date: 2026-11-04
+date: 2025-11-07
 area: infrastructure
 ---
 
-# ADR-0036: Production runs two container apps: nginx serves the SPA and the API is separate
+# ADR-0036 (backfilled): Production runs two container apps: nginx serves the SPA and the API is separate
 
 **Summary:** In the context of a static single-page application and a stateless API, facing the choice
 between one origin serving both and two deployments with their own hostnames, we decided on two

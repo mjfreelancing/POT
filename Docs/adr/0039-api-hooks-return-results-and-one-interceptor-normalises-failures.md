@@ -2,11 +2,11 @@
 id: ADR-0039
 title: API hooks return results and one interceptor normalises every failure
 status: accepted
-date: 2026-11-04
+date: 2025-05-03
 area: frontend
 ---
 
-# ADR-0039: API hooks return results and one interceptor normalises every failure
+# ADR-0039 (backfilled): API hooks return results and one interceptor normalises every failure
 
 **Summary:** In the context of a client where every screen has to distinguish success from failure and
 say something useful, facing the choice between letting each caller inspect the HTTP response and

@@ -2,11 +2,11 @@
 id: ADR-0005
 title: Cross-origin access is limited to configured browser origins
 status: accepted
-date: 2026-11-04
+date: 2025-09-12
 area: backend
 ---
 
-# ADR-0005: Cross-origin access is limited to configured browser origins
+# ADR-0005 (backfilled): Cross-origin access is limited to configured browser origins
 
 **Summary:** In the context of a browser client served from one origin and an API on another, facing
 the need for the refresh cookie to travel with requests and for the client to read a few response

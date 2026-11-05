@@ -2,11 +2,11 @@
 id: ADR-0029
 title: Migrations run in a separate process before the API starts, in additive steps
 status: accepted
-date: 2026-11-04
+date: 2024-12-28
 area: backend
 ---
 
-# ADR-0029: Migrations run in a separate process before the API starts, in additive steps
+# ADR-0029 (backfilled): Migrations run in a separate process before the API starts, in additive steps
 
 **Summary:** In the context of an API that must never serve a schema it does not expect, facing the
 choice between applying migrations inside the API and applying them first in their own process, we

@@ -2,11 +2,11 @@
 id: ADR-0033
 title: Tests are per-layer unit projects plus one hosted integration project
 status: accepted
-date: 2026-11-04
+date: 2026-01-17
 area: backend
 ---
 
-# ADR-0033: Tests are per-layer unit projects plus one hosted integration project
+# ADR-0033 (backfilled): Tests are per-layer unit projects plus one hosted integration project
 
 **Summary:** In the context of a layered server whose rules, queries and HTTP behaviour fail in
 different ways, facing the choice between one end-to-end suite and a suite per layer, we decided on

@@ -2,11 +2,11 @@
 id: ADR-0037
 title: The client is organised by feature over shared API, concern and utility layers
 status: accepted
-date: 2026-11-04
+date: 2025-03-15
 area: frontend
 ---
 
-# ADR-0037: The client is organised by feature over shared API, concern and utility layers
+# ADR-0037 (backfilled): The client is organised by feature over shared API, concern and utility layers
 
 **Summary:** In the context of a single-page application whose screens are independent but share
 transport, state and presentation helpers, facing the choice between grouping by feature or by technical

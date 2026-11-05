@@ -2,11 +2,11 @@
 id: ADR-0038
 title: Server state lives in TanStack Query over one configured HTTP client
 status: accepted
-date: 2026-11-04
+date: 2025-03-23
 area: frontend
 ---
 
-# ADR-0038: Server state lives in TanStack Query over one configured HTTP client
+# ADR-0038 (backfilled): Server state lives in TanStack Query over one configured HTTP client
 
 **Summary:** In the context of a client whose screens all read and write the same server resources,
 facing the choice between hand-managed fetching and a query cache with explicit invalidation, we decided

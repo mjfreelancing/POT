@@ -1,6 +1,6 @@
 ---
 name: adr
-description: "Record a technical decision as an Architecture Decision Record: take the next number, write the front matter and body from the template, cite the evidence for a backfilled decision, update the instruction files and rule documents that should point at it, and run docs-check. Use when a change makes a decision that outlives its feature, or when asked to document why something is the way it is. Never stages or commits."
+description: "Record a technical decision as an Architecture Decision Record: take the next number, write the front matter and body from the template, cite the evidence for a decision already in the code, update the instruction files and rule documents that should point at it, and run docs-check. Use when a change makes a decision that outlives its feature, or when asked to document why something is the way it is. Never stages or commits."
 argument-hint: "[the decision, or the change that made it]"
 ---
 
@@ -20,10 +20,10 @@ format, the statuses and the amendment rules. This skill is the procedure that a
 - **Never rewrite an accepted decision in place.** Supersede it: set the old record to `superseded`,
   point `superseded-by` at the new one, and give the new one `supersedes`.
 - **Never reuse a number.** A withdrawn draft still consumes its number.
-- **A backfilled record says so where it matters.** It is written after the decision was already in the
-  code, so the Context section states that and names what the record was reconstructed from: a PRD
-  section, a dated note, a merged PR, or a source file. Do not date it from a commit that a squash merge
-  will lose.
+- **A new record carries no heading suffix and does not call itself backfilled.** Only ADR-0001 to
+  ADR-0047 carry `(legacy)` or `(backfilled)` after the number in their heading; the ADR guide says why. When the decision is already in
+  the code, Context cites the evidence for it: a PRD section, a dated note, a merged PR, or a source
+  file.
 - **Confirmation must name something mechanical.** A test, an analyzer, an instruction file or a review
   rule. A record with no enforcement is prose, and prose drifts.
 - **Never stage or commit.** Offer a commit message and stop; the human stages and commits.
@@ -36,7 +36,7 @@ format, the statuses and the amendment rules. This skill is the procedure that a
 
 Apply the "When to write one" test, including the historical question: before or during implementation,
 what consequential alternatives were considered, and would the rationale or trade-offs be lost if only
-the current code remained? A stable decision can still merit a backfilled ADR. Use source material as
+the current code remained? A stable, long-standing decision can still merit an ADR. Use source material as
 evidence; do not present an inference as established history. If the item is a coding convention, it
 belongs in [Docs/standards/](../../../Docs/standards/) as a rule document. If it is a product rule, it
 belongs in the PRD. If it was an approach tried and dropped without shipping, it belongs in the
@@ -59,7 +59,7 @@ Copy [references/adr.template.md](./references/adr.template.md) to
 2. **Summary** — one sentence in the form "In the context of …, facing …, we decided …, to achieve …,
    accepting …".
 3. **Context and Problem Statement** — the forces, not the history of the discussion.
-4. **Considered Options** — at least two, including the status quo for a backfilled record.
+4. **Considered Options** — at least two, including the status quo when the decision is already in the code.
 5. **Decision Outcome** with **Consequences** (good and bad) and **Confirmation**.
 6. **Length** — 40 to 120 lines, ceiling about 150. A longer draft is several decisions, or a design
    document that belongs in reference or explanation.

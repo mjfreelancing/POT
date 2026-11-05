@@ -10,7 +10,7 @@ instruction files, skills, Docker and compose files, the Azure diagram, and the 
 Azure facts rest only on what `DOCS-WORK-LISTS.md` records (SQ-35, SQ-37, SQ-38, rows 0083 and 0084) and on
 the tracked diagram.
 
-**Result:** 291 proposed edits. Their severities: consistency 59, format 29, factual 112, unsupported-history 27, confirmation 39, omission 25. MAJOR (the decision statement or summary
+**Result:** 270 proposed edits. Their severities: consistency 44, format 23, factual 112, unsupported-history 27, confirmation 39, omission 25. MAJOR (the decision statement or summary
 is factually wrong): ADR-0014, ADR-0041, ADR-0044, ADR-0045.
 
 **House style:** 33 edits were reworded, because the reviewers had reintroduced "this record is
@@ -31,14 +31,15 @@ backfill paragraph and were dropped: E-0015-02, E-0006-01. Each reworded edit is
 
 - **Per edit:** put `Y` or `N` in the `Decision: [ ]` box under each edit in "Edits in full", or write the
   change you want.
-- **In bulk:** answer the owner decisions (D-1 to D-9) below. Each one approves or rejects a whole tagged
+- **In bulk:** answer the owner decisions (D-2 to D-9; D-1 is decided) below. Each one approves or rejects a whole tagged
   set. Then write, for example, "approve all others except E-0012-03".
 - Every edit carries tags. Use them to approve a category at once.
 
 ## How to apply (for the agent that processes this file)
 
 1. **Which edits to apply:** those marked `Y`, plus those covered by an approved bulk decision. Skip
-   `DROPPED` blocks.
+   `DROPPED` blocks and every block marked `APPLIED`. That covers all `E-NNNN-00` and G-nn edits, which
+   are already in the files.
 2. **Order:** within each ADR file, apply in ascending edit number.
 3. **Line endings:** the ADR files are CRLF. Normalise to LF to match `old`, then write the file back as
    CRLF.
@@ -55,18 +56,20 @@ backfill paragraph and were dropped: E-0015-02, E-0006-01. Each reworded edit is
 
 ## Owner decisions
 
-**D-1. Decision dates (tag `DATE`).**
-- The 45 new records all say `date: 2026-11-04`. That is the day they were written; the template says
-  "when the decision was made".
-- These edits propose dates taken from PRDs and commits: E-0003-01, E-0004-01, E-0005-01, E-0007-01, E-0008-01, E-0009-01, E-0010-01, E-0011-01, E-0012-01, E-0013-01, E-0014-01, E-0015-01, E-0016-01, E-0032-01, E-0035-01, E-0036-01, E-0038-01, E-0039-01, E-0040-01, E-0041-01, E-0042-01, E-0043-01, E-0044-02, E-0045-02, E-0046-01.
-- The other groups left the date alone and asked you to decide. ADRs with no date edit: ADR-0006, ADR-0017, ADR-0018, ADR-0019, ADR-0020, ADR-0021, ADR-0022, ADR-0023, ADR-0024, ADR-0025, ADR-0026, ADR-0027, ADR-0028, ADR-0029, ADR-0030, ADR-0031, ADR-0033, ADR-0034, ADR-0037, ADR-0047.
-- Many of the proposed dates come from commits that exist only on `v0.1*` branches, not on `main`. The
-  date is still a valid value, but the commit cited in a `Why` line may not survive a squash merge.
-- **Options:**
-  - A: apply the proposed dates, and have the remaining records dated the same way in a follow-up.
-  - B: reject them all and keep `2026-11-04` as the series convention. FQ-04 would then need to record
-    that the convention changed.
-- **Recommendation:** A.
+**D-1. Decision dates and heading suffix. Decided by the owner and applied (tag `D-1`).**
+- **The ruling:**
+  - ADR-0001 and ADR-0002 take the date of the PRD they came from.
+  - Every other record takes the oldest date in the `v0.1` git history at which its decision appeared,
+    or keeps its current date if no such date is found.
+  - In ADR-0001 and ADR-0002 the heading's number carries `(legacy)`, as in `# ADR-0001 (legacy): …`.
+    In every other record it carries `(backfilled)`. The `title` field carries no suffix.
+  - Records written from now on carry no suffix, and nothing else in a record says it is legacy or
+    backfilled.
+- **What the report now contains:**
+  - 47 edits that set the date and add the suffix, one per ADR, numbered `E-NNNN-00`.
+  - 9 guidance edits (G-01 to G-09) that bring the ADR guide, the `adr` skill and the template
+    into line with the ruling.
+- **Where the details are:** the section "D-1 dates and suffixes" lists every date and its source.
 
 **D-2. ADR-0043 to ADR-0046 supersede ADR-0001 (tag `STATUS-LINK`: E-0001-01, E-0043-03, E-0044-04, E-0045-04, E-0046-03).**
 - `DOCS-WORK-LISTS.md` W4 says the bounded E2E records replace ADR-0001, but no file declares it.
@@ -233,26 +236,270 @@ Marked **verified** where I re-checked it myself; the rest are as reported by th
   is approved.
 
 
+## D-1 dates and suffixes (decided and APPLIED 2026-11-05)
+
+Each ADR has one edit, `E-NNNN-00`. It has already been applied to `Docs/adr/`, together with the
+guidance edits G-01 to G-09. Do not apply any of them again. Each `E-NNNN-00`:
+- sets `date:`;
+- puts the suffix after the ADR number in the heading, so `# ADR-NNNN:` becomes
+  `# ADR-NNNN (backfilled):`;
+- uses `(legacy)` instead for ADR-0001 and ADR-0002, and `(backfilled)` for ADR-0003 to ADR-0047;
+- leaves the `id` and `title` fields without a suffix.
+
+Every other edit in this file is written against the files as they are now, after D-1. So a reviewer edit
+to a heading, such as E-0044-05, already shows `(backfilled)` in its `old` and `new`.
+
+- **ADR-0001 and ADR-0002** keep `2026-09-02`. That is the date of PRD-012 and PRD-014, the PRDs they came
+  from, and both PRDs are about the same thing as their ADR.
+- **ADR-0003 to ADR-0047** take the oldest commit on `origin/v0.1` that introduced any essential part of
+  the decision, as the rule asks. The commit and evidence are in each ADR's `E-NNNN-00` block. Where a
+  later date would fit a narrower reading of the decision, the block gives it under "Later".
+- **Superseded reviewer date edits:** E-0043-01, E-0044-02, E-0045-02, E-0046-01, E-0003-01, E-0004-01, E-0005-01, E-0010-01, E-0035-01, E-0036-01, E-0007-01, E-0008-01, E-0009-01, E-0011-01, E-0013-01, E-0040-01, E-0012-01, E-0015-01, E-0016-01, E-0038-01, E-0042-01. They are marked DROPPED. A reviewer edit that changed the
+  date and something else keeps the other change.
+- **Nothing in any ADR body says "backfilled" or "legacy".** The only marker is the suffix. Every proposed
+  edit's final text and every edited preview were checked for "backfill", "legacy" and "reconstruct". The
+  only hit is "reconstruct" used as an ordinary verb in ADR-0015.
+- **Calls to check.** These records can be dated more than one way:
+  - ADR-0005: 2025-09-12, the credentialed CORS policy. Configured origins came on 2025-11-07.
+  - ADR-0008: 2025-09-12, the first access and refresh tokens. The 15-minute token came on 2025-09-27.
+  - ADR-0011: 2026-10-08, the endpoint test fixture. The fallback policy came on 2026-10-15.
+  - ADR-0014: 2025-01-11, Problem Details introduced. The form "every failure" describes was reached on
+    2026-10-21.
+  - ADR-0029: 2024-12-28, the separate migrator. Running it before the API in the entrypoint came on
+    2025-04-01.
+  - ADR-0030: 2025-10-05, the first in-process worker, a backup worker since removed. The cleanup worker
+    came on 2025-10-18.
+  - ADR-0034: the `.env.development.template` that the record names is not on `origin/v0.1`. It was
+    added on 2026-11-04 on this branch. The date used, 2025-09-12, is when env files left the repository
+    for `.gitignore`.
+  - ADR-0040: 2025-09-11, refresh on a 401. The token moved into memory on 2025-11-23.
+  - ADR-0043 and ADR-0045: 2026-05-11, the first Playwright commit. It already had one shared stack and
+    the four-project matrix.
+- **`DOCS-WORK-LISTS.md` FQ-04** still describes the rule that a backfilled record declares itself in
+  Context. That file is disposable, so it is not edited here.
+
+
+| ADR | Date now | D-1 date | Source | Confidence |
+| --- | --- | --- | --- | --- |
+| ADR-0001 | 2026-09-02 | 2026-09-02 (same) | PRD-012 | high |
+| ADR-0002 | 2026-09-02 | 2026-09-02 (same) | PRD-014 | high |
+| ADR-0003 | 2026-11-04 | 2025-11-08 | bebba703 "Add a comment why UseHttpsRedirection() is not being used" | medium-high |
+| ADR-0004 | 2026-11-04 | 2026-11-02 | ceb57419 "Honour the forwarded headers set by the Container Apps ingress" | high |
+| ADR-0005 | 2026-11-04 | 2025-09-12 | 8db2d00f "Initial jwt auth effort - still a WIP - plus some cleanup" | medium |
+| ADR-0006 | 2026-11-04 | 2024-12-28 | a0c78b6d "Adding initial postgres support" | medium (use 2025-01-25 if only the compare-before-save counts as the decision) |
+| ADR-0007 | 2026-11-04 | 2025-09-12 | 8db2d00f "Initial jwt auth effort - still a WIP - plus some cleanup" | high |
+| ADR-0008 | 2026-11-04 | 2025-09-12 | 8db2d00f "Initial jwt auth effort - still a WIP - plus some cleanup" | medium |
+| ADR-0009 | 2026-11-04 | 2025-11-22 | 2805f9c3 "Add JWT token versioning" | high |
+| ADR-0010 | 2026-11-04 | 2025-11-09 | e09c5394 "Updated signup / approval flow" | high |
+| ADR-0011 | 2026-11-04 | 2026-10-08 | eef1bbe2 "PRD 026 cross-tenant hardening + initial red tests + expected pre/post green tests" | medium |
+| ADR-0012 | 2026-11-04 | 2025-11-08 | 1896f3e4 "Add rate limiting" | high |
+| ADR-0013 | 2026-11-04 | 2025-09-12 | 8db2d00f "Initial jwt auth effort - still a WIP - plus some cleanup" | high |
+| ADR-0014 | 2026-11-04 | 2025-01-11 | 3d8fca2c "Infra refactoring, intro of validation, problem details" | medium |
+| ADR-0015 | 2026-11-04 | 2025-01-24 | 89bf905b "Refactoring updates while working out architecture" | high |
+| ADR-0016 | 2026-11-04 | 2026-10-16 | bec69a48 "Refactored API to return 400 instead of 422" | high |
+| ADR-0017 | 2026-11-04 | 2025-01-19 | f3f8e8eb "Add RowId for use in place of Id" | high |
+| ADR-0018 | 2026-11-04 | 2026-10-19 | 7a7d85c8 "Auto generate OpenApi contract on build + script" | high |
+| ADR-0019 | 2026-11-04 | 2024-12-28 | f852865d "Add initial minimal api setup" | medium |
+| ADR-0020 | 2026-11-04 | 2024-12-28 | a0c78b6d "Adding initial postgres support" | medium (use 2025-06-07 if the application layer is required for the decision to exist) |
+| ADR-0021 | 2026-11-04 | 2024-12-28 | a0c78b6d "Adding initial postgres support" | high |
+| ADR-0022 | 2026-11-04 | 2024-12-28 | a0c78b6d "Adding initial postgres support" | high |
+| ADR-0023 | 2026-11-04 | 2025-01-01 | 1dbe5aa6 "Added basic import repo's to get started" | medium (use 2025-01-18 if only data-project repositories consumed by services count) |
+| ADR-0024 | 2026-11-04 | 2025-10-26 | ef170a2d "Multiple updates - rabbit hole while implementing signup" | high |
+| ADR-0025 | 2026-11-04 | 2025-10-26 | ef170a2d "Multiple updates - rabbit hole while implementing signup" | medium-high |
+| ADR-0026 | 2026-11-04 | 2025-01-11 | 3d8fca2c "Infra refactoring, intro of validation, problem details" | medium (use 2025-01-25 if the check chain is required for the decision to exist) |
+| ADR-0027 | 2026-11-04 | 2024-12-28 | a0c78b6d "Adding initial postgres support" | high |
+| ADR-0028 | 2026-11-04 | 2024-12-28 | a0c78b6d "Adding initial postgres support" | high |
+| ADR-0029 | 2026-11-04 | 2024-12-28 | a0c78b6d "Adding initial postgres support" | medium. If the decision is read as the entrypoint ordering only, the date is 2025-04-01. |
+| ADR-0030 | 2026-11-04 | 2025-10-05 | afb7e3f7 "Add background worker to backup database - initial version" | medium. If a worker that was later removed counts as an incidental precursor, the date is 2025-10-18. |
+| ADR-0031 | 2026-11-04 | 2025-10-18 | ee0d1e05 "OTP verification now updates the user's password hash" | high |
+| ADR-0032 | 2026-11-04 | 2026-10-22 | 59bbae8f "Log requests with the framework's HTTP logging" | high |
+| ADR-0033 | 2026-11-04 | 2026-01-17 | 2e980c60 "Add Pot.App.Tests project + AccrueExpenseCalculator tests" | medium (use 2026-02-28 if the hosted integration project is required) |
+| ADR-0034 | 2026-11-04 | 2025-09-12 | 599ad397 "remove .env from docker" (with dabc2ebc "Ignore development/environment config" and 985eeb6c "remove .env from client", same evening) | medium (the template, an essential named part, is not on v0.1 at all. If the owner treats the template as the decision, the answer is KEEP 2026-11-04.) |
+| ADR-0035 | 2026-11-04 | 2025-11-07 | e45caf59 "Docker file updates for local vs azure builds" | medium-high |
+| ADR-0036 | 2026-11-04 | 2025-11-07 | e45caf59 "Docker file updates for local vs azure builds" | high |
+| ADR-0037 | 2026-11-04 | 2025-03-15 | f6516773 "Initial work adding a sidebar" | medium |
+| ADR-0038 | 2026-11-04 | 2025-03-23 | 7bb53c3b "Start adding account api call" | high |
+| ADR-0039 | 2026-11-04 | 2025-05-03 | 0e78a23e "Update and apply result pattern to creating accounts" | medium. If the unused result type counts, the date is 2025-03-22. |
+| ADR-0040 | 2026-11-04 | 2025-09-11 | dfadb190 "Add test JWT details to docker config" | medium |
+| ADR-0041 | 2026-11-04 | 2026-05-03 | c63f92fb "add per-user, per-environment storage scoping infrastructure" | high |
+| ADR-0042 | 2026-11-04 | 2026-03-30 | ab0b559e "Add PWA support" | high |
+| ADR-0043 | 2026-11-04 | 2026-05-11 | d5838735 "Add initial playwright config / smoke tests" | high |
+| ADR-0044 | 2026-11-04 | 2026-05-16 | 21bb6a1f "Playwright instructions update" | medium-high |
+| ADR-0045 | 2026-11-04 | 2026-05-11 | d5838735 "Add initial playwright config / smoke tests" | medium-high |
+| ADR-0046 | 2026-11-04 | 2026-10-27 | 73416f13 "Add PRD-031 / PRD-032" | medium |
+| ADR-0047 | 2026-11-04 | 2025-11-08 | 2f2897de "Update UI to handle 429 statuses" | high |
+
+## Guidance edits that follow from D-1
+
+These are not ADR edits. They bring the ADR guide, the `adr` skill and the template into line with D-1. They have been applied, and each block is kept as a record.
+
+### G-01 — Docs/adr/README.md (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1-GUIDANCE
+- Why: D-1 makes the title suffix the only marker, so the guide no longer asks a record to state in its body that it is reconstructed.
+- old:
+~~~
+in the "Considered Options" of the ADR that replaced it. For a backfilled record, use the PRDs, dated
+notes, commit history, guides and source as evidence. State when the record is reconstructed and do not
+present an inference as established historical fact.
+~~~
+- new:
+~~~
+in the "Considered Options" of the ADR that replaced it. When the decision is already in the code, use
+the PRDs, dated notes, commit history, guides and source as evidence, and do not present an inference as
+established historical fact.
+~~~
+
+### G-02 — Docs/adr/README.md (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1-GUIDANCE
+- Why: Same rule, without the word that now names only the suffixed set.
+- old:
+~~~
+Options (at least two, including the status quo for a backfilled record), Decision Outcome, Consequences
+and Confirmation. Optional: Decision Drivers, Pros and Cons of the Options, More Information.
+~~~
+- new:
+~~~
+Options (at least two, including the status quo when the decision is already in the code), Decision
+Outcome, Consequences and Confirmation. Optional: Decision Drivers, Pros and Cons of the Options, More
+Information.
+~~~
+
+### G-03 — Docs/adr/README.md (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1-GUIDANCE
+- Why: Records D-1: the suffixes, where they go, which records carry them, how those records are dated, and that new records carry none. Replaces the sentence saying a backfilled record is described in Context and not flagged.
+- old:
+~~~
+anything else. A backfilled record is described in its Context section, not flagged in the front matter.
+~~~
+- new:
+~~~
+anything else.
+
+In ADR-0001 and ADR-0002 the heading's number carries `(legacy)` (`# ADR-0001 (legacy): …`), and in
+ADR-0003 to ADR-0047 it carries `(backfilled)`: each was written after its decision was in the code. The
+`id` and `title` fields carry no suffix. The suffix is the only marker, and the body does not repeat it.
+Their `date` is when the decision was made: the date of the PRD the record came from, otherwise the
+oldest commit in the `v0.1` history that introduced the decision. A record written from ADR-0048 on
+carries no suffix.
+~~~
+
+### G-04 — .github/skills/adr/SKILL.md (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1-GUIDANCE
+- Why: Skill description: same rewording.
+- old:
+~~~
+cite the evidence for a backfilled decision,
+~~~
+- new:
+~~~
+cite the evidence for a decision already in the code,
+~~~
+
+### G-05 — .github/skills/adr/SKILL.md (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1-GUIDANCE
+- Why: The hard rule told a backfilled record to say so in Context, and not to date from a commit a squash merge will lose. D-1 reverses both for ADR-0001 to ADR-0047 (suffix only; dated from v0.1 commits) and gives new records no suffix.
+- old:
+~~~
+- **A backfilled record says so where it matters.** It is written after the decision was already in the
+  code, so the Context section states that and names what the record was reconstructed from: a PRD
+  section, a dated note, a merged PR, or a source file. Do not date it from a commit that a squash merge
+  will lose.
+~~~
+- new:
+~~~
+- **A new record carries no heading suffix and does not call itself backfilled.** Only ADR-0001 to
+  ADR-0047 carry `(legacy)` or `(backfilled)` after the number in their heading; the ADR guide says why. When the decision is already in
+  the code, Context cites the evidence for it: a PRD section, a dated note, a merged PR, or a source
+  file.
+~~~
+
+### G-06 — .github/skills/adr/SKILL.md (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1-GUIDANCE
+- Why: Same rewording.
+- old:
+~~~
+A stable decision can still merit a backfilled ADR.
+~~~
+- new:
+~~~
+A stable, long-standing decision can still merit an ADR.
+~~~
+
+### G-07 — .github/skills/adr/SKILL.md (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1-GUIDANCE
+- Why: Same rewording.
+- old:
+~~~
+at least two, including the status quo for a backfilled record.
+~~~
+- new:
+~~~
+at least two, including the status quo when the decision is already in the code.
+~~~
+
+### G-08 — .github/skills/adr/references/adr.template.md (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1-GUIDANCE
+- Why: The template told the author to say the record is backfilled.
+- old:
+~~~
+that shows the problem. If this record is backfilled — written after the decision was already in the code
+— say so here and name what it was reconstructed from.>
+~~~
+- new:
+~~~
+that shows the problem. If the decision is already in the code, cite the evidence for it here.>
+~~~
+
+### G-09 — .github/skills/adr/references/adr.template.md (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1-GUIDANCE
+- Why: Same rewording.
+- old:
+~~~
+1. <option, including the status quo for a backfilled record>
+~~~
+- new:
+~~~
+1. <option, including the status quo when the decision is already in the code>
+~~~
+
 ## Per-ADR summary
 
 | ADR | File | Verdict | Edits | Lines after |
 | --- | --- | --- | --- | --- |
 | ADR-0001 | 0001-playwright-e2e-testing-infrastructure.md | EDITS | 4 | 670 |
 | ADR-0002 | 0002-retry-after-client-cooldown-handling.md | EDITS | 1 | 138 |
-| ADR-0003 | 0003-public-tls-terminates-at-the-container-apps-ingress.md | EDITS | 6 | 107 |
-| ADR-0004 | 0004-the-api-trusts-the-caller-address-and-scheme-from-the-ingress.md | EDITS | 4 | 117 |
-| ADR-0005 | 0005-cross-origin-access-is-limited-to-configured-browser-origins.md | EDITS | 3 | 116 |
+| ADR-0003 | 0003-public-tls-terminates-at-the-container-apps-ingress.md | EDITS | 5 | 107 |
+| ADR-0004 | 0004-the-api-trusts-the-caller-address-and-scheme-from-the-ingress.md | EDITS | 3 | 117 |
+| ADR-0005 | 0005-cross-origin-access-is-limited-to-configured-browser-origins.md | EDITS | 2 | 116 |
 | ADR-0006 | 0006-optimistic-concurrency-is-checked-in-the-application.md | EDITS | 4 | 118 |
-| ADR-0007 | 0007-each-request-resolves-the-callers-permissions-from-the-database.md | EDITS | 6 | 132 |
-| ADR-0008 | 0008-access-tokens-are-short-lived-and-backed-by-a-server-side-session.md | EDITS | 8 | 136 |
-| ADR-0009 | 0009-access-tokens-are-rejected-once-their-session-or-user-version-changes.md | EDITS | 8 | 127 |
-| ADR-0010 | 0010-platform-administration-is-granted-by-deployment-configuration.md | EDITS | 8 | 124 |
-| ADR-0011 | 0011-every-endpoint-is-authenticated-unless-explicitly-anonymous.md | EDITS | 7 | 110 |
-| ADR-0012 | 0012-one-chained-rate-limit-policy-partitions-by-caller.md | EDITS | 5 | 105 |
-| ADR-0013 | 0013-passwords-are-hashed-with-the-framework-hasher-and-reset-by-single-use-code.md | EDITS | 10 | 134 |
+| ADR-0007 | 0007-each-request-resolves-the-callers-permissions-from-the-database.md | EDITS | 5 | 132 |
+| ADR-0008 | 0008-access-tokens-are-short-lived-and-backed-by-a-server-side-session.md | EDITS | 7 | 136 |
+| ADR-0009 | 0009-access-tokens-are-rejected-once-their-session-or-user-version-changes.md | EDITS | 7 | 127 |
+| ADR-0010 | 0010-platform-administration-is-granted-by-deployment-configuration.md | EDITS | 7 | 124 |
+| ADR-0011 | 0011-every-endpoint-is-authenticated-unless-explicitly-anonymous.md | EDITS | 6 | 110 |
+| ADR-0012 | 0012-one-chained-rate-limit-policy-partitions-by-caller.md | EDITS | 4 | 105 |
+| ADR-0013 | 0013-passwords-are-hashed-with-the-framework-hasher-and-reset-by-single-use-code.md | EDITS | 9 | 134 |
 | ADR-0014 | 0014-every-failure-is-written-as-a-problem-details-document.md | MAJOR | 7 | 127 |
-| ADR-0015 | 0015-expected-business-failures-are-returned-as-results.md | EDITS | 6 | 109 |
-| ADR-0016 | 0016-validation-failures-answer-400-with-an-errors-map.md | EDITS | 7 | 112 |
+| ADR-0015 | 0015-expected-business-failures-are-returned-as-results.md | EDITS | 5 | 109 |
+| ADR-0016 | 0016-validation-failures-answer-400-with-an-errors-map.md | EDITS | 6 | 112 |
 | ADR-0017 | 0017-only-guid-row-identifiers-are-exposed.md | EDITS | 3 | 100 |
 | ADR-0018 | 0018-the-openapi-document-is-generated-at-build-time-and-committed.md | EDITS | 5 | 109 |
 | ADR-0019 | 0019-endpoints-are-minimal-api-slices-with-their-own-models.md | EDITS | 4 | 116 |
@@ -271,53 +518,56 @@ Marked **verified** where I re-checked it myself; the rest are as reported by th
 | ADR-0032 | 0032-logs-record-request-metadata-and-never-submitted-values.md | EDITS | 5 | 116 |
 | ADR-0033 | 0033-tests-are-per-layer-unit-projects-plus-one-hosted-integration-project.md | EDITS | 6 | 111 |
 | ADR-0034 | 0034-secret-values-live-outside-the-repository.md | EDITS | 4 | 106 |
-| ADR-0035 | 0035-builds-and-deployments-are-run-by-hand.md | EDITS | 5 | 105 |
-| ADR-0036 | 0036-production-runs-two-container-apps.md | EDITS | 6 | 113 |
+| ADR-0035 | 0035-builds-and-deployments-are-run-by-hand.md | EDITS | 4 | 105 |
+| ADR-0036 | 0036-production-runs-two-container-apps.md | EDITS | 5 | 113 |
 | ADR-0037 | 0037-the-client-is-organised-by-feature-over-shared-layers.md | EDITS | 4 | 112 |
-| ADR-0038 | 0038-server-state-lives-in-a-query-cache-over-one-http-client.md | EDITS | 7 | 115 |
+| ADR-0038 | 0038-server-state-lives-in-a-query-cache-over-one-http-client.md | EDITS | 6 | 115 |
 | ADR-0039 | 0039-api-hooks-return-results-and-one-interceptor-normalises-failures.md | EDITS | 4 | 106 |
-| ADR-0040 | 0040-the-access-token-lives-in-memory-with-proactive-and-reactive-refresh.md | EDITS | 7 | 119 |
+| ADR-0040 | 0040-the-access-token-lives-in-memory-with-proactive-and-reactive-refresh.md | EDITS | 6 | 119 |
 | ADR-0041 | 0041-browser-storage-is-keyed-by-environment-and-user.md | MAJOR | 9 | 116 |
-| ADR-0042 | 0042-the-pwa-precaches-the-shell-only-and-enforces-updates.md | EDITS | 10 | 118 |
-| ADR-0043 | 0043-end-to-end-tests-run-on-one-shared-stack.md | EDITS | 7 | 110 |
-| ADR-0044 | 0044-every-end-to-end-test-declares-whether-it-may-run-beside-others.md | MAJOR | 15 | 118 |
-| ADR-0045 | 0045-the-end-to-end-matrix-runs-on-every-change-with-a-stricter-release-profile.md | MAJOR | 11 | 113 |
-| ADR-0046 | 0046-tenants-are-provisioned-and-destroyed-by-the-products-own-routes-in-tests.md | EDITS | 10 | 122 |
+| ADR-0042 | 0042-the-pwa-precaches-the-shell-only-and-enforces-updates.md | EDITS | 9 | 118 |
+| ADR-0043 | 0043-end-to-end-tests-run-on-one-shared-stack.md | EDITS | 6 | 110 |
+| ADR-0044 | 0044-every-end-to-end-test-declares-whether-it-may-run-beside-others.md | MAJOR | 14 | 118 |
+| ADR-0045 | 0045-the-end-to-end-matrix-runs-on-every-change-with-a-stricter-release-profile.md | MAJOR | 10 | 113 |
+| ADR-0046 | 0046-tenants-are-provisioned-and-destroyed-by-the-products-own-routes-in-tests.md | EDITS | 9 | 122 |
 | ADR-0047 | 0047-a-rate-limited-caller-is-told-when-to-retry.md | EDITS | 8 | 113 |
 
 ## Index of every edit
 
 | Edit | Kind | Severity | Tags | Why (short) |
 | --- | --- | --- | --- | --- |
+| E-0001-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(legacy)` after the ADR number in the heading; date 2026-09-02 → 2026-09-02 (unchanged). |
 | E-0001-01 | front-matter | consistency | STATUS-LINK | W4 records that the bounded end-to-end records supersede this one, and its decision statements on test classes, |
 | E-0001-02 | replace | format |  | The README allows an accepted record to change only by a dated clarification. Only the first entry carries a date. |
 | E-0001-03 | insert-after | factual |  | The body has more errors that the clarifications do not cover: the Vite version; the "platform admin" presented as |
 | E-0001-04 | replace | factual |  | The inline note says PRD-030 made the 422 → 400 change. The change was made in commit `bec69a48` on 2026-10-16, |
+| E-0002-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(legacy)` after the ADR number in the heading; date 2026-09-02 → 2026-09-02 (unchanged). |
 | E-0002-01 | replace | factual |  | The clarification says the 429 body holds those four members "only"; it also carries `traceId`, which the framework writer adds to every problem body. |
-| E-0003-01 | front-matter | format | DATE | `date` is the writing date. The earliest record of the choice in code is the commit that explains why `UseHttpsRedirection()` is left out, one day aft… |
+| E-0003-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-11-08. |
 | E-0003-02 | replace | consistency |  | The issuer is recorded. The owner-confirmed deployment record (SQ-38) and the tracked diagram both name Let's Encrypt, so "not recorded" is false. (Se… |
 | E-0003-03 | replace | factual |  | The image does not set the listening address. Only the compose file sets `ASPNETCORE_URLS=http://+:5241`; the Dockerfile only `EXPOSE`s 5241. The depl… |
 | E-0003-04 | replace | unsupported-history |  | The owner's recollection of why this option was chosen is recorded, and the record leaves it out. The first correction pass removed "it is the platfor… |
 | E-0003-05 | replace | factual |  | As configured, `UseHttpsRedirection()` would not redirect. No HTTPS port is set anywhere: compose and launchSettings are HTTP-only and there is no `HT… |
 | E-0003-06 | replace | consistency |  | This bullet states network confinement as fact. The Consequences section of the same record (and SQ-38) treats it as an assumption the repo cannot sho… |
-| E-0004-01 | front-matter | format | DATE | The decision was made and implemented in one dated commit. |
+| E-0004-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2026-11-02. |
 | E-0004-02 | replace | unsupported-history |  | "Unreachable except through the ingress" goes further than the evidence. The record confirms only that the ingress is the sole public route; it does n… |
 | E-0004-03 | replace | consistency | TEMP-DOC-CITE | "Needs no change" settles a follow-up that is still open, and it hides the local effect: every anonymous caller shares nginx's rate-limit partition. |
 | E-0004-04 | replace | confirmation |  | The fixture tests more than the scheme. It also proves the address half, including the driver "a caller must not be able to choose its own address", a… |
-| E-0005-01 | front-matter | format | DATE | Configured origins with credentials arrived in November 2025, so `2026-11-04` is not the decision date. (Later refinements are listed in Notes.) |
+| E-0005-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-09-12. |
 | E-0005-02 | replace | factual |  | Local development is not cross-origin. The compose client's nginx proxies `/api/` to the server, and the Vite dev server is configured with an `/api` … |
 | E-0005-03 | replace | confirmation |  | The splitting, trimming and de-duplication rules are tested in `CorsConfigurationFixture`, which the record does not name. "Validated on start" is pro… |
+| E-0006-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2024-12-28. |
 | E-0006-02 | replace | unsupported-history |  | The owner gave this reason: database independence, and unfamiliarity with database tokens made the application check the simpler choice. The claim tha… |
 | E-0006-03 | replace | factual |  | A 409 body carries the problem `type` and `detail` only. The property name goes into the response only for a 400 (the `errors` map), so no `etag` fiel… |
 | E-0006-04 | replace | factual |  | Leaving the tag check out of a path does not leave that path with an empty chain. Its other checks still run (Accounts, for example, also has `CheckDe… |
 | E-0006-05 | replace | omission |  | The existing `DbUpdateConcurrencyException` mapping answers 409 with the `data-conflict` type, not `stale-entity-tag`. Adopting the token would theref… |
-| E-0007-01 | front-matter | consistency | DATE | `date` is the writing date. The handler that resolves permissions from the database per requirement dates from the first JWT authorization work. PRD-0… |
+| E-0007-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-09-12. |
 | E-0007-02 | insert-after | omission |  | The record gives no evidence for its rationale, yet a completed PRD states it in so many words. The owner's recollection (SQ-29) is the first of those… |
 | E-0007-03 | replace | format |  | The template requires "Chosen option: n, because …". The record gives no reason, though the evidence above supplies one. |
 | E-0007-04 | replace | factual |  | The cost is one read per declared requirement, not per request. The handler creates a scope and calls `GetPermissionsAsync` for each `PermissionRequir… |
 | E-0007-05 | replace | factual | TEMP-DOC-CITE | (1) The grant changes when configuration changes and the API restarts, which is not necessarily a redeploy. The options are bound once into a singleto… |
 | E-0007-06 | replace | confirmation |  | The gap claims the matrix covers resolution, which it does not. The matrix takes each caller's expected permission set from `PermissionService` itself… |
-| E-0008-01 | front-matter | consistency | DATE | `date` is the writing date. The server-side session this record decides (one AuthSession row per sign-in) was delivered by PRD-001 and PRD-002. The sh… |
+| E-0008-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-09-12. |
 | E-0008-02 | replace | factual |  | Bearer validation does not set `ClockSkew`, so the framework's default five-minute skew applies and a token is accepted up to about twenty minutes aft… |
 | E-0008-03 | insert-after | unsupported-history |  | A shipped design was replaced: one refresh token on the user row. It is the evidenced status quo this decision replaced, and the record does not menti… |
 | E-0008-04 | insert-after | unsupported-history |  | Adds the real former design as an option (see E-0008-03). |
@@ -325,7 +575,7 @@ Marked **verified** where I re-checked it myself; the rest are as reported by th
 | E-0008-06 | replace | omission |  | For a security record, "cannot read it" alone misleads. Script on the page can still use the cookie, because the browser attaches it to the refresh PO… |
 | E-0008-07 | insert-after | omission |  | The code shows three material consequences. (1) Session expiry slides on every refresh, with no absolute lifetime and no purge. (2) The raw refresh to… |
 | E-0008-08 | replace | confirmation |  | No fixture asserts the fifteen-minute lifetime or the claim set, which are the parts the Review rule protects. |
-| E-0009-01 | front-matter | consistency | DATE | `date` is the writing date. The per-session half, which completes the decision in the title, was added on 2026-10-17 with no PRD. The global token ver… |
+| E-0009-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-11-22. |
 | E-0009-02 | insert-after | unsupported-history |  | The evidenced history is missing. The record does not mention that global revocation came first or that per-session rejection was added later to close… |
 | E-0009-03 | replace | factual |  | On an `AllowAnonymous` route (logout, refresh), failed token validation does not produce `401`; the request continues unauthenticated. |
 | E-0009-04 | replace | factual |  | A password change also revokes every unrevoked session. Without that, a refresh would mint a token carrying the new version, so revoking the sessions … |
@@ -333,7 +583,7 @@ Marked **verified** where I re-checked it myself; the rest are as reported by th
 | E-0009-06 | insert-after | unsupported-history |  | Adds the real former design (version only) as an option. It is the evidenced status quo before 2026-10-17. |
 | E-0009-07 | insert-after | unsupported-history |  | Pros and cons for option 5. |
 | E-0009-08 | replace | confirmation |  | `LogoutFixture` directly asserts per-session revocation and the other device's survival, so the record should cite those tests. No fixture presents a … |
-| E-0010-01 | front-matter | format | DATE | The configured platform-admin list arrived with the sign-up approval flow. |
+| E-0010-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-11-09. |
 | E-0010-02 | replace | factual |  | The summary presents recovering a locked-out site as a need this authority meets. Today `platform:manage` guards only the two approvals routes. Recove… |
 | E-0010-03 | insert-after | omission |  | Without this, a reader would believe the two cases listed are handled today. |
 | E-0010-04 | replace | factual |  | There are four refusals, not two. None protects a platform administrator in general; they protect only the last *enabled* one. "A site holding one can… |
@@ -341,19 +591,19 @@ Marked **verified** where I re-checked it myself; the rest are as reported by th
 | E-0010-06 | replace | factual |  | The bullet contradicts itself ("must know them before the first sign-in" vs "discovered ... after the account exists"). The actual bootstrap also need… |
 | E-0010-07 | replace | confirmation |  | The record should name the actual fixtures. The "parsing" gap is too broad: integration hosts already parse multi-id lists (for example `DeleteUserFix… |
 | E-0010-08 | replace | consistency |  | The record refers to the permission-resolution decision without linking it, although ADR-0007 links back to this one. The planned cross-tenant scope (… |
-| E-0011-01 | front-matter | consistency | DATE | `date` is the writing date. The fallback and the endpoint test were decided in PRD-026 §4.3. That PRD is Complete and was last updated 2026-10-14; the… |
+| E-0011-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2026-10-08. |
 | E-0011-02 | replace | factual |  | The public set also includes password reset and logout. |
 | E-0011-03 | insert-after | unsupported-history |  | The record argues hypothetically for a failure that actually happened and is documented. SQ-28 cites the incident. |
 | E-0011-04 | replace | factual |  | In Development, the OpenAPI document and the Scalar page are also `AllowAnonymous()`, so "nine" holds only outside Development. |
 | E-0011-05 | replace | factual |  | The test requires each endpoint to declare its own `IAuthorizeData` and does not accept reliance on the fallback. So in the test host no route relies … |
 | E-0011-06 | replace | factual |  | "the profile and user routes" overstates. Only the three `/api/me` routes and `PUT /api/users/{id}` use `AuthenticatedUser`; the other user routes nee… |
 | E-0011-07 | replace | confirmation |  | The bullet omits the first assertion, which enforces the rule directly. The theory checks "contains", not "exact", on 8 routes. The host runs as Produ… |
-| E-0012-01 | front-matter | consistency | DATE | `date` is when the decision was made; the policy, its partitions and its limits arrived in one commit. |
+| E-0012-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-11-08. |
 | E-0012-02 | replace | unsupported-history |  | Says lockout "is the wrong one here", but the owner says lockout was deferred, not rejected (as the record's own More Information says). The record al… |
 | E-0012-03 | replace | consistency |  | The driver says limits "should be configurable", which contradicts the record's own Review rule and the code: the production values are constants, and… |
 | E-0012-04 | replace | factual |  | "a Problem Details body that names the wait" is false for an authenticated rejection, whose detail is untimed, and "carries the detail without the hea… |
 | E-0012-05 | replace | factual |  | With `QueueLimit = 0`, every rejection returns at once, so it cannot be reported as a timeout. The client timeout is 30 s, not tied to the window. The… |
-| E-0013-01 | front-matter | consistency | DATE | `date` is the writing date. The hasher dates from 2025-09-12. The single-use code entity, which completes the decision in the title, dates from 2025-1… |
+| E-0013-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-09-12. |
 | E-0013-02 | replace | factual |  | A reset request names a username, not an address. The handler and service take `Username` only. |
 | E-0013-03 | replace | factual |  | No Identity package is referenced. `PasswordHasher<T>` ships in the ASP.NET Core shared framework, which the Web SDK project gets implicitly. |
 | E-0013-04 | replace | factual |  | Three wrong attempts fail that code, and the caller must request a new one. The five-minute "too many attempts" refusal applies only once three reques… |
@@ -363,48 +613,55 @@ Marked **verified** where I re-checked it myself; the rest are as reported by th
 | E-0013-08 | replace | confirmation |  | "The authentication fixtures" names no fixture. The unit fixture substitutes the hasher, so the real hash round trip is exercised only by the integrat… |
 | E-0013-09 | delete | format |  | E-0013-07 moves this into Consequences with specifics. A "Known gap" about storage is not a confirmation mechanism. |
 | E-0013-10 | replace | omission |  | A reader would assume a reset ends sessions as a password change does. It does not (see E-0009-05). |
-| E-0014-01 | front-matter | consistency | DATE, RELATED-PRDS | `date` should be when the decision was made. Option 1 ("written by the application even where the framework would not write one") became true in `50ff… |
+| E-0014-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-01-11. |
+| E-0014-01 | front-matter | consistency | RELATED-PRDS | `date` should be when the decision was made. Option 1 ("written by the application even where the framework would not write one") became true in `50ff… |
 | E-0014-02 | replace | factual |  | No error code is on the wire, a `400` has no `detail`, and POT publishes a `type` only for conflicts (a `429` has none). |
 | E-0014-03 | insert-after | format |  | The record is backfilled and must say so in Context and name its sources. |
 | E-0014-04 | replace | factual |  | The driver asks for a type "per failure kind". Only the conflict categories get one, and the outcome says so. |
 | E-0014-05 | replace | factual |  | The outcome lists `type`, `title` and `detail` as on every failure, and says a validation failure and a refusal are told apart by `detail`. A `400` ha… |
 | E-0014-06 | replace | factual |  | The client can branch on `type` only for conflicts. It reads `type` only to recognise the stale tag. |
 | E-0014-07 | replace | confirmation |  | The validation-body test is unnamed; the real guard is the shared helper. `EndpointResponseMetadataFixture` pins only the shared failure declarations,… |
-| E-0015-01 | front-matter | consistency | DATE | `date` should be when services began returning `EnrichedResult`. |
+| E-0015-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-01-24. |
 | E-0015-03 | replace | factual |  | The failure is not always an `ApiDetailError`. `ApiBasicError` and `ApiDetailErrorCollection` are also used. The error does not carry the status it sh… |
 | E-0015-04 | replace | omission |  | The record says refusals are values and faults are exceptions. Two kinds of refusal arrive as exceptions and are converted centrally, which is the pat… |
 | E-0015-05 | replace | omission |  | The structural distinction holds only for refusals a feature defines. A race the database detects is a refusal that arrives as an exception. |
 | E-0015-06 | replace | consistency |  | "cannot be forgotten" contradicts the record's own Bad consequence ("an ignored result is a silent success path"). Nothing forces a caller to handle t… |
 | E-0015-07 | replace | unsupported-history |  | "no measurement of it was taken, so it is not offered as a reason" claims an absence the record cannot show, and it sets aside a reason the owner gave… |
-| E-0016-01 | front-matter | consistency | DATE | The decision has an exact date: the commit that made the switch. |
+| E-0016-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2026-10-16. |
 | E-0016-02 | insert-after | format |  | The record is backfilled and must say so and name its sources. It should also say what the prior state was (the commit proves it) and that no rational… |
 | E-0016-03 | delete | unsupported-history |  | No evidence (commit, PRD, interview) supports proxy or tooling handling as a reason for the switch. |
 | E-0016-04 | replace | factual |  | A `400` carries no `detail`. A refusal's message goes into `errors` under its field, or the empty key. The error code was removed by PRD-030 (B9) a we… |
 | E-0016-05 | replace | factual |  | "the `detail` is the only signal" is false, because a `400` has no `detail`. |
 | E-0016-06 | replace | confirmation |  | "the validation fixtures" is unnamed. The real guards are the shared helper, its callers, and `EnrichedErrorExtensionsFixture`, which pins refusals in… |
 | E-0016-07 | replace | factual |  | A refusal cannot carry its meaning in `detail`, which a `400` never has. |
+| E-0017-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-01-19. |
 | E-0017-01 | insert-after | format |  | A backfilled record must say so in Context and name its sources. The owner's reason (SQ-14) is available. |
 | E-0017-02 | replace | factual |  | `RowId` is not always generated on insert. An import creates rows with the `RowId` from the export file, so linked incomes and expenses resolve. Token… |
 | E-0017-03 | insert-after | confirmation |  | The only mechanical guards are the instruction rule and the `:guid` route constraint. The record names neither. |
+| E-0018-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2026-10-19. |
 | E-0018-01 | insert-after | format |  | Backfilled with no statement. The owner's account (SQ-25) contradicts the record's implied need, so it belongs in Context. |
 | E-0018-02 | replace | unsupported-history |  | "The clearest description of the contract that exists" is an inferred reason. The instructions and the owner state different ones. |
 | E-0018-03 | replace | factual |  | A missing diff is not visible. Committing the regenerated file is manual and unenforced, as the record's own Known gap and the instructions say. |
 | E-0018-04 | replace | confirmation |  | `EndpointResponseMetadataFixture` does not pin which failures each endpoint declares. It asserts shared rules over every endpoint, plus the success sh… |
 | E-0018-05 | delete | factual |  | Client types are hand-written, and the document generates nothing for the client. Per-endpoint declarations therefore cannot affect which bodies the c… |
+| E-0019-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2024-12-28. |
 | E-0019-01 | insert-after | format |  | Backfilled with no statement. The owner's reasons (SQ-03, SQ-04, SQ-05) are recorded and match the drivers. |
 | E-0019-02 | replace | factual |  | Entity checks are not in the operation's endpoint folder. The host folder holds the handler, request, response, request mapping and validator. The che… |
 | E-0019-03 | replace | factual |  | Only the standard failures (400 validation problem and 500) and the rate-limit policy are declared per group. Each operation declares its own success … |
 | E-0019-04 | replace | confirmation |  | The stated reason is wrong (the operation makes its own failure declarations). An existing test mechanically checks per-operation models, and the reco… |
+| E-0020-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2024-12-28. |
 | E-0020-01 | insert-after | format |  | Backfilled with no statement. The owner's account (SQ-01, SQ-02) is recorded. |
 | E-0020-02 | replace | factual |  | Request validation is not in the application project. All 24 `RequestValidator` classes live in the host beside their endpoints, which is what ADR-002… |
 | E-0020-03 | replace | factual |  | The host references the data project directly, and its auth services use repositories without going through the application. A reader would otherwise … |
 | E-0020-04 | replace | unsupported-history |  | The "because" is an inferred reason. No evidence records why authentication was placed in the host. |
 | E-0020-05 | replace | unsupported-history |  | "Deliberate" is not evidenced. The direct data access (E-0020-03) is the material part of this exception. |
 | E-0020-06 | replace | confirmation |  | The first bullet is half wrong and contradicts the record's own Consequence ("enforced by project references"). A reference from a lower project to a … |
+| E-0021-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2024-12-28. |
 | E-0021-01 | replace | unsupported-history |  | "familiarity matters more than the last increment of control" is an inferred trade-off. The owner's account (SQ-40) gives prior experience, built-in m… |
 | E-0021-02 | replace | factual |  | The four query filters are not a central convention. Each is declared per entity in `PotDbContext`. The central conventions in `DbContextBase` are tab… |
 | E-0021-03 | replace | omission | TEMP-DOC-CITE | The in-memory provider ignores `citext`, unique indexes and SQL translation. Whether this split is the intended test strategy is still open (DD-12d), … |
 | E-0021-04 | replace | consistency |  | The "separate decisions" exist as ADRs and should be linked. |
+| E-0022-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2024-12-28. |
 | E-0022-01 | insert-after | unsupported-history |  | The record is backfilled but does not say so. The owner's reason (SQ-39) is cost and open source. The schema features are presented as the drivers of … |
 | E-0022-02 | delete | unsupported-history |  | Nothing in the owner's account or the repository shows "managed hosting" as a driver, and the repository cannot confirm that the production server is … |
 | E-0022-03 | replace | unsupported-history |  | Same reason as E-0022-02. "Managed server" states an Azure setting that cannot be confirmed from the repository. |
@@ -413,19 +670,23 @@ Marked **verified** where I re-checked it myself; the rest are as reported by th
 | E-0022-06 | replace | factual |  | 17.6 comes only from a diagram label, which the brief requires to be attributed. "Pinned" overstates `SetPostgresVersion`, which is a compatibility ta… |
 | E-0022-07 | replace | factual |  | The schema uses no partial indexes, so "partial-index behaviours the schema uses" is false. |
 | E-0022-08 | replace | consistency | TEMP-DOC-CITE | The open item is DD-06, and the uniqueness decision is ADR-0027. Both should be linked. "Rather than only by application checks" also misstates SQ-18 … |
+| E-0023-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-01-01. |
 | E-0023-01 | insert-after | format |  | The record is backfilled but does not say so. The owner's reasons are recorded and should be cited, and the other options have no evidence of being we… |
 | E-0023-02 | replace | factual |  | The claim holds only for users and sites. The account, expense, income and role repositories expose a queryable that services compose. The Decision Ou… |
 | E-0023-03 | replace | confirmation |  | The cited test does not enforce the rule. Nothing fails if a service injects the public `PotDbContext`. Four `Pot.App.Tests` fixtures use the in-memor… |
 | E-0023-04 | replace | consistency |  | The "separate decisions" exist as ADRs and should be linked. |
+| E-0024-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-10-26. |
 | E-0024-01 | insert-after | format |  | The record is backfilled but does not say so. The owner's reason (SQ-12) should be cited, and the other options have no evidence of being weighed. |
 | E-0024-02 | replace | factual |  | As written, the statement is false. Two operations save twice without a transaction, because their first save is independent housekeeping (expiring st… |
 | E-0024-03 | replace | confirmation |  | The "Test:" bullet describes a test that does not exist. The gap line also says the import transaction is "covered through the version gate", which is… |
+| E-0025-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-10-26. |
 | E-0025-01 | front-matter | consistency | RELATED-PRDS | The users-and-sites half of this decision, the refusal contract and the rejection of a `User`/`Site` filter all come from PRD-026, which is Complete. |
 | E-0025-02 | insert-after | format |  | The record is backfilled but does not say so. PRD-026 is real evidence for part of the history and should be cited. Option 2 was in fact considered an… |
 | E-0025-03 | replace | factual |  | Not every cross-tenant read is "named as such". `GetByUsernameAsync`, `GetByUsernameWithSiteAsync` and `GetSecurityStateAsync` have neutral names and … |
 | E-0025-04 | insert-after | omission |  | The PRD itself bounds the guarantee to the repository layer. `PotDbContext` is public and exposes `Users`. A reader of "isolation that a feature canno… |
 | E-0025-05 | replace | confirmation |  | Two claims overstate. First, `CrossTenantAuthorizationFixture` covers only user and site routes (its own summary says so), and the normalised body com… |
 | E-0025-06 | replace | consistency |  | The "separate decision" exists as an ADR and should be linked. |
+| E-0026-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-01-11. |
 | E-0026-01 | replace | factual |  | Checks do need the database. For example, `CheckDescriptionDoesNotExist` queries the repository. Read literally, "refusals that do not need a database… |
 | E-0026-02 | replace | factual |  | A refused data-dependent rule of type BadRequest or Constraint is written as a `400` with the same `errors` map as a shape failure. Only 404 and 409 d… |
 | E-0026-03 | insert-after | format | DEPENDS-ON E-0026-02 | Backfilled with no statement. The owner's account (SQ-08) supports the data-annotations option. |
@@ -434,83 +695,94 @@ Marked **verified** where I re-checked it myself; the rest are as reported by th
 | E-0026-06 | replace | factual |  | Same as E-0026-04. A malformed authenticated request still costs the auth and permission reads. |
 | E-0026-07 | replace | confirmation |  | The "handler fixtures" do not exist. `Pot.AspNetCore.Tests` has one handler fixture (Export), and it does not test validation. The 400 is asserted by … |
 | E-0026-08 | replace | consistency |  | "Testing a rule needs a repository substitute" applies equally to the chosen option. Checks take repositories, and their fixtures use the in-memory pr… |
+| E-0027-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2024-12-28. |
 | E-0027-01 | replace | format |  | Backfilled record does not say so or name its sources (adr skill hard rule). |
 | E-0027-02 | replace | factual |  | The indexes are not all per-site: expense/income descriptions are unique per account, site names and usernames are unique across the database. |
 | E-0027-03 | replace | factual |  | An enriched enum carries one name (member name by default, or explicit), not separate display and storage names; and roles/permissions are not "the ta… |
 | E-0027-04 | replace | factual |  | There is no longer an "unscoped case" for settings: `SiteId` was made required, so the global partial index can match no row. The setting key is case-… |
 | E-0027-05 | replace | confirmation |  | Confirmation names no fixture; the cited check fixture asserts property name and message, not an error code (PRD-030 removed `errorCode`), and runs on… |
+| E-0028-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2024-12-28. |
 | E-0028-01 | front-matter | consistency | RELATED-PRDS | The hard-delete, no-soft-delete and sweep decisions were made in PRD-022 (Complete), which carries "Removal type: Permanent hard delete" and lists sof… |
 | E-0028-02 | replace | format |  | Backfilled record does not say so or name its sources. |
 | E-0028-03 | replace | factual |  | (a) Restrict is applied by convention to every FK on an entity type, not only owner FKs, and that convention is the mechanism worth naming. (b) Accoun… |
 | E-0028-04 | replace | omission |  | The sweep materialises and tracks every dependent row before deleting it, which is the real cost for a large site. |
 | E-0028-05 | replace | confirmation |  | `DeletionSweepFixture` is correctly cited but under-described; `IsolationFixture` (with `OrphanSweep` and model-derived tables) is the mechanical guar… |
 | E-0028-06 | replace | factual |  | The sweeps use no explicit transaction; atomicity comes from the single `SaveAsync`, as this record's own Decision and Gap say. ADR-0024 covers when a… |
+| E-0029-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2024-12-28. |
 | E-0029-01 | replace | format |  | Backfilled record does not say so or name its sources; the owner's stated reasons (SQ-19, SQ-20) are absent. |
 | E-0029-02 | replace | factual |  | The driver as written says the opposite of what is meant. |
 | E-0029-03 | replace | omission |  | The record presents the additive-step rule as practised without exception; history shows two column drops shipped in the same change as the code, and … |
 | E-0029-04 | replace | factual |  | The code answers the conditional: the runner catches every exception, logs it and sets exit code -1, which the AllOverIt console host returns; `set -e… |
 | E-0029-05 | replace | confirmation |  | Name the fixture, say what it proves (EF Core refuses `MigrateAsync` on pending model changes, observed in PRD-021's delivery) and what it does not (t… |
+| E-0030-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-10-05. |
 | E-0030-01 | replace | factual |  | The OTP worker updates status to Expired (it does not delete), mail is drained as it arrives rather than on a schedule, and the cadences are known. |
 | E-0030-02 | replace | format |  | Backfilled record does not say so or name its sources. |
 | E-0030-03 | replace | factual |  | "The single-replica assumption is what makes the scheduling safe" is false for the reminder: it duplicates on a restart inside the trigger hour and mi… |
 | E-0030-04 | replace | factual |  | An async hosted service does not hold a "request thread pool slot"; it shares the thread pool and the database connection pool with requests while it … |
 | E-0030-05 | replace | confirmation |  | Neither worker fixture asserts "does not run when the host is stopping"; the drainer is not "covered through the channel's tests" — no fixture exercis… |
 | E-0030-06 | replace | unsupported-history |  | PRD-019 keeps the workers in the API process ("No ... new deployables"), so it would not supersede in-process hosting; the owner said PRD-019 "does no… |
+| E-0031-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-10-18. |
 | E-0031-01 | replace | factual |  | Bodies are not type-checked: values pass to the component as a name-keyed dictionary at run time, and the plain-text body is a `.text` template with s… |
 | E-0031-02 | replace | factual |  | The implementation does not make a wrong property a build error (see E-0031-01), so this cannot be a driver the decision satisfies, and no evidence re… |
 | E-0031-03 | replace | factual |  | The subject is a constant per type, and only the HTML body comes from a Razor component. |
 | E-0031-04 | replace | factual |  | A renamed property does not break the build. A dictionary key the component does not declare makes `SetParametersAsync` throw at render, which the cha… |
 | E-0031-05 | replace | confirmation |  | The cited "channel's fixtures" do not exist — there is no `Pot.EmailSender` test project and no test references `SendEmailChannel`. Name the tests tha… |
 | E-0031-06 | replace | consistency |  | PRD-019 leaves OD-03 pending (scheduled-only vs all types), so the outbox may replace the channel only for scheduled mail; "would supersede this recor… |
-| E-0032-01 | front-matter | consistency | DATE, RELATED-PRDS | The decision was made in PRD-030 (Complete) and delivered on 2026-10-22; the record carries neither. |
+| E-0032-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2026-10-22. |
+| E-0032-01 | front-matter | consistency | RELATED-PRDS | The decision was made in PRD-030 (Complete) and delivered on 2026-10-22; the record carries neither. |
 | E-0032-02 | replace | format |  | Backfilled record does not say so or name its sources; it omits that option 2 was effectively the status quo until PRD-030 (a raw body logger ran outs… |
 | E-0032-03 | replace | consistency |  | "defects to be removed, not an accepted exception" presents DD-08 option B as decided; DD-08 is open ("Your call" blank). The list is also imprecise: … |
 | E-0032-04 | replace | confirmation |  | Removal of the level entry is not silent to the suite: `RequestLoggingFixture` asserts it. |
 | E-0032-05 | replace | confirmation |  | Name the enricher fixture and the level assertion, and record the gap that lets the call-logging exceptions exist. |
+| E-0033-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2026-01-17. |
 | E-0033-01 | insert-after | format |  | Backfilled with no statement. The owner's account (SQ-26) is recorded. |
 | E-0033-02 | replace | omission |  | Two facts would change a reader's picture. Some application fixtures use real repositories over the in-memory provider, not substitutes. Every hosted … |
 | E-0033-03 | replace | factual |  | The cost is a container start and full migration per test, not one per run. |
 | E-0033-04 | replace | consistency |  | There are two problems. First, the Etag is not a database concurrency token (ADR-0006, DD-02), so concurrency does not differ between the in-memory an… |
 | E-0033-05 | replace | confirmation |  | Name the metadata fixtures the bullet relies on, so the confirmation is checkable. |
 | E-0033-06 | replace | confirmation |  | Existing unit tests legitimately assert status codes on the classes that map failures to statuses, so the review rule as written condemns correct test… |
+| E-0034-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-09-12. |
 | E-0034-01 | replace | factual |  | The template does not hold "every key the compose file substitutes". `POSTGRES_DB` (and `COMPOSE_PROJECT_NAME`) come from the tracked `.env`, and `IMA… |
 | E-0034-02 | replace | omission |  | The tracked evidence for the production store (the diagram) should be named, and the record should state what the repo cannot show. The API has no Key… |
 | E-0034-03 | replace | confirmation |  | The named "Test" does not exist: nothing runs the compose instructions. Real mechanical enforcement does exist (the ignore rule and startup validation… |
 | E-0034-04 | replace | consistency |  | The record refers to the consuming deployment without linking it. |
-| E-0035-01 | front-matter | format | DATE | The hand-run build-and-push tasks for Azure date from the first Azure build. |
+| E-0035-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-11-07. |
 | E-0035-02 | replace | unsupported-history |  | Nothing in the repo records cost as "the deciding factor": there is no SQ interview row and no dated note. The deployment plan tracked in history from… |
 | E-0035-03 | insert-after | confirmation |  | The Confirmation section has no mechanical rule at all. Adding a pipeline file is the observable event that undoes this decision. |
 | E-0035-04 | replace | consistency | TEMP-DOC-CITE | (1) "Expected to be revisited as the product grows" is unsupported; the actual status is an open, undecided brief (DD-05). (2) "A change to this recor… |
 | E-0035-05 | replace | consistency |  | The record refers to the deployment topology without linking it. |
-| E-0036-01 | front-matter | format | DATE | The two-app shape is fixed by the first Azure client build: `nginx.azure.conf` with no `/api` proxy, plus an absolute API base URL. |
+| E-0036-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-11-07. |
 | E-0036-02 | insert-after | omission |  | W4 row 0074 is still `Ver` because the tracked documents disagree. The diagram and the Docker guide say the ingress routes `/api/*` to the API contain… |
 | E-0036-03 | replace | omission |  | The code shows why `SameSite` is load-bearing. The refresh cookie is `Lax`, which works cross-origin only because the client and API hosts are the sam… |
 | E-0036-04 | insert-after | omission | TEMP-DOC-CITE | The record misses an important cost of independent deployment. Two separate tasks deploy the two apps, so the client and API versions can be skewed, a… |
 | E-0036-05 | replace | confirmation |  | The named test does not exercise this arrangement. `playwright.prod.config.ts` builds the client and serves it with `vite preview`, whose proxy forwar… |
 | E-0036-06 | replace | consistency |  | Both "separate decisions" exist as ADRs and should be linked. The build-and-publish decision is related too. |
+| E-0037-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-03-15. |
 | E-0037-01 | insert-after | format |  | The record is backfilled but does not say so or name its sources (skill hard rule). |
 | E-0037-02 | replace | factual |  | The current text gets the dependency graph wrong (DD-13): |
 | E-0037-03 | replace | factual |  | Removing a screen means deleting its folder and also editing the route table and the sidebar menu that import it. |
 | E-0037-04 | replace | consistency |  | - "The existing ones are debt to be removed" treats DD-13 option C as decided, but DD-13 is open. |
-| E-0038-01 | front-matter | consistency | DATE | `date` is the writing date. TanStack Query and the shared axios hooks first appear together in `7bb53c3b`. |
+| E-0038-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-03-23. |
 | E-0038-02 | insert-after | format |  | Backfilled record with no backfill statement or sources. |
 | E-0038-03 | replace | factual |  | - The transport is the global default axios instance, configured through `axios.defaults`. It is not an instance made with `axios.create()`. |
 | E-0038-04 | replace | factual |  | - Invalidation follows one central dependency table. Mutations do not each declare the full set of affected keys. |
 | E-0038-05 | replace | factual |  | False as written. No query ever rejects, so TanStack Query never retries. There is also an important consequence the record leaves out: a failure is c… |
 | E-0038-06 | replace | factual |  | Invalidation takes a typed union, `CacheKey`, so a typo there is a compile error. The silent miss is between a query's untyped `string[]` key and that… |
 | E-0038-07 | replace | confirmation |  | "The mutation hooks are tested" is broader than the truth. Only a few mutation flows have invalidation fixtures, and the account, expense and income m… |
-| E-0039-01 | front-matter | consistency | DATE, RELATED-PRDS | `date` is the writing date. PRD-030 (Complete) sets this decision's current requirements (E1–E8), and row 0058 cites it. |
+| E-0039-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-05-03. |
+| E-0039-01 | front-matter | consistency | RELATED-PRDS | `date` is the writing date. PRD-030 (Complete) sets this decision's current requirements (E1–E8), and row 0058 cites it. |
 | E-0039-02 | insert-after | format |  | Backfilled record with no backfill statement or sources. |
 | E-0039-03 | replace | factual |  | "The typed value" suggests validation, but the body is only cast. That runtime check is the open item DD-07. |
 | E-0039-04 | replace | factual |  | A caller cannot "read further into the result". A failure carries only `type`, `code` and `description`. A 400's field messages are joined into one st… |
-| E-0040-01 | front-matter | consistency | DATE | `date` is the writing date. The memory-only token provider and the cookie-based refresh arrived together. |
+| E-0040-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-09-11. |
 | E-0040-02 | replace | omission |  | The record gives no timing for the proactive refresh, and it omits that the interceptor never retries `/auth/` routes. |
 | E-0040-03 | replace | factual |  | The single-flight belongs to the interceptor only. "One logout path" is stated loosely: every sign-out reaches the `logoutManager` callback, which cal… |
 | E-0040-04 | replace | factual |  | The start-up refresh has no unit fixture, but every authenticated E2E test starts a page with only the refresh cookie (a storage state from a fresh lo… |
 | E-0040-05 | insert-after | omission |  | The timer and the start-up refresh post to `/auth/refresh` independently of the interceptor's guard, and each tab has its own guard. Because the serve… |
 | E-0040-06 | replace | confirmation |  | The bullet names no fixture and overstates "ends the session through the same logout path": the interceptor test asserts `clearTokens`, and a separate… |
 | E-0040-07 | replace | consistency |  | As written, the rule makes the deletion flows (E-0040-03) defects. The rule should target a sign-out that leaves a live server session behind. |
-| E-0041-01 | front-matter | consistency | DATE, RELATED-PRDS | The decision came from PRD-001 and was implemented on 2026-05-03. |
+| E-0041-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2026-05-03. |
+| E-0041-01 | front-matter | consistency | RELATED-PRDS | The decision came from PRD-001 and was implemented on 2026-05-03. |
 | E-0041-02 | replace | factual |  | - Browser storage is already separated by origin, so a local dev server and a deployed site never share keys. The env marker only separates dev-mode a… |
 | E-0041-03 | replace | unsupported-history |  | Option 2 is not hypothetical. It was the shipped shape that PRD-001 replaced, and the record should say so. |
 | E-0041-04 | replace | factual |  | The decision statement is wrong. It says keys are env-scoped and not user-scoped, and that most settings persist. In the code, user scoping is the nor… |
@@ -519,7 +791,7 @@ Marked **verified** where I re-checked it myself; the rest are as reported by th
 | E-0041-07 | replace | factual |  | - False as written: persisted preferences are user-scoped. |
 | E-0041-08 | replace | confirmation |  | The lifetime of each setting does have fixtures: each consumer's test asserts its key and backend. The record should name them. |
 | E-0041-09 | replace | factual |  | Filters *are* stored, in session storage. The URL is the render-time source, and the stored copy feeds the sidebar links. |
-| E-0042-01 | front-matter | consistency | DATE | The decision took its current form, an enforced update, on 2026-09-22. The shell-only precache dates from 2026-03-30. |
+| E-0042-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2026-03-30. |
 | E-0042-02 | replace | factual |  | The reload is enforced, at 45 seconds without input or 5 minutes at the latest. It does not wait for the user to reload. |
 | E-0042-03 | insert-after | format |  | Backfilled record with no backfill statement or sources. The git history shows a deferrable prompt that shipped and was later replaced. |
 | E-0042-04 | insert-after | unsupported-history |  | The approach that shipped and was then dropped, a prompt the user could postpone, belongs in Considered Options (README: "record that in the Considere… |
@@ -529,15 +801,15 @@ Marked **verified** where I re-checked it myself; the rest are as reported by th
 | E-0042-08 | replace | confirmation |  | - The Gap names the wrong mechanism. Nothing excludes the API; it is uncached because there are no runtime routes. |
 | E-0042-09 | replace | factual |  | Without a service worker, repeat loads would still reuse the hashed bundle, because nginx marks `/assets/` as immutable. What would be lost is install… |
 | E-0042-10 | insert-after | unsupported-history |  | Pros and cons for the option added in E-0042-04, citing the evidence that it shipped and was replaced. |
-| E-0043-01 | front-matter | consistency | DATE | `date` is when the decision was made. The shared stack is PRD-012 R1, approved and implemented by 2026-09-02, |
+| E-0043-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2026-05-11. |
 | E-0043-02 | front-matter | consistency | RELATED-PRDS, TITLE-AREA | W4 files this group as cross-cutting, and the stack spans the client, the API and the database. The decision comes |
 | E-0043-03 | replace | consistency | STATUS-LINK | This is the other half of E-0001-01 (W4: this group supersedes ADR-0001). |
 | E-0043-04 | replace | unsupported-history |  | "Starts in seconds" is not supported. Before the first test, setup starts two containers, runs migrations through |
 | E-0043-05 | replace | factual |  | The setup order is misstated: the baseline SQL runs before the readiness wait, and only the import comes after it. |
 | E-0043-06 | replace | confirmation |  | The first bullet is labelled "Test" but describes setup behaviour without naming it, and nothing listed |
 | E-0043-07 | replace | consistency |  | The neighbouring decisions are named but not linked, and the record cites no source. |
+| E-0044-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2026-05-16. |
 | E-0044-01 | front-matter | factual | TITLE-AREA | The title states a practice that is neither required nor followed. W4's statement of the decision is |
-| E-0044-02 | front-matter | consistency | DATE | The decision date is PRD-012 R6 (2026-09-02). PRD-031 later added the destructive class. |
 | E-0044-03 | front-matter | consistency | RELATED-PRDS, TITLE-AREA | W4 files the group as cross-cutting. The two-class model comes from PRD-012 and the third class from PRD-031. |
 | E-0044-04 | replace | consistency | STATUS-LINK | This is the other half of E-0001-01. Row 0071 is sourced from ADR-0001 §7. |
 | E-0044-05 | replace | factual | TITLE-AREA | The H1 must match the title (E-0044-01). |
@@ -551,8 +823,8 @@ Marked **verified** where I re-checked it myself; the rest are as reported by th
 | E-0044-13 | replace | confirmation |  | No instruction requires a header statement. The instruction file and AUTHORING are what define the classes and |
 | E-0044-14 | replace | consistency |  | The heading and its bullets repeat the "declared" framing that E-0044-01 corrects. |
 | E-0044-15 | replace | consistency |  | Neighbours are named but not linked; sources not cited. |
+| E-0045-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2026-05-11. |
 | E-0045-01 | front-matter | factual | TITLE-AREA | The title contradicts the skills and records an undecided trigger as decided. |
-| E-0045-02 | front-matter | consistency | DATE | The two-profile decision is PRD-012 R7 and R8, approved 2026-09-02. The prodlike config was "validated |
 | E-0045-03 | front-matter | consistency | RELATED-PRDS, TITLE-AREA | W4 files the group as cross-cutting; the source is PRD-012. |
 | E-0045-04 | replace | consistency | STATUS-LINK | This is the other half of E-0001-01. Row 0072 is sourced from ADR-0001 §10 and §13. |
 | E-0045-05 | replace | factual | TITLE-AREA | The H1 must match the title (E-0045-01). |
@@ -562,7 +834,7 @@ Marked **verified** where I re-checked it myself; the rest are as reported by th
 | E-0045-09 | replace | factual |  | Prodlike runs the same four projects. Its exclusions are also not a subset of the dev ones: it drops |
 | E-0045-10 | replace | confirmation |  | The skill step and the instruction lines are the mechanisms that apply this decision. The current timeout bullet |
 | E-0045-11 | replace | consistency |  | Neighbours are named but not linked. "A separate decision" for CI is ADR-0035. |
-| E-0046-01 | front-matter | consistency | DATE | The decision is PRD-031's. Its "Decisions Carried Into This Document" were committed on 2026-10-27, and the PRD was |
+| E-0046-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2026-10-27. |
 | E-0046-02 | front-matter | consistency | RELATED-PRDS, TITLE-AREA | The decision spans the browser suite and the server integration suite. W4 files it as cross-cutting, and the |
 | E-0046-03 | replace | consistency | STATUS-LINK | This is the other half of E-0001-01. It reverses ADR-0001's "OTP / email flows deferred indefinitely" and the |
 | E-0046-04 | replace | factual |  | The site-deletion journey reads the sign-up message (its one-time code and temporary password), not an |
@@ -572,6 +844,7 @@ Marked **verified** where I re-checked it myself; the rest are as reported by th
 | E-0046-08 | replace | factual |  | The sink starts first in global setup and throws if it cannot start or its ports are taken, so the whole run |
 | E-0046-09 | replace | confirmation |  | Name the fixture and the instruction files that actually enforce this. "Each destructive operation" overstates |
 | E-0046-10 | replace | consistency |  | Neighbours are named but not linked, and the source PRD is not cited. |
+| E-0047-00 | replace | owner-decision | D-1 | D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-11-08. |
 | E-0047-01 | front-matter | consistency | RELATED-PRDS | The decision comes from PRD-014, as 0002 did. The skill says to set `related-prds` when a decision came from a PRD. PRD-014 is still a draft, which ma… |
 | E-0047-02 | replace | factual |  | The server sends `Retry-After` only for the fixed window; an authenticated (sliding-window) 429 has none. |
 | E-0047-03 | replace | factual |  | "it says for how long" is true only for an anonymous caller. |
@@ -586,6 +859,32 @@ Marked **verified** where I re-checked it myself; the rest are as reported by th
 ## ADR-0001 — 0001-playwright-e2e-testing-infrastructure.md
 
 Verdict: EDITS
+
+### E-0001-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(legacy)` after the ADR number in the heading; date 2026-09-02 → 2026-09-02 (unchanged).
+- Date source: PRD-012. Legacy record from PRD-012, which it implements; PRD-012 is dated 2026-09-02 (Last Updated, and its first commit a45fc4d0). Confidence: high.
+- old:
+~~~
+date: 2026-09-02
+area: cross-cutting
+related-prds: [PRD-012]
+---
+
+# ADR-0001: Playwright E2E testing infrastructure
+~~~
+- new:
+~~~
+date: 2026-09-02
+area: cross-cutting
+related-prds: [PRD-012]
+---
+
+# ADR-0001 (legacy): Playwright E2E testing infrastructure
+~~~
 
 ### E-0001-01
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -717,6 +1016,34 @@ front matter replacing the Status/Date lines, the H1, two relative links, and th
 (`f4313370`). A "Legacy record" banner added at renumbering (`f3a043d6`) was removed again in `8e74098d`.
 All within what the README allows for a record that was `proposed` and is now `superseded`.
 
+### E-0002-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(legacy)` after the ADR number in the heading; date 2026-09-02 → 2026-09-02 (unchanged).
+- Date source: PRD-014. Legacy record from PRD-014, written with it; PRD-014 was first committed on 2026-09-02 (97ec744c). Confidence: high.
+- old:
+~~~
+date: 2026-09-02
+area: cross-cutting
+related-prds: [PRD-014]
+superseded-by: [ADR-0047]
+---
+
+# ADR-0002: Retry-After client cooldown handling
+~~~
+- new:
+~~~
+date: 2026-09-02
+area: cross-cutting
+related-prds: [PRD-014]
+superseded-by: [ADR-0047]
+---
+
+# ADR-0002 (legacy): Retry-After client cooldown handling
+~~~
+
 ### E-0002-01
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
 - Kind: replace
@@ -751,21 +1078,33 @@ All within what the README allows for a record that was `proposed` and is now `s
 
 Verdict: EDITS
 
-### E-0003-01
-- Decision: [ ]  (Y = apply, N = reject, or write a change)
-- Kind: front-matter
-- Tags: DATE
-- Severity: format
-- Why: `date` is the writing date. The earliest record of the choice in code is the commit that explains why `UseHttpsRedirection()` is left out, one day after the first Azure build tasks.
-- Evidence: `git log -S UseHttpsRedirection` → `bebba703 2025-11-08 Add a comment why UseHttpsRedirection() is not being used`; `e45caf59 2025-11-07 Docker file updates for local vs azure builds` (first Azure tasks).
+### E-0003-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-11-08.
+- Date source: bebba703 "Add a comment why UseHttpsRedirection() is not being used". This commit adds the commented-out `app.UseHttpsRedirection()` with "Not required since we are behind a reverse proxy in Azure that handles HTTPS". `-S'UseHttpsRedirection'` finds nothing earlier. On the same day 5cf6f237 "Azure docs updated" added Docs/Azure-Diagram.mmd, which shows "Ingress Layer / HTTPS Termination" in front of the client (port 80) and API (port 5241) containers. Both are explicit statements of where TLS terminates. Later: none needed. ForwardedHeaders (ADR-0004) came on 2026-11-02 but is a separate record. Confidence: medium-high.
 - old:
 ~~~
 date: 2026-11-04
+area: infrastructure
+---
+
+# ADR-0003: Public TLS terminates at the Container Apps ingress
 ~~~
 - new:
 ~~~
 date: 2025-11-08
+area: infrastructure
+---
+
+# ADR-0003 (backfilled): Public TLS terminates at the Container Apps ingress
 ~~~
+
+### E-0003-01 — DROPPED (superseded by D-1)
+- Was: `date` is the writing date. The earliest record of the choice in code is the commit that explains why `UseHttpsRedirection()` is left out, one day after the first Azure build tasks.
+- Reason dropped: it only changed the date, which E-0003-00 now sets.
 
 ### E-0003-02
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -887,21 +1226,33 @@ application and matches the configuration the deployment runs under.
 
 Verdict: EDITS
 
-### E-0004-01
-- Decision: [ ]  (Y = apply, N = reject, or write a change)
-- Kind: front-matter
-- Tags: DATE
-- Severity: format
-- Why: The decision was made and implemented in one dated commit.
-- Evidence: `ceb57419 2026-11-02 Honour the forwarded headers set by the Container Apps ingress` (adds `ForwardedHeadersOptionsSetup`, both fixtures and the `Program.cs` change).
+### E-0004-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2026-11-02.
+- Date source: ceb57419 "Honour the forwarded headers set by the Container Apps ingress". This commit adds ForwardedHeadersOptionsSetup (XForwardedFor | XForwardedProto, cleared KnownProxies/KnownIPNetworks), AddPotForwardedHeaders, UseForwardedHeaders in Program.cs and both fixtures. It is the first commit that has `UseForwardedHeaders`, `XForwardedProto` or `KnownProxies`. The X-Forwarded-* lines in aa157418 (2025-11-16) are nginx `proxy_set_header` lines in a doc, which is incidental. Later: none Confidence: high.
 - old:
 ~~~
 date: 2026-11-04
+area: backend
+---
+
+# ADR-0004: The API trusts the caller address and scheme from the ingress
 ~~~
 - new:
 ~~~
 date: 2026-11-02
+area: backend
+---
+
+# ADR-0004 (backfilled): The API trusts the caller address and scheme from the ingress
 ~~~
+
+### E-0004-01 — DROPPED (superseded by D-1)
+- Was: The decision was made and implemented in one dated commit.
+- Reason dropped: it only changed the date, which E-0004-00 now sets.
 
 ### E-0004-02
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -987,21 +1338,33 @@ infrastructure-as-code exists to check it.
 
 Verdict: EDITS
 
-### E-0005-01
-- Decision: [ ]  (Y = apply, N = reject, or write a change)
-- Kind: front-matter
-- Tags: DATE
-- Severity: format
-- Why: Configured origins with credentials arrived in November 2025, so `2026-11-04` is not the decision date. (Later refinements are listed in Notes.)
-- Evidence: `4d0856f3 2025-11-07 Load allowed origins from config`; `61a9c403 2025-11-07 Cors config / setup update` (adds `CorsConfiguration`, `CorsConfigurationSetup`, `CorsOptionsSetup`).
+### E-0005-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-09-12.
+- Date source: 8db2d00f "Initial jwt auth effort - still a WIP - plus some cleanup". This is the first credentialed policy. It has explicit WithOrigins (no wildcard), AllowAnyMethod/AllowAnyHeader, AllowCredentials with the comment "WithOrigins() cannot use * with AllowCredentials", an exposed `content-disposition`, and UseCors placed before authentication. Together these are the core of the recorded choice: credentialed, explicit origins, any method and header, exposed headers. Later: origins moved into configuration on 2025-11-07 (4d0856f3 "Load allowed origins from config (initial test version)", then 61a9c403 "Cors config / setup update" with CorsOptionsSetup/CorsConfigurationSetup). The ten-minute preflight cache came on 2026-10-19 (3dce3560). Client withCredentials arrived on 2025-11-23 (550b4681). Confidence: medium.
 - old:
 ~~~
 date: 2026-11-04
+area: backend
+---
+
+# ADR-0005: Cross-origin access is limited to configured browser origins
 ~~~
 - new:
 ~~~
-date: 2025-11-07
+date: 2025-09-12
+area: backend
+---
+
+# ADR-0005 (backfilled): Cross-origin access is limited to configured browser origins
 ~~~
+
+### E-0005-01 — DROPPED (superseded by D-1)
+- Was: Configured origins with credentials arrived in November 2025, so `2026-11-04` is not the decision date. (Later refinements are listed in Notes.)
+- Reason dropped: it only changed the date, which E-0005-00 now sets.
 
 ### E-0005-02
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -1068,6 +1431,30 @@ The count is nine, and the ADR is right. There are nine `CheckHasSameEtag.cs` fi
 Nine input models carry `Etag`, and nine routes call `.ProducesStaleEntityTagConflict()`
 (`Pot.AspNetCore/Features/*/Extensions/RouteGroupBuilderExtensions.cs`; Users has three). DD-02's list of
 six leaves out the three Users paths, so DD-02 is the stale document.
+
+### E-0006-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2024-12-28.
+- Date source: a0c78b6d "Adding initial postgres support". Added `EntityBase` with a plain `long Etag` (no concurrency token), the `Etag` bigint column in the Init migration, and `ETag` on the response DTOs. That is the version carried in the body and kept out of the database's concurrency features, which the decision is about. Later: 2025-01-01 (1dbe5aa6) the save override assigns `DateTime.UtcNow.GetEtag()`; 2025-01-25 (9fcd7464 "Refactoring") adds the first application-side compare, `CheckHasSameETag` / `account.Etag != request.ETag` -> `CreateETagConflict` on account update. Confidence: medium (use 2025-01-25 if only the compare-before-save counts as the decision).
+- old:
+~~~
+date: 2026-11-04
+area: backend
+---
+
+# ADR-0006: Optimistic concurrency is checked in the application, not by the database
+~~~
+- new:
+~~~
+date: 2024-12-28
+area: backend
+---
+
+# ADR-0006 (backfilled): Optimistic concurrency is checked in the application, not by the database
+~~~
 
 ### E-0006-01 — DROPPED (house style)
 - Was: The record is backfilled but does not say so, and does not name its sources (skill hard rule).
@@ -1176,21 +1563,33 @@ Checks are bound by scanning for the
 
 Verdict: EDITS
 
-### E-0007-01
-- Decision: [ ]  (Y = apply, N = reject, or write a change)
-- Kind: front-matter
-- Tags: DATE
-- Severity: consistency
-- Why: `date` is the writing date. The handler that resolves permissions from the database per requirement dates from the first JWT authorization work. PRD-026 §4.6 (Complete, 2026-10-14) later restated the policy.
-- Evidence: `git log -S"PermissionAuthorizationHandler" --reverse` → `8db2d00f 2025-09-12 Initial jwt auth effort`; `Docs/Future/PRD-026-cross-tenant-authorization-hardening.md:463-469`.
+### E-0007-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-09-12.
+- Date source: 8db2d00f "Initial jwt auth effort - still a WIP - plus some cleanup". Added `PermissionService` (loads the user's roles and their permissions from the database and flattens them to names), `PermissionRequirement`, `PermissionAuthorizationPolicyProvider` and `PermissionAuthorizationHandler`, which creates a scope per requirement and checks membership. The token carried only `sub` and `jti`. This is the decision exactly. Later: the platform-administrator permission from configuration and the profile's permission list came later (`/me` arrived 2025-09-20 in 4bad2f2c). Confidence: high.
 - old:
 ~~~
 date: 2026-11-04
+area: backend
+---
+
+# ADR-0007: Each request resolves the caller's permissions from the database
 ~~~
 - new:
 ~~~
 date: 2025-09-12
+area: backend
+---
+
+# ADR-0007 (backfilled): Each request resolves the caller's permissions from the database
 ~~~
+
+### E-0007-01 — DROPPED (superseded by D-1)
+- Was: `date` is the writing date. The handler that resolves permissions from the database per requirement dates from the first JWT authorization work. PRD-026 §4.6 (Complete, 2026-10-14) later restated the policy.
+- Reason dropped: it only changed the date, which E-0007-00 now sets.
 
 ### E-0007-02
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -1312,21 +1711,33 @@ configuration-added grant is exercised only by fixtures that start `PlatformAdmi
 
 Verdict: EDITS
 
-### E-0008-01
-- Decision: [ ]  (Y = apply, N = reject, or write a change)
-- Kind: front-matter
-- Tags: DATE
-- Severity: consistency
-- Why: `date` is the writing date. The server-side session this record decides (one AuthSession row per sign-in) was delivered by PRD-001 and PRD-002. The short JWT and the HttpOnly cookie are older (2025-11-23).
-- Evidence: `Docs/Future/PRD-002-server-login-logout-session-architecture.md` "PRD Status" (Implemented; Last updated 2026-05-03); `git log -S"class AuthSessionEntity"` → 2026-05-02.
+### E-0008-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-09-12.
+- Date source: 8db2d00f "Initial jwt auth effort - still a WIP - plus some cleanup". The first server issue of the token pair: an HMAC-SHA512 JWT carrying only `sub` and `jti`, with a 60-minute expiry commented "Recommended is 15-60 minutes", and a random refresh token with a 30-day expiry. The refresh token was held server-side on the user row and replaced on every refresh, so this is the short-access-plus-rotating-refresh split the record is built on. Later: 2025-09-27 5f27622c "Token refresh updates" (the expiry became the recorded fifteen minutes); 2025-11-23 49bdb7a9 "Server http cookie implementation" (HttpOnly, SameSite=Lax refresh cookie); 2026-05-02 db0c710e / bcc0acc1 (hashed AuthSession rows); 2026-10-17 31c96313 "Bind access tokens to their login session" (session id in the token). The client half of the pair (refresh on 401 with token rotation, kept in localStorage) landed one day earlier, 2025-09-11 dfadb190, but that commit is the client's consuming side, so it is counted under ADR-0040. Confidence: medium.
 - old:
 ~~~
 date: 2026-11-04
+area: backend
+---
+
+# ADR-0008: Access tokens are short-lived and backed by a server-side session
 ~~~
 - new:
 ~~~
-date: 2026-05-03
+date: 2025-09-12
+area: backend
+---
+
+# ADR-0008 (backfilled): Access tokens are short-lived and backed by a server-side session
 ~~~
+
+### E-0008-01 — DROPPED (superseded by D-1)
+- Was: `date` is the writing date. The server-side session this record decides (one AuthSession row per sign-in) was delivered by PRD-001 and PRD-002. The short JWT and the HttpOnly cookie are older (2025-11-23).
+- Reason dropped: it only changed the date, which E-0008-00 now sets.
 
 ### E-0008-02
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -1490,21 +1901,33 @@ held. A session row per sign-in replaced it.
 
 Verdict: EDITS
 
-### E-0009-01
-- Decision: [ ]  (Y = apply, N = reject, or write a change)
-- Kind: front-matter
-- Tags: DATE
-- Severity: consistency
-- Why: `date` is the writing date. The per-session half, which completes the decision in the title, was added on 2026-10-17 with no PRD. The global token version dates from 2025-11-22.
-- Evidence: `DOCS-WORK-LISTS.md` "Decisions with no PRD" ("binding access tokens to their session, in commit `31c96313` (2026-10-17)"); `git log -S"TokenVersion" --reverse` → 2025-11-22.
+### E-0009-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-11-22.
+- Date source: 2805f9c3 "Add JWT token versioning". Added `UserEntity.TokenVersion` with its migration, a token-version claim, and `JwtBearerEventsSetup.OnTokenValidated`. On every authenticated request that handler reads the user's TokenVersion and Status from the database (commented as "one database (indexed) query per authenticated request"), fails on a version mismatch or a non-enabled account, and the version is bumped on a password change. This is the core of the recorded check. Later: 2026-05-03 d160b90f (logout revokes only the current session and no longer bumps the version); 2026-10-17 31c96313 "Bind access tokens to their login session" (session existence, revocation and expiry added to the same check). Confidence: high.
 - old:
 ~~~
 date: 2026-11-04
+area: backend
+---
+
+# ADR-0009: Access tokens are rejected once their session or user version changes
 ~~~
 - new:
 ~~~
-date: 2026-10-17
+date: 2025-11-22
+area: backend
+---
+
+# ADR-0009 (backfilled): Access tokens are rejected once their session or user version changes
 ~~~
+
+### E-0009-01 — DROPPED (superseded by D-1)
+- Was: `date` is the writing date. The per-session half, which completes the decision in the title, was added on 2026-10-17 with no PRD. The global token version dates from 2025-11-22.
+- Reason dropped: it only changed the date, which E-0009-00 now sets.
 
 ### E-0009-02
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -1661,21 +2084,33 @@ one session row, which invalidates the tokens that name it.
 
 Verdict: EDITS
 
-### E-0010-01
-- Decision: [ ]  (Y = apply, N = reject, or write a change)
-- Kind: front-matter
-- Tags: DATE
-- Severity: format
-- Why: The configured platform-admin list arrived with the sign-up approval flow.
-- Evidence: `git log -S PlatformAdmin` → `e09c5394 2025-11-09 Updated signup / approval flow` (adds `PlatformAdminOptions.cs`).
+### E-0010-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-11-09.
+- Date source: e09c5394 "Updated signup / approval flow". This commit adds PlatformAdminOptions (`UserIds`, a comma-separated list of RowIds), PLATFORMADMIN__USERIDS in compose, and PermissionService code that grants `platform:manage` when the user's id is in the configured list. It is the first commit that has `PlatformAdmin`, `UserIds` or "platform admin". Later: startup validation and the last-admin/site-deletion guards came later (not dated here). Confidence: high.
 - old:
 ~~~
 date: 2026-11-04
+area: backend
+---
+
+# ADR-0010: Platform administration is granted by deployment configuration, not by a role
 ~~~
 - new:
 ~~~
 date: 2025-11-09
+area: backend
+---
+
+# ADR-0010 (backfilled): Platform administration is granted by deployment configuration, not by a role
 ~~~
+
+### E-0010-01 — DROPPED (superseded by D-1)
+- Was: The configured platform-admin list arrived with the sign-up approval flow.
+- Reason dropped: it only changed the date, which E-0010-00 now sets.
 
 ### E-0010-02
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -1838,21 +2273,33 @@ operator, and a tenant is a consumer of the product.
 
 Verdict: EDITS
 
-### E-0011-01
-- Decision: [ ]  (Y = apply, N = reject, or write a change)
-- Kind: front-matter
-- Tags: DATE
-- Severity: consistency
-- Why: `date` is the writing date. The fallback and the endpoint test were decided in PRD-026 §4.3. That PRD is Complete and was last updated 2026-10-14; the implementation followed on 2026-10-15.
-- Evidence: `Docs/Future/PRD-026-cross-tenant-authorization-hardening.md:15-17, 435-437`; `git log -S"FallbackPolicy"`.
+### E-0011-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2026-10-08.
+- Date source: eef1bbe2 "PRD 026 cross-tenant hardening + initial red tests + expected pre/post green tests". Added `EndpointAuthorizationMetadataFixture`, which requires every endpoint to carry an authorization requirement or to be explicitly `AllowAnonymous()` (the first `AllowAnonymous` in Source). This is the endpoint-inventory half of the recorded decision, written test-first ahead of the fallback. Later: 2026-10-14 9b1d5153 "Doc update" (DEVELOPER.md describes the fallback); 2026-10-15 60693d57 "Apply cross-tenant hardening implementation (PRD-026)" (`options.FallbackPolicy = ...RequireAuthenticatedUser()` and `AllowAnonymous()` on the auth routes). The idea was first proposed, as pending OD-02, in PRD-026 on 2026-10-03 (3886a75e), and that PRD's design was marked complete on 2026-10-05 (5acd6b2a). Those are requirements documents, not the mechanism. Confidence: medium.
 - old:
 ~~~
 date: 2026-11-04
+area: backend
+---
+
+# ADR-0011: Every endpoint is authenticated unless it is explicitly anonymous
 ~~~
 - new:
 ~~~
-date: 2026-10-14
+date: 2026-10-08
+area: backend
+---
+
+# ADR-0011 (backfilled): Every endpoint is authenticated unless it is explicitly anonymous
 ~~~
+
+### E-0011-01 — DROPPED (superseded by D-1)
+- Was: `date` is the writing date. The fallback and the endpoint test were decided in PRD-026 §4.3. That PRD is Complete and was last updated 2026-10-14; the implementation followed on 2026-10-15.
+- Reason dropped: it only changed the date, which E-0011-00 now sets.
 
 ### E-0011-02
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -1985,25 +2432,33 @@ as Production, so the Development-only anonymous routes are outside it.
 
 Verdict: EDITS
 
-### E-0012-01
-- Decision: [ ]  (Y = apply, N = reject, or write a change)
-- Kind: front-matter
-- Tags: DATE
-- Severity: consistency
-- Why: `date` is when the decision was made; the policy, its partitions and its limits arrived in one commit.
-- Evidence: `git show 1896f3e4` (2025-11-08, "Add rate limiting") adds `RateLimiterPolicy.cs` with `ChainedPolicy`, `user:`/`ip:` partitions, sliding 50 / fixed 15, and `RequireRateLimiting` on every group.
+### E-0012-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-11-08.
+- Date source: 1896f3e4 "Add rate limiting". Added `RateLimiterPolicy.CreateChainedPolicy`, which partitions by `user:{sub}` when authenticated and `ip:{RemoteIpAddress}` when anonymous. Authenticated callers get a sliding window of 50 permits per 30 s in 10 segments; anonymous callers get a fixed window of 15 permits per 10 s; neither queues. Rejection is 429 with `Retry-After` when the metadata exists and a too-many-requests problem, and the policy is applied to every endpoint group. This is exactly the recorded policy. Confidence: high.
 - old:
 ~~~
-status: accepted
 date: 2026-11-04
 area: backend
+---
+
+# ADR-0012: One chained rate-limit policy partitions by caller and never locks an account
 ~~~
 - new:
 ~~~
-status: accepted
 date: 2025-11-08
 area: backend
+---
+
+# ADR-0012 (backfilled): One chained rate-limit policy partitions by caller and never locks an account
 ~~~
+
+### E-0012-01 — DROPPED (superseded by D-1)
+- Was: `date` is when the decision was made; the policy, its partitions and its limits arrived in one commit.
+- Reason dropped: it only changed the date, which E-0012-00 now sets.
 
 ### E-0012-02
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -2107,21 +2562,33 @@ message.
 
 Verdict: EDITS
 
-### E-0013-01
-- Decision: [ ]  (Y = apply, N = reject, or write a change)
-- Kind: front-matter
-- Tags: DATE
-- Severity: consistency
-- Why: `date` is the writing date. The hasher dates from 2025-09-12. The single-use code entity, which completes the decision in the title, dates from 2025-10-10. No PRD covers either.
-- Evidence: `git log -S"PasswordHasher<UserEntity>" --reverse` → 2025-09-12; `git log -S"OtpCode" --reverse` → `400590f6 2025-10-10 Add OneTimePassword entity`.
+### E-0013-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-09-12.
+- Date source: 8db2d00f "Initial jwt auth effort - still a WIP - plus some cleanup". Added `UserPasswordHasher`, which wraps `Microsoft.AspNetCore.Identity.PasswordHasher<UserEntity>` (with a comment describing the V3 format marker, iteration count and salt) without adopting the Identity store. The framework hasher is the first essential part of the bundled decision and is named in the title. Later: 2025-10-10 400590f6 "Add OneTimePassword entity" (single-use codes); 2025-10-15 41d0fa1d "Implementation of OTP client, server, and migrations" (reference codes, expiry and attempts); 2025-10-18 ee0d1e05 (OTP verification updates the password hash). Confidence: high.
 - old:
 ~~~
 date: 2026-11-04
+area: backend
+---
+
+# ADR-0013: Passwords are hashed with the ASP.NET Core hasher and reset by single-use code
 ~~~
 - new:
 ~~~
-date: 2025-10-10
+date: 2025-09-12
+area: backend
+---
+
+# ADR-0013 (backfilled): Passwords are hashed with the ASP.NET Core hasher and reset by single-use code
 ~~~
+
+### E-0013-01 — DROPPED (superseded by D-1)
+- Was: `date` is the writing date. The hasher dates from 2025-09-12. The single-use code entity, which completes the decision in the title, dates from 2025-10-10. No PRD covers either.
+- Reason dropped: it only changed the date, which E-0013-00 now sets.
 
 ### E-0013-02
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -2279,6 +2746,7 @@ too many attempts. A new request invalidates the earlier active code for that us
 ~~~
 - new:
 ~~~
+
 ~~~
 
 ### E-0013-10
@@ -2320,22 +2788,47 @@ Verdict: MAJOR (the Summary says every failure carries a stable type, a user-saf
 No failure carries an error code, a `400` carries no `detail`, and only conflicts get a POT type. The
 Decision Outcome says refusals are distinguished by `detail`, which a `400` never has.)
 
-### E-0014-01
-- Decision: [ ]  (Y = apply, N = reject, or write a change)
-- Kind: front-matter
-- Tags: DATE, RELATED-PRDS
-- Severity: consistency
-- Why: `date` should be when the decision was made. Option 1 ("written by the application even where the framework would not write one") became true in `50ff0372`. The record comes from PRD-030 (Complete), which front matter should name.
-- Evidence: `git show -s 50ff0372` (2026-10-21, "Write every error as Problem Details and echo the correlation id"); PRD-030 status Complete, scope line; DOCS-WORK-LISTS.md W4 row 0022 (main source PRD-030).
+### E-0014-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-01-11.
+- Date source: 3d8fca2c "Infra refactoring, intro of validation, problem details". Introduced `AddProblemDetails`, customised to add `correlationId` and `instance` to every problem. It also introduced `IExceptionHandler` implementations, including an `UnhandledExceptionHandler` registered last, that write Problem Details through `IProblemDetailsService` for failures the framework would otherwise leave bodiless. Problem Details as the failure shape, with a correlation identifier and an application-written body for unhandled exceptions, is the core of the record. Later: 2026-10-16 bec69a48 (first `UseStatusCodePages`); 2026-10-21 50ff0372 "Write every error as Problem Details and echo the correlation id"; 2026-10-22 d837c060 "Give every failure one shape and name each conflict category" (`urn:pot:*` conflict types) and 44104893 (no submitted values echoed). Confidence: medium.
 - old:
 ~~~
 date: 2026-11-04
 area: backend
 ---
+
+# ADR-0014: Every failure is written as a Problem Details document
 ~~~
 - new:
 ~~~
-date: 2026-10-21
+date: 2025-01-11
+area: backend
+---
+
+# ADR-0014 (backfilled): Every failure is written as a Problem Details document
+~~~
+
+### E-0014-01
+- Decision: [ ]  (Y = apply, N = reject, or write a change)
+- Kind: front-matter
+- Tags: RELATED-PRDS
+- Severity: consistency
+- Why: `date` should be when the decision was made. Option 1 ("written by the application even where the framework would not write one") became true in `50ff0372`. The record comes from PRD-030 (Complete), which front matter should name.
+- D-1 note: the date change this edit proposed is now made by E-0014-00 (D-1). Only the rest of the edit is left here.
+- Evidence: `git show -s 50ff0372` (2026-10-21, "Write every error as Problem Details and echo the correlation id"); PRD-030 status Complete, scope line; DOCS-WORK-LISTS.md W4 row 0022 (main source PRD-030).
+- old:
+~~~
+date: 2025-01-11
+area: backend
+---
+~~~
+- new:
+~~~
+date: 2025-01-11
 area: backend
 related-prds: [PRD-030]
 ---
@@ -2497,25 +2990,33 @@ only in the messages in `errors`.
 
 Verdict: EDITS
 
-### E-0015-01
-- Decision: [ ]  (Y = apply, N = reject, or write a change)
-- Kind: front-matter
-- Tags: DATE
-- Severity: consistency
-- Why: `date` should be when services began returning `EnrichedResult`.
-- Evidence: `git log --reverse -S EnrichedResult` → `89bf905b` (2025-01-24, "Refactoring updates while working out architecture"), which adds `Task<EnrichedResult<AccountEntity>> CreateAccountAsync` and `EnrichedResult.Fail`.
+### E-0015-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-01-24.
+- Date source: 89bf905b "Refactoring updates while working out architecture". Introduced `EnrichedResult<T>` with `EnrichedResult.Fail` / `Success`, and a `ServiceError : EnrichedError`. `CreateAccountAsync` returns a typed failure instead of throwing, replacing the exception-per-failure handlers of 2025-01-11. Later: 2026-02-12 d65896f1 (the error type was renamed toward `ApiDetailError`). Confidence: high.
 - old:
 ~~~
-status: accepted
 date: 2026-11-04
 area: backend
+---
+
+# ADR-0015: Expected business failures are returned as results, not thrown as exceptions
 ~~~
 - new:
 ~~~
-status: accepted
 date: 2025-01-24
 area: backend
+---
+
+# ADR-0015 (backfilled): Expected business failures are returned as results, not thrown as exceptions
 ~~~
+
+### E-0015-01 — DROPPED (superseded by D-1)
+- Was: `date` should be when services began returning `EnrichedResult`.
+- Reason dropped: it only changed the date, which E-0015-00 now sets.
 
 ### E-0015-02 — DROPPED (house style)
 - Was: The record is backfilled and must say so in Context and name its sources.
@@ -2635,25 +3136,33 @@ converted centrally: a unique, reference or concurrency failure from the databas
 Verdict: EDITS (the decision statement and Summary are true; the Outcome, a consequence and a Review rule
 describe a `detail` that a `400` never carries)
 
-### E-0016-01
-- Decision: [ ]  (Y = apply, N = reject, or write a change)
-- Kind: front-matter
-- Tags: DATE
-- Severity: consistency
-- Why: The decision has an exact date: the commit that made the switch.
-- Evidence: `git show -s bec69a48` (2026-10-16, "Refactored API to return 400 instead of 422"); DOCS-WORK-LISTS.md "Decisions with no PRD".
+### E-0016-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2026-10-16.
+- Date source: bec69a48 "Refactored API to return 400 instead of 422". A single change moved validation and refusal failures from 422 to 400 across the route declarations, the client error mapping and the metadata fixtures. From 2025-01-11 until then, validation failures answered 422 (`HttpStatusCode.UnprocessableEntity`, then `Status422UnprocessableEntity`), so no earlier commit matches "400, never 422". Later: 2026-10-17 86d7cd40 (leftover 422 naming corrected); 2026-10-21 50ff0372 (`HttpValidationProblemDetails`); 2026-10-26 6fc9452f "Report a validation failure as a map of fields to messages" (the `errors` map). Confidence: high.
 - old:
 ~~~
-status: accepted
 date: 2026-11-04
 area: backend
+---
+
+# ADR-0016: Validation failures answer 400 with an errors map, never 422
 ~~~
 - new:
 ~~~
-status: accepted
 date: 2026-10-16
 area: backend
+---
+
+# ADR-0016 (backfilled): Validation failures answer 400 with an errors map, never 422
 ~~~
+
+### E-0016-01 — DROPPED (superseded by D-1)
+- Was: The decision has an exact date: the commit that made the switch.
+- Reason dropped: it only changed the date, which E-0016-00 now sets.
 
 ### E-0016-02
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -2690,6 +3199,7 @@ and PRD-030 rather than from a recorded rationale.
 ~~~
 - new:
 ~~~
+
 ~~~
 
 ### E-0016-04
@@ -2791,6 +3301,30 @@ from the wire (B9).
 
 Verdict: EDITS
 
+### E-0017-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-01-19.
+- Date source: f3f8e8eb "Add RowId for use in place of Id". Added `Guid RowId` with a unique index to `EntityBase`, generated it in `DbContextBase`, and switched the Get handler, responses and `ResponseBase` from `Id` to `RowId`. This is the first appearance of the `RowId` token in history. Later: none needed Confidence: high.
+- old:
+~~~
+date: 2026-11-04
+area: backend
+---
+
+# ADR-0017: Only GUID row identifiers are exposed; integer keys stay internal
+~~~
+- new:
+~~~
+date: 2025-01-19
+area: backend
+---
+
+# ADR-0017 (backfilled): Only GUID row identifiers are exposed; integer keys stay internal
+~~~
+
 ### E-0017-01
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
 - Kind: insert-after
@@ -2859,6 +3393,30 @@ and response payloads, token claims and export files.
 ## ADR-0018 — 0018-the-openapi-document-is-generated-at-build-time-and-committed.md
 
 Verdict: EDITS
+
+### E-0018-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2026-10-19.
+- Date source: 7a7d85c8 "Auto generate OpenApi contract on build + script". Added `contracts/openapi/v1.json`, the `Microsoft.Extensions.ApiDescription.Server` build-time generation and `OpenApiDocumentsDirectory`. Runtime `AddOpenApi` serving has existed since 2025-01-18 (530a4ddb), but that is the rejected runtime-only option, not this decision. Later: none needed Confidence: high.
+- old:
+~~~
+date: 2026-11-04
+area: backend
+---
+
+# ADR-0018: The OpenAPI document is generated at build time and committed
+~~~
+- new:
+~~~
+date: 2026-10-19
+area: backend
+---
+
+# ADR-0018 (backfilled): The OpenAPI document is generated at build time and committed
+~~~
 
 ### E-0018-01
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -2954,6 +3512,7 @@ server, could be built on it later.
 ~~~
 - new:
 ~~~
+
 ~~~
 
 ### Notes (no edit proposed)
@@ -2967,6 +3526,30 @@ server, could be built on it later.
 ## ADR-0019 — 0019-endpoints-are-minimal-api-slices-with-their-own-models.md
 
 Verdict: EDITS
+
+### E-0019-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2024-12-28.
+- Date source: f852865d "Add initial minimal api setup". Created the host as minimal APIs (no controllers): static handlers (`Accounts.GetAll`) registered through per-feature `RouteGroupBuilder` extension methods (`AddAccountsEndpoints`, `AddExpensesEndpoints`). Later the same day, a0c78b6d moved each operation into its own folder (`Endpoints/Accounts/GetAll/Handler.cs`). Later: 2025-01-18 (530a4ddb, a8a5fc5f) gave operations their own `Request.cs` / `Response.cs` and `ResponseBase`; until then handlers returned the data project's shared DTOs. Confidence: medium.
+- old:
+~~~
+date: 2026-11-04
+area: backend
+---
+
+# ADR-0019: Endpoints are minimal API slices with their own request and response models
+~~~
+- new:
+~~~
+date: 2024-12-28
+area: backend
+---
+
+# ADR-0019 (backfilled): Endpoints are minimal API slices with their own request and response models
+~~~
 
 ### E-0019-01
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -3060,6 +3643,30 @@ It does not
 ## ADR-0020 — 0020-the-server-is-layered-with-feature-slices-mirrored-across-layers.md
 
 Verdict: EDITS
+
+### E-0020-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2024-12-28.
+- Date source: a0c78b6d "Adding initial postgres support". Split the server into the `Pot.AspNetCore` host, which references a new `Pot.Data` project (entities, context, migrations), plus a `Pot.Data.Migrations` support project, with feature/operation folders in the host. This is the first host -> data layering. `Pot.Shared` followed on 2025-01-01 (1dbe5aa6). Later: 2025-06-07 (db6e4dfa "Major refactor to move things out of AspNet project - accounts done") added `Pot.App`, giving the recorded host -> application -> data shape. Confidence: medium (use 2025-06-07 if the application layer is required for the decision to exist).
+- old:
+~~~
+date: 2026-11-04
+area: backend
+---
+
+# ADR-0020: The server is layered by responsibility with feature slices mirrored across the layers
+~~~
+- new:
+~~~
+date: 2024-12-28
+area: backend
+---
+
+# ADR-0020 (backfilled): The server is layered by responsibility with feature slices mirrored across the layers
+~~~
 
 ### E-0020-01
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -3193,6 +3800,30 @@ was placed there rather than in the application. It is not purely transport:
 
 Verdict: EDITS
 
+### E-0021-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2024-12-28.
+- Date source: a0c78b6d "Adding initial postgres support". Added `Pot.Data` with `Microsoft.EntityFrameworkCore` 9.0.0 / Tools, `PotDbContext`, entities configured in code and the first generated migration (`20241228113628_Init`). It is the first persistence code in the repository (the 2024-08 Maui app read JSON assets). Later: none needed (central conventions such as enriched enums arrived 2025-01-01 in `DbContextBase`) Confidence: high.
+- old:
+~~~
+date: 2026-11-04
+area: backend
+---
+
+# ADR-0021: Entity Framework Core is the persistence mechanism
+~~~
+- new:
+~~~
+date: 2024-12-28
+area: backend
+---
+
+# ADR-0021 (backfilled): Entity Framework Core is the persistence mechanism
+~~~
+
 ### E-0021-01
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
 - Kind: replace
@@ -3290,6 +3921,30 @@ a query that reaches the same row twice materialises one instance of it.
 
 Verdict: EDITS
 
+### E-0022-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2024-12-28.
+- Date source: a0c78b6d "Adding initial postgres support". Added the `Npgsql.EntityFrameworkCore.PostgreSQL` 9.0.2 provider and a PostgreSQL-typed Init migration. This is the first database engine in history, and no other engine appears before it. Later: 2025-04-01 (e0139b0f "Add docker support for the database and server.") added the local PostgreSQL container. Confidence: high.
+- old:
+~~~
+date: 2026-11-04
+area: backend
+---
+
+# ADR-0022: PostgreSQL is the relational datastore
+~~~
+- new:
+~~~
+date: 2024-12-28
+area: backend
+---
+
+# ADR-0022 (backfilled): PostgreSQL is the relational datastore
+~~~
+
 ### E-0022-01
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
 - Kind: insert-after
@@ -3325,6 +3980,7 @@ not show whether they, or the other options below, were weighed when the engine 
 ~~~
 - new:
 ~~~
+
 ~~~
 
 ### E-0022-03
@@ -3470,6 +4126,30 @@ registration and the health check (`WebApplicationBuilderExtensions.cs:56,532`).
 one. `GetAccountService`, `GetExpenseService` and `GetIncomeService` take persistable interfaces while
 only reading, so the "split is not applied uniformly" claim is correct.
 
+### E-0023-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-01-01.
+- Date source: 1dbe5aa6 "Added basic import repo's to get started". Added the feature-specific `IAccountImportRepository` / `IExpenseImportRepository`, which wrap the context factory and are injected into the import endpoints instead of the context. This is the first server data access behind a named feature repository. The 2024-08 Maui `AccountRepository` read JSON assets in a discarded client app and is not counted. Later: 2025-01-18 (530a4ddb) added the data-project `Repositories/Accounts/IAccountRepository`; 2025-02-08 (219fa241 "Lots of refactoring - decision making") added the read-only vs `IPersistable*Repository` split. Confidence: medium (use 2025-01-18 if only data-project repositories consumed by services count).
+- old:
+~~~
+date: 2026-11-04
+area: backend
+---
+
+# ADR-0023: Services read and write through feature repositories, never through the context
+~~~
+- new:
+~~~
+date: 2025-01-01
+area: backend
+---
+
+# ADR-0023 (backfilled): Services read and write through feature repositories, never through the context
+~~~
+
 ### E-0023-01
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
 - Kind: insert-after
@@ -3578,6 +4258,30 @@ without one: `VerificationServiceBase.cs:85` calls `OtpService.UpdateExpiredRequ
 (`OtpService.cs:56`), and then `VerifySignupService.cs:97` and `VerifyPasswordResetService.cs:92` save
 again.
 
+### E-0024-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-10-26.
+- Date source: ef170a2d "Multiple updates - rabbit hole while implementing signup". Added `IPotTransactionFactory.CreateTransactionAsync` (`Database.BeginTransactionAsync`) and its first use, a `using var transaction` with `CommitAsync` around the multi-save import of accounts, expenses and incomes. No earlier commit calls `BeginTransaction`. A 2025-07-02 commit (57516d3c) holds only a TODO saying a transaction is needed. Later: none needed Confidence: high.
+- old:
+~~~
+date: 2026-11-04
+area: backend
+---
+
+# ADR-0024: Transactions are explicit and used only where writes must be one unit
+~~~
+- new:
+~~~
+date: 2025-10-26
+area: backend
+---
+
+# ADR-0024 (backfilled): Transactions are explicit and used only where writes must be one unit
+~~~
+
 ### E-0024-01
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
 - Kind: insert-after
@@ -3677,6 +4381,30 @@ Verified: the four `HasQueryFilter` calls are at `PotDbContext.cs:55-76`. `IUser
 `ISiteRepository` expose no queryable. The site-scoped reads take no site parameter (`UserRepository.cs`
 `FindForCurrentSiteAsync`, `GetCurrentSiteId`). A foreign id returns `null`, the same as a missing one,
 and is logged as a cross-tenant refusal.
+
+### E-0025-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-10-26.
+- Date source: ef170a2d "Multiple updates - rabbit hole while implementing signup". Added the global `HasQueryFilter` on accounts, expenses, incomes and settings keyed to `GetCurrentUserSiteId()`, the structural confinement of financial data. Before this, from 2025-09-12 (8db2d00f), site filters were written into individual specifications, which is the rejected option 3. Later: site-scoped user/site repository methods came after (e.g. dff35f40 the same day, "Added endpoint to get all users for same site as caller", and later cross-tenant hardening work). Confidence: medium-high.
+- old:
+~~~
+date: 2026-11-04
+area: backend
+---
+
+# ADR-0025: Tenant confinement is structural: query filters and site-scoped reads
+~~~
+- new:
+~~~
+date: 2025-10-26
+area: backend
+---
+
+# ADR-0025 (backfilled): Tenant confinement is structural: query filters and site-scoped reads
+~~~
 
 ### E-0025-01
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -3820,6 +4548,30 @@ repository with a `Cross-tenant` comment and listed in PRD-026 §4.5. Some names
 ## ADR-0026 — 0026-request-shape-is-validated-at-the-edge-and-rules-in-check-chains.md
 
 Verdict: EDITS
+
+### E-0026-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-01-11.
+- Date source: 3d8fca2c "Infra refactoring, intro of validation, problem details". Introduced FluentValidation request validators (`AccountImportValidator`, `AccountImportArrayValidator`, `IsUniqueValidator`) and the validation problem-details path, so the request shape is checked at the edge. This is the first half of the recorded two-layer split. Later: 2025-01-25 (9fcd7464 "Refactoring") added the first chain-of-responsibility pre-commit checks (`PreUpdateChecker`, `CheckDescriptionDoesNotExist` and others); 2025-01-26 (cd297a4f, 960db506) applied them to create and renamed them `EntityChecks`. Confidence: medium (use 2025-01-25 if the check chain is required for the decision to exist).
+- old:
+~~~
+date: 2026-11-04
+area: backend
+---
+
+# ADR-0026: Request shape is validated at the edge and data-dependent rules in check chains
+~~~
+- new:
+~~~
+date: 2025-01-11
+area: backend
+---
+
+# ADR-0026 (backfilled): Request shape is validated at the edge and data-dependent rules in check chains
+~~~
 
 ### E-0026-01
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -3983,6 +4735,30 @@ five whose input is only identifiers, an entity tag and a status, or an uploaded
 
 Verdict: EDITS
 
+### E-0027-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2024-12-28.
+- Date source: a0c78b6d "Adding initial postgres support". The first EF Core data layer configured `modelBuilder.UseEnrichedEnum(options => options.AsName(maxLength: 10))`, so enumerations were stored by name. It also put a unique index on `Description` (`[Index(nameof(Description), IsUnique = true)]`). Both halves of the decision start here. Later: case-insensitive `citext` columns came in 219fa241 (2025-02-08). The enum length was raised to 50 in 4d04515c (2025-10-10). Confidence: high.
+- old:
+~~~
+date: 2026-11-04
+area: backend
+---
+
+# ADR-0027: Enumerations are stored by name and uniqueness is enforced by the database
+~~~
+- new:
+~~~
+date: 2024-12-28
+area: backend
+---
+
+# ADR-0027 (backfilled): Enumerations are stored by name and uniqueness is enforced by the database
+~~~
+
 ### E-0027-01
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
 - Kind: replace
@@ -4122,6 +4898,30 @@ and the model snapshot records the site index without its filter.
 
 Verdict: EDITS
 
+### E-0028-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2024-12-28.
+- Date source: a0c78b6d "Adding initial postgres support". `PotDbContext.DisableCascadeDelete` set `foreignKey.DeleteBehavior = DeleteBehavior.Restrict` on every foreign key in the first EF model. That is the "restrict rather than cascade" half of the decision. Later: the explicit ordered deletion sweeps arrived with the delete-site, delete-user and delete-my-account endpoints (3d4bd940, da792ad0, 4b011ccc, all 2026-10-18). Confidence: high.
+- old:
+~~~
+date: 2026-11-04
+area: backend
+---
+
+# ADR-0028: Cascades are restricted and deletion is an explicit, ordered sweep
+~~~
+- new:
+~~~
+date: 2024-12-28
+area: backend
+---
+
+# ADR-0028 (backfilled): Cascades are restricted and deletion is an explicit, ordered sweep
+~~~
+
 ### E-0028-01
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
 - Kind: front-matter
@@ -4131,13 +4931,13 @@ Verdict: EDITS
 - Evidence: `Docs/Future/PRD-022-user-and-site-deletion.md:3,114,144`.
 - old:
 ~~~
-date: 2026-11-04
+date: 2024-12-28
 area: backend
 ---
 ~~~
 - new:
 ~~~
-date: 2026-11-04
+date: 2024-12-28
 area: backend
 related-prds: [PRD-022]
 ---
@@ -4267,6 +5067,30 @@ convention's scope.
 
 Verdict: EDITS
 
+### E-0029-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2024-12-28.
+- Date source: a0c78b6d "Adding initial postgres support". Added `Pot.Data.Migrations`, a separate console executable (`App`/`PotDbMigrator`) that applies migrations. The API never migrated itself, so the "dedicated runner in its own process" part of the decision begins here. Later: e0139b0f (2025-04-01, "Add docker support for the database and server.") added `entrypoint.sh` with `set -e`. It runs `Pot.Data.Migrations.dll` and only then the API, which is the "before the API starts" ordering. Confidence: medium. If the decision is read as the entrypoint ordering only, the date is 2025-04-01..
+- old:
+~~~
+date: 2026-11-04
+area: backend
+---
+
+# ADR-0029: Migrations run in a separate process before the API starts, in additive steps
+~~~
+- new:
+~~~
+date: 2024-12-28
+area: backend
+---
+
+# ADR-0029 (backfilled): Migrations run in a separate process before the API starts, in additive steps
+~~~
+
 ### E-0029-01
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
 - Kind: replace
@@ -4386,6 +5210,30 @@ dropped in the same change as the code that stopped using them.
 ## ADR-0030 — 0030-background-work-runs-inside-the-api-process.md
 
 Verdict: EDITS
+
+### E-0030-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-10-05.
+- Date source: afb7e3f7 "Add background worker to backup database - initial version". The first `AddHostedService` in the API process (`DbBackupWorker`). It established in-process hosted workers as the way periodic work runs. Later: that worker was deleted in 9091b1ff (2025-11-02). The workers the ADR names arrived later: `ExpiredOtpCleanupWorker` in df744109 (2025-10-18), `SendEmailWorker` in 6291d05a (2025-10-19) and the budget reminder worker by 87ac698d (2026-02-07). Confidence: medium. If a worker that was later removed counts as an incidental precursor, the date is 2025-10-18..
+- old:
+~~~
+date: 2026-11-04
+area: backend
+---
+
+# ADR-0030: Background work runs inside the API process under a single-replica assumption
+~~~
+- new:
+~~~
+date: 2025-10-05
+area: backend
+---
+
+# ADR-0030 (backfilled): Background work runs inside the API process under a single-replica assumption
+~~~
 
 ### E-0030-01
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -4526,6 +5374,30 @@ database readiness before its first cycle and does not run when the host is stop
 ## ADR-0031 — 0031-email-is-queued-in-process-and-rendered-from-razor-components.md
 
 Verdict: EDITS
+
+### E-0031-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-10-18.
+- Date source: ee0d1e05 "OTP verification now updates the user's password hash". Added the `Pot.RazorComponents` project with `RazorComponentRenderer` (`HtmlRenderer.RenderComponentAsync`) and `VerifyPasswordEmail.razor`, plus a MailKit `EmailSender`. This is where email bodies started being rendered from Razor components. Later: the next day, 6291d05a (2025-10-19, "Package updates + send verification email via background worker") added the in-process queue (`Channel.CreateUnbounded`) drained by `SendEmailWorker`. Confidence: high.
+- old:
+~~~
+date: 2026-11-04
+area: backend
+---
+
+# ADR-0031: Email is queued in process and rendered from Razor components
+~~~
+- new:
+~~~
+date: 2025-10-18
+area: backend
+---
+
+# ADR-0031 (backfilled): Email is queued in process and rendered from Razor components
+~~~
 
 ### E-0031-01
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -4669,16 +5541,41 @@ replaced. The channel is unbounded and lives as long as the process.
 
 Verdict: EDITS
 
-### E-0032-01
-- Decision: [ ]  (Y = apply, N = reject, or write a change)
-- Kind: front-matter
-- Tags: DATE, RELATED-PRDS
-- Severity: consistency
-- Why: The decision was made in PRD-030 (Complete) and delivered on 2026-10-22; the record carries neither.
-- Evidence: `git show 59bbae8f` (2026-10-22, "Log requests with the framework's HTTP logging": deletes `RawRequestLoggingMiddleware`, adds `AddHttpLogging` and `RequestLoggingFixture`); `Docs/Future/PRD-030-problem-details-consolidation.md:3,64-68,153,204`.
+### E-0032-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2026-10-22.
+- Date source: 59bbae8f "Log requests with the framework's HTTP logging". Deleted `RawRequestLoggingMiddleware`, which logged whole request bodies outside production. Replaced it with `AddHttpLogging` restricted to method, path, query, status and duration, with no body or headers. Before this commit the code did the opposite of the decision. Later: none. The correlation-id log enricher (17a2ad92, 2025-01-12) is an earlier precursor but not this decision. Confidence: high.
 - old:
 ~~~
 date: 2026-11-04
+area: backend
+---
+
+# ADR-0032: Logs record request metadata and never submitted values
+~~~
+- new:
+~~~
+date: 2026-10-22
+area: backend
+---
+
+# ADR-0032 (backfilled): Logs record request metadata and never submitted values
+~~~
+
+### E-0032-01
+- Decision: [ ]  (Y = apply, N = reject, or write a change)
+- Kind: front-matter
+- Tags: RELATED-PRDS
+- Severity: consistency
+- Why: The decision was made in PRD-030 (Complete) and delivered on 2026-10-22; the record carries neither.
+- D-1 note: the date change this edit proposed is now made by E-0032-00 (D-1). Only the rest of the edit is left here.
+- Evidence: `git show 59bbae8f` (2026-10-22, "Log requests with the framework's HTTP logging": deletes `RawRequestLoggingMiddleware`, adds `AddHttpLogging` and `RequestLoggingFixture`); `Docs/Future/PRD-030-problem-details-consolidation.md:3,64-68,153,204`.
+- old:
+~~~
+date: 2026-10-22
 area: backend
 ---
 ~~~
@@ -4798,6 +5695,30 @@ credentials and sensitive financial data out of logs.
 ## ADR-0033 — 0033-tests-are-per-layer-unit-projects-plus-one-hosted-integration-project.md
 
 Verdict: EDITS
+
+### E-0033-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2026-01-17.
+- Date source: 2e980c60 "Add Pot.App.Tests project + AccrueExpenseCalculator tests". Added the first test project in history, the application-layer unit project, together with `Pot.TestUtils`. It begins the per-layer unit projects the decision records. Later: 2026-01-26 `Pot.Data.Tests` (a47e0b31); 2026-02-28 `Pot.AspNetCore.Tests` and an empty `Pot.AspNetCore.Integration.Tests` (81211799); 2026-03-21 first integration tests (a5f8758e); 2026-03-24 `Pot.Shared.Tests` (95fe7f67); 2026-05-03 Testcontainers PostgreSQL (a8b26915). Confidence: medium (use 2026-02-28 if the hosted integration project is required).
+- old:
+~~~
+date: 2026-11-04
+area: backend
+---
+
+# ADR-0033: Tests are per-layer unit projects plus one hosted integration project
+~~~
+- new:
+~~~
+date: 2026-01-17
+area: backend
+---
+
+# ADR-0033 (backfilled): Tests are per-layer unit projects plus one hosted integration project
+~~~
 
 ### E-0033-01
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -4926,6 +5847,30 @@ and the metadata
 
 Verdict: EDITS
 
+### E-0034-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-09-12.
+- Date source: 599ad397 "remove .env from docker" (with dabc2ebc "Ignore development/environment config" and 985eeb6c "remove .env from client", same evening). The tracked Source/Docker/.env.development, which supplied the compose substitutions such as `${JWT_SECRET_KEY}` and `${POSTGRES_PASSWORD}`, was deleted from the repo. .gitignore then gained `*.development*` and `*.production*`, so the working value files have lived outside the repository since then. Before this, the compose file and tracked env files held values (for example `POSTGRES_PASSWORD=password` in the 2025-04-01 compose file). Later: the platform secret store (Key Vault) first appears in tracked docs on 2025-11-08 (5cf6f237, Azure-Diagram.mmd: "Key Vault ... Get Secrets"). The tracked `.env.development.template` named in the Decision Outcome is NOT on origin/v0.1. It was added on 2026-11-04 (5e2bbe34 "Track a development environment template"), which exists only on v0.1-doc-update-plan. Confidence: medium (the template, an essential named part, is not on v0.1 at all. If the owner treats the template as the decision, the answer is KEEP 2026-11-04.).
+- old:
+~~~
+date: 2026-11-04
+area: infrastructure
+---
+
+# ADR-0034: Secret values live outside the repository, in a tracked template and a platform store
+~~~
+- new:
+~~~
+date: 2025-09-12
+area: infrastructure
+---
+
+# ADR-0034 (backfilled): Secret values live outside the repository, in a tracked template and a platform store
+~~~
+
 ### E-0034-01
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
 - Kind: replace
@@ -5032,21 +5977,33 @@ own; how each value is mapped is container-app configuration that the repository
 
 Verdict: EDITS
 
-### E-0035-01
-- Decision: [ ]  (Y = apply, N = reject, or write a change)
-- Kind: front-matter
-- Tags: DATE
-- Severity: format
-- Why: The hand-run build-and-push tasks for Azure date from the first Azure build.
-- Evidence: `git show e45caf59 -- .vscode/tasks.json` adds `pot-server-build-and-deploy-azure` / `pot-client-build-and-deploy-azure` (2025-11-07); they were renamed to `azure-*-build-and-deploy` in `11f91299` (2026-05-01).
+### E-0035-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-11-07.
+- Date source: e45caf59 "Docker file updates for local vs azure builds". This commit adds the VS Code tasks `pot-server-build-and-deploy-azure` and `pot-client-build-and-deploy-azure` (docker build plus docker push of `:latest` to ghcr.io). These are the first hand-run image-publication and deployment tasks. No CI workflow or pipeline file has ever existed on origin/v0.1. Later: the tasks were refined later (3f017586 2025-11-22 --no-cache, 11f91299 2026-05-01). Confidence: medium-high.
 - old:
 ~~~
 date: 2026-11-04
+area: process
+---
+
+# ADR-0035: Builds, tests and deployments are run by hand; there is no continuous integration
 ~~~
 - new:
 ~~~
 date: 2025-11-07
+area: process
+---
+
+# ADR-0035 (backfilled): Builds, tests and deployments are run by hand; there is no continuous integration
 ~~~
+
+### E-0035-01 — DROPPED (superseded by D-1)
+- Was: The hand-run build-and-push tasks for Azure date from the first Azure build.
+- Reason dropped: it only changed the date, which E-0035-00 now sets.
 
 ### E-0035-02
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -5143,21 +6100,33 @@ manual first deployment; it has not followed.
 
 Verdict: EDITS
 
-### E-0036-01
-- Decision: [ ]  (Y = apply, N = reject, or write a change)
-- Kind: front-matter
-- Tags: DATE
-- Severity: format
-- Why: The two-app shape is fixed by the first Azure client build: `nginx.azure.conf` with no `/api` proxy, plus an absolute API base URL.
-- Evidence: `e45caf59 2025-11-07 Docker file updates for local vs azure builds` (adds `Source/Docker/Client/nginx.azure.conf` and the client deploy task with `VITE_API_BASE_URL=https://api.payontime.com.au/api`).
+### E-0036-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-11-07.
+- Date source: e45caf59 "Docker file updates for local vs azure builds". This commit adds nginx.azure.conf (static files plus /health only, no /api proxy). The client build task bakes in `VITE_API_BASE_URL=https://api.payontime.com.au/api`, and the Docker Readme describes separate `pot-client-prod` and `pot-api-prod` container apps with "NO API proxy". That is exactly the two-app split with a build-time absolute API URL. Later: 5cf6f237 (2025-11-08) diagrams both apps in one Container Apps environment on custom domains. The multi-stage nginx client Dockerfile already existed from 2025-08-10 (40d3268d) for local compose, which is a precursor only. Confidence: high.
 - old:
 ~~~
 date: 2026-11-04
+area: infrastructure
+---
+
+# ADR-0036: Production runs two container apps: nginx serves the SPA and the API is separate
 ~~~
 - new:
 ~~~
 date: 2025-11-07
+area: infrastructure
+---
+
+# ADR-0036 (backfilled): Production runs two container apps: nginx serves the SPA and the API is separate
 ~~~
+
+### E-0036-01 — DROPPED (superseded by D-1)
+- Was: The two-app shape is fixed by the first Azure client build: `nginx.azure.conf` with no `/api` proxy, plus an absolute API base URL.
+- Reason dropped: it only changed the date, which E-0036-00 now sets.
 
 ### E-0036-02
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -5282,6 +6251,30 @@ The record does not show whether the single-origin options were weighed when the
 ## ADR-0037 — 0037-the-client-is-organised-by-feature-over-shared-layers.md
 
 Verdict: EDITS
+
+### E-0037-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-03-15.
+- Date source: f6516773 "Initial work adding a sidebar". Created the first React feature folder (`src/features/summary`) alongside the shared `components`, `hooks` and `lib` folders. That is the feature-over-shared-layers shape. Later: the `api` layer started in e63e268b (2025-03-22) and 7bb53c3b (2025-03-23). The `concerns` layer came in 550b4681 (2025-11-23, "Client http-cookie + some re-organisation"). The older MAUI `Features/` folders (2024-08-13) belong to a different client and are excluded. Confidence: medium.
+- old:
+~~~
+date: 2026-11-04
+area: frontend
+---
+
+# ADR-0037: The client is organised by feature over shared API, concern and utility layers
+~~~
+- new:
+~~~
+date: 2025-03-15
+area: frontend
+---
+
+# ADR-0037 (backfilled): The client is organised by feature over shared API, concern and utility layers
+~~~
 
 ### E-0037-01
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -5420,21 +6413,33 @@ structure or by lint, which is the one place this record's rule is softer than t
 
 Verdict: EDITS
 
-### E-0038-01
-- Decision: [ ]  (Y = apply, N = reject, or write a change)
-- Kind: front-matter
-- Tags: DATE
-- Severity: consistency
-- Why: `date` is the writing date. TanStack Query and the shared axios hooks first appear together in `7bb53c3b`.
-- Evidence: `git log --reverse -S "QueryClient" -- Source/Client/pot-react/src` → `7bb53c3b 2025-03-23 Start adding account api call` (it adds `src/api/hooks/useApi.ts`).
+### E-0038-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-03-23.
+- Date source: 7bb53c3b "Start adding account api call". Added `@tanstack/react-query` with `QueryClientProvider` and a `useQuery` on the dashboard. The same commit added axios with one global configuration (`axios.defaults.baseURL`/`timeout`) in `apiBase.ts`. Later: `invalidateQueries` first appears in 360ff22c (2025-03-29). The single `axios.create` instance and the default `staleTime` options arrived in 8db2d00f and 85200a61 (2025-09-12). Confidence: high.
 - old:
 ~~~
 date: 2026-11-04
+area: frontend
+---
+
+# ADR-0038: Server state lives in TanStack Query over one configured HTTP client
 ~~~
 - new:
 ~~~
 date: 2025-03-23
+area: frontend
+---
+
+# ADR-0038 (backfilled): Server state lives in TanStack Query over one configured HTTP client
 ~~~
+
+### E-0038-01 — DROPPED (superseded by D-1)
+- Was: `date` is the writing date. TanStack Query and the shared axios hooks first appear together in `7bb53c3b`.
+- Reason dropped: it only changed the date, which E-0038-00 now sets.
 
 ### E-0038-02
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -5599,12 +6604,37 @@ directly: the dashboard renew actions for projections, and the budget reminders 
 
 Verdict: EDITS
 
+### E-0039-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-05-03.
+- Date source: 0e78a23e "Update and apply result pattern to creating accounts". `useApi.ts` started returning `Result`/`SuccessResult`/`FailResult`, and the first typed client error classes appeared (`ValidationError`, `ConflictError`, `UnexpectedError`). This is the first time an API hook returned a result. Later: 2be2902a (2025-05-04, "Refactor API fail result generation to use the axios interceptor") moved failure mapping into one `axios.interceptors.response.use`. The full error taxonomy (`NotFoundError` and the rest) was in place by 5e095848 (2025-05-08) and f4b9a68d (2025-05-10). Confidence: medium. If the unused result type counts, the date is 2025-03-22..
+- old:
+~~~
+date: 2026-11-04
+area: frontend
+---
+
+# ADR-0039: API hooks return results and one interceptor normalises every failure
+~~~
+- new:
+~~~
+date: 2025-05-03
+area: frontend
+---
+
+# ADR-0039 (backfilled): API hooks return results and one interceptor normalises every failure
+~~~
+
 ### E-0039-01
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
 - Kind: front-matter
-- Tags: DATE, RELATED-PRDS
+- Tags: RELATED-PRDS
 - Severity: consistency
 - Why: `date` is the writing date. PRD-030 (Complete) sets this decision's current requirements (E1–E8), and row 0058 cites it.
+- D-1 note: the date change this edit proposed is now made by E-0039-00 (D-1). Only the rest of the edit is left here.
 - Evidence:
   - `f4b9a68d 2025-05-10 "Api + test updates - WIP"` adds `src/api/interceptors/axiosInterceptors.ts`, which maps status to `FailResult`, and strips the mapping out of `useApi.ts`.
   - `53235fb4 2025-05-04` "Update useGet for result pattern".
@@ -5612,12 +6642,12 @@ Verdict: EDITS
   - `DOCS-WORK-LISTS.md` row 0058.
 - old:
 ~~~
-date: 2026-11-04
+date: 2025-05-03
 area: frontend
 ~~~
 - new:
 ~~~
-date: 2025-05-10
+date: 2025-05-03
 area: frontend
 related-prds: [PRD-030]
 ~~~
@@ -5707,21 +6737,33 @@ A successful call produces a successful result carrying the response body, cast 
 
 Verdict: EDITS
 
-### E-0040-01
-- Decision: [ ]  (Y = apply, N = reject, or write a change)
-- Kind: front-matter
-- Tags: DATE
-- Severity: consistency
-- Why: `date` is the writing date. The memory-only token provider and the cookie-based refresh arrived together.
-- Evidence: `git show 550b4681` (2025-11-23 "Client http-cookie + some re-organisation") adds `src/concerns/auth/authTokenProvider.ts` ("tokens live only in memory"); `git log -S"HttpOnly = true" --reverse` → `49bdb7a9 2025-11-23 Server http cookie implementation`.
+### E-0040-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-09-11.
+- Date source: dfadb190 "Add test JWT details to docker config". Despite its subject, this commit added the client's `authInterceptor`, which refreshes reactively on a 401, queues concurrent failures behind one refresh (`isRefreshing` / `failedQueue`) and replays the request. It also added the single `logoutManager` path. Reactive refresh, the single shared refresh and the one logout path are essential, named parts of the recorded decision. Later: 2025-09-12 8db2d00f (proactive `tokenRefreshTimer`); 2025-11-23 550b4681 "Client http-cookie + some re-organisation" (tokens moved out of localStorage into the in-memory `tokenProvider`, with a start-up refresh from the cookie). That last commit is the recorded form; until then the tokens lived in localStorage. Confidence: medium.
 - old:
 ~~~
 date: 2026-11-04
+area: frontend
+---
+
+# ADR-0040: The access token lives in memory, with proactive and reactive refresh
 ~~~
 - new:
 ~~~
-date: 2025-11-23
+date: 2025-09-11
+area: frontend
+---
+
+# ADR-0040 (backfilled): The access token lives in memory, with proactive and reactive refresh
 ~~~
+
+### E-0040-01 — DROPPED (superseded by D-1)
+- Was: `date` is the writing date. The memory-only token provider and the cookie-based refresh arrived together.
+- Reason dropped: it only changed the date, which E-0040-00 now sets.
 
 ### E-0040-02
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -5862,16 +6904,41 @@ the code and of PRD-001. Every feature setting and the signed-in theme use
 correction pass (`a84609c0`) introduced this error, and four consequence bullets and the Confirmation now
 follow from it.
 
-### E-0041-01
-- Decision: [ ]  (Y = apply, N = reject, or write a change)
-- Kind: front-matter
-- Tags: DATE, RELATED-PRDS
-- Severity: consistency
-- Why: The decision came from PRD-001 and was implemented on 2026-05-03.
-- Evidence: `git show c63f92fb` (2026-05-03, "add per-user, per-environment storage scoping infrastructure"); `Docs/Future/PRD-001-per-session-login-support.md:20-25` (Stage: Implemented, last updated 2026-05-03) and decisions D001–D007 (`:126-160`).
+### E-0041-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2026-05-03.
+- Date source: c63f92fb "add per-user, per-environment storage scoping infrastructure". Introduced `resolveStorageEnv`, `buildEnvScopedKey`/`buildUserScopedKey` (`pot:{env}:...`) and `resolveStorageBackend` (local or session storage per setting). No environment-scoped storage keys exist before it. Later: c641e6e7 (same day) moved the existing client storage onto the helper. Confidence: high.
 - old:
 ~~~
 date: 2026-11-04
+area: frontend
+---
+
+# ADR-0041: Browser storage is keyed by environment and user, with a policy per setting
+~~~
+- new:
+~~~
+date: 2026-05-03
+area: frontend
+---
+
+# ADR-0041 (backfilled): Browser storage is keyed by environment and user, with a policy per setting
+~~~
+
+### E-0041-01
+- Decision: [ ]  (Y = apply, N = reject, or write a change)
+- Kind: front-matter
+- Tags: RELATED-PRDS
+- Severity: consistency
+- Why: The decision came from PRD-001 and was implemented on 2026-05-03.
+- D-1 note: the date change this edit proposed is now made by E-0041-00 (D-1). Only the rest of the edit is left here.
+- Evidence: `git show c63f92fb` (2026-05-03, "add per-user, per-environment storage scoping infrastructure"); `Docs/Future/PRD-001-per-session-login-support.md:20-25` (Stage: Implemented, last updated 2026-05-03) and decisions D001–D007 (`:126-160`).
+- old:
+~~~
+date: 2026-05-03
 area: frontend
 ~~~
 - new:
@@ -6105,21 +7172,33 @@ exists, but each hook passes its backend directly.
 
 Verdict: EDITS
 
-### E-0042-01
-- Decision: [ ]  (Y = apply, N = reject, or write a change)
-- Kind: front-matter
-- Tags: DATE
-- Severity: consistency
-- Why: The decision took its current form, an enforced update, on 2026-09-22. The shell-only precache dates from 2026-03-30.
-- Evidence: `ab0b559e 2026-03-30 Add PWA support` (adds `navigateFallbackDenylist`); `edd85d43 2026-09-22 PWA update to enforce client updates instead of allowing deferral`; `3a8d0cbd 2026-09-22` (deployed-build detection).
+### E-0042-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2026-03-30.
+- Date source: ab0b559e "Add PWA support". Added `VitePWA` with a workbox `globPatterns` precache of the built shell, `navigateFallbackDenylist: [/^\/api/]` and `runtimeCaching: []`. That is the shell-only precache with API traffic excluded, an essential part of the decision. Later: the prompt-based update flow came in 27d0f7c1 (2026-04-04). Enforced updates through deployed-build detection (`version.json`) came in 3a8d0cbd (2026-09-22). Confidence: high.
 - old:
 ~~~
 date: 2026-11-04
+area: frontend
+---
+
+# ADR-0042: The PWA precaches the application shell only and enforces updates
 ~~~
 - new:
 ~~~
-date: 2026-09-22
+date: 2026-03-30
+area: frontend
+---
+
+# ADR-0042 (backfilled): The PWA precaches the application shell only and enforces updates
 ~~~
+
+### E-0042-01 — DROPPED (superseded by D-1)
+- Was: The decision took its current form, an enforced update, on 2026-09-22. The shell-only precache dates from 2026-03-30.
+- Reason dropped: it only changed the date, which E-0042-00 now sets.
 
 ### E-0042-02
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -6349,22 +7428,33 @@ be dismissed, and the application applies the update and reloads after 45 second
 
 Verdict: EDITS
 
-### E-0043-01
-- Decision: [ ]  (Y = apply, N = reject, or write a change)
-- Kind: front-matter
-- Tags: DATE
-- Severity: consistency
-- Why: `date` is when the decision was made. The shared stack is PRD-012 R1, approved and implemented by 2026-09-02,
-  which is also ADR-0001's date. The first shared-stack config dates from `d5838735` (2026-05-11).
-- Evidence: `Docs/Future/PRD-012-playwright-e2e-testing-infrastructure.md:4-5`, `:88-95`; ADR-0001 front matter.
+### E-0043-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2026-05-11.
+- Date source: d5838735 "Add initial playwright config / smoke tests". This commit adds playwright.config.ts with globalSetup and a client webServer, workers 1 on CI, and playwright.globalSetup.ts. Global setup starts one Testcontainers PostgreSQL and runs the migrations once for the whole run, which is the shared single stack. PRD 012 in the same commit specifies it. Later: 2026-05-16 a38f5f71 added the API as a webServer and the baseline.sql seed. 2026-05-20 550db126 added financial data through the import routes. 2026-10-28 ee148852 added the mail sink. That is the full recorded form. Confidence: high.
 - old:
 ~~~
 date: 2026-11-04
+area: frontend
+---
+
+# ADR-0043: End-to-end tests run on one shared stack against a single seeded database
 ~~~
 - new:
 ~~~
-date: 2026-09-02
+date: 2026-05-11
+area: frontend
+---
+
+# ADR-0043 (backfilled): End-to-end tests run on one shared stack against a single seeded database
 ~~~
+
+### E-0043-01 — DROPPED (superseded by D-1)
+- Was: `date` is when the decision was made. The shared stack is PRD-012 R1, approved and implemented by 2026-09-02,
+- Reason dropped: it only changed the date, which E-0043-00 now sets.
 
 ### E-0043-02
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -6395,14 +7485,14 @@ related-prds: [PRD-012]
 ~~~
 ---
 
-# ADR-0043:
+# ADR-0043 (backfilled):
 ~~~
 - new:
 ~~~
 supersedes: [ADR-0001]
 ---
 
-# ADR-0043:
+# ADR-0043 (backfilled):
 ~~~
 
 ### E-0043-04
@@ -6524,6 +7614,30 @@ names itself destructive; and both deletion journeys, `siteDetails`, `userSettin
 W4 row 0071 states the decision as "Every E2E test is classified …". There are also smaller errors: the destructive class
 is not "whole tenant only", and `fullyParallel` runs tests within a file in parallel, not only whole files.
 
+### E-0044-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2026-05-16.
+- Date source: 21bb6a1f "Playwright instructions update". This commit adds to .github/instructions/playwright-e2e.instructions.md: "Classify every test as one of parallel-safe, fixture-managed, or isolated-sequence before writing it". 96e74523 and a38f5f71 (same day) record it in PRD 012 as "Approved: three-class classification model" and in the e2e README. It is the first occurrence of "parallel-safe" or "fixture-managed" anywhere. Later: classification headers in the test files first appear on 2026-09-02 (a5fbd0c5 "Client tests added"). The destructive class (own tenant) came on 2026-10-29 (5d9d9fad). Confidence: medium-high.
+- old:
+~~~
+date: 2026-11-04
+area: frontend
+---
+
+# ADR-0044: Every end-to-end test declares whether it may run beside others
+~~~
+- new:
+~~~
+date: 2026-05-16
+area: frontend
+---
+
+# ADR-0044 (backfilled): Every end-to-end test declares whether it may run beside others
+~~~
+
 ### E-0044-01
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
 - Kind: front-matter
@@ -6542,21 +7656,9 @@ title: Every end-to-end test declares whether it may run beside others
 title: Every end-to-end test is classified by whether it may run beside others
 ~~~
 
-### E-0044-02
-- Decision: [ ]  (Y = apply, N = reject, or write a change)
-- Kind: front-matter
-- Tags: DATE
-- Severity: consistency
-- Why: The decision date is PRD-012 R6 (2026-09-02). PRD-031 later added the destructive class.
-- Evidence: PRD-012 lines 4–5, 143–153; PRD-031 F1–F3; commit `5d9d9fad` (2026-10-29).
-- old:
-~~~
-date: 2026-11-04
-~~~
-- new:
-~~~
-date: 2026-09-02
-~~~
+### E-0044-02 — DROPPED (superseded by D-1)
+- Was: The decision date is PRD-012 R6 (2026-09-02). PRD-031 later added the destructive class.
+- Reason dropped: it only changed the date, which E-0044-00 now sets.
 
 ### E-0044-03
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -6586,14 +7688,14 @@ related-prds: [PRD-012, PRD-031]
 ~~~
 ---
 
-# ADR-0044:
+# ADR-0044 (backfilled):
 ~~~
 - new:
 ~~~
 supersedes: [ADR-0001]
 ---
 
-# ADR-0044:
+# ADR-0044 (backfilled):
 ~~~
 
 ### E-0044-05
@@ -6605,11 +7707,11 @@ supersedes: [ADR-0001]
 - Evidence: template ("title, matching the front matter").
 - old:
 ~~~
-# ADR-0044: Every end-to-end test declares whether it may run beside others
+# ADR-0044 (backfilled): Every end-to-end test declares whether it may run beside others
 ~~~
 - new:
 ~~~
-# ADR-0044: Every end-to-end test is classified by whether it may run beside others
+# ADR-0044 (backfilled): Every end-to-end test is classified by whether it may run beside others
 ~~~
 
 ### E-0044-06
@@ -6867,6 +7969,30 @@ PRD-012 R8 and ADR-0001 say on demand. DD-11 is still open ("Your call" is blank
 are described as engine-specific, but none is; and the prodlike profile is said to run "fewer projects", when it runs the
 same four.
 
+### E-0045-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2026-05-11.
+- Date source: d5838735 "Add initial playwright config / smoke tests". The initial playwright.config.ts already defines the four-project default matrix: chromium, edge (msedge channel), mobile-chrome (Pixel 7) and mobile-safari (iPhone 14). PRD 012 in the same commit requires "browser/device matrix coverage for Chromium, Edge, mobile Chrome, and mobile Safari". Later: the production-like profile (playwright.prod.config.ts, `npm run build && npm run preview`) came on 2026-05-16 (a38f5f71). The "ON-DEMAND gate ... not per-change" policy and `e2e:prodlike` script were written on 2026-09-02 (a45fc4d0). Confidence: medium-high.
+- old:
+~~~
+date: 2026-11-04
+area: frontend
+---
+
+# ADR-0045: The end-to-end matrix runs on every change, with a stricter profile before release
+~~~
+- new:
+~~~
+date: 2026-05-11
+area: frontend
+---
+
+# ADR-0045 (backfilled): The end-to-end matrix runs on every change, with a stricter profile before release
+~~~
+
 ### E-0045-01
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
 - Kind: front-matter
@@ -6884,22 +8010,9 @@ title: The end-to-end matrix runs on every change, with a stricter profile befor
 title: End-to-end tests run as a four-project development matrix, with a separately run production-build profile
 ~~~
 
-### E-0045-02
-- Decision: [ ]  (Y = apply, N = reject, or write a change)
-- Kind: front-matter
-- Tags: DATE
-- Severity: consistency
-- Why: The two-profile decision is PRD-012 R7 and R8, approved 2026-09-02. The prodlike config was "validated
-  2026-09-01".
-- Evidence: PRD-012 lines 4–5, 155–174; ADR-0001 §3.2 heading; `e2e/README.md:142`.
-- old:
-~~~
-date: 2026-11-04
-~~~
-- new:
-~~~
-date: 2026-09-02
-~~~
+### E-0045-02 — DROPPED (superseded by D-1)
+- Was: The two-profile decision is PRD-012 R7 and R8, approved 2026-09-02. The prodlike config was "validated
+- Reason dropped: it only changed the date, which E-0045-00 now sets.
 
 ### E-0045-03
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -6929,14 +8042,14 @@ related-prds: [PRD-012]
 ~~~
 ---
 
-# ADR-0045:
+# ADR-0045 (backfilled):
 ~~~
 - new:
 ~~~
 supersedes: [ADR-0001]
 ---
 
-# ADR-0045:
+# ADR-0045 (backfilled):
 ~~~
 
 ### E-0045-05
@@ -6948,11 +8061,11 @@ supersedes: [ADR-0001]
 - Evidence: template.
 - old:
 ~~~
-# ADR-0045: The end-to-end matrix runs on every change, with a stricter profile before release
+# ADR-0045 (backfilled): The end-to-end matrix runs on every change, with a stricter profile before release
 ~~~
 - new:
 ~~~
-# ADR-0045: End-to-end tests run as a four-project development matrix, with a separately run production-build profile
+# ADR-0045 (backfilled): End-to-end tests run as a four-project development matrix, with a separately run production-build profile
 ~~~
 
 ### E-0045-06
@@ -7117,23 +8230,33 @@ does not settle it.
 
 Verdict: EDITS
 
-### E-0046-01
-- Decision: [ ]  (Y = apply, N = reject, or write a change)
-- Kind: front-matter
-- Tags: DATE
-- Severity: consistency
-- Why: The decision is PRD-031's. Its "Decisions Carried Into This Document" were committed on 2026-10-27, and the PRD was
-  Complete on 2026-11-02.
-- Evidence: `git log --diff-filter=A` on PRD-031 → `73416f13` 2026-10-27; PRD-031 lines 3–5, 186–200;
-  `DOCS-WORK-LISTS.md:522` (row 0073).
+### E-0046-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2026-10-27.
+- Date source: 73416f13 "Add PRD-031 / PRD-032". PRD-031 (automated tenant scenario testing) records the decision itself. Its decision table says to provision "through the product's routes", read the invitation password from a test mail sink, use canary-tenant fingerprints, and have destructive browser specs "provision and destroy their own tenant" rather than consume seeded identities. Later: the implementation followed on 2026-10-28: bdb53fe9 "Capture the messages the application submits", c42be872 "Provision a declared scenario through the routes a person uses", 38c72b96 "Prove a destructive action touches only what it names", and ee148852 for the mail sink. On 2026-10-29, 5d9d9fad "Give the destructive browser specs a tenant they create and destroy". Confidence: medium.
 - old:
 ~~~
 date: 2026-11-04
+area: frontend
+---
+
+# ADR-0046: Tenants are provisioned and destroyed by the product's own routes in tests
 ~~~
 - new:
 ~~~
 date: 2026-10-27
+area: frontend
+---
+
+# ADR-0046 (backfilled): Tenants are provisioned and destroyed by the product's own routes in tests
 ~~~
+
+### E-0046-01 — DROPPED (superseded by D-1)
+- Was: The decision is PRD-031's. Its "Decisions Carried Into This Document" were committed on 2026-10-27, and the PRD was
+- Reason dropped: it only changed the date, which E-0046-00 now sets.
 
 ### E-0046-02
 - Decision: [ ]  (Y = apply, N = reject, or write a change)
@@ -7165,14 +8288,14 @@ related-prds: [PRD-031]
 ~~~
 ---
 
-# ADR-0046:
+# ADR-0046 (backfilled):
 ~~~
 - new:
 ~~~
 supersedes: [ADR-0001]
 ---
 
-# ADR-0046:
+# ADR-0046 (backfilled):
 ~~~
 
 ### E-0046-04
@@ -7360,6 +8483,32 @@ rendered and sent. That is the mechanism option 4 describes.
 Verdict: EDITS
 
 Supersession check: `supersedes: [ADR-0002]` matches 0002's `superseded-by: [ADR-0047]`.
+
+### E-0047-00 — D-1 suffix and date (APPLIED)
+- Decision: APPLIED 2026-11-05. This is a record; do not apply it again
+- Kind: replace
+- Tags: D-1
+- Severity: owner-decision
+- Why: D-1 (decided). Suffix `(backfilled)` after the ADR number in the heading; date 2026-11-04 → 2025-11-08.
+- Date source: 2f2897de "Update UI to handle 429 statuses". The client's axios interceptor maps a 429 to a `RateLimitedError` with fixed copy and does not retry it. That is the behaviour this record confirms ("a `429` is mapped to a rate-limited failure ... nothing in the transport retries"). The server's 429 with `Retry-After` arrived the same day in 1896f3e4 "Add rate limiting", which the record itself calls a separate decision. Later: none. The record is `proposed`, and the countdown that reads `Retry-After` does not exist yet. Confidence: high.
+- old:
+~~~
+date: 2026-11-04
+area: frontend
+supersedes: [ADR-0002]
+---
+
+# ADR-0047: A rate-limited caller is told when to retry, and nothing retries automatically
+~~~
+- new:
+~~~
+date: 2025-11-08
+area: frontend
+supersedes: [ADR-0002]
+---
+
+# ADR-0047 (backfilled): A rate-limited caller is told when to retry, and nothing retries automatically
+~~~
 
 ### E-0047-01
 - Decision: [ ]  (Y = apply, N = reject, or write a change)

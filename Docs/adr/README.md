@@ -24,9 +24,9 @@ Raise an ADR when any of these is true:
 
 Do not raise one for a coding convention ([Docs/standards/](../standards/) holds those), for a product
 rule (a PRD holds those), or for an approach that was tried and dropped without shipping — record that
-in the "Considered Options" of the ADR that replaced it. For a backfilled record, use the PRDs, dated
-notes, commit history, guides and source as evidence. State when the record is reconstructed and do not
-present an inference as established historical fact.
+in the "Considered Options" of the ADR that replaced it. When the decision is already in the code, use
+the PRDs, dated notes, commit history, guides and source as evidence, and do not present an inference as
+established historical fact.
 
 Review the system as it was being designed, not only as it behaves now. A decision can merit an ADR
 even when it is old, stable or already encoded in tests. Current code establishes current behavior; it
@@ -55,12 +55,20 @@ ADR.
 ## The format
 
 The format is MADR 4, customised. Required sections: Summary, Context and Problem Statement, Considered
-Options (at least two, including the status quo for a backfilled record), Decision Outcome, Consequences
-and Confirmation. Optional: Decision Drivers, Pros and Cons of the Options, More Information.
+Options (at least two, including the status quo when the decision is already in the code), Decision
+Outcome, Consequences and Confirmation. Optional: Decision Drivers, Pros and Cons of the Options, More
+Information.
 
 Front matter is eight lines: five required fields and three optional links. It is limited to flat
 `key: value` pairs and simple lists, because `docs-check` parses it without a YAML library and rejects
-anything else. A backfilled record is described in its Context section, not flagged in the front matter.
+anything else.
+
+In ADR-0001 and ADR-0002 the heading's number carries `(legacy)` (`# ADR-0001 (legacy): …`), and in
+ADR-0003 to ADR-0047 it carries `(backfilled)`: each was written after its decision was in the code. The
+`id` and `title` fields carry no suffix. The suffix is the only marker, and the body does not repeat it.
+Their `date` is when the decision was made: the date of the PRD the record came from, otherwise the
+oldest commit in the `v0.1` history that introduced the decision. A record written from ADR-0048 on
+carries no suffix.
 
 Target 40–120 lines, with a ceiling of about 150. A longer draft is either several decisions (split it)
 or a design document (move the detail to reference or explanation and link it).

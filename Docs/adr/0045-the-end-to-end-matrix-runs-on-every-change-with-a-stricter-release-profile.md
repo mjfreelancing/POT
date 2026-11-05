@@ -2,11 +2,11 @@
 id: ADR-0045
 title: The end-to-end matrix runs on every change, with a stricter profile before release
 status: accepted
-date: 2026-11-04
+date: 2026-05-11
 area: frontend
 ---
 
-# ADR-0045: The end-to-end matrix runs on every change, with a stricter profile before release
+# ADR-0045 (backfilled): The end-to-end matrix runs on every change, with a stricter profile before release
 
 **Summary:** In the context of a browser suite that is slow enough to be run deliberately and valuable
 enough not to skip, facing the choice between one configuration and two, we decided on a development

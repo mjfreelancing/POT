@@ -2,11 +2,11 @@
 id: ADR-0034
 title: Secret values live outside the repository, in a tracked template and a platform store
 status: accepted
-date: 2026-11-04
+date: 2025-09-12
 area: infrastructure
 ---
 
-# ADR-0034: Secret values live outside the repository, in a tracked template and a platform store
+# ADR-0034 (backfilled): Secret values live outside the repository, in a tracked template and a platform store
 
 **Summary:** In the context of an application that needs database credentials, a signing key and mail
 credentials to start, facing the choice between committing usable values and committing only their

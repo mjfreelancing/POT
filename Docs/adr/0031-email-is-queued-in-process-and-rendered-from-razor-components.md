@@ -2,11 +2,11 @@
 id: ADR-0031
 title: Email is queued in process and rendered from Razor components
 status: accepted
-date: 2026-11-04
+date: 2025-10-18
 area: backend
 ---
 
-# ADR-0031: Email is queued in process and rendered from Razor components
+# ADR-0031 (backfilled): Email is queued in process and rendered from Razor components
 
 **Summary:** In the context of transactional email — verification codes, invitations, password resets,
 reminders — facing the choice between a durable delivery mechanism and a channel inside the process, we

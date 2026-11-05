@@ -2,11 +2,11 @@
 id: ADR-0027
 title: Enumerations are stored by name and uniqueness is enforced by the database
 status: accepted
-date: 2026-11-04
+date: 2024-12-28
 area: backend
 ---
 
-# ADR-0027: Enumerations are stored by name and uniqueness is enforced by the database
+# ADR-0027 (backfilled): Enumerations are stored by name and uniqueness is enforced by the database
 
 **Summary:** In the context of persisted enumerated values and business-level uniqueness rules, facing
 the choice between storing numbers and names, and between application checks and database constraints,
