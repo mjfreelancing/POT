@@ -91,6 +91,6 @@ a query that reaches the same row twice materialises one instance of it.
 ## More Information
 
 - No-tracking reads are part of the repository access model,
-  [ADR-0009](0009-services-access-data-through-feature-repositories.md). Explicit transactions are
-  [ADR-0025](0025-transactions-are-explicit-and-only-where-writes-must-be-one-unit.md).
+  [ADR-0011](0011-services-access-data-through-feature-repositories.md). Explicit transactions are
+  [ADR-0029](0029-transactions-are-explicit-and-only-where-writes-must-be-one-unit.md).
 - The database engine choice is [ADR-0005](0005-postgresql-is-the-relational-datastore.md).

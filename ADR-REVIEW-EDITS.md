@@ -10,24 +10,17 @@ ever holds what is still open; numbers are not reused, so the list may skip. ADR
 
 ## Decisions still open
 
-**D-6. Records that bundle several decisions.** The reviewers proposed no splits. Splitting is your call.
-
-- ADR-0021: password hashing, and code-based reset.
-- ADR-0006: enum-by-name storage, and database-enforced uniqueness.
-- ADR-0008: a separate migration process, running before the API, and running on every start.
-- ADR-0024: in-process queueing, and Razor templating.
-
 **D-8. Facts only the Azure portal can settle.**
 
-- **Certificate issuer.** ADR-0029 says the certificates are Azure-managed, and that the deployment record
+- **Certificate issuer.** ADR-0033 says the certificates are Azure-managed, and that the deployment record
   and the diagram give the issuer as Let's Encrypt. Azure's documentation names DigiCert for managed
-  Container Apps certificates. If it is DigiCert, correct ADR-0029 and the diagram label.
+  Container Apps certificates. If it is DigiCert, correct ADR-0033 and the diagram label.
 - **Where `/api` reaches the API** (row 0074, still `Ver`). The build implies the API app's own hostname
-  (`api.payontime.com.au`). The diagram and the Docker guide say ingress path routing. ADR-0028 records
+  (`api.payontime.com.au`). The diagram and the Docker guide say ingress path routing. ADR-0032 records
   the discrepancy, not an answer.
 - **Readiness probe and replica count** (FQ-03, DD-04) cannot be confirmed from the repository.
 
-**D-9. ADR-0046's title against the running system.**
+**D-9. ADR-0050's title against the running system.**
 
 - "Logs … never submitted values" is the decision (PRD-0030), but it is not what the code does today:
   verification codes and the raw refresh token are logged at `Information` (see F-2).
@@ -73,7 +66,7 @@ directly; the rest are as the reviewers reported.
   - The per-user lock (`OtpService.HasReachedRateLimitAsync`) counts codes with `Failed` status, and that
     status is never persisted either, so the lock never trips.
   - The only brakes on guessing a six-digit code are the HTTP rate limit and the 15-minute expiry.
-  - ADR-0021 (lines 52-56) describes the intended behaviour ("fails after three wrong attempts"), not
+  - ADR-0024's Decision Outcome describes the intended behaviour ("fails after three wrong attempts"), not
     the effective behaviour. Check its wording as you review it.
   - No test references `AttemptCount` or the too-many-attempts result.
   - This affects DD-08's reasoning that the impact is "contained" by three attempts.
@@ -82,7 +75,7 @@ directly; the rest are as the reviewers reported.
 
 - **F-8. API failures never reach the query library.** Hooks return failures as values, so TanStack
   Query's error state, retries and error boundaries never see them, and a failed query is cached as a
-  success-shaped value. The same mechanism means 429s are never retried. ADR-0049 now makes that a rule,
+  success-shaped value. The same mechanism means 429s are never retried. ADR-0053 now makes that a rule,
   but nothing configures or tests it.
 - **F-9. `authClient` sets no timeout** (`src/api/authClient.ts:19-20`), so a refresh can wait
   indefinitely.

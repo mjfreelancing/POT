@@ -308,7 +308,7 @@ Client:
 - `features/dashboard/actions/accruals/index.ts` — the barrel re-exports both removed components, so its two export lines go with them or the client build breaks.
 - The Quick Actions grid: `QuickActions.tsx` keeps `grid grid-cols-2 lg:grid-cols-4`, so the two remaining renew actions occupy the first two of four desktop columns. Four columns is the deliberate choice rather than a leftover from the combined action: it holds the section's layout stable as further actions are added, and the two columns that stand empty today are the accepted cost of that (§8).
 
-Noted because they go stale, but **not rewritten** (OD-05's discipline): PRD-0012 and ADR-0040 (the E2E seed step that accrues expenses), PRD-0018 (which names `AccrueExpensesService` among the accrual-start call sites), PRD-0019 and PRD-0024 (their `AccountAccrual` inventories) and PRD-0022 (its deletion sweep).
+Noted because they go stale, but **not rewritten** (OD-05's discipline): PRD-0012 and ADR-0044 (the E2E seed step that accrues expenses), PRD-0018 (which names `AccrueExpensesService` among the accrual-start call sites), PRD-0019 and PRD-0024 (their `AccountAccrual` inventories) and PRD-0022 (its deletion sweep).
 
 ### 5. Schema and migration approach
 

@@ -22,7 +22,7 @@ Playwright reporters are config-owned (`playwright.config.ts`, `playwright.prod.
 - Global app state: Zustand. Server state: React Query. Feature-local cross-component state: React Context. Persisted browser state: `useLocalStorage`.
 - API calls go through `src/api/hooks/useApi.ts`. Hook results are `Result<TSuccess, FailResultBase>` from `src/lib/result.ts`; branch explicitly on `result.success`.
 - Normalize API errors only in `src/api/interceptors/axiosInterceptors.ts` and typed errors in `src/api/errors/*`.
-- Never retry a `429` automatically: not in an interceptor, not through a query or mutation `retry` option or the `QueryClient` defaults, and not in a hand-written loop. It ends as a `RateLimitedError`, and the user acts again (ADR-0049).
+- Never retry a `429` automatically: not in an interceptor, not through a query or mutation `retry` option or the `QueryClient` defaults, and not in a hand-written loop. It ends as a `RateLimitedError`, and the user acts again (ADR-0053).
 - Invalidate caches via `useCacheInvalidation` / `invalidateCache` in `src/concerns/cache/cacheInvalidation.ts` and existing `useApi` variants before adding new transport wrappers.
 - Encapsulate mutation flows in feature-level hooks that own cancellation and cache invalidation. State-changing work belongs in handlers/effects, never in render paths.
 - Logout goes through `logoutManager.logout()`; do not scatter logout side effects across contexts/components. Keep the `/logout` recovery route and authenticated catch-all behavior.

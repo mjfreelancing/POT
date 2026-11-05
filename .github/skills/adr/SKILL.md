@@ -21,7 +21,7 @@ format, the statuses and the amendment rules. This skill is the procedure that a
   point `superseded-by` at the new one, and give the new one `supersedes`.
 - **Never reuse a number.** A withdrawn draft still consumes its number.
 - **A new record carries no heading suffix and does not call itself backfilled.** Only records up to
-  ADR-0048 carry `(legacy)` or `(backfilled)` after the number in their heading, and ADR-0042 does not;
+  ADR-0052 carry `(legacy)` or `(backfilled)` after the number in their heading, and ADR-0046 does not;
   the ADR guide says why. When the decision is already in
   the code, Context cites the evidence for it: a PRD section, a dated note, a merged PR, or a source
   file.
@@ -68,7 +68,7 @@ Copy [references/adr.template.md](./references/adr.template.md) to
 ### 4. Point the rest of the documentation at it
 
 - An instruction file that states the rule gets the ADR number appended in parentheses, for example
-  `… a foreign id is a 404 (ADR-0023).` Rules stay imperative; the rationale is not copied in.
+  `… a foreign id is a 404 (ADR-0030).` Rules stay imperative; the rationale is not copied in.
 - A rule document under `Docs/standards/` that restates the decision links to the ADR instead.
 - A guide or reference page that explains the decision links to it rather than repeating it.
 

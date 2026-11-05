@@ -95,4 +95,4 @@ uniqueness of names alongside the application's own check. The same engine runs 
 - The version target and the drift between environments are a separate, open item:
   `DECISIONS-TO-DISCUSS.md` (DD-06).
 - Enforcing uniqueness in the database as well as by application checks is
-  [ADR-0006](0006-enumerations-are-stored-by-name-and-uniqueness-is-enforced-by-the-database.md).
+  [ADR-0007](0007-uniqueness-is-enforced-by-the-database.md).

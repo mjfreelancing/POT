@@ -15,7 +15,7 @@ deployment, and how a deployed version is identified and rolled back.
 ## Problem To Solve
 
 Builds, tests and deployments are run by hand
-([ADR-0027](../adr/0027-builds-and-deployments-are-run-by-hand.md)). Two VS Code tasks build the server
+([ADR-0031](../adr/0031-builds-and-deployments-are-run-by-hand.md)). Two VS Code tasks build the server
 and client images from the local working tree and push them as `:latest`. No test, lint or contract check
 runs first, and the running revision is switched by hand in the Azure portal. So:
 
@@ -53,14 +53,14 @@ apply, are for discovery. The brief's options were:
 | Pipelines            | None. `.github/workflows/` exists locally but is empty and untracked                                                                       | Repository                                               |
 | Image build and push | `azure-server-build-and-deploy` and `azure-client-build-and-deploy`: `docker build --no-cache` from the working tree, push `:latest` to GHCR | `.vscode/tasks.json`                                     |
 | Client build inputs  | The API base URL, timeout and nginx config are baked in as build arguments                                                                 | `.vscode/tasks.json`; `Source/Docker/Client/Dockerfile`  |
-| Deployment           | The Container Apps revision is switched by hand in the portal                                                                              | ADR-0027; ADR-0028                                       |
-| Migrations           | The server image runs the migration runner at start-up, then the API                                                                       | `Source/Docker/Server/entrypoint.sh`; ADR-0008           |
+| Deployment           | The Container Apps revision is switched by hand in the portal                                                                              | ADR-0031; ADR-0032                                       |
+| Migrations           | The server image runs the migration runner at start-up, then the API                                                                       | `Source/Docker/Server/entrypoint.sh`; ADR-0009           |
 | Server checks        | `dotnet build` and `dotnet test pot.sln`; integration tests need Docker (Testcontainers)                                                   | `.github/copilot-instructions.md`                        |
 | Client checks        | `lint`, `type:check`, `test` (Vitest) and `build`                                                                                          | `Source/Client/pot-react/package.json`                   |
-| Browser suites       | Dev matrix and production-build matrix, both run by hand; the production-build run gates client-changing PRDs                              | ADR-0038                                                 |
-| Contract             | The OpenAPI document is generated at build time and committed; nothing checks that it is current                                           | ADR-0045                                                 |
+| Browser suites       | Dev matrix and production-build matrix, both run by hand; the production-build run gates client-changing PRDs                              | ADR-0042                                                 |
+| Contract             | The OpenAPI document is generated at build time and committed; nothing checks that it is current                                           | ADR-0049                                                 |
 | Documentation        | `docs-check` validates ADRs, links and citations; it is run by hand                                                                        | `.github/scripts/docs-check/`                            |
-| Secrets              | Secret values live outside the repository, in a platform store                                                                             | ADR-0022                                                 |
+| Secrets              | Secret values live outside the repository, in a platform store                                                                             | ADR-0025                                                 |
 
 ## Questions Discovery Must Answer
 
@@ -88,7 +88,7 @@ apply, are for discovery. The brief's options were:
 11. Which dependency and security checks are wanted (dependency updates, vulnerability scanning, secret
     scanning)?
 12. Which existing decisions or open items should be revisited once a pipeline exists? Candidates:
-    ADR-0027, ADR-0038's production-build gate, DD-06 (database version alignment) and DD-07 (generated
+    ADR-0031, ADR-0042's production-build gate, DD-06 (database version alignment) and DD-07 (generated
     client types).
 13. What is the budget for hosted-runner minutes and any paid services?
 
@@ -100,8 +100,8 @@ apply, are for discovery. The brief's options were:
 ## Related Documents
 
 - Feature index: [Docs/Future/README.md](README.md)
-- Current process: [ADR-0027](../adr/0027-builds-and-deployments-are-run-by-hand.md); production topology:
-  [ADR-0028](../adr/0028-production-runs-two-container-apps.md)
+- Current process: [ADR-0031](../adr/0031-builds-and-deployments-are-run-by-hand.md); production topology:
+  [ADR-0032](../adr/0032-production-runs-two-container-apps.md)
 - Build-time code-style enforcement, which a pipeline would run:
   [PRD-0029](PRD-0029-build-time-code-style-enforcement.md)
 - Liveness and readiness probes, which an automated deployment depends on:

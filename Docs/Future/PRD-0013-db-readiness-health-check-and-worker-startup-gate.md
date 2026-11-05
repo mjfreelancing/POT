@@ -40,7 +40,7 @@ This safety guarantee is not replicated outside production. Playwright's `webSer
 
 ### E2E
 
-Playwright's `globalSetup` polls `/_health/ready` (bounded) before any test runs, and the API starts with both workers waiting rather than erroring. By the time `globalSetup` reports the database ready, the workers have already moved into their normal execution loop — no test configuration is involved. See ADR-0040 §9 and §13.4.
+Playwright's `globalSetup` polls `/_health/ready` (bounded) before any test runs, and the API starts with both workers waiting rather than erroring. By the time `globalSetup` reports the database ready, the workers have already moved into their normal execution loop — no test configuration is involved. See ADR-0044 §9 and §13.4.
 
 ## Out of Scope
 
