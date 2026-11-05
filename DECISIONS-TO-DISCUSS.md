@@ -40,7 +40,6 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 | DD-10 | DI by marker-interface scanning: code and server guide agree, `server.instructions.md` does not | Low (documentation) | A: keep scanning, correct the instructions                                                           | No                           |
 | DD-13 | Features import other features (and shared layers import features)                              | Low (structure)     | C: move auth and shared pieces into layers, enforce with lint                                        | No                           |
 | DD-15 | `WhenNotNull()` on injected dependencies: the server guide and the instructions disagree        | Low (consistency)   | A: keep the guards, correct the instructions                                                         | No                           |
-| DD-11 | The prodlike E2E gate is per-PRD or on demand, depending on which doc you read                  | Low (documentation) | A: per client-affecting PRD, plus on demand                                                          | No                           |
 | DD-16 | No server health check in the prodlike compose stack                                            | Low (local only)    | B: readiness health check, client waits for it                                                       | No                           |
 | DD-12 | Smaller items (Cronos, sonner theme, animate plugin, EF InMemory, ERD path)                     | Low (housekeeping)  | Per item, see brief                                                                                  | No                           |
 
@@ -127,7 +126,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 - **Recommendation:** B. It catches broken builds and contract drift for little effort, and C can follow once B has been reliable for a while. You can also change the deploy tasks today to tag with the commit SHA as well as `latest`, which gives a rollback point.
 - **Route if changed:** raise a PRD via the prd-discovery skill (repo automation; no code paths change).
 
-> **Your call:**
+> **Your call:** B (2026-11-06). Raise the PRD. ADR-0035 stays accepted until that PRD's record supersedes it.
 
 ---
 
@@ -310,28 +309,6 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
   - **C. The instruction wins, with a sweep.** Change the guide and remove the guards from about 157 files. Effort M (mechanical). No migration, contract or client change. A large diff for no behaviour change.
 - **Recommendation:** A. It matches the code, costs nothing at runtime, and still catches a `null` passed by a hand-written test or factory. If you made the instruction change on purpose on 2026-10-03, choose B instead and say so, and the ADR will record the reason.
 - **Route if changed:** A and B are docs changes made with the ADR. C needs a PRD via the prd-discovery skill.
-
-> **Your call:**
-
----
-
-### DD-11 — The prodlike E2E gate is per-PRD or on demand, depending on which doc you read
-
-- **Backlog row:** 0072 (`Acc + Dec`).
-- **What the code does today:**
-  - "On demand" only, run "when the client production build changes … and before releases": `Source/Client/pot-react/e2e/README.md:142-153`, and `Docs/adr/0001-playwright-e2e-testing-infrastructure.md:147-165` and `:402`.
-  - "The completion gate for client-affecting work … when such a PRD completes, and on demand when the client production build changes": `.github/instructions/e2e.instructions.md:13`.
-  - The same per-PRD rule appears in `.github/skills/prd-delivery/SKILL.md:15,64,84`, `prd-delivery/references/stage-plan.template.md:46` and `.github/skills/run-tests/SKILL.md:57-58`.
-  - `prd-delivery` step 4.8 also asks, at completion, whether to run two opt-in tiers. One is the scenario tier; the other is the browser tier, which is the **dev** matrix (`e2e:all:dev`). This is separate from the prodlike gate at step 4.6, and it does not change the disagreement above.
-  - The guidance agents follow is consistent (per client-affecting PRD, plus on demand). Only the human-facing README and ADR-0001 disagree. There are no formal "releases" (see DD-05), so "before releases" has no trigger.
-- **Why it matters:** This is documentation only. Someone working from the README skips a gate that the delivery skill enforces, or the other way round.
-- **Options:**
-  - **A. Per client-affecting PRD at completion, plus on demand when the production build changes.** Update the README and the new ADR to match the skills. Effort S. Docs only.
-  - **B. On demand only.** Update `e2e.instructions.md`, prd-delivery and run-tests to drop the completion gate. Effort S. Docs only. Fewer slow runs; production-build regressions are found later.
-  - **C. Run prodlike in CI.** This depends on DD-05. Effort L. Infra (Docker and browsers on runners).
-  - **D. Keep as-is (record honestly)**, documenting the disagreement. Not recommended: it leaves two rules in force.
-- **Recommendation:** A. It matches what the delivery process already does.
-- **Route if changed:** docs change with the ADR; no PRD needed.
 
 > **Your call:**
 

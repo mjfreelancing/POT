@@ -10,6 +10,13 @@ supersedes: [ADR-0001]
 
 # ADR-0045 (backfilled): End-to-end tests run as a four-project development matrix, with a separately run production-build profile
 
+> **Clarification (2026-11-06).** The question this record left open (DD-11) is settled. The rule the
+> delivery skills and `e2e.instructions.md` give applies: the production-like full matrix
+> (`npm run e2e:all:prodlike`) is the completion gate for a PRD that changed client product code. It is
+> also run on demand (`npm run e2e:prodlike`) when the client production build changes. There is no
+> separate "before releases" trigger. `e2e/README.md` now gives the same rule. Neither profile runs
+> automatically, so the decision above is unchanged.
+
 **Summary:** In the context of a browser suite that is slow enough to be run deliberately and valuable
 enough not to skip, facing the choice between one configuration and two, we decided on a development
 profile running the suite across four projects — two Chromium variants, a mobile Chromium device and a

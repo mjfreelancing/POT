@@ -147,10 +147,12 @@ preview server inherits `server.proxy`, so `/api` still reaches the API, and
 the dev-only/conflicting tests (`**/feedback/errorBoundary.test.ts` on all projects;
 `**/settings/userSettings.test.ts` on edge + mobile; `**/filters/filters.test.ts` on mobile).
 The PWA contract is covered by the mode-aware `e2e/tests/pwa/pwaContract.test.ts` (dev: no
-manifest/SW; built: manifest + SW). Prodlike is an **on-demand gate** — run it when the client
-production build changes (vite config/manifest/PWA, `.env.production`, Docker build args) and
-before releases; the dev matrix remains the default (validated 3x consecutive clean at
-262 passed / 72 skipped / 0 flaky).
+manifest/SW; built: manifest + SW). Prodlike is not run per change. It is the **completion gate
+for client-affecting work**: run the full matrix (`npm run e2e:all:prodlike`) when a PRD that
+changed client product code completes, and run `npm run e2e:prodlike` on demand when the client
+production build changes (vite config/manifest/PWA, `.env.production`, Docker build args). The
+dev matrix remains the default (validated 3x consecutive clean at 262 passed / 72 skipped /
+0 flaky).
 
 ---
 

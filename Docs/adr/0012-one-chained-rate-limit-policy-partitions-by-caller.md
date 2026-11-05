@@ -99,6 +99,8 @@ There is no lockout of an account. The temporary rejection is the whole of the r
 
 ## More Information
 
-- The client's handling of `429` and `Retry-After` is a separate decision.
+- The client's handling of `429` and `Retry-After` is a separate decision: the client never retries a `429`
+  ([ADR-0049](0049-the-client-never-retries-a-rate-limited-request.md)), and what the user is shown is
+  [ADR-0047](0047-a-rate-limited-caller-is-told-when-to-retry.md).
 - An account lockout policy could be added later without changing this one; it is deferred rather than
   rejected.

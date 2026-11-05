@@ -5,7 +5,7 @@ status: superseded
 date: 2026-09-02
 area: cross-cutting
 related-prds: [PRD-014]
-superseded-by: [ADR-0047]
+superseded-by: [ADR-0047, ADR-0049]
 ---
 
 # ADR-0002 (legacy): Retry-After client cooldown handling
@@ -15,6 +15,10 @@ superseded-by: [ADR-0047]
 > only where the limiter exposes it, so an authenticated sliding-window rejection carries neither the
 > header nor a timed message (`HeadersAndRateLimitFixture`). The decision itself is recorded as
 > [ADR-0047](0047-a-rate-limited-caller-is-told-when-to-retry.md).
+>
+> **Clarification (2026-11-06).** D-2 (never auto-retry a 429) is now recorded on its own, and accepted, as
+> [ADR-0049](0049-the-client-never-retries-a-rate-limited-request.md). ADR-0047 keeps the rest of this
+> design and stays proposed with PRD-014.
 
 ## Context
 

@@ -167,7 +167,8 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | [ADR-0040](0040-the-access-token-lives-in-memory-with-proactive-and-reactive-refresh.md) | The access token lives in memory, with proactive and reactive refresh | accepted |
 | [ADR-0041](0041-browser-storage-is-keyed-by-environment-and-user.md) | Browser storage is keyed by environment and user, with a policy per setting | accepted |
 | [ADR-0042](0042-the-pwa-precaches-the-shell-only-and-enforces-updates.md) | The PWA precaches the application shell only and enforces updates | accepted |
-| [ADR-0047](0047-a-rate-limited-caller-is-told-when-to-retry.md) | A rate-limited caller is told when to retry, and nothing retries automatically | proposed |
+| [ADR-0047](0047-a-rate-limited-caller-is-told-when-to-retry.md) | A rate-limited caller is told when to retry | proposed |
+| [ADR-0049](0049-the-client-never-retries-a-rate-limited-request.md) | The client never retries a rate-limited request | accepted |
 
 ### Infrastructure
 
@@ -181,9 +182,9 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 ### Proposed (1)
 
-- [ADR-0047](0047-a-rate-limited-caller-is-told-when-to-retry.md) — A rate-limited caller is told when to retry, and nothing retries automatically
+- [ADR-0047](0047-a-rate-limited-caller-is-told-when-to-retry.md) — A rate-limited caller is told when to retry
 
-### Accepted (45)
+### Accepted (46)
 
 - [ADR-0003](0003-public-tls-terminates-at-the-container-apps-ingress.md) — Public TLS terminates at the Container Apps ingress
 - [ADR-0004](0004-the-api-trusts-the-caller-address-and-scheme-from-the-ingress.md) — The API trusts the caller address and scheme from the ingress
@@ -230,6 +231,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 - [ADR-0045](0045-end-to-end-tests-run-as-a-four-project-development-matrix-with-a-separately-run-production-build-profile.md) — End-to-end tests run as a four-project development matrix, with a separately run production-build profile
 - [ADR-0046](0046-tenants-are-provisioned-and-destroyed-by-the-products-own-routes-in-tests.md) — Tenants are provisioned and destroyed by the product's own routes in tests
 - [ADR-0048](0048-no-end-to-end-test-shares-authentication-state-with-another.md) — No end-to-end test shares authentication state with another
+- [ADR-0049](0049-the-client-never-retries-a-rate-limited-request.md) — The client never retries a rate-limited request
 
 ### Superseded (2)
 

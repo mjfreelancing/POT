@@ -9,15 +9,6 @@ ever holds what is still open; numbers are not reused, so the list may skip.
 
 ## Decisions still open
 
-**D-5. Records whose status runs ahead of an open decision.**
-
-- **ADR-0035** (hand-run builds, no CI) is `accepted`, which in effect answers DD-05 with option A. Either
-  answer DD-05 as A, or set the record to `proposed` until DD-05 is decided.
-- **ADR-0045** records both of DD-11's rules and leaves the choice open. When DD-11 is decided, it needs a
-  clarification or a superseding record.
-- **ADR-0047** is `proposed`, and ADR-0002 is `superseded` by it, so no binding record states the
-  never-auto-retry-a-429 rule today. Accept ADR-0047, or say why not.
-
 **D-6. Records that bundle several decisions.** The reviewers proposed no splits. Splitting is your call.
 
 - ADR-0013: password hashing, and code-based reset.
@@ -99,8 +90,8 @@ directly; the rest are as the reviewers reported.
 
 - **F-8. API failures never reach the query library.** Hooks return failures as values, so TanStack
   Query's error state, retries and error boundaries never see them, and a failed query is cached as a
-  success-shaped value. The same mechanism means 429s are never retried, but nothing configures or tests
-  that.
+  success-shaped value. The same mechanism means 429s are never retried. ADR-0049 now makes that a rule,
+  but nothing configures or tests it.
 - **F-9. `authClient` sets no timeout** (`src/api/authClient.ts:19-20`), so a refresh can wait
   indefinitely.
 - **F-10. Cross-site import may fail** (unverified). The `RowId` unique index spans all sites, while the
@@ -122,8 +113,6 @@ directly; the rest are as the reviewers reported.
 - **F-15. `DECISIONS-TO-DISCUSS.md`:**
   - DD-02 says six Etag update paths; there are nine. The three Users paths are missing.
   - The forwarded-headers follow-up cites rows 0074 and 0036; the trust model is row 0083.
-  - DD-11 cites ADR-0001 by line number (`:147-165`, `:402`). Those lines have moved; cite the sections
-    instead.
 - **F-16. Documents that say a 429 always carries `Retry-After`:** PRD-014:22-30, PRD-030 B8,
   `Source/Server/DEVELOPER.md:244` and `:3633`. An authenticated 429 carries none.
 - **F-17. The client's "features never import features" rule is false in practice.**
