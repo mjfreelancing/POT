@@ -3,6 +3,7 @@
 **Feature ID:** 012
 **Status:** Approved & Implemented (test catalog complete; dev + prodlike matrices green)
 **Last Updated:** 2026-09-02
+**Amended:** 2026-11-06 — 1 amendment, see [Amendments](#amendments).
 
 ## Purpose of this document
 
@@ -295,3 +296,13 @@ Rejected alternatives and the full design history are recorded in
 - `Source/Client/pot-react/playwright.config.ts`, `playwright.prod.config.ts`,
   `playwright.globalSetup.ts` — implementation
 - `.github/instructions/e2e.instructions.md` — agent rules
+
+## Amendments
+
+Append-only, oldest first. The text above is this document as approved; read it through these entries.
+
+- **AM-1 (2026-11-06, Clarified) — when the prodlike gate runs (R8, D6).** R8 and D6 call the prodlike
+  configuration an on-demand gate without saying when it is due. The full prodlike matrix
+  (`npm run e2e:all:prodlike`) is the completion gate for a PRD that changed client product code.
+  `npm run e2e:prodlike` is also run on demand when the client production build changes. Recorded in
+  [ADR-0045](../adr/0045-end-to-end-tests-run-as-a-four-project-development-matrix-with-a-separately-run-production-build-profile.md).

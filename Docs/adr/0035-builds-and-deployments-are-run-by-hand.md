@@ -8,11 +8,6 @@ area: process
 
 # ADR-0035 (backfilled): Builds, tests and deployments are run by hand; there is no continuous integration
 
-> **Clarification (2026-11-06).** DD-05 was decided as option B: a build-and-test workflow on pull requests
-> and pushes to `main`, with deployment unchanged. It is raised as a PRD. This record stays accepted, and
-> describes the system, until that PRD's record is accepted and supersedes it. Deployment by hand carries
-> into the superseding record.
-
 **Summary:** In the context of a personal project with one developer and a small hosted deployment,
 facing the choice between a pipeline and a set of editor tasks, we decided that builds, tests, image
 publication and deployment are run by hand from tasks defined with the project, to achieve no
@@ -104,7 +99,9 @@ a wait.
 
 ## More Information
 
-- Whether to add a build-and-test workflow was `DECISIONS-TO-DISCUSS.md` DD-05; see the clarification
-  above. A pipeline, if adopted, supersedes this record rather than sitting beside it.
+- A build-and-test workflow is planned (`DECISIONS-TO-DISCUSS.md` DD-05, decided 2026-11-06 as option B).
+  It runs on pull requests and pushes to `main`, and deployment is unchanged. It is raised as a PRD. This
+  record describes the system until that PRD's record is accepted and supersedes it, and deployment by hand
+  carries into the superseding record.
 - The deployment target and its topology are
   [ADR-0036](0036-production-runs-two-container-apps.md).

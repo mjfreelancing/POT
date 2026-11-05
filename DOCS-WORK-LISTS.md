@@ -52,7 +52,7 @@ Each item is fixed when its file is reworked, not in a separate pass.
     - `e2e/README.md:121–128` lists three canonical users; the seed has four (`e2e_quickactions` is missing).
     - `e2e/README.md:398` refers to a "see 8.7" that matches nothing.
     - Playwright and Vite versions are stale (`e2e/README.md:88` says Playwright 1.59.1; `package.json` has `^1.62.1`).
-    - **Resolved 2026-11-06 (DD-11, option A):** e2e.instructions:13 called prodlike a per-PRD completion gate, while the README (150–153) called it on-demand. The README now gives the per-PRD gate plus on demand, matching the instructions and skills, and ADR-0045 carries a dated clarification.
+    - **Resolved 2026-11-06 (DD-11, option A):** e2e.instructions:13 called prodlike a per-PRD completion gate, while the README (150–153) called it on-demand. The README now gives the per-PRD gate plus on demand, matching the instructions and skills, and ADR-0045 states the rule.
     - e2e.instructions:67 says react-day-picker v9; the project uses v10.
 12. **Setup docs:**
     - Node minimum: 22.22.2 vs `>=22.22.0` vs "Node 24 is the minimum".

@@ -16,16 +16,6 @@ ever holds what is still open; numbers are not reused, so the list may skip.
 - ADR-0029: a separate migration process, running before the API, and running on every start.
 - ADR-0031: in-process queueing, and Razor templating.
 
-**D-7. Accepted records were edited in place.**
-
-- `Docs/adr/README.md` allows an `accepted` record to change only for a typo, a link, status, or a dated
-  clarification.
-- The edits rewrite text in records 0003 to 0047, as the earlier "Correct the … record" commits did. The
-  basis is that these records were written this week and are not yet on `main`.
-- ADR-0001 and ADR-0002 were changed only by dated clarifications.
-- **To do:** confirm that basis. If it does not hold, every non-clarification edit must become a
-  superseding record instead.
-
 **D-8. Facts only the Azure portal can settle.**
 
 - **Certificate issuer.** ADR-0003 says the certificates are Azure-managed, and that the deployment record
@@ -41,7 +31,8 @@ ever holds what is still open; numbers are not reused, so the list may skip.
 - "Logs … never submitted values" is the decision (PRD-030), but it is not what the code does today:
   verification codes and the raw refresh token are logged at `Information` (see F-2).
 - The record keeps the decision and lists the exceptions.
-- If DD-08 is answered "keep", the record has to be narrowed, which means superseding it.
+- If DD-08 is answered "keep", the record has to be narrowed. While the records are still being corrected,
+  that is an edit in place, not a superseding record.
 
 ## Findings outside the ADRs
 

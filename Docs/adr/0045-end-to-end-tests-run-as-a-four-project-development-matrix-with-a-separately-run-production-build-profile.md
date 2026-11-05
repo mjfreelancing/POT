@@ -10,19 +10,12 @@ supersedes: [ADR-0001]
 
 # ADR-0045 (backfilled): End-to-end tests run as a four-project development matrix, with a separately run production-build profile
 
-> **Clarification (2026-11-06).** The question this record left open (DD-11) is settled. The rule the
-> delivery skills and `e2e.instructions.md` give applies: the production-like full matrix
-> (`npm run e2e:all:prodlike`) is the completion gate for a PRD that changed client product code. It is
-> also run on demand (`npm run e2e:prodlike`) when the client production build changes. There is no
-> separate "before releases" trigger. `e2e/README.md` now gives the same rule. Neither profile runs
-> automatically, so the decision above is unchanged.
-
 **Summary:** In the context of a browser suite that is slow enough to be run deliberately and valuable
 enough not to skip, facing the choice between one configuration and two, we decided on a development
 profile running the suite across four projects — two Chromium variants, a mobile Chromium device and a
-mobile WebKit device — and a production-like profile that runs the built client against the API, to achieve
-confidence without paying the strictest cost every time, accepting that neither profile runs automatically
-and that when the production-build profile must run is not yet settled.
+mobile WebKit device — and a production-like profile that runs the built client against the API, gating the
+completion of every PRD that changes the client, to achieve confidence without paying the strictest cost
+every time, accepting that neither profile runs automatically, so the gate is kept by convention.
 
 ## Context and Problem Statement
 
@@ -33,6 +26,11 @@ cheap to cover with the same stack; the second needs a built client and a differ
 Running the production-like profile on every change would double the slowest gate. Running only the
 development profile risks a build-only failure — a base URL, an asset path, a service worker — reaching a
 deployment.
+
+When the production-like profile must run was written down two ways. The delivery skills and
+`e2e.instructions.md` made it the completion gate for a PRD that changed client product code. `e2e/README.md`
+and ADR-0001 called it on demand, when the production build changes and before releases. There are no
+formal releases, so "before releases" named no trigger.
 
 ## Decision Drivers
 
@@ -57,11 +55,14 @@ data run on `chromium` only (`settings/userSettings.test.ts`, `dashboard/quickAc
 desktop-layout files skip the phone projects. The default profile is itself opt-in: the delivery skill asks
 before running it, and `run-tests` never runs it as routine verification. The production-like profile
 (`playwright.prod.config.ts`) builds the client, serves it from the local preview server and runs the same four
-projects against it. Neither profile is run on every change. The documents give two rules for when the
-production-like profile runs. The delivery skills and `e2e.instructions.md` make the full matrix the completion
-gate for a PRD that changed client product code. `e2e/README.md`, PRD-012 R8 and ADR-0001 call it on demand,
-when the production build changes and before releases. That disagreement is open as DD-11, and this record
-does not settle it.
+projects against it.
+
+Neither profile is run on every change. The production-like full matrix (`npm run e2e:all:prodlike`) is the
+completion gate for a PRD that changed client product code. `npm run e2e:prodlike` is also run on demand
+whenever the client production build changes: the Vite configuration, the manifest or PWA set-up,
+`.env.production`, or the Docker build arguments. A gate at each such PRD's completion is preferred to
+on-demand runs alone, because otherwise a build-only regression is found only when someone happens to
+look, and there is no release to hang a pre-release run on.
 
 ### Consequences
 
@@ -85,7 +86,8 @@ does not settle it.
   changed client product code, and the report must say so when it is skipped. `.github/skills/run-tests/SKILL.md`
   says not to run the prodlike suite per change.
 - Instruction: `.github/instructions/e2e.instructions.md` (Fixtures and config; Reporting and process lifecycle).
-  Do not raise `timeout` to chase flakes, and never pass `--reporter` from an npm script.
+  It states the completion gate and the on-demand run. Do not raise `timeout` to chase flakes, and never pass
+  `--reporter` from an npm script. `e2e/README.md` (Prodlike config) gives the same rule for people.
 - Review: a change to a timeout is made in the configuration and justified there, never passed as a flag.
 
 ## Pros and Cons of the Options
@@ -116,4 +118,6 @@ does not settle it.
   [ADR-0044](0044-every-end-to-end-test-is-classified-by-whether-it-may-run-beside-others.md).
 - There is no continuous integration, so nothing runs either profile automatically:
   [ADR-0035](0035-builds-and-deployments-are-run-by-hand.md).
-- Source: [PRD-012](../Future/PRD-012-playwright-e2e-testing-infrastructure.md) R7 and R8.
+- Source: [PRD-012](../Future/PRD-012-playwright-e2e-testing-infrastructure.md) R7 and R8. R8 and decision D6
+  call the production-like run an on-demand gate without saying when it is due; this record adds the
+  completion gate.
