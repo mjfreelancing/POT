@@ -18,7 +18,7 @@ review.
   because its documents are broken on purpose.
 - **Instruction citations** — a `ADR-NNNN` reference in `.github/instructions/` must name an ADR that
   exists and is `accepted`.
-- **Document identifiers in code** — a `PRD-NNN` or `ADR-NNNN` reference in code or configuration under
+- **Document identifiers in code** — a `PRD-NNNN` or `ADR-NNNN` reference in code or configuration under
   `Source/` is an error. Markdown under `Source/` is exempt, because a developer guide may cite an ADR.
 
 With `-ReportFacts` it also prints, for a small list of reference facts (ports, the health endpoints, the

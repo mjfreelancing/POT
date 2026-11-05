@@ -4,7 +4,7 @@ Each brief is one undecided item from `DOCS-REORGANISATION-PLAN.md`: a `Dec` row
 
 **Baseline:** commit `9024e1d2`. Paths are relative to the repo root, and `path:line` references are to that commit. Every reference was re-checked against the code at that commit; the availability check is recorded in `DOCS-WORK-LISTS.md` ("Files reported missing, and where they turned out to be").
 
-**How to answer:** write your decision after `> **Your call:**` at the end of each brief. A short answer is fine ("Option B", "Keep, record honestly", "Defer until after PRD-019"). Add any conditions on the same line or the lines below.
+**How to answer:** write your decision after `> **Your call:**` at the end of each brief. A short answer is fine ("Option B", "Keep, record honestly", "Defer until after PRD-0019"). Add any conditions on the same line or the lines below.
 
 **What happens next:**
 
@@ -80,7 +80,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
   - **B. Keep double, but round at defined boundaries.** Round totals, rates and `Available` to 2 dp in the calculator and the outputs. Effort S. No migration or contract change. This reduces visible drift; it does not make values exact.
   - **C. Use `decimal` end to end.** C# `decimal`, PostgreSQL `numeric(18,2)` for the stored amounts (computed values are never stored, row 0009), with explicit rounding rules in the calculators. Effort L. **DB migration and data migration** (`USING round(col::numeric, 2)`, written by a human). Contract: `format` changes from `double` to `decimal` on about 30 properties, but the wire format stays a JSON number, so the client is unchanged apart from tests. Import/export parsing and tests change.
   - **D. Integer cents (`long`).** Effort L. DB and data migration, a breaking contract change, and client changes everywhere. Not recommended.
-- **Recommendation:** C. It is the standard representation for money, the wire format does not change, and the data set is still small. Sequence it next to the per-site currency work (PRD-018) so the rounding rules are decided once.
+- **Recommendation:** C. It is the standard representation for money, the wire format does not change, and the data set is still small. Sequence it next to the per-site currency work (PRD-0018) so the rounding rules are decided once.
 - **Route if changed:** raise a PRD via the prd-discovery skill. The schema and data migration are generated and written by a human.
 
 > **Your call:**
@@ -94,7 +94,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
   - Email goes through an unbounded in-memory channel (`Pot.EmailSender/SendEmailChannel.cs:27-31`), drained by `SendEmailWorker` (`Pot.AspNetCore/Features/Workers/SendEmailWorker.cs:17-20`). If a send throws, the error is logged and the message is dropped, with no retry anywhere in `Pot.EmailSender` (`SendEmailChannel.cs:62,68-71`). Anything still queued is lost on restart. OTP, sign-up and reset emails all go this way.
   - `BudgetReminderEmailWorker` runs once at start-up and then on every UTC hour (`Features/Workers/BudgetReminderEmailWorker.cs:29-104`, `:89-90`). Whether to send depends only on "current local hour == configured hour" (`Pot.App/Features/Notifications/BudgetReminder/BudgetReminderService.cs:65`). There is no record that a reminder was sent.
   - Database migrations also run on every container start (`Source/Docker/Server/entrypoint.sh`).
-  - PRD-019 (outbox and durable dispatch) is **Proposed**, priority High, dated 2026-09-23 (`Docs/Future/README.md:36`). PRD-018 is its prerequisite and is also Proposed (`:35`).
+  - PRD-0019 (outbox and durable dispatch) is **Proposed**, priority High, dated 2026-09-23 (`Docs/Future/README.md:36`). PRD-0018 is its prerequisite and is also Proposed (`:35`).
   - The repo has no infrastructure-as-code, so the replica count in Azure cannot be confirmed from the code.
   - **Duplicates happen with one replica too,** not just with several. A restart inside the trigger hour sends that hour's reminder again. A failed SMTP send is lost even when the process does not restart.
 - **Why it matters:** A user who requests a sign-up code during a deploy may never receive it. If the container restarts at 07:20 and reminders go out at 07:00, every admin gets a second reminder. Scaling to two replicas doubles every reminder and runs migrations concurrently.
@@ -102,8 +102,8 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
   - **A. Keep as-is (record honestly), and pin Azure to one replica.** Set the Container App's minimum and maximum replicas to 1. The ADR states the single-replica constraint and the loss and duplicate cases. Effort S. Infra change only.
   - **B. Targeted hardening.** Add a per-user "last reminder date" so restarts don't send a second reminder, and an in-process retry with backoff for failed sends. Effort M. DB migration (one column or table). Restart loss remains.
   - **C. Deliver the outbox PRD.** Effort L. DB migration. Solves loss, duplicates and the replica limit together.
-- **Recommendation:** A now, and C when PRD-018/019 are scheduled. Pinning replicas costs nothing and makes the current assumption true. B would be work that C then replaces.
-- **Route if changed:** A is an infra setting plus the ADR. C goes through the existing PRD-019 via the prd-delivery flow, with its migration generated by a human.
+- **Recommendation:** A now, and C when PRD-0018/019 are scheduled. Pinning replicas costs nothing and makes the current assumption true. B would be work that C then replaces.
+- **Route if changed:** A is an infra setting plus the ADR. C goes through the existing PRD-0019 via the prd-delivery flow, with its migration generated by a human.
 
 > **Your call:**
 
@@ -150,7 +150,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
   - **A. Keep as-is (record honestly).** The ADR records hand-written types, and that the contract is a reference, not a source. Effort: none.
   - **B. Generate the types from the committed contract.** Use a types-only generator (for example `openapi-typescript`) as a dev dependency, with an npm script and a "generated file is current" check. The client response types are replaced by generated ones; form schemas stay as Zod. Effort M-L. No contract change on the wire. It does need a server-side schema transformer, so numbers are published as `number` rather than `number|string`; otherwise every generated number type is a union.
   - **C. Validate at runtime.** Call `.parse` on responses with the existing Zod schemas. Effort M. Client only. Catches drift in use rather than at build. The Etag schema has to be fixed first, or every parse fails.
-- **Recommendation:** B, after CI exists (PRD-034, raised from the decided DD-05) so the "generated file is current" check runs on every change. It turns contract drift into a compile error.
+- **Recommendation:** B, after CI exists (PRD-0034, raised from the decided DD-05) so the "generated file is current" check runs on every change. It turns contract drift into a compile error.
 - **Route if changed:** raise a PRD via the prd-discovery skill (client plus a small server schema change).
 
 > **Your call:**
@@ -161,7 +161,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 
 - **Backlog row:** 0019 (`Acc`: "Client and server release together; breaking API changes need no compatibility window").
 - **What the code does today:**
-  - `Source/Client/pot-react/DEVELOPER.md:3122` says detection has no client/server version handshake, "so a breaking API change still relies on the backward-compatibility policy". **No such policy exists anywhere in the repo.** The only related statements are the four PRD lines behind row 0019 (`PRD-021:169`, `PRD-025:261`, `PRD-028:73`, `PRD-030:157`), and they say the opposite: no compatibility period is needed.
+  - `Source/Client/pot-react/DEVELOPER.md:3122` says detection has no client/server version handshake, "so a breaking API change still relies on the backward-compatibility policy". **No such policy exists anywhere in the repo.** The only related statements are the four PRD lines behind row 0019 (`PRD-0021:169`, `PRD-0025:261`, `PRD-0028:73`, `PRD-0030:157`), and they say the opposite: no compatibility period is needed.
   - "Release together" is not true in practice:
     - The server and client are built and pushed by two separate manual tasks (`.vscode/tasks.json:93-117`), so for a while the new server serves the old client.
     - An open or cached PWA shell keeps calling the API until it updates.
@@ -192,7 +192,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
   - **A. Keep as-is (record honestly).** The ADR records plaintext storage and the reasons the impact is limited. Effort: none.
   - **B. A plus remove `VerificationCode` from the four `LogCall` sites.** Effort S. No migration.
   - **C. Hash `OtpCode` with HMAC-SHA256 under a server-held key** (an unkeyed hash of a six-digit code can be brute-forced instantly), and compare in constant time. Effort M. **DB migration** (column length). Codes active at deploy time stop working, which is acceptable with a 15-minute life. Infra: a new secret. `RefCode` stays plaintext.
-- **Recommendation:** B. It closes the larger leak for almost no cost. C adds little while the temporary password is hashed, and could be folded into PRD-032 if that reworks credentials.
+- **Recommendation:** B. It closes the larger leak for almost no cost. C adds little while the temporary password is hashed, and could be folded into PRD-0032 if that reworks credentials.
 - **Route if changed:** raise a PRD via the prd-discovery skill. For C, a human generates the migration.
 
 > **Your call:**

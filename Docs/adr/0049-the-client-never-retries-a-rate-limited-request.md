@@ -4,7 +4,7 @@ title: The client never retries a rate-limited request
 status: accepted
 date: 2026-11-06
 area: frontend
-supersedes: [ADR-0002]
+supersedes: [ADR-0041]
 ---
 
 # ADR-0049: The client never retries a rate-limited request
@@ -18,7 +18,7 @@ is held by review until a test asserts it.
 ## Context and Problem Statement
 
 A `429` is the server's decision that this caller may not proceed yet
-([ADR-0012](0012-one-chained-rate-limit-policy-partitions-by-caller.md)). It is not a transient fault.
+([ADR-0030](0030-one-chained-rate-limit-policy-partitions-by-caller.md)). It is not a transient fault.
 Retrying on a timer contradicts that decision, and several clients doing so would replace a rate limit
 with a synchronised retry storm against the endpoint the server is protecting.
 
@@ -31,12 +31,12 @@ The client does not retry a `429` today, but nothing makes it so on purpose:
   `Source/Client/pot-react/src/main.tsx` configures no `retry`.
 - Those retries never fire only because `useGet` resolves every failure as a `FailResult` value instead of
   throwing (`performOperation` in `src/api/hooks/useApi.ts`; see
-  [ADR-0038](0038-server-state-lives-in-a-query-cache-over-one-http-client.md) and
-  [ADR-0039](0039-api-hooks-return-results-and-one-interceptor-normalises-failures.md)). A query function
+  [ADR-0015](0015-server-state-lives-in-a-query-cache-over-one-http-client.md) and
+  [ADR-0016](0016-api-hooks-return-results-and-one-interceptor-normalises-failures.md)). A query function
   that threw would start retrying every `429`, and no test would notice.
 
-The rule was first written as D-2 of [ADR-0002](0002-retry-after-client-cooldown-handling.md), a proposed
-design for PRD-014, and restated in [ADR-0047](0047-a-rate-limited-caller-is-told-when-to-retry.md), which
+The rule was first written as D-2 of [ADR-0041](0041-retry-after-client-cooldown-handling.md), a proposed
+design for PRD-0014, and restated in [ADR-0031](0031-a-rate-limited-caller-is-told-when-to-retry.md), which
 stays proposed with that PRD. The rule does not depend on the PRD: it describes the client as it is, so it
 is recorded here on its own and is binding now.
 
@@ -58,14 +58,14 @@ is recorded here on its own and is binding now.
 Chosen option: 1, because a `429` is an answer, not a fault.
 
 - **Option 2** obeys the server's timing but hides the rejection from a user who sees nothing happen.
-  An authenticated rejection names no delay to wait for anyway (ADR-0012).
+  An authenticated rejection names no delay to wait for anyway (ADR-0030).
 - **Option 3** ignores the server's timing and multiplies load exactly when the server is protecting
   itself. Backoff is for transient failures, such as a network error or a `5xx`, not for a rate limit.
 - **Option 4** is how a `429` retry would arrive unnoticed, because the library default is three retries.
 
 The rule covers every path that could resend a request: the axios interceptors, the `retry` option of a
 query or a mutation, the `QueryClient` defaults, and any loop written by hand. What the user is shown
-instead is [ADR-0047](0047-a-rate-limited-caller-is-told-when-to-retry.md).
+instead is [ADR-0031](0031-a-rate-limited-caller-is-told-when-to-retry.md).
 
 ### Consequences
 
@@ -89,8 +89,8 @@ instead is [ADR-0047](0047-a-rate-limited-caller-is-told-when-to-retry.md).
 ## More Information
 
 - The server policy that produces a `429`:
-  [ADR-0012](0012-one-chained-rate-limit-policy-partitions-by-caller.md).
-- What the user is shown when a `429` arrives: [ADR-0047](0047-a-rate-limited-caller-is-told-when-to-retry.md),
-  proposed with [PRD-014](../Future/PRD-014-retry-after-client-cooldown-handling.md). PRD-014's test plan
+  [ADR-0030](0030-one-chained-rate-limit-policy-partitions-by-caller.md).
+- What the user is shown when a `429` arrives: [ADR-0031](0031-a-rate-limited-caller-is-told-when-to-retry.md),
+  proposed with [PRD-0014](../Future/PRD-0014-retry-after-client-cooldown-handling.md). PRD-0014's test plan
   includes an interceptor test that a `429` is never retried. Once written, that test is this record's
   confirmation.

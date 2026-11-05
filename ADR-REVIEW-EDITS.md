@@ -5,30 +5,31 @@ the E2E authentication record in `fed146e7`; `git log -- Docs/adr` is the full r
 only what the ADRs do not: the decisions still open, and the findings outside the ADRs. The full report,
 with the reason and evidence for every edit, is `git show 79f48dd6:ADR-REVIEW-EDITS.md`. Delete this file
 once each item below has a home. A resolved item is removed rather than marked resolved, so this file only
-ever holds what is still open; numbers are not reused, so the list may skip.
+ever holds what is still open; numbers are not reused, so the list may skip. ADR and PRD numbers here follow the renumbering of
+2026-11-06; the commits named above, and the report in them, use the earlier numbers.
 
 ## Decisions still open
 
 **D-6. Records that bundle several decisions.** The reviewers proposed no splits. Splitting is your call.
 
-- ADR-0013: password hashing, and code-based reset.
-- ADR-0027: enum-by-name storage, and database-enforced uniqueness.
-- ADR-0029: a separate migration process, running before the API, and running on every start.
-- ADR-0031: in-process queueing, and Razor templating.
+- ADR-0021: password hashing, and code-based reset.
+- ADR-0006: enum-by-name storage, and database-enforced uniqueness.
+- ADR-0008: a separate migration process, running before the API, and running on every start.
+- ADR-0024: in-process queueing, and Razor templating.
 
 **D-8. Facts only the Azure portal can settle.**
 
-- **Certificate issuer.** ADR-0003 says the certificates are Azure-managed, and that the deployment record
+- **Certificate issuer.** ADR-0029 says the certificates are Azure-managed, and that the deployment record
   and the diagram give the issuer as Let's Encrypt. Azure's documentation names DigiCert for managed
-  Container Apps certificates. If it is DigiCert, correct ADR-0003 and the diagram label.
+  Container Apps certificates. If it is DigiCert, correct ADR-0029 and the diagram label.
 - **Where `/api` reaches the API** (row 0074, still `Ver`). The build implies the API app's own hostname
-  (`api.payontime.com.au`). The diagram and the Docker guide say ingress path routing. ADR-0036 records
+  (`api.payontime.com.au`). The diagram and the Docker guide say ingress path routing. ADR-0028 records
   the discrepancy, not an answer.
 - **Readiness probe and replica count** (FQ-03, DD-04) cannot be confirmed from the repository.
 
-**D-9. ADR-0032's title against the running system.**
+**D-9. ADR-0046's title against the running system.**
 
-- "Logs … never submitted values" is the decision (PRD-030), but it is not what the code does today:
+- "Logs … never submitted values" is the decision (PRD-0030), but it is not what the code does today:
   verification codes and the raw refresh token are logged at `Information` (see F-2).
 - The record keeps the decision and lists the exceptions.
 - If DD-08 is answered "keep", the record has to be narrowed. While the records are still being corrected,
@@ -60,7 +61,7 @@ directly; the rest are as the reviewers reported.
   - The session is revoked only if the logout request carries a valid access token.
   - On the interceptor-failure path the client clears the token before it posts `/auth/logout`.
   - A replayed, already-rotated refresh token is refused but does not revoke the session, so there is no
-    theft signal. PRD-002 OQ-4 was never implemented.
+    theft signal. PRD-0002 OQ-4 was never implemented.
 - **F-5. Access tokens are accepted for up to about 20 minutes, not 15,** because the framework's default
   five-minute clock skew is kept.
 - **F-6. Sign-up answers `UsernameTaken`,** which undermines the password reset's protection against
@@ -72,7 +73,7 @@ directly; the rest are as the reviewers reported.
   - The per-user lock (`OtpService.HasReachedRateLimitAsync`) counts codes with `Failed` status, and that
     status is never persisted either, so the lock never trips.
   - The only brakes on guessing a six-digit code are the HTTP rate limit and the 15-minute expiry.
-  - ADR-0013 (lines 52-56) describes the intended behaviour ("fails after three wrong attempts"), not
+  - ADR-0021 (lines 52-56) describes the intended behaviour ("fails after three wrong attempts"), not
     the effective behaviour. Check its wording as you review it.
   - No test references `AttemptCount` or the too-many-attempts result.
   - This affects DD-08's reasoning that the impact is "contained" by three attempts.
@@ -104,7 +105,7 @@ directly; the rest are as the reviewers reported.
 - **F-15. `DECISIONS-TO-DISCUSS.md`:**
   - DD-02 says six Etag update paths; there are nine. The three Users paths are missing.
   - The forwarded-headers follow-up cites rows 0074 and 0036; the trust model is row 0083.
-- **F-16. Documents that say a 429 always carries `Retry-After`:** PRD-014:22-30, PRD-030 B8,
+- **F-16. Documents that say a 429 always carries `Retry-After`:** PRD-0014:22-30, PRD-0030 B8,
   `Source/Server/DEVELOPER.md:244` and `:3633`. An authenticated 429 carries none.
 - **F-17. The client's "features never import features" rule is false in practice.**
   `Source/Client/pot-react/DEVELOPER.md:260` states it, and the client instruction says shared layers
@@ -117,5 +118,5 @@ directly; the rest are as the reviewers reported.
   - `RateLimiterPolicy.cs:11,15,79` mention concurrency limiting and a 10 s timeout; the client timeout
     is 30 s.
   - `src/hooks/useLocalStorage.ts:24-61` describes the legacy `pot-` prefix.
-- **F-20. PRD-031 D1** says a canary covers "every destructive action". `IsolationFixture` covers three
+- **F-20. PRD-0031 D1** says a canary covers "every destructive action". `IsolationFixture` covers three
   routes.

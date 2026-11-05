@@ -713,7 +713,7 @@ with the `docker-prune-all-unused-images` task.
 - **Ingress ports** — port 80 for the client container, 5241 for the API container.
 - **Forwarded headers** — the ingress terminates HTTPS and forwards plain HTTP with `X-Forwarded-For` and
   `X-Forwarded-Proto`. The API trusts these from any sender, which is safe only because the API container is
-  reachable through the ingress alone; never expose it directly (ADR-0003, ADR-0004). See "Forwarded
+  reachable through the ingress alone; never expose it directly (ADR-0029, ADR-0048). See "Forwarded
   Headers" in `Source/Server/DEVELOPER.md`.
 - **Migrations still run at startup**, because the image entrypoint is unchanged.
 

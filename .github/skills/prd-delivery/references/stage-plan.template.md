@@ -1,8 +1,8 @@
-# TASKS — PRD-NNN <feature name>
+# TASKS — PRD-NNNN <feature name>
 
 > Temporary delivery plan. Never committed; delete when the PRD is Complete.
 
-- PRD: `Docs/Future/PRD-NNN-<slug>.md`
+- PRD: `Docs/Future/PRD-NNNN-<slug>.md`
 - Status: <Planned | In Progress | Complete>
 - Started: <yyyy-mm-dd>
 - Progress: 0/<total>

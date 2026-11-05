@@ -39,7 +39,7 @@ Classify every test before writing it.
 
 ## Fixtures and config
 
-- `e2e/fixtures/auth.ts` exposes `test` (admin), `viewerTest` (viewer), `pwChangeTest` (`e2e_pwchange`, viewer). Each authenticated test logs in ONCE and receives both `storageState` and `accessToken` (15-min JWT for API setup/cleanup). Do not log in per operation (PBKDF2 CPU under load) and do not share storage state across tests/workers (the refresh cookie rotates on every `/api/auth/refresh`). A journey that changes its own account runs as a seeded identity nothing else logs in as (ADR-0048).
+- `e2e/fixtures/auth.ts` exposes `test` (admin), `viewerTest` (viewer), `pwChangeTest` (`e2e_pwchange`, viewer). Each authenticated test logs in ONCE and receives both `storageState` and `accessToken` (15-min JWT for API setup/cleanup). Do not log in per operation (PBKDF2 CPU under load) and do not share storage state across tests/workers (the refresh cookie rotates on every `/api/auth/refresh`). A journey that changes its own account runs as a seeded identity nothing else logs in as (ADR-0042).
 - Config: `workers: process.env.CI ? 1 : 2`, `retries: process.env.CI ? 2 : 1`, `timeout: 60_000`, `expect.timeout: 10_000`, `video: 'on-first-retry'`, API webServer `dotnet run -c Release`. Do not raise `timeout` to chase flakes (it worsens shared-stack contention); retries are a safety net, not a fix.
 - PWA: dev serves no manifest/SW (`vite-plugin-pwa` gates both behind `devOptions.enabled`; `registerServiceWorker()` short-circuits on `import.meta.env.DEV`); the built client serves the manifest and registers the SW. `e2e/tests/pwa/pwaContract.test.ts` asserts whichever contract applies.
 

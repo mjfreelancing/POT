@@ -1,9 +1,9 @@
-# PRD-NNN <feature name> — Discovery
+# PRD-NNNN <feature name> — Discovery
 
 > Scratch document. Not a PRD and not a durable record. Delete this file once
-> `PRD-NNN-<slug>.md` exists and has been approved.
+> `PRD-NNNN-<slug>.md` exists and has been approved.
 
-**Feature ID:** NNN
+**Feature ID:** NNNN
 **Last Updated:** <yyyy-mm-dd>
 **Status:** Planning
 

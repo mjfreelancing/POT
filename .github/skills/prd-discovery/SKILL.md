@@ -10,8 +10,8 @@ Discovery first, documentation second. The output is a PRD that was argued over 
 
 Two files are involved:
 
-- **Discovery document** — `Docs/Future/PRD-NNN-<slug>-discovery.md`. Holds the captured input, the draft problem statement, the scope sketch, every question round and any open questions. It is scratch: delete it once the PRD is written.
-- **PRD** — `Docs/Future/PRD-NNN-<slug>.md`. The durable document that `prd-delivery` consumes.
+- **Discovery document** — `Docs/Future/PRD-NNNN-<slug>-discovery.md`. Holds the captured input, the draft problem statement, the scope sketch, every question round and any open questions. It is scratch: delete it once the PRD is written.
+- **PRD** — `Docs/Future/PRD-NNNN-<slug>.md`. The durable document that `prd-delivery` consumes.
 
 The number comes from `Docs/Future/README.md`, never from guessing: read the `Next free PRD number` line and bump it when the number is claimed.
 
@@ -26,7 +26,7 @@ project, adjust these four things and nothing else:
 - The next number comes from a `Next free PRD number:` line in `Docs/Future/README.md` — change the
   number source if the project keeps one elsewhere, or ask the human outright when it keeps none.
 - The index is a Markdown table in that same README — change the row format if the project's index differs.
-- Delivery plans live beside the PRD as `TASKS-PRD-NNN.md` — keep that convention, because the
+- Delivery plans live beside the PRD as `TASKS-PRD-NNNN.md` — keep that convention, because the
   `prd-delivery` skill looks for it.
 
 ## Hard rules
@@ -48,7 +48,7 @@ project, adjust these four things and nothing else:
 
 1. Read `Docs/Future/README.md` and take the number from the `Next free PRD number` line.
 2. Derive a short kebab-case slug from the feature, matching the existing file names.
-3. Create `Docs/Future/PRD-NNN-<slug>-discovery.md` from the [discovery document template](./references/discovery-document.template.md), filling in:
+3. Create `Docs/Future/PRD-NNNN-<slug>-discovery.md` from the [discovery document template](./references/discovery-document.template.md), filling in:
    - the input exactly as the human supplied it, or the notes from the interview;
    - a draft problem statement — what is wrong today and why it matters — written for the human to correct;
    - a scope sketch listing what appears to be in scope and out of scope.
@@ -93,7 +93,7 @@ Repeat until nothing material is unanswered.
 
 When the rounds are done, **ask the human whether to produce the PRD now or wait**, because some open questions become answerable as the work progresses. Then:
 
-1. Create `Docs/Future/PRD-NNN-<slug>.md` from the
+1. Create `Docs/Future/PRD-NNNN-<slug>.md` from the
    [PRD template](./references/prd.template.md), which
    defines the whole shape: header metadata, problem statement, actors and authority, terms, grouped
    functional requirements, requirement coverage, out of scope, known risks, assumptions, decisions,

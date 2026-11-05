@@ -4,7 +4,7 @@
 **Priority:** <High | Medium | Low>
 **Last Updated:** <yyyy-mm-dd>
 <!-- **Amended:** <yyyy-mm-dd> — <count> amendments, see [Amendments](#amendments). Uncomment only once the document is Complete and a later change has overtaken it. -->
-**Feature ID:** NNN
+**Feature ID:** NNNN
 **Discovery:** complete
 **Scope:** <One paragraph. What the feature does, which actors it serves, and — explicitly — what it
 does not cover and where those parts live instead. This paragraph is the contract the delivery plan is
@@ -100,7 +100,7 @@ row empty only when the change needs no amendment.>
 
 | Document | What changes | Amendment |
 | -------- | ------------ | --------- |
-| <PRD-NNN, ADR-NNNN or reference page> | <what it now says wrongly> | <AM-n, or "(rewrite)"> |
+| <PRD-NNNN, ADR-NNNN or reference page> | <what it now says wrongly> | <AM-n, or "(rewrite)"> |
 
 ## Open Questions
 

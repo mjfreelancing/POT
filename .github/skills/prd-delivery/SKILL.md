@@ -45,7 +45,7 @@ Use this skill only for PRDs under `Docs/Future/`. For general multi-stage work,
    - name the layers and files it touches, and the targeted validation command(s);
    - be small enough to review and commit as one unit;
    - be broken into numbered sub-tasks (`1.1`, `1.2`, …) that each carry a checkbox, so the human can reference any one precisely;
-3. Write the plan to `Docs/Future/TASKS-PRD-NNN.md`, beside the PRD (`NNN` taken from the PRD filename), using the [stage plan template](./references/stage-plan.template.md). The file is never committed — leave it unstaged.
+3. Write the plan to `Docs/Future/TASKS-PRD-NNNN.md`, beside the PRD (`NNNN` taken from the PRD filename), using the [stage plan template](./references/stage-plan.template.md). The file is never committed — leave it unstaged.
 4. Do the start-of-work bookkeeping per `Docs/Future` conventions: set the PRD `Status` to `In Progress`, update `Last Updated`, and update the matching `Docs/Future/README.md` row (`Status`, `Last Updated`) plus the index-update date.
 5. Add a **UI testing checkpoints** table near the top of the plan when the PRD has client work: which stage first produces something the human can exercise by hand, and what they can test after each later client stage. A human should never have to guess when the UI is ready.
 6. Present the plan and **stop.** Wait for the plan to be approved. If the human changes it, edit the TASKS file in place; do not create another.
@@ -120,5 +120,5 @@ After final approval:
    `-Update`, because the status change alters it. This is the second validation point the `adr` skill
    defines; the first ran when each record was written, and this run is what proves the instruction files
    may now cite them.
-6. Delete `Docs/Future/TASKS-PRD-NNN.md`. If it was ever committed — to read it from another machine, say — state that in the summary so the removal is staged with the rest of the close.
+6. Delete `Docs/Future/TASKS-PRD-NNNN.md`. If it was ever committed — to read it from another machine, say — state that in the summary so the removal is staged with the rest of the close.
 7. Summarize the whole delivery, offer a final commit message, and **stop** for final review.

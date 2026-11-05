@@ -11,7 +11,7 @@ Layout: .NET server in `Source/Server` (`pot.sln`), React/Vite client in `Source
 - Search for existing code to reuse before writing new code.
 - Before creating or moving code into shared helpers/utils or a shared project/package (production or test), ask the user where it should go when the decision is not obvious.
 - Preserve public API shape unless a change is explicitly requested or approved.
-- Never reference PRDs, ADRs, task lists, stage numbers or requirement IDs (e.g. `PRD-025`, `R6`, `A-08`, `Stage 2`) in code, tests, comments or test names. Describe the behaviour itself. Task lists are temporary; PRDs and ADRs are permanent but are cited from docs and instruction files only — code states the rule itself.
+- Never reference PRDs, ADRs, task lists, stage numbers or requirement IDs (e.g. `PRD-0025`, `R6`, `A-08`, `Stage 2`) in code, tests, comments or test names. Describe the behaviour itself. Task lists are temporary; PRDs and ADRs are permanent but are cited from docs and instruction files only — code states the rule itself.
 - Before an architectural change, read `Docs/adr/README.md`. Do not contradict an accepted ADR without asking. A change that makes a new architectural decision adds a proposed ADR in the same change.
 - Never remove existing comments. If one looks out of date, ask before changing it (spelling fixes are fine).
 - Never generate EF Core migrations unless explicitly asked; after editing entities or schema-impacting models, ask the developer to add a migration and review it — `Running things` has the command.
