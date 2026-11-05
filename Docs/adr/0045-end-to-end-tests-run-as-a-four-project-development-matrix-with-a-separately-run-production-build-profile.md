@@ -106,7 +106,7 @@ does not settle it.
 ## More Information
 
 - The shared stack and the test classification: [ADR-0043](0043-end-to-end-tests-run-on-one-shared-stack.md) and
-  [ADR-0044](0044-every-end-to-end-test-declares-whether-it-may-run-beside-others.md).
+  [ADR-0044](0044-every-end-to-end-test-is-classified-by-whether-it-may-run-beside-others.md).
 - There is no continuous integration, so nothing runs either profile automatically:
   [ADR-0035](0035-builds-and-deployments-are-run-by-hand.md).
 - Source: [PRD-012](../Future/PRD-012-playwright-e2e-testing-infrastructure.md) R7 and R8.

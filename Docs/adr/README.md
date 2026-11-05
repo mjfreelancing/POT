@@ -117,8 +117,8 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | [ADR-0001](0001-playwright-e2e-testing-infrastructure.md) | Playwright E2E testing infrastructure | superseded |
 | [ADR-0002](0002-retry-after-client-cooldown-handling.md) | Retry-After client cooldown handling | superseded |
 | [ADR-0043](0043-end-to-end-tests-run-on-one-shared-stack.md) | End-to-end tests run on one shared stack against a single seeded database | accepted |
-| [ADR-0044](0044-every-end-to-end-test-declares-whether-it-may-run-beside-others.md) | Every end-to-end test is classified by whether it may run beside others | accepted |
-| [ADR-0045](0045-the-end-to-end-matrix-runs-on-every-change-with-a-stricter-release-profile.md) | End-to-end tests run as a four-project development matrix, with a separately run production-build profile | accepted |
+| [ADR-0044](0044-every-end-to-end-test-is-classified-by-whether-it-may-run-beside-others.md) | Every end-to-end test is classified by whether it may run beside others | accepted |
+| [ADR-0045](0045-end-to-end-tests-run-as-a-four-project-development-matrix-with-a-separately-run-production-build-profile.md) | End-to-end tests run as a four-project development matrix, with a separately run production-build profile | accepted |
 | [ADR-0046](0046-tenants-are-provisioned-and-destroyed-by-the-products-own-routes-in-tests.md) | Tenants are provisioned and destroyed by the product's own routes in tests | accepted |
 | [ADR-0048](0048-no-end-to-end-test-shares-authentication-state-with-another.md) | No end-to-end test shares authentication state with another | accepted |
 
@@ -226,8 +226,8 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 - [ADR-0041](0041-browser-storage-is-keyed-by-environment-and-user.md) — Browser storage is keyed by environment and user, with a policy per setting
 - [ADR-0042](0042-the-pwa-precaches-the-shell-only-and-enforces-updates.md) — The PWA precaches the application shell only and enforces updates
 - [ADR-0043](0043-end-to-end-tests-run-on-one-shared-stack.md) — End-to-end tests run on one shared stack against a single seeded database
-- [ADR-0044](0044-every-end-to-end-test-declares-whether-it-may-run-beside-others.md) — Every end-to-end test is classified by whether it may run beside others
-- [ADR-0045](0045-the-end-to-end-matrix-runs-on-every-change-with-a-stricter-release-profile.md) — End-to-end tests run as a four-project development matrix, with a separately run production-build profile
+- [ADR-0044](0044-every-end-to-end-test-is-classified-by-whether-it-may-run-beside-others.md) — Every end-to-end test is classified by whether it may run beside others
+- [ADR-0045](0045-end-to-end-tests-run-as-a-four-project-development-matrix-with-a-separately-run-production-build-profile.md) — End-to-end tests run as a four-project development matrix, with a separately run production-build profile
 - [ADR-0046](0046-tenants-are-provisioned-and-destroyed-by-the-products-own-routes-in-tests.md) — Tenants are provisioned and destroyed by the product's own routes in tests
 - [ADR-0048](0048-no-end-to-end-test-shares-authentication-state-with-another.md) — No end-to-end test shares authentication state with another
 
@@ -241,11 +241,11 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | PRD | ADRs |
 | --- | --- |
 | PRD-001 | [ADR-0041](0041-browser-storage-is-keyed-by-environment-and-user.md) |
-| PRD-012 | [ADR-0001](0001-playwright-e2e-testing-infrastructure.md), [ADR-0043](0043-end-to-end-tests-run-on-one-shared-stack.md), [ADR-0044](0044-every-end-to-end-test-declares-whether-it-may-run-beside-others.md), [ADR-0045](0045-the-end-to-end-matrix-runs-on-every-change-with-a-stricter-release-profile.md), [ADR-0048](0048-no-end-to-end-test-shares-authentication-state-with-another.md) |
+| PRD-012 | [ADR-0001](0001-playwright-e2e-testing-infrastructure.md), [ADR-0043](0043-end-to-end-tests-run-on-one-shared-stack.md), [ADR-0044](0044-every-end-to-end-test-is-classified-by-whether-it-may-run-beside-others.md), [ADR-0045](0045-end-to-end-tests-run-as-a-four-project-development-matrix-with-a-separately-run-production-build-profile.md), [ADR-0048](0048-no-end-to-end-test-shares-authentication-state-with-another.md) |
 | PRD-014 | [ADR-0002](0002-retry-after-client-cooldown-handling.md), [ADR-0047](0047-a-rate-limited-caller-is-told-when-to-retry.md) |
 | PRD-022 | [ADR-0028](0028-cascades-are-restricted-and-deletion-is-an-explicit-ordered-sweep.md) |
 | PRD-026 | [ADR-0025](0025-tenant-confinement-is-structural-query-filters-and-site-scoped-reads.md) |
 | PRD-030 | [ADR-0014](0014-every-failure-is-written-as-a-problem-details-document.md), [ADR-0032](0032-logs-record-request-metadata-and-never-submitted-values.md), [ADR-0039](0039-api-hooks-return-results-and-one-interceptor-normalises-failures.md) |
-| PRD-031 | [ADR-0044](0044-every-end-to-end-test-declares-whether-it-may-run-beside-others.md), [ADR-0046](0046-tenants-are-provisioned-and-destroyed-by-the-products-own-routes-in-tests.md) |
+| PRD-031 | [ADR-0044](0044-every-end-to-end-test-is-classified-by-whether-it-may-run-beside-others.md), [ADR-0046](0046-tenants-are-provisioned-and-destroyed-by-the-products-own-routes-in-tests.md) |
 
 <!-- END GENERATED INDEX -->

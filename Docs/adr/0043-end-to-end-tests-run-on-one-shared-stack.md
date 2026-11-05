@@ -100,9 +100,9 @@ themselves within it by owning the data they create.
 ## More Information
 
 - How a test is classified for running beside others:
-  [ADR-0044](0044-every-end-to-end-test-declares-whether-it-may-run-beside-others.md).
+  [ADR-0044](0044-every-end-to-end-test-is-classified-by-whether-it-may-run-beside-others.md).
 - Which configurations run, and when:
-  [ADR-0045](0045-the-end-to-end-matrix-runs-on-every-change-with-a-stricter-release-profile.md).
+  [ADR-0045](0045-end-to-end-tests-run-as-a-four-project-development-matrix-with-a-separately-run-production-build-profile.md).
 - How destructive journeys get a tenant of their own:
   [ADR-0046](0046-tenants-are-provisioned-and-destroyed-by-the-products-own-routes-in-tests.md).
 - Source: [PRD-012](../Future/PRD-012-playwright-e2e-testing-infrastructure.md) R1, R2 and R10. The earlier combined

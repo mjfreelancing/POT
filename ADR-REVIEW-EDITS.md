@@ -17,11 +17,12 @@ every edit, is `git show 79f48dd6:ADR-REVIEW-EDITS.md`. Delete this file once ea
   `.github/instructions/e2e.instructions.md` cites it.
 - The supersession edits stand; ADR-0001 stays `superseded`.
 
-**D-3. ADR-0044 and ADR-0045 are retitled (applied); their file names are not.**
+**D-3. ADR-0044 and ADR-0045 are retitled (applied); their file names are not. Resolved: files renamed.**
 
 - The file slugs no longer match the titles. docs-check does not compare them.
-- **To do:** rename both files (recommended). The links added in ADR-0043, ADR-0044 and ADR-0045 must
-  follow, and so must the index (`docs-check -Update`).
+- **Resolved:** renamed to `0044-every-end-to-end-test-is-classified-by-whether-it-may-run-beside-others.md`
+  and `0045-end-to-end-tests-run-as-a-four-project-development-matrix-with-a-separately-run-production-build-profile.md`.
+  The links in ADR-0043, ADR-0045 and ADR-0046 follow, and the index is regenerated.
 
 **D-4. `related-prds` front matter is filled in (applied).**
 

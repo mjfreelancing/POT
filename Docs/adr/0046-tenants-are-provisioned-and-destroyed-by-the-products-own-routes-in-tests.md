@@ -114,7 +114,7 @@ rendered and sent. That is the mechanism option 4 describes.
 ## More Information
 
 - The shared stack and the parallel classification: [ADR-0043](0043-end-to-end-tests-run-on-one-shared-stack.md)
-  and [ADR-0044](0044-every-end-to-end-test-declares-whether-it-may-run-beside-others.md).
+  and [ADR-0044](0044-every-end-to-end-test-is-classified-by-whether-it-may-run-beside-others.md).
 - Queued in-process email delivery:
   [ADR-0031](0031-email-is-queued-in-process-and-rendered-from-razor-components.md). The sink is what makes that
   queue observable to a browser test.
