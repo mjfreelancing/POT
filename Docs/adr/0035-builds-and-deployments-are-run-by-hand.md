@@ -99,9 +99,9 @@ a wait.
 
 ## More Information
 
-- A build-and-test workflow is planned (`DECISIONS-TO-DISCUSS.md` DD-05, decided 2026-11-06 as option B).
-  It runs on pull requests and pushes to `main`, and deployment is unchanged. It is raised as a PRD. This
-  record describes the system until that PRD's record is accepted and supersedes it, and deployment by hand
-  carries into the superseding record.
+- Continuous integration, and whether delivery is automated too, is planned as
+  [PRD-034](../Future/PRD-034-ci-cd-pipeline-and-delivery-policies.md). That PRD was raised from
+  `DECISIONS-TO-DISCUSS.md` DD-05, decided on 2026-11-06 with a build-and-test workflow as the starting
+  direction. This record describes the system until that PRD's record is accepted and supersedes it.
 - The deployment target and its topology are
   [ADR-0036](0036-production-runs-two-container-apps.md).

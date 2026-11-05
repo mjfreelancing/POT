@@ -17,7 +17,6 @@ Each brief is one undecided item from `DOCS-REORGANISATION-PLAN.md`: a `Dec` row
 **Before acting on a brief, re-check its evidence against the code at that time.** These briefs were written on a machine without the full repository. Several rely on something being absent:
 
 - DD-04, DD-06 and DD-16: no infrastructure-as-code;
-- DD-05: no `.github/workflows/` directory;
 - DD-06: the local data folders.
 
 Run the availability check in `DOCS-WORK-LISTS.md` ("Files reported missing, and where they turned out to be") first; it has been run once, and its result is recorded there. Never copy the contents of a git-ignored file into a brief or an ADR.
@@ -31,7 +30,6 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 | DD-02 | Etag checked in code but not a database concurrency token; client types it as `bigint`          | Med (integrity)     | B + C: concurrency token, a monotonic value and `z.number()`                                         | Model-only (empty migration) |
 | DD-03 | Money stored and calculated as `double`                                                         | Med (correctness)   | C: `decimal` / `numeric(18,2)` end to end                                                            | Yes: DB + data               |
 | DD-04 | Email queued in process; reminders assume one replica                                           | Med (reliability)   | A now (pin to one replica), C (the outbox PRD) later                                                 | Not for A; yes for C         |
-| DD-05 | No CI; deploy pushes `:latest` from the local working tree                                      | Med (process)       | B: a build-and-test workflow, deploy unchanged                                                       | No                           |
 | DD-06 | PostgreSQL 13 locally and in tests, 16 in E2E, 17.6 in Azure                                    | Med (drift)         | B: align everything on the Azure version                                                             | No (local data rebuild)      |
 | DD-07 | Client API types are hand-written                                                               | Med (drift)         | B: generate types from the committed contract                                                        | No                           |
 | DD-14 | No policy for API/client version skew while an old PWA shell is cached                          | Med (skew)          | A: record that no window exists, correct the guide                                                   | No                           |
@@ -111,25 +109,6 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 
 ---
 
-### DD-05 — No CI; deploy pushes `:latest` from the local working tree
-
-- **Backlog row:** 0080 (`Dec`).
-- **What the code does today:**
-  - There is no `.github/workflows/` directory.
-  - Deployment uses two VS Code tasks (`.vscode/tasks.json:93-117`). They run `docker build --no-cache` from the local working tree and `docker push ghcr.io/mjfreelancing/pot-{server,client}:latest` (`:95`, `:108`). No tests or lint run first.
-  - The server image runs migrations at start-up (`Source/Docker/Server/entrypoint.sh`).
-- **Why it matters:** Uncommitted or failing code can ship. There is no record of which commit is in production, and `:latest` gives no image to roll back to. Nothing checks that the committed OpenAPI document matches the build. The planned `docs-check` script (D11) would also have nowhere to run.
-- **Options:**
-  - **A. Keep as-is (record honestly).** The ADR records manual build and deploy, and its consequences. Effort: none.
-  - **B. A build-and-test workflow only.** Run on pull requests and pushes to `main`: `dotnet build` + `dotnet test` (integration tests use Testcontainers, which work on GitHub's Ubuntu runners), client `lint`, `type:check` and `vitest`, a check that `contracts/openapi/v1.json` is unchanged after the build, and `docs-check`. E2E stays local. Deploy is unchanged. Effort M. No migration, contract or client change. Infra: GitHub Actions minutes.
-  - **C. B plus image build and deploy from `main`.** Tag images with the commit SHA, deploy with `az containerapp update` using OIDC federated credentials. Effort L. Infra: an Azure identity, a federated credential and repo secrets.
-- **Recommendation:** B. It catches broken builds and contract drift for little effort, and C can follow once B has been reliable for a while. You can also change the deploy tasks today to tag with the commit SHA as well as `latest`, which gives a rollback point.
-- **Route if changed:** raise a PRD via the prd-discovery skill (repo automation; no code paths change).
-
-> **Your call:** B (2026-11-06). Raise the PRD. ADR-0035 stays accepted until that PRD's record supersedes it.
-
----
-
 ### DD-06 — PostgreSQL 13 locally and in tests, 16 in E2E, 17.6 in Azure
 
 - **Backlog row:** 0047 (`Dec`).
@@ -171,7 +150,7 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
   - **A. Keep as-is (record honestly).** The ADR records hand-written types, and that the contract is a reference, not a source. Effort: none.
   - **B. Generate the types from the committed contract.** Use a types-only generator (for example `openapi-typescript`) as a dev dependency, with an npm script and a "generated file is current" check. The client response types are replaced by generated ones; form schemas stay as Zod. Effort M-L. No contract change on the wire. It does need a server-side schema transformer, so numbers are published as `number` rather than `number|string`; otherwise every generated number type is a union.
   - **C. Validate at runtime.** Call `.parse` on responses with the existing Zod schemas. Effort M. Client only. Catches drift in use rather than at build. The Etag schema has to be fixed first, or every parse fails.
-- **Recommendation:** B, after CI (DD-05) exists so the "generated file is current" check runs on every change. It turns contract drift into a compile error.
+- **Recommendation:** B, after CI exists (PRD-034, raised from the decided DD-05) so the "generated file is current" check runs on every change. It turns contract drift into a compile error.
 - **Route if changed:** raise a PRD via the prd-discovery skill (client plus a small server schema change).
 
 > **Your call:**
