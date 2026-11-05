@@ -1,28 +1,13 @@
 # ADR review: what is still open (temporary)
 
-**Status:** All review edits are applied to `Docs/adr/`. D-1 is in `79f48dd6`; the other 270 edits are
-uncommitted, for review in `git diff -- Docs/adr`. This file now holds only what the ADRs do not: the
-decisions still open, and the findings outside the ADRs. The full report, with the reason and evidence for
-every edit, is `git show 79f48dd6:ADR-REVIEW-EDITS.md`. Delete this file once each item below has a home.
+**Status:** All review edits to `Docs/adr/` are applied. D-1 is in `79f48dd6`, the bulk in `a50d1c85`, and
+the E2E authentication record in `fed146e7`; `git log -- Docs/adr` is the full record. This file now holds
+only what the ADRs do not: the decisions still open, and the findings outside the ADRs. The full report,
+with the reason and evidence for every edit, is `git show 79f48dd6:ADR-REVIEW-EDITS.md`. Delete this file
+once each item below has a home. A resolved item is removed rather than marked resolved, so this file only
+ever holds what is still open; numbers are not reused, so the list may skip.
 
 ## Decisions still open
-
-**D-2. ADR-0043 to ADR-0046 now supersede ADR-0001 (applied). Resolved by ADR-0048.**
-
-- Two of ADR-0001's sections had no other record: the fresh login for every test, which refresh-token
-  rotation forces, and the dedicated seeded identities such as `e2e_pwchange`.
-- **Resolved:** `Docs/adr/0048-no-end-to-end-test-shares-authentication-state-with-another.md` records both
-  as one decision — a test owns its session and the account it signs in as — and states that it was found
-  by trial and error rather than designed. ADR-0001's `superseded-by` lists it, and
-  `.github/instructions/e2e.instructions.md` cites it.
-- The supersession edits stand; ADR-0001 stays `superseded`.
-
-**D-3. ADR-0044 and ADR-0045 are retitled (applied); their file names are not. Resolved: files renamed.**
-
-- The file slugs no longer match the titles. docs-check does not compare them.
-- **Resolved:** renamed to `0044-every-end-to-end-test-is-classified-by-whether-it-may-run-beside-others.md`
-  and `0045-end-to-end-tests-run-as-a-four-project-development-matrix-with-a-separately-run-production-build-profile.md`.
-  The links in ADR-0043, ADR-0045 and ADR-0046 follow, and the index is regenerated.
 
 **D-4. `related-prds` front matter is filled in (applied).**
 
