@@ -5,7 +5,7 @@ status: superseded
 date: 2026-09-02
 area: cross-cutting
 related-prds: [PRD-012]
-superseded-by: [ADR-0043, ADR-0044, ADR-0045, ADR-0046]
+superseded-by: [ADR-0043, ADR-0044, ADR-0045, ADR-0046, ADR-0048]
 ---
 
 # ADR-0001 (legacy): Playwright E2E testing infrastructure

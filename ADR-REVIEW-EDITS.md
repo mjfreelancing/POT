@@ -7,23 +7,30 @@ every edit, is `git show 79f48dd6:ADR-REVIEW-EDITS.md`. Delete this file once ea
 
 ## Decisions still open
 
-**D-2. ADR-0043 to ADR-0046 now supersede ADR-0001 (applied).**
-- Two of ADR-0001's sections have no other record: the fresh login for every test, which refresh-token
+**D-2. ADR-0043 to ADR-0046 now supersede ADR-0001 (applied). Resolved by ADR-0048.**
+
+- Two of ADR-0001's sections had no other record: the fresh login for every test, which refresh-token
   rotation forces, and the dedicated seeded identities such as `e2e_pwchange`.
-- **To do:** write one more bounded ADR for the E2E authentication strategy. If you would rather not,
-  revert the five supersession edits and leave ADR-0001 `accepted`.
+- **Resolved:** `Docs/adr/0048-no-end-to-end-test-shares-authentication-state-with-another.md` records both
+  as one decision — a test owns its session and the account it signs in as — and states that it was found
+  by trial and error rather than designed. ADR-0001's `superseded-by` lists it, and
+  `.github/instructions/e2e.instructions.md` cites it.
+- The supersession edits stand; ADR-0001 stays `superseded`.
 
 **D-3. ADR-0044 and ADR-0045 are retitled (applied); their file names are not.**
+
 - The file slugs no longer match the titles. docs-check does not compare them.
 - **To do:** rename both files (recommended). The links added in ADR-0043, ADR-0044 and ADR-0045 must
   follow, and so must the index (`docs-check -Update`).
 
 **D-4. `related-prds` front matter is filled in (applied).**
+
 - Each PRD named there should list the ADR in its "Decisions Carried Into This Document" table. Those PRD
   edits have not been made. See F-21.
 - The auth records cite their PRDs in the body text instead, so the series is not yet consistent.
 
 **D-5. Records whose status runs ahead of an open decision.**
+
 - **ADR-0035** (hand-run builds, no CI) is `accepted`, which in effect answers DD-05 with option A. Either
   answer DD-05 as A, or set the record to `proposed` until DD-05 is decided.
 - **ADR-0045** records both of DD-11's rules and leaves the choice open. When DD-11 is decided, it needs a
@@ -32,12 +39,14 @@ every edit, is `git show 79f48dd6:ADR-REVIEW-EDITS.md`. Delete this file once ea
   never-auto-retry-a-429 rule today. Accept ADR-0047, or say why not.
 
 **D-6. Records that bundle several decisions.** The reviewers proposed no splits. Splitting is your call.
+
 - ADR-0013: password hashing, and code-based reset.
 - ADR-0027: enum-by-name storage, and database-enforced uniqueness.
 - ADR-0029: a separate migration process, running before the API, and running on every start.
 - ADR-0031: in-process queueing, and Razor templating.
 
 **D-7. Accepted records were edited in place.**
+
 - `Docs/adr/README.md` allows an `accepted` record to change only for a typo, a link, status, or a dated
   clarification.
 - The edits rewrite text in records 0003 to 0047, as the earlier "Correct the … record" commits did. The
@@ -47,6 +56,7 @@ every edit, is `git show 79f48dd6:ADR-REVIEW-EDITS.md`. Delete this file once ea
   superseding record instead.
 
 **D-8. Facts only the Azure portal can settle.**
+
 - **Certificate issuer.** ADR-0003 says the certificates are Azure-managed, and that the deployment record
   and the diagram give the issuer as Let's Encrypt. Azure's documentation names DigiCert for managed
   Container Apps certificates. If it is DigiCert, correct ADR-0003 and the diagram label.
@@ -56,6 +66,7 @@ every edit, is `git show 79f48dd6:ADR-REVIEW-EDITS.md`. Delete this file once ea
 - **Readiness probe and replica count** (FQ-03, DD-04) cannot be confirmed from the repository.
 
 **D-9. ADR-0032's title against the running system.**
+
 - "Logs … never submitted values" is the decision (PRD-030), but it is not what the code does today:
   verification codes and the raw refresh token are logged at `Information` (see F-2).
 - The record keeps the decision and lists the exceptions.
