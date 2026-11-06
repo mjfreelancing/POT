@@ -65,8 +65,10 @@ it produces travels only by email.
   username that exists, so usernames can be probed there instead.
 - Bad, because the verification code is stored as issued and compared as plain text, and the sign-up and
   reset verification handlers and services log it at `Information` with the username and reference code.
-  The temporary password is stored only as a hash, so a code alone signs nobody in; whether to stop
-  logging codes, or to hash them, is open (`DECISIONS-TO-DISCUSS.md`, DD-08).
+  The temporary password is stored only as a hash, so a code alone signs nobody in. Removing the code
+  from the logs is decided and carried by
+  [PRD-0035](../Future/PRD-0035-telemetry-tracing-and-redaction.md); hashing stored codes is left to that
+  PRD's discovery.
 
 ### Confirmation
 

@@ -2,21 +2,12 @@
 
 **Status:** All review edits to `Docs/adr/` are applied. D-1 is in `79f48dd6`, the bulk in `a50d1c85`, and
 the E2E authentication record in `fed146e7`; `git log -- Docs/adr` is the full record. This file now holds
-only what the ADRs do not: the decisions still open, and the findings outside the ADRs. The full report,
+only what the ADRs do not: the findings outside the ADRs. No review decision is still open; the last,
+D-9, was resolved on 2026-11-06 by narrowing ADR-0050 and raising PRD-0035. The full report,
 with the reason and evidence for every edit, is `git show 79f48dd6:ADR-REVIEW-EDITS.md`. Delete this file
 once each item below has a home. A resolved item is removed rather than marked resolved, so this file only
 ever holds what is still open; numbers are not reused, so the list may skip. ADR and PRD numbers here follow the renumbering of
 2026-11-06; the commits named above, and the report in them, use the earlier numbers.
-
-## Decisions still open
-
-**D-9. ADR-0050's title against the running system.**
-
-- "Logs … never submitted values" is the decision (PRD-0030), but it is not what the code does today:
-  verification codes and the raw refresh token are logged at `Information` (see F-2).
-- The record keeps the decision and lists the exceptions.
-- If DD-08 is answered "keep", the record has to be narrowed. While the records are still being corrected,
-  that is an edit in place, not a superseding record.
 
 ## Findings outside the ADRs
 
@@ -32,11 +23,6 @@ directly; the rest are as the reviewers reported.
   - It contains password and connection-string steps.
   - **Check whether it holds a real value.** If it does, rotate that credential: rewriting history alone
     is not enough once the commits are pushed.
-- **F-2. The raw refresh token is logged at `Information`** (verified).
-  - `Source/Server/Pot.AspNetCore/Concerns/Auth/Services/AuthService.cs:229` calls
-    `_logger.LogCall(this, new { refreshToken })`.
-  - It is a 30-day credential. DD-08 covers only the verification code, so this needs its own brief, or
-    an extension of DD-08.
 - **F-3. A completed password reset leaves existing sessions valid.**
   - Unlike a signed-in password change, it revokes nothing.
   - Nothing records whether this is intended.
@@ -59,7 +45,8 @@ directly; the rest are as the reviewers reported.
   - ADR-0024's Decision Outcome describes the intended behaviour ("fails after three wrong attempts"), not
     the effective behaviour. Check its wording as you review it.
   - No test references `AttemptCount` or the too-many-attempts result.
-  - This affects DD-08's reasoning that the impact is "contained" by three attempts.
+  - This weakens the reasoning, in ADR-0024 and in DD-08 (answered 2026-11-06), that a leaked code's
+    impact is contained. PRD-0035 removes codes from the logs, but a code can still be guessed.
   - The HTTP rate limit is also weaker than configured: its counters are per replica, and the API allows
     up to ten (ADR-0026, "Known scale-out risks"). PRD-0008 records that risk.
 

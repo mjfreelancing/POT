@@ -32,7 +32,6 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 | DD-06 | PostgreSQL 13 locally and in tests, 16 in E2E, 17.6 in Azure                                    | Med (drift)         | B: align everything on the Azure version                                                             | No (local data rebuild)      |
 | DD-07 | Client API types are hand-written                                                               | Med (drift)         | B: generate types from the committed contract                                                        | No                           |
 | DD-14 | No policy for API/client version skew while an old PWA shell is cached                          | Med (skew)          | A: record that no window exists, correct the guide                                                   | No                           |
-| DD-08 | One-time codes stored in plaintext, and written to logs                                         | Low (contained)     | B: stop logging codes; keep storage as-is                                                            | No                           |
 | DD-09 | Permission policies are string literals                                                         | Low (fails closed)  | B: named constants and a test for every endpoint (now one assertion over the new endpoint inventory) | No                           |
 | DD-10 | DI by marker-interface scanning: code and server guide agree, `server.instructions.md` does not | Low (documentation) | A: keep scanning, correct the instructions                                                           | No                           |
 | DD-13 | Features import other features (and shared layers import features)                              | Low (structure)     | C: move auth and shared pieces into layers, enforce with lint                                        | No                           |
@@ -151,26 +150,6 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
   - **C. A version handshake.** The client sends its build id in a header. The server answers a dedicated Problem Details type when the client is older than a minimum, and the client forces the update immediately. Effort M. Server, client and contract changes (new header, new problem type). Infra: none.
 - **Recommendation:** A. The enforced PWA update already bounds the skew to minutes, and there is one client and one operator. Revisit C if a breaking change causes real failures.
 - **Route if changed:** A is a docs change made with the ADR. B and C each need a PRD via the prd-discovery skill.
-
-> **Your call:**
-
----
-
-### DD-08 — One-time codes stored in plaintext, and written to logs
-
-- **Backlog row:** 0033 (`Acc + Dec (plaintext codes)`).
-- **What the code does today:**
-  - `RefCode` and `OtpCode` are six-digit strings stored as-is (`Pot.Data/Entities/OneTimePasswordEntity.cs:51-59`). They are generated with `RandomNumberGenerator` (`Pot.App/Features/Auth/OtpGenerator.cs:20`), expire after 15 minutes (`Features/Otp/OtpService.cs:23,152`), allow 3 attempts (`Features/Auth/VerificationServiceBase.cs:26,128-134`), and are checked with a plain `==` (`:106`).
-  - The temporary password is stored only as a hash (`OneTimePasswordEntity.cs:65-66`). A successful reset sets the user's password to that hash (`PasswordReset/Verify/VerifyPasswordResetService.cs:84`). **So a stolen code alone does not let anyone sign in.** Signing in still needs the emailed temporary password. Someone who already knows the username can use a stolen code to complete a pending reset, which stops the old password working.
-  - `RefCode` is not a secret: it is returned to the browser (`Signup/Request/RequestSignupService.cs:71`).
-  - **The verification code is written to the logs.** `LogCall(…, new { Username, ReferenceCode, VerificationCode })` appears at `VerifyPasswordResetService.cs:63`, `Signup/Complete/VerifySignupService.cs:78` and the two handlers (`Pot.AspNetCore/Features/Auth/PasswordReset/Verify/Handler.cs:16`, `Signup/Complete/Handler.cs:17`). `LogCall` defaults to `Information` (AllOverIt.Logging 9.4.0), and the default level is `Information` (`Pot.AspNetCore/appsettings.json:4`).
-- **Why it matters:** Anyone with read access to the database or the logs can see live codes for 15 minutes. Because of the hashed temporary password, the damage is limited to forcing a pending reset or sign-up through. That is real but contained. Secrets in logs are the more general problem, because logs are kept longer and shared more widely than the database.
-- **Options:**
-  - **A. Keep as-is (record honestly).** The ADR records plaintext storage and the reasons the impact is limited. Effort: none.
-  - **B. A plus remove `VerificationCode` from the four `LogCall` sites.** Effort S. No migration.
-  - **C. Hash `OtpCode` with HMAC-SHA256 under a server-held key** (an unkeyed hash of a six-digit code can be brute-forced instantly), and compare in constant time. Effort M. **DB migration** (column length). Codes active at deploy time stop working, which is acceptable with a 15-minute life. Infra: a new secret. `RefCode` stays plaintext.
-- **Recommendation:** B. It closes the larger leak for almost no cost. C adds little while the temporary password is hashed, and could be folded into PRD-0032 if that reworks credentials.
-- **Route if changed:** raise a PRD via the prd-discovery skill. For C, a human generates the migration.
 
 > **Your call:**
 

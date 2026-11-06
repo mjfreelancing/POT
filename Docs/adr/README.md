@@ -161,8 +161,9 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | [ADR-0047](0047-every-endpoint-is-authenticated-unless-explicitly-anonymous.md) | Every endpoint is authenticated unless it is explicitly anonymous | accepted |
 | [ADR-0048](0048-validation-failures-answer-400-with-an-errors-map.md) | Validation failures answer 400 with an errors map, never 422 | accepted |
 | [ADR-0049](0049-the-openapi-document-is-generated-at-build-time-and-committed.md) | The OpenAPI document is generated at build time and committed | accepted |
-| [ADR-0050](0050-logs-record-request-metadata-and-never-submitted-values.md) | Logs record request metadata and never submitted values | accepted |
+| [ADR-0050](0050-request-and-failure-logs-record-metadata-never-a-submitted-value.md) | Request and failure logs record metadata, never a submitted value | accepted |
 | [ADR-0052](0052-the-api-trusts-the-caller-address-and-scheme-from-the-ingress.md) | The API trusts the caller address and scheme from the ingress | accepted |
+| [ADR-0054](0054-server-telemetry-is-instrumented-with-dotnet-apis-and-exported-through-opentelemetry.md) | Server telemetry is instrumented with .NET's built-in APIs and exported through OpenTelemetry | proposed |
 
 ### Frontend
 
@@ -187,9 +188,10 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 
 ## By status
 
-### Proposed (1)
+### Proposed (2)
 
 - [ADR-0035](0035-a-rate-limited-caller-is-told-when-to-retry.md) — A rate-limited caller is told when to retry
+- [ADR-0054](0054-server-telemetry-is-instrumented-with-dotnet-apis-and-exported-through-opentelemetry.md) — Server telemetry is instrumented with .NET's built-in APIs and exported through OpenTelemetry
 
 ### Accepted (50)
 
@@ -239,7 +241,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 - [ADR-0047](0047-every-endpoint-is-authenticated-unless-explicitly-anonymous.md) — Every endpoint is authenticated unless it is explicitly anonymous
 - [ADR-0048](0048-validation-failures-answer-400-with-an-errors-map.md) — Validation failures answer 400 with an errors map, never 422
 - [ADR-0049](0049-the-openapi-document-is-generated-at-build-time-and-committed.md) — The OpenAPI document is generated at build time and committed
-- [ADR-0050](0050-logs-record-request-metadata-and-never-submitted-values.md) — Logs record request metadata and never submitted values
+- [ADR-0050](0050-request-and-failure-logs-record-metadata-never-a-submitted-value.md) — Request and failure logs record metadata, never a submitted value
 - [ADR-0051](0051-tenants-are-provisioned-and-destroyed-by-the-products-own-routes-in-tests.md) — Tenants are provisioned and destroyed by the product's own routes in tests
 - [ADR-0052](0052-the-api-trusts-the-caller-address-and-scheme-from-the-ingress.md) — The API trusts the caller address and scheme from the ingress
 - [ADR-0053](0053-the-client-never-retries-a-rate-limited-request.md) — The client never retries a rate-limited request
@@ -259,7 +261,8 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | PRD-0014 | [ADR-0035](0035-a-rate-limited-caller-is-told-when-to-retry.md), [ADR-0045](0045-retry-after-client-cooldown-handling.md) |
 | PRD-0022 | [ADR-0008](0008-cascades-are-restricted-and-deletion-is-an-explicit-ordered-sweep.md) |
 | PRD-0026 | [ADR-0021](0021-each-request-resolves-the-callers-permissions-from-the-database.md), [ADR-0030](0030-tenant-confinement-is-structural-query-filters-and-site-scoped-reads.md), [ADR-0047](0047-every-endpoint-is-authenticated-unless-explicitly-anonymous.md) |
-| PRD-0030 | [ADR-0012](0012-every-failure-is-written-as-a-problem-details-document.md), [ADR-0018](0018-api-hooks-return-results-and-one-interceptor-normalises-failures.md), [ADR-0048](0048-validation-failures-answer-400-with-an-errors-map.md), [ADR-0050](0050-logs-record-request-metadata-and-never-submitted-values.md) |
+| PRD-0030 | [ADR-0012](0012-every-failure-is-written-as-a-problem-details-document.md), [ADR-0018](0018-api-hooks-return-results-and-one-interceptor-normalises-failures.md), [ADR-0048](0048-validation-failures-answer-400-with-an-errors-map.md), [ADR-0050](0050-request-and-failure-logs-record-metadata-never-a-submitted-value.md) |
 | PRD-0031 | [ADR-0043](0043-every-end-to-end-test-is-classified-by-whether-it-may-run-beside-others.md), [ADR-0051](0051-tenants-are-provisioned-and-destroyed-by-the-products-own-routes-in-tests.md) |
+| PRD-0035 | [ADR-0054](0054-server-telemetry-is-instrumented-with-dotnet-apis-and-exported-through-opentelemetry.md) |
 
 <!-- END GENERATED INDEX -->

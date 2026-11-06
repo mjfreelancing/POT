@@ -1,20 +1,21 @@
 ---
 id: ADR-0050
-title: Logs record request metadata and never submitted values
+title: Request and failure logs record metadata, never a submitted value
 status: accepted
 date: 2026-10-22
 area: backend
 related-prds: [PRD-0030]
 ---
 
-# ADR-0050 (backfilled): Logs record request metadata and never submitted values
+# ADR-0050 (backfilled): Request and failure logs record metadata, never a submitted value
 
 **Summary:** In the context of an API whose requests carry passwords, one-time codes and personal
 financial data, facing the choice between rich request logging and logs that never contain what was
-submitted, we decided to log metadata — method, path, status, duration, correlation identifier — and
-never a body, a header value or a field from a payload, to achieve diagnostics without turning logs into
-a copy of sensitive data, accepting that reproducing a failure sometimes needs the caller's input rather
-than the server's record of it.
+submitted, we decided that the request log records metadata — method, path, status, duration,
+correlation identifier — and never a body or a header value, and that a logged failure carries the
+exception and server-generated detail, never a submitted value, to achieve diagnostics without turning
+logs into a copy of sensitive data, accepting that reproducing a failure sometimes needs the caller's
+input rather than the server's record of it.
 
 ## Context and Problem Statement
 
@@ -29,6 +30,10 @@ Before [PRD-0030](../Future/PRD-0030-problem-details-consolidation.md), a hand-w
 every request body whenever the server ran outside Production and recorded no request metadata, which is
 close to option 2 below. PRD-0030 (requirements A2 to A6) replaced it with this decision, to keep
 credentials and sensitive financial data out of logs.
+
+This record covers the request log and the logging of failures. What the application's own log
+statements may carry, call logging included, is governed separately
+([PRD-0035](../Future/PRD-0035-telemetry-tracing-and-redaction.md)).
 
 ## Decision Drivers
 
@@ -56,11 +61,11 @@ correlation identifier is how a user's report and a log entry are joined.
 ### Consequences
 
 - Good, because the request log cannot be made to contain a body or a header value in any environment.
-- Bad, because the rule has exceptions in the current code, all through call logging at `Information` and
-  so in every environment: the sign-up and password-reset verification handlers and services log the
-  username, reference code and verification code; `AuthService.RefreshAsync` logs the refresh token; and
-  other handlers, services and the email sender log usernames and reference codes. They contradict this
-  decision; whether and when they are removed is not yet decided.
+- Bad, because the request log being clean does not make the logs clean. Call logging writes its
+  argument objects at `Information`, and so in every environment: the sign-up and password-reset
+  verification handlers and services log the verification code, `AuthService.RefreshAsync` logs the raw
+  refresh token, and other handlers, services and the email sender log usernames and reference codes.
+  Those statements are outside this decision; PRD-0035 removes them and sets the rule for them.
 - Good, because the correlation identifier joins the caller's report to the server's entries, including
   on requests that failed before a handler ran.
 - Good, because the rule is uniform, so a developer cannot enable verbosity that leaks in development and
@@ -80,10 +85,10 @@ correlation identifier is how a user's report and a log entry are joined.
   entry carries the method, the path and the status, that the health probes are not logged, and that a
   body sent in a request never appears; the correlation identifier in entries is asserted by
   `CorrelationIdLogEnricherFixture`.
-- Gap: no test asserts that call logging carries no credential, which is how the exceptions above exist.
-- Review: a log statement that includes a request or response value is a defect. The one path payload
-  values take into logs is call logging with an argument object, so an object logged that way must not
-  carry a credential field.
+- Test: `LoggerExtensionsFixture` asserts that a rejected application result is logged with its message
+  and property name only, never the submitted value.
+- Review: a request-log field beyond those chosen in code, or a failure log that writes a submitted
+  value, is a defect.
 
 ## Pros and Cons of the Options
 
@@ -113,3 +118,6 @@ correlation identifier is how a user's report and a log entry are joined.
 
 - The correlation identifier is also returned to the caller so a report can quote it.
 - What a failure body may contain is decided separately, by the same principle applied to responses.
+- Traces and metrics, when added, are proposed in
+  [ADR-0054](0054-server-telemetry-is-instrumented-with-dotnet-apis-and-exported-through-opentelemetry.md);
+  they carry no value that a log may not.
