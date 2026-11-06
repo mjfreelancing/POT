@@ -141,7 +141,7 @@ The items above that name PRD-0027 are specified and delivered there. The rest a
 
 | Decision                                          | Resolution                                                           | ADR                                                                                          |
 | ------------------------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Removal type                                      | Permanent hard delete; disabling remains the reversible alternative  | [ADR-0008](../adr/0008-cascades-are-restricted-and-deletion-is-an-explicit-ordered-sweep.md) |
+| Removal type                                      | Permanent hard delete; disabling remains the reversible alternative  | [ADR-0008](../adr/ADR-0008-cascades-are-restricted-and-deletion-is-an-explicit-ordered-sweep.md) |
 | Financial data on user removal                    | Belongs to the site and stays                                        | —                                                                                            |
 | Username after removal                            | Reusable immediately                                                 | —                                                                                            |
 | Removable account states                          | Enabled, disabled and never-activated                                | —                                                                                            |

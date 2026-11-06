@@ -15,7 +15,7 @@ deployment, and how a deployed version is identified and rolled back.
 ## Problem To Solve
 
 Builds, tests and deployments are run by hand
-([ADR-0031](../adr/0031-builds-and-deployments-are-run-by-hand.md)). Two VS Code tasks build the server
+([ADR-0031](../adr/ADR-0031-builds-and-deployments-are-run-by-hand.md)). Two VS Code tasks build the server
 and client images from the local working tree and push them as `:latest`. No test, lint or contract check
 runs first, and the running revision is switched by hand in the Azure portal. So:
 
@@ -113,8 +113,8 @@ apply, are for discovery. The brief's options were:
 ## Related Documents
 
 - Feature index: [Docs/Future/README.md](README.md)
-- Current process: [ADR-0031](../adr/0031-builds-and-deployments-are-run-by-hand.md); production topology:
-  [ADR-0032](../adr/0032-production-runs-two-container-apps.md)
+- Current process: [ADR-0031](../adr/ADR-0031-builds-and-deployments-are-run-by-hand.md); production topology:
+  [ADR-0032](../adr/ADR-0032-production-runs-two-container-apps.md)
 - Build-time code-style enforcement, which a pipeline would run:
   [PRD-0029](PRD-0029-build-time-code-style-enforcement.md)
 - Liveness and readiness probes, which an automated deployment depends on:

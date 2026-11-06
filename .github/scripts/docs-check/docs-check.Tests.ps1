@@ -72,7 +72,7 @@ Describe 'docs-check' {
             $script:Root = (Resolve-Path -LiteralPath $root).Path
 
             Add-Content -Path (Join-Path $script:Root 'Docs/README.md') -Value 'The client runs on 5175.'
-            Add-Content -Path (Join-Path $script:Root 'Docs/adr/0002-good-proposed-decision.md') -Value 'The client also runs on 5175.'
+            Add-Content -Path (Join-Path $script:Root 'Docs/adr/ADR-0002-good-proposed-decision.md') -Value 'The client also runs on 5175.'
 
             $report = Get-ReferenceFactReport -Root $script:Root
 
@@ -117,12 +117,25 @@ Describe 'docs-check' {
             $script:Root = (Resolve-Path -LiteralPath $root).Path
 
             $adrDirectory = Join-Path $script:Root 'Docs/adr'
-            Copy-Item -Path (Join-Path $adrDirectory '0001-good-accepted-decision.md') -Destination (Join-Path $adrDirectory 'not-numbered.md')
+            Copy-Item -Path (Join-Path $adrDirectory 'ADR-0001-good-accepted-decision.md') -Destination (Join-Path $adrDirectory 'not-numbered.md')
 
             $errors = [System.Collections.Generic.List[string]]::new()
             Get-AdrRecords -Errors $errors | Out-Null
 
-            ($errors -join "`n") | Should -Match 'must be NNNN-kebab-case-title.md'
+            ($errors -join "`n") | Should -Match 'must be ADR-NNNN-kebab-case-title.md'
+        }
+
+        It 'rejects a numbered file name that lacks the ADR- prefix' {
+            $root = New-FixtureCopy -Name 'good'
+            $script:Root = (Resolve-Path -LiteralPath $root).Path
+
+            $adrDirectory = Join-Path $script:Root 'Docs/adr'
+            Rename-Item -LiteralPath (Join-Path $adrDirectory 'ADR-0002-good-proposed-decision.md') -NewName '0002-good-proposed-decision.md'
+
+            $errors = [System.Collections.Generic.List[string]]::new()
+            Get-AdrRecords -Errors $errors | Out-Null
+
+            ($errors -join "`n") | Should -Match '0002-good-proposed-decision.md: the file name must be ADR-NNNN-kebab-case-title.md'
         }
     }
 

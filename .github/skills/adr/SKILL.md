@@ -47,13 +47,13 @@ Stop and say so when it is not an ADR, naming where it belongs instead.
 
 ### 2. Take the next number
 
-List `Docs/adr/`, read the highest four-digit prefix, and add one. Do not take the next number from the
+List `Docs/adr/`, read the highest four-digit number after the `ADR-` prefix, and add one. Do not take the next number from the
 backlog in `DOCS-REORGANISATION-PLAN.md`: the folder is the authority.
 
 ### 3. Write the file
 
 Copy [references/adr.template.md](./references/adr.template.md) to
-`Docs/adr/NNNN-kebab-case-title.md` and fill it in:
+`Docs/adr/ADR-NNNN-kebab-case-title.md` and fill it in:
 
 1. **Front matter** — the five required fields, plus `related-prds` when the decision came from a PRD.
    `date` is when the decision was made, not today.

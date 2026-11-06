@@ -6,7 +6,7 @@ Date created: 2026-11-06
 Scope: Placeholder for discovery. This document records why the server needs a rule for what may enter
 its telemetry, and tracing to go with it; the starting direction agreed so far; and the questions
 discovery must settle. Tracing is proposed in
-[ADR-0054](../adr/0054-server-telemetry-is-instrumented-with-dotnet-apis-and-exported-through-opentelemetry.md).
+[ADR-0054](../adr/ADR-0054-server-telemetry-is-instrumented-with-dotnet-apis-and-exported-through-opentelemetry.md).
 Discovery starts once that record is approved, and a full `prd-discovery` cycle produces the requirements.
 Audience: Future discovery and implementation agent(s), reviewers, and maintainers.
 
@@ -28,7 +28,7 @@ template writes a credential, but about eleven `LogInformation`, `LogWarning` an
 write a username or site name in clear text. Production logs are read from console output into Log
 Analytics, where they are kept longer and read more widely than the database.
 
-[ADR-0050](../adr/0050-request-and-failure-logs-record-metadata-never-a-submitted-value.md) keeps bodies and
+[ADR-0050](../adr/ADR-0050-request-and-failure-logs-record-metadata-never-a-submitted-value.md) keeps bodies and
 headers out of the request log, and names these writes as outside its decision. The decision brief DD-08
 (answered 2026-11-06) chose option B, stop logging verification codes, and it is carried into this PRD.
 The raw refresh token was found later (review finding F-2) and is carried in with it.
@@ -132,8 +132,8 @@ Agreed on 2026-11-06, as a starting point for discovery rather than as requireme
 
 - Feature index: [Docs/Future/README.md](README.md)
 - Tracing:
-  [ADR-0054](../adr/0054-server-telemetry-is-instrumented-with-dotnet-apis-and-exported-through-opentelemetry.md)
-- The request log: [ADR-0050](../adr/0050-request-and-failure-logs-record-metadata-never-a-submitted-value.md);
+  [ADR-0054](../adr/ADR-0054-server-telemetry-is-instrumented-with-dotnet-apis-and-exported-through-opentelemetry.md)
+- The request log: [ADR-0050](../adr/ADR-0050-request-and-failure-logs-record-metadata-never-a-submitted-value.md);
   the contract it came from: [PRD-0030](PRD-0030-problem-details-consolidation.md)
-- Codes and tokens: [ADR-0024](../adr/0024-verification-and-password-reset-use-single-use-expiring-codes.md),
-  [ADR-0022](../adr/0022-access-tokens-are-short-lived-and-backed-by-a-server-side-session.md)
+- Codes and tokens: [ADR-0024](../adr/ADR-0024-verification-and-password-reset-use-single-use-expiring-codes.md),
+  [ADR-0022](../adr/ADR-0022-access-tokens-are-short-lived-and-backed-by-a-server-side-session.md)

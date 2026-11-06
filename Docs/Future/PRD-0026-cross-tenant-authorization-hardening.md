@@ -607,9 +607,9 @@ Run commands (from `Source/Client/pot-react`): `npm run e2e:preflight` before a 
 
 | Decision                                            | Resolution                                                                                                 | ADR                                                                                             |
 | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| How tenant confinement is enforced                  | Structurally, through site-scoped repository reads and a query filter, not per-handler checks (§4.1, §4.7) | [ADR-0030](../adr/0030-tenant-confinement-is-structural-query-filters-and-site-scoped-reads.md) |
-| How permissions reach a request                     | Resolved from the database during authorization, never carried as claims in the token (§4.6)               | [ADR-0021](../adr/0021-each-request-resolves-the-callers-permissions-from-the-database.md)      |
-| What happens to an endpoint that declares no policy | A fallback policy requires a caller, and an endpoint test fails when a route is left open (§4.3)           | [ADR-0047](../adr/0047-every-endpoint-is-authenticated-unless-explicitly-anonymous.md)          |
+| How tenant confinement is enforced                  | Structurally, through site-scoped repository reads and a query filter, not per-handler checks (§4.1, §4.7) | [ADR-0030](../adr/ADR-0030-tenant-confinement-is-structural-query-filters-and-site-scoped-reads.md) |
+| How permissions reach a request                     | Resolved from the database during authorization, never carried as claims in the token (§4.6)               | [ADR-0021](../adr/ADR-0021-each-request-resolves-the-callers-permissions-from-the-database.md)      |
+| What happens to an endpoint that declares no policy | A fallback policy requires a caller, and an endpoint test fails when a route is left open (§4.3)           | [ADR-0047](../adr/ADR-0047-every-endpoint-is-authenticated-unless-explicitly-anonymous.md)          |
 
 ## 11. Scope
 

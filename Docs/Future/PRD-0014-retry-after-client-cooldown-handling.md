@@ -87,13 +87,13 @@ Candidate requirements; nothing implemented yet.
 
 | Decision                        | Resolution                                                                                                        | ADR                                                                    |
 | ------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| What a throttled caller is told | The server states when to retry, and the client reads `Retry-After` into a cooldown instead of auto-retrying (R1) | [ADR-0035](../adr/0035-a-rate-limited-caller-is-told-when-to-retry.md) |
-| Whether a `429` is retried      | Never automatically; the user acts again. Accepted on its own, independent of this PRD                            | [ADR-0053](../adr/0053-the-client-never-retries-a-rate-limited-request.md) |
+| What a throttled caller is told | The server states when to retry, and the client reads `Retry-After` into a cooldown instead of auto-retrying (R1) | [ADR-0035](../adr/ADR-0035-a-rate-limited-caller-is-told-when-to-retry.md) |
+| Whether a `429` is retried      | Never automatically; the user acts again. Accepted on its own, independent of this PRD                            | [ADR-0053](../adr/ADR-0053-the-client-never-retries-a-rate-limited-request.md) |
 
 ## Related Documents
 
 - Future index: [Docs/Future/README.md](README.md)
-- Companion design record: [ADR 0031 — A rate-limited caller is told when to retry](../adr/0035-a-rate-limited-caller-is-told-when-to-retry.md), which supersedes [ADR 0041](../adr/0045-retry-after-client-cooldown-handling.md) together with [ADR 0049 — The client never retries a rate-limited request](../adr/0053-the-client-never-retries-a-rate-limited-request.md)
+- Companion design record: [ADR 0031 — A rate-limited caller is told when to retry](../adr/ADR-0035-a-rate-limited-caller-is-told-when-to-retry.md), which supersedes [ADR 0041](../adr/ADR-0045-retry-after-client-cooldown-handling.md) together with [ADR 0049 — The client never retries a rate-limited request](../adr/ADR-0053-the-client-never-retries-a-rate-limited-request.md)
 - Server rate limiting: `Source/Server/Pot.AspNetCore/Concerns/RateLimiting/RateLimiterOptionsSetup.cs`, `RateLimiterPolicy.cs`, `RateLimiterDefaults.cs`
 - Server CORS policy (exposed headers): `Source/Server/Pot.AspNetCore/Concerns/Cors/Configuration/CorsOptionsSetup.cs`
 - Server integration coverage: `Source/Server/Pot.AspNetCore.Integration.Tests/Security/HeadersAndRateLimitFixture.cs`, `Source/Server/Pot.AspNetCore.Integration.Tests/Pipeline/CorsFixture.cs`

@@ -210,8 +210,8 @@ function Get-AdrRecord {
         }
     }
 
-    if ($fileName -notmatch '^(?<number>\d{4})-(?<slug>[a-z0-9-]+)\.md$') {
-        $Errors.Add("${displayPath}: the file name must be NNNN-kebab-case-title.md")
+    if ($fileName -notmatch '^ADR-(?<number>\d{4})-(?<slug>[a-z0-9-]+)\.md$') {
+        $Errors.Add("${displayPath}: the file name must be ADR-NNNN-kebab-case-title.md")
         return $null
     }
 
