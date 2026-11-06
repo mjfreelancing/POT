@@ -8,7 +8,7 @@ graph TB
         API["api.payontime.com.au<br/>CNAME"]
     end
     
-    Ingress["🌐 Ingress Layer<br/>HTTPS Termination<br/>Let's Encrypt SSL"]
+    Ingress["🌐 Ingress Layer<br/>HTTPS Termination<br/>Azure-managed certificates"]
     
     subgraph CAE["🏢 Container Apps Environment: cae-pot-prod"]
         Client["📱 Client Container<br/>pot-client-prod<br/>React + Nginx<br/>Port 80"]
@@ -36,10 +36,8 @@ graph TB
     WWW --> Ingress
     API --> Ingress
 
-    Ingress -->|"/"| Client
-    Ingress -->|"/api/*"| APIContainer
-
-    Client -.->|API Calls| APIContainer
+    Ingress -->|"payontime.com.au<br/>www.payontime.com.au"| Client
+    Ingress -->|"api.payontime.com.au"| APIContainer
 
     APIContainer -->|PostgreSQL<br/>SSL| DB
     APIContainer -->|SMTP<br/>TLS| SMTP

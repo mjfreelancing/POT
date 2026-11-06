@@ -16,7 +16,7 @@ Each brief is one undecided item from `DOCS-REORGANISATION-PLAN.md`: a `Dec` row
 
 **Before acting on a brief, re-check its evidence against the code at that time.** These briefs were written on a machine without the full repository. Several rely on something being absent:
 
-- DD-04, DD-06 and DD-16: no infrastructure-as-code;
+- DD-06 and DD-16: no infrastructure-as-code;
 - DD-06: the local data folders.
 
 Run the availability check in `DOCS-WORK-LISTS.md` ("Files reported missing, and where they turned out to be") first; it has been run once, and its result is recorded there. Never copy the contents of a git-ignored file into a brief or an ADR.
@@ -29,7 +29,6 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 | ----- | ----------------------------------------------------------------------------------------------- | ------------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------- |
 | DD-02 | Etag checked in code but not a database concurrency token; client types it as `bigint`          | Med (integrity)     | B + C: concurrency token, a monotonic value and `z.number()`                                         | Model-only (empty migration) |
 | DD-03 | Money stored and calculated as `double`                                                         | Med (correctness)   | C: `decimal` / `numeric(18,2)` end to end                                                            | Yes: DB + data               |
-| DD-04 | Email queued in process; reminders assume one replica                                           | Med (reliability)   | A now (pin to one replica), C (the outbox PRD) later                                                 | Not for A; yes for C         |
 | DD-06 | PostgreSQL 13 locally and in tests, 16 in E2E, 17.6 in Azure                                    | Med (drift)         | B: align everything on the Azure version                                                             | No (local data rebuild)      |
 | DD-07 | Client API types are hand-written                                                               | Med (drift)         | B: generate types from the committed contract                                                        | No                           |
 | DD-14 | No policy for API/client version skew while an old PWA shell is cached                          | Med (skew)          | A: record that no window exists, correct the guide                                                   | No                           |
@@ -82,28 +81,6 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
   - **D. Integer cents (`long`).** Effort L. DB and data migration, a breaking contract change, and client changes everywhere. Not recommended.
 - **Recommendation:** C. It is the standard representation for money, the wire format does not change, and the data set is still small. Sequence it next to the per-site currency work (PRD-0018) so the rounding rules are decided once.
 - **Route if changed:** raise a PRD via the prd-discovery skill. The schema and data migration are generated and written by a human.
-
-> **Your call:**
-
----
-
-### DD-04 — Email queued in process; reminders assume one replica
-
-- **Backlog row:** 0049 (`Acc + Dec`), related to 0050.
-- **What the code does today:**
-  - Email goes through an unbounded in-memory channel (`Pot.EmailSender/SendEmailChannel.cs:27-31`), drained by `SendEmailWorker` (`Pot.AspNetCore/Features/Workers/SendEmailWorker.cs:17-20`). If a send throws, the error is logged and the message is dropped, with no retry anywhere in `Pot.EmailSender` (`SendEmailChannel.cs:62,68-71`). Anything still queued is lost on restart. OTP, sign-up and reset emails all go this way.
-  - `BudgetReminderEmailWorker` runs once at start-up and then on every UTC hour (`Features/Workers/BudgetReminderEmailWorker.cs:29-104`, `:89-90`). Whether to send depends only on "current local hour == configured hour" (`Pot.App/Features/Notifications/BudgetReminder/BudgetReminderService.cs:65`). There is no record that a reminder was sent.
-  - Database migrations also run on every container start (`Source/Docker/Server/entrypoint.sh`).
-  - PRD-0019 (outbox and durable dispatch) is **Proposed**, priority High, dated 2026-09-23 (`Docs/Future/README.md:36`). PRD-0018 is its prerequisite and is also Proposed (`:35`).
-  - The repo has no infrastructure-as-code, so the replica count in Azure cannot be confirmed from the code.
-  - **Duplicates happen with one replica too,** not just with several. A restart inside the trigger hour sends that hour's reminder again. A failed SMTP send is lost even when the process does not restart.
-- **Why it matters:** A user who requests a sign-up code during a deploy may never receive it. If the container restarts at 07:20 and reminders go out at 07:00, every admin gets a second reminder. Scaling to two replicas doubles every reminder and runs migrations concurrently.
-- **Options:**
-  - **A. Keep as-is (record honestly), and pin Azure to one replica.** Set the Container App's minimum and maximum replicas to 1. The ADR states the single-replica constraint and the loss and duplicate cases. Effort S. Infra change only.
-  - **B. Targeted hardening.** Add a per-user "last reminder date" so restarts don't send a second reminder, and an in-process retry with backoff for failed sends. Effort M. DB migration (one column or table). Restart loss remains.
-  - **C. Deliver the outbox PRD.** Effort L. DB migration. Solves loss, duplicates and the replica limit together.
-- **Recommendation:** A now, and C when PRD-0018/019 are scheduled. Pinning replicas costs nothing and makes the current assumption true. B would be work that C then replaces.
-- **Route if changed:** A is an infra setting plus the ADR. C goes through the existing PRD-0019 via the prd-delivery flow, with its migration generated by a human.
 
 > **Your call:**
 

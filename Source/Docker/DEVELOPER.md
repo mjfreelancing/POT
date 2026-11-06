@@ -102,8 +102,9 @@ while the API is still applying migrations. Refresh if the first request fails.
 The postgres and client host ports deliberately differ from their container ports so they do not
 clash with a locally installed PostgreSQL or the Vite dev server.
 
-**Azure (Container Apps):** each container listens on its normal port (client `80`, API `5241`) and
-container-app ingress terminates HTTPS and routes `/api/*` to the API container. See
+**Azure (Container Apps):** each container listens on its normal port (client `80`, API `5241`). Each
+container app has its own ingress and hostname, and the ingress terminates HTTPS: the client is served
+at `payontime.com.au` and `www.payontime.com.au`, and the API at `api.payontime.com.au` (ADR-0032). See
 `Docs/Azure/Azure-Deployment-Notes.md`.
 
 ---
@@ -401,9 +402,10 @@ Things worth knowing:
 
 **Azure — `Source/Docker/Client/nginx.azure.conf`**
 
-Same static-file and PWA behaviour, **without** the `/api/` proxy. Container-app ingress routes
-`/api/*` to the API container, and the SPA calls the absolute API URL that was baked in at build
-time through `VITE_API_BASE_URL`.
+Same static-file and PWA behaviour, **without** the `/api/` proxy. The browser calls the API on its own
+hostname, through the absolute URL baked in at build time through `VITE_API_BASE_URL`, so nothing
+reaches the API through the client's host. A request for `/api/...` on the client's host gets the SPA's
+`index.html`, like any other unknown path.
 
 ---
 
@@ -706,8 +708,9 @@ with the `docker-prune-all-unused-images` task.
 
 ### How Azure differs from local
 
-- **No `/api` proxy** — container-app ingress routes `/api/*` to the API container, so the SPA uses
-  the absolute URL baked in at build time.
+- **No `/api` proxy** — the API has its own container app and hostname (`api.payontime.com.au`), and
+  the SPA calls it through the absolute URL baked in at build time, so every API call is cross-origin
+  (ADR-0032).
 - **No compose stack** — postgres is not part of these images; connection details come from the
   container app's environment variables.
 - **Ingress ports** — port 80 for the client container, 5241 for the API container.

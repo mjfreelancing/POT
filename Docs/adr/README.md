@@ -149,7 +149,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 | [ADR-0022](0022-access-tokens-are-short-lived-and-backed-by-a-server-side-session.md) | Access tokens are short-lived and backed by a server-side session | accepted |
 | [ADR-0023](0023-passwords-are-hashed-with-the-framework-hasher.md) | Passwords are hashed with the ASP.NET Core hasher | accepted |
 | [ADR-0024](0024-verification-and-password-reset-use-single-use-expiring-codes.md) | Verification and password reset use single-use, expiring codes | accepted |
-| [ADR-0026](0026-background-work-runs-inside-the-api-process.md) | Background work runs inside the API process under a single-replica assumption | accepted |
+| [ADR-0026](0026-background-work-runs-inside-the-api-process.md) | Background work runs inside the API process | accepted |
 | [ADR-0027](0027-email-is-queued-in-process.md) | Email is queued in process | accepted |
 | [ADR-0028](0028-email-bodies-are-rendered-from-razor-components.md) | Email bodies are rendered from Razor components | accepted |
 | [ADR-0029](0029-transactions-are-explicit-and-only-where-writes-must-be-one-unit.md) | Transactions are explicit and used only where writes must be one unit | accepted |
@@ -218,7 +218,7 @@ _Generated from the ADR front matter by `.github/scripts/docs-check/docs-check.p
 - [ADR-0023](0023-passwords-are-hashed-with-the-framework-hasher.md) — Passwords are hashed with the ASP.NET Core hasher
 - [ADR-0024](0024-verification-and-password-reset-use-single-use-expiring-codes.md) — Verification and password reset use single-use, expiring codes
 - [ADR-0025](0025-secret-values-live-outside-the-repository.md) — Secret values live outside the repository, in a tracked template and a platform store
-- [ADR-0026](0026-background-work-runs-inside-the-api-process.md) — Background work runs inside the API process under a single-replica assumption
+- [ADR-0026](0026-background-work-runs-inside-the-api-process.md) — Background work runs inside the API process
 - [ADR-0027](0027-email-is-queued-in-process.md) — Email is queued in process
 - [ADR-0028](0028-email-bodies-are-rendered-from-razor-components.md) — Email bodies are rendered from Razor components
 - [ADR-0029](0029-transactions-are-explicit-and-only-where-writes-must-be-one-unit.md) — Transactions are explicit and used only where writes must be one unit

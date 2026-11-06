@@ -14,7 +14,7 @@ Define a cohesive, post-session-architecture plan for authentication abuse contr
 - Stage: Proposed
 - Code changes: Not started
 - Decisions finalized: None yet
-- Last updated: 2026-04-11
+- Last updated: 2026-11-06 (per-replica rate-limit risk added)
 
 ## Important Note (Not Agreed)
 
@@ -26,6 +26,13 @@ Everything in this document is a draft for PRD refinement. None of the recommend
 2. Existing rate limiting is valuable but does not fully address account-focused brute-force or credential-stuffing patterns.
 3. Implementing lockout logic before Feature 002 session architecture may create rework as token/session persistence changes.
 4. Product and security policy decisions (for example user messaging and unlock behavior) are not yet finalized.
+5. **Known risk (recorded 2026-11-06): rate limits are per replica.** The HTTP rate limiter keeps its
+   counters in each API process's memory. The API container app allows 1 to 10 replicas (ADR-0026,
+   "Known scale-out risks"), so a caller whose requests are spread across N replicas gets up to N times
+   the configured limit. This matters most for the one-time code endpoints (sign-up and password reset
+   verification). There, the HTTP rate limit and the code's 15-minute expiry are currently the only
+   brakes on guessing, because the three-attempt limit is not persisted between requests. Accepted for
+   now while the API normally runs one replica.
 
 ## Relationship to Features 001 and 002
 
@@ -73,6 +80,9 @@ Everything in this document is a draft for PRD refinement. None of the recommend
 10. What rollout/feature-flag strategy should be used to reduce false-positive lockouts during initial deployment?
 11. What contract guarantees are required so client behavior remains stable under new auth-abuse states?
 12. Should password reset or password change clear lockout state immediately, conditionally, or never?
+13. Must attempt counting and rate limits hold across replicas, for example by keeping counters in the
+    database? Or is a per-replica limit acceptable while the API normally runs one replica, possibly with
+    the maximum pinned lower?
 
 ## Dependencies
 

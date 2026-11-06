@@ -47,9 +47,11 @@ The client is built with the API's absolute base URL, because there is no proxy 
 work.
 Both are set in `.vscode/tasks.json` (`azure-client-build-and-deploy`): it builds with
 `NGINX_CONFIG=nginx.azure.conf`, which has no `/api` proxy, and with the API's own hostname as the base
-URL. The tracked diagram and `Source/Docker/DEVELOPER.md` instead describe the ingress routing `/api/*`
-to the API container. This record follows the build, and the repository cannot settle the discrepancy.
-The record does not show whether the single-origin options were weighed when the deployment was set up.
+URL. The browser therefore calls `api.payontime.com.au` directly, and nothing routes `/api` on the
+client's hostname to the API: `nginx.azure.conf` answers any unknown path, `/api/...` included, with the
+SPA's `index.html`. An earlier diagram and `Source/Docker/DEVELOPER.md` described ingress routing
+`/api/*` to the API container; both were corrected on 2026-11-06 to follow the build. The record does
+not show whether the single-origin options were weighed when the deployment was set up.
 
 ### Consequences
 

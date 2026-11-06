@@ -17,9 +17,7 @@ depends on the container never being reachable except through the ingress.
 
 ## Context and Problem Statement
 
-The apex, www and api domains are served over HTTPS with Azure-managed certificates, which the
-deployment record and `Docs/Azure/POT-Azure-Diagram.mmd` give as Let's Encrypt; the issuer does not
-affect this decision. The API container app accepts traffic from anywhere through its ingress,
+The apex, www and api domains are served over HTTPS with Azure-managed certificates. The API container app accepts traffic from anywhere through its ingress,
 with ingress type `HTTP` and target port 5241. The deployed PostgreSQL server requires SSL on its
 connections, while the local compose stack disables it (`DATABASE__SSLMODE=Disable`).
 

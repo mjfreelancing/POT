@@ -10,16 +10,6 @@ ever holds what is still open; numbers are not reused, so the list may skip. ADR
 
 ## Decisions still open
 
-**D-8. Facts only the Azure portal can settle.**
-
-- **Certificate issuer.** ADR-0033 says the certificates are Azure-managed, and that the deployment record
-  and the diagram give the issuer as Let's Encrypt. Azure's documentation names DigiCert for managed
-  Container Apps certificates. If it is DigiCert, correct ADR-0033 and the diagram label.
-- **Where `/api` reaches the API** (row 0074, still `Ver`). The build implies the API app's own hostname
-  (`api.payontime.com.au`). The diagram and the Docker guide say ingress path routing. ADR-0032 records
-  the discrepancy, not an answer.
-- **Readiness probe and replica count** (FQ-03, DD-04) cannot be confirmed from the repository.
-
 **D-9. ADR-0050's title against the running system.**
 
 - "Logs … never submitted values" is the decision (PRD-0030), but it is not what the code does today:
@@ -70,6 +60,8 @@ directly; the rest are as the reviewers reported.
     the effective behaviour. Check its wording as you review it.
   - No test references `AttemptCount` or the too-many-attempts result.
   - This affects DD-08's reasoning that the impact is "contained" by three attempts.
+  - The HTTP rate limit is also weaker than configured: its counters are per replica, and the API allows
+    up to ten (ADR-0026, "Known scale-out risks"). PRD-0008 records that risk.
 
 ### Correctness and code
 

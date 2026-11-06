@@ -79,6 +79,7 @@ apply, are for discovery. The brief's options were:
 6. How is an image identified (commit SHA, version, tag), and what replaces `:latest`?
 7. What is a release, and how is it triggered: every merge to `main`, a tag, or a manual approval?
 8. How is a deployment rolled back, and how does that interact with migrations that run at start-up?
+   See also "Known Risks" below.
 9. Does deployment need a staging or pre-production environment?
 10. How does the pipeline authenticate to Azure and GHCR (for example OIDC federated credentials, or
     repository secrets)?
@@ -91,6 +92,18 @@ apply, are for discovery. The brief's options were:
     ADR-0031, ADR-0042's production-build gate, DD-06 (database version alignment) and DD-07 (generated
     client types).
 13. What is the budget for hosted-runner minutes and any paid services?
+
+## Known Risks
+
+- **Concurrent migration runs (recorded 2026-11-06, accepted for now).**
+  - Every API replica runs the migration runner when it starts (ADR-0009).
+  - The API allows 1 to 10 replicas (ADR-0026, "Known scale-out risks"), and a revision can overlap the
+    previous one during a deploy, so replicas that start together while a migration is pending each try
+    to apply it.
+  - Nothing verifies whether that is safe. EF Core 9 and later take a database lock while migrating, but
+    nothing tests the provider's behaviour or the runner against it.
+  - Discovery decides whether migrations move out of container start-up into a single pipeline step, or
+    whether a verified lock is enough.
 
 ## Out Of Scope
 
