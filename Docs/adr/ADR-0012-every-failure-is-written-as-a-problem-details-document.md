@@ -32,8 +32,9 @@ A consistent shape is what lets the client interpret and handle every error pred
 ## Decision Drivers
 
 - One shape, so the client has one parser and one way to choose a message.
-- No submitted value in a body or a log, because the same value may be a password or a financial
-  figure.
+- No submitted value in a failure body, because the same value may be a password or a financial figure.
+  Keeping it out of the logs is
+  [ADR-0050](ADR-0050-request-and-failure-logs-record-metadata-never-a-submitted-value.md).
 - A correlation identifier on every failure, so a user's report can be matched to a log entry.
 - A stable, machine-readable type wherever a caller must tell failures of one status apart, so it need
   not match prose.
@@ -48,20 +49,18 @@ A consistent shape is what lets the client interpret and handle every error pred
 
 ## Decision Outcome
 
-Chosen option: 1. Every failure body carries `status`, a correlation identifier (`correlationId`), the
-framework trace identifier (`traceId`) and the request path as `instance`. A `400` is always a validation
-problem: the framework's validation title, an `errors` map from field to messages (a message for the whole
-request under the empty key), and no `detail`. Every other status carries no `errors` and a user-safe
-`detail`, the application's own or a per-status default. A bespoke `urn:pot:*` type is published for the
-three conflict categories, which is where a caller needs to tell one conflict from another; every other
-status keeps the framework's per-status `type` where the framework defines one, and a `429` has none. No
-error code is serialised, so a validation failure and a refused business rule share one shape and differ
-only in the messages in `errors`.
+Chosen option: 1. Every failure response is an RFC 9457 Problem Details document, and the application
+writes one even where the framework would have left the response without a body. Every document
+carries a correlation identifier. A `400` is always a validation problem, whose messages are an `errors`
+map keyed by field; every other status carries a user-safe `detail` instead. A conflict carries a stable
+`type` naming its category, so a caller branches on the type rather than on an error code or on prose,
+and no error code is serialised. The document is written in one shape whatever the request's `Accept`
+header asks for.
 
-Three producers write failures the framework would not: the exception handler writes a body for an
-unhandled exception, the status-code pages write one for a status that otherwise has none, and the rate
-limiter writes its own rejection. The body is written whatever the request's `Accept` header asks for,
-which is what makes the shape uniform for a caller that did not ask for JSON.
+The member-by-member rules — which members each status carries, the default `detail` per status and the
+conflict types — are documented in the Problem Details section of
+[`Source/Server/DEVELOPER.md`](../../Source/Server/DEVELOPER.md#problem-details) and specified by
+[PRD-0030](../Future/PRD-0030-problem-details-consolidation.md).
 
 ### Consequences
 
@@ -121,6 +120,11 @@ which is what makes the shape uniform for a caller that did not ask for JSON.
 
 ## More Information
 
+- Three producers write failures the framework would not: the exception handler writes a body for an
+  unhandled exception, the status-code pages write one for a status that otherwise has none, and the rate
+  limiter writes its own rejection.
+- A status other than a conflict keeps the framework's per-status `type` where the framework defines one,
+  and a `429` has none, as `HeadersAndRateLimitFixture` asserts.
 - Expected failures being values rather than exceptions is a separate decision; this record is about how
   both kinds are written on the wire.
 - The client's single normalising interceptor is recorded for the client separately.

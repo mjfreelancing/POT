@@ -275,7 +275,7 @@ Reference notes for future maintainers.
 
 | Document                                                                                                                                                   | What changes                                                                                                                                                                | Amendment           |
 | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
-| [ADR-0036](../adr/ADR-0036-platform-administration-is-granted-by-deployment-configuration.md) — Platform administration is granted by deployment configuration | Its statements about the current system: that `platform:manage` guards only the approvals routes, and that the cross-tenant repair operations are planned but not delivered | Dated clarification |
+| [ADR-0035](../adr/ADR-0035-platform-administration-is-granted-by-deployment-configuration.md) — Platform administration is granted by deployment configuration | Its statements about the current system: that `platform:manage` guards only the approvals routes, and that the cross-tenant repair operations are planned but not delivered | Dated clarification |
 
 ## Related Documents
 

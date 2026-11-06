@@ -83,4 +83,4 @@ format marker, work factor and salt in the stored string. Temporary passwords ar
 - How an email address is verified and a forgotten password is reset is
   [ADR-0024](ADR-0024-verification-and-password-reset-use-single-use-expiring-codes.md).
 - Which sessions are ended by a password change is
-  [ADR-0037](ADR-0037-access-tokens-are-rejected-once-their-session-or-user-version-changes.md).
+  [ADR-0036](ADR-0036-access-tokens-are-rejected-once-their-session-or-user-version-changes.md).

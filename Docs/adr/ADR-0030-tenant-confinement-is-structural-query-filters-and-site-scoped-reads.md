@@ -49,10 +49,8 @@ were weighed.
 Chosen option: 1. Accounts, expenses, incomes and settings are filtered globally by the current site, so
 a query that does not mention tenancy is still confined. Users and sites are reached only through
 repository methods that apply the current site themselves — the caller cannot pass one — and the raw
-queryables for those two are not exposed. A small set of deliberately cross-tenant user reads exists, and
-this is how authentication and recovery work before a site is known. Each read is marked in the
-repository with a `Cross-tenant` comment and listed in PRD-0026 §4.5. Some names say so, such as
-`GetEnabledUsersForAllSitesAsync`, but `GetByUsernameAsync` and `GetSecurityStateAsync` do not.
+queryables for those two are not exposed. A read that must cross tenants, as authentication and
+recovery do before a site is known, is a named repository method marked as deliberately cross-tenant.
 
 A lookup that targets another tenant's row answers exactly as a missing one: `404`, with a body identical
 to the response for an id that does not exist, so the answer does not confirm the row's existence.
@@ -115,6 +113,10 @@ to the response for an id that does not exist, so the answer does not confirm th
 
 ## More Information
 
+- The deliberately cross-tenant user reads are a small set. Each is marked in the repository with a
+  `Cross-tenant` comment and listed in
+  [PRD-0026](../Future/PRD-0026-cross-tenant-authorization-hardening.md) §4.5. Some names say so, such as
+  `GetEnabledUsersForAllSitesAsync`, but `GetByUsernameAsync` and `GetSecurityStateAsync` do not.
 - Which authority a signed-in caller has anywhere is a separate decision,
   [ADR-0021](ADR-0021-each-request-resolves-the-callers-permissions-from-the-database.md). This one is about
   which rows a query can see.

@@ -44,13 +44,8 @@ what each would have cost; the record does not show whether they were weighed be
 
 Chosen option: 1. An operation whose saves must succeed together opens a transaction around the whole
 unit. Its early-return failure paths leave without committing, so disposing the transaction at the end
-of the operation rolls the work back. Today the only such operation is the data import: its account,
-expense and income importers each save once, inside one transaction. Signup and password-reset
-verification also save twice without a transaction, because the first save only expires stale codes and
-need not roll back with the second.
-
-An operation that saves once does not open a transaction, with one exception: a role assignment opens
-one around its single save. The record does not show why.
+of the operation rolls the work back. An operation that saves once does not open a transaction, and an
+operation that saves more than once without needing all of them to succeed together does not either.
 
 ### Consequences
 
@@ -106,6 +101,11 @@ one around its single save. The record does not show why.
 
 ## More Information
 
+- Where transactions are used today: the only operation that opens one around several saves is the data
+  import, whose account, expense and income importers each save once, inside one transaction. Signup and
+  password-reset verification save twice without a transaction, because the first save only expires
+  stale codes and need not roll back with the second. One operation departs from the rule: a role
+  assignment opens a transaction around its single save, and the record does not show why.
 - The repository access model this sits on is
   [ADR-0011](ADR-0011-services-access-data-through-feature-repositories.md).
 - Optimistic concurrency decides what happens when two writers reach the same row, which is separate from

@@ -37,17 +37,10 @@ against a coding error or direct database access. Case-insensitive uniqueness re
 
 ## Decision Outcome
 
-Chosen option: 1. User-facing names are held in the database's case-insensitive text type under a unique
-index scoped to their owner — an account's description per site, an expense's or income's description
-per account, and a site's name and a username across the whole database. A settings row is unique per
-site, category and key, and its key is case-sensitive text. The two reference tables, roles and
-permissions, have plain, case-sensitive unique indexes on their names, which are global rather than
-site-scoped. An application check runs first where one exists, so the caller receives a business message
+Chosen option: 1. Every business-level uniqueness rule is backed by a unique index. A user-facing name is
+held in the database's case-insensitive text type, and its index is scoped to the record that owns the
+name. An application check runs first where one exists, so the caller receives a business message
 rather than a constraint violation, but the index is the guarantee.
-
-The settings index was created by hand as two partial indexes, one for rows with a site and one for
-global rows with none. Settings have since been made site-specific, so the global index can match no row,
-and the model snapshot records the site index without its filter.
 
 ### Consequences
 
@@ -90,6 +83,14 @@ and the model snapshot records the site index without its filter.
 
 ## More Information
 
+- The indexes as they stand: an account's description is unique per site, an expense's or income's
+  description per account, and a site's name and a username across the whole database, each as
+  case-insensitive text. A settings row is unique per site, category and key, and its key is
+  case-sensitive text. The two reference tables, roles and permissions, have plain, case-sensitive unique
+  indexes on their names, which are global rather than site-scoped.
+- The settings index was created by hand as two partial indexes, one for rows with a site and one for
+  global rows with none. Settings have since been made site-specific, so the global index can match no
+  row, and the model snapshot records the site index without its filter.
 - The application check is part of the two-layer validation model,
   [ADR-0013](ADR-0013-request-shape-is-validated-at-the-edge-and-rules-in-check-chains.md).
 - Enumerations stored by name are [ADR-0006](ADR-0006-enumerations-are-stored-by-name.md).

@@ -48,7 +48,7 @@ directly; the rest are as the reviewers reported.
   - This weakens the reasoning, in ADR-0024 and in DD-08 (answered 2026-11-06), that a leaked code's
     impact is contained. PRD-0035 removes codes from the logs, but a code can still be guessed.
   - The HTTP rate limit is also weaker than configured: its counters are per replica, and the API allows
-    up to ten (ADR-0026, "Known scale-out risks"). PRD-0008 records that risk.
+    up to ten (ADR-0032, "Known scale-out risks"). PRD-0008 records that risk.
 
 ### Correctness and code
 

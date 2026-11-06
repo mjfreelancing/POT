@@ -165,7 +165,7 @@ If hybrid/tab policies are used, load order must be:
 
 | Decision                      | Resolution                                                                              | ADR                                                                                          |
 | ----------------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| How browser storage is scoped | Every key is keyed by environment and by user, as D001–D007 record                      | [ADR-0040](../adr/ADR-0040-browser-storage-is-keyed-by-environment-and-user.md)                  |
+| How browser storage is scoped | Every key is keyed by environment and by user, as D001–D007 record                      | [ADR-0039](../adr/ADR-0039-browser-storage-is-keyed-by-environment-and-user.md)                  |
 | How a sign-in is represented  | One session row per sign-in, with the refresh token stored as a hash and rotated on use | [ADR-0022](../adr/ADR-0022-access-tokens-are-short-lived-and-backed-by-a-server-side-session.md) |
 
 ## Finalized Storage Requirements (Client)

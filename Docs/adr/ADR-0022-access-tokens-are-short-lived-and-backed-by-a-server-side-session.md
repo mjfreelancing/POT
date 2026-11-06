@@ -50,7 +50,8 @@ held. A session row per sign-in replaced it.
    cookie.
 2. A long-lived access token only, with no session.
 3. A server-side session cookie as the only credential, with no bearer token.
-4. A short access token plus a refresh token kept in browser storage.5. A short access token plus one refresh token stored on the user row, so one session per user.
+4. A short access token plus a refresh token kept in browser storage.
+5. A short access token plus one refresh token stored on the user row, so one session per user.
 
 ## Decision Outcome
 
@@ -133,6 +134,6 @@ shape but hands it to any script running on the page.
 ## More Information
 
 - Revocation, both per session and globally, is a separate decision:
-  [ADR-0037](ADR-0037-access-tokens-are-rejected-once-their-session-or-user-version-changes.md).
+  [ADR-0036](ADR-0036-access-tokens-are-rejected-once-their-session-or-user-version-changes.md).
 - The client side of this — access token in memory, proactive and reactive refresh, one logout path —
   is [ADR-0019](ADR-0019-the-access-token-lives-in-memory-with-proactive-and-reactive-refresh.md).

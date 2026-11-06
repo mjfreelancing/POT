@@ -108,6 +108,11 @@ Agreed on 2026-11-06, as a starting point for discovery rather than as requireme
 13. Does the W3C trace identifier replace the `X-Correlation-Id` the API returns to callers, or sit
     beside it?
 14. Is browser-side telemetry in scope?
+15. How are sources and meters named? The starting proposal is one of each per assembly, named after it
+    (`Pot.App`, `Pot.EmailSender`, `Pot.AspNetCore`), with the names held as constants the host
+    registers.
+16. Do the health probes produce spans? They produce no request log entry (ADR-0050), and the proposal is
+    that they produce no span either.
 
 ## Known Risks
 

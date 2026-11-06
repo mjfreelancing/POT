@@ -125,8 +125,8 @@ so the interface is shaped by the same answer that the server enforces.
 ## More Information
 
 - Platform administration is itself a separate decision, recorded as
-  [ADR-0036](ADR-0036-platform-administration-is-granted-by-deployment-configuration.md).
+  [ADR-0035](ADR-0035-platform-administration-is-granted-by-deployment-configuration.md).
 - The token and its revocation are [ADR-0022](ADR-0022-access-tokens-are-short-lived-and-backed-by-a-server-side-session.md)
-  and [ADR-0037](ADR-0037-access-tokens-are-rejected-once-their-session-or-user-version-changes.md).
+  and [ADR-0036](ADR-0036-access-tokens-are-rejected-once-their-session-or-user-version-changes.md).
 - Whether the per-request read is worth caching is open; the trade-off to evaluate is permission
   freshness against request cost.

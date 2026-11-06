@@ -14,12 +14,12 @@ planned, implemented, and evaluated.
 
 The **implemented design and current state** — the architecture, operational detail, and the
 history of approaches that were tried and rejected — are documented separately in
-[ADR-0041](../adr/ADR-0041-end-to-end-tests-run-on-one-shared-stack.md),
-[ADR-0043](../adr/ADR-0043-every-end-to-end-test-is-classified-by-whether-it-may-run-beside-others.md),
-[ADR-0042](../adr/ADR-0042-end-to-end-tests-run-as-a-four-project-development-matrix-with-a-separately-run-production-build-profile.md)
-and [ADR-0046](../adr/ADR-0046-no-end-to-end-test-shares-authentication-state-with-another.md), with the
+[ADR-0040](../adr/ADR-0040-end-to-end-tests-run-on-one-shared-stack.md),
+[ADR-0042](../adr/ADR-0042-every-end-to-end-test-is-classified-by-whether-it-may-run-beside-others.md),
+[ADR-0041](../adr/ADR-0041-end-to-end-tests-run-on-a-development-profile-by-default-and-a-production-build-profile-gates-client-changing-prds.md)
+and [ADR-0045](../adr/ADR-0045-no-end-to-end-test-shares-authentication-state-with-another.md), with the
 combined record they superseded kept as
-[ADR 0040](../adr/ADR-0044-playwright-e2e-testing-infrastructure.md).
+[ADR-0043](../adr/ADR-0043-playwright-e2e-testing-infrastructure.md).
 Read the PRD for requirements; read the records for how they are met.
 
 ---
@@ -276,21 +276,21 @@ Fixed, non-negotiable rules:
 | D7  | Keep Vite dev server for the dev matrix (HMR disabled)                     | A built-client local matrix regressed (PWA service-worker install per context; errorBoundary aborts a dev-source chunk) — see ADR design history                         |
 
 Rejected alternatives and the full design history are recorded in
-[ADR 0040, Appendix A](../adr/ADR-0044-playwright-e2e-testing-infrastructure.md#appendix-a-design-history--what-was-tried-and-rejected).
+[ADR-0043, Appendix A](../adr/ADR-0043-playwright-e2e-testing-infrastructure.md#appendix-a-design-history--what-was-tried-and-rejected).
 
 ## Decisions Carried Into This Document
 
 | Decision                                               | Resolution                                                                                                        | ADR                                                                                                                                 |
 | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| One stack and one seeded database for the run          | A single fully-seeded mode, with the API, client, database and mail sink started once (§8, D1–D2)                 | [ADR-0041](../adr/ADR-0041-end-to-end-tests-run-on-one-shared-stack.md)                                                                 |
-| Classification by whether a test may run beside others | Parallel-safe, fixture-managed or destructive, decided where the test is written (§8, D3)                         | [ADR-0043](../adr/ADR-0043-every-end-to-end-test-is-classified-by-whether-it-may-run-beside-others.md)                                  |
-| Which configurations run, and when                     | The four-project development matrix by default, and the built-client profile as a separately run gate (§8, D6–D7) | [ADR-0042](../adr/ADR-0042-end-to-end-tests-run-as-a-four-project-development-matrix-with-a-separately-run-production-build-profile.md) |
-| How tests authenticate                                 | One fresh login per test, and a dedicated seeded identity for a journey that changes its own account (§8, D4)     | [ADR-0046](../adr/ADR-0046-no-end-to-end-test-shares-authentication-state-with-another.md)                                              |
+| One stack and one seeded database for the run          | A single fully-seeded mode, with the API, client, database and mail sink started once (§8, D1–D2)                 | [ADR-0040](../adr/ADR-0040-end-to-end-tests-run-on-one-shared-stack.md)                                                                 |
+| Classification by whether a test may run beside others | Parallel-safe, fixture-managed or destructive, decided where the test is written (§8, D3)                         | [ADR-0042](../adr/ADR-0042-every-end-to-end-test-is-classified-by-whether-it-may-run-beside-others.md)                                  |
+| Which configurations run, and when                     | The four-project development matrix by default, and the built-client profile as a separately run gate (§8, D6–D7) | [ADR-0041](../adr/ADR-0041-end-to-end-tests-run-on-a-development-profile-by-default-and-a-production-build-profile-gates-client-changing-prds.md) |
+| How tests authenticate                                 | One fresh login per test, and a dedicated seeded identity for a journey that changes its own account (§8, D4)     | [ADR-0045](../adr/ADR-0045-no-end-to-end-test-shares-authentication-state-with-another.md)                                              |
 
 ## 9. References
 
-- Design records: [ADR-0041](../adr/ADR-0041-end-to-end-tests-run-on-one-shared-stack.md), [ADR-0043](../adr/ADR-0043-every-end-to-end-test-is-classified-by-whether-it-may-run-beside-others.md), [ADR-0042](../adr/ADR-0042-end-to-end-tests-run-as-a-four-project-development-matrix-with-a-separately-run-production-build-profile.md), [ADR-0046](../adr/ADR-0046-no-end-to-end-test-shares-authentication-state-with-another.md)
-- [ADR 0040 — Playwright E2E testing infrastructure (superseded)](../adr/ADR-0044-playwright-e2e-testing-infrastructure.md#appendix-a-design-history--what-was-tried-and-rejected)
+- Design records: [ADR-0040](../adr/ADR-0040-end-to-end-tests-run-on-one-shared-stack.md), [ADR-0042](../adr/ADR-0042-every-end-to-end-test-is-classified-by-whether-it-may-run-beside-others.md), [ADR-0041](../adr/ADR-0041-end-to-end-tests-run-on-a-development-profile-by-default-and-a-production-build-profile-gates-client-changing-prds.md), [ADR-0045](../adr/ADR-0045-no-end-to-end-test-shares-authentication-state-with-another.md)
+- [ADR-0043 — Playwright E2E testing infrastructure (superseded)](../adr/ADR-0043-playwright-e2e-testing-infrastructure.md#appendix-a-design-history--what-was-tried-and-rejected)
 - `Source/Client/pot-react/e2e/README.md` — architecture & conventions
 - `Source/Client/pot-react/e2e/AUTHORING.md` — authoring guide
 - `Source/Client/pot-react/playwright.config.ts`, `playwright.prod.config.ts`,
@@ -305,4 +305,4 @@ Append-only, oldest first. The text above is this document as approved; read it 
   configuration an on-demand gate without saying when it is due. The full prodlike matrix
   (`npm run e2e:all:prodlike`) is the completion gate for a PRD that changed client product code.
   `npm run e2e:prodlike` is also run on demand when the client production build changes. Recorded in
-  [ADR-0042](../adr/ADR-0042-end-to-end-tests-run-as-a-four-project-development-matrix-with-a-separately-run-production-build-profile.md).
+  [ADR-0041](../adr/ADR-0041-end-to-end-tests-run-on-a-development-profile-by-default-and-a-production-build-profile-gates-client-changing-prds.md).

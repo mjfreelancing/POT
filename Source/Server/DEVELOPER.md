@@ -3655,8 +3655,9 @@ app.MapGroup(AccountsEndpoints.Group)
 }
 ```
 
-The rate limiter writes this body through `IProblemDetailsService`, so it carries the same `type`,
-`title`, `correlationId` and `instance` as every other error response. `Retry-After` is an integer
+The rate limiter writes this body through `IProblemDetailsService`, so it carries the same `title`,
+`correlationId` and `instance` as every other error response. It carries no `type`: the framework
+defines no per-status type for `429`. `Retry-After` is an integer
 delta-seconds value (RFC 9110), rounded up to the next whole second. When the lease carries no
 `RetryAfter` metadata the header is omitted and the body omits the wait instead of naming one.
 

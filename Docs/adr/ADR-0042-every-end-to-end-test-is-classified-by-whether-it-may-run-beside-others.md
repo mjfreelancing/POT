@@ -1,14 +1,14 @@
 ---
-id: ADR-0043
+id: ADR-0042
 title: Every end-to-end test is classified by whether it may run beside others
 status: accepted
 date: 2026-05-16
 area: cross-cutting
 related-prds: [PRD-0012, PRD-0031]
-supersedes: [ADR-0044]
+supersedes: [ADR-0043]
 ---
 
-# ADR-0043 (backfilled): Every end-to-end test is classified by whether it may run beside others
+# ADR-0042 (backfilled): Every end-to-end test is classified by whether it may run beside others
 
 **Summary:** In the context of one shared database for the whole end-to-end run, facing the choice between
 serialising everything and letting tests run in parallel, we decided that every test is classified before
@@ -110,7 +110,7 @@ parallel, within a file as well as across files, unless the suite is declared se
 
 ## More Information
 
-- The shared stack this depends on: [ADR-0041](ADR-0041-end-to-end-tests-run-on-one-shared-stack.md).
+- The shared stack this depends on: [ADR-0040](ADR-0040-end-to-end-tests-run-on-one-shared-stack.md).
 - How the destructive class provisions its own tenant:
   [ADR-0051](ADR-0051-tenants-are-provisioned-and-destroyed-by-the-products-own-routes-in-tests.md).
 - Sources: [PRD-0012](../Future/PRD-0012-playwright-e2e-testing-infrastructure.md) R6 (two classes) and

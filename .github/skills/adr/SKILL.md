@@ -21,10 +21,13 @@ format, the statuses and the amendment rules. This skill is the procedure that a
   point `superseded-by` at the new one, and give the new one `supersedes`.
 - **Never reuse a number.** A withdrawn draft still consumes its number.
 - **A new record carries no heading suffix and does not call itself backfilled.** Only records up to
-  ADR-0052 carry `(legacy)` or `(backfilled)` after the number in their heading, and ADR-0046 does not;
+  ADR-0052 carry `(legacy)` or `(backfilled)` after the number in their heading, and ADR-0045 does not;
   the ADR guide says why. When the decision is already in
   the code, Context cites the evidence for it: a PRD section, a dated note, a merged PR, or a source
   file.
+- **Decision Outcome states the decision and the rules it imposes, nothing else.** Tuning values, call
+  sites, inventories of current usage and history go in More Information, or in Confirmation as a gap.
+  A second rule that no Considered Option weighs is a second decision, or it belongs somewhere else.
 - **Confirmation must name something mechanical.** A test, an analyzer, an instruction file or a review
   rule. A record with no enforcement is prose, and prose drifts.
 - **Never stage or commit.** Offer a commit message and stop; the human stages and commits.
@@ -40,7 +43,9 @@ what consequential alternatives were considered, and would the rationale or trad
 the current code remained? A stable, long-standing decision can still merit an ADR. Use source material as
 evidence; do not present an inference as established history. If the item is a coding convention, it
 belongs in [Docs/standards/](../../../Docs/standards/) as a rule document. If it is a product rule, it
-belongs in the PRD. If it was an approach tried and dropped without shipping, it belongs in the
+belongs in the PRD; so does interface behaviour for one feature, even when a PRD raised it. Ask whether
+the decision would constrain a feature that does not exist yet: a record that would only restate one
+PRD's requirements is not an ADR. If it was an approach tried and dropped without shipping, it belongs in the
 `Considered Options` of the ADR that replaced it.
 
 Stop and say so when it is not an ADR, naming where it belongs instead.

@@ -27,7 +27,7 @@ Everything in this document is a draft for PRD refinement. None of the recommend
 3. Implementing lockout logic before Feature 002 session architecture may create rework as token/session persistence changes.
 4. Product and security policy decisions (for example user messaging and unlock behavior) are not yet finalized.
 5. **Known risk (recorded 2026-11-06): rate limits are per replica.** The HTTP rate limiter keeps its
-   counters in each API process's memory. The API container app allows 1 to 10 replicas (ADR-0026,
+   counters in each API process's memory. The API container app allows 1 to 10 replicas (ADR-0032,
    "Known scale-out risks"), so a caller whose requests are spread across N replicas gets up to N times
    the configured limit. This matters most for the one-time code endpoints (sign-up and password reset
    verification). There, the HTTP rate limit and the code's 15-minute expiry are currently the only

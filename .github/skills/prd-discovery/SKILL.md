@@ -104,7 +104,8 @@ When the rounds are done, **ask the human whether to produce the PRD now or wait
    "Decisions Carried Into This Document" and apply the significance test in the "When to write one"
    section of [the ADR guide](../../../Docs/adr/README.md): does it constrain features beyond this one,
    cost a lot to reverse, cross components, or invite "why is it like this?" later? A product rule stays
-   in the PRD. An architectural decision gets a `proposed` ADR written from
+   in the PRD, and so does interface behaviour for this feature: never raise an ADR that only restates
+   this PRD's requirements. Most PRDs raise no ADR at all. An architectural decision gets a `proposed` ADR written from
    [the ADR template](../adr/references/adr.template.md), named in the table's `ADR` column, and its
    `status` stays `proposed` while the PRD is not Complete.
 3. **Harvest the rejected alternatives before the discovery document goes.** The alternatives weighed

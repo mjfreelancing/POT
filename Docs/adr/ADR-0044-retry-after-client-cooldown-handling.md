@@ -1,24 +1,24 @@
 ---
-id: ADR-0045
+id: ADR-0044
 title: Retry-After client cooldown handling
 status: superseded
 date: 2026-09-02
 area: cross-cutting
 related-prds: [PRD-0014]
-superseded-by: [ADR-0035, ADR-0053]
+superseded-by: [ADR-0053]
 ---
 
-# ADR-0045 (legacy): Retry-After client cooldown handling
+# ADR-0044 (legacy): Retry-After client cooldown handling
 
 > **Clarification (2026-11-04).** The 429 body carries no error code: it holds `detail`, `status`,
 > `correlationId`, `traceId` and `instance` only (`ProblemDetailsOptionsSetup.cs`), and `Retry-After` is written
 > only where the limiter exposes it, so an authenticated sliding-window rejection carries neither the
-> header nor a timed message (`HeadersAndRateLimitFixture`). The decision itself is recorded as
-> [ADR-0035](ADR-0035-a-rate-limited-caller-is-told-when-to-retry.md).
+> header nor a timed message (`HeadersAndRateLimitFixture`).
 >
 > **Clarification (2026-11-06).** D-2 (never auto-retry a 429) is now recorded on its own, and accepted, as
-> [ADR-0053](ADR-0053-the-client-never-retries-a-rate-limited-request.md). ADR-0035 keeps the rest of this
-> design and stays proposed with PRD-0014.
+> [ADR-0053](ADR-0053-the-client-never-retries-a-rate-limited-request.md). The rest of this design is
+> interface behaviour for one feature, not an architectural decision: it lives in
+> [PRD-0014](../Future/PRD-0014-retry-after-client-cooldown-handling.md) as requirements R1, R3 and R5.
 
 ## Context
 

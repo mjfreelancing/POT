@@ -1,14 +1,14 @@
 ---
-id: ADR-0041
+id: ADR-0040
 title: End-to-end tests run on one shared stack against a single seeded database
 status: accepted
 date: 2026-05-11
 area: cross-cutting
 related-prds: [PRD-0012]
-supersedes: [ADR-0044]
+supersedes: [ADR-0043]
 ---
 
-# ADR-0041 (backfilled): End-to-end tests run on one shared stack against a single seeded database
+# ADR-0040 (backfilled): End-to-end tests run on one shared stack against a single seeded database
 
 **Summary:** In the context of browser tests that need a real API, a real database and realistic data,
 facing the choice between a stack per test file and one stack for the run, we decided on a single shared
@@ -100,10 +100,10 @@ themselves within it by owning the data they create.
 ## More Information
 
 - How a test is classified for running beside others:
-  [ADR-0043](ADR-0043-every-end-to-end-test-is-classified-by-whether-it-may-run-beside-others.md).
+  [ADR-0042](ADR-0042-every-end-to-end-test-is-classified-by-whether-it-may-run-beside-others.md).
 - Which configurations run, and when:
-  [ADR-0042](ADR-0042-end-to-end-tests-run-as-a-four-project-development-matrix-with-a-separately-run-production-build-profile.md).
+  [ADR-0041](ADR-0041-end-to-end-tests-run-on-a-development-profile-by-default-and-a-production-build-profile-gates-client-changing-prds.md).
 - How destructive journeys get a tenant of their own:
   [ADR-0051](ADR-0051-tenants-are-provisioned-and-destroyed-by-the-products-own-routes-in-tests.md).
 - Source: [PRD-0012](../Future/PRD-0012-playwright-e2e-testing-infrastructure.md) R1, R2 and R10. The earlier combined
-  design record is [ADR-0044](ADR-0044-playwright-e2e-testing-infrastructure.md).
+  design record is [ADR-0043](ADR-0043-playwright-e2e-testing-infrastructure.md).

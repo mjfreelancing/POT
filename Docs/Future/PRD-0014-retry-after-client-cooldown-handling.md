@@ -74,6 +74,7 @@ Candidate requirements; nothing implemented yet.
 - **OQ-4**: Message/interaction precedence when both HTTP 429 and the OTP `TooManyAttempts` (with `retryMinutes`) can apply to the same flow.
 - **OQ-5**: Whether the proactive refresh timer should pause/suppress when the refresh endpoint itself is 429-limited.
 - **OQ-6**: Fallback behaviour when `Retry-After` is absent from a rejection (R1 fallback path) — confirm the server can actually omit it and what the client should show.
+- **OQ-7**: Which source of the wait is canonical when both are present — the exposed `Retry-After` header or the timed ProblemDetails `detail`? An authenticated rejection carries neither, and the countdown is client-side arithmetic on a server value, so a long wait across a clock change can display inaccurately.
 
 ## Validation / Test Considerations
 
@@ -87,13 +88,13 @@ Candidate requirements; nothing implemented yet.
 
 | Decision                        | Resolution                                                                                                        | ADR                                                                    |
 | ------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| What a throttled caller is told | The server states when to retry, and the client reads `Retry-After` into a cooldown instead of auto-retrying (R1) | [ADR-0035](../adr/ADR-0035-a-rate-limited-caller-is-told-when-to-retry.md) |
+| What a throttled caller is told | The server states when to retry, and the client reads `Retry-After` into a cooldown instead of auto-retrying (R1) | — (a requirement of this PRD: R1, R3, R5)                              |
 | Whether a `429` is retried      | Never automatically; the user acts again. Accepted on its own, independent of this PRD                            | [ADR-0053](../adr/ADR-0053-the-client-never-retries-a-rate-limited-request.md) |
 
 ## Related Documents
 
 - Future index: [Docs/Future/README.md](README.md)
-- Companion design record: [ADR 0031 — A rate-limited caller is told when to retry](../adr/ADR-0035-a-rate-limited-caller-is-told-when-to-retry.md), which supersedes [ADR 0041](../adr/ADR-0045-retry-after-client-cooldown-handling.md) together with [ADR 0049 — The client never retries a rate-limited request](../adr/ADR-0053-the-client-never-retries-a-rate-limited-request.md)
+- Earlier design record: [ADR-0044](../adr/ADR-0044-retry-after-client-cooldown-handling.md), superseded by [ADR-0053 — The client never retries a rate-limited request](../adr/ADR-0053-the-client-never-retries-a-rate-limited-request.md); its interface behaviour is carried here as R1, R3 and R5
 - Server rate limiting: `Source/Server/Pot.AspNetCore/Concerns/RateLimiting/RateLimiterOptionsSetup.cs`, `RateLimiterPolicy.cs`, `RateLimiterDefaults.cs`
 - Server CORS policy (exposed headers): `Source/Server/Pot.AspNetCore/Concerns/Cors/Configuration/CorsOptionsSetup.cs`
 - Server integration coverage: `Source/Server/Pot.AspNetCore.Integration.Tests/Security/HeadersAndRateLimitFixture.cs`, `Source/Server/Pot.AspNetCore.Integration.Tests/Pipeline/CorsFixture.cs`

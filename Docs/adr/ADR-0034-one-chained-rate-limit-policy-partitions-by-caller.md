@@ -1,19 +1,19 @@
 ---
 id: ADR-0034
-title: One chained rate-limit policy partitions by caller and never locks an account
+title: One chained rate-limit policy partitions by caller
 status: accepted
 date: 2025-11-08
 area: backend
 ---
 
-# ADR-0034 (backfilled): One chained rate-limit policy partitions by caller and never locks an account
+# ADR-0034 (backfilled): One chained rate-limit policy partitions by caller
 
 **Summary:** In the context of an internet-facing API whose sign-in route is the obvious target for
 credential guessing, facing the need to slow abuse without penalising a legitimate user who mistyped a
 password, we decided on a single chained policy that partitions by caller address when anonymous and
-by user when signed in, using a ten-second fixed window for anonymous traffic and a thirty-second
-sliding window for authenticated traffic, to achieve cheap brute-force resistance, accepting that the
-protection is deliberately temporary and never becomes a lockout.
+by user when signed in, using a short fixed window for anonymous traffic and a sliding window for
+authenticated traffic, to achieve cheap brute-force resistance, accepting that the protection is
+temporary and limits the rate of guessing, not the number of attempts per account.
 
 ## Context and Problem Statement
 
@@ -40,15 +40,10 @@ known costs are set out under the options below.
 ## Decision Outcome
 
 Chosen option: 1. Every endpoint group requires the same named policy, which chooses a partition:
-anonymous callers get fifteen permits in a ten-second fixed window per address, and authenticated
-callers fifty permits in a thirty-second sliding window per user, split into ten segments, with no
-queueing in either. Despite the name `ChainedPolicy`, no limiters are chained: each request is counted by
-exactly one partition. Rejection is `429` with a Problem Details body. `Retry-After` is written, and the
-`detail` names the wait, only where the limiter exposes the retry metadata, which the fixed window does
-and the sliding window does not, so an authenticated rejection carries neither the header nor a timed
-message.
-
-There is no lockout of an account. The temporary rejection is the whole of the response to guessing.
+anonymous callers are limited per address in a fixed window, and authenticated callers per user in a
+sliding window, with no queueing in either. Despite the name `ChainedPolicy`, no limiters are chained:
+each request is counted by exactly one partition. Rejection is `429` with a Problem Details body. The
+limits are constants in code, not deployment settings.
 
 ### Consequences
 
@@ -101,6 +96,13 @@ There is no lockout of an account. The temporary rejection is the whole of the r
 
 - The client's handling of `429` and `Retry-After` is a separate decision: the client never retries a `429`
   ([ADR-0053](ADR-0053-the-client-never-retries-a-rate-limited-request.md)), and what the user is shown is
-  [ADR-0035](ADR-0035-a-rate-limited-caller-is-told-when-to-retry.md).
+  a requirement of [PRD-0014](../Future/PRD-0014-retry-after-client-cooldown-handling.md).
 - An account lockout policy could be added later without changing this one; it is deferred rather than
-  rejected.
+  rejected. Until then there is no lockout of an account, and the temporary rejection is the whole of the
+  response to guessing.
+- The limits as built: anonymous callers get fifteen permits in a ten-second fixed window per address,
+  and authenticated callers fifty permits in a thirty-second sliding window per user, split into ten
+  segments.
+- `Retry-After` is written, and the `detail` names the wait, only where the limiter exposes the retry
+  metadata, which the fixed window does and the sliding window does not, so an authenticated rejection
+  carries neither the header nor a timed message.

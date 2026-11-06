@@ -1,5 +1,5 @@
 ---
-id: ADR-0037
+id: ADR-0036
 title: Access tokens are rejected once their session or user version changes
 status: accepted
 date: 2025-11-22
@@ -7,7 +7,7 @@ area: backend
 related-prds: [PRD-0002]
 ---
 
-# ADR-0037 (backfilled): Access tokens are rejected once their session or user version changes
+# ADR-0036 (backfilled): Access tokens are rejected once their session or user version changes
 
 **Summary:** In the context of self-contained access tokens that stay valid until they expire, facing
 the need to end one device's access without waiting, or to invalidate every token after a credential
@@ -43,7 +43,8 @@ stopped the session's refresh but left its access token usable until it expired.
 1. Validate the token's session and user version against the database on every request.
 2. Rely on token expiry alone, with no revocation.
 3. Keep a server-side denylist of revoked tokens until they expire.
-4. Cache the validation result per user for a short window.5. Validate the user's token version only, so logging out ends a session's refresh but not its access
+4. Cache the validation result per user for a short window.
+5. Validate the user's token version only, so logging out ends a session's refresh but not its access
    token.
 
 ## Decision Outcome

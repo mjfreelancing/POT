@@ -1,14 +1,14 @@
 ---
-id: ADR-0046
+id: ADR-0045
 title: No end-to-end test shares authentication state with another
 status: accepted
 date: 2026-09-02
 area: cross-cutting
 related-prds: [PRD-0012]
-supersedes: [ADR-0044]
+supersedes: [ADR-0043]
 ---
 
-# ADR-0046: No end-to-end test shares authentication state with another
+# ADR-0045: No end-to-end test shares authentication state with another
 
 **Summary:** In the context of a browser suite that runs its tests in parallel against one API and one
 database, facing a refresh token that is rotated on every use and test identities whose credentials and
@@ -29,7 +29,7 @@ test that cannot use it.
 A second kind of sharing is the identity itself. Signing in updates `LastLoggedInUtc`, which the save
 pipeline treats as a modification and which therefore bumps the row's `Etag`; a password change revokes
 the user's sessions and bumps the user version
-([ADR-0037](ADR-0037-access-tokens-are-rejected-once-their-session-or-user-version-changes.md)). One seeded
+([ADR-0036](ADR-0036-access-tokens-are-rejected-once-their-session-or-user-version-changes.md)). One seeded
 account used by every suite is therefore both a concurrency hazard for optimistic concurrency and a
 credential that one test can destroy for all of them.
 
@@ -106,4 +106,4 @@ by another test; a test with its own account but a shared session is broken by t
 
 The abandoned worker-scoped approach, and the other approaches tried and dropped while the suite was
 being made reliable, are recorded in
-[ADR-0044](ADR-0044-playwright-e2e-testing-infrastructure.md) (Appendix A, design history).
+[ADR-0043](ADR-0043-playwright-e2e-testing-infrastructure.md) (Appendix A, design history).

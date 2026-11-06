@@ -10,10 +10,9 @@ area: frontend
 
 **Summary:** In the context of a fifteen-minute access token and a refresh token the browser holds in an
 HttpOnly cookie, facing the choice between persisting the access token and holding it only in memory, we
-decided that the token lives in memory, that it is refreshed shortly before expiry and again on a `401`,
-and that every path out of the session goes through one logout, to achieve a token that no script can
-read from storage and a session that survives a page reload through the cookie, accepting that a reload
-costs a refresh round trip.
+decided that the token lives in memory and is refreshed shortly before expiry and again on a `401`, to
+achieve a token that no script can read from storage and a session that survives a page reload through
+the cookie, accepting that a reload costs a refresh round trip.
 
 ## Context and Problem Statement
 
@@ -29,11 +28,10 @@ must be renewed and the request retried rather than surfaced.
 - The access token should not be readable from browser storage.
 - A reload must not sign the user out.
 - An expiry mid-session must be invisible to the user.
-- Signing out must end the session everywhere in the client, not wherever the user happened to click.
 
 ## Considered Options
 
-1. Token in memory, proactive refresh before expiry, reactive refresh on `401`, one logout path.
+1. Token in memory, proactive refresh before expiry, reactive refresh on `401`.
 2. Token in `localStorage` or `sessionStorage`.
 3. Token in memory with only reactive refresh.
 4. Token in memory with only proactive refresh.
@@ -46,10 +44,7 @@ Nothing is written to storage. A timer refreshes it five minutes before expiry, 
 refreshes it on a `401` (except on `/auth/` routes) and replays the request.
 
 Concurrent requests that fail together wait on the interceptor's one refresh rather than each starting
-their own. Every sign-out reaches one logout function, registered with `logoutManager`, which asks the
-server to end the session and then clears the token, the cached user and the query cache through
-`useClearSession`; the account and site deletion flows call `useClearSession` directly, because the
-server session has already gone with the account.
+their own.
 
 On a reload the token is gone but the cookie is not, so the application refreshes at start-up to resume
 the session.
@@ -85,8 +80,7 @@ the session.
   clearing the tokens triggers the logout manager.
 - Test: `tests/features/auth/accessTokenRefreshTimer.test.ts` asserts the timer refreshes when it fires
   and reports a failure to its error callback.
-- Review: a token written to storage, or a sign-out that bypasses `logoutManager` while the server
-  session still exists, is a defect.
+- Review: a token written to storage is a defect.
 
 ## Pros and Cons of the Options
 
@@ -115,5 +109,11 @@ the session.
 ## More Information
 
 - The server side of the session and its revocation are separate decisions.
+- Every sign-out goes through one logout path, so that signing out ends the session everywhere in the
+  client, not wherever the user happened to click. That path is one logout function, registered with
+  `logoutManager`, which asks the server to end the session and then clears the token, the cached user
+  and the query cache through `useClearSession`. The account and site deletion flows call
+  `useClearSession` directly, because the server session has already gone with the account. A sign-out
+  that bypasses `logoutManager` while the server session still exists is a defect in review.
 - Cache invalidation on logout belongs to the server-state decision, and the single logout path is what
   triggers it.

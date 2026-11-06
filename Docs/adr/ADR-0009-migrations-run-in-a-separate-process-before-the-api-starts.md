@@ -56,7 +56,7 @@ step: the runner applies whatever has not yet been applied, every time the conta
   turns that into a stopped container. Neither is tested.
 - Bad, because every replica that starts runs the migration check, so concurrency of migrations depends on
   the runner being safe when it finds the schema already current. The API allows up to ten replicas
-  (ADR-0026), so replicas starting together with a migration pending is possible. That is unverified and
+  (ADR-0032), so replicas starting together with a migration pending is possible. That is unverified and
   recorded as a risk in PRD-0034.
 
 ### Confirmation

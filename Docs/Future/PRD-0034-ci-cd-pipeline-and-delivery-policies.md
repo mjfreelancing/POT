@@ -57,7 +57,7 @@ apply, are for discovery. The brief's options were:
 | Migrations           | The server image runs the migration runner at start-up, then the API                                                                       | `Source/Docker/Server/entrypoint.sh`; ADR-0009           |
 | Server checks        | `dotnet build` and `dotnet test pot.sln`; integration tests need Docker (Testcontainers)                                                   | `.github/copilot-instructions.md`                        |
 | Client checks        | `lint`, `type:check`, `test` (Vitest) and `build`                                                                                          | `Source/Client/pot-react/package.json`                   |
-| Browser suites       | Dev matrix and production-build matrix, both run by hand; the production-build run gates client-changing PRDs                              | ADR-0042                                                 |
+| Browser suites       | Dev matrix and production-build matrix, both run by hand; the production-build run gates client-changing PRDs                              | ADR-0041                                                 |
 | Contract             | The OpenAPI document is generated at build time and committed; nothing checks that it is current                                           | ADR-0049                                                 |
 | Documentation        | `docs-check` validates ADRs, links and citations; it is run by hand                                                                        | `.github/scripts/docs-check/`                            |
 | Secrets              | Secret values live outside the repository, in a platform store                                                                             | ADR-0025                                                 |
@@ -89,7 +89,7 @@ apply, are for discovery. The brief's options were:
 11. Which dependency and security checks are wanted (dependency updates, vulnerability scanning, secret
     scanning)?
 12. Which existing decisions or open items should be revisited once a pipeline exists? Candidates:
-    ADR-0031, ADR-0042's production-build gate, DD-06 (database version alignment) and DD-07 (generated
+    ADR-0031, ADR-0041's production-build gate, DD-06 (database version alignment) and DD-07 (generated
     client types).
 13. What is the budget for hosted-runner minutes and any paid services?
 
@@ -97,7 +97,7 @@ apply, are for discovery. The brief's options were:
 
 - **Concurrent migration runs (recorded 2026-11-06, accepted for now).**
   - Every API replica runs the migration runner when it starts (ADR-0009).
-  - The API allows 1 to 10 replicas (ADR-0026, "Known scale-out risks"), and a revision can overlap the
+  - The API allows 1 to 10 replicas (ADR-0032, "Known scale-out risks"), and a revision can overlap the
     previous one during a deploy, so replicas that start together while a migration is pending each try
     to apply it.
   - Nothing verifies whether that is safe. EF Core 9 and later take a database lock while migrating, but

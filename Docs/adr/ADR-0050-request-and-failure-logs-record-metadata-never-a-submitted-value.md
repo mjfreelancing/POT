@@ -61,11 +61,8 @@ correlation identifier is how a user's report and a log entry are joined.
 ### Consequences
 
 - Good, because the request log cannot be made to contain a body or a header value in any environment.
-- Bad, because the request log being clean does not make the logs clean. Call logging writes its
-  argument objects at `Information`, and so in every environment: the sign-up and password-reset
-  verification handlers and services log the verification code, `AuthService.RefreshAsync` logs the raw
-  refresh token, and other handlers, services and the email sender log usernames and reference codes.
-  Those statements are outside this decision; PRD-0035 removes them and sets the rule for them.
+- Bad, because a clean request log does not make the logs clean: the application's own log statements
+  are outside this decision, and some write credentials today. PRD-0035 sets their rule.
 - Good, because the correlation identifier joins the caller's report to the server's entries, including
   on requests that failed before a handler ran.
 - Good, because the rule is uniform, so a developer cannot enable verbosity that leaks in development and

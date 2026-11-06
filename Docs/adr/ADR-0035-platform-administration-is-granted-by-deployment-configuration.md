@@ -1,12 +1,12 @@
 ---
-id: ADR-0036
+id: ADR-0035
 title: Platform administration is granted by deployment configuration, not by a role
 status: accepted
 date: 2025-11-09
 area: backend
 ---
 
-# ADR-0036 (backfilled): Platform administration is granted by deployment configuration, not by a role
+# ADR-0035 (backfilled): Platform administration is granted by deployment configuration, not by a role
 
 **Summary:** In the context of a multi-tenant product operated by its author, facing the need for an
 authority above every tenant (today it approves sign-ups from every site), we
@@ -48,9 +48,7 @@ Chosen option: 1. The configuration holds a comma-separated list of user identif
 `PlatformAdmin:UserIds`, each one a user's `RowId`. When the resolved permission set is built, a user
 whose identifier appears in that list also receives the platform permission, on top of whatever their
 roles give them. Everything else about them is an ordinary user: their site, their roles and their data
-are unchanged, apart from guards that keep at least one enabled platform administrator: the last one
-cannot be disabled or deleted by another user, cannot delete their own account, and the site that holds
-them cannot be deleted. A platform administrator who is not the last enabled one has no protection.
+are unchanged.
 
 The authority is kept out of tenant data because platform administration belongs to the product's
 operator, and a tenant is a consumer of the product.
@@ -115,6 +113,11 @@ no platform administrator at all; a well-formed identifier that names no user al
 
 ## More Information
 
+- Guards keep at least one enabled platform administrator: the last one
+  cannot be disabled or deleted by another user, cannot delete their own account, and the site that
+  holds them cannot be deleted. A platform administrator who is not the last enabled one has no
+  protection. [PRD-0027](../Future/PRD-0027-platform-administration.md) plans broader refusals for its
+  cross-tenant operations (no configured platform administrator deleted, no site holding one deleted).
 - Platform authority is added to the caller's ordinary permissions on each request, which is the
   permission-resolution decision recorded in
   [ADR-0021](ADR-0021-each-request-resolves-the-callers-permissions-from-the-database.md).

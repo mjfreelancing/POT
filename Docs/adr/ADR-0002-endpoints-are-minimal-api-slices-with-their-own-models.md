@@ -10,8 +10,8 @@ area: backend
 
 **Summary:** In the context of an API with no views and a client that calls it operation by operation,
 facing the choice between controllers shared per resource and a handler per operation, we decided that
-each operation is a minimal API slice with its own request and response models, a static handler and
-hand-written mapping, to achieve operations that change independently and declare exactly what they
+each operation is a minimal API slice with its own request and response models and a static handler,
+to achieve operations that change independently and declare exactly what they
 return, accepting some repetition between similar operations.
 
 ## Context and Problem Statement
@@ -36,7 +36,7 @@ returning entities or generated handlers were weighed.
 
 ## Considered Options
 
-1. One minimal API slice per operation, with per-operation models and hand-written mapping.
+1. One minimal API slice per operation, with per-operation models.
 2. Controllers grouped by resource, with shared request models.
 3. Minimal APIs returning entities directly, with no separate models.
 4. Handlers generated from the contract.
@@ -45,16 +45,13 @@ returning entities or generated handlers were weighed.
 
 Chosen option: 1. Each operation has its own folder in the host containing its handler, its request and
 response models, its request mapping and its request validator, and a folder of the same name in the
-application layer holding its service, input and output models, mapping and entity checks. Handlers are static and take only the services
-they use; one handler is an exception and returns an untyped result. Most response models derive from one
-shared base carrying the row identifier and version, so "its own model" means what the operation adds
-rather than a type built from nothing.
+application layer holding its service, input and output models, mapping and entity checks. Handlers are
+static and take only the services they use; one handler is an exception and returns an untyped result.
+Most response models derive from one shared base carrying the row identifier and version, so "its own
+model" means what the operation adds rather than a type built from nothing.
 
-The standard failures (the validation-problem `400` and the `500`) and the rate-limit policy are declared
-once per feature group, so a new route in a feature inherits them. Each operation declares its own success
-response, its authorization and the failures specific to it, such as `401`, `404`, `409` and the
-request-body `408` and `413`. Mapping is written by hand — no mapping library is referenced — so a
-shape change is a compile error rather than a silent convention.
+Metadata shared by a feature's routes is declared once on its group, and each operation declares its own
+success response, authorization and the failures specific to it.
 
 Endpoints are registered as a chain of per-feature extension methods, so the registration reads as the
 API's surface.
@@ -68,8 +65,6 @@ API's surface.
   is declared at the group or the operation it applies to, rather than in a controller-wide pipeline.
 - Bad, because similar operations repeat similar models instead of sharing one, which looks like
   duplication until the operations diverge.
-- Bad, because hand-written mapping is more code than a convention-based mapper, and every new field is
-  a second edit.
 - Bad, because a shared behaviour must be applied per slice or per group, where a controller base class
   would have offered inheritance.
 
@@ -81,8 +76,6 @@ API's surface.
 - Test: `OpenApiSecurityFixture.Should_Use_Distinct_Schemas_For_Feature_Specific_Requests_And_Responses`
   asserts that operations publish feature-specific request and response schemas rather than one shared
   `Request` or `Response`.
-- Review: the hand-written mapping has no mechanical check; the evidence is that no mapping library is
-  referenced, so adding one is the change that would need challenging.
 - Review: a shared request model introduced between operations is a decision to be challenged, not a
   refactor; only genuinely common shapes are shared.
 
@@ -111,5 +104,12 @@ API's surface.
 
 ## More Information
 
+- The standard failures (the validation-problem `400` and the `500`) and the rate-limit policy are the
+  metadata declared per feature group, so a new route in a feature inherits them. An operation's own
+  failures include `401`, `404`, `409` and the request-body `408` and `413`.
+- Related convention: mapping between request, input, output and response models is written by hand,
+  and no mapping library is referenced, so a shape change is a compile error rather than a silent
+  convention. The cost is more code than a convention-based mapper, and every new field is a second
+  edit. Nothing checks it mechanically; adding a mapping library is the change to challenge.
 - The layering the slices sit in is a separate decision.
 - The contract document each slice contributes to is a separate decision.

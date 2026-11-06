@@ -1,14 +1,14 @@
 ---
-id: ADR-0044
+id: ADR-0043
 title: Playwright E2E testing infrastructure
 status: superseded
 date: 2026-09-02
 area: cross-cutting
 related-prds: [PRD-0012]
-superseded-by: [ADR-0041, ADR-0043, ADR-0042, ADR-0051, ADR-0046]
+superseded-by: [ADR-0040, ADR-0042, ADR-0041, ADR-0051, ADR-0045]
 ---
 
-# ADR-0044 (legacy): Playwright E2E testing infrastructure
+# ADR-0043 (legacy): Playwright E2E testing infrastructure
 
 ## Clarifications
 

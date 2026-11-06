@@ -40,10 +40,7 @@ easily LINQ queries compose. The record does not show whether the other options 
 
 Chosen option: 1. Entity Framework Core 10 with the Npgsql provider is referenced centrally, entities are
 configured in code, migrations are generated from the model, and reads compose LINQ projections.
-Conventions are applied centrally in `DbContextBase` rather than per entity: entity naming, `RowId`
-value generation, enriched enum storage and restricted cascades. The four tenant query filters are
-declared per entity in `PotDbContext`. Reads do not track by default. Identity resolution is enabled, so
-a query that reaches the same row twice materialises one instance of it.
+Conventions that apply to every entity are set once on the context rather than per entity.
 
 ### Consequences
 
@@ -51,8 +48,8 @@ a query that reaches the same row twice materialises one instance of it.
   runtime failure.
 - Good, because migrations follow the model, so schema history is derived rather than remembered.
 - Good, because projections compose, which is how the read endpoints are written.
-- Bad, because tracking is on by default and quietly expensive; the code has to make no-tracking the
-  default rather than the exception.
+- Bad, because the framework tracks by default, which is quietly expensive, so the code has to override
+  that default ([ADR-0011](ADR-0011-services-access-data-through-feature-repositories.md)).
 - Bad, because some queries translate poorly or not at all, so the model is shaped partly by what the
   provider can turn into SQL.
 - Bad, because the generated SQL is not visible in review, so a costly query is easy to write.
@@ -90,7 +87,13 @@ a query that reaches the same row twice materialises one instance of it.
 
 ## More Information
 
-- No-tracking reads are part of the repository access model,
+- The central conventions live in `DbContextBase`: entity naming and `RowId` value generation
+  ([ADR-0014](ADR-0014-only-guid-row-identifiers-are-exposed.md)), enriched enumerations stored by name
+  ([ADR-0006](ADR-0006-enumerations-are-stored-by-name.md)) and restricted cascades
+  ([ADR-0008](ADR-0008-cascades-are-restricted-and-deletion-is-an-explicit-ordered-sweep.md)). The four
+  tenant query filters are declared per entity in `PotDbContext`
+  ([ADR-0030](ADR-0030-tenant-confinement-is-structural-query-filters-and-site-scoped-reads.md)).
+- Untracked reads with identity resolution are part of the repository access model,
   [ADR-0011](ADR-0011-services-access-data-through-feature-repositories.md). Explicit transactions are
   [ADR-0029](ADR-0029-transactions-are-explicit-and-only-where-writes-must-be-one-unit.md).
 - The database engine choice is [ADR-0005](ADR-0005-postgresql-is-the-relational-datastore.md).

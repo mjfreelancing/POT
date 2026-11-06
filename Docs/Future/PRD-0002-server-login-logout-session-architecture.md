@@ -204,7 +204,7 @@ Targeted execution convention (from repo guidance):
 | Decision                          | Resolution                                                                                                         | ADR                                                                                              |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
 | How a sign-in is represented      | An `AuthSession` row per login; the legacy single refresh-token columns are removed                                | [ADR-0022](../adr/ADR-0022-access-tokens-are-short-lived-and-backed-by-a-server-side-session.md)     |
-| What each kind of revocation ends | Logging out ends that session without bumping the token version; a password change bumps it and ends every session | [ADR-0037](../adr/ADR-0037-access-tokens-are-rejected-once-their-session-or-user-version-changes.md) |
+| What each kind of revocation ends | Logging out ends that session without bumping the token version; a password change bumps it and ends every session | [ADR-0036](../adr/ADR-0036-access-tokens-are-rejected-once-their-session-or-user-version-changes.md) |
 
 ## Related Documents
 

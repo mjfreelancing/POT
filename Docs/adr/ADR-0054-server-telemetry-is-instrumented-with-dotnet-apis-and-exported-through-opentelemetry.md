@@ -56,12 +56,10 @@ OTLP is accepted by every mainstream backend, so the backend stays a deployment 
 - **Code instruments with `ActivitySource`, `Meter` and `ILogger` only.** Only the host project
   references OpenTelemetry packages; the application, data and email projects reference none
   ([ADR-0003](ADR-0003-the-server-is-layered-with-feature-slices-mirrored-across-layers.md)).
-- **Each component owns one `ActivitySource` and one `Meter`, named after its assembly** (`Pot.App`,
-  `Pot.EmailSender`, `Pot.AspNetCore`), with the names held as constants the host registers. A source
-  the host does not register emits nothing.
+- **The host registers every source and meter the components declare.** A source the host does not
+  register emits nothing.
 - **The host enables automatic instrumentation** for inbound ASP.NET Core requests, outgoing HTTP and
-  Npgsql. The health probes produce no span, as they produce no request log entry
-  ([ADR-0050](ADR-0050-request-and-failure-logs-record-metadata-never-a-submitted-value.md)).
+  Npgsql.
 - **W3C trace context links the signals.** A log entry written inside an activity carries its trace and
   span identifiers.
 - **Queued work keeps its parent.** Whatever queues work captures the current activity context with it,
@@ -97,15 +95,15 @@ whether the trace identifier replaces the correlation identifier are decided in 
 
 - Test: an integration fixture with an `ActivityListener` asserts that a request produces a server span
   with a database child span, that a request which queues an email produces a consumer span linked to
-  the request's trace, and that a health probe produces no span.
+  the request's trace.
 - Test: a fixture asserts that every `ActivitySource` and `Meter` name declared in the server assemblies
   is registered by the host.
 - Test: a fixture asserts that no server project other than the host references an OpenTelemetry
   package.
 - Instruction: `.github/instructions/server.instructions.md` names the source to use and the rule for
   queued work, citing this record once it is accepted.
-- Review: a span started from anything other than its component's source, or work queued without its
-  activity context, is a defect.
+- Review: a source or meter the host does not register, or work queued without its activity context, is
+  a defect.
 
 ## Pros and Cons of the Options
 
@@ -133,5 +131,8 @@ whether the trace identifier replaces the correlation identifier are decided in 
 ## More Information
 
 - The request log stays as ADR-0050 decides.
+- How sources and meters are named, and whether the health probes produce spans, are settled in
+  PRD-0035. One source and one meter per assembly, named after it (`Pot.App`, `Pot.EmailSender`,
+  `Pot.AspNetCore`), is the starting proposal.
 - Whether a value may enter telemetry, and in what form, is the data rule PRD-0035 settles. If discovery
   finds that rule architectural, it raises its own record.

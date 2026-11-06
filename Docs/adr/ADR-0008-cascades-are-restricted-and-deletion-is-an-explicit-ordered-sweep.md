@@ -44,12 +44,11 @@ permanent hard delete, and the user and site sweeps carry it out.
 
 ## Decision Outcome
 
-Chosen option: 1. A model convention, `DbContextBase.DisableCascadeDelete`, sets every foreign key on an
-entity type to restrict, so a new relationship restricts without being configured. Removing a user or a
-site is a sequence of named repository operations in dependency order — children, then the parent —
-inside one save, so the whole removal either applies or does not. An account is not swept: deleting one
-that still has expenses or incomes is refused with a business error, and expenses and incomes are deleted
-one row at a time.
+Chosen option: 1. A model convention sets every foreign key on an entity type to restrict, so a new
+relationship restricts without being configured. Removing a record together with what depends on it is
+a sequence of named repository operations in dependency order — children, then the parent — inside one
+save, so the whole removal either applies or does not. A record whose dependents are not swept cannot be
+deleted while they exist.
 
 The join tables that link roles to permissions and users to roles are the exception: they are not entity
 types of their own, so the convention does not reach them and their keys keep the framework's default
@@ -111,6 +110,10 @@ fails rather than returning a tombstone.
 
 ## More Information
 
+- The convention is `DbContextBase.DisableCascadeDelete`. The sweeps that exist are the user and site
+  removals of [PRD-0022](../Future/PRD-0022-user-and-site-deletion.md).
+- A financial account is not swept: deleting one that still has expenses or incomes is refused with a
+  business error, and expenses and incomes are deleted one row at a time.
 - A sweep is all-or-nothing because it is one save, not because of an explicit transaction; when an
   explicit transaction is used instead is
   [ADR-0029](ADR-0029-transactions-are-explicit-and-only-where-writes-must-be-one-unit.md).

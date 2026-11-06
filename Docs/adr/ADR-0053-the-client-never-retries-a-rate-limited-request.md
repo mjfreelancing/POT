@@ -4,7 +4,7 @@ title: The client never retries a rate-limited request
 status: accepted
 date: 2026-11-06
 area: frontend
-supersedes: [ADR-0045]
+supersedes: [ADR-0044]
 ---
 
 # ADR-0053: The client never retries a rate-limited request
@@ -31,14 +31,13 @@ The client does not retry a `429` today, but nothing makes it so on purpose:
   `Source/Client/pot-react/src/main.tsx` configures no `retry`.
 - Those retries never fire only because `useGet` resolves every failure as a `FailResult` value instead of
   throwing (`performOperation` in `src/api/hooks/useApi.ts`; see
-  [ADR-0017](ADR-0017-server-state-lives-in-a-query-cache-over-one-http-client.md) and
+  [ADR-0017](ADR-0017-server-state-lives-in-a-tanstack-query-cache-with-explicit-invalidation.md) and
   [ADR-0018](ADR-0018-api-hooks-return-results-and-one-interceptor-normalises-failures.md)). A query function
   that threw would start retrying every `429`, and no test would notice.
 
-The rule was first written as D-2 of [ADR-0045](ADR-0045-retry-after-client-cooldown-handling.md), a proposed
-design for PRD-0014, and restated in [ADR-0035](ADR-0035-a-rate-limited-caller-is-told-when-to-retry.md), which
-stays proposed with that PRD. The rule does not depend on the PRD: it describes the client as it is, so it
-is recorded here on its own and is binding now.
+The rule was first written as D-2 of [ADR-0044](ADR-0044-retry-after-client-cooldown-handling.md), a proposed
+design for PRD-0014. The rule does not depend on the PRD: it describes the client as it is, so it is
+recorded here on its own and is binding now.
 
 ## Decision Drivers
 
@@ -64,8 +63,7 @@ Chosen option: 1, because a `429` is an answer, not a fault.
 - **Option 4** is how a `429` retry would arrive unnoticed, because the library default is three retries.
 
 The rule covers every path that could resend a request: the axios interceptors, the `retry` option of a
-query or a mutation, the `QueryClient` defaults, and any loop written by hand. What the user is shown
-instead is [ADR-0035](ADR-0035-a-rate-limited-caller-is-told-when-to-retry.md).
+query or a mutation, the `QueryClient` defaults, and any loop written by hand.
 
 ### Consequences
 
@@ -90,7 +88,7 @@ instead is [ADR-0035](ADR-0035-a-rate-limited-caller-is-told-when-to-retry.md).
 
 - The server policy that produces a `429`:
   [ADR-0034](ADR-0034-one-chained-rate-limit-policy-partitions-by-caller.md).
-- What the user is shown when a `429` arrives: [ADR-0035](ADR-0035-a-rate-limited-caller-is-told-when-to-retry.md),
-  proposed with [PRD-0014](../Future/PRD-0014-retry-after-client-cooldown-handling.md). PRD-0014's test plan
+- What the user is shown when a `429` arrives is a requirement of
+  [PRD-0014](../Future/PRD-0014-retry-after-client-cooldown-handling.md) (R1, R3 and R5). PRD-0014's test plan
   includes an interceptor test that a `429` is never retried. Once written, that test is this record's
   confirmation.

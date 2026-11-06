@@ -10,9 +10,10 @@ area: backend
 
 **Summary:** In the context of local accounts with no external identity provider, facing the need to
 prove an email address is reachable and to reset a forgotten password without revealing whether an
-account exists, we decided to issue single-use, expiring codes for verification and reset, to email a
-temporary password once a reset is verified, and to answer a reset request the same way whether or not
-the account exists, accepting the codes' extra state and the cost of a temporary password.
+account exists, we decided to prove control of the address with single-use, expiring codes held by the
+server and to end a verified reset with a temporary password sent only by email, to achieve one
+mechanism for both flows with nothing secret in a URL, accepting the codes' extra state and the cost of
+a temporary password.
 
 ## Context and Problem Statement
 
@@ -39,20 +40,17 @@ and its answer must not depend on the truth.
 
 ## Decision Outcome
 
-Chosen option: 1. Verification and reset codes are rows keyed by username, reason and reference code,
-carrying an expiry, an attempt count and a status, with indexes matching the queries that find expired
-codes, count failures and invalidate the previous active code for a username. A code is six digits,
-expires fifteen minutes after issue and fails after three wrong attempts, after which a new request is
-needed; once three requests for a username have failed within five minutes, further wrong codes are
-refused as too many attempts. A new request invalidates the earlier active code for that username.
+Chosen option: 1. Sign-up and password reset prove control of an address with a code the server stores
+against the request. A code works once, expires on its own, stops working after a limited number of
+wrong attempts, and is invalidated by a later request for the same username. A verified reset ends in a
+temporary password that travels only by email.
 
-A reset request is answered identically whether or not the account exists, and the temporary password
-it produces travels only by email.
+A reset request must be answered identically whether or not the account exists.
 
 ### Consequences
 
-- Good, because codes expire, are counted and are invalidated by a later request, so a leaked earlier
-  code is not a permanent key.
+- Good, because codes expire and are invalidated by a later request, so a leaked earlier code is not a
+  permanent key. Wrong attempts are meant to be counted too, but are not yet (More Information).
 - Bad, because a code is not unconditionally consumed: a matched code whose username became taken
   returns a refusal with the row still active and no attempt counted, so it can be retried until it
   expires.
@@ -102,9 +100,19 @@ it produces travels only by email.
 
 ## More Information
 
+- The codes as built: verification and reset codes are rows keyed by username, reason and reference
+  code, carrying an expiry, an attempt count and a status, with indexes matching the queries that find
+  expired codes, count failures and invalidate the previous active code for a username. A code is six
+  digits and expires fifteen minutes after issue. It is meant to fail after three wrong attempts, after
+  which a new request is needed, and once three requests for a username have failed within five minutes,
+  further wrong codes are meant to be refused as too many attempts.
+- The attempt limit is the intended behaviour but is not enforced across requests: `VerifySignupService`
+  and `VerifyPasswordResetService` call `SaveAsync` only on success, so the incremented `AttemptCount`
+  and the `Failed` status are never persisted, and the per-username too-many-attempts refusal never
+  trips. Until that is fixed, expiry and the HTTP rate limit are the only brakes on guessing a code.
 - How passwords, including the temporary one, are stored is
   [ADR-0023](ADR-0023-passwords-are-hashed-with-the-framework-hasher.md).
 - Which sessions are ended by a password change is
-  [ADR-0037](ADR-0037-access-tokens-are-rejected-once-their-session-or-user-version-changes.md). Completing a
+  [ADR-0036](ADR-0036-access-tokens-are-rejected-once-their-session-or-user-version-changes.md). Completing a
   reset ends none: it replaces the password hash only.
 - Email delivery is queued in process: [ADR-0027](ADR-0027-email-is-queued-in-process.md).

@@ -11,9 +11,9 @@ area: backend
 **Summary:** In the context of application services that need data but must be testable without a
 database, facing the choice between injecting the persistence context and injecting a named repository,
 we decided that every read and write goes through a feature-specific repository interface split into
-read-only and persistable capabilities, with reads untracked by default, to achieve named data access the
-service code reads as intent and a persistence layer that can be substituted in tests, accepting a
-repository method per query shape and some ceremony for the tracking opt-in.
+read-only capabilities, whose reads are untracked, and persistable ones that opt into tracking, to achieve
+named data access the service code reads as intent and a persistence layer that can be substituted in
+tests, accepting a repository method per query shape and some ceremony for the tracking opt-in.
 
 ## Context and Problem Statement
 
@@ -38,8 +38,7 @@ cost; the record does not show whether they were weighed before the choice.
 
 ## Considered Options
 
-1. Feature-specific repository interfaces, split into read-only and persistable, with untracked reads by
-   default.
+1. Feature-specific repository interfaces, split into read-only (untracked) and persistable.
 2. Inject the context into services and query directly.
 3. One generic repository over all entities.
 4. No repository, and a query object per operation.
@@ -47,11 +46,11 @@ cost; the record does not show whether they were weighed before the choice.
 ## Decision Outcome
 
 Chosen option: 1. Each feature has repository interfaces — plural where the capabilities differ — naming
-the queries the feature needs. Read interfaces expose only reads, persistable ones add the operations
-that change state. Some entity repositories expose a single named queryable that services compose for
-filters the repository does not anticipate; the tenant-scoped repositories for users and sites expose
-none, because composing them would bypass the confinement they exist to enforce. Writes opt into
-tracking explicitly; reads do not track.
+the queries the feature needs. A read interface exposes only reads, and what it returns is untracked; a
+persistable interface adds the operations that change state, and a write opts into tracking explicitly.
+Some entity repositories expose a single named queryable that services compose for filters the
+repository does not anticipate; a tenant-scoped repository exposes none, because composing it would
+bypass the confinement it exists to enforce.
 
 ### Consequences
 
