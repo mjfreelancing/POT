@@ -82,8 +82,6 @@ directly; the rest are as the reviewers reported.
 - **F-17. The client's "features never import features" rule is false in practice.**
   `Source/Client/pot-react/DEVELOPER.md:260` states it, and the client instruction says shared layers
   "must never depend on features"; both are contradicted by the code. See DD-13.
-- **F-18. `Docs/AUTHENTICATION.md:2101`** says invalid platform-admin GUIDs are "ignored". They fail
-  start-up.
 - **F-19. Stale code comments:**
   - `playwright.config.ts:93-95` and `playwright.prod.config.ts:40-42` say "no mail is delivered".
   - `e2e/approvals/approvals.test.ts:17-23` says "no delete-user API".

@@ -163,8 +163,8 @@ If hybrid/tab policies are used, load order must be:
 
 ## Decisions Carried Into This Document
 
-| Decision                      | Resolution                                                                              | ADR                                                                                          |
-| ----------------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Decision                      | Resolution                                                                              | ADR                                                                                              |
+| ----------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | How browser storage is scoped | Every key is keyed by environment and by user, as D001–D007 record                      | [ADR-0039](../adr/ADR-0039-browser-storage-is-keyed-by-environment-and-user.md)                  |
 | How a sign-in is represented  | One session row per sign-in, with the refresh token stored as a hash and rotated on use | [ADR-0022](../adr/ADR-0022-access-tokens-are-short-lived-and-backed-by-a-server-side-session.md) |
 
@@ -363,7 +363,7 @@ Plan:
 
   Updated 17 Oct 2026: the access token embeds the session RowId as a `session_id` claim, and every authenticated
   request rejects a token whose session is missing, revoked or expired. `TokenVersion` is unchanged and still
-  covers global revokes. See `Docs/AUTHENTICATION.md` ("Session vs TokenVersion: Separate Controls").
+  covers global revokes. See `Docs/AUTHENTICATION.md` ("Session vs Token Version: Separate Controls").
 
 ## Phase 3: Test strategy
 

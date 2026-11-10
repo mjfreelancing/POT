@@ -19,11 +19,11 @@ serves none of them is not in this plan.
 
 Three checks, each run by a person in a few minutes:
 
-| Criterion | Check |
-| --- | --- |
+| Criterion          | Check                                                                                                                                                                                                                                                                                               |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **No duplication** | Review every topic in the W2 list in `DOCS-WORK-LISTS.md`: each has one authoritative document, and other documents link to it or omit redundant detail. Use `docs-check -ReportFacts` only as a diagnostic; its broad word matches and limited file scope make it unsuitable as a completion gate. |
-| **Nothing false** | Every W1 item has been confirmed against the code and fixed. No sample, version or role name contradicts what a reader would find in the repository. |
-| **Easy to find** | From [Docs/README.md](Docs/README.md), any fact is two hops away, and a new document has an obvious row. An agent adding content finds a home for it without inventing one. |
+| **Nothing false**  | Every W1 item has been confirmed against the code and fixed. No sample, version or role name contradicts what a reader would find in the repository.                                                                                                                                                |
+| **Easy to find**   | From [Docs/README.md](Docs/README.md), any fact is two hops away, and a new document has an obvious row. An agent adding content finds a home for it without inventing one.                                                                                                                         |
 
 ## Rules
 
@@ -129,25 +129,25 @@ W3 and one setup-docs item in W1. Nothing else waits on them.
 
 ## Process lives in the skills, not in records
 
-| Work | Procedure | Format |
-| --- | --- | --- |
-| Discovering a PRD | `.github/skills/prd-discovery/` | `.github/skills/prd-discovery/references/prd.template.md` |
-| Delivering a PRD | `.github/skills/prd-delivery/` | the PRD template's Verification Evidence section |
-| Writing an ADR | `.github/skills/adr/` | `.github/skills/adr/references/adr.template.md` |
-| Amending a Complete PRD | `prd-delivery` close-out | the `AM-n` shape in the PRD template |
-| Coding conventions | `.github/instructions/` | `Docs/standards/rule-template.md` |
+| Work                    | Procedure                       | Format                                                    |
+| ----------------------- | ------------------------------- | --------------------------------------------------------- |
+| Discovering a PRD       | `.github/skills/prd-discovery/` | `.github/skills/prd-discovery/references/prd.template.md` |
+| Delivering a PRD        | `.github/skills/prd-delivery/`  | the PRD template's Verification Evidence section          |
+| Writing an ADR          | `.github/skills/adr/`           | `.github/skills/adr/references/adr.template.md`           |
+| Amending a Complete PRD | `prd-delivery` close-out        | the `AM-n` shape in the PRD template                      |
+| Coding conventions      | `.github/instructions/`         | `Docs/standards/rule-template.md`                         |
 
 `Docs/README.md` keeps a short "how we write docs" section, because a skill only loads for an agent: a
 person editing a document still needs the placement rule in front of them.
 
 ## What this plan dropped from v1, and why
 
-| Dropped | Why |
-| --- | --- |
-| A predetermined batch of about eighty ADRs | A fixed count and preassigned record set would treat every inventory row as equally significant. Replaced by W4's evidence-led historical review: preserve consequential decisions, group related records for navigation, and do not invent rationale. |
-| Retrofitting twenty-nine old amendment notes | None of the three criteria needs history reorganised; the convention matters from now on, applied when a change actually contradicts a Complete PRD. |
-| Four process ADRs and three standards ADRs | Process belongs in the skills and the two guides; the standards records restated the rule documents' own headings. Removed; the rule documents stand on their own. |
-| Status and tier machinery on the decision inventory | It was planning overhead for a programme that no longer exists. The inventory is now a menu with a priority hint. |
+| Dropped                                             | Why                                                                                                                                                                                                                                                    |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| A predetermined batch of about eighty ADRs          | A fixed count and preassigned record set would treat every inventory row as equally significant. Replaced by W4's evidence-led historical review: preserve consequential decisions, group related records for navigation, and do not invent rationale. |
+| Retrofitting twenty-nine old amendment notes        | None of the three criteria needs history reorganised; the convention matters from now on, applied when a change actually contradicts a Complete PRD.                                                                                                   |
+| Four process ADRs and three standards ADRs          | Process belongs in the skills and the two guides; the standards records restated the rule documents' own headings. Removed; the rule documents stand on their own.                                                                                     |
+| Status and tier machinery on the decision inventory | It was planning overhead for a programme that no longer exists. The inventory is now a menu with a priority hint.                                                                                                                                      |
 
 ## Sequencing
 
@@ -162,13 +162,13 @@ commit.
 
 ## Progress
 
-| Workstream | State |
-| --- | --- |
-| Foundations (v1 Phase 1) | Done 2026-11-02: `docs-check` with 14 Pester tests, the ADR and PRD templates (with their skills), the docs map, the rule documents, `AGENTS.md`, and the skill changes. The seven meta records were removed when this plan replaced v1. |
-| W1 Truth pass | In progress: W1 item 1 corrected in the working tree; pending owner review. |
-| W2 Dedup pass | Not started. |
-| W3 Move and split | Not started. |
-| W4 Decision-history review | In progress: criteria and initial candidate gaps updated in the working tree; pending owner review. |
+| Workstream                 | State                                                                                                                                                                                                                                    |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Foundations (v1 Phase 1)   | Done 2026-11-02: `docs-check` with 14 Pester tests, the ADR and PRD templates (with their skills), the docs map, the rule documents, `AGENTS.md`, and the skill changes. The seven meta records were removed when this plan replaced v1. |
+| W1 Truth pass              | In progress: `AUTHENTICATION.md` and the server guide's token/claims text corrected (W1 items 1–4 and the server-guide claims block); pending owner review.                                                                              |
+| W2 Dedup pass              | Not started.                                                                                                                                                                                                                             |
+| W3 Move and split          | Not started.                                                                                                                                                                                                                             |
+| W4 Decision-history review | In progress: criteria and initial candidate gaps updated in the working tree; pending owner review.                                                                                                                                      |
 
 ## Verifying a change
 
