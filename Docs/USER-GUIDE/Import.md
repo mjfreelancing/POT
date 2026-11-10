@@ -10,7 +10,6 @@
 
 ## Available to
 
-- Site Owners (full access)
 - Admins (full access)
 
 ## Key Features
@@ -23,7 +22,7 @@
 
 ## Permission-Based Features
 
-### For Site Owners & Admins
+### For Admins
 
 [Content to be added]
 

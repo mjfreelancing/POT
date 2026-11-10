@@ -8,7 +8,6 @@ It also surfaces a stable Daily Need value, which answers: how much should I set
 
 ## Available to
 
-- Site Owners
 - Admins
 - Viewers
 
@@ -53,7 +52,7 @@ It also surfaces a stable Daily Need value, which answers: how much should I set
 - Use period filtering
 - Open and inspect dashboard item context menus (view-level interactions)
 
-### For Site Owners & Admins
+### For Admins
 
 - Execute quick actions that mutate schedules/accrual state
 - Perform account and expense maintenance workflows from linked pages

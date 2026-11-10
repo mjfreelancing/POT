@@ -8,7 +8,6 @@
 
 ## Available to
 
-- Site Owners (full access)
 - Admins (full access)
 - Viewers (view only)
 
@@ -30,7 +29,7 @@ Hover any column heading to see a hint describing what that column shows.
 
 [Content to be added]
 
-### For Site Owners & Admins
+### For Admins
 
 [Content to be added]
 

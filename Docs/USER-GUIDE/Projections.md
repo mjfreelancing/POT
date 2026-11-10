@@ -9,7 +9,6 @@ The page is read-only and designed for analysis.
 
 ## Available to
 
-- Site Owners
 - Admins
 - Viewers
 
@@ -243,7 +242,7 @@ Start date persistence rules:
   - tooltips
   - details sheet for bar metrics
 
-### For Site Owners And Admins
+### For Admins
 
 - Same projections behavior as viewers.
 

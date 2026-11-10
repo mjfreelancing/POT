@@ -2,7 +2,7 @@
 
 This guide provides detailed instructions for using each feature in POT (Pay On Time).
 
-Each page includes step-by-step instructions with screenshots, explains what to enter and how to interpret results, and details how features vary based on your permissions (Site Owner, Admin, or Viewer).
+Each page includes step-by-step instructions with screenshots, explains what to enter and how to interpret results, and details how features vary based on your permissions (Admin or Viewer).
 
 ## Getting Started - Build Your Financial System
 
@@ -26,7 +26,7 @@ Once your system is set up, use these tools to maintain and protect your data:
 Customize your experience and manage access:
 
 8. **[Settings](Settings.md)** - Configure user preferences and site settings
-9. **[Users](Users.md)** - Invite and manage users (Site Owners & Admins only)
+9. **[Users](Users.md)** - Invite and manage users (Admins only)
 
 ## Platform Administration
 
@@ -74,8 +74,7 @@ If you're setting up POT for the first time:
 
 POT uses role-based permissions to control access:
 
-- **Site Owner** - Full control over site settings, users, and all financial data
-- **Admin** - Can manage financial data and invite users (cannot modify site settings)
+- **Admin** - Full control over site settings, users, and all financial data
 - **Viewer** - Can view financial data but cannot modify anything
 
 **Platform Admin** is a special role with `platform:manage` permission for cross-site administration tasks like approving new user registrations.

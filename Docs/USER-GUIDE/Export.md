@@ -8,7 +8,6 @@
 
 ## Available to
 
-- Site Owners
 - Admins
 - Viewers
 

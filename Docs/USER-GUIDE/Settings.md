@@ -8,8 +8,7 @@
 
 ## Available to
 
-- Site Owners (full access including site settings)
-- Admins (personal settings only)
+- Admins (full access including site settings)
 - Viewers (personal settings only)
 
 ## Key Features
@@ -26,7 +25,7 @@
 
 [Content to be added]
 
-### For Site Owners
+### For Admins
 
 [Content to be added]
 

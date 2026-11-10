@@ -9,14 +9,16 @@ This document provides a high-level overview of POT's technical architecture.
 - **React 19** - Modern UI library with latest features
 - **TypeScript 6** - Type-safe development
 - **Vite 8** - Fast build tool and dev server
-- **TailwindCSS** - Utility-first CSS framework
+- **Tailwind CSS v4** - Utility-first CSS framework
 - **shadcn/ui** - High-quality, customizable UI components
 - **React Router v8** - Client-side routing
-- **React Query** - Server state management and caching
-- **Zustand** - Global state management
+- **TanStack Query** - Server state management and caching
+- **TanStack Table** - Headless table and data-grid primitives
+- **Zustand** - Small global client state (user session details, UI preferences)
 - **React Hook Form** - Form handling
 - **Zod** - Schema validation
 - **Recharts** - Data visualization
+- **vite-plugin-pwa** - Installable app shell with offline precache
 
 ### Backend
 
@@ -26,6 +28,8 @@ This document provides a high-level overview of POT's technical architecture.
 - **Entity Framework Core** - Object-relational mapping
 - **PostgreSQL** - Relational database
 - **FluentValidation** - Input and business validation
+- **AllOverIt** - Helper, validation, result and dependency-injection library family
+- **Scalar** - OpenAPI reference UI, enabled in Development only
 - **MailKit** - Email sending
 - **JWT** - Token-based authentication
 
@@ -45,8 +49,13 @@ POT/
 │   │   │   ├── features/                     # Feature modules (auth, accounts, expenses, etc.)
 │   │   │   ├── components/                   # Reusable UI components
 │   │   │   ├── api/                          # API integration layer
+│   │   │   ├── concerns/                     # Cross-cutting concerns (auth, cache, pwa, errors)
+│   │   │   ├── contexts/                     # React context providers (access token, auth)
+│   │   │   ├── data/                         # Zod schemas and API data types
+│   │   │   ├── hooks/                        # Shared hooks
 │   │   │   ├── lib/                          # Utilities and helpers
-│   │   │   └── store/                        # Global state management
+│   │   │   ├── routes/                       # Route definitions
+│   │   │   └── stores/                       # Zustand stores (client-only state)
 │   │   └── DEVELOPER.md                      # Frontend development guide
 │   │
 │   ├── Server/                               # ASP.NET Core backend
@@ -58,23 +67,22 @@ POT/
 │   │   ├── Pot.Data/                         # EF Core data access
 │   │   ├── Pot.Data.Tests/                   # Unit tests for data layer
 │   │   ├── Pot.Data.Migrations/              # Database migrations
-│   │   ├── Pot.Shared/                       # DTOs and shared types
 │   │   ├── Pot.EmailSender/                  # Email infrastructure
+│   │   ├── Pot.RazorComponents/              # Razor email templates
+│   │   ├── Pot.Shared/                       # DTOs and shared types
+│   │   ├── Pot.Shared.Tests/                 # Unit tests for shared types
 │   │   ├── Pot.TestUtils/                    # Shared test helpers and utilities
 │   │   └── DEVELOPER.md                      # Backend development guide
 │   │
 │   └── Docker/                               # Docker configuration
 │       ├── docker-compose-client-server.yml
-│       ├── .env                              # Base environment variables
+│       ├── .env                              # Base environment variables (tracked)
 │       ├── .env.development.template         # Tracked development env template
-│       ├── .env.development                  # Development settings
+│       ├── .env.development                  # Development settings (local, ignored)
 │       └── DEVELOPER.md                      # Docker development guide
 │
-├── Docs/                                     # Documentation
-│   ├── GETTING-STARTED.md                    # Setup and installation
-│   ├── FEATURES.md                           # Feature descriptions
-│   └── ARCHITECTURE.md                       # This file
-│
+├── contracts/openapi/v1.json                 # Build-generated OpenAPI contract (committed)
+├── Docs/                                     # Documentation (see Docs/README.md)
 └── README.md                                 # Project overview
 ```
 
@@ -85,9 +93,9 @@ The frontend follows a **feature-based architecture** where related code is grou
 **Key Patterns:**
 
 - Feature modules in `src/features/` (auth, accounts, expenses, income, etc.)
-- Centralized API layer with React Query
+- Centralized API layer with TanStack Query
 - Type-safe API communication with custom Result pattern
-- Global state with Zustand, server state with React Query
+- Global client state with Zustand, server state with TanStack Query
 - Component composition with shadcn/ui primitives
 
 **For detailed frontend patterns:** See `Source/Client/pot-react/DEVELOPER.md`
@@ -231,7 +239,7 @@ Database migrations are managed in the `Pot.Data.Migrations` project.
 
 ## Docker Setup
 
-POT runs in Docker containers for consistent development and deployment:
+POT runs in Docker containers for consistent development. The local stack is:
 
 - **PostgreSQL container** - Database
 - **ASP.NET Core container** - Backend API
@@ -268,8 +276,8 @@ The frontend communicates with the backend via RESTful APIs:
 
 ## State Management Strategy
 
-- **Server state** - React Query (API data, caching, synchronization)
-- **Global state** - Zustand (authentication, user preferences)
+- **Server state** - TanStack Query (API data, caching, synchronization)
+- **Global client state** - Zustand (user session details, UI preferences); the short-lived access token is held in React context, not in a store
 - **Local state** - React Context (feature-specific state)
 - **Form state** - React Hook Form (form inputs, validation)
 
@@ -283,12 +291,12 @@ The frontend communicates with the backend via RESTful APIs:
 
 **Production:**
 
-- Frontend: Vite production build → Docker container with nginx serving static files
-- Backend: Docker container with ASP.NET Core runtime (framework-dependent deployment)
-- Database: Docker PostgreSQL with persistent volume mounts
-- Orchestration: Docker Compose
+- Frontend: Vite production build served by nginx in a container, on its own hostname and certificate
+- Backend: container running the migration runner and then ASP.NET Core, on its own hostname and certificate
+- Database: a managed PostgreSQL server (SSL required), separate from the container apps
+- Orchestration: Azure Container Apps, two container apps in one environment (no Docker Compose in production)
 
-> **Note:** Development supports both Docker (recommended) and manual setup. Production uses Docker containers for all services.
+> **Note:** Development supports both Docker (recommended) and manual setup. Production runs in Azure Container Apps — nginx serving the built client and the API on its own hostname — against a managed PostgreSQL server. The exact server version is not recorded in the repository; confirm it in the Azure portal. See [ADR-0032](adr/ADR-0032-production-runs-two-container-apps.md) and [ADR-0005](adr/ADR-0005-postgresql-is-the-relational-datastore.md).
 
 ---
 

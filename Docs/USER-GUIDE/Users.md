@@ -8,8 +8,7 @@
 
 ## Available to
 
-- Site Owners (full access)
-- Admins (can invite and manage non-owner users)
+- Admins (full access)
 
 ## Key Features
 
@@ -20,10 +19,6 @@
 [Content to be added]
 
 ## Permission-Based Features
-
-### For Site Owners
-
-[Content to be added]
 
 ### For Admins
 

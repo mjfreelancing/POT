@@ -6,7 +6,6 @@ Accounts are the foundation of projections and dashboard totals. Each account ho
 
 ## Available to
 
-- Site Owners (full access)
 - Admins (full access)
 - Viewers (view only)
 
@@ -47,7 +46,7 @@ definitions listed under Key Concepts.
 
 - View account list, balances, and totals
 
-### For Site Owners & Admins
+### For Admins
 
 - Create, edit, delete accounts
 

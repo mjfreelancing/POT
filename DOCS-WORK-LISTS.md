@@ -8,19 +8,10 @@ four are done.
 
 ## W1 — Content to correct
 
-Each item is fixed when its file is reworked, not in a separate pass. Items 1–4 were fixed in the `AUTHENTICATION.md` and server-guide truth pass (see the commit that corrected those files); they are removed rather than marked done, so the numbers below start at 5 and may skip.
-
-**Fix early: wrong in a security-relevant way, or misleading enough to cause bad code**
-
-5. **The "Site Owner" role doesn't exist.** The user guide (README 77–79 and every page) and `_DOCUMENTATION_PLAN.md` use it; the real roles are Admin and Viewer.
-6. **ARCHITECTURE 284–291 says production is Docker Compose with Docker PostgreSQL.** It is Azure Container Apps with a separate PostgreSQL 17.6.
+Each item is fixed when its file is reworked, not in a separate pass. Items 1–7 were fixed in the `AUTHENTICATION.md`, server-guide, `ARCHITECTURE.md` and user-guide passes; they are removed rather than marked done, so the numbers below start at 8 and may skip. (`_DOCUMENTATION_PLAN.md` still uses "Site Owner", but W3 retires that file rather than correcting it.)
 
 **Fix when the file is reworked**
 
-7. **ARCHITECTURE.md:**
-   - The tree (38–79) shows `store/` and omits `Pot.Shared.Tests`, `Pot.RazorComponents` and `contracts/`.
-   - The stack list omits AllOverIt, TanStack Table, the PWA, Scalar and Tailwind v4.
-   - Line 272 says Zustand holds authentication; the access token is in React context.
 8. **Server DEVELOPER:**
    - The enriched-enum sample (4362) omits `EndOfMonth`.
    - Line 207 lists 204, but deletes return 200.
@@ -59,9 +50,6 @@ Each item is fixed when its file is reworked, not in a separate pass. Items 1–
 13. **FIRST-TIME-SETUP:**
     - Status names are inconsistent: `PendingApproval` vs `Approval`.
     - It says only platform admins see the Users menu; the real gate is `user:manage`.
-14. **Other docs:**
-    - FEATURES 145 claims automatic logout on inactivity, which doesn't exist.
-    - USER-GUIDE/Security 7 says a password change ends "every other session"; it ends every session, including the current one.
 15. **Compose file comment** (`docker-compose-client-server.yml:430`): it refers to `/swagger`, but the API UI is Scalar and is Development-only.
 
 ---

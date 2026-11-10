@@ -116,14 +116,14 @@ Customize your POT experience:
 
 - **Profile Management** - Update your username and email
 - **Password Changes** - Keep your account secure
-- **Site Settings** - Customize site name and description (site owners only)
+- **Site Settings** - Customize site name and description (admins only)
 - **Display Preferences** - Configure how data is displayed
 
 [View detailed Settings guide →](USER-GUIDE/Settings.md)
 
 ## User Management
 
-Collaborate with others on financial management (site owners and admins):
+Collaborate with others on financial management (admins):
 
 - **User Invitations** - Invite family members or trusted individuals
 - **Role Assignment** - Grant Admin or Viewer permissions
@@ -142,7 +142,7 @@ POT takes security seriously:
 - **JWT Authentication** - Secure token-based authentication
 - **Role-Based Permissions** - Granular access control for all features
 - **Secure Password Requirements** - Enforce strong passwords
-- **Session Management** - Automatic logout on inactivity
+- **Session Management** - Server-side sessions with per-device revocation and short-lived access tokens
 
 [View detailed Authentication & Security guide →](AUTHENTICATION.md)
 
