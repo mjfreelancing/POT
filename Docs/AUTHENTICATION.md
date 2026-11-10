@@ -392,7 +392,7 @@ public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke(
     }
 
     // Successful login - set refresh token as HTTP-only cookie
-    RefreshTokenCookieHelper.SetRefreshTokenCookie(
+    RefreshTokenHelper.SetCookie(
         httpContext,
         authResult.Value.RefreshToken,
         authOptions
@@ -457,16 +457,14 @@ public static async Task<IResult> Invoke(
 // - Revokes only that session row (sets RevokedUtc)
 // - Does NOT increment TokenVersion - other devices keep their access tokens
 // - Rejects the access tokens issued for the revoked session on their next request
-// - Clears legacy user-level refresh fields during transition period
 ```
 
 **What `LogoutAsync` Does:**
 
 - Reads the refresh token cookie to identify the current session
 - Revokes only the `AuthSession` row matching that token (sets `RevokedUtc`)
-- Does **not** increment `TokenVersion` — other logged-in devices keep their own sessions and access tokens
+- Does **not** increment `User.TokenVersion` — other logged-in devices keep their own sessions and access tokens
 - Causes later requests carrying an access token issued for that session to be rejected with 401
-- Clears legacy `RefreshToken`/`RefreshTokenExpiryUtc` fields on the user row during transition
 
 **What `ClearRefreshTokenCookie` Does:**
 
@@ -833,8 +831,6 @@ public static async Task<Results<Ok, ProblemHttpResult>> Invoke(
 user.PasswordHash = _passwordHasher.GetHash(user, newPassword);
 // Revoke ALL AuthSession rows for this user (all devices must re-authenticate)
 await _authSessionService.RevokeAllSessionsForUserAsync(user.Id, nowUtc, cancellationToken);
-user.RefreshToken = null;
-user.RefreshTokenExpiryUtc = null;
 user.TokenVersion++; // Invalidate all existing access tokens across all devices
 ```
 
@@ -844,9 +840,8 @@ user.TokenVersion++; // Invalidate all existing access tokens across all devices
 2. Compares with database password hash
 3. If match: Hashes new password and updates database
 4. Revokes **all** `AuthSession` rows for the user (every device must re-authenticate)
-5. Sets `RefreshToken` to `null` and `RefreshTokenExpiryUtc` to `null`
-6. Increments `TokenVersion` to immediately invalidate all live access tokens across all devices
-7. Returns success or error
+5. Increments `User.TokenVersion` to immediately invalidate all live access tokens across all devices
+6. Returns success or error
 
 **Why Invalidate Refresh Token?**
 
@@ -920,7 +915,7 @@ const changePasswordSchema = z
 
 **Server-Side:**
 
-- BCrypt password hashing
+- PBKDF2 password hashing via the ASP.NET Core `PasswordHasher` (not BCrypt)
 - Current password verification
 - New password complexity validation
 - Database transaction for atomic update
@@ -1131,7 +1126,7 @@ public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke(
     CancellationToken cancellationToken)
 {
     // Get refresh token from HTTP-only cookie
-    var refreshToken = RefreshTokenCookieHelper.GetRefreshTokenFromCookie(httpContext, authOptions);
+    var refreshToken = RefreshTokenHelper.GetFromCookie(httpContext, authOptions);
 
     if (refreshToken.IsNullOrEmpty())
     {
@@ -1152,7 +1147,7 @@ public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke(
     }
 
     // Set new refresh token as HTTP-only cookie
-    RefreshTokenCookieHelper.SetRefreshTokenCookie(httpContext, authTokens.Value!.RefreshToken, authOptions);
+    RefreshTokenHelper.SetCookie(httpContext, authTokens.Value!.RefreshToken, authOptions);
 
     return Response.Ok(authTokens.Value!);
 }
@@ -1178,10 +1173,10 @@ public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke(
 
 **Scenario 2: Page Refresh During Session**
 
-- User has valid access token in session storage
+- User has a valid refresh cookie but no access token in memory (memory clears on reload)
 - Page refreshed at 10:05 AM
-- Token still valid for 10 more minutes
-- New refresh timer set for 10:09 AM (80% of remaining time)
+- The app calls `POST /api/auth/refresh`; the HTTP-only cookie supplies the session
+- A new access token is issued and a new refresh timer is set
 - ✅ Refresh cycle continues seamlessly
 
 **Scenario 3: Refresh Token Expired**
@@ -1204,32 +1199,32 @@ public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke(
 
 ### Token Versioning
 
-**Why Token Version Claim?**
+**Why Two Revocation Claims?**
 
-JWTs are stateless — the server cannot cancel a live access token by deleting a record. Two claims close that gap, and both are checked on every authenticated request:
+JWTs are stateless — the server cannot cancel a live access token by deleting a record. Two claims close that gap, and both are checked on every authenticated request. Each is named by a constant in `PotClaimTypes`:
 
-- **`session_id`** names the `AuthSession` the token was issued for. Once that session is revoked or expires, the tokens issued for it are rejected, so logging out stops the access token held by that device.
-- **`TokenVersion`** embeds the user's token version at issuance and revokes every outstanding access token for the user at once.
+- **`session_id`** (`PotClaimTypes.SessionId`) carries the `RowId` of the `AuthSession` the token was issued for. Once that session is revoked or expires, the tokens issued for it are rejected, so logging out stops the access token held by that device.
+- **`token_version`** (`PotClaimTypes.TokenVersion`) carries the user's `User.TokenVersion` at issuance and revokes every outstanding access token for the user at once.
 
-**How the `TokenVersion` check works:**
+**How the `token_version` check works:**
 
-- Every issued JWT embeds the `TokenVersion` value at the time of issuance.
+- Every issued JWT carries the claim `token_version`, set to `User.TokenVersion` at the time of issuance.
 - The authentication middleware compares the claim against the current `User.TokenVersion` on every request.
-- If the value in the JWT is lower than the database value, the request is rejected immediately with 401.
+- If the claim value is lower than the database value, the request is rejected immediately with 401.
 - This provides **synchronous, global revocation** of all outstanding access tokens.
 
-**TokenVersion is incremented only on global-revoke paths:**
+**`User.TokenVersion` is incremented only on global-revoke paths:**
 
 - `ChangePasswordAsync` — credentials may be compromised; every device must re-authenticate.
 - Any future logout-all operation.
 
-**TokenVersion is deliberately NOT incremented on single-device logout.** Per-device logout revokes only the `AuthSession` row for that device, and that device's access token is rejected through its `session_id` claim. Other devices keep their access tokens and can refresh normally until their sessions are revoked or expire.
+**`User.TokenVersion` is deliberately NOT incremented on single-device logout.** Per-device logout revokes only the `AuthSession` row for that device, and that device's access token is rejected through its `session_id` claim. Other devices keep their access tokens and can refresh normally until their sessions are revoked or expire.
 
 **Flow after password change:**
 
 1. User changes password
-2. All `AuthSession` rows revoked; database `TokenVersion` incremented from N to N+1
-3. Old access tokens on all devices still have `TokenVersion: N`
+2. All `AuthSession` rows revoked; `User.TokenVersion` incremented from N to N+1
+3. Old access tokens on all devices still carry `token_version: N`
 4. Next API request on any device: middleware detects version mismatch → 401 Unauthorized
 5. Proactive refresh attempt also fails (all sessions revoked)
 6. All devices logged out and redirected to login
@@ -1243,7 +1238,7 @@ POT has two distinct refresh mechanisms:
 | **Trigger**          | Timer (before token expires)         | Page load/reload                 |
 | **Purpose**          | Keep session alive during active use | Restore session after navigation |
 | **Timing**           | Every 12 minutes during use          | On every page load               |
-| **Token Source**     | Memory (current access token)        | Session storage (persisted)      |
+| **Token Source**     | Memory (current access token)        | HTTP-only refresh cookie         |
 | **User Impact**      | Invisible background operation       | Brief loading state              |
 | **Failure Handling** | Logout and redirect                  | Show login page                  |
 
@@ -1331,8 +1326,8 @@ On every page load, the frontend automatically attempts to get a new access toke
    - Frontend does **not** send the access token (it doesn't have one)
 4. **Backend validates refresh token:**
    - Reads `pot_refresh_token` from cookie (`Refresh/Handler.cs`)
-   - Looks up user in database using the refresh token value
-   - Validates token hasn't expired (checks `RefreshTokenExpiryUtc` column)
+   - Resolves the active `AuthSession` by hashing the token and matching `RefreshTokenHash`
+   - Rejects the session if it is revoked or past `ExpiresUtc`
 5. **Backend generates new tokens:**
    - Creates new access token (JWT with user claims)
    - Creates new refresh token (rotates for security)
@@ -1392,7 +1387,7 @@ public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke(
     CancellationToken cancellationToken)
 {
     // Get refresh token from HTTP-only cookie
-    var refreshToken = RefreshTokenCookieHelper.GetRefreshTokenFromCookie(httpContext, authOptions);
+    var refreshToken = RefreshTokenHelper.GetFromCookie(httpContext, authOptions);
 
     if (refreshToken.IsNullOrEmpty())
     {
@@ -1408,47 +1403,54 @@ public static async Task<Results<Ok<Response>, ProblemHttpResult>> Invoke(
     }
 
     // Set new refresh token as HTTP-only cookie
-    RefreshTokenCookieHelper.SetRefreshTokenCookie(httpContext, authTokens.Value.RefreshToken, authOptions);
+    RefreshTokenHelper.SetCookie(httpContext, authTokens.Value.RefreshToken, authOptions);
 
     return Response.Ok(authTokens.Value);
 }
 ```
 
-**Backend (`AuthService.cs` - handling null access token):**
+**Backend (`AuthService.cs` — `RefreshAsync`):**
 
 ```csharp
 public async Task<EnrichedResult<AuthTokens?>> RefreshAsync(string? accessToken, string refreshToken, CancellationToken cancellationToken)
 {
-    Guid userRowId;
+    Guid? accessTokenUserRowId = null;
 
-    if (accessToken.IsNullOrEmpty())
+    // Optional guard: if an expired access token is present, extract its subject for a consistency check.
+    if (accessToken.IsNotNullOrEmpty())
     {
-        // No access token provided (page refresh scenario)
-        // Look up user directly from refresh token
-        var userFromRefresh = await _userRepository.Users
-            .SingleOrDefaultAsync(u => u.RefreshToken == refreshToken, cancellationToken);
-
-        if (userFromRefresh is null)
-        {
-            return CreateAuthError();
-        }
-
-        userRowId = userFromRefresh.RowId;
-    }
-    else
-    {
-        // Access token provided (normal refresh scenario)
-        // Extract user ID from expired access token
         var principal = _jwtService.GetPrincipalFromExpiredToken(accessToken);
         var subject = principal.Claims.SingleOrDefault(claim => claim.Type == JwtRegisteredClaimNames.Sub);
 
-        if (subject is null || !Guid.TryParse(subject.Value, out userRowId))
+        if (subject is null || !Guid.TryParse(subject.Value, out var userRowId))
         {
             return CreateAuthError();
         }
+
+        accessTokenUserRowId = userRowId;
     }
 
-    // Continue with token generation...
+    // Resolve the active session by the refresh-token hash (only hashes are stored).
+    var authSession = await _authSessionService.ResolveActiveSessionByRefreshTokenAsync(refreshToken, nowUtc, cancellationToken);
+
+    if (authSession is null)
+    {
+        return CreateAuthError();
+    }
+
+    // Prevent token-mix attacks: the access-token subject and refresh-token session must agree.
+    if (accessTokenUserRowId is not null && authSession.User.RowId != accessTokenUserRowId.Value)
+    {
+        return CreateAuthError();
+    }
+
+    // Rotate both tokens on the same session row.
+    var authTokens = CreateUserAuthTokens(authSession.User, authSession.RowId);
+    _authSessionService.RotateRefreshToken(authSession, authTokens.RefreshToken, authTokens.RefreshTokenExpiryUtc, nowUtc);
+
+    await _userRepository.SaveAsync(cancellationToken);
+
+    return EnrichedResult.Success<AuthTokens?>(authTokens);
 }
 ```
 
@@ -1457,7 +1459,7 @@ public async Task<EnrichedResult<AuthTokens?>> RefreshAsync(string? accessToken,
 1. **Browser automatically sends cookies** - No JavaScript required
 2. **Server validates cookie** - Checks database for matching refresh token
 3. **Server trusts its own cookie** - No need for client-side access token validation
-4. **Stateless authentication** - No server-side session storage needed
+4. **Server-side session lookup** - The refresh token resolves to an `AuthSession` row, so a revoked session stops further refreshes
 5. **Seamless UX** - User never sees a login screen on page refresh
 
 **Security Benefits:**
@@ -1769,7 +1771,7 @@ server {
 
 - `jti` (JWT ID) - Unique token identifier (GUID)
 - `sub` (subject) - User ID (GUID/RowId)
-- `TokenVersion` - User's token version number (custom claim)
+- `token_version` - User's token version number (custom claim)
 - `session_id` - RowId of the `AuthSession` the token was issued for (custom claim)
 - `exp` (expiration) - Token expiry timestamp (15 minutes from creation)
 - `iat` (issued at) - Token creation timestamp
@@ -1869,23 +1871,23 @@ POT uses a per-session model for refresh token lifecycle. Each login event creat
 
 **Logout** resolves the session for the current refresh token cookie and sets `RevokedUtc`. Only that one row is affected. Other sessions for the same user remain active.
 
-**Password change** revokes all `AuthSession` rows for the user and increments `TokenVersion`. Every device must re-authenticate.
+**Password change** revokes all `AuthSession` rows for the user and increments `User.TokenVersion`. Every device must re-authenticate.
 
-### Session vs TokenVersion: Separate Controls
+### Session vs Token Version: Separate Controls
 
 These two mechanisms solve different problems and are deliberately kept separate.
 
-**Per-session revocation (`RevokedUtc`):**
+**Per-session revocation (`AuthSession.RevokedUtc`):**
 
 - Prevents future _refresh_ calls from this device.
 - Does not affect other sessions.
-- Rejects the access tokens issued for that session, because every request checks the session named by the token's `session_id` claim.
+- Rejects the access tokens issued for that session, because every request checks the session named by the token's `session_id` claim against the `AuthSession` row.
 - Still leaves the access tokens of the user's _other_ sessions working.
 
-**TokenVersion (global access-token invalidation):**
+**Token version (global access-token invalidation, claim `token_version`, property `User.TokenVersion`):**
 
 - JWTs are stateless; the server cannot cancel them by deleting a record.
-- Every issued JWT embeds the `TokenVersion` at issuance time.
+- Every issued JWT carries `token_version`, set to `User.TokenVersion` at issuance.
 - The authentication middleware rejects any request whose token carries a lower version than the current `User.TokenVersion`.
 - This provides immediate, global invalidation of every session, evaluated in the same per-request read that resolves the session.
 - Incremented only on global-revoke events (password change; any future logout-all).
@@ -1893,9 +1895,9 @@ These two mechanisms solve different problems and are deliberately kept separate
 
 **Why both are needed:**
 
-Session binding revokes exactly what a logout is responsible for — the access tokens of the device that logged out — and `TokenVersion` covers user-wide decisions that must apply to every device at once, whatever the state of its session. Both are evaluated in the same per-request read, so the session check adds no further database round trip.
+Session binding revokes exactly what a logout is responsible for — the access tokens of the device that logged out — and the token version covers user-wide decisions that must apply to every device at once, whatever the state of its session. Both are evaluated in the same per-request read, so the session check adds no further database round trip.
 
-A revoked `AuthSession` stops the attacker from getting a _new_ access token via refresh, and the `session_id` claim means an access token taken before logout is rejected on its next request instead of staying usable until it expires. `TokenVersion` remains for a password change, where every device must re-authenticate immediately.
+A revoked `AuthSession` stops the attacker from getting a _new_ access token via refresh, and the `session_id` claim means an access token taken before logout is rejected on its next request instead of staying usable until it expires. The token version remains for a password change, where every device must re-authenticate immediately.
 
 ---
 
@@ -1916,7 +1918,7 @@ A revoked `AuthSession` stops the attacker from getting a _new_ access token via
 **Lowercase Convention:**
 
 - All permissions are lowercase
-- Use hyphens for multi-word resources (e.g., `import-export:manage`)
+- Each permission is `resource:action`, for example `maintenance:import`
 
 ### Permission Hierarchy
 
@@ -2114,11 +2116,11 @@ PLATFORM_ADMIN_USERIDS=guid1, guid2
 PLATFORM_ADMIN_USERIDS= guid1 , guid2
 ```
 
-**Invalid GUIDs Ignored:**
+**Invalid GUIDs Fail Start-up:**
 
 ```bash
-# Only valid GUIDs recognized
-PLATFORM_ADMIN_USERIDS=valid-guid,invalid-guid,not-a-guid
+# Any value that is not a GUID fails configuration validation when the API starts
+PLATFORM_ADMIN_USERIDS=valid-guid,not-a-guid
 ```
 
 ### Configuration Changes
@@ -2160,10 +2162,10 @@ When platform admin authenticates, log entry appears:
 
 The authentication system provides the following protection features:
 
-- **Passwords** must meet a configurable minimum length (typically 8 characters) and contain an uppercase letter, a lowercase letter, a number and a special character. They are stored only as salted hashes produced by BCrypt - never in plain text - and the hashing is deliberately computationally expensive.
+- **Passwords** must meet a configurable minimum length (typically 8 characters) and contain an uppercase letter, a lowercase letter, a number and a special character. They are stored only as salted hashes produced by the ASP.NET Core `PasswordHasher` (PBKDF2-based) - never in plain text - and the hashing is deliberately computationally expensive.
 - **Email verification** confirms ownership of the address, prevents fake accounts and proves the user can receive notifications. Codes are single use, expire after 15 minutes, are rate limited and are cleaned up automatically.
 - **Account approval** puts every new signup in front of a platform administrator before it can sign in, which keeps spam accounts out and growth under control. Only `platform:manage` can approve or reject, rejecting locks the username against reuse, and approvals and rejections are recorded.
-- **Sessions** are token based with no server-side session store. Access tokens expire after 15 minutes and refresh tokens after 30 days, after which the user signs in again. Each refresh rotates the refresh token, and signing out clears the HTTP-only refresh cookie and invalidates the stored refresh token, which stops the access tokens issued to that session from being accepted.
+- **Sessions** are backed by a server-side `AuthSession` row per sign-in. Access tokens expire after 15 minutes and refresh tokens after 30 days, after which the user signs in again. Each refresh rotates the refresh token on that session row, and signing out revokes the session and clears the HTTP-only refresh cookie, which stops the access tokens issued to that session from being accepted.
 - **Authorization is fail closed.** Permissions are resolved on every request from the caller's roles plus the deployment-configured platform grant. An endpoint that declares no requirement of its own requires authentication, and the routes that must stay reachable while signed out - sign-in, sign-out, token refresh, signup, password reset and the health checks - are marked `AllowAnonymous()` explicitly.
 - **The access token carries no derived state**: `jti`, `sub`, `token_version` and `session_id` only. Tenancy, permissions and account status are read from the database on every request, so revoking access does not wait for a token to expire.
 - **Cross-origin requests** are accepted only from the origins configured for the environment, and only the response headers named in the API's CORS policy are exposed.
