@@ -8,7 +8,7 @@ four are done.
 
 ## W1 — Content to correct
 
-Each item is fixed when its file is reworked, not in a separate pass. Items 1–7 were fixed in the `AUTHENTICATION.md`, server-guide, `ARCHITECTURE.md` and user-guide passes; they are removed rather than marked done, so the numbers below start at 8 and may skip. (`_DOCUMENTATION_PLAN.md` still uses "Site Owner", but W3 retires that file rather than correcting it.)
+Each item is fixed when its file is reworked, not in a separate pass. Items 1–7 and 9 were fixed in the `AUTHENTICATION.md`, server-guide, `ARCHITECTURE.md`, user-guide and `IMPLEMENTATION.md` passes; they are removed rather than marked done, so the numbers below start at 8 and may skip. (`_DOCUMENTATION_PLAN.md` still uses "Site Owner", but W3 retires that file rather than correcting it.)
 
 **Fix when the file is reworked**
 
@@ -17,22 +17,17 @@ Each item is fixed when its file is reworked, not in a separate pass. Items 1–
    - Line 207 lists 204, but deletes return 200.
    - Line 1875 (`WhenNotNull` on every dependency) contradicts allsoverit-patterns:18 (DD-15).
    - The table of contents is wrong.
-9. **IMPLEMENTATION.md:**
-   - Encoding corruption at about 20 lines.
-   - `AccruedIsDirty` at 442 and 603 no longer exists.
-   - The projection mechanism text (374–381, 732–740, 767–777, 802, 804–813) predates the fold or cursor design.
-   - `EndOfMonth` is never mentioned.
-10. **Client DEVELOPER:**
-    - The source tree (46–101) is stale.
-    - It claims ESLint "strict" (262–323), but the config is `recommended` + `stylistic`.
-    - Filter persistence is described as localStorage (1854–1866); the code uses the URL plus sessionStorage.
-    - Auth and logout paths are wrong (2391–2427).
-    - The cache invalidation path is wrong (2678).
-    - It lists a `ValidationError (422)` that doesn't exist (2707–2726).
-    - It imports from `react-router-dom` (2556).
-    - Chart heights are stale (1689–1759).
-    - The toast import points at a non-existent hook (765).
-11. **E2E docs:**
+9. **Client DEVELOPER:**
+   - The source tree (46–101) is stale.
+   - It claims ESLint "strict" (262–323), but the config is `recommended` + `stylistic`.
+   - Filter persistence is described as localStorage (1854–1866); the code uses the URL plus sessionStorage.
+   - Auth and logout paths are wrong (2391–2427).
+   - The cache invalidation path is wrong (2678).
+   - It lists a `ValidationError (422)` that doesn't exist (2707–2726).
+   - It imports from `react-router-dom` (2556).
+   - Chart heights are stale (1689–1759).
+   - The toast import points at a non-existent hook (765).
+10. **E2E docs:**
     - **Resolved 2026-11-04:** `e2e/README.md:10`, `e2e/AUTHORING.md:5` and the E2E ADR cited a non-existent `playwright-e2e.instructions.md`; all three now point at `e2e.instructions.md`.
     - The fixture lists in `AUTHORING.md:31` and `e2e.instructions:42` are stale: they list three fixtures, but `e2e/fixtures/auth.ts` exports four (`quickActionsTest` is missing).
     - `e2e/README.md:121–128` lists three canonical users; the seed has four (`e2e_quickactions` is missing).
@@ -40,17 +35,17 @@ Each item is fixed when its file is reworked, not in a separate pass. Items 1–
     - Playwright and Vite versions are stale (`e2e/README.md:88` says Playwright 1.59.1; `package.json` has `^1.62.1`).
     - **Resolved 2026-11-06 (DD-11, option A):** e2e.instructions:13 called prodlike a per-PRD completion gate, while the README (150–153) called it on-demand. The README now gives the per-PRD gate plus on demand, matching the instructions and skills, and ADR-0041 states the rule.
     - e2e.instructions:67 says react-day-picker v9; the project uses v10.
-12. **Setup docs:**
+11. **Setup docs:**
     - Node minimum: 22.22.2 vs `>=22.22.0` vs "Node 24 is the minimum".
     - `.env.development`: resolved — `Source/Docker/.env.development.template` is now tracked, and the places that said the repository ships none are corrected. The key list lives in that file; the remaining duplicated copies are consolidated under W2 ("Docker env-file setup").
     - `Docs/Azure/Azure-Deployment-Notes.md` is linked three times (Docker DEVELOPER 107, 720 and 843) but is untracked and ignored, so those links are dead for every other reader. **Decided:** the file stays private; remove the links. See "Private and ignored files" at the end of this file.
     - The GETTING-STARTED anchor at 228 is broken.
     - DOCKER-SETUP's "curl" output is actually PowerShell output.
     - LOCAL-SETUP Option B collides with the prodlike container name.
-13. **FIRST-TIME-SETUP:**
+12. **FIRST-TIME-SETUP:**
     - Status names are inconsistent: `PendingApproval` vs `Approval`.
     - It says only platform admins see the Users menu; the real gate is `user:manage`.
-15. **Compose file comment** (`docker-compose-client-server.yml:430`): it refers to `/swagger`, but the API UI is Scalar and is Development-only.
+13. **Compose file comment** (`docker-compose-client-server.yml:430`): it refers to `/swagger`, but the API UI is Scalar and is Development-only.
 
 ---
 

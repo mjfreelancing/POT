@@ -55,10 +55,10 @@ This rate remains constant throughout the accrual period.
 The amount accrued so far:
 
 ```
-Accrued = DailyAccrual � (days from AccrualStart to currentDate)
+Accrued = DailyAccrual × (days from AccrualStart to currentDate)
 ```
 
-**Example:** After 15 days, Accrued = $10/day � 15 days = $150
+**Example:** After 15 days, Accrued = $10/day × 15 days = $150
 
 On the due date, `Accrued` is set to the full `Amount` regardless of how many days have passed.
 
@@ -86,7 +86,7 @@ When a recurring expense is due, it immediately begins accruing for the next per
 - On Jan 31: `Accrued = $1200` (full amount), expense is "paid"
 - `NextDue` advances to Feb 28 (28 days away - see [Month-End Date Behavior](#month-end-date-behavior) in ExpenseRenewalCalculator)
 - New `dailyAccrual = $1200 / 28 = $42.86/day`
-- On Feb 1: `Accrued = $42.86` (1 day � $42.86/day)
+- On Feb 1: `Accrued = $42.86` (1 day × $42.86/day)
 
 ⚠️ **Note:** This expense will remain on the 28th for all subsequent months due to month-end date drift (see [ExpenseRenewalCalculator](#expenserenewalcalculator) documentation).
 
@@ -226,8 +226,9 @@ For each expense (regardless of mode):
 The number of days to add is determined by `Frequency` and `FrequencyCount`:
 
 - **Days:** `FrequencyCount` days (e.g., every 3 days = 3)
-- **Weeks:** `FrequencyCount � 7` days (e.g., bi-weekly = 2 � 7 = 14)
+- **Weeks:** `FrequencyCount × 7` days (e.g., bi-weekly = 2 × 7 = 14)
 - **Months:** Uses .NET's `DateOnly.AddMonths()` - see [Month-End Date Behavior](#month-end-date-behavior) below
+- **End of Month:** Advances by `frequencyCount` months and lands on the last day of that month (for example, Jan 31 → Feb 28 → Mar 31 → Apr 30), so it does not suffer the months-only date drift below
 - **Years:** Uses .NET's `DateOnly.AddYears()` - see [Leap Year Date Behavior](#leap-year-date-behavior-yearly-frequency) below
 
 **Examples:**
@@ -247,9 +248,9 @@ When an expense due on the **29th, 30th, or 31st** renews through a shorter mont
 
 **Example: Expense due on January 31st**
 
-1. **Jan 31** ? Feb 28 (Feb only has 28 days in non-leap years)
-2. **Feb 28** ? Mar 28 (AddMonths from 28th stays on 28th)
-3. **Mar 28** ? Apr 28 (continues on 28th)
+1. **Jan 31** → Feb 28 (Feb only has 28 days in non-leap years)
+2. **Feb 28** → Mar 28 (AddMonths from 28th stays on 28th)
+3. **Mar 28** → Apr 28 (continues on 28th)
 4. **Forever stuck on 28th** - will never return to 31st
 
 **Why This Happens:**
@@ -282,10 +283,10 @@ When an expense due on **February 29th** (leap year) renews to a non-leap year, 
 
 **Example: Expense due on February 29, 2024 (leap year)**
 
-1. **Feb 29, 2024** ? Feb 28, 2025 (2025 is not a leap year, so Feb 29 doesn't exist)
-2. **Feb 28, 2025** ? Feb 28, 2026 (AddYears from 28th stays on 28th)
-3. **Feb 28, 2026** ? Feb 28, 2027 (continues on 28th)
-4. **Feb 28, 2027** ? Feb 28, 2028 (2028 IS a leap year, but stays on 28th)
+1. **Feb 29, 2024** → Feb 28, 2025 (2025 is not a leap year, so Feb 29 doesn't exist)
+2. **Feb 28, 2025** → Feb 28, 2026 (AddYears from 28th stays on 28th)
+3. **Feb 28, 2026** → Feb 28, 2027 (continues on 28th)
+4. **Feb 28, 2027** → Feb 28, 2028 (2028 IS a leap year, but stays on 28th)
 5. **Forever stuck on Feb 28** - will never return to Feb 29, even in leap years
 
 **Why This Happens:**
@@ -439,7 +440,6 @@ Unlike expenses, income does NOT have:
 
 - `AccrualStart` (income doesn't gradually accrue like expenses)
 - `Accrued` tracking (no need to track partial income before it's received)
-- `AccruedIsDirty` flag (no accrual recalculation needed)
 
 Income is simpler: it either has been received (past due dates) or will be received (future due dates). There's no gradual accumulation or "available funds" adjustment needed for income.
 
@@ -448,8 +448,9 @@ Income is simpler: it either has been received (past due dates) or will be recei
 Same as `ExpenseRenewalCalculator`, days to add are determined by `Frequency` and `FrequencyCount`:
 
 - **Days:** `FrequencyCount` days
-- **Weeks:** `FrequencyCount � 7` days (e.g., bi-weekly salary = 2 � 7 = 14)
+- **Weeks:** `FrequencyCount × 7` days (e.g., bi-weekly salary = 2 × 7 = 14)
 - **Months:** Uses .NET's `DateOnly.AddMonths()` - see [Month-End Date Behavior](#month-end-date-behavior-1) below
+- **End of Month:** Advances by `frequencyCount` months and lands on the last day of that month, so it does not suffer the months-only date drift below
 - **Years:** Uses .NET's `DateOnly.AddYears()` - see [Leap Year Date Behavior](#leap-year-date-behavior-yearly-frequency-1) below
 
 **Examples:**
@@ -467,9 +468,9 @@ This is identical to the behavior in `ExpenseRenewalCalculator`. When income due
 
 **Example: Salary paid on January 31st**
 
-1. **Jan 31** ? Feb 28 (Feb only has 28 days in non-leap years)
-2. **Feb 28** ? Mar 28 (AddMonths from 28th stays on 28th)
-3. **Mar 28** ? Apr 28 (continues on 28th)
+1. **Jan 31** → Feb 28 (Feb only has 28 days in non-leap years)
+2. **Feb 28** → Mar 28 (AddMonths from 28th stays on 28th)
+3. **Mar 28** → Apr 28 (continues on 28th)
 4. **Forever stuck on 28th** - will never return to 31st
 
 **Tested and Documented:**
@@ -489,10 +490,10 @@ When income due on **February 29th** (leap year) renews to a non-leap year, the 
 
 **Example: Annual bonus paid on February 29, 2024 (leap year)**
 
-1. **Feb 29, 2024** ? Feb 28, 2025 (2025 is not a leap year, so Feb 29 doesn't exist)
-2. **Feb 28, 2025** ? Feb 28, 2026 (AddYears from 28th stays on 28th)
-3. **Feb 28, 2026** ? Feb 28, 2027 (continues on 28th)
-4. **Feb 28, 2027** ? Feb 28, 2028 (2028 IS a leap year, but stays on 28th)
+1. **Feb 29, 2024** → Feb 28, 2025 (2025 is not a leap year, so Feb 29 doesn't exist)
+2. **Feb 28, 2025** → Feb 28, 2026 (AddYears from 28th stays on 28th)
+3. **Feb 28, 2026** → Feb 28, 2027 (continues on 28th)
+4. **Feb 28, 2027** → Feb 28, 2028 (2028 IS a leap year, but stays on 28th)
 5. **Forever stuck on Feb 28** - will never return to Feb 29, even in leap years
 
 **Why This Happens:**
@@ -600,7 +601,6 @@ The loop continues until `NextDue` is in the future relative to `asOfDate`.
 This calculator mirrors the logic of `ExpenseRenewalCalculator` but for income. The key structural differences are:
 
 - No `AccrualStart` updates (income doesn't accrue)
-- No `AccruedIsDirty` flag (no accrual system for income)
 - Otherwise, the timing rules, frequency handling, and end date logic are identical
 
 ---
@@ -694,8 +694,8 @@ This is the most subtle part of the formula. On a day when an expense is due:
 - Balance: $4200 (rent subtracted)
 - Accrued: $800 (still shows full amount because expense hasn't been "renewed" yet)
 - ExpensesPaid: $800
-- Available WITHOUT adding back: $4200 - $1000 - $800 = $2400 ? WRONG! Double-counted rent
-- Available WITH adding back: $4200 - $1000 - $800 + $800 = $3200 ? CORRECT! Same as before payment
+- Available WITHOUT adding back: $4200 - $1000 - $800 = $2400 — WRONG! Double-counted rent
+- Available WITH adding back: $4200 - $1000 - $800 + $800 = $3200 — CORRECT! Same as before payment
 
 The Available amount should remain constant on the payment day, just like in reality - paying a bill you've been saving for doesn't change how much discretionary money you have.
 
@@ -799,7 +799,7 @@ The projection period is specified by:
    - Calculate accruals
    - Update balances
    - Record projections
-4. After all days processed, return account projections and global projections
+4. After all days processed, return the per-account projections (there is no global series; the client sums the selected accounts)
 
 ### Stateful Processing
 
@@ -808,7 +808,7 @@ The projection process is stateful:
 - Account balances are modified as we progress through days
 - Expense `NextDue` dates advance as they're renewed
 - Income `NextDue` dates advance as they're renewed
-- Expense `Accrued` amounts update daily
+- The day's `accrued`, `arrears` and `unpaidAccrual` are derived on each day from the current cursor; no accrual value is written back
 
 ⚠️ **Warning:** This means running projections modifies the entity data so do not persist it back to the repository. Cloned models could be used but there is no need for that at this time.
 
