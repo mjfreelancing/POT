@@ -49,8 +49,8 @@ Comprehensive guide for developers working on the POT React frontend application
 
 - React 19 + TypeScript
 - Vite 8 (build tool)
-- Zustand (global state)
-- React Query (server state)
+- Zustand (global client state)
+- TanStack Query (server state)
 - TailwindCSS + shadcn/ui (styling)
 
 **Project Structure:**
@@ -78,8 +78,8 @@ src/
 │   ├── auth/            # tokenProvider, logoutManager, permissions
 │   ├── cache/           # cacheInvalidation
 │   └── logging/         # logger
-├── contexts/            # React contexts
-├── data/                # Static data and constants
+├── contexts/            # React contexts (ErrorContext, access token)
+├── data/                # Zod schemas and API data types (z.infer)
 ├── features/            # Feature modules
 │   ├── accounts/        # Account management
 │   ├── approvals/       # Platform admin approvals
@@ -91,10 +91,10 @@ src/
 │   ├── projections/     # Financial projections
 │   ├── users/           # User management
 │   └── userSettings/    # User settings
-├── hooks/               # Custom hooks (useLocalStorage, useToast, etc.)
+├── hooks/               # Custom hooks (useLocalStorage, usePermissions, etc.)
 ├── lib/                 # Pure utilities (dateUtils, moneyUtils, result.ts)
 ├── routes/              # React Router routes
-└── stores/              # Zustand stores (authStore, etc.)
+└── stores/              # Zustand stores (useUserStore, etc.)
 ```
 
 ---
@@ -212,7 +212,7 @@ Each module (file/folder) should have one clear purpose:
 
 ✅ **Good Examples:**
 
-- `useExpenseStorage.ts` - Manages expense-related localStorage only
+- `useExpenseStorage.ts` - Manages the expense list filter state (sessionStorage and the URL) only
 - `ExpensesTable.tsx` - Renders expense table only
 - `expenseTableRowUtils.ts` - Utility functions for expense table rows only
 
@@ -263,13 +263,14 @@ src/api/
 
 #### No `any` Types
 
-The `any` type is **prohibited** via ESLint configuration.
+The `any` type is **prohibited** by the ESLint configuration.
 
 **ESLint Configuration:**
 
 ```javascript
-// eslint.config.mjs
-tseslint.configs.strict; // Includes @typescript-eslint/no-explicit-any: error
+// eslint.config.js
+// tseslint.configs.recommended enables @typescript-eslint/no-explicit-any: error
+extends: [js.configs.recommended, ...tseslint.configs.recommended, ...tseslint.configs.stylistic],
 ```
 
 **Why Enforce This?**
@@ -312,14 +313,9 @@ function process(data: DataStructure) {
 }
 ```
 
-**ESLint Strict Mode Benefits:**
+**ESLint Rule Coverage:**
 
-Beyond `no-explicit-any`, strict mode enforces:
-
-- `@typescript-eslint/no-non-null-assertion` - Avoid `!` operator
-- `@typescript-eslint/no-unnecessary-type-assertion` - Remove redundant assertions
-- `@typescript-eslint/prefer-as-const` - Use `as const` for literal types
-- `@typescript-eslint/no-floating-promises` - Always handle promises
+`@typescript-eslint/no-explicit-any` is `error` through `recommended`. Rules that require type information (`no-floating-promises`, `no-non-null-assertion`, `no-unnecessary-type-assertion`) are **not** enabled, because the config does not use a type-checked preset. `@typescript-eslint/prefer-as-const` is `error` via `stylistic`.
 
 ### Code Formatting
 
@@ -762,7 +758,7 @@ import { ErrorSheet } from '@/components/feedback';
 
 ```tsx
 import { ErrorToast, SuccessToast } from '@/components/feedback';
-import { toast } from '@/hooks/useToast';
+import { toast } from 'sonner';
 import { CheckCircle } from 'lucide-react';
 
 // Success toast (requires icon, title, description; optional details)
@@ -1601,14 +1597,14 @@ This section documents the layout architecture and responsive styling patterns f
 
 **Location:** `src/features/projections/ProjectionsPage.tsx`, `src/features/projections/components/ProjectionChart.tsx`
 
-The Projections page displays financial projection data with interactive charts. The layout implementation uses a carefully structured flex-based architecture to ensure proper viewport filling on desktop and natural scrolling on mobile.
+The Projections page displays financial projection data with interactive charts. The layout implementation uses a carefully structured flex-based architecture to ensure the page fills the viewport with scrolling handled by the chart area.
 
 #### Page Container Structure
 
 **ProjectionsPage.tsx:**
 
 ```tsx
-<div className="flex flex-col md:h-screen bg-card">
+<div className="flex flex-col h-screen overflow-hidden bg-card">
   <ProjectionsHeader />
   <div className="p-6 md:pb-6 md:flex-1 md:min-h-0 relative">
     <ProjectionChart {...props} />
@@ -1616,10 +1612,9 @@ The Projections page displays financial projection data with interactive charts.
 </div>
 ```
 
-**Outer Container (`flex flex-col md:h-screen bg-card`):**
+**Outer Container (`flex flex-col h-screen overflow-hidden bg-card`):**
 
-- **Mobile:** Natural height based on content - allows vertical scrolling when content exceeds viewport
-- **Desktop (`md:h-screen`):** Full viewport height (100vh) - creates fixed viewport layout
+- `h-screen overflow-hidden`: Full viewport height (100vh) with the page itself not scrolling; the chart area inside scrolls (see `ProjectionChart`'s short-viewport branch)
 - `bg-card`: Solid background matching Card component (prevents visual gaps from showing through)
 
 **Content Container (`p-6 md:pb-6 md:flex-1 md:min-h-0 relative`):**
@@ -1650,10 +1645,10 @@ The Projections page displays financial projection data with interactive charts.
   </CardHeader>
   <ChartControls {...controlProps} />
   <CardContent className="flex-1 flex flex-col p-0">
-    <div className="flex-1 px-2 md:px-6 overflow-x-auto min-h-[400px] md:min-h-0">
+    <div className="flex-1 px-2 md:px-6 overflow-x-auto min-h-[500px] md:min-h-0">
       <ChartContainer
         config={chartConfig}
-        className="aspect-auto h-[400px] md:h-full"
+        className="aspect-auto h-[500px] md:h-full"
         style={{ minWidth: '600px' }}
       >
         <LineChart data={chartData} margin={chartMargins}>
@@ -1677,19 +1672,19 @@ The Projections page displays financial projection data with interactive charts.
 - `flex flex-col`: Vertical flex container for chart
 - `p-0`: Removes default shadcn CardContent padding (default is `p-6`)
 
-**Chart Container Div (`flex-1 px-2 md:px-6 overflow-x-auto min-h-[400px] md:min-h-0`):**
+**Chart Container Div (`flex-1 px-2 md:px-6 overflow-x-auto min-h-[500px] md:min-h-0`):**
 
 - `flex-1`: Fills CardContent height
 - `px-2`: 8px horizontal padding on mobile (tight spacing for small screens)
 - `md:px-6`: 24px horizontal padding on desktop (more breathing room)
 - `overflow-x-auto`: Enables horizontal scrolling when chart exceeds container width
-- `min-h-[400px]`: Minimum 400px height on mobile (ensures adequate chart visibility)
+- `min-h-[500px]`: Minimum 500px height on mobile (ensures adequate chart visibility)
 - `md:min-h-0`: Removes minimum height on desktop (allows flex to control height)
 
-**ChartContainer (`aspect-auto h-[400px] md:h-full`):**
+**ChartContainer (`aspect-auto h-[500px] md:h-full`):**
 
 - `aspect-auto`: Overrides shadcn default `aspect-video` (16:9) constraint - critical for proper height calculation
-- `h-[400px]`: Fixed 400px height on mobile - necessary for Recharts ResponsiveContainer to render on initial load
+- `h-[500px]`: Fixed 500px height on mobile - necessary for Recharts ResponsiveContainer to render on initial load
 - `md:h-full`: Fill parent height on desktop (dynamic based on viewport)
 - `style={{ minWidth: '600px' }}`: Minimum chart width ensures x-axis labels don't compress - triggers horizontal scroll on small screens
 
@@ -1746,16 +1741,16 @@ Both chart types use identical XAxis settings:
 
 #### Key Learnings & Best Practices
 
-**1. Pure CSS Responsive Approach:**
+**1. Responsive Layout:**
 
-- Use Tailwind responsive classes (`md:`) for all layout and styling behavior
-- Avoids hydration issues and flash of wrong layout on page refresh
-- CSS-only approach is more maintainable and performant
+- Use Tailwind responsive classes (`md:`) for layout and styling, except where a runtime branch is needed
+- `ProjectionChart` reads `useIsShortViewport()` and drops the `md:h-full`/`md:min-h-0` classes on a short viewport, so the fixed-height chart still renders and the page scrolls to it
+- Otherwise the layout is CSS-only, which avoids hydration issues and a flash of wrong layout on page refresh
 
 **2. Explicit Heights on Mobile for Recharts:**
 
 - Recharts ResponsiveContainer requires explicit height on mobile initial render
-- Without `h-[400px]`, chart disappears after page refresh (ResponsiveContainer can't calculate dimensions from flex layout)
+- Without `h-[500px]`, chart disappears after page refresh (ResponsiveContainer can't calculate dimensions from flex layout)
 - Desktop can use `h-full` because flex calculations happen before ResponsiveContainer renders
 
 **3. Aspect Ratio Constraints:**
@@ -1768,7 +1763,7 @@ Both chart types use identical XAxis settings:
 
 - `min-h-0` on flex children is critical for allowing shrinking below content size
 - Without it, flex children won't shrink properly causing layout overflow
-- Mobile needs explicit `min-h-[400px]` for chart visibility, desktop uses `md:min-h-0` for flex behavior
+- Mobile needs explicit `min-h-[500px]` for chart visibility, desktop uses `md:min-h-0` for flex behavior
 
 **5. Clean Component Structure:**
 
@@ -1851,7 +1846,7 @@ These pages share a consistent layout pattern for data tables with filtering and
 
 **Common Features:**
 
-- Search by description (persistent via localStorage)
+- Search by description (persistent via sessionStorage and the URL)
 - Account filtering (Expenses and Incomes only, synced with URL params)
 - Permission-gated action buttons (`WithPermission` wrapper)
 - Nested routing via `<Outlet />` for create/edit sheets
@@ -1859,11 +1854,11 @@ These pages share a consistent layout pattern for data tables with filtering and
 
 **Filter Persistence:**
 
-All table pages use custom storage hooks (`useAccountStorage`, `useExpenseStorage`, `useIncomeStorage`) to persist filter state:
+All table pages use custom storage hooks (`useAccountStorage`, `useExpenseStorage`, `useIncomeStorage`) to persist filter state. The URL is the render-time source of truth; the storage hook backs it:
 
-- Search term saved to localStorage on change
-- Account filter (Expenses/Incomes) synced with both localStorage and URL search params
-- Filters restored on page mount
+- Search term saved to sessionStorage on change
+- Account filter (Expenses/Incomes) synced with both sessionStorage and URL search params
+- Filters restored from the URL (or sessionStorage) on page mount
 
 ---
 
@@ -2388,12 +2383,12 @@ const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('theme', 'light');
 
 Central authentication context providing user state, tokens, and login/logout operations.
 
-**Location:** `src/features/auth/AuthContext.tsx`
+**Location:** `src/features/auth/contexts/AuthContext.tsx`
 
 **Usage:**
 
 ```tsx
-import useAuthContext from '@/features/auth/AuthContext';
+import { useAuthContext } from '@/features/auth/contexts';
 
 function MyComponent() {
   const { isAuthenticated, userInfo, login, logout } = useAuthContext();
@@ -2419,12 +2414,12 @@ function MyComponent() {
 
 Use `logoutManager` for triggering logout from anywhere without circular dependencies.
 
-**Location:** `src/features/auth/logoutManager.ts`
+**Location:** `src/concerns/auth/logoutManager.ts`
 
 **Usage:**
 
 ```tsx
-import logoutManager from '@/features/auth/logoutManager';
+import { logoutManager } from '@/concerns';
 
 // In event handlers
 const handleLogout = () => {
@@ -2553,8 +2548,8 @@ Routes that require authentication use the `ProtectedRoute` wrapper component.
 **Pattern:**
 
 ```tsx
-import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
-import useAuthContext from '@/features/auth/AuthContext';
+import { Navigate, Outlet, Route, Routes } from 'react-router';
+import { useAuthContext } from '@/features/auth/contexts';
 
 function ProtectedRoute() {
   const { isAuthenticated } = useAuthContext();
@@ -2675,7 +2670,7 @@ All mutation hooks support `signal?: AbortSignal` for cancellation.
 
 Use centralized cache invalidation to automatically handle dependency chains.
 
-**Location:** `src/lib/cacheInvalidation.ts`
+**Location:** `src/concerns/cache/cacheInvalidation.ts`
 
 **Available Cache Keys:**
 
@@ -2695,7 +2690,7 @@ Use centralized cache invalidation to automatically handle dependency chains.
 **Usage:**
 
 ```tsx
-import { useCacheInvalidation } from '@/lib/cacheInvalidation';
+import { useCacheInvalidation } from '@/concerns/cache';
 
 const { queryClient } = useApiClient();
 const { invalidateCache } = useCacheInvalidation(queryClient);
@@ -2714,9 +2709,10 @@ All errors are normalized by Axios interceptors into:
 - `ForbiddenError` - Authorization failures (403)
 - `NotFoundError` - Resource not found (404)
 - `MethodNotAllowedError` - HTTP method not allowed (405)
+- `BadRequestError` - Request validation failures (400)
 - `ConflictError` - Resource conflicts (409)
-- `ValidationError` - Request validation failures (422)
 - `RateLimitedError` - Rate limit exceeded (429)
+- `ServerError` - Server failures (500)
 - `NetworkError` - Network/connection errors
 - `UnexpectedError` - Unexpected/unhandled errors
 
