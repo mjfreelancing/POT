@@ -501,8 +501,6 @@ internal static class WebApplicationBuilderExtensions
             validationRegistry.AddAppValidators();
         });
 
-        builder.Services.AddSingleton<IProblemDetailsInspector, ProblemDetailsInspector>();
-
         return builder;
     }
 

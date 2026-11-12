@@ -25,18 +25,17 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 
 ## Summary
 
-| ID    | Item                                                                                            | Severity            | Recommendation                                                                                       | Needs migration?             |
-| ----- | ----------------------------------------------------------------------------------------------- | ------------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------- |
-| DD-02 | Etag checked in code but not a database concurrency token; client types it as `bigint`          | Med (integrity)     | B + C: concurrency token, a monotonic value and `z.number()`                                         | Model-only (empty migration) |
-| DD-03 | Money stored and calculated as `double`                                                         | Med (correctness)   | C: `decimal` / `numeric(18,2)` end to end                                                            | Yes: DB + data               |
-| DD-06 | PostgreSQL 13 locally and in tests, 16 in E2E, 17.6 in Azure                                    | Med (drift)         | B: align everything on the Azure version                                                             | No (local data rebuild)      |
-| DD-07 | Client API types are hand-written                                                               | Med (drift)         | B: generate types from the committed contract                                                        | No                           |
-| DD-14 | No policy for API/client version skew while an old PWA shell is cached                          | Med (skew)          | A: record that no window exists, correct the guide                                                   | No                           |
-| DD-09 | Permission policies are string literals                                                         | Low (fails closed)  | B: named constants and a test for every endpoint (now one assertion over the new endpoint inventory) | No                           |
-| DD-10 | DI by marker-interface scanning: code and server guide agree, `server.instructions.md` does not | Low (documentation) | A: keep scanning, correct the instructions                                                           | No                           |
-| DD-13 | Features import other features (and shared layers import features)                              | Low (structure)     | C: move auth and shared pieces into layers, enforce with lint                                        | No                           |
-| DD-16 | No server health check in the prodlike compose stack                                            | Low (local only)    | B: readiness health check, client waits for it                                                       | No                           |
-| DD-12 | Smaller items (Cronos, sonner theme, animate plugin, EF InMemory, ERD path)                     | Low (housekeeping)  | Per item, see brief                                                                                  | No                           |
+| ID    | Item                                                                                   | Severity           | Recommendation                                                                                       | Needs migration?             |
+| ----- | -------------------------------------------------------------------------------------- | ------------------ | ---------------------------------------------------------------------------------------------------- | ---------------------------- |
+| DD-02 | Etag checked in code but not a database concurrency token; client types it as `bigint` | Med (integrity)    | B + C: concurrency token, a monotonic value and `z.number()`                                         | Model-only (empty migration) |
+| DD-03 | Money stored and calculated as `double`                                                | Med (correctness)  | C: `decimal` / `numeric(18,2)` end to end                                                            | Yes: DB + data               |
+| DD-06 | PostgreSQL 13 locally and in tests, 16 in E2E, 17.6 in Azure                           | Med (drift)        | B: align everything on the Azure version                                                             | No (local data rebuild)      |
+| DD-07 | Client API types are hand-written                                                      | Med (drift)        | B: generate types from the committed contract                                                        | No                           |
+| DD-14 | No policy for API/client version skew while an old PWA shell is cached                 | Med (skew)         | A: record that no window exists, correct the guide                                                   | No                           |
+| DD-09 | Permission policies are string literals                                                | Low (fails closed) | B: named constants and a test for every endpoint (now one assertion over the new endpoint inventory) | No                           |
+| DD-13 | Features import other features (and shared layers import features)                     | Low (structure)    | C: move auth and shared pieces into layers, enforce with lint                                        | No                           |
+| DD-16 | No server health check in the prodlike compose stack                                   | Low (local only)   | B: readiness health check, client waits for it                                                       | No                           |
+| DD-12 | Smaller items (Cronos, sonner theme, animate plugin, EF InMemory, ERD path)            | Low (housekeeping) | Per item, see brief                                                                                  | No                           |
 
 ---
 
@@ -194,7 +193,15 @@ The briefs are ordered by severity, highest first. A follow-up on an item alread
 - **Recommendation:** A. The scanning works and is tested, the guide already describes it, and B costs a great deal for no behaviour change. Fixing the one outlier stops agents writing services that never get registered.
 - **Route if changed:** A is a docs change made with the ADR; no PRD needed. B would need a PRD via the prd-discovery skill.
 
-> **Your call:**
+> **Your call:** Option A. Record the scanning as the decision and correct the instructions; the code and the server guide already agree.
+
+**Resolved 2026-11-12:** [ADR-0055](Docs/adr/ADR-0055-services-are-registered-by-scanning-each-layer-for-its-marker-interface.md)
+records the scanning decision, with convenience against hand registration as the reason on record and
+startup cost as the condition on it. The Dependency injection section of
+`.github/instructions/server.instructions.md` now states the marker rules and the three cases where an
+explicit registration is right, so it no longer contradicts the code. `IProblemDetailsInspector` was the
+one Pot service still registered by hand; it now extends `IPotSingletonDependency` and is picked up by
+the scan, so no explicit registration is left without a stated reason.
 
 ---
 

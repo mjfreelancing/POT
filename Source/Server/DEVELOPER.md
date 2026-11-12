@@ -5061,6 +5061,9 @@ The API validates its JWT, authentication-cookie, platform-admin, CORS, SMTP, an
 
 POT uses **auto-registration** via marker interfaces to automatically discover and register services. This eliminates manual registration in `Program.cs` and ensures consistent service lifetimes.
 
+The decision, and the trade-offs it accepts, are recorded in
+[ADR-0055](../../Docs/adr/ADR-0055-services-are-registered-by-scanning-each-layer-for-its-marker-interface.md).
+
 ### Auto-Registration Pattern
 
 **Configuration:** `Pot.AspNetCore/Extensions/WebApplicationBuilderExtensions.cs`

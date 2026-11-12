@@ -1,7 +1,9 @@
+using Pot.Shared.DependencyInjection;
+
 namespace Pot.AspNetCore.Concerns.Validation;
 
 /// <summary>Inspects validation results and represents failures as problem details.</summary>
-public interface IProblemDetailsInspector
+public interface IProblemDetailsInspector : IPotSingletonDependency
 {
     /// <summary>Validates the supplied value and returns the validation result.</summary>
     /// <param name="instance">The object to validate.</param>

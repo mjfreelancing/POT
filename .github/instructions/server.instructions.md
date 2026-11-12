@@ -61,9 +61,11 @@ Run server commands from `Source/Server`. `.editorconfig` is the source of truth
 
 ## Dependency injection
 
-- Register concrete classes for internal, single-implementation plumbing. Add an interface only when there are multiple implementations now, it is an intentional public/extensible boundary, a real outside consumer needs it, or tests need a seam and no simpler one exists.
-- Keep implementation classes non-public; do not make them `public` for DI convenience. "Internal first": promote to interface/public only when a concrete requirement appears. Re-evaluate single-implementation interfaces with no extension point.
-- Keep registration in a small set of composition-root extension methods. Default lifetime is `Scoped`; use `Singleton` or `Transient` only with a proven reason.
+- A service is registered by its interface: every service interface extends `IPotScopedDependency` or `IPotSingletonDependency` from `Pot.Shared/DependencyInjection/`. Put the marker on the interface, never on the class — the scan registers interface-to-implementation pairs, so a class that implements a marker is not registered (ADR-0055).
+- Scoped is the default; extend `IPotSingletonDependency` only for a service that must be created once. There is no transient marker, so a transient registration is explicit and states why.
+- Each layer composes itself: a layer that adds services declares a `ServiceRegistrarBase` subclass and scans for the markers from its own `Add*Dependencies()` extension method. `Pot.AspNetCore` calls those methods rather than naming services.
+- Register explicitly only where the scan cannot express it: a framework abstraction that must not carry a Pot marker (`IAuthorizationHandler`, `IAuthorizationPolicyProvider`), a type consumed as a concrete class (middleware), or a registration built by a factory delegate.
+- Keep implementation classes non-public; do not make them `public` for DI convenience.
 
 ## XML documentation
 
