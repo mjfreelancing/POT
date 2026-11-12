@@ -2027,7 +2027,7 @@ WHERE r."Name" = 'Admin' AND p."Name" = 'new-feature:manage';
 **Platform administrators are identified via environment variables, not database roles.**
 
 > **Making yourself the first platform admin:** the end-to-end procedure, including approving your own
-> first account, is in [First-Time Configuration](FIRST-TIME-SETUP.md). This section documents the setting
+> first account, is in [First-Time Configuration](tutorials/first-time-setup.md). This section documents the setting
 > itself.
 
 **Development (Docker):**
@@ -2209,8 +2209,8 @@ The authentication system provides the following protection features:
 
 ## Additional Resources
 
-- [Platform Admin Setup Guide](FIRST-TIME-SETUP.md) - Step-by-step first-time configuration
-- [Getting Started](GETTING-STARTED.md) - Complete setup guide
+- [Platform Admin Setup Guide](tutorials/first-time-setup.md) - Step-by-step first-time configuration
+- [Getting Started](tutorials/getting-started.md) - Complete setup guide
 - [Frontend Developer Guide](../Source/Client/pot-react/DEVELOPER.md) - Frontend auth patterns
 - [Backend Developer Guide](../Source/Server/DEVELOPER.md) - Backend auth implementation
 
@@ -2218,6 +2218,6 @@ The authentication system provides the following protection features:
 
 **Related Topics:**
 
-- [User Management](USER-GUIDE/Users.md) - Managing users after approval
-- [Approvals](USER-GUIDE/Approvals.md) - Platform admin approval workflow
-- [Settings](USER-GUIDE/Settings.md) - Password changes and profile updates
+- [User Management](user-guide/Users.md) - Managing users after approval
+- [Approvals](user-guide/Approvals.md) - Platform admin approval workflow
+- [Settings](user-guide/Settings.md) - Password changes and profile updates

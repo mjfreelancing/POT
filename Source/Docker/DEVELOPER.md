@@ -3,7 +3,7 @@
 Technical reference for the POT Docker stack: how the three containers are wired together, how the
 images are built, and how the stack behaves locally and on Azure.
 
-> **Setting up for the first time?** Follow `Docs/DOCKER-SETUP.md`. This guide explains how the
+> **Setting up for the first time?** Follow `Docs/how-to/run-the-docker-stack.md`. This guide explains how the
 > configuration works, so reach for it when you need to change or debug it.
 
 ## Table of Contents
@@ -805,8 +805,8 @@ docker-compose --env-file .env --env-file .env.development -f docker-compose-cli
 
 In this repository:
 
-- `Docs/DOCKER-SETUP.md` — step-by-step local setup with Docker
-- `Docs/LOCAL-SETUP.md` — running the client and server without Docker
+- `Docs/how-to/run-the-docker-stack.md` — step-by-step local setup with Docker
+- `Docs/how-to/run-locally-without-docker.md` — running the client and server without Docker
 - `Data/Seed Docker/README.md` — the seed-authoring database (E2E baseline data)
 - `Data/Local Docker/README.md` — the scratch database for restoring a dump locally
 - `Source/Server/DEVELOPER.md` — backend patterns

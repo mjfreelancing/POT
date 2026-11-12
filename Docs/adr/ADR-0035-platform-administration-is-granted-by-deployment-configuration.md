@@ -71,7 +71,7 @@ no platform administrator at all; a well-formed identifier that names no user al
 - Bad, because the configuration holds user identifiers that exist only once the account does: the first
   platform administrator signs up, reads their `RowId` from the database, adds it to configuration and
   restarts the API, and, because sign-up waits for a platform administrator's approval, enables their
-  own account directly in the database (`Docs/FIRST-TIME-SETUP.md`, step 4).
+  own account directly in the database (`Docs/tutorials/first-time-setup.md`, step 4).
 - Bad, because the authority is not auditable through the application's own role history.
 
 ### Confirmation

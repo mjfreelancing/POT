@@ -18,7 +18,7 @@ Daily Need is the long-run daily funding requirement across active obligations. 
 
 The dashboard adapts to your selected time period, showing only relevant metrics and adjusting calculations dynamically.
 
-[View detailed Dashboard guide →](USER-GUIDE/Dashboard.md)
+[View detailed Dashboard guide →](user-guide/Dashboard.md)
 
 ## Financial Projections
 
@@ -36,7 +36,7 @@ The projection system helps you:
 - Ensure you always have enough funds to cover bills
 - Make informed financial decisions
 
-[View detailed Projections guide →](USER-GUIDE/Projections.md)
+[View detailed Projections guide →](user-guide/Projections.md)
 
 ## Account Management
 
@@ -48,7 +48,7 @@ Manage all your financial accounts in one place:
 - **Computed Accruals** - Accrual totals are derived from each expense's schedule whenever the accounts are read, so they always reflect the current schedules
 - **Obligation-Aware Availability** - Available funds account for your reserved buffer plus committed obligations: the accrued cycles in progress and any past-due arrears
 
-[View detailed Accounts guide →](USER-GUIDE/Accounts.md)
+[View detailed Accounts guide →](user-guide/Accounts.md)
 
 ## Expense Management
 
@@ -71,7 +71,7 @@ Never miss a payment deadline:
   - Excluded items styled distinctly with red accents
   - Subtle row borders for improved readability
 
-[View detailed Expenses guide →](USER-GUIDE/Expenses.md)
+[View detailed Expenses guide →](user-guide/Expenses.md)
 
 ## Income Management
 
@@ -93,7 +93,7 @@ Track all your income sources:
   - Excluded items styled distinctly with red accents
   - Subtle row borders for improved readability
 
-[View detailed Income guide →](USER-GUIDE/Income.md)
+[View detailed Income guide →](user-guide/Income.md)
 
 ## Data Management
 
@@ -108,7 +108,7 @@ Perfect for:
 - Recovering from errors
 - Archiving financial records
 
-[View detailed Export guide →](USER-GUIDE/Export.md) | [View detailed Import guide →](USER-GUIDE/Import.md)
+[View detailed Export guide →](user-guide/Export.md) | [View detailed Import guide →](user-guide/Import.md)
 
 ## User Settings
 
@@ -119,7 +119,7 @@ Customize your POT experience:
 - **Site Settings** - Customize site name and description (admins only)
 - **Display Preferences** - Configure how data is displayed
 
-[View detailed Settings guide →](USER-GUIDE/Settings.md)
+[View detailed Settings guide →](user-guide/Settings.md)
 
 ## User Management
 
@@ -131,7 +131,7 @@ Collaborate with others on financial management (admins):
 - **User Status** - Monitor active and pending users
 - **Invitation Management** - Resend invitations
 
-[View detailed Users guide →](USER-GUIDE/Users.md)
+[View detailed Users guide →](user-guide/Users.md)
 
 ## Security Features
 
@@ -153,10 +153,10 @@ For platform administrators only:
 - **Platform Permissions** - Special `platform:manage` permission for platform specific tasks
 - **User Approval** - Approve or reject new user registrations
 
-[View detailed Platform Admin guide →](USER-GUIDE/PlatformAdmin.md)
+[View detailed Platform Admin guide →](user-guide/PlatformAdmin.md)
 
 ---
 
-For setup instructions, see [Getting Started](GETTING-STARTED.md).
+For setup instructions, see [Getting Started](tutorials/getting-started.md).
 
 For technical details, see [Architecture](ARCHITECTURE.md).

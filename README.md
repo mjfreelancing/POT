@@ -61,13 +61,21 @@ You might have $5,000 in your account today, but if you have $6,000 in bills due
 
 ## Documentation
 
-For detailed information, see:
+For detailed information, see [Docs/README.md](Docs/README.md), which maps every kind of document to its
+one home.
 
-- [Getting Started Guide](Docs/GETTING-STARTED.md) - Setup and installation
+- [Getting Started Guide](Docs/tutorials/getting-started.md) - Setup and installation
+- [Run the Docker stack](Docs/how-to/run-the-docker-stack.md) - The full stack in containers
+- [Run locally without Docker](Docs/how-to/run-locally-without-docker.md) - API and client on the host
+- [First-time setup](Docs/tutorials/first-time-setup.md) - Your first account and the first platform admin
 - [Features Documentation](Docs/FEATURES.md) - Detailed feature descriptions
 - [Authentication & Security](Docs/AUTHENTICATION.md) - User signup, permissions, and security
 - [Architecture Overview](Docs/ARCHITECTURE.md) - Technical architecture
-- [User Guide](Docs/USER-GUIDE/) - Detailed feature walkthroughs
+- [User Guide](Docs/user-guide/) - Detailed feature walkthroughs
+- [Ports and environments](Docs/reference/ports-and-environments.md) - Every port, and what must agree
+- [Configuration](Docs/reference/configuration.md) - Env files and startup validation
+- [Glossary](Docs/reference/glossary.md) - Terms with a precise meaning
+- [Decisions (ADRs)](Docs/adr/README.md) - Why the system is shaped as it is
 
 **Developer Documentation:**
 

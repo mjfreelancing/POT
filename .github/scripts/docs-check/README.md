@@ -13,9 +13,10 @@ review.
 - **The generated index** — the block between the markers in `Docs/adr/README.md` must match what the
   script would generate from the front matter.
 - **Relative links** — every Markdown link in `Docs/adr/`, `Docs/standards/`, `Docs/prd/`, `Docs/reference/`,
-  `Docs/explanation/`, `.github/`, `Docs/README.md`, `AGENTS.md`, `README.md` and the two planning documents
-  must resolve. Links inside fenced code blocks, absolute URLs and bare anchors are ignored, and a
-  `fixtures/` folder is skipped because its documents are broken on purpose.
+  `Docs/explanation/`, `Docs/tutorials/`, `Docs/how-to/`, `Docs/user-guide/`, `.github/`, `Docs/README.md`,
+  `AGENTS.md`, `README.md` and the two planning documents must resolve. Links inside fenced code blocks,
+  absolute URLs and bare anchors are ignored, and a `fixtures/` folder is skipped because its documents
+  are broken on purpose.
 - **Instruction citations** — a `ADR-NNNN` reference in `.github/instructions/` must name an ADR that
   exists and is `accepted`.
 - **Document identifiers in code** — a `PRD-NNNN` or `ADR-NNNN` reference in code or configuration under

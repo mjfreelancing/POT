@@ -10,7 +10,7 @@ The Docker setup runs the complete stack:
 - **ASP.NET Core API** on port 5241
 - **React frontend** on port 5175
 
-Every port, why it was chosen, and which values must agree when one changes: [Ports and environments](reference/ports-and-environments.md).
+Every port, why it was chosen, and which values must agree when one changes: [Ports and environments](../reference/ports-and-environments.md).
 
 ## Choose Your Method
 
@@ -32,7 +32,7 @@ Before you run the task, make sure these local prerequisites exist:
 If `Source/Docker/.env.development` does not exist yet, copy it from the tracked
 `Source/Docker/.env.development.template` in the same folder and fill the values that file marks
 REQUIRED. Your copy is git-ignored; the template is the tracked starting point, and
-[Configuration](reference/configuration.md) explains what each value does.
+[Configuration](../reference/configuration.md) explains what each value does.
 
 > **Important:** VS Code must be opened at the workspace root (the `POT` folder) for tasks to work correctly. The tasks are defined in `.vscode/tasks.json` and rely on the workspace folder structure.
 
@@ -241,6 +241,6 @@ docker image prune -a
 
 ---
 
-**Next:** [Local Setup](LOCAL-SETUP.md) (alternative approach) or [First-Time Configuration](FIRST-TIME-SETUP.md)
+**Next:** [Local Setup](run-locally-without-docker.md) (alternative approach) or [First-Time Configuration](../tutorials/first-time-setup.md)
 
-**Return to:** [Getting Started](GETTING-STARTED.md)
+**Return to:** [Getting Started](../tutorials/getting-started.md)

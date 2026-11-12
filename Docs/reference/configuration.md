@@ -73,5 +73,5 @@ at build time; see the client build arguments in the Docker guide.
 ## Running without Docker
 
 The API reads `Pot.AspNetCore/appsettings.Development.json` when run with `dotnet run`, and the values
-needed for a local start are listed in [Local setup](../LOCAL-SETUP.md). The env file above is used only
+needed for a local start are listed in [Local setup](../how-to/run-locally-without-docker.md). The env file above is used only
 by the compose stack.

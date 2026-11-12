@@ -62,7 +62,7 @@ Then populate it using one of the two options below.
 ### Option A — Run migrations (empty database)
 
 This creates the schema with no application data. Follow the steps in the
-[Getting Started guide](../../Docs/GETTING-STARTED.md) to run migrations and seed initial data.
+[Getting Started guide](../../Docs/tutorials/getting-started.md) to run migrations and seed initial data.
 
 ### Option B — Restore from a backup
 

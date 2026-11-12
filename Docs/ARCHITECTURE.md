@@ -259,7 +259,7 @@ POT runs in Docker containers for consistent development. The local stack is:
 5. **Access application** - Navigate to http://localhost:5175
 6. **First-time setup** - Create user account and configure platform admin
 
-**For complete setup:** See [Getting Started](GETTING-STARTED.md)
+**For complete setup:** See [Getting Started](tutorials/getting-started.md)
 
 ## API Communication
 

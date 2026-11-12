@@ -101,6 +101,6 @@ Each guide follows this pattern:
 
 For a feature overview, see [Features](../FEATURES.md).
 
-For initial setup instructions, see [Getting Started](../GETTING-STARTED.md).
+For initial setup instructions, see [Getting Started](../tutorials/getting-started.md).
 
 For technical details, see [Architecture](../ARCHITECTURE.md).

@@ -129,10 +129,10 @@ holds your local settings; never put a real credential in the tracked template.
 | `SMTP_*`                | Replace the placeholders with real provider credentials before testing sign-up, password reset, invitations or reminders   |
 | `POSTGRES_PASSWORD`     | Only if you changed the password in `Source/Docker/Postgres/Dockerfile`; the two must match                                |
 | `CORS_ALLOWED_ORIGINS`  | Already correct for `http://localhost:5175`                                                                              |
-| `PLATFORM_ADMIN_USERIDS`| Leave empty for now; add your `RowId` after sign-up — see [First-Time Configuration](FIRST-TIME-SETUP.md)                 |
+| `PLATFORM_ADMIN_USERIDS`| Leave empty for now; add your `RowId` after sign-up — see [First-Time Configuration](first-time-setup.md)                 |
 | `JWT_ISSUER`, `JWT_AUDIENCE` | Already correct for `http://localhost:5241`; they must equal the URL the API is reached at                          |
 
-What each value does and which values must agree: [Configuration](reference/configuration.md).
+What each value does and which values must agree: [Configuration](../reference/configuration.md).
 
 ### Step 4: Create Required Directories
 
@@ -151,8 +151,8 @@ mkdir -p Source/Docker/postgres-data
 
 Once configuration is complete, proceed to:
 
-1. **[Docker Setup](DOCKER-SETUP.md)** (recommended) - Run POT using Docker containers
-2. **[Local Setup](LOCAL-SETUP.md)** - Run API and React locally (with or without Docker PostgreSQL)
-3. **[First-Time Configuration](FIRST-TIME-SETUP.md)** - Create your first user and configure platform admin access
+1. **[Docker Setup](../how-to/run-the-docker-stack.md)** (recommended) - Run POT using Docker containers
+2. **[Local Setup](../how-to/run-locally-without-docker.md)** - Run API and React locally (with or without Docker PostgreSQL)
+3. **[First-Time Configuration](first-time-setup.md)** - Create your first user and configure platform admin access
 
 ---

@@ -204,7 +204,7 @@ The React application will start on `http://localhost:5175`
 
 Once you have POT running locally, proceed to:
 
-**[First-Time Configuration](FIRST-TIME-SETUP.md)** - Create your first user and configure platform admin access
+**[First-Time Configuration](../tutorials/first-time-setup.md)** - Create your first user and configure platform admin access
 
 ---
 
@@ -238,4 +238,4 @@ dotnet run --project Pot.Data.Migrations
 
 ---
 
-**Return to:** [Getting Started](GETTING-STARTED.md)
+**Return to:** [Getting Started](../tutorials/getting-started.md)
