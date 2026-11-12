@@ -74,11 +74,11 @@ You should see three running containers (container names → image names):
 
 Check that the API is responding:
 
-```bash
-curl http://localhost:5241/_health
+```powershell
+curl http://localhost:5241/_health   # PowerShell: curl is an alias for Invoke-WebRequest
 ```
 
-Expected response should look something like this:
+Expected response should look something like this (PowerShell `Invoke-WebRequest` output):
 
 ```
 StatusCode        : 200
@@ -105,11 +105,11 @@ RawContentLength  : 7
 
 Check that the frontend is responding:
 
-```bash
-curl http://localhost:5175/health
+```powershell
+curl http://localhost:5175/health   # PowerShell: curl is an alias for Invoke-WebRequest
 ```
 
-Expected response should look something like this:
+Expected response should look something like this (PowerShell `Invoke-WebRequest` output):
 
 ```
 StatusCode        : 200
@@ -136,7 +136,7 @@ Navigate to:
 
 You should see the POT login/signup page.
 
-### Stopping Services
+### Stopping the Services
 
 1. Press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (Mac)
 2. Type "Run Task" and press Enter
@@ -191,11 +191,11 @@ You should see three running containers (container names → image names):
 
 Check that the API is responding:
 
-```bash
-curl http://localhost:5241/_health
+```powershell
+curl http://localhost:5241/_health   # PowerShell: curl is an alias for Invoke-WebRequest
 ```
 
-Expected response should look something like this:
+Expected response should look something like this (PowerShell `Invoke-WebRequest` output):
 
 ```
 StatusCode        : 200
@@ -222,11 +222,11 @@ RawContentLength  : 7
 
 Check that the frontend is responding:
 
-```bash
-curl http://localhost:5175/health
+```powershell
+curl http://localhost:5175/health   # PowerShell: curl is an alias for Invoke-WebRequest
 ```
 
-Expected response should look something like this:
+Expected response should look something like this (PowerShell `Invoke-WebRequest` output):
 
 ```
 StatusCode        : 200
@@ -253,7 +253,7 @@ Navigate to:
 
 You should see the POT login/signup page.
 
-### Stopping the Services
+### Stopping Services
 
 When you're done:
 

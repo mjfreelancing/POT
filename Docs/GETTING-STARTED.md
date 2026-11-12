@@ -8,7 +8,7 @@ Before you begin, ensure you have the following installed:
 
 ### Required Software
 
-- **Node.js** (v22.22.2 or later; Node 24.x LTS recommended) - [Download](https://nodejs.org/)
+- **Node.js** (>= 22.22.0 required; Node 24.x LTS recommended) - [Download](https://nodejs.org/)
   - Required for frontend development and Docker builds
 - **npm** (comes with Node.js)
 - **.NET 10 SDK** - [Download](https://dotnet.microsoft.com/download/dotnet/10.0)
@@ -36,7 +36,7 @@ Before you begin, ensure you have the following installed:
 After installing the prerequisites, verify they're working:
 
 ```bash
-# Check Node.js version (should be v22.22.2 or later)
+# Check Node.js version (should be >= 22.22.0; Node 24.x LTS recommended)
 node --version
 
 # Check npm version
@@ -243,7 +243,7 @@ Leave empty for initial setup:
 PLATFORM_ADMIN_USERIDS=
 ```
 
-> **Note:** After creating your first user account, you'll add your user GUID here to grant platform admin permissions. See [First-Time Configuration](#first-time-configuration) for details.
+> **Note:** After creating your first user account, you'll add your user GUID here to grant platform admin permissions. See [Platform Admin](#platform-admin) for details.
 
 ### Step 4: Create Required Directories
 

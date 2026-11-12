@@ -34,9 +34,10 @@ If you prefer to use Docker just for PostgreSQL:
 # Navigate to the Docker directory
 cd Source/Docker/Postgres
 
-# Build and run the PostgreSQL container
-docker build -t pot-postgres .
-docker run -d --name pot-postgres -p 5432:5432 pot-postgres
+# Build and run a standalone PostgreSQL container (named pot-local-postgres so it does not
+# collide with the prodlike stack's pot-postgres container)
+docker build -t pot-local-postgres .
+docker run -d --name pot-local-postgres -p 5432:5432 pot-local-postgres
 ```
 
 This creates a PostgreSQL container with:
@@ -212,20 +213,20 @@ Once you have POT running locally, proceed to:
 ### Stop PostgreSQL Docker Container
 
 ```bash
-docker stop pot-postgres
-docker rm pot-postgres
+docker stop pot-local-postgres
+docker rm pot-local-postgres
 ```
 
 ### Restart PostgreSQL Docker Container
 
 ```bash
-docker start pot-postgres
+docker start pot-local-postgres
 ```
 
 ### View PostgreSQL Logs
 
 ```bash
-docker logs pot-postgres
+docker logs pot-local-postgres
 ```
 
 ### Re-run Migrations (after pulling new code)

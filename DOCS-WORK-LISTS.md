@@ -8,18 +8,11 @@ five are done.
 
 ## W1 — Content to correct
 
-Each item is fixed when its file is reworked, not in a separate pass. Items 1–7 and 9 were fixed in the `AUTHENTICATION.md`, server-guide, `ARCHITECTURE.md`, user-guide, `IMPLEMENTATION.md`, client-guide and E2E-docs passes; they are removed rather than marked done, so the numbers below skip. (`_DOCUMENTATION_PLAN.md` still uses "Site Owner", but W3 retires that file rather than correcting it.)
+Each item is fixed when its file is reworked, not in a separate pass. Items 1–7, 9 and 10 were fixed in the `AUTHENTICATION.md`, server-guide, `ARCHITECTURE.md`, user-guide, `IMPLEMENTATION.md`, client-guide, E2E-docs and setup-docs passes; they are removed rather than marked done, so the numbers below skip. (`_DOCUMENTATION_PLAN.md` still uses "Site Owner", but W3 retires that file rather than correcting it.)
 
 **Fix when the file is reworked**
 
 8. **Server DEVELOPER:** the `WhenNotNull()` guidance at ~1921 conflicts with `allsoverit-patterns.instructions.md:18` (DD-15). Leave it until DD-15 is decided; it matches the code today.
-10. **Setup docs:**
-    - Node minimum: 22.22.2 vs `>=22.22.0` vs "Node 24 is the minimum".
-    - `.env.development`: resolved — `Source/Docker/.env.development.template` is now tracked, and the places that said the repository ships none are corrected. The key list lives in that file; the remaining duplicated copies are consolidated under W2 ("Docker env-file setup").
-    - `Docs/Azure/Azure-Deployment-Notes.md` is linked three times (Docker DEVELOPER 107, 720 and 843) but is untracked and ignored, so those links are dead for every other reader. **Decided:** the file stays private; remove the links. See "Private and ignored files" at the end of this file.
-    - The GETTING-STARTED anchor at 228 is broken.
-    - DOCKER-SETUP's "curl" output is actually PowerShell output.
-    - LOCAL-SETUP Option B collides with the prodlike container name.
 11. **FIRST-TIME-SETUP:**
     - Status names are inconsistent: `PendingApproval` vs `Approval`.
     - It says only platform admins see the Users menu; the real gate is `user:manage`.

@@ -104,8 +104,7 @@ clash with a locally installed PostgreSQL or the Vite dev server.
 
 **Azure (Container Apps):** each container listens on its normal port (client `80`, API `5241`). Each
 container app has its own ingress and hostname, and the ingress terminates HTTPS: the client is served
-at `payontime.com.au` and `www.payontime.com.au`, and the API at `api.payontime.com.au` (ADR-0032). See
-`Docs/Azure/Azure-Deployment-Notes.md`.
+at `payontime.com.au` and `www.payontime.com.au`, and the API at `api.payontime.com.au` (ADR-0032).
 
 ---
 
@@ -365,8 +364,9 @@ Things worth knowing:
 
 - **Dependency layer caching.** `package*.json` is copied and `npm ci` is run before the source is
   copied, so dependency installation is reused unless dependencies change.
-- **Node 24** is the minimum for the current toolchain (Vite 8, react-router 8, ESLint 10,
-  `@testing-library/jest-dom` 7).
+- **Node 24** is the version the client image is built with (`node:24-alpine`). A local build only
+  needs Node `>= 22.22.0` (the client's `engines`); Node 24.15.0+ keeps `npm ci` warning-free
+  (jsdom 30 requires `^22.22.2 || ^24.15.0 || >=26`).
 - **Build-time configuration.** `ARG VITE_API_BASE_URL` and `ARG VITE_API_TIMEOUT_MS` have no
   defaults. The Dockerfile only exports them when they are non-empty:
 
@@ -720,8 +720,8 @@ with the `docker-prune-all-unused-images` task.
   Headers" in `Source/Server/DEVELOPER.md`.
 - **Migrations still run at startup**, because the image entrypoint is unchanged.
 
-Deployment steps (container app configuration, ingress, secrets, custom domains) are in
-`Docs/Azure/Azure-Deployment-Notes.md`.
+Deployment steps (container app configuration, ingress, secrets, custom domains) are performed by hand
+against the deployed environment; they are not recorded in this repository.
 
 ---
 
@@ -844,7 +844,6 @@ In this repository:
 
 - `Docs/DOCKER-SETUP.md` — step-by-step local setup with Docker
 - `Docs/LOCAL-SETUP.md` — running the client and server without Docker
-- `Docs/Azure/Azure-Deployment-Notes.md` — Azure deployment detail
 - `Data/Seed Docker/README.md` — the seed-authoring database (E2E baseline data)
 - `Data/Local Docker/README.md` — the scratch database for restoring a dump locally
 - `Source/Server/DEVELOPER.md` — backend patterns
