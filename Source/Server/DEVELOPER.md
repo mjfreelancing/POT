@@ -192,7 +192,7 @@ Source/Server/
 - **Endpoint-level permission checks** using `resource:action` pattern (e.g., `account:view`, `expense:manage`)
 - **Rate limiting** with differentiated limits (authenticated: 50/30s, anonymous: 15/10s)
 - **CORS** configured for trusted origins only
-- **Multi-tenancy isolation** - query filters isolate `Account`, `Expense`, `Income` and `Setting`; `User` and `Site` are isolated by the repository surface instead (see [Security](#security))
+- **Multi-tenancy isolation** - tenant-scoped reads are confined to the caller's site by the two-part model described under [Security](#security)
 
 **2. Layered Clean Architecture**
 
@@ -220,9 +220,7 @@ Source/Server/
 
 **6. Multi-Tenancy by Default**
 
-- **Site-based query filters** automatically isolate `Account`, `Expense`, `Income` and `Setting`
-- **`User` and `Site` are not filtered** - a `User` filter would be self-referential, and permission resolution and token validation run before a site is known. They are reachable only through named, site-scoped repository methods, so a query that omits the site is not expressible
-- The two mechanisms sit side by side; neither replaces the other (see [Security](#security))
+- Tenant-scoped entities are isolated by default, and the two that cannot be filtered are confined by the repository surface. The model is in [Security](#security); the mechanics are in [Multi-Tenancy & Query Filters](#multi-tenancy--query-filters)
 
 **7. Health Checks**
 
