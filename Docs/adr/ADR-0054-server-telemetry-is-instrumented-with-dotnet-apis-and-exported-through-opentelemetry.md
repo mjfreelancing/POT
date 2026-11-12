@@ -69,7 +69,7 @@ OTLP is accepted by every mainstream backend, so the backend stays a deployment 
   traces and metrics, not logs.
 - **Sampling is parent-based, with a configured ratio.**
 - **Telemetry carries no value that a log may not.** The data rule in
-  [PRD-0035](../Future/PRD-0035-telemetry-tracing-and-redaction.md) applies to span tags, span events and
+  [PRD-0035](../prd/PRD-0035-telemetry-tracing-and-redaction.md) applies to span tags, span events and
   metric dimensions as well as to logs. Baggage carries no application data.
 
 The backend, the sampling ratio, whether logs are exported over OTLP as well as to the console, and

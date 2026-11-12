@@ -116,11 +116,11 @@ no platform administrator at all; a well-formed identifier that names no user al
 - Guards keep at least one enabled platform administrator: the last one
   cannot be disabled or deleted by another user, cannot delete their own account, and the site that
   holds them cannot be deleted. A platform administrator who is not the last enabled one has no
-  protection. [PRD-0027](../Future/PRD-0027-platform-administration.md) plans broader refusals for its
+  protection. [PRD-0027](../prd/PRD-0027-platform-administration.md) plans broader refusals for its
   cross-tenant operations (no configured platform administrator deleted, no site holding one deleted).
 - Platform authority is added to the caller's ordinary permissions on each request, which is the
   permission-resolution decision recorded in
   [ADR-0021](ADR-0021-each-request-resolves-the-callers-permissions-from-the-database.md).
 - The cross-tenant operations this authority is meant to carry (deleting a user or site in another
   tenant, and administrator recovery) are specified in
-  [PRD-0027](../Future/PRD-0027-platform-administration.md), which is not delivered.
+  [PRD-0027](../prd/PRD-0027-platform-administration.md), which is not delivered.

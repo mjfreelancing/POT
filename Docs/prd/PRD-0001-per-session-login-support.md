@@ -632,5 +632,5 @@ Required validation scenarios:
 
 ## Related Documents
 
-- Feature index: [Docs/Future/README.md](README.md)
+- Feature index: [Docs/prd/README.md](README.md)
 - Current auth docs: [Docs/AUTHENTICATION.md](../AUTHENTICATION.md)

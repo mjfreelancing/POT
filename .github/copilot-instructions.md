@@ -51,4 +51,4 @@ Ports: client `5175`, API `5241` (Docker), Postgres host `5444`. Non-Docker back
 - Coding conventions: `Docs/standards/`
 - Local setup: `Docs/how-to/run-locally-without-docker.md`
 - Docker setup: `Docs/how-to/run-the-docker-stack.md`, `Source/Docker/DEVELOPER.md`
-- PRDs: `Docs/Future/`
+- PRDs: `Docs/prd/`

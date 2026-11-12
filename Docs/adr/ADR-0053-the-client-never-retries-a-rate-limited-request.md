@@ -89,6 +89,6 @@ query or a mutation, the `QueryClient` defaults, and any loop written by hand.
 - The server policy that produces a `429`:
   [ADR-0034](ADR-0034-one-chained-rate-limit-policy-partitions-by-caller.md).
 - What the user is shown when a `429` arrives is a requirement of
-  [PRD-0014](../Future/PRD-0014-retry-after-client-cooldown-handling.md) (R1, R3 and R5). PRD-0014's test plan
+  [PRD-0014](../prd/PRD-0014-retry-after-client-cooldown-handling.md) (R1, R3 and R5). PRD-0014's test plan
   includes an interceptor test that a `429` is never retried. Once written, that test is this record's
   confirmation.

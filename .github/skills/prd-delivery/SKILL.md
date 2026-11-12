@@ -1,7 +1,7 @@
 ---
 name: prd-delivery
-description: "Deliver a discovered PRD as a staged plan of testable increments. Use when the human asks to plan, start or continue delivery of a PRD under Docs/Future: write the TASKS plan, then implement one stage at a time — tests first (red for changed behaviour, already green for a coverage gap), then code to green — run the targeted tests, report when the UI can be tested, offer a commit message, and stop for review. Never stages or commits."
-argument-hint: "<PRD file or number under Docs/Future>"
+description: "Deliver a discovered PRD as a staged plan of testable increments. Use when the human asks to plan, start or continue delivery of a PRD under Docs/prd: write the TASKS plan, then implement one stage at a time — tests first (red for changed behaviour, already green for a coverage gap), then code to green — run the targeted tests, report when the UI can be tested, offer a commit message, and stop for review. Never stages or commits."
+argument-hint: "<PRD file or number under Docs/prd>"
 ---
 
 # PRD Delivery
@@ -14,7 +14,7 @@ Every stage and sub-task is numbered (Stage 1 holds tasks `1.1`, `1.2`, …; Sta
 
 Client E2E is gated on client code: the dev suite (`npm run e2e:all:dev`) is opt-in at each client-changing stage, and the prodlike suite (`npm run e2e:all:prodlike`) runs once at completion. Server-only work never triggers E2E if there is no impact to the client.
 
-Use this skill only for PRDs under `Docs/Future/`. For general multi-stage work, use the `feature-implementation` skill.
+Use this skill only for PRDs under `Docs/prd/`. For general multi-stage work, use the `feature-implementation` skill.
 
 ## Hard rules
 
@@ -30,7 +30,7 @@ Use this skill only for PRDs under `Docs/Future/`. For general multi-stage work,
 - **Track progress in the plan.** Tick each sub-task's checkbox (`- [x]`) as it is implemented and keep each stage's `Progress: n/total complete` line accurate. Reference work by task number (e.g. `2.3`) in summaries and questions.
 - **Never generate EF Core migrations.** If a stage changes schema, ask the developer to add a migration and review it; `Running things` in `.github/copilot-instructions.md` has the command.
 - **Stay inside PRD scope.** Do not refactor unrelated code or change public API shape beyond what the PRD specifies; ask if scope is unclear.
-- **Never reference PRDs, ADRs, task lists, stage numbers or requirement IDs in code, tests, comments or test names.** Those belong only inside `Docs/Future/` (the plan file lives there, so references to the PRD are fine in it).
+- **Never reference PRDs, ADRs, task lists, stage numbers or requirement IDs in code, tests, comments or test names.** Those belong only inside `Docs/prd/` (the plan file lives there, so references to the PRD are fine in it).
 - Obey the scoped `.github/instructions/` file for every area the stage touches, and never touch `Source/Docker/postgres-data/**`.
 
 ## Procedure
@@ -45,8 +45,8 @@ Use this skill only for PRDs under `Docs/Future/`. For general multi-stage work,
    - name the layers and files it touches, and the targeted validation command(s);
    - be small enough to review and commit as one unit;
    - be broken into numbered sub-tasks (`1.1`, `1.2`, …) that each carry a checkbox, so the human can reference any one precisely;
-3. Write the plan to `Docs/Future/TASKS-PRD-NNNN.md`, beside the PRD (`NNNN` taken from the PRD filename), using the [stage plan template](./references/stage-plan.template.md). The file is never committed — leave it unstaged.
-4. Do the start-of-work bookkeeping per `Docs/Future` conventions: set the PRD `Status` to `In Progress`, update `Last Updated`, and update the matching `Docs/Future/README.md` row (`Status`, `Last Updated`) plus the index-update date.
+3. Write the plan to `Docs/prd/TASKS-PRD-NNNN.md`, beside the PRD (`NNNN` taken from the PRD filename), using the [stage plan template](./references/stage-plan.template.md). The file is never committed — leave it unstaged.
+4. Do the start-of-work bookkeeping per `Docs/prd` conventions: set the PRD `Status` to `In Progress`, update `Last Updated`, and update the matching `Docs/prd/README.md` row (`Status`, `Last Updated`) plus the index-update date.
 5. Add a **UI testing checkpoints** table near the top of the plan when the PRD has client work: which stage first produces something the human can exercise by hand, and what they can test after each later client stage. A human should never have to guess when the UI is ready.
 6. Present the plan and **stop.** Wait for the plan to be approved. If the human changes it, edit the TASKS file in place; do not create another.
 
@@ -105,20 +105,20 @@ After final approval:
    - **The limits of the evidence**, so a number is not read as covering more than it does: a tool that cannot instrument the code, a suite that was not run, a result that holds only on an idle machine.
      Leave the stage plan out. The commit messages and the PRD already record what happened, and a second document describing the same behaviour drifts away from the first.
 3. Do the completion bookkeeping defined in the "How this works" section of
-   [Docs/Future/README.md](../../../Docs/Future/README.md): PRD `Status` to `Complete`, update
+   [Docs/prd/README.md](../../../Docs/prd/README.md): PRD `Status` to `Complete`, update
    `Last Updated`, add or adjust the `Scope` line, copy the requirement table from the final verification
-   report into `## Requirement Coverage`, rewrite the `Docs/Future/README.md` row summary to state what
+   report into `## Requirement Coverage`, rewrite the `Docs/prd/README.md` row summary to state what
    the feature **is**, and bump the index-update date.
 4. **Amend what this delivery made wrong.** For every row of the PRD's "Effect on Earlier Documents" —
    and for any other Complete PRD this delivery contradicted, even if the row was missed — append an
    `AM-n` entry to that document, add or update its `**Amended:**` header line, and leave the body text
    alone. Use the type that fits: `Superseded`, `Obsoleted`, `Corrected` or `Clarified`. Keep each
-   `Docs/Future/README.md` row to one line; the history belongs in the amendment, not the index.
+   `Docs/prd/README.md` row to one line; the history belongs in the amendment, not the index.
 5. **Flip the ADRs this PRD raised to `accepted`.** Every ADR named in the PRD's decisions table, and
    any raised during delivery, moves from `proposed` to `accepted` now that the PRD is Complete; one whose
    work was abandoned moves to `rejected` instead. Run `docs-check` and regenerate the ADR index with
    `-Update`, because the status change alters it. This is the second validation point the `adr` skill
    defines; the first ran when each record was written, and this run is what proves the instruction files
    may now cite them.
-6. Delete `Docs/Future/TASKS-PRD-NNNN.md`. If it was ever committed — to read it from another machine, say — state that in the summary so the removal is staged with the rest of the close.
+6. Delete `Docs/prd/TASKS-PRD-NNNN.md`. If it was ever committed — to read it from another machine, say — state that in the summary so the removal is staged with the rest of the close.
 7. Summarize the whole delivery, offer a final commit message, and **stop** for final review.

@@ -22,7 +22,7 @@ reachable by anyone. That is a safe default for a public site and an unsafe one 
 route but sign-in, sign-up, password reset, refresh, logout and the health probes expects a caller.
 
 The failure is silent in both directions. A new protected endpoint that forgets its policy is
-immediately public, and nothing in a normal review catches it. That happened: [PRD-0026](../Future/PRD-0026-cross-tenant-authorization-hardening.md) found that the API
+immediately public, and nothing in a normal review catches it. That happened: [PRD-0026](../prd/PRD-0026-cross-tenant-authorization-hardening.md) found that the API
 had no fallback policy and that `PUT /api/users/{id}` declared no requirement, so an anonymous caller
 could edit any user's details (§2.1, issue I1); its §4.3 introduced the fallback and the endpoint test.
 

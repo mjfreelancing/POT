@@ -291,7 +291,7 @@ When the page mounts with URL `/expenses` (no `?accountId` param):
 
 ## References
 
-- [Docs/Future/README.md](README.md)
+- [Docs/prd/README.md](README.md)
 - [Source/Client/pot-react/src/features/expenses/ExpensesPage.tsx](../../Source/Client/pot-react/src/features/expenses/ExpensesPage.tsx)
 - [Source/Client/pot-react/src/features/incomes/IncomesPage.tsx](../../Source/Client/pot-react/src/features/incomes/IncomesPage.tsx)
 - [Source/Client/pot-react/src/features/accounts/components/AccountsTable.tsx](../../Source/Client/pot-react/src/features/accounts/components/AccountsTable.tsx)

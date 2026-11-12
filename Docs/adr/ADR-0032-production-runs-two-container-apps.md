@@ -118,7 +118,7 @@ work, and the browser calls the API's hostname directly.
   2026-11-06); nothing in the repository sets or records this. At current traffic it normally runs one
   replica. The owner accepts the duplicated scheduled work that scale-out brings
   ([ADR-0026](ADR-0026-background-work-runs-inside-the-api-process.md)) until the outbox
-  ([PRD-0019](../Future/PRD-0019-email-outbox-durable-dispatch.md)) removes the duplicate for email,
+  ([PRD-0019](../prd/PRD-0019-email-outbox-durable-dispatch.md)) removes the duplicate for email,
   rather than pinning the maximum to 1.
 
 ### Known scale-out risks
@@ -130,8 +130,8 @@ The risks to background work are in ADR-0026, "Known scale-out risks".
 - **Rate limits multiply.** The HTTP rate limiter keeps its counters in each process's memory, so a
   caller whose requests are spread across N replicas gets up to N times the configured limit. This
   matters most for the one-time code endpoints, where the rate limit is the main brake on guessing.
-  Owner: [PRD-0008](../Future/PRD-0008-authentication-abuse-protection-and-lockout-policy.md).
+  Owner: [PRD-0008](../prd/PRD-0008-authentication-abuse-protection-and-lockout-policy.md).
 - **Concurrent migration runs.** Every replica runs the migration runner when it starts
   ([ADR-0009](ADR-0009-migrations-run-in-a-separate-process-before-the-api-starts.md)), so replicas that
   start together each try to apply a pending migration. Owner:
-  [PRD-0034](../Future/PRD-0034-ci-cd-pipeline-and-delivery-policies.md).
+  [PRD-0034](../prd/PRD-0034-ci-cd-pipeline-and-delivery-policies.md).

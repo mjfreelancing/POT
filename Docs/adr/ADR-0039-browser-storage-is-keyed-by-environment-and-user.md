@@ -23,7 +23,7 @@ storage is already separated by origin, so a deployed site and a local server on
 each other's keys; what can share an origin is a development-mode and a production-mode build of the same
 client (`npm run dev` and `npm run preview` both serve on port 5175).
 
-Until [PRD-0001](../Future/PRD-0001-per-session-login-support.md) (decisions D001–D007), every setting used
+Until [PRD-0001](../prd/PRD-0001-per-session-login-support.md) (decisions D001–D007), every setting used
 a flat, unscoped `localStorage` key shared by every user and environment.
 
 ## Decision Drivers

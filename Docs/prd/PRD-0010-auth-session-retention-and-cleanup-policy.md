@@ -119,7 +119,7 @@ When this PRD moves from Proposed to Planning, re-evaluate this baseline recomme
 
 ## Related Documents
 
-- Future index: [Docs/Future/README.md](README.md)
+- Future index: [Docs/prd/README.md](README.md)
 - Session architecture: [Server Login/Logout Session Architecture Placeholder](PRD-0002-server-login-logout-session-architecture.md)
 - Client/server session umbrella: [Per-Session Login Support Plan](PRD-0001-per-session-login-support.md)
 - Abuse controls: [Authentication Abuse Protection and Lockout Policy (Draft)](PRD-0008-authentication-abuse-protection-and-lockout-policy.md)

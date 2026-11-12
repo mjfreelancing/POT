@@ -26,7 +26,7 @@ The provisioning a real tenant needs — sign-up, approval, an invitation, an ac
 several steps through the product, one of which is an email.
 A seeded identity can also be destroyed only once per database. A destructive spec that consumes one cannot
 run in a second browser project, or a second time against the same seed
-([PRD-0031](../Future/PRD-0031-automated-tenant-scenario-testing.md), Problem Statement and F1–F3).
+([PRD-0031](../prd/PRD-0031-automated-tenant-scenario-testing.md), Problem Statement and F1–F3).
 
 ## Decision Drivers
 
@@ -122,4 +122,4 @@ asserts that the seeded identities survive.
 - Queued in-process email delivery:
   [ADR-0027](ADR-0027-email-is-queued-in-process.md). The sink is what makes that
   queue observable to a browser test.
-- Source: [PRD-0031](../Future/PRD-0031-automated-tenant-scenario-testing.md) (A, B, D and F requirements).
+- Source: [PRD-0031](../prd/PRD-0031-automated-tenant-scenario-testing.md) (A, B, D and F requirements).

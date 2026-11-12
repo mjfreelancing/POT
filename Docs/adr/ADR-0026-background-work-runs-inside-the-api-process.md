@@ -102,7 +102,7 @@ inside its period.
 
 ## More Information
 
-- `Docs/Future/PRD-0019-email-outbox-durable-dispatch.md` (Proposed) would make scheduled email safe under
+- `Docs/prd/PRD-0019-email-outbox-durable-dispatch.md` (Proposed) would make scheduled email safe under
   more than one replica and across restarts — a database outbox drained with claim and lease — while
   keeping the workers in the API process and adding no deployable, and it leaves the expired-code update
   out of scope. It would remove the reliance on one replica for email, not the in-process hosting; the
@@ -119,7 +119,7 @@ work, are in [ADR-0032](ADR-0032-production-runs-two-container-apps.md).
 - **Duplicate budget reminders.** Each replica runs the hourly cycle, so every admin gets one reminder per
   running replica. The reminder is not safe with one replica either: it records nothing, so a restart
   inside the trigger hour sends that hour's reminders again, and a trigger hour with no process running
-  sends none. Owner: [PRD-0019](../Future/PRD-0019-email-outbox-durable-dispatch.md), which sets out
+  sends none. Owner: [PRD-0019](../prd/PRD-0019-email-outbox-durable-dispatch.md), which sets out
   both failures.
 
 The expired-code update is idempotent, so a duplicate run of it is only redundant work. Sign-up, reset

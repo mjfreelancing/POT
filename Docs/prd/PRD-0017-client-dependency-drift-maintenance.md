@@ -106,7 +106,7 @@ Stop the client re-accumulating the drift PRD-0015 removed. PRD-0015 verified th
 
 ## Related Documents
 
-- Future index: [Docs/Future/README.md](README.md)
+- Future index: [Docs/prd/README.md](README.md)
 - Predecessor programme: [PRD-0015 — React Client Stack Modernisation](PRD-0015-react-client-stack-modernisation.md)
 - Deferred major: [PRD-0016 — TypeScript 7 Upgrade](PRD-0016-typescript-7-upgrade.md)
 - Client toolchain facts and lessons: `Source/Client/pot-react/DEVELOPER.md`

@@ -128,6 +128,6 @@ look, and there is no release to hang a pre-release run on.
   [ADR-0042](ADR-0042-every-end-to-end-test-is-classified-by-whether-it-may-run-beside-others.md).
 - There is no continuous integration, so nothing runs either profile automatically:
   [ADR-0031](ADR-0031-builds-and-deployments-are-run-by-hand.md).
-- Source: [PRD-0012](../Future/PRD-0012-playwright-e2e-testing-infrastructure.md) R7 and R8. R8 and decision D6
+- Source: [PRD-0012](../prd/PRD-0012-playwright-e2e-testing-infrastructure.md) R7 and R8. R8 and decision D6
   call the production-like run an on-demand gate without saying when it is due; this record adds the
   completion gate.

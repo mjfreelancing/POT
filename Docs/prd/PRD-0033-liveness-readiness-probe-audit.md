@@ -89,6 +89,6 @@ Two further questions belong to the same audit because they depend on the same f
 
 ## Related Documents
 
-- Feature index: [Docs/Future/README.md](README.md)
+- Feature index: [Docs/prd/README.md](README.md)
 - DB readiness health check and worker startup gate: [PRD-0013](PRD-0013-db-readiness-health-check-and-worker-startup-gate.md)
 - Deployed Azure configuration: [Docs/Azure/Azure-Deployment-Notes.md](../Azure/Azure-Deployment-Notes.md)

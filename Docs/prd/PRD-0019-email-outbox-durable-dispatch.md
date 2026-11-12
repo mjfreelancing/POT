@@ -161,7 +161,7 @@ Reference notes for future maintainers. Rationale recorded here would otherwise 
 
 ## Related Documents
 
-- Future index: [Docs/Future/README.md](README.md)
+- Future index: [Docs/prd/README.md](README.md)
 - Prerequisite: [Site Locale and Time Zone Settings](PRD-0018-site-locale-settings.md)
 - Worker startup gate that the drainer reuses: [DB Readiness Health Check and Worker Startup Gate](PRD-0013-db-readiness-health-check-and-worker-startup-gate.md)
 - Retention idiom to align with: [AuthSession Retention and Background Cleanup Policy](PRD-0010-auth-session-retention-and-cleanup-policy.md)

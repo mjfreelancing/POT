@@ -43,7 +43,8 @@ $script:RequiredAdrFields = @('id', 'title', 'status', 'date', 'area')
 $script:IndexStartMarker = '<!-- BEGIN GENERATED INDEX -->'
 $script:IndexEndMarker = '<!-- END GENERATED INDEX -->'
 
-$script:LinkScopeDirectories = @('Docs/adr', 'Docs/standards', 'Docs/prd', 'Docs/reference', 'Docs/explanation', 'Docs/tutorials', 'Docs/how-to', 'Docs/user-guide', '.github')
+# A frozen PRD records what was asked at the time, including the code paths of that time, so its links are not checked.
+$script:LinkScopeDirectories = @('Docs/adr', 'Docs/standards', 'Docs/reference', 'Docs/explanation', 'Docs/tutorials', 'Docs/how-to', 'Docs/user-guide', '.github')
 $script:LinkScopeFiles = @(
     'Docs/README.md',
     'AGENTS.md',

@@ -98,6 +98,6 @@ step: the runner applies whatever has not yet been applied, every time the conta
 - How a destructive schema change is delivered across releases is
   [ADR-0010](ADR-0010-destructive-schema-changes-are-made-in-additive-steps.md).
 - Deployment without a pipeline is [ADR-0031](ADR-0031-builds-and-deployments-are-run-by-hand.md).
-  [PRD-0034](../Future/PRD-0034-ci-cd-pipeline-and-delivery-policies.md) asks how a rollback interacts
+  [PRD-0034](../prd/PRD-0034-ci-cd-pipeline-and-delivery-policies.md) asks how a rollback interacts
   with migrations that run at start-up.
 - The readiness signal that reports the schema is migrated belongs to the health-probe work.

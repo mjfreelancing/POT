@@ -65,7 +65,7 @@ A reset request must be answered identically whether or not the account exists.
   reset verification handlers and services log it at `Information` with the username and reference code.
   The temporary password is stored only as a hash, so a code alone signs nobody in. Removing the code
   from the logs is decided and carried by
-  [PRD-0035](../Future/PRD-0035-telemetry-tracing-and-redaction.md); hashing stored codes is left to that
+  [PRD-0035](../prd/PRD-0035-telemetry-tracing-and-redaction.md); hashing stored codes is left to that
   PRD's discovery.
 
 ### Confirmation

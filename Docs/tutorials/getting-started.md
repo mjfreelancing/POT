@@ -55,7 +55,7 @@ git --version
 
 ### Tooling Version Reference
 
-POT is built against the following tooling versions. **Required** is the minimum the code enforces; **Recommended / verified** is what the maintainers build and test with. Planning and decision records under `Docs/Future/` may quote older versions as of their writing date — this table reflects the current codebase.
+POT is built against the following tooling versions. **Required** is the minimum the code enforces; **Recommended / verified** is what the maintainers build and test with. Planning and decision records under `Docs/prd/` may quote older versions as of their writing date — this table reflects the current codebase.
 
 | Tool                     | Required             | Recommended / verified                                                                                       |
 | ------------------------ | -------------------- | ------------------------------------------------------------------------------------------------------------ |

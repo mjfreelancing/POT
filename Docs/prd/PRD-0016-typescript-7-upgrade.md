@@ -88,6 +88,6 @@ typescript-eslint — the package that parses/lints TS in this repo (`typescript
 
 ## 11. References
 
-- `Docs/Future/PRD-0015-react-client-stack-modernisation.md` — Inc 12 (TS → 6.0.3), DQ-1 (hold at 6.0.x until typescript-eslint supports TS 7), risk R3.
+- `Docs/prd/PRD-0015-react-client-stack-modernisation.md` — Inc 12 (TS → 6.0.3), DQ-1 (hold at 6.0.x until typescript-eslint supports TS 7), risk R3.
 - Repo memory `/memories/repo/client-upgrade-audit.md` (Inc-by-Inc audit + version facts).
 - Client gates + conventions: `Source/Client/pot-react/DEVELOPER.md`, `.github/copilot-instructions.md`.

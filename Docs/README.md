@@ -17,7 +17,7 @@ Two things follow from having one home per kind:
 | If you are writing…                                                       | It goes in                                                                                                    |
 | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | A significant technical decision, and why                                 | `Docs/adr/` — see [adr/README.md](adr/README.md)                                                              |
-| What a feature must do, and for whom                                      | `Docs/prd/` (today `Docs/Future/`)                                                                            |
+| What a feature must do, and for whom                                      | `Docs/prd/`                                                                                                   |
 | A later change to a Complete PRD                                          | that PRD's `## Amendments`                                                                                    |
 | A binding coding convention (naming, structure, validation, …)            | `Docs/standards/` — see [standards/](standards/)                                                              |
 | Steps a newcomer follows once, start to finish                            | `Docs/tutorials/`                                                                                             |

@@ -93,7 +93,7 @@ Candidate requirements; nothing implemented yet.
 
 ## Related Documents
 
-- Future index: [Docs/Future/README.md](README.md)
+- Future index: [Docs/prd/README.md](README.md)
 - Earlier design record: [ADR-0044](../adr/ADR-0044-retry-after-client-cooldown-handling.md), superseded by [ADR-0053 — The client never retries a rate-limited request](../adr/ADR-0053-the-client-never-retries-a-rate-limited-request.md); its interface behaviour is carried here as R1, R3 and R5
 - Server rate limiting: `Source/Server/Pot.AspNetCore/Concerns/RateLimiting/RateLimiterOptionsSetup.cs`, `RateLimiterPolicy.cs`, `RateLimiterDefaults.cs`
 - Server CORS policy (exposed headers): `Source/Server/Pot.AspNetCore/Concerns/Cors/Configuration/CorsOptionsSetup.cs`

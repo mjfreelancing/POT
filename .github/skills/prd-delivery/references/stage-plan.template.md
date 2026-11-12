@@ -2,7 +2,7 @@
 
 > Temporary delivery plan. Never committed; delete when the PRD is Complete.
 
-- PRD: `Docs/Future/PRD-NNNN-<slug>.md`
+- PRD: `Docs/prd/PRD-NNNN-<slug>.md`
 - Status: <Planned | In Progress | Complete>
 - Started: <yyyy-mm-dd>
 - Progress: 0/<total>

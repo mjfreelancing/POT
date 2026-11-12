@@ -135,7 +135,7 @@ Agreed on 2026-11-06, as a starting point for discovery rather than as requireme
 
 ## Related Documents
 
-- Feature index: [Docs/Future/README.md](README.md)
+- Feature index: [Docs/prd/README.md](README.md)
 - Tracing:
   [ADR-0054](../adr/ADR-0054-server-telemetry-is-instrumented-with-dotnet-apis-and-exported-through-opentelemetry.md)
 - The request log: [ADR-0050](../adr/ADR-0050-request-and-failure-logs-record-metadata-never-a-submitted-value.md);

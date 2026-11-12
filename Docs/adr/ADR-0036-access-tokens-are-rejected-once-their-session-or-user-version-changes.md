@@ -28,7 +28,7 @@ row therefore does nothing on its own to a token already issued. Two revocations
 Neither can be expressed inside the token, because a token cannot be edited after it is issued. They
 can only be detected by comparing the token against current state.
 Global revocation by a per-user token version came first, with the password-change goal recorded in
-[PRD-0002](../Future/PRD-0002-server-login-logout-session-architecture.md). Per-session rejection was added
+[PRD-0002](../prd/PRD-0002-server-login-logout-session-architecture.md). Per-session rejection was added
 on 2026-10-17, when each access token began to carry its session's identifier; before that, logging out
 stopped the session's refresh but left its access token usable until it expired.
 

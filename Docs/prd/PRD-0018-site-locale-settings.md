@@ -143,7 +143,7 @@ Reference notes for future maintainers.
 
 ## Related Documents
 
-- Future index: [Docs/Future/README.md](README.md)
+- Future index: [Docs/prd/README.md](README.md)
 - Dependent feature: [Email Outbox and Durable Dispatch](PRD-0019-email-outbox-durable-dispatch.md)
 - Settings feature area: `Source/Server/Pot.App/Features/Settings`, `Source/Client/pot-react/src/features/userSettings`
 - Accrual behaviour that depends on local dates: [Accrual Dirty Flag Rules and UI Status](PRD-0009-accrual-dirty-flag-rules-and-ui-status-prd.md)

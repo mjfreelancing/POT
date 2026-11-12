@@ -18,11 +18,11 @@ superseded-by: [ADR-0053]
 > **Clarification (2026-11-06).** D-2 (never auto-retry a 429) is now recorded on its own, and accepted, as
 > [ADR-0053](ADR-0053-the-client-never-retries-a-rate-limited-request.md). The rest of this design is
 > interface behaviour for one feature, not an architectural decision: it lives in
-> [PRD-0014](../Future/PRD-0014-retry-after-client-cooldown-handling.md) as requirements R1, R3 and R5.
+> [PRD-0014](../prd/PRD-0014-retry-after-client-cooldown-handling.md) as requirements R1, R3 and R5.
 
 ## Context
 
-[PRD 0014](../Future/PRD-0014-retry-after-client-cooldown-handling.md) defines **what** Retry-After client
+[PRD 0014](../prd/PRD-0014-retry-after-client-cooldown-handling.md) defines **what** Retry-After client
 handling must deliver — requirements, non-goals, and open questions. This ADR records **how**
 the work would be approached: the verified current state of the server contract and the client
 gap, the proposed design, and the decisions under consideration. No code changes have been
@@ -30,7 +30,7 @@ applied in this session.
 
 ## Companion documents
 
-- [PRD 0014 — Retry-After Client Cooldown Handling](../Future/PRD-0014-retry-after-client-cooldown-handling.md)
+- [PRD 0014 — Retry-After Client Cooldown Handling](../prd/PRD-0014-retry-after-client-cooldown-handling.md)
   — requirements (what/why).
 - Server rate limiting source: `Source/Server/Pot.AspNetCore/Concerns/RateLimiting/`.
 - Client error pipeline source: `Source/Client/pot-react/src/api/`.

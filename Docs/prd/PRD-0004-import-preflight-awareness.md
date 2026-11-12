@@ -31,5 +31,5 @@ Add a preflight capability so users can see compatibility status and remediation
 
 ## Related Documents
 
-- Future index: [Docs/Future/README.md](README.md)
-- Expense accrual policy plan: [Docs/Future/PRD-0003-expense-accrual-policy-modes.md](PRD-0003-expense-accrual-policy-modes.md)
+- Future index: [Docs/prd/README.md](README.md)
+- Expense accrual policy plan: [Docs/prd/PRD-0003-expense-accrual-policy-modes.md](PRD-0003-expense-accrual-policy-modes.md)

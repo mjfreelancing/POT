@@ -96,7 +96,7 @@ limits are constants in code, not deployment settings.
 
 - The client's handling of `429` and `Retry-After` is a separate decision: the client never retries a `429`
   ([ADR-0053](ADR-0053-the-client-never-retries-a-rate-limited-request.md)), and what the user is shown is
-  a requirement of [PRD-0014](../Future/PRD-0014-retry-after-client-cooldown-handling.md).
+  a requirement of [PRD-0014](../prd/PRD-0014-retry-after-client-cooldown-handling.md).
 - An account lockout policy could be added later without changing this one; it is deferred rather than
   rejected. Until then there is no lockout of an account, and the temporary rejection is the whole of the
   response to guessing.

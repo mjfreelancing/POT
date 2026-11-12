@@ -10,20 +10,20 @@ Discovery first, documentation second. The output is a PRD that was argued over 
 
 Two files are involved:
 
-- **Discovery document** — `Docs/Future/PRD-NNNN-<slug>-discovery.md`. Holds the captured input, the draft problem statement, the scope sketch, every question round and any open questions. It is scratch: delete it once the PRD is written.
-- **PRD** — `Docs/Future/PRD-NNNN-<slug>.md`. The durable document that `prd-delivery` consumes.
+- **Discovery document** — `Docs/prd/PRD-NNNN-<slug>-discovery.md`. Holds the captured input, the draft problem statement, the scope sketch, every question round and any open questions. It is scratch: delete it once the PRD is written.
+- **PRD** — `Docs/prd/PRD-NNNN-<slug>.md`. The durable document that `prd-delivery` consumes.
 
-The number comes from `Docs/Future/README.md`, never from guessing: read the `Next free PRD number` line and bump it when the number is claimed.
+The number comes from `Docs/prd/README.md`, never from guessing: read the `Next free PRD number` line and bump it when the number is claimed.
 
 ## Project conventions this skill assumes
 
 The procedure below hard-codes the layout this repository uses. When this skill is copied into another
 project, adjust these four things and nothing else:
 
-- PRDs live in `Docs/Future/` — change the paths in Stages 1, 5 and 6.
+- PRDs live in `Docs/prd/` — change the paths in Stages 1, 5 and 6.
 - The PRD template lives beside this skill at `references/prd.template.md` — change the Stage 5 link if
   it moves.
-- The next number comes from a `Next free PRD number:` line in `Docs/Future/README.md` — change the
+- The next number comes from a `Next free PRD number:` line in `Docs/prd/README.md` — change the
   number source if the project keeps one elsewhere, or ask the human outright when it keeps none.
 - The index is a Markdown table in that same README — change the row format if the project's index differs.
 - Delivery plans live beside the PRD as `TASKS-PRD-NNNN.md` — keep that convention, because the
@@ -46,13 +46,13 @@ project, adjust these four things and nothing else:
 
 ### Stage 1 — Claim the number and open the discovery document
 
-1. Read `Docs/Future/README.md` and take the number from the `Next free PRD number` line.
+1. Read `Docs/prd/README.md` and take the number from the `Next free PRD number` line.
 2. Derive a short kebab-case slug from the feature, matching the existing file names.
-3. Create `Docs/Future/PRD-NNNN-<slug>-discovery.md` from the [discovery document template](./references/discovery-document.template.md), filling in:
+3. Create `Docs/prd/PRD-NNNN-<slug>-discovery.md` from the [discovery document template](./references/discovery-document.template.md), filling in:
    - the input exactly as the human supplied it, or the notes from the interview;
    - a draft problem statement — what is wrong today and why it matters — written for the human to correct;
    - a scope sketch listing what appears to be in scope and out of scope.
-4. Add a `Docs/Future/README.md` row with status `Planning`, the current date, a link to the discovery document, and a one-line summary. Bump `Next free PRD number` and the index-update date on the last line of that file.
+4. Add a `Docs/prd/README.md` row with status `Planning`, the current date, a link to the discovery document, and a one-line summary. Bump `Next free PRD number` and the index-update date on the last line of that file.
 5. Summarize what you understood in a short paragraph and **stop**. Offer a commit message for the index change.
 
 ### Stage 2 — Clarify unknowns (chat, one at a time)
@@ -93,7 +93,7 @@ Repeat until nothing material is unanswered.
 
 When the rounds are done, **ask the human whether to produce the PRD now or wait**, because some open questions become answerable as the work progresses. Then:
 
-1. Create `Docs/Future/PRD-NNNN-<slug>.md` from the
+1. Create `Docs/prd/PRD-NNNN-<slug>.md` from the
    [PRD template](./references/prd.template.md), which
    defines the whole shape: header metadata, problem statement, actors and authority, terms, grouped
    functional requirements, requirement coverage, out of scope, known risks, assumptions, decisions,
@@ -116,7 +116,7 @@ When the rounds are done, **ask the human whether to produce the PRD now or wait
    this feature makes wrong, what it will say wrongly, and the amendment entry that will record the
    change. A feature that contradicts a Complete PRD without a row here will leave two documents in
    conflict, so an empty table is a claim worth stating explicitly.
-5. Rewrite the `Docs/Future/README.md` row to link to the PRD, keep status `Planning`, refresh the date
+5. Rewrite the `Docs/prd/README.md` row to link to the PRD, keep status `Planning`, refresh the date
    and the one-line summary.
 6. Complete the **Manual Test Plan** section of that same file: a setup section, scenario groups with
    referenceable IDs (`A1`, `B2`, …) and expected results, a cleanup section, and a results table. It
@@ -136,5 +136,5 @@ When the rounds are done, **ask the human whether to produce the PRD now or wait
 ## Notes
 
 - The PRD records decisions; the discovery document records how they were reached. Once the PRD exists, the second is noise.
-- Never reference the PRD number, requirement IDs or this process in code, tests, comments or test names. Those identifiers live only in `Docs/Future/`.
+- Never reference the PRD number, requirement IDs or this process in code, tests, comments or test names. Those identifiers live only in `Docs/prd/`.
 - The Manual Test Plan is executed at the end of delivery — `prd-delivery` pauses for it before completing a PRD — unless the PRD marks it `Not required`, in which case the automated suites named there are the completion gate.

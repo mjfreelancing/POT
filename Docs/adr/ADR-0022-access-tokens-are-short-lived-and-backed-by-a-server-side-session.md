@@ -31,8 +31,8 @@ subdomains and is cleared on logout on the same domain it was set on.
 
 Session state is readable on every request, which is what makes revocation possible at all: a
 self-contained token cannot be taken back once issued.
-Until [PRD-0001](../Future/PRD-0001-per-session-login-support.md) and
-[PRD-0002](../Future/PRD-0002-server-login-logout-session-architecture.md), delivered together, the user
+Until [PRD-0001](../prd/PRD-0001-per-session-login-support.md) and
+[PRD-0002](../prd/PRD-0002-server-login-logout-session-architecture.md), delivered together, the user
 row held a single refresh token, so a sign-in or refresh on one device replaced the token another device
 held. A session row per sign-in replaced it.
 
@@ -79,7 +79,7 @@ shape but hands it to any script running on the page.
   client holding a token the server has already replaced.
 - Bad, because the session's expiry slides: every refresh moves it thirty days on, there is no absolute
   lifetime, and nothing purges revoked or expired session rows
-  ([PRD-0010](../Future/PRD-0010-auth-session-retention-and-cleanup-policy.md), a draft, proposes a policy).
+  ([PRD-0010](../prd/PRD-0010-auth-session-retention-and-cleanup-policy.md), a draft, proposes a policy).
 - Bad, because the raw refresh token is written to the log at `Information` when a refresh is handled, so
   "never stored in clear" holds for the database only.
 - Bad, because logout revokes the session only when the request also carries a valid access token: the

@@ -27,7 +27,7 @@ a developer.
 A client that receives no body cannot say anything useful, so it invents a generic message; a support
 request that quotes only a status code cannot be traced to a request at all.
 A consistent shape is what lets the client interpret and handle every error predictably;
-[PRD-0030](../Future/PRD-0030-problem-details-consolidation.md) consolidated the responses into one.
+[PRD-0030](../prd/PRD-0030-problem-details-consolidation.md) consolidated the responses into one.
 
 ## Decision Drivers
 
@@ -60,7 +60,7 @@ header asks for.
 The member-by-member rules — which members each status carries, the default `detail` per status and the
 conflict types — are documented in the Problem Details section of
 [`Source/Server/DEVELOPER.md`](../../Source/Server/DEVELOPER.md#problem-details) and specified by
-[PRD-0030](../Future/PRD-0030-problem-details-consolidation.md).
+[PRD-0030](../prd/PRD-0030-problem-details-consolidation.md).
 
 ### Consequences
 

@@ -11,7 +11,7 @@ home and none of them is restated.
 | Utility scripts, including the documentation check             | [.github/scripts/README.md](.github/scripts/README.md)             |
 | Where any kind of document belongs                             | [Docs/README.md](Docs/README.md)                                   |
 | Why the system is shaped as it is, and what is already decided | [Docs/adr/README.md](Docs/adr/README.md)                           |
-| What a feature must do, and why (PRDs)                         | [Docs/Future/README.md](Docs/Future/README.md)                     |
+| What a feature must do, and why (PRDs)                         | [Docs/prd/README.md](Docs/prd/README.md)                     |
 | Binding coding conventions                                     | [Docs/standards/](Docs/standards/)                                 |
 
 Before an architectural change, read the ADR guide and do not contradict an accepted decision without

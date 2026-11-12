@@ -113,5 +113,5 @@ parallel, within a file as well as across files, unless the suite is declared se
 - The shared stack this depends on: [ADR-0040](ADR-0040-end-to-end-tests-run-on-one-shared-stack.md).
 - How the destructive class provisions its own tenant:
   [ADR-0051](ADR-0051-tenants-are-provisioned-and-destroyed-by-the-products-own-routes-in-tests.md).
-- Sources: [PRD-0012](../Future/PRD-0012-playwright-e2e-testing-infrastructure.md) R6 (two classes) and
-  [PRD-0031](../Future/PRD-0031-automated-tenant-scenario-testing.md) F1–F3 (the destructive class).
+- Sources: [PRD-0012](../prd/PRD-0012-playwright-e2e-testing-infrastructure.md) R6 (two classes) and
+  [PRD-0031](../prd/PRD-0031-automated-tenant-scenario-testing.md) F1–F3 (the destructive class).

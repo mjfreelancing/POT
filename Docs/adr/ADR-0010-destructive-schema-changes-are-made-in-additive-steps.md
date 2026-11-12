@@ -81,5 +81,5 @@ were dropped in the same change as the code that stopped using them.
 ## More Information
 
 - How migrations are applied is [ADR-0009](ADR-0009-migrations-run-in-a-separate-process-before-the-api-starts.md).
-- The removals cited are [PRD-0023](../Future/PRD-0023-dynamic-accrual-calculation.md) and
-  [PRD-0021](../Future/PRD-0021-remove-account-bsb-and-number.md).
+- The removals cited are [PRD-0023](../prd/PRD-0023-dynamic-accrual-calculation.md) and
+  [PRD-0021](../prd/PRD-0021-remove-account-bsb-and-number.md).

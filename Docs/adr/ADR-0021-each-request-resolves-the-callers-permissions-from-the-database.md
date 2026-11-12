@@ -29,7 +29,7 @@ administrator at any time.
 The resolution happens during authorization, before the user-context middleware has established which
 site the caller is acting in, so it is necessarily cross-tenant: it answers "what may this user do
 anywhere", not "what may this user do here". Site scoping is enforced later, by the data layer.
-[PRD-0026](../Future/PRD-0026-cross-tenant-authorization-hardening.md) §4.6 records why permission and
+[PRD-0026](../prd/PRD-0026-cross-tenant-authorization-hardening.md) §4.6 records why permission and
 site claims are kept out of the token: a JWT payload is encoded, not encrypted, so a claim is readable by
 anyone holding the token; and a claim goes stale while the token stays valid.
 

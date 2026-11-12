@@ -112,7 +112,7 @@ apply, are for discovery. The brief's options were:
 
 ## Related Documents
 
-- Feature index: [Docs/Future/README.md](README.md)
+- Feature index: [Docs/prd/README.md](README.md)
 - Current process: [ADR-0031](../adr/ADR-0031-builds-and-deployments-are-run-by-hand.md); production topology:
   [ADR-0032](../adr/ADR-0032-production-runs-two-container-apps.md)
 - Build-time code-style enforcement, which a pipeline would run:

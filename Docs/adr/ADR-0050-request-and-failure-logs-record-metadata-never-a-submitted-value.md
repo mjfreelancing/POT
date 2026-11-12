@@ -26,14 +26,14 @@ the amounts of a user's accounts.
 Logs are read by more people, kept longer and stored in more places than the database. A value that
 enters a log has left the controls that were designed around it.
 
-Before [PRD-0030](../Future/PRD-0030-problem-details-consolidation.md), a hand-written middleware wrote
+Before [PRD-0030](../prd/PRD-0030-problem-details-consolidation.md), a hand-written middleware wrote
 every request body whenever the server ran outside Production and recorded no request metadata, which is
 close to option 2 below. PRD-0030 (requirements A2 to A6) replaced it with this decision, to keep
 credentials and sensitive financial data out of logs.
 
 This record covers the request log and the logging of failures. What the application's own log
 statements may carry, call logging included, is governed separately
-([PRD-0035](../Future/PRD-0035-telemetry-tracing-and-redaction.md)).
+([PRD-0035](../prd/PRD-0035-telemetry-tracing-and-redaction.md)).
 
 ## Decision Drivers
 

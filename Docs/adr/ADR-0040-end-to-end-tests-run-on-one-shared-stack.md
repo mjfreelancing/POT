@@ -105,5 +105,5 @@ themselves within it by owning the data they create.
   [ADR-0041](ADR-0041-end-to-end-tests-run-on-a-development-profile-by-default-and-a-production-build-profile-gates-client-changing-prds.md).
 - How destructive journeys get a tenant of their own:
   [ADR-0051](ADR-0051-tenants-are-provisioned-and-destroyed-by-the-products-own-routes-in-tests.md).
-- Source: [PRD-0012](../Future/PRD-0012-playwright-e2e-testing-infrastructure.md) R1, R2 and R10. The earlier combined
+- Source: [PRD-0012](../prd/PRD-0012-playwright-e2e-testing-infrastructure.md) R1, R2 and R10. The earlier combined
   design record is [ADR-0043](ADR-0043-playwright-e2e-testing-infrastructure.md).

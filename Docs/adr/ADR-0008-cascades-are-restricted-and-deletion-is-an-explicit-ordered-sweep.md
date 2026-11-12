@@ -26,7 +26,7 @@ Restricting makes the schema refuse instead: deleting a parent with children fai
 are handled, which turns an unintended deletion into an error.
 
 Restricting cascades is meant to prevent accidental data loss through a coding error or direct database
-access. [PRD-0022](../Future/PRD-0022-user-and-site-deletion.md) makes removing a user or a site a
+access. [PRD-0022](../prd/PRD-0022-user-and-site-deletion.md) makes removing a user or a site a
 permanent hard delete, and the user and site sweeps carry it out.
 
 ## Decision Drivers
@@ -111,7 +111,7 @@ fails rather than returning a tombstone.
 ## More Information
 
 - The convention is `DbContextBase.DisableCascadeDelete`. The sweeps that exist are the user and site
-  removals of [PRD-0022](../Future/PRD-0022-user-and-site-deletion.md).
+  removals of [PRD-0022](../prd/PRD-0022-user-and-site-deletion.md).
 - A financial account is not swept: deleting one that still has expenses or incomes is refused with a
   business error, and expenses and incomes are deleted one row at a time.
 - A sweep is all-or-nothing because it is one save, not because of an explicit transaction; when an

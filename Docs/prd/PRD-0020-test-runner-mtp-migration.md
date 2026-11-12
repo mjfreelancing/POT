@@ -172,7 +172,7 @@ Interpretation:
 | Instructions         | `.github/copilot-instructions.md`, `.github/instructions/dotnet.tests.instructions.md`, `.github/instructions/aspnetcore.integration-tests.instructions.md`, `.github/instructions/aspnetcore-api.instructions.md`                                       |
 | Prompts/skills/index | `.github/prompts/dotnet_unit_test.prompt.md`, `.github/prompts/repo_tests.prompt.md`, `.github/README.md`, `.github/skills/code-coverage/SKILL.md`, `.github/skills/dotnet-integration-test/SKILL.md`, `.github/skills/server-integration-test/SKILL.md` |
 | Server docs          | `Source/Server/DEVELOPER.md` (test/coverage command tables)                                                                                                                                                                                              |
-| Historical docs      | `Docs/Future/PRD-0002-server-login-logout-session-architecture.md` (command example) — decide whether to update historical PRDs or leave them as-is                                                                                                       |
+| Historical docs      | `Docs/prd/PRD-0002-server-login-logout-session-architecture.md` (command example) — decide whether to update historical PRDs or leave them as-is                                                                                                       |
 
 Command translation table (VSTest → MTP mode):
 
@@ -232,8 +232,8 @@ Command translation table (VSTest → MTP mode):
 
 ## 14. References
 
-- `Docs/Future/PRD-0016-typescript-7-upgrade.md` — the gated-track format this PRD follows (trigger, probe, exit criteria).
-- `Docs/Future/PRD-0017-client-dependency-drift-maintenance.md` — per-increment gate discipline referenced by DQ-4.
+- `Docs/prd/PRD-0016-typescript-7-upgrade.md` — the gated-track format this PRD follows (trigger, probe, exit criteria).
+- `Docs/prd/PRD-0017-client-dependency-drift-maintenance.md` — per-increment gate discipline referenced by DQ-4.
 - xUnit.net v3 docs — migration, MTP support, MTP code coverage: <https://xunit.net/docs/getting-started/v3/microsoft-testing-platform>, <https://xunit.net/docs/getting-started/v3/code-coverage-with-mtp>.
 - Microsoft Learn — `dotnet test` MTP mode and troubleshooting/exit codes: <https://learn.microsoft.com/dotnet/core/tools/dotnet-test-mtp>, <https://learn.microsoft.com/dotnet/core/testing/microsoft-testing-platform-troubleshooting>.
 - Repo memory `/memories/repo/server-tests.md` — current runner configuration and the recorded blocker evidence.

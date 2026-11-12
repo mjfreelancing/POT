@@ -635,4 +635,4 @@ Run commands (from `Source/Client/pot-react`): `npm run e2e:preflight` before a 
 - Authentication reference (platform administrators and permissions): `Docs/AUTHENTICATION.md`
 - Server conventions (multi-tenancy, query filters): `Source/Server/DEVELOPER.md`
 - User guide index (the security overview links from here): `Docs/USER-GUIDE/README.md`
-- Future index: [Docs/Future/README.md](README.md)
+- Future index: [Docs/prd/README.md](README.md)

@@ -27,7 +27,7 @@ application answers with no body at all. Transport has other cross-cutting behav
 credentials, correlation identifier, token refresh — and if every screen configured it, they would
 diverge.
 How the interceptor reads a body, and which message each status shows, are set by
-[PRD-0030](../Future/PRD-0030-problem-details-consolidation.md) (E1–E8). The alternatives below record what
+[PRD-0030](../prd/PRD-0030-problem-details-consolidation.md) (E1–E8). The alternatives below record what
 each would have cost; the record does not show whether they were weighed before the choice.
 
 ## Decision Drivers

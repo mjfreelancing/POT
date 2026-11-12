@@ -287,4 +287,4 @@ Reference notes for future maintainers.
 - Platform-admin configuration in source: `Source/Server/Pot.AspNetCore/Concerns/Auth/Configuration/PlatformAdminOptions.cs`, `.../PlatformAdminOptionsSetup.cs`, `.../Auth/Services/PermissionService.cs`
 - The FK convention that forces the sweeps: `Source/Server/Pot.Data/DbContextBase.cs`, `Source/Server/Pot.Data/PotDbContext.cs`
 - Platform-admin surface in the client: `Source/Client/pot-react/src/components/nav/AppSidebarMenus.tsx`
-- Future index: [Docs/Future/README.md](README.md)
+- Future index: [Docs/prd/README.md](README.md)

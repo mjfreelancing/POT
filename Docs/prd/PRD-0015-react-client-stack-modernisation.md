@@ -363,4 +363,4 @@ Recommended policy: **before each risky increment (6–12), land its guard test 
 
 ### Companion index
 
-Registered in [`Docs/Future/README.md`](README.md) as feature **015**.
+Registered in [`Docs/prd/README.md`](README.md) as feature **015**.

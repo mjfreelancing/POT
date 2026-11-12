@@ -27,7 +27,7 @@ two roles, a build-time variable), how many documents currently mention each. Th
 informational and never fails: it measures the duplication the migration is removing, so the count
 should fall to one per fact and stay there.
 
-Broken links in `Docs/Future/` (frozen PRDs), the legacy guides and the user guide are not checked yet:
+Broken links in `Docs/prd/` (frozen PRDs), the legacy guides and the user guide are not checked yet:
 they carry historical links to files that have since moved, and each is corrected when it is reworked.
 
 ## Running it

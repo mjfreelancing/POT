@@ -41,7 +41,7 @@ Recorded as the design has moved, rather than by rewriting the sections below. T
 
 ## Context
 
-[PRD 0012](../Future/PRD-0012-playwright-e2e-testing-infrastructure.md) defines **what** the E2E testing
+[PRD 0012](../prd/PRD-0012-playwright-e2e-testing-infrastructure.md) defines **what** the E2E testing
 infrastructure must deliver — goals, non-goals, requirements, and acceptance criteria. This
 ADR records **how** those requirements are met: the implemented architecture and its current
 state. Read the PRD for the requirements and their rationale; read this ADR for the concrete
@@ -49,7 +49,7 @@ design, operational detail, and design history.
 
 ## Companion documents
 
-- [PRD 0012 — Playwright E2E Testing Infrastructure](../Future/PRD-0012-playwright-e2e-testing-infrastructure.md)
+- [PRD 0012 — Playwright E2E Testing Infrastructure](../prd/PRD-0012-playwright-e2e-testing-infrastructure.md)
   — requirements (what/why).
 - `Source/Client/pot-react/e2e/README.md` — day-to-day architecture & conventions reference.
 - `Source/Client/pot-react/e2e/AUTHORING.md` — how to add/update a test.
@@ -358,7 +358,7 @@ contract), then globalSetup:
     renew incomes (mode `Overdue`, as of the local date) → renew expenses. Throws if
     `e2e/seed/financial.export` is missing.
 
-    > **Note (2026-09-27).** The `accrue expenses` leg is gone. [PRD-0023](../Future/PRD-0023-dynamic-accrual-calculation.md) removed the accrual command surface because accrual is derived on read, so there is nothing to run after an import: the helper now goes login → import → renew incomes → renew expenses. The same correction applies to the two other places this ADR states the step — the `renewal/accrual` label in the §3 setup diagram and step 5 of §4 — where it now means renewal only. The step above is kept as it was written when this ADR was accepted.
+    > **Note (2026-09-27).** The `accrue expenses` leg is gone. [PRD-0023](../prd/PRD-0023-dynamic-accrual-calculation.md) removed the accrual command surface because accrual is derived on read, so there is nothing to run after an import: the helper now goes login → import → renew incomes → renew expenses. The same correction applies to the two other places this ADR states the step — the `renewal/accrual` label in the §3 setup diagram and step 5 of §4 — where it now means renewal only. The step above is kept as it was written when this ADR was accepted.
 
 11. Pre-warms the shared stack (`warmUpSharedStack`): mounts every authenticated route in a
     real browser once, forcing Vite to transform lazy chunks and the API to serve first reads

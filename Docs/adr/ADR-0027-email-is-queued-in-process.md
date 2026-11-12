@@ -89,7 +89,7 @@ until the worker dequeues it. The channel is unbounded and lives as long as the 
 
 - This record is expected to be superseded by a durable outbox. The intended direction — a database
   outbox drained with claim and lease, with retry and same-day catch-up — is written up in
-  `Docs/Future/PRD-0019-email-outbox-durable-dispatch.md` (Proposed); adopting it would supersede this
+  `Docs/prd/PRD-0019-email-outbox-durable-dispatch.md` (Proposed); adopting it would supersede this
   record rather than edit it. PRD-0019 leaves open whether transactional messages move to the outbox or
   stay on the in-process channel, so the supersession may be partial.
 - How a message's subject and bodies are produced is

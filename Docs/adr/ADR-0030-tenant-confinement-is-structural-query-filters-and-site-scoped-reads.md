@@ -26,7 +26,7 @@ not during authentication, and a filter on users or sites would have to exclude 
 resolve which site the caller is in.
 
 The site-scoped repository methods for users and sites, and the refusal contract, come from
-[PRD-0026](../Future/PRD-0026-cross-tenant-authorization-hardening.md) (§§4.1, 4.2). That PRD also
+[PRD-0026](../prd/PRD-0026-cross-tenant-authorization-hardening.md) (§§4.1, 4.2). That PRD also
 considered a filter on `User` and `Site` and rejected it (§4.7). The four entity filters predate the PRD;
 beyond what §4.7 says, the record does not show why they were chosen, or whether options 3 and 4 below
 were weighed.
@@ -115,7 +115,7 @@ to the response for an id that does not exist, so the answer does not confirm th
 
 - The deliberately cross-tenant user reads are a small set. Each is marked in the repository with a
   `Cross-tenant` comment and listed in
-  [PRD-0026](../Future/PRD-0026-cross-tenant-authorization-hardening.md) §4.5. Some names say so, such as
+  [PRD-0026](../prd/PRD-0026-cross-tenant-authorization-hardening.md) §4.5. Some names say so, such as
   `GetEnabledUsersForAllSitesAsync`, but `GetByUsernameAsync` and `GetSecurityStateAsync` do not.
 - Which authority a signed-in caller has anywhere is a separate decision,
   [ADR-0021](ADR-0021-each-request-resolves-the-callers-permissions-from-the-database.md). This one is about

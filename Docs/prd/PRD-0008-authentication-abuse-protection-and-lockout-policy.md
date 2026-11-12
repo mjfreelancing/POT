@@ -98,7 +98,7 @@ Everything in this document is a draft for PRD refinement. None of the recommend
 
 ## Related Documents
 
-- Future index: [Docs/Future/README.md](README.md)
-- Client and session companion plan: [Docs/Future/PRD-0001-per-session-login-support.md](PRD-0001-per-session-login-support.md)
-- Session architecture baseline: [Docs/Future/PRD-0002-server-login-logout-session-architecture.md](PRD-0002-server-login-logout-session-architecture.md)
+- Future index: [Docs/prd/README.md](README.md)
+- Client and session companion plan: [Docs/prd/PRD-0001-per-session-login-support.md](PRD-0001-per-session-login-support.md)
+- Session architecture baseline: [Docs/prd/PRD-0002-server-login-logout-session-architecture.md](PRD-0002-server-login-logout-session-architecture.md)
 - Current auth reference: [Docs/AUTHENTICATION.md](../AUTHENTICATION.md)
