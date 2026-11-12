@@ -8,15 +8,11 @@ five are done.
 
 ## W1 — Content to correct
 
-Each item is fixed when its file is reworked, not in a separate pass. Items 1–7, 9 and 10 were fixed in the `AUTHENTICATION.md`, server-guide, `ARCHITECTURE.md`, user-guide, `IMPLEMENTATION.md`, client-guide, E2E-docs and setup-docs passes; they are removed rather than marked done, so the numbers below skip. (`_DOCUMENTATION_PLAN.md` still uses "Site Owner", but W3 retires that file rather than correcting it.)
+Each item is fixed when its file is reworked, not in a separate pass. Items 1–7 and 9–12 were fixed in the `AUTHENTICATION.md`, server-guide, `ARCHITECTURE.md`, user-guide, `IMPLEMENTATION.md`, client-guide, E2E-docs and setup-docs passes; they are removed rather than marked done, so the numbers below skip. (`_DOCUMENTATION_PLAN.md` still uses "Site Owner", but W3 retires that file rather than correcting it.)
 
 **Fix when the file is reworked**
 
-8. **Server DEVELOPER:** the `WhenNotNull()` guidance at ~1921 conflicts with `allsoverit-patterns.instructions.md:18` (DD-15). Leave it until DD-15 is decided; it matches the code today.
-11. **FIRST-TIME-SETUP:**
-    - Status names are inconsistent: `PendingApproval` vs `Approval`.
-    - It says only platform admins see the Users menu; the real gate is `user:manage`.
-12. **Compose file comment** (`docker-compose-client-server.yml:430`): it refers to `/swagger`, but the API UI is Scalar and is Development-only.
+8. **Server DEVELOPER:** the `WhenNotNull()` guidance at ~1921 conflicts with `allsoverit-patterns.instructions.md:18` (DD-15). Leave it until DD-15 is decided; it matches the code today. This is the only W1 item left.
 
 ---
 

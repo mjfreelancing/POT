@@ -427,7 +427,7 @@ services:
     # Why same ports: Simplifies configuration, no mental translation needed
     # Access examples:
     #   - From host: curl http://localhost:5241/_health
-    #   - From browser: http://localhost:5241/swagger
+    #   - From browser: http://localhost:5241/scalar (Development only, the API reference UI)
     #   - From client container: http://pot-aspnet:5241 (uses container name + internal port)
     # Result: API accessible on http://localhost:5241 from host machine
     ports:

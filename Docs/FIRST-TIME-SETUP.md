@@ -41,7 +41,7 @@ Now that POT is running, you need to create your first user account and configur
 
 ## Step 3: Wait for Platform Admin Approval
 
-After email verification, your account status will be **PendingApproval**. You cannot log in until a platform admin approves your account.
+After email verification, your account status will be **Approval**. You cannot log in until a platform admin approves your account.
 
 > **For the first user:** Since there are no platform admins yet, you need to approve yourself manually. Continue to Step 4.
 
@@ -160,7 +160,7 @@ You should see the status changed to `Enabled`:
 
 6. **Verify platform admin access:**
 
-   - Navigate to **Users** in the left sidebar (only visible to platform admins)
+   - Navigate to **Users** in the left sidebar (shown to anyone with `user:manage` or `user:view`; as the platform admin you have both)
    - You should see your account listed with "Admin" role and "Enabled" status
 
      ![User management view](images/first-time-setup/step06-01-users.png)
